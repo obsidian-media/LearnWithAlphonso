@@ -1,4 +1,879 @@
 {
+ "es:card:esa1p10l1/caballo": {
+  "patch": {
+   "meaning": "horse",
+   "example": "El caballo corre rápido."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l1/gato": {
+  "patch": {
+   "meaning": "cat",
+   "example": "Mi gato duerme mucho."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l1/perro": {
+  "patch": {
+   "meaning": "dog",
+   "example": "Mi perro es muy grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l1/pez": {
+  "patch": {
+   "meaning": "fish",
+   "example": "El pez nada en el agua."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l1/pájaro": {
+  "patch": {
+   "meaning": "bird",
+   "example": "Hay un pájaro en el árbol."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l2/cerdo": {
+  "patch": {
+   "meaning": "pig",
+   "example": "El cerdo está en la granja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l2/león": {
+  "patch": {
+   "meaning": "lion",
+   "example": "El león es fuerte."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l2/oveja": {
+  "patch": {
+   "meaning": "sheep",
+   "example": "La oveja es blanca."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l2/tigre": {
+  "patch": {
+   "meaning": "tiger",
+   "example": "El tigre es grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l2/vaca": {
+  "patch": {
+   "meaning": "cow",
+   "example": "La vaca come hierba."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l3/conejo": {
+  "patch": {
+   "meaning": "rabbit",
+   "example": "El conejo come zanahorias."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l3/elefante": {
+  "patch": {
+   "meaning": "elephant",
+   "example": "El elefante es muy grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l3/mono": {
+  "patch": {
+   "meaning": "monkey",
+   "example": "El mono come plátanos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l3/oso": {
+  "patch": {
+   "meaning": "bear",
+   "example": "El oso come miel."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l3/ratón": {
+  "patch": {
+   "meaning": "mouse",
+   "example": "Hay un ratón en la cocina."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l4/lobo": {
+  "patch": {
+   "meaning": "wolf",
+   "example": "El lobo vive en el bosque."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l4/pato": {
+  "patch": {
+   "meaning": "duck",
+   "example": "El pato nada en el lago."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l4/rana": {
+  "patch": {
+   "meaning": "frog",
+   "example": "La rana salta en el lago."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l4/serpiente": {
+  "patch": {
+   "meaning": "snake",
+   "example": "La serpiente es larga."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p10l4/tortuga": {
+  "patch": {
+   "meaning": "turtle",
+   "example": "La tortuga es lenta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l1/lluvia": {
+  "patch": {
+   "meaning": "rain",
+   "example": "La lluvia es fuerte hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l1/nieve": {
+  "patch": {
+   "meaning": "snow",
+   "example": "Hay nieve en la montaña."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l1/nube": {
+  "patch": {
+   "meaning": "cloud",
+   "example": "Hay una nube en el cielo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l1/sol": {
+  "patch": {
+   "meaning": "sun",
+   "example": "Hoy hay mucho sol."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l1/viento": {
+  "patch": {
+   "meaning": "wind",
+   "example": "Hoy hay mucho viento."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l2/calor": {
+  "patch": {
+   "meaning": "heat",
+   "example": "Hoy hace mucho calor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l2/frío": {
+  "patch": {
+   "meaning": "cold",
+   "example": "Hoy hace mucho frío."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l2/hielo": {
+  "patch": {
+   "meaning": "ice",
+   "example": "Quiero jugo con hielo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l2/niebla": {
+  "patch": {
+   "meaning": "fog",
+   "example": "Hay mucha niebla hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l2/tormenta": {
+  "patch": {
+   "meaning": "storm",
+   "example": "Hay una tormenta esta noche."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l3/arcoíris": {
+  "patch": {
+   "meaning": "rainbow",
+   "example": "Veo un arcoíris en el cielo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l3/humedad": {
+  "patch": {
+   "meaning": "humidity",
+   "example": "Hay mucha humedad hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l3/relámpago": {
+  "patch": {
+   "meaning": "lightning",
+   "example": "Veo un relámpago en el cielo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l3/temperatura": {
+  "patch": {
+   "meaning": "temperature",
+   "example": "La temperatura es de veinte grados."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p11l3/trueno": {
+  "patch": {
+   "meaning": "thunder",
+   "example": "Escucho un trueno fuerte."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l1/camisa": {
+  "patch": {
+   "meaning": "shirt",
+   "example": "Mi papá usa una camisa blanca."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l1/camiseta": {
+  "patch": {
+   "meaning": "t-shirt",
+   "example": "Tengo una camiseta roja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l1/falda": {
+  "patch": {
+   "meaning": "skirt",
+   "example": "Ella usa una falda negra."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l1/pantalones": {
+  "patch": {
+   "meaning": "pants",
+   "example": "Mis pantalones son azules."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l1/vestido": {
+  "patch": {
+   "meaning": "dress",
+   "example": "Mi hermana tiene un vestido nuevo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l2/abrigo": {
+  "patch": {
+   "meaning": "coat",
+   "example": "Mi abuelo usa un abrigo gris."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l2/calcetines": {
+  "patch": {
+   "meaning": "socks",
+   "example": "Mis calcetines están limpios."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l2/chaqueta": {
+  "patch": {
+   "meaning": "jacket",
+   "example": "Hace frío, necesito mi chaqueta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l2/sombrero": {
+  "patch": {
+   "meaning": "hat",
+   "example": "Mi tío usa un sombrero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l2/zapatos": {
+  "patch": {
+   "meaning": "shoes",
+   "example": "Mis zapatos son nuevos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l3/bufanda": {
+  "patch": {
+   "meaning": "scarf",
+   "example": "Mi abuela tiene una bufanda roja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l3/cinturón": {
+  "patch": {
+   "meaning": "belt",
+   "example": "Necesito un cinturón negro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l3/guantes": {
+  "patch": {
+   "meaning": "gloves",
+   "example": "Uso guantes cuando hace frío."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l3/pijama": {
+  "patch": {
+   "meaning": "pajamas",
+   "example": "Me pongo la pijama por la noche."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p12l3/suéter": {
+  "patch": {
+   "meaning": "sweater",
+   "example": "Me pongo un suéter azul."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l1/escritorio": {
+  "patch": {
+   "meaning": "desk",
+   "example": "Mi libro está en el escritorio."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l1/escuela": {
+  "patch": {
+   "meaning": "school",
+   "example": "Mis hijos van a la escuela."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l1/estudiante": {
+  "patch": {
+   "meaning": "student",
+   "example": "Soy estudiante de español."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l1/maestro": {
+  "patch": {
+   "meaning": "teacher at a primary school",
+   "example": "Mi maestro es muy amable."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l1/salón de clase": {
+  "patch": {
+   "meaning": "classroom",
+   "example": "El salón de clase es grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l2/cuaderno": {
+  "patch": {
+   "meaning": "notebook",
+   "example": "Escribo en mi cuaderno."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l2/goma": {
+  "patch": {
+   "meaning": "eraser",
+   "example": "Necesito una goma para borrar."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l2/lápiz": {
+  "patch": {
+   "meaning": "pencil",
+   "example": "Necesito un lápiz, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l2/mochila": {
+  "patch": {
+   "meaning": "backpack",
+   "example": "Mi mochila es muy pesada."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l2/pizarra": {
+  "patch": {
+   "meaning": "blackboard",
+   "example": "El maestro escribe en la pizarra."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l3/examen": {
+  "patch": {
+   "meaning": "exam",
+   "example": "Mañana tengo un examen."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l3/pegamento": {
+  "patch": {
+   "meaning": "glue",
+   "example": "Necesito pegamento para el papel."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l3/regla": {
+  "patch": {
+   "meaning": "ruler",
+   "example": "Necesito una regla."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l3/tarea": {
+  "patch": {
+   "meaning": "homework",
+   "example": "Tengo mucha tarea hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p13l3/tijeras": {
+  "patch": {
+   "meaning": "scissors",
+   "example": "Necesito unas tijeras."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l1/abogado": {
+  "patch": {
+   "meaning": "lawyer",
+   "example": "Mi tío es abogado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l1/enfermero": {
+  "patch": {
+   "meaning": "nurse",
+   "example": "Mi primo es enfermero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l1/ingeniero": {
+  "patch": {
+   "meaning": "engineer",
+   "example": "Mi papá es ingeniero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l1/médico": {
+  "patch": {
+   "meaning": "doctor",
+   "example": "Mi tía es médico."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l1/profesor": {
+  "patch": {
+   "meaning": "teacher",
+   "example": "Mi profesor es de Chile."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l2/artista": {
+  "patch": {
+   "meaning": "artist",
+   "example": "Mi amiga es artista."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l2/bombero": {
+  "patch": {
+   "meaning": "firefighter",
+   "example": "Mi hermano es bombero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l2/cocinero": {
+  "patch": {
+   "meaning": "cook",
+   "example": "Mi abuelo es cocinero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l2/granjero": {
+  "patch": {
+   "meaning": "farmer",
+   "example": "El granjero tiene vacas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l2/policía": {
+  "patch": {
+   "meaning": "police officer",
+   "example": "El policía ayuda a la gente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l3/camarero": {
+  "patch": {
+   "meaning": "waiter",
+   "example": "El camarero trae el jugo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l3/científico": {
+  "patch": {
+   "meaning": "scientist",
+   "example": "Mi tía es científico."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l3/conductor": {
+  "patch": {
+   "meaning": "driver",
+   "example": "El conductor del autobús es amable."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l3/escritor": {
+  "patch": {
+   "meaning": "writer",
+   "example": "Mi abuelo es escritor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p14l3/músico": {
+  "patch": {
+   "meaning": "musician",
+   "example": "Mi tío es músico."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l1/caliente": {
+  "patch": {
+   "meaning": "hot",
+   "example": "El café está caliente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l1/dulce": {
+  "patch": {
+   "meaning": "sweet",
+   "example": "El jugo es muy dulce."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l1/duro": {
+  "patch": {
+   "meaning": "hard",
+   "example": "El pan está duro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l1/salado": {
+  "patch": {
+   "meaning": "salty",
+   "example": "La sopa está salada."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l1/áspero": {
+  "patch": {
+   "meaning": "rough to the touch",
+   "example": "La pared es áspera."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l2/blando": {
+  "patch": {
+   "meaning": "soft",
+   "example": "La cama es blanda."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l2/limpio": {
+  "patch": {
+   "meaning": "clean",
+   "example": "Mi cuarto está limpio."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l2/lleno": {
+  "patch": {
+   "meaning": "full",
+   "example": "El vaso está lleno."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l2/sucio": {
+  "patch": {
+   "meaning": "dirty",
+   "example": "Mi carro está sucio."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l2/vacío": {
+  "patch": {
+   "meaning": "empty",
+   "example": "El vaso está vacío."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l3/abierto": {
+  "patch": {
+   "meaning": "open",
+   "example": "El mercado está abierto."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l3/cerrado": {
+  "patch": {
+   "meaning": "closed",
+   "example": "El banco está cerrado hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l3/mojado": {
+  "patch": {
+   "meaning": "wet",
+   "example": "El piso está mojado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l3/pesado": {
+  "patch": {
+   "meaning": "heavy",
+   "example": "Mi mochila está pesada."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l3/seco": {
+  "patch": {
+   "meaning": "dry",
+   "example": "La toalla está seca."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l4/débil": {
+  "patch": {
+   "meaning": "weak",
+   "example": "Estoy débil por la gripe."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l4/fuerte": {
+  "patch": {
+   "meaning": "strong",
+   "example": "Mi papá es fuerte."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l4/ligero": {
+  "patch": {
+   "meaning": "light in weight",
+   "example": "Mi bolsa es ligera."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l4/ruidoso": {
+  "patch": {
+   "meaning": "loud",
+   "example": "El carro es ruidoso."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p15l4/silencioso": {
+  "patch": {
+   "meaning": "quiet",
+   "example": "El salón está silencioso."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l1/agradecido": {
+  "patch": {
+   "meaning": "grateful",
+   "example": "Estoy muy agradecido contigo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l1/asustado": {
+  "patch": {
+   "meaning": "scared",
+   "example": "El niño está asustado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l1/contento": {
+  "patch": {
+   "meaning": "happy or content",
+   "example": "Estoy contento con mi trabajo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l1/enojado": {
+  "patch": {
+   "meaning": "angry",
+   "example": "Mi papá está enojado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l1/sorprendido": {
+  "patch": {
+   "meaning": "surprised",
+   "example": "Estoy sorprendido con el regalo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l2/aburrido": {
+  "patch": {
+   "meaning": "bored",
+   "example": "Estoy aburrido en casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l2/emocionado": {
+  "patch": {
+   "meaning": "excited",
+   "example": "Estoy emocionado por el viaje."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l2/enamorado": {
+  "patch": {
+   "meaning": "in love",
+   "example": "Mi amigo está enamorado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l2/nervioso": {
+  "patch": {
+   "meaning": "nervous",
+   "example": "Estoy nervioso por el examen."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l2/tranquilo": {
+  "patch": {
+   "meaning": "calm",
+   "example": "Mi hermano está tranquilo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l3/cansado": {
+  "patch": {
+   "meaning": "tired",
+   "example": "Estoy cansado después del trabajo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l3/celoso": {
+  "patch": {
+   "meaning": "jealous",
+   "example": "Mi amigo está celoso."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l3/confundido": {
+  "patch": {
+   "meaning": "confused",
+   "example": "Estoy confundido con la tarea."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l3/orgulloso": {
+  "patch": {
+   "meaning": "proud",
+   "example": "Estoy orgulloso de mi hijo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p16l3/preocupado": {
+  "patch": {
+   "meaning": "worried",
+   "example": "Mi mamá está preocupada."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l1/cuándo": {
+  "patch": {
+   "meaning": "when",
+   "example": "¿Cuándo llega tu hermano?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l1/dónde": {
+  "patch": {
+   "meaning": "where",
+   "example": "¿Dónde está el baño?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l1/por qué": {
+  "patch": {
+   "meaning": "why",
+   "example": "¿Por qué estás triste?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l1/quién": {
+  "patch": {
+   "meaning": "who",
+   "example": "¿Quién es ella?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l1/qué": {
+  "patch": {
+   "meaning": "what",
+   "example": "¿Qué quieres comer?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l2/cuál": {
+  "patch": {
+   "meaning": "which",
+   "example": "¿Cuál es tu libro?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l2/cuánto": {
+  "patch": {
+   "meaning": "how much",
+   "example": "¿Cuánto cuesta el libro?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l2/cuántos": {
+  "patch": {
+   "meaning": "how many",
+   "example": "¿Cuántos años tienes?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l2/cómo": {
+  "patch": {
+   "meaning": "how",
+   "example": "¿Cómo estás?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p17l2/de quién": {
+  "patch": {
+   "meaning": "whose",
+   "example": "¿De quién es este libro?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
  "es:card:esa1p18l1/cuarto": {
   "patch": {
    "meaning": "quarter, as in quarter past"
@@ -13,9 +888,10 @@
  },
  "es:card:esa1p18l1/es": {
   "patch": {
-   "meaning": "is (as in 'what time is it')"
+   "meaning": "is, in telling the time",
+   "example": "¿Qué hora es?"
   },
-  "reason": "Missing meaning."
+  "reason": "Missing meaning. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p18l1/media": {
   "patch": {
@@ -25,15 +901,17 @@
  },
  "es:card:esa1p18l1/una": {
   "patch": {
-   "meaning": "one (o'clock)"
+   "meaning": "one, in one o'clock",
+   "example": "Es la una de la tarde."
   },
-  "reason": "Missing meaning."
+  "reason": "Missing meaning. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p18l2/cuarto": {
   "patch": {
-   "meaning": "quarter (fifteen minutes)"
+   "meaning": "quarter, fifteen minutes",
+   "example": "Son las seis menos cuarto."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p18l2/mañana": {
   "patch": {
@@ -55,9 +933,10 @@
  },
  "es:card:esa1p18l2/punto": {
   "patch": {
-   "meaning": "point; 'en punto' means exactly, o'clock"
+   "meaning": "exactly, in on the dot",
+   "example": "Son las cinco en punto."
   },
-  "reason": "Meaning missing; term used in 'en punto'."
+  "reason": "Meaning missing; term used in 'en punto'. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p18l3/cinco": {
   "patch": {
@@ -88,6 +967,531 @@
    "meaning": "twenty"
   },
   "reason": "Meaning missing."
+ },
+ "es:card:esa1p19l1/al lado de": {
+  "patch": {
+   "meaning": "next to",
+   "example": "Mi casa está al lado de la escuela."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l1/debajo de": {
+  "patch": {
+   "meaning": "under",
+   "example": "El gato está debajo de la mesa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l1/en": {
+  "patch": {
+   "meaning": "in",
+   "example": "El libro está en la mesa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l1/entre": {
+  "patch": {
+   "meaning": "between",
+   "example": "El banco está entre la tienda y el parque."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l1/sobre": {
+  "patch": {
+   "meaning": "on",
+   "example": "El libro está sobre la mesa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l2/cerca de": {
+  "patch": {
+   "meaning": "near",
+   "example": "Mi casa está cerca de la escuela."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l2/delante de": {
+  "patch": {
+   "meaning": "in front of",
+   "example": "El carro está delante de mi casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l2/dentro de": {
+  "patch": {
+   "meaning": "inside",
+   "example": "El gato está dentro de la casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l2/detrás de": {
+  "patch": {
+   "meaning": "behind",
+   "example": "El perro está detrás de la puerta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l2/lejos de": {
+  "patch": {
+   "meaning": "far from",
+   "example": "Mi trabajo está lejos de mi casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l3/a través de": {
+  "patch": {
+   "meaning": "through",
+   "example": "Veo el parque a través de la ventana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l3/alrededor de": {
+  "patch": {
+   "meaning": "around",
+   "example": "Hay árboles alrededor de la casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l3/contra": {
+  "patch": {
+   "meaning": "against",
+   "example": "La bicicleta está contra la pared."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l3/encima de": {
+  "patch": {
+   "meaning": "above",
+   "example": "El libro está encima de la mesa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p19l3/fuera de": {
+  "patch": {
+   "meaning": "outside",
+   "example": "El perro está fuera de la casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l1/adiós": {
+  "patch": {
+   "meaning": "goodbye",
+   "example": "Adiós, nos vemos el lunes."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l1/buenas noches": {
+  "patch": {
+   "meaning": "good evening",
+   "example": "Buenas noches, hasta mañana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l1/buenas tardes": {
+  "patch": {
+   "meaning": "good afternoon",
+   "example": "Buenas tardes, ¿en qué le ayudo?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l1/buenos días": {
+  "patch": {
+   "meaning": "good morning",
+   "example": "Buenos días, señora Ruiz."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l1/hola": {
+  "patch": {
+   "meaning": "hello",
+   "example": "Hola, ¿cómo estás?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l2/de nada": {
+  "patch": {
+   "meaning": "you're welcome",
+   "example": "De nada, fue un gusto."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l2/gracias": {
+  "patch": {
+   "meaning": "thank you",
+   "example": "Gracias por tu ayuda."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l2/hasta mañana": {
+  "patch": {
+   "meaning": "see you tomorrow",
+   "example": "Hasta mañana, que descanses."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l2/hasta pronto": {
+  "patch": {
+   "meaning": "see you soon",
+   "example": "Hasta pronto, mi amigo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l2/por favor": {
+  "patch": {
+   "meaning": "please",
+   "example": "Un jugo, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l3/lo siento": {
+  "patch": {
+   "meaning": "sorry",
+   "example": "Lo siento, llegué tarde."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l3/no": {
+  "patch": {
+   "meaning": "a negative answer or refusal",
+   "example": "No, hablo español."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l3/perdón": {
+  "patch": {
+   "meaning": "excuse me",
+   "example": "Perdón, ¿dónde está el baño?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l3/sí": {
+  "patch": {
+   "meaning": "yes",
+   "example": "Sí, quiero un café."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l3/¿cómo estás?": {
+  "patch": {
+   "meaning": "how are you?",
+   "example": "Hola Ana, ¿cómo estás?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l4/bienvenido": {
+  "patch": {
+   "meaning": "welcome",
+   "example": "Bienvenido a mi casa, Pedro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l4/estoy bien, gracias": {
+  "patch": {
+   "meaning": "I'm fine, thanks",
+   "example": "Estoy bien, gracias. ¿Y tú?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l4/me llamo...": {
+  "patch": {
+   "meaning": "my name is...",
+   "example": "Me llamo Carlos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l4/mucho gusto": {
+  "patch": {
+   "meaning": "nice to meet you",
+   "example": "Mucho gusto, soy Laura."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p1l4/¿cómo te llamas?": {
+  "patch": {
+   "meaning": "what is your name?",
+   "example": "Hola, ¿cómo te llamas?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l1/arrecife de coral": {
+  "patch": {
+   "meaning": "coral reef",
+   "example": "Quiero ver un arrecife de coral."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l1/cielo": {
+  "patch": {
+   "meaning": "sky",
+   "example": "El cielo está azul."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l1/estrella": {
+  "patch": {
+   "meaning": "star",
+   "example": "Veo una estrella en el cielo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l1/luna": {
+  "patch": {
+   "meaning": "moon",
+   "example": "La luna está hermosa hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l1/árbol": {
+  "patch": {
+   "meaning": "tree",
+   "example": "Hay un árbol en mi jardín."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l2/arena": {
+  "patch": {
+   "meaning": "sand",
+   "example": "La arena está caliente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l2/flor": {
+  "patch": {
+   "meaning": "flower",
+   "example": "Esta flor es muy hermosa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l2/hierba": {
+  "patch": {
+   "meaning": "grass",
+   "example": "Los caballos comen hierba."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l2/mar": {
+  "patch": {
+   "meaning": "sea",
+   "example": "Me gusta nadar en el mar."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l2/roca": {
+  "patch": {
+   "meaning": "rock",
+   "example": "Hay una roca grande aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l3/hoja": {
+  "patch": {
+   "meaning": "leaf",
+   "example": "Esta hoja es verde."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l3/isla": {
+  "patch": {
+   "meaning": "island",
+   "example": "Vivo en una isla pequeña."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l3/lago": {
+  "patch": {
+   "meaning": "lake",
+   "example": "El lago es muy hermoso."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l3/montaña": {
+  "patch": {
+   "meaning": "mountain",
+   "example": "La montaña es muy alta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p20l3/playa": {
+  "patch": {
+   "meaning": "beach",
+   "example": "Voy a la playa el domingo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l1/fresa": {
+  "patch": {
+   "meaning": "strawberry",
+   "example": "Me gusta la fresa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l1/manzana": {
+  "patch": {
+   "meaning": "apple",
+   "example": "Como una manzana todos los días."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l1/naranja": {
+  "patch": {
+   "meaning": "orange, the fruit",
+   "example": "Quiero jugo de naranja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l1/plátano": {
+  "patch": {
+   "meaning": "banana",
+   "example": "Quiero un plátano, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l1/uva": {
+  "patch": {
+   "meaning": "grape",
+   "example": "Quiero una uva."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l2/cereza": {
+  "patch": {
+   "meaning": "cherry",
+   "example": "La cereza es roja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l2/limón": {
+  "patch": {
+   "meaning": "lemon",
+   "example": "Quiero agua con limón."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l2/pera": {
+  "patch": {
+   "meaning": "pear",
+   "example": "Quiero una pera."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l2/piña": {
+  "patch": {
+   "meaning": "pineapple",
+   "example": "Me gusta el jugo de piña."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l2/sandía": {
+  "patch": {
+   "meaning": "watermelon",
+   "example": "La sandía es dulce."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l3/coco": {
+  "patch": {
+   "meaning": "coconut",
+   "example": "Me gusta el agua de coco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l3/durazno": {
+  "patch": {
+   "meaning": "peach",
+   "example": "El durazno es dulce."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l3/kiwi": {
+  "patch": {
+   "meaning": "kiwi",
+   "example": "Quiero un kiwi, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l3/mango": {
+  "patch": {
+   "meaning": "mango",
+   "example": "Me gusta el jugo de mango."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l3/tomate": {
+  "patch": {
+   "meaning": "tomato",
+   "example": "Necesito un tomate para la ensalada."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l4/ajo": {
+  "patch": {
+   "meaning": "garlic",
+   "example": "Me gusta el ajo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l4/cebolla": {
+  "patch": {
+   "meaning": "onion",
+   "example": "Necesito una cebolla para la sopa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l4/lechuga": {
+  "patch": {
+   "meaning": "lettuce",
+   "example": "Necesito lechuga para la ensalada."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l4/papa": {
+  "patch": {
+   "meaning": "potato",
+   "example": "Quiero una papa con queso."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l4/zanahoria": {
+  "patch": {
+   "meaning": "carrot",
+   "example": "El conejo come una zanahoria."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l5/aguacate": {
+  "patch": {
+   "meaning": "avocado",
+   "example": "Quiero un aguacate, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l5/calabaza": {
+  "patch": {
+   "meaning": "pumpkin",
+   "example": "La sopa de calabaza es rica."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l5/maíz": {
+  "patch": {
+   "meaning": "corn",
+   "example": "Me gusta el maíz."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l5/pepino": {
+  "patch": {
+   "meaning": "cucumber",
+   "example": "Quiero pepino en la ensalada."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p21l5/pimiento": {
+  "patch": {
+   "meaning": "bell pepper",
+   "example": "Quiero un pimiento rojo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p22l1/corto": {
   "patch": {
@@ -235,9 +1639,1130 @@
  },
  "es:card:esa1p22l5/unto": {
   "patch": {
-   "meaning": "I spread (on something)"
+   "meaning": "I spread on something",
+   "example": "Unto mantequilla en el pan."
   },
-  "reason": "Meaning was empty; 'unto' with butter on bread means I spread."
+  "reason": "Meaning was empty; 'unto' with butter on bread means I spread. Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l1/menos": {
+  "patch": {
+   "meaning": "less",
+   "example": "Quiero menos azúcar, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l1/mucho": {
+  "patch": {
+   "meaning": "a lot",
+   "example": "Tengo mucho trabajo hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l1/más": {
+  "patch": {
+   "meaning": "more",
+   "example": "Quiero más agua, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l1/poco": {
+  "patch": {
+   "meaning": "a little, not much",
+   "example": "Tengo poco tiempo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l1/varios": {
+  "patch": {
+   "meaning": "several",
+   "example": "Tengo varios amigos aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l2/cada": {
+  "patch": {
+   "meaning": "each",
+   "example": "Estudio español cada día."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l2/demasiado": {
+  "patch": {
+   "meaning": "too much",
+   "example": "Hay demasiado ruido aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l2/mitad": {
+  "patch": {
+   "meaning": "half",
+   "example": "Quiero la mitad del pastel."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l2/ninguno": {
+  "patch": {
+   "meaning": "none",
+   "example": "Ninguno de mis amigos vive aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l2/suficiente": {
+  "patch": {
+   "meaning": "enough",
+   "example": "Tengo suficiente comida."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l3/algunos": {
+  "patch": {
+   "meaning": "some",
+   "example": "Algunos niños juegan en el parque."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l3/mayoría": {
+  "patch": {
+   "meaning": "most",
+   "example": "La mayoría de mis amigos estudia español."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l3/muchos": {
+  "patch": {
+   "meaning": "many",
+   "example": "Tengo muchos libros en casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l3/pocos": {
+  "patch": {
+   "meaning": "few",
+   "example": "Hay pocos estudiantes hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l3/solo": {
+  "patch": {
+   "meaning": "only",
+   "example": "Solo quiero agua, gracias."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l4/casi": {
+  "patch": {
+   "meaning": "almost",
+   "example": "Casi son las cinco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l4/doble": {
+  "patch": {
+   "meaning": "double",
+   "example": "Quiero un café doble, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l4/nada": {
+  "patch": {
+   "meaning": "nothing",
+   "example": "No tengo nada en la bolsa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l4/triple": {
+  "patch": {
+   "meaning": "three times as much",
+   "example": "Quiero una porción triple."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l4/único": {
+  "patch": {
+   "meaning": "one and only",
+   "example": "Eres mi único amigo aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l5/aproximadamente": {
+  "patch": {
+   "meaning": "approximately",
+   "example": "Tengo aproximadamente veinte libros."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l5/entero": {
+  "patch": {
+   "meaning": "entire",
+   "example": "Me comí el pastel entero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l5/exactamente": {
+  "patch": {
+   "meaning": "exactly",
+   "example": "Son exactamente las cinco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l5/extra": {
+  "patch": {
+   "meaning": "additional",
+   "example": "Necesito una silla extra."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p23l5/parcial": {
+  "patch": {
+   "meaning": "partial",
+   "example": "Es un pago parcial."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l1/cuánto tiempo sin verte": {
+  "patch": {
+   "meaning": "Long time no see",
+   "example": "Hola Ana, cuánto tiempo sin verte."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l1/cuídate": {
+  "patch": {
+   "meaning": "Take care",
+   "example": "Adiós, cuídate mucho."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l1/hasta luego": {
+  "patch": {
+   "meaning": "See you later",
+   "example": "Hasta luego, nos vemos mañana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l1/siéntete como en casa": {
+  "patch": {
+   "meaning": "Make yourself at home",
+   "example": "Pasa, siéntete como en casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l1/¿qué tal?": {
+  "patch": {
+   "meaning": "How's it going?",
+   "example": "Hola Luis, ¿qué tal?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l2/bienvenido de vuelta": {
+  "patch": {
+   "meaning": "Welcome back",
+   "example": "Bienvenido de vuelta, Pablo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l2/habla despacio, por favor": {
+  "patch": {
+   "meaning": "Speak slowly, please",
+   "example": "No entiendo, habla despacio, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l2/no entiendo": {
+  "patch": {
+   "meaning": "I don't understand",
+   "example": "Perdón, no entiendo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l2/que tengas un buen día": {
+  "patch": {
+   "meaning": "Have a good day",
+   "example": "Adiós, que tengas un buen día."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l2/¿puedes repetirlo?": {
+  "patch": {
+   "meaning": "Can you repeat that?",
+   "example": "Perdón, ¿puedes repetirlo?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l3/claro": {
+  "patch": {
+   "meaning": "Of course",
+   "example": "Claro, con mucho gusto."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l3/está bien": {
+  "patch": {
+   "meaning": "That's okay",
+   "example": "No te preocupes, está bien."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l3/no hay problema": {
+  "patch": {
+   "meaning": "No problem",
+   "example": "Gracias, no hay problema."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l3/no sé": {
+  "patch": {
+   "meaning": "I don't know",
+   "example": "No sé dónde está."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l3/¿qué significa eso?": {
+  "patch": {
+   "meaning": "What does that mean?",
+   "example": "Perdón, ¿qué significa eso?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l4/buena suerte": {
+  "patch": {
+   "meaning": "Good luck",
+   "example": "Mañana es tu examen, buena suerte."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l4/estoy de acuerdo": {
+  "patch": {
+   "meaning": "I agree",
+   "example": "Estoy de acuerdo contigo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l4/felicidades": {
+  "patch": {
+   "meaning": "Congratulations",
+   "example": "Felicidades por tu nuevo trabajo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l4/no estoy de acuerdo": {
+  "patch": {
+   "meaning": "I disagree",
+   "example": "Lo siento, no estoy de acuerdo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l4/perdón": {
+  "patch": {
+   "meaning": "I'm sorry",
+   "example": "Perdón, fue mi culpa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l5/buen trabajo": {
+  "patch": {
+   "meaning": "Good job",
+   "example": "Buen trabajo, Ana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l5/disculpe": {
+  "patch": {
+   "meaning": "excuse me, to get attention",
+   "example": "Disculpe, ¿dónde está el baño?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l5/es un placer": {
+  "patch": {
+   "meaning": "It's a pleasure",
+   "example": "Es un placer conocerla, señora."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l5/igualmente": {
+  "patch": {
+   "meaning": "Same to you",
+   "example": "Gracias, igualmente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p24l5/tómalo con calma": {
+  "patch": {
+   "meaning": "Take it easy",
+   "example": "No te preocupes, tómalo con calma."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l1/gris": {
+  "patch": {
+   "meaning": "gray",
+   "example": "El gato es gris."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l1/marrón": {
+  "patch": {
+   "meaning": "brown",
+   "example": "Mis zapatos son marrón."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l1/morado": {
+  "patch": {
+   "meaning": "purple",
+   "example": "Me gusta el color morado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l1/rosa": {
+  "patch": {
+   "meaning": "pink",
+   "example": "Mi vestido es rosa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l1/turquesa": {
+  "patch": {
+   "meaning": "turquoise",
+   "example": "El mar es turquesa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l2/azul marino": {
+  "patch": {
+   "meaning": "navy blue",
+   "example": "Mi chaqueta es azul marino."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l2/beige": {
+  "patch": {
+   "meaning": "beige",
+   "example": "Mi sofá es beige."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l2/círculo": {
+  "patch": {
+   "meaning": "circle",
+   "example": "Dibujo un círculo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l2/dorado": {
+  "patch": {
+   "meaning": "gold",
+   "example": "El anillo es dorado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l2/plateado": {
+  "patch": {
+   "meaning": "silver",
+   "example": "Mi celular es plateado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l3/corazón": {
+  "patch": {
+   "meaning": "heart shape",
+   "example": "Dibujo un corazón rojo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l3/cuadrado": {
+  "patch": {
+   "meaning": "square",
+   "example": "La mesa es un cuadrado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l3/estrella": {
+  "patch": {
+   "meaning": "star shape",
+   "example": "Dibujo una estrella amarilla."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l3/rectángulo": {
+  "patch": {
+   "meaning": "rectangle",
+   "example": "La puerta es un rectángulo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l3/triángulo": {
+  "patch": {
+   "meaning": "triangle",
+   "example": "Dibujo un triángulo rojo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l4/curva": {
+  "patch": {
+   "meaning": "curve",
+   "example": "La calle tiene una curva."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l4/diamante": {
+  "patch": {
+   "meaning": "diamond shape",
+   "example": "Dibujo un diamante azul."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l4/línea": {
+  "patch": {
+   "meaning": "line",
+   "example": "Dibujo una línea recta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l4/punto": {
+  "patch": {
+   "meaning": "dot",
+   "example": "Hay un punto negro aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l4/óvalo": {
+  "patch": {
+   "meaning": "oval",
+   "example": "El espejo es un óvalo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l5/brillante": {
+  "patch": {
+   "meaning": "bright",
+   "example": "El sol es muy brillante."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l5/claro": {
+  "patch": {
+   "meaning": "light in shade",
+   "example": "Me gusta el azul claro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l5/con manchas": {
+  "patch": {
+   "meaning": "spotted",
+   "example": "Mi perro es blanco con manchas negras."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l5/oscuro": {
+  "patch": {
+   "meaning": "dark in shade",
+   "example": "Me gusta el verde oscuro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p25l5/rayado": {
+  "patch": {
+   "meaning": "striped",
+   "example": "Mi gato es rayado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l1/camina": {
+  "patch": {
+   "meaning": "walk",
+   "example": "Camina conmigo al parque."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l1/gira a la derecha": {
+  "patch": {
+   "meaning": "turn right",
+   "example": "Gira a la derecha en el parque."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l1/gira a la izquierda": {
+  "patch": {
+   "meaning": "turn left",
+   "example": "Gira a la izquierda en la esquina."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l1/para": {
+  "patch": {
+   "meaning": "stop",
+   "example": "Para aquí, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l1/sigue derecho": {
+  "patch": {
+   "meaning": "go straight",
+   "example": "Sigue derecho dos cuadras."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l2/baja": {
+  "patch": {
+   "meaning": "go down",
+   "example": "Baja a la cocina, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l2/cruza la calle": {
+  "patch": {
+   "meaning": "cross the street",
+   "example": "Cruza la calle con cuidado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l2/sube": {
+  "patch": {
+   "meaning": "go up",
+   "example": "Sube al segundo piso."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l2/ve allá": {
+  "patch": {
+   "meaning": "go there",
+   "example": "Ve allá y espera."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l2/ven aquí": {
+  "patch": {
+   "meaning": "come here",
+   "example": "Ven aquí, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l3/apúrate": {
+  "patch": {
+   "meaning": "hurry up",
+   "example": "Apúrate, llegamos tarde."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l3/espera aquí": {
+  "patch": {
+   "meaning": "wait here",
+   "example": "Espera aquí un momento."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l3/más despacio": {
+  "patch": {
+   "meaning": "slow down",
+   "example": "Habla más despacio, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l3/sígueme": {
+  "patch": {
+   "meaning": "follow me",
+   "example": "Sígueme, es por aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l3/ten cuidado": {
+  "patch": {
+   "meaning": "be careful",
+   "example": "Ten cuidado con el perro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l4/entra": {
+  "patch": {
+   "meaning": "come in",
+   "example": "Entra, la puerta está abierta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l4/escucha": {
+  "patch": {
+   "meaning": "listen",
+   "example": "Escucha, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l4/levántate": {
+  "patch": {
+   "meaning": "stand up",
+   "example": "Levántate, ya es tarde."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l4/mira aquí": {
+  "patch": {
+   "meaning": "look here",
+   "example": "Mira aquí, es mi casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l4/siéntate": {
+  "patch": {
+   "meaning": "sit down",
+   "example": "Siéntate aquí, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l5/abre la ventana": {
+  "patch": {
+   "meaning": "open the window",
+   "example": "Abre la ventana, hace calor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l5/cierra la puerta": {
+  "patch": {
+   "meaning": "close the door",
+   "example": "Cierra la puerta, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l5/cállate": {
+  "patch": {
+   "meaning": "be quiet",
+   "example": "Cállate, el bebé duerme."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l5/presta atención": {
+  "patch": {
+   "meaning": "pay attention",
+   "example": "Presta atención, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p26l5/sal": {
+  "patch": {
+   "meaning": "go out",
+   "example": "Sal de la casa ahora."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l1/cinco": {
+  "patch": {
+   "meaning": "the number five",
+   "example": "Son cinco manzanas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l1/cuatro": {
+  "patch": {
+   "meaning": "the number four",
+   "example": "La mesa tiene cuatro sillas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l1/dos": {
+  "patch": {
+   "meaning": "the number two",
+   "example": "Tengo dos hermanos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l1/tres": {
+  "patch": {
+   "meaning": "the number three",
+   "example": "Hay tres gatos aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l1/uno": {
+  "patch": {
+   "meaning": "the number one",
+   "example": "Tengo uno."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l2/diez": {
+  "patch": {
+   "meaning": "the number ten",
+   "example": "Necesito diez minutos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l2/nueve": {
+  "patch": {
+   "meaning": "the number nine",
+   "example": "Hay nueve niños en la clase."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l2/ocho": {
+  "patch": {
+   "meaning": "the number eight",
+   "example": "Mi hijo tiene ocho años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l2/seis": {
+  "patch": {
+   "meaning": "the number six",
+   "example": "Tengo seis libros."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l2/siete": {
+  "patch": {
+   "meaning": "the number seven",
+   "example": "Son las siete de la mañana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l3/catorce": {
+  "patch": {
+   "meaning": "the number fourteen",
+   "example": "Hoy es el catorce de mayo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l3/doce": {
+  "patch": {
+   "meaning": "the number twelve",
+   "example": "Hay doce huevos aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l3/once": {
+  "patch": {
+   "meaning": "the number eleven",
+   "example": "Mi hermana tiene once años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l3/quince": {
+  "patch": {
+   "meaning": "the number fifteen",
+   "example": "Vivo a quince minutos de aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l3/trece": {
+  "patch": {
+   "meaning": "the number thirteen",
+   "example": "Mi primo tiene trece años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l4/diecinueve": {
+  "patch": {
+   "meaning": "the number nineteen",
+   "example": "Son diecinueve pesos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l4/dieciocho": {
+  "patch": {
+   "meaning": "the number eighteen",
+   "example": "Mi hermano tiene dieciocho años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l4/diecisiete": {
+  "patch": {
+   "meaning": "the number seventeen",
+   "example": "Hay diecisiete estudiantes hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l4/dieciséis": {
+  "patch": {
+   "meaning": "the number sixteen",
+   "example": "Ella tiene dieciséis años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p2l4/veinte": {
+  "patch": {
+   "meaning": "the number twenty",
+   "example": "Tengo veinte dólares."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l1/amarillo": {
+  "patch": {
+   "meaning": "yellow",
+   "example": "El sol es amarillo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l1/azul": {
+  "patch": {
+   "meaning": "blue",
+   "example": "El cielo está azul hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l1/negro": {
+  "patch": {
+   "meaning": "black",
+   "example": "Mi gato es negro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l1/rojo": {
+  "patch": {
+   "meaning": "red",
+   "example": "Tengo un lápiz rojo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l1/verde": {
+  "patch": {
+   "meaning": "green",
+   "example": "Me gusta la camisa verde."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l2/blanco": {
+  "patch": {
+   "meaning": "white",
+   "example": "La casa es blanca y grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l2/grande": {
+  "patch": {
+   "meaning": "big",
+   "example": "Tengo un perro grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l2/nuevo": {
+  "patch": {
+   "meaning": "new",
+   "example": "Tengo un celular nuevo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l2/pequeño": {
+  "patch": {
+   "meaning": "small",
+   "example": "Es un cuarto pequeño."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l2/viejo": {
+  "patch": {
+   "meaning": "old",
+   "example": "Mi abuelo tiene un carro viejo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l3/bueno": {
+  "patch": {
+   "meaning": "good",
+   "example": "Este jugo es muy bueno."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l3/feliz": {
+  "patch": {
+   "meaning": "happy",
+   "example": "Mi mamá está feliz hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l3/hermoso": {
+  "patch": {
+   "meaning": "beautiful",
+   "example": "Tu casa es muy hermosa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l3/malo": {
+  "patch": {
+   "meaning": "bad",
+   "example": "Ese camino es malo y peligroso."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l3/triste": {
+  "patch": {
+   "meaning": "sad",
+   "example": "El niño está triste."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l4/alto": {
+  "patch": {
+   "meaning": "tall",
+   "example": "Mi papá es alto."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l4/bajo": {
+  "patch": {
+   "meaning": "short in height",
+   "example": "Mi hermana es baja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l4/fácil": {
+  "patch": {
+   "meaning": "easy",
+   "example": "El examen es fácil."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l4/lento": {
+  "patch": {
+   "meaning": "slow",
+   "example": "La tortuga es lenta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p3l4/rápido": {
+  "patch": {
+   "meaning": "fast",
+   "example": "El tren es muy rápido."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l1/hermana": {
+  "patch": {
+   "meaning": "sister",
+   "example": "Mi hermana vive en Lima."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l1/hermano": {
+  "patch": {
+   "meaning": "brother",
+   "example": "Mi hermano juega fútbol."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l1/hija": {
+  "patch": {
+   "meaning": "daughter",
+   "example": "Su hija tiene cinco años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l1/madre": {
+  "patch": {
+   "meaning": "mother",
+   "example": "Mi madre cocina muy bien."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l1/padre": {
+  "patch": {
+   "meaning": "father",
+   "example": "Mi padre trabaja hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l2/abuela": {
+  "patch": {
+   "meaning": "grandmother",
+   "example": "Mi abuela vive con nosotros."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l2/abuelo": {
+  "patch": {
+   "meaning": "grandfather",
+   "example": "Mi abuelo es muy simpático."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l2/hijo": {
+  "patch": {
+   "meaning": "son",
+   "example": "Mi hijo come manzanas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l2/tía": {
+  "patch": {
+   "meaning": "aunt",
+   "example": "Mi tía vive en México."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l2/tío": {
+  "patch": {
+   "meaning": "uncle",
+   "example": "Mi tío tiene un perro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l3/bebé": {
+  "patch": {
+   "meaning": "baby",
+   "example": "El bebé duerme ahora."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l3/esposa": {
+  "patch": {
+   "meaning": "wife",
+   "example": "Su esposa es médica."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l3/esposo": {
+  "patch": {
+   "meaning": "husband",
+   "example": "Mi esposo cocina hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l3/familia": {
+  "patch": {
+   "meaning": "family",
+   "example": "Mi familia es grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l3/primo": {
+  "patch": {
+   "meaning": "cousin",
+   "example": "Mi primo estudia en la escuela."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l4/adulto": {
+  "patch": {
+   "meaning": "grown-up",
+   "example": "Mi papá es un adulto."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l4/amiga": {
+  "patch": {
+   "meaning": "female friend",
+   "example": "Ella es mi amiga Sofía."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l4/amigo": {
+  "patch": {
+   "meaning": "male friend",
+   "example": "Él es mi amigo Pablo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l4/niño": {
+  "patch": {
+   "meaning": "child",
+   "example": "El niño juega en el parque."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p4l4/padres": {
+  "patch": {
+   "meaning": "parents",
+   "example": "Mis padres viven en Bogotá."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p5l1/como": {
   "patch": {
@@ -247,9 +2772,10 @@
  },
  "es:card:esa1p5l1/estoy": {
   "patch": {
-   "meaning": "I am (state or feeling)"
+   "meaning": "I am, for a state or feeling",
+   "example": "Estoy cansado hoy."
   },
-  "reason": "Missing meaning; example is a state."
+  "reason": "Missing meaning; example is a state. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p5l1/hablo": {
   "patch": {
@@ -259,9 +2785,10 @@
  },
  "es:card:esa1p5l1/soy": {
   "patch": {
-   "meaning": "I am (identity or trait)"
+   "meaning": "I am, for identity or traits",
+   "example": "Soy estudiante de español."
   },
-  "reason": "Missing meaning; example is identity."
+  "reason": "Missing meaning; example is identity. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p5l1/tengo": {
   "patch": {
@@ -289,9 +2816,10 @@
  },
  "es:card:esa1p5l2/sé": {
   "patch": {
-   "meaning": "I know (a fact)"
+   "meaning": "I know, a fact",
+   "example": "Sé la respuesta."
   },
-  "reason": "Missing meaning; example is knowing a fact."
+  "reason": "Missing meaning; example is knowing a fact. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p5l2/voy": {
   "patch": {
@@ -307,9 +2835,10 @@
  },
  "es:card:esa1p5l3/tomo": {
   "patch": {
-   "meaning": "I take (also: I drink)"
+   "meaning": "I take or I drink",
+   "example": "Tomo el autobús todos los días."
   },
-  "reason": "Missing meaning; example means take a bus."
+  "reason": "Missing meaning; example means take a bus. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa1p5l3/vengo": {
   "patch": {
@@ -389,6 +2918,1126 @@
   },
   "reason": "Missing meaning."
  },
+ "es:card:esa1p6l1/jueves": {
+  "patch": {
+   "meaning": "Thursday",
+   "example": "El jueves hay examen."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l1/lunes": {
+  "patch": {
+   "meaning": "Monday",
+   "example": "El lunes voy a la escuela."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l1/martes": {
+  "patch": {
+   "meaning": "Tuesday",
+   "example": "El martes tengo clase."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l1/miércoles": {
+  "patch": {
+   "meaning": "Wednesday",
+   "example": "El miércoles como con mi tía."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l1/viernes": {
+  "patch": {
+   "meaning": "Friday",
+   "example": "El viernes salgo con amigos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l2/ayer": {
+  "patch": {
+   "meaning": "yesterday",
+   "example": "Ayer fui al mercado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l2/domingo": {
+  "patch": {
+   "meaning": "Sunday",
+   "example": "El domingo descanso en casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l2/hoy": {
+  "patch": {
+   "meaning": "today",
+   "example": "Hoy hace mucho calor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l2/mañana": {
+  "patch": {
+   "meaning": "tomorrow",
+   "example": "Mañana tengo un examen."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l2/sábado": {
+  "patch": {
+   "meaning": "Saturday",
+   "example": "El sábado visito a mi abuela."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l3/ahora": {
+  "patch": {
+   "meaning": "now",
+   "example": "Ahora estoy en casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l3/año": {
+  "patch": {
+   "meaning": "year",
+   "example": "Este año aprendo español."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l3/luego": {
+  "patch": {
+   "meaning": "later",
+   "example": "Primero como, luego estudio."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l3/mes": {
+  "patch": {
+   "meaning": "month",
+   "example": "Este mes voy a viajar."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l3/semana": {
+  "patch": {
+   "meaning": "week",
+   "example": "Tengo clase toda la semana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l4/por la mañana": {
+  "patch": {
+   "meaning": "in the morning",
+   "example": "Estudio por la mañana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l4/por la noche": {
+  "patch": {
+   "meaning": "at night",
+   "example": "Leo un libro por la noche."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l4/por la tarde": {
+  "patch": {
+   "meaning": "in the afternoon",
+   "example": "Trabajo por la tarde."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l4/tarde": {
+  "patch": {
+   "meaning": "late",
+   "example": "Llegas tarde otra vez."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p6l4/temprano": {
+  "patch": {
+   "meaning": "early",
+   "example": "Me levanto temprano."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l1/baño": {
+  "patch": {
+   "meaning": "bathroom",
+   "example": "El baño está al fondo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l1/casa": {
+  "patch": {
+   "meaning": "house",
+   "example": "Mi casa tiene un jardín."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l1/cocina": {
+  "patch": {
+   "meaning": "kitchen",
+   "example": "Mi mamá está en la cocina."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l1/dormitorio": {
+  "patch": {
+   "meaning": "bedroom",
+   "example": "Mi dormitorio tiene una ventana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l1/habitación": {
+  "patch": {
+   "meaning": "room",
+   "example": "Mi habitación es pequeña."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l2/cama": {
+  "patch": {
+   "meaning": "bed",
+   "example": "Mi cama es muy cómoda."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l2/mesa": {
+  "patch": {
+   "meaning": "table",
+   "example": "Los libros están en la mesa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l2/puerta": {
+  "patch": {
+   "meaning": "door",
+   "example": "La puerta está abierta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l2/silla": {
+  "patch": {
+   "meaning": "chair",
+   "example": "Necesito una silla, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l2/ventana": {
+  "patch": {
+   "meaning": "window",
+   "example": "Abre la ventana, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l3/espejo": {
+  "patch": {
+   "meaning": "mirror",
+   "example": "Hay un espejo en el baño."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l3/llave": {
+  "patch": {
+   "meaning": "key",
+   "example": "¿Dónde está mi llave?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l3/lámpara": {
+  "patch": {
+   "meaning": "lamp",
+   "example": "La lámpara está en mi escritorio."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l3/reloj": {
+  "patch": {
+   "meaning": "clock",
+   "example": "El reloj está en la pared."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l3/televisor": {
+  "patch": {
+   "meaning": "television",
+   "example": "El televisor es nuevo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l4/bolsa": {
+  "patch": {
+   "meaning": "bag",
+   "example": "Llevo una bolsa al mercado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l4/bolígrafo": {
+  "patch": {
+   "meaning": "pen",
+   "example": "Necesito un bolígrafo azul."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l4/libro": {
+  "patch": {
+   "meaning": "book",
+   "example": "Leo un libro cada semana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l4/papel": {
+  "patch": {
+   "meaning": "paper",
+   "example": "Necesito papel para escribir."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p7l4/teléfono": {
+  "patch": {
+   "meaning": "telephone",
+   "example": "El teléfono suena mucho."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l1/cabeza": {
+  "patch": {
+   "meaning": "head",
+   "example": "Me duele la cabeza."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l1/nariz": {
+  "patch": {
+   "meaning": "nose",
+   "example": "Tengo la nariz roja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l1/ojo": {
+  "patch": {
+   "meaning": "eye",
+   "example": "Me duele el ojo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l1/oreja": {
+  "patch": {
+   "meaning": "ear",
+   "example": "Me duele la oreja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l1/pelo": {
+  "patch": {
+   "meaning": "hair",
+   "example": "Mi hermana tiene el pelo largo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l2/boca": {
+  "patch": {
+   "meaning": "mouth",
+   "example": "Abre la boca, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l2/brazo": {
+  "patch": {
+   "meaning": "arm",
+   "example": "Mi brazo está cansado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l2/cuello": {
+  "patch": {
+   "meaning": "neck",
+   "example": "Me duele el cuello."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l2/diente": {
+  "patch": {
+   "meaning": "tooth",
+   "example": "Me duele un diente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l2/hombro": {
+  "patch": {
+   "meaning": "shoulder",
+   "example": "Me duele el hombro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l3/dedo": {
+  "patch": {
+   "meaning": "finger",
+   "example": "Me duele un dedo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l3/mano": {
+  "patch": {
+   "meaning": "hand",
+   "example": "Lávate la mano, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l3/pie": {
+  "patch": {
+   "meaning": "foot",
+   "example": "Me duele el pie."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l3/pierna": {
+  "patch": {
+   "meaning": "leg",
+   "example": "Me duele la pierna."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l3/rodilla": {
+  "patch": {
+   "meaning": "knee",
+   "example": "Mi rodilla está mal."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l4/cara": {
+  "patch": {
+   "meaning": "face",
+   "example": "Lávate la cara."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l4/corazón": {
+  "patch": {
+   "meaning": "heart",
+   "example": "Mi corazón late rápido."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l4/espalda": {
+  "patch": {
+   "meaning": "back",
+   "example": "Me duele la espalda."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l4/estómago": {
+  "patch": {
+   "meaning": "stomach",
+   "example": "Me duele el estómago."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p8l4/piel": {
+  "patch": {
+   "meaning": "skin",
+   "example": "Tengo la piel seca."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l1/cuarenta": {
+  "patch": {
+   "meaning": "the number forty",
+   "example": "Mi papá tiene cuarenta años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l1/treinta": {
+  "patch": {
+   "meaning": "the number thirty",
+   "example": "Mi mamá tiene treinta años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l1/treinta y cinco": {
+  "patch": {
+   "meaning": "the number thirty-five",
+   "example": "Mi tía tiene treinta y cinco años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l1/veinticinco": {
+  "patch": {
+   "meaning": "the number twenty-five",
+   "example": "Hay veinticinco estudiantes."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l1/veintiuno": {
+  "patch": {
+   "meaning": "the number twenty-one",
+   "example": "Mi tío tiene veintiuno años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l2/cincuenta": {
+  "patch": {
+   "meaning": "the number fifty",
+   "example": "Tengo cincuenta dólares."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l2/cuarenta y cinco": {
+  "patch": {
+   "meaning": "the number forty-five",
+   "example": "Son cuarenta y cinco pesos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l2/ochenta": {
+  "patch": {
+   "meaning": "the number eighty",
+   "example": "Hay ochenta personas aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l2/sesenta": {
+  "patch": {
+   "meaning": "the number sixty",
+   "example": "Mi abuelo tiene sesenta años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l2/setenta": {
+  "patch": {
+   "meaning": "the number seventy",
+   "example": "Mi abuela tiene setenta años."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l3/cien": {
+  "patch": {
+   "meaning": "the number one hundred",
+   "example": "Tengo cien pesos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l3/doscientos": {
+  "patch": {
+   "meaning": "the number two hundred",
+   "example": "Son doscientos pesos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l3/mil": {
+  "patch": {
+   "meaning": "the number one thousand",
+   "example": "Cuesta mil pesos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l3/noventa": {
+  "patch": {
+   "meaning": "the number ninety",
+   "example": "El libro cuesta noventa pesos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa1p9l3/quinientos": {
+  "patch": {
+   "meaning": "the number five hundred",
+   "example": "Cuesta quinientos pesos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l1/la cuenta, por favor": {
+  "patch": {
+   "meaning": "The check, please",
+   "example": "Mesero, la cuenta, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l1/quisiera...": {
+  "patch": {
+   "meaning": "I would like...",
+   "example": "Quisiera un café, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l1/soy alérgico a...": {
+  "patch": {
+   "meaning": "I'm allergic to...",
+   "example": "Soy alérgico a los mariscos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l1/¿me da el menú?": {
+  "patch": {
+   "meaning": "Could I have the menu?",
+   "example": "Mesero, ¿me da el menú?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l1/¿qué me recomienda?": {
+  "patch": {
+   "meaning": "What do you recommend?",
+   "example": "Mesero, ¿qué me recomienda?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l2/estaba delicioso": {
+  "patch": {
+   "meaning": "It was delicious",
+   "example": "La comida estaba deliciosa, gracias."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l2/mesa para dos, por favor": {
+  "patch": {
+   "meaning": "Table for two, please",
+   "example": "Buenas noches, mesa para dos, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l2/yo quiero lo mismo": {
+  "patch": {
+   "meaning": "I'll have the same",
+   "example": "Yo quiero lo mismo, gracias."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l2/¿está incluido el servicio?": {
+  "patch": {
+   "meaning": "Is service included?",
+   "example": "Disculpe, ¿está incluido el servicio?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l2/¿me lo da para llevar?": {
+  "patch": {
+   "meaning": "Can I get this to go?",
+   "example": "Disculpe, ¿me lo da para llevar?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l3/agua, por favor": {
+  "patch": {
+   "meaning": "Water, please",
+   "example": "Agua, por favor, y un poco de hielo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l3/buen provecho": {
+  "patch": {
+   "meaning": "Enjoy your meal",
+   "example": "Buen provecho, que les guste la comida."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l3/nada más, gracias": {
+  "patch": {
+   "meaning": "Nothing else, thanks",
+   "example": "Nada más, gracias, ya estoy lleno."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l3/¿este plato es picante?": {
+  "patch": {
+   "meaning": "Is this dish spicy?",
+   "example": "Mesero, ¿este plato es picante?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p10l3/¿tienen opciones vegetarianas?": {
+  "patch": {
+   "meaning": "Do you have vegetarian options?",
+   "example": "Disculpe, ¿tienen opciones vegetarianas?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l1/cita": {
+  "patch": {
+   "meaning": "appointment",
+   "example": "Tengo una cita con el doctor mañana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l1/consultorio": {
+  "patch": {
+   "meaning": "doctor's office",
+   "example": "Mi mamá trabaja en un consultorio."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l1/dolor de cabeza": {
+  "patch": {
+   "meaning": "headache",
+   "example": "Tengo dolor de cabeza desde la mañana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l1/fiebre": {
+  "patch": {
+   "meaning": "fever",
+   "example": "El niño tiene fiebre desde ayer."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l1/síntoma": {
+  "patch": {
+   "meaning": "symptom",
+   "example": "La tos es un síntoma de gripe."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l2/enfermo": {
+  "patch": {
+   "meaning": "sick",
+   "example": "Mi hermano está enfermo hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l2/farmacia": {
+  "patch": {
+   "meaning": "pharmacy",
+   "example": "Voy a la farmacia por la medicina."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l2/medicina": {
+  "patch": {
+   "meaning": "medicine",
+   "example": "Debes tomar la medicina dos veces al día."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l2/receta": {
+  "patch": {
+   "meaning": "doctor's written order for medicine",
+   "example": "El doctor me da una receta hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l2/tos": {
+  "patch": {
+   "meaning": "cough",
+   "example": "Mi hijo tiene tos por la noche."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l3/alergia": {
+  "patch": {
+   "meaning": "allergy",
+   "example": "Mi hija tiene una alergia al polvo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l3/enfermera": {
+  "patch": {
+   "meaning": "woman who cares for sick people",
+   "example": "Mi tía es enfermera en un hospital."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l3/lesión": {
+  "patch": {
+   "meaning": "injury",
+   "example": "Mi primo tiene una lesión en la rodilla."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l3/paciente": {
+  "patch": {
+   "meaning": "patient",
+   "example": "El paciente espera en la sala."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p11l3/sano": {
+  "patch": {
+   "meaning": "healthy",
+   "example": "Mi abuela es una persona muy sana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l1/me queda bien": {
+  "patch": {
+   "meaning": "It fits well",
+   "example": "Esta camisa me queda bien."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l1/probador": {
+  "patch": {
+   "meaning": "fitting room",
+   "example": "El probador está al fondo de la tienda."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l1/¿puedo probarme esto?": {
+  "patch": {
+   "meaning": "Can I try this on?",
+   "example": "Disculpe, ¿puedo probarme esto?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l1/¿tiene una talla más grande?": {
+  "patch": {
+   "meaning": "Do you have a bigger size?",
+   "example": "Perdone, ¿tiene una talla más grande?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l1/¿tiene una talla más pequeña?": {
+  "patch": {
+   "meaning": "Do you have a smaller size?",
+   "example": "Perdone, ¿tiene una talla más pequeña?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l2/me queda apretado": {
+  "patch": {
+   "meaning": "It's too tight",
+   "example": "Este pantalón me queda apretado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l2/me queda flojo": {
+  "patch": {
+   "meaning": "It's too loose",
+   "example": "Esta chaqueta me queda flojo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l2/solo estoy mirando": {
+  "patch": {
+   "meaning": "I'm just looking",
+   "example": "Gracias, solo estoy mirando."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l2/¿dónde están los probadores?": {
+  "patch": {
+   "meaning": "Where are the fitting rooms?",
+   "example": "Perdone, ¿dónde están los probadores?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l2/¿qué talla usa?": {
+  "patch": {
+   "meaning": "What size do you wear?",
+   "example": "Señor, ¿qué talla usa?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l3/está de rebaja": {
+  "patch": {
+   "meaning": "It's on sale",
+   "example": "Esta chaqueta está de rebaja hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l3/me lo llevo": {
+  "patch": {
+   "meaning": "I'll take it",
+   "example": "Me gusta mucho, me lo llevo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l3/¿aceptan tarjetas?": {
+  "patch": {
+   "meaning": "Do you accept cards?",
+   "example": "Perdone, ¿aceptan tarjetas?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l3/¿cuánto cuesta?": {
+  "patch": {
+   "meaning": "How much does it cost?",
+   "example": "Perdone, ¿cuánto cuesta esta chaqueta?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p12l3/¿viene en otro color?": {
+  "patch": {
+   "meaning": "Does it come in another color?",
+   "example": "Disculpe, ¿viene en otro color?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l1/biblioteca": {
+  "patch": {
+   "meaning": "library",
+   "example": "Estudio en la biblioteca los lunes."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l1/clínica": {
+  "patch": {
+   "meaning": "clinic",
+   "example": "La clínica abre a las ocho."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l1/museo": {
+  "patch": {
+   "meaning": "museum",
+   "example": "Visitamos el museo el sábado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l1/oficina de correos": {
+  "patch": {
+   "meaning": "post office",
+   "example": "Voy a la oficina de correos hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l1/supermercado": {
+  "patch": {
+   "meaning": "supermarket",
+   "example": "Compro frutas en el supermercado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l2/gimnasio": {
+  "patch": {
+   "meaning": "gym",
+   "example": "Mi hermano va al gimnasio todos los días."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l2/hotel": {
+  "patch": {
+   "meaning": "hotel",
+   "example": "Nuestro hotel está cerca de la playa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l2/panadería": {
+  "patch": {
+   "meaning": "bakery",
+   "example": "Compro pan en la panadería."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l2/restaurante": {
+  "patch": {
+   "meaning": "restaurant",
+   "example": "Cenamos en un restaurante italiano."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l2/teatro": {
+  "patch": {
+   "meaning": "theater",
+   "example": "Vamos al teatro con mi abuela."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l3/ayuntamiento": {
+  "patch": {
+   "meaning": "town hall",
+   "example": "El alcalde trabaja en el ayuntamiento."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l3/comisaría": {
+  "patch": {
+   "meaning": "police station",
+   "example": "La comisaría está en la calle principal."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l3/gasolinera": {
+  "patch": {
+   "meaning": "gas station",
+   "example": "Hay una gasolinera cerca de aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l3/librería": {
+  "patch": {
+   "meaning": "bookstore",
+   "example": "Mi papá trabaja en una librería."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p13l3/palacio de justicia": {
+  "patch": {
+   "meaning": "courthouse",
+   "example": "El palacio de justicia es muy grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l1/computadora": {
+  "patch": {
+   "meaning": "computer",
+   "example": "Mi computadora es nueva."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l1/contraseña": {
+  "patch": {
+   "meaning": "password",
+   "example": "Mi contraseña tiene ocho letras."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l1/correo electrónico": {
+  "patch": {
+   "meaning": "email",
+   "example": "Te envío un correo electrónico mañana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l1/internet": {
+  "patch": {
+   "meaning": "internet",
+   "example": "Mi casa tiene internet rápido."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l1/teléfono": {
+  "patch": {
+   "meaning": "phone",
+   "example": "Mi teléfono está en la mesa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l2/aplicación": {
+  "patch": {
+   "meaning": "application",
+   "example": "Uso una aplicación para aprender español."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l2/cargador": {
+  "patch": {
+   "meaning": "charger",
+   "example": "Necesito mi cargador para el teléfono."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l2/pantalla": {
+  "patch": {
+   "meaning": "screen",
+   "example": "La pantalla de mi teléfono es grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l2/ratón": {
+  "patch": {
+   "meaning": "small device moved by hand on a computer",
+   "example": "Mi ratón no funciona bien."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l2/teclado": {
+  "patch": {
+   "meaning": "keyboard",
+   "example": "Mi teclado nuevo es muy cómodo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l3/archivo": {
+  "patch": {
+   "meaning": "file",
+   "example": "Guardo el archivo en mi computadora."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l3/batería": {
+  "patch": {
+   "meaning": "battery",
+   "example": "La batería de mi teléfono está baja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l3/descarga": {
+  "patch": {
+   "meaning": "file copied to your device",
+   "example": "La descarga de la aplicación es gratis."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l3/videollamada": {
+  "patch": {
+   "meaning": "video call",
+   "example": "Tengo una videollamada con mi tío."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p14l3/wifi": {
+  "patch": {
+   "meaning": "wifi",
+   "example": "Este café tiene wifi gratis."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l1/a menudo": {
+  "patch": {
+   "meaning": "often",
+   "example": "Mi papá viaja a menudo por trabajo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l1/a veces": {
+  "patch": {
+   "meaning": "sometimes",
+   "example": "A veces camino al trabajo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l1/generalmente": {
+  "patch": {
+   "meaning": "usually",
+   "example": "Generalmente desayuno a las siete."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l1/raramente": {
+  "patch": {
+   "meaning": "rarely",
+   "example": "Raramente como pescado en la cena."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l1/siempre": {
+  "patch": {
+   "meaning": "always",
+   "example": "Mi mamá siempre cocina los domingos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l2/de vez en cuando": {
+  "patch": {
+   "meaning": "from time to time",
+   "example": "De vez en cuando visito a mis abuelos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l2/nunca": {
+  "patch": {
+   "meaning": "never",
+   "example": "Nunca bebo café por la noche."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l2/otra vez": {
+  "patch": {
+   "meaning": "again",
+   "example": "Repite la pregunta otra vez, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l2/todos los días": {
+  "patch": {
+   "meaning": "every day",
+   "example": "Corro en el parque todos los días."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p15l2/una vez a la semana": {
+  "patch": {
+   "meaning": "once a week",
+   "example": "Voy al gimnasio una vez a la semana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
  "es:card:esa2p16l1/va": {
   "patch": {
    "meaning": "he/she goes, is going"
@@ -445,9 +4094,10 @@
  },
  "es:card:esa2p16l2/visitar": {
   "patch": {
-   "meaning": "to visit"
+   "meaning": "to go and see someone or something",
+   "example": "Tú vas a visitar a tus abuelos."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p16l3/estudiar": {
   "patch": {
@@ -488,75 +4138,87 @@
  },
  "es:card:esa2p17l1/nuestros": {
   "patch": {
-   "meaning": "our (masculine plural)"
+   "meaning": "our, masculine plural",
+   "example": "Estos son nuestros amigos."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l1/su": {
   "patch": {
-   "meaning": "his, her, their, your (formal)"
+   "meaning": "his or her, belonging to someone",
+   "example": "Ese es su coche."
   },
-  "reason": "Meaning missing; in the example it means his, her or their."
+  "reason": "Meaning missing; in the example it means his, her or their. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l1/tu": {
   "patch": {
-   "meaning": "your (informal, singular)"
+   "meaning": "your, informal singular",
+   "example": "Esta es tu casa."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l2/mis": {
   "patch": {
-   "meaning": "my (before plural nouns)"
+   "meaning": "my, plural",
+   "example": "Mis padres viven aquí."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l2/nuestra": {
   "patch": {
-   "meaning": "our (before a feminine singular noun)"
+   "meaning": "our, feminine singular",
+   "example": "Nuestra casa es grande."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l2/su": {
   "patch": {
-   "meaning": "his, her, your (formal), their (singular noun)"
+   "meaning": "your, formal singular",
+   "example": "¿Dónde está su oficina, señor?"
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l2/sus": {
   "patch": {
-   "meaning": "his, her, their, your (formal), plural"
+   "meaning": "their, belonging to them",
+   "example": "Esas son sus ideas."
   },
-  "reason": "Meaning missing; gloss as used with plural noun."
+  "reason": "Meaning missing; gloss as used with plural noun. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l3/mío": {
   "patch": {
-   "meaning": "mine (masculine singular)"
+   "meaning": "mine, masculine singular",
+   "example": "Ese perro es mío."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l3/nuestra": {
   "patch": {
-   "meaning": "our (before a feminine singular noun)"
+   "meaning": "our, feminine singular",
+   "example": "Nosotros amamos nuestra ciudad."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l3/su": {
   "patch": {
-   "meaning": "his, her, their, your (formal)"
+   "meaning": "her, belonging to her",
+   "example": "Ella olvidó su teléfono."
   },
-  "reason": "Meaning missing; in the example it means her."
+  "reason": "Meaning missing; in the example it means her. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l3/suya": {
   "patch": {
-   "meaning": "his, hers, theirs, yours (feminine singular)"
+   "meaning": "his, feminine singular",
+   "example": "Esa idea fue suya."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p17l3/tuyas": {
   "patch": {
-   "meaning": "yours (feminine plural, informal)"
+   "meaning": "yours, feminine plural",
+   "example": "¿Son tuyas estas llaves?"
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p18l1/conduzco": {
   "patch": {
@@ -566,9 +4228,10 @@
  },
  "es:card:esa2p18l1/conozco": {
   "patch": {
-   "meaning": "I know (a person or place)"
+   "meaning": "I know, for people and places",
+   "example": "Yo conozco a mucha gente aquí."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p18l1/pongo": {
   "patch": {
@@ -620,17 +4283,579 @@
   },
   "reason": "Meaning missing."
  },
+ "es:card:esa2p19l1/abril": {
+  "patch": {
+   "meaning": "April",
+   "example": "Vamos de vacaciones en abril."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l1/enero": {
+  "patch": {
+   "meaning": "January",
+   "example": "Mi cumpleaños es en enero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l1/febrero": {
+  "patch": {
+   "meaning": "February",
+   "example": "En febrero hace frío aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l1/marzo": {
+  "patch": {
+   "meaning": "March",
+   "example": "Mi hermana nació en marzo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l1/mayo": {
+  "patch": {
+   "meaning": "May",
+   "example": "En mayo empiezan las flores."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l2/agosto": {
+  "patch": {
+   "meaning": "August",
+   "example": "Viajamos a Chile en agosto."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l2/julio": {
+  "patch": {
+   "meaning": "July",
+   "example": "Mi papá cumple años en julio."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l2/junio": {
+  "patch": {
+   "meaning": "June",
+   "example": "En junio termina la escuela."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l2/octubre": {
+  "patch": {
+   "meaning": "October",
+   "example": "En octubre hay una fiesta en mi barrio."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l2/septiembre": {
+  "patch": {
+   "meaning": "September",
+   "example": "La escuela empieza en septiembre."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l3/diciembre": {
+  "patch": {
+   "meaning": "December",
+   "example": "En diciembre celebramos la Navidad."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l3/noviembre": {
+  "patch": {
+   "meaning": "November",
+   "example": "Mi primo viene en noviembre."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l3/otoño": {
+  "patch": {
+   "meaning": "autumn",
+   "example": "En otoño las hojas son amarillas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l3/primavera": {
+  "patch": {
+   "meaning": "spring",
+   "example": "En primavera hay muchas flores."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l3/verano": {
+  "patch": {
+   "meaning": "summer",
+   "example": "En verano vamos a la playa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l4/calendario": {
+  "patch": {
+   "meaning": "calendar",
+   "example": "Mi calendario tiene fotos de playas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l4/década": {
+  "patch": {
+   "meaning": "decade",
+   "example": "Esa casa tiene una década de antigüedad."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l4/estación": {
+  "patch": {
+   "meaning": "season",
+   "example": "Mi estación favorita es el verano."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l4/invierno": {
+  "patch": {
+   "meaning": "winter",
+   "example": "En invierno tomo chocolate caliente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p19l4/siglo": {
+  "patch": {
+   "meaning": "century",
+   "example": "Estamos en el siglo veintiuno."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l1/agua": {
+  "patch": {
+   "meaning": "water",
+   "example": "Mi hermana bebe agua después de correr."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l1/arroz": {
+  "patch": {
+   "meaning": "rice",
+   "example": "Mi mamá prepara arroz con frijoles."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l1/café": {
+  "patch": {
+   "meaning": "coffee",
+   "example": "Mi abuelo toma café por la mañana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l1/leche": {
+  "patch": {
+   "meaning": "milk",
+   "example": "Los niños beben leche con galletas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l1/pan": {
+  "patch": {
+   "meaning": "bread",
+   "example": "Compro pan fresco en la panadería."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l2/desayuno": {
+  "patch": {
+   "meaning": "breakfast",
+   "example": "El desayuno es a las siete."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l2/fruta": {
+  "patch": {
+   "meaning": "fruit",
+   "example": "Una fruta es un buen postre."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l2/pescado": {
+  "patch": {
+   "meaning": "fish eaten as food",
+   "example": "El pescado está fresco en este mercado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l2/pollo": {
+  "patch": {
+   "meaning": "chicken",
+   "example": "Hoy comemos pollo con ensalada."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l2/verduras": {
+  "patch": {
+   "meaning": "vegetables",
+   "example": "Mi tío come muchas verduras en el almuerzo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l3/almuerzo": {
+  "patch": {
+   "meaning": "lunch",
+   "example": "Mi familia come el almuerzo a las doce."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l3/cena": {
+  "patch": {
+   "meaning": "dinner",
+   "example": "La cena está lista, ven a la mesa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l3/delicioso": {
+  "patch": {
+   "meaning": "delicious",
+   "example": "La sopa de tomate está muy deliciosa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l3/la cuenta": {
+  "patch": {
+   "meaning": "the bill",
+   "example": "Mesero, la cuenta, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l3/menú": {
+  "patch": {
+   "meaning": "menu",
+   "example": "El mesero trae el menú."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l4/cuchara": {
+  "patch": {
+   "meaning": "spoon",
+   "example": "Necesito una cuchara para la sopa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l4/cuchillo": {
+  "patch": {
+   "meaning": "knife",
+   "example": "Uso un cuchillo para cortar el pan."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l4/hambriento": {
+  "patch": {
+   "meaning": "hungry",
+   "example": "Después del partido estoy hambriento."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l4/sediento": {
+  "patch": {
+   "meaning": "thirsty",
+   "example": "Después de correr, el niño está sediento."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p1l4/tenedor": {
+  "patch": {
+   "meaning": "fork",
+   "example": "Pon el tenedor a la izquierda del plato."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l1/dormir hasta tarde": {
+  "patch": {
+   "meaning": "to sleep in",
+   "example": "Los sábados me gusta dormir hasta tarde."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l1/ir de compras": {
+  "patch": {
+   "meaning": "to go shopping",
+   "example": "Me gusta ir de compras con mi mamá."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l1/relajarse": {
+  "patch": {
+   "meaning": "to relax",
+   "example": "Es bueno relajarse después del trabajo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l1/ver una película": {
+  "patch": {
+   "meaning": "to watch a movie",
+   "example": "Esta noche vamos a ver una película."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l1/visitar a amigos": {
+  "patch": {
+   "meaning": "to visit friends",
+   "example": "Hoy voy a visitar a amigos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l2/dar un paseo": {
+  "patch": {
+   "meaning": "to go for a walk",
+   "example": "Después de comer, vamos a dar un paseo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l2/hacer un picnic": {
+  "patch": {
+   "meaning": "to have a picnic",
+   "example": "Este domingo vamos a hacer un picnic."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l2/ir al gimnasio": {
+  "patch": {
+   "meaning": "to go to the gym",
+   "example": "Mi hermano quiere ir al gimnasio hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l2/limpiar la casa": {
+  "patch": {
+   "meaning": "to clean the house",
+   "example": "Los sábados debo limpiar la casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l2/salir a comer": {
+  "patch": {
+   "meaning": "to go out to eat",
+   "example": "Esta noche queremos salir a comer."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l3/acostarse tarde": {
+  "patch": {
+   "meaning": "to go to bed late",
+   "example": "No es bueno acostarse tarde en la semana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l3/cocinar una gran comida": {
+  "patch": {
+   "meaning": "to cook a big meal",
+   "example": "Mi abuela va a cocinar una gran comida."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l3/ir a la playa": {
+  "patch": {
+   "meaning": "to go to the beach",
+   "example": "El domingo queremos ir a la playa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l3/leer un libro": {
+  "patch": {
+   "meaning": "to read a book",
+   "example": "Me gusta leer un libro antes de dormir."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p20l3/no hacer nada": {
+  "patch": {
+   "meaning": "to do nothing",
+   "example": "El domingo quiero no hacer nada."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l1/estufa": {
+  "patch": {
+   "meaning": "stove",
+   "example": "Mi estufa tiene cuatro hornillas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l1/horno": {
+  "patch": {
+   "meaning": "oven",
+   "example": "Mi mamá hornea pan en el horno."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l1/lavadora": {
+  "patch": {
+   "meaning": "washing machine",
+   "example": "Mi lavadora es muy silenciosa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l1/microondas": {
+  "patch": {
+   "meaning": "microwave",
+   "example": "Caliento la sopa en el microondas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l1/refrigerador": {
+  "patch": {
+   "meaning": "refrigerator",
+   "example": "Mi refrigerador es muy grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l2/aspiradora": {
+  "patch": {
+   "meaning": "vacuum cleaner",
+   "example": "Uso la aspiradora los sábados."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l2/lavavajillas": {
+  "patch": {
+   "meaning": "dishwasher",
+   "example": "Mi lavavajillas lava los platos solo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l2/licuadora": {
+  "patch": {
+   "meaning": "blender",
+   "example": "Hago jugo en la licuadora."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l2/plancha": {
+  "patch": {
+   "meaning": "iron",
+   "example": "Necesito la plancha para mi camisa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l2/secadora": {
+  "patch": {
+   "meaning": "dryer",
+   "example": "Mi secadora seca la ropa rápido."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l3/aire acondicionado": {
+  "patch": {
+   "meaning": "air conditioner",
+   "example": "Prendo el aire acondicionado en verano."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l3/cafetera": {
+  "patch": {
+   "meaning": "coffee maker",
+   "example": "Mi mamá prepara café en la cafetera."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l3/calefactor": {
+  "patch": {
+   "meaning": "heater",
+   "example": "El calefactor calienta mi cuarto."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l3/tostadora": {
+  "patch": {
+   "meaning": "toaster",
+   "example": "La tostadora está sobre la mesa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l3/ventilador": {
+  "patch": {
+   "meaning": "fan",
+   "example": "El ventilador ayuda cuando hace calor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l4/cubo": {
+  "patch": {
+   "meaning": "bucket",
+   "example": "Lleno el cubo con agua."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l4/detergente": {
+  "patch": {
+   "meaning": "detergent",
+   "example": "Compro detergente en el supermercado."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l4/escoba": {
+  "patch": {
+   "meaning": "broom",
+   "example": "Mi papá usa la escoba en el patio."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l4/esponja": {
+  "patch": {
+   "meaning": "sponge",
+   "example": "Uso una esponja para lavar los platos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l4/trapeador": {
+  "patch": {
+   "meaning": "mop",
+   "example": "Uso el trapeador para limpiar el piso."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l5/armario": {
+  "patch": {
+   "meaning": "closet",
+   "example": "Mi ropa está en el armario."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l5/cajón": {
+  "patch": {
+   "meaning": "drawer",
+   "example": "Guardo los calcetines en el cajón."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l5/cortina": {
+  "patch": {
+   "meaning": "curtain",
+   "example": "La cortina de mi cuarto es azul."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l5/estante": {
+  "patch": {
+   "meaning": "shelf",
+   "example": "Los libros están en el estante."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p21l5/percha": {
+  "patch": {
+   "meaning": "hanger",
+   "example": "Pongo mi camisa en la percha."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
  "es:card:esa2p22l1/cansado": {
   "patch": {
-   "meaning": "tired (masculine)"
+   "meaning": "tired, masculine singular",
+   "example": "Él se siente cansado después del trabajo."
   },
-  "reason": "The meaning field is empty; the example is natural. / Meaning missing."
+  "reason": "The meaning field is empty; the example is natural. / Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l1/enojado": {
   "patch": {
-   "meaning": "angry (masculine)"
+   "meaning": "angry, masculine singular",
+   "example": "Te pones enojado muy fácil."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l1/feliz": {
   "patch": {
@@ -640,46 +4865,52 @@
  },
  "es:card:esa2p22l1/nerviosa": {
   "patch": {
-   "meaning": "nervous (feminine)"
+   "meaning": "nervous, feminine singular",
+   "example": "Ella se pone nerviosa antes de un examen."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l1/tristes": {
   "patch": {
-   "meaning": "sad (plural)"
+   "meaning": "sad, plural",
+   "example": "Nos ponemos tristes cuando llueve."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l2/confundido": {
   "patch": {
-   "meaning": "confused (masculine)"
+   "meaning": "confused, masculine singular",
+   "example": "Me siento confundido con esta tarea."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l2/emocionados": {
   "patch": {
-   "meaning": "excited (plural)"
+   "meaning": "excited, masculine plural",
+   "example": "Se ponen emocionados antes del viaje."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l2/nervioso": {
   "patch": {
-   "meaning": "nervous (masculine)"
+   "meaning": "nervous, masculine singular",
+   "example": "Te sientes nervioso por la entrevista."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l2/orgullosos": {
   "patch": {
-   "meaning": "proud (plural)"
+   "meaning": "proud, masculine plural",
+   "example": "Nos sentimos orgullosos de nuestro equipo."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l2/preocupada": {
   "patch": {
-   "meaning": "worried (feminine)",
-   "example": "Ella se siente preocupada cuando no la llamas."
+   "meaning": "worried, feminine singular",
+   "example": "Mi mamá se pone preocupada si no llamas."
   },
-  "reason": "Meaning missing. / The meaning is fine, but \"se pone preocupada cuando no llamas\" is awkward (natives say \"se preocupa\") and lacks the object pronoun."
+  "reason": "Meaning missing. / The meaning is fine, but \"se pone preocupada cuando no llamas\" is awkward (natives say \"se preocupa\") and lacks the object pronoun. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l3/aburrido": {
   "patch": {
@@ -689,21 +4920,24 @@
  },
  "es:card:esa2p22l3/felices": {
   "patch": {
-   "meaning": "happy (plural)"
+   "meaning": "happy, plural",
+   "example": "Nos ponemos felices en las fiestas."
   },
-  "reason": "Empty meaning; plural form."
+  "reason": "Empty meaning; plural form. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l3/relajado": {
   "patch": {
-   "meaning": "relaxed (masculine)"
+   "meaning": "relaxed, masculine singular",
+   "example": "Me siento relajado en la playa."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l3/sorprendidos": {
   "patch": {
-   "meaning": "surprised (plural)"
+   "meaning": "surprised, masculine plural",
+   "example": "Se sienten sorprendidos por la noticia."
   },
-  "reason": "Empty meaning; gloss as plural form."
+  "reason": "Empty meaning; gloss as plural form. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l3/triste": {
   "patch": {
@@ -713,9 +4947,10 @@
  },
  "es:card:esa2p22l4/agradecidos": {
   "patch": {
-   "meaning": "grateful (plural)"
+   "meaning": "thankful, masculine plural",
+   "example": "Nos sentimos agradecidos por tu ayuda."
   },
-  "reason": "Empty meaning; plural form."
+  "reason": "Empty meaning; plural form. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l4/avergonzado": {
   "patch": {
@@ -726,9 +4961,10 @@
  },
  "es:card:esa2p22l4/emocionadas": {
   "patch": {
-   "meaning": "excited (feminine plural)"
+   "meaning": "excited, feminine plural",
+   "example": "Ellas se ponen emocionadas con la música."
   },
-  "reason": "Empty meaning; feminine plural."
+  "reason": "Empty meaning; feminine plural. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l4/seguro": {
   "patch": {
@@ -751,16 +4987,17 @@
  },
  "es:card:esa2p22l5/curioso": {
   "patch": {
-   "meaning": "curious",
-   "example": "Mi hijo es muy curioso y siempre pregunta todo."
+   "meaning": "wanting to know more",
+   "example": "Me siento curioso sobre este libro."
   },
-  "reason": "Empty meaning. / 'Me siento curioso sobre esto' is an English calque; a native would say 'tengo curiosidad', so the example should use 'curioso' the natural way."
+  "reason": "Empty meaning. / 'Me siento curioso sobre esto' is an English calque; a native would say 'tengo curiosidad', so the example should use 'curioso' the natural way. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l5/decepcionados": {
   "patch": {
-   "meaning": "disappointed (plural)"
+   "meaning": "let down, masculine plural",
+   "example": "Se sienten decepcionados con el resultado."
   },
-  "reason": "Empty meaning; plural form."
+  "reason": "Empty meaning; plural form. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p22l5/impaciente": {
   "patch": {
@@ -770,9 +5007,535 @@
  },
  "es:card:esa2p22l5/motivados": {
   "patch": {
-   "meaning": "motivated (plural)"
+   "meaning": "eager to act, masculine plural",
+   "example": "Nos sentimos motivados para empezar hoy."
   },
-  "reason": "Empty meaning; plural form."
+  "reason": "Empty meaning; plural form. Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l1/ahorros": {
+  "patch": {
+   "meaning": "savings",
+   "example": "Mis ahorros están en el banco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l1/cajero automático": {
+  "patch": {
+   "meaning": "ATM",
+   "example": "Hay un cajero automático en la esquina."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l1/cuenta bancaria": {
+  "patch": {
+   "meaning": "bank account",
+   "example": "Mi mamá abre una cuenta bancaria hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l1/depósito": {
+  "patch": {
+   "meaning": "deposit",
+   "example": "Hago un depósito en el banco hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l1/retiro": {
+  "patch": {
+   "meaning": "withdrawal",
+   "example": "Hago un retiro en el cajero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l2/estampilla": {
+  "patch": {
+   "meaning": "stamp",
+   "example": "Necesito una estampilla para esta carta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l2/préstamo": {
+  "patch": {
+   "meaning": "loan",
+   "example": "Mi papá pide un préstamo para la casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l2/saldo": {
+  "patch": {
+   "meaning": "balance",
+   "example": "Mi saldo es de doscientos dólares."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l2/sobre": {
+  "patch": {
+   "meaning": "envelope",
+   "example": "Pongo la carta en un sobre blanco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l2/tasa de interés": {
+  "patch": {
+   "meaning": "interest rate",
+   "example": "La tasa de interés es muy baja."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l3/buzón": {
+  "patch": {
+   "meaning": "mailbox",
+   "example": "La carta está en el buzón."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l3/código postal": {
+  "patch": {
+   "meaning": "zip code",
+   "example": "Mi código postal tiene cinco números."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l3/dirección": {
+  "patch": {
+   "meaning": "address",
+   "example": "Mi dirección es calle Sol, número cinco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l3/enviar": {
+  "patch": {
+   "meaning": "to send",
+   "example": "Voy a enviar una carta a mi abuela."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l3/paquete": {
+  "patch": {
+   "meaning": "package",
+   "example": "Mi tío envía un paquete a Perú."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l4/cajero": {
+  "patch": {
+   "meaning": "teller",
+   "example": "El cajero del banco es muy amable."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l4/enviar por correo": {
+  "patch": {
+   "meaning": "to mail",
+   "example": "Quiero enviar por correo este paquete."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l4/firma": {
+  "patch": {
+   "meaning": "signature",
+   "example": "Pongo mi firma en el papel."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l4/formulario": {
+  "patch": {
+   "meaning": "paper you fill out with information",
+   "example": "Debo llenar un formulario en el banco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l4/identificación": {
+  "patch": {
+   "meaning": "identification",
+   "example": "Necesito mi identificación para entrar."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l5/caja fuerte": {
+  "patch": {
+   "meaning": "strong locked box for valuables",
+   "example": "Guardo el dinero en la caja fuerte."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l5/moneda": {
+  "patch": {
+   "meaning": "currency",
+   "example": "La moneda de México es el peso."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l5/sucursal": {
+  "patch": {
+   "meaning": "local office of a bank",
+   "example": "La sucursal del banco abre a las nueve."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l5/tipo de cambio": {
+  "patch": {
+   "meaning": "exchange rate",
+   "example": "Hoy el tipo de cambio es bueno."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p23l5/transferencia": {
+  "patch": {
+   "meaning": "transfer",
+   "example": "Hice una transferencia a mi hermano."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l1/bien": {
+  "patch": {
+   "meaning": "well",
+   "example": "Mi hermana canta muy bien."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l1/fácilmente": {
+  "patch": {
+   "meaning": "easily",
+   "example": "Ella aprende idiomas fácilmente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l1/lentamente": {
+  "patch": {
+   "meaning": "slowly",
+   "example": "Mi abuelo camina lentamente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l1/mal": {
+  "patch": {
+   "meaning": "badly",
+   "example": "Hoy dormí muy mal."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l1/rápidamente": {
+  "patch": {
+   "meaning": "quickly",
+   "example": "El niño come rápidamente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l2/cuidadosamente": {
+  "patch": {
+   "meaning": "carefully",
+   "example": "Mi papá maneja cuidadosamente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l2/de repente": {
+  "patch": {
+   "meaning": "suddenly",
+   "example": "De repente empezó a llover."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l2/especialmente": {
+  "patch": {
+   "meaning": "especially",
+   "example": "Me gusta el pescado, especialmente el frito."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l2/finalmente": {
+  "patch": {
+   "meaning": "finally",
+   "example": "Finalmente llegamos a la playa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l2/inmediatamente": {
+  "patch": {
+   "meaning": "immediately",
+   "example": "Mi mamá responde inmediatamente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l3/afortunadamente": {
+  "patch": {
+   "meaning": "fortunately",
+   "example": "Afortunadamente, nadie salió herido."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l3/ciertamente": {
+  "patch": {
+   "meaning": "certainly",
+   "example": "Ciertamente, voy a ayudarte."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l3/desafortunadamente": {
+  "patch": {
+   "meaning": "unfortunately",
+   "example": "Desafortunadamente, no puedo ir hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l3/obviamente": {
+  "patch": {
+   "meaning": "obviously",
+   "example": "Obviamente, tengo que estudiar más."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l3/probablemente": {
+  "patch": {
+   "meaning": "probably",
+   "example": "Mañana probablemente va a llover."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l4/completamente": {
+  "patch": {
+   "meaning": "completely",
+   "example": "Estoy completamente de acuerdo contigo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l4/generalmente": {
+  "patch": {
+   "meaning": "generally",
+   "example": "Generalmente desayuno a las siete."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l4/personalmente": {
+  "patch": {
+   "meaning": "personally",
+   "example": "Personalmente, prefiero el té."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l4/simplemente": {
+  "patch": {
+   "meaning": "simply",
+   "example": "Es simplemente un regalo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l4/totalmente": {
+  "patch": {
+   "meaning": "totally",
+   "example": "Estoy totalmente seguro de la respuesta."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l5/aparentemente": {
+  "patch": {
+   "meaning": "apparently",
+   "example": "Aparentemente, el tren llega tarde."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l5/claramente": {
+  "patch": {
+   "meaning": "clearly",
+   "example": "Mi maestra habla claramente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l5/directamente": {
+  "patch": {
+   "meaning": "directly",
+   "example": "Voy directamente a casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l5/en realidad": {
+  "patch": {
+   "meaning": "actually",
+   "example": "En realidad, no tengo hambre."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p24l5/en serio": {
+  "patch": {
+   "meaning": "seriously",
+   "example": "¿En serio vas a viajar mañana?"
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l1/antes de": {
+  "patch": {
+   "meaning": "before",
+   "example": "Lavo las manos antes de comer."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l1/desde": {
+  "patch": {
+   "meaning": "since",
+   "example": "Vivo aquí desde enero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l1/después de": {
+  "patch": {
+   "meaning": "after",
+   "example": "Descanso después de la cena."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l1/durante": {
+  "patch": {
+   "meaning": "during",
+   "example": "Durante el verano voy a la playa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l1/hasta": {
+  "patch": {
+   "meaning": "until",
+   "example": "Trabajo hasta las cinco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l2/a las": {
+  "patch": {
+   "meaning": "at, before a clock hour",
+   "example": "La clase empieza a las ocho."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l2/dentro de": {
+  "patch": {
+   "meaning": "within",
+   "example": "Llego dentro de diez minutos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l2/el": {
+  "patch": {
+   "meaning": "the word used before a weekday",
+   "example": "El lunes tengo clase de español."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l2/en": {
+  "patch": {
+   "meaning": "in, before months and years",
+   "example": "Mi cumpleaños es en marzo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l2/por": {
+  "patch": {
+   "meaning": "for, during a length of time",
+   "example": "Estudié por dos horas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l3/a lo largo de": {
+  "patch": {
+   "meaning": "throughout",
+   "example": "Llovió a lo largo de la semana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l3/desde...hasta": {
+  "patch": {
+   "meaning": "from...to",
+   "example": "Trabajo desde las nueve hasta las cinco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l3/hace": {
+  "patch": {
+   "meaning": "ago",
+   "example": "Llegué hace dos horas."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l3/para": {
+  "patch": {
+   "meaning": "by, marking a deadline",
+   "example": "Necesito el informe para el viernes."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l3/pronto": {
+  "patch": {
+   "meaning": "soon",
+   "example": "Mi papá llega pronto."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l4/anteriormente": {
+  "patch": {
+   "meaning": "previously",
+   "example": "Anteriormente vivía en Lima."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l4/con el tiempo": {
+  "patch": {
+   "meaning": "eventually",
+   "example": "Con el tiempo, aprendes todo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l4/hoy en día": {
+  "patch": {
+   "meaning": "nowadays",
+   "example": "Hoy en día todos usan teléfono."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l4/mientras tanto": {
+  "patch": {
+   "meaning": "meanwhile",
+   "example": "Mientras tanto, yo preparo la cena."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l4/posteriormente": {
+  "patch": {
+   "meaning": "subsequently",
+   "example": "Posteriormente, llegaron mis primos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l5/ahora mismo": {
+  "patch": {
+   "meaning": "right now",
+   "example": "Mi mamá cocina ahora mismo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l5/brevemente": {
+  "patch": {
+   "meaning": "briefly",
+   "example": "Mi jefe habló brevemente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l5/de ahora en adelante": {
+  "patch": {
+   "meaning": "from now on",
+   "example": "De ahora en adelante estudio más."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l5/frecuentemente": {
+  "patch": {
+   "meaning": "frequently",
+   "example": "Mi hermana viaja frecuentemente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p25l5/ocasionalmente": {
+  "patch": {
+   "meaning": "occasionally",
+   "example": "Mi tío visita ocasionalmente."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p26l1/empezamos": {
   "patch": {
@@ -932,9 +5695,10 @@
  },
  "es:card:esa2p2l1/fui": {
   "patch": {
-   "meaning": "I went (also: I was)"
+   "meaning": "I went, past of to go",
+   "example": "Ayer fui al mercado con mi mamá."
   },
-  "reason": "Meaning was empty; in the example 'fui al cine' means I went."
+  "reason": "Meaning was empty; in the example 'fui al cine' means I went. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p2l1/hablé": {
   "patch": {
@@ -1070,36 +5834,173 @@
   },
   "reason": "Meaning was empty."
  },
+ "es:card:esa2p3l1/banco": {
+  "patch": {
+   "meaning": "bank",
+   "example": "Voy al banco para sacar dinero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l1/calle": {
+  "patch": {
+   "meaning": "street",
+   "example": "Mi casa está en esta calle."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l1/ciudad": {
+  "patch": {
+   "meaning": "city",
+   "example": "Quito es una ciudad muy bonita."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l1/hospital": {
+  "patch": {
+   "meaning": "hospital",
+   "example": "Mi tía trabaja en un hospital grande."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l1/puente": {
+  "patch": {
+   "meaning": "bridge",
+   "example": "El puente es largo y viejo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l2/estación": {
+  "patch": {
+   "meaning": "station",
+   "example": "La estación de autobuses está lejos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l2/iglesia": {
+  "patch": {
+   "meaning": "church",
+   "example": "La iglesia está cerca de la plaza."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l2/mercado": {
+  "patch": {
+   "meaning": "market",
+   "example": "Compramos fruta en el mercado los sábados."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l2/parque": {
+  "patch": {
+   "meaning": "park",
+   "example": "Los niños juegan en el parque."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l2/tienda": {
+  "patch": {
+   "meaning": "store",
+   "example": "La tienda abre a las nueve."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l3/aeropuerto": {
+  "patch": {
+   "meaning": "airport",
+   "example": "Mi papá llega hoy al aeropuerto."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l3/cerca": {
+  "patch": {
+   "meaning": "near",
+   "example": "Mi escuela está cerca de mi casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
  "es:card:esa2p3l3/derecha": {
   "patch": {
-   "meaning": "right (direction)",
+   "meaning": "the right side",
    "example": "Gire a la derecha en la esquina."
   },
-  "reason": "The meaning gloss is empty, and the example is an English question wrapped around the Spanish sentence instead of a plain Spanish example."
+  "reason": "The meaning gloss is empty, and the example is an English question wrapped around the Spanish sentence instead of a plain Spanish example. Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l3/derecho": {
+  "patch": {
+   "meaning": "straight ahead",
+   "example": "Siga derecho dos cuadras y llega al banco."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l3/izquierda": {
+  "patch": {
+   "meaning": "left",
+   "example": "El baño está a la izquierda."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l4/allí": {
+  "patch": {
+   "meaning": "there",
+   "example": "Mi mochila está allí, sobre la silla."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l4/aquí": {
+  "patch": {
+   "meaning": "here",
+   "example": "Ven aquí, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l4/esquina": {
+  "patch": {
+   "meaning": "corner",
+   "example": "La farmacia está en la esquina."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l4/lejos": {
+  "patch": {
+   "meaning": "far",
+   "example": "La playa queda lejos de aquí."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p3l4/semáforo": {
+  "patch": {
+   "meaning": "traffic light",
+   "example": "Pare en el semáforo, está en rojo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l1/alta": {
   "patch": {
-   "meaning": "tall (feminine)"
+   "meaning": "tall, feminine singular",
+   "example": "Mi prima es muy alta."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l1/bonita": {
   "patch": {
-   "meaning": "pretty, beautiful (feminine)"
+   "meaning": "pretty, feminine singular",
+   "example": "Tu casa es muy bonita."
   },
-  "reason": "Meaning was empty."
+  "reason": "Meaning was empty. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l1/bonitas": {
   "patch": {
-   "meaning": "pretty, nice-looking (feminine plural)"
+   "meaning": "pretty, feminine plural",
+   "example": "Las flores del jardín son muy bonitas."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l1/interesantes": {
   "patch": {
-   "meaning": "interesting (plural)"
+   "meaning": "interesting, plural",
+   "example": "Estos libros son muy interesantes."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l1/rápido": {
   "patch": {
@@ -1110,9 +6011,10 @@
  },
  "es:card:esa2p4l2/alto": {
   "patch": {
-   "meaning": "tall (masculine)"
+   "meaning": "tall, masculine singular",
+   "example": "Mi hermano es muy alto."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l2/caliente": {
   "patch": {
@@ -1128,34 +6030,38 @@
  },
  "es:card:esa2p4l2/nuevas": {
   "patch": {
-   "meaning": "new (feminine plural)"
+   "meaning": "new, feminine plural",
+   "example": "Las sillas de la cocina son nuevas."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l2/pequeños": {
   "patch": {
-   "meaning": "small (masculine plural)"
+   "meaning": "small, masculine plural",
+   "example": "Los gatos de mi vecina son pequeños."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l3/aburrida": {
   "patch": {
-   "meaning": "boring (feminine)"
+   "meaning": "boring, feminine singular",
+   "example": "La clase de hoy es muy aburrida."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l3/blancas": {
   "patch": {
-   "meaning": "white (feminine plural)"
+   "meaning": "white, feminine plural",
+   "example": "Mis camisas favoritas son blancas."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l3/fría": {
   "patch": {
-   "meaning": "cold (feminine)",
-   "example": "La bebida está fría."
+   "meaning": "cold, feminine singular",
+   "example": "La sopa está fría."
   },
-  "reason": "Gloss added; example changed to avoid 'el agua' confusion in an agreement lesson."
+  "reason": "Gloss added; example changed to avoid 'el agua' confusion in an agreement lesson. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l3/fácil": {
   "patch": {
@@ -1177,9 +6083,10 @@
  },
  "es:card:esa2p4l4/cansados": {
   "patch": {
-   "meaning": "tired (masculine plural)"
+   "meaning": "tired, masculine plural",
+   "example": "Después del viaje, los niños están cansados."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l4/rico": {
   "patch": {
@@ -1189,33 +6096,38 @@
  },
  "es:card:esa2p4l4/verdes": {
   "patch": {
-   "meaning": "green (plural); unripe with estar"
+   "meaning": "green, plural",
+   "example": "Las hojas de este árbol son verdes."
   },
-  "reason": "Gloss reflects estar meaning in the example."
+  "reason": "Gloss reflects estar meaning in the example. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l4/viejo": {
   "patch": {
-   "meaning": "old (masculine)"
+   "meaning": "old, masculine singular",
+   "example": "Mi abuelo tiene un coche viejo."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l5/cómodos": {
   "patch": {
-   "meaning": "comfortable (plural)"
+   "meaning": "comfortable, masculine plural",
+   "example": "Estos zapatos son muy cómodos."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l5/importantes": {
   "patch": {
-   "meaning": "important (plural)"
+   "meaning": "of great value, plural",
+   "example": "Las reglas de la escuela son importantes."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l5/larga": {
   "patch": {
-   "meaning": "long (feminine)"
+   "meaning": "long, feminine singular",
+   "example": "La calle principal es muy larga."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p4l5/nublado": {
   "patch": {
@@ -1225,87 +6137,101 @@
  },
  "es:card:esa2p4l5/oscura": {
   "patch": {
-   "meaning": "dark (feminine)"
+   "meaning": "dark, feminine singular",
+   "example": "La cocina es muy oscura de noche."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l1/menos": {
   "patch": {
-   "meaning": "less (with que: less than)"
+   "meaning": "less, used to compare",
+   "example": "Este libro es menos caro que ese."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l1/más": {
   "patch": {
-   "meaning": "more (with que: more than)"
+   "meaning": "more, used to compare",
+   "example": "Mi casa es más grande que la tuya."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l1/tan": {
   "patch": {
-   "meaning": "as (tan... como: as... as)"
+   "meaning": "as, used to say two things are equal",
+   "example": "Mi hermano es tan alto como mi papá."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l2/más": {
   "patch": {
-   "meaning": "more; la más = the most"
+   "meaning": "most, used to say the highest degree",
+   "example": "Es la más bonita del barrio."
   },
-  "reason": "Gloss covers superlative use."
+  "reason": "Gloss covers superlative use. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l2/tan": {
   "patch": {
-   "meaning": "as (tan... como: as... as)"
+   "meaning": "as, used to say two things are equal",
+   "example": "Mi tía es tan simpática como mi mamá."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l3/menos": {
   "patch": {
-   "meaning": "less (not as much), used with 'que'"
+   "meaning": "less, used to compare",
+   "example": "Esta sopa es menos picante que la otra."
   },
-  "reason": "Meaning was empty; 'menos' here means less."
+  "reason": "Meaning was empty; 'menos' here means less. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l3/más": {
   "patch": {
-   "meaning": "more (with que: more than)"
+   "meaning": "more, used to compare",
+   "example": "Tu bicicleta es más rápida que la mía."
   },
-  "reason": "Missing gloss added."
+  "reason": "Missing gloss added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l4/menos": {
   "patch": {
-   "meaning": "less (not as much), used with 'que'"
+   "meaning": "less, used to compare",
+   "example": "El té está menos dulce que el café."
   },
-  "reason": "Meaning was empty."
+  "reason": "Meaning was empty. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l4/más": {
   "patch": {
-   "meaning": "more; 'la más' means the most"
+   "meaning": "most, used to say the highest degree",
+   "example": "Es la más divertida de la clase."
   },
-  "reason": "Meaning was empty; example is a superlative."
+  "reason": "Meaning was empty; example is a superlative. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l4/tan": {
   "patch": {
-   "meaning": "as, so (as in 'tan... como', as... as)"
+   "meaning": "as, used to say two things are equal",
+   "example": "Mi cuarto es tan pequeño como el tuyo."
   },
-  "reason": "Meaning was empty."
+  "reason": "Meaning was empty. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l5/menos": {
   "patch": {
-   "meaning": "less (not as much), used with 'que'"
+   "meaning": "less, used to compare",
+   "example": "Mi examen fue menos difícil que el tuyo."
   },
-  "reason": "Meaning was empty."
+  "reason": "Meaning was empty. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l5/más": {
   "patch": {
-   "meaning": "more; 'el más' means the most"
+   "meaning": "most, used to say the highest degree",
+   "example": "Este es el más viejo del pueblo."
   },
-  "reason": "Meaning was empty; example is a superlative."
+  "reason": "Meaning was empty; example is a superlative. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p5l5/tan": {
   "patch": {
-   "meaning": "as, so (as in 'tan... como', as... as)"
+   "meaning": "as, used to say two things are equal",
+   "example": "Esta pizza es tan rica como la de Roma."
   },
-  "reason": "Meaning was empty."
+  "reason": "Meaning was empty. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p6l1/comes": {
   "patch": {
@@ -1315,9 +6241,10 @@
  },
  "es:card:esa2p6l1/eres": {
   "patch": {
-   "meaning": "you are (ser: identity, traits)"
+   "meaning": "you are, for a state or quality",
+   "example": "Tú eres un amigo muy bueno."
   },
-  "reason": "Meaning was empty."
+  "reason": "Meaning was empty. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p6l1/hablas": {
   "patch": {
@@ -1339,9 +6266,10 @@
  },
  "es:card:esa2p6l2/estás": {
   "patch": {
-   "meaning": "you are (estar: state, location)"
+   "meaning": "you are, for a state or location",
+   "example": "Tú estás en la cocina ahora."
   },
-  "reason": "Meaning was empty."
+  "reason": "Meaning was empty. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p6l2/haces": {
   "patch": {
@@ -1376,9 +6304,10 @@
  },
  "es:card:esa2p6l3/sabes": {
   "patch": {
-   "meaning": "you know (a fact)"
+   "meaning": "you know, for a fact",
+   "example": "Tú sabes dónde está la farmacia."
   },
-  "reason": "Missing meaning added."
+  "reason": "Missing meaning added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p6l3/tomas": {
   "patch": {
@@ -1458,11 +6387,292 @@
   },
   "reason": "Missing meaning added."
  },
+ "es:card:esa2p7l1/barato": {
+  "patch": {
+   "meaning": "cheap",
+   "example": "Esta camisa es muy barata."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l1/cajero": {
+  "patch": {
+   "meaning": "cashier",
+   "example": "El cajero me da el recibo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l1/caro": {
+  "patch": {
+   "meaning": "expensive",
+   "example": "Este reloj es muy caro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l1/dinero": {
+  "patch": {
+   "meaning": "money",
+   "example": "Necesito dinero para comprar pan."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l1/precio": {
+  "patch": {
+   "meaning": "price",
+   "example": "El precio de este libro es bajo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l2/comprar": {
+  "patch": {
+   "meaning": "to buy",
+   "example": "Quiero comprar pan en la panadería."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l2/efectivo": {
+  "patch": {
+   "meaning": "cash",
+   "example": "Voy a pagar en efectivo hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l2/recibo": {
+  "patch": {
+   "meaning": "receipt",
+   "example": "Guarde el recibo, por favor."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l2/tarjeta de crédito": {
+  "patch": {
+   "meaning": "credit card",
+   "example": "Mi mamá paga con tarjeta de crédito."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l2/vender": {
+  "patch": {
+   "meaning": "to sell",
+   "example": "Mi tío va a vender su coche."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l3/cambio": {
+  "patch": {
+   "meaning": "money returned after paying",
+   "example": "Aquí tiene su cambio, señora."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l3/cartera": {
+  "patch": {
+   "meaning": "wallet",
+   "example": "Mi cartera está en la mochila."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l3/descuento": {
+  "patch": {
+   "meaning": "discount",
+   "example": "La tienda hace un descuento hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l3/gratis": {
+  "patch": {
+   "meaning": "at no cost",
+   "example": "La entrada al museo es gratis hoy."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l3/talla": {
+  "patch": {
+   "meaning": "size of clothes",
+   "example": "Mi talla es mediana."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l4/cliente": {
+  "patch": {
+   "meaning": "customer",
+   "example": "El cliente espera en la fila."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l4/factura": {
+  "patch": {
+   "meaning": "invoice for a purchase or service",
+   "example": "Necesito la factura de la tienda."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l4/moneda": {
+  "patch": {
+   "meaning": "coin",
+   "example": "Tengo una moneda en el bolsillo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l4/pagar": {
+  "patch": {
+   "meaning": "to pay",
+   "example": "Voy a pagar la cuenta ahora."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p7l4/rebaja": {
+  "patch": {
+   "meaning": "sale",
+   "example": "Hay una rebaja de ropa en enero."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l1/bailar": {
+  "patch": {
+   "meaning": "to dance",
+   "example": "Mi hermana quiere bailar salsa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l1/cantar": {
+  "patch": {
+   "meaning": "to sing",
+   "example": "Mi abuela canta en el coro."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l1/leer": {
+  "patch": {
+   "meaning": "to read",
+   "example": "Me gusta leer en la cama."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l1/nadar": {
+  "patch": {
+   "meaning": "to swim",
+   "example": "Quiero nadar en el mar."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l1/pintar": {
+  "patch": {
+   "meaning": "to paint",
+   "example": "Mi padre quiere pintar la casa."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l2/caminar": {
+  "patch": {
+   "meaning": "to walk",
+   "example": "Mis vecinos caminan al trabajo."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l2/cocinar": {
+  "patch": {
+   "meaning": "to cook",
+   "example": "Me gusta cocinar para mi familia."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l2/correr": {
+  "patch": {
+   "meaning": "to run",
+   "example": "Me gusta correr en el parque."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l2/dibujar": {
+  "patch": {
+   "meaning": "to draw",
+   "example": "A mi hija le gusta dibujar flores."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l2/viajar": {
+  "patch": {
+   "meaning": "to travel",
+   "example": "Queremos viajar a México en diciembre."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l3/deporte": {
+  "patch": {
+   "meaning": "sport",
+   "example": "El tenis es mi deporte favorito."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l3/fútbol": {
+  "patch": {
+   "meaning": "soccer",
+   "example": "Mis amigos juegan fútbol los domingos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l3/juego": {
+  "patch": {
+   "meaning": "game",
+   "example": "Este juego es muy divertido."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l3/música": {
+  "patch": {
+   "meaning": "music",
+   "example": "Escucho música cuando cocino."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l3/película": {
+  "patch": {
+   "meaning": "movie",
+   "example": "Vamos a ver una película esta noche."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l4/acampar": {
+  "patch": {
+   "meaning": "to camp",
+   "example": "Nos gusta acampar cerca del río."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l4/fotografía": {
+  "patch": {
+   "meaning": "photograph",
+   "example": "Esta fotografía es de mi familia."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l4/guitarra": {
+  "patch": {
+   "meaning": "guitar",
+   "example": "Mi primo toca la guitarra muy bien."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l4/jardín": {
+  "patch": {
+   "meaning": "garden",
+   "example": "Mi abuela tiene flores en el jardín."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
+ "es:card:esa2p8l4/pescar": {
+  "patch": {
+   "meaning": "to fish",
+   "example": "A mi abuelo le gusta pescar los domingos."
+  },
+  "reason": "Round 7: authored meaning and example for the word card."
+ },
  "es:card:esa2p9l1/hace": {
   "patch": {
-   "meaning": "it is (weather: hace calor = it's hot)"
+   "meaning": "it is, in weather expressions",
+   "example": "Hace calor hoy en la ciudad."
   },
-  "reason": "Empty meaning; glossed as weather 'it is'."
+  "reason": "Empty meaning; glossed as weather 'it is'. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p9l1/lloviendo": {
   "patch": {
@@ -1472,15 +6682,17 @@
  },
  "es:card:esa2p9l2/hace": {
   "patch": {
-   "meaning": "it is (weather: hace buen tiempo = nice weather)"
+   "meaning": "it is, in weather expressions",
+   "example": "Hace buen tiempo hoy en la playa."
   },
-  "reason": "Empty meaning; glossed as weather 'it is'."
+  "reason": "Empty meaning; glossed as weather 'it is'. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p9l2/hay": {
   "patch": {
-   "meaning": "there is (hay niebla = it's foggy)"
+   "meaning": "there is, used for fog",
+   "example": "Hay niebla esta mañana en el camino."
   },
-  "reason": "Empty meaning; glossed as 'there is' as used for fog."
+  "reason": "Empty meaning; glossed as 'there is' as used for fog. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p9l2/nevando": {
   "patch": {
@@ -1496,21 +6708,24 @@
  },
  "es:card:esa2p9l3/es": {
   "patch": {
-   "meaning": "is (from ser)"
+   "meaning": "is, stating a measured value",
+   "example": "La temperatura aquí es de veinte grados."
   },
-  "reason": "Empty meaning; added a short gloss."
+  "reason": "Empty meaning; added a short gloss. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p9l3/hace": {
   "patch": {
-   "meaning": "it is (weather: hace calor = it's hot)"
+   "meaning": "it is, in weather expressions",
+   "example": "En verano hace mucho calor aquí."
   },
-  "reason": "Empty meaning; glossed as weather 'it is'."
+  "reason": "Empty meaning; glossed as weather 'it is'. Round 7: authored meaning and example for the word card."
  },
  "es:card:esa2p9l3/hay": {
   "patch": {
-   "meaning": "there is (hay humedad = it's humid)"
+   "meaning": "there is, used for humidity",
+   "example": "Hay humedad hoy en la costa."
   },
-  "reason": "Empty meaning; glossed as 'there is'."
+  "reason": "Empty meaning; glossed as 'there is'. Round 7: authored meaning and example for the word card."
  },
  "es:card:esb1p10l1/la": {
   "patch": {
@@ -2264,9 +7479,9 @@
  "es:card:esb1p26l2/de": {
   "patch": {
    "meaning": "for (responsable de = responsible for)",
-   "example": "Él es responsable del proyecto."
+   "example": "Ella es responsable de la limpieza."
   },
-  "reason": "Example needs the contraction 'del'; meaning missing."
+  "reason": "Example needs the contraction 'del'; meaning missing. Round 7: the example now uses the word \"de\" itself."
  },
  "es:card:esb1p26l2/en": {
   "patch": {
@@ -5316,15 +10531,17 @@
  },
  "es:card:esga2p1l1/comen": {
   "patch": {
-   "meaning": "you (plural) eat, they eat"
+   "meaning": "you all eat",
+   "example": "Ustedes comen arroz en la cena."
   },
-  "reason": "Missing meaning; the example subject is ustedes."
+  "reason": "Missing meaning; the example subject is ustedes. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p1l1/comes": {
   "patch": {
-   "meaning": "you eat (informal singular)"
+   "meaning": "you eat, informal singular",
+   "example": "Tú comes una manzana cada día."
   },
-  "reason": "Missing meaning."
+  "reason": "Missing meaning. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p1l2/come": {
   "patch": {
@@ -5340,15 +10557,17 @@
  },
  "es:card:esga2p1l2/comen": {
   "patch": {
-   "meaning": "they eat, you (plural) eat"
+   "meaning": "they eat, feminine",
+   "example": "Ellas comen pollo con ensalada."
   },
-  "reason": "Missing meaning; gloss the form as used with 'Ellas'. / The gloss \"they eat (feminine)\" wrongly suggests that \"comen\" is a feminine form, when it is identical for ellos, ellas and ustedes."
+  "reason": "Missing meaning; gloss the form as used with 'Ellas'. / The gloss \"they eat (feminine)\" wrongly suggests that \"comen\" is a feminine form, when it is identical for ellos, ellas and ustedes. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p1l2/comes": {
   "patch": {
-   "meaning": "you eat (informal, singular)"
+   "meaning": "you eat, informal singular",
+   "example": "Tú comes un tomate en el almuerzo."
   },
-  "reason": "Missing meaning."
+  "reason": "Missing meaning. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p1l2/como": {
   "patch": {
@@ -5412,9 +10631,10 @@
  },
  "es:card:esga2p2l2/bebes": {
   "patch": {
-   "meaning": "you drink (informal, singular)"
+   "meaning": "you drink, informal singular",
+   "example": "Tú bebes café por la mañana."
   },
-  "reason": "Missing meaning."
+  "reason": "Missing meaning. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p2l2/bebo": {
   "patch": {
@@ -5436,9 +10656,10 @@
  },
  "es:card:esga2p2l3/bebes": {
   "patch": {
-   "meaning": "you drink (informal)"
+   "meaning": "you drink, informal singular",
+   "example": "Tú bebes té con tu abuela."
   },
-  "reason": "Missing meaning; example is correct."
+  "reason": "Missing meaning; example is correct. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p3l1/compra": {
   "patch": {
@@ -5460,9 +10681,10 @@
  },
  "es:card:esga2p3l1/compras": {
   "patch": {
-   "meaning": "you buy (informal)"
+   "meaning": "you buy, informal singular",
+   "example": "Tú compras unas tijeras nuevas."
   },
-  "reason": "Missing meaning; example uses tú."
+  "reason": "Missing meaning; example uses tú. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p3l2/compra": {
   "patch": {
@@ -5496,9 +10718,10 @@
  },
  "es:card:esga2p3l3/compras": {
   "patch": {
-   "meaning": "you buy (informal)"
+   "meaning": "you buy, informal singular",
+   "example": "Tú compras un bolígrafo azul."
   },
-  "reason": "Missing meaning; example uses tú."
+  "reason": "Missing meaning; example uses tú. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p3l3/compro": {
   "patch": {
@@ -5544,9 +10767,10 @@
  },
  "es:card:esga2p4l2/ves": {
   "patch": {
-   "meaning": "you see (informal singular)"
+   "meaning": "you see, informal singular",
+   "example": "Tú ves un conejo en el jardín."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p4l3/vemos": {
   "patch": {
@@ -5568,9 +10792,10 @@
  },
  "es:card:esga2p4l3/ves": {
   "patch": {
-   "meaning": "you see (informal singular)"
+   "meaning": "you see, informal singular",
+   "example": "Tú ves un pájaro en el árbol."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p5l1/lee": {
   "patch": {
@@ -5604,9 +10829,10 @@
  },
  "es:card:esga2p5l2/lees": {
   "patch": {
-   "meaning": "you read (informal singular)"
+   "meaning": "you read, informal singular",
+   "example": "Tú lees la revista en el parque."
   },
-  "reason": "The meaning field is empty; the example is natural. / Meaning missing."
+  "reason": "The meaning field is empty; the example is natural. / Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p5l2/leo": {
   "patch": {
@@ -5670,9 +10896,10 @@
  },
  "es:card:esga2p6l2/tienes": {
   "patch": {
-   "meaning": "you have (informal)"
+   "meaning": "you have, informal singular",
+   "example": "Tú tienes un reloj nuevo."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p6l3/tenemos": {
   "patch": {
@@ -5688,9 +10915,10 @@
  },
  "es:card:esga2p6l3/tiene": {
   "patch": {
-   "meaning": "he has (from tener)"
+   "meaning": "he has",
+   "example": "Él tiene un libro nuevo."
   },
-  "reason": "Missing meaning added."
+  "reason": "Missing meaning added. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p6l3/tienen": {
   "patch": {
@@ -5700,9 +10928,10 @@
  },
  "es:card:esga2p6l3/tienes": {
   "patch": {
-   "meaning": "you have (informal)"
+   "meaning": "you have, informal singular",
+   "example": "Tú tienes un espejo grande."
   },
-  "reason": "Meaning missing."
+  "reason": "Meaning missing. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p7l1/comieron": {
   "patch": {
@@ -5814,9 +11043,10 @@
  },
  "es:card:esga2p8l3/compraste": {
   "patch": {
-   "meaning": "you bought (informal)"
+   "meaning": "you bought, informal singular",
+   "example": "Ayer tú compraste unos zapatos."
   },
-  "reason": "The meaning field is empty; the example is natural. / Missing gloss; subject 'tú'."
+  "reason": "The meaning field is empty; the example is natural. / Missing gloss; subject 'tú'. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p8l3/compré": {
   "patch": {
@@ -5850,9 +11080,10 @@
  },
  "es:card:esga2p9l1/viste": {
   "patch": {
-   "meaning": "you saw (informal)"
+   "meaning": "you saw, informal singular",
+   "example": "Ayer tú viste un conejo."
   },
-  "reason": "Missing gloss."
+  "reason": "Missing gloss. Round 7: authored meaning and example for the word card."
  },
  "es:card:esga2p9l2/vi": {
   "patch": {
