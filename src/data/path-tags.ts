@@ -114,6 +114,10 @@ export const CAMPAIGN_TAGS: Readonly<Record<string, PathTag>> = {
   "doctors-visit": t("B1", ["family", "travel"], [], ["speaking", "vocabulary"]),
   "new-flat": t("B1", ["family", "work"], [], ["speaking", "vocabulary"]),
   "refund-return": t("B1", ["work", "fun"], [], ["speaking", "grammar"]),
+  "study-abroad": t("B1", ["school", "exam"], [], ["speaking", "vocabulary"]),
+  "gym-join": t("A2", ["fun", "family"], ["sport"], ["speaking", "vocabulary"]),
+  "project-week": t("B2", ["work"], ["business"], ["speaking", "grammar"]),
+  "family-weekend": t("A2", ["family", "fun"], ["family", "food"], ["speaking", "listening"]),
 };
 
 export const podcastTagKey = (course: string, folder: string, slug: string) =>

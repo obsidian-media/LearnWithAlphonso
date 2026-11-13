@@ -106,6 +106,18 @@ export const SCENE_ROOMS: Readonly<Record<string, string>> = {
   "refund-return/refund-shop": "returns",
   "refund-return/refund-parcel": "techshop",
   "refund-return/refund-opinion": "coffee",
+  "study-abroad/study-register": "office",
+  "study-abroad/study-office-hours": "classroom",
+  "study-abroad/study-group": "library",
+  "gym-join/gym-sign-up": "gym",
+  "gym-join/gym-class": "gym",
+  "gym-join/gym-after-class": "coffee",
+  "project-week/project-pitch": "office",
+  "project-week/project-deadline": "negotiation",
+  "project-week/project-update": "interview",
+  "family-weekend/family-station": "station",
+  "family-weekend/family-birthday-plan": "kitchen",
+  "family-weekend/family-call": "bedroom",
 };
 
 export function sceneRoom(campaignId: string, sceneId: string): string {
