@@ -11,11 +11,12 @@ final class PathDeepLink {
 
     func open(_ destination: PathDestination) { pending = destination }
 
-    /// The tab a destination lives in, or nil for a lesson (opened on the Learn tab itself).
+    /// The tab a destination lives in. A lesson opens on the Learn tab (the path opens its own lessons directly; a video's
+    /// "practice this" arrives here), a video in the Library.
     static func tab(for destination: PathDestination) -> RootTab? {
         switch destination {
-        case .lesson: return nil
-        case .podcastLibrary: return .listen
+        case .lesson: return .learn
+        case .podcastLibrary, .video: return .listen
         case .talk, .campaign: return .practice
         }
     }

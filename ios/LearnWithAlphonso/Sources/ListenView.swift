@@ -59,7 +59,7 @@ struct ListenView: View {
                 }
             }
             .screenScene(.listen)
-            .navigationTitle("Listen")
+            .navigationTitle("Library")
             .searchable(text: $searchQuery, prompt: "Search episodes")
         }
         .tint(AlphonsoColor.moss)
@@ -297,7 +297,7 @@ private struct PodcastFolderListing: View {
     var body: some View {
         List {
             // A large header over the studio scene; it also reports the scroll position for the parallax.
-            ListenSceneHeader(title: folder?.title ?? "Listen", subtitle: folder == nil ? "Podcasts to practice your ear" : "Episodes and folders")
+            ListenSceneHeader(title: folder?.title ?? "Library", subtitle: folder == nil ? "Podcasts and videos to practice your ear" : "Episodes and folders")
                 .sceneScrollProbe()
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
@@ -394,7 +394,7 @@ private struct PodcastFolderListing: View {
         .scrollContentBackground(.hidden)
         .miniPlayerClearance(player)
         .screenScene(.listen, if: showsScene)
-        .navigationTitle(folder?.title ?? "Listen")
+        .navigationTitle(folder?.title ?? "Library")
         .task(id: folder?.id) { await loadEpisodes() }
     }
 

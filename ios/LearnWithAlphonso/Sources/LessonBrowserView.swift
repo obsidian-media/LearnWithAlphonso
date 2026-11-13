@@ -7,6 +7,8 @@ import LearnWithAlphonsoKit
 /// LessonPlayerView, which does hit the network on finish.
 struct LessonBrowserView: View {
     @Environment(\.alphonsoDS) private var ds
+    /// A lesson another tab asked for (a video's "practice this"); the path screen opens its own lessons directly.
+    @Environment(PathDeepLink.self) private var deepLink
     let contentStore: ContentStore
     let session: Session
     let notificationScheduler: NotificationScheduler
@@ -463,6 +465,11 @@ struct LessonBrowserView: View {
             }
             .navigationDestination(item: $openedLesson) { opened in
                 lessonDestination(opened.id)
+            }
+            .task(id: deepLink.pending) {
+                guard case let .lesson(id)? = deepLink.pending else { return }
+                deepLink.pending = nil
+                openedLesson = OpenedLesson(id: id)
             }
             .navigationDestination(for: PathRoute.self) { route in
                 PathScreen(route: route, session: session, course: course) { lessonID in

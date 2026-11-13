@@ -130,7 +130,7 @@ struct RootView: View {
                             activeCourse: activeCourse
                         )
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
-                            .tabItem { Label("Listen", systemImage: "headphones") }
+                            .tabItem { Label("Library", systemImage: "headphones") }
                             .tag(RootTab.listen)
                         ConversationView(contentStore: contentStore, session: session, activeCourse: activeCourse, conversationStore: conversationStore, entitlementStore: entitlementStore)
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)

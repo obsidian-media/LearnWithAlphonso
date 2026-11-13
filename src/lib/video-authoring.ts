@@ -11,6 +11,8 @@ import { isValidSlug } from "./podcast-tree";
  */
 
 export const VIDEO_BUCKET = "videos";
+/** The byte-order mark some editors put first in a text file (spelled as a code point: it is invisible). */
+const BOM = String.fromCharCode(0xfeff);
 export const VIDEO_COURSES: readonly Course[] = ["en", "fr", "es"];
 export const PRACTICE_KINDS = ["lesson", "talk", "campaign"] as const;
 export type PracticeKind = (typeof PRACTICE_KINDS)[number];
@@ -93,7 +95,7 @@ export function isLikelyJpeg(bytes: Uint8Array): boolean {
 
 /** A WebVTT file starts with the signature `WEBVTT` (after an optional byte-order mark) and holds at least one cue. */
 export function isLikelyVtt(text: string): boolean {
-  const body = text.replace(/^﻿/u, "");
+  const body = text.startsWith(BOM) ? text.slice(1) : text;
   return /^WEBVTT(\s|$)/.test(body) && body.includes("-->");
 }
 

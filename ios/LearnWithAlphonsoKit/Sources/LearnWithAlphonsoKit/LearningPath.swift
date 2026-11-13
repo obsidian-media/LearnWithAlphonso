@@ -8,10 +8,10 @@ import FoundationNetworking
 /// so web, iOS and Android always show the same plan. The shared contract is src/lib/learning-path.fixtures.json,
 /// copied into this package's tests (guarded by src/lib/learning-path-native-fixtures.test.ts).
 ///
-/// Types and states stay plain strings on the wire: a type a newer server adds (videos, later) decodes fine and is
+/// Types and states stay plain strings on the wire: a type a newer server adds decodes fine and is
 /// drawn generically by `PathKind.unknown`, never an error.
 public enum PathKind: Equatable, Sendable {
-    case lesson, podcast, talk, campaign
+    case lesson, podcast, talk, campaign, video
     case unknown
 
     public init(raw: String) {
@@ -20,6 +20,7 @@ public enum PathKind: Equatable, Sendable {
         case "podcast": self = .podcast
         case "talk": self = .talk
         case "campaign": self = .campaign
+        case "video": self = .video
         default: self = .unknown
         }
     }
@@ -31,6 +32,7 @@ public enum PathKind: Equatable, Sendable {
         case .podcast: return "Podcasts"
         case .talk: return "Talk"
         case .campaign: return "Campaigns"
+        case .video: return "Videos"
         case .unknown: return "Activity"
         }
     }
@@ -42,12 +44,13 @@ public enum PathKind: Equatable, Sendable {
         case .podcast: return "Podcast"
         case .talk: return "Talk to Alphonso"
         case .campaign: return "Story campaign"
+        case .video: return "Video"
         case .unknown: return "Activity"
         }
     }
 
     /// The types a learner may switch off (lessons are the backbone).
-    public static let optional: [PathKind] = [.podcast, .talk, .campaign]
+    public static let optional: [PathKind] = [.podcast, .talk, .campaign, .video]
 
     /// The wire name used by the switches request.
     public var wire: String {
@@ -56,8 +59,27 @@ public enum PathKind: Equatable, Sendable {
         case .podcast: return "podcast"
         case .talk: return "talk"
         case .campaign: return "campaign"
+        case .video: return "video"
         case .unknown: return "unknown"
         }
+    }
+}
+
+extension PathKind {
+    /// The switches the learner is offered. Podcasts, Talk and campaigns always; Videos only once there is something to
+    /// watch (the mix gives them minutes) or the learner already switched them off. The web (switchableTypes) and Android
+    /// apply the same rule.
+    public static func switchable(mix: [PathMixEntry], off: [String]) -> [PathKind] {
+        optional.filter { kind in
+            kind != .video || off.contains(kind.wire) || (mix.first { $0.kind == .video }?.minutes ?? 0) > 0
+        }
+    }
+}
+
+extension PathStreak {
+    /// The profile tiles: one per activity, except Videos before any video activity (no empty tile).
+    public static func visible(_ streaks: [PathStreak]) -> [PathStreak] {
+        streaks.filter { $0.kind != .video || $0.days > 0 || $0.weekMinutes > 0 }
     }
 }
 

@@ -6,6 +6,8 @@ public enum PathDestination: Equatable, Sendable {
     case lesson(String)
     /// A podcast stop opens the Listen library (the stop names an episode, but the library is where it lives).
     case podcastLibrary
+    /// A video stop opens that video's player in the Library tab.
+    case video(String)
     /// A talk opens that scenario's pre-call sheet in Practice.
     case talk(String)
     /// A campaign stop opens that scene's pre-call sheet in Practice.
@@ -20,13 +22,14 @@ public enum PracticeChoice: Equatable, Sendable {
 
 public enum PathStopRouting {
     /// The destination for a stop's reference, or nil when there is nothing to open: no reference, a finished stop,
-    /// or a reference with an empty id. Any reference that is not a lesson, talk or campaign is a podcast, as on web and Android.
+    /// or a reference with an empty id. Any reference that is not a lesson, talk, campaign or video is a podcast, as on web and Android.
     public static func destination(for ref: PathItemRef?, done: Bool) -> PathDestination? {
         guard let ref, !done, !ref.id.isEmpty else { return nil }
         switch ref.kind {
         case "lesson": return .lesson(ref.id)
         case "talk": return .talk(ref.id)
         case "campaign": return .campaign(ref.id, scene: max(0, ref.sceneIndex ?? 0))
+        case "video": return .video(ref.id)
         default: return .podcastLibrary
         }
     }
@@ -45,7 +48,7 @@ public enum PathStopRouting {
         case let .campaign(id, scene):
             guard let count = campaignSceneCounts[id], count > 0 else { return nil }
             return .campaign(id, scene: min(max(0, scene), count - 1))
-        case .lesson, .podcastLibrary:
+        case .lesson, .podcastLibrary, .video:
             return nil
         }
     }
