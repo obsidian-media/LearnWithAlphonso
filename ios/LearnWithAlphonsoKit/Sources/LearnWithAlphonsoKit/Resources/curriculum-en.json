@@ -27647,29 +27647,30 @@
               "type": "reorder",
               "prompt": "Put the words in order to make a sentence.",
               "tokens": [
-                "There's",
-                "community",
-                "friendly",
-                "a",
-                "here",
-                "atmosphere"
+                "space",
+                "of",
+                "area",
+                "lots",
+                "green",
+                "has",
+                "The"
               ],
-              "answer": "There's a friendly community atmosphere here",
-              "explanation": "Correct order: \"There's a friendly community atmosphere here.\""
+              "answer": "The area has lots of green space",
+              "explanation": "Correct order: \"The area has lots of green space.\""
             },
             {
               "id": "a2p16q35",
               "type": "listening",
               "prompt": "Which sentence did you hear?",
-              "audioText": "The area near my house has great restaurants.",
+              "audioText": "There's a friendly community atmosphere here.",
               "choices": [
-                "The bus near my house has great restaurants.",
-                "The train near my house has great restaurants.",
-                "The area near my house has great restaurants.",
-                "The road near my house has great restaurants."
+                "There's a friendly quiet atmosphere here.",
+                "There's a friendly traffic atmosphere here.",
+                "There's a friendly tax atmosphere here.",
+                "There's a friendly community atmosphere here."
               ],
-              "answer": "The area near my house has great restaurants.",
-              "explanation": "The audio says \"The area near my house has great restaurants.\""
+              "answer": "There's a friendly community atmosphere here.",
+              "explanation": "The audio says \"There's a friendly community atmosphere here.\""
             },
             {
               "id": "a2p16q36",

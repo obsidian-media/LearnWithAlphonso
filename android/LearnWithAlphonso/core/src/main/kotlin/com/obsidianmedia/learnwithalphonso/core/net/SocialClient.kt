@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorAllowance
 import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -46,6 +47,26 @@ suspend fun ProgressSyncClient.fetchActivityXp(userId: String, from: String, to:
             queryList = listOf("day" to "gte.$from", "day" to "lt.$to"),
         ),
     ).sumOf { it.int("xp_earned") ?: 0 }
+
+/**
+ * Whether today's Hector allowance is used up (BACKLOG 0.0-bq #5): the learner's own ai_usage row for today's UTC day
+ * and kind hector (RLS lets them read it). Any failure answers false, so Hector still greets and the server stays the
+ * real guard. Port of ProgressSyncClient.fetchHectorAllowanceUsedUp in Swift.
+ */
+suspend fun ProgressSyncClient.fetchHectorAllowanceUsedUp(): Boolean = try {
+    HectorAllowance.isUsedUp(
+        rowsOf(
+            http.rest(
+                HttpMethod.Get, "ai_usage",
+                mapOf("select" to "count", "day" to "eq.${HectorAllowance.utcDay(nowMillis())}", "kind" to "eq.hector"),
+            ),
+        ).mapNotNull { it.int("count") },
+    )
+} catch (e: kotlinx.coroutines.CancellationException) {
+    throw e
+} catch (_: Exception) {
+    false
+}
 
 // ---- friends ----
 

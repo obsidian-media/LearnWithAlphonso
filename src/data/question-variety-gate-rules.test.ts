@@ -55,6 +55,7 @@ const RULE_FIXTURES: Record<string, string> = {
   "two-things-spatial": "The car park is under the shopping centre",
   "is-proper-noun": "The shortest month is February",
   "ly-adverb": "She speaks gently",
+  "here-adverb": "There's a friendly community atmosphere here",
 };
 
 describe("reorder gate: each rule has a fixture only it catches", () => {
@@ -66,6 +67,27 @@ describe("reorder gate: each rule has a fixture only it catches", () => {
     it(`${name}: "${sentence}" is flagged by that rule alone`, () => {
       expect(movableRuleHits(sentence)).toEqual([name]);
     });
+
+  it('flags a closing "here" that can be fronted (BACKLOG 0.0-av, a2p16q34)', () => {
+    for (const s of [
+      "There's a friendly community atmosphere here",
+      "We have a lovely pool here",
+      "I work in this office here",
+    ])
+      expect(movableRuleHits(s), s).toContain("here-adverb");
+    // a motion or placing verb keeps its "here"; a superlative noun phrase owns its "here" ("the thinnest book here"); "from here" is a fixed phrase; a leading "Here" is not a closing one
+    for (const s of [
+      "Come here",
+      "Please sit here",
+      "Put the bag here",
+      "How far is it from here",
+      "Here is your key",
+      "Here you are",
+      "This is the thinnest book here",
+      "He was the last person here",
+    ])
+      expect(movableRuleHits(s), s).not.toContain("here-adverb");
+  });
 
   it("flags symmetric relations: two things that can swap places", () => {
     for (const s of [
