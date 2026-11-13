@@ -1,6 +1,23 @@
 # Admin console, roles, and in-app support: design
 
-Date: 2026-11-13. Status: draft for owner approval.
+Date: 2026-11-13. Status: approved by the owner 2026-11-13; phase 1 is built and merged, phases 2 and 3 are not started (table below).
+
+## Implementation status (2026-11-13, main at #498)
+
+| Part | State | Where |
+| --- | --- | --- |
+| Phase 1: roles and scopes (`owner`, `support`, `support_ai`), `requireStaff` | **Done** (#496) | `src/lib/staff-scopes.ts`, `staff-middleware.ts`, `staff-authorize.ts` |
+| Phase 1: append-only action record (`staff_audit_log`), recording helpers, `user.view` | **Done** (#496) | migration `20261113100000`, `staff-audit.server.ts`, `staff-actions.ts` |
+| Phase 1: learner search, learner page, notes | **Done** (#496) | `staff-users.functions.ts`, `staff-user-facts.server.ts`, `admin/routes/users*.tsx` |
+| Phase 1: gift and end Pro (RevenueCat promotional), "Pro (gift)" in the apps | **Done** (#496) | `revenuecat-entitlement.ts`, `pro_grants` |
+| Phase 1: block, enforced in every place learners meet | **Done** (#496) | migration `20261113100100`, `social-surfaces.ts`, `restriction-enforcement.test.ts` |
+| Phase 1: ban, immediately (web middleware and the five learner Edge Functions) | **Done** (#496) | `account-suspended.ts`, `_shared/account-status.ts` |
+| Phase 1: delete an account (absorbs the reports page delete) | **Done** (#496) | `account.functions.ts` |
+| Phase 1: staff management, console screens, registry test | **Done** (#496) | `admin/routes/staff.tsx`, `audit.tsx`, `staff-registry.test.ts` |
+| Owner steps for phase 1: both migrations are merged on `main`; set `ADMIN_REQUIRE_AAL2=true` on the admin project, optionally insert the owner's `staff_roles` row, deploy the Edge Functions | **Owner to confirm** | see `docs/privacy-and-data.md` and the backlog |
+| Phase 2: in-app Help, AI support agent, support inbox (`support_conversations`, `support_messages`) | **Not started** | `support` scopes exist; the admin `support.tsx` route is a placeholder |
+| Phase 3: numbers dashboard (Supabase, RevenueCat, PostHog, Sentry tiles) | **Not started** | `numbers.tsx` is a placeholder; needs a Sentry token |
+| Native: a full-screen suspended view | **Not built** (web only); iOS and Android show the suspended copy on sign-in and on a refused refresh | |
 
 ## Intent and why
 

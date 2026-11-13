@@ -53,7 +53,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   the server in one transaction (`submit_podcast_quiz`, Edge Function
   `complete-podcast-quiz`), sharing the lesson hourly ceiling, day and streak
   rules. The web player offers it when an episode ends; iOS and Android have the same quiz
-  (#376, #381). SRS wiring is not built. On iOS, episodes can be **downloaded for offline listening**
+  (#376, #381). Questions you miss go to your spaced review (#487, build 62). On iOS, episodes can be **downloaded for offline listening**
   (Phase 3): downloads are explicit, nothing is ever deleted without you
   asking, and offline the downloaded set is listed flat rather than as the
   folder tree. The iOS player saves your position from the very first listen,
@@ -85,17 +85,22 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Study together**: opt-in buddies (a friend, or a matched learner aged 13+ in the same course within one CEFR step), a shared weekly goal and a streak, and **preset messages only** (8 fixed encouragements, never free text). Block and Report are on every card
 - **Public name and moderation**: a one-time "What should other learners call you?" step after first sign-in (Skip keeps a `Learner-XXXX` handle); display and team names pass one server-side filter, every refusal is explained in words, blocked users disappear from each other's team lists, leaderboards and matching, and a new report emails the owner within seconds
 - **Save any word** (web, iOS and Android: Hector, Practice and Campaign replies, lesson explanations and podcast transcripts, which save under the episode's own course; in French and Spanish lessons only text the question proves is course-language is tappable): tap a word in an assistant reply to save it with its sentence. One AI call writes the meaning, shown at once, and the word returns later in the review queue as a multiple-choice card. Limited to 40 new words a day and 500 per course
-- **Word cards**: each lesson's "words to learn" deck shows one card at a time with a photo when one exists (1,154 reviewed, self-hosted photos: English 444, French 356, Spanish 354), sound, and, in the English course, an authored meaning and example on every card (about 2,600 cards, A1 to C1; French and Spanish cards have no authored meaning yet).
+- **Word cards**: each lesson's "words to learn" deck shows one card at a time with a photo when one exists (1,154 reviewed, self-hosted photos: English 444, French 356, Spanish 354), sound, and an authored meaning and example on every card in all three courses (English about 2,600 cards; French and Spanish A1 to C1 since #486 and #492), held by `vocab-meanings.test.ts`. About 190 French and Spanish cards have an English term (idiom, prefix and suffix cards), so their example is plain English; a native-speaker read of the French and Spanish cards has not happened.
 - **Anti-farming**: `complete-lesson` refuses more than 60 lesson completions per user in any rolling hour (no minimum lesson time, no daily XP cap), and the voice (speech-to-text) allowance is 120 requests a day.
 - **Crash reporting**: Sentry on web, iOS and Android, production builds only, with no user identity, no IP storage and no session replay.
-- **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP; the server refuses to start a lesson at 0 hearts and the apps offer "Review instead"), leagues (five tiers, shown to learners as Sprout, Sapling, Grove, Treetop and Summit; the database keys are unchanged), achievements, friend duels + open/stranger duel matchmaking, weekly challenges, persistent teams (weekly-XP competition plus a shared weekly team mission), and a season ladder (weekly promotion/demotion cohorts, separate from the permanent league)
+- **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP; the server refuses to start a lesson at 0 hearts and the apps offer "Review instead"; since build 62 the server also charges the misses an app did not report, `SERVER_HEARTS` on by default, and Alphonso Pro has unlimited hearts), streaks and daily activity counted on the learner's own local day (build 62), leagues (five tiers, shown to learners as Sprout, Sapling, Grove, Treetop and Summit; the database keys are unchanged), achievements, friend duels + open/stranger duel matchmaking, weekly challenges, persistent teams (weekly-XP competition plus a shared weekly team mission), and a season ladder (weekly promotion/demotion cohorts, separate from the permanent league)
 - **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both native-only (iOS and Android, not on web; see "Native iOS app" below)
 - **Leaderboards**: global, friends, and country rankings; overtake detection and a weekly recap, both native-only (iOS and Android)
 - **Themes**: 4 user-selectable themes on web (Canopy, the default since the web port, then Meadow, Studio Ink and Manuscript — `/profile`), synced to the account and persisted locally
 - **The round-6 look** (web, iOS and Android; native not yet run on a device): one design-token source (`design/tokens.json`, Royal and Meadow palettes, light and night, bundled Bricolage Grotesque and Figtree fonts) behind every screen. Lessons play in the unit's painted room with Alphonso reacting; a new learner gets an 8-question first run (name, course, language, country, goal, level, daily time, age range, interests), a taste of two real questions and a plan before sign-in, then picks one of 16 animal profile pictures (presets only). The Profile page shows streak, XP, words, a week ring, minutes spoken, a 3-month heat map, records, weak spots and a shareable image. Age is stored as a range, and a learner who chooses Under 13 is stopped on the device with nothing sent.
 - **Practice hub with stars**: scenarios and story campaigns in their rooms, a "Today's pick" that practises your top weak spot, "Continue", and 1 to 3 stars per call that the server awards (finished; 80% right; all right, 4+ words each, no English). Alphonso speaks his opening line, and Hector greets you by name when a call opens.
 - **Sound effects**: nine short CC0 sounds (right, wrong, complete, taps, call start and end) with a Settings switch; they never play over a voice.
-- **Listen, redesigned** (build 61): a rooms shelf with a "continue listening" card, a painted room per folder with how far through it you are, a folder view (finished, in progress, new), a mini player and a full-screen player (back 15, forward 30, transcript; speed on web). Your place in each episode is saved to your account (`listen_progress`). Transcript follow-along and a sleep timer are not built.
+- **Listen, redesigned** (build 61): a rooms shelf with a "continue listening" card, a painted room per folder with how far through it you are, a folder view (finished, in progress, new), a mini player and a full-screen player (back 15, forward 30, transcript; speed on web). Your place in each episode is saved to your account (`listen_progress`). Build 62 adds transcript follow-along (the current line is highlighted and tap-to-seek, for all 16 episodes), a sleep timer (15, 30, 45 minutes or the end of the episode) and swipe to close. A Library tab with a Watch shelf of Alphonso tutor videos (it renames Listen to Library) is **in progress** on a branch and is not part of any build yet; `docs/VIDEO-PLAYBOOK.md` describes how the videos are made.
+- **Explain in my language** (build 62, web, iOS and Android): a short why in the learner's own language, only when asked: an "Explain in <language>" chip on a wrong answer and on word cards, "Say that in <language>" under Practice and Hector replies, and a Settings section (My language, and Tap to explain / Always show / Target language only). Lesson text stays 100% in the course language. It goes through `POST /api/explain` (consent, the owner AI switch, its own quota of 40 a day; Hector replies need Pro), explanations are cached per item and language in a server-only table, and right-to-left languages are laid out per block.
+- **Your learning path** (build 62, web, iOS and Android): a personalised roadmap built once on the server (`/api/learning-path`): a weekly mix of lessons, podcasts with their quiz, practice talks and story scenes, today's list, the road to your goal with dates from your own pace, three recovery choices when you are behind, a week view, "Why this mix", per-type switches (lessons cannot be switched off), a rest day you pick (or none), and a My path card on Profile. No migration: the switches live with the first-run answers. Every path stop opens on iOS too.
+- **Podcast quiz mistakes go to review** (build 62): a missed podcast question becomes a spaced-review item on every platform (migration `20261112140000`).
+- **Optional usage analytics** (build 62): off until you agree (the cookie banner on web, a neutral step after sign-in on iOS and Android, plus a Settings switch). PostHog, US region, anonymous only: no name, email or account id, no autocapture, no session replay. Under-13 devices never send. The project key is not in this repo (`VITE_POSTHOG_KEY`).
+- **Staff console, phase 1** (build 62, the admin app): roles (owner, support) with named scopes, an append-only record of every staff action with a required reason, a learner search and learner page (no payment details, answers or chats), notes, gifting and ending Pro through RevenueCat, block (no social features) and ban (no sign-in), enforced in every place learners meet, and deleting an account. Phase 2 (in-app Help, AI support agent and inbox) and phase 3 (numbers) are designed (`docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md`) and not started.
 - **Learn and Profile layout** (build 61): Learn pins your current unit at the top and folds finished units; Profile has Overview, Progress and Social tabs, with settings at the bottom of Overview.
 - **Skills radar and learning minutes** (build 61): a five-skill radar (listening, speaking, vocabulary, grammar, reading) that appears once there are at least 3 skills with 5 answers each, week rings that count your daily goal in learning minutes, "words mastered", and your rank in this week's league. These are stored as daily totals and per-skill counts only; your time zone is used to show dates, streaks stay on UTC days.
 - **Hector remembers on the web**: the web Hector call is primed, on the server, with your own open weak-spot labels, as on iOS.
@@ -126,7 +131,7 @@ session:
 
 | Course      | A1  | A2  | B1  | B2  | C1  | Total lessons | Total questions |
 | ----------- | --- | --- | --- | --- | --- | ------------- | --------------- |
-| **English** | 137 | 119 | 119 | 117 | 117 | **609**       | 3,096           |
+| **English** | 137 | 119 | 119 | 117 | 117 | **609**       | 3,726           |
 | **French**  | 115 | 133 | 133 | 115 | 115 | **611**       | 3,055           |
 | **Spanish** | 115 | 143 | 119 | 117 | 116 | **610**       | 3,050           |
 
@@ -232,10 +237,13 @@ DEEPGRAM_API_KEY               # TTS/STT (deepgram.com)
 STT_DAILY_AUDIO_SECONDS        # optional: daily voice seconds per learner (default 1200)
 STT_MAX_CALL_SECONDS           # optional: longest single recording in seconds (default 120)
 LESSON_SESSION_SECRET          # signs lesson-session tokens (also an Edge Function secret)
+VITE_POSTHOG_KEY               # optional: PostHog project key; unset = analytics off (iOS: Info.plist PostHogKey, Android: BuildConfig, both from the POSTHOG_PROJECT_KEY secret)
+ADMIN_REQUIRE_AAL2             # admin deployment: "true" requires an authenticator code on every staff session
+SERVER_HEARTS                  # optional: shadow or off to opt out of server hearts; unset enforces (Edge Function secret too)
 ```
 
 Optional switches default on and are turned off only by the literal value
-`false`: `ENFORCE_AI_CONSENT` and `ENFORCE_HEARTS_GATE`. Crash reporting (Sentry, production only) needs no variable: the public DSNs are committed, and `SENTRY_DSN` / `VITE_SENTRY_DSN` only override the web one (`docs/sentry-crash-reporting.md`).
+`false`: `ENFORCE_AI_CONSENT` and `ENFORCE_HEARTS_GATE`. `SERVER_HEARTS` enforces unless it is exactly `shadow` or `off`. Crash reporting (Sentry, production only) needs no variable: the public DSNs are committed, and `SENTRY_DSN` / `VITE_SENTRY_DSN` only override the web one (`docs/sentry-crash-reporting.md`).
 
 ### Available Scripts
 
@@ -253,7 +261,7 @@ bun run test:e2e    # Playwright + axe-core (e2e/*.spec.ts) — needs a running 
 CI (`.github/workflows/ci.yml`, workflow name "CI") has these jobs on every
 PR and push to `main`: `lint-and-typecheck` (lint, typecheck, the Vitest
 suite, and a check that the bundled iOS content is up to date), `types-fresh`
-(the generated Supabase types; advisory, it does not gate the deploy),
+(the generated Supabase types; advisory, it does not gate the deploy; since #484 `regenerate-supabase-types.yml` regenerates them after a successful deploy),
 `admin-build`, `web-build`, `e2e` (Playwright + axe-core), `e2e-signed-in` (a signed-in journey against a local Supabase stack; advisory), `deno-tests`,
 `ios-swift-tests` and `ios-app-build` (a real `xcodebuild` of the app target,
 plus a check that RevenueCat resolved to the pinned version, both on a macOS
@@ -429,10 +437,12 @@ src/
 └── routes/                # File-based routes (TanStack Router)
     ├── api/               # Server routes: AI (chat, TTS, STT, hector-respond, define-word,
     │                      #   generate-practice, grade-translation, analyze-weaknesses),
-    │                      #   learning-goal, account export/delete, apple-link, internal/ (report-notify,
+    │                      #   learning-goal, learning-path, explain, app-config, account export/delete, apple-link, internal/ (report-notify,
     │                      #   maintenance; see docs/operations.md)
     └── _authenticated/    # Protected routes (learn, lesson, review, profile, league, converse, friends)
+admin/                    # The staff console app (separate Vite config; `bun run dev:admin`)
 e2e/                      # Playwright + axe-core E2E/accessibility tests
+scripts/video/            # Alphonso tutor-video tools (see docs/VIDEO-PLAYBOOK.md)
 supabase/
 ├── migrations/            # SQL migrations (auto-applied on merge to main by the
                             # `deploy-supabase` job — see ARCHITECTURE.md)
@@ -460,6 +470,9 @@ ios/
 - `AGENTS.md` — conventions and key-file map for agents/contributors working in this repo
 - `CHANGELOG.md` — versioned history (V1 web app through the current V5 batches)
 - `docs/database-privileges.md` — the table-privilege model (new tables start with no client access) and how to check it
+- `docs/VIDEO-PLAYBOOK.md` — how an Alphonso tutor video is made (scene still, script, voice, lip-sync, whiteboard writing, finish), with its quality checks and approval gates; the tools are in `scripts/video/`
+- `docs/privacy-and-data.md` — what the optional and staff-side data is, why, how long it is kept, and how it is exported and deleted (analytics, Explain, the staff action record, time zone)
+- `docs/CONTENT-PLAYBOOK.md` — required reading before any content change
 - `docs/sql-probes.md` — how to execute a new SQL function as a seeded user in a rolled-back transaction before trusting it
 - `docs/mascot-provenance.md` — where the mascot art came from and its terms
 - `android/LearnWithAlphonso/` — the Android app's own `README.md`, `TOOLING.md`, `OWNER-SETUP.md`, `DEVICE-CHECKLIST.md` and `play/` listing files
