@@ -14,6 +14,8 @@ final class EntitlementStore: EntitlementResetting {
     /// Where a website subscriber manages Pro; nil for App Store subscribers (they use Apple's sheet).
     var webManagementURL: URL? { state.webManagementURL }
     var presentation: PaywallPresentation { state.presentation }
+    /// "Pro (gift)" for a promotional entitlement, "Pro" for a purchase, nil when not Pro (Settings).
+    var proLabel: String? { state.proLabel }
 
     @ObservationIgnored private let controller: EntitlementController
     @ObservationIgnored private var hasStarted = false

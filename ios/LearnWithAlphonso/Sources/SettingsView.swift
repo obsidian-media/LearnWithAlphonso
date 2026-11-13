@@ -17,6 +17,8 @@ import LearnWithAlphonsoKit
 /// and deletion requires typing DELETE, same as web.
 struct SettingsView: View {
     let session: Session
+    /// Optional so a Settings screen without Pro context (previews) still builds; the Pro row shows only with it.
+    var entitlementStore: EntitlementStore? = nil
     @EnvironmentObject private var aiConsent: AIConsentStore
     @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
     @State private var showAIDisclosure = false
@@ -153,6 +155,12 @@ struct SettingsView: View {
                         .foregroundStyle(AlphonsoColor.inkSoft)
                 }
                 .listRowBackground(AlphonsoColor.parchment)
+
+                if let label = entitlementStore?.proLabel {
+                    Section {
+                        LabeledContent("Alphonso Pro", value: label)
+                    }
+                }
 
                 SoundEffectsSettingsSection()
 

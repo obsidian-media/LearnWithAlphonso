@@ -3,6 +3,7 @@ package com.obsidianmedia.learnwithalphonso.billing
 import android.app.Activity
 import android.content.Context
 import com.obsidianmedia.learnwithalphonso.core.logic.BillingPeriodUnit
+import com.obsidianmedia.learnwithalphonso.core.logic.ProLabel
 import com.revenuecat.purchases.Package
 import com.revenuecat.purchases.PurchaseParams
 import com.revenuecat.purchases.Purchases
@@ -38,9 +39,11 @@ interface BillingPort {
     suspend fun packages(): List<BillingPackage>
     suspend fun purchase(activity: Activity, pkg: BillingPackage): Boolean
     suspend fun restore(): Boolean
+    /** True when the active Pro is a promotional entitlement (a gift from the team), not a purchase. */
+    suspend fun isGift(): Boolean = false
 }
 
-data class EntitlementUiState(val isPro: Boolean = false, val packages: List<BillingPackage> = emptyList(), val isLoading: Boolean = false, val error: String? = null)
+data class EntitlementUiState(val isPro: Boolean = false, val isGift: Boolean = false, val packages: List<BillingPackage> = emptyList(), val isLoading: Boolean = false, val error: String? = null)
 
 /** Port of EntitlementStore.swift. A null port is "this build has no store key". */
 class EntitlementStore(private val port: BillingPort?) {
@@ -52,12 +55,17 @@ class EntitlementStore(private val port: BillingPort?) {
 
     suspend fun login(userId: String) {
         val p = port ?: return
-        runCatching { p.logIn(userId) }.getOrNull()?.let { pro -> _state.update { it.copy(isPro = pro) } }
+        runCatching { p.logIn(userId) }.getOrNull()?.let { pro ->
+            val gift = pro && runCatching { p.isGift() }.getOrDefault(false)
+            _state.update { it.copy(isPro = pro, isGift = gift) }
+        }
     }
 
     suspend fun refresh() {
-        val p = port ?: run { _state.update { it.copy(isPro = false) }; return }
-        _state.update { it.copy(isPro = runCatching { p.isPro() }.getOrDefault(false)) }
+        val p = port ?: run { _state.update { it.copy(isPro = false, isGift = false) }; return }
+        val pro = runCatching { p.isPro() }.getOrDefault(false)
+        val gift = pro && runCatching { p.isGift() }.getOrDefault(false)
+        _state.update { it.copy(isPro = pro, isGift = gift) }
     }
 
     suspend fun loadOffering() {
@@ -107,6 +115,11 @@ class RevenueCatBilling private constructor() : BillingPort {
     }
 
     override suspend fun restore(): Boolean = purchases.awaitRestore().entitlements[PRO_ENTITLEMENT_ID]?.isActive == true
+
+    override suspend fun isGift(): Boolean {
+        val pro = purchases.awaitCustomerInfo().entitlements[PRO_ENTITLEMENT_ID] ?: return false
+        return pro.isActive && ProLabel.isGiftStore(pro.store.name)
+    }
 
     private fun Package.toBillingPackage(): BillingPackage {
         val period = product.period

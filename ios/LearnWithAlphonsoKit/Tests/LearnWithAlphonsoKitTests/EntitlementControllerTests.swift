@@ -33,6 +33,39 @@ final class EntitlementControllerTests: XCTestCase {
         return controller
     }
 
+    // MARK: - Gifted Pro
+
+    func testPromotionalStoreShowsProGiftLabel() {
+        var state = EntitlementState()
+        state.isPro = true
+        state.isGift = EntitlementSnapshot(isProActive: true, isGift: true).isGift
+        XCTAssertEqual(state.proLabel, "Pro (gift)")
+    }
+
+    func testPurchasedProShowsPlainProLabelAndFreeShowsNone() {
+        var state = EntitlementState()
+        XCTAssertNil(state.proLabel)
+        state.isPro = true
+        XCTAssertEqual(state.proLabel, "Pro")
+    }
+
+    func testAGiftFlagWithoutActiveProIsIgnored() {
+        XCTAssertFalse(EntitlementSnapshot(isProActive: false, isGift: true).isGift)
+        var state = EntitlementState()
+        state.isGift = true
+        XCTAssertNil(state.proLabel)
+    }
+
+    @MainActor
+    func testStreamedGiftReachesStateAndClearsWhenProEnds() async {
+        let mock = MockPurchases()
+        let controller = await signedInController(mock)
+        mock.emit(EntitlementSnapshot(isProActive: true, isGift: true))
+        await waitUntil { controller.state.proLabel == "Pro (gift)" }
+        mock.emit(free)
+        await waitUntil { controller.state.proLabel == nil }
+    }
+
     // MARK: - Web subscriptions
 
     func testSnapshotDefaultsToNoWebManagementLink() {

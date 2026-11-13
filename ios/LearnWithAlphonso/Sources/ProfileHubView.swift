@@ -67,7 +67,7 @@ struct ProfileHubView: View {
                     notificationScheduler: notificationScheduler
                 )
             case .settings:
-                SettingsView(session: session)
+                SettingsView(session: session, entitlementStore: entitlementStore)
             case .review:
                 ReviewQueueView(contentStore: contentStore, session: session, notificationScheduler: notificationScheduler,
                                 networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
