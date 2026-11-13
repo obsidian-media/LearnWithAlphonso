@@ -220,6 +220,49 @@ describe("English word cards have an authored meaning and example", () => {
   }
 });
 
+// French and Spanish: the same gate, with the circularity rules off (the term is in another language,
+// so "lion" glossing "lion" is a translation, not a circle). A level is added only when EVERY card of it
+// passes; never remove a level.
+const ROMANCE_GATED: Record<"fr" | "es", Level[]> = { fr: ["A1", "A2"], es: ["A1", "A2"] };
+
+describe("cardProblems for a French or Spanish term", () => {
+  it("accepts a gloss that is the same English word as the term", () => {
+    const lion = { term: "lion", meaning: "lion", example: "Le lion dort." };
+    expect(cardProblems(lion, "A1", "fr")).toEqual([]);
+    expect(cardProblems(lion, "A1")).toContain("meaning repeats the word");
+  });
+  it("still flags an empty meaning, a bracket clue and an example without the term", () => {
+    const ok = { term: "pain", meaning: "bread", example: "J'aime le pain." };
+    expect(cardProblems(ok, "A1", "fr")).toEqual([]);
+    expect(cardProblems({ ...ok, meaning: "" }, "A1", "fr")).toContain("empty meaning");
+    expect(cardProblems({ ...ok, meaning: "bread (food)" }, "A1", "fr")).toContain(
+      "meaning has a bracket clue",
+    );
+    expect(cardProblems({ ...ok, example: "J'aime le riz." }, "A1", "fr")).toContain(
+      "example lacks the word",
+    );
+  });
+});
+
+for (const lang of ["fr", "es"] as const)
+  describe(`${lang === "fr" ? "French" : "Spanish"} word cards have an authored meaning and example`, () => {
+    for (const level of ROMANCE_GATED[lang]) {
+      it(`every ${level} card is clean`, () => {
+        const all = getCourse(lang)
+          .curriculum.filter((u) => u.level === level)
+          .flatMap((u) =>
+            u.lessons.flatMap((l) => deriveVocab(l).map((c) => ({ ...c, lesson: l.id }))),
+          );
+        expect(all.length).toBeGreaterThan(0);
+        const bad = all
+          .map((c) => ({ c, p: cardProblems(c, level, lang) }))
+          .filter((x) => x.p.length > 0)
+          .map((x) => `${x.c.lesson} "${x.c.term}": ${x.p.join(", ")}`);
+        expect(bad).toEqual([]);
+      });
+    }
+  });
+
 describe("a2p12 teaches the adverb, not its gloss", () => {
   const en = getCourse("en");
   const a2p12 = en.curriculum

@@ -98,13 +98,13 @@ describe("story campaigns", () => {
       ],
       fr: [
         "ne pose jamais de diagnostic, ne nomme aucun médicament ni aucune dose",
-        "que le médecin ou le pharmacien l'expliquera",
+        "que seul un vrai médecin ou un vrai pharmacien peut l'expliquer",
         "une douleur à la poitrine, une difficulté à respirer ou des idées de se faire du mal, sors brièvement de ton personnage",
         "contacter tout de suite les secours de son pays",
       ],
       es: [
         "nunca des un diagnóstico, nunca nombres un medicamento ni una dosis",
-        "que la médica o el farmacéutico lo explicará",
+        "que solo un médico o un farmacéutico de verdad puede explicárselo",
         "dolor en el pecho, dificultad para respirar o ideas de hacerse daño, sal brevemente de tu personaje",
         "servicios de emergencia de su país",
       ],
