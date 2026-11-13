@@ -144,6 +144,9 @@ fun LearnScreen(
     onOpenReview: (Course) -> Unit,
     onOpenPlacement: (Course) -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenPath: () -> Unit = {},
+    onBuildPath: () -> Unit = {},
+    onOpenPathRef: (com.obsidianmedia.learnwithalphonso.core.path.PathItemRef) -> Unit = {},
 ) {
     val vm: LearnViewModel = viewModel { LearnViewModel(container.content, container.progressClient, container.syncStore, initialCourse = container.activeCourse.course.value, userId = container.session.userId) }
     val state by vm.state.collectAsState()
@@ -204,16 +207,11 @@ fun LearnScreen(
                 }
             }
             item(key = "header") { StatusHeader(progress, onBuyStreakFreeze = vm::buyStreakFreeze) }
-            item(key = "goal") {
+            item(key = "path") {
                 // One view-model per course: a request still running for a course the learner just left can only
                 // write into that course's own (hidden) model, never into the card now on screen.
-                val goalVm: GoalCardViewModel = viewModel(key = "goal-" + state.course.code) {
-                    GoalCardViewModel(state.course, container.goalClient, container.goalCache) { container.session.userId }
-                }
-                // This view-model outlives the screen (kept with the Learn back-stack entry), so reload on every entry:
-                // after a lesson the numbers must be fresh. Quiet = no "Loading" flash over the card already showing.
-                LaunchedEffect(goalVm) { goalVm.reload(quiet = true) }
-                GoalCard(goalVm)
+                val pathVm = com.obsidianmedia.learnwithalphonso.ui.path.rememberPathViewModel(container, state.course)
+                com.obsidianmedia.learnwithalphonso.ui.path.PathCard(pathVm, onOpenRoad = onOpenPath, onBuild = onBuildPath, onOpenRef = onOpenPathRef)
             }
             teamMission?.let { mission -> item(key = "team-mission") { TeamMissionCard(mission) } }
             if (state.challenges.isNotEmpty()) {

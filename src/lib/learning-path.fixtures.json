@@ -1,0 +1,1298 @@
+{
+  "onTrack": {
+    "asOf": "2026-11-11T10:00:00.000Z",
+    "course": "en",
+    "goalLabel": "A2 by 1 June",
+    "status": "ahead",
+    "statusLine": "Ahead of plan",
+    "statusDetail": "4 lessons a week to finish on time; 5 in the last 7 days.",
+    "progress": {
+      "lessonsDone": 6,
+      "lessonsInScope": 256,
+      "requiredPerWeek": 4,
+      "doneLast7Days": 5,
+      "targetLevel": "A2",
+      "targetDate": "2028-06-01",
+      "suggestedDate": null
+    },
+    "dailyMinutes": 10,
+    "weekMinutes": 60,
+    "weekDoneMinutes": 10,
+    "trimmed": false,
+    "trimUntil": null,
+    "off": [],
+    "mix": [
+      {
+        "type": "lesson",
+        "minutes": 30,
+        "share": 50,
+        "count": 9
+      },
+      {
+        "type": "podcast",
+        "minutes": 13,
+        "share": 22,
+        "count": 3
+      },
+      {
+        "type": "talk",
+        "minutes": 7,
+        "share": 12,
+        "count": 2
+      },
+      {
+        "type": "campaign",
+        "minutes": 10,
+        "share": 17,
+        "count": 2
+      }
+    ],
+    "today": {
+      "day": "2026-11-11",
+      "targetMinutes": 10,
+      "minutesLeft": 10,
+      "items": [
+        {
+          "type": "lesson",
+          "id": "u2l3",
+          "title": "Free Time",
+          "subtitle": "Unit 2 · A1",
+          "minutes": 3,
+          "state": "next",
+          "ref": {
+            "kind": "lesson",
+            "id": "u2l3"
+          }
+        },
+        {
+          "type": "lesson",
+          "id": "u2l4",
+          "title": "Evening & Sleep",
+          "subtitle": "Unit 2 · A1",
+          "minutes": 4,
+          "state": "todo",
+          "ref": {
+            "kind": "lesson",
+            "id": "u2l4"
+          }
+        },
+        {
+          "type": "podcast",
+          "id": "ep-coffee",
+          "title": "Ordering coffee",
+          "subtitle": "Podcast · quiz after",
+          "minutes": 5,
+          "state": "todo",
+          "ref": {
+            "kind": "podcast",
+            "id": "ep-coffee"
+          }
+        }
+      ]
+    },
+    "week": [
+      {
+        "day": "2026-11-09",
+        "label": "Mon",
+        "state": "done",
+        "minutes": 10,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u2l2",
+            "title": "At Work",
+            "subtitle": "Done",
+            "minutes": 10,
+            "state": "done",
+            "ref": null
+          }
+        ]
+      },
+      {
+        "day": "2026-11-10",
+        "label": "Tue",
+        "state": "missed",
+        "minutes": 0,
+        "items": []
+      },
+      {
+        "day": "2026-11-11",
+        "label": "Wed",
+        "state": "today",
+        "minutes": 12,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u2l3",
+            "title": "Free Time",
+            "subtitle": "Unit 2 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u2l3"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u2l4",
+            "title": "Evening & Sleep",
+            "subtitle": "Unit 2 · A1",
+            "minutes": 4,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u2l4"
+            }
+          },
+          {
+            "type": "podcast",
+            "id": "ep-coffee",
+            "title": "Ordering coffee",
+            "subtitle": "Podcast · quiz after",
+            "minutes": 5,
+            "state": "todo",
+            "ref": {
+              "kind": "podcast",
+              "id": "ep-coffee"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-12",
+        "label": "Thu",
+        "state": "upcoming",
+        "minutes": 9,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u3l1",
+            "title": "Please & Thank You",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l1"
+            }
+          },
+          {
+            "type": "campaign",
+            "id": "city-day/coffee-stop",
+            "title": "A day in a new city",
+            "subtitle": "Story campaign · scene 1 of 3",
+            "minutes": 6,
+            "state": "todo",
+            "ref": {
+              "kind": "campaign",
+              "id": "city-day",
+              "sceneIndex": 0
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-13",
+        "label": "Fri",
+        "state": "upcoming",
+        "minutes": 10,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u3l2",
+            "title": "At a Café",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l2"
+            }
+          },
+          {
+            "type": "talk",
+            "id": "airport",
+            "title": "At the airport",
+            "subtitle": "Talk to Alphonso · Sam, check-in agent",
+            "minutes": 4,
+            "state": "todo",
+            "ref": {
+              "kind": "talk",
+              "id": "airport"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u3l3",
+            "title": "Asking for Directions",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l3"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-14",
+        "label": "Sat",
+        "state": "upcoming",
+        "minutes": 7,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u3l4",
+            "title": "Making Plans",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l4"
+            }
+          },
+          {
+            "type": "talk",
+            "id": "directions",
+            "title": "Asking for directions",
+            "subtitle": "Talk to Alphonso · Tom, a friendly local",
+            "minutes": 4,
+            "state": "todo",
+            "ref": {
+              "kind": "talk",
+              "id": "directions"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-15",
+        "label": "Sun",
+        "state": "rest",
+        "minutes": 0,
+        "items": []
+      }
+    ],
+    "road": [
+      {
+        "kind": "item",
+        "type": "podcast",
+        "title": "Ordering coffee",
+        "subtitle": "Podcast · 5 min",
+        "note": "This week",
+        "state": "current",
+        "estDate": null,
+        "ref": {
+          "kind": "podcast",
+          "id": "ep-coffee"
+        }
+      },
+      {
+        "kind": "item",
+        "type": "campaign",
+        "title": "A day in a new city",
+        "subtitle": "Story campaign · 6 min",
+        "note": "This week",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": {
+          "kind": "campaign",
+          "id": "city-day",
+          "sceneIndex": 0
+        }
+      },
+      {
+        "kind": "item",
+        "type": "talk",
+        "title": "At the airport",
+        "subtitle": "Talk to Alphonso · 4 min",
+        "note": "This week",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": {
+          "kind": "talk",
+          "id": "airport"
+        }
+      },
+      {
+        "kind": "unit",
+        "type": "lesson",
+        "title": "Unit 2: The Daily Routine",
+        "subtitle": "Lessons · A1",
+        "note": "2 lessons left in the unit",
+        "state": "upcoming",
+        "estDate": "2026-11-14",
+        "ref": null
+      },
+      {
+        "kind": "level",
+        "type": "lesson",
+        "title": "Finish A1",
+        "subtitle": "131 lessons",
+        "note": "Level step",
+        "state": "upcoming",
+        "estDate": "2027-05-14",
+        "ref": null
+      },
+      {
+        "kind": "item",
+        "type": "campaign",
+        "title": "First week at a new job",
+        "subtitle": "Story campaign · needs A2",
+        "note": "Unlocks later",
+        "state": "upcoming",
+        "estDate": "2027-05-14",
+        "ref": {
+          "kind": "campaign",
+          "id": "first-week-job",
+          "sceneIndex": 0
+        }
+      },
+      {
+        "kind": "goal",
+        "type": null,
+        "title": "Your goal: finish A2 by 1 June",
+        "subtitle": "An estimate of lessons, not of fluency",
+        "note": "",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": null
+      }
+    ],
+    "recovery": [],
+    "why": [
+      {
+        "type": "lesson",
+        "headline": "4 lessons a week",
+        "detail": "Needed to finish A2 by 1 June (the goal planner). They are 50% of your week.",
+        "source": "planner"
+      },
+      {
+        "type": "podcast",
+        "headline": "More podcasts",
+        "detail": "Listening is your weakest skill (33%), so there is more of what trains it.",
+        "source": "skills"
+      },
+      {
+        "type": "campaign",
+        "headline": "Travel campaigns",
+        "detail": "You said \"travel\": A day in a new city first.",
+        "source": "goal"
+      },
+      {
+        "type": "podcast",
+        "headline": "Food podcasts",
+        "detail": "You like food: Ordering coffee is picked over other shows.",
+        "source": "interests"
+      }
+    ],
+    "streaks": [
+      {
+        "type": "lesson",
+        "days": 0,
+        "weekMinutes": 10
+      },
+      {
+        "type": "podcast",
+        "days": 0,
+        "weekMinutes": 0
+      },
+      {
+        "type": "talk",
+        "days": 0,
+        "weekMinutes": 0
+      },
+      {
+        "type": "campaign",
+        "days": 0,
+        "weekMinutes": 0
+      }
+    ]
+  },
+  "behind": {
+    "asOf": "2026-11-11T10:00:00.000Z",
+    "course": "en",
+    "goalLabel": "A2 by 1 June",
+    "status": "behind",
+    "statusLine": "A bit behind",
+    "statusDetail": "5 lessons this week; the plan needs 9. Plans slip. Pick a way forward.",
+    "progress": {
+      "lessonsDone": 6,
+      "lessonsInScope": 256,
+      "requiredPerWeek": 9,
+      "doneLast7Days": 5,
+      "targetLevel": "A2",
+      "targetDate": "2027-06-01",
+      "suggestedDate": "2027-10-27"
+    },
+    "dailyMinutes": 10,
+    "weekMinutes": 60,
+    "weekDoneMinutes": 10,
+    "trimmed": false,
+    "trimUntil": null,
+    "off": [],
+    "mix": [
+      {
+        "type": "lesson",
+        "minutes": 30,
+        "share": 50,
+        "count": 9
+      },
+      {
+        "type": "podcast",
+        "minutes": 13,
+        "share": 22,
+        "count": 3
+      },
+      {
+        "type": "talk",
+        "minutes": 7,
+        "share": 12,
+        "count": 2
+      },
+      {
+        "type": "campaign",
+        "minutes": 10,
+        "share": 17,
+        "count": 2
+      }
+    ],
+    "today": {
+      "day": "2026-11-11",
+      "targetMinutes": 10,
+      "minutesLeft": 10,
+      "items": [
+        {
+          "type": "lesson",
+          "id": "u2l3",
+          "title": "Free Time",
+          "subtitle": "Unit 2 · A1",
+          "minutes": 3,
+          "state": "next",
+          "ref": {
+            "kind": "lesson",
+            "id": "u2l3"
+          }
+        },
+        {
+          "type": "lesson",
+          "id": "u2l4",
+          "title": "Evening & Sleep",
+          "subtitle": "Unit 2 · A1",
+          "minutes": 4,
+          "state": "todo",
+          "ref": {
+            "kind": "lesson",
+            "id": "u2l4"
+          }
+        },
+        {
+          "type": "podcast",
+          "id": "ep-coffee",
+          "title": "Ordering coffee",
+          "subtitle": "Podcast · quiz after",
+          "minutes": 5,
+          "state": "todo",
+          "ref": {
+            "kind": "podcast",
+            "id": "ep-coffee"
+          }
+        }
+      ]
+    },
+    "week": [
+      {
+        "day": "2026-11-09",
+        "label": "Mon",
+        "state": "done",
+        "minutes": 10,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u2l2",
+            "title": "At Work",
+            "subtitle": "Done",
+            "minutes": 10,
+            "state": "done",
+            "ref": null
+          }
+        ]
+      },
+      {
+        "day": "2026-11-10",
+        "label": "Tue",
+        "state": "missed",
+        "minutes": 0,
+        "items": []
+      },
+      {
+        "day": "2026-11-11",
+        "label": "Wed",
+        "state": "today",
+        "minutes": 12,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u2l3",
+            "title": "Free Time",
+            "subtitle": "Unit 2 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u2l3"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u2l4",
+            "title": "Evening & Sleep",
+            "subtitle": "Unit 2 · A1",
+            "minutes": 4,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u2l4"
+            }
+          },
+          {
+            "type": "podcast",
+            "id": "ep-coffee",
+            "title": "Ordering coffee",
+            "subtitle": "Podcast · quiz after",
+            "minutes": 5,
+            "state": "todo",
+            "ref": {
+              "kind": "podcast",
+              "id": "ep-coffee"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-12",
+        "label": "Thu",
+        "state": "upcoming",
+        "minutes": 9,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u3l1",
+            "title": "Please & Thank You",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l1"
+            }
+          },
+          {
+            "type": "campaign",
+            "id": "city-day/coffee-stop",
+            "title": "A day in a new city",
+            "subtitle": "Story campaign · scene 1 of 3",
+            "minutes": 6,
+            "state": "todo",
+            "ref": {
+              "kind": "campaign",
+              "id": "city-day",
+              "sceneIndex": 0
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-13",
+        "label": "Fri",
+        "state": "upcoming",
+        "minutes": 10,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u3l2",
+            "title": "At a Café",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l2"
+            }
+          },
+          {
+            "type": "talk",
+            "id": "airport",
+            "title": "At the airport",
+            "subtitle": "Talk to Alphonso · Sam, check-in agent",
+            "minutes": 4,
+            "state": "todo",
+            "ref": {
+              "kind": "talk",
+              "id": "airport"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u3l3",
+            "title": "Asking for Directions",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l3"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-14",
+        "label": "Sat",
+        "state": "upcoming",
+        "minutes": 7,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u3l4",
+            "title": "Making Plans",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l4"
+            }
+          },
+          {
+            "type": "talk",
+            "id": "directions",
+            "title": "Asking for directions",
+            "subtitle": "Talk to Alphonso · Tom, a friendly local",
+            "minutes": 4,
+            "state": "todo",
+            "ref": {
+              "kind": "talk",
+              "id": "directions"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-15",
+        "label": "Sun",
+        "state": "rest",
+        "minutes": 0,
+        "items": []
+      }
+    ],
+    "road": [
+      {
+        "kind": "item",
+        "type": "podcast",
+        "title": "Ordering coffee",
+        "subtitle": "Podcast · 5 min",
+        "note": "This week",
+        "state": "current",
+        "estDate": null,
+        "ref": {
+          "kind": "podcast",
+          "id": "ep-coffee"
+        }
+      },
+      {
+        "kind": "item",
+        "type": "campaign",
+        "title": "A day in a new city",
+        "subtitle": "Story campaign · 6 min",
+        "note": "This week",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": {
+          "kind": "campaign",
+          "id": "city-day",
+          "sceneIndex": 0
+        }
+      },
+      {
+        "kind": "item",
+        "type": "talk",
+        "title": "At the airport",
+        "subtitle": "Talk to Alphonso · 4 min",
+        "note": "This week",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": {
+          "kind": "talk",
+          "id": "airport"
+        }
+      },
+      {
+        "kind": "unit",
+        "type": "lesson",
+        "title": "Unit 2: The Daily Routine",
+        "subtitle": "Lessons · A1",
+        "note": "2 lessons left in the unit",
+        "state": "upcoming",
+        "estDate": "2026-11-14",
+        "ref": null
+      },
+      {
+        "kind": "level",
+        "type": "lesson",
+        "title": "Finish A1",
+        "subtitle": "131 lessons",
+        "note": "Level step",
+        "state": "upcoming",
+        "estDate": "2027-05-14",
+        "ref": null
+      },
+      {
+        "kind": "item",
+        "type": "campaign",
+        "title": "First week at a new job",
+        "subtitle": "Story campaign · needs A2",
+        "note": "Unlocks later",
+        "state": "upcoming",
+        "estDate": "2027-05-14",
+        "ref": {
+          "kind": "campaign",
+          "id": "first-week-job",
+          "sceneIndex": 0
+        }
+      },
+      {
+        "kind": "goal",
+        "type": null,
+        "title": "Your goal: finish A2 by 1 June",
+        "subtitle": "An estimate of lessons, not of fluency",
+        "note": "",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": null
+      }
+    ],
+    "recovery": [
+      {
+        "id": "lessons_first",
+        "title": "Lessons first for 2 weeks",
+        "detail": "Pause the extras, keep one podcast. Back to your mix when you are caught up. The date stays 1 June.",
+        "suggested": true,
+        "mix": [
+          {
+            "type": "lesson",
+            "minutes": 55,
+            "share": 92,
+            "count": 16
+          },
+          {
+            "type": "podcast",
+            "minutes": 5,
+            "share": 8,
+            "count": 1
+          },
+          {
+            "type": "talk",
+            "minutes": 0,
+            "share": 0,
+            "count": 0
+          },
+          {
+            "type": "campaign",
+            "minutes": 0,
+            "share": 0,
+            "count": 0
+          }
+        ]
+      },
+      {
+        "id": "move_date",
+        "title": "Move the date to 27 October 2027",
+        "detail": "Keeps the full mix at the pace you really do (5 lessons a week).",
+        "suggested": false,
+        "date": "2027-10-27"
+      },
+      {
+        "id": "add_minutes",
+        "title": "Add 5 minutes a day",
+        "detail": "15 min a day, about 26 lessons a week plus the full mix.",
+        "suggested": false,
+        "dailyMinutes": 15,
+        "lessonsPerWeek": 26
+      }
+    ],
+    "why": [
+      {
+        "type": "lesson",
+        "headline": "9 lessons a week",
+        "detail": "Needed to finish A2 by 1 June (the goal planner). They are 50% of your week.",
+        "source": "planner"
+      },
+      {
+        "type": "podcast",
+        "headline": "More podcasts",
+        "detail": "Listening is your weakest skill (33%), so there is more of what trains it.",
+        "source": "skills"
+      },
+      {
+        "type": "campaign",
+        "headline": "Travel campaigns",
+        "detail": "You said \"travel\": A day in a new city first.",
+        "source": "goal"
+      },
+      {
+        "type": "podcast",
+        "headline": "Food podcasts",
+        "detail": "You like food: Ordering coffee is picked over other shows.",
+        "source": "interests"
+      }
+    ],
+    "streaks": [
+      {
+        "type": "lesson",
+        "days": 0,
+        "weekMinutes": 10
+      },
+      {
+        "type": "podcast",
+        "days": 0,
+        "weekMinutes": 0
+      },
+      {
+        "type": "talk",
+        "days": 0,
+        "weekMinutes": 0
+      },
+      {
+        "type": "campaign",
+        "days": 0,
+        "weekMinutes": 0
+      }
+    ]
+  },
+  "behindTrimmed": {
+    "asOf": "2026-11-11T10:00:00.000Z",
+    "course": "en",
+    "goalLabel": "A2 by 15 December",
+    "status": "behind",
+    "statusLine": "A bit behind",
+    "statusDetail": "0 lessons this week; the plan needs 53. Plans slip. Pick a way forward.",
+    "progress": {
+      "lessonsDone": 1,
+      "lessonsInScope": 256,
+      "requiredPerWeek": 53,
+      "doneLast7Days": 0,
+      "targetLevel": "A2",
+      "targetDate": "2026-12-15",
+      "suggestedDate": null
+    },
+    "dailyMinutes": 10,
+    "weekMinutes": 60,
+    "weekDoneMinutes": 0,
+    "trimmed": true,
+    "trimUntil": "2026-11-25",
+    "off": [
+      "talk"
+    ],
+    "mix": [
+      {
+        "type": "lesson",
+        "minutes": 55,
+        "share": 92,
+        "count": 16
+      },
+      {
+        "type": "podcast",
+        "minutes": 5,
+        "share": 8,
+        "count": 1
+      },
+      {
+        "type": "talk",
+        "minutes": 0,
+        "share": 0,
+        "count": 0
+      },
+      {
+        "type": "campaign",
+        "minutes": 0,
+        "share": 0,
+        "count": 0
+      }
+    ],
+    "today": {
+      "day": "2026-11-11",
+      "targetMinutes": 10,
+      "minutesLeft": 10,
+      "items": [
+        {
+          "type": "lesson",
+          "id": "u1l2",
+          "title": "About Me",
+          "subtitle": "Unit 1 · A1",
+          "minutes": 5,
+          "state": "next",
+          "ref": {
+            "kind": "lesson",
+            "id": "u1l2"
+          }
+        },
+        {
+          "type": "lesson",
+          "id": "u1l3",
+          "title": "Numbers & Time",
+          "subtitle": "Unit 1 · A1",
+          "minutes": 3,
+          "state": "todo",
+          "ref": {
+            "kind": "lesson",
+            "id": "u1l3"
+          }
+        },
+        {
+          "type": "lesson",
+          "id": "u1l4",
+          "title": "Small Talk",
+          "subtitle": "Unit 1 · A1",
+          "minutes": 3,
+          "state": "todo",
+          "ref": {
+            "kind": "lesson",
+            "id": "u1l4"
+          }
+        }
+      ]
+    },
+    "week": [
+      {
+        "day": "2026-11-09",
+        "label": "Mon",
+        "state": "missed",
+        "minutes": 0,
+        "items": []
+      },
+      {
+        "day": "2026-11-10",
+        "label": "Tue",
+        "state": "missed",
+        "minutes": 0,
+        "items": []
+      },
+      {
+        "day": "2026-11-11",
+        "label": "Wed",
+        "state": "today",
+        "minutes": 11,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u1l2",
+            "title": "About Me",
+            "subtitle": "Unit 1 · A1",
+            "minutes": 5,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u1l2"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u1l3",
+            "title": "Numbers & Time",
+            "subtitle": "Unit 1 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u1l3"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u1l4",
+            "title": "Small Talk",
+            "subtitle": "Unit 1 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u1l4"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-12",
+        "label": "Thu",
+        "state": "upcoming",
+        "minutes": 10,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u2l1",
+            "title": "Morning Habits",
+            "subtitle": "Unit 2 · A1",
+            "minutes": 4,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u2l1"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u2l2",
+            "title": "At Work",
+            "subtitle": "Unit 2 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u2l2"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u2l3",
+            "title": "Free Time",
+            "subtitle": "Unit 2 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u2l3"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-13",
+        "label": "Fri",
+        "state": "upcoming",
+        "minutes": 10,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u2l4",
+            "title": "Evening & Sleep",
+            "subtitle": "Unit 2 · A1",
+            "minutes": 4,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u2l4"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u3l1",
+            "title": "Please & Thank You",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l1"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u3l2",
+            "title": "At a Café",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l2"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-14",
+        "label": "Sat",
+        "state": "upcoming",
+        "minutes": 11,
+        "items": [
+          {
+            "type": "lesson",
+            "id": "u3l3",
+            "title": "Asking for Directions",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l3"
+            }
+          },
+          {
+            "type": "lesson",
+            "id": "u3l4",
+            "title": "Making Plans",
+            "subtitle": "Unit 3 · A1",
+            "minutes": 3,
+            "state": "todo",
+            "ref": {
+              "kind": "lesson",
+              "id": "u3l4"
+            }
+          },
+          {
+            "type": "podcast",
+            "id": "ep-coffee",
+            "title": "Ordering coffee",
+            "subtitle": "Podcast · quiz after",
+            "minutes": 5,
+            "state": "todo",
+            "ref": {
+              "kind": "podcast",
+              "id": "ep-coffee"
+            }
+          }
+        ]
+      },
+      {
+        "day": "2026-11-15",
+        "label": "Sun",
+        "state": "rest",
+        "minutes": 0,
+        "items": []
+      }
+    ],
+    "road": [
+      {
+        "kind": "item",
+        "type": "podcast",
+        "title": "Ordering coffee",
+        "subtitle": "Podcast · 5 min",
+        "note": "This week",
+        "state": "current",
+        "estDate": null,
+        "ref": {
+          "kind": "podcast",
+          "id": "ep-coffee"
+        }
+      },
+      {
+        "kind": "unit",
+        "type": "lesson",
+        "title": "Unit 1: Everyday Basics",
+        "subtitle": "Lessons · A1",
+        "note": "3 lessons left in the unit",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": null
+      },
+      {
+        "kind": "level",
+        "type": "lesson",
+        "title": "Finish A1",
+        "subtitle": "136 lessons",
+        "note": "Level step",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": null
+      },
+      {
+        "kind": "item",
+        "type": "campaign",
+        "title": "First week at a new job",
+        "subtitle": "Story campaign · needs A2",
+        "note": "Unlocks later",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": {
+          "kind": "campaign",
+          "id": "first-week-job",
+          "sceneIndex": 0
+        }
+      },
+      {
+        "kind": "level",
+        "type": "lesson",
+        "title": "Finish A2",
+        "subtitle": "119 lessons",
+        "note": "Level step",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": null
+      },
+      {
+        "kind": "item",
+        "type": "campaign",
+        "title": "Doctor's visit",
+        "subtitle": "Story campaign · needs B1",
+        "note": "Unlocks later",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": {
+          "kind": "campaign",
+          "id": "doctors-visit",
+          "sceneIndex": 0
+        }
+      },
+      {
+        "kind": "goal",
+        "type": null,
+        "title": "Your goal: finish A2 by 15 December",
+        "subtitle": "An estimate of lessons, not of fluency",
+        "note": "",
+        "state": "upcoming",
+        "estDate": null,
+        "ref": null
+      }
+    ],
+    "recovery": [
+      {
+        "id": "add_minutes",
+        "title": "Add 5 minutes a day",
+        "detail": "15 min a day, about 25 lessons a week plus the full mix.",
+        "suggested": false,
+        "dailyMinutes": 15,
+        "lessonsPerWeek": 25
+      }
+    ],
+    "why": [
+      {
+        "type": "lesson",
+        "headline": "53 lessons a week",
+        "detail": "Needed to finish A2 by 15 December (the goal planner). They are 92% of your week.",
+        "source": "planner"
+      },
+      {
+        "type": "lesson",
+        "headline": "Lessons first",
+        "detail": "You chose to catch up: the extras wait until 2026-11-25, except one podcast.",
+        "source": "recovery"
+      }
+    ],
+    "streaks": [
+      {
+        "type": "lesson",
+        "days": 0,
+        "weekMinutes": 0
+      },
+      {
+        "type": "podcast",
+        "days": 0,
+        "weekMinutes": 0
+      },
+      {
+        "type": "talk",
+        "days": 0,
+        "weekMinutes": 0
+      },
+      {
+        "type": "campaign",
+        "days": 0,
+        "weekMinutes": 0
+      }
+    ]
+  }
+}

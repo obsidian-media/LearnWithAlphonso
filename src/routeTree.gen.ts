@@ -28,6 +28,7 @@ import { Route as AuthenticatedHelloRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
+import { Route as AuthenticatedPathRouteImport } from './routes/_authenticated/path'
 import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
 import { Route as AuthenticatedProReturnRouteImport } from './routes/_authenticated/pro-return'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -47,6 +48,7 @@ import { Route as ApiGradeTranslationRouteImport } from './routes/api/grade-tran
 import { Route as ApiHectorRespondRouteImport } from './routes/api/hector-respond'
 import { Route as ApiLearnerProfileRouteImport } from './routes/api/learner-profile'
 import { Route as ApiLearningGoalRouteImport } from './routes/api/learning-goal'
+import { Route as ApiLearningPathRouteImport } from './routes/api/learning-path'
 import { Route as ApiPracticeRouteImport } from './routes/api/practice'
 import { Route as ApiProOfferingRouteImport } from './routes/api/pro-offering'
 import { Route as ApiProStatusRouteImport } from './routes/api/pro-status'
@@ -59,6 +61,9 @@ import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_a
 import { Route as AuthenticatedInviteCodeRouteImport } from './routes/_authenticated/invite.$code'
 import { Route as AuthenticatedLessonIdRouteImport } from './routes/_authenticated/lesson.$id'
 import { Route as AuthenticatedListenSplatRouteImport } from './routes/_authenticated/listen.$'
+import { Route as AuthenticatedPathBuildRouteImport } from './routes/_authenticated/path_.build'
+import { Route as AuthenticatedPathWeekRouteImport } from './routes/_authenticated/path_.week'
+import { Route as AuthenticatedPathWhyRouteImport } from './routes/_authenticated/path_.why'
 import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile_.friends'
 import { Route as AuthenticatedTeamsTeamIdRouteImport } from './routes/_authenticated/teams_.$teamId'
 import { Route as ApiInternalMaintenanceRouteImport } from './routes/api/internal/maintenance'
@@ -159,6 +164,11 @@ const AuthenticatedListenRoute = AuthenticatedListenRouteImport.update({
   path: '/listen',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPathRoute = AuthenticatedPathRouteImport.update({
+  id: '/path',
+  path: '/path',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPlacementRoute = AuthenticatedPlacementRouteImport.update({
   id: '/placement',
   path: '/placement',
@@ -254,6 +264,11 @@ const ApiLearningGoalRoute = ApiLearningGoalRouteImport.update({
   path: '/api/learning-goal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLearningPathRoute = ApiLearningPathRouteImport.update({
+  id: '/api/learning-path',
+  path: '/api/learning-path',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPracticeRoute = ApiPracticeRouteImport.update({
   id: '/api/practice',
   path: '/api/practice',
@@ -317,6 +332,21 @@ const AuthenticatedListenSplatRoute =
     path: '/$',
     getParentRoute: () => AuthenticatedListenRoute,
   } as any)
+const AuthenticatedPathBuildRoute = AuthenticatedPathBuildRouteImport.update({
+  id: '/path_/build',
+  path: '/path/build',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPathWeekRoute = AuthenticatedPathWeekRouteImport.update({
+  id: '/path_/week',
+  path: '/path/week',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPathWhyRoute = AuthenticatedPathWhyRouteImport.update({
+  id: '/path_/why',
+  path: '/path/why',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileFriendsRoute =
   AuthenticatedProfileFriendsRouteImport.update({
     id: '/profile_/friends',
@@ -359,6 +389,7 @@ export interface FileRoutesByFullPath {
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
+  '/path': typeof AuthenticatedPathRoute
   '/placement': typeof AuthenticatedPlacementRoute
   '/pro-return': typeof AuthenticatedProReturnRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -378,6 +409,7 @@ export interface FileRoutesByFullPath {
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learner-profile': typeof ApiLearnerProfileRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/learning-path': typeof ApiLearningPathRoute
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
@@ -390,6 +422,9 @@ export interface FileRoutesByFullPath {
   '/invite/$code': typeof AuthenticatedInviteCodeRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/listen/$': typeof AuthenticatedListenSplatRoute
+  '/path/build': typeof AuthenticatedPathBuildRoute
+  '/path/week': typeof AuthenticatedPathWeekRoute
+  '/path/why': typeof AuthenticatedPathWhyRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
@@ -414,6 +449,7 @@ export interface FileRoutesByTo {
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
+  '/path': typeof AuthenticatedPathRoute
   '/placement': typeof AuthenticatedPlacementRoute
   '/pro-return': typeof AuthenticatedProReturnRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -433,6 +469,7 @@ export interface FileRoutesByTo {
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learner-profile': typeof ApiLearnerProfileRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/learning-path': typeof ApiLearningPathRoute
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
@@ -445,6 +482,9 @@ export interface FileRoutesByTo {
   '/invite/$code': typeof AuthenticatedInviteCodeRoute
   '/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/listen/$': typeof AuthenticatedListenSplatRoute
+  '/path/build': typeof AuthenticatedPathBuildRoute
+  '/path/week': typeof AuthenticatedPathWeekRoute
+  '/path/why': typeof AuthenticatedPathWhyRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
@@ -471,6 +511,7 @@ export interface FileRoutesById {
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/listen': typeof AuthenticatedListenRouteWithChildren
+  '/_authenticated/path': typeof AuthenticatedPathRoute
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
   '/_authenticated/pro-return': typeof AuthenticatedProReturnRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -490,6 +531,7 @@ export interface FileRoutesById {
   '/api/hector-respond': typeof ApiHectorRespondRoute
   '/api/learner-profile': typeof ApiLearnerProfileRoute
   '/api/learning-goal': typeof ApiLearningGoalRoute
+  '/api/learning-path': typeof ApiLearningPathRoute
   '/api/practice': typeof ApiPracticeRoute
   '/api/pro-offering': typeof ApiProOfferingRoute
   '/api/pro-status': typeof ApiProStatusRoute
@@ -502,6 +544,9 @@ export interface FileRoutesById {
   '/_authenticated/invite/$code': typeof AuthenticatedInviteCodeRoute
   '/_authenticated/lesson/$id': typeof AuthenticatedLessonIdRoute
   '/_authenticated/listen/$': typeof AuthenticatedListenSplatRoute
+  '/_authenticated/path_/build': typeof AuthenticatedPathBuildRoute
+  '/_authenticated/path_/week': typeof AuthenticatedPathWeekRoute
+  '/_authenticated/path_/why': typeof AuthenticatedPathWhyRoute
   '/_authenticated/profile_/friends': typeof AuthenticatedProfileFriendsRoute
   '/_authenticated/teams_/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
@@ -528,6 +573,7 @@ export interface FileRouteTypes {
     | '/league'
     | '/learn'
     | '/listen'
+    | '/path'
     | '/placement'
     | '/pro-return'
     | '/profile'
@@ -547,6 +593,7 @@ export interface FileRouteTypes {
     | '/api/hector-respond'
     | '/api/learner-profile'
     | '/api/learning-goal'
+    | '/api/learning-path'
     | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
@@ -559,6 +606,9 @@ export interface FileRouteTypes {
     | '/invite/$code'
     | '/lesson/$id'
     | '/listen/$'
+    | '/path/build'
+    | '/path/week'
+    | '/path/why'
     | '/profile/friends'
     | '/teams/$teamId'
     | '/api/internal/maintenance'
@@ -583,6 +633,7 @@ export interface FileRouteTypes {
     | '/league'
     | '/learn'
     | '/listen'
+    | '/path'
     | '/placement'
     | '/pro-return'
     | '/profile'
@@ -602,6 +653,7 @@ export interface FileRouteTypes {
     | '/api/hector-respond'
     | '/api/learner-profile'
     | '/api/learning-goal'
+    | '/api/learning-path'
     | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
@@ -614,6 +666,9 @@ export interface FileRouteTypes {
     | '/invite/$code'
     | '/lesson/$id'
     | '/listen/$'
+    | '/path/build'
+    | '/path/week'
+    | '/path/why'
     | '/profile/friends'
     | '/teams/$teamId'
     | '/api/internal/maintenance'
@@ -639,6 +694,7 @@ export interface FileRouteTypes {
     | '/_authenticated/league'
     | '/_authenticated/learn'
     | '/_authenticated/listen'
+    | '/_authenticated/path'
     | '/_authenticated/placement'
     | '/_authenticated/pro-return'
     | '/_authenticated/profile'
@@ -658,6 +714,7 @@ export interface FileRouteTypes {
     | '/api/hector-respond'
     | '/api/learner-profile'
     | '/api/learning-goal'
+    | '/api/learning-path'
     | '/api/practice'
     | '/api/pro-offering'
     | '/api/pro-status'
@@ -670,6 +727,9 @@ export interface FileRouteTypes {
     | '/_authenticated/invite/$code'
     | '/_authenticated/lesson/$id'
     | '/_authenticated/listen/$'
+    | '/_authenticated/path_/build'
+    | '/_authenticated/path_/week'
+    | '/_authenticated/path_/why'
     | '/_authenticated/profile_/friends'
     | '/_authenticated/teams_/$teamId'
     | '/api/internal/maintenance'
@@ -701,6 +761,7 @@ export interface RootRouteChildren {
   ApiHectorRespondRoute: typeof ApiHectorRespondRoute
   ApiLearnerProfileRoute: typeof ApiLearnerProfileRoute
   ApiLearningGoalRoute: typeof ApiLearningGoalRoute
+  ApiLearningPathRoute: typeof ApiLearningPathRoute
   ApiPracticeRoute: typeof ApiPracticeRoute
   ApiProOfferingRoute: typeof ApiProOfferingRoute
   ApiProStatusRoute: typeof ApiProStatusRoute
@@ -847,6 +908,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedListenRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/path': {
+      id: '/_authenticated/path'
+      path: '/path'
+      fullPath: '/path'
+      preLoaderRoute: typeof AuthenticatedPathRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/placement': {
       id: '/_authenticated/placement'
       path: '/placement'
@@ -980,6 +1048,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLearningGoalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/learning-path': {
+      id: '/api/learning-path'
+      path: '/api/learning-path'
+      fullPath: '/api/learning-path'
+      preLoaderRoute: typeof ApiLearningPathRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/practice': {
       id: '/api/practice'
       path: '/api/practice'
@@ -1064,6 +1139,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedListenSplatRouteImport
       parentRoute: typeof AuthenticatedListenRoute
     }
+    '/_authenticated/path_/build': {
+      id: '/_authenticated/path_/build'
+      path: '/path/build'
+      fullPath: '/path/build'
+      preLoaderRoute: typeof AuthenticatedPathBuildRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/path_/week': {
+      id: '/_authenticated/path_/week'
+      path: '/path/week'
+      fullPath: '/path/week'
+      preLoaderRoute: typeof AuthenticatedPathWeekRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/path_/why': {
+      id: '/_authenticated/path_/why'
+      path: '/path/why'
+      fullPath: '/path/why'
+      preLoaderRoute: typeof AuthenticatedPathWhyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile_/friends': {
       id: '/_authenticated/profile_/friends'
       path: '/profile/friends'
@@ -1115,6 +1211,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRouteWithChildren
+  AuthenticatedPathRoute: typeof AuthenticatedPathRoute
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
   AuthenticatedProReturnRoute: typeof AuthenticatedProReturnRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -1125,6 +1222,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConverseScenarioIdRoute: typeof AuthenticatedConverseScenarioIdRoute
   AuthenticatedInviteCodeRoute: typeof AuthenticatedInviteCodeRoute
   AuthenticatedLessonIdRoute: typeof AuthenticatedLessonIdRoute
+  AuthenticatedPathBuildRoute: typeof AuthenticatedPathBuildRoute
+  AuthenticatedPathWeekRoute: typeof AuthenticatedPathWeekRoute
+  AuthenticatedPathWhyRoute: typeof AuthenticatedPathWhyRoute
   AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
   AuthenticatedTeamsTeamIdRoute: typeof AuthenticatedTeamsTeamIdRoute
 }
@@ -1138,6 +1238,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedListenRoute: AuthenticatedListenRouteWithChildren,
+  AuthenticatedPathRoute: AuthenticatedPathRoute,
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
   AuthenticatedProReturnRoute: AuthenticatedProReturnRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
@@ -1148,6 +1249,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConverseScenarioIdRoute: AuthenticatedConverseScenarioIdRoute,
   AuthenticatedInviteCodeRoute: AuthenticatedInviteCodeRoute,
   AuthenticatedLessonIdRoute: AuthenticatedLessonIdRoute,
+  AuthenticatedPathBuildRoute: AuthenticatedPathBuildRoute,
+  AuthenticatedPathWeekRoute: AuthenticatedPathWeekRoute,
+  AuthenticatedPathWhyRoute: AuthenticatedPathWhyRoute,
   AuthenticatedProfileFriendsRoute: AuthenticatedProfileFriendsRoute,
   AuthenticatedTeamsTeamIdRoute: AuthenticatedTeamsTeamIdRoute,
 }
@@ -1180,6 +1284,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHectorRespondRoute: ApiHectorRespondRoute,
   ApiLearnerProfileRoute: ApiLearnerProfileRoute,
   ApiLearningGoalRoute: ApiLearningGoalRoute,
+  ApiLearningPathRoute: ApiLearningPathRoute,
   ApiPracticeRoute: ApiPracticeRoute,
   ApiProOfferingRoute: ApiProOfferingRoute,
   ApiProStatusRoute: ApiProStatusRoute,

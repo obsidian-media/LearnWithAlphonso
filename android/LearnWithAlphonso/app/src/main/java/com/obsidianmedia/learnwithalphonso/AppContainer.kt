@@ -146,6 +146,8 @@ class AppContainer(context: Context) {
     val translationGrading = TranslationGradingClient(apiHttp)
     val aiClient = AiConversationClient(apiHttp)
     val goalClient = LearningGoalClient(apiHttp)
+    /** The personalised learning path (/api/learning-path): one server-computed plan for web, iOS and Android. */
+    val pathClient = com.obsidianmedia.learnwithalphonso.core.net.LearningPathClient(apiHttp)
     /** The first-run answers on the account (/api/learner-profile), the same checked save as the web. */
     val learnerProfileClient = LearnerProfileClient(apiHttp)
     /** "Explain in my language" (BACKLOG 0.0-bc): the explain call, and the account's native language and mode. */

@@ -1,0 +1,169 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import fixtures from "../../lib/learning-path.fixtures.json";
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    to,
+    children,
+    className,
+    ...rest
+  }: {
+    to: string;
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <a
+      href={to}
+      className={className}
+      aria-label={(rest as { "aria-label"?: string })["aria-label"]}
+    >
+      {children}
+    </a>
+  ),
+}));
+vi.mock("@/components/AppShell", () => ({
+  MobileFrame: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+vi.mock("@/components/GoalCard", () => ({ GoalCard: () => <div data-testid="goal-card" /> }));
+vi.mock("@/lib/auth-headers", () => ({ authHeaders: async () => ({}) }));
+vi.mock("../../lib/auth-headers", () => ({ authHeaders: async () => ({}) }));
+
+const { PathCard } = await import("./PathCard");
+const { PathProfileCard } = await import("./PathProfileCard");
+const { RoadScreen, WeekScreen, WhyScreen, BuildScreen } = await import("./PathScreens");
+
+type Fx = keyof typeof fixtures;
+const calls: { url: string; init?: RequestInit }[] = [];
+function serve(key: Fx | null) {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, init?: RequestInit) => {
+      calls.push({ url, init });
+      return new Response(JSON.stringify({ path: key ? fixtures[key] : null }), { status: 200 });
+    }),
+  );
+}
+beforeEach(() => {
+  calls.length = 0;
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+
+describe("Learn path card", () => {
+  it("shows the goal in words, the progress and today's list from the server", async () => {
+    serve("behind");
+    render(<PathCard course="en" />);
+    expect(await screen.findByText("A bit behind")).toBeTruthy();
+    expect(screen.getByText(/Finish A2 by 1 June/)).toBeTruthy();
+    const today = fixtures.behind.today.items;
+    for (const item of today) expect(screen.getAllByText(item.title).length).toBeGreaterThan(0);
+    expect(screen.getByRole("progressbar", { name: "Lessons toward your goal" })).toBeTruthy();
+  });
+  it("offers Build my path when there is no goal", async () => {
+    serve(null);
+    render(<PathCard course="en" />);
+    const link = await screen.findByRole("link", { name: "Build my path" });
+    expect(link.getAttribute("href")).toBe("/path/build");
+  });
+  it("says so when the path cannot load, with a retry", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("{}", { status: 500 })),
+    );
+    render(<PathCard course="en" />);
+    expect(await screen.findByRole("alert")).toHaveProperty(
+      "textContent",
+      "Couldn't load your path.",
+    );
+    expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
+  });
+});
+
+describe("the road", () => {
+  it("lists every stop, the goal flag last, and the three ways to catch up when behind", async () => {
+    serve("behind");
+    render(<RoadScreen />);
+    await screen.findByLabelText("Your road");
+    const stops = screen.getAllByRole("listitem").filter((li) => li.closest("ol"));
+    expect(stops).toHaveLength(fixtures.behind.road.length);
+    expect(stops[stops.length - 1].textContent).toContain("Your goal: finish A2");
+    expect(screen.getAllByRole("radio")).toHaveLength(fixtures.behind.recovery.length);
+    expect(screen.getByRole("button", { name: "Update my path" })).toBeTruthy();
+  });
+  it("Update my path sends the chosen recovery (lessons first) to the server", async () => {
+    serve("behind");
+    render(<RoadScreen />);
+    fireEvent.click(await screen.findByRole("button", { name: "Update my path" }));
+    await waitFor(() => expect(calls.some((c) => c.init?.method === "PUT")).toBe(true));
+    const put = calls.find((c) => c.init?.method === "PUT")!;
+    expect(JSON.parse(String(put.init?.body))).toEqual({ course: "en", action: "lessons_first" });
+  });
+  it("shows no recovery card when on track", async () => {
+    serve("onTrack");
+    render(<RoadScreen />);
+    await screen.findByLabelText("Your road");
+    expect(screen.queryAllByRole("radio")).toHaveLength(0);
+  });
+  it("a trimmed path says so and offers to resume", async () => {
+    serve("behindTrimmed");
+    render(<RoadScreen />);
+    expect(await screen.findByText(/Lessons first until/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Resume my mix" })).toBeTruthy();
+  });
+});
+
+describe("the week and why", () => {
+  it("shows seven days with one rest day", async () => {
+    serve("onTrack");
+    render(<WeekScreen />);
+    await screen.findByText("My week");
+    expect(screen.getAllByText(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)$/)).toHaveLength(7);
+    expect(screen.getAllByText("Rest day")).toHaveLength(1);
+  });
+  it("lists every reason the server gave", async () => {
+    serve("onTrack");
+    render(<WhyScreen />);
+    for (const w of fixtures.onTrack.why)
+      expect((await screen.findAllByText(w.headline)).length).toBeGreaterThan(0);
+  });
+});
+
+describe("build my path", () => {
+  it("turning a type off sends the switches", async () => {
+    serve("onTrack");
+    render(<BuildScreen />);
+    fireEvent.click(await screen.findByRole("switch", { name: "Podcasts in my path" }));
+    await waitFor(() => expect(calls.some((c) => c.init?.method === "PUT")).toBe(true));
+    const put = calls.find((c) => c.init?.method === "PUT")!;
+    expect(JSON.parse(String(put.init?.body))).toEqual({
+      course: "en",
+      action: "set_off",
+      off: ["podcast"],
+    });
+  });
+  it("lessons cannot be switched off", async () => {
+    serve("onTrack");
+    render(<BuildScreen />);
+    await screen.findByRole("switch", { name: "Podcasts in my path" });
+    expect(screen.queryByRole("switch", { name: /Lessons/ })).toBeNull();
+  });
+});
+
+describe("Profile my path", () => {
+  it("shows a tile per activity with its streak and this week's minutes", async () => {
+    serve("onTrack");
+    render(<PathProfileCard course="en" />);
+    await screen.findByText(/This week:/);
+    for (const s of fixtures.onTrack.streaks) {
+      const label = { lesson: "Lessons", podcast: "Podcasts", talk: "Talk", campaign: "Campaigns" }[
+        s.type
+      ];
+      const text = `${label}: ${s.days} ${s.days === 1 ? "day" : "days"} in a row, ${s.weekMinutes} minutes this week`;
+      expect(screen.getByLabelText(text)).toBeTruthy();
+    }
+  });
+});
