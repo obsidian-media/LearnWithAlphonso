@@ -4699,7 +4699,7 @@
                 "hora"
               ],
               "answer": 0,
-              "explanation": "\"punto\" is correct here. Basic time-telling expressions.",
+              "explanation": "\"punto\" completes \"en punto\", the fixed phrase for exactly on the hour, as the clue says.",
               "meaning": "point; 'en punto' means exactly, o'clock"
             },
             {
@@ -4713,7 +4713,7 @@
                 "cuarto"
               ],
               "answer": "cuarto",
-              "explanation": "\"cuarto\" is correct here. Basic time-telling expressions.",
+              "explanation": "\"cuarto\" is a quarter: \"las seis menos cuarto\" is a quarter to six, and \"cuarto\" is masculine, so \"cuarta\" does not fit.",
               "meaning": "quarter (fifteen minutes)"
             },
             {
@@ -4727,7 +4727,7 @@
                 "día"
               ],
               "answer": 2,
-              "explanation": "\"mañana\" is correct here. Basic time-telling expressions.",
+              "explanation": "\"mañana\" completes \"de la mañana\", which means in the morning (a.m.), as the clue says: \"llego a las siete de la mañana\".",
               "meaning": "morning"
             }
           ]
@@ -4748,7 +4748,7 @@
                 "día"
               ],
               "answer": 2,
-              "explanation": "\"noche\" is correct here. Basic time-telling expressions.",
+              "explanation": "\"noche\" completes \"de la noche\", which means at night (p.m.), as the clue says: \"ceno a las nueve de la noche\".",
               "meaning": "night"
             },
             {
@@ -10126,7 +10126,7 @@
                 "tanto"
               ],
               "answer": 2,
-              "explanation": "\"más\" is correct here. Comparative and superlative structures."
+              "explanation": "\"más\" builds the superlative with \"la\": \"la más barata de todas\" is the cheapest of all, and the clue says most."
             }
           ]
         },
@@ -10201,7 +10201,7 @@
                 "tanto"
               ],
               "answer": 2,
-              "explanation": "\"más\" is correct here. Comparative and superlative structures."
+              "explanation": "\"más\" builds the superlative with \"la\": \"la más original de todas\" is the most original of all, and the clue says most."
             }
           ]
         }
@@ -22256,7 +22256,7 @@
                 "sales"
               ],
               "answer": 0,
-              "explanation": "\"salgas\" is correct here. Informal (tú) imperative mood, affirmative and negative.",
+              "explanation": "A negative command to \"tú\" uses the present subjunctive, so \"salgas\" is right after \"no\"; \"sal\" is the affirmative form.",
               "meaning": "don't go out (informal command)"
             },
             {
@@ -22319,7 +22319,7 @@
                 "pones"
               ],
               "answer": 0,
-              "explanation": "\"pongas\" is correct here. Informal (tú) imperative mood, affirmative and negative.",
+              "explanation": "A negative command to \"tú\" uses the present subjunctive, so \"pongas\" is right after \"no\"; \"pon\" is the affirmative form.",
               "meaning": "don't put (informal command)"
             },
             {
@@ -22375,7 +22375,7 @@
                 "vaya"
               ],
               "answer": 0,
-              "explanation": "\"vayas\" is correct here. Informal (tú) imperative mood, affirmative and negative.",
+              "explanation": "A negative command to \"tú\" uses the present subjunctive, so \"vayas\" is right after \"no\"; \"ve\" is the affirmative form.",
               "meaning": "don't go (informal command)"
             }
           ]
@@ -23762,7 +23762,7 @@
                 "Planchar"
               ],
               "answer": 2,
-              "explanation": "\"Hay\" is correct here. Impersonal expressions of obligation for household tasks.",
+              "explanation": "\"Hay\" completes \"hay que\" plus an infinitive, which says what has to be done in general, with no subject: \"hay que lavar los platos\".",
               "meaning": "there is; hay que: one must"
             },
             {
@@ -23776,7 +23776,7 @@
                 "Es"
               ],
               "answer": "Hay",
-              "explanation": "\"Hay\" is correct here. Impersonal expressions of obligation for household tasks."
+              "explanation": "\"Hay\" completes \"hay que\" plus an infinitive, which says what has to be done in general, with no subject: \"hay que limpiar la casa\"."
             },
             {
               "id": "esb1p16q2",
@@ -29511,7 +29511,7 @@
                 "con"
               ],
               "answer": 0,
-              "explanation": "\"de\" is correct here. Compound prepositional phrases common in intermediate-advanced Spanish."
+              "explanation": "\"después de\" is the preposition for after, and it takes \"de\" before a noun: \"después de la clase\"."
             },
             {
               "id": "esb2p5q9",
@@ -38163,7 +38163,7 @@
                 "ha salido"
               ],
               "answer": 2,
-              "explanation": "\"había salido\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses.",
+              "explanation": "\"había salido\" is the pluperfect: it shows she had left before another past moment, \"cuando llegué\".",
               "meaning": "she had left"
             },
             {
@@ -38177,7 +38177,7 @@
                 "he terminado"
               ],
               "answer": "habré terminado",
-              "explanation": "\"habré terminado\" is correct here. Pluperfect (had done) and future perfect (will have done) tenses.",
+              "explanation": "\"habré terminado\" is the future perfect: it says I will have finished by a future point, \"para el año próximo\".",
               "meaning": "I will have finished"
             },
             {
