@@ -1131,6 +1131,40 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(trend, [])
     }
 
+    // MARK: - fetchHectorAllowanceUsedUp (BACKLOG 0.0-bq #5)
+
+    func testHectorAllowanceReadsTodaysUTCRowForKindHector() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(for: request.url!, body: [["count": HectorAllowance.dailyLimit]])
+        }
+        let now = ISO8601DateFormatter().date(from: "2026-11-12T23:30:00Z")!
+        let usedUp = await client.fetchHectorAllowanceUsedUp(now: now)
+        XCTAssertTrue(usedUp)
+        let url = try XCTUnwrap(captured.value).url!.absoluteString
+        XCTAssertTrue(url.contains("/rest/v1/ai_usage"))
+        XCTAssertTrue(url.contains("day=eq.2026-11-12"))
+        XCTAssertTrue(url.contains("kind=eq.hector"))
+    }
+
+    func testHectorAllowanceIsNotUsedUpOneShortOrWithNoRow() async {
+        let short = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["count": HectorAllowance.dailyLimit - 1]])
+        }
+        let none = makeClient { request in self.jsonResponse(for: request.url!, body: [] as [[String: Any]]) }
+        let shortUsedUp = await short.fetchHectorAllowanceUsedUp()
+        let noneUsedUp = await none.fetchHectorAllowanceUsedUp()
+        XCTAssertFalse(shortUsedUp)
+        XCTAssertFalse(noneUsedUp)
+    }
+
+    func testHectorAllowanceFailsOpenWhenTheReadFails() async {
+        let client = makeClient { _ in throw URLError(.notConnectedToInternet) }
+        let usedUp = await client.fetchHectorAllowanceUsedUp()
+        XCTAssertFalse(usedUp)
+    }
+
     // MARK: - fetchActivityXP
 
     func testFetchActivityXPSumsXpEarnedOverTheDateRange() async throws {
