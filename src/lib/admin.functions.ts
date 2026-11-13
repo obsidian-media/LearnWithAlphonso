@@ -15,7 +15,6 @@ import {
 } from "./admin-upload";
 import { normalizeTranscript } from "./podcast-transcript";
 import { isPublishableProvider, UNPUBLISHABLE_PROVIDER_MESSAGE } from "./podcast-provenance";
-import { eraseSubscriberRecord, revokeAppleGrantForUser } from "./account.functions";
 import { socialReasonMessage } from "./social-reason-copy";
 
 // Matches podcast_folders/podcast_episodes.course's own CHECK constraint
@@ -52,7 +51,6 @@ export const ADMIN_FUNCTION_NAMES = [
   "adminGetTranscript",
   "adminSaveTranscript",
   "adminListReports",
-  "adminDeleteReportedUser",
   "adminResetDisplayName",
   "adminRenameTeam",
   "adminDisbandTeam",
@@ -881,63 +879,6 @@ export const adminListReports = createServerFn({ method: "GET" })
       createdAt: r.created_at,
       accountDeletedAt: r.account_deleted_at ?? null,
     }));
-  });
-
-/**
- * The heaviest action on a report: delete the reported account (lighter
- * ones -- reset the name, rename or disband a team, dismiss -- are below).
- * The reports against them stay in the queue for 90 days with the account
- * shown as "(deleted account)" (content_reports.reported is ON DELETE SET
- * NULL since 20261105101100); dismiss them when done. An AI-response report
- * names no account and is refused, as is a report whose account is already gone. Revokes the Apple grant first, same as self-service
- * deleteMyAccount, because Apple requires that on any account deletion
- * regardless of who initiates it -- see revokeAppleGrantForUser's own
- * doc comment for why it lives in account.functions.ts and is reused
- * here rather than duplicated.
- *
- * Keyed by the report, not a bare userId: the server looks up which
- * account a report actually names rather than trusting an id the client
- * could otherwise send unchecked.
- *
- * Deliberately skips the USER_DELETE_TABLES pre-delete step
- * deleteMyAccount does -- that step exists only because deleteMyAccount
- * issues DELETEs as the caller, whose RLS grants don't cover every
- * table (see account.functions.test.ts's "only tries to delete rows the
- * caller's own RLS role can delete"). Every user-scoped table has
- * ON DELETE CASCADE from auth.users (content_reports alone is SET NULL, kept
- * for moderation), so an admin acting as service_role needs nothing
- * pre-deleted for auth.admin.deleteUser to clean it all up.
- */
-export const adminDeleteReportedUser = createServerFn({ method: "POST" })
-  .middleware([requireStaff("reports.manage")])
-  .inputValidator((d: unknown) => z.object({ reportId: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    const { data: report, error } = await context.supabaseAdmin
-      .from("content_reports")
-      .select("reported")
-      .eq("id", data.reportId)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!report) throw new Error("That report no longer exists.");
-    if (!report.reported) throw new Error("This report has no account to delete.");
-
-    const appleRevocationStatus = await revokeAppleGrantForUser(
-      context.supabaseAdmin,
-      report.reported,
-    );
-    if (appleRevocationStatus === "failed") {
-      console.error(
-        `[apple-revocation] FAILED to revoke an Apple grant during an admin-initiated deletion -- a live grant may still exist.`,
-      );
-    }
-    const { error: deleteError } = await context.supabaseAdmin.auth.admin.deleteUser(
-      report.reported,
-    );
-    if (deleteError) throw new Error(deleteError.message);
-    await eraseSubscriberRecord(report.reported);
-    logAdminAction("delete_account", data.reportId, report.reported, context.userId);
-
-    return { ok: true };
   });
 
 type ReportRow = {

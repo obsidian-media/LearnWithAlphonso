@@ -48,14 +48,12 @@ vi.mock("@tanstack/react-start", () => ({
 const adminModule = await import("./admin.functions");
 const {
   adminListReports,
-  adminDeleteReportedUser,
   adminResetDisplayName,
   adminRenameTeam,
   adminDisbandTeam,
   adminDismissReport,
 } = asTestFns({
   adminListReports: adminModule.adminListReports,
-  adminDeleteReportedUser: adminModule.adminDeleteReportedUser,
   adminResetDisplayName: adminModule.adminResetDisplayName,
   adminRenameTeam: adminModule.adminRenameTeam,
   adminDisbandTeam: adminModule.adminDisbandTeam,
@@ -234,121 +232,6 @@ describe("adminListReports", () => {
   });
 });
 
-describe("adminDeleteReportedUser", () => {
-  it("deletes the reported account, never the reporter's", async () => {
-    const deleteUser = vi.fn().mockResolvedValue({ error: null });
-    const supabaseAdmin = {
-      ...createSupabaseMock(),
-      auth: {
-        admin: {
-          deleteUser,
-          getUserById: vi.fn().mockResolvedValue({
-            data: { user: { identities: [{ provider: "email" }] } },
-            error: null,
-          }),
-        },
-      },
-    };
-    supabaseAdmin.from.mockImplementation((table: string) => {
-      if (table === "content_reports") return chainable({ data: { reported: "u2" }, error: null });
-      // apple_auth_tokens lookup inside revokeAppleGrantForUser -- no
-      // stored token, so it short-circuits to "not revoked" without
-      // touching the auth API.
-      return chainable({ data: null, error: null });
-    });
-
-    const result = await adminDeleteReportedUser({
-      context: ctx(supabaseAdmin),
-      data: { reportId: "11111111-1111-4111-8111-111111111111" },
-    });
-
-    expect(result).toEqual({ ok: true });
-    expect(deleteUser).toHaveBeenCalledOnce();
-    expect(deleteUser).toHaveBeenCalledWith("u2");
-  });
-
-  it("throws when the report no longer exists, rather than deleting nothing silently", async () => {
-    const deleteUser = vi.fn();
-    const supabaseAdmin = {
-      ...createSupabaseMock(),
-      auth: {
-        admin: {
-          deleteUser,
-          getUserById: vi.fn().mockResolvedValue({
-            data: { user: { identities: [{ provider: "email" }] } },
-            error: null,
-          }),
-        },
-      },
-    };
-    supabaseAdmin.from.mockImplementation(() => chainable({ data: null, error: null }));
-
-    await expect(
-      adminDeleteReportedUser({
-        context: ctx(supabaseAdmin),
-        data: { reportId: "11111111-1111-4111-8111-111111111111" },
-      }),
-    ).rejects.toThrow(/no longer exists/);
-    expect(deleteUser).not.toHaveBeenCalled();
-  });
-
-  it("throws when the report lookup itself errors", async () => {
-    const supabaseAdmin = {
-      ...createSupabaseMock(),
-      auth: { admin: { deleteUser: vi.fn() } },
-    };
-    supabaseAdmin.from.mockImplementation(() =>
-      chainable({ data: null, error: { message: "connection lost" } }),
-    );
-
-    await expect(
-      adminDeleteReportedUser({
-        context: ctx(supabaseAdmin),
-        data: { reportId: "11111111-1111-4111-8111-111111111111" },
-      }),
-    ).rejects.toThrow("connection lost");
-  });
-
-  it("throws when the auth deletion itself fails", async () => {
-    const deleteUser = vi.fn().mockResolvedValue({ error: new Error("auth service down") });
-    const supabaseAdmin = {
-      ...createSupabaseMock(),
-      auth: {
-        admin: {
-          deleteUser,
-          getUserById: vi.fn().mockResolvedValue({
-            data: { user: { identities: [{ provider: "email" }] } },
-            error: null,
-          }),
-        },
-      },
-    };
-    supabaseAdmin.from.mockImplementation((table: string) => {
-      if (table === "content_reports") return chainable({ data: { reported: "u2" }, error: null });
-      return chainable({ data: null, error: null });
-    });
-
-    await expect(
-      adminDeleteReportedUser({
-        context: ctx(supabaseAdmin),
-        data: { reportId: "11111111-1111-4111-8111-111111111111" },
-      }),
-    ).rejects.toThrow("auth service down");
-  });
-
-  it("rejects a malformed reportId before touching the database", async () => {
-    const supabaseAdmin = {
-      ...createSupabaseMock(),
-      auth: { admin: { deleteUser: vi.fn() } },
-    };
-
-    await expect(
-      adminDeleteReportedUser({ context: ctx(supabaseAdmin), data: { reportId: "not-a-uuid" } }),
-    ).rejects.toThrow();
-    expect(supabaseAdmin.from).not.toHaveBeenCalled();
-  });
-});
-
 describe("teamIdForReport", () => {
   it("reads context.team_id, then the legacy reason prefix, else null", () => {
     const id = "5b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b";
@@ -475,16 +358,6 @@ describe("moderation actions", () => {
     await expect(
       adminDisbandTeam({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
     ).rejects.toThrow("This report is not about a team.");
-  });
-
-  it("deleting the account refuses an AI report", async () => {
-    const deleteUser = vi.fn();
-    const supabaseAdmin = { ...createSupabaseMock(), auth: { admin: { deleteUser } } };
-    supabaseAdmin.from.mockReturnValueOnce(chainable({ data: { reported: null }, error: null }));
-    await expect(
-      adminDeleteReportedUser({ data: { reportId: REPORT }, context: ctx(supabaseAdmin as never) }),
-    ).rejects.toThrow("This report has no account to delete.");
-    expect(deleteUser).not.toHaveBeenCalled();
   });
 
   it("dismiss deletes only that report", async () => {

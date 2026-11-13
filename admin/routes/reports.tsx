@@ -2,13 +2,14 @@ import { createFileRoute, redirect, useRouter, Link } from "@tanstack/react-rout
 import { useState } from "react";
 import {
   adminListReports,
-  adminDeleteReportedUser,
+  adminWhoAmI,
   adminResetDisplayName,
   adminRenameTeam,
   adminDisbandTeam,
   adminDismissReport,
   type AdminReport,
 } from "@/lib/admin.functions";
+import { staffDeleteUser } from "@/lib/staff-users.functions";
 
 /**
  * Abuse reports (App Store Guideline 1.2 -- responding to a complaint
@@ -22,7 +23,10 @@ import {
 export const Route = createFileRoute("/reports")({
   loader: async () => {
     try {
-      return { reports: await adminListReports() };
+      const [reports, me] = await Promise.all([adminListReports(), adminWhoAmI()]);
+      // Deleting an account is the owner's scope (user.delete); the button is hidden without it, and the server
+      // refuses the call regardless.
+      return { reports, canDelete: me.scopes.includes("user.delete") };
     } catch {
       throw redirect({ to: "/signin" });
     }
@@ -31,7 +35,7 @@ export const Route = createFileRoute("/reports")({
 });
 
 function Reports() {
-  const { reports } = Route.useLoaderData();
+  const { reports, canDelete } = Route.useLoaderData();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -50,6 +54,7 @@ function Reports() {
             <ReportRow
               key={report.id}
               report={report}
+              canDelete={canDelete}
               onError={setError}
               onDeleted={() => router.invalidate()}
             />
@@ -68,15 +73,18 @@ const KIND_LABEL: Record<AdminReport["kind"], string> = {
 
 function ReportRow({
   report,
+  canDelete,
   onError,
   onDeleted,
 }: {
   report: AdminReport;
+  canDelete: boolean;
   onError: (message: string | null) => void;
   onDeleted: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
-  const [confirmText, setConfirmText] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [disbanding, setDisbanding] = useState(false);
@@ -95,14 +103,22 @@ function ReportRow({
     }
   }
 
+  /** The learner is deleted through the staff action (reason and email required, recorded), then the report is closed. */
   async function remove() {
+    if (!report.reportedId) return;
     onError(null);
     setBusy(true);
     try {
-      await adminDeleteReportedUser({ data: { reportId: report.id } });
-      // Reports against the account stay for 90 days with the account shown
-      // as deleted (content_reports.reported is ON DELETE SET NULL); re-reading
-      // the list shows that.
+      const result = await staffDeleteUser({
+        data: { id: report.reportedId, reason, confirmEmail },
+      });
+      // The account is gone either way; a failed report close must not read as a failed deletion.
+      await adminDismissReport({ data: { reportId: report.id } }).catch(() => undefined);
+      if (result.failedSteps.length > 0) {
+        onError(
+          `Account deleted, but these steps need follow-up (see the action record): ${result.failedSteps.join(", ")}.`,
+        );
+      }
       onDeleted();
     } catch (e) {
       onError(e instanceof Error ? e.message : "Delete failed.");
@@ -235,7 +251,7 @@ function ReportRow({
         </div>
       ) : null}
 
-      {!report.reportedId ? null : !confirming ? (
+      {!report.reportedId || !canDelete ? null : !confirming ? (
         <button
           onClick={() => setConfirming(true)}
           disabled={busy}
@@ -247,19 +263,32 @@ function ReportRow({
         <div className="mt-2 space-y-2 rounded border border-hairline p-3">
           <p className="text-xs text-ember">
             This permanently deletes {report.reportedName}&rsquo;s account and all their data. It
-            cannot be undone. Type DELETE to confirm.
+            cannot be undone. Give a reason and type the learner&rsquo;s email to confirm (find it
+            on{" "}
+            <a className="underline" href={`/users/${report.reportedId}`}>
+              their page
+            </a>
+            ).
           </p>
           <input
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
-            placeholder="DELETE"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Reason (3-500 characters)"
+            maxLength={500}
+            className="w-full rounded border border-hairline px-3 py-2 text-sm"
+          />
+          <input
+            value={confirmEmail}
+            onChange={(e) => setConfirmEmail(e.target.value)}
+            placeholder="Learner's email"
             className="w-full rounded border border-hairline px-3 py-2 text-sm"
           />
           <div className="flex gap-4">
             <button
               onClick={() => {
                 setConfirming(false);
-                setConfirmText("");
+                setConfirmEmail("");
+                setReason("");
               }}
               disabled={busy}
               className="text-sm text-ink-soft underline disabled:opacity-50"
@@ -268,7 +297,7 @@ function ReportRow({
             </button>
             <button
               onClick={remove}
-              disabled={confirmText !== "DELETE" || busy}
+              disabled={reason.trim().length < 3 || confirmEmail.trim() === "" || busy}
               className="text-sm font-semibold text-ember disabled:opacity-50"
             >
               {busy ? "Deleting…" : "Delete forever"}

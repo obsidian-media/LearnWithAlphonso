@@ -330,3 +330,67 @@ async function assertEmailConfirmed(
   if (typed.trim().toLowerCase() !== email) throw new Error(CONFIRM_EMAIL_MESSAGE);
   return email;
 }
+
+/**
+ * Delete an account: the existing deletion path (Apple revocation, subscription cancel, Auth delete, RevenueCat
+ * erase), run by the server as a staff action. External calls cannot join a database transaction, so the record is
+ * written in steps: "requested" first (with the sha256 of the lowercased email, never the email; the learner row is
+ * gone afterwards), then "completed", or "failed" naming the step.
+ *
+ *  - A web subscription that cannot be cancelled, or an Apple grant that cannot be revoked, does not stop the
+ *    deletion (a learner's account cannot depend on those services being reachable): each is recorded as
+ *    user.delete.failed with its step, the retry queues in eraseSubscriberRecord / revokeAppleGrantForUser handle the
+ *    rest, and the call returns the failed steps. The final row is user.delete.completed with the failed steps.
+ *  - Auth deletion failing stops here: recorded as failed at delete_user, and the call throws.
+ */
+export const staffDeleteUser = createServerFn({ method: "POST" })
+  .middleware([requireStaff("user.delete")])
+  .inputValidator((d: unknown) =>
+    z.object({ id: idSchema, reason: z.string(), confirmEmail: z.string().max(320) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true; failedSteps: string[] }> => {
+    const { createHash } = await import("node:crypto");
+    const { assertNotSelf, validateReason, recordStaffAction } =
+      await import("./staff-audit.server");
+    const { revokeAppleGrantForUser, eraseSubscriberRecord } = await import("./account.functions");
+    const { cancelAccountWebSubscriptions, revenueCatConfigFromEnv } =
+      await import("./revenuecat-entitlement");
+    const reason = validateReason(data.reason);
+    assertNotSelf(context.userId, data.id);
+    const email = await assertEmailConfirmed(context.supabaseAdmin, data.id, data.confirmEmail);
+
+    const base = {
+      actor: context.userId,
+      role: context.staffRole,
+      target: data.id,
+      reason,
+    } as const;
+    const record = (action: string, after: unknown) =>
+      recordStaffAction(context.supabaseAdmin, { ...base, action, after });
+
+    await record("user.delete.requested", {
+      emailHash: createHash("sha256").update(email).digest("hex"),
+    });
+
+    const failedSteps: string[] = [];
+    const config = revenueCatConfigFromEnv();
+    const cancelled = config ? await cancelAccountWebSubscriptions(config, data.id) : "failed";
+    if (cancelled === "failed") failedSteps.push("web_subscription");
+    const apple = await revokeAppleGrantForUser(context.supabaseAdmin, data.id);
+    if (apple === "failed") failedSteps.push("apple");
+
+    // Each earlier failure is recorded once the outcome of the deletion itself is known, so the row says truthfully
+    // whether the account is gone.
+    const { error } = await context.supabaseAdmin.auth.admin.deleteUser(data.id);
+    if (error) {
+      for (const step of failedSteps)
+        await record("user.delete.failed", { step, accountDeleted: false });
+      await record("user.delete.failed", { step: "delete_user", accountDeleted: false });
+      throw new Error("The account could not be deleted. Nothing further was done; try again.");
+    }
+    await eraseSubscriberRecord(data.id);
+    for (const step of failedSteps)
+      await record("user.delete.failed", { step, accountDeleted: true });
+    await record("user.delete.completed", { failedSteps });
+    return { ok: true, failedSteps };
+  });

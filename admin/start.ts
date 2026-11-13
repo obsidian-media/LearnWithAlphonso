@@ -2,6 +2,7 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "@/lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { watchAccountSuspended } from "@/lib/watch-account-suspended";
 
 /**
  * The admin app's equivalent of src/start.ts.
@@ -41,6 +42,7 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 });
 
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
+  // watchAccountSuspended is listed to keep the two files identical (the console never mounts the suspended screen).
+  functionMiddleware: [attachSupabaseAuth, watchAccountSuspended],
   requestMiddleware: [errorMiddleware],
 }));
