@@ -28,6 +28,7 @@ const EXPECTED_SITES: Record<string, number> = {
   "src/lib/learner-profile.functions.ts": 1, // country mirror for the leaderboard flag: UPDATE own row (user client)
   "src/routes/api/learner-profile.ts": 1, // the same country mirror for the apps: UPDATE by the verified token's id (service role)
   "src/lib/admin.functions.ts": 1, // admin reports (service role)
+  "src/lib/staff-user-facts.server.ts": 1, // staff console learner page: display names of one learner and note authors (service role)
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+DisplayIdentity.swift": 3, // own GET + 2 PATCH
   // 3 = own theme GET + PATCH, plus the PATCH shape quoted in the file's doc comment (line 13).
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+Profile.swift": 3,

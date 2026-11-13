@@ -14,7 +14,17 @@ vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth:
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: {} }));
 
 const mod = await import("./staff-users.functions");
-const { staffSearchUsers, staffGetUser, staffAddNote, staffGrantPro, staffRevokePro } = asTestFns({
+const {
+  staffSearchUsers,
+  staffGetUser,
+  staffAddNote,
+  staffGrantPro,
+  staffRevokePro,
+  staffBlockUser,
+  staffUnblockUser,
+} = asTestFns({
+  staffBlockUser: mod.staffBlockUser,
+  staffUnblockUser: mod.staffUnblockUser,
   staffGrantPro: mod.staffGrantPro,
   staffRevokePro: mod.staffRevokePro,
   staffSearchUsers: mod.staffSearchUsers,
@@ -359,5 +369,76 @@ describe("staffGrantPro and staffRevokePro", () => {
     ).rejects.toThrow("RevenueCat refused the change; nothing changed.");
     expect(rpcNames(admin)).toEqual(["staff_record"]);
     expect(admin.rpc.mock.calls[0]![1]).toMatchObject({ p_action: "pro.revoke.failed" });
+  });
+});
+
+// ---- Block and unblock (Task 6) ----
+describe("staffBlockUser and staffUnblockUser", () => {
+  beforeEach(() => {
+    setStaff({
+      [OWNER]: { role: "owner", scopes: [] },
+      [SUPPORT]: { role: "support", scopes: ["user.block"] },
+      "00000000-0000-4000-8000-0000000000b2": { role: "support", scopes: ["users.read"] },
+    });
+  });
+  const block = (userId: string, admin: ReturnType<typeof adminClient>, over = {}) =>
+    staffBlockUser({
+      data: { id: LEARNER, reason: "harassing other learners", ...over },
+      context: { supabaseAdmin: admin, userId },
+    });
+
+  it("support with user.block records the restriction through staff_set_restriction", async () => {
+    const admin = adminClient();
+    await block(SUPPORT, admin);
+    expect(admin.rpc).toHaveBeenCalledWith("staff_set_restriction", {
+      p_actor: SUPPORT,
+      p_role: "support",
+      p_target: LEARNER,
+      p_kind: "block",
+      p_reason: "harassing other learners",
+    });
+  });
+
+  it("a staff member without user.block is Forbidden and nothing is written", async () => {
+    const admin = adminClient();
+    await expect(block("00000000-0000-4000-8000-0000000000b2", admin)).rejects.toThrow(
+      "Forbidden: missing scope user.block",
+    );
+    expect(admin.rpc).not.toHaveBeenCalled();
+  });
+
+  it("requires a reason and refuses your own account", async () => {
+    const admin = adminClient();
+    await expect(block(SUPPORT, admin, { reason: "no" })).rejects.toThrow(/reason/i);
+    await expect(block(SUPPORT, admin, { id: SUPPORT })).rejects.toThrow(/own account/i);
+    expect(admin.rpc).not.toHaveBeenCalled();
+  });
+
+  it("says so when the learner is already blocked", async () => {
+    const admin = adminClient();
+    admin.rpc.mockResolvedValue({ data: null, error: { code: "23505", message: "dup" } });
+    await expect(block(OWNER, admin)).rejects.toThrow("That learner is already blocked.");
+  });
+
+  it("unblock lifts through staff_lift_restriction and says so when there is nothing to lift", async () => {
+    const admin = adminClient();
+    await staffUnblockUser({
+      data: { id: LEARNER, reason: "resolved after talking" },
+      context: { supabaseAdmin: admin, userId: SUPPORT },
+    });
+    expect(admin.rpc).toHaveBeenCalledWith("staff_lift_restriction", {
+      p_actor: SUPPORT,
+      p_role: "support",
+      p_target: LEARNER,
+      p_kind: "block",
+      p_reason: "resolved after talking",
+    });
+    admin.rpc.mockResolvedValue({ data: null, error: { code: "P0002", message: "none" } });
+    await expect(
+      staffUnblockUser({
+        data: { id: LEARNER, reason: "resolved after talking" },
+        context: { supabaseAdmin: admin, userId: SUPPORT },
+      }),
+    ).rejects.toThrow("That learner is not blocked.");
   });
 });

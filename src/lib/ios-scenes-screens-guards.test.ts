@@ -178,7 +178,7 @@ describe("Profile: hall scene, hero, glass menu cards", () => {
       "destination = target",
       "LeaderboardView(session: session)",
       "FriendsView(session: session)",
-      "SettingsView(session: session)",
+      "SettingsView(session: session", // the Pro row passes the entitlement store as a second argument
     ]) {
       expect(profile, keep).toContain(keep);
     }

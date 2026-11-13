@@ -195,3 +195,53 @@ export const staffRevokePro = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+type RestrictionKind = "block" | "ban";
+
+/** The restriction and its record row are written by one database function (one transaction). */
+async function applyRestriction(
+  context: {
+    supabaseAdmin: import("@supabase/supabase-js").SupabaseClient;
+    userId: string;
+    staffRole: import("./staff-scopes").StaffRole;
+  },
+  input: { id: string; reason: string; kind: RestrictionKind; lift: boolean },
+): Promise<void> {
+  const { assertNotSelf, validateReason } = await import("./staff-audit.server");
+  const reason = validateReason(input.reason);
+  assertNotSelf(context.userId, input.id);
+  const { error } = await context.supabaseAdmin.rpc(
+    input.lift ? "staff_lift_restriction" : "staff_set_restriction",
+    {
+      p_actor: context.userId,
+      p_role: context.staffRole,
+      p_target: input.id,
+      p_kind: input.kind,
+      p_reason: reason,
+    } as never,
+  );
+  if (error) {
+    if (error.code === "23505") throw new Error(`That learner is already ${input.kind}ed.`);
+    if (error.code === "P0002") throw new Error(`That learner is not ${input.kind}ed.`);
+    throw new Error("Could not change the restriction. Nothing was changed.");
+  }
+}
+
+const reasonedTarget = (d: unknown) => z.object({ id: idSchema, reason: z.string() }).parse(d);
+
+/** Block: the learner keeps learning but loses every social surface (enforced in the database). */
+export const staffBlockUser = createServerFn({ method: "POST" })
+  .middleware([requireStaff("user.block")])
+  .inputValidator(reasonedTarget)
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await applyRestriction(context, { ...data, kind: "block", lift: false });
+    return { ok: true };
+  });
+
+export const staffUnblockUser = createServerFn({ method: "POST" })
+  .middleware([requireStaff("user.block")])
+  .inputValidator(reasonedTarget)
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await applyRestriction(context, { ...data, kind: "block", lift: true });
+    return { ok: true };
+  });

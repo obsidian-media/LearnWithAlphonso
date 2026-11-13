@@ -2991,6 +2991,10 @@ export type Database = {
         Args: { p_kind: string; p_user: string };
         Returns: boolean;
       };
+      is_social_restricted: {
+        Args: { p_user: string };
+        Returns: boolean;
+      };
       join_buddy_pool: {
         Args: { _age_confirmed: boolean; _course: string };
         Returns: {

@@ -7,6 +7,12 @@ const getClaims = vi.fn();
 const createClient = vi.fn().mockReturnValue({ auth: { getClaims } });
 vi.mock("@supabase/supabase-js", () => ({ createClient }));
 
+// The account-status check asks the database through the service client; these tests are about the token, so it
+// answers "not banned" (the ban itself is covered in src/lib/staff-ban.test.ts).
+vi.mock("./client.server", () => ({
+  supabaseAdmin: { rpc: vi.fn(async () => ({ data: false, error: null })) },
+}));
+
 const { requireSupabaseAuth } = await import("./auth-middleware");
 const server = requireSupabaseAuth.options.server as (opts: {
   next: (ctx: unknown) => unknown;

@@ -31,6 +31,12 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
   };
 }
 
+/**
+ * What a banned learner's still-valid access token gets (staff console, 20261113100000). The clients recognise the
+ * string and show the suspended screen. Kept in step with supabase/functions/_shared/account-status.ts.
+ */
+export const ACCOUNT_SUSPENDED_MESSAGE = "account_suspended";
+
 export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
     const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -92,6 +98,22 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" }).server
 
     if (!data.claims.sub) {
       throw new Error("Unauthorized: No user ID found in token");
+    }
+
+    // A ban takes effect at once, not when the access token expires: the token is valid, so ask the database. A failed
+    // check is logged and lets the call through (an outage must not lock every learner out); the ban is also enforced
+    // by revoking the sessions and by Supabase Auth's own ban.
+    try {
+      const { supabaseAdmin } = await import("./client.server");
+      const { data: banned, error: banError } = await supabaseAdmin.rpc("is_restricted", {
+        p_user: data.claims.sub,
+        p_kind: "ban",
+      });
+      if (banError) console.error("[auth] could not check the account status");
+      else if (banned === true) throw new Error(ACCOUNT_SUSPENDED_MESSAGE);
+    } catch (e) {
+      if (e instanceof Error && e.message === ACCOUNT_SUSPENDED_MESSAGE) throw e;
+      console.error("[auth] could not check the account status");
     }
 
     return next({
