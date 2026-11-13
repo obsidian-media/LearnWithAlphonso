@@ -360,6 +360,11 @@ private struct HectorConversationView: View {
         let openCategories = trend.filter { $0.openCount > 0 }.map(\.category)
         cefrLevel = level
         memoryContext = TutorMemoryContext.buildPrimingMessage(cefrLevel: level, openWeaknessCategories: openCategories)
+        // Today's allowance is used up (BACKLOG 0.0-bq #5): the "out for today" message and no greeting, so no speech.
+        if await client.fetchHectorAllowanceUsedUp() {
+            notice = HectorAllowance.outForToday
+            return
+        }
         // Hector speaks first: a conversation with no turns yet opens with his greeting (built locally, no LLM call).
         conversation = conversationStore.openWithGreeting(key, greeting: HectorGreeting.build(
             course: course, cefrLevel: level,

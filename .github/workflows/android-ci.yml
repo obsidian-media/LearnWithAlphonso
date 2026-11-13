@@ -136,6 +136,18 @@ jobs:
           disable-animations: true
           working-directory: android/LearnWithAlphonso
           script: ./gradlew connectedDebugAndroidTest
+      # The Gradle log only says "There were failing tests"; name them in the job summary so the reason is obvious.
+      - name: Summarise failing instrumentation tests
+        if: failure()
+        run: |
+          {
+            echo "### Instrumentation tests that failed"
+            grep -rl "<failure" android/LearnWithAlphonso/app/build/outputs/androidTest-results --include=*.xml 2>/dev/null | while read -r f; do
+              grep -B1 "<failure" "$f" | grep -o 'testcase name="[^"]*" classname="[^"]*"' || true
+              grep -h -A2 "<failure" "$f" | head -6
+            done
+            echo "(full HTML report: the android-instrumentation-reports artifact)"
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:

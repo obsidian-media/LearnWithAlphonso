@@ -96,6 +96,13 @@ export const MOVABLE_RULES: Rule[] = [
     re: /\b(nearby|downtown|upstairs|downstairs|abroad|at home|in class|at school|at work|in town|in bed|on tv|in american english|in british english)\b/,
   },
   { name: "place-phrase", re: PLACE_RULE },
+  // a closing "here" fronts too ("We have a lovely pool here" / "Here we have a lovely pool"); a motion or
+  // placing verb keeps it ("Come here", "Put it here"), "from here" is a fixed phrase, and in "the thinnest book here" the
+  // "here" belongs to the noun phrase, so it cannot go to the front
+  {
+    name: "here-adverb",
+    re: /^(?!.*\bthe (?:\w+ )?(?:\w+est|most \w+|least \w+|best|worst|last|first|only|same)\b)(?!(?:please )?(?:come|sit|stand|wait|stay|put|place|bring|park|sign|look|move|leave|hang|give|get|go|take|turn|pull|push)\b)(?:[\w']+ ){3,}(?<!\b(?:from|of|near|around) )here$/,
+  },
   // two clauses that can swap places ("Take an umbrella - it might rain") or a trailing "sorry"
   { name: "clause-swap", re: /—|,(?! so\b)(?! not\b)|\bsorry$/ },
   // a particle that can sit before or after the object ("try this on", "set up a plan", "rolled up his sleeves")

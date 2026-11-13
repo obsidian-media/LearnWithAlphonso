@@ -1207,6 +1207,22 @@ public final class ProgressSyncClient: Sendable {
         return rows.first?["cefr_level"] as? String
     }
 
+    /// Whether today's Hector allowance is used up (BACKLOG 0.0-bq #5): the learner's own `ai_usage` row for today's
+    /// UTC day and kind `hector` (RLS lets them read it). Any failure answers false, so Hector still greets and the
+    /// server stays the real guard.
+    public func fetchHectorAllowanceUsedUp(now: Date = Date()) async -> Bool {
+        var request = restRequest(path: "ai_usage", query: [
+            URLQueryItem(name: "select", value: "count"),
+            URLQueryItem(name: "day", value: "eq.\(HectorAllowance.utcDay(now))"),
+            URLQueryItem(name: "kind", value: "eq.hector"),
+        ])
+        request.httpMethod = "GET"
+        guard let (data, response) = try? await requester(request),
+              (try? Self.requireSuccess(data: data, response: response)) != nil,
+              let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return false }
+        return HectorAllowance.isUsedUp(counts: rows.compactMap { $0["count"] as? Int })
+    }
+
     /// Whether -- and when -- this course's placement test has been taken.
     /// **Not** the same question as `fetchCefrLevel` returning non-nil:
     /// `language_progress.cefr_level` defaults to `'A1'` and that row can

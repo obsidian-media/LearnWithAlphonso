@@ -36,11 +36,12 @@ class HectorGreetingViewModelTest {
     private val withWeakSpot = "Hi Sam! Last time the past tense tripped you up. Want to practice that in conversation?"
     private val generic = "Hi Sam! Good to see you. What's been happening lately? Tell me about it."
 
-    private fun server(weakSpot: Boolean = true, ttsFails: Boolean = false) = FakeServer { req ->
+    private fun server(weakSpot: Boolean = true, ttsFails: Boolean = false, usedToday: Int = 0) = FakeServer { req ->
         when {
             req.path.endsWith("/api/tts") -> if (ttsFails) json("""{"error":"x"}""", HttpStatusCode.InternalServerError) else json("mp3")
             req.path.endsWith("/api/stt") -> json("""{"text":"yes please"}""")
             req.path.endsWith("/api/hector-respond") -> json("""{"request_id":"r","session_id":"s","agent":"tutor","reply":"Great! What did you do yesterday?","audio_base64":"AQID","tts_model":"m","tts_provider":"p","language":"en","state":"ok","timings_ms":{"llm":1,"tts":2,"total":3}}""")
+            req.path.endsWith("ai_usage") -> json(if (usedToday > 0) """[{"count":$usedToday}]""" else "[]")
             req.path.endsWith("get_my_name_status") -> json("""[{"display_name":"Sam","name_confirmed_at":"2026-10-01T00:00:00+00:00"}]""")
             req.query["select"] == "cefr_level" -> json("""[{"cefr_level":"B1"}]""")
             req.path.endsWith("weakness_events") -> json(if (weakSpot) """[{"category":"past-tense","event_type":"detected","created_at":"$recent"}]""" else "[]")
@@ -136,5 +137,26 @@ class HectorGreetingViewModelTest {
         Thread.sleep(200)
         assertFalse(v.state.value.turns.any { it.content == withWeakSpot })
         assertTrue(tts(s).isEmpty())
+    }
+
+    @Test
+    fun `with today's Hector allowance used up the screen shows out for today and says nothing`() = runBlocking {
+        val s = server(usedToday = 150)
+        val v = vm(s)
+        v.greet()
+        awaitTrue("out-for-today shown") { v.state.value.error != null }
+        assertEquals("You've reached today's AI practice limit. Try again tomorrow.", v.state.value.error)
+        assertTrue(v.state.value.turns.isEmpty())
+        assertTrue("no speech is fetched", tts(s).isEmpty())
+    }
+
+    @Test
+    fun `one turn short of the allowance he still greets`() = runBlocking {
+        val s = server(usedToday = 149)
+        val v = vm(s)
+        v.greet()
+        awaitTrue("greeting played") { tts(s).size == 1 }
+        assertEquals(withWeakSpot, v.state.value.turns.single().content)
+        assertNull(v.state.value.error)
     }
 }

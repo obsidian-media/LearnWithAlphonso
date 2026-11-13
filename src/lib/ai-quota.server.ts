@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { createSupabaseFetch } from "@/integrations/supabase/fetch";
 import { nextMinute, nextUtcMidnight } from "./ai-quota-response";
+import { HECTOR_DAILY_LIMIT } from "./hector-allowance";
 
 export type QuotaKind = "chat" | "stt" | "tts" | "translate" | "define" | "hector";
 
@@ -28,7 +29,7 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   define: 40,
   // Pro learners' Hector turns (20261102120000). Separate from `chat`, which free Practice spends, so practicing
   // never blocks the feature a learner pays for; still capped to bound AI cost.
-  hector: 150,
+  hector: HECTOR_DAILY_LIMIT,
 };
 
 export type QuotaResult =
