@@ -73,6 +73,20 @@ describe("CookieConsent", () => {
   });
 });
 
+describe("anonymous usage analytics follows the same choice", () => {
+  it("Accept all turns analytics on", async () => {
+    render(<CookieConsent />);
+    await userEvent.click(screen.getByRole("button", { name: "Accept all" }));
+    expect(window.localStorage.getItem("lwa.analytics-consent.v1")).toBe("1");
+  });
+
+  it("Essential only keeps analytics off", async () => {
+    render(<CookieConsent />);
+    await userEvent.click(screen.getByRole("button", { name: "Essential only" }));
+    expect(window.localStorage.getItem("lwa.analytics-consent.v1")).toBe("0");
+  });
+});
+
 describe("the apps' bot-check page", () => {
   afterEach(() => window.history.replaceState(null, "", "/"));
 

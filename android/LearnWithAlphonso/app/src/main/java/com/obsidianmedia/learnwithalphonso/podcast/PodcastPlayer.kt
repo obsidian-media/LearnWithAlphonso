@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.podcast
 
+import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
+import com.obsidianmedia.learnwithalphonso.Analytics
 import com.obsidianmedia.learnwithalphonso.core.net.PodcastClient
 import com.obsidianmedia.learnwithalphonso.core.net.PodcastClientError
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
@@ -152,6 +154,8 @@ class PodcastPlayer(
     /** Changes whenever what this device remembers does, so a list showing [resumed] rows recomposes. */
     val positionsRevision: StateFlow<Int> get() = savedPositions.revision
 
+    private var playTrackedEpisodeId: String? = null
+
     init {
         port.onTick = ::tick
         port.onEnded = ::finish
@@ -184,6 +188,11 @@ class PodcastPlayer(
         // A learner action is a fresh observation: saving paused by a stale write or a 401 may resume.
         saveGate.userStartedPlayback()
         _state.update { it.copy(savesDisabled = false) }
+        // Analytics: the first play of an episode only; pausing and resuming is not a new play.
+        if (playTrackedEpisodeId != episode.id) {
+            playTrackedEpisodeId = episode.id
+            Analytics.track(AnalyticsEvent.PODCAST_PLAYED, mapOf("episode_id" to episode.id))
+        }
         val sameEpisode = _state.value.episode?.id == episode.id
         pausedByRecording = false
         if (sameEpisode) {
@@ -307,7 +316,8 @@ class PodcastPlayer(
     }
 
     private fun finish() {
-        if (_state.value.episode == null) return
+        val finished = _state.value.episode ?: return
+        Analytics.track(AnalyticsEvent.PODCAST_COMPLETED, mapOf("episode_id" to finished.id))
         dispatch(PodcastPlayerEvent.PlayedToEnd)
     }
 

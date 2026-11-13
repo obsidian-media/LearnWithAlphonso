@@ -27,6 +27,9 @@ struct LearnWithAlphonsoApp: App {
     init() {
         // First, so a crash during the rest of startup is captured. Release builds only (see CrashReporting).
         CrashReporting.start()
+        // Usage analytics start only if the learner already opted in (see Analytics).
+        Analytics.start()
+        Analytics.track(.appOpen)
         // ContentStore reads JSON bundled at build time (see that type's
         // doc comment) -- a failure here means the bundled resources are
         // missing, a build configuration problem, not a runtime one. Still

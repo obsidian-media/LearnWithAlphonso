@@ -63,9 +63,11 @@ function Cookies() {
           time you arrived in your browser's local storage. Until you choose, they are held only for
           the current tab. When you create an account we save them once to your account (see the
           Privacy Policy) and remove them from your browser. If you choose Essential only they are
-          discarded. We set no analytics, advertising or cross-site tracking cookies. Our marketing
-          website, discover.alphonsoecosystem.app, uses Vercel Web Analytics, which does not use
-          cookies and counts page views and events only in aggregate.
+          discarded. Accept all also turns on anonymous usage analytics (which features are used,
+          never what you type or say or who you are); it is stored in your browser's local storage,
+          not in a cookie, and you can turn it off in Settings. We set no advertising or cross-site
+          tracking cookies. Our marketing website, discover.alphonsoecosystem.app, uses Vercel Web
+          Analytics, which does not use cookies and counts page views and events only in aggregate.
         </p>
       </Section>
 

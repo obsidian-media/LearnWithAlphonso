@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { track } from "../lib/analytics";
 import { usePodcastPlayer } from "../lib/podcast-player";
 
 /** How often a position is written back while audio plays. */
@@ -38,6 +39,8 @@ export function PodcastAudio() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastSavedRef = useRef(0);
+  /** The episode whose first play was already counted: pausing and resuming is not a new play. */
+  const playedTracked = useRef<string | null>(null);
   /** Seconds actually listened this session, for the play event. */
   const listenedRef = useRef(0);
   const lastTickRef = useRef<number | null>(null);
@@ -177,6 +180,10 @@ export function PodcastAudio() {
     setPlaying(false);
     setElapsed(0);
     markFinished();
+    void track("podcast_completed", {
+      episode_id: episode.id,
+      course: episode.course ?? undefined,
+    });
     persist(episode.id, 0, true);
     flushPlayEvent(episode.id);
   };
@@ -209,7 +216,16 @@ export function PodcastAudio() {
       }}
       onTimeUpdate={onTimeUpdate}
       onError={() => setFailed(true)}
-      onPlay={() => setPlaying(true)}
+      onPlay={() => {
+        setPlaying(true);
+        if (playedTracked.current !== episode.id) {
+          playedTracked.current = episode.id;
+          void track("podcast_played", {
+            episode_id: episode.id,
+            course: episode.course ?? undefined,
+          });
+        }
+      }}
       onPause={() => {
         setPlaying(false);
         const audio = audioRef.current;

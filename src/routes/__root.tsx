@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { track } from "../lib/analytics";
 import {
   Outlet,
   Link,
@@ -164,6 +165,9 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    void track("app_open");
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

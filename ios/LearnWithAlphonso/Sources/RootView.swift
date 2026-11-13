@@ -414,6 +414,7 @@ struct RootView: View {
     /// be running), and the rest checks FirstRunDevice.isBlocked before it would send.
     private func blockThisDevice() {
         CrashReporting.stop()
+        Analytics.setConsent(false)
         firstRunBlocked = true
     }
 

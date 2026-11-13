@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice
 
+import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
+import com.obsidianmedia.learnwithalphonso.Analytics
 import com.obsidianmedia.learnwithalphonso.audio.SoundEffectsPlayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -117,6 +119,7 @@ abstract class BaseConversationViewModel(
             replyAudioJob?.cancelAndJoin()
             elapsedSeconds = ((System.currentTimeMillis() - startedAt) / 1000).toInt()
             val r = runCatching { ai.finishPractice(id) }.getOrNull()
+            if (r != null) analyticsScenarioId?.let { Analytics.track(AnalyticsEvent.PRACTICE_CALL_COMPLETED, mapOf("scenario_id" to it, "stars" to r.stars)) }
             _result.value = r
             r
         }
@@ -133,6 +136,9 @@ abstract class BaseConversationViewModel(
     }
 
     protected abstract fun systemPrompt(): String
+
+    /** Set by a Practice scenario so its finished call is counted (analytics); a campaign scene leaves it null. */
+    protected open val analyticsScenarioId: String? get() = null
 
     init {
         viewModelScope.launch { _state.update { it.copy(cefrLevel = runCatching { progress.fetchCefrLevel(course.code) }.getOrNull()) } }
@@ -246,6 +252,11 @@ class ScenarioConversationViewModel(
     openerCache: OpenerSpeechCache = OpenerSpeechCache.shared,
 ) : BaseConversationViewModel(recorder, requestMic, ai, progress, player, scenario.opener, course, alphonsoVoice, openerCache) {
     override fun systemPrompt(): String = scenario.systemPrompt
+    override val analyticsScenarioId: String get() = scenario.id
+
+    init {
+        Analytics.track(AnalyticsEvent.PRACTICE_CALL_STARTED, mapOf("scenario_id" to scenario.id))
+    }
 }
 
 data class CampaignProgress(val sceneIndex: Int = 0, val sceneAnchor: Int = 0, val finished: Boolean = false)

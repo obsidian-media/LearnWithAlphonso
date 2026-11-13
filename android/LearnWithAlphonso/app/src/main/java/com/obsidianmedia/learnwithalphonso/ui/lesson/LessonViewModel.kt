@@ -1,5 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsProperties
+import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
+import com.obsidianmedia.learnwithalphonso.Analytics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
@@ -190,6 +193,10 @@ class LessonViewModel(
         }
         try {
             sessionToken = client.startLessonSession(_state.value.lesson.id, course.code)
+            Analytics.track(
+                AnalyticsEvent.LESSON_STARTED,
+                mapOf("lesson_id" to _state.value.lesson.id, "level" to unit?.level, "course" to course.code),
+            )
             _state.update { it.copy(outOfHearts = null, buyMessage = null) }
         } catch (e: ProgressSyncError.OutOfHearts) {
             _state.update { it.copy(outOfHearts = OutOfHeartsModel(e.refillAt)) }
@@ -369,6 +376,13 @@ class LessonViewModel(
                 return
             }
             val result = outcome.getOrThrow()
+            Analytics.track(
+                AnalyticsEvent.LESSON_COMPLETED,
+                mapOf(
+                    "lesson_id" to s.lesson.id, "level" to unit?.level, "course" to course.code,
+                    "score_bucket" to AnalyticsProperties.scoreBucket((result.correct ?: 0).toDouble() / maxOf(s.total, 1) * 100),
+                ),
+            )
             sessionToken = null
             val previousTier = lastKnownTier()
             rememberTier(result.progress.leagueTier)

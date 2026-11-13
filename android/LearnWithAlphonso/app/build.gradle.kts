@@ -39,6 +39,9 @@ android {
         buildConfigField("String", "API_BASE_URL", "\"https://learn.alphonsoecosystem.app\"")
         // Injected by CI from REVENUECAT_ANDROID_PUBLIC_KEY; empty means Pro is unavailable in this build (Plan 3).
         buildConfigField("String", "REVENUECAT_PUBLIC_KEY", "\"${System.getenv("REVENUECAT_ANDROID_PUBLIC_KEY") ?: ""}\"")
+        // Optional usage analytics (PostHog). The repo is public, so the key is never committed: CI injects it from the
+        // POSTHOG_PROJECT_KEY secret. Blank means analytics is off and its screens are hidden (Analytics.kt).
+        buildConfigField("String", "POSTHOG_PROJECT_KEY", "\"${(System.getenv("POSTHOG_PROJECT_KEY") ?: "").filter { it.isLetterOrDigit() || it == '_' }}\"")
     }
 
     buildFeatures {
@@ -120,6 +123,8 @@ dependencies {
     implementation(libs.revenuecat.purchases)
     // Crash reporting (CrashReporting.kt): release builds only, scrubbed, no replay or screenshots.
     implementation(libs.sentry.android)
+    // Optional, opt-in usage analytics (Analytics.kt): nothing starts before the learner says yes.
+    implementation(libs.posthog.android)
     // Lint: Activity Result APIs need Fragment >= 1.3.0; the transitive default is 1.1.0.
     implementation(libs.androidx.fragment)
 

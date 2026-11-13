@@ -97,6 +97,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 identity.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
             }
             AiFeaturesSection(container)
+            AnalyticsSection()
             AvatarSection(container)
             SoundEffectsSection(container)
             VoicesSection(container)

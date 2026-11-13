@@ -68,6 +68,11 @@
 	     "Generate Xcode project" step. -->
 	<key>RCApiKey</key>
 	<string>test_UzoFLqAlXAHPWSwBgKQuZcqFKrq</string>
+	<!-- PostHog project key for the optional, opt-in usage analytics. Empty here on purpose: this repo is public, so
+	     ios-release.yml writes the real key from the POSTHOG_PROJECT_KEY secret (PlistBuddy, after xcodegen). Empty
+	     means analytics is off and its screens are hidden (Analytics.swift). -->
+	<key>PostHogKey</key>
+	<string></string>
 	<!-- Design system (all 3 themes, see DesignSystem/AlphonsoTheme.swift
 	     and AlphonsoFont.swift): each theme's display/sans font pair,
 	     bundled as upstream variable-font files under Sources/Fonts/

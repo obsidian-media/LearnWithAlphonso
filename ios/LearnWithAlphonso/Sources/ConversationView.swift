@@ -397,7 +397,11 @@ struct ConversationSessionView: View {
         voice.disappeared()
         while pendingTurns > 0 { try? await Task.sleep(for: .milliseconds(50)) }
         elapsed = Int(Date().timeIntervalSince(startedAt))
-        do { result = try await practiceClient(session).finishPractice(callId: callId) }
+        do {
+            let finished = try await practiceClient(session).finishPractice(callId: callId)
+            Analytics.track(.practiceCallCompleted, ["scenario_id": scenario.id, "stars": finished.stars])
+            result = finished
+        }
         catch { dismiss() } // Same as web when no reply was judged or finish is unavailable.
     }
 

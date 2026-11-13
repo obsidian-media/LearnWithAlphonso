@@ -51,6 +51,8 @@ final class PodcastAudioPlayer {
     var makeClient: (@MainActor () -> PodcastClient?)?
 
     private var saveGate = PodcastSaveGate()
+    /// The episode whose first play was already counted for analytics: pausing and resuming is not a new play.
+    private var playTrackedEpisodeID: String?
     /// The last position this device stored per episode, so a stale list row never wins (PodcastSavedPositions).
     private var savedPositions = PodcastSavedPositions()
 
@@ -90,6 +92,10 @@ final class PodcastAudioPlayer {
         savedPositions.noteSeen(listed)
         if !queue.isEmpty { self.queue = queue }
         saveGate.userStartedPlayback()
+        if playTrackedEpisodeID != episode.id {
+            playTrackedEpisodeID = episode.id
+            Analytics.track(.podcastPlayed, ["episode_id": episode.id, "course": episode.course ?? ""])
+        }
 
         if self.episode?.id == episode.id, player != nil {
             switch machine.phase {
@@ -281,7 +287,12 @@ final class PodcastAudioPlayer {
         let center = NotificationCenter.default
         itemNotificationTokens = [
             center.addObserver(forName: AVPlayerItem.didPlayToEndTimeNotification, object: item, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.handle(.didPlayToEnd) }
+                MainActor.assumeIsolated {
+                    if let finished = self?.episode {
+                        Analytics.track(.podcastCompleted, ["episode_id": finished.id, "course": finished.course ?? ""])
+                    }
+                    self?.handle(.didPlayToEnd)
+                }
             },
             center.addObserver(forName: AVPlayerItem.failedToPlayToEndTimeNotification, object: item, queue: .main) { [weak self] notification in
                 let error = notification.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] as? Error

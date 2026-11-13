@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui
 
+import com.obsidianmedia.learnwithalphonso.Analytics
 import com.obsidianmedia.learnwithalphonso.CrashReporting
 import com.obsidianmedia.learnwithalphonso.core.firstrun.CompleteProfileSkip
 import com.obsidianmedia.learnwithalphonso.core.firstrun.FirstRun
@@ -113,6 +114,7 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
     val blockThisDevice: () -> Unit = {
         // Reporting may already be running: close it now. Everything else checks FirstRunDevice.isBlocked.
         CrashReporting.stop()
+        Analytics.setConsent(false)
         firstRunBlocked = true
     }
     val isRestoring by session.isRestoring.collectAsState()

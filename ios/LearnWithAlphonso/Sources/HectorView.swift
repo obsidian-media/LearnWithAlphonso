@@ -111,6 +111,7 @@ private struct HectorConversationView: View {
             PaywallView(entitlementStore: entitlementStore, source: .hectorRefused, onClose: { showPaywall = false })
         }
         .onAppear {
+            Analytics.track(.hectorOpened)
             conversation = conversationStore.snapshot(for: key, seededWith: nil)
             voice.onCapture = { capture in await handle(capture) }
             voice.appeared()

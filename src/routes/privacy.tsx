@@ -61,6 +61,7 @@ function Privacy() {
             "Where you came from: if you chose Accept all in the cookie banner and arrived through a link that carries campaign tags (utm_source, utm_medium, utm_campaign), those tags and the time you arrived, saved once when you create your account. For this we do not store your IP address, device, browser or the page you came from.",
             "Technical data: request logs and error reports needed to keep the service running and secure, including IP address, device or browser type, and the time and address of each request.",
             "Crash and error reports: if the app or website crashes or hits an unexpected error, a report is sent to Sentry with the technical details of the fault (the error message, a stack trace, the app version, your device model and operating system or browser, and the page or screen). Reports are not linked to your account, carry no email address, name or sign-in token (we remove them before sending), and include no screenshots or screen recordings. The iPhone and Android apps send them from released builds only.",
+            "Anonymous usage data (optional, off until you choose it): if you choose Accept all in the web cookie banner, or turn on Share anonymous usage data in Settings (in the iPhone and Android apps, in the first-run choice or in Settings), we record which features are used, such as that a lesson was started or finished (with its level, course and a score band), a practice call was made, an episode was played, Hector or the Pro offer was opened, or a first-run step was reached, with the app version and platform. It never includes your name, email, account identifier, what you type or say, or AI chat content, and it is not linked to your account: it uses a random identifier that is reset when you turn the setting off. Nothing is sent before you choose, and never from a device where you said you are under 13.",
           ]}
         />
       </Section>
@@ -125,8 +126,9 @@ function Privacy() {
         />
         <p>
           We do not sell your data, we do not share it with data brokers, and we do not use it for
-          advertising. There are no advertising or analytics SDKs in our apps. The only diagnostics
-          SDK is Sentry’s crash reporter, described above.
+          advertising. There are no advertising SDKs in our apps. The only SDKs that report on how
+          the app runs are Sentry’s crash reporter and, only if you opt in, PostHog’s anonymous
+          usage analytics, both described above.
         </p>
       </Section>
 
@@ -183,6 +185,7 @@ function Privacy() {
             "RevenueCat: manages subscription status, so Alphonso Pro works on every device you sign in on. It receives an account identifier and purchase and renewal information from Apple, Google or Stripe, not your payment details. For a subscription bought on our website it also runs the checkout page.",
             "Stripe: processes card payments for subscriptions bought on our website. It receives your card details and billing email directly; we never see or store your card number.",
             "Sentry: receives the crash and error reports described above, so we can find and fix faults. It stores the technical details of the fault for 90 days, not your account details, and does not use them for advertising.",
+            "PostHog (United States data region): receives the anonymous usage data described above, only if you have opted in, so we can see which features are used and improve lessons. It does not receive your name, email or account identifier, and does not use the data for advertising.",
             "Apple: Sign in with Apple if you choose it, App Store billing for Alphonso Pro, and the Apple Push Notification service for notifications on iPhone.",
             "Google: Sign in with Google if you choose it and, on Android, Google Play billing and Firebase Cloud Messaging for notifications.",
             "Neon: hosts the database behind the launch email list on our marketing website. It stores the email address you enter there and when you entered it.",

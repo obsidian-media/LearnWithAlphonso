@@ -12,7 +12,8 @@
 	     code starts collecting an undeclared category. All types: linked to the
 	     account (every row is keyed to the Supabase user id), never used for
 	     tracking (no ad or analytics SDK), app functionality only, except Product Interaction, which
-	     declares App Functionality + Analytics + Product Personalization. The App Store
+	     declares App Functionality + Analytics + Product Personalization. Device ID also declares Analytics: the
+	     optional, opt-in PostHog usage analytics (Analytics.swift) keeps a random per-install id, no email, name or account id. The App Store
 	     Connect App Privacy answers must be updated to match before submission. Other Data
 	     Types covers the 13+ self-declaration for stranger buddy matching and the
 	     AI consent record. -->
@@ -88,6 +89,7 @@
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
 				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+				<string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
 			</array>
 		</dict>
 		<dict>
