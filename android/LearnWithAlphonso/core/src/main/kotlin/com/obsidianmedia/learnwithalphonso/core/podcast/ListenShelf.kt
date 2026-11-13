@@ -57,6 +57,18 @@ object ListenShelf {
         return if (m >= 60) "${m / 60} h ${m % 60} m" else "$m m"
     }
 
+    /** The start of the current UTC month, ISO-8601 with a Z: where "this month" begins (web counts the same way). */
+    fun monthStartIso(nowMillis: Long): String {
+        val date = java.time.Instant.ofEpochMilli(nowMillis).atZone(java.time.ZoneOffset.UTC).toLocalDate()
+        return "%04d-%02d-01T00:00:00Z".format(date.year, date.monthValue)
+    }
+
+    /** Seconds listened this month from `podcast_play_events` rows; garbage rows count for nothing. */
+    fun monthSeconds(rows: List<Int>): Int = rows.sumOf { it.coerceAtLeast(0) }
+
+    /** The month chip's text, or null under one minute (hidden, as on web). */
+    fun monthChip(seconds: Int): String? = if (seconds >= 60) "${hoursMinutes(seconds)} this month" else null
+
     /** Capped below int4 so "the very end" reaches the database's own clamp instead of overflowing it. */
     fun wirePosition(seconds: Int): Int = seconds.coerceIn(0, 2_000_000_000)
 

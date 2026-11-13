@@ -16,6 +16,7 @@ import { AiFeaturesSetting } from "../../components/AiFeaturesSetting";
 import { AvatarSetting } from "../../components/AvatarSetting";
 import { SoundEffectsSetting } from "../../components/SoundEffectsSetting";
 import { VoicesSetting } from "../../components/VoicesSetting";
+import { ExplainSetting } from "../../components/ExplainSetting";
 import { ProfileAboutYou, ProfileAvatarEditor } from "../../components/firstrun/ProfileAboutYou";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getProfileOverview } from "../../lib/profile.functions";
@@ -301,6 +302,8 @@ function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
       <SoundEffectsSetting />
 
       <VoicesSetting />
+
+      <ExplainSetting />
 
       <h2 className={H2}>Account</h2>
       <div className={`${PANEL} space-y-2`}>

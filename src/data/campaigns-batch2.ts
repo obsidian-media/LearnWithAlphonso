@@ -41,7 +41,7 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
       es: "Plan a picnic with a friend, buy fruit and bread at the market in Quito, and share lunch in the park.",
     },
     premise: {
-      en: "It is a sunny Saturday and the learner is going to the neighbourhood market. This roleplay follows one easy day: meeting a friend at the market entrance and planning a picnic, buying fruit and bread at the stalls, and sharing the picnic in the park. It is one day with the same food, so people may mention what was bought earlier if it comes up naturally. Use very simple, everyday words.",
+      en: "It is a sunny Saturday and the learner is going to the neighborhood market. This roleplay follows one easy day: meeting a friend at the market entrance and planning a picnic, buying fruit and bread at the stalls, and sharing the picnic in the park. It is one day with the same food, so people may mention what was bought earlier if it comes up naturally. Use very simple, everyday words.",
       fr: "Contexte : c'est un samedi ensoleillé et l'apprenant va au marché de son quartier, à Toulouse. Ce jeu de rôle suit une journée simple : retrouver un ami à l'entrée du marché et organiser un pique-nique, acheter des fruits et du pain aux étals, puis partager le pique-nique au parc. C'est la même journée et la même nourriture : tu peux mentionner naturellement ce qui a été acheté plus tôt si l'occasion se présente. Utilise des mots très simples et courants. Toute la conversation se déroule en français.",
       es: "Contexto: es un sábado soleado y el estudiante va al mercado de su barrio, en Quito. Este juego de rol sigue un día sencillo: encontrarse con un amigo en la entrada del mercado y organizar un picnic, comprar frutas y pan en los puestos, y compartir el picnic en el parque. Es el mismo día y la misma comida: puedes mencionar con naturalidad lo que se compró antes si surge. Usa palabras muy sencillas y cotidianas. Toda la conversación es en español.",
     },
@@ -96,7 +96,7 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
         },
         systemPrompt: {
           en: en(
-            "You are Ana, a friendly seller at a fruit and bread stall in a neighbourhood market. Help the learner buy food for a picnic: ask what they would like, how much or how many (a kilo of apples, six bananas, one loaf of bread), tell them the price in a simple number, and give the change. Keep prices small, round and invented.",
+            "You are Ana, a friendly seller at a fruit and bread stall in a neighborhood market. Help the learner buy food for a picnic: ask what they would like, how much or how many (a kilo of apples, six bananas, one loaf of bread), tell them the price in a simple number, and give the change. Keep prices small, round and invented.",
             "ask for two or three things with a quantity, ask the price of one of them, and pay.",
           ),
           fr: fr(
@@ -190,7 +190,7 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
         },
         systemPrompt: {
           en: en(
-            "You are Nora, who has invited the learner to dinner. You open the door, welcome them and take their coat. When they hand you a small gift (flowers or sweets), thank them kindly, show them in, and offer a drink before dinner: water, juice or tea. Use simple, polite sentences.",
+            "You are Nora, who has invited the learner to dinner. You open the door, welcome them and take their coat. When they hand you a small gift (flowers or candy), thank them kindly, show them in, and offer a drink before dinner: water, juice or tea. Use simple, polite sentences.",
             "greet Nora, give a small gift with a polite sentence, and choose a drink.",
           ),
           fr: fr(
@@ -294,12 +294,12 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
       es: "Una mochila olvidada en el autobús",
     },
     blurb: {
-      en: "Ask the driver for help, describe your bag at the lost property office, and tell a friend the story.",
-      fr: "Ask the driver for help, describe your bag at the lost property office in Strasbourg, and tell a friend the story.",
-      es: "Ask the driver for help, describe your bag at the lost property office in Santiago, and tell a friend the story.",
+      en: "Ask the driver for help, describe your bag at the lost-and-found office, and tell a friend the story.",
+      fr: "Ask the driver for help, describe your bag at the lost-and-found office in Strasbourg, and tell a friend the story.",
+      es: "Ask the driver for help, describe your bag at the lost-and-found office in Santiago, and tell a friend the story.",
     },
     premise: {
-      en: "The learner left a bag on a city bus this afternoon. This roleplay follows what happens next: asking a bus driver at the terminus for help, describing the bag at the lost property office, and later telling a friend the whole story in order. It is one afternoon and one bag, so people may refer to details already mentioned (the bus route, the color of the bag) if it comes up naturally. When the learner tells the friend the story, encourage past-tense sentences.",
+      en: "The learner left a bag on a city bus this afternoon. This roleplay follows what happens next: asking a bus driver at the terminus for help, describing the bag at the lost-and-found office, and later telling a friend the whole story in order. It is one afternoon and one bag, so people may refer to details already mentioned (the bus route, the color of the bag) if it comes up naturally. When the learner tells the friend the story, encourage past-tense sentences.",
       fr: "Contexte : l'apprenant a oublié un sac dans un bus de Strasbourg cet après-midi. Ce jeu de rôle suit la suite : demander de l'aide à un conducteur au terminus, décrire le sac au bureau des objets trouvés, puis raconter toute l'histoire dans l'ordre à une amie. C'est le même après-midi et le même sac : tu peux reprendre naturellement les détails déjà donnés (la ligne de bus, la couleur du sac) si l'occasion se présente. L'histoire se raconte au passé : encourage les phrases au passé. Toute la conversation se déroule en français.",
       es: "Contexto: el estudiante olvidó una mochila en un autobús de Santiago esta tarde. Este juego de rol sigue lo que pasa después: pedir ayuda a un conductor en la terminal, describir la mochila en la oficina de objetos extraviados y, más tarde, contarle toda la historia en orden a un amigo. Es la misma tarde y la misma mochila: puedes retomar con naturalidad los detalles ya dados (la línea del autobús, el color de la mochila) si surge. La historia se cuenta en pasado: anima a usar frases en pasado. Usa usted con el conductor y con el empleado de objetos extraviados, y tú con el amigo; no cambies de trato dentro de una misma escena. Toda la conversación es en español.",
     },
@@ -319,7 +319,7 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
         },
         systemPrompt: {
           en: en(
-            "You are Omar, a bus driver on a break at the end of the line. A passenger comes to you worried: they left a bag on a bus earlier. Ask which bus line it was, where they got on and off, and about what time. Then explain that lost bags go to the lost property office downtown and tell them how to get there. Use clear, simple A2-level English.",
+            "You are Omar, a bus driver on a break at the end of the line. A passenger comes to you worried: they left a bag on a bus earlier. Ask which bus line it was, where they got on and off, and about what time. Then explain that lost bags go to the lost-and-found office downtown and tell them how to get there. Use clear, simple A2-level English.",
             "say what happened in the past tense (which bus, where they got on and off, when) and ask where to go.",
           ),
           fr: fr(
@@ -343,7 +343,7 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
         id: "lost-property-office",
         minTurns: 3,
         title: {
-          en: "At the lost property office",
+          en: "At the lost-and-found office",
           fr: "Au bureau des objets trouvés",
           es: "En la oficina de objetos extraviados",
         },
@@ -354,8 +354,8 @@ export const BATCH2_CAMPAIGNS: Campaign[] = [
         },
         systemPrompt: {
           en: en(
-            "You are Ines, who works at the city lost property office. Help the learner find their bag. Ask them to describe it: colour, size, material, and two things inside (the learner may invent them, nothing valuable or private). Then say you will check the shelves, come back, and tell them you found a bag that matches their description. Never ask for a surname, a phone number, an address, an ID or a bank card; if you need to write a name on the form, ask only for a first name.",
-            "describe the bag (colour, size, what is inside) and give a first name for the form.",
+            "You are Ines, who works at the city lost-and-found office. Help the learner find their bag. Ask them to describe it: color, size, material, and two things inside (the learner may invent them, nothing valuable or private). Then say you will check the shelves, come back, and tell them you found a bag that matches their description. Never ask for a surname, a phone number, an address, an ID or a bank card; if you need to write a name on the form, ask only for a first name.",
+            "describe the bag (color, size, what is inside) and give a first name for the form.",
           ),
           fr: fr(
             "Tu es Inès, qui travaille au bureau des objets trouvés de la ville, à Strasbourg. Aide l'apprenant à retrouver son sac. Demande-lui de le décrire : couleur, taille, matière et deux choses à l'intérieur (l'apprenant peut les inventer, rien de précieux ni de privé). Dis ensuite que tu vas regarder sur les étagères, puis reviens lui dire que tu as trouvé un sac qui correspond à sa description. Ne demande jamais un nom de famille, un numéro de téléphone, une adresse, une pièce d'identité ni une carte bancaire ; si tu dois écrire un nom sur le formulaire, demande seulement un prénom.",

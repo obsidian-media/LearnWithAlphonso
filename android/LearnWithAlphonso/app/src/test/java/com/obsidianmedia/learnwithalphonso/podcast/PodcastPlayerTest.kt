@@ -11,6 +11,8 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlaybackFailure
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerControl
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerPhase
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastProbeResult
+import com.obsidianmedia.learnwithalphonso.core.podcast.SleepChoice
+import com.obsidianmedia.learnwithalphonso.core.podcast.SleepTimerState
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -134,11 +136,13 @@ class PodcastPlayerTest {
         isOnline: () -> Boolean = { true },
         probe: suspend (String) -> PodcastProbeResult = { PodcastProbeResult.NotRun },
         timeoutMillis: Long = 20_000L,
+        clock: () -> Long = System::currentTimeMillis,
     ): PodcastPlayer {
         val client = PodcastClient(SupabaseHttp("https://x.supabase.co", "pk", { "tok" }, s.engine), { "u1" }) { 1_758_000_000_000L }
         return PodcastPlayer(
             port, { client }, recording, CoroutineScope(Dispatchers.Main),
-            isOnline = isOnline, probe = probe, loadTimeoutMillis = timeoutMillis, stallTimeoutMillis = timeoutMillis,
+            nowMillis = clock, isOnline = isOnline, probe = probe, loadTimeoutMillis = timeoutMillis, stallTimeoutMillis = timeoutMillis,
+            sleepPollMillis = 10L,
         )
     }
 
@@ -170,6 +174,82 @@ class PodcastPlayerTest {
         val event = s.seen.first { it.path.endsWith("record_podcast_play_event") }
         assertEquals("""{"_episode_id":"e1","_seconds_listened":10}""", event.body)
         assertFalse(p.state.value.isPlaying)
+    }
+
+    @Test
+    fun `the end of an episode stores its completion once, though the player echoes its own pause`() = runBlocking {
+        val s = server()
+        val port = FakePort()
+        val p = player(s, port)
+        p.play(episode())
+        port.endPlayback()
+        awaitTrue("completion save") { saves(s).isNotEmpty() }
+        kotlinx.coroutines.delay(300)
+        assertEquals("one upsert at the end, not one per pause echo", 1, saves(s).size)
+        assertTrue(Json.parseToJsonElement(saves(s).single().body).jsonObject.containsKey("completed_at"))
+        assertEquals(1, s.seen.count { it.path.endsWith("save_listen_progress") })
+    }
+
+    @Test
+    fun `seek goes to an absolute position, clamped into the episode`() = runBlocking {
+        val port = FakePort()
+        val p = player(server(), port)
+        p.play(episode())
+        p.seek(120.0)
+        assertTrue(port.calls.contains("seek(120000)"))
+        assertEquals(120.0, p.state.value.elapsedSeconds, 0.0)
+        p.seek(9_999.0)
+        assertTrue(port.calls.contains("seek(300000)"))
+        p.seek(-5.0)
+        assertTrue(port.calls.contains("seek(0)"))
+        port.calls.clear()
+        p.seek(Double.NaN)
+        assertTrue("a bad number seeks nowhere", port.calls.none { it.startsWith("seek") })
+    }
+
+    @Test
+    fun `a timed sleep pauses playback at its deadline and switches itself off`() = runBlocking {
+        var now = 1_000_000L
+        val port = FakePort()
+        val p = player(server(), port, clock = { now })
+        p.play(episode())
+        assertTrue(p.state.value.isPlaying)
+        p.setSleep(SleepChoice.Min15)
+        now += 14 * 60_000L
+        kotlinx.coroutines.delay(100)
+        assertTrue("still playing before the deadline", p.state.value.isPlaying)
+        now += 61_000L
+        awaitTrue("paused at the deadline") { p.state.value.phase == PodcastPlayerPhase.Paused }
+        assertEquals(SleepTimerState.OFF, p.sleep.value)
+        assertFalse(port.playing)
+    }
+
+    @Test
+    fun `end of episode never pauses on the clock, and clears when the episode ends`() = runBlocking {
+        var now = 0L
+        val port = FakePort()
+        val p = player(server(), port, clock = { now })
+        p.play(episode())
+        p.setSleep(SleepChoice.EndOfEpisode)
+        now += 5 * 3_600_000L
+        kotlinx.coroutines.delay(100)
+        assertTrue(p.state.value.isPlaying)
+        port.endPlayback()
+        assertEquals(SleepTimerState.OFF, p.sleep.value)
+    }
+
+    @Test
+    fun `choosing off cancels a running sleep`() = runBlocking {
+        var now = 0L
+        val port = FakePort()
+        val p = player(server(), port, clock = { now })
+        p.play(episode())
+        p.setSleep(SleepChoice.Min15)
+        p.setSleep(SleepChoice.Off)
+        now += 3_600_000L
+        kotlinx.coroutines.delay(100)
+        assertTrue(p.state.value.isPlaying)
+        assertEquals(SleepTimerState.OFF, p.sleep.value)
     }
 
     @Test

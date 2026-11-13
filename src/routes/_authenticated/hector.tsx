@@ -3,6 +3,7 @@ import { DsIcon } from "../../components/ds/DsIcon";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
+import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
 import { LessonFrame } from "../../components/AppShell";
 import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { MascotImage } from "../../components/MascotImage";
@@ -424,6 +425,11 @@ function HectorConversation({
                   {!(greeted && i === 0) && (
                     <AiMessageReport message={m.content} surface="hector" course={course} />
                   )}
+                  <ExplainInMyLanguage
+                    className="mt-1"
+                    surface="hector"
+                    request={{ kind: "message", course, text: m.content.slice(0, 1000) }}
+                  />
                 </div>
               ) : (
                 <div className="max-w-[85%] rounded-2xl rounded-br-md bg-ds-ink px-4 py-2.5 ds-type-footnote leading-relaxed text-ds-card">

@@ -16,6 +16,8 @@ struct ListenShelfRoot: View {
 
     @State private var episodes: [PodcastEpisode] = []
     @State private var progress: [ListenProgress] = []
+    /// Seconds listened this month (podcast_play_events); the chip is hidden under a minute.
+    @State private var monthSeconds = 0
     @State private var course: String?
     @State private var level: String?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -41,6 +43,16 @@ struct ListenShelfRoot: View {
                     ForEach(courses, id: \.code) { Text($0.label).tag($0.code) }
                 }
                 .pickerStyle(.segmented)
+
+                if let chip = ListenShelf.monthChip(seconds: monthSeconds) {
+                    Label(chip, systemImage: "timer")
+                        .dsText(.footnote)
+                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .padding(.horizontal, AlphonsoSpacing.md)
+                        .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                        .background(Capsule().fill(AlphonsoColor.surface))
+                        .accessibilityElement(children: .combine)
+                }
 
                 if let target {
                     ContinueCard(target: target, player: player, downloads: downloads, networkMonitor: networkMonitor, queue: target.shelf.episodes)
@@ -131,6 +143,7 @@ struct ListenShelfRoot: View {
     private func reloadProgress() async {
         guard let client = makePodcastClient(session: session) else { return }
         if let rows = try? await client.fetchListenProgress() { progress = rows }
+        if let seconds = try? await client.fetchMonthListenedSeconds() { monthSeconds = seconds }
     }
 }
 

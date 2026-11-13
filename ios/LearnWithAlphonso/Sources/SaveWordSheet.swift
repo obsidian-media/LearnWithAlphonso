@@ -105,6 +105,11 @@ struct SaveWordSheet: View {
                 Text("AI-generated meaning. It can occasionally be wrong.")
                     .font(AlphonsoFont.sans(12))
                     .foregroundStyle(AlphonsoColor.inkSoft)
+                // The meaning above stays in English; this offers it in the learner's own language, on tap.
+                ExplainInMyLanguage(
+                    request: ExplainRequest.makeWord(
+                        word: result.word, sentence: result.sentence, course: request.course),
+                    session: session)
             }
         case .failed(let error):
             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {

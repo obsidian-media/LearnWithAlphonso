@@ -620,7 +620,9 @@ struct LessonCard<Content: View>: View {
 /// scroll inside it while the button stays put.
 struct LessonVerdictSheet<Explanation: View>: View {
     private static var explanationMaxHeight: CGFloat { 116 }
+    private static var extraMaxHeight: CGFloat { 260 }
     @State private var explanationHeight: CGFloat = 0
+    @State private var extraHeight: CGFloat = 0
     let correct: Bool
     let title: String
     /// "+N XP" when this right answer pays, else nil.
@@ -629,6 +631,9 @@ struct LessonVerdictSheet<Explanation: View>: View {
     var onHearAnswer: (() -> Void)?
     let continueTitle: String
     let onContinue: () -> Void
+    /// Optional content between the explanation and the button (the "Explain in <language>" chip and card). Nil draws
+    /// nothing, so every other caller is unchanged.
+    var extra: AnyView? = nil
     @ViewBuilder var explanation: () -> Explanation
 
     @Environment(\.alphonsoDS) private var ds
@@ -687,6 +692,16 @@ struct LessonVerdictSheet<Explanation: View>: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .frame(height: min(explanationHeight, Self.explanationMaxHeight))
+            if let extra {
+                // As tall as its content, up to a cap; a long explanation scrolls inside the sheet.
+                ScrollView {
+                    extra
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { extraHeight = $0 }
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .frame(height: min(extraHeight, Self.extraMaxHeight))
+            }
             Button(continueTitle, action: onContinue)
                 .buttonStyle(LessonEdgeButtonStyle(variant: correct ? .right : .wrong))
                 .padding(.top, 2)

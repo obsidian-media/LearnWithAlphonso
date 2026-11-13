@@ -111,7 +111,13 @@ describe("the review overlay", () => {
         for (const [k, v] of Object.entries(fix.patch))
           expect(it!.data[k], `${id} ${k}`).toEqual(v);
         expect(
-          checkFix(it!, { id, patch: fix.patch, reason: fix.reason, keyChange: fix.keyChange }),
+          checkFix(it!, {
+            id,
+            patch: fix.patch,
+            reason: fix.reason,
+            keyChange: fix.keyChange,
+            americanEnglish: fix.americanEnglish,
+          }),
           id,
         ).toEqual([]);
       }

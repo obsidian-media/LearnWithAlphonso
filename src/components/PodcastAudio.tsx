@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { usePodcastPlayer } from "../lib/podcast-player";
+import { SLEEP_OFF, sleepShouldPause } from "../lib/sleep-timer";
 
 /** How often a position is written back while audio plays. */
 const SAVE_INTERVAL_SECONDS = 10;
@@ -35,6 +36,9 @@ export function PodcastAudio() {
   const setElapsed = usePodcastPlayer((state) => state.setElapsed);
   const setFailed = usePodcastPlayer((state) => state.setFailed);
   const setMediaDuration = usePodcastPlayer((state) => state.setMediaDuration);
+
+  const sleep = usePodcastPlayer((state) => state.sleep);
+  const setSleep = usePodcastPlayer((state) => state.setSleep);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastSavedRef = useRef(0);
@@ -100,6 +104,21 @@ export function PodcastAudio() {
       audio.pause();
     }
   }, [isPlaying, episodeId, retryToken, setFailed]);
+
+  // The sleep timer: a timed choice pauses at its deadline. Checked each second against the wall clock, so a
+  // backgrounded tab with throttled timers still stops at the first tick after the deadline.
+  useEffect(() => {
+    if (sleep.endsAtMs === null) return;
+    const check = () => {
+      if (sleepShouldPause(sleep, Date.now(), false)) {
+        setPlaying(false);
+        setSleep(SLEEP_OFF);
+      }
+    };
+    check();
+    const id = window.setInterval(check, 1000);
+    return () => window.clearInterval(id);
+  }, [sleep, setPlaying, setSleep]);
 
   // The scrubber's seeks. Keyed on the token, so the same target twice is two requests; a seek is not a
   // listen, so lastTickRef is cleared and the next tick does not count the jump as listening time.
@@ -174,6 +193,8 @@ export function PodcastAudio() {
   };
 
   const onEnded = () => {
+    // "End of episode" has done its job; any timed choice is spent too, since nothing is left to stop.
+    setSleep(SLEEP_OFF);
     setPlaying(false);
     setElapsed(0);
     markFinished();

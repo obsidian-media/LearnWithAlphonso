@@ -45,8 +45,9 @@ describe("the deterministic flags agree with the gates they mirror", () => {
   const counts = flagCounts(items);
   const total = (f: string) => Object.values(counts[f] ?? {}).reduce((a, b) => a + b, 0);
 
-  it("B1-C1 drill flags match romance-conjugation.test.ts's ratchet (at most 490)", () => {
-    expect(total(FLAG.drillNonForm)).toBeGreaterThan(0);
+  it("B1-C1 drill flags match romance-conjugation.test.ts's ratchet (at most 490, now 0)", () => {
+    // Round 7 fixed the last three, so the flag may now be zero; the upper bound is what can still fail.
+    expect(total(FLAG.drillNonForm)).toBeGreaterThanOrEqual(0);
     expect(total(FLAG.drillNonForm)).toBeLessThanOrEqual(490);
   });
 
@@ -102,15 +103,17 @@ describe("sampling", () => {
   });
 
   it("a rewrite-class flag alone does not force a second opinion (it is rewritten, then re-reviewed)", () => {
-    const generic = items.find(
-      (i) =>
-        i.flags?.length === 1 &&
-        i.flags[0] === FLAG.genericExplanation &&
-        verdicts.get(i.id)?.verdict === "ok",
-    )!;
-    expect(secondOpinionSet(items, verdicts, 0, "s").flagged.some((i) => i.id === generic.id)).toBe(
-      false,
-    );
+    // No built item is generic any more (English and the Romance engine now give a reason), so the
+    // case is built by hand: a generic-explanation flag alone, with a Claude verdict of "ok".
+    const generic = {
+      ...items[1]!,
+      id: "synthetic:generic-explanation",
+      flags: [FLAG.genericExplanation],
+    };
+    const withGeneric = new Map(verdicts);
+    withGeneric.set(generic.id, { id: generic.id, verdict: "ok", confidence: 0.9 });
+    const set = secondOpinionSet([...items, generic], withGeneric, 0, "s");
+    expect(set.flagged.some((i) => i.id === generic.id)).toBe(false);
   });
 
   it("the blind sample is 100 per course, seeded, and spread over kinds", () => {

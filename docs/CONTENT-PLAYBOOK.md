@@ -38,7 +38,7 @@ Every rule here exists because breaking it shipped a defect. The history is in
   `"x" is correct here. <note>` line is a defect; never add a new one. The quotes are load-bearing:
   the save-a-word feature (`src/lib/course-language-spans.ts` and its Swift and Kotlin twins) only
   offers course-language text that the explanation quotes.
-- **Varieties.** English: British spelling and usage. French: standard European French.
+- **Varieties.** English: American spelling and usage (the owner's decision, 2026-11-06; `src/lib/american-english.ts` lists the British forms and `src/data/american-english.test.ts` fails on them). French: standard European French.
   Spanish: Latin American (tú/usted/ustedes, never vosotros or vos; seseo and yeísmo assumed).
 - **Conversation prompts.** The English `systemPrompt` of a scenario or campaign scene is frozen:
   older app builds send it verbatim and `/api/chat` rejects anything not in `ALL_SYSTEM_PROMPTS`.
@@ -82,7 +82,7 @@ The full review and the per-PR check give these lines to the reviewing models wo
 
 **English**
 
-- Variety: British English spelling and usage (colour, favourite, flat); flag a US-only form only when it is the key or the only natural option.
+- Variety: American English spelling and usage (color, favorite, apartment); flag a British-only form (colour, flat, queue, mum) unless the item is deliberately about it.
 - Register: everyday neutral English unless the item sets a formal or casual scene.
 - Phrasal verbs, articles and prepositions: the classic learner traps; a second preposition that is also idiomatic is a second answer.
 

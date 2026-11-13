@@ -94,6 +94,8 @@ class PodcastPlayerMachineTest {
         assertEquals(Ph.Finished, m.phase)
         assertEquals(PodcastPlayerControl.PLAY, m.control)
         assertEquals(emptyList<Fx>(), m.send(Ev.PlayedToEnd), "ending twice does nothing")
+        // The player echoes its own pause at the end; that must not store the position a second time.
+        assertEquals(emptyList<Fx>(), m.send(Ev.PausedExternally(resumable = false)), "a pause echo after the end saves nothing")
         val again = m.send(Ev.TogglePressed)
         assertEquals(listOf(Fx.Play, Fx.ScheduleLoadTimeout(m.stallGeneration)), again, "Play from the end loads again")
     }

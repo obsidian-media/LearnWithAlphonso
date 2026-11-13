@@ -8,7 +8,7 @@ type ReportInput = {
   reason: AiReportReason;
   context: {
     message: string;
-    surface: "hector" | "conversation" | "campaign";
+    surface: "hector" | "conversation" | "campaign" | "explain";
     course: "en" | "fr" | "es";
     scenario_id?: string;
     campaign_id?: string;
@@ -24,6 +24,7 @@ export function AiMessageReport({
   scenarioId,
   campaignId,
   sceneIndex,
+  label = "Report",
   send = (input: ReportInput) => reportAiResponse({ data: input }),
 }: {
   message: string;
@@ -32,6 +33,8 @@ export function AiMessageReport({
   scenarioId?: string;
   campaignId?: string;
   sceneIndex?: number;
+  /** The button's words; the accessible name stays "Report this response". */
+  label?: string;
   send?: (input: ReportInput) => Promise<{ ok: boolean }>;
 }) {
   const [open, setOpen] = useState(false);
@@ -72,7 +75,7 @@ export function AiMessageReport({
         onClick={() => setOpen(true)}
         className="mt-1 rounded-full bg-ds-card/85 px-2 py-0.5 ds-type-caption text-ds-ink-soft underline backdrop-blur-md"
       >
-        Report
+        {label}
       </button>
       {open && (
         <Modal

@@ -356,7 +356,9 @@ struct LessonPlayerView: View {
                     LessonHUD(progress: 0, hearts: hudHearts, onLight: true, onClose: { dismiss() })
                         .padding(.horizontal)
                         .padding(.top, 8)
-                    VocabScreen(lesson: lesson, items: vocab, onSpeak: { speak($0, course: course) }) { phase = .quiz }
+                    VocabScreen(
+                        lesson: lesson, items: vocab, session: session, courseCode: course.wireCode,
+                        onSpeak: { speak($0, course: course) }) { phase = .quiz }
                 }
                 .lessonSurface()
             case .quiz:
@@ -440,6 +442,15 @@ struct LessonPlayerView: View {
         .animation(reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.38, dampingFraction: 0.86), value: checked)
     }
 
+    /// What "Explain in <language>" would explain: the question, what the learner answered and the right answer. Nil
+    /// for a right answer or when nothing was answered.
+    private var explainRequest: ExplainRequest? {
+        guard !lastAnswerCorrect, let picked else { return nil }
+        return ExplainRequest.makeWrongAnswer(
+            question: currentQuestion.prompt, wrongAnswer: picked,
+            correctAnswer: AnswerVerdict.correctAnswer(for: currentQuestion), course: course.wireCode)
+    }
+
     /// Check, or the verdict sheet once checked: pinned below the scrolling question.
     @ViewBuilder
     private var quizControls: some View {
@@ -483,7 +494,10 @@ struct LessonPlayerView: View {
                 onHearAnswer: { speak(AnswerVerdict.correctAnswer(for: currentQuestion), course: course) },
                 continueTitle: isReinforcing || pendingReinforcement != nil || idx < total - 1
                     ? (lastAnswerCorrect ? "Continue" : "Got it") : "Finish",
-                onContinue: advance
+                onContinue: advance,
+                extra: explainRequest.map { request in
+                    AnyView(ExplainInMyLanguage(request: request, session: session))
+                }
             ) {
                 ExplanationView(
                     question: currentQuestion, picked: picked, explanation: currentQuestion.explanationText,

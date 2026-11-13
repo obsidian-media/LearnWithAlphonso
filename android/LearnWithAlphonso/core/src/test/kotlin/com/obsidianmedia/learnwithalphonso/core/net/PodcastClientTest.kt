@@ -59,6 +59,18 @@ class PodcastClientTest {
     }
 
     @Test
+    fun `month listened seconds asks for this UTC month and sums, ignoring bad rows`() = runTest {
+        // 2026-11-30 23:59 UTC is still November.
+        val nov = 1_796_083_140_000L
+        val fake = FakeSupabase { json("""[{"seconds_listened":600},{"seconds_listened":1200},{"seconds_listened":-5},{"seconds_listened":null}]""") }
+        assertEquals(1800, PodcastClient(fake.http, { "user-1" }) { nov }.fetchMonthListenedSeconds())
+        val request = fake.seen.single()
+        assertEquals("podcast_play_events", request.path.substringAfterLast('/'))
+        assertEquals("gte.2026-11-01T00:00:00Z", request.query["started_at"])
+        assertEquals("seconds_listened", request.query["select"])
+    }
+
+    @Test
     fun `a save returns the updated_at the server stored, not the device clock`() = runTest {
         val patch = FakeSupabase { json("""[{"position_seconds":30,"updated_at":"2026-09-24T10:00:07.123456+00:00"}]""") }
         assertEquals("2026-09-24T10:00:07.123456+00:00", client(patch).savePlaybackPosition("e1", 30, false, "2026-09-24T10:00:00Z"))

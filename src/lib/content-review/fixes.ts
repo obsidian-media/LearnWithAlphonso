@@ -18,7 +18,7 @@ import type { ItemKind, ReviewItem } from "./inventory";
 import { FLAG, GENERIC_EXPLANATION, INFINITIVE } from "./gates";
 import { isFormOf } from "../../data/conjugation-form-check";
 import { bracketedVerb } from "../../data/romance-conjugation";
-import { cardProblems } from "../../data/card-rules";
+import { cardProblems, mentionsTerm } from "../../data/card-rules";
 import type { Question } from "../../data/curriculum";
 import type { Level } from "../../data/levels";
 import { deriveVocab } from "../../data/vocab";
@@ -31,6 +31,11 @@ export type ProposedFix = {
   patch: Patch;
   /** True only when the judge decided the key itself is wrong (category wrong-key). */
   keyChange?: boolean;
+  /**
+   * The patch only respells an English item in American English (src/lib/american-english.ts). It
+   * may then restate a prompt or wrong options that an earlier reviewed fix owns.
+   */
+  americanEnglish?: boolean;
   reason: string;
 };
 
@@ -111,7 +116,11 @@ export function cardRules(term: string, patch: Patch, course: string = "en"): st
   if (
     typeof patch.example === "string" &&
     term &&
-    !patch.example.toLowerCase().includes(term.toLowerCase())
+    // French and Spanish verbs are conjugated in the example ("chante" for chanter), so they use the
+    // word-card gate's own test (a shared stem, elisions split); English keeps the literal match.
+    (course === "en"
+      ? !patch.example.toLowerCase().includes(term.toLowerCase())
+      : !mentionsTerm(patch.example, term))
   )
     why.push("the card example does not use the term");
   return why;
@@ -255,7 +264,7 @@ export function checkFix(item: ReviewItem, fix: ProposedFix): string[] {
   }
   // An earlier reviewed English fix (question-fixes.ts, pinned by question-fixes.test.ts) owns its
   // prompt and wrong options: the review overlay must not undo it.
-  if (item.course === "en" && item.kind === "question") {
+  if (item.course === "en" && item.kind === "question" && !fix.americanEnglish) {
     const earlier = QUESTION_FIXES[item.id.slice(item.id.indexOf(":question:") + 10)];
     if (earlier?.prompt && "prompt" in fix.patch)
       why.push("the prompt is owned by an earlier reviewed fix (question-fixes.ts)");

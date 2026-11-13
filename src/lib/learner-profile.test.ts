@@ -103,3 +103,17 @@ describe("merge and the Complete-your-profile gate", () => {
     );
   });
 });
+
+describe("explainMode (Explain in my language)", () => {
+  it("is saved and read back", () => {
+    expect(learnerProfilePatchSchema.safeParse({ explainMode: "always" }).success).toBe(true);
+    expect(parseLearnerProfile({ explainMode: "off" }).explainMode).toBe("off");
+  });
+  it("an unknown value is dropped, not trusted", () => {
+    expect(learnerProfilePatchSchema.safeParse({ explainMode: "sometimes" }).success).toBe(false);
+    expect(parseLearnerProfile({ explainMode: "sometimes" }).explainMode).toBeUndefined();
+  });
+  it("is not set by default, so readers fall back to tap-to-explain", () => {
+    expect(parseLearnerProfile({}).explainMode).toBeUndefined();
+  });
+});
