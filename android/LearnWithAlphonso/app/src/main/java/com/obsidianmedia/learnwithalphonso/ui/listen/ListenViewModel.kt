@@ -43,6 +43,8 @@ data class ListenUiState(
     val progress: List<ListenProgress> = emptyList(),
     val libraryLoading: Boolean = true,
     val libraryFailed: Boolean = false,
+    /** Seconds listened this month (podcast_play_events); the shelf's chip is hidden under a minute. */
+    val monthSeconds: Int = 0,
 )
 
 /** Port of ListenView.swift's state: the folder tree, per-folder episodes, search and the offline listing. */
@@ -119,6 +121,7 @@ class ListenViewModel(
     /** Re-reads progress, for example after an episode played or the player closed. */
     suspend fun refreshProgress() {
         runCatching { client.fetchListenProgress() }.getOrNull()?.let { rows -> _state.update { it.copy(progress = rows) } }
+        runCatching { client.fetchMonthListenedSeconds() }.getOrNull()?.let { seconds -> _state.update { it.copy(monthSeconds = seconds) } }
     }
 
     fun loadEpisodes(folderId: String) {
