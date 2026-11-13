@@ -369,7 +369,9 @@ describe("staff console migration", () => {
       ),
     );
     expect(await count("admin_users", `user_id='${T1}'`)).toBe(1);
-    expect(await count("staff_roles", `user_id='${T1}' AND role='support' AND added_by='${ACTOR}'`)).toBe(1);
+    expect(
+      await count("staff_roles", `user_id='${T1}' AND role='support' AND added_by='${ACTOR}'`),
+    ).toBe(1);
     expect(await count("staff_audit_log")).toBe(before + 1);
     expect(await count("staff_audit_log", `action='staff.add' AND target_user_id='${T1}'`)).toBe(1);
   });
@@ -410,7 +412,10 @@ describe("staff console migration", () => {
     expect(audit.after.disabled).toBe(true);
     const upd = (args: unknown[]) =>
       asServer(() =>
-        db.query("SELECT public.staff_update_member($1,'owner',$2,$3,$4::text[],$5,'reason here')", args),
+        db.query(
+          "SELECT public.staff_update_member($1,'owner',$2,$3,$4::text[],$5,'reason here')",
+          args,
+        ),
       );
     await expect(upd([ACTOR, ACTOR, null, null, true])).rejects.toThrow(/own account/);
     await expect(upd([ACTOR, T1, null, "{staff.manage}", null])).rejects.toThrow(/staff\.manage/);
@@ -423,8 +428,11 @@ describe("staff console migration", () => {
       `SELECT public.staff_add_member('${ACTOR}','owner','${T2}','support','{}','reason here')`,
       `SELECT public.staff_update_member('${ACTOR}','owner','${T1}',NULL,NULL,true,'reason here')`,
     ]) {
-      await asRole("authenticated", () => expect(db.query(q)).rejects.toMatchObject({ code: "42501" }), ACTOR);
+      await asRole(
+        "authenticated",
+        () => expect(db.query(q)).rejects.toMatchObject({ code: "42501" }),
+        ACTOR,
+      );
     }
   });
 });
-
