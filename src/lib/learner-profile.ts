@@ -40,6 +40,9 @@ export const HEARD_FROM = [
   "podcast",
 ] as const;
 export const PROFILE_COURSES = ["en", "fr", "es"] as const;
+/** Learning-path types a learner may switch off (lessons are the backbone and can never be switched off). */
+export const PATH_OPTIONAL_TYPES = ["podcast", "talk", "campaign"] as const;
+export type PathOptionalType = (typeof PATH_OPTIONAL_TYPES)[number];
 
 /** ISO 639-1 codes for the "I speak" picker; names come from Intl.DisplayNames. */
 export const NATIVE_LANGUAGES = [
@@ -366,6 +369,7 @@ export type HeardFrom = (typeof HEARD_FROM)[number];
 export type ProfileCourse = (typeof PROFILE_COURSES)[number];
 
 const nameSchema = z.string().trim().min(1).max(40);
+const isoDate = z.string().regex(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
 const isoTime = z
   .string()
   .max(40)
@@ -394,12 +398,16 @@ export const learnerProfilePatchSchema = z
     ageRange: z.enum(AGE_RANGES).optional(),
     interests: z.array(z.enum(INTERESTS)).max(INTERESTS.length).optional(),
     heardFrom: z.enum(HEARD_FROM).optional(),
+    /** Learning path: the optional types switched off, and the day "lessons first" ends (null clears it). */
+    pathOff: z.array(z.enum(PATH_OPTIONAL_TYPES)).max(PATH_OPTIONAL_TYPES.length).optional(),
+    pathTrimUntil: isoDate.nullable().optional(),
   })
   .strict();
 
 export type LearnerProfilePatch = z.infer<typeof learnerProfilePatchSchema>;
 
-export type LearnerProfile = Omit<LearnerProfilePatch, "showFlag"> & {
+export type LearnerProfile = Omit<LearnerProfilePatch, "showFlag" | "pathTrimUntil"> & {
+  pathTrimUntil?: string;
   showFlag: boolean;
   completedAt?: string;
   dismissedAt?: string;
@@ -438,6 +446,13 @@ export function parseLearnerProfile(raw: unknown): LearnerProfile {
   }
   const heardFrom = pick(shape.heardFrom, v.heardFrom);
   if (heardFrom) out.heardFrom = heardFrom;
+  if (Array.isArray(v.pathOff)) {
+    out.pathOff = [...new Set(v.pathOff)].filter((t): t is PathOptionalType =>
+      (PATH_OPTIONAL_TYPES as readonly unknown[]).includes(t),
+    );
+  }
+  const pathTrimUntil = pick(isoDate, v.pathTrimUntil);
+  if (pathTrimUntil) out.pathTrimUntil = pathTrimUntil;
   const completedAt = pick(isoTime, v.completedAt);
   if (completedAt) out.completedAt = completedAt;
   const dismissedAt = pick(isoTime, v.dismissedAt);
