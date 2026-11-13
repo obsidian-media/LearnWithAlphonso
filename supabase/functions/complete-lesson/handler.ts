@@ -97,7 +97,7 @@ export type CompleteLessonDeps = {
   consumeCompletionSlot: (admin: SupabaseClient, userId: string, atIso: string) => Promise<boolean>;
   /** Gives back a slot taken for a completion that then failed to save, so the client's retry is not double counted. */
   releaseCompletionSlot: (admin: SupabaseClient, userId: string, atIso: string) => Promise<void>;
-  /** SERVER_HEARTS: whether the lesson's hearts are settled here ("shadow" records only, "on" charges). */
+  /** SERVER_HEARTS: whether the lesson's hearts are settled here ("on" charges, the default; "shadow" records only). */
   heartsMode: () => ServerHeartsMode;
   /** Alphonso Pro: unlimited hearts. Fails closed (false). */
   heartsUnlimited: (admin: SupabaseClient, userId: string) => Promise<boolean>;

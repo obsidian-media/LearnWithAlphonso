@@ -1144,13 +1144,18 @@ describe("completeLessonRemote settles the lesson's hearts on the server", () =>
     delete process.env.SERVER_HEARTS;
   });
 
-  it("passes the server's own miss count, in shadow mode by default", async () => {
+  it("passes the server's own miss count and charges by default (hearts are enforced)", async () => {
     await call(2);
-    expect(settleArgs()).toMatchObject({ _user_id: USER_ID, _misses: 2, _enforce: false });
+    expect(settleArgs()).toMatchObject({ _user_id: USER_ID, _misses: 2, _enforce: true });
   });
 
-  it("charges only with SERVER_HEARTS=on, and returns the settled hearts", async () => {
-    process.env.SERVER_HEARTS = "on";
+  it("SERVER_HEARTS=shadow records without charging", async () => {
+    process.env.SERVER_HEARTS = "shadow";
+    await call(2);
+    expect(settleArgs()).toMatchObject({ _misses: 2, _enforce: false });
+  });
+
+  it("returns the settled hearts from the server", async () => {
     adminRpc.mockImplementation(async (name?: string) =>
       name === "apply_lesson_completion"
         ? { data: { status: "applied" }, error: null }

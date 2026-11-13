@@ -235,7 +235,7 @@ function setup(
       if (i >= 0) slots.splice(i, 1);
       return Promise.resolve();
     },
-    heartsMode: () => opts.heartsMode ?? "shadow",
+    heartsMode: () => opts.heartsMode ?? "on",
     heartsUnlimited: () => Promise.resolve(opts.pro ?? false),
     now: () => opts.now ?? NOW,
   };
@@ -823,8 +823,14 @@ Deno.test(
   },
 );
 
-Deno.test("shadow mode (the default) settles without charging", async () => {
+Deno.test("hearts are enforced by default: the settlement charges", async () => {
   const { handler, db } = setup();
+  await handler(post(body(["b", "c"])));
+  assertEquals(db.settleCalls[0]._enforce, true);
+});
+
+Deno.test("SERVER_HEARTS=shadow settles without charging", async () => {
+  const { handler, db } = setup({ heartsMode: "shadow" });
   await handler(post(body(["b", "c"])));
   assertEquals(db.settleCalls[0]._enforce, false);
 });
