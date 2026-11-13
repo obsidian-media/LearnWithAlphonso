@@ -103,15 +103,17 @@ describe("sampling", () => {
   });
 
   it("a rewrite-class flag alone does not force a second opinion (it is rewritten, then re-reviewed)", () => {
-    const generic = items.find(
-      (i) =>
-        i.flags?.length === 1 &&
-        i.flags[0] === FLAG.genericExplanation &&
-        verdicts.get(i.id)?.verdict === "ok",
-    )!;
-    expect(secondOpinionSet(items, verdicts, 0, "s").flagged.some((i) => i.id === generic.id)).toBe(
-      false,
-    );
+    // No built item is generic any more (English and the Romance engine now give a reason), so the
+    // case is built by hand: a generic-explanation flag alone, with a Claude verdict of "ok".
+    const generic = {
+      ...items[1]!,
+      id: "synthetic:generic-explanation",
+      flags: [FLAG.genericExplanation],
+    };
+    const withGeneric = new Map(verdicts);
+    withGeneric.set(generic.id, { id: generic.id, verdict: "ok", confidence: 0.9 });
+    const set = secondOpinionSet([...items, generic], withGeneric, 0, "s");
+    expect(set.flagged.some((i) => i.id === generic.id)).toBe(false);
   });
 
   it("the blind sample is 100 per course, seeded, and spread over kinds", () => {
