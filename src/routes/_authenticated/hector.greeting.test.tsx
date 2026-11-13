@@ -4,6 +4,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "../../lib/__testutils__/ai-consent";
 import { clearOpenerSpeechCache } from "../../lib/opener-speech-cache";
+import { HECTOR_OUT_FOR_TODAY } from "../../lib/hector-allowance";
 
 /** Hector speaks first (BACKLOG 0.0-bp): the greeting he says when a call opens. */
 
@@ -19,9 +20,24 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   };
 });
 const sessionUser = vi.hoisted(() => ({ current: { id: "u1" } as Record<string, unknown> }));
+const usageRows = vi.hoisted(() => ({ current: null as { count: number }[] | null }));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: { getSession: async () => ({ data: { session: { user: sessionUser.current } } }) },
+    // ai_usage: the learner's own rows (RLS), asked for today's Hector count. null: the read fails.
+    from: (table: string) => {
+      const q = {
+        select: () => q,
+        eq: () => q,
+        then: (ok: (v: unknown) => void) =>
+          ok(
+            table === "ai_usage" && usageRows.current
+              ? { data: usageRows.current, error: null }
+              : { data: null, error: { message: "unavailable" } },
+          ),
+      };
+      return q;
+    },
   },
 }));
 const fetchProgress = vi.fn();
@@ -80,6 +96,7 @@ beforeEach(() => {
       },
     ],
   });
+  usageRows.current = [];
   sent.length = 0;
   players.length = 0;
   routes = {
@@ -185,5 +202,29 @@ describe("Hector speaks first", () => {
     renderPage();
     await shows(GREETING_EN);
     expect(screen.queryByRole("button", { name: /Report/i })).toBeNull();
+  });
+
+  it("with today's Hector allowance used up, shows the out-for-today message and says nothing", async () => {
+    usageRows.current = [{ count: 150 }];
+    renderPage();
+    await waitFor(() => expect(document.body.textContent).toContain(HECTOR_OUT_FOR_TODAY));
+    await new Promise((r) => setTimeout(r, 200));
+    expect(tts()).toHaveLength(0);
+    expect(players).toHaveLength(0);
+    expect(screen.getByRole("log")).not.toHaveTextContent("Last time");
+  });
+
+  it("one turn short of the allowance he still greets", async () => {
+    usageRows.current = [{ count: 149 }];
+    renderPage();
+    await shows(GREETING_EN);
+    expect(tts()).toHaveLength(1);
+  });
+
+  it("when the allowance cannot be read he still greets: the server stays the real guard", async () => {
+    usageRows.current = null;
+    renderPage();
+    await shows(GREETING_EN);
+    expect(tts()).toHaveLength(1);
   });
 });

@@ -29,6 +29,7 @@ import { voiceFor } from "@/lib/voice-prefs";
 import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 import { waitForCallCue } from "@/lib/sfx";
 import { buildHectorGreeting, recentWeakSpot } from "@/lib/hector-greeting";
+import { HECTOR_OUT_FOR_TODAY, isHectorAllowanceUsedUp } from "@/lib/hector-allowance";
 import { getWeaknessTrend } from "@/lib/weakness-trend.functions";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
 import { supabase } from "@/integrations/supabase/client";
@@ -291,24 +292,32 @@ function HectorConversation({
       })
       .catch(() => {});
     // Everything the greeting uses is best effort: without it Hector still says hello.
-    void Promise.allSettled([progress, getWeaknessTrend(), supabase.auth.getSession()]).then(
-      ([p, trend, session]) => {
-        if (cancelled) return;
-        const meta =
-          session.status === "fulfilled" ? session.value.data.session?.user?.user_metadata : null;
-        void greet(
-          buildHectorGreeting({
-            course,
-            cefr: p.status === "fulfilled" ? p.value.cefrLevel : null,
-            name: parseLearnerProfile(meta?.[LEARNER_PROFILE_KEY]).name,
-            weakSpot:
-              trend.status === "fulfilled"
-                ? recentWeakSpot(trend.value?.categories ?? [], Date.now())
-                : null,
-          }),
-        );
-      },
-    );
+    void Promise.allSettled([
+      progress,
+      getWeaknessTrend(),
+      supabase.auth.getSession(),
+      isHectorAllowanceUsedUp(supabase),
+    ]).then(([p, trend, session, usedUp]) => {
+      if (cancelled) return;
+      // Today's allowance is used up (BACKLOG 0.0-bq #5): the "out for today" message, and no greeting, so no speech.
+      if (usedUp.status === "fulfilled" && usedUp.value) {
+        setError(HECTOR_OUT_FOR_TODAY);
+        return;
+      }
+      const meta =
+        session.status === "fulfilled" ? session.value.data.session?.user?.user_metadata : null;
+      void greet(
+        buildHectorGreeting({
+          course,
+          cefr: p.status === "fulfilled" ? p.value.cefrLevel : null,
+          name: parseLearnerProfile(meta?.[LEARNER_PROFILE_KEY]).name,
+          weakSpot:
+            trend.status === "fulfilled"
+              ? recentWeakSpot(trend.value?.categories ?? [], Date.now())
+              : null,
+        }),
+      );
+    });
     return () => {
       cancelled = true;
       leftRef.current = true;

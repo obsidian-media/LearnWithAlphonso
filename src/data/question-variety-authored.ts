@@ -83,6 +83,8 @@ export const LISTENING_EXTRA_WRONGS: Record<string, string[]> = {
   "They could not attend the meeting yesterday.": ["They did not attend the meeting yesterday."],
   "He could not swim before he took lessons.": ["He did not swim before he took lessons."],
   "It is cold today.": ["It is hot today."],
+  // a2p16l4: its reorder moved to another sentence once the gate learned that a closing "here" fronts (BACKLOG 0.0-av)
+  "There's a friendly community atmosphere here.": ["There's a friendly quiet atmosphere here."],
   "We are not ready.": ["We are not late."],
   "We're having dinner at eight.": ["We're having lunch at eight."],
   "He's taking his exam on Friday.": ["He's taking his exam on Monday."],

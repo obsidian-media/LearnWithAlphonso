@@ -70,6 +70,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryContext
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorAllowance
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorGreeting
 import com.obsidianmedia.learnwithalphonso.core.net.fetchNameStatus
 import com.obsidianmedia.learnwithalphonso.ui.practice.OpenerSpeaker
@@ -81,6 +82,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.AiErrorCopy
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.TutorConversationClient
+import com.obsidianmedia.learnwithalphonso.core.net.fetchHectorAllowanceUsedUp
 import com.obsidianmedia.learnwithalphonso.core.net.fetchWeaknessTrend
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
@@ -136,6 +138,8 @@ class HectorViewModel(
     private var analysed = false
     /** Hector speaks first (BACKLOG 0.0-bp): his greeting, built locally once the learner context has loaded. */
     private val greeting = CompletableDeferred<String>()
+    /** Today's Hector allowance is used up (BACKLOG 0.0-bq #5): no greeting, no speech, the out-for-today message. */
+    private var allowanceUsedUp = false
     // Hector's greeting goes through the same player as Alphonso's openers, in Hector's own voice.
     private val opener by lazy {
         OpenerSpeaker(viewModelScope, _state, { engine.phase.value == TurnPhase.IDLE }, player, openerCache, course.code) { text, voice ->
@@ -152,6 +156,7 @@ class HectorViewModel(
             val name = runCatching { progress.fetchNameStatus() }.getOrNull()?.takeIf { it.nameConfirmed }?.displayName
             cefrLevel = level
             memoryContext = TutorMemoryContext.buildPrimingMessage(level, open)
+            allowanceUsedUp = progress.fetchHectorAllowanceUsedUp()
             greeting.complete(HectorGreeting.build(course, level, name, HectorGreeting.recentWeakSpot(trend)))
         }
         viewModelScope.launch {
@@ -188,6 +193,10 @@ class HectorViewModel(
     fun greet() {
         viewModelScope.launch {
             val text = greeting.await()
+            if (allowanceUsedUp) {
+                _state.update { it.copy(error = HectorAllowance.OUT_FOR_TODAY) }
+                return@launch
+            }
             _state.update { if (it.turns.isEmpty()) it.copy(turns = listOf(ChatMessage("assistant", text)), openerIndices = setOf(0)) else it }
             opener.speak({ pendingGreeting }, { hectorVoice(course.code) })
         }
