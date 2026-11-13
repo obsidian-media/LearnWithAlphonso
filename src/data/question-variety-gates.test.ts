@@ -25,7 +25,8 @@ const lessonsOf = (units: typeof curriculum) =>
 const added = lessonsOf(curriculum).flatMap(({ lesson }) =>
   lesson.questions.filter((q) => /^a[12]p\d+q(2[5-9]|3\d)$/.test(q.id)).map((q) => ({ lesson, q })),
 );
-const knownWords = knownWordsOf(fixed, REVIEWED_WORDS);
+// The overlay writes American English (review-fixes/en.json), so its words count as known too.
+const knownWords = new Set([...knownWordsOf(fixed, REVIEWED_WORDS), ...knownWordsOf(curriculum)]);
 const key = (s: string) =>
   s
     .toLowerCase()

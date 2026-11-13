@@ -23,6 +23,8 @@ export type ReviewFix = {
   patch: Record<string, string | string[] | number>;
   reason: string;
   keyChange?: boolean;
+  /** An American English respelling that may restate text an earlier reviewed fix owns (fixes.ts). */
+  americanEnglish?: boolean;
 };
 export type ReviewFixes = Record<string, ReviewFix>;
 type Course = "en" | "fr" | "es";
