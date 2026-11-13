@@ -58,7 +58,9 @@ import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordHint
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordPart
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordParts
+import com.obsidianmedia.learnwithalphonso.core.logic.ExplainRules
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
+import com.obsidianmedia.learnwithalphonso.ui.explain.ExplainInMyLanguage
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
@@ -212,6 +214,10 @@ fun SaveWordSheet(container: AppContainer, request: SaveWordRequest, onDone: () 
                 Text(flow.request.word, style = MaterialTheme.typography.headlineSmall, color = palette.ink)
                 Text("“${flow.request.sentence}”", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
                 SaveWordContent(phase, onSave = { flow.save() })
+                // Once the word is saved and its meaning is on screen, the same meaning can be had in the learner's language.
+                if (phase is SaveWordPhase.Saved) {
+                    ExplainInMyLanguage(container, remember(flow) { ExplainRules.word(flow.request.word, flow.request.sentence, flow.request.course) })
+                }
             }
             TextButton(onClick = onDone, modifier = Modifier.fillMaxWidth()) { Text(SavedWordCopy.DONE, color = palette.inkSoft) }
         }
