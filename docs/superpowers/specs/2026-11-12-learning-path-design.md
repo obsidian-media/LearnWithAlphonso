@@ -20,3 +20,17 @@ Owner-approved mock: mocks-r8 Feature 2, layout A "the road", plus layout B's we
 ## Minutes
 
 Lessons: `lesson-timing.json` through `estimateLessonMinutes`. Podcasts: the episode's real `duration_seconds` plus the quiz. Finished-day lesson minutes come from `learning_days`; call minutes from `practice_calls` start to last reply (capped). Talk, campaign scene and quiz minutes are estimates in `path-config.ts` (production had only 8 finished calls on 2026-11-12): calibrate them from production.
+
+## Implementation status (2026-11-13, main at #498)
+
+| Part | State | Notes |
+| --- | --- | --- |
+| Engine `planPath`, `/api/learning-path`, shared fixtures | **Done** (#490) | fixtures decoded byte for byte by Swift and Kotlin tests |
+| Web, iOS, Android: Learn path card, the road, behind and its three recovery choices, week view, Why this mix, Build my path, Profile My path card | **Done** (#490) | not yet checked on a device |
+| Rest day (Sun to Sat or none) | **Done** (#493) | `pathRestDay`, `set_rest_day` |
+| iOS: every stop opens (`PathStopRouting`) | **Done** (#493) | a podcast stop opens the Listen tab, not the episode |
+| Days are the learner's local day | **Done** (#497) | the engine's today and week use `localDay` |
+| Calibration of `TALK_MINUTES`, `CAMPAIGN_SCENE_MINUTES`, `QUIZ_MINUTES` | **Open** | estimates in `src/data/path-config.ts` until production data exists |
+| Review of `src/data/path-tags.ts` (goal to campaign map; four campaigns added in #495) | **Open, owner** | |
+| PostHog `path_built` event | **Open** | the name is reserved in the three event lists; no call site |
+| `video` path type (Alphonso tutor videos as path stops) | **In progress** | the Library branch `feat/library-watch` adds it; not merged |

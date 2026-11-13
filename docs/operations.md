@@ -59,6 +59,15 @@ Deleting an account (by the learner or by an admin) also:
 
 Account ids are not written to the server logs on any of these paths.
 
+Staff deletion (#496) is recorded in `staff_audit_log` (`user.delete`, and `user.delete.failed` with the step for each failed web-subscription cancel or Apple revocation, which do not stop the deletion; only a failed Auth delete stops it). The action record keeps ids only and outlives the account on purpose.
+
+## Staff console and types regeneration
+
+- **Staff console.** Set `ADMIN_REQUIRE_AAL2=true` on the admin Vercel project once an authenticator is enrolled. Add staff from the Staff page (they must have signed up first). An `admin_users` member with no `staff_roles` row is treated as owner; inserting the owner's row is recommended. The Edge Functions `complete-lesson`, `complete-podcast-quiz`, `grade-review`, `start-lesson-session` and `get-season-status` must be deployed from `main` so a ban stops them at once.
+- **Types.** `regenerate-supabase-types.yml` regenerates `src/integrations/supabase/types.ts` after a successful `deploy-supabase` on `main` (#484); a `chore: regenerate supabase types` commit after a migration merge is expected. It can still be dispatched by hand.
+- **Server hearts.** `SERVER_HEARTS` enforces by default (#494); set it to exactly `shadow` or `off` to back out. The Edge Functions need `REVENUECAT_SECRET_API_KEY` in Supabase secrets or nobody counts as Pro there.
+- **Analytics.** PostHog is off until the learner opts in and until a key is set (`VITE_POSTHOG_KEY`, iOS `PostHogKey`, Android `POSTHOG_PROJECT_KEY`); see `docs/privacy-and-data.md`.
+
 ## Deadlines on provider calls
 
 No request waits on a provider without a limit. A timeout returns a retryable `504`.

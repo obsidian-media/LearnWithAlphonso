@@ -5,6 +5,9 @@ Spanish courses: lesson questions, explanations, word cards, unit and lesson tit
 questions, story campaigns, speaking scenarios and podcast quizzes. Read it before you write the
 first line, not before you open the PR.
 
+Other pipelines have their own playbook: the Alphonso tutor videos are `docs/VIDEO-PLAYBOOK.md` (scripts in
+`scripts/video/`); video scripts that teach English follow the same American-English rule as the course.
+
 Every rule here exists because breaking it shipped a defect. The history is in
 `docs/distractor-policy.md`, `docs/content-panel/`, and the "Content guards" table in `AGENTS.md`.
 
@@ -109,12 +112,12 @@ The "Content guards" table in `AGENTS.md` says what each holds. The ones content
 
 | Change                    | Run                                                                                                                |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Any lesson question       | `src/lib/id-parity.test.ts`, `src/data/curriculum-consistency.test.ts`, `src/data/question-variety*.test.ts`       |
+| Any lesson question       | `src/lib/id-parity.test.ts`, `src/data/curriculum-consistency.test.ts`, `src/data/question-variety*.test.ts`, `src/data/american-english.test.ts` (English) |
 | English options           | `src/data/distractor-gate.test.ts`, `src/data/also-correct.test.ts`, `src/data/english-distractor-quality.test.ts` |
-| French or Spanish options | `src/data/romance-options.test.ts`, `src/data/romance-conjugation.test.ts`                                         |
+| French or Spanish options | `src/data/romance-options.test.ts`, `src/data/romance-conjugation.test.ts`, `src/data/romance-tables-audit.test.ts` |
 | Listening                 | `src/data/lesson-bank-listening.test.ts`                                                                           |
-| Word cards                | `src/data/vocab.test.ts`, `src/data/vocab-meanings.test.ts`                                                        |
-| Explanations              | `src/lib/course-language-spans.test.ts`, `src/lib/save-word-spans-fixture.test.ts`                                 |
+| Word cards (all three courses, A1 to C1) | `src/data/vocab.test.ts`, `src/data/vocab-meanings.test.ts` |
+| Explanations | `src/lib/course-language-spans.test.ts`, `src/lib/save-word-spans-fixture.test.ts`, `src/data/english-explanations.test.ts`, `src/data/romance-explanations.test.ts` |
 | Placement                 | `src/data/placement*.test.ts`                                                                                      |
 | Campaigns, scenarios      | `src/data/campaigns*.test.ts`, `src/data/scenarios.test.ts`, `src/data/legacy-system-prompts.test.ts`              |
 | Podcast quizzes           | `src/data/podcast-quizzes.test.ts`                                                                                 |

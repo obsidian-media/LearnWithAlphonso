@@ -20,9 +20,17 @@ issue.
 - **Captcha (web, optional).** With `VITE_TURNSTILE_SITE_KEY` set, the web email forms send a Cloudflare Turnstile
   token (`src/lib/turnstile.ts`). The auth server setting is switched on only once the native apps can pass a captcha
   too, because it applies to every client.
-- **Admin second factor.** With `ADMIN_REQUIRE_AAL2=true`, every admin server function requires a session verified
-  with an authenticator code (`requireAdmin`, `src/lib/admin-auth.ts`). The admin sign-in page enrols and verifies
-  the authenticator.
+- **Admin second factor.** With `ADMIN_REQUIRE_AAL2=true`, every staff server function requires a session verified
+  with an authenticator code (`requireStaff`, which replaced `requireAdmin` in #496; `src/lib/admin-auth.ts`). The
+  admin sign-in page enrols and verifies the authenticator.
+- **Staff roles, scopes and the action record (#496).** Staff are `owner` or `support` with named scopes
+  (`src/lib/staff-scopes.ts`); the server checks the scope in every function and a registry test fails if one skips
+  `requireStaff`. Every staff change is written with a required reason to the append-only `staff_audit_log` in the same
+  transaction as the change (a trigger refuses UPDATE, DELETE and TRUNCATE). Staff tables have no client privileges.
+  Staff management is owner-only and never on one's own row. See `docs/privacy-and-data.md`.
+- **Ban and block (#496).** A ban refuses the learner's token in the web middleware and in the five learner Edge
+  Functions (`account_suspended`), revokes sessions and sets the Auth ban. A block hides and refuses social surfaces;
+  `social-surfaces.ts` lists every RPC and policy where learners meet and a test executes each.
 
 ## Paid features and AI
 
