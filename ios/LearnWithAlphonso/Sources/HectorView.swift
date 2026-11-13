@@ -388,18 +388,23 @@ private struct HectorConversationView: View {
     }
 
     private func bubble(for turn: ChatMessage, isOpener: Bool) -> some View {
-        HStack(alignment: .bottom, spacing: 6) {
-            if turn.role == "user" { Spacer(minLength: 40) }
-            bubbleText(for: turn, isOpener: isOpener)
-                .font(AlphonsoFont.sans(15))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(
-                    turn.role == "user" ? AlphonsoColor.ember : AlphonsoColor.surface,
-                    in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 4, style: .continuous)
-                )
-                .alphonsoLift(turn.role == "assistant")
-            if turn.role == "assistant" { Spacer(minLength: 40) }
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .bottom, spacing: 6) {
+                if turn.role == "user" { Spacer(minLength: 40) }
+                bubbleText(for: turn, isOpener: isOpener)
+                    .font(AlphonsoFont.sans(15))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(
+                        turn.role == "user" ? AlphonsoColor.ember : AlphonsoColor.surface,
+                        in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 4, style: .continuous)
+                    )
+                    .alphonsoLift(turn.role == "assistant")
+                if turn.role == "assistant" { Spacer(minLength: 40) }
+            }
+            // "Say that in <language>": Hector's own calls spend his Pro allowance (surface "hector").
+            AssistantExplainRow(turn: turn, isOpener: isOpener, course: course, surface: .hector, session: session)
+                .padding(.leading, 4)
         }
         .frame(maxWidth: .infinity, alignment: turn.role == "user" ? .trailing : .leading)
     }
