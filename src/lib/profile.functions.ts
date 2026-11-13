@@ -42,10 +42,16 @@ export const getProfileOverview = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<ProfileOverview> => {
     const { supabase, userId } = context;
     const { course } = data;
-    const today = streakToday();
-    const from = weekStart(threeMonthsWindow(today).start);
     // speech_days is not in the generated types until they are regenerated (speech-days.functions.ts).
     const untyped = supabase as unknown as SupabaseClient;
+    // The learner's own calendar day is "today" (owner decision 2026-11-12): read their zone first, UTC when unknown.
+    const zone = await untyped
+      .from("learner_time_zones")
+      .select("time_zone")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const today = streakToday(new Date(), (zone.data as { time_zone: string } | null)?.time_zone);
+    const from = weekStart(threeMonthsWindow(today).start);
 
     const [
       profile,
@@ -63,7 +69,6 @@ export const getProfileOverview = createServerFn({ method: "GET" })
       learning,
       mastered,
       standing,
-      zone,
       skills,
     ] = await Promise.all([
       supabase
@@ -136,7 +141,6 @@ export const getProfileOverview = createServerFn({ method: "GET" })
         .eq("user_id", userId)
         .eq("language", course),
       untyped.rpc("get_my_league_standing", { _course: course }),
-      untyped.from("learner_time_zones").select("time_zone").eq("user_id", userId).maybeSingle(),
       untyped
         .from("skill_days")
         .select("day,skill,right_answers,total_answers")

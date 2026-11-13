@@ -36,48 +36,52 @@ export async function loadPathData(
   fail("goal", goalRes.error);
   if (!goalRes.data) return null;
 
-  const [level, done, days, skills, episodes, listen, calls, stars, user] = await Promise.all([
-    admin
-      .from("language_progress")
-      .select("cefr_level")
-      .eq("user_id", userId)
-      .eq("language", course)
-      .maybeSingle(),
-    admin
-      .from("lesson_completions")
-      .select("lesson_id,completed_at")
-      .eq("user_id", userId)
-      .eq("language", course),
-    admin
-      .from("learning_days")
-      .select("day,lesson_seconds,practice_seconds")
-      .eq("user_id", userId)
-      .gte("day", sinceDay),
-    admin
-      .from("skill_days")
-      .select("day,skill,right_answers,total_answers")
-      .eq("user_id", userId)
-      .gte("day", sinceDay),
-    admin
-      .from("podcast_episodes")
-      .select("id,slug,title,duration_seconds,level_id,podcast_folders(slug)")
-      .eq("published", true)
-      .eq("course", course),
-    admin.from("listen_progress").select("episode_id,completed_at").eq("user_id", userId),
-    admin
-      .from("practice_calls")
-      .select("kind,item_key,started_at,last_reply_at,finished_at")
-      .eq("user_id", userId)
-      .eq("course", course)
-      .not("finished_at", "is", null)
-      .gte("started_at", since),
-    admin
-      .from("practice_stars")
-      .select("kind,item_key,best_stars,last_played_at")
-      .eq("user_id", userId)
-      .eq("course", course),
-    admin.auth.admin.getUserById(userId),
-  ]);
+  const [level, done, days, skills, episodes, listen, calls, stars, user, zone] = await Promise.all(
+    [
+      admin
+        .from("language_progress")
+        .select("cefr_level")
+        .eq("user_id", userId)
+        .eq("language", course)
+        .maybeSingle(),
+      admin
+        .from("lesson_completions")
+        .select("lesson_id,completed_at")
+        .eq("user_id", userId)
+        .eq("language", course),
+      admin
+        .from("learning_days")
+        .select("day,lesson_seconds,practice_seconds")
+        .eq("user_id", userId)
+        .gte("day", sinceDay),
+      admin
+        .from("skill_days")
+        .select("day,skill,right_answers,total_answers")
+        .eq("user_id", userId)
+        .gte("day", sinceDay),
+      admin
+        .from("podcast_episodes")
+        .select("id,slug,title,duration_seconds,level_id,podcast_folders(slug)")
+        .eq("published", true)
+        .eq("course", course),
+      admin.from("listen_progress").select("episode_id,completed_at").eq("user_id", userId),
+      admin
+        .from("practice_calls")
+        .select("kind,item_key,started_at,last_reply_at,finished_at")
+        .eq("user_id", userId)
+        .eq("course", course)
+        .not("finished_at", "is", null)
+        .gte("started_at", since),
+      admin
+        .from("practice_stars")
+        .select("kind,item_key,best_stars,last_played_at")
+        .eq("user_id", userId)
+        .eq("course", course),
+      admin.auth.admin.getUserById(userId),
+      // The learner's own calendar day is "today" (owner decision 2026-11-12); a failed read means UTC.
+      admin.from("learner_time_zones").select("time_zone").eq("user_id", userId).maybeSingle(),
+    ],
+  );
   const reads = { level, done, days, skills, episodes, listen, calls, stars };
   for (const [what, r] of Object.entries(reads)) fail(what, r.error as { message: string } | null);
   if (user.error || !user.data?.user) throw new Error("account: could not read");
@@ -88,6 +92,7 @@ export async function loadPathData(
   return {
     course,
     now,
+    timeZone: zone.error ? null : ((zone.data as { time_zone?: string } | null)?.time_zone ?? null),
     currentLevel: known && LEVEL_ORDER.includes(known) ? known : "A1",
     goal: {
       targetLevel: LEVEL_ORDER.includes(targetLevel) ? targetLevel : "A1",

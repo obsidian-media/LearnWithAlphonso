@@ -24,6 +24,12 @@ export type StreakInput = {
   streak: number;
   longestStreak: number;
   freezes: number;
+  /**
+   * True once, for a streak still written under the old UTC-day rule (user_progress.day_basis = 'utc'): a gap of two
+   * dates counts as the next day without spending a freeze, because a learner east of UTC has a local "yesterday" that
+   * is two UTC dates back. Every write after the switch is on the local basis, where this is false.
+   */
+  bridgeUtcDay?: boolean;
 };
 
 export type StreakResult = {
@@ -49,7 +55,7 @@ export function computeStreakUpdate(input: StreakInput): StreakResult {
     streak = 1;
   } else {
     const diff = daysDiff(lastActiveDate, today);
-    if (diff === 1) streak = input.streak + 1;
+    if (diff === 1 || (diff === 2 && input.bridgeUtcDay)) streak = input.streak + 1;
     else if (diff === 2 && freezes > 0) {
       streak = input.streak + 1;
       freezes -= 1;

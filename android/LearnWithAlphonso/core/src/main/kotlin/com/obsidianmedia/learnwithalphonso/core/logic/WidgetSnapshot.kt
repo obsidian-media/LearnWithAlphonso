@@ -18,6 +18,12 @@ data class StreakWidgetSnapshot(
 const val STREAK_WIDGET_PREFS = "alphonso.widget"
 const val STREAK_WIDGET_SNAPSHOT_KEY = "streakWidgetSnapshot"
 
-/** studiedToday follows the UTC date convention of the streak math it is paired with. */
-fun makeStreakWidgetSnapshot(streak: Int, longestStreak: Int, lastActiveDate: String?, nowMillis: Long): StreakWidgetSnapshot =
-    StreakWidgetSnapshot(streak, longestStreak, lastActiveDate == utcDateString(nowMillis), nowMillis)
+/** studiedToday follows the learner's local day, like the streak it is paired with. */
+fun makeStreakWidgetSnapshot(
+    streak: Int,
+    longestStreak: Int,
+    lastActiveDate: String?,
+    nowMillis: Long,
+    zone: java.time.ZoneId = java.time.ZoneId.systemDefault(),
+): StreakWidgetSnapshot =
+    StreakWidgetSnapshot(streak, longestStreak, lastActiveDate == localDateString(nowMillis, zone), nowMillis)

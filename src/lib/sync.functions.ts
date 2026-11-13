@@ -16,6 +16,7 @@ import {
 } from "./progress-math";
 import { makeBlockedTermCheck } from "./ai-safety";
 import { gradeLessonAnswer } from "./grade-lesson-answer.server";
+import { localDay, streakBridge } from "./local-day";
 import {
   MAX_HEARTS,
   XP_HEART_COST,
@@ -36,10 +37,6 @@ import {
  * separate level/XP per course.
  */
 const courseSchema = z.enum(["en", "fr", "es"]).default("en");
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export type ProgressSnapshot = {
   xp: number;
@@ -323,7 +320,9 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     }
     const correct = answers.length - missedQuestionIds.length;
 
-    const today = todayStr();
+    // The learner's own calendar day (owner decision 2026-11-12): their stored zone, UTC when none is known.
+    const { readLearnerTimeZone } = await import("./learner-time-zone.server");
+    const today = localDay(Date.now(), await readLearnerTimeZone(supabase, userId));
 
     // Read the current state, derive the next one, and write it in one transaction. Another write to the same
     // account (a lost heart, a quest reward, a second device) between the read and the write makes the snapshot
@@ -397,6 +396,8 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         streak: cur.streak,
         longestStreak: cur.longest_streak,
         freezes: cur.streak_freezes,
+        // A streak still on the old UTC-day basis bridges one extra day, once, so the switch drops nobody.
+        bridgeUtcDay: streakBridge((cur as { day_basis?: string | null }).day_basis),
       });
 
       // Resolve any pending passive regen first, then layer bonuses on top:
@@ -491,6 +492,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
               ? new Date(heartsResult.heartsRefillAt).toISOString()
               : null,
             streak_freezes: freezes,
+            day_basis: "local",
             xp,
             league_tier: leagueTier,
             best_correct: bestCorrect,

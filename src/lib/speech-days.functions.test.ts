@@ -27,6 +27,10 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 
+// The learner's zone (learner_time_zones): UTC (null) unless a test sets one; kept out of the Supabase mock's call order.
+const readLearnerTimeZone = vi.fn(async (): Promise<string | null> => null);
+vi.mock("./learner-time-zone.server", () => ({ readLearnerTimeZone }));
+
 const mod = await import("./speech-days.functions");
 const { getSpeechHistory } = asTestFns({ getSpeechHistory: mod.getSpeechHistory });
 const { lastUtcDays, speechHistory } = mod;
@@ -93,6 +97,20 @@ describe("getSpeechHistory", () => {
     expect(result.days.at(-1)).toEqual({ day: dayFromToday(0), seconds: 95 });
     expect(result.days.at(-3)).toEqual({ day: dayFromToday(-2), seconds: 60 });
     expect(result.totalSeconds).toBe(155);
+  });
+
+  it("counts the window in the learner's own days: a zone far ahead of UTC ends on its own today", async () => {
+    readLearnerTimeZone.mockResolvedValueOnce("Pacific/Kiritimati"); // UTC+14
+    const own = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Pacific/Kiritimati",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    const { context, calls } = ctx([{ day: own, speech_seconds: 40 }]);
+    const result = await getSpeechHistory({ data: { days: 3 }, context });
+    expect(result.days.at(-1)).toEqual({ day: own, seconds: 40 });
+    expect(calls).toContainEqual({ method: "gte", args: ["day", result.days[0]!.day] });
   });
 
   it("defaults to 30 days", async () => {

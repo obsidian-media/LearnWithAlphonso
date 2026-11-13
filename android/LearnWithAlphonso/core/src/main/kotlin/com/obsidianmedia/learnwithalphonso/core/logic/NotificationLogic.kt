@@ -8,8 +8,8 @@ import java.time.ZonedDateTime
 
 /**
  * Ports of NotificationLogic.swift and nextWeeklyRecapDate in
- * LeaderboardEngagement.swift. "Today" for the streak check is the UTC
- * calendar date (the server's convention); the fire times are local.
+ * LeaderboardEngagement.swift. "Today" for the streak check is the learner's
+ * local calendar date (the server books streaks in their zone); the fire times are local too.
  */
 
 private fun at(nowMillis: Long, zone: ZoneId, hour: Int): ZonedDateTime =
@@ -17,7 +17,7 @@ private fun at(nowMillis: Long, zone: ZoneId, hour: Int): ZonedDateTime =
 
 /** Null when the user already studied today; else the next 20:00 local. */
 fun nextStreakReminderMillis(lastActiveDate: String?, nowMillis: Long, zone: ZoneId): Long? {
-    if (lastActiveDate == utcDateString(nowMillis)) return null
+    if (lastActiveDate == localDateString(nowMillis, zone)) return null
     val todayAt8pm = at(nowMillis, zone, 20)
     val now = Instant.ofEpochMilli(nowMillis)
     return if (now.isBefore(todayAt8pm.toInstant())) todayAt8pm.toInstant().toEpochMilli() else todayAt8pm.plusDays(1).toInstant().toEpochMilli()

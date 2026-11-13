@@ -12,6 +12,9 @@ const quizSql = read("20261104100200_podcast_quiz.sql");
 const seedSql = read("20261104100300_podcast_quiz_seed.sql");
 const REVIEW_FILE = "20261112140000_podcast_quiz_review.sql";
 const reviewSql = read(REVIEW_FILE);
+const LOCAL_DAYS_FILE = "20261114100000_local_days.sql";
+const localDaysSql = read(LOCAL_DAYS_FILE);
+const atomicSql = read("20261014100300_atomic_lesson_completion.sql");
 
 const U1 = "00000000-0000-4000-8000-000000000001";
 const U2 = "00000000-0000-4000-8000-000000000002";
@@ -73,7 +76,8 @@ describe("podcast quiz (real Postgres)", () => {
         slug text NOT NULL, course text, published boolean NOT NULL DEFAULT false);
       CREATE TABLE public.language_progress (
         user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, language text NOT NULL,
-        xp integer NOT NULL DEFAULT 0, league_tier text NOT NULL DEFAULT 'bronze', PRIMARY KEY (user_id, language));
+        xp integer NOT NULL DEFAULT 0, league_tier text NOT NULL DEFAULT 'bronze',
+        updated_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (user_id, language));
       CREATE TABLE public.user_progress (
         user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, streak integer NOT NULL DEFAULT 0,
         longest_streak integer NOT NULL DEFAULT 0, last_active_date date, hearts integer NOT NULL DEFAULT 5,
@@ -81,6 +85,29 @@ describe("podcast quiz (real Postgres)", () => {
       CREATE TABLE public.activity_days (
         user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, day date NOT NULL,
         xp_earned integer NOT NULL DEFAULT 0, PRIMARY KEY (user_id, day));
+      -- Tables the local-days migration touches. learner_time_zones is as 20261107120000 made it (the zone is validated on
+      -- write there; the tests below also insert a bad one directly to prove the fallback).
+      CREATE TABLE public.learner_time_zones (
+        user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, time_zone text NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT now());
+      CREATE TABLE public.learning_days (
+        user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, day date NOT NULL,
+        lesson_seconds integer NOT NULL DEFAULT 0, practice_seconds integer NOT NULL DEFAULT 0,
+        updated_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (user_id, day));
+      CREATE TABLE public.skill_days (
+        user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, day date NOT NULL, skill text NOT NULL,
+        right_answers integer NOT NULL DEFAULT 0, total_answers integer NOT NULL DEFAULT 0,
+        updated_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (user_id, day, skill));
+      CREATE TABLE public.speech_days (
+        user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, day date NOT NULL,
+        speech_seconds integer NOT NULL DEFAULT 0, updated_at timestamptz NOT NULL DEFAULT now(),
+        PRIMARY KEY (user_id, day));
+      CREATE TABLE public.lesson_completions (
+        user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, lesson_id text NOT NULL,
+        language text NOT NULL, correct integer NOT NULL, total integer NOT NULL, xp_earned integer NOT NULL,
+        PRIMARY KEY (user_id, lesson_id));
+      CREATE TABLE public.friend_activity_events (
+        id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, user_id uuid NOT NULL, event_type text NOT NULL, payload jsonb);
       -- review_items as it stands before the new migration: the columns and constraints of the base table plus
       -- 20260908020628 (language), 20260912040533 (unique with language), 20260920040000 (weakness) and
       -- 20261005120000 (saved_word, which also fixed the constraint names used below).
@@ -127,6 +154,8 @@ describe("podcast quiz (real Postgres)", () => {
     await db.exec(quizSql);
     await db.exec(seedSql);
     await db.exec(reviewSql);
+    await db.exec(atomicSql);
+    await db.exec(localDaysSql);
   }
 
   beforeEach(async () => {
@@ -361,7 +390,8 @@ describe("podcast quiz (real Postgres)", () => {
       ).rows;
     const seed = (user: string, last: string, streak: number, freezes = 0, longest = streak) =>
       db.query(
-        "INSERT INTO public.user_progress (user_id, streak, longest_streak, last_active_date, streak_freezes) VALUES ($1,$2,$3,$4,$5)",
+        // These learners count local days already (day_basis 'local'): the UTC-to-local bridge has its own tests below.
+        "INSERT INTO public.user_progress (user_id, streak, longest_streak, last_active_date, streak_freezes, day_basis) VALUES ($1,$2,$3,$4,$5,'local')",
         [user, streak, longest, last, freezes],
       );
     const q = (slug: string) => answersFor(slug, 0);
@@ -696,6 +726,254 @@ describe("podcast quiz (real Postgres)", () => {
     it("adds no client write grant on review_items", () => {
       expect(reviewSql.replace(/^--.*$/gm, "")).not.toMatch(
         /GRANT[^;]*(INSERT|UPDATE|DELETE|ALL)[^;]*review_items/i,
+      );
+    });
+  });
+
+  describe("local days (owner decision 2026-11-12)", () => {
+    const zone = (user: string, tz: string) =>
+      db.query("INSERT INTO public.learner_time_zones (user_id, time_zone) VALUES ($1,$2)", [
+        user,
+        tz,
+      ]);
+    const localDate = async (user: string, at: string) =>
+      (
+        await db.query<{ d: string }>(
+          "SELECT public.learner_local_date($1::uuid, $2::timestamptz)::text AS d",
+          [user, at],
+        )
+      ).rows[0]!.d;
+    const jsDay = (tz: string, ms = Date.now()) =>
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: tz,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date(ms));
+
+    it("the helper is the learner's calendar day, UTC with no zone, a bad zone or no row", async () => {
+      await zone(U1, "Australia/Sydney");
+      await zone(U2, "Not/AZone"); // written around the validating function, to prove the fallback
+      const at = "2026-11-12T23:30:00Z";
+      expect(await localDate(U1, at)).toBe("2026-11-13");
+      expect(await localDate(U2, at)).toBe("2026-11-12");
+      expect(await localDate("00000000-0000-4000-8000-0000000000ff", at)).toBe("2026-11-12");
+    });
+
+    it("follows daylight saving time", async () => {
+      await zone(U1, "America/New_York");
+      expect(await localDate(U1, "2026-07-01T04:30:00Z")).toBe("2026-07-01");
+      expect(await localDate(U1, "2026-01-01T04:30:00Z")).toBe("2025-12-31");
+    });
+
+    it("learning seconds, skill results and speech seconds are booked on the learner's day", async () => {
+      await zone(U1, "Pacific/Kiritimati"); // UTC+14
+      await zone(U2, "Pacific/Pago_Pago"); // UTC-11
+      for (const [u, tz] of [
+        [U1, "Pacific/Kiritimati"],
+        [U2, "Pacific/Pago_Pago"],
+      ] as const) {
+        const want = jsDay(tz);
+        const learning = await db.query<{ d: string }>(
+          "SELECT public.add_learning_seconds($1::uuid, 60, 0)::text AS d",
+          [u],
+        );
+        expect(learning.rows[0]!.d).toBe(want);
+        const speech = await db.query<{ d: string }>(
+          "SELECT public.add_speech_seconds($1::uuid, 30)::text AS d",
+          [u],
+        );
+        expect(speech.rows[0]!.d).toBe(want);
+        await db.query(
+          `SELECT public.add_skill_results($1::uuid, '[{"skill":"listening","right":1,"total":2}]'::jsonb)`,
+          [u],
+        );
+        const skill = await db.query<{ d: string }>(
+          "SELECT day::text AS d FROM public.skill_days WHERE user_id=$1",
+          [u],
+        );
+        expect(skill.rows[0]!.d).toBe(want);
+      }
+    });
+
+    const progress = (user: string, last: string | null, basis: string, streak = 4, freezes = 0) =>
+      db.query(
+        `INSERT INTO public.user_progress (user_id, streak, longest_streak, last_active_date, streak_freezes, day_basis)
+         VALUES ($1,$2,$2,$3,$4,$5)`,
+        [user, streak, last, freezes, basis],
+      );
+    const progressOf = async (user: string) =>
+      (
+        await db.query<{
+          streak: number;
+          last_active_date: string;
+          streak_freezes: number;
+          day_basis: string;
+        }>(
+          "SELECT streak, last_active_date::text, streak_freezes, day_basis FROM public.user_progress WHERE user_id=$1",
+          [user],
+        )
+      ).rows[0]!;
+    const activityDays = async (user: string) =>
+      (
+        await db.query<{ day: string }>(
+          "SELECT day::text FROM public.activity_days WHERE user_id=$1 ORDER BY day",
+          [user],
+        )
+      ).rows.map((r) => r.day);
+
+    it("a quiz books the streak day and the activity day in the learner's zone", async () => {
+      await zone(U1, "Australia/Sydney");
+      await submit(U1, COFFEE, answersFor(COFFEE, 0), 60, "2026-11-04T23:30:00Z");
+      expect(await activityDays(U1)).toEqual(["2026-11-05"]);
+      expect((await progressOf(U1)).last_active_date).toBe("2026-11-05");
+      expect((await progressOf(U1)).day_basis).toBe("local");
+    });
+
+    it("a learner with no zone still books UTC days", async () => {
+      await submit(U1, COFFEE, answersFor(COFFEE, 0), 60, "2026-11-04T23:30:00Z");
+      expect(await activityDays(U1)).toEqual(["2026-11-04"]);
+    });
+
+    it("EAST of UTC the switch drops nobody: yesterday's local day stored as a UTC date two back still continues", async () => {
+      await zone(U1, "Australia/Brisbane"); // UTC+10
+      // Studied Tuesday 08:00 local = Monday 22:00 UTC: the old rule stored Monday 2026-11-02. It is now Wednesday
+      // 08:00 local (2026-11-04, Tuesday 22:00 UTC): two dates on, but only one local day.
+      await progress(U1, "2026-11-02", "utc", 4, 0);
+      await submit(U1, COFFEE, answersFor(COFFEE, 0), 60, "2026-11-03T22:00:00Z");
+      const p = await progressOf(U1);
+      expect(p.streak).toBe(5);
+      expect(p.streak_freezes).toBe(0);
+      expect(p.last_active_date).toBe("2026-11-04");
+      expect(p.day_basis).toBe("local");
+    });
+
+    it("WEST of UTC the switch drops nobody either: the local day behind the stored date is the same day", async () => {
+      await zone(U1, "America/Los_Angeles"); // UTC-8
+      // Studied Tuesday 20:00 local = Wednesday 04:00 UTC: stored 2026-11-04. Now Tuesday 20:30 local the NEXT week day
+      // is not reached; the local date (2026-11-04) is not after the stored one: no drop, no double count.
+      await progress(U1, "2026-11-04", "utc", 4, 0);
+      await submit(U1, COFFEE, answersFor(COFFEE, 0), 60, "2026-11-05T04:30:00Z");
+      const p = await progressOf(U1);
+      expect(p.streak).toBe(4);
+      expect(p.last_active_date).toBe("2026-11-04");
+    });
+
+    it("the bridge happens once: on the local basis a two-date gap is a real missed day", async () => {
+      await progress(U1, "2026-11-02", "local", 4, 0);
+      await submit(U1, COFFEE, answersFor(COFFEE, 0), 60, "2026-11-04T12:00:00Z");
+      expect((await progressOf(U1)).streak).toBe(1);
+    });
+
+    it("on the local basis a freeze still covers a missed day", async () => {
+      await progress(U1, "2026-11-02", "local", 4, 1);
+      await submit(U1, COFFEE, answersFor(COFFEE, 0), 60, "2026-11-04T12:00:00Z");
+      const p = await progressOf(U1);
+      expect(p.streak).toBe(5);
+      expect(p.streak_freezes).toBe(0);
+    });
+
+    it("the bridge never carries a gap of three or more dates", async () => {
+      await progress(U1, "2026-11-01", "utc", 4, 0);
+      await submit(U1, COFFEE, answersFor(COFFEE, 0), 60, "2026-11-04T12:00:00Z");
+      expect((await progressOf(U1)).streak).toBe(1);
+    });
+
+    it("a consecutive day continues on either basis", async () => {
+      await progress(U1, "2026-11-03", "utc", 4, 0);
+      await submit(U1, COFFEE, answersFor(COFFEE, 0), 60, "2026-11-04T12:00:00Z");
+      expect((await progressOf(U1)).streak).toBe(5);
+    });
+
+    it("apply_lesson_completion records the basis the caller sends, and leaves it alone when the caller says nothing", async () => {
+      const call = (uid: string, next: Record<string, unknown>) =>
+        db.query(
+          "SELECT public.apply_lesson_completion($1::uuid,'en','u1l1','A1','2026-11-04'::date,$2::jsonb,$3::jsonb,'[]'::jsonb,'[]'::jsonb) AS r",
+          [
+            uid,
+            JSON.stringify({
+              p_updated_at: null,
+              lp_updated_at: null,
+              completion_xp: null,
+              day_xp: null,
+            }),
+            JSON.stringify({
+              streak: 1,
+              longest_streak: 1,
+              last_active_date: "2026-11-04",
+              hearts: 5,
+              hearts_refill_at: null,
+              streak_freezes: 0,
+              xp: 10,
+              league_tier: "bronze",
+              best_correct: 1,
+              total: 1,
+              best_xp: 10,
+              day_xp: 10,
+              ...next,
+            }),
+          ],
+        );
+      await call(U1, { day_basis: "local" });
+      expect((await progressOf(U1)).day_basis).toBe("local");
+      // A brand-new learner whose caller predates the field starts on the local basis; an existing UTC one stays utc.
+      await progress(U2, "2026-11-01", "utc", 4, 0);
+      const before = (
+        await db.query<{ u: string }>(
+          "SELECT updated_at::text u FROM public.user_progress WHERE user_id=$1",
+          [U2],
+        )
+      ).rows[0]!.u;
+      await db.query(
+        "SELECT public.apply_lesson_completion($1::uuid,'en','u1l1','A1','2026-11-04'::date,$2::jsonb,$3::jsonb,'[]'::jsonb,'[]'::jsonb)",
+        [
+          U2,
+          JSON.stringify({
+            p_updated_at: before,
+            lp_updated_at: null,
+            completion_xp: null,
+            day_xp: null,
+          }),
+          JSON.stringify({
+            streak: 5,
+            longest_streak: 5,
+            last_active_date: "2026-11-04",
+            hearts: 5,
+            hearts_refill_at: null,
+            streak_freezes: 0,
+            xp: 10,
+            league_tier: "bronze",
+            best_correct: 1,
+            total: 1,
+            best_xp: 10,
+            day_xp: 10,
+          }),
+        ],
+      );
+      expect((await progressOf(U2)).day_basis).toBe("utc");
+    });
+  });
+
+  describe("local days migration file", () => {
+    it("is versioned after the migration whose function it replaces", () => {
+      expect(LOCAL_DAYS_FILE.slice(0, 14) > "20261112140000").toBe(true);
+    });
+    it("keeps every function private to the service role and grants no client write", () => {
+      expect(localDaysSql).toMatch(
+        /GRANT EXECUTE ON FUNCTION public\.learner_local_date\(uuid, timestamptz\) TO service_role;/,
+      );
+      expect(localDaysSql).toMatch(
+        /REVOKE ALL ON FUNCTION public\.learner_local_date\(uuid, timestamptz\) FROM PUBLIC, anon, authenticated;/,
+      );
+      expect(localDaysSql.replace(/^--.*$/gm, "")).not.toMatch(
+        /GRANT[^;]*(INSERT|UPDATE|DELETE|ALL)[^;]*TO[^;]*(authenticated|anon|PUBLIC)/i,
+      );
+    });
+    it("books no day with the hard-coded UTC expression; only the review due date (a due day, not a streak day) keeps it", () => {
+      const uses = localDaysSql.replace(/^--.*$/gm, "").match(/AT TIME ZONE 'UTC'\)::date/g) ?? [];
+      expect(uses).toHaveLength(1);
+      expect(localDaysSql).toMatch(
+        /\(_at AT TIME ZONE 'UTC'\)::date\s+FROM public\.podcast_quiz_questions/,
       );
     });
   });

@@ -59,19 +59,21 @@ public struct StreakWidgetSnapshot: Codable, Sendable, Equatable {
         self.updatedAt = updatedAt
     }
 
-    /// This snapshot as it should read at `date`. "Studied today" was true for the UTC day it was written on;
-    /// read on a later day it is false. Without this the widget kept saying "Studied today" after midnight
+    /// This snapshot as it should read at `date`. "Studied today" was true for the learner's local day it was written
+    /// on; read on a later day it is false. Without this the widget kept saying "Studied today" after midnight
     /// until the app was next opened.
-    public func asOf(_ date: Date) -> StreakWidgetSnapshot {
-        guard studiedToday, utcDateString(date) != utcDateString(updatedAt) else { return self }
+    public func asOf(_ date: Date, timeZone: TimeZone = .current) -> StreakWidgetSnapshot {
+        guard studiedToday,
+              localDateString(date, timeZone: timeZone) != localDateString(updatedAt, timeZone: timeZone)
+        else { return self }
         return StreakWidgetSnapshot(streak: streak, longestStreak: longestStreak, studiedToday: false, updatedAt: updatedAt)
     }
 }
 
-/// The first instant of the next UTC day after `date`: when a widget showing "Studied today" must redraw.
-public func nextUTCMidnight(after date: Date) -> Date {
+/// The first instant of the next local day after `date`: when a widget showing "Studied today" must redraw.
+public func nextLocalMidnight(after date: Date, timeZone: TimeZone = .current) -> Date {
     var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = TimeZone(identifier: "UTC")!
+    calendar.timeZone = timeZone
     let startOfDay = calendar.startOfDay(for: date)
     return calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? date.addingTimeInterval(24 * 60 * 60)
 }
@@ -81,20 +83,20 @@ public func nextUTCMidnight(after date: Date) -> Date {
 /// StreakWidgetSnapshot above touches UserDefaults or WidgetKit; the app
 /// target's WidgetProgressPublisher is the thin wrapper that calls this
 /// and does the actual shared-container write + reload. `lastActiveDate`
-/// follows the same UTC-anchored "yyyy-MM-dd" convention as
-/// ProgressMath.swift's streak math (utcDateString, NotificationLogic.swift)
-/// rather than the device's local calendar day, so "studied today" here
-/// always agrees with the streak counter it's paired with.
+/// is the learner's local calendar day, "yyyy-MM-dd" (localDateString,
+/// NotificationLogic.swift), so "studied today" here always agrees with the
+/// streak counter it's paired with.
 public func makeStreakWidgetSnapshot(
     streak: Int,
     longestStreak: Int,
     lastActiveDate: String?,
-    now: Date = Date()
+    now: Date = Date(),
+    timeZone: TimeZone = .current
 ) -> StreakWidgetSnapshot {
     StreakWidgetSnapshot(
         streak: streak,
         longestStreak: longestStreak,
-        studiedToday: lastActiveDate == utcDateString(now),
+        studiedToday: lastActiveDate == localDateString(now, timeZone: timeZone),
         updatedAt: now
     )
 }

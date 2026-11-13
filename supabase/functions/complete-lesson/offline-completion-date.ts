@@ -1,3 +1,5 @@
+import { localDay } from "../_shared/local-day.ts";
+
 /**
  * Resolve a queued lesson's original UTC completion day, but only within the
  * server-issued lesson session. This gives offline learners a bounded streak
@@ -17,11 +19,13 @@ export function verifiedOfflineCompletionDay(
   completedAt: string,
   sessionIssuedAtMs: number,
   now: Date,
+  timeZone?: string | null,
 ): string | null {
   const completedAtMs = Date.parse(completedAt);
   const nowMs = now.getTime();
   if (!Number.isFinite(sessionIssuedAtMs) || !Number.isFinite(completedAtMs)) return null;
   if (sessionIssuedAtMs > nowMs) return null;
   const clampedMs = Math.min(Math.max(completedAtMs, sessionIssuedAtMs), nowMs);
-  return new Date(clampedMs).toISOString().slice(0, 10);
+  // The learner's own calendar day (UTC when no zone is known), like every other day the server books.
+  return localDay(clampedMs, timeZone);
 }

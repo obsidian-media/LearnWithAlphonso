@@ -53,6 +53,11 @@ const consumeCompletionSlot = vi.fn(async (_userId: string, _atIso: string) => t
 const releaseCompletionSlot = vi.fn(async (_userId: string, _atIso: string) => {});
 vi.mock("./completion-slot.server", () => ({ consumeCompletionSlot, releaseCompletionSlot }));
 
+// The learner's time zone (learner_time_zones). UTC (null) unless a test sets one; kept out of the Supabase mocks'
+// call order so the sequences below stay as they are.
+const readLearnerTimeZone = vi.fn(async (): Promise<string | null> => null);
+vi.mock("./learner-time-zone.server", () => ({ readLearnerTimeZone }));
+
 // Account AI consent is read through hasAiConsent; the default here is "allowed", individual tests flip it.
 const hasAiConsent = vi.fn(async () => true);
 vi.mock("./ai-consent.server", () => ({ hasAiConsent }));
@@ -1172,5 +1177,84 @@ describe("completeLessonRemote settles the lesson's hearts on the server", () =>
     process.env.SERVER_HEARTS = "off";
     await call(1);
     expect(settleArgs()).toBeUndefined();
+  });
+});
+
+describe("completeLessonRemote: the learner's own calendar day", () => {
+  const token = () =>
+    issueLessonSessionToken({ userId: USER_ID, lessonId: LESSON_ID, course: "en" });
+  const ALL = Object.entries({
+    q1: "Good morning.",
+    q2: "meet",
+    q3: "I am fine, thanks.",
+    q4: "Good",
+    q5: "Good night.",
+    q6: "Hey!",
+    q7: "later",
+    q8: "You're welcome.",
+  }).map(([questionId, answer]) => ({ questionId, answer }));
+
+  async function run(progress: Record<string, unknown>) {
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(chainable({ data: progress })) // user_progress
+      .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
+      .mockReturnValueOnce(chainable({ data: [] }));
+    supabaseAdminFrom.mockReturnValue(chainable({}));
+    await completeLessonRemote({
+      context: ctx(supabase),
+      data: { lessonId: LESSON_ID, total: 8, answers: ALL, course: "en", sessionToken: token() },
+    });
+    const calls = adminRpc.mock.calls as unknown as [string, unknown][];
+    const call = calls.find(([name]) => name === "apply_lesson_completion");
+    return call?.[1] as { _today: string; _next: Record<string, unknown> };
+  }
+  const base = {
+    streak: 4,
+    longest_streak: 4,
+    hearts: 5,
+    hearts_refill_at: null,
+    streak_freezes: 0,
+  };
+
+  afterEach(() => {
+    vi.useRealTimers();
+    readLearnerTimeZone.mockReset();
+    readLearnerTimeZone.mockResolvedValue(null);
+  });
+
+  it("books the day in the learner's zone: 23:30 UTC is already tomorrow in Sydney", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-12T23:30:00Z"));
+    readLearnerTimeZone.mockResolvedValue("Australia/Sydney");
+    const args = await run({ ...base, last_active_date: null });
+    expect(args._today).toBe("2026-11-13");
+    expect(args._next.last_active_date).toBe("2026-11-13");
+    expect(args._next.day_basis).toBe("local");
+  });
+
+  it("is UTC when no zone is known", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-12T23:30:00Z"));
+    const args = await run({ ...base, last_active_date: null });
+    expect(args._today).toBe("2026-11-12");
+  });
+
+  it("a streak still on the UTC basis bridges a two-date gap once, spending no freeze", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-12T10:00:00Z"));
+    const args = await run({ ...base, last_active_date: "2026-11-10", day_basis: "utc" });
+    expect(args._next.streak).toBe(5);
+    expect(args._next.streak_freezes).toBe(0);
+  });
+
+  it("on the local basis the same two-date gap is a real missed day", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-12T10:00:00Z"));
+    const args = await run({ ...base, last_active_date: "2026-11-10", day_basis: "local" });
+    expect(args._next.streak).toBe(1);
   });
 });

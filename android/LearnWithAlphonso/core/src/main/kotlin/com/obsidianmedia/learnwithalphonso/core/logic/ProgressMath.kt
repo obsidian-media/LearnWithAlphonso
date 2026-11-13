@@ -18,6 +18,14 @@ fun computeXpGain(correct: Int, total: Int): Int = correct * 10 + if (correct ==
 fun utcDateString(epochMillis: Long): String =
     Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalDate().toString()
 
+/**
+ * The learner's own calendar date, "yyyy-MM-dd", in [zone]. Streaks and days are the learner's local days (owner
+ * decision 2026-11-12; the server books them in their stored zone, which the app sends from the device), so "studied
+ * today" compares against this. Review due dates stay UTC dates: use [utcDateString] for those.
+ */
+fun localDateString(epochMillis: Long, zone: java.time.ZoneId): String =
+    Instant.ofEpochMilli(epochMillis).atZone(zone).toLocalDate().toString()
+
 private fun daysDiff(from: String, to: String): Int =
     ChronoUnit.DAYS.between(LocalDate.parse(from), LocalDate.parse(to)).toInt()
 

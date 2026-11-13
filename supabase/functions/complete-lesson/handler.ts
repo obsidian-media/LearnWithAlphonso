@@ -38,6 +38,7 @@ import {
   streakHeartMilestoneReached,
 } from "../_shared/hearts.ts";
 import { heartsUnlimitedFor } from "../_shared/hearts-pro.ts";
+import { localDay, streakBridge } from "../_shared/local-day.ts";
 import { createHash } from "node:crypto";
 import { sendPushToUser } from "../_shared/apns.ts";
 // §0.1-d #6: re-grades each submitted answer against the real question
@@ -313,10 +314,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
   }
   const sessionIssuedAt = deps.sessionIssuedAt(sessionToken, { userId, lessonId, course });
-  const trustedCompletionDay =
-    completedAt && sessionIssuedAt !== null
-      ? verifiedOfflineCompletionDay(completedAt, sessionIssuedAt, deps.now())
-      : null;
+  // The completion's own day is worked out below, once the learner's time zone has been read.
   // No trusted day (unreadable session issue time) falls back to the server's day below, never a 400:
   // a 400 here would dead-letter a real lesson on both native clients.
 
@@ -355,10 +353,9 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const correct = answers.length - missedQuestionIds.length;
 
   const now = deps.now();
-  const serverToday = now.toISOString().slice(0, 10);
 
   // Batch every read that doesn't depend on another read's result.
-  const [pResult, lpResult, compResult] = await Promise.all([
+  const [pResult, lpResult, compResult, tzResult] = await Promise.all([
     admin.from("user_progress").select("*").eq("user_id", userId).maybeSingle(),
     admin
       .from("language_progress")
@@ -373,12 +370,21 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
       .eq("lesson_id", lessonId)
       .eq("language", course)
       .maybeSingle(),
+    admin.from("learner_time_zones").select("time_zone").eq("user_id", userId).maybeSingle(),
   ]);
   const readError = [pResult, lpResult, compResult].find((r) => r.error);
   if (readError) return jsonResponse({ error: "Could not load lesson progress" }, 503);
   const pRow = pResult.data;
   const lpRow = lpResult.data;
   const existingComp = compResult.data;
+  // Days are the learner's own calendar days (owner decision 2026-11-12): their stored zone, UTC when none is known.
+  // An unreadable zone is UTC too: it must never fail a lesson.
+  const timeZone = tzResult.error ? null : ((tzResult.data?.time_zone as string | undefined) ?? null);
+  const serverToday = localDay(now.getTime(), timeZone);
+  const trustedCompletionDay =
+    completedAt && sessionIssuedAt !== null
+      ? verifiedOfflineCompletionDay(completedAt, sessionIssuedAt, now, timeZone)
+      : null;
   // A dated replay may never move the account's activity marker backwards.
   const claimedDay = trustedCompletionDay ?? serverToday;
   const today =
@@ -423,6 +429,8 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     streak: cur.streak,
     longestStreak: cur.longest_streak,
     freezes: cur.streak_freezes,
+    // A streak still on the old UTC-day basis bridges one extra day, once, so the switch drops nobody.
+    bridgeUtcDay: streakBridge((cur as { day_basis?: string | null }).day_basis),
   });
 
   // Resolve any pending passive regen first, then layer bonuses on top:
@@ -521,6 +529,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
         ? new Date(heartsResult.heartsRefillAt).toISOString()
         : null,
       streak_freezes: freezes,
+      day_basis: "local",
       xp,
       league_tier: leagueTier,
       best_correct: bestCorrect,
