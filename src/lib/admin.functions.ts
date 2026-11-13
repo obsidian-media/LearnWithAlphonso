@@ -931,11 +931,24 @@ async function resolveAfterAction(supabaseAdmin: AdminClient, reportId: string):
   }
 }
 
+/**
+ * The four report actions each change something AND write the action record in one database call (the staff_*
+ * functions in 20261113100000_staff_console.sql), so there is no change without a record. The report itself is
+ * resolved afterwards, as before.
+ */
 export const adminDismissReport = createServerFn({ method: "POST" })
   .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) => reportIdSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    await resolveReport(context.supabaseAdmin, data.reportId);
+    const report = await loadReport(context.supabaseAdmin, data.reportId);
+    const { data: removed, error } = await context.supabaseAdmin.rpc("staff_dismiss_report", {
+      p_actor: context.userId,
+      p_role: context.staffRole,
+      p_target: report.reported,
+      p_report: data.reportId,
+    } as never);
+    if (error) throw new Error(error.message);
+    if (!removed) throw new Error("That report no longer exists.");
     logAdminAction("dismiss_report", data.reportId, null, context.userId);
     return { ok: true };
   });
@@ -947,14 +960,17 @@ export const adminResetDisplayName = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: true; newName: string }> => {
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     if (!report.reported) throw new Error("This report has no account to rename.");
-    const { data: newName, error } = await context.supabaseAdmin.rpc("admin_reset_display_name", {
-      _user_id: report.reported,
-    });
+    const { data: newName, error } = await context.supabaseAdmin.rpc("staff_reset_display_name", {
+      p_actor: context.userId,
+      p_role: context.staffRole,
+      p_target: report.reported,
+      p_report: data.reportId,
+    } as never);
     if (error) throw new Error(error.message);
     if (!newName) throw new Error("That account no longer exists.");
     logAdminAction("reset_display_name", data.reportId, report.reported, context.userId);
     await resolveAfterAction(context.supabaseAdmin, data.reportId);
-    return { ok: true, newName };
+    return { ok: true, newName: newName as string };
   });
 
 export const adminRenameTeam = createServerFn({ method: "POST" })
@@ -966,12 +982,16 @@ export const adminRenameTeam = createServerFn({ method: "POST" })
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     const teamId = teamIdForReport(report);
     if (!teamId) throw new Error("This report is not about a team.");
-    const { data: reason, error } = await context.supabaseAdmin.rpc("admin_rename_team", {
-      _team_id: teamId,
-      _name: data.name,
-    });
+    const { data: reason, error } = await context.supabaseAdmin.rpc("staff_rename_team", {
+      p_actor: context.userId,
+      p_role: context.staffRole,
+      p_target: report.reported,
+      p_report: data.reportId,
+      p_team: teamId,
+      p_name: data.name,
+    } as never);
     if (error) throw new Error(error.message);
-    if (reason) throw new Error(socialReasonMessage(reason));
+    if (reason) throw new Error(socialReasonMessage(reason as string));
     logAdminAction("rename_team", data.reportId, teamId, context.userId);
     await resolveAfterAction(context.supabaseAdmin, data.reportId);
     return { ok: true };
@@ -985,10 +1005,15 @@ export const adminDisbandTeam = createServerFn({ method: "POST" })
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     const teamId = teamIdForReport(report);
     if (!teamId) throw new Error("This report is not about a team.");
-    affectedOrThrow(
-      await context.supabaseAdmin.from("teams").delete({ count: "exact" }).eq("id", teamId),
-      "That team no longer exists.",
-    );
+    const { data: removed, error } = await context.supabaseAdmin.rpc("staff_disband_team", {
+      p_actor: context.userId,
+      p_role: context.staffRole,
+      p_target: report.reported,
+      p_report: data.reportId,
+      p_team: teamId,
+    } as never);
+    if (error) throw new Error(error.message);
+    if (!removed) throw new Error("That team no longer exists.");
     logAdminAction("disband_team", data.reportId, teamId, context.userId);
     await resolveAfterAction(context.supabaseAdmin, data.reportId);
     return { ok: true };

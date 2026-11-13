@@ -17,7 +17,10 @@
 -- a boolean about the id it is given.
 --
 -- Rollback: DROP FUNCTION public.staff_revoke_sessions(uuid), public.staff_lift_restriction(uuid,text,uuid,text,text),
---   public.staff_set_restriction(uuid,text,uuid,text,text), public.is_restricted(uuid,text),
+--   public.staff_set_restriction(uuid,text,uuid,text,text), public.staff_assert_may_restrict(text,uuid),
+--   public.staff_reset_display_name(uuid,text,uuid,uuid), public.staff_rename_team(uuid,text,uuid,uuid,uuid,text),
+--   public.staff_disband_team(uuid,text,uuid,uuid,uuid), public.staff_dismiss_report(uuid,text,uuid,uuid),
+--   public.is_restricted(uuid,text),
 --   public.staff_record(uuid,text,text,uuid,text,jsonb,jsonb,text);
 --   DROP TABLE public.staff_notes, public.pro_grants, public.user_restrictions, public.staff_audit_log,
 --   public.staff_roles;
@@ -161,6 +164,34 @@ $$;
 REVOKE ALL ON FUNCTION public.is_restricted(uuid, text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.is_restricted(uuid, text) TO authenticated, service_role;
 
+-- Who may be restricted. A learner, by any staff member holding the scope. Another staff member, only by an owner.
+-- An owner, by nobody. A member of admin_users with no staff_roles row is the implicit owner (admin-auth.ts).
+CREATE FUNCTION public.staff_assert_may_restrict(p_actor_role text, p_target uuid)
+RETURNS void
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  target_role text;
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.admin_users WHERE user_id = p_target)
+     AND NOT EXISTS (SELECT 1 FROM public.staff_roles WHERE user_id = p_target) THEN
+    RETURN;
+  END IF;
+  SELECT coalesce((SELECT role FROM public.staff_roles WHERE user_id = p_target), 'owner') INTO target_role;
+  IF target_role = 'owner' THEN
+    RAISE EXCEPTION 'an owner cannot be restricted' USING ERRCODE = '42501';
+  END IF;
+  IF p_actor_role IS DISTINCT FROM 'owner' THEN
+    RAISE EXCEPTION 'only an owner can restrict a staff member' USING ERRCODE = '42501';
+  END IF;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_assert_may_restrict(text, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_assert_may_restrict(text, uuid) TO service_role;
+
 CREATE FUNCTION public.staff_set_restriction(
   p_actor uuid, p_role text, p_target uuid, p_kind text, p_reason text
 ) RETURNS uuid
@@ -177,6 +208,7 @@ BEGIN
   IF p_actor IS NOT NULL AND p_actor = p_target THEN
     RAISE EXCEPTION 'staff_set_restriction: staff cannot act on their own account' USING ERRCODE = '42501';
   END IF;
+  PERFORM public.staff_assert_may_restrict(p_role, p_target);
   IF p_reason IS NULL OR char_length(btrim(p_reason)) < 3 THEN
     RAISE EXCEPTION 'staff_set_restriction: a reason is required' USING ERRCODE = '22023';
   END IF;
@@ -208,6 +240,7 @@ BEGIN
   IF p_actor IS NOT NULL AND p_actor = p_target THEN
     RAISE EXCEPTION 'staff_lift_restriction: staff cannot act on their own account' USING ERRCODE = '42501';
   END IF;
+  PERFORM public.staff_assert_may_restrict(p_role, p_target);
   IF p_reason IS NULL OR char_length(btrim(p_reason)) < 3 THEN
     RAISE EXCEPTION 'staff_lift_restriction: a reason is required' USING ERRCODE = '22023';
   END IF;
@@ -276,7 +309,7 @@ BEGIN
    WHERE (as_uuid IS NOT NULL AND u.id = as_uuid)
       OR lower(u.email) = lower(q)
       OR (p.display_name IS NOT NULL
-          AND lower(p.display_name) LIKE lower(replace(replace(replace(q, '\', '\'), '%', '\%'), '_', '\_')) || '%')
+          AND lower(p.display_name) LIKE lower(replace(replace(replace(q, '\', '\\'), '%', '\%'), '_', '\_')) || '%' ESCAPE '\')
    ORDER BY u.created_at DESC
    LIMIT 25;
 END;
@@ -458,3 +491,99 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.staff_update_member(uuid, text, uuid, text, text[], boolean, text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.staff_update_member(uuid, text, uuid, text, text[], boolean, text) TO service_role;
+
+-- ---- report actions ----
+-- The moderation queue's four actions (reset a display name, rename a team, disband a team, dismiss a report). Each
+-- change and its record row commit together. The caller must already hold reports.manage (checked by the console).
+-- The target is the REPORTED learner (may be NULL: a report outlives a deleted account); ids only in the record.
+CREATE FUNCTION public.staff_reset_display_name(p_actor uuid, p_role text, p_target uuid, p_report uuid)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  new_name text;
+BEGIN
+  new_name := public.admin_reset_display_name(p_target);
+  IF new_name IS NULL THEN
+    RETURN NULL;
+  END IF;
+  PERFORM public.staff_record(
+    p_actor, p_role, 'report.reset_display_name', p_target, NULL, NULL,
+    jsonb_build_object('report_id', p_report), NULL);
+  RETURN new_name;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_reset_display_name(uuid, text, uuid, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_reset_display_name(uuid, text, uuid, uuid) TO service_role;
+
+-- Returns NULL when renamed, else the refusal reason from admin_rename_team (nothing recorded, nothing changed).
+CREATE FUNCTION public.staff_rename_team(p_actor uuid, p_role text, p_target uuid, p_report uuid, p_team uuid, p_name text)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  problem text;
+BEGIN
+  problem := public.admin_rename_team(p_team, p_name);
+  IF problem IS NOT NULL THEN
+    RETURN problem;
+  END IF;
+  PERFORM public.staff_record(
+    p_actor, p_role, 'report.rename_team', p_target, NULL, NULL,
+    jsonb_build_object('report_id', p_report, 'team_id', p_team), NULL);
+  RETURN NULL;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_rename_team(uuid, text, uuid, uuid, uuid, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_rename_team(uuid, text, uuid, uuid, uuid, text) TO service_role;
+
+-- Returns false (nothing recorded) when the team is already gone.
+CREATE FUNCTION public.staff_disband_team(p_actor uuid, p_role text, p_target uuid, p_report uuid, p_team uuid)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  removed integer;
+BEGIN
+  DELETE FROM public.teams WHERE id = p_team;
+  GET DIAGNOSTICS removed = ROW_COUNT;
+  IF removed = 0 THEN
+    RETURN false;
+  END IF;
+  PERFORM public.staff_record(
+    p_actor, p_role, 'report.disband_team', p_target, NULL, NULL,
+    jsonb_build_object('report_id', p_report, 'team_id', p_team), NULL);
+  RETURN true;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_disband_team(uuid, text, uuid, uuid, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_disband_team(uuid, text, uuid, uuid, uuid) TO service_role;
+
+-- Returns false (nothing recorded) when the report is already gone.
+CREATE FUNCTION public.staff_dismiss_report(p_actor uuid, p_role text, p_target uuid, p_report uuid)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  removed integer;
+BEGIN
+  DELETE FROM public.content_reports WHERE id = p_report;
+  GET DIAGNOSTICS removed = ROW_COUNT;
+  IF removed = 0 THEN
+    RETURN false;
+  END IF;
+  PERFORM public.staff_record(
+    p_actor, p_role, 'report.dismiss', p_target, NULL, NULL, jsonb_build_object('report_id', p_report), NULL);
+  RETURN true;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.staff_dismiss_report(uuid, text, uuid, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.staff_dismiss_report(uuid, text, uuid, uuid) TO service_role;

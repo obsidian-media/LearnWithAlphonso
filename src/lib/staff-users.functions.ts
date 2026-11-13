@@ -198,6 +198,9 @@ export const staffRevokePro = createServerFn({ method: "POST" })
 
 type RestrictionKind = "block" | "ban";
 
+export const RESTRICT_STAFF_MESSAGE =
+  "You cannot restrict an owner, or a staff member unless you are an owner.";
+
 /** The restriction and its record row are written by one database function (one transaction). */
 async function applyRestriction(
   context: {
@@ -225,6 +228,7 @@ async function applyRestriction(
       throw new Error(`That learner is already ${input.kind === "ban" ? "banned" : "blocked"}.`);
     if (error.code === "P0002")
       throw new Error(`That learner is not ${input.kind === "ban" ? "banned" : "blocked"}.`);
+    if (error.code === "42501") throw new Error(RESTRICT_STAFF_MESSAGE);
     throw new Error("Could not change the restriction. Nothing was changed.");
   }
 }
@@ -389,8 +393,21 @@ export const staffDeleteUser = createServerFn({ method: "POST" })
       throw new Error("The account could not be deleted. Nothing further was done; try again.");
     }
     await eraseSubscriberRecord(data.id);
-    for (const step of failedSteps)
-      await record("user.delete.failed", { step, accountDeleted: true });
-    await record("user.delete.completed", { failedSteps });
+    // The account is gone from here on: a record that cannot be written must not turn a finished deletion into an
+    // error (a retry would find nothing to delete). It is logged (ids only) and returned as a failed step instead.
+    const afterDelete = async (action: string, after: unknown, step: string) => {
+      try {
+        await record(action, after);
+      } catch {
+        console.error(
+          JSON.stringify({ event: "audit_write_failed", action, step, target: data.id }),
+        );
+        if (!failedSteps.includes(step)) failedSteps.push(step);
+      }
+    };
+    const earlier = [...failedSteps];
+    for (const step of earlier)
+      await afterDelete("user.delete.failed", { step, accountDeleted: true }, "audit_failed_step");
+    await afterDelete("user.delete.completed", { failedSteps: earlier }, "audit_completed");
     return { ok: true, failedSteps };
   });

@@ -435,4 +435,184 @@ describe("staff console migration", () => {
       );
     }
   });
+  describe("restricting staff", () => {
+    const OWNR = "00000000-0000-4000-8000-0000000000c1";
+    const SUPP = "00000000-0000-4000-8000-0000000000c2";
+    const IMPL = "00000000-0000-4000-8000-0000000000c3";
+    const rowCounts = async (u: string) => ({
+      restrictions: await count("user_restrictions", `user_id='${u}'`),
+      audit: await count("staff_audit_log", `target_user_id='${u}'`),
+    });
+    const run = (q: string, args: unknown[]) => asServer(() => db.query(q, args));
+
+    beforeAll(async () => {
+      await db.exec(`
+        INSERT INTO auth.users(id) VALUES ('${OWNR}'), ('${SUPP}'), ('${IMPL}');
+        INSERT INTO public.admin_users(user_id) VALUES ('${OWNR}'), ('${SUPP}'), ('${IMPL}');
+        INSERT INTO public.staff_roles(user_id, role, scopes) VALUES ('${OWNR}','owner','{}'), ('${SUPP}','support','{user.block}');
+      `);
+    });
+
+    it("support cannot block or ban an owner, explicit or implicit: refused, no restriction row, no audit row", async () => {
+      for (const target of [OWNR, IMPL]) {
+        for (const kind of ["block", "ban"]) {
+          const before = await rowCounts(target);
+          await asServer(() =>
+            expect(
+              db.query("SELECT public.staff_set_restriction($1,'support',$2,$3,'because I can')", [
+                ACTOR,
+                target,
+                kind,
+              ]),
+            ).rejects.toMatchObject({ code: "42501" }),
+          );
+          expect(await rowCounts(target)).toEqual(before);
+        }
+      }
+    });
+
+    it("support cannot restrict another staff member, but an owner can; nobody can restrict an owner", async () => {
+      const before = await rowCounts(SUPP);
+      await asServer(() =>
+        expect(
+          db.query("SELECT public.staff_set_restriction($1,'support',$2,'block','no way')", [
+            ACTOR,
+            SUPP,
+          ]),
+        ).rejects.toMatchObject({ code: "42501" }),
+      );
+      expect(await rowCounts(SUPP)).toEqual(before);
+      // an owner may restrict support staff
+      await run(
+        "SELECT public.staff_set_restriction($1,'owner',$2,'block','misuse of the console')",
+        [ACTOR, SUPP],
+      );
+      expect((await rowCounts(SUPP)).restrictions).toBe(1);
+      // lifting is held to the same rule
+      await asServer(() =>
+        expect(
+          db.query("SELECT public.staff_lift_restriction($1,'support',$2,'block','undo it')", [
+            ACTOR,
+            SUPP,
+          ]),
+        ).rejects.toMatchObject({ code: "42501" }),
+      );
+      expect((await rowCounts(SUPP)).restrictions).toBe(1);
+      await run("SELECT public.staff_lift_restriction($1,'owner',$2,'block','resolved')", [
+        ACTOR,
+        SUPP,
+      ]);
+      // even an owner cannot restrict an owner
+      const owner = await rowCounts(OWNR);
+      await asServer(() =>
+        expect(
+          db.query("SELECT public.staff_set_restriction($1,'owner',$2,'ban','coup')", [ACTOR, OWNR]),
+        ).rejects.toMatchObject({ code: "42501" }),
+      );
+      expect(await rowCounts(OWNR)).toEqual(owner);
+    });
+  });
+
+  it("staff_search_users treats backslash, percent and underscore in the query as literal text", async () => {
+    const U = "00000000-0000-4000-8000-0000000000c4";
+    await db.exec(`
+      INSERT INTO auth.users(id) VALUES ('${U}');
+      INSERT INTO public.profiles VALUES ('${U}', '50%\\off_deal');
+    `);
+    const search = (q: string) =>
+      asServer(async () =>
+        (
+          await db.query<{ id: string }>("SELECT id FROM public.staff_search_users($1)", [q])
+        ).rows.map((r) => r.id),
+      );
+    expect(await search("50%\\o")).toEqual([U]);
+    expect(await search("50%\\off_d")).toEqual([U]);
+    expect(await search("50%off")).toEqual([]); // the backslash is not an escape character
+    expect(await search("50_\\")).toEqual([]);
+  });
+
+  describe("report actions", () => {
+    const REP = "00000000-0000-4000-8000-0000000000d1";
+    const TEAM = "00000000-0000-4000-8000-0000000000e1";
+    const GONE = "00000000-0000-4000-8000-0000000000e9";
+    const audit = (action: string) =>
+      count("staff_audit_log", `action='${action}' AND actor_user_id='${ACTOR}'`);
+
+    beforeAll(async () => {
+      await db.exec(`
+        CREATE TABLE public.teams (id uuid PRIMARY KEY, name text);
+        CREATE TABLE public.content_reports (id uuid PRIMARY KEY, reported uuid);
+        CREATE FUNCTION public.admin_reset_display_name(_user_id uuid) RETURNS text LANGUAGE sql AS $$ SELECT 'Learner-ABCD' $$;
+        CREATE FUNCTION public.admin_rename_team(_team_id uuid, _name text) RETURNS text LANGUAGE plpgsql AS $$
+          BEGIN IF _name = 'bad' THEN RETURN 'blocked-content'; END IF; UPDATE public.teams SET name = _name WHERE id = _team_id; RETURN NULL; END $$;
+        INSERT INTO public.teams VALUES ('${TEAM}', 'Old name');
+        INSERT INTO public.content_reports VALUES ('${REP}', '${T1}');
+      `);
+    });
+
+    it("a refused rename (blocked name) or a team that is gone writes no audit row", async () => {
+      const r = await asServer(() =>
+        db.query<{ r: string }>(
+          "SELECT public.staff_rename_team($1,'support',$2,$3,$4,'bad') AS r",
+          [ACTOR, T1, REP, TEAM],
+        ),
+      );
+      expect(r.rows[0]!.r).toBe("blocked-content");
+      expect(await audit("report.rename_team")).toBe(0);
+      const gone = await asServer(() =>
+        db.query<{ r: boolean }>("SELECT public.staff_disband_team($1,'support',$2,$3,$4) AS r", [
+          ACTOR,
+          T1,
+          REP,
+          GONE,
+        ]),
+      );
+      expect(gone.rows[0]!.r).toBe(false);
+      expect(await audit("report.disband_team")).toBe(0);
+    });
+
+    it("every report action writes its audit row in the same call as the change", async () => {
+      await asServer(async () => {
+        await db.query("SELECT public.staff_reset_display_name($1,'support',$2,$3)", [
+          ACTOR,
+          T1,
+          REP,
+        ]);
+        await db.query("SELECT public.staff_rename_team($1,'support',$2,$3,$4,'New name')", [
+          ACTOR,
+          T1,
+          REP,
+          TEAM,
+        ]);
+        await db.query("SELECT public.staff_disband_team($1,'support',$2,$3,$4)", [
+          ACTOR,
+          T1,
+          REP,
+          TEAM,
+        ]);
+        await db.query("SELECT public.staff_dismiss_report($1,'support',$2,$3)", [ACTOR, T1, REP]);
+      });
+      for (const a of [
+        "report.reset_display_name",
+        "report.rename_team",
+        "report.disband_team",
+        "report.dismiss",
+      ]) {
+        expect(await audit(a), a).toBe(1);
+      }
+      expect(await count("teams")).toBe(0);
+      expect(await count("content_reports")).toBe(0);
+    });
+
+    it("clients cannot call the report functions", async () => {
+      await asRole(
+        "authenticated",
+        () =>
+          expect(
+            db.query("SELECT public.staff_dismiss_report($1,'support',$2,$3)", [ACTOR, T1, REP]),
+          ).rejects.toMatchObject({ code: "42501" }),
+        ACTOR,
+      );
+    });
+  });
 });

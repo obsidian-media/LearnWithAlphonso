@@ -127,6 +127,41 @@ describe("staffBanUser", () => {
   });
 });
 
+describe("restricting staff or an owner", () => {
+  const REFUSED = "You cannot restrict an owner, or a staff member unless you are an owner.";
+  const refuse = (admin: ReturnType<typeof adminClient>) =>
+    admin.rpc.mockResolvedValue({
+      data: null,
+      error: { code: "42501", message: "an owner cannot be restricted" },
+    });
+
+  it("a ban the database refuses for a staff target throws the clear message and bans nothing in Auth", async () => {
+    const admin = adminClient();
+    refuse(admin);
+    await expect(ban(admin)).rejects.toThrow(REFUSED);
+    expect(admin.auth.admin.updateUserById).not.toHaveBeenCalled();
+    expect(rpcNames(admin)).toEqual(["staff_set_restriction"]);
+  });
+
+  it("block and unblock surface the same refusal", async () => {
+    const mod2 = await import("./staff-users.functions");
+    const { staffBlockUser, staffUnblockUser } = asTestFns({
+      staffBlockUser: mod2.staffBlockUser,
+      staffUnblockUser: mod2.staffUnblockUser,
+    });
+    for (const fn of [staffBlockUser, staffUnblockUser]) {
+      const admin = adminClient();
+      refuse(admin);
+      await expect(
+        fn({
+          data: { id: LEARNER, reason: "reason given here" },
+          context: { supabaseAdmin: admin, userId: SUPPORT },
+        }),
+      ).rejects.toThrow(REFUSED);
+    }
+  });
+});
+
 describe("staffUnbanUser", () => {
   it("lifts the restriction and sets ban_duration none", async () => {
     const admin = adminClient();

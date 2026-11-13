@@ -165,6 +165,37 @@ describe("staffDeleteUser", () => {
     expect(recorded(admin, "user.delete.completed")).toHaveLength(0);
   });
 
+  it("the final completed row failing after the account is gone does not throw: ok, with audit_completed", async () => {
+    const admin = adminClient();
+    admin.rpc.mockImplementation(async (name: string, args: { p_action?: string }) => {
+      if (name === "staff_record" && args.p_action === "user.delete.completed") {
+        return { data: null, error: { message: "audit down" } };
+      }
+      return { data: 1, error: null };
+    });
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    const result = await del(admin);
+    expect(admin.auth.admin.deleteUser).toHaveBeenCalled();
+    expect(result).toEqual({ ok: true, failedSteps: ["audit_completed"] });
+    expect(logged).toHaveBeenCalled();
+    expect(JSON.stringify(logged.mock.calls)).not.toContain("example.com");
+    logged.mockRestore();
+  });
+
+  it("audit_completed is added after the other failed steps", async () => {
+    revokeApple.mockResolvedValue("failed");
+    const admin = adminClient();
+    admin.rpc.mockImplementation(async (name: string, args: { p_action?: string }) =>
+      name === "staff_record" && args.p_action === "user.delete.completed"
+        ? { data: null, error: { message: "audit down" } }
+        : { data: 1, error: null },
+    );
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    const result = await del(admin);
+    expect(result).toEqual({ ok: true, failedSteps: ["apple", "audit_completed"] });
+    logged.mockRestore();
+  });
+
   it("nothing at all happens without a matching confirmEmail", async () => {
     const admin = adminClient();
     await expect(del(admin, { confirmEmail: "other@example.com" })).rejects.toThrow(

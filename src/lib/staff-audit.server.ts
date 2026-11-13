@@ -18,6 +18,17 @@ export const STAFF_WRITE_FUNCTIONS = [
   "staffUpdateStaff",
 ] as const;
 
+/**
+ * The moderation queue's write actions (admin.functions.ts, scope reports.manage). Each reaches a staff_* SQL function
+ * that changes the data and writes the action record in one transaction; staff-registry.test.ts checks it.
+ */
+export const REPORT_WRITE_FUNCTIONS = [
+  "adminDismissReport",
+  "adminResetDisplayName",
+  "adminRenameTeam",
+  "adminDisbandTeam",
+] as const;
+
 export const REASON_MESSAGE = "A reason (3-500 characters) is required.";
 
 /** The reason every write action must carry: trimmed, 3 to 500 characters. */

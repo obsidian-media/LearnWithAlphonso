@@ -3205,6 +3205,18 @@ export type Database = {
         Args: { p_actor: string; p_body: string; p_role: string; p_target: string };
         Returns: string;
       };
+      staff_assert_may_restrict: {
+        Args: { p_actor_role: string; p_target: string };
+        Returns: undefined;
+      };
+      staff_disband_team: {
+        Args: { p_actor: string; p_report: string; p_role: string; p_target: string; p_team: string };
+        Returns: boolean;
+      };
+      staff_dismiss_report: {
+        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Returns: boolean;
+      };
       staff_lift_restriction: {
         Args: {
           p_actor: string;
@@ -3248,6 +3260,21 @@ export type Database = {
           p_target: string;
         };
         Returns: undefined;
+      };
+      staff_rename_team: {
+        Args: {
+          p_actor: string;
+          p_name: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+          p_team: string;
+        };
+        Returns: string;
+      };
+      staff_reset_display_name: {
+        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Returns: string;
       };
       staff_revoke_sessions: {
         Args: { p_target: string };

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CONSOLE_FUNCTIONS, STAFF_READ_FUNCTIONS } from "./console-registry";
-import { STAFF_WRITE_FUNCTIONS } from "./staff-audit.server";
+import { REPORT_WRITE_FUNCTIONS, STAFF_WRITE_FUNCTIONS } from "./staff-audit.server";
 
 /**
  * The one thing standing between this console and an endpoint that forgot its gate or its record. It reads the source
@@ -69,6 +69,32 @@ describe("the registry of console server functions", () => {
     expect(helper).toContain("staff_lift_restriction");
   });
 
+  it("every report action (admin.functions.ts) records itself through a staff_* SQL function", () => {
+    const src = read("admin.functions.ts");
+    expect(REPORT_WRITE_FUNCTIONS.length).toBe(4);
+    for (const name of REPORT_WRITE_FUNCTIONS) {
+      const start = src.indexOf(`export const ${name} =`);
+      expect(start, `${name} exists`).toBeGreaterThan(-1);
+      const next = src.indexOf("\nexport const ", start + 1);
+      const body = src.slice(start, next === -1 ? undefined : next);
+      expect(body, `${name} must record what it did`).toMatch(/rpc\(\s*"staff_/);
+      expect(body, `${name} must not change data outside the recording function`).not.toMatch(
+        /\.from\("teams"\)|\.delete\(|admin_(reset_display_name|rename_team)/,
+      );
+      expect(body, `${name} passes its actor and role`).toMatch(/p_actor: context\.userId/);
+      expect(body).toMatch(/p_role: context\.staffRole/);
+    }
+    // The registry must name every moderation action admin.functions.ts declares with reports.manage.
+    const gated = src
+      .split(/\r?\n(?=export const )/)
+      .filter((block) => /^export const \w+ = createServerFn/.test(block))
+      .filter((block) => block.includes('requireStaff("reports.manage")'))
+      .map((block) => /^export const (\w+)/.exec(block)![1]!)
+      .filter((n) => n !== "adminListReports")
+      .sort();
+    expect([...REPORT_WRITE_FUNCTIONS].sort()).toEqual(gated);
+  });
+
   it("every staff_* SQL function the console calls exists in a migration", () => {
     const sql = readdirSync("supabase/migrations")
       .map((f) => readFileSync(path.join("supabase/migrations", f), "utf8"))
@@ -76,7 +102,7 @@ describe("the registry of console server functions", () => {
     const defined = new Set(
       [...sql.matchAll(/CREATE (?:OR REPLACE )?FUNCTION public\.(staff_\w+)/g)].map((m) => m[1]!),
     );
-    const source = staffFiles.map((f) => read(f)).join("\n");
+    const source = [...staffFiles, "admin.functions.ts"].map((f) => read(f)).join("\n");
     const called = new Set(
       [...source.matchAll(/["'](staff_[a-z_]+)["']/g)]
         .map((m) => m[1]!)
