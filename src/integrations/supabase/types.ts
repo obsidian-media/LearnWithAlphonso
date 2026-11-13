@@ -2022,7 +2022,7 @@ export type Database = {
           after?: Json | null;
           at?: string;
           before?: Json | null;
-          id?: number;
+          id?: never;
           ip_hash?: string | null;
           reason?: string | null;
           request_id?: string | null;
@@ -2035,7 +2035,7 @@ export type Database = {
           after?: Json | null;
           at?: string;
           before?: Json | null;
-          id?: number;
+          id?: never;
           ip_hash?: string | null;
           reason?: string | null;
           request_id?: string | null;
@@ -2991,10 +2991,7 @@ export type Database = {
         Args: { p_kind: string; p_user: string };
         Returns: boolean;
       };
-      is_social_restricted: {
-        Args: { p_user: string };
-        Returns: boolean;
-      };
+      is_social_restricted: { Args: { p_user: string }; Returns: boolean };
       join_buddy_pool: {
         Args: { _age_confirmed: boolean; _course: string };
         Returns: {
@@ -3202,7 +3199,12 @@ export type Database = {
         Returns: undefined;
       };
       staff_add_note: {
-        Args: { p_actor: string; p_body: string; p_role: string; p_target: string };
+        Args: {
+          p_actor: string;
+          p_body: string;
+          p_role: string;
+          p_target: string;
+        };
         Returns: string;
       };
       staff_assert_may_restrict: {
@@ -3220,7 +3222,12 @@ export type Database = {
         Returns: boolean;
       };
       staff_dismiss_report: {
-        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Args: {
+          p_actor: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+        };
         Returns: boolean;
       };
       staff_lift_restriction: {
@@ -3279,13 +3286,15 @@ export type Database = {
         Returns: string;
       };
       staff_reset_display_name: {
-        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Args: {
+          p_actor: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+        };
         Returns: string;
       };
-      staff_revoke_sessions: {
-        Args: { p_target: string };
-        Returns: undefined;
-      };
+      staff_revoke_sessions: { Args: { p_target: string }; Returns: undefined };
       staff_search_users: {
         Args: { p_q: string };
         Returns: {
