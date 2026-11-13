@@ -3482,6 +3482,13 @@
   },
   "reason": "Meaning was missing."
  },
+ "fr:card:frb2p10l1/ainsi": {
+  "patch": {
+   "meaning": "thus, so",
+   "example": "Les routes étaient bloquées. Ainsi, nous avons dû rentrer à pied."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"ainsi\". (Round 7: the example uses a full stop, not \" ;\", which the vocab gate refuses.)"
+ },
  "fr:card:frb2p10l2/de sorte que": {
   "patch": {
    "meaning": "so that",
@@ -3496,12 +3503,33 @@
   },
   "reason": "The gloss is empty and the example is English, not a French sentence using \"en raison de\"."
  },
+ "fr:card:frb2p10l3/c'est pourquoi": {
+  "patch": {
+   "meaning": "that's why",
+   "example": "Il pleut. C'est pourquoi nous restons à la maison."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"c'est pourquoi\". (Round 7: the example uses a full stop, not \" ;\", which the vocab gate refuses.)"
+ },
+ "fr:card:frb2p10l3/par conséquent": {
+  "patch": {
+   "meaning": "consequently",
+   "example": "Il n'a pas étudié. Par conséquent, il a raté l'examen."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"par conséquent\". (Round 7: the example uses a full stop, not \" ;\", which the vocab gate refuses.)"
+ },
  "fr:card:frb2p10l4/afin de": {
   "patch": {
    "meaning": "in order to",
    "example": "Elle étudie tous les soirs afin de réussir son examen."
   },
   "reason": "The gloss is empty and the example is English, not a French sentence using \"afin de\" with an infinitive."
+ },
+ "fr:card:frb2p10l4/pour cette raison": {
+  "patch": {
+   "meaning": "for this reason",
+   "example": "Le prix a augmenté. Pour cette raison, nous avons changé de fournisseur."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"pour cette raison\". (Round 7: the example uses a full stop, not \" ;\", which the vocab gate refuses.)"
  },
  "fr:card:frb2p10l5/afin que": {
   "patch": {
@@ -4988,6 +5016,27 @@
    "example": "Il est fatigué, mais il continue de travailler."
   },
   "reason": "The gloss is empty and the example is an English sentence instead of a French sentence using the term."
+ },
+ "fr:card:frb2p9l1/néanmoins": {
+  "patch": {
+   "meaning": "nevertheless",
+   "example": "Le projet est coûteux. Néanmoins, nous le poursuivrons."
+  },
+  "reason": "The gloss is empty and the example is English metalanguage, not a French sentence using \"néanmoins\". (Round 7: the example uses a full stop, not \" ;\", which the vocab gate refuses.)"
+ },
+ "fr:card:frb2p9l2/en revanche": {
+  "patch": {
+   "meaning": "on the other hand",
+   "example": "Il est lent. En revanche, il est très précis."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"en revanche\". (Round 7: the example uses a full stop, not \" ;\", which the vocab gate refuses.)"
+ },
+ "fr:card:frb2p9l2/pourtant": {
+  "patch": {
+   "meaning": "yet, however",
+   "example": "Il a beaucoup travaillé. Pourtant, il a échoué."
+  },
+  "reason": "The gloss is empty and the example is English, not a French sentence using \"pourtant\". (Round 7: the example uses a full stop, not \" ;\", which the vocab gate refuses.)"
  },
  "fr:card:frb2p9l5/à la différence de": {
   "patch": {
