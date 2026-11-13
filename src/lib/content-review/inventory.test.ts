@@ -45,8 +45,9 @@ describe("the deterministic flags agree with the gates they mirror", () => {
   const counts = flagCounts(items);
   const total = (f: string) => Object.values(counts[f] ?? {}).reduce((a, b) => a + b, 0);
 
-  it("B1-C1 drill flags match romance-conjugation.test.ts's ratchet (at most 490)", () => {
-    expect(total(FLAG.drillNonForm)).toBeGreaterThan(0);
+  it("B1-C1 drill flags match romance-conjugation.test.ts's ratchet (at most 490, now 0)", () => {
+    // Round 7 fixed the last three, so the flag may now be zero; the upper bound is what can still fail.
+    expect(total(FLAG.drillNonForm)).toBeGreaterThanOrEqual(0);
     expect(total(FLAG.drillNonForm)).toBeLessThanOrEqual(490);
   });
 
