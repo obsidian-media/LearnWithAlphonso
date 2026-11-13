@@ -93,7 +93,7 @@ export function isLikelyJpeg(bytes: Uint8Array): boolean {
 
 /** A WebVTT file starts with the signature `WEBVTT` (after an optional byte-order mark) and holds at least one cue. */
 export function isLikelyVtt(text: string): boolean {
-  const body = text.replace(/^﻿/, "");
+  const body = text.replace(/^﻿/u, "");
   return /^WEBVTT(\s|$)/.test(body) && body.includes("-->");
 }
 
