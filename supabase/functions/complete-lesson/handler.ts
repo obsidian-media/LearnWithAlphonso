@@ -17,6 +17,7 @@
 // by startLessonSession (web) won't verify here.
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { suspendedResponseIfBanned } from "../_shared/account-status.ts";
 import {
   computeLeaguePromotion,
   computeLessonReplayXp,
@@ -240,6 +241,14 @@ async function authenticate(
   if (error || !data?.claims?.sub) {
     return jsonResponse({ error: "Unauthorized: invalid token" }, 401);
   }
+  // A banned learner's token stays valid until it expires; the ban must not wait for that.
+  const banned = await suspendedResponseIfBanned(
+    createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+      auth: { persistSession: false },
+    }),
+    data.claims.sub as string,
+  );
+  if (banned) return banned;
   return { userId: data.claims.sub as string, userClient: anonClient };
 }
 

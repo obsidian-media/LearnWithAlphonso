@@ -117,7 +117,7 @@ final class Session {
             // session. Being offline or rate-limited used to sign the
             // learner out too (2026-09-29 audit); now the caller just gets
             // nil and shows its own error.
-            if Self.isRejectedRefreshToken(error) { signOut() }
+            if Self.isRejectedRefreshToken(error) { endAfterRejectedRefresh(error) }
             return nil
         }
     }
@@ -476,7 +476,7 @@ final class Session {
             // session that has since been replaced must not touch the new one.
             guard case .signedIn(let stillCurrent) = state, stillCurrent == current else { return }
             if Self.isRejectedRefreshToken(error) {
-                signOut()
+                endAfterRejectedRefresh(error)
             } else {
                 scheduleProactiveRefresh(after: 30)
             }
@@ -582,8 +582,19 @@ final class Session {
         #endif
     }
 
+    /// A refresh the server rejected ends the session. When the reason is a ban, the sign-in screen says so plainly
+    /// (title and support address) instead of leaving the learner to wonder why they were signed out.
+    private func endAfterRejectedRefresh(_ error: Error) {
+        if AccountSuspension.isSuspended(error) {
+            endSession(.signedOut, notice: AccountSuspension.message)
+        } else {
+            signOut()
+        }
+    }
+
     private static func message(for error: Error) -> String {
         if error is URLError { return Copy.connectionFailure }
+        if AccountSuspension.isSuspended(error) { return AccountSuspension.message }
         if case SupabaseAuthError.server(let status, let message) = error {
             if status == 429 { return AuthCopy.tooManyRequests }
             return message ?? AuthCopy.generic

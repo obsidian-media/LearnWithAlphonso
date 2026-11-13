@@ -3,6 +3,7 @@ import { createStart, createMiddleware } from "@tanstack/react-start";
 import { renderErrorPage } from "./lib/error-page";
 import { reportServerError } from "./lib/sentry-server";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+import { watchAccountSuspended } from "./lib/watch-account-suspended";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -21,6 +22,6 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 });
 
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
+  functionMiddleware: [attachSupabaseAuth, watchAccountSuspended],
   requestMiddleware: [errorMiddleware],
 }));

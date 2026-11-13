@@ -7,6 +7,7 @@
 // request, and translates the result. It never trusts a client-sent score: the request carries the chosen answers.
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { suspendedResponseIfBanned } from "../_shared/account-status.ts";
 
 // The shared rolling-hour ceiling. Keep equal to complete-lesson/anti-farming.ts (handler.test.ts compares them): a
 // function directory deploys on its own, so it does not import from a sibling.
@@ -58,6 +59,14 @@ async function authenticate(req: Request): Promise<{ userId: string } | Response
   const { data, error } = await anonClient.auth.getClaims(token);
   if (error || !data?.claims?.sub)
     return jsonResponse({ error: "Unauthorized: invalid token" }, 401);
+  // A banned learner's token stays valid until it expires; the ban must not wait for that.
+  const banned = await suspendedResponseIfBanned(
+    createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+      auth: { persistSession: false },
+    }),
+    data.claims.sub as string,
+  );
+  if (banned) return banned;
   return { userId: data.claims.sub as string };
 }
 

@@ -9,6 +9,7 @@
 // live status. See docs/superpowers/specs/2026-09-22-deeper-
 // gamification-design.md section 2.
 import { createClient } from "@supabase/supabase-js";
+import { suspendedResponseIfBanned } from "../_shared/account-status.ts";
 import { weekStartFor, rankCohort, computePromotions } from "./season-math.ts";
 
 const COHORT_CAP = 30;
@@ -29,6 +30,9 @@ export async function handleRequest(req: Request): Promise<Response> {
   const userId = userData.user.id;
 
   const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  // A banned learner's token stays valid until it expires; the ban must not wait for that.
+  const banned = await suspendedResponseIfBanned(admin, userId);
+  if (banned) return banned;
 
   const now = new Date();
   const currentWeekStart = weekStartFor(now);

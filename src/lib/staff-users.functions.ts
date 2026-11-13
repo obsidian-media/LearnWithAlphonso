@@ -221,8 +221,10 @@ async function applyRestriction(
     } as never,
   );
   if (error) {
-    if (error.code === "23505") throw new Error(`That learner is already ${input.kind}ed.`);
-    if (error.code === "P0002") throw new Error(`That learner is not ${input.kind}ed.`);
+    if (error.code === "23505")
+      throw new Error(`That learner is already ${input.kind === "ban" ? "banned" : "blocked"}.`);
+    if (error.code === "P0002")
+      throw new Error(`That learner is not ${input.kind === "ban" ? "banned" : "blocked"}.`);
     throw new Error("Could not change the restriction. Nothing was changed.");
   }
 }
@@ -245,3 +247,86 @@ export const staffUnblockUser = createServerFn({ method: "POST" })
     await applyRestriction(context, { ...data, kind: "block", lift: true });
     return { ok: true };
   });
+
+/**
+ * Ban: no sign-in, effective at once. The restriction (and its record row) is written first because the
+ * database is what the auth middleware asks; then Supabase Auth's own ban and a sign-out everywhere. A failure of
+ * either of those last two does not undo the ban (the restriction already refuses the account on every call): it is
+ * recorded as user.ban.partial with the failed step and returned, never swallowed.
+ * The learner's email must be typed to confirm.
+ */
+export const staffBanUser = createServerFn({ method: "POST" })
+  .middleware([requireStaff("user.ban")])
+  .inputValidator((d: unknown) =>
+    z.object({ id: idSchema, reason: z.string(), confirmEmail: z.string().max(320) }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true; partial: string[] }> => {
+    const { assertNotSelf, validateReason, recordStaffAction } =
+      await import("./staff-audit.server");
+    validateReason(data.reason);
+    assertNotSelf(context.userId, data.id);
+    await assertEmailConfirmed(context.supabaseAdmin, data.id, data.confirmEmail);
+
+    await applyRestriction(context, { id: data.id, reason: data.reason, kind: "ban", lift: false });
+
+    const partial: string[] = [];
+    const { error: banError } = await context.supabaseAdmin.auth.admin.updateUserById(data.id, {
+      ban_duration: "876000h",
+    });
+    if (banError) partial.push("auth_ban");
+    const { error: revokeError } = await context.supabaseAdmin.rpc("staff_revoke_sessions", {
+      p_target: data.id,
+    } as never);
+    if (revokeError) partial.push("revoke_sessions");
+    if (partial.length > 0) {
+      await recordStaffAction(context.supabaseAdmin, {
+        actor: context.userId,
+        role: context.staffRole,
+        action: "user.ban.partial",
+        target: data.id,
+        reason: validateReason(data.reason),
+        after: { failedSteps: partial },
+      });
+    }
+    return { ok: true, partial };
+  });
+
+/** Lifts the ban and Supabase Auth's ban. An Auth failure is recorded as user.unban.partial and returned. */
+export const staffUnbanUser = createServerFn({ method: "POST" })
+  .middleware([requireStaff("user.unban")])
+  .inputValidator(reasonedTarget)
+  .handler(async ({ data, context }): Promise<{ ok: true; partial: string[] }> => {
+    const { recordStaffAction, validateReason } = await import("./staff-audit.server");
+    await applyRestriction(context, { ...data, kind: "ban", lift: true });
+    const partial: string[] = [];
+    const { error } = await context.supabaseAdmin.auth.admin.updateUserById(data.id, {
+      ban_duration: "none",
+    });
+    if (error) {
+      partial.push("auth_unban");
+      await recordStaffAction(context.supabaseAdmin, {
+        actor: context.userId,
+        role: context.staffRole,
+        action: "user.unban.partial",
+        target: data.id,
+        reason: validateReason(data.reason),
+        after: { failedSteps: partial },
+      });
+    }
+    return { ok: true, partial };
+  });
+
+export const CONFIRM_EMAIL_MESSAGE = "Type the learner's email to confirm.";
+
+/** Destructive actions (ban, delete) need the learner's own email typed back, compared case-insensitively. */
+async function assertEmailConfirmed(
+  admin: import("@supabase/supabase-js").SupabaseClient,
+  id: string,
+  typed: string,
+): Promise<string> {
+  const { data, error } = await admin.auth.admin.getUserById(id);
+  const email = data?.user?.email?.trim().toLowerCase();
+  if (error || !email) throw new Error("That learner does not exist.");
+  if (typed.trim().toLowerCase() !== email) throw new Error(CONFIRM_EMAIL_MESSAGE);
+  return email;
+}
