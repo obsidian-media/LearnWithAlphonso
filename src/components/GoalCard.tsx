@@ -58,7 +58,14 @@ type Preview =
 
 type View = "loading" | "error" | "empty" | "goal" | "setup";
 
-export function GoalCard({ course }: { course: GoalCourse }) {
+export function GoalCard({
+  course,
+  onChanged,
+}: {
+  course: GoalCourse;
+  /** Called after the goal was saved or removed, so a screen built on it can reload. */
+  onChanged?: () => void;
+}) {
   const [view, setView] = useState<View>("loading");
   const [state, setState] = useState<GoalState>({ goal: null, plan: null });
   const [loadError, setLoadError] = useState<GoalErrorKind | null>(null);
@@ -148,6 +155,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       setState(next);
       setLoadError(null);
       setView("goal");
+      onChanged?.();
     } catch (error) {
       if (startedAt !== loadId.current) return;
       setSaveError(messageFor(error));
@@ -163,6 +171,7 @@ export function GoalCard({ course }: { course: GoalCourse }) {
       if (startedAt !== loadId.current) return;
       setState({ goal: null, plan: null });
       setView("empty");
+      onChanged?.();
     } catch (error) {
       if (startedAt !== loadId.current) return;
       // A failed remove is an action error, not "offline": the goal is still there and editable.

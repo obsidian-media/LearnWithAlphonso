@@ -10,6 +10,8 @@ const read = (f: string) => readFileSync(path.join(root, "supabase/migrations", 
 const hitsSql = read("20261104100100_lesson_completion_hits.sql");
 const quizSql = read("20261104100200_podcast_quiz.sql");
 const seedSql = read("20261104100300_podcast_quiz_seed.sql");
+const REVIEW_FILE = "20261112140000_podcast_quiz_review.sql";
+const reviewSql = read(REVIEW_FILE);
 
 const U1 = "00000000-0000-4000-8000-000000000001";
 const U2 = "00000000-0000-4000-8000-000000000002";
@@ -79,6 +81,36 @@ describe("podcast quiz (real Postgres)", () => {
       CREATE TABLE public.activity_days (
         user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, day date NOT NULL,
         xp_earned integer NOT NULL DEFAULT 0, PRIMARY KEY (user_id, day));
+      -- review_items as it stands before the new migration: the columns and constraints of the base table plus
+      -- 20260908020628 (language), 20260912040533 (unique with language), 20260920040000 (weakness) and
+      -- 20261005120000 (saved_word, which also fixed the constraint names used below).
+      CREATE TABLE public.review_items (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+        item_key text NOT NULL, lesson_id text NOT NULL, level text NOT NULL DEFAULT 'A1',
+        ease real NOT NULL DEFAULT 2.5, interval_days integer NOT NULL DEFAULT 0,
+        repetitions integer NOT NULL DEFAULT 0, lapses integer NOT NULL DEFAULT 0,
+        due_on date NOT NULL DEFAULT CURRENT_DATE, last_reviewed_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
+        language text NOT NULL DEFAULT 'en',
+        source text NOT NULL DEFAULT 'lesson',
+        weakness_label text, weakness_display text, prompt text, choices jsonb, answer_index integer, explanation text,
+        saved_word text, saved_context text,
+        CONSTRAINT review_items_user_id_item_key_language_key UNIQUE (user_id, item_key, language),
+        CONSTRAINT review_items_source_check CHECK (source IN ('lesson', 'weakness', 'saved_word')),
+        CONSTRAINT weakness_shape_matches_source CHECK (
+          (source = 'lesson') OR
+          (source = 'weakness' AND weakness_label IS NOT NULL AND weakness_display IS NOT NULL
+             AND prompt IS NOT NULL AND choices IS NOT NULL AND answer_index IS NOT NULL) OR
+          (source = 'saved_word' AND saved_word IS NOT NULL AND saved_context IS NOT NULL
+             AND prompt IS NOT NULL AND choices IS NOT NULL AND answer_index IS NOT NULL
+             AND explanation IS NOT NULL))
+      );
+      GRANT SELECT, INSERT, UPDATE, DELETE ON public.review_items TO authenticated;
+      GRANT ALL ON public.review_items TO service_role;
+      ALTER TABLE public.review_items ENABLE ROW LEVEL SECURITY;
+      CREATE POLICY ri_own_all ON public.review_items FOR ALL TO authenticated
+        USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
     `);
     for (const quiz of PODCAST_QUIZZES) {
       const f = await db.query<{ id: string }>(
@@ -94,6 +126,7 @@ describe("podcast quiz (real Postgres)", () => {
     await db.exec(hitsSql);
     await db.exec(quizSql);
     await db.exec(seedSql);
+    await db.exec(reviewSql);
   }
 
   beforeEach(async () => {
@@ -531,5 +564,139 @@ describe("podcast quiz (real Postgres)", () => {
         `SELECT has_function_privilege('service_role','public.submit_podcast_quiz(uuid,uuid,jsonb,timestamptz,timestamptz,integer)','EXECUTE') ok`,
       ),
     ).toBe(true);
+  });
+
+  describe("missed questions become review items", () => {
+    const reviews = async (user: string) =>
+      (
+        await db.query<{
+          item_key: string;
+          source: string;
+          language: string;
+          prompt: string;
+          choices: string[];
+          answer_index: number;
+          explanation: string | null;
+          due_on: string;
+        }>(
+          "SELECT item_key, source, language, prompt, choices, answer_index, explanation, due_on::text FROM public.review_items WHERE user_id=$1 ORDER BY item_key",
+          [user],
+        )
+      ).rows;
+    const quizOf = (slug: string) => PODCAST_QUIZZES.find((x) => x.slug === slug)!;
+
+    it("adds exactly the missed questions, with the stored prompt, choices and answer, in the episode's course", async () => {
+      await submit(U1, "au-cafe", answersFor("au-cafe", 2));
+      const rows = await reviews(U1);
+      const missed = quizOf("au-cafe").questions.slice(0, 2);
+      expect(rows).toHaveLength(2);
+      for (const q of missed) {
+        const row = rows.find((r) => r.item_key.endsWith(q.id))!;
+        expect(row).toMatchObject({
+          source: "podcast_quiz",
+          language: "fr",
+          prompt: q.prompt,
+          choices: q.choices,
+          answer_index: q.answerIndex,
+          // The native review players need an explanation on every self-contained row: the right answer, stated.
+          explanation: `Correct answer: ${q.choices[q.answerIndex]}`,
+          due_on: AT.slice(0, 10),
+        });
+      }
+    });
+
+    it("adds nothing for a perfect score, nor for another learner's miss", async () => {
+      await submit(U1, COFFEE, answersFor(COFFEE, 0));
+      await submit(U2, COFFEE, answersFor(COFFEE, 2));
+      expect(await reviews(U1)).toEqual([]);
+      expect(await reviews(U2)).toHaveLength(2);
+    });
+
+    it("builds a key the review grader accepts (letters and digits, one colon, short)", async () => {
+      await submit(U1, COFFEE, answersFor(COFFEE, 3));
+      const rows = await reviews(U1);
+      expect(rows.length).toBeGreaterThan(0);
+      for (const r of rows) {
+        expect(r.item_key).toMatch(/^[a-z0-9]+:[a-z0-9]+$/);
+        expect(r.item_key.length).toBeLessThanOrEqual(120);
+      }
+    });
+
+    it("keeps one row per question however often it is missed, and never pushes a due date later", async () => {
+      await submit(U1, COFFEE, answersFor(COFFEE, 2));
+      await db.query("UPDATE public.review_items SET due_on = '2026-11-01' WHERE user_id=$1", [U1]);
+      await submit(U1, COFFEE, answersFor(COFFEE, 2));
+      const rows = await reviews(U1);
+      expect(rows).toHaveLength(2);
+      expect(rows.every((r) => r.due_on === "2026-11-01")).toBe(true);
+    });
+
+    it("brings back a question that was retired (its row deleted) when it is missed again", async () => {
+      await submit(U1, COFFEE, answersFor(COFFEE, 1));
+      await db.query("DELETE FROM public.review_items WHERE user_id=$1", [U1]);
+      await submit(U1, COFFEE, answersFor(COFFEE, 1));
+      expect(await reviews(U1)).toHaveLength(1);
+    });
+
+    it("adds nothing when the submission is refused", async () => {
+      await submit(U1, COFFEE, answersFor(COFFEE, 0), 1, RECENT);
+      await submit(U1, "au-cafe", answersFor("au-cafe", 3), 1, RECENT); // rate-limited
+      await submit(U1, COFFEE, [{ questionId: "q99", choiceIndex: 0 }]); // invalid
+      expect(await reviews(U1)).toEqual([]);
+    });
+
+    it("is readable by its owner through RLS and by nobody else", async () => {
+      await submit(U1, COFFEE, answersFor(COFFEE, 2));
+      const countAs = async (uid: string) => {
+        await db.query("SELECT set_config('app.uid', $1, false)", [uid]);
+        await db.exec("SET ROLE authenticated");
+        try {
+          return (await db.query<{ n: number }>("SELECT count(*)::int n FROM public.review_items"))
+            .rows[0]!.n;
+        } finally {
+          await db.exec("RESET ROLE");
+        }
+      };
+      expect(await countAs(U1)).toBe(2);
+      expect(await countAs(U2)).toBe(0);
+    });
+
+    it("requires the question itself on the row, and leaves the other sources as they were", async () => {
+      await expect(
+        db.query(
+          "INSERT INTO public.review_items (user_id,item_key,lesson_id,source) VALUES ($1,'podcast:x','podcast','podcast_quiz')",
+          [U1],
+        ),
+      ).rejects.toThrow();
+      await db.query(
+        "INSERT INTO public.review_items (user_id,item_key,lesson_id) VALUES ($1,'a1:q1','a1')",
+        [U1],
+      );
+      await expect(
+        db.query(
+          "INSERT INTO public.review_items (user_id,item_key,lesson_id,source) VALUES ($1,'w:1','w','weakness')",
+          [U1],
+        ),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe("migration file", () => {
+    it("is versioned after everything that was on main", () => {
+      expect(REVIEW_FILE.slice(0, 14) > "20261107130000").toBe(true);
+    });
+    it("keeps the function private to the service role, as the original", () => {
+      expect(reviewSql).toMatch(
+        /REVOKE ALL ON FUNCTION public\.submit_podcast_quiz[\s\S]*FROM PUBLIC, anon, authenticated;/,
+      );
+      expect(reviewSql).toMatch(
+        /GRANT EXECUTE ON FUNCTION public\.submit_podcast_quiz[\s\S]*TO service_role;/,
+      );
+    });
+    it("adds no client write grant on review_items", () => {
+      expect(reviewSql.replace(/^--.*$/gm, "")).not.toMatch(
+        /GRANT[^;]*(INSERT|UPDATE|DELETE|ALL)[^;]*review_items/i,
+      );
+    });
   });
 });

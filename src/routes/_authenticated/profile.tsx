@@ -1,3 +1,4 @@
+import { PathProfileCard } from "../../components/path/PathProfileCard";
 import { DELETE_WEB_SUBSCRIPTION_NOTE } from "@/lib/account-deletion-copy";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type Ref } from "react";
@@ -75,6 +76,7 @@ function ProgressTab({ o }: { o: ProfileOverview }) {
   return (
     <>
       <SkillsChart o={o} />
+      <PathProfileCard course={o.course} />
       <ProgressFold headingId="heat-heading" title="Activity heat map" summary={sum.heat}>
         <HeatMap o={o} />
       </ProgressFold>

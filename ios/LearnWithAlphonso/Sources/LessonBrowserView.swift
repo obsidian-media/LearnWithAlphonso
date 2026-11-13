@@ -74,6 +74,8 @@ struct LessonBrowserView: View {
     /// Set by tapping the current node on the path map; pushes the same lesson screen a list row does.
     /// A wrapper type, not a bare String: a String destination is already registered for the NavigationLinks.
     @State private var openedLesson: OpenedLesson?
+    /// "Build my path" (the learning path's goal, level, date and type switches).
+    @State private var showingPathBuild = false
 
     private struct OpenedLesson: Hashable { let id: String }
 
@@ -325,7 +327,7 @@ struct LessonBrowserView: View {
 
                 // One card identity per course: a save or remove still in flight for the course the
                 // learner just left must not land in the new course's card (its state is discarded).
-                GoalCardView(session: session, course: course)
+                PathCardSection(session: session, course: course) { showingPathBuild = true }
                     .id(course.translationCourseCode)
 
                 TeamMissionSection(mission: missionModel.mission)
@@ -461,6 +463,14 @@ struct LessonBrowserView: View {
             }
             .navigationDestination(item: $openedLesson) { opened in
                 lessonDestination(opened.id)
+            }
+            .navigationDestination(for: PathRoute.self) { route in
+                PathScreen(route: route, session: session, course: course) { lessonID in
+                    openedLesson = OpenedLesson(id: lessonID)
+                }
+            }
+            .sheet(isPresented: $showingPathBuild) {
+                PathBuildView(session: session, course: course)
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView(session: session)

@@ -107,6 +107,7 @@ final class QuestionGradingTests: XCTestCase {
         }
         XCTAssertTrue(item("weakness").isSelfContained)
         XCTAssertTrue(item("saved_word").isSelfContained)
+        XCTAssertTrue(item("podcast_quiz").isSelfContained)
         XCTAssertFalse(item("lesson").isSelfContained)
         XCTAssertFalse(item("anything-else").isSelfContained)
     }

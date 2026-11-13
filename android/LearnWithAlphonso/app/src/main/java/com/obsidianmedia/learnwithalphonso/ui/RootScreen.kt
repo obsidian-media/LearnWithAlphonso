@@ -1,6 +1,9 @@
 package com.obsidianmedia.learnwithalphonso.ui
 
 import com.obsidianmedia.learnwithalphonso.Analytics
+import com.obsidianmedia.learnwithalphonso.ui.path.PathBuildScreen
+import com.obsidianmedia.learnwithalphonso.ui.path.PathMode
+import com.obsidianmedia.learnwithalphonso.ui.path.PathScreen
 import com.obsidianmedia.learnwithalphonso.CrashReporting
 import com.obsidianmedia.learnwithalphonso.core.firstrun.CompleteProfileSkip
 import com.obsidianmedia.learnwithalphonso.core.firstrun.FirstRun
@@ -280,6 +283,15 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             }
         },
     ) { padding ->
+        // A path item opens where it lives: lessons, talks and campaign scenes directly; a podcast in the Listen tab.
+        val openPathRef: (com.obsidianmedia.learnwithalphonso.core.path.PathItemRef) -> Unit = { ref ->
+            when (ref.kind) {
+                "lesson" -> nav.navigate(Routes.lesson(container.activeCourse.course.value.code, ref.id))
+                "talk" -> nav.navigate(Routes.scenario(ref.id))
+                "campaign" -> nav.navigate(Routes.campaign(ref.id, ref.sceneIndex ?: 0))
+                else -> nav.navigate(Routes.LISTEN) { launchSingleTop = true }
+            }
+        }
         NavHost(nav, startDestination = Routes.LEARN, modifier = Modifier.padding(padding)) {
             composable(Routes.LEARN) {
                 LearnScreen(
@@ -288,8 +300,15 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                     onOpenReview = { course -> nav.navigate(Routes.review(course.code)) },
                     onOpenPlacement = { course -> nav.navigate(Routes.placement(course.code)) },
                     onOpenSettings = { nav.navigate(Routes.SETTINGS) },
+                    onOpenPath = { nav.navigate(Routes.PATH) },
+                    onBuildPath = { nav.navigate(Routes.PATH_BUILD) },
+                    onOpenPathRef = openPathRef,
                 )
             }
+            composable(Routes.PATH) { PathScreen(container, PathMode.ROAD, onBack = { nav.popBackStack() }, onOpenWeek = { nav.navigate(Routes.PATH_WEEK) }, onOpenWhy = { nav.navigate(Routes.PATH_WHY) }, onBuild = { nav.navigate(Routes.PATH_BUILD) }, onOpenRef = openPathRef) }
+            composable(Routes.PATH_WEEK) { PathScreen(container, PathMode.WEEK, onBack = { nav.popBackStack() }, onOpenWeek = {}, onOpenWhy = { nav.navigate(Routes.PATH_WHY) }, onBuild = { nav.navigate(Routes.PATH_BUILD) }, onOpenRef = openPathRef) }
+            composable(Routes.PATH_WHY) { PathScreen(container, PathMode.WHY, onBack = { nav.popBackStack() }, onOpenWeek = {}, onOpenWhy = {}, onBuild = { nav.navigate(Routes.PATH_BUILD) }, onOpenRef = openPathRef) }
+            composable(Routes.PATH_BUILD) { PathBuildScreen(container, onBack = { nav.popBackStack() }) }
             composable(Routes.LISTEN) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
                 val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }) }

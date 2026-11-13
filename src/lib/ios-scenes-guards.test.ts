@@ -150,7 +150,7 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
     for (const keep of [
       "StatusHeaderView(progress:",
       "LearnCurrentUnitCard(",
-      "GoalCardView(",
+      "PathCardSection(",
       "TeamMissionSection(",
       "WeeklyChallengesSection(",
       "PlacementBannerSection(",

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
-import { GoalCard } from "../../components/GoalCard";
+import { PathCard } from "../../components/path/PathCard";
 import { TeamMissionCard } from "../../components/TeamMissionCard";
 import { WeeklyChallengesCard } from "../../components/WeeklyChallengesCard";
 import { SegmentedControl } from "../../components/SegmentedControl";
@@ -448,6 +448,10 @@ function LearnPage() {
           ))}
         </div>
 
+        <div className="mb-4">
+          <PathCard course={course} />
+        </div>
+
         {here && hereUnit && hereLesson ? (
           <YouAreHere
             index={here.index}
@@ -653,7 +657,6 @@ function LearnPage() {
         <div data-sheet className="mt-6 grid gap-6">
           <TeamMissionCard />
           <WeeklyChallengesCard />
-          <GoalCard course={course} />
         </div>
       </div>
       {here && !hereVisible && (
