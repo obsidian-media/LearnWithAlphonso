@@ -38,6 +38,7 @@ struct PlacementView: View {
     var onFinished: () -> Void = {}
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.alphonsoDS) private var ds
     @State private var attempt: PlacementAttempt
     @State private var step = 0
     /// The submitted TEXT, not an option index -- a listening question
@@ -83,7 +84,7 @@ struct PlacementView: View {
                     // expected to trigger.
                     VStack(spacing: AlphonsoSpacing.md) {
                         Text("No placement questions are available for this course right now.")
-                            .font(AlphonsoFont.sans(14))
+                            .dsText(.footnote)
                             .foregroundStyle(AlphonsoColor.inkSoft)
                             .multilineTextAlignment(.center)
                         Button("Back to Learn") { onFinished() }
@@ -117,7 +118,7 @@ struct PlacementView: View {
             ForEach(attempt.markers(done: false), id: \.level) { marker in
                 let look = markerLook(marker.state)
                 Text(marker.level)
-                    .font(AlphonsoFont.sans(10, weight: .semiBold))
+                    .dsText(.caption)
                     .foregroundStyle(look.text)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)
@@ -152,7 +153,7 @@ struct PlacementView: View {
                 .tint(AlphonsoColor.moss)
                 .accessibilityLabel("Placement progress")
             Text(attempt.progressLabel(step: step))
-                .font(AlphonsoFont.sans(11, weight: .medium))
+                .dsText(.caption)
                 .foregroundStyle(AlphonsoColor.inkSoft)
                 .accessibilityLabel(attempt.progressSpokenLabel(step: step))
             levelMarkers
@@ -161,7 +162,7 @@ struct PlacementView: View {
 
         let content = VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
             Text("Placement test")
-                .font(AlphonsoFont.sans(10, weight: .semiBold))
+                .dsText(.caption)
                 .tracking(0.4)
                 .foregroundStyle(AlphonsoColor.ember)
 
@@ -179,7 +180,7 @@ struct PlacementView: View {
             .disabled(picked?.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
 
             Text("No hearts lost — this just finds your starting point.")
-                .font(AlphonsoFont.sans(11))
+                .dsText(.caption)
                 .foregroundStyle(AlphonsoColor.inkSoft)
         }
         .padding()
@@ -211,12 +212,12 @@ struct PlacementView: View {
         switch q {
         case .multipleChoice(let mc):
             Text(mc.prompt)
-                .font(AlphonsoFont.display(22, weight: .semiBold))
+                .dsText(.title)
                 .foregroundStyle(AlphonsoColor.ink)
             choiceButtons(mc.choices)
         case .listening(let listening):
             Text("Listening")
-                .font(AlphonsoFont.sans(10, weight: .semiBold))
+                .dsText(.caption)
                 .tracking(0.3)
                 .foregroundStyle(AlphonsoColor.inkSoft)
             Button {
@@ -226,12 +227,12 @@ struct PlacementView: View {
             }
             .buttonStyle(.bordered)
             Text(listening.prompt)
-                .font(AlphonsoFont.display(22, weight: .semiBold))
+                .dsText(.title)
                 .foregroundStyle(AlphonsoColor.ink)
             choiceButtons(listening.choices)
         case .translate(let translate):
             Text(translate.prompt)
-                .font(AlphonsoFont.display(22, weight: .semiBold))
+                .dsText(.title)
                 .foregroundStyle(AlphonsoColor.ink)
             TextField(
                 "Write your answer",
@@ -257,22 +258,21 @@ struct PlacementView: View {
                     picked = choice
                 } label: {
                     Text(choice)
-                        .font(AlphonsoFont.sans(16))
-                        .foregroundStyle(AlphonsoColor.ink)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(AlphonsoSpacing.sm + 4)
+                        .dsText(.answer)
+                        .foregroundStyle(ds.ink)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+                        .padding(AlphonsoDS.Space.s3)
                         .background(
-                            picked == choice ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
-                            in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-                        )
+                            RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+                                .fill(picked == choice ? ds.choiceTint : ds.card))
                         .overlay(
-                            RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-                                .strokeBorder(
-                                    picked == choice ? AlphonsoColor.moss : AlphonsoColor.hairline,
-                                    lineWidth: picked == choice ? 1.5 : 1
-                                )
-                        )
+                            RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+                                .strokeBorder(picked == choice ? ds.choice : ds.line, lineWidth: 2))
+                        .contentShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
                 }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(picked == choice ? .isSelected : [])
             }
         }
     }
@@ -284,46 +284,46 @@ struct PlacementView: View {
         let content = VStack(spacing: AlphonsoSpacing.md) {
             Image(systemName: "star.fill")
                 .accessibilityHidden(true)
-                .font(.system(size: 40))
+                .dsText(.displayXL)
                 .foregroundStyle(AlphonsoColor.surface)
                 .frame(width: 64, height: 64)
                 .background(AlphonsoColor.moss, in: Circle())
             Text("Your level")
-                .font(AlphonsoFont.sans(10, weight: .semiBold))
+                .dsText(.caption)
                 .tracking(0.4)
                 .foregroundStyle(AlphonsoColor.ember)
             Text(level)
-                .font(AlphonsoFont.display(40, weight: .semiBold))
+                .dsText(.displayXL)
                 .foregroundStyle(AlphonsoColor.ink)
             if let meta {
                 Text(meta.name)
-                    .font(AlphonsoFont.display(18, weight: .semiBold))
+                    .dsText(.headline)
                     .foregroundStyle(AlphonsoColor.ink)
                 Text(meta.blurb)
-                    .font(AlphonsoFont.sans(14))
+                    .dsText(.footnote)
                     .foregroundStyle(AlphonsoColor.inkSoft)
                     .multilineTextAlignment(.center)
             }
             Text("\(correct) of \(total) correct")
-                .font(AlphonsoFont.sans(12))
+                .dsText(.caption)
                 .foregroundStyle(AlphonsoColor.inkSoft)
             if let finished = attempt.finishedLabel {
                 Text(finished)
-                    .font(AlphonsoFont.sans(11, weight: .medium))
+                    .dsText(.caption)
                     .foregroundStyle(AlphonsoColor.moss)
             }
             // Only skips the learner's real answers backed up (see resolveBand): a band the exam went back to
             // and asked is no longer in this list.
             if !attempt.tally.skippedLevels.isEmpty {
                 Text("Fast-tracked past \(attempt.tally.skippedLevels.joined(separator: ", ")) after strong answers.")
-                    .font(AlphonsoFont.sans(11))
+                    .dsText(.caption)
                     .foregroundStyle(AlphonsoColor.inkSoft)
                     .multilineTextAlignment(.center)
             }
             Button("Start learning at \(level)") { onFinished() }
                 .buttonStyle(.alphonsoPrimary)
             Button("Retake the test") { restart() }
-                .font(AlphonsoFont.sans(12, weight: .medium))
+                .dsText(.caption)
                 .foregroundStyle(AlphonsoColor.inkSoft)
         }
         .padding()

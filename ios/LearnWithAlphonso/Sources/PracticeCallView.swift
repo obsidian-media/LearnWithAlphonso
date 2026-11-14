@@ -87,13 +87,22 @@ struct PracticeCallView<Sheet: View>: View {
                     statePill
                         .padding(.top, 10)
                     if voice.isHandsFreeOn, let line = HandsFreeCopy.statusLine(voice.handsFreeStatus) {
-                        Text(line)
-                            .dsText(.footnote)
-                            .foregroundStyle(ds.onHero)
-                            .multilineTextAlignment(.center)
-                            .shadow(color: .black.opacity(0.5), radius: 3, y: 1)
-                            .padding(.top, 8)
-                            .accessibilityAddTraits(.updatesFrequently)
+                        // A paused hands-free call is a safety stop: it gets its own glass pill and a pause mark, so it
+                        // cannot be missed over the picture.
+                        let paused: Bool = { if case .paused = voice.handsFreeStatus { return true } else { return false } }()
+                        HStack(spacing: AlphonsoDS.Space.s2) {
+                            if paused {
+                                Image(systemName: "pause.fill").dsText(.caption).accessibilityHidden(true)
+                            }
+                            Text(line).multilineTextAlignment(.center)
+                        }
+                        .dsText(.footnote)
+                        .foregroundStyle(ds.onHero)
+                        .padding(.horizontal, AlphonsoDS.Space.s3)
+                        .padding(.vertical, AlphonsoDS.Space.s2)
+                        .background(paused ? glassStrong : glass, in: Capsule())
+                        .padding(.top, 8)
+                        .accessibilityAddTraits(.updatesFrequently)
                     }
                     controls
                         .padding(.top, 14)

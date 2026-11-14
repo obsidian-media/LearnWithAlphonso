@@ -52,6 +52,8 @@ struct LessonPlayerView: View {
     @State private var phase: Phase = .overview
     /// The word the learner tapped in a lesson explanation, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
+    /// "See all achievements" from the unlock sheet opens the catalog over the lesson.
+    @State private var showingAchievements = false
     @State private var idx = 0
     @State private var correctCount = 0
     // §0.1-d #6: every real (non-reinforcement) question's raw submission,
@@ -328,6 +330,9 @@ struct LessonPlayerView: View {
         // call site. They only use it for a course whose text is wholly in its
         // own language (SavedWordPolicy), i.e. the English course today.
         .environment(\.saveWordHandler, { savingWord = $0 })
+        .sheet(isPresented: $showingAchievements) {
+            AchievementsView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
+        }
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
         }
@@ -345,7 +350,8 @@ struct LessonPlayerView: View {
         } else if let completionFailure {
             LessonSaveFailureView(error: completionFailure, onSignIn: { session.signOut() }, onDone: { dismiss() })
         } else if total == 0 {
-            ContentUnavailableView("This lesson has no questions yet", systemImage: "questionmark.circle")
+            DSEmptyState(art: "Alphonso-thinking", title: "This lesson has no questions yet")
+                .padding()
         } else {
             switch phase {
             case .overview:
@@ -554,6 +560,7 @@ struct LessonPlayerView: View {
             missed: missed,
             topInset: topInset,
             onHearHeadline: { speak(headline, course: .english) },
+            onSeeAllAchievements: { showingAchievements = true },
             continueTitle: nextLessonID != nil ? "Continue to next lesson" : "Back to Learn",
             onContinue: { if nextLessonID != nil { continueToNextLesson() } else { dismiss() } }
         ) {
@@ -1125,45 +1132,47 @@ private struct GeneratedPracticeSection: View {
     @State private var checked = false
     @State private var errorText: String?
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
         switch status {
         case .idle, .loading, .empty, .error:
-            VStack(spacing: 8) {
+            VStack(spacing: AlphonsoDS.Space.s2) {
                 Button {
                     Task { await generate() }
                 } label: {
                     if status == .loading {
-                        ProgressView().tint(AlphonsoColor.ink)
+                        ProgressView().tint(ds.brand)
                     } else {
                         Text("Generate more practice")
                     }
                 }
-                .buttonStyle(.alphonsoSecondary)
+                .buttonStyle(.dsButton(.secondary))
                 .disabled(status == .loading)
 
                 // The server answers within about 20 seconds (two short model attempts, then its own fallback
                 // set), and generatePractice gives up after 25. This text says a wait is expected.
                 if status == .loading {
                     Text("This can take up to 20 seconds.")
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .dsText(.caption)
+                        .foregroundStyle(ds.inkSoft)
                 } else if status == .empty {
                     Text("Couldn't generate practice for this lesson right now.")
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .dsText(.caption)
+                        .foregroundStyle(ds.inkSoft)
                 } else if status == .error {
                     Text(errorText ?? "Something went wrong. Try again.")
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .dsText(.caption)
+                        .foregroundStyle(ds.wrongInk)
                 }
             }
-            .padding(.top, 8)
+            .padding(.top, AlphonsoDS.Space.s2)
         case .ready:
             if idx >= questions.count {
                 Text("Nice work. That's all the extra practice for this lesson.")
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                    .padding(.top, 8)
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.inkSoft)
+                    .padding(.top, AlphonsoDS.Space.s2)
             } else {
                 practiceCard
             }
@@ -1172,46 +1181,55 @@ private struct GeneratedPracticeSection: View {
 
     private var practiceCard: some View {
         let q = questions[idx]
-        return VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+        return VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
             Text("Extra practice \u{00B7} \(idx + 1)/\(questions.count)")
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .dsText(.overline)
+                .foregroundStyle(ds.inkSoft)
             Text(q.prompt)
-                .font(AlphonsoFont.sans(16, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
+                .dsText(.headline)
+                .foregroundStyle(ds.ink)
+                .fixedSize(horizontal: false, vertical: true)
             // Keyed by position, not text: a repeated choice would otherwise collide and light up twice.
             ForEach(Array(q.choices.enumerated()), id: \.offset) { index, choice in
+                let isRight = checked && q.answerIndex == index
+                let isWrong = checked && picked == index && q.answerIndex != index
+                let border: Color = isRight ? ds.rightInk : isWrong ? ds.wrongInk : picked == index ? ds.choice : ds.line
                 Button {
                     picked = index
                 } label: {
                     HStack {
-                        Text(choice).font(AlphonsoFont.sans(15))
+                        Text(choice).dsText(.answer).multilineTextAlignment(.leading)
                         Spacer()
-                        if checked && q.answerIndex == index {
-                            Image(systemName: "checkmark.circle.fill").foregroundStyle(AlphonsoColor.moss)
-                        } else if checked && picked == index {
-                            Image(systemName: "xmark.circle.fill").foregroundStyle(AlphonsoColor.destructive)
+                        if isRight {
+                            Image(systemName: "checkmark").foregroundStyle(ds.rightInk)
+                        } else if isWrong {
+                            Image(systemName: "xmark").foregroundStyle(ds.wrongInk)
                         }
                     }
-                    .padding(AlphonsoSpacing.sm + 4)
+                    .padding(AlphonsoDS.Space.s3)
+                    .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
                     .background(
-                        picked == index ? AlphonsoColor.moss.opacity(0.14) : AlphonsoColor.parchment,
-                        in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous)
-                    )
+                        RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+                            .fill(isRight ? ds.rightTint : isWrong ? ds.wrongTint : picked == index ? ds.choiceTint : ds.card))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+                            .strokeBorder(border, lineWidth: 2))
+                    .contentShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
                 }
+                .buttonStyle(.plain)
                 .disabled(checked)
-                .foregroundStyle(AlphonsoColor.ink)
+                .foregroundStyle(ds.ink)
             }
             if checked {
                 if picked == q.answerIndex {
                     if let saveCourse, let saveWordHandler {
                         TappableText(
-                            text: q.explanation, color: AlphonsoColor.inkSoft, course: saveCourse,
+                            text: q.explanation, color: ds.inkSoft, course: saveCourse,
                             mode: .allWords, onSave: saveWordHandler
                         )
-                        .font(AlphonsoFont.sans(13))
+                        .dsText(.footnote)
                     } else {
-                        Text(q.explanation).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                        Text(q.explanation).dsText(.footnote).foregroundStyle(ds.inkSoft)
                     }
                 } else {
                     AlphonsoTipCard(explanation: q.explanation, saveCourse: saveCourse)
@@ -1229,10 +1247,10 @@ private struct GeneratedPracticeSection: View {
                 picked = nil
                 checked = false
             }
-            .buttonStyle(.alphonsoPrimary)
+            .buttonStyle(.dsButton(.primary))
             .disabled(!checked && picked == nil)
         }
-        .padding(.top, 8)
+        .padding(.top, AlphonsoDS.Space.s2)
         .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.75), value: checked)
     }
 
@@ -1280,39 +1298,43 @@ private struct OfflineFinishView: View {
     let onContinue: () -> Void
     let onPracticeWithHector: (() -> Void)?
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
-        VStack(spacing: AlphonsoSpacing.md) {
-            Image(systemName: "icloud.and.arrow.up.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(AlphonsoColor.ember)
+        VStack(spacing: AlphonsoDS.Space.s3) {
+            // Alphonso with the hourglass: waiting, not celebrating, and no streak chip (the streak is the server's).
+            Image("Alphonso-refill-hourglass").resizable().scaledToFit()
+                .frame(height: AlphonsoDS.Space.s12 * 3)
                 .accessibilityHidden(true)
             Text(reason.userMessage)
-                .font(AlphonsoFont.display(19, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
+                .dsText(.title)
+                .foregroundStyle(ds.ink)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             // "Up to": the number is this attempt's full value. A lesson completed before only earns the
             // improvement over its best score, which this screen cannot know offline.
             Text("Up to +\(pending.optimisticXpEstimate) XP once it syncs")
-                .font(AlphonsoFont.display(24, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ember)
+                .dsText(.title)
+                .foregroundStyle(ds.xpText)
                 .multilineTextAlignment(.center)
             Text("A lesson you've already finished only earns XP for a better score.")
-                .font(AlphonsoFont.sans(13))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .dsText(.footnote)
+                .foregroundStyle(ds.inkSoft)
                 .multilineTextAlignment(.center)
             Text("\(correct)/\(total) correct")
-                .font(AlphonsoFont.sans(14))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .dsText(.footnote)
+                .foregroundStyle(ds.inkSoft)
             Button("Continue", action: onContinue)
-                .buttonStyle(.alphonsoPrimary)
-                .padding(.top, AlphonsoSpacing.sm)
+                .buttonStyle(.dsButton(.primary))
+                .padding(.top, AlphonsoDS.Space.s2)
             if let onPracticeWithHector {
                 Button("Practice with Hector", action: onPracticeWithHector)
-                    .buttonStyle(.alphonsoSecondary)
+                    .buttonStyle(.dsButton(.secondary))
             }
         }
-        .padding()
-        .background(AlphonsoColor.surface)
+        .padding(AlphonsoDS.Space.gutter)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(ds.surface)
     }
 }
 
@@ -1325,6 +1347,7 @@ private struct OfflineFinishView: View {
 private struct LeaguePromotionOverlay: View {
     let tier: String
     let onContinue: () -> Void
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         ZStack {
@@ -1332,12 +1355,13 @@ private struct LeaguePromotionOverlay: View {
             VStack(spacing: 20) {
                 Spacer()
                 Image(systemName: "shield.fill")
-                    .font(.system(size: 96))
+                    .dsText(.numeralXL)
+                    .scaleEffect(2)
                     .foregroundStyle(LeagueTierPalette.color(for: tier))
                     .springEntrance(response: 0.6, dampingFraction: 0.6, minScale: 0.4)
                 Text("League up!")
-                    .font(AlphonsoFont.display(34, weight: .bold))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .dsText(.displayXL)
+                    .foregroundStyle(ds.ink)
                 AlphonsoMascotBanner(mascot: .alphonso, message: "You've been promoted to \(LeagueTierPalette.label(for: tier))!")
                     .padding(.horizontal)
                 Spacer()
@@ -1347,27 +1371,6 @@ private struct LeaguePromotionOverlay: View {
                     .padding(.bottom, 40)
             }
         }
-    }
-}
-
-/// Ports src/data/achievements.ts's LEAGUE_TIER_META hex values exactly --
-/// a different, 5-tier palette (bronze/silver/sapphire/ruby/diamond) from
-/// AchievementBadgeView's 4-tier achievement-tier palette, so kept separate
-/// rather than merged.
-enum LeagueTierPalette {
-    static func color(for tier: String) -> Color {
-        switch tier {
-        case "bronze": return Color(hex: 0xB07242)
-        case "silver": return Color(hex: 0x8A9099)
-        case "sapphire": return Color(hex: 0x4A6B8A)
-        case "ruby": return Color(hex: 0x9A4A4A)
-        case "diamond": return Color(hex: 0x4A7F7A)
-        default: return Color(white: 0.53)
-        }
-    }
-
-    static func label(for tier: String) -> String {
-        LeagueTierCopy.label(for: tier)
     }
 }
 
