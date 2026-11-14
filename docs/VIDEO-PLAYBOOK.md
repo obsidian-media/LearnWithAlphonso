@@ -94,13 +94,18 @@ Quality check: play the mp4 with captions on. Captions are in sync (within a fra
 
 ## How a video reaches the app
 
-The Library's Watch shelf reads the `videos` table and the public `videos` storage bucket. The owner-run uploader is `scripts/video-tool.ts` (it ships with the Library PR; check that it exists on `main` before you rely on this section):
+This is live (#499, merged 2026-11-13). The Library's Watch shelf reads the `videos` table and the public `videos` storage bucket (migration `20261115100000_videos_watch_shelf.sql`). The owner-run uploader is `scripts/video-tool.ts`, run from Git Bash with bun (`bun` is a Bash shim here; PowerShell cannot run it). It reads `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from the environment or from the owner's `~/.alphonso-secrets/podcast.env`. Every command is a dry run that prints what it would do until you add `--confirm`.
 
-1. `add` uploads the mp4, the poster and the captions and writes the row **unpublished** (a dry run unless `--confirm`).
-2. The owner watches it from the unpublished row.
-3. `publish` makes it visible. It refuses a video without captions or with a missing object.
+1. `add --file en-x.mp4 --poster en-x.jpg --captions en-x.en.vtt --course en --slug en-x --title "..." [--description ...] [--level A1] [--tags food,travel] [--practice lesson:u3l2] [--sort 0] --confirm` uploads the mp4, poster and WebVTT captions to the `videos` bucket and writes the row **unpublished**. `--tags` are free labels; a goal or interest from the first-run answers (travel, work, food, tech, ...) puts the video on that learner's path. `--practice` is the item the player offers after the video (`lesson:`, `talk:` or `campaign:` plus its id).
+2. Watch it (the owner, from the unpublished row).
+3. `publish --slug en-x --confirm` makes it visible. It refuses a video without captions or with a missing object (a database CHECK enforces the captions rule too).
+4. `unpublish --slug en-x --confirm` hides it again. This hides the row, not the file: the bucket is public-read, so the mp4 is still fetchable by anyone who has its URL. `published` is a staging flag, not privacy.
 
-Uploading and publishing are the owner's commands (they need the service-role key). An agent prepares the `publish/` folder and hands the owner the exact `add` and `publish` commands.
+Limits: mp4 up to 50 MB, a JPEG, PNG or WebP poster, and `text/vtt` captions. Captions are mandatory because the player turns them on by default.
+
+On the learner's side: the Watch shelf (in the Library tab, hidden when the course has no videos), a captioned player sheet that remembers where they stopped (`save_video_progress`, one row per user per video, deleted with the account), a "practice this" button at the end, and a stop on Your learning path. Usage events are `video_started` and `video_completed`. See `ARCHITECTURE.md`, "Library tab and Watch shelf".
+
+Uploading and publishing are the owner's commands (they need the service-role key); the coordinator ran them for the first three videos at the owner's request. An agent prepares the `publish/` folder and hands the owner the exact `add` and `publish` commands.
 
 ## What is deliberately not in the repo
 
