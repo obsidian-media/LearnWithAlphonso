@@ -1,10 +1,8 @@
 {
   "$comment": "Raw colours and font sizes per file in view code, today. A count may only go down: lower it with bun scripts/design-raw-value-baseline.ts. Never raise one; use the design tokens instead.",
-  "total": 44,
+  "total": 35,
   "files": {
     "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/audio/HoldToTalkButton.kt": 1,
-    "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/UpdateRequiredScreen.kt": 2,
-    "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/achievements/AchievementsScreen.kt": 7,
     "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/components/AlphonsoComponents.kt": 5,
     "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/placement/PlacementScreen.kt": 2,
     "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/practice/call/PracticeCallScreen.kt": 17,

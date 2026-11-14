@@ -100,11 +100,20 @@ class TeamsViewModel(private val client: ProgressSyncClient, private val seed: T
 
 data class SeasonUiState(val isLoading: Boolean = true, val status: SeasonStatus? = null)
 
-class SeasonViewModel(private val client: ProgressSyncClient) : ViewModel() {
-    private val _state = MutableStateFlow(SeasonUiState())
+class SeasonViewModel(private val client: ProgressSyncClient, private val seed: SeasonUiState? = null) : ViewModel() {
+    private val _state = MutableStateFlow(seed ?: SeasonUiState())
     val state: StateFlow<SeasonUiState> = _state.asStateFlow()
 
-    init {
+    init { if (seed == null) load() }
+
+    /** Try again after a failed read: back to loading, then the answer. */
+    fun reload() {
+        if (seed != null) return
+        _state.value = SeasonUiState()
+        load()
+    }
+
+    private fun load() {
         viewModelScope.launch {
             val status = runCatching { client.getSeasonStatus() }.getOrNull()
             _state.value = SeasonUiState(isLoading = false, status = status)

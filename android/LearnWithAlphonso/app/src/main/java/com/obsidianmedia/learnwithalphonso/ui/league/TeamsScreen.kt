@@ -1,5 +1,9 @@
 package com.obsidianmedia.learnwithalphonso.ui.league
 
+import androidx.compose.ui.res.painterResource
+import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.core.logic.SeasonPresentation
+import com.obsidianmedia.learnwithalphonso.ui.components.DsEmptyState
 import android.content.Intent
 import android.text.format.DateUtils
 import androidx.compose.foundation.background
@@ -230,25 +234,53 @@ fun TeamsScreen(container: AppContainer, onBack: () -> Unit, seededVm: TeamsView
     }
 }
 
+/**
+ * Season (the batch-2 redesign, screen 19): the trophy hall, this week's division as the navy hero, last week's result
+ * on a card, and a failed read as an empty state with Try again. The same data and wording as before.
+ */
 @Composable
-fun SeasonScreen(container: AppContainer, onBack: () -> Unit) {
-    val palette = AlphonsoColor.palette
-    val vm: SeasonViewModel = viewModel { SeasonViewModel(container.progressClient) }
+fun SeasonScreen(container: AppContainer, onBack: () -> Unit, seededVm: SeasonViewModel? = null) {
+    val ds = LocalAlphonsoTokens.current
+    val vm: SeasonViewModel = seededVm ?: viewModel { SeasonViewModel(container.progressClient) }
     val state by vm.state.collectAsState()
-    Column(Modifier.fillMaxSize().background(palette.surface)) {
-        ScreenHeader("Season", onBack)
-        Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            when {
-                state.isLoading -> Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) }
-                state.status == null -> Text("Couldn't load your season status.", color = palette.inkSoft)
-                else -> {
-                    val s = state.status!!
-                    SectionCard("This week") {
-                        Text("Division ${s.division}", style = MaterialTheme.typography.headlineMedium, color = palette.ink)
-                        Text("Rank ${s.rankInCohort} of ${s.cohortSize} this week", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+    DsSceneScreen(DsScene.PROFILE) {
+        Column(Modifier.fillMaxWidth()) {
+            DsBackBar("League", onBack)
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.gutter).padding(bottom = AlphonsoTokens.Space.s6),
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                DsGlassTitle("Season")
+                val s = state.status
+                when {
+                    state.isLoading -> DsCard {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                            CircularProgressIndicator(color = ds.choice)
+                            Text(SeasonPresentation.LOADING, style = FootnoteType, color = ds.inkSoft)
+                        }
                     }
-                    s.lastWeekResult?.let { lw ->
-                        SectionCard("Last week") { Text("Division ${lw.division}, rank ${lw.rankInCohort} of ${lw.cohortSize}", color = palette.ink) }
+                    s == null -> Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                        DsEmptyState(SeasonPresentation.FAILED_TITLE, SeasonPresentation.FAILED_BODY, artAsset = "lesson/hmm.webp")
+                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { DsCompactButton("Try again", vm::reload, primary = true) }
+                    }
+                    else -> {
+                        DsHeroCard {
+                            Text("THIS WEEK", style = OverlineType, color = ds.onHeroKick)
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                                Icon(painterResource(R.drawable.ds_trophy), null, tint = ds.xp, modifier = Modifier.size(AlphonsoTokens.Space.s12))
+                                Text("Division ${s.division}", style = DisplayType, color = ds.onHero, modifier = Modifier.semantics { heading() })
+                            }
+                            Text(SeasonPresentation.rankLine(s.rankInCohort, s.cohortSize), style = FootnoteType, color = ds.onHeroSoft)
+                        }
+                        s.lastWeekResult?.let { lw ->
+                            DsOverline("Last week")
+                            DsCard {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                                    Icon(painterResource(R.drawable.ds_league), null, tint = ds.choice, modifier = Modifier.size(AlphonsoTokens.Space.s8))
+                                    Text(SeasonPresentation.lastWeekLine(lw.division, lw.rankInCohort, lw.cohortSize), style = HeadlineType, color = ds.ink)
+                                }
+                            }
+                        }
                     }
                 }
             }

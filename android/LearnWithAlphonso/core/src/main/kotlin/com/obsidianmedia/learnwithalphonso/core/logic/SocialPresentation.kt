@@ -126,3 +126,24 @@ object FriendsPresentation {
     /** The list's header: "3 friends", or "Your friends" while there are none. */
     fun friendsHeader(count: Int): String = countLine(count) ?: "Your friends"
 }
+
+/** The Season screen's wording (batch 2, screen 19): the same lines the web and iOS show. */
+object SeasonPresentation {
+    /** New copy, approved with the Season mock: the line beside the spinner. */
+    const val LOADING = "Loading your season\u2026"
+    const val FAILED_TITLE = "Couldn't load your season status."
+    const val FAILED_BODY = "Check your connection and try again."
+
+    fun rankLine(rank: Int, cohortSize: Int): String = "Rank $rank of $cohortSize this week"
+
+    fun lastWeekLine(division: Int, rank: Int, cohortSize: Int): String = "Division $division, rank $rank of $cohortSize"
+}
+
+/** The Weekly recap sheet's small decisions (batch 2, screen 25). */
+object RecapPresentation {
+    /** A week with no XP is a quiet one: Alphonso is asleep instead of cheering. */
+    fun isQuiet(lastWeekXp: Int): Boolean = lastWeekXp <= 0
+
+    /** "You moved up to Sapling!": the new league by its display name. */
+    fun promotionLine(tier: String): String = "You moved up to ${LeagueTierCopy.label(tier)}!"
+}

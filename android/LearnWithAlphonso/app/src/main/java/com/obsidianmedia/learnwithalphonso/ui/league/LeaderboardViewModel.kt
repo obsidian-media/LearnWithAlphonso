@@ -49,12 +49,13 @@ class LeaderboardViewModel(
     private val tierCache: LeagueTierCache,
     private val userId: String?,
     private val seed: LeaderboardUiState? = null,
+    recapSeed: RecapState? = null,
     private val nowMillis: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
     private val _state = MutableStateFlow(seed ?: LeaderboardUiState())
     val state: StateFlow<LeaderboardUiState> = _state.asStateFlow()
 
-    private val _recap = MutableStateFlow(RecapState())
+    private val _recap = MutableStateFlow(recapSeed ?: RecapState())
     val recap: StateFlow<RecapState> = _recap.asStateFlow()
 
     init {
@@ -125,6 +126,7 @@ class LeaderboardViewModel(
 
     /** Last week's XP between the two Mondays, today's global weekly rank, and a promotion since the last recap. */
     fun loadRecap() {
+        if (seed != null) return
         val me = userId ?: run { _recap.value = RecapState(isLoading = false); return }
         _recap.value = RecapState()
         viewModelScope.launch {
