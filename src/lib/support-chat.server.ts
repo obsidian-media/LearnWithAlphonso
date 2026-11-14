@@ -145,13 +145,27 @@ async function handOff(
   reason: HandoffReason,
   topic: SupportTopic,
   summary: string | null,
-): Promise<void> {
-  try {
-    await rt.store.handoff(userId, conversationId, reason, topic, summary);
-  } catch {
-    rt.log({ event: "support_handoff_failed", reason });
+): Promise<boolean> {
+  // One retry: a failed hand-off leaves the conversation with the AI and the learner's message unanswered.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await rt.store.handoff(userId, conversationId, reason, topic, summary);
+      return true;
+    } catch {
+      rt.log({ event: "support_handoff_failed", reason, attempt });
+    }
   }
+  return false;
 }
+
+export const SUPPORT_UNREACHABLE_CODE = "support-unreachable";
+const unreachable = (): HandlerResult => ({
+  status: 503,
+  body: {
+    error: SUPPORT_UNREACHABLE_CODE,
+    message: "We couldn't reach support. Your message is saved. Try again in a moment.",
+  },
+});
 
 async function newMessages(
   rt: SupportRuntime,
@@ -211,7 +225,9 @@ export async function handlePostMessage(
 
     const forced = findForcedHandoff(text);
     if (forced) {
-      await handOff(rt, userId, conversationId, forced.reason, forced.topic, null);
+      if (!(await handOff(rt, userId, conversationId, forced.reason, forced.topic, null))) {
+        return unreachable();
+      }
       rt.log({
         event: "support_message",
         outcome: "handoff",
@@ -225,7 +241,7 @@ export async function handlePostMessage(
       reason: HandoffReason,
       extra: Record<string, string | number | boolean | null> = {},
     ) => {
-      await handOff(rt, userId, conversationId, reason, "other", null);
+      if (!(await handOff(rt, userId, conversationId, reason, "other", null))) return unreachable();
       rt.log({
         event: "support_message",
         outcome: "handoff",
@@ -287,7 +303,8 @@ export async function handlePostMessage(
     return await newMessages(rt, userId, learnerMessageId);
   } catch {
     // A failure after the learner's message was stored: the message stays; a person gets the conversation.
-    await handOff(rt, userId, conversationId, "ai_error", "other", null);
+    if (!(await handOff(rt, userId, conversationId, "ai_error", "other", null)))
+      return unreachable();
     rt.log({
       event: "support_message",
       outcome: "handoff",

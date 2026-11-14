@@ -650,3 +650,71 @@ describe("channel", () => {
     expect(channelOf(req())).toBe("web");
   });
 });
+
+describe("a failed hand-off is never silent", () => {
+  const failing = (times: number) => {
+    const h = makeRuntime(db, { switchOn: false });
+    const real = h.runtime.store.handoff.bind(h.runtime.store);
+    let calls = 0;
+    h.runtime.store.handoff = async (...args) => {
+      calls++;
+      if (calls <= times) throw new Error("db blip SENTINEL-DB-ERROR");
+      return real(...args);
+    };
+    return { h, calls: () => calls };
+  };
+
+  it("retries once: one failure still ends handed off", async () => {
+    const { h, calls } = failing(1);
+    const res = await handlePostMessage(
+      A,
+      "web",
+      { text: "How do I restore Pro?", clientId: cid() },
+      h.runtime,
+    );
+    expect(res.status).toBe(200);
+    expect(calls()).toBe(2);
+    expect(await convRow(A)).toMatchObject({ status: "new" });
+  });
+
+  it("two failures return a 503 the client can show, the message stays, and the log has no ids or text", async () => {
+    const { h } = failing(2);
+    const res = await handlePostMessage(
+      A,
+      "web",
+      { text: "private words SENTINEL-TEXT", clientId: cid() },
+      h.runtime,
+    );
+    expect(res.status).toBe(503);
+    expect((res.body as { error: string }).error).toBe("support-unreachable");
+    expect(await convRow(A)).toMatchObject({ status: "ai" });
+    expect(await count("public.support_messages WHERE author_kind='learner'")).toBe(1);
+    const all = h.logged.join("\n");
+    expect(all).toContain("support_handoff_failed");
+    for (const secret of ["SENTINEL-TEXT", "SENTINEL-DB-ERROR", A])
+      expect(all).not.toContain(secret);
+  });
+
+  it("the same applies to a forced hand-off and to the Talk to a person button", async () => {
+    const forced = failing(2);
+    const res = await handlePostMessage(
+      A,
+      "web",
+      { text: "I want a refund", clientId: cid() },
+      forced.h.runtime,
+    );
+    expect(res.status).toBe(503);
+    const button = failing(0);
+    await post(B, "hello", { switchOn: false }); // B has an AI conversation to hand off
+    await db.exec(
+      "UPDATE public.support_conversations SET status='ai', handoff_reason=NULL WHERE user_id='" +
+        B +
+        "'",
+    );
+    button.h.runtime.store.handoff = async () => {
+      throw new Error("down");
+    };
+    const pressed = await handlePostHandoff(B, "web", button.h.runtime);
+    expect(pressed.status).toBe(500);
+  });
+});
