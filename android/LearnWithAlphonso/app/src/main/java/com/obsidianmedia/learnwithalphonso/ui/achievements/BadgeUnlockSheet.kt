@@ -68,7 +68,7 @@ fun BadgeUnlockSheet(unlocked: List<Achievement>, onContinue: () -> Unit, onSeeA
         shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = AlphonsoTokens.Radius.sheet, topEnd = AlphonsoTokens.Radius.sheet),
     ) {
         Box(Modifier.fillMaxWidth()) {
-            LessonConfetti(reduce, Modifier.fillMaxWidth().height(AlphonsoTokens.Space.s12 * 5))
+            LessonConfetti(reduce, Modifier.fillMaxWidth().height(AlphonsoTokens.Space.s12 * 4))
             Column(
                 Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
