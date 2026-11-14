@@ -1,6 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { MobileFrame } from "../../components/AppShell";
+import {
+  BackPill,
+  DsButton,
+  DsCard,
+  DsHero,
+  GlassTitle,
+  HeroKicker,
+  Icon,
+  Overline,
+  PoseCard,
+} from "@/components/ds/Blocks";
+import { DsScreen } from "@/components/ds/DsScreen";
 import { getSeasonStatus } from "../../lib/season.functions";
 
 export const Route = createFileRoute("/_authenticated/season")({
@@ -9,42 +20,68 @@ export const Route = createFileRoute("/_authenticated/season")({
 });
 
 function SeasonPage() {
-  const { data: status, isLoading } = useQuery({
+  const {
+    data: status,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["seasonStatus"],
     queryFn: () => getSeasonStatus(),
   });
 
   return (
-    <MobileFrame>
-      <div className="px-6 pb-12 pt-6">
-        <div className="flex items-center gap-3">
-          <Link to="/league" aria-label="Back to league" className="text-ds-ink-soft/70">
-            ←
-          </Link>
-          <h1 className="font-display ds-type-title font-semibold text-ds-ink">Season</h1>
-        </div>
+    <DsScreen scene="profile">
+      <BackPill to="/league" label="Back to league">
+        League
+      </BackPill>
+      <GlassTitle title="Season" />
 
-        {isLoading ? (
-          <p className="mt-6 text-sm text-ds-ink-soft">Loading…</p>
-        ) : status ? (
-          <>
-            <p className="mt-6 font-display ds-type-display font-semibold text-ds-ink">
-              Division {status.division}
-            </p>
-            <p className="mt-1 text-sm text-ds-ink-soft">
+      {isLoading ? (
+        <DsCard aria-busy="true">
+          <div className="h-[34px] w-3/5 rounded-[10px] bg-ds-sunk" />
+          <div className="h-4 w-2/5 rounded-lg bg-ds-sunk" />
+          <p role="status" className="ds-type-caption text-center text-ds-ink-soft">
+            Loading your season…
+          </p>
+        </DsCard>
+      ) : status ? (
+        <>
+          <DsHero aria-label="This week">
+            <HeroKicker>This week</HeroKicker>
+            <div className="flex items-center gap-3">
+              <Icon name="trophy" size={52} />
+              <p className="ds-type-display-x-l">Division {status.division}</p>
+            </div>
+            <p className="ds-type-headline text-ds-on-hero-soft">
               Rank {status.rankInCohort} of {status.cohortSize} this week
             </p>
-            {status.lastWeekResult && (
-              <p className="mt-4 text-xs text-ds-ink-soft/80">
-                Last week: Division {status.lastWeekResult.division}, rank{" "}
-                {status.lastWeekResult.rankInCohort} of {status.lastWeekResult.cohortSize}
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="mt-6 text-sm text-ds-ink-soft">Couldn't load your season status.</p>
-        )}
-      </div>
-    </MobileFrame>
+          </DsHero>
+          {status.lastWeekResult && (
+            <>
+              <Overline>Last week</Overline>
+              <DsCard>
+                <div className="flex items-center gap-2.5">
+                  <Icon name="shield" />
+                  <p className="ds-type-headline min-w-0 flex-1 text-ds-ink">
+                    Division {status.lastWeekResult.division}, rank{" "}
+                    {status.lastWeekResult.rankInCohort} of {status.lastWeekResult.cohortSize}
+                  </p>
+                </div>
+              </DsCard>
+            </>
+          )}
+        </>
+      ) : (
+        <PoseCard
+          src="/mascots/alphonso-encouraging.png"
+          title="Couldn't load your season status."
+          body="Check your connection and try again."
+        >
+          <DsButton small variant="secondary" onClick={() => void refetch()}>
+            Try again
+          </DsButton>
+        </PoseCard>
+      )}
+    </DsScreen>
   );
 }
