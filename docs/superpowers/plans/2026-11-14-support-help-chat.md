@@ -6,7 +6,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md` (Phase 2 and "Calls made after the builder review", calls 4, 6, 7, 8). Phase 1 is built (#496), see `docs/superpowers/plans/2026-11-13-admin-console-phase1.md`.
 
-**Status:** plan written 2026-11-14 against main at #507. Milestone 1 (data, server, AI agent) built in the PR "Support chat: data and server", awaiting the owner merging its two migrations; milestone 2 (web Help chat) built in the PR "Help chat on the web", no migration; milestones 3 to 6 not started.
+**Status:** plan written 2026-11-14 against main at #507. Milestone 1 (data, server, AI agent) built in the PR "Support chat: data and server", awaiting the owner merging its two migrations; milestone 2 (web Help chat) built in the PR "Help chat on the web", no migration; milestone 3 (staff inbox in the admin console) built in the PR "Support inbox in the admin console", awaiting the owner merging its migration `20261117100200`; milestones 4 to 6 not started.
 
 ## Owner decisions (2026-11-14)
 
@@ -243,6 +243,18 @@ Verify: a real signed-in end to end check with the agent mailbox (receive the em
 - **"Get help" on web** is on the paywall load error, the restore-check error and the profile load error (web has no lesson-save error screen and no sync-error message).
 - **System lines "This chat was marked solved." and "This chat was reopened. A person will reply here."** are drawn as the mock shows but are written by the staff SQL in milestone 3 (task 3.1); until then a solved or reopened chat shows the banner only.
 - **Poses**: `alphonso-explaining-pointer` (welcome) and `alphonso-sleepy-night` (daily limit) from the round 11 pose set, plus a small face crop for AI bubbles, in `public/mascots/`.
+
+## Built in milestone 3: deviations from this plan (2026-11-14)
+
+- **The mock is the spec** (owner approved sections 7 and 8, 2026-11-14): the list shows no learner name or email; the facts panel is the snapshot the AI saw (`ai_facts` of the latest AI turn, copied through the key allowlist; rebuilt when the AI never answered).
+- **The list is one SQL function**, `staff_support_inbox`, so its shape (and the absence of any name or email) is fixed and tested in the database. It also returns the filter counts, the cursor, and `unopened` (a new or open ticket with no `user.view` row for that learner since it began; opening a ticket records one).
+- **Conversations still with the AI are not tickets**: staff cannot list, open, reply to, assign or annotate them (the functions refuse with 55000).
+- **Reply moves the ticket to waiting on the learner**; a learner message moves it back to open (milestone 1). A solved ticket cannot be replied to or set to anything but open; reopening is refused (23505) if the learner has since started a new conversation.
+- **Solving writes the system line "This chat was marked solved."; reopening writes "This chat was reopened. A person will reply here."**
+- **Assignee must be active staff who may read support**; handing a ticket to someone else needs `staff.manage` (the picker only loads for managers); taking one yourself or giving back your own needs `support.assign`.
+- **Fixed reasons** in the record (`ticket reply`, `ticket status`, `ticket assignment`, `ticket note`); message and note text never go in it (a note's length does).
+- **The ticket page is `admin/routes/support_.$id.tsx`** (path `/support/$id`). The trailing underscore keeps it from nesting under `support.tsx`, which has no `Outlet`.
+- Staff cannot act on a conversation that belongs to their own account.
 
 ## Order of work and risks
 

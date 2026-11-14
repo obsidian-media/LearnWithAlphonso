@@ -3556,6 +3556,33 @@ export type Database = {
         };
         Returns: string;
       };
+      staff_support_add_note: {
+        Args: { p_actor: string; p_body: string; p_conversation: string; p_role: string };
+        Returns: string;
+      };
+      staff_support_assign: {
+        Args: { p_actor: string; p_assignee: string; p_conversation: string; p_role: string };
+        Returns: boolean;
+      };
+      staff_support_inbox: {
+        Args: {
+          p_actor: string;
+          p_assigned: string;
+          p_cursor_at: string;
+          p_cursor_id: string;
+          p_filter: string;
+          p_limit: number;
+        };
+        Returns: Json;
+      };
+      staff_support_reply: {
+        Args: { p_actor: string; p_body: string; p_conversation: string; p_role: string };
+        Returns: number;
+      };
+      staff_support_set_status: {
+        Args: { p_actor: string; p_conversation: string; p_role: string; p_status: string };
+        Returns: boolean;
+      };
       staff_update_member: {
         Args: {
           p_actor: string;

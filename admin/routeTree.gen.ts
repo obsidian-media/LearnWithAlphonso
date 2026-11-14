@@ -19,6 +19,7 @@ import { Route as StaffRouteImport } from './routes/staff'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as FolderIdRouteImport } from './routes/folder.$id'
+import { Route as SupportIdRouteImport } from './routes/support_.$id'
 import { Route as UsersIdRouteImport } from './routes/users.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,6 +72,11 @@ const FolderIdRoute = FolderIdRouteImport.update({
   path: '/folder/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupportIdRoute = SupportIdRouteImport.update({
+  id: '/support_/$id',
+  path: '/support/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UsersIdRoute = UsersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/users': typeof UsersRouteWithChildren
   '/folder/$id': typeof FolderIdRoute
+  '/support/$id': typeof SupportIdRoute
   '/users/$id': typeof UsersIdRoute
 }
 export interface FileRoutesByTo {
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/users': typeof UsersRouteWithChildren
   '/folder/$id': typeof FolderIdRoute
+  '/support/$id': typeof SupportIdRoute
   '/users/$id': typeof UsersIdRoute
 }
 export interface FileRoutesById {
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/users': typeof UsersRouteWithChildren
   '/folder/$id': typeof FolderIdRoute
+  '/support_/$id': typeof SupportIdRoute
   '/users/$id': typeof UsersIdRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/users'
     | '/folder/$id'
+    | '/support/$id'
     | '/users/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/users'
     | '/folder/$id'
+    | '/support/$id'
     | '/users/$id'
   id:
     | '__root__'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/users'
     | '/folder/$id'
+    | '/support_/$id'
     | '/users/$id'
   fileRoutesById: FileRoutesById
 }
@@ -170,6 +182,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   UsersRoute: typeof UsersRouteWithChildren
   FolderIdRoute: typeof FolderIdRoute
+  SupportIdRoute: typeof SupportIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FolderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/support_/$id': {
+      id: '/support_/$id'
+      path: '/support/$id'
+      fullPath: '/support/$id'
+      preLoaderRoute: typeof SupportIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/users/$id': {
       id: '/users/$id'
       path: '/$id'
@@ -275,6 +295,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   UsersRoute: UsersRouteWithChildren,
   FolderIdRoute: FolderIdRoute,
+  SupportIdRoute: SupportIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
