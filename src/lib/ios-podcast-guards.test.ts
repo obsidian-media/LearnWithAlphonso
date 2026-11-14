@@ -358,7 +358,9 @@ describe("iOS podcast quiz: every choice card takes a tap, and the row button re
       "private func choiceRow(index: Int, text: String, answerIndex: Int) -> some View {",
     );
     const frame = row.indexOf(".frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch");
-    const shape = row.indexOf(".contentShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control");
+    const shape = row.indexOf(
+      ".contentShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control",
+    );
     const plain = row.indexOf(".buttonStyle(.plain)");
     expect(frame).toBeGreaterThan(-1);
     expect(plain).toBeGreaterThan(-1);
