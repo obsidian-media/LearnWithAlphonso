@@ -2,13 +2,14 @@
  * Off switches the owner can flip in the database without a deploy (table public.app_switches, service role only):
  *   "ai"    every AI feature: conversation, speech, AI grading, word lookup, and the tutor
  *   "tutor" the paid voice tutor only
+ *   "support_ai" the AI answers in the Help chat only (off at launch; people still answer; 20261117100000)
  * Lessons, reviews and progress never read these, so turning AI off leaves ordinary learning working.
  *
  * To turn one off: UPDATE public.app_switches SET enabled = false, updated_at = now() WHERE key = 'ai';
  * It takes effect within SWITCH_CACHE_MS on every server instance. The Edge twin is
  * supabase/functions/_shared/ai-consent.ts (isAiSwitchedOn).
  */
-export type AppSwitch = "ai" | "tutor";
+export type AppSwitch = "ai" | "tutor" | "support_ai";
 
 export const SWITCH_CACHE_MS = 30_000;
 

@@ -36,11 +36,12 @@ const STUBS = `
   GRANT USAGE ON SCHEMA public, auth TO authenticated, anon, service_role;
 `;
 
-export async function buildFullSchema(): Promise<PGlite> {
+/** `skip` leaves out migration files (by name), so a test can apply them itself and compare before and after. */
+export async function buildFullSchema(options: { skip?: readonly string[] } = {}): Promise<PGlite> {
   const db = new PGlite();
   await db.exec(STUBS);
   for (const file of readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith(".sql"))
+    .filter((f) => f.endsWith(".sql") && !options.skip?.includes(f))
     .sort()) {
     const sql = readFileSync(path.join(MIGRATIONS_DIR, file), "utf8").replace(
       /CREATE EXTENSION IF NOT EXISTS (pg_net|pg_cron);/gi,

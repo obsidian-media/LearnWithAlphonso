@@ -6,15 +6,17 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md` (Phase 2 and "Calls made after the builder review", calls 4, 6, 7, 8). Phase 1 is built (#496), see `docs/superpowers/plans/2026-11-13-admin-console-phase1.md`.
 
-**Status:** plan only, written 2026-11-14 against main at #507. No code yet.
+**Status:** plan written 2026-11-14 against main at #507. Milestone 1 (data, server, AI agent) built in the PR "Support chat: data and server", awaiting the owner merging its two migrations; milestones 2 to 6 not started.
 
-## Open questions for the owner (5)
+## Owner decisions (2026-11-14)
 
-1. **Launch with AI answers on or off?** Recommended: **off** at first. Everything goes to a person until you have read the help file and ten sample AI transcripts. One SQL line turns the AI on (`app_switches` key `support_ai`). Learners can still write and get answers from people.
-2. **Who is told when a ticket arrives?** Recommended: an email to the report address (`REPORT_NOTIFY_TO`), at most one per 15 minutes, saying "N new tickets" with no learner text in it.
-3. **Do blocked learners get Help?** Recommended: **yes**. A block only removes social features. Banned learners cannot sign in, so they keep using the support email on the ban screen.
-4. **A learner writes after a ticket is marked solved.** Recommended: **reopen** the same ticket if it was solved less than 7 days ago, otherwise start a new one.
-5. **Limits.** Recommended: 30 AI messages per learner per day and 5 per minute (`support` quota kind), and 50 learner messages per day in total (the cap that protects the inbox from spam).
+The owner answered the five open questions: every recommended answer is accepted.
+
+1. **AI answers launch OFF.** Everything goes to a person until the owner has read the help file and ten sample AI transcripts. One SQL line turns the AI on (`app_switches` key `support_ai`, inserted OFF by the first migration). Learners can still write and get answers from people.
+2. **New-ticket notice:** an email to the report address (`REPORT_NOTIFY_TO`), at most one per 15 minutes, saying "N new tickets" with no learner text in it. Built in milestone 6; milestone 1 keeps the data ready (`created_at`, `status`, `updated_at`).
+3. **Blocked learners do get Help.** A block only removes social features. Banned learners cannot sign in, so they keep using the support email on the ban screen.
+4. **A learner writes after a ticket is marked solved:** the same ticket reopens if it was solved less than 7 days ago, otherwise a new one starts.
+5. **Limits:** 30 AI messages per learner per day and 5 per minute (`support` quota kind), and 50 learner messages per day in total (the cap that protects the inbox from spam).
 
 ## What exists today (checked in the code, 2026-11-14)
 
@@ -39,7 +41,7 @@
 
 ## Data model
 
-Migration `20261116100000_support_chat.sql`. All tables: RLS on, zero policies, `REVOKE ALL` from `PUBLIC, anon, authenticated`, `GRANT` to `service_role` only, and a `-- client-grants: none public.<table>` marker line (CI guard from #227). Deviation from the spec wording "learners read via RLS": reads also go through the API, because the AI summary and hand-off reason must not be visible to the learner and column-level policies are easy to get wrong. Say so in the migration header.
+Migration `20261117100000_support_chat.sql`. All tables: RLS on, zero policies, `REVOKE ALL` from `PUBLIC, anon, authenticated`, `GRANT` to `service_role` only, and a `-- client-grants: none public.<table>` marker line (CI guard from #227). Deviation from the spec wording "learners read via RLS": reads also go through the API, because the AI summary and hand-off reason must not be visible to the learner and column-level policies are easy to get wrong. Say so in the migration header.
 
 `support_conversations`
 - `id uuid pk default gen_random_uuid()`
@@ -74,10 +76,10 @@ SQL functions (all `SECURITY DEFINER`, `SET search_path = ''`, EXECUTE revoked f
 - `support_add_learner_message(p_user, p_conversation, p_body, p_client_id) returns bigint`: checks the conversation belongs to `p_user`, enforces the daily cap (50) and the 100-messages-per-conversation cap, sets `waiting_learner` back to `open`.
 - `support_add_ai_message(p_conversation, p_body, p_facts jsonb, p_handoff jsonb) returns bigint`: inserts the AI row; if `p_handoff` is set, moves `ai` to `new` and stores `handoff_reason`, `topic`, `ai_summary`.
 - `support_handoff(p_user, p_conversation, p_reason, p_topic, p_summary)`: used by the button and by server-forced hand-offs; adds a `system` message "A person will reply here."
-- Staff functions (migration `20261116100200_support_staff_actions.sql`, milestone 3): `staff_support_reply`, `staff_support_assign`, `staff_support_set_status`, `staff_support_add_note`. Each writes its row in `staff_audit_log` (actions `support.reply`, `support.assign`, `support.status`, `support.note`) in the same transaction. The record holds ids and the status change only, never the message text. These four use fixed reasons ("ticket reply" and so on), because the ticket is the reason; the registry test must accept that.
+- Staff functions (migration `20261117100200_support_staff_actions.sql`, milestone 3): `staff_support_reply`, `staff_support_assign`, `staff_support_set_status`, `staff_support_add_note`. Each writes its row in `staff_audit_log` (actions `support.reply`, `support.assign`, `support.status`, `support.note`) in the same transaction. The record holds ids and the status change only, never the message text. These four use fixed reasons ("ticket reply" and so on), because the ticket is the reason; the registry test must accept that.
 - `support_purge_old()`: deletes solved conversations whose `solved_at` is older than 12 months (messages and notes follow by cascade). Called by the sweep (milestone 6 migration).
 
-Quota (migration `20261116100100_support_quota_kind.sql`): add kind `support` (30 a day, 5 a minute) by restating `consume_ai_quota` and `consume_ai_rate_limit` from their newest bodies (find with `grep -ln consume_ai_quota supabase/migrations/*`, then copy the newest one verbatim and add one `WHEN`). Also add `"support"` to `QuotaKind` and `DAILY_LIMITS` in `src/lib/ai-quota.server.ts`; `ai-quota.server.test.ts` already compares the two.
+Quota (migration `20261117100100_support_quota_kind.sql`): add kind `support` (30 a day, 5 a minute) by restating `consume_ai_quota` and `consume_ai_rate_limit` from their newest bodies (find with `grep -ln consume_ai_quota supabase/migrations/*`, then copy the newest one verbatim and add one `WHEN`). Also add `"support"` to `QuotaKind` and `DAILY_LIMITS` in `src/lib/ai-quota.server.ts`; `ai-quota.server.test.ts` already compares the two.
 
 Export: add `support_conversations` and `support_messages` to `USER_ID_EXPORT_TABLES` with explicit column lists that leave out `assigned_to`, `ai_summary`, `handoff_reason`, `ai_facts`, `author_id` (staff internals). Never `support_notes`. (Deletion needs nothing: cascade.)
 
@@ -85,10 +87,10 @@ Export: add `support_conversations` and `support_messages` to `USER_ID_EXPORT_TA
 
 | # | File | Milestone | Owner merges? |
 | --- | --- | --- | --- |
-| 1 | `20261116100000_support_chat.sql` (tables, learner-side functions, `app_switches` row `support_ai` set to off) | 1 | Yes |
-| 2 | `20261116100100_support_quota_kind.sql` | 1 | Yes (same PR as 1) |
-| 3 | `20261116100200_support_staff_actions.sql` | 3 | Yes |
-| 4 | `20261116100300_support_notifications.sql` (notify queue, trigger, sweep restate with retention and ticket digest, and ticket digest) | 6 | Yes |
+| 1 | `20261117100000_support_chat.sql` (tables, learner-side functions, `app_switches` row `support_ai` set to off) | 1 | Yes |
+| 2 | `20261117100100_support_quota_kind.sql` | 1 | Yes (same PR as 1) |
+| 3 | `20261117100200_support_staff_actions.sql` | 3 | Yes |
+| 4 | `20261117100300_support_notifications.sql` (notify queue, trigger, sweep restate with retention and ticket digest, and ticket digest) | 6 | Yes |
 
 Version each one after whatever is newest on main when the PR is opened (other sessions add migrations). The `support_ai` switch row is inserted in migration 1 (one line), so AI is off by default from day one.
 
@@ -143,7 +145,7 @@ Server functions in `src/lib/staff-support.functions.ts`, all in `console-regist
 Reply by staff inserts a `staff` message. Migration 4 adds a trigger that queues one row in `support_notify_queue` (`conversation_id`, `queued_at`, `delivered_at`) unless one was delivered for that conversation in the last 30 minutes. The trigger calls, through `pg_net`, a new route `POST /api/internal/support-notify` (shared secret, same pattern and header as `report-notify`), which:
 - sends an email to the learner's account address with `sendEmailViaResend` (add an optional `from` field to `EmailMessage`; env `SUPPORT_NOTIFY_FROM`, default a support sender on the existing domain). Text: "You have a reply from Alphonso support. Open the app and go to Help. Replying to this email will not reach us." No message text.
 - calls `send-push` for the learner (title "Alphonso support", body "You have a reply in Help", data `{type:"support"}`); if the learner has no device tokens it does nothing.
-The sweep in `maintenance.server.ts` retries undelivered rows after 10 minutes and gives up after 24 hours, like the report email. The same sweep sends the owner digest for new tickets (open question 2) and calls `support_purge_old()`.
+The sweep in `maintenance.server.ts` retries undelivered rows after 10 minutes and gives up after 24 hours, like the report email. The same sweep sends the owner digest for new tickets (owner decision 2) and calls `support_purge_old()`.
 
 ## Security: how each rule is tested
 
@@ -172,7 +174,7 @@ Each task: write the failing test first, run it red, implement, run green, run t
 ### Milestone 1: data, server endpoints, AI agent (PR "Support chat: data and server", owner merges the migrations)
 
 **Task 1.1: Tables and functions.**
-Files: create `supabase/migrations/20261116100000_support_chat.sql`, `supabase/migrations/20261116100100_support_quota_kind.sql`; test `src/lib/support-chat-migration.test.ts`.
+Files: create `supabase/migrations/20261117100000_support_chat.sql`, `supabase/migrations/20261117100100_support_quota_kind.sql`; test `src/lib/support-chat-migration.test.ts`.
 Tests first: applies after all migrations; client roles cannot touch any table; one open conversation per learner (second `support_open_conversation` returns the same id, parallel calls do not create two); solved under 7 days reopens, over 7 days creates new; messages cannot be updated or deleted; caps (50 a day, 100 per conversation); `client_id` dedupe; `support_add_ai_message` with a hand-off moves `ai` to `new`; a staff-note table is not reachable from any learner-facing function; cascade on user delete; quota kind `support` allowed at 30 and refused at 31, minute limit 5, and every older kind keeps its old limit (the restate-by-copy risk).
 Verify: `bunx vitest run src/lib/support-chat-migration.test.ts src/lib/*grants*.test.ts src/lib/*migration*.test.ts`. Mutation: drop the append-only trigger, the test goes red.
 
@@ -198,7 +200,7 @@ Verify: component tests, a Playwright e2e in the existing e2e setup against mock
 
 ### Milestone 3: admin inbox (PR "Support inbox in the admin console", owner merges the migration)
 
-**Task 3.1: Staff SQL.** `supabase/migrations/20261116100200_support_staff_actions.sql`; test `src/lib/support-staff-migration.test.ts` (one audit row per action, rollback on failure, status moves, `solved_at` set and cleared).
+**Task 3.1: Staff SQL.** `supabase/migrations/20261117100200_support_staff_actions.sql`; test `src/lib/support-staff-migration.test.ts` (one audit row per action, rollback on failure, status moves, `solved_at` set and cleared).
 **Task 3.2: Server functions.** `src/lib/staff-support.functions.ts`; modify `src/lib/console-registry.ts`, `src/lib/staff-audit.server.ts`; test `src/lib/staff-support.functions.test.ts` and the existing `staff-registry.test.ts` (both directions).
 **Task 3.3: Screens.** Replace `admin/routes/support.tsx`, add `admin/routes/support.$id.tsx`, `src/components/staff/TicketList.tsx`, `TicketView.tsx`; modify `src/lib/staff-nav.ts`, regenerate `admin/routeTree.gen.ts`; tests for list filters, the facts panel, plain-text rendering, and the forbidden state.
 Verify: `admin-build` check, screenshots from the views with sample data (desktop and phone width). State plainly in the PR that these were not run against a live backend.
@@ -219,10 +221,19 @@ Verify: `:core:test` and the app module compile in `android-ci`; say what was an
 
 ### Milestone 6: notifications and retention (PR "Support replies: email, push, retention", owner merges the migration)
 
-**Task 6.1: Queue and trigger.** `supabase/migrations/20261116100300_support_notifications.sql`: `support_notify_queue`, trigger on `support_messages` (staff rows only), sweep restated from its newest body plus the retention call and the owner ticket digest; `support_purge_old()`. Test `src/lib/support-notify-migration.test.ts` (30-minute batching, only `staff` messages queue, purge deletes only solved over 12 months and keeps younger and unsolved, the sweep body still contains every older step: compare the step list to the previous body).
+**Task 6.1: Queue and trigger.** `supabase/migrations/20261117100300_support_notifications.sql`: `support_notify_queue`, trigger on `support_messages` (staff rows only), sweep restated from its newest body plus the retention call and the owner ticket digest; `support_purge_old()`. Test `src/lib/support-notify-migration.test.ts` (30-minute batching, only `staff` messages queue, purge deletes only solved over 12 months and keeps younger and unsolved, the sweep body still contains every older step: compare the step list to the previous body).
 **Task 6.2: Route and senders.** Create `src/routes/api/internal/support-notify.ts` (shared secret, header like `report-notify`); modify `src/lib/report-notify.server.ts` (`from` option), `src/lib/maintenance.server.ts` (retry and digest). Tests first: wrong or missing secret gets 401; the email and push bodies contain no message text (assert against a sentinel); Apple relay and missing-token cases; logs contain no address.
 **Task 6.3: Owner steps and docs.** `docs/privacy-and-data.md` (what is kept: conversations, messages, AI facts snapshot, notes; 12 months after solved; export; deletion), policy page wording check against `src/routes/privacy.tsx` (an engineering note, owner approves any wording change), and a short owner list: set `SUPPORT_NOTIFY_FROM`, confirm the Resend sender, flip `support_ai` when satisfied, review ten sample transcripts.
 Verify: a real signed-in end to end check with the agent mailbox (receive the email, confirm it has no message text); push cannot be verified without a device and the plan says so.
+
+## Built in milestone 1: deviations from this plan (2026-11-14)
+
+- **Keyword hand-off runs before the AI switch and consent**, not after, so a refund or safety message is recorded as `sensitive_topic` with its topic even while AI is off (which is the launch state). It still costs no quota and never reaches the model.
+- **Learner view is one SQL function**, `support_learner_view(p_user)`, so the shape (id, kind, body, time) is fixed in the database and tested there. The service role can only SELECT the support tables; every write is a function.
+- **`X-Client` is read but the apps do not send it yet** (the plan assumed they did); until milestones 4 and 5 add it, every conversation is channel `web`.
+- **`support_purge_old()` is not in migration 1**; the trigger already honours the `lwa.support_retention` setting it will use (milestone 6).
+- **"delete my account" is a forced hand-off phrase** (the plan's test table lists it), so the help file's self-service deletion steps are reached only when a learner asks indirectly. Revisit when the owner reads the transcripts.
+- A retried `clientId` returns the stored message and skips the AI when an answer already exists; two truly simultaneous retries can both reach the AI (one extra quota unit at worst).
 
 ## Order of work and risks
 

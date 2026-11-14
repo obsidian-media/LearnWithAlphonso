@@ -69,6 +69,9 @@ import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authe
 import { Route as AuthenticatedTeamsTeamIdRouteImport } from './routes/_authenticated/teams_.$teamId'
 import { Route as ApiInternalMaintenanceRouteImport } from './routes/api/internal/maintenance'
 import { Route as ApiInternalReportNotifyRouteImport } from './routes/api/internal/report-notify'
+import { Route as ApiSupportConversationRouteImport } from './routes/api/support/conversation'
+import { Route as ApiSupportHandoffRouteImport } from './routes/api/support/handoff'
+import { Route as ApiSupportMessageRouteImport } from './routes/api/support/message'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -376,6 +379,21 @@ const ApiInternalReportNotifyRoute = ApiInternalReportNotifyRouteImport.update({
   path: '/api/internal/report-notify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSupportConversationRoute = ApiSupportConversationRouteImport.update({
+  id: '/api/support/conversation',
+  path: '/api/support/conversation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSupportHandoffRoute = ApiSupportHandoffRouteImport.update({
+  id: '/api/support/handoff',
+  path: '/api/support/handoff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSupportMessageRoute = ApiSupportMessageRouteImport.update({
+  id: '/api/support/message',
+  path: '/api/support/message',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -437,6 +455,9 @@ export interface FileRoutesByFullPath {
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
+  '/api/support/conversation': typeof ApiSupportConversationRoute
+  '/api/support/handoff': typeof ApiSupportHandoffRoute
+  '/api/support/message': typeof ApiSupportMessageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -498,6 +519,9 @@ export interface FileRoutesByTo {
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
+  '/api/support/conversation': typeof ApiSupportConversationRoute
+  '/api/support/handoff': typeof ApiSupportHandoffRoute
+  '/api/support/message': typeof ApiSupportMessageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -561,6 +585,9 @@ export interface FileRoutesById {
   '/_authenticated/teams_/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
+  '/api/support/conversation': typeof ApiSupportConversationRoute
+  '/api/support/handoff': typeof ApiSupportHandoffRoute
+  '/api/support/message': typeof ApiSupportMessageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -624,6 +651,9 @@ export interface FileRouteTypes {
     | '/teams/$teamId'
     | '/api/internal/maintenance'
     | '/api/internal/report-notify'
+    | '/api/support/conversation'
+    | '/api/support/handoff'
+    | '/api/support/message'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -685,6 +715,9 @@ export interface FileRouteTypes {
     | '/teams/$teamId'
     | '/api/internal/maintenance'
     | '/api/internal/report-notify'
+    | '/api/support/conversation'
+    | '/api/support/handoff'
+    | '/api/support/message'
   id:
     | '__root__'
     | '/'
@@ -747,6 +780,9 @@ export interface FileRouteTypes {
     | '/_authenticated/teams_/$teamId'
     | '/api/internal/maintenance'
     | '/api/internal/report-notify'
+    | '/api/support/conversation'
+    | '/api/support/handoff'
+    | '/api/support/message'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -785,6 +821,9 @@ export interface RootRouteChildren {
   ApiTtsRoute: typeof ApiTtsRoute
   ApiInternalMaintenanceRoute: typeof ApiInternalMaintenanceRoute
   ApiInternalReportNotifyRoute: typeof ApiInternalReportNotifyRoute
+  ApiSupportConversationRoute: typeof ApiSupportConversationRoute
+  ApiSupportHandoffRoute: typeof ApiSupportHandoffRoute
+  ApiSupportMessageRoute: typeof ApiSupportMessageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1209,6 +1248,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiInternalReportNotifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/support/conversation': {
+      id: '/api/support/conversation'
+      path: '/api/support/conversation'
+      fullPath: '/api/support/conversation'
+      preLoaderRoute: typeof ApiSupportConversationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/support/handoff': {
+      id: '/api/support/handoff'
+      path: '/api/support/handoff'
+      fullPath: '/api/support/handoff'
+      preLoaderRoute: typeof ApiSupportHandoffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/support/message': {
+      id: '/api/support/message'
+      path: '/api/support/message'
+      fullPath: '/api/support/message'
+      preLoaderRoute: typeof ApiSupportMessageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1317,6 +1377,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTtsRoute: ApiTtsRoute,
   ApiInternalMaintenanceRoute: ApiInternalMaintenanceRoute,
   ApiInternalReportNotifyRoute: ApiInternalReportNotifyRoute,
+  ApiSupportConversationRoute: ApiSupportConversationRoute,
+  ApiSupportHandoffRoute: ApiSupportHandoffRoute,
+  ApiSupportMessageRoute: ApiSupportMessageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

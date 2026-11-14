@@ -67,3 +67,19 @@ A missed podcast question is stored as a `review_items` row (prompt, choices, an
 | **Deletion** | `ON DELETE CASCADE` on `user_id`, so account deletion removes it; a learner can also delete their own rows. |
 | **Analytics** | `video_started` and `video_completed` carry only `video_id` and `course`, anonymous and only after the learner opted in (see the first section). |
 | **Policy text** | `src/routes/privacy.tsx` lists video progress with the listening positions. |
+
+## Help chat (milestone 1 of the support work: data and server)
+
+| | |
+| --- | --- |
+| **What** | What the learner writes in Help and is answered (`support_messages`: the text, who wrote it as learner, ai, staff or system, the time), their conversation (`support_conversations`: status, channel, a topic from a fixed list, why it went to a person, a short AI summary of up to 600 characters, who it is assigned to), and internal staff notes (`support_notes`, a separate table). On every AI turn we also keep the exact facts snapshot the AI saw (`ai_facts`): Pro active and source, course and level, streak, days active in the last 30, lessons in the last 7, platforms, whether social features are blocked (yes or no, never why), and up to 3 previous tickets as status, topic and day. Never in it: email, name, user id, notes, gift or restriction reasons, reports, payment details, lesson answers, chats with Alphonso or Hector. |
+| **Why** | To answer a learner's question in the app, and to let a person pick it up with the context the AI had. |
+| **Where it goes** | The learner's messages and the facts snapshot go to the AI provider (Anthropic through OpenRouter, like the other AI features; not used for training) only while AI answers are on (`app_switches` key `support_ai`, OFF at launch), the learner has given AI consent, and the message is not one of the topics that always go to a person (refunds and billing disputes, deleting an account, safety and abuse, legal and privacy requests, a request for a person). |
+| **Written by** | Only server functions (`support_*`, SECURITY DEFINER). Clients and even the service role cannot insert, update or delete rows directly. Messages are append-only (a trigger refuses UPDATE and TRUNCATE; DELETE only for retention or when the account or conversation is already gone). |
+| **Limits** | 50 learner messages a day in total, 100 per conversation; 30 AI answers a day and 5 a minute (quota kind `support`); one open conversation per learner. |
+| **Retention** | Planned (milestone 6): solved conversations are deleted 12 months after they were solved. Not yet running. |
+| **Export** | `support_conversations` and `support_messages` are in the export with explicit columns that leave out `assigned_to`, `ai_summary`, `handoff_reason`, `ai_facts`, `author_id` and `client_id`. `support_notes` is never exported (internal). |
+| **Deletion** | `ON DELETE CASCADE` from the account removes conversations, messages and notes. |
+| **Logs** | The server logs an event name, outcome, hand-off reason, status code, quota result and message length only: no user id, no conversation id, no text. A failing provider is logged by status only. |
+| **Policy text** | `src/routes/privacy.tsx` does not yet describe the Help chat. **Owner to approve a wording change before the chat ships to learners.** |
+
