@@ -31,6 +31,7 @@ private struct AIDisclosureGateModifier: ViewModifier {
     @State private var showDisclosure = false
     @State private var isSaving = false
     @State private var saveError: String?
+    @Environment(\.alphonsoDS) private var ds
 
     /// Every decision about what is on screen is `AIConsentGate.presentation` (Kit, tested): mounted or not, spinner,
     /// prompt or cover. This view only draws it.
@@ -50,16 +51,17 @@ private struct AIDisclosureGateModifier: ViewModifier {
                         if let covered {
                             prompt(covered)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .background(AlphonsoColor.surface.opacity(0.96))
+                                .background(ds.surface.opacity(0.96))
                         }
                     }
             case .prompt(let kind):
-                prompt(kind)
+                prompt(kind).background(ds.surface)
             case .spinner:
                 // Unknown yet (fresh install, first read in flight): never prompt someone who may have consented
                 // on another device.
-                ProgressView().tint(AlphonsoColor.moss)
+                ProgressView().tint(ds.choice)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(ds.surface)
             }
         }
         .onChange(of: aiConsent.isGranted, initial: true) { _, granted in
@@ -90,25 +92,21 @@ private struct AIDisclosureGateModifier: ViewModifier {
         if kind == .retry {
             // With no connection the setting was never the problem: say "offline", not "couldn't check your AI
             // setting", which reads as something the learner has to fix in Settings.
-            ContentUnavailableView {
-                Label(
-                    isConnected ? AIConsentCopy.checkFailedTitle : AIConsentCopy.offlineTitle,
-                    systemImage: isConnected ? "exclamationmark.triangle" : "wifi.slash")
-            } description: {
-                Text(isConnected ? AIConsentCopy.checkFailedBody : AIConsentCopy.offlineBody)
-            } actions: {
-                Button(AIConsentCopy.retry) { Task { await aiConsent.refresh() } }
-                    .buttonStyle(.alphonsoPrimary)
-            }
+            DSEmptyState(
+                art: "Alphonso-explaining-pointer",
+                title: isConnected ? AIConsentCopy.checkFailedTitle : AIConsentCopy.offlineTitle,
+                message: isConnected ? AIConsentCopy.checkFailedBody : AIConsentCopy.offlineBody,
+                actionTitle: AIConsentCopy.retry,
+                action: { Task { await aiConsent.refresh() } })
+                .padding(AlphonsoDS.Space.gutter)
         } else {
-            ContentUnavailableView {
-                Label(AIConsentCopy.gateTitle, systemImage: "sparkles")
-            } description: {
-                Text(AIConsentCopy.gateBody)
-            } actions: {
-                Button(AIConsentCopy.gateAction) { showDisclosure = true }
-                    .buttonStyle(.alphonsoPrimary)
-            }
+            DSEmptyState(
+                emoji: "\u{2728}",
+                title: AIConsentCopy.gateTitle,
+                message: AIConsentCopy.gateBody,
+                actionTitle: AIConsentCopy.gateAction,
+                action: { showDisclosure = true })
+                .padding(AlphonsoDS.Space.gutter)
         }
     }
 
@@ -176,47 +174,54 @@ private struct AIDisclosureSheet: View {
     let errorMessage: String?
     let onAllow: () -> Void
     let onDecline: () -> Void
+    @Environment(\.alphonsoDS) private var ds
 
     private var privacyPolicyURL: URL { AppConfig.apiBaseURL.appendingPathComponent("privacy") }
 
     var body: some View {
         ScrollView { sheetContent }
-            .background(AlphonsoColor.surface)
+            .background(ds.surface)
             // The longer provider-naming copy plus two buttons no longer fits a .medium sheet at large Dynamic Type
             // sizes.
             .presentationDetents([.medium, .large])
     }
 
     private var sheetContent: some View {
-        VStack(spacing: AlphonsoSpacing.lg) {
+        VStack(spacing: AlphonsoDS.Space.s4) {
+            Image("Alphonso-explaining-pointer").resizable().scaledToFit()
+                .frame(height: AlphonsoDS.Space.s12 * 2)
+                .accessibilityHidden(true)
             Text(AIConsentCopy.sheetTitle)
-                .font(AlphonsoFont.display(22, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
+                .dsText(.title)
+                .foregroundStyle(ds.ink)
                 .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+            // The legal copy is verbatim; only its container is the design system's.
             Text(AIConsentCopy.sheetBody)
-                .font(AlphonsoFont.sans(14))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-                .multilineTextAlignment(.center)
+                .dsText(.footnote)
+                .foregroundStyle(ds.inkSoft)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
             Link(AIConsentCopy.privacyLink, destination: privacyPolicyURL)
-                .font(AlphonsoFont.sans(13, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.moss)
+                .dsText(.footnote)
+                .foregroundStyle(ds.choice)
             if let errorMessage {
                 Text(errorMessage)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.destructive)
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.wrongInk)
                     .multilineTextAlignment(.center)
             }
             Button(action: onAllow) {
-                if isSaving { ProgressView().tint(AlphonsoColor.surface) } else { Text(AIConsentCopy.allow) }
+                if isSaving { ProgressView().tint(ds.onAction) } else { Text(AIConsentCopy.allow) }
             }
-            .buttonStyle(.alphonsoPrimary)
+            .buttonStyle(.dsButton(.primary))
             .disabled(isSaving)
             Button(AIConsentCopy.notNow, action: onDecline)
-                .font(AlphonsoFont.sans(14, weight: .medium))
-                .tint(AlphonsoColor.inkSoft)
+                .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
                 .disabled(isSaving)
         }
-        .padding()
+        .padding(AlphonsoDS.Space.gutter)
         .frame(maxWidth: 360)
         .frame(maxWidth: .infinity)
     }
