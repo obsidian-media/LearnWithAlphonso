@@ -1,5 +1,4 @@
 import SwiftUI
-import AVFoundation
 import LearnWithAlphonsoKit
 
 /// V1's review queue: due SM-2 items, one at a time. Grading happens
@@ -40,6 +39,8 @@ struct ReviewQueueView: View {
     /// result, so a grade whose response was lost is replayed instead of being graded a second time.
     @State private var gradeAttempt: PendingReviewGrade?
     @State private var checked = false
+    /// True once a word is placed in a sentence; QuestionCard's binding (Review has no Alphonso to react to it).
+    @State private var reorderStarted = false
     @State private var isLoading = true
     @State private var isSubmitting = false
     @State private var errorMessage: String?
@@ -59,19 +60,19 @@ struct ReviewQueueView: View {
         _course = State(initialValue: ActiveCoursePreference.load(for: session.userID))
     }
 
+    @Environment(\.alphonsoDS) private var ds
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         NavigationStack {
+            // The loader below sits on this always-present stack, never on a state that may draw nothing.
             Group {
                 if isLoading {
-                    ProgressView().tint(AlphonsoColor.moss)
+                    ProgressView().tint(ds.choice).frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let errorMessage {
-                    ContentUnavailableView("Couldn't load your review queue", systemImage: "wifi.slash", description: Text(errorMessage))
+                    stateCard(art: "Alphonso-thinking", title: "Couldn't load your review queue", message: errorMessage)
                 } else if queue.isEmpty {
-                    ContentUnavailableView {
-                        Label("All caught up", systemImage: "checkmark.circle")
-                    } description: {
-                        Text(clearedBonusMessage ?? "Nothing due for review right now.")
-                    }
+                    stateCard(art: "Alphonso-happy", title: "All caught up", message: clearedBonusMessage ?? "Nothing due for review right now.")
                 } else if idx < queue.count {
                     VStack(spacing: 0) {
                         if let showingCachedQueueSince {
@@ -80,15 +81,12 @@ struct ReviewQueueView: View {
                         reviewBody
                     }
                 } else {
-                    ContentUnavailableView {
-                        Label("Queue cleared", systemImage: "checkmark.circle.fill")
-                    } description: {
-                        Text(clearedBonusMessage ?? "Nice work. Check back tomorrow for more.")
-                    }
+                    stateCard(art: "Alphonso-proud", title: "Queue cleared", message: clearedBonusMessage ?? "Nice work. Check back tomorrow for more.")
                 }
             }
-            .background(AlphonsoColor.surface)
+            .background(ds.surface)
             .navigationTitle("Review")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     CoursePicker(course: $course)
@@ -99,7 +97,7 @@ struct ReviewQueueView: View {
                 }
             }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .task(id: course) { await loadQueue() }
         // No whole-screen consent wall. Each item decides (AIConsentPolicy): a
         // translate item is graded by grade-review, which skips the AI grader
@@ -111,6 +109,14 @@ struct ReviewQueueView: View {
         .environment(\.saveWordHandler, { savingWord = $0 })
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
+        }
+    }
+
+    /// An empty, cleared or failed queue: Alphonso over the words, on a card.
+    private func stateCard(art: String, title: String, message: String) -> some View {
+        ScrollView {
+            DSEmptyState(art: art, title: title, message: message)
+                .padding(AlphonsoDS.Space.gutter)
         }
     }
 
@@ -127,77 +133,113 @@ struct ReviewQueueView: View {
     /// Non-nil for any index inside the queue: loadQueue keeps only items ReviewQueueResolution resolved.
     private var currentQuestion: Question? { idx < queue.count ? queue[idx].question : nil }
 
+    /// Alphonso at his book over the library scene: the picture the due count sits above.
+    private var banner: some View {
+        Color.clear
+            .frame(height: AlphonsoDS.Space.s12 * 3 + AlphonsoDS.Space.s2)
+            .overlay {
+                Image(SceneName.hector.assetName).resizable().scaledToFill()
+            }
+            .overlay {
+                LinearGradient(colors: [.clear, ds.heroB.opacity(0.55)], startPoint: .center, endPoint: .bottom)
+            }
+            .overlay(alignment: .bottomTrailing) {
+                Image("Alphonso-reading-book").resizable().scaledToFit()
+                    .frame(height: AlphonsoDS.Space.s12 * 3)
+                    .padding(.trailing, AlphonsoDS.Space.s3)
+                    .offset(y: AlphonsoDS.Space.s2)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous))
+            .accessibilityHidden(true)
+    }
+
     private var reviewBody: some View {
         Group {
             if let question = currentQuestion {
-                // The question scrolls; Check and the verdict panel are pinned below it, so a tall item plus the
-                // panel never pushes the button off a small screen.
+                let layout = LessonStage.layout(viewportHeight: Double(UIScreen.main.bounds.height), prompt: question.prompt)
+                // The question scrolls; Check and the verdict sheet are pinned below it, so a tall item plus the
+                // sheet never pushes the button off a small screen.
                 ScrollView {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-                    Text("\(idx + 1)/\(queue.count) due")
-                        .font(AlphonsoFont.sans(13, weight: .medium))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-
-                    // .id() forces a fresh ReviewQuestionCard (and its
-                    // reorder @State) per item -- same reasoning as
-                    // LessonPlayerView's identical pattern.
-                    ReviewQuestionCard(question: question, course: course, vocabImages: contentStore.vocabImages, session: session, lessonId: currentItem.lessonId, isConnected: networkMonitor.isConnected, checked: checked, picked: $picked, translationVerdict: $translationVerdict)
-                        .id(currentItem.itemKey)
-                }
-                .padding()
+                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                        HStack(spacing: AlphonsoDS.Space.s3) {
+                            DSProgressBar(fraction: Double(idx + (checked ? 1 : 0)) / Double(max(1, queue.count)))
+                            DSPill(text: "\(idx + 1)/\(queue.count) due", tone: .gold)
+                        }
+                        banner
+                        // .id() forces a fresh QuestionCard (and its reorder @State) per item -- same reasoning as
+                        // LessonPlayerView's identical pattern.
+                        QuestionCard(
+                            question: question, course: course, vocabImages: contentStore.vocabImages, session: session,
+                            lessonId: currentItem.lessonId, isConnected: networkMonitor.isConnected, checked: checked,
+                            isReinforcing: false, compact: layout.size == .small, surface: .review, picked: $picked,
+                            translationVerdict: $translationVerdict, reorderStarted: $reorderStarted)
+                            .id(currentItem.itemKey)
+                    }
+                    .padding(AlphonsoDS.Space.gutter)
                 }
                 .scrollDismissesKeyboard(.interactively)
-                .safeAreaInset(edge: .bottom) {
-                    Group {
-                    if isSubmitting {
-                        ProgressView().tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
-                    } else if isCheckingTranslation {
-                        ProgressView("Checking...").tint(AlphonsoColor.moss)
-                            .frame(maxWidth: .infinity)
-                    } else if !checked {
-                        Button("Check") {
-                            // A translation has to settle before the learner is
-                            // shown anything: the curated phrasings are only a
-                            // floor, and the second opinion that can lift them
-                            // is a network call. Every other type is decided
-                            // locally and instantly.
-                            if case .translate(let q) = question {
-                                isCheckingTranslation = true
-                                Task {
-                                    await gradeTranslationReviewItem(question: q)
-                                    isCheckingTranslation = false
-                                    checked = true
-                                }
-                            } else {
-                                checked = true
-                            }
-                        }
-                            .buttonStyle(.alphonsoPrimary)
-                            // Whitespace is not an answer.
-                            .disabled((picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    } else {
-                        let correct = verdictCorrect(question)
-                        // Same wording as the web's review: the item either stays learned or comes back.
-                        AnswerVerdictPanel(
-                            correct: correct,
-                            correctAnswer: AnswerVerdict.correctAnswer(for: question),
-                            title: correct ? "Still got it." : "Back in the queue.",
-                            continueTitle: "Next"
-                        ) { Task { await submitAndAdvance(question: question) } }
-                    }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, AlphonsoSpacing.sm)
-                    .background(AlphonsoColor.surface)
-                }
-                // The verdict panel announces the verdict itself; the explanation under the item stays quiet.
+                .safeAreaInset(edge: .bottom, spacing: 0) { reviewControls(question) }
+                // The verdict sheet announces the verdict itself; the explanation inside it stays quiet.
                 .environment(\.verdictAnnouncedByPanel, true)
+                .animation(reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.38, dampingFraction: 0.86), value: checked)
             } else {
                 // Unreachable since loadQueue resolves every item up front. Kept as a guard: .task(id:) re-fires
                 // for each index, where a bare .task fired once per view identity and left a blank screen when
                 // two unresolvable items followed each other.
                 Color.clear.task(id: idx) { advance() }
             }
+        }
+    }
+
+    /// Check, or the verdict sheet once checked: pinned below the scrolling question.
+    @ViewBuilder
+    private func reviewControls(_ question: Question) -> some View {
+        if isSubmitting {
+            ProgressView().tint(ds.choice).frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s4).background(ds.surface)
+        } else if isCheckingTranslation {
+            ProgressView("Checking...").tint(ds.choice)
+                .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s4).background(ds.surface)
+        } else if !checked {
+            Button("Check") {
+                // A translation has to settle before the learner is
+                // shown anything: the curated phrasings are only a
+                // floor, and the second opinion that can lift them
+                // is a network call. Every other type is decided
+                // locally and instantly.
+                if case .translate(let q) = question {
+                    isCheckingTranslation = true
+                    Task {
+                        await gradeTranslationReviewItem(question: q)
+                        isCheckingTranslation = false
+                        checked = true
+                    }
+                } else {
+                    checked = true
+                }
+            }
+            .buttonStyle(LessonEdgeButtonStyle(variant: .primary))
+            // Whitespace is not an answer.
+            .disabled((picked ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .padding(.horizontal, AlphonsoDS.Space.gutter)
+            .padding(.top, AlphonsoDS.Space.s3)
+            .padding(.bottom, AlphonsoDS.Space.s2)
+            .background(ds.surface)
+        } else {
+            let correct = verdictCorrect(question)
+            // Same wording as the web's review: the item either stays learned or comes back.
+            LessonVerdictSheet(
+                correct: correct,
+                title: correct ? "Still got it." : "Back in the queue.",
+                xp: nil,
+                correctAnswer: AnswerVerdict.correctAnswer(for: question),
+                continueTitle: "Next",
+                onContinue: { Task { await submitAndAdvance(question: question) } }
+            ) {
+                ExplanationView(
+                    question: question, picked: picked, explanation: question.explanationText,
+                    course: course, correctOverride: translationVerdict?.correct, inSheet: true)
+            }
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom))
         }
     }
 
@@ -447,197 +489,29 @@ private func addDaysDateString(_ days: Int) -> String {
     return String(ISO8601DateFormatter().string(from: date).prefix(10))
 }
 
-/// V3 pkg 4a: on-device TTS for "listening comprehension" format questions
-/// -- same instance/reasoning as LessonPlayerView's identical helper.
-private let reviewQuestionSpeechSynthesizer = AVSpeechSynthesizer()
-
-private func speak(_ text: String, course: Course) {
-    reviewQuestionSpeechSynthesizer.stopSpeaking(at: .immediate)
-    let utterance = AVSpeechUtterance(string: text)
-    utterance.voice = SpeechVoice.voice(for: course)
-    reviewQuestionSpeechSynthesizer.speak(utterance)
-}
-
 /// Shown above the queue when it's SyncQueueStore's cached snapshot rather
 /// than a fresh fetch -- a relative-time indicator instead of the error
 /// screen an offline/failed fetch used to show.
 private struct CachedQueueBanner: View {
     let since: Date?
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "wifi.slash")
+        HStack(spacing: AlphonsoDS.Space.s2) {
+            Image(systemName: "wifi.slash").accessibilityHidden(true)
             Text(label)
         }
-        .font(AlphonsoFont.sans(12, weight: .medium))
-        .foregroundStyle(AlphonsoColor.inkSoft)
-        .padding(.vertical, 6)
+        .dsText(.caption)
+        .foregroundStyle(ds.inkSoft)
+        .padding(.vertical, AlphonsoDS.Space.s2)
         .frame(maxWidth: .infinity)
-        .background(AlphonsoColor.emberSoft)
+        .background(ds.actionTint)
+        .accessibilityElement(children: .combine)
     }
 
     private var label: String {
         guard let since else { return "Offline. Showing your last synced queue" }
         let relative = RelativeDateTimeFormatter().localizedString(for: since, relativeTo: Date())
         return "Offline. Last synced \(relative)"
-    }
-}
-
-private struct ReviewQuestionCard: View {
-    let question: Question
-    let course: Course
-    let vocabImages: [String: VocabImageRef]
-    // A speaking item needs a token to transcribe with, and needs to know
-    // whether transcription can happen at all -- see SpeakQuestionCard.
-    let session: Session
-    /// The lesson half of this item's key, for the server-side question lookup.
-    let lessonId: String
-    let isConnected: Bool
-    let checked: Bool
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Binding var picked: String?
-    @Binding var translationVerdict: TranslationVerdict?
-
-    // Reset automatically per item via this view's .id() in reviewBody --
-    // same reasoning as LessonPlayerView's identical property.
-    @State private var orderPicks: [Int] = []
-
-    var body: some View {
-        Group {
-            switch question {
-            case .multipleChoice(let q):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
-                    VocabImageView(image: image, cardHeight: 160, decorative: true)
-                }
-                if let audioText = q.audioText {
-                    Button {
-                        speak(audioText, course: course)
-                    } label: {
-                        Label("Play audio", systemImage: "speaker.wave.2.fill")
-                    }
-                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
-                }
-                AskingAlphonso(prompt: q.prompt, hasMedia: q.imageKey.flatMap { vocabImages[$0] } != nil || q.audioText != nil)
-                ForEach(q.choices, id: \.self) { choice in
-                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.choices[q.answer] == choice) { picked = choice }
-                }
-                if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
-                }
-            }
-        case .fillInBlank(let q):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                AskingAlphonso(prompt: q.prompt)
-                TextField("Type your answer", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
-                    .textFieldStyle(.plain)
-                    .padding(AlphonsoSpacing.sm)
-                    .alphonsoInputBackground()
-                    .disabled(checked)
-                if !q.bank.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(q.bank, id: \.self) { word in
-                                Button(word) { picked = word }
-                                    .buttonStyle(.alphonsoWordChip(picked: picked == word))
-                                    .disabled(checked)
-                                    // Room for the chip's 4 pt edge, which a horizontal ScrollView would clip.
-                                    .padding(.bottom, 4)
-                            }
-                        }
-                    }
-                }
-                if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
-                }
-            }
-        case .reorder(let q):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                AskingAlphonso(prompt: q.prompt)
-                assembledArea(tokens: q.tokens)
-                tokenPool(tokens: q.tokens)
-                if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
-                }
-            }
-            .onChange(of: orderPicks) {
-                picked = orderPicks.count == q.tokens.count
-                    ? orderPicks.map { q.tokens[$0] }.joined(separator: " ")
-                    : nil
-            }
-        case .listening(let q):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                Text("LISTENING")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                Button {
-                    speak(q.audioText, course: course)
-                } label: {
-                    Label("Play audio", systemImage: "speaker.wave.2.fill")
-                }
-                .buttonStyle(.alphonsoSecondary(fullWidth: false))
-                AskingAlphonso(prompt: q.prompt, hasMedia: true)
-                ForEach(q.choices, id: \.self) { choice in
-                    // `answer` is the choice text, not an index.
-                    AnswerChoiceButton(choice: choice, picked: picked, checked: checked, isCorrectChoice: q.answer == choice) { picked = choice }
-                }
-                if checked {
-                    ExplanationView(question: question, picked: picked, explanation: q.explanation, course: course)
-                }
-            }
-            case .translate(let q):
-                TranslateQuestionCard(
-                    question: q, checked: checked, picked: $picked,
-                    verdict: $translationVerdict, course: course, surface: .review)
-            case .speak(let q):
-                SpeakQuestionCard(
-                    question: q, course: course, session: session,
-                    isConnected: isConnected, checked: checked, picked: $picked)
-            }
-        }
-        // Same reduced-motion handling as LessonPlayerView's identical
-        // pattern: AlphonsoTipCard's own transition already drops to a
-        // plain fade, so this container spring is disabled outright rather
-        // than also animating its relayout.
-        .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.75), value: checked)
-    }
-
-    private func assembledArea(tokens: [String]) -> some View {
-        HStack {
-            if orderPicks.isEmpty {
-                Text("Tap the words below in order")
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-            } else {
-                ForEach(Array(orderPicks.enumerated()), id: \.offset) { position, tokenIdx in
-                    Button(tokens[tokenIdx]) {
-                        orderPicks.remove(at: position)
-                    }
-                    .buttonStyle(.alphonsoPrimary(fullWidth: false))
-                    .disabled(checked)
-                }
-            }
-            Spacer()
-        }
-        .frame(minHeight: 44)
-        .padding(AlphonsoSpacing.sm)
-        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
-    }
-
-    private func tokenPool(tokens: [String]) -> some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-                ForEach(Array(tokens.enumerated()), id: \.offset) { i, token in
-                    if !orderPicks.contains(i) {
-                        Button(token) { orderPicks.append(i) }
-                            .buttonStyle(.alphonsoWordChip(picked: false))
-                            .disabled(checked)
-                            // Room for the chip's 4 pt edge, which a horizontal ScrollView would clip.
-                            .padding(.bottom, 4)
-                    }
-                }
-            }
-        }
     }
 }

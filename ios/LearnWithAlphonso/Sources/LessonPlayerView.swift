@@ -903,7 +903,7 @@ private let questionCardSpeechSynthesizer = AVSpeechSynthesizer()
 
 /// One question in the unit's room: Alphonso's bubble with the prompt (and a play button), any picture, and the
 /// answers in the lesson's style. Mechanics unchanged from before the redesign.
-private struct QuestionCard: View {
+struct QuestionCard: View {
     /// The right answer's scroll target, so it can be brought into view above the verdict sheet.
     static let correctAnswerID = "lesson-correct-answer"
 
@@ -921,6 +921,8 @@ private struct QuestionCard: View {
     let isReinforcing: Bool
     /// A phone under 700 pt tall: the smaller question type.
     let compact: Bool
+    /// The screen that shows the card, for the AI consent policy (Review is its own surface).
+    var surface: AIConsentSurface = .lesson
     @Binding var picked: String?
     /// Settled by the player before it scores -- see settledTranslationVerdict.
     @Binding var translationVerdict: TranslationVerdict?
@@ -988,7 +990,7 @@ private struct QuestionCard: View {
             case .translate(let q):
                 TranslateQuestionCard(
                     question: q, checked: checked, picked: $picked,
-                    verdict: $translationVerdict, course: course, surface: .lesson, inStage: true)
+                    verdict: $translationVerdict, course: course, surface: surface, inStage: true)
             case .speak(let q):
                 SpeakQuestionCard(
                     question: q, course: course, session: session,

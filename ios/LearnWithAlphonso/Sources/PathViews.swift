@@ -552,60 +552,67 @@ struct PathBuildView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // The goal, level and date: the same card the planner always had.
-                // The goal card saves on its own button; reload so the switches appear once a goal exists.
-                GoalCardView(session: session, course: course, onChanged: { Task { await model?.load() } })
-                    .id(course.translationCourseCode)
-                if let path = model?.path { switches(path) }
+            ScrollView {
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                    // The goal, level and date: the same card the planner always had.
+                    // The goal card saves on its own button; reload so the switches appear once a goal exists.
+                    GoalCardView(session: session, course: course, onChanged: { Task { await model?.load() } })
+                        .id(course.translationCourseCode)
+                    if let path = model?.path { switches(path) }
+                }
+                .padding(AlphonsoDS.Space.gutter)
             }
+            .screenScene(.learn)
+            .background(ds.surface)
             .navigationTitle("Build my path")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
+            // On the always-present ScrollView, never on the switches, which draw nothing until the path loads.
             .task(id: course.translationCourseCode) {
                 let made = PathModel(session: session, courseCode: course.translationCourseCode)
                 model = made
                 await made.load()
             }
         }
+        .tint(ds.choice)
     }
 
     @ViewBuilder
     private func switches(_ path: LearningPath) -> some View {
-        Section {
-            Text("\(path.progress.requiredPerWeek) lessons a week").dsText(.headline).foregroundStyle(ds.ink)
+        DSOverline("Your plan")
+        DSCard {
+            Text("\(path.progress.requiredPerWeek) lessons a week").dsText(.title).foregroundStyle(ds.brand)
             Text("\(path.dailyMinutes) minutes a day, \(PathRestDay.studyDays(path.restDayValue)) days. The rest of each day is filled with the mix below.")
-                .dsText(.caption).foregroundStyle(ds.inkSoft)
+                .dsText(.footnote).foregroundStyle(ds.inkSoft)
             PathMixBar(mix: path.mix)
-        } header: {
-            Text("Your plan").dsText(.overline).foregroundStyle(ds.actionText)
         }
-        Section {
-            Picker("Rest day", selection: Binding(
-                get: { path.restDayValue },
-                set: { day in Task { await model?.apply(.setRestDay(day)) } })
-            ) {
-                ForEach(PathRestDay.choices, id: \.value) { Text($0.label).tag($0.value) }
+        DSOverline("Rest day")
+        DSCard {
+            LessonFlowLayout {
+                ForEach(PathRestDay.choices, id: \.value) { choice in
+                    DSChip(choice.label, selected: path.restDayValue == choice.value) {
+                        Task { await model?.apply(.setRestDay(choice.value)) }
+                    }
+                    .disabled(model?.busy ?? false)
+                }
             }
-            .pickerStyle(.menu)
-            .tint(ds.choice)
-            .disabled(model?.busy ?? false)
-            .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .accessibilityElement(children: .contain)
             .accessibilityLabel("Rest day")
-        } header: {
-            Text("Rest day").dsText(.overline).foregroundStyle(ds.actionText)
         }
-        Section {
+        DSOverline("How I like to learn")
+        DSCard(padding: AlphonsoDS.Space.s3, spacing: AlphonsoDS.Space.s1) {
             HStack(spacing: AlphonsoDS.Space.s3) {
                 PathTypeBadge(kind: .lesson)
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Lessons").dsText(.headline).foregroundStyle(ds.ink)
                     Text("Always on, the backbone").dsText(.caption).foregroundStyle(ds.inkSoft)
                 }
+                Spacer(minLength: 0)
             }
             .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .accessibilityElement(children: .combine)
             ForEach(PathKind.switchable(mix: path.mix, off: path.off), id: \.wire) { kind in
                 Toggle(isOn: Binding(
                     get: { !path.off.contains(kind.wire) },
@@ -626,13 +633,12 @@ struct PathBuildView: View {
                 }
                 .tint(ds.choice)
                 .disabled(model?.busy ?? false)
+                .frame(minHeight: AlphonsoDS.Space.minTouch)
                 .accessibilityLabel("\(kind.label) in my path")
             }
-            if let error = model?.actionError {
-                Text(error).dsText(.footnote).foregroundStyle(ds.wrongInk)
-            }
-        } header: {
-            Text("How I like to learn").dsText(.overline).foregroundStyle(ds.actionText)
+        }
+        if let error = model?.actionError {
+            DSCard { Text(error).dsText(.footnote).foregroundStyle(ds.wrongInk) }
         }
     }
 

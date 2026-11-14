@@ -191,6 +191,8 @@ struct SocialSafetyMenu: View {
     /// the generic label.
     var accessibilityName: String? = nil
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
         Menu {
             Button(role: .destructive, action: onBlock) {
@@ -201,7 +203,8 @@ struct SocialSafetyMenu: View {
             }
         } label: {
             Image(systemName: "ellipsis.circle")
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(ds.inkSoft)
+                .frame(minWidth: AlphonsoDS.Space.minTouch, minHeight: AlphonsoDS.Space.minTouch)
         }
         .accessibilityLabel(accessibilityName.map(BuddyCopy.safetyMenuLabel) ?? "More options")
     }
