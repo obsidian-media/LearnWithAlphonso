@@ -1,6 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { useCountdown } from "../hooks/use-countdown";
+import { MAX_HEARTS } from "../lib/hearts";
 import { useProgress } from "../lib/progress";
 import { Icon3D } from "./Icon3D";
 import { PodcastPlayer } from "./PodcastPlayer";
@@ -11,22 +13,36 @@ function StatPill({
   value,
   color,
   label,
+  hint,
 }: {
   icon: ReactNode;
   value: number | string;
   color: string;
   label: string;
+  /** A small second line, e.g. the time until the next heart. */
+  hint?: string | null;
 }) {
   return (
     <div className="flex items-center gap-1.5" aria-label={label}>
       <span className={color}>{icon}</span>
       <span className="tnum text-sm font-semibold text-ink">{value}</span>
+      {hint ? <span className="tnum text-[11px] text-ink-soft/70">{hint}</span> : null}
     </div>
   );
 }
 
 export function TopBar() {
-  const { xp, streak, hearts, hydrated, leagueTier } = useProgress();
+  const { xp, streak, hearts, heartsRefillAt, hydrated, leagueTier } = useProgress();
+  const refillHeartsLocal = useProgress((s) => s.refillHeartsLocal);
+
+  // Below the cap a heart comes back every 30 minutes. Show the wait for the next one (the same clock the server
+  // keeps) and add the heart on screen the moment it is due.
+  const nextHeartIn = useCountdown(hydrated && hearts < MAX_HEARTS ? heartsRefillAt : null);
+  useEffect(() => {
+    if (!hydrated || heartsRefillAt === null || hearts >= MAX_HEARTS) return;
+    const id = setTimeout(refillHeartsLocal, Math.max(0, heartsRefillAt - Date.now()) + 50);
+    return () => clearTimeout(id);
+  }, [hydrated, hearts, heartsRefillAt, refillHeartsLocal]);
 
   // Announce meaningful stat changes to screen readers -- but never on
   // first hydration (every page load), only on genuine later changes.
@@ -96,6 +112,7 @@ export function TopBar() {
             value={hydrated ? hearts : 5}
             color="text-rose-500"
             label="Hearts"
+            hint={nextHeartIn ? `+1 in ${nextHeartIn}` : null}
           />
         </div>
       </div>

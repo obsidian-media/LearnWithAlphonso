@@ -51,6 +51,17 @@ export type CallTally = {
   englishReplies: number;
 };
 
+/**
+ * When a finished call counts as done on the learning path (owner decision 2026-11-14): only if it earned at least one
+ * star. A call that was finished but earned none (one reply, say) is not a talk done. `stars` is practice_calls.stars
+ * (null while unfinished). Keep identical to the rule the practice_stars table already holds (best_stars is 1 to 3).
+ */
+export const MIN_STARS_FOR_DONE = 1;
+
+export function callCountsAsDone(stars: number | null | undefined): boolean {
+  return typeof stars === "number" && stars >= MIN_STARS_FOR_DONE;
+}
+
 /** 0 (not finished) to 3. Integer arithmetic only, so 4 of 5 is exactly 80% and never 79.999...%. */
 export function starsForCall(t: CallTally, finishMinReplies: number): 0 | 1 | 2 | 3 {
   if (t.replies < Math.max(1, finishMinReplies)) return 0;

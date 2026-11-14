@@ -10,6 +10,11 @@ works now_.
 
 ## Unreleased
 
+### Progress rules: hearts refill steadily, a talk counts once it earns a star (migration 20261116100000)
+
+- **Hearts refill.** While a learner has fewer than 5 hearts, one heart comes back every 30 minutes, counted from the moment they first dropped below 5 or from the last refill, capped at 5. The wait carries over (losing a heart while a refill is pending keeps the clock; time away adds every heart that came due). At 5 hearts there is no timer. The migration adds `hearts_refill_resolve` and redefines `lose_heart`, `restore_hearts_if_due`, `buy_heart_with_xp`, `claim_review_clear_bonus` and `settle_lesson_hearts` on it, and restores every learner who was stuck below 5 with no timer to 5. The web (`hearts.ts`, store, header, hearts dialog), the complete-lesson Edge Function, the iOS Kit and Android core share the rule and the test vectors; the header shows "+1 in M:SS" next to the count on web, iOS and Android.
+- **A talk counts as done only if it earned at least one star.** The path builder drops finished calls with 0 stars from "done" (`callCountsAsDone`). The native apps read the path from the server, so they follow without a code change.
+
 ### Device-check fixes (#504, merged 2026-11-13; goes out in build 64)
 
 Owner device check of builds 62 and 63.
@@ -34,8 +39,7 @@ Owner device check of builds 62 and 63.
 
 ### Open bugs found in device check (not fixed, awaiting owner decisions)
 
-- **Hearts never refill between 1 and 4.** The refill timer is only set when hearts reach 0, so a learner at 1 to 4 hearts never refills (seven learners were stuck). Needs the owner's refill rate.
-- **The path marks a talk done for any finished call.** A QA account's 6-second, 0-star call counted. Needs the owner's rule for "talk done".
+- Both owner-decision items below were decided on 2026-11-14 and are fixed in the progress-rules PR (see Progress rules).
 
 ### Library tab with a Watch shelf (#499, merged 2026-11-13; goes out in build 63)
 

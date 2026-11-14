@@ -127,10 +127,9 @@ export const fetchProgress = createServerFn({ method: "GET" })
       answers[c.lesson_id] = { correct: c.correct, total: c.total };
     }
 
-    // A pending "out of hearts" timer may have already elapsed since this
-    // row was last written -- resolve it now (full refill) and persist,
-    // rather than leaving the client to display a countdown that never
-    // actually restores anything.
+    // Hearts refill one per 30 minutes while below the cap. Hearts that came due since this row was last
+    // written are added now and persisted (with the clock for the next one), rather than leaving the client to
+    // display a countdown that never actually restores anything.
     const rawHeartsRefillAt = p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null;
     const resolvedHearts = resolveHeartsRefill(
       p?.hearts ?? MAX_HEARTS,
@@ -144,7 +143,12 @@ export const fetchProgress = createServerFn({ method: "GET" })
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       await supabaseAdmin
         .from("user_progress")
-        .update({ hearts: resolvedHearts.hearts, hearts_refill_at: null })
+        .update({
+          hearts: resolvedHearts.hearts,
+          hearts_refill_at: resolvedHearts.heartsRefillAt
+            ? new Date(resolvedHearts.heartsRefillAt).toISOString()
+            : null,
+        })
         .eq("user_id", userId);
     }
 
@@ -422,7 +426,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         xpGain > 0 &&
         regen.hearts < MAX_HEARTS
       ) {
-        heartsResult = gainHearts(regen.hearts, 1);
+        heartsResult = gainHearts(regen.hearts, 1, regen.heartsRefillAt, Date.now());
         heartsBonus = "perfect";
       }
 

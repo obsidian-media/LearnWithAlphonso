@@ -140,8 +140,8 @@ export function HeartsModal({
             <p className="mt-1.5 text-sm text-ds-ink-soft/80">
               You've used all your hearts for now.{" "}
               {countdown
-                ? `They refill automatically in ${countdown}.`
-                : "They'll refill again shortly."}
+                ? `Your next heart comes back in ${countdown}.`
+                : "A heart will come back shortly."}
             </p>
             {canBuyWithXp && (
               <button

@@ -798,7 +798,10 @@ Deno.test("hearts refill against the injected clock, not the machine clock", asy
       updated_at: "t0",
     },
   ];
-  assertEquals((await (await handler(post(body(["a", "c"])))).json()).progress.hearts, 5);
+  // One heart per 30 minutes: the heart that came due is added, and the next one is a full interval after it.
+  const due = (await (await handler(post(body(["a", "c"])))).json()).progress;
+  assertEquals(due.hearts, 1);
+  assertEquals(due.heartsRefillAt, NOW.getTime() - 60_000 + 30 * 60_000);
 
   const later = setup();
   later.db.tables.user_progress = [

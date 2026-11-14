@@ -36,6 +36,7 @@ import com.obsidianmedia.learnwithalphonso.BuildConfig
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -72,6 +73,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.stateDescription
 import com.obsidianmedia.learnwithalphonso.core.logic.CurrentUnit
+import com.obsidianmedia.learnwithalphonso.core.logic.HeartsEconomy
 import com.obsidianmedia.learnwithalphonso.core.logic.FoldRow
 import com.obsidianmedia.learnwithalphonso.core.logic.FoldUnit
 import com.obsidianmedia.learnwithalphonso.core.logic.LearnFold
@@ -402,7 +404,7 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             StatPill("🔥", "${progress.streak}", "Streak: ${progress.streak} day${if (progress.streak == 1) "" else "s"}")
-            StatPill("❤️", "${progress.hearts}", "Hearts: ${progress.hearts}")
+            HeartsPill(progress)
             StatPill("⭐", "${progress.xp}", "XP: ${progress.xp}")
             Spacer(Modifier.weight(1f))
             Text(
@@ -429,7 +431,7 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
 }
 
 @Composable
-private fun StatPill(icon: String, value: String, label: String) {
+private fun StatPill(icon: String, value: String, label: String, hint: String? = null) {
     val ds = LocalAlphonsoTokens.current
     Row(
         Modifier.clip(CircleShape).background(ds.card).border(1.dp, ds.line, CircleShape).padding(horizontal = 10.dp, vertical = 6.dp).semantics(mergeDescendants = true) { contentDescription = label },
@@ -438,5 +440,32 @@ private fun StatPill(icon: String, value: String, label: String) {
     ) {
         Text(icon, style = FootnoteType)
         Text(value, style = FootnoteType, fontWeight = FontWeight.Bold, color = ds.ink)
+        if (hint != null) Text(hint, style = CaptionType, color = ds.inkSoft)
     }
+}
+
+/**
+ * The hearts counter. Below the cap it ticks on its own: a heart that has come due appears without a sync (the same
+ * rule the server applies), and the wait for the next one shows beside the count.
+ */
+@Composable
+private fun HeartsPill(progress: LessonCompletionProgress) {
+    if (progress.hearts >= HeartsEconomy.MAX_HEARTS) {
+        StatPill("❤️", "${progress.hearts}", "Hearts: ${progress.hearts}")
+        return
+    }
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(progress.hearts, progress.heartsRefillAt) {
+        while (true) {
+            now = System.currentTimeMillis()
+            kotlinx.coroutines.delay(1000)
+        }
+    }
+    val shown = HeartsEconomy.resolveHeartsRefill(progress.hearts, progress.heartsRefillAt?.toLong(), now)
+    val wait = HeartsEconomy.nextHeartCountdown(shown.hearts, shown.heartsRefillAt, now)
+    StatPill(
+        "❤️", "${shown.hearts}",
+        if (wait != null) "Hearts: ${shown.hearts}, next heart in $wait" else "Hearts: ${shown.hearts}",
+        hint = wait?.let { "+1 in $it" },
+    )
 }

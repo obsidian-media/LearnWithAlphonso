@@ -9,10 +9,12 @@
 // the existing TS/Swift copies. Run with `deno test supabase/functions/complete-lesson/`.
 import { assertEquals } from "jsr:@std/assert@1";
 import {
+  HEART_REFILL_MS,
   MAX_HEARTS,
   gainHearts,
   heartsGate,
   heartsGateEnforced,
+  loseHeart,
   serverHeartsMode,
   outOfHeartsBody,
   perfectLessonBonusEarned,
@@ -20,35 +22,50 @@ import {
   streakHeartMilestoneReached,
 } from "./hearts.ts";
 
-Deno.test("resolveHeartsRefill leaves hearts untouched when no refill is pending", () => {
-  assertEquals(resolveHeartsRefill(3, null, Date.now()), { hearts: 3, heartsRefillAt: null });
+const T0 = 1_700_000_000_000;
+const STEP = HEART_REFILL_MS;
+
+Deno.test("resolveHeartsRefill: full hearts have no timer", () => {
+  assertEquals(resolveHeartsRefill(MAX_HEARTS, T0 + 5, T0), { hearts: MAX_HEARTS, heartsRefillAt: null });
 });
 
 Deno.test("resolveHeartsRefill leaves hearts untouched before the refill timestamp", () => {
-  const now = Date.now();
-  assertEquals(resolveHeartsRefill(0, now + 1000, now), { hearts: 0, heartsRefillAt: now + 1000 });
+  assertEquals(resolveHeartsRefill(2, T0 + 1000, T0), { hearts: 2, heartsRefillAt: T0 + 1000 });
 });
 
-Deno.test("resolveHeartsRefill restores to MAX_HEARTS and clears the timer once the timestamp has passed", () => {
-  const now = Date.now();
-  assertEquals(resolveHeartsRefill(0, now - 1, now), { hearts: MAX_HEARTS, heartsRefillAt: null });
+Deno.test("resolveHeartsRefill gives exactly one heart per due interval", () => {
+  assertEquals(resolveHeartsRefill(2, T0 - 1, T0), { hearts: 3, heartsRefillAt: T0 - 1 + STEP });
+  assertEquals(resolveHeartsRefill(0, T0, T0), { hearts: 1, heartsRefillAt: T0 + STEP });
 });
 
-Deno.test("resolveHeartsRefill restores exactly at the refill timestamp (boundary)", () => {
-  const now = Date.now();
-  assertEquals(resolveHeartsRefill(0, now, now), { hearts: MAX_HEARTS, heartsRefillAt: null });
+Deno.test("resolveHeartsRefill: two hours away gives four hearts", () => {
+  const due = T0 - 4 * STEP + 1000;
+  assertEquals(resolveHeartsRefill(0, due, T0), { hearts: 4, heartsRefillAt: due + 4 * STEP });
 });
 
-Deno.test("gainHearts adds hearts up to the cap", () => {
-  assertEquals(gainHearts(3, 1), { hearts: 4, heartsRefillAt: null });
+Deno.test("resolveHeartsRefill carries the leftover time into the next heart", () => {
+  assertEquals(resolveHeartsRefill(1, T0 - 1.5 * STEP, T0), { hearts: 3, heartsRefillAt: T0 + 0.5 * STEP });
 });
 
-Deno.test("gainHearts caps at MAX_HEARTS", () => {
-  assertEquals(gainHearts(4, 3), { hearts: MAX_HEARTS, heartsRefillAt: null });
+Deno.test("resolveHeartsRefill caps at MAX_HEARTS and clears the timer", () => {
+  assertEquals(resolveHeartsRefill(3, T0 - 10 * STEP, T0), { hearts: MAX_HEARTS, heartsRefillAt: null });
 });
 
-Deno.test("gainHearts clears a pending refill timer on any gain", () => {
-  assertEquals(gainHearts(0, 1), { hearts: 1, heartsRefillAt: null });
+Deno.test("resolveHeartsRefill starts the clock for a row below the cap that has none", () => {
+  assertEquals(resolveHeartsRefill(3, null, T0), { hearts: 3, heartsRefillAt: T0 + STEP });
+});
+
+Deno.test("loseHeart starts a clock from full, keeps a running clock, never goes below zero", () => {
+  assertEquals(loseHeart(MAX_HEARTS, null, T0), { hearts: 4, heartsRefillAt: T0 + STEP });
+  assertEquals(loseHeart(3, T0 + 600_000, T0), { hearts: 2, heartsRefillAt: T0 + 600_000 });
+  assertEquals(loseHeart(2, T0 - 1, T0), { hearts: 2, heartsRefillAt: T0 - 1 + STEP });
+  assertEquals(loseHeart(0, T0 + 5, T0), { hearts: 0, heartsRefillAt: T0 + 5 });
+});
+
+Deno.test("gainHearts keeps a running clock below the cap and clears it at the cap", () => {
+  assertEquals(gainHearts(2, 1, T0 + 900, T0), { hearts: 3, heartsRefillAt: T0 + 900 });
+  assertEquals(gainHearts(4, 3, T0 + 900, T0), { hearts: MAX_HEARTS, heartsRefillAt: null });
+  assertEquals(gainHearts(0, 1, null, T0), { hearts: 1, heartsRefillAt: T0 + STEP });
 });
 
 Deno.test("perfectLessonBonusEarned is true when every question was correct", () => {
@@ -93,8 +110,12 @@ Deno.test("heartsGate opens once the refill time has passed (resolveHeartsRefill
   assertEquals(heartsGate(0, 5_000, 5_000), { blocked: false });
 });
 
-Deno.test("heartsGate blocks a negative count and a missing timer with refillAt null", () => {
-  assertEquals(heartsGate(-1, null, 1_000), { blocked: true, refillAt: null });
+Deno.test("heartsGate blocks a negative count with no timer and starts the clock", () => {
+  assertEquals(heartsGate(-1, null, 1_000), { blocked: true, refillAt: 1_000 + HEART_REFILL_MS });
+});
+
+Deno.test("heartsGate stays blocked a moment before the first heart is due", () => {
+  assertEquals(heartsGate(0, 5_000, 4_999), { blocked: true, refillAt: 5_000 });
 });
 
 Deno.test("outOfHeartsBody is the contract shape with an ISO refillAt", () => {

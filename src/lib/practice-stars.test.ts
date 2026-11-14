@@ -5,6 +5,7 @@ import {
   starRuleLines,
   measureReply,
   starsForCall,
+  callCountsAsDone,
   type CallTally,
   type ReplyMeasure,
 } from "./practice-stars";
@@ -117,5 +118,15 @@ describe("starRuleLines: the copy follows the mode", () => {
     expect(starRuleLines("chat")[0][1]).toBe("Finish the chat");
     expect(starRuleLines("call")[0][1]).toBe("Finish the call");
     expect(starRuleLines("chat").slice(1)).toEqual(STAR_RULE_LINES.slice(1));
+  });
+});
+
+describe("callCountsAsDone", () => {
+  it("counts a finished call only when it earned at least one star", () => {
+    expect(callCountsAsDone(0)).toBe(false);
+    expect(callCountsAsDone(null)).toBe(false);
+    expect(callCountsAsDone(undefined)).toBe(false);
+    expect(callCountsAsDone(1)).toBe(true);
+    expect(callCountsAsDone(3)).toBe(true);
   });
 });

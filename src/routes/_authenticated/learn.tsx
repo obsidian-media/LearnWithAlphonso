@@ -245,7 +245,8 @@ function LearnPage() {
   const heartsRefillAt = useProgress((s) => s.heartsRefillAt);
   const xp = useProgress((s) => s.xp);
   const streak = useProgress((s) => s.streak);
-  const restoreHeartsLocal = useProgress((s) => s.restoreHeartsLocal);
+  const refillHeartsLocal = useProgress((s) => s.refillHeartsLocal);
+  const setHeartsLocal = useProgress((s) => s.setHeartsLocal);
   const spendXpForHeartLocal = useProgress((s) => s.spendXpForHeartLocal);
   const saveLevel = useServerFn(setCefrLevel);
   const loadProgress = useServerFn(fetchProgress);
@@ -278,8 +279,13 @@ function LearnPage() {
   }
 
   function handleRefillDue() {
-    restoreHeartsLocal();
-    void restoreHearts().catch(() => {});
+    // A heart came due: show it at once (the same rule the server applies), then take the server's answer, which
+    // also carries the clock for the next heart. With at least one heart back the dialog has done its job.
+    refillHeartsLocal();
+    if (useProgress.getState().hearts > 0) setShowHeartsModal(false);
+    void restoreHearts()
+      .then((res) => setHeartsLocal(res.hearts, res.heartsRefillAt ?? null))
+      .catch(() => {});
   }
 
   function handleBuyWithXp() {
