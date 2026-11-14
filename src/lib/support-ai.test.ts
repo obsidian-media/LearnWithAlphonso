@@ -14,6 +14,7 @@ import {
   type SupportTurn,
 } from "./support-ai.server";
 import type { SupportFacts } from "./support-facts.server";
+import { SUPPORT_LINK_IDS } from "./support-links";
 
 const FACTS: SupportFacts = {
   pro: { active: false, source: "none", until: null, unavailable: false },
@@ -225,6 +226,35 @@ describe("reply parsing", () => {
       parseSupportReply(JSON.stringify({ ...ok, handoff: true, reason: "sensitive_topic" }))!
         .reason,
     ).toBe("sensitive_topic");
+  });
+});
+
+describe("the optional app link in a reply", () => {
+  const base = { reply: "Tap Restore Purchases.", handoff: false, topic: "restore" };
+  it("keeps an allowed id", () => {
+    expect(parseSupportReply(JSON.stringify({ ...base, link: "subscription" }))?.link).toBe(
+      "subscription",
+    );
+  });
+  it("drops an unknown, non-string or URL id but keeps the reply", () => {
+    for (const link of ["https://evil.example", "nope", 3, ["settings"], null]) {
+      const r = parseSupportReply(JSON.stringify({ ...base, link }));
+      expect(r?.reply).toBe("Tap Restore Purchases.");
+      expect(r?.link).toBeNull();
+    }
+    expect(parseSupportReply(JSON.stringify(base))?.link).toBeNull();
+  });
+  it("the prompt names the allowed ids and says never a web address", () => {
+    const prompt = buildSupportSystemPrompt(FACTS);
+    for (const id of SUPPORT_LINK_IDS) expect(prompt).toContain(`"${id}"`);
+    expect(prompt).toContain("never a web address");
+  });
+  it("the model never sees the stored marker in an earlier answer", () => {
+    const msgs = buildSupportMessages(FACTS, [
+      { kind: "learner", body: "help" },
+      { kind: "ai", body: "Tap Restore.\n\n[[link:subscription]]" },
+    ]);
+    expect(msgs[2]!.content).toBe("Tap Restore.");
   });
 });
 
