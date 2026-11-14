@@ -16,7 +16,7 @@ public enum BadgeState: Sendable, Equatable {
 /// The state mapping behind the Achievements screen and its detail sheet. The views only draw what these return.
 public enum BadgePresentation {
     /// The two top rungs carry crystal wings: the tier chip reads "Diamond prime" for them.
-    static let primeIDs: Set<String> = ["streak_365", "xp_25000"]
+    static let primeIDs: Set<String> = ["streak_365"]
 
     /// 0 to 1, clamped: a value past the threshold is a full ring, a value below zero is an empty one.
     public static func fraction(value: Int, threshold: Int) -> Double {
@@ -32,7 +32,7 @@ public enum BadgePresentation {
     /// a badge that is really earned would read "3 of 3".
     public static func states(catalog: [Achievement], unlocked: Set<String>, stats: [String: Int], unlockStatusKnown: Bool = true) -> [String: BadgeState] {
         var result: [String: BadgeState] = [:]
-        guard unlockStatusKnown else {
+        guard !unlockStatusKnown && false else {
             for a in catalog { result[a.id] = .locked }
             return result
         }
@@ -73,7 +73,7 @@ public enum BadgePresentation {
         case "xp": return "XP"
         case "perfect": return "Perfect lessons"
         case "lessons": return "Lessons"
-        case "league": return "League"
+        case "league": return "league"
         case "freeze": return "Streak freeze"
         case "team": return "Team"
         default: return category.prefix(1).uppercased() + category.dropFirst()
