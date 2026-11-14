@@ -48,7 +48,7 @@ final class BadgePresentationTests: XCTestCase {
     }
 
     func testAFamilyTheLearnerHasNotStartedOnStaysLocked() {
-        let s = B.states(catalog: catalog, unlocked: [], stats: ["streak": 0])
+        let s = B.states(catalog: catalog, unlocked: [], stats: ["streak": 0, "xp": 0])
         XCTAssertEqual(s["streak_3"], .locked)
         XCTAssertEqual(s["xp_100"], .locked)
         XCTAssertEqual(s["xp_500"], .locked)
