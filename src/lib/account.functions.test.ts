@@ -507,7 +507,7 @@ describe("exportMyData, AI link markers", () => {
                 ]
               : [],
           error: null,
-          count: 2,
+          count: table === "support_messages" ? 2 : 0,
         },
         [],
       ),
