@@ -33,71 +33,137 @@ struct PodcastQuizSheet: View {
     }
 
     @Environment(\.alphonsoDS) private var ds
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// The radio studio: the room a podcast quiz is asked in.
+    private let roomID = "radio"
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
-                    switch run.phase {
-                    case .answering:
-                        if let question = run.current { questionView(question) }
-                    case .submitting:
-                        DSCard {
-                            HStack(spacing: AlphonsoDS.Space.s3) {
-                                ProgressView().tint(ds.choice)
-                                Text("Saving your answers…").dsText(.body).foregroundStyle(ds.inkSoft)
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                    case let .error(error):
-                        errorView(error)
-                    case .done:
-                        if let result = run.result { resultView(result) }
-                    case .empty:
+            Group {
+                switch run.phase {
+                case .answering:
+                    if let question = run.current { questionView(question) }
+                case .submitting:
+                    VStack(spacing: AlphonsoDS.Space.s3) {
+                        ProgressView().tint(ds.choice)
+                        Text("Saving your answers…").dsText(.body).foregroundStyle(ds.inkSoft)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(ds.surface)
+                case let .error(error):
+                    stateScreen { errorView(error) }
+                case .done:
+                    if let result = run.result { resultView(result) }
+                case .empty:
+                    stateScreen {
                         DSEmptyState(art: "Alphonso-thinking", title: "No quiz", message: PodcastQuizCopy.message(for: .notFound))
                     }
                 }
-                .padding(AlphonsoDS.Space.gutter)
             }
-            .background(ds.surface)
             .navigationTitle("Quiz: \(title)")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(run.phase == .done ? "Done" : "Leave") { dismiss() }
-                }
-            }
+            .toolbar(.hidden, for: .navigationBar)
         }
         .tint(ds.choice)
     }
 
-    // MARK: - Question
+    /// An error or empty card on the plain surface, with a way out.
+    private func stateScreen<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(spacing: AlphonsoDS.Space.s3) {
+            Spacer()
+            content()
+            Button("Leave") { dismiss() }.buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+            Spacer()
+        }
+        .padding(AlphonsoDS.Space.gutter)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(ds.surface)
+    }
+
+    // MARK: - Question (the lesson flow: the room, Alphonso's bubble, the lesson's answers and verdict sheet)
 
     private func questionView(_ question: PodcastQuizQuestion) -> some View {
-        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
-            Text(progressLine).dsText(.caption).foregroundStyle(ds.inkSoft)
-            DSProgressBar(
-                fraction: Double(run.index + (run.checked ? 1 : 0)) / Double(max(run.questions.count, 1)),
-                accessibilityLabel: "Quiz progress", accessibilityValue: progressLine)
-            Text(question.prompt).dsText(.question).foregroundStyle(ds.ink)
-                .fixedSize(horizontal: false, vertical: true)
-            VStack(spacing: AlphonsoDS.Space.s2) {
-                ForEach(Array(question.choices.enumerated()), id: \.offset) { index, choice in
-                    choiceRow(index: index, text: choice, answerIndex: question.answerIndex)
+        let right = run.selected == question.answerIndex
+        let expression = LessonStage.expression(picked: run.selected != nil, verdict: run.checked ? right : nil)
+        return ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    LessonRoomView(
+                        roomID: roomID, expression: expression, height: 300, alphonsoWidth: 250, topInset: 0
+                    ) {
+                        HStack(spacing: AlphonsoDS.Space.s3) {
+                            Button { dismiss() } label: {
+                                Image(systemName: "xmark").dsText(.headline).foregroundStyle(ds.ink)
+                                    .frame(width: AlphonsoDS.Space.minTouch, height: AlphonsoDS.Space.minTouch)
+                                    .background(Circle().fill(ds.card.opacity(0.9)))
+                            }
+                            .accessibilityLabel("Leave the quiz")
+                            DSProgressBar(
+                                fraction: Double(run.index + (run.checked ? 1 : 0)) / Double(max(run.questions.count, 1)),
+                                accessibilityLabel: "Quiz progress", accessibilityValue: progressLine)
+                        }
+                        .padding(.horizontal, AlphonsoDS.Space.s4)
+                        .padding(.top, AlphonsoDS.Space.s4)
+                    }
+                    VStack(spacing: AlphonsoDS.Space.s3) {
+                        AlphonsoBubbleView(label: progressLine, text: question.prompt, compact: true, isHeading: false)
+                            .padding(.top, -AlphonsoDS.Space.s8)
+                        VStack(spacing: AlphonsoDS.Space.s2) {
+                            ForEach(Array(question.choices.enumerated()), id: \.offset) { index, choice in
+                                LessonAnswerButton(
+                                    index: index, label: choice,
+                                    state: LessonAnswerState.of(
+                                        checked: run.checked, isPicked: run.selected == index,
+                                        isRight: index == question.answerIndex)
+                                ) { run.select(index) }
+                                .disabled(run.checked)
+                                .id(index == question.answerIndex ? "quiz-right" : "quiz-choice-\(index)")
+                            }
+                        }
+                    }
+                    .padding(.horizontal, AlphonsoDS.Space.gutter)
+                    .padding(.bottom, AlphonsoDS.Space.s4)
                 }
             }
-            Button {
-                if run.checked {
+            .background(ds.surface)
+            .ignoresSafeArea(edges: .top)
+            .onChange(of: run.checked) { _, isChecked in
+                guard isChecked else { return }
+                // After the verdict sheet has taken its room, so the right answer is not hidden behind it.
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(120))
+                    withAnimation(reduceMotion ? nil : .easeOut(duration: 0.3)) { proxy.scrollTo("quiz-right", anchor: .center) }
+                }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) { controls(question, right: right) }
+        }
+    }
+
+    /// Check, or the lesson's verdict sheet once checked: pinned below the scrolling question.
+    @ViewBuilder
+    private func controls(_ question: PodcastQuizQuestion, right: Bool) -> some View {
+        if !run.checked {
+            Button("Check") { run.check() }
+                .buttonStyle(LessonEdgeButtonStyle(variant: .primary))
+                .disabled(run.selected == nil)
+                .padding(.horizontal, AlphonsoDS.Space.gutter)
+                .padding(.top, AlphonsoDS.Space.s3)
+                .padding(.bottom, AlphonsoDS.Space.s2)
+                .background(ds.surface)
+        } else {
+            LessonVerdictSheet(
+                correct: right,
+                title: AnswerVerdict.title(correct: right),
+                xp: nil,
+                correctAnswer: question.choices[question.answerIndex],
+                continueTitle: run.isLastQuestion ? "Finish" : "Next",
+                onContinue: {
                     run.next()
                     if run.phase == .submitting { finishedAt = Date(); submit() }
-                } else {
-                    run.check()
                 }
-            } label: {
-                Text(run.checked ? (run.isLastQuestion ? "Finish" : "Next") : "Check")
-            }
-            .buttonStyle(.dsButton(.primary))
-            .disabled(run.selected == nil)
+            ) { EmptyView() }
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom))
         }
     }
 
@@ -107,48 +173,12 @@ struct PodcastQuizSheet: View {
         return line
     }
 
-    private func choiceRow(index: Int, text: String, answerIndex: Int) -> some View {
-        let isPicked = run.selected == index
-        let isRight = run.checked && index == answerIndex
-        let isWrong = run.checked && isPicked && index != answerIndex
-        let border: Color = isRight ? ds.rightInk : isWrong ? ds.wrongInk : isPicked ? ds.choice : ds.line
-        let fill: Color = isRight ? ds.rightTint : isWrong ? ds.wrongTint : isPicked ? ds.choiceTint : ds.card
-        return Button {
-            run.select(index)
-        } label: {
-            HStack(spacing: AlphonsoDS.Space.s3) {
-                Text("\(index + 1)").dsText(.footnote).foregroundStyle(border)
-                    .frame(width: AlphonsoDS.Space.s6, height: AlphonsoDS.Space.s6)
-                    .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.key, style: .continuous).strokeBorder(border, lineWidth: 2))
-                Text(text).dsText(.answer).foregroundStyle(ds.ink)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 0)
-                // The verdict is also text for VoiceOver, not only colour and an icon.
-                if isRight { Image(systemName: "checkmark").dsText(.footnote).foregroundStyle(ds.rightInk) }
-                if isWrong { Image(systemName: "xmark").dsText(.footnote).foregroundStyle(ds.wrongInk) }
-            }
-            .padding(AlphonsoDS.Space.s3)
-            .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(fill))
-            .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(border, lineWidth: 2))
-            // The whole card is the target. A plain-style button only hit-tests what it draws: the glyphs and the 1 pt
-            // stroke, never the padding or the Spacer. A short choice ("It means no") left the middle of its card
-            // dead, so a tap there selected nothing and Check stayed disabled.
-            .contentShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .disabled(run.checked)
-        .accessibilityAddTraits(isPicked ? .isSelected : [])
-        .accessibilityValue(isRight ? "Correct answer" : isWrong ? "Your answer, not correct" : "")
-    }
-
     // MARK: - Saving and result
 
     private func errorView(_ error: PodcastQuizError) -> some View {
-        // Only when sending the same answers again can help; a missing quiz or malformed answers cannot.
+        // The error's own message is the title. Only when sending the same answers again can help is there a retry.
         DSEmptyState(
-            art: "Alphonso-encouraging", title: "Couldn't save your answers", message: PodcastQuizCopy.message(for: error),
+            art: "Alphonso-encouraging", title: PodcastQuizCopy.message(for: error),
             actionTitle: error.isRetryable ? "Try again" : nil,
             action: error.isRetryable ? {
                 run.retry()
@@ -156,13 +186,26 @@ struct PodcastQuizSheet: View {
             } : nil)
     }
 
+    /// The lesson-complete layout: the room, the bubble with the score, then the XP line and what to review.
     private func resultView(_ result: PodcastQuizResult) -> some View {
-        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
-            DSCard {
-                Text("\(result.correct) of \(result.total) correct").dsText(.display).foregroundStyle(ds.brand)
-                Text(PodcastQuizCopy.xpLine(for: result)).dsText(.body).foregroundStyle(ds.inkSoft)
-            }
-            let missed = run.questions.filter { result.missedQuestionIDs.contains($0.id) }
+        let missed = run.questions.filter { result.missedQuestionIDs.contains($0.id) }
+        return LessonCompleteView(
+            roomID: roomID,
+            headline: "\(result.correct) of \(result.total) correct",
+            chips: [],
+            time: nil,
+            xpLines: [],
+            correct: result.correct,
+            total: result.total,
+            heartsBonus: nil,
+            achievements: [],
+            missed: [],
+            topInset: 0,
+            continueTitle: "Done",
+            onContinue: { dismiss() }
+        ) {
+            Text(PodcastQuizCopy.xpLine(for: result)).dsText(.body).foregroundStyle(ds.inkSoft)
+                .multilineTextAlignment(.center)
             if !missed.isEmpty {
                 DSOverline("To review")
                 DSCard(spacing: AlphonsoDS.Space.s2) {
