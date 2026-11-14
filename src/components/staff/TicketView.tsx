@@ -65,11 +65,11 @@ function Line({ m }: { m: TicketMessage }) {
   return (
     <div className={`grid max-w-[88%] gap-0.5 ${staff ? "justify-self-end" : ""}`}>
       <p
-        className={`flex flex-wrap items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-ds-ink-soft ${staff ? "justify-end" : ""}`}
+        className={`flex flex-wrap items-center gap-1.5 ds-type-overline text-ds-ink-soft ${staff ? "justify-end" : ""}`}
       >
         {who}
         {m.kind === "ai" ? (
-          <span className="rounded-lg bg-ds-sunk px-1.5 py-0.5 text-[11px]">AI</span>
+          <span className="ds-type-caption rounded-lg bg-ds-sunk px-1.5 py-0.5">AI</span>
         ) : null}
         <span className="font-semibold normal-case tracking-normal">
           {stampLabel(m.at)}
@@ -78,7 +78,7 @@ function Line({ m }: { m: TicketMessage }) {
       </p>
       {/* Plain text only: React escapes it, newlines are kept, nothing is rendered as HTML or markdown. */}
       <p
-        className={`whitespace-pre-wrap break-words rounded-2xl border px-3.5 py-2.5 text-[15px] leading-snug text-ds-ink ${
+        className={`whitespace-pre-wrap break-words rounded-2xl border ds-type-body px-3.5 py-2.5 text-ds-ink ${
           staff
             ? "border-ds-choice-edge bg-ds-choice-tint"
             : m.kind === "ai"
@@ -120,7 +120,7 @@ function Facts({ ticket }: { ticket: TicketViewData }) {
   ];
   return (
     <>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[13.5px]">
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 ds-type-footnote">
         {rows.map(([k, v]) => (
           <div key={k} className="contents">
             <dt className="font-semibold text-ds-ink-soft">{k}</dt>
