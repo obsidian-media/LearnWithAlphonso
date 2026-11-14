@@ -150,7 +150,7 @@ private struct HectorConversationView: View {
     private var saveWordHint: some View {
         if conversation.turns.contains(where: { $0.role == "assistant" }) {
             Text("Tap any word in Hector's reply to save it.")
-                .font(AlphonsoFont.sans(12))
+                .dsText(.caption)
                 .foregroundStyle(AlphonsoColor.inkSoft)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
@@ -166,7 +166,7 @@ private struct HectorConversationView: View {
 
             if let message = voice.failure?.userMessage() ?? notice {
                 Text(message)
-                    .font(AlphonsoFont.sans(13))
+                    .dsText(.footnote)
                     .foregroundStyle(AlphonsoColor.destructive)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
@@ -241,7 +241,7 @@ private struct HectorConversationView: View {
     private var callEndedView: some View {
         VStack(spacing: 14) {
             Text("Call ended")
-                .font(AlphonsoFont.display(24, weight: .bold))
+                .dsText(.title)
                 .foregroundStyle(AlphonsoColor.ink)
             Button("Call again") {
                 callEnded = false
@@ -267,7 +267,7 @@ private struct HectorConversationView: View {
                 }
             }
         ))
-        .font(AlphonsoFont.sans(14, weight: .medium))
+        .dsText(.footnote)
         .tint(AlphonsoColor.moss)
         .padding(.horizontal, AlphonsoSpacing.md)
         .padding(.bottom, 6)
@@ -303,10 +303,10 @@ private struct HectorConversationView: View {
             // Over the library the title sits on glass, never straight on the picture.
             VStack(alignment: .leading, spacing: 2) {
                 Text("Hector")
-                    .font(AlphonsoFont.display(30, weight: .bold))
+                    .dsText(.display)
                     .foregroundStyle(AlphonsoColor.ink)
                 Text(voice.isHandsFreeOn ? "Your tutor · hands-free on" : "Your tutor")
-                    .font(AlphonsoFont.sans(13))
+                    .dsText(.footnote)
                     .foregroundStyle(AlphonsoColor.inkSoft)
             }
             .padding(.horizontal, AlphonsoSpacing.md)
@@ -339,7 +339,7 @@ private struct HectorConversationView: View {
 
     private func heroPill<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         content()
-            .font(AlphonsoFont.sans(12, weight: .semiBold))
+            .dsText(.caption)
             .foregroundStyle(.white)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
@@ -395,7 +395,7 @@ private struct HectorConversationView: View {
             HStack(alignment: .bottom, spacing: 6) {
                 if turn.role == "user" { Spacer(minLength: 40) }
                 bubbleText(for: turn, isOpener: isOpener)
-                    .font(AlphonsoFont.sans(15))
+                    .dsText(.body)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
                     .background(
@@ -421,7 +421,7 @@ private struct HectorConversationView: View {
         return VStack(spacing: 8) {
             if let line = HandsFreeCopy.statusLine(status) {
                 Text(line)
-                    .font(AlphonsoFont.sans(13))
+                    .dsText(.footnote)
                     .foregroundStyle(AlphonsoColor.inkSoft)
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.updatesFrequently)
@@ -433,7 +433,7 @@ private struct HectorConversationView: View {
             .accessibilityIdentifier("hectorHandsFreePause")
             if voice.microphoneUnavailable || voice.recorderStartFailed {
                 Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
-                    .font(AlphonsoFont.sans(12))
+                    .dsText(.caption)
                     .foregroundStyle(AlphonsoColor.destructive)
                     .multilineTextAlignment(.center)
             }
@@ -460,7 +460,7 @@ private struct HectorConversationView: View {
                     }
                 }
             ))
-            .font(AlphonsoFont.sans(14, weight: .medium))
+            .dsText(.footnote)
             .tint(AlphonsoColor.moss)
             .padding(.horizontal, AlphonsoSpacing.md)
             .accessibilityIdentifier("hectorHandsFreeToggle")
@@ -487,11 +487,11 @@ private struct HectorConversationView: View {
                 }
                 .padding(.vertical, 10)
                 Text(voice.isRecording ? "Listening — release to send" : "Hold to talk")
-                    .font(AlphonsoFont.sans(12))
+                    .dsText(.caption)
                     .foregroundStyle(AlphonsoColor.inkSoft)
                 if voice.microphoneUnavailable || voice.recorderStartFailed {
                     Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
-                        .font(AlphonsoFont.sans(12))
+                        .dsText(.caption)
                         .foregroundStyle(AlphonsoColor.destructive)
                         .multilineTextAlignment(.center)
                 }

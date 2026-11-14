@@ -1,17 +1,15 @@
 {
   "$comment": "Raw colours and font sizes per file in view code, today. A count may only go down: lower it with bun scripts/design-raw-value-baseline.ts. Never raise one; use the design tokens instead.",
-  "total": 127,
+  "total": 89,
   "files": {
     "ios/LearnWithAlphonso/Sources/AcknowledgementsView.swift": 4,
     "ios/LearnWithAlphonso/Sources/AvatarColor.swift": 2,
     "ios/LearnWithAlphonso/Sources/GoogleSignInButton.swift": 3,
-    "ios/LearnWithAlphonso/Sources/HectorView.swift": 13,
     "ios/LearnWithAlphonso/Sources/LearnPathMap.swift": 1,
     "ios/LearnWithAlphonso/Sources/LessonPlayerView.swift": 22,
     "ios/LearnWithAlphonso/Sources/ListenView.swift": 8,
     "ios/LearnWithAlphonso/Sources/PlacementView.swift": 19,
     "ios/LearnWithAlphonso/Sources/PodcastMiniBar.swift": 9,
-    "ios/LearnWithAlphonso/Sources/PracticeCallView.swift": 25,
     "ios/LearnWithAlphonso/Sources/RootView.swift": 1,
     "ios/LearnWithAlphonso/Sources/SpeakQuestionCard.swift": 8,
     "ios/LearnWithAlphonso/Sources/StatusHeaderView.swift": 3,
