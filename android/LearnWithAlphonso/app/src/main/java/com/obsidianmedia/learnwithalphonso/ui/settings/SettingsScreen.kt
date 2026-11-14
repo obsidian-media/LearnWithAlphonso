@@ -1,5 +1,28 @@
 package com.obsidianmedia.learnwithalphonso.ui.settings
 
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import com.obsidianmedia.learnwithalphonso.ui.components.DsBackBar
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChipRow
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDivider
+import com.obsidianmedia.learnwithalphonso.ui.components.DsField
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassTitle
+import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
+import com.obsidianmedia.learnwithalphonso.ui.components.DsScene
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen
+import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.AvatarPickerDialog
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.ProfileAvatar
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonLightScope
@@ -24,7 +47,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -60,7 +82,7 @@ import kotlinx.coroutines.withContext
 /** Port of SettingsView.swift's theme, account and sign-out sections. Display name and avatar arrive with Plan 2. */
 @Composable
 fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val theme by container.themeManager.theme.collectAsState()
     val identityVm: IdentityViewModel = viewModel { IdentityViewModel(container.progressClient, container.session.userId) }
     val identity by identityVm.state.collectAsState()
@@ -82,68 +104,77 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
         exportBytes = null
     }
 
-    Column(Modifier.fillMaxSize().background(palette.surface)) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
-            Text("Settings", style = MaterialTheme.typography.titleMedium, color = palette.ink)
-        }
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Section("Profile", footer = "Your name and picture are visible to other learners on leaderboards, friends, and duels.") {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 8.dp)) {
-                    ProfileAvatar(identity.avatarSeed.ifEmpty { "a" }, identity.displayName, 40.dp)
-                    AlphonsoSecondaryButton("Change picture", onClick = { pickingAvatar = true }, fullWidth = false)
+    DsSceneScreen(DsScene.PROFILE) {
+        Column(Modifier.fillMaxWidth()) {
+            DsBackBar("Profile", onBack, showBack = false) { DsGlassChip("Done", onBack) }
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.gutter).padding(bottom = AlphonsoTokens.Space.s6),
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                DsGlassTitle("Settings")
+                Section("Profile", footer = "Your name and picture are visible to other learners on leaderboards, friends, and duels.") {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                        ProfileAvatar(identity.avatarSeed.ifEmpty { "a" }, identity.displayName, AlphonsoTokens.Space.s8 + AlphonsoTokens.Space.s4)
+                        DsCompactButton("Change picture", { pickingAvatar = true })
+                    }
+                    DsField(identity.displayName, identityVm::editName, "Display name")
+                    LessonEdgeButton("Save Name", EdgeVariant.PRIMARY, { identityVm.saveName() }, enabled = !identity.saving && identity.displayName.isNotBlank())
+                    identity.error?.let { Text(it, style = FootnoteType, color = ds.wrongInk) }
                 }
-                OutlinedTextField(value = identity.displayName, onValueChange = identityVm::editName, label = { Text("Display name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                RowButton("Save Name", enabled = !identity.saving && identity.displayName.isNotBlank()) { identityVm.saveName() }
-                identity.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
-            }
-            val entitlement by container.entitlements.state.collectAsState()
-            ProLabel.of(entitlement.isPro, entitlement.isGift)?.let { label ->
-                Section("Alphonso Pro") { Text(label, style = MaterialTheme.typography.bodyLarge, color = palette.ink) }
-            }
-            AiFeaturesSection(container)
-            ExplainSection(container)
-            AnalyticsSection()
-            AvatarSection(container)
-            SoundEffectsSection(container)
-            VoicesSection(container)
-            Section("Theme") {
-                AlphonsoThemeId.entries.forEach { id ->
-                    val p = AlphonsoPalettes.light.getValue(id)
-                    Row(
-                        Modifier.fillMaxWidth().clickable {
-                            container.themeManager.setTheme(id)
-                            container.session.userId?.let { uid -> scope.launch { runCatching { container.progressClient.updateProfileTheme(id.raw, uid) } } }
-                        }.padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Box(Modifier.size(28.dp).clip(CircleShape).background(p.surface)) { Box(Modifier.size(28.dp, 14.dp).background(p.moss)) }
-                        Text(id.displayName, style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier = Modifier.weight(1f))
-                        if (theme == id) Text("✓", color = palette.moss, fontWeight = FontWeight.Bold)
+                Section("Theme") {
+                    DsChipRow {
+                        AlphonsoThemeId.entries.forEach { id ->
+                            val swatch = AlphonsoTokens.colors(com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoPaletteId.forTheme(id), false).brand
+                            DsChip(
+                                if (theme == id) "${id.displayName} ✓" else id.displayName, theme == id,
+                                onClick = {
+                                    container.themeManager.setTheme(id)
+                                    container.session.userId?.let { uid -> scope.launch { runCatching { container.progressClient.updateProfileTheme(id.raw, uid) } } }
+                                },
+                                accessibilityText = if (theme == id) "${id.displayName}, selected" else id.displayName,
+                                leading = { Box(Modifier.size(AlphonsoTokens.Space.s4).clip(CircleShape).background(swatch)) },
+                            )
+                        }
                     }
                 }
-            }
-            Section("Account", footer = "Download the data in your Alphonso account, or permanently erase it.") {
-                RowButton("Export My Data", enabled = !busy) {
-                    scope.launch {
-                        busy = true; error = null
-                        val bytes = runCatching { withContext(Dispatchers.IO) { container.accountClient.exportMyData() } }.getOrNull()
-                        busy = false
-                        if (bytes == null) error = "Couldn't export your data. Try again."
-                        else { exportBytes = bytes; saveExport.launch("alphonso-my-data.json") }
-                    }
+                AvatarSection(container)
+                SoundEffectsSection(container)
+                val entitlement by container.entitlements.state.collectAsState()
+                ProLabel.of(entitlement.isPro, entitlement.isGift)?.let { label ->
+                    Section("Alphonso Pro") { Text(label, style = HeadlineType, color = ds.ink) }
                 }
-                RowButton("Delete My Account", enabled = !busy, destructive = true) { confirmText = ""; showDelete = true }
-                error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
-            }
-            Section("About") {
-                RowButton("Privacy Policy") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") }
-                RowButton("Terms of Use") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") }
-                RowButton("Support") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/support") }
-                RowButton("Manage subscription") { uriHandler.openUri("https://play.google.com/store/account/subscriptions") }
-            }
-            Section("Session") {
-                RowButton("Sign out", destructive = true) { container.pushRegistrar.onSignOut(); container.session.signOut() }
+                ExplainSection(container)
+                VoicesSection(container)
+                AnalyticsSection()
+                AiFeaturesSection(container)
+                Section("Account", footer = null) {
+                    Text("Download the data in your Alphonso account, or permanently erase it.", style = FootnoteType, color = ds.inkSoft)
+                    Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                        DsCompactButton("Export My Data", {
+                            scope.launch {
+                                busy = true; error = null
+                                val bytes = runCatching { withContext(Dispatchers.IO) { container.accountClient.exportMyData() } }.getOrNull()
+                                busy = false
+                                if (bytes == null) error = "Couldn't export your data. Try again."
+                                else { exportBytes = bytes; saveExport.launch("alphonso-my-data.json") }
+                            }
+                        }, enabled = !busy)
+                        DsCompactButton("Delete My Account", { confirmText = ""; showDelete = true }, enabled = !busy, danger = true)
+                    }
+                    error?.let { Text(it, style = FootnoteType, color = ds.wrongInk) }
+                }
+                DsCard(padding = AlphonsoTokens.Space.s2, spacing = 0.dp) {
+                    RowButton("Privacy Policy") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") }
+                    DsDivider()
+                    RowButton("Terms of Use") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") }
+                    DsDivider()
+                    RowButton("Support") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/support") }
+                    DsDivider()
+                    RowButton("Manage subscription") { uriHandler.openUri("https://play.google.com/store/account/subscriptions") }
+                }
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    DsCompactButton("Sign out", { container.pushRegistrar.onSignOut(); container.session.signOut() }, danger = true)
+                }
             }
         }
     }
@@ -174,7 +205,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                         showDelete = false
                         if (ok) container.session.signOut() else error = "Couldn't delete your account. Try again."
                     }
-                }) { Text("Delete Forever", color = palette.destructive) }
+                }) { Text("Delete Forever", color = ds.wrongInk) }
             },
             dismissButton = { TextButton(onClick = { showDelete = false }) { Text("Cancel") } },
         )
@@ -182,22 +213,24 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
 }
 
 @Composable
-internal fun Section(title: String, footer: String? = null, content: @Composable () -> Unit) {
-    val palette = AlphonsoColor.palette
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        AlphonsoSectionHeader(title)
-        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.parchment).padding(horizontal = 12.dp, vertical = 4.dp)) { content() }
-        footer?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft) }
+internal fun Section(title: String, footer: String? = null, content: @Composable ColumnScope.() -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+        DsOverline(title)
+        DsCard(spacing = AlphonsoTokens.Space.s2) {
+            content()
+            footer?.let { Text(it, style = CaptionType, color = ds.inkSoft) }
+        }
     }
 }
 
 @Composable
 private fun RowButton(label: String, enabled: Boolean = true, destructive: Boolean = false, onClick: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     Text(
         label,
-        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-        color = if (destructive) palette.destructive else palette.ink,
-        modifier = Modifier.fillMaxWidth().clickable(enabled = enabled, onClick = onClick).padding(vertical = 12.dp),
+        style = HeadlineType,
+        color = if (destructive) ds.wrongInk else ds.ink,
+        modifier = Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clickable(enabled = enabled, onClick = onClick).padding(AlphonsoTokens.Space.s3).wrapContentHeight(Alignment.CenterVertically),
     )
 }

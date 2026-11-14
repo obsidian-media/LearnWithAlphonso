@@ -1,16 +1,31 @@
 package com.obsidianmedia.learnwithalphonso.ui.friends
 
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.semantics.semantics
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChipRow
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPill
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPillTone
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSwitch
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,11 +64,9 @@ import com.obsidianmedia.learnwithalphonso.core.net.getMyBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.requestBuddy
 import com.obsidianmedia.learnwithalphonso.core.net.respondBuddyRequest
 import com.obsidianmedia.learnwithalphonso.core.net.sendBuddyMessage
-import com.obsidianmedia.learnwithalphonso.ui.league.SectionCard
 import com.obsidianmedia.learnwithalphonso.ui.social.BlockConfirmDialog
 import com.obsidianmedia.learnwithalphonso.ui.social.SocialSafetyMenu
 import com.obsidianmedia.learnwithalphonso.ui.social.SocialTarget
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,14 +103,14 @@ data class BuddyUiState(
  * The Friends screen's study buddy section (study together Phase 4; web: src/components/BuddyCard.tsx, iOS:
  * BuddySectionView.swift). Only the newest load is applied; a cancelled load is rethrown, never reported as a failure.
  */
-class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
-    private val _state = MutableStateFlow(BuddyUiState())
+class BuddyViewModel(private val client: ProgressSyncClient, private val seed: BuddyUiState? = null) : ViewModel() {
+    private val _state = MutableStateFlow(seed ?: BuddyUiState())
     val state: StateFlow<BuddyUiState> = _state.asStateFlow()
     private var loadGeneration = 0
 
     init { load() }
 
-    fun load() { viewModelScope.launch { reload() } }
+    fun load() { if (seed == null) viewModelScope.launch { reload() } }
 
     /** True when this reload's result was applied (it was still the newest one). */
     private suspend fun reload(): Boolean {
@@ -168,7 +181,7 @@ class BuddyViewModel(private val client: ProgressSyncClient) : ViewModel() {
 @Composable
 fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, knownAgeRange: String?, onReport: (SocialTarget) -> Unit) {
     val asksAge = BuddyCopy.needsAgeConfirmation(knownAgeRange)
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     var confirmingEnd by remember { mutableStateOf(false) }
     var choosingPreset by remember { mutableStateOf(false) }
@@ -188,27 +201,25 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, knownAgeRang
         }
     }
 
-    SectionCard("Study buddy") {
+    DsCard {
         val buddy = state.buddy
         when {
             !state.hasLoaded && !state.loadFailed ->
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) }
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) }
             state.loadFailed -> {
-                Text(BuddyCopy.LOAD_FAILED, color = palette.ink)
-                TextButton(onClick = { vm.load() }) { Text("Try again", color = palette.moss) }
+                Text(BuddyCopy.LOAD_FAILED, style = BodyType, color = ds.ink)
+                DsCompactButton("Try again", { vm.load() })
             }
             buddy != null -> {
                 Row(verticalAlignment = Alignment.Top) {
-                    Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(buddy.buddyName, style = MaterialTheme.typography.titleMedium, color = palette.ink, modifier = Modifier.weight(1f))
-                            if (buddy.isMatch) {
-                                Text(BuddyCopy.MATCHED_LABEL, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
-                            }
+                    Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                            Text(buddy.buddyName, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f, fill = false))
+                            if (buddy.isMatch) DsPill(BuddyCopy.MATCHED_LABEL, DsPillTone.NEUTRAL)
                         }
-                        Text(BuddyCopy.weekLine(buddy.myCount, buddy.buddyCount, buddy.goal), color = palette.ink)
-                        Text(BuddyCopy.streakLine(buddy.streakWeeks), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                        Text(BuddyCopy.graceLine(buddy.graceAvailable), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                        Text(BuddyCopy.weekLine(buddy.myCount, buddy.buddyCount, buddy.goal), style = BodyType, color = ds.ink)
+                        Text(BuddyCopy.streakLine(buddy.streakWeeks), style = FootnoteType, color = ds.inkSoft)
+                        Text(BuddyCopy.graceLine(buddy.graceAvailable), style = FootnoteType, color = ds.inkSoft)
                     }
                     if (buddy.isMatch) {
                         // A matched buddy is not a friend: block and report live right here (guideline 1.2), outside the
@@ -222,9 +233,7 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, knownAgeRang
                 }
                 if (buddy.canSendPresets) {
                     Box {
-                        TextButton(onClick = { choosingPreset = true }, enabled = !state.busy) {
-                            Text("Send ${buddy.buddyName} a message", color = palette.moss)
-                        }
+                        DsCompactButton("Send ${buddy.buddyName} a message", { choosingPreset = true }, enabled = !state.busy)
                         DropdownMenu(expanded = choosingPreset, onDismissRequest = { choosingPreset = false }) {
                             BuddyCopy.PRESETS.forEach { preset ->
                                 DropdownMenuItem(text = { Text(preset.text) }, onClick = { choosingPreset = false; vm.send(preset.id) })
@@ -233,28 +242,28 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, knownAgeRang
                     }
                 } else {
                     // Matching is switched off; the server refuses this pair's presets (matching_paused).
-                    Text(BuddyCopy.statusMessage("matching_paused"), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                    Text(BuddyCopy.statusMessage("matching_paused"), style = FootnoteType, color = ds.inkSoft)
                 }
                 state.messages.takeLast(10).forEach { m ->
                     BuddyCopy.messageLine(m.isMine, buddy.buddyName, m.presetId)?.let { line ->
-                        Text(line, style = MaterialTheme.typography.bodySmall, color = palette.ink)
+                        Text(line, style = FootnoteType, color = ds.ink)
                     }
                 }
-                TextButton(onClick = { confirmingEnd = true }, enabled = !state.busy) { Text("End study buddy", color = palette.destructive) }
+                DsCompactButton("End study buddy", { confirmingEnd = true }, enabled = !state.busy, danger = true)
             }
             else -> {
-                Text(BuddyCopy.INTRO, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                Text(BuddyCopy.INTRO, style = FootnoteType, color = ds.inkSoft)
                 state.requests.forEach { r ->
                     if (r.direction == BuddyRequest.Direction.INCOMING) {
-                        Text(BuddyCopy.incomingLine(r.otherName), color = palette.ink)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton(onClick = { vm.respond(r, accept = true) }, enabled = !state.busy) { Text("Accept", color = palette.moss) }
-                            TextButton(onClick = { vm.respond(r, accept = false) }, enabled = !state.busy) { Text("Decline", color = palette.inkSoft) }
+                        Text(BuddyCopy.incomingLine(r.otherName), style = BodyType, color = ds.ink)
+                        Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                            DsCompactButton("Accept", { vm.respond(r, accept = true) }, primary = true, enabled = !state.busy)
+                            DsCompactButton("Decline", { vm.respond(r, accept = false) }, enabled = !state.busy)
                         }
                     } else {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(BuddyCopy.outgoingLine(r.otherName), color = palette.ink, modifier = Modifier.weight(1f))
-                            TextButton(onClick = { vm.cancel(r) }, enabled = !state.busy) { Text("Cancel request", color = palette.inkSoft) }
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                            Text(BuddyCopy.outgoingLine(r.otherName), style = BodyType, color = ds.ink, modifier = Modifier.weight(1f))
+                            DsCompactButton("Cancel request", { vm.cancel(r) }, enabled = !state.busy)
                         }
                     }
                 }
@@ -263,32 +272,33 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, knownAgeRang
                 // A local copy: BuddyPool lives in :core, and Kotlin does not smart-cast another module's properties.
                 val waitingCourse = pool?.takeIf { it.waiting }?.course
                 if (pool != null && waitingCourse != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(BuddyCopy.waitingLine(waitingCourse), color = palette.ink, modifier = Modifier.weight(1f))
-                        TextButton(onClick = { vm.leave() }, enabled = !state.busy) { Text(BuddyCopy.STOP_LOOKING, color = palette.inkSoft) }
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                        Text(BuddyCopy.waitingLine(waitingCourse), style = BodyType, color = ds.ink, modifier = Modifier.weight(1f))
+                        DsCompactButton(BuddyCopy.STOP_LOOKING, { vm.leave() }, enabled = !state.busy)
                     }
                 } else if (pool != null && pool.matchingEnabled && pool.courses.isNotEmpty()) {
-                    Text(BuddyCopy.POOL_INTRO, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                    if (asksAge) Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(checked = ageConfirmed, onCheckedChange = { ageConfirmed = it })
-                        Text(BuddyCopy.AGE_CONFIRM, color = palette.ink)
+                    Text(BuddyCopy.POOL_INTRO, style = FootnoteType, color = ds.inkSoft)
+                    if (asksAge) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).semantics(mergeDescendants = true) { }) {
+                        Text(BuddyCopy.AGE_CONFIRM, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+                        DsSwitch(ageConfirmed, { ageConfirmed = it })
                     }
-                    pool.courses.forEach { course ->
-                        TextButton(onClick = { vm.join(course, !asksAge || ageConfirmed) }, enabled = !state.busy && (!asksAge || ageConfirmed)) {
-                            Text(BuddyCopy.findButton(course), color = palette.moss)
-                        }
+                    pool.courses.forEachIndexed { index, course ->
+                        LessonEdgeButton(
+                            BuddyCopy.findButton(course), if (index == 0) EdgeVariant.PRIMARY else EdgeVariant.SECONDARY,
+                            { vm.join(course, !asksAge || ageConfirmed) }, enabled = !state.busy && (!asksAge || ageConfirmed),
+                        )
                     }
                 }
                 val askable = state.askable(friends)
                 if (askable.isNotEmpty()) {
-                    Text("Ask a friend to be your study buddy", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
-                    askable.forEach { f ->
-                        TextButton(onClick = { vm.ask(f.userId) }, enabled = !state.busy) { Text(f.displayName, color = palette.moss) }
+                    Text("Ask a friend to be your study buddy", style = CaptionType, color = ds.inkSoft)
+                    DsChipRow {
+                        askable.forEach { f -> DsChip(f.displayName, false, onClick = { vm.ask(f.userId) }) }
                     }
                 }
             }
         }
-        state.message?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft) }
+        state.message?.let { Text(it, style = FootnoteType, color = ds.inkSoft) }
     }
 
     blockTarget?.let { target ->
@@ -305,7 +315,7 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, knownAgeRang
             onDismissRequest = { confirmingEnd = false },
             title = { Text(BuddyCopy.endConfirm(state.buddy?.buddyName ?: "your buddy")) },
             confirmButton = {
-                TextButton(onClick = { confirmingEnd = false; vm.end() }) { Text("Yes, end", color = palette.destructive) }
+                TextButton(onClick = { confirmingEnd = false; vm.end() }) { Text("Yes, end", color = ds.wrongInk) }
             },
             dismissButton = { TextButton(onClick = { confirmingEnd = false }) { Text("Keep") } },
         )

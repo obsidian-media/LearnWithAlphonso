@@ -152,6 +152,8 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
         when {
             // Before everything else: a blocked device shows only the stop screen, signed in or not.
             firstRunBlocked -> LessonLightScope(themeIdForFirstRun, paletteIdForFirstRun) { Under13StopScreen() }
+            // DEBUG only: one redesigned screen over made-up data, for screenshots (ScreenHarness).
+            harness != null && BuildConfig.DEBUG && harness.startsWith("screen:") -> ScreenHarness(harness.removePrefix("screen:"), container)
             // DEBUG only: one first-run screen with a made-up learner, for screenshots (FirstRunHarness).
             harness != null && BuildConfig.DEBUG -> LessonLightScope(themeIdForFirstRun, paletteIdForFirstRun) { FirstRunHarness(harness, container) }
             // Replaces the app rather than covering it, so TalkBack cannot reach anything underneath.

@@ -57,7 +57,8 @@ class LeaderboardViewModelTest {
         val s = server(rows("bob", me))
         val v = vm(s, prefs)
         awaitTrue("toast") { v.state.value.toast == "Someone passed you on the leaderboard!" }
-        assertEquals(listOf("bob", me), LeaderboardSnapshotCache(prefs).lastSnapshot!!.map { it.userId })
+        // The toast and the cache write are separate steps in the view-model: wait for the write instead of assuming it already happened.
+        awaitTrue("cache replaced") { LeaderboardSnapshotCache(prefs).lastSnapshot?.map { it.userId } == listOf("bob", me) }
         v.clearToast()
         v.checkForOvertake()
         awaitTrue("second check ran") { s.seen.count { it.path.endsWith("get_leaderboard") } >= 3 }
@@ -102,10 +103,26 @@ class LeaderboardViewModelTest {
         assertEquals(42, r.lastWeekXp)
         assertEquals(2, r.currentRank)
         assertEquals("silver", r.promotedToTier)
-        val activity = s.seen.first { it.path.endsWith("activity_days") }
+        // The hero also reads this week's activity when the screen opens; the recap is the request for the week before.
+        val activity = s.seen.first { it.path.endsWith("activity_days") && it.queryAll("day").firstOrNull() == "gte.2026-09-21" }
         assertEquals(listOf("gte.2026-09-21", "lt.2026-09-28"), activity.queryAll("day"))
         v.loadRecap()
         awaitTrue("second recap") { !v.recap.value.isLoading }
         assertNull(v.recap.value.promotedToTier)
+    }
+
+    @Test
+    fun `the hero shows the cached tier and this weeks XP from the learners own activity`() = runBlocking {
+        val prefs = MemoryPrefs()
+        LeagueTierCache(prefs).lastKnownTier = "ruby"
+        val s = server(rows("bob", me))
+        val v = vm(s, prefs)
+        awaitTrue("hero") { v.state.value.myWeekXp != null }
+        assertEquals("ruby", v.state.value.leagueTier)
+        assertEquals(42, v.state.value.myWeekXp)
+        val activity = s.seen.first { it.path.endsWith("activity_days") }
+        // This Monday up to the next one: the week the board is in, whatever scope or period it shows.
+        assertEquals(2, activity.queryAll("day").size)
+        assertEquals("gte.2026-09-28", activity.queryAll("day").first())
     }
 }

@@ -2,6 +2,7 @@ package com.obsidianmedia.learnwithalphonso.ui.friends
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.obsidianmedia.learnwithalphonso.core.logic.DuelsPresentation
 import com.obsidianmedia.learnwithalphonso.core.net.Duel
 import com.obsidianmedia.learnwithalphonso.core.net.FriendProgress
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
@@ -28,8 +29,8 @@ data class DuelsUiState(
 )
 
 /** Port of DuelsView.swift. */
-class DuelsViewModel(private val client: ProgressSyncClient, private val userId: String?) : ViewModel() {
-    private val _state = MutableStateFlow(DuelsUiState())
+class DuelsViewModel(private val client: ProgressSyncClient, private val userId: String?, private val seed: DuelsUiState? = null) : ViewModel() {
+    private val _state = MutableStateFlow(seed ?: DuelsUiState())
     val state: StateFlow<DuelsUiState> = _state.asStateFlow()
 
     val pending: List<Duel> get() = _state.value.duels.filter { it.status == "pending" && it.opponentId == userId }
@@ -39,6 +40,7 @@ class DuelsViewModel(private val client: ProgressSyncClient, private val userId:
     init { loadAll() }
 
     fun loadAll() {
+        if (seed != null) return
         viewModelScope.launch {
             val duels = runCatching { client.fetchMyDuels() }.getOrDefault(emptyList())
             val friends = runCatching { client.fetchFriendsProgress() }.getOrDefault(emptyList())
@@ -96,10 +98,7 @@ class DuelsViewModel(private val client: ProgressSyncClient, private val userId:
     fun myDelta(d: Duel): Int = if (d.challengerId == userId) d.challengerXpNow - d.challengerXpStart else d.opponentXpNow - d.opponentXpStart
     fun theirDelta(d: Duel): Int = if (d.challengerId == userId) d.opponentXpNow - d.opponentXpStart else d.challengerXpNow - d.challengerXpStart
 
-    fun resultLabel(d: Duel): String = when {
-        d.status == "declined" -> "Declined"
-        d.winnerId == userId -> "You won"
-        d.winnerId != null -> "You lost"
-        else -> "Tied"
-    }
+    fun result(d: Duel): DuelsPresentation.Result = DuelsPresentation.result(d.status, d.winnerId, userId)
+
+    fun resultLabel(d: Duel): String = result(d).label
 }

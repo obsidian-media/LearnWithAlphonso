@@ -45,7 +45,8 @@ class AlphonsoTokensSyncTest {
 
     @Test
     fun `space, radius, edge and durations match the JSON`() {
-        assertEquals(ints("space"), AlphonsoTokens.Space.values)
+        // Everything but one entry is the shared scale; Android's smallest touch target is 48 dp, not the shared 44 (a platform rule in the generator).
+        assertEquals(ints("space") + ("minTouch" to 48), AlphonsoTokens.Space.values)
         assertEquals(ints("radius"), AlphonsoTokens.Radius.values)
         assertEquals(ints("edge"), AlphonsoTokens.Edge.values)
         val durations = json.getValue("motion").jsonObject.getValue("duration").jsonObject.mapValues { it.value.jsonPrimitive.int }

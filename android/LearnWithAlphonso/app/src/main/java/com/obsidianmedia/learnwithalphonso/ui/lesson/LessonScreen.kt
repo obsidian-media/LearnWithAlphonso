@@ -1,5 +1,24 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.NumeralType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.audio.rememberHaptics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -382,7 +401,7 @@ private fun OfflineFinishScreen(message: String, estimate: Int, correct: Int, to
  * because review and practice never cost hearts. Every path leads somewhere.
  */
 @Composable
-private fun OutOfHeartsContent(
+internal fun OutOfHeartsContent(
     model: OutOfHeartsModel,
     isOnline: Boolean,
     buying: Boolean,
@@ -391,7 +410,7 @@ private fun OutOfHeartsContent(
     onRefillDue: () -> Unit,
     onReviewInstead: () -> Unit,
 ) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(model) {
         var refillHandled = false
@@ -404,22 +423,45 @@ private fun OutOfHeartsContent(
             delay(1_000)
         }
     }
-    Column(
-        Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-    ) {
-        Text("💔", style = MaterialTheme.typography.displaySmall, modifier = Modifier.clearAndSetSemantics {})
-        Text(OutOfHeartsModel.TITLE, style = MaterialTheme.typography.headlineSmall, color = palette.ink)
-        Text(
-            model.message(now), style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center,
-            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-        )
-        if (model.showsBuy(isOnline)) {
-            if (buying) CircularProgressIndicator(color = palette.moss)
-            else AlphonsoPrimaryButton(OutOfHeartsModel.BUY_TITLE, onClick = onBuy)
+    val pose = rememberFirstRunAsset("poses/alphonso-hearts-calm.webp")
+    // The lesson behind it, dimmed; the sheet rises from the foot with Alphonso calm on top.
+    Box(Modifier.fillMaxSize().background(ds.heroB.copy(alpha = 0.45f)), contentAlignment = Alignment.BottomCenter) {
+        val shape = RoundedCornerShape(topStart = AlphonsoTokens.Radius.sheet, topEnd = AlphonsoTokens.Radius.sheet)
+        Column(
+            Modifier.fillMaxWidth().clip(shape).background(ds.surface).verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+        ) {
+            pose?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 3).clearAndSetSemantics { }) }
+            Text(OutOfHeartsModel.TITLE, style = DisplayType, color = ds.brand, modifier = Modifier.semantics { heading() })
+            // The model's sentence, with the countdown in the heart colour so it reads at a glance.
+            val message = model.message(now)
+            val countdown = model.countdown(now)
+            val annotated = buildAnnotatedString {
+                val at = countdown?.let { message.indexOf(it) } ?: -1
+                if (countdown == null || at < 0) append(message) else {
+                    append(message.substring(0, at))
+                    withStyle(SpanStyle(color = ds.heart, fontWeight = FontWeight.Bold)) { append(countdown) }
+                    append(message.substring(at + countdown.length))
+                }
+            }
+            Text(
+                annotated, style = BodyType, color = ds.inkSoft, textAlign = TextAlign.Center,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
+                modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "${model.hearts} hearts" },
+            ) {
+                Icon(painterResource(R.drawable.ds_heart_solid), null, tint = ds.heart, modifier = Modifier.size(AlphonsoTokens.Space.s12 + AlphonsoTokens.Space.s1))
+                Text("${model.hearts}", style = NumeralType, color = ds.heart, modifier = Modifier.clearAndSetSemantics { })
+            }
+            if (model.showsBuy(isOnline)) {
+                if (buying) CircularProgressIndicator(color = ds.choice)
+                else LessonEdgeButton(OutOfHeartsModel.BUY_TITLE, EdgeVariant.PRIMARY, onBuy)
+            }
+            buyMessage?.let { Text(it, style = CaptionType, color = ds.wrongInk, textAlign = TextAlign.Center) }
+            LessonEdgeButton(OutOfHeartsModel.REVIEW_INSTEAD_TITLE, EdgeVariant.SECONDARY, onReviewInstead)
         }
-        buyMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, textAlign = TextAlign.Center) }
-        TextButton(onClick = onReviewInstead) { Text(OutOfHeartsModel.REVIEW_INSTEAD_TITLE, color = palette.moss) }
     }
 }
