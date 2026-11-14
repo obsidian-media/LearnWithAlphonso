@@ -22,6 +22,14 @@ export const CONSOLE_FUNCTIONS: Readonly<Record<string, readonly string[]>> = {
   ],
   "staff-admin.functions.ts": ["staffListStaff", "staffAddStaff", "staffUpdateStaff"],
   "staff-audit.functions.ts": ["staffListAudit"],
+  "staff-support.functions.ts": [
+    "staffListTickets",
+    "staffGetTicket",
+    "staffReplyTicket",
+    "staffAssignTicket",
+    "staffSetTicketStatus",
+    "staffAddTicketNote",
+  ],
 };
 
 /** The staff functions that only read. Every other staff function is in STAFF_WRITE_FUNCTIONS (staff-audit.server.ts). */
@@ -30,4 +38,6 @@ export const STAFF_READ_FUNCTIONS = [
   "staffGetUser",
   "staffListStaff",
   "staffListAudit",
+  "staffListTickets",
+  "staffGetTicket",
 ] as const;

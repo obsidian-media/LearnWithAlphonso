@@ -39,7 +39,12 @@ const readers = () =>
 describe("every reader of support_messages.body goes through the link parser", () => {
   it("finds the known readers (the scan is not empty)", () => {
     expect(readers().map((f) => path.basename(f))).toEqual(
-      expect.arrayContaining(["account.functions.ts", "support-chat-runtime.server.ts"]),
+      expect.arrayContaining([
+        "account.functions.ts",
+        "support-chat-runtime.server.ts",
+        // The staff inbox reads ticket bodies (milestone 3) and strips the marker itself.
+        "staff-support.server.ts",
+      ]),
     );
   });
   it("each one uses a sanitizer or is a named downstream-sanitised exception", () => {

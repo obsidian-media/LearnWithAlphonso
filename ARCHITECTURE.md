@@ -2564,3 +2564,7 @@ test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   `/api/stt` passes it to Deepgram's `language` parameter, so French and
   Spanish conversations are transcribed in their own language. Builds from
   before the change (and Android) still omit `course` and get English.
+
+### Support inbox (support chat, milestone 3)
+
+Staff answer from `/support` in the admin console. Server functions are in `src/lib/staff-support.functions.ts` (reads `staffListTickets`, `staffGetTicket` under `support.read`; writes `staffReplyTicket`, `staffSetTicketStatus`, `staffAddTicketNote` under `support.reply`, `staffAssignTicket` under `support.assign`, plus `staff.manage` to hand a ticket to someone else), registered in `console-registry.ts` and `staff-audit.server.ts`. The database side is `20261117100200_support_staff_actions.sql`: `staff_support_inbox` (list, counts, paging; no learner name or email) and four write functions that each write their `staff_audit_log` row (`support.reply`, `support.assign`, `support.status`, `support.note`) in the same transaction, with ids and the status change only, never message text. Opening a ticket records a `user.view` row for the learner BEFORE the data is returned. Ticket bodies are read in `src/lib/staff-support.server.ts` through `stripSupportLink` (`support-body-guard.test.ts` covers it). Screens: `TicketList.tsx`, `TicketView.tsx`, `admin/routes/support.tsx`, `admin/routes/support_.$id.tsx`.

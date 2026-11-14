@@ -649,7 +649,10 @@ describe("support chat migrations against the whole migration history", () => {
 
   it("apply after every older migration, and change no older quota limit (the restate-by-copy check)", async () => {
     const { buildFullSchema } = await import("./__testutils__/full-schema");
-    const history = await buildFullSchema({ skip: MINE });
+    // The milestone 3 staff functions depend on these two, so they wait until MINE has been applied.
+    const history = await buildFullSchema({
+      skip: [...MINE, "20261117100200_support_staff_actions.sql"],
+    });
     try {
       const limits = async () => {
         const out: Record<string, unknown> = {};

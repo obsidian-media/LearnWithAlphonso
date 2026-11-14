@@ -16,9 +16,44 @@ describe("the console navigation points at real screens", () => {
   });
 
   it("the learner page and the new screens are in the generated route tree", () => {
-    for (const path of ["/users/$id", "/staff", "/audit", "/users", "/numbers", "/support"]) {
+    for (const path of [
+      "/users/$id",
+      "/staff",
+      "/audit",
+      "/users",
+      "/numbers",
+      "/support",
+      "/support/$id",
+    ]) {
       expect(tree, path).toContain(`'${path}'`);
     }
+  });
+});
+
+describe("the support inbox screens", () => {
+  it("the inbox and the ticket page are separate pages gated by support.read and read through staff server functions", () => {
+    const list = readFileSync("admin/routes/support.tsx", "utf8");
+    const one = readFileSync("admin/routes/support_.$id.tsx", "utf8");
+    for (const src of [list, one]) {
+      expect(src).toContain('"support.read"');
+      expect(src).not.toMatch(/supabaseAdmin|from\(["']support_/);
+    }
+    expect(list).toContain("staffListTickets");
+    for (const fn of [
+      "staffGetTicket",
+      "staffReplyTicket",
+      "staffAssignTicket",
+      "staffSetTicketStatus",
+      "staffAddTicketNote",
+    ]) {
+      expect(one, fn).toContain(fn);
+    }
+    // The ticket page must not nest under the inbox (support.tsx has no Outlet).
+    expect(tree).toContain("path: '/support/$id'");
+    expect(tree).toContain("getParentRoute: () => rootRouteImport");
+    expect(tree).not.toMatch(
+      /SupportIdRoute = SupportIdRouteImport\.update\(\{[^}]*getParentRoute: \(\) => SupportRoute/,
+    );
   });
 });
 

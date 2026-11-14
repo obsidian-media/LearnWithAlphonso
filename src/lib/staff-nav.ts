@@ -15,7 +15,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     soon: "coming in phase 3",
   },
   { key: "users", label: "Users", to: "/users", scope: "users.read" },
-  { key: "support", label: "Support", to: "/support", scope: "support.read", soon: "phase 2" },
+  { key: "support", label: "Support", to: "/support", scope: "support.read" },
   { key: "reports", label: "Reports", to: "/reports", scope: "reports.manage" },
   { key: "podcasts", label: "Podcasts", to: "/folders", scope: "podcasts.manage" },
   { key: "staff", label: "Staff", to: "/staff", scope: "staff.manage" },
