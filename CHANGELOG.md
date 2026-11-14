@@ -10,7 +10,7 @@ works now_.
 
 ## Unreleased
 
-### Device-check fixes (build 64)
+### Device-check fixes (#504, merged 2026-11-13; goes out in build 64)
 
 Owner device check of builds 62 and 63.
 
@@ -18,6 +18,24 @@ Owner device check of builds 62 and 63.
 - **"Report this response" unreadable on iOS.** The system `confirmationDialog` draws accent-tinted text on iOS 26 glass. All eight dialogs (reports, block, remove friend, end buddy, kick) now use the app's own `alphonsoChoiceDialog` sheet (`AlphonsoChoiceDialog.swift`), drawn with design tokens. `confirmationDialog` is forbidden by the guard.
 - **iOS Learn and Profile scene missing.** `.background(ds.surface)` was applied before `.screenScene(...)`; a later `.background` sits behind an earlier one, so the flat surface covered the scene (since #473). The scene is now applied first. Guarded. Web and Android Learn stay flat by design (the approved round 6.1 mock has no full-screen scene).
 - **Goal on the path.** MY PATH starts with a goal card on web, iOS and Android: target level and date, lessons a week and the status, from the server's numbers (`pathGoalCard` in `src/lib/path-goal-card.ts`, `PathGoalCard` in the Kit and in `:core`), opening the goal planner; with no goal it is a "Set a goal" invitation. The iOS MY PATH rows no longer draw the List's near-black default row colour; they use design tokens.
+
+### Friend invites and social flows (#505, merged 2026-11-13; no migration)
+
+- **Invite links survive sign-in on web.** The signed-out guard in `src/routes/_authenticated/route.tsx` now sends the visitor to `/auth` with the page they asked for as `next` (re-vetted by `safeNextPath`); an `/invite/...` link opens the sign-up form. Before, the link was dropped at the door and the friendship never happened.
+- **Universal Links on iOS.** `GET /.well-known/apple-app-site-association` is served by the web app (`src/lib/apple-app-site-association.ts`; team ID plus bundle ID, both public) and lists only `/invite/*`; every other page stays in the browser. The app gets the `com.apple.developer.associated-domains` entitlement (`applinks:learn.alphonsoecosystem.app`) in both the Debug and Release entitlements and in `project.yml`. Opening a link shows an "Add {name} as a friend?" sheet (`FriendInviteAccept.swift`; the name comes from `get_friend_invite_preview`, the only thing that can look a code up, through `ProgressSyncClient.getFriendInvitePreview`). **A signed build fails without the Associated Domains capability on the App ID**, so enable it (and regenerate the provisioning profile) before the next iOS build.
+- **Android:** the friend-code field accepts a pasted invite link as well as a bare code (`InviteLink.codeFromEntry`). Android App Links (`assetlinks.json`) still wait on the Play app-signing key's SHA-256.
+- **Verified working:** study buddy and duels. Learner-to-learner calls never existed, so there is nothing to fix there.
+
+### Polish: Hector tabs, league flags, brand mark (#506, merged 2026-11-13; no migration)
+
+- **Web Hector keeps the tab bar** (`AppShell.tsx`, `hector.tsx`), so the learner can leave without a special exit.
+- **League flags** show on web, iOS and Android only for learners who turned their flag on: `profiles.country` is cleared unless they did, so a row's country being present is the consent signal (`src/lib/country-flag.ts`, `ProfileMath.flagEmoji`). A malformed code draws nothing. Screen readers say "Country XX".
+- **Web header brand mark** and the league badge beside the stats.
+
+### Open bugs found in device check (not fixed, awaiting owner decisions)
+
+- **Hearts never refill between 1 and 4.** The refill timer is only set when hearts reach 0, so a learner at 1 to 4 hearts never refills (seven learners were stuck). Needs the owner's refill rate.
+- **The path marks a talk done for any finished call.** A QA account's 6-second, 0-star call counted. Needs the owner's rule for "talk done".
 
 ### Library tab with a Watch shelf (#499, merged 2026-11-13; goes out in build 63)
 
