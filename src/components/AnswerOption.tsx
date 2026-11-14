@@ -1,5 +1,3 @@
-import { useTheme } from "../lib/theme";
-
 type AnswerState = "idle" | "selected" | "correct" | "incorrect";
 
 function stateOf({
@@ -38,29 +36,7 @@ export function AnswerOption({
   disabled: boolean;
   onClick: () => void;
 }) {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const state = stateOf({ checked, isPicked, isRight });
-
-  if (isStudioInk) {
-    const barColor =
-      state === "correct"
-        ? "border-l-ds-brand"
-        : state === "incorrect"
-          ? "border-l-rose-400"
-          : state === "selected"
-            ? "border-l-ds-ink"
-            : "border-l-transparent";
-    return (
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onClick}
-        className={`w-full border-b border-ds-line border-l-[3px] py-3 pl-3 pr-4 text-left text-base text-ds-ink transition ${barColor}`}
-      >
-        {label}
-      </button>
-    );
-  }
 
   // A chunky tile with a darker bottom edge that collapses while pressed, like the app's buttons. The colours
   // say picked / right / wrong; the edge takes the same hue so the tile reads as one solid piece.

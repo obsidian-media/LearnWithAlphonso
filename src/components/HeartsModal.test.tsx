@@ -3,11 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HeartsModal } from "./HeartsModal";
-import { useTheme } from "../lib/theme";
 import { XP_HEART_COST } from "../lib/hearts";
 
 afterEach(() => {
-  useTheme.setState({ theme: "meadow" });
   vi.useRealTimers();
 });
 

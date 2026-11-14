@@ -51,10 +51,7 @@ struct AnswerVerdictPanel: View {
                 .buttonStyle(
                     correct
                         ? AlphonsoPrimaryButtonStyle(foreground: AlphonsoColor.onPrimary)
-                        : (AlphonsoColor.wrongAnswerUsesEmber ? AlphonsoPrimaryButtonStyle.alphonsoEmber
-                            : AlphonsoPrimaryButtonStyle(
-                                tint: AlphonsoColor.destructive, shadow: Color(red: 0.55, green: 0, blue: 0.04),
-                                foreground: .white))
+                        : AlphonsoPrimaryButtonStyle.alphonsoEmber
                 )
         }
         .padding(AlphonsoSpacing.md)

@@ -10,16 +10,11 @@
 @import "tw-animate-css";
 
 /* Fonts are served from this site, not a font CDN: loading them from a third party would send every
-   visitor's IP address to it. One import per face the themes use; the browser fetches only the files
-   for the theme on screen and the characters on the page. */
+   visitor's IP address to it. One import per face the two themes use (Royal: Baloo 2 and Geist; Meadow:
+   Fraunces and Geist); the browser fetches only the files for the theme on screen and the characters on
+   the page. */
 @import "@fontsource-variable/fraunces/opsz.css";
 @import "@fontsource-variable/geist/wght.css";
-@import "@fontsource/instrument-serif/400.css";
-@import "@fontsource/instrument-serif/400-italic.css";
-@import "@fontsource-variable/instrument-sans/wght.css";
-@import "@fontsource-variable/newsreader/opsz.css";
-@import "@fontsource-variable/newsreader/opsz-italic.css";
-@import "@fontsource-variable/source-sans-3/wght.css";
 @import "@fontsource-variable/baloo-2/wght.css";
 @import "./styles/tile-tones.generated.css";
 /* The round-6 design system: --c-* palette tokens, scales, self-hosted Bricolage Grotesque and Figtree. */
@@ -28,7 +23,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-display: "Fraunces Variable", "Fraunces", ui-serif, Georgia, serif;
+  --font-display: "Baloo 2 Variable", "Baloo 2", ui-rounded, "Segoe UI", sans-serif;
   --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
   /* The legacy names read the round-6 tokens, so older screens carry no mint or moss green of their own. */
   --color-surface: var(--c-surface);
@@ -37,10 +32,10 @@
   --color-ink-soft: var(--c-ink-soft);
   --color-moss: var(--c-brand);
   --color-moss-deep: var(--c-ink);
-  --color-ember: oklch(0.62 0.17 40);
-  --color-ember-soft: oklch(0.88 0.06 60);
+  --color-ember: oklch(0.64 0.18 32);
+  --color-ember-soft: oklch(0.9 0.05 32);
   --color-hairline: var(--c-line);
-  --color-ink-on-ember: var(--color-surface);
+  --color-ink-on-ember: var(--color-ink);
 }
 
 @utility grain {
@@ -161,24 +156,24 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.958 0.012 80);
-  --foreground: oklch(0.24 0.035 155);
+  --background: var(--color-surface);
+  --foreground: var(--color-ink);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.24 0.035 155);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.24 0.035 155);
-  --primary: oklch(0.45 0.075 155);
-  --primary-foreground: oklch(0.98 0.01 80);
+  --primary: var(--color-moss);
+  --primary-foreground: var(--c-surface);
   --secondary: oklch(0.923 0.019 75);
   --secondary-foreground: oklch(0.24 0.035 155);
   --muted: oklch(0.923 0.019 75);
-  --muted-foreground: oklch(0.42 0.025 155);
+  --muted-foreground: var(--color-ink-soft);
   --accent: oklch(0.62 0.17 40);
   --accent-foreground: oklch(0.98 0.01 80);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(0.24 0.035 155 / 0.1);
-  --input: oklch(0.24 0.035 155 / 0.1);
+  --input: var(--color-hairline);
   --ring: oklch(0.45 0.075 155);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -195,74 +190,9 @@
   --sidebar-ring: oklch(0.704 0.04 256.788);
 }
 
-[data-theme="studio-ink"] {
-  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-
-  --color-surface: oklch(0.16 0.01 260);
-  --color-parchment: oklch(0.2 0.012 260);
-  --color-ink: oklch(0.96 0.01 80);
-  --color-ink-soft: oklch(0.72 0.015 80);
-  --color-moss: oklch(0.55 0.18 250);
-  --color-moss-deep: oklch(0.4 0.16 250);
-  --color-ember: oklch(0.55 0.18 250);
-  --color-ember-soft: oklch(0.3 0.1 250);
-  --color-hairline: oklch(1 0 0 / 0.1);
-  --color-ink-on-ember: var(--color-surface);
-
-  --background: var(--color-surface);
-  --foreground: var(--color-ink);
-  --primary: var(--color-moss);
-  --primary-foreground: oklch(0.98 0.01 80);
-  --muted-foreground: var(--color-ink-soft);
-  --input: var(--color-hairline);
-}
-
-[data-theme="manuscript"] {
-  --font-display: "Newsreader Variable", "Newsreader", ui-serif, Georgia, serif;
-  --font-sans: "Source Sans 3 Variable", "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-
-  --color-surface: oklch(0.97 0.004 250);
-  --color-parchment: oklch(0.94 0.005 250);
-  --color-ink: oklch(0.18 0.01 260);
-  --color-ink-soft: oklch(0.42 0.01 260);
-  --color-moss: oklch(0.42 0.15 20);
-  --color-moss-deep: oklch(0.32 0.13 20);
-  --color-ember: oklch(0.42 0.15 20);
-  --color-ember-soft: oklch(0.85 0.05 20);
-  --color-hairline: oklch(0.18 0.01 260 / 0.12);
-  --color-ink-on-ember: var(--color-surface);
-
-  --background: var(--color-surface);
-  --foreground: var(--color-ink);
-  --primary: var(--color-moss);
-  --primary-foreground: oklch(0.98 0.005 250);
-  --muted-foreground: var(--color-ink-soft);
-  --input: var(--color-hairline);
-}
-
-[data-theme="canopy"] {
-  --font-display: "Baloo 2 Variable", "Baloo 2", ui-rounded, "Segoe UI", sans-serif;
-  --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
-
-  /* Round-6 tokens: the old mint surface and moss green are gone from the default theme. */
-  --color-surface: var(--c-surface);
-  --color-parchment: var(--c-sunk);
-  --color-ink: var(--c-ink);
-  --color-ink-soft: var(--c-ink-soft);
-  --color-moss: var(--c-brand);
-  --color-moss-deep: var(--c-ink);
-  --color-ember: oklch(0.64 0.18 32);
-  --color-ember-soft: oklch(0.9 0.05 32);
-  --color-hairline: var(--c-line);
-  --color-ink-on-ember: var(--color-ink);
-
-  --background: var(--color-surface);
-  --foreground: var(--color-ink);
-  --primary: var(--color-moss);
-  --primary-foreground: var(--c-surface);
-  --muted-foreground: var(--color-ink-soft);
-  --input: var(--color-hairline);
+/* Meadow keeps its own display face; Royal's is Baloo 2 (the @theme default above). */
+:root[data-palette="meadow"] {
+  --font-display: "Fraunces Variable", "Fraunces", ui-serif, Georgia, serif;
 }
 
 @layer base {
@@ -297,7 +227,7 @@
 }
 
 /* Scenes (SceneBackdrop): a scrim keeps the top of the screen calm for the title and chips, and the bottom
-   blends into the page. Dark themes darken the whole scene so light text and cards stay comfortable. */
+   blends into the page; it reads --color-surface, so it follows the theme and its night appearance. */
 .scene-scrim {
   background: linear-gradient(
     to bottom,
@@ -306,11 +236,6 @@
     transparent 55%,
     color-mix(in oklab, var(--color-surface) 30%, transparent) 100%
   );
-}
-[data-theme="studio-ink"] .scene-scrim {
-  background:
-    linear-gradient(to bottom, oklch(0.16 0.01 260 / 0.85) 0%, oklch(0.16 0.01 260 / 0.35) 40%),
-    oklch(0.16 0.01 260 / 0.45);
 }
 
 /* The next lesson on the Learn map bobs gently to invite a tap. Only Y: the node is centred with Tailwind's

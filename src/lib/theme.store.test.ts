@@ -9,50 +9,52 @@ const { useTheme } = await import("./theme");
 beforeEach(() => {
   window.localStorage.clear();
   updateProfile.mockClear();
-  useTheme.setState({ theme: "meadow", hydrated: false });
-  document.documentElement.dataset.theme = "";
+  useTheme.setState({ theme: "royal", hydrated: false });
+  document.documentElement.dataset.palette = "";
 });
 
 afterEach(() => {
-  useTheme.setState({ theme: "meadow", hydrated: false });
+  useTheme.setState({ theme: "royal", hydrated: false });
 });
 
 describe("useTheme.setTheme", () => {
   it("updates the store, the DOM dataset, localStorage, and syncs the profile", () => {
-    useTheme.getState().setTheme("studio-ink");
-    expect(useTheme.getState().theme).toBe("studio-ink");
-    expect(document.documentElement.dataset.theme).toBe("studio-ink");
-    expect(window.localStorage.getItem("theme")).toBe("studio-ink");
-    expect(updateProfile).toHaveBeenCalledWith({ data: { theme: "studio-ink" } });
+    useTheme.getState().setTheme("meadow");
+    expect(useTheme.getState().theme).toBe("meadow");
+    expect(document.documentElement.dataset.palette).toBe("meadow");
+    expect(window.localStorage.getItem("theme")).toBe("meadow");
+    expect(updateProfile).toHaveBeenCalledWith({ data: { theme: "meadow" } });
   });
 });
 
 describe("useTheme.hydrateFromServer", () => {
-  it("adopts the server theme when it differs from the current one", () => {
-    useTheme.getState().hydrateFromServer("manuscript");
-    expect(useTheme.getState().theme).toBe("manuscript");
-    expect(useTheme.getState().hydrated).toBe(true);
-    expect(document.documentElement.dataset.theme).toBe("manuscript");
-  });
-
-  it("falls back to localStorage when the server value is invalid", () => {
-    window.localStorage.setItem("theme", "studio-ink");
-    useTheme.getState().hydrateFromServer(null);
-    expect(useTheme.getState().theme).toBe("studio-ink");
-  });
-
-  it("still applies the resolved theme to the DOM even when it matches the store's current guess", () => {
-    // Regression: the store's initial `theme` is itself a *guess*
-    // (resolveInitialTheme run at module-init, before any DOM write
-    // happens) -- for a brand-new visitor that guess is "canopy" with
-    // nothing yet applied to the DOM. A guard that skipped writing
-    // whenever `resolved === get().theme` treated "the guess agrees
-    // with itself" as "the DOM already reflects it", which isn't true
-    // the first time hydrateFromServer runs. Always applying is what
-    // fixes that, at the (harmless) cost of a redundant write on the
-    // one path where the DOM genuinely already matches.
+  it("adopts the account theme when it differs from the current one", () => {
     useTheme.getState().hydrateFromServer("meadow");
-    expect(document.documentElement.dataset.theme).toBe("meadow");
+    expect(useTheme.getState().theme).toBe("meadow");
+    expect(useTheme.getState().hydrated).toBe(true);
+    expect(document.documentElement.dataset.palette).toBe("meadow");
+  });
+
+  it.each(["studio-ink", "manuscript", "canopy"])(
+    "moves a retired account value (%s) to Royal without an error",
+    (name) => {
+      window.localStorage.setItem("theme", "meadow");
+      expect(() => useTheme.getState().hydrateFromServer(name)).not.toThrow();
+      expect(useTheme.getState().theme).toBe("royal");
+      expect(document.documentElement.dataset.palette).toBe("royal");
+      expect(window.localStorage.getItem("theme")).toBe("royal");
+    },
+  );
+
+  it("falls back to the device value when the account has none", () => {
+    window.localStorage.setItem("theme", "meadow");
+    useTheme.getState().hydrateFromServer(null);
+    expect(useTheme.getState().theme).toBe("meadow");
+  });
+
+  it("always applies the resolved theme to the DOM, even when it matches the store guess", () => {
+    useTheme.getState().hydrateFromServer("royal");
+    expect(document.documentElement.dataset.palette).toBe("royal");
     expect(useTheme.getState().hydrated).toBe(true);
   });
 });

@@ -3,24 +3,26 @@ package com.obsidianmedia.learnwithalphonso.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * The four themes the web app defines in src/styles.css and iOS mirrors in
- * AlphonsoTheme.swift. Raw values match the web's THEME_NAMES and the
- * profiles.theme CHECK constraint, so a value round-trips unchanged.
+ * The two themes: Royal (navy and gold, the default) and Meadow (green). Raw values match the web's THEME_NAMES, the
+ * iOS Kit's DSPaletteID and the profiles.theme CHECK constraint, so a value round-trips unchanged. Each has a light
+ * and a night appearance (the night one follows the system).
+ *
+ * Studio Ink, Manuscript and Canopy are gone: a stored value that is one of them, or unknown, means Royal (resolve).
  */
 enum class AlphonsoThemeId(val raw: String, val displayName: String) {
-    MEADOW("meadow", "Meadow"),
-    STUDIO_INK("studio-ink", "Studio Ink"),
-    MANUSCRIPT("manuscript", "Manuscript"),
-    CANOPY("canopy", "Canopy");
+    ROYAL("royal", "Royal"),
+    MEADOW("meadow", "Meadow");
 
     companion object {
-        val DEFAULT = CANOPY
-        fun fromRaw(raw: String?): AlphonsoThemeId? = entries.firstOrNull { it.raw == raw }
+        val DEFAULT = ROYAL
+
+        /** Any stored raw value to a theme: Meadow stays Meadow, everything else (retired, unknown, null) is Royal. */
+        fun resolve(raw: String?): AlphonsoThemeId = if (raw == MEADOW.raw) MEADOW else ROYAL
     }
 }
 
 /** Which bundled font file a theme's display or body text resolves from. */
-enum class AlphonsoFontFace { FRAUNCES, GEIST, INSTRUMENT_SERIF, INSTRUMENT_SANS, NEWSREADER, SOURCE_SANS3, BALOO2 }
+enum class AlphonsoFontFace { FRAUNCES, GEIST, BALOO2 }
 
 /** One theme's resolved tokens; hex values are copied from AlphonsoTheme.swift verbatim. */
 data class AlphonsoPalette(
@@ -49,7 +51,7 @@ private fun rgb(hex: Long): Color = Color(0xFF000000L or hex)
 private fun rgba(hex: Long, alpha: Float): Color = rgb(hex).copy(alpha = alpha)
 
 object AlphonsoPalettes {
-    /** Light variant of each theme. Studio Ink has no light variant and lives here as its only form. */
+    /** Light variant of each theme. */
     val light: Map<AlphonsoThemeId, AlphonsoPalette> = mapOf(
         AlphonsoThemeId.MEADOW to AlphonsoPalette(
             surface = rgb(0xF5F0E8), parchment = rgb(0xEDE4D8), ink = rgb(0x112418), inkSoft = rgb(0x435147),
@@ -58,21 +60,7 @@ object AlphonsoPalettes {
             onPrimary = rgb(0xF5F0E8), onAccent = rgb(0xF5F0E8), onMossGradient = rgb(0xF5F0E8),
             isDark = false, displayFont = AlphonsoFontFace.FRAUNCES, sansFont = AlphonsoFontFace.GEIST,
         ),
-        AlphonsoThemeId.STUDIO_INK to AlphonsoPalette(
-            surface = rgb(0x0B0D12), parchment = rgb(0x13161C), ink = rgb(0xF5F1EA), inkSoft = rgb(0xAAA49A),
-            moss = rgb(0x0072D5), mossDeep = rgb(0x004699), ember = rgb(0x0072D5), emberSoft = rgb(0x002E5D),
-            destructive = rgb(0xF8000C), hairline = rgba(0xFFFFFF, 0.1f),
-            onPrimary = rgb(0x0B0D12), onAccent = rgb(0x0B0D12), onMossGradient = rgb(0xF5F1EA),
-            isDark = true, displayFont = AlphonsoFontFace.INSTRUMENT_SERIF, sansFont = AlphonsoFontFace.INSTRUMENT_SANS,
-        ),
-        AlphonsoThemeId.MANUSCRIPT to AlphonsoPalette(
-            surface = rgb(0xF3F5F8), parchment = rgb(0xE9EBEE), ink = rgb(0x0F1216), inkSoft = rgb(0x4A4D53),
-            moss = rgb(0x8D1828), mossDeep = rgb(0x650014), ember = rgb(0x8D1828), emberSoft = rgb(0xEDC1C0),
-            destructive = rgb(0xE7000B), hairline = rgba(0x0F1216, 0.12f),
-            onPrimary = rgb(0xF3F5F8), onAccent = rgb(0xF3F5F8), onMossGradient = rgb(0xF3F5F8),
-            isDark = false, displayFont = AlphonsoFontFace.NEWSREADER, sansFont = AlphonsoFontFace.SOURCE_SANS3,
-        ),
-        AlphonsoThemeId.CANOPY to AlphonsoPalette(
+        AlphonsoThemeId.ROYAL to AlphonsoPalette(
             surface = rgb(0xFBF6EC), parchment = rgb(0xFFFFFF), ink = rgb(0x141B3D), inkSoft = rgb(0x5A5873),
             moss = rgb(0x1D2B64), mossDeep = rgb(0x141B3D), ember = rgb(0xE4573F), emberSoft = rgb(0xFDD3CA),
             destructive = rgb(0xE7000B), hairline = rgba(0x141B3D, 0.1f),
@@ -81,7 +69,7 @@ object AlphonsoPalettes {
         ),
     )
 
-    /** Dark variant of each light theme. Studio Ink is already dark and is deliberately absent. */
+    /** Night variant of each theme. */
     val dark: Map<AlphonsoThemeId, AlphonsoPalette> = mapOf(
         AlphonsoThemeId.MEADOW to AlphonsoPalette(
             surface = rgb(0x0C1810), parchment = rgb(0x15261B), ink = rgb(0xF4F1EC), inkSoft = rgb(0xB9B0A2),
@@ -90,14 +78,7 @@ object AlphonsoPalettes {
             onPrimary = rgb(0xF4F1EC), onAccent = rgb(0x0C1810), onMossGradient = rgb(0xF4F1EC),
             isDark = true, displayFont = AlphonsoFontFace.FRAUNCES, sansFont = AlphonsoFontFace.GEIST,
         ),
-        AlphonsoThemeId.MANUSCRIPT to AlphonsoPalette(
-            surface = rgb(0x0E1115), parchment = rgb(0x181D23), ink = rgb(0xECEFF4), inkSoft = rgb(0xA2ABB9),
-            moss = rgb(0x8D1828), mossDeep = rgb(0x650014), ember = rgb(0x8D1828), emberSoft = rgb(0x4F1817),
-            destructive = rgb(0xFB000C), hairline = rgba(0xFFFFFF, 0.1f),
-            onPrimary = rgb(0xECEFF4), onAccent = rgb(0xECEFF4), onMossGradient = rgb(0xECEFF4),
-            isDark = true, displayFont = AlphonsoFontFace.NEWSREADER, sansFont = AlphonsoFontFace.SOURCE_SANS3,
-        ),
-        AlphonsoThemeId.CANOPY to AlphonsoPalette(
+        AlphonsoThemeId.ROYAL to AlphonsoPalette(
             surface = rgb(0x0E1330), parchment = rgb(0x161C40), ink = rgb(0xECE7F5), inkSoft = rgb(0xA9AEC9),
             moss = rgb(0xC9D2F7), mossDeep = rgb(0x9AA8E8), ember = rgb(0xE4573F), emberSoft = rgb(0x4F2117),
             destructive = rgb(0xFF0B16), hairline = rgba(0xFFFFFF, 0.1f),
@@ -106,10 +87,9 @@ object AlphonsoPalettes {
         ),
     )
 
-    /** Studio Ink ignores the system setting; every other theme follows it. */
+    /** Both themes follow the system setting: night values when the system is dark. */
     fun resolve(themeId: AlphonsoThemeId, systemDark: Boolean): AlphonsoPalette {
-        if (themeId == AlphonsoThemeId.STUDIO_INK) return light.getValue(AlphonsoThemeId.STUDIO_INK)
         if (systemDark) dark[themeId]?.let { return it }
-        return light[themeId] ?: light.getValue(AlphonsoThemeId.MEADOW)
+        return light[themeId] ?: light.getValue(AlphonsoThemeId.ROYAL)
     }
 }

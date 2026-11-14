@@ -93,7 +93,7 @@ beforeEach(() => {
     ...data.patch,
   }));
   useProgress.getState().reset();
-  useTheme.setState({ theme: "meadow" });
+  useTheme.setState({ theme: "royal" });
   Object.defineProperty(global.URL, "createObjectURL", {
     value: vi.fn(() => "blob:mock-url"),
     configurable: true,
@@ -212,28 +212,30 @@ describe("Profile page", () => {
     );
   });
 
+  it("offers exactly two themes, Royal and Meadow, Royal selected by default", async () => {
+    renderPage();
+    await screen.findByLabelText("Display name");
+    const group = screen.getByRole("tablist", { name: "Choose a theme" });
+    const tabs = within(group).getAllByRole("tab");
+    expect(tabs.map((t) => t.textContent)).toEqual(["Royal", "Meadow"]);
+    expect(within(group).getByRole("tab", { name: "Royal" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    for (const gone of ["Studio Ink", "Manuscript", "Canopy"]) {
+      expect(screen.queryByRole("tab", { name: gone })).toBeNull();
+    }
+  });
+
   it("switches theme, persisting it through updateProfile", async () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByLabelText("Display name");
 
-    await user.click(screen.getByRole("tab", { name: "Studio Ink" }));
+    await user.click(screen.getByRole("tab", { name: "Meadow" }));
 
-    expect(useTheme.getState().theme).toBe("studio-ink");
-    await waitFor(() =>
-      expect(updateProfile).toHaveBeenCalledWith({ data: { theme: "studio-ink" } }),
-    );
-  });
-
-  it("offers Canopy as a theme option and can switch to it", async () => {
-    const user = userEvent.setup();
-    renderPage();
-    await screen.findByLabelText("Display name");
-
-    await user.click(screen.getByRole("tab", { name: "Canopy" }));
-
-    expect(useTheme.getState().theme).toBe("canopy");
-    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ data: { theme: "canopy" } }));
+    expect(useTheme.getState().theme).toBe("meadow");
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ data: { theme: "meadow" } }));
   });
 
   it("signs out: cancels queries, clears the cache, and navigates to /auth", async () => {

@@ -1,8 +1,8 @@
 {
   "$comment": "Raw colours and font sizes per file in view code, today. A count may only go down: lower it with bun scripts/design-raw-value-baseline.ts. Never raise one; use the design tokens instead.",
-  "total": 110,
+  "total": 107,
   "files": {
-    "src/components/AchievementBadge.tsx": 10,
+    "src/components/AchievementBadge.tsx": 8,
     "src/components/AlphonsoAvatar.tsx": 3,
     "src/components/AnswerVerdictPanel.tsx": 1,
     "src/components/AppShell.tsx": 2,
@@ -15,7 +15,7 @@
     "src/components/ui/StatPill.tsx": 1,
     "src/components/ui/TileCard.tsx": 3,
     "src/routes/_authenticated/campaign_.$campaignId.tsx": 15,
-    "src/routes/_authenticated/placement.tsx": 13,
+    "src/routes/_authenticated/placement.tsx": 12,
     "src/routes/_authenticated/review.tsx": 6,
     "src/routes/api/review-demo-code.ts": 2,
     "src/routes/index.tsx": 6,

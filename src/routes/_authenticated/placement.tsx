@@ -22,7 +22,6 @@ import { canSpeak, speak } from "../../lib/speech";
 import { isPlacementAnswerCorrect } from "../../data/placement-grading";
 import { fetchProgress, savePlacementResult } from "../../lib/sync.functions";
 import { useProgress } from "../../lib/progress";
-import { useTheme } from "../../lib/theme";
 import { LEVELS, type Level } from "../../data/levels";
 
 export const Route = createFileRoute("/_authenticated/placement")({
@@ -89,7 +88,6 @@ function startSession(pool: PlacementQuestion[]): Session {
 }
 
 function PlacementPage() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   const savePlacement = useServerFn(savePlacementResult);
   const setPlacementLocal = useProgress((s) => s.setPlacementLocal);
@@ -432,7 +430,7 @@ function PlacementPage() {
             <h1 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">
               {q.prompt}
             </h1>
-            <div className={isStudioInk ? "mt-7" : "mt-7 flex flex-col gap-2.5"}>
+            <div className={"mt-7 flex flex-col gap-2.5"}>
               {q.type === "translate" && (
                 <textarea
                   value={picked ?? ""}
@@ -443,33 +441,20 @@ function PlacementPage() {
                   className="w-full resize-none rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss"
                 />
               )}
-              {(q.type === "mc" || q.type === "listening" ? q.choices : []).map((c) =>
-                isStudioInk ? (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setPicked(c)}
-                    className={`w-full border-b border-hairline border-l-[3px] py-3 pl-3 pr-4 text-left text-[15px] font-medium text-ink transition ${
-                      picked === c ? "border-l-ink" : "border-l-transparent"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ) : (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setPicked(c)}
-                    className={`rounded-2xl border px-4 py-3.5 text-left text-[15px] font-medium transition ${
-                      picked === c
-                        ? "border-ink bg-ink text-surface"
-                        : "border-hairline bg-surface text-ink hover:bg-parchment"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ),
-              )}
+              {(q.type === "mc" || q.type === "listening" ? q.choices : []).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setPicked(c)}
+                  className={`rounded-2xl border px-4 py-3.5 text-left text-[15px] font-medium transition ${
+                    picked === c
+                      ? "border-ink bg-ink text-surface"
+                      : "border-hairline bg-surface text-ink hover:bg-parchment"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
             </div>
           </motion.div>
         </AnimatePresence>

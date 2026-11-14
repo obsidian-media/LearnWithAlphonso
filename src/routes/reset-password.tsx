@@ -6,7 +6,6 @@ import {
 } from "@/lib/password-policy";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useTheme } from "../lib/theme";
 import { TextField } from "../components/TextField";
 
 export const Route = createFileRoute("/reset-password")({
@@ -27,7 +26,6 @@ export const Route = createFileRoute("/reset-password")({
 });
 
 function ResetPasswordPage() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
@@ -89,9 +87,7 @@ function ResetPasswordPage() {
         {done ? (
           <p
             className={
-              isStudioInk
-                ? "mt-8 border-l-[3px] border-l-moss py-2 pl-4 text-sm text-ink"
-                : "mt-8 rounded-2xl border border-hairline bg-parchment px-4 py-3 text-sm text-ink"
+              "mt-8 rounded-2xl border border-hairline bg-parchment px-4 py-3 text-sm text-ink"
             }
           >
             Password updated. Taking you to your lessons…
@@ -119,15 +115,7 @@ function ResetPasswordPage() {
               className="disabled:opacity-50"
             />
             {error && (
-              <p
-                className={
-                  isStudioInk
-                    ? "border-l-[3px] border-l-rose-400 py-1 pl-3 text-xs text-rose-500"
-                    : "rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700"
-                }
-              >
-                {error}
-              </p>
+              <p className={"rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700"}>{error}</p>
             )}
             <button
               type="submit"

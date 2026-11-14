@@ -293,8 +293,8 @@ class ProgressSyncClientTest {
 
     @Test
     fun `theme reads and writes hit profiles by id`() = runTest {
-        val fake = FakeSupabase { req -> if (req.method == "GET") json("""[{"theme":"canopy"}]""") else json("") }
-        assertEquals("canopy", client(fake).fetchProfileTheme(userId))
+        val fake = FakeSupabase { req -> if (req.method == "GET") json("""[{"theme":"royal"}]""") else json("") }
+        assertEquals("royal", client(fake).fetchProfileTheme(userId))
         client(fake).updateProfileTheme("meadow", userId)
         assertEquals("eq.$userId", fake.seen[0].query["id"])
         assertEquals("PATCH", fake.seen[1].method)

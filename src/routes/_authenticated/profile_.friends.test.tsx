@@ -44,7 +44,6 @@ vi.mock("../../lib/buddy.functions", () => ({
 }));
 
 const { Route } = await import("./profile_.friends");
-const { useTheme } = await import("../../lib/theme");
 
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -63,7 +62,6 @@ beforeEach(() => {
   getMyBuddy.mockReset().mockResolvedValue(null);
   getBuddyRequests.mockReset().mockResolvedValue([]);
   requestBuddy.mockReset();
-  useTheme.setState({ theme: "meadow" });
   Object.defineProperty(navigator, "clipboard", {
     value: { writeText: vi.fn().mockResolvedValue(undefined) },
     configurable: true,
@@ -194,13 +192,5 @@ describe("Friends page", () => {
     await waitFor(() => expect(screen.queryByText("Ada")).not.toBeInTheDocument());
     expect(screen.getByText("Bo")).toBeInTheDocument();
     expect(await screen.findByText("1 friend")).toBeInTheDocument();
-  });
-
-  it("uses the studio-ink copy and arrow affordance for that theme", async () => {
-    useTheme.setState({ theme: "studio-ink" });
-    getFriends.mockResolvedValue([]);
-    getMyFriendCode.mockResolvedValue("me-code");
-    renderPage();
-    expect(await screen.findByText("Copy invite link →")).toBeInTheDocument();
   });
 });

@@ -24,7 +24,6 @@ import { type AvatarReplyVerdict } from "../../components/AlphonsoAvatar";
 import { PracticeCall } from "../../components/PracticeCall";
 import { parseVerdict, type AvatarMode, type VoicePhase } from "../../lib/avatar/machine";
 import { useAvatarPreference } from "../../lib/avatar/preference";
-import { useTheme } from "../../lib/theme";
 import { useReducedMotion } from "framer-motion";
 import { voiceFor } from "@/lib/voice-prefs";
 import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
@@ -197,7 +196,6 @@ function CampaignChatPage({
   const hydrateAvatarPreference = useAvatarPreference((st) => st.hydrate);
   useEffect(() => hydrateAvatarPreference(), [hydrateAvatarPreference]);
   const reducedMotion = useReducedMotion() ?? false;
-  const darkTheme = useTheme((t) => t.theme === "studio-ink");
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
@@ -815,7 +813,7 @@ function CampaignChatPage({
           title={sceneLine}
           // A campaign is not a scenario: it always gets the default room, even where an id looks like one.
           scenarioId={null}
-          dark={darkTheme}
+          dark={false}
           avatar={{
             phase: avatarPhase,
             replyText: spoken,

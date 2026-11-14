@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
-// The legacy surface/parchment/hairline/ink/moss tokens resolve to the Canopy mint-green theme.
+// The legacy surface/parchment/hairline/ink/moss tokens resolve to the old mint-green look.
 // The Profile settings cards, the AI consent gate and sheet, the voice sheet and the segmented control
-// must use the round-6 ds-* tokens, so they follow the round-6 look in every theme.
+// must use the round-6 ds-* tokens, so they follow the round-6 look in both themes.
 const LEGACY =
   /(?<![\w-])(?:[a-z]+:)?(?:bg|text|border)-(?:surface|parchment|hairline|ink|ink-soft|moss)(?![\w-])/;
 const FILES = [

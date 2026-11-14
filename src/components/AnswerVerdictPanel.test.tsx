@@ -1,13 +1,8 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AnswerVerdictPanel } from "./AnswerVerdictPanel";
-import { useTheme } from "../lib/theme";
-
-afterEach(() => {
-  useTheme.setState({ theme: "meadow" });
-});
 
 function renderPanel(props: Partial<Parameters<typeof AnswerVerdictPanel>[0]> = {}) {
   const onContinue = vi.fn();
@@ -64,12 +59,5 @@ describe("AnswerVerdictPanel", () => {
   it("an empty right answer adds no answer line", () => {
     renderPanel({ correctAnswer: "" });
     expect(screen.queryByText(/^Answer:/)).not.toBeInTheDocument();
-  });
-
-  it("Studio Ink keeps its own feedback look", () => {
-    useTheme.setState({ theme: "studio-ink" });
-    renderPanel();
-    expect(screen.getByRole("status")).toHaveClass("border-l-rose-400");
-    expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
   });
 });

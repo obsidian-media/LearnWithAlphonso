@@ -11,7 +11,6 @@ import {
   removeFriend,
   type FriendEntry,
 } from "../../lib/friends.functions";
-import { useTheme } from "../../lib/theme";
 import { buddyBlockConfirm } from "../../lib/buddy";
 import { getMyBuddy } from "../../lib/buddy.functions";
 
@@ -29,7 +28,6 @@ export const Route = createFileRoute("/_authenticated/profile_/friends")({
 });
 
 function FriendsPage() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const queryClient = useQueryClient();
   // Same cache entry as BuddyCard: blocking the current buddy from their friend row gets the buddy wording.
   const myBuddy = useQuery({ queryKey: ["myBuddy"], queryFn: () => getMyBuddy(), retry: false });
@@ -87,36 +85,19 @@ function FriendsPage() {
           </Link>
         </div>
 
-        <div
-          className={
-            isStudioInk
-              ? "mt-6 border-b border-ds-line pb-5"
-              : "mt-6 rounded-2xl border border-ds-line bg-ds-sunk p-4"
-          }
-        >
+        <div className={"mt-6 rounded-2xl border border-ds-line bg-ds-sunk p-4"}>
           <p className="font-display text-base font-semibold text-ds-ink">Invite a friend</p>
           <p className="mt-1 text-xs text-ds-ink-soft/80">
             Share your link. When they open it and tap Add friend, you're friends.
           </p>
-          {isStudioInk ? (
-            <button
-              type="button"
-              onClick={copyInvite}
-              disabled={!inviteLink}
-              className="mt-3 text-sm font-semibold text-ds-brand underline underline-offset-4 disabled:opacity-50"
-            >
-              {copied ? "Link copied!" : "Copy invite link →"}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={copyInvite}
-              disabled={!inviteLink}
-              className="mt-3 w-full rounded-full bg-ds-ink px-4 py-2.5 text-sm font-semibold text-ds-card transition hover:opacity-90 disabled:opacity-50"
-            >
-              {copied ? "Link copied!" : "Copy invite link"}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={copyInvite}
+            disabled={!inviteLink}
+            className="mt-3 w-full rounded-full bg-ds-ink px-4 py-2.5 text-sm font-semibold text-ds-card transition hover:opacity-90 disabled:opacity-50"
+          >
+            {copied ? "Link copied!" : "Copy invite link"}
+          </button>
           <span role="status" aria-live="polite" className="sr-only">
             {copied ? "Link copied to clipboard" : ""}
           </span>
@@ -135,26 +116,18 @@ function FriendsPage() {
         {isLoading ? (
           <p className="mt-3 text-sm text-ds-ink-soft">Loading…</p>
         ) : !friends || friends.length === 0 ? (
-          <div
-            className={
-              isStudioInk
-                ? "mt-3 border-y border-ds-line py-4 text-center"
-                : "mt-3 rounded-2xl border border-ds-line bg-ds-card p-4 text-center"
-            }
-          >
+          <div className={"mt-3 rounded-2xl border border-ds-line bg-ds-card p-4 text-center"}>
             <p className="text-sm text-ds-ink-soft">
               No friends yet. Share your invite link to get started.
             </p>
           </div>
         ) : (
-          <div className={isStudioInk ? "mt-3 divide-y divide-ds-line" : "mt-3 space-y-2"}>
+          <div className={"mt-3 space-y-2"}>
             {friends.map((f) => (
               <div
                 key={f.userId}
                 className={
-                  isStudioInk
-                    ? "flex items-center gap-3 py-3.5"
-                    : "flex items-center gap-3 rounded-2xl border border-ds-line bg-ds-card p-3.5"
+                  "flex items-center gap-3 rounded-2xl border border-ds-line bg-ds-card p-3.5"
                 }
               >
                 <ProfileAvatar seed={f.avatarSeed} name={f.displayName} className="size-10" />

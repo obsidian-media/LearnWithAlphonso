@@ -187,25 +187,25 @@ describe("updateProfile", () => {
     ).rejects.toThrow();
   });
 
-  it("accepts the canopy theme", async () => {
+  it.each([
+    ["meadow", "meadow"],
+    ["royal", "royal"],
+    ["canopy", "royal"],
+    ["studio-ink", "royal"],
+    ["manuscript", "royal"],
+    ["solarized", "royal"],
+  ])("stores the theme %s as %s", async (sent, stored) => {
     const supabase = createSupabaseMock();
     const updateChain = chainable({ data: null, error: null });
     supabase.from.mockReturnValueOnce(updateChain);
     const result = await updateProfile({
       context: ctx(supabase),
-      data: { theme: "canopy" },
+      data: { theme: sent },
     });
     expect(result).toEqual({ ok: true });
     expect(updateChain.calls.find((c) => c.method === "update")?.args[0]).toEqual({
-      theme: "canopy",
+      theme: stored,
     });
-  });
-
-  it("still rejects a theme value that isn't in the enum", async () => {
-    const supabase = createSupabaseMock();
-    await expect(
-      updateProfile({ context: ctx(supabase), data: { theme: "solarized" as never } }),
-    ).rejects.toThrow();
   });
 });
 

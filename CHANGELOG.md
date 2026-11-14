@@ -15,6 +15,10 @@ works now_.
 - **Hearts refill.** While a learner has fewer than 5 hearts, one heart comes back every 30 minutes, counted from the moment they first dropped below 5 or from the last refill, capped at 5. The wait carries over (losing a heart while a refill is pending keeps the clock; time away adds every heart that came due). At 5 hearts there is no timer. The migration adds `hearts_refill_resolve` and redefines `lose_heart`, `restore_hearts_if_due`, `buy_heart_with_xp`, `claim_review_clear_bonus` and `settle_lesson_hearts` on it, and restores every learner who was stuck below 5 with no timer to 5. The web (`hearts.ts`, store, header, hearts dialog), the complete-lesson Edge Function, the iOS Kit and Android core share the rule and the test vectors; the header shows "+1 in M:SS" next to the count on web, iOS and Android.
 - **A talk counts as done only if it earned at least one star.** The path builder drops finished calls with 0 stars from "done" (`callCountsAsDone`). The native apps read the path from the server, so they follow without a code change.
 
+### Themes: Royal and Meadow (migration 20261116110000)
+
+- **Two themes: Royal and Meadow.** Studio Ink, Manuscript and Canopy are removed from web, iOS and Android: pickers, token sets, tile-tone palettes, the unused font families and their licence files, previews and tests. Royal (the default) keeps its light and night looks; Meadow is unchanged. A saved theme that is one of the removed ones moves to Royal silently on every platform (`profiles.theme` is rewritten by migration `20261116110000`, and older app builds that still send a removed value are stored as Royal).
+
 ### Device-check fixes (#504, merged 2026-11-13; goes out in build 64)
 
 Owner device check of builds 62 and 63.

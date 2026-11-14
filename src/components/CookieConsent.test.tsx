@@ -12,16 +12,11 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 const { CookieConsent, getConsent } = await import("./CookieConsent");
-const { useTheme } = await import("../lib/theme");
 
 const KEY = "lingua.cookie-consent.v1";
 
 beforeEach(() => {
   window.localStorage.clear();
-});
-
-afterEach(() => {
-  useTheme.setState({ theme: "meadow" });
 });
 
 describe("getConsent", () => {
@@ -63,13 +58,6 @@ describe("CookieConsent", () => {
     render(<CookieConsent />);
     await userEvent.click(screen.getByRole("button", { name: "Accept all" }));
     expect(window.localStorage.getItem(KEY)).toBe("all");
-  });
-
-  it("renders the Studio Ink variant without the rounded-card shadow", () => {
-    useTheme.setState({ theme: "studio-ink" });
-    render(<CookieConsent />);
-    const panel = screen.getByRole("dialog").firstElementChild;
-    expect(panel).toHaveClass("border-t");
   });
 });
 
