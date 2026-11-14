@@ -255,6 +255,8 @@ Verify: a real signed-in end to end check with the agent mailbox (receive the em
 - **Fixed reasons** in the record (`ticket reply`, `ticket status`, `ticket assignment`, `ticket note`); message and note text never go in it (a note's length does).
 - **The ticket page is `admin/routes/support_.$id.tsx`** (path `/support/$id`). The trailing underscore keeps it from nesting under `support.tsx`, which has no `Outlet`.
 - Staff cannot act on a conversation that belongs to their own account.
+- **Staff can reopen a solved chat only within 7 days of solving and only if it is the learner's newest conversation** (`support_learner_view` shows only the newest, so anything else would be invisible to the learner). Otherwise SQLSTATE `LW001` and the console says "This chat is too old to reopen; the learner can start a new one."
+- **`admin/routes/users.$id.tsx` is now `users_.$id.tsx`** (same reason as the ticket page): nested under `users.tsx`, which has no `Outlet`, the learner page never rendered.
 
 ## Order of work and risks
 

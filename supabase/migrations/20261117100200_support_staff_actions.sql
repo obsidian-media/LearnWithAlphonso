@@ -252,7 +252,8 @@ GRANT EXECUTE ON FUNCTION public.staff_support_assign(uuid, text, uuid, uuid) TO
 -- ---- status ----
 -- open, waiting_learner or solved. Solving sets solved_at and tells the learner; reopening (solved to open, the only
 -- way out of solved) clears solved_at and tells the learner. If the learner has meanwhile started a new conversation,
--- the one-live-conversation index refuses the reopen (23505). TRUE when the status changed, FALSE when it already was
+-- the one-live-conversation index refuses the reopen (23505). A solved ticket more than 7 days old, or one the
+-- learner has a newer conversation after, cannot be reopened at all (LW001): the learner could not see it. TRUE when the status changed, FALSE when it already was
 -- that status (nothing written, nothing recorded). 'new' and 'ai' cannot be set by staff.
 CREATE FUNCTION public.staff_support_set_status(p_actor uuid, p_role text, p_conversation uuid, p_status text)
 RETURNS boolean
@@ -284,6 +285,16 @@ BEGIN
   END IF;
   IF conv.status = 'solved' AND p_status <> 'open' THEN
     RAISE EXCEPTION 'support: a solved ticket can only be reopened' USING ERRCODE = '22023';
+  END IF;
+  -- The learner's chat shows only their NEWEST conversation (support_learner_view), so a reopen must land on it, and
+  -- only within the same 7 days a learner's own message can reopen a solved chat (support_open_conversation).
+  -- Otherwise staff could reply into a conversation the learner never sees.
+  IF conv.status = 'solved' AND (
+       conv.solved_at IS NULL OR conv.solved_at <= now() - interval '7 days'
+       OR EXISTS (SELECT 1 FROM public.support_conversations n
+                   WHERE n.user_id = conv.user_id AND n.id <> conv.id
+                     AND (n.created_at, n.id) > (conv.created_at, conv.id))) THEN
+    RAISE EXCEPTION 'support: this chat is too old to reopen' USING ERRCODE = 'LW001';
   END IF;
   IF p_status = 'solved' THEN
     UPDATE public.support_conversations

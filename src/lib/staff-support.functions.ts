@@ -20,6 +20,7 @@ export const TOO_MANY_READS = "Too many requests. Wait a minute and try again.";
 export const TOO_MANY_CHANGES = "Too many changes. Wait a minute and try again.";
 export const NO_TICKET_MESSAGE = "That ticket does not exist.";
 export const ASSIGN_OTHERS_MESSAGE = "Handing a ticket to someone else needs the Staff permission.";
+export const TOO_OLD_MESSAGE = "This chat is too old to reopen; the learner can start a new one.";
 export const SELF_TICKET_MESSAGE = "You cannot act on your own account.";
 
 export type TicketFilter = "open" | "waiting" | "solved" | "all";
@@ -198,6 +199,7 @@ export const staffSetTicketStatus = createServerFn({ method: "POST" })
         ...COMMON_REFUSALS,
         "22023": "A solved ticket can only be reopened.",
         "23505": "The learner already has an open conversation, so this one cannot be reopened.",
+        LW001: TOO_OLD_MESSAGE,
       });
     }
     return { ok: true, changed: changed === true };

@@ -499,6 +499,14 @@ describe("the four writes", () => {
     ).rejects.toThrow(/already has an open conversation/);
   });
 
+  it("status: a reopen refused because the chat is too old or not the learner's newest says so", async () => {
+    const { admin } = adminClient();
+    admin.rpc.mockResolvedValueOnce({ data: null, error: { code: "LW001" } });
+    await expect(
+      call(staffSetTicketStatus, SAM, admin, { id: TICKET, status: "open" }),
+    ).rejects.toThrow(mod.TOO_OLD_MESSAGE);
+  });
+
   it("note: trims, caps at 2000, needs support.reply", async () => {
     const { admin } = adminClient();
     admin.rpc.mockResolvedValueOnce({ data: "note-id", error: null });

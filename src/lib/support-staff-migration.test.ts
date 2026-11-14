@@ -421,12 +421,12 @@ describe("support staff migration: status", () => {
     await reset();
   });
 
-  it("refuses to reopen a solved ticket when the learner already has a live conversation (the index decides)", async () => {
+  it("refuses to reopen a solved ticket when the learner already has a newer live conversation", async () => {
     await reset();
     const audits = await count("staff_audit_log", "action = 'support.status'");
     const old = await ticket(25, LEARNER, "solved", { body: "old" });
     await ticket(26, LEARNER, "open", { body: "new one" });
-    await rejects(setStatus(SAM, old, "open"), "23505");
+    await rejects(setStatus(SAM, old, "open"), "LW001");
     expect(
       (
         await db.query<{ status: string }>(
@@ -436,6 +436,49 @@ describe("support staff migration: status", () => {
       ).rows[0]!.status,
     ).toBe("solved");
     expect(await count("staff_audit_log", "action = 'support.status'")).toBe(audits);
+    await reset();
+  });
+});
+
+describe("support staff migration: reopen only what the learner can see", () => {
+  const statusOf = async (id: string) =>
+    (
+      await db.query<{ status: string }>(
+        "SELECT status FROM public.support_conversations WHERE id=$1",
+        [id],
+      )
+    ).rows[0]!.status;
+
+  it("refuses to reopen a chat solved more than 7 days ago (a learner message would not reopen it either)", async () => {
+    await reset();
+    const audits = await count("staff_audit_log", "action = 'support.status'");
+    const old = await ticket(60, LEARNER, "solved", { body: "old" });
+    await db.query(
+      "UPDATE public.support_conversations SET solved_at = now() - interval '7 days 1 hour' WHERE id=$1",
+      [old],
+    );
+    await rejects(setStatus(SAM, old, "open"), "LW001");
+    expect(await statusOf(old)).toBe("solved");
+    expect(await count("staff_audit_log", "action = 'support.status'")).toBe(audits);
+    // just inside the window it still works
+    await db.query(
+      "UPDATE public.support_conversations SET solved_at = now() - interval '6 days 23 hours' WHERE id=$1",
+      [old],
+    );
+    expect(await setStatus(SAM, old, "open")).toBe(true);
+    await reset();
+  });
+
+  it("refuses to reopen an older solved chat when the learner has a newer one (the learner's view shows only the newest)", async () => {
+    await reset();
+    const older = await ticket(61, LEARNER, "solved", { body: "first" });
+    const newer = await ticket(62, LEARNER, "solved", { body: "second" });
+    await rejects(setStatus(SAM, older, "open"), "LW001");
+    expect(await statusOf(older)).toBe("solved");
+    // the newest one can be reopened, and the learner sees it
+    expect(await setStatus(SAM, newer, "open")).toBe(true);
+    const view = await one<{ status: string }>("public.support_learner_view($1)", [LEARNER]);
+    expect(view!.status).toBe("open");
     await reset();
   });
 });
