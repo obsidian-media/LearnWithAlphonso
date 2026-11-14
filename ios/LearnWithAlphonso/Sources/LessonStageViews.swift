@@ -1012,22 +1012,21 @@ struct LessonRewardTile: View {
 
 /// A new achievement: a gold medal on navy. Toasts slide in 250 ms apart after the tiles (a fade under Reduce Motion).
 struct LessonAchievementToast: View {
+    /// The achievement's id: the medallion drawn is that badge's own art.
+    let id: String
     let title: String
     let detail: String
     let index: Int
     let reduce: Bool
+    /// A tap opens the unlock sheet.
+    var onTap: (() -> Void)?
 
     @Environment(\.alphonsoDS) private var ds
     @State private var shown = false
 
     var body: some View {
         HStack(spacing: AlphonsoDS.Space.s3) {
-            DSIconView(icon: .trophy, size: 28)
-                .foregroundStyle(ds.brand)
-                .frame(width: 56, height: 56)
-                .background(Circle().fill(RadialGradient(
-                    colors: [ds.xpTint, ds.xp, ds.xpEdge], center: UnitPoint(x: 0.35, y: 0.3),
-                    startRadius: 0, endRadius: 40)))
+            BadgeMedallion(id: id, size: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s2, state: .earned)
             VStack(alignment: .leading, spacing: 1) {
                 Text("Achievement unlocked").dsText(.overline).foregroundStyle(ds.onHeroKick)
                 Text(title).dsText(.headline).foregroundStyle(ds.onHero)
@@ -1044,6 +1043,9 @@ struct LessonAchievementToast: View {
         .opacity(shown ? 1 : 0)
         .offset(y: shown || reduce ? 0 : -16)
         .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(onTap == nil ? [] : .isButton)
+        .contentShape(Rectangle())
+        .onTapGesture { onTap?() }
         .onAppear {
             withAnimation(.easeOut(duration: reduce ? AlphonsoDS.Motion.reducedMax : AlphonsoDS.Motion.sheetWeb)
                 .delay(reduce ? 0 : 1.7 + Double(index) * 0.25)) { shown = true }
@@ -1085,6 +1087,8 @@ struct LessonCompleteView<Extras: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var amazed = true
     @State private var appeared = false
+    /// The achievement whose unlock sheet is open: the first new one shows after the celebration, the toast reopens it.
+    @State private var unlockShown: Achievement?
 
     private var tiles: [(kind: LessonRewardTile.Kind, value: String)] {
         var out: [(kind: LessonRewardTile.Kind, value: String)] = chips.map { chip -> (kind: LessonRewardTile.Kind, value: String) in
@@ -1157,8 +1161,8 @@ struct LessonCompleteView<Extras: View>: View {
                         VStack(spacing: AlphonsoDS.Space.s2) {
                             ForEach(Array(achievements.enumerated()), id: \.element.id) { index, achievement in
                                 LessonAchievementToast(
-                                    title: achievement.title, detail: achievement.description, index: index,
-                                    reduce: reduceMotion)
+                                    id: achievement.id, title: achievement.title, detail: achievement.description, index: index,
+                                    reduce: reduceMotion, onTap: { unlockShown = achievement })
                             }
                         }
                     }
@@ -1203,9 +1207,17 @@ struct LessonCompleteView<Extras: View>: View {
         }
         .task {
             // He says "wow", then smiles (1.4 s in). Under Reduce Motion he is already smiling.
-            guard !reduceMotion else { return }
-            try? await Task.sleep(for: .seconds(1.4))
-            amazed = false
+            if !reduceMotion {
+                try? await Task.sleep(for: .seconds(1.4))
+                amazed = false
+            }
+            // The first new achievement slides up once the celebration has played (at once under Reduce Motion, with
+            // no confetti).
+            if !reduceMotion { try? await Task.sleep(for: .seconds(1.6)) }
+            if unlockShown == nil, let first = achievements.first { unlockShown = first }
+        }
+        .sheet(item: $unlockShown) { achievement in
+            AchievementUnlockSheet(achievement: achievement) { unlockShown = nil }
         }
     }
 }
