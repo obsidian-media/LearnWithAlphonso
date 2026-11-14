@@ -12,7 +12,9 @@ name: Regenerate iOS Provisioning Profile
 # release run. Found live 2026-09-26 when build 23's archive failed on the
 # Sign in with Apple entitlement added in #146.
 #
-# ENABLE THE CAPABILITY ON THE APP ID FIRST, in the Developer portal. This
+# ENABLE THE CAPABILITY ON THE APP ID FIRST, in the Developer portal, or
+# list a settings-free one (e.g. ASSOCIATED_DOMAINS) in the
+# ensure_capabilities input and the script adds it before the profile. This
 # reads whatever the App ID currently has and fails loudly if the new
 # profile does not carry the entitlement -- it cannot add one.
 #
@@ -22,6 +24,11 @@ name: Regenerate iOS Provisioning Profile
 # IOS_PROVISIONING_PROFILE_BASE64 and IOS_PROVISIONING_PROFILE_UUID change.
 on:
   workflow_dispatch:
+    inputs:
+      ensure_capabilities:
+        description: "Comma-separated settings-free capabilities to add to the App ID first (e.g. ASSOCIATED_DOMAINS); empty = none"
+        required: false
+        default: ""
 
 # Read-only token: nothing here writes to the repository through GitHub.
 permissions:
@@ -43,6 +50,7 @@ jobs:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_P8_BASE64: ${{ secrets.APP_STORE_CONNECT_KEY_P8_BASE64 }}
+          ENSURE_CAPABILITIES: ${{ inputs.ensure_capabilities }}
 
       - name: Encode the profile for the secret
         run: base64 -i out/ios_distribution.mobileprovision -o out/ios_provisioning_profile_base64.txt

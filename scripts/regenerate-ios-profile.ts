@@ -22,8 +22,12 @@
  * `CODE_SIGNING_ALLOWED=NO`, so signing is never exercised until a real
  * release run.
  *
- * Enable the capability on the App ID in the Developer portal FIRST. This
- * script reads whatever the App ID currently has; it cannot add anything.
+ * Enable the capability on the App ID in the Developer portal FIRST, or
+ * name it in ENSURE_CAPABILITIES (comma-separated App Store Connect
+ * capability types, e.g. ASSOCIATED_DOMAINS): the script then adds any
+ * listed capability the App ID lacks before it creates the profile. Only
+ * capabilities with no settings can be added this way; Sign in with Apple
+ * needs its settings and stays a portal step.
  *
  * Only two secrets change afterwards -- `IOS_PROVISIONING_PROFILE_BASE64`
  * and `IOS_PROVISIONING_PROFILE_UUID`. The certificate and its password are
@@ -39,6 +43,26 @@ const KEY_ID = process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
 const KEY_P8_BASE64 = process.env.APP_STORE_CONNECT_KEY_P8_BASE64;
 const BUNDLE_ID = process.env.BUNDLE_ID || "com.obsidianmedia.learnwithalphonso";
+
+/**
+ * Capability type -> the entitlement key it puts in the profile. Only
+ * settings-free capabilities belong here (see the header).
+ */
+const ENSURABLE: Record<string, string> = {
+  ASSOCIATED_DOMAINS: "com.apple.developer.associated-domains",
+};
+const ENSURE_CAPABILITIES = (process.env.ENSURE_CAPABILITIES ?? "")
+  .split(",")
+  .map((c) => c.trim())
+  .filter(Boolean);
+const unknownCaps = ENSURE_CAPABILITIES.filter((c) => !(c in ENSURABLE));
+if (unknownCaps.length) {
+  console.error(
+    `ENSURE_CAPABILITIES has unsupported value(s): ${unknownCaps.join(", ")}. ` +
+      `Supported: ${Object.keys(ENSURABLE).join(", ")}`,
+  );
+  process.exit(1);
+}
 
 const missing = [
   ["APP_STORE_CONNECT_KEY_ID", KEY_ID],
@@ -132,6 +156,28 @@ async function main() {
   }
   console.log(`Matched bundle ID ${bundleIdResource.id} (${BUNDLE_ID})`);
 
+  if (ENSURE_CAPABILITIES.length) {
+    const capsResp = await api(`/bundleIds/${bundleIdResource.id}/bundleIdCapabilities?limit=200`);
+    const have = new Set(
+      (capsResp.data as unknown as AscResource[]).map((c) => String(c.attributes?.capabilityType)),
+    );
+    for (const cap of ENSURE_CAPABILITIES) {
+      if (have.has(cap)) {
+        console.log(`Capability ${cap} already enabled on the App ID.`);
+        continue;
+      }
+      console.log(`Enabling capability ${cap} on the App ID...`);
+      await api("/bundleIdCapabilities", "POST", {
+        data: {
+          type: "bundleIdCapabilities",
+          attributes: { capabilityType: cap },
+          relationships: { bundleId: { data: { id: bundleIdResource.id, type: "bundleIds" } } },
+        },
+      });
+      console.log(`  enabled ${cap}`);
+    }
+  }
+
   // The name carries a timestamp so a stale profile is identifiable at a
   // glance in the portal, matching the existing convention.
   const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
@@ -199,6 +245,15 @@ async function main() {
         " -> Sign in with Apple -> Save,\nthen run this again. A profile cannot add a capability the App ID lacks.",
     );
     process.exit(1);
+  }
+  for (const cap of ENSURE_CAPABILITIES) {
+    const key = ENSURABLE[cap]!;
+    if (!plistXml.includes(key)) {
+      console.error(`
+The new profile does NOT carry ${key} although ${cap} was ensured.`);
+      process.exit(1);
+    }
+    console.log(`${key} present in profile: true`);
   }
 
   // Only NOW retire the superseded profiles. An earlier version deleted
