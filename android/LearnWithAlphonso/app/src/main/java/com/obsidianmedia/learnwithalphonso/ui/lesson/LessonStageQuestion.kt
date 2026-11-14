@@ -54,6 +54,8 @@ fun LessonStageQuestion(
     onPick: (String?) -> Unit,
     onStarted: (Boolean) -> Unit,
     translationVerdict: TranslationVerdict?,
+    /** Which screen the question is on: the consent rules differ for a lesson and for Review. */
+    surface: AiConsentSurface = AiConsentSurface.LESSON,
 ) {
     val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
@@ -112,7 +114,7 @@ fun LessonStageQuestion(
                 // is told so with a way to turn AI grading on. Never a wall: the lesson goes on.
                 val consent by container.aiConsent.state.collectAsState()
                 var showConsent by rememberSaveable { mutableStateOf(false) }
-                if (!checked && AiConsentPolicy.offersAiGradingOptIn(AiConsentSurface.LESSON, container.aiConsent.statusOf(consent))) {
+                if (!checked && AiConsentPolicy.offersAiGradingOptIn(surface, container.aiConsent.statusOf(consent))) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(AiConsentCopy.localGradingNote, style = lessonBodyStyle(), color = ds.inkSoft, modifier = Modifier.weight(1f, fill = false))
                         TextButton(onClick = { showConsent = true }) { Text(AiConsentCopy.turnOnAiGrading, color = ds.choice) }

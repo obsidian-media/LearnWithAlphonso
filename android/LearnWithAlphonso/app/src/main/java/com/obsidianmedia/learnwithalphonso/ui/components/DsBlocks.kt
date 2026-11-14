@@ -233,7 +233,7 @@ fun DsRankBadge(rank: Int, medal: DsRankMedal?) {
     val (face, ink) = when (medal) {
         DsRankMedal.GOLD -> ds.xp to ds.onAction
         DsRankMedal.SILVER -> ds.line to ds.ink
-        DsRankMedal.BRONZE -> ds.flame to ds.onWrong
+        DsRankMedal.BRONZE -> ds.flame to ds.onAction
         null -> ds.sunk to ds.inkSoft
     }
     Box(
@@ -290,7 +290,7 @@ fun DsField(value: String, onChange: (String) -> Unit, placeholder: String, modi
         textStyle = BodyType.copy(color = ds.ink), cursorBrush = SolidColor(ds.choice),
         modifier = modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).onFocusChanged { focused = it.isFocused }
             .clip(shape).background(ds.card).border(2.dp, if (focused) ds.choice else ds.line, shape).padding(AlphonsoTokens.Space.s3)
-            .semantics { contentDescription = placeholder },
+            .semantics { contentDescription = if (value.isEmpty()) placeholder else "$placeholder, $value" },
         decorationBox = { inner ->
             Box(contentAlignment = Alignment.CenterStart) {
                 if (value.isEmpty()) Text(placeholder, style = BodyType, color = ds.inkFaint)
@@ -320,25 +320,34 @@ fun DsDivider() {
     Box(Modifier.fillMaxWidth().height(1.dp).background(LocalAlphonsoTokens.current.line))
 }
 
-/** The back control over a scene: a glass pill with the parent screen's name, then any chips the screen offers on the right. */
+/**
+ * The back control over a scene: a glass pill with the parent screen's name, then any chips the screen offers on the right.
+ * The chips wrap onto a second line at a large font size instead of running off the edge. [showBack] false leaves only the chips
+ * (Settings has just Done, as the mock draws it).
+ */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-fun DsBackBar(parent: String, onBack: () -> Unit, modifier: Modifier = Modifier, actions: @Composable () -> Unit = {}) {
+fun DsBackBar(parent: String, onBack: () -> Unit, modifier: Modifier = Modifier, showBack: Boolean = true, actions: @Composable () -> Unit = {}) {
     val ds = LocalAlphonsoTokens.current
     Row(
         modifier.fillMaxWidth().padding(horizontal = AlphonsoTokens.Space.gutter, vertical = AlphonsoTokens.Space.s2),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
+        verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
     ) {
-        Row(
-            Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clip(CircleShape).background(glassFace())
-                .clickable(role = Role.Button, onClick = onBack).padding(horizontal = AlphonsoTokens.Space.s3)
-                .semantics(mergeDescendants = true) { contentDescription = "Back to $parent" },
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
-        ) {
-            androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = ds.choice, modifier = Modifier.size(AlphonsoTokens.Space.s4))
-            Text(parent, style = FootnoteType, color = ds.choice)
+        if (showBack) {
+            Row(
+                Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clip(CircleShape).background(glassFace())
+                    .clickable(role = Role.Button, onClick = onBack).padding(horizontal = AlphonsoTokens.Space.s3)
+                    .semantics(mergeDescendants = true) { contentDescription = "Back to $parent" },
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
+            ) {
+                androidx.compose.material3.Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = ds.choice, modifier = Modifier.size(AlphonsoTokens.Space.s4))
+                Text(parent, style = FootnoteType, color = ds.choice)
+            }
         }
-        Box(Modifier.weight(1f))
-        actions()
+        FlowRow(
+            Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2, Alignment.End),
+            verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
+        ) { actions() }
     }
 }
 

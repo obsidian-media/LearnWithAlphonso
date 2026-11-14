@@ -106,7 +106,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
 
     DsSceneScreen(DsScene.PROFILE) {
         Column(Modifier.fillMaxWidth()) {
-            DsBackBar("Profile", onBack) { DsGlassChip("Done", onBack) }
+            DsBackBar("Profile", onBack, showBack = false) { DsGlassChip("Done", onBack) }
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.gutter).padding(bottom = AlphonsoTokens.Space.s6),
                 verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
@@ -124,7 +124,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                 Section("Theme") {
                     DsChipRow {
                         AlphonsoThemeId.entries.forEach { id ->
-                            val p = AlphonsoPalettes.light.getValue(id)
+                            val swatch = AlphonsoTokens.colors(com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoPaletteId.forTheme(id), false).brand
                             DsChip(
                                 if (theme == id) "${id.displayName} ✓" else id.displayName, theme == id,
                                 onClick = {
@@ -132,7 +132,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                                     container.session.userId?.let { uid -> scope.launch { runCatching { container.progressClient.updateProfileTheme(id.raw, uid) } } }
                                 },
                                 accessibilityText = if (theme == id) "${id.displayName}, selected" else id.displayName,
-                                leading = { Box(Modifier.size(AlphonsoTokens.Space.s4).clip(CircleShape).background(p.moss)) },
+                                leading = { Box(Modifier.size(AlphonsoTokens.Space.s4).clip(CircleShape).background(swatch)) },
                             )
                         }
                     }

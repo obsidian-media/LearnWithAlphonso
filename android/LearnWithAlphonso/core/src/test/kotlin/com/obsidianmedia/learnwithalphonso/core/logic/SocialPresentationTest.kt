@@ -141,16 +141,38 @@ class FriendsPresentationTest {
 
 class OutOfHeartsHeartsTest {
     @Test
-    fun `the sheet shows the hearts it is given and defaults to the gate's zero`() {
-        assertEquals(0, OutOfHeartsModel(refillAt = null).hearts)
-        assertEquals(3, OutOfHeartsModel(refillAt = null, hearts = 3).hearts)
+    fun `the countdown rounds up to the second and reads minutes and seconds`() {
+        val m = OutOfHeartsModel(refillAt = 272_000)
+        assertEquals("4:32", m.countdown(0))
+        assertEquals("4:32", m.countdown(1)) // 271.999 s left rounds up, never down to 4:31
+        assertEquals("0:01", m.countdown(271_001))
+        assertEquals("0:01", m.countdown(271_999))
     }
 
     @Test
-    fun `the message carries the countdown the sheet highlights`() {
+    fun `there is no countdown once the refill is due or when none is known`() {
         val m = OutOfHeartsModel(refillAt = 272_000)
-        assertEquals("4:32", m.countdown(0))
-        assertTrue(m.message(0).contains("Your next heart comes back in 4:32."))
+        assertNull(m.countdown(272_000))
+        assertNull(m.countdown(300_000))
+        assertTrue(m.isRefillDue(272_000))
+        assertFalse(m.isRefillDue(271_999))
+        assertNull(OutOfHeartsModel(refillAt = null).countdown(0))
+        assertFalse(OutOfHeartsModel(refillAt = null).isRefillDue(Long.MAX_VALUE))
+    }
+
+    @Test
+    fun `the message carries the next-heart sentence with the countdown and a fallback without one`() {
+        val m = OutOfHeartsModel(refillAt = 272_000)
+        assertEquals("You've used all your hearts for now. Your next heart comes back in 4:32.", m.message(0))
+        assertEquals("You've used all your hearts for now. A heart will come back shortly.", OutOfHeartsModel(refillAt = null).message(0))
+    }
+
+    @Test
+    fun `buying is offered online only and the sheet shows the hearts it is given`() {
+        assertTrue(OutOfHeartsModel(null).showsBuy(true))
+        assertFalse(OutOfHeartsModel(null).showsBuy(false))
+        assertEquals(0, OutOfHeartsModel(null).hearts)
+        assertEquals(3, OutOfHeartsModel(null, hearts = 3).hearts)
     }
 }
 

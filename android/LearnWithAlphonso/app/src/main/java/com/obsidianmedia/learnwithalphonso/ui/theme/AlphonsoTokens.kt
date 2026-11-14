@@ -338,7 +338,7 @@ object AlphonsoTokens {
         val summit = Color(0xFF4A7F7A)
     }
 
-    /** Spacing, 4 dp base. The screen gutter is 16 dp. */
+    /** Spacing, 4 dp base. The screen gutter is 16 dp. The smallest touch target is 48 dp here (Android's guideline); iOS and web keep 44. */
     object Space {
         val s1 = 4.dp
         val s2 = 8.dp
@@ -349,8 +349,8 @@ object AlphonsoTokens {
         val s8 = 32.dp
         val s12 = 48.dp
         val gutter = 16.dp
-        val minTouch = 44.dp
-        val values: Map<String, Int> = mapOf("s1" to 4, "s2" to 8, "s3" to 12, "s4" to 16, "s5" to 20, "s6" to 24, "s8" to 32, "s12" to 48, "gutter" to 16, "minTouch" to 44)
+        val minTouch = 48.dp
+        val values: Map<String, Int> = mapOf("s1" to 4, "s2" to 8, "s3" to 12, "s4" to 16, "s5" to 20, "s6" to 24, "s8" to 32, "s12" to 48, "gutter" to 16, "minTouch" to 48)
     }
 
     /** Pressables are 16, floating things 22 to 28, chips and HUD pills fully round. */

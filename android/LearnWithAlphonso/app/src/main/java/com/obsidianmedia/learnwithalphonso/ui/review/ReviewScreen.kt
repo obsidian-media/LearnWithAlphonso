@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.review
 
+import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentSurface
 import android.text.format.DateUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -124,7 +125,7 @@ fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit, se
                                     container = container, question = question, course = course, vocabImages = container.content.vocabImages,
                                     checked = answered, isCorrect = correct, isReinforcing = false,
                                     compact = layout.size == LessonStage.Size.SMALL, picked = state.picked, onPick = vm::pick,
-                                    onStarted = { }, translationVerdict = state.translationVerdict,
+                                    onStarted = { }, translationVerdict = state.translationVerdict, surface = AiConsentSurface.REVIEW,
                                 )
                             }
                         }
