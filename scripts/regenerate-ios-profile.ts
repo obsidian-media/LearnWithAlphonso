@@ -157,7 +157,7 @@ async function main() {
   console.log(`Matched bundle ID ${bundleIdResource.id} (${BUNDLE_ID})`);
 
   if (ENSURE_CAPABILITIES.length) {
-    const capsResp = await api(`/bundleIds/${bundleIdResource.id}/bundleIdCapabilities?limit=200`);
+    const capsResp = await api(`/bundleIds/${bundleIdResource.id}/bundleIdCapabilities`);
     const have = new Set(
       (capsResp.data as unknown as AscResource[]).map((c) => String(c.attributes?.capabilityType)),
     );
