@@ -100,7 +100,7 @@ object HeartsEconomy {
  * Everything the out-of-hearts screen shows, so the composable only renders. Same copy and M:SS countdown
  * (ceil to the second) as the iOS Kit's OutOfHeartsModel and the web's HeartsModal.
  */
-data class OutOfHeartsModel(val refillAt: Long?) {
+data class OutOfHeartsModel(val refillAt: Long?, /** The hearts the learner has when the sheet opens (0 at the gate; the sheet shows what it is given). */ val hearts: Int = 0) {
     fun countdown(now: Long): String? {
         val refill = refillAt ?: return null
         val remainingMs = refill - now

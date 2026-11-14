@@ -40,13 +40,15 @@ class FriendsViewModel(
     private val nudgeCache: NudgeCooldownCache,
     private val userId: String?,
     private val apiBaseUrl: String,
+    private val seed: FriendsUiState? = null,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(FriendsUiState())
+    private val _state = MutableStateFlow(seed ?: FriendsUiState())
     val state: StateFlow<FriendsUiState> = _state.asStateFlow()
 
     init { loadAll() }
 
     fun loadAll() {
+        if (seed != null) return
         _state.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
             val friends = runCatching { client.fetchFriendsProgress() }

@@ -550,6 +550,8 @@ export function renderKotlin(src: DesignSource): string {
     const mode = t.palettes[p][m];
     return `    val ${id} = Colors(\n${names.map((k) => `        ${k} = Color(0xFF${mode[k].slice(1)}),`).join("\n")}\n    )`;
   }).join("\n\n");
+  // Android's minimum touch target is 48 dp, 4 more than the shared token: a platform rule, so it lives here, not in tokens.json.
+  const androidSpace = { ...t.space, minTouch: Math.max(t.space.minTouch, 48) };
   const intMap = (o: Record<string, number>) =>
     `mapOf(${Object.entries(o)
       .map(([k, v]) => `"${k}" to ${v}`)
@@ -603,10 +605,10 @@ ${Object.entries(t.league)
   .join("\n")}
     }
 
-    /** Spacing, 4 dp base. The screen gutter is 16 dp. */
+    /** Spacing, 4 dp base. The screen gutter is 16 dp. The smallest touch target is 48 dp here (Android's guideline); iOS and web keep 44. */
     object Space {
-${dps(t.space)}
-        val values: Map<String, Int> = ${intMap(t.space)}
+${dps(androidSpace)}
+        val values: Map<String, Int> = ${intMap(androidSpace)}
     }
 
     /** Pressables are 16, floating things 22 to 28, chips and HUD pills fully round. */

@@ -1,5 +1,9 @@
 package com.obsidianmedia.learnwithalphonso.ui.settings
 
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +15,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -35,7 +38,6 @@ import com.obsidianmedia.learnwithalphonso.core.firstrun.LearnerProfileLists
 import com.obsidianmedia.learnwithalphonso.core.logic.ExplainCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.ExplainMode
 import com.obsidianmedia.learnwithalphonso.core.logic.ExplainRules
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -46,7 +48,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 internal fun ExplainSection(container: AppContainer) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val store = container.explainSettings
     val settings by store.state.collectAsState()
     val scope = rememberCoroutineScope()
@@ -78,29 +80,29 @@ internal fun ExplainSection(container: AppContainer) {
     Section(ExplainCopy.SETTINGS_TITLE, footer = "${ExplainCopy.ABOUT_HEADING} ${ExplainCopy.ABOUT_NOTE}") {
         if (!settings.loaded) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(if (loadFailed) ExplainCopy.SAVE_FAILED else "Loading...", style = MaterialTheme.typography.bodyLarge, color = palette.inkSoft, modifier = Modifier.weight(1f))
-                if (loadFailed) TextButton(onClick = { loadFailed = false; scope.launch { store.ensureLoaded(force = true); loadFailed = !store.state.value.loaded } }) { Text(ExplainCopy.RETRY, color = palette.moss) }
+                Text(if (loadFailed) ExplainCopy.SAVE_FAILED else "Loading...", style = HeadlineType, color = ds.inkSoft, modifier = Modifier.weight(1f))
+                if (loadFailed) TextButton(onClick = { loadFailed = false; scope.launch { store.ensureLoaded(force = true); loadFailed = !store.state.value.loaded } }) { Text(ExplainCopy.RETRY, color = ds.choice) }
             }
             return@Section
         }
         val languageName = settings.nativeLanguage?.let(ExplainRules::languageName) ?: "your language"
         Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(ExplainCopy.MY_LANGUAGE, style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier = Modifier.weight(1f))
+            Text(ExplainCopy.MY_LANGUAGE, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
             Box {
                 TextButton(enabled = !saving, onClick = { picking = true }, modifier = Modifier.semantics { contentDescription = "${ExplainCopy.MY_LANGUAGE}, ${settings.nativeLanguage?.let(ExplainRules::languageName) ?: "not chosen"}" }) {
-                    Text(settings.nativeLanguage?.let(ExplainRules::languageName) ?: "Choose a language", color = palette.moss)
+                    Text(settings.nativeLanguage?.let(ExplainRules::languageName) ?: "Choose a language", color = ds.choice)
                 }
                 DropdownMenu(expanded = picking, onDismissRequest = { picking = false }, modifier = Modifier.heightIn(max = 360.dp)) {
                     languages.forEach { (code, name) ->
                         DropdownMenuItem(
-                            text = { Text(name, color = if (code == settings.nativeLanguage) palette.moss else palette.ink) },
+                            text = { Text(name, color = if (code == settings.nativeLanguage) ds.choice else ds.ink) },
                             onClick = { picking = false; if (code != settings.nativeLanguage) save(language = code) },
                         )
                     }
                 }
             }
         }
-        Text(ExplainCopy.FROM_FIRST_RUN, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+        Text(ExplainCopy.FROM_FIRST_RUN, style = FootnoteType, color = ds.inkSoft)
         Column(Modifier.fillMaxWidth().selectableGroup().padding(top = 8.dp)) {
             ExplainMode.entries.forEach { mode ->
                 val (title, body) = when (mode) {
@@ -115,17 +117,17 @@ internal fun ExplainSection(container: AppContainer) {
                         .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    RadioButton(selected = on, onClick = null, colors = RadioButtonDefaults.colors(selectedColor = palette.moss, unselectedColor = palette.inkSoft))
+                    RadioButton(selected = on, onClick = null, colors = RadioButtonDefaults.colors(selectedColor = ds.choice, unselectedColor = ds.inkSoft))
                     Column(Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(title, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
-                            if (mode == ExplainMode.DEFAULT) Text(ExplainCopy.DEFAULT_BADGE, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
+                            Text(title, style = HeadlineType, color = ds.ink)
+                            if (mode == ExplainMode.DEFAULT) Text(ExplainCopy.DEFAULT_BADGE, style = CaptionType, color = ds.inkSoft)
                         }
-                        Text(body, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                        Text(body, style = FootnoteType, color = ds.inkSoft)
                     }
                 }
             }
         }
-        error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
+        error?.let { Text(it, style = FootnoteType, color = ds.wrongInk) }
     }
 }

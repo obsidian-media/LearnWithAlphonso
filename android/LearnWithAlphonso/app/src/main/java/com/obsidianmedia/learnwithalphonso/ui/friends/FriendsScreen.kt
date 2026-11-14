@@ -3,6 +3,33 @@ package com.obsidianmedia.learnwithalphonso.ui.friends
 import com.obsidianmedia.learnwithalphonso.core.logic.InviteLink
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.core.logic.FriendsPresentation
+import com.obsidianmedia.learnwithalphonso.ui.components.DsBackBar
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDivider
+import com.obsidianmedia.learnwithalphonso.ui.components.DsField
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassTitle
+import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
+import com.obsidianmedia.learnwithalphonso.ui.components.DsScene
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
+import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +41,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,7 +53,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -36,25 +60,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.BuildConfig
 import com.obsidianmedia.learnwithalphonso.core.net.FriendProgress
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
-import com.obsidianmedia.learnwithalphonso.ui.league.ScreenHeader
-import com.obsidianmedia.learnwithalphonso.ui.league.SectionCard
 import com.obsidianmedia.learnwithalphonso.ui.social.AvatarCircle
 import com.obsidianmedia.learnwithalphonso.ui.social.BlockConfirmDialog
 import com.obsidianmedia.learnwithalphonso.ui.social.ReportSheet
 import com.obsidianmedia.learnwithalphonso.ui.social.SocialSafetyMenu
 import com.obsidianmedia.learnwithalphonso.ui.social.SocialTarget
 import com.obsidianmedia.learnwithalphonso.ui.social.ToastBanner
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
 @Composable
-fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -> Unit, onEnterCode: (String) -> Unit) {
-    val palette = AlphonsoColor.palette
+fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -> Unit, onEnterCode: (String) -> Unit, seededVm: FriendsViewModel? = null, seededBuddyVm: BuddyViewModel? = null) {
+    val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
-    val vm: FriendsViewModel = viewModel { FriendsViewModel(container.progressClient, container.nudgeCache, container.session.userId, BuildConfig.API_BASE_URL) }
+    val vm: FriendsViewModel = seededVm ?: viewModel { FriendsViewModel(container.progressClient, container.nudgeCache, container.session.userId, BuildConfig.API_BASE_URL) }
     val state by vm.state.collectAsState()
-    val buddyVm: BuddyViewModel = viewModel { BuddyViewModel(container.progressClient) }
+    val buddyVm: BuddyViewModel = seededBuddyVm ?: viewModel { BuddyViewModel(container.progressClient) }
     var knownAgeRange by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) { knownAgeRange = runCatching { container.learnerProfileClient.fetch().answers.ageRange }.getOrNull() }
     var removeTarget by remember { mutableStateOf<FriendProgress?>(null) }
@@ -64,46 +83,64 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
 
     LifecycleResumeEffect(Unit) { vm.checkForNudges(); onPauseOrDispose { } }
 
-    Column(Modifier.fillMaxSize().background(palette.surface)) {
-        ScreenHeader("Friends", onBack) { TextButton(onClick = onOpenDuels) { Text("Duels", color = palette.moss) } }
-        ToastBanner(state.toast, onClear = vm::clearToast)
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            SectionCard("Invite a friend") {
-                Text("Share your link. When they open it and tap Add friend, you're friends.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                state.inviteLink?.let { link ->
-                    AlphonsoPrimaryButton("Share invite link", fullWidth = false, onClick = {
-                        val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, link) }
-                        context.startActivity(Intent.createChooser(send, "Share invite link"))
-                    })
-                }
-                Text("Got a link or code from a friend?", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = manualCode, onValueChange = { manualCode = it }, label = { Text("Friend link or code") }, singleLine = true, modifier = Modifier.weight(1f))
-                    AlphonsoSecondaryButton("Add", onClick = { InviteLink.codeFromEntry(manualCode)?.let { onEnterCode(it); manualCode = "" } }, enabled = InviteLink.codeFromEntry(manualCode) != null, fullWidth = false)
-                }
-            }
-            BuddySection(buddyVm, state.friends, knownAgeRange, onReport = { reportTarget = it })
-            SectionCard(if (state.friends.isEmpty()) "Your friends" else "${state.friends.size} friend${if (state.friends.size == 1) "" else "s"}") {
-                when {
-                    state.isLoading -> Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) }
-                    state.error != null -> Text(state.error!!, color = palette.inkSoft)
-                    state.friends.isEmpty() -> Text("No friends yet. Share your invite link to get started.", color = palette.inkSoft)
-                    else -> state.friends.forEach { f ->
-                        FriendRow(
-                            friend = f, canNudge = remember(state.nudgeVersion, f.userId) { vm.canNudge(f) },
-                            onNudge = { vm.nudge(f) }, onRemove = { removeTarget = f },
-                            onBlock = { blockTarget = f }, onReport = { reportTarget = SocialTarget(f.userId, f.displayName) },
-                        )
+    DsSceneScreen(DsScene.PRACTICE) {
+        Column(Modifier.fillMaxWidth()) {
+            DsBackBar("Profile", onBack) { DsGlassChip("Duels", onOpenDuels) }
+            ToastBanner(state.toast, onClear = vm::clearToast)
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.gutter).padding(bottom = AlphonsoTokens.Space.s6),
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                DsGlassTitle("Friends", FriendsPresentation.countLine(state.friends.size))
+                DsCard {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                        Icon(painterResource(R.drawable.ds_friends), null, tint = ds.xp, modifier = Modifier.size(AlphonsoTokens.Space.s12))
+                        Column(Modifier.weight(1f)) {
+                            Text("Invite a friend", style = HeadlineType, color = ds.ink, modifier = Modifier.semantics { heading() })
+                            Text("Share your link. When they open it and tap Add friend, you're friends.", style = FootnoteType, color = ds.inkSoft)
+                        }
+                    }
+                    state.inviteLink?.let { link ->
+                        LessonEdgeButton("Share invite link", EdgeVariant.PRIMARY, {
+                            val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, link) }
+                            context.startActivity(Intent.createChooser(send, "Share invite link"))
+                        })
+                    }
+                    Text("Got a link or code from a friend?", style = CaptionType, color = ds.inkSoft)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                        Box(Modifier.weight(1f)) { DsField(manualCode, { manualCode = it }, "Friend link or code") }
+                        val code = InviteLink.codeFromEntry(manualCode)
+                        DsCompactButton("Add", { code?.let { onEnterCode(it); manualCode = "" } }, enabled = code != null)
                     }
                 }
-            }
-            if (state.activity.isNotEmpty()) {
-                SectionCard("Activity") {
-                    state.activity.forEach { e ->
-                        val icon = when (e.eventType) { "lesson_completed" -> "✓"; "streak_milestone" -> "🔥"; "league_promotion" -> "⬆"; else -> "●" }
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(icon, color = palette.moss)
-                            Text(vm.activityCopy(e), style = MaterialTheme.typography.bodyMedium, color = palette.ink)
+                DsOverline("Study buddy")
+                BuddySection(buddyVm, state.friends, knownAgeRange, onReport = { reportTarget = it })
+                DsOverline(FriendsPresentation.friendsHeader(state.friends.size))
+                DsCard(padding = AlphonsoTokens.Space.s2, spacing = 0.dp) {
+                    when {
+                        state.isLoading -> Box(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s2), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) }
+                        state.error != null -> Text(state.error!!, style = FootnoteType, color = ds.inkSoft, modifier = Modifier.padding(AlphonsoTokens.Space.s2))
+                        state.friends.isEmpty() -> Text("No friends yet. Share your invite link to get started.", style = FootnoteType, color = ds.inkSoft, modifier = Modifier.padding(AlphonsoTokens.Space.s2))
+                        else -> state.friends.forEachIndexed { index, f ->
+                            if (index > 0) DsDivider()
+                            FriendRow(
+                                friend = f, canNudge = remember(state.nudgeVersion, f.userId) { vm.canNudge(f) },
+                                onNudge = { vm.nudge(f) }, onRemove = { removeTarget = f },
+                                onBlock = { blockTarget = f }, onReport = { reportTarget = SocialTarget(f.userId, f.displayName) },
+                            )
+                        }
+                    }
+                }
+                if (state.activity.isNotEmpty()) {
+                    DsOverline("Activity")
+                    DsCard {
+                        state.activity.forEach { e ->
+                            val icon = when (e.eventType) { "lesson_completed" -> R.drawable.ds_check; "streak_milestone" -> R.drawable.ds_flame_solid; "league_promotion" -> R.drawable.ds_trophy; else -> R.drawable.ds_star_solid }
+                            val tint = when (e.eventType) { "lesson_completed" -> ds.right; "streak_milestone" -> ds.flame; else -> ds.xp }
+                            Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(painterResource(icon), null, tint = tint, modifier = Modifier.size(AlphonsoTokens.Space.s6))
+                                Text(vm.activityCopy(e), style = BodyType, color = ds.ink)
+                            }
                         }
                     }
                 }
@@ -116,7 +153,7 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
             onDismissRequest = { removeTarget = null },
             title = { Text("Remove ${f.displayName}?") },
             text = { Text("You won't see each other's activity or streaks anymore.") },
-            confirmButton = { TextButton(onClick = { vm.remove(f); removeTarget = null }) { Text("Remove", color = palette.destructive) } },
+            confirmButton = { TextButton(onClick = { vm.remove(f); removeTarget = null }) { Text("Remove", color = ds.wrongInk) } },
             dismissButton = { TextButton(onClick = { removeTarget = null }) { Text("Cancel") } },
         )
     }
@@ -126,47 +163,60 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
 
 @Composable
 private fun FriendRow(friend: FriendProgress, canNudge: Boolean, onNudge: () -> Unit, onRemove: () -> Unit, onBlock: () -> Unit, onReport: () -> Unit) {
-    val palette = AlphonsoColor.palette
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-        AvatarCircle(friend.avatarSeed, friend.displayName, 40.dp)
+    val ds = LocalAlphonsoTokens.current
+    Row(
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
+        modifier = Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).padding(AlphonsoTokens.Space.s2),
+    ) {
+        AvatarCircle(friend.avatarSeed, friend.displayName, AlphonsoTokens.Space.s8 + AlphonsoTokens.Space.s2)
         Column(Modifier.weight(1f)) {
-            Text(friend.displayName, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = palette.ink)
-            Text("🔥 ${friend.streak}-day streak", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+            Text(friend.displayName, style = HeadlineType, color = ds.ink)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+                Icon(painterResource(R.drawable.ds_flame_solid), null, tint = ds.flame, modifier = Modifier.size(AlphonsoTokens.Space.s3 + AlphonsoTokens.Space.s1))
+                Text("${friend.streak}-day streak", style = CaptionType, color = ds.inkSoft)
+            }
         }
         Column(horizontalAlignment = Alignment.End) {
-            Text("${friend.weekXp}", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = palette.ink)
-            Text("XP this week", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
+            Text("${friend.weekXp}", style = HeadlineType, color = ds.ink)
+            Text("XP this week", style = CaptionType, color = ds.inkSoft)
         }
-        AlphonsoSecondaryButton("👋", onClick = onNudge, enabled = canNudge, fullWidth = false)
-        Box {
-            SocialSafetyMenu(onBlock = onBlock, onReport = onReport)
-        }
-        TextButton(onClick = onRemove) { Text("Remove", color = palette.destructive, style = MaterialTheme.typography.labelMedium) }
+        DsCompactButton("👋", onNudge, enabled = canNudge)
+        SocialSafetyMenu(onBlock = onBlock, onReport = onReport)
     }
 }
 
 /** The in-app landing for an invite link or a typed code. */
 @Composable
 fun InviteAcceptScreen(container: AppContainer, code: String, onDone: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val vm: InviteAcceptViewModel = viewModel(key = "invite-$code") { InviteAcceptViewModel(container.progressClient, code) }
     val state by vm.state.collectAsState()
-    Column(Modifier.fillMaxSize().background(palette.surface)) {
-        ScreenHeader("Friend invite", onDone)
-        Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
-            when (val s = state) {
-                InviteState.Loading -> CircularProgressIndicator(color = palette.moss)
-                InviteState.Self -> Text("That's your own invite link. Share it with a friend instead.", color = palette.ink, textAlign = TextAlign.Center)
-                InviteState.Invalid -> Text("This invite link doesn't look right. Ask your friend for a fresh one.", color = palette.ink, textAlign = TextAlign.Center)
-                is InviteState.Ready -> {
-                    Text("Add ${s.inviterName} as a friend?", style = MaterialTheme.typography.headlineSmall, color = palette.ink, textAlign = TextAlign.Center)
-                    AlphonsoPrimaryButton("Add friend", onClick = vm::accept)
+    DsSceneScreen(DsScene.PRACTICE) {
+        Column(Modifier.fillMaxWidth()) {
+            DsBackBar("Friends", onDone)
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.gutter),
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                DsGlassTitle("Friend invite", null)
+                DsCard {
+                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                        when (val s = state) {
+                            InviteState.Loading -> CircularProgressIndicator(color = ds.choice)
+                            InviteState.Self -> Text("That's your own invite link. Share it with a friend instead.", style = BodyType, color = ds.ink, textAlign = TextAlign.Center)
+                            InviteState.Invalid -> Text("This invite link doesn't look right. Ask your friend for a fresh one.", style = BodyType, color = ds.ink, textAlign = TextAlign.Center)
+                            is InviteState.Ready -> {
+                                Text("Add ${s.inviterName} as a friend?", style = TitleType, color = ds.ink, textAlign = TextAlign.Center)
+                                LessonEdgeButton("Add friend", EdgeVariant.PRIMARY, vm::accept)
+                            }
+                            is InviteState.Accepted -> {
+                                Text("You and ${s.inviterName} are now friends.", style = TitleType, color = ds.ink, textAlign = TextAlign.Center)
+                                LessonEdgeButton("Done", EdgeVariant.PRIMARY, onDone)
+                            }
+                            is InviteState.Error -> Text(s.message, style = BodyType, color = ds.wrongInk, textAlign = TextAlign.Center)
+                        }
+                    }
                 }
-                is InviteState.Accepted -> {
-                    Text("You and ${s.inviterName} are now friends.", style = MaterialTheme.typography.headlineSmall, color = palette.ink, textAlign = TextAlign.Center)
-                    AlphonsoPrimaryButton("Done", onClick = onDone)
-                }
-                is InviteState.Error -> Text(s.message, color = palette.destructive, textAlign = TextAlign.Center)
             }
         }
     }

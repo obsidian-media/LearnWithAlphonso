@@ -57,11 +57,13 @@ class ReviewViewModel(
     private val ownerUserId: () -> String? = { null },
     /** Plan 4: the due-review nudge reuses this fetch (no second round trip), as ReviewQueueView.swift does. Last, so a trailing lambda lands here. */
     private val onQueueFetched: (List<ReviewItem>) -> Unit = {},
+    /** DEBUG screenshots (ScreenHarness): a seeded view-model shows exactly this state and never calls the network. */
+    private val seed: ReviewUiState? = null,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(ReviewUiState())
+    private val _state = MutableStateFlow(seed ?: ReviewUiState())
     val state: StateFlow<ReviewUiState> = _state.asStateFlow()
 
-    init { viewModelScope.launch { loadQueue() } }
+    init { if (seed == null) viewModelScope.launch { loadQueue() } }
 
     fun questionFor(item: ReviewItem): Question? {
         if (item.isSelfContained) return questionFromWeaknessItem(item)

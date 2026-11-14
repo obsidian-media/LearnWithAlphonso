@@ -3,6 +3,44 @@ package com.obsidianmedia.learnwithalphonso.ui.league
 import android.content.Intent
 import android.text.format.DateUtils
 import androidx.compose.foundation.background
+import com.obsidianmedia.learnwithalphonso.core.team.TeamMission
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import com.obsidianmedia.learnwithalphonso.core.logic.LeaguePresentation
+import com.obsidianmedia.learnwithalphonso.core.logic.TeamsPresentation
+import com.obsidianmedia.learnwithalphonso.ui.components.DsBackBar
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDivider
+import com.obsidianmedia.learnwithalphonso.ui.components.DsField
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassTitle
+import com.obsidianmedia.learnwithalphonso.ui.components.DsHeroCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPill
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPillTone
+import com.obsidianmedia.learnwithalphonso.ui.components.DsRankBadge
+import com.obsidianmedia.learnwithalphonso.ui.components.DsScene
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSegmented
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
+import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
+import com.obsidianmedia.learnwithalphonso.ui.social.AvatarCircle
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,78 +105,127 @@ fun SectionCard(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-fun TeamsScreen(container: AppContainer, onBack: () -> Unit) {
-    val palette = AlphonsoColor.palette
+fun TeamsScreen(container: AppContainer, onBack: () -> Unit, seededVm: TeamsViewModel? = null, seededMission: TeamMission? = null) {
+    val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
-    val vm: TeamsViewModel = viewModel { TeamsViewModel(container.progressClient) }
+    val vm: TeamsViewModel = seededVm ?: viewModel { TeamsViewModel(container.progressClient) }
     val state by vm.state.collectAsState()
     var code by remember { mutableStateOf("") }
     var newName by remember { mutableStateOf("") }
     var visibility by remember { mutableStateOf("public") }
 
-    Column(Modifier.fillMaxSize().background(palette.surface)) {
-        ScreenHeader("Teams", onBack)
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            val team = state.myTeam
-            if (team != null) {
-                SectionCard(team.name) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Join code: ${team.joinCode}", color = palette.ink, modifier = Modifier.weight(1f))
-                        TextButton(onClick = {
-                            val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, vm.shareText(team)) }
-                            context.startActivity(Intent.createChooser(send, "Share join code"))
-                        }) { Text("Share", color = palette.moss) }
+    DsSceneScreen(DsScene.PROFILE) {
+        Column(Modifier.fillMaxWidth()) {
+            DsBackBar("League", onBack)
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.gutter).padding(bottom = AlphonsoTokens.Space.s6),
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                val team = state.myTeam
+                if (team != null) {
+                    DsHeroCard {
+                        Text("YOUR TEAM", style = OverlineType, color = ds.onHeroKick)
+                        Text(team.name, style = DisplayType, color = ds.onHero, modifier = Modifier.semantics { heading() })
+                        Text("${team.thisWeekXp} XP this week", style = HeadlineType, color = ds.onHeroKick)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                            Text(
+                                "Join code: ${team.joinCode}", style = FootnoteType, color = ds.onHero,
+                                modifier = Modifier.weight(1f).heightIn(min = AlphonsoTokens.Space.minTouch).clip(RoundedCornerShape(AlphonsoTokens.Radius.control))
+                                    .background(ds.onHero.copy(alpha = 0.14f)).padding(horizontal = AlphonsoTokens.Space.s3).wrapContentHeight(Alignment.CenterVertically),
+                            )
+                            Box(
+                                Modifier.size(AlphonsoTokens.Space.minTouch).clip(CircleShape).background(ds.action)
+                                    .clickable(role = Role.Button) {
+                                        val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, vm.shareText(team)) }
+                                        context.startActivity(Intent.createChooser(send, "Share join code"))
+                                    }
+                                    .semantics { contentDescription = "Share team invite" },
+                                contentAlignment = Alignment.Center,
+                            ) { Icon(Icons.Filled.Share, null, tint = ds.onAction, modifier = Modifier.size(AlphonsoTokens.Space.s5)) }
+                        }
+                        if (!state.canLeave) {
+                            Text(
+                                "Can't leave until ${DateUtils.formatDateTime(context, team.switchLockedUntilMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_MONTH)}",
+                                style = CaptionType, color = ds.onHeroSoft,
+                            )
+                        }
                     }
-                    Text("${team.thisWeekXp} XP this week", style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                    if (state.canLeave) TextButton(onClick = vm::leave) { Text("Leave team", color = palette.destructive) }
-                    else Text("Can't leave until ${DateUtils.formatDateTime(context, team.switchLockedUntilMillis, DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_MONTH)}", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                }
-                // The mission card follows the member count: an owner removing someone turns a two-person mission
-                // into "invite a friend" on the server, and the card must follow (a refresh also fires on entry).
-                val missionVm: TeamMissionViewModel = viewModel(key = "team-mission-teams") { TeamMissionViewModel(container.progressClient) }
-                val mission by missionVm.state.collectAsState()
-                LaunchedEffect(state.members.size) { missionVm.refresh() }
-                // Only a mission that belongs to the team on screen: after leaving one team and joining another here, the
-                // view-model still holds the old team's mission until the new refresh returns.
-                mission?.takeIf { it.teamId == team.teamId }?.let { TeamMissionCard(it) }
-                SectionCard("Members") {
-                    state.members.forEach { m ->
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(m.displayName, color = palette.ink, modifier = Modifier.weight(1f))
-                            if (m.isOwner) Text("Owner", style = MaterialTheme.typography.labelSmall, color = palette.ember, fontWeight = FontWeight.SemiBold)
-                            // Only the owner's list contains blocked members; shown so they can be removed.
-                            if (m.isBlocked) Text("Blocked", style = MaterialTheme.typography.labelSmall, color = palette.destructive, fontWeight = FontWeight.SemiBold)
-                            if (team.isOwner && !m.isOwner) TextButton(onClick = { vm.kick(m) }) { Text("Remove", color = palette.destructive) }
+                    // The mission card follows the member count: an owner removing someone turns a two-person mission
+                    // into "invite a friend" on the server, and the card must follow (a refresh also fires on entry).
+                    val missionVm: TeamMissionViewModel = viewModel(key = "team-mission-teams") { TeamMissionViewModel(container.progressClient) }
+                    val fetchedMission by missionVm.state.collectAsState()
+                    val mission = seededMission ?: fetchedMission
+                    LaunchedEffect(state.members.size) { if (seededMission == null) missionVm.refresh() }
+                    // Only a mission that belongs to the team on screen: after leaving one team and joining another here, the
+                    // view-model still holds the old team's mission until the new refresh returns.
+                    mission?.takeIf { it.teamId == team.teamId }?.let { TeamMissionCard(it) }
+                    DsOverline("Members")
+                    DsCard(padding = AlphonsoTokens.Space.s2, spacing = 0.dp) {
+                        state.members.forEachIndexed { index, m ->
+                            if (index > 0) DsDivider()
+                            Row(
+                                Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).padding(vertical = AlphonsoTokens.Space.s2, horizontal = AlphonsoTokens.Space.s2),
+                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+                            ) {
+                                AvatarCircle(m.avatarSeed, m.displayName, AlphonsoTokens.Space.s8 + AlphonsoTokens.Space.s2)
+                                Text(m.displayName, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+                                if (m.isOwner) DsPill("Owner", DsPillTone.GOLD)
+                                // Only the owner's list contains blocked members; shown so they can be removed.
+                                if (m.isBlocked) DsPill("Blocked", DsPillTone.BAD)
+                                if (team.isOwner && !m.isOwner) DsCompactButton("Remove", { vm.kick(m) }, danger = true)
+                            }
+                        }
+                    }
+                } else {
+                    DsGlassTitle("Teams", TeamsPresentation.SUBTITLE)
+                    if (state.teamLoadFailed) {
+                        DsOverline("Your team")
+                        DsCard {
+                            Text("Couldn't load your team.", style = HeadlineType, color = ds.ink)
+                            DsCompactButton("Try again", { vm.loadAll() })
+                        }
+                    } else {
+                        DsOverline("Join a team")
+                        DsCard {
+                            DsField(code, { code = it }, "Join code")
+                            LessonEdgeButton("Join by code", EdgeVariant.PRIMARY, { vm.joinByCode(code) }, enabled = TeamsPresentation.canJoin(code))
+                            LessonEdgeButton("Put me on a team", EdgeVariant.SECONDARY, vm::autoJoin)
+                        }
+                        DsOverline("Create a team")
+                        DsCard {
+                            DsField(newName, { newName = it }, "Team name")
+                            DsSegmented(listOf("public" to "Public", "private" to "Private"), visibility, { visibility = it }, "Team visibility")
+                            LessonEdgeButton("Create team", EdgeVariant.PRIMARY, { vm.createTeam(newName, visibility); newName = "" }, enabled = TeamsPresentation.canCreate(newName))
                         }
                     }
                 }
-            } else if (state.teamLoadFailed) {
-                SectionCard("Your team") {
-                    Text("Couldn't load your team.", color = palette.ink)
-                    TextButton(onClick = { vm.loadAll() }) { Text("Try again", color = palette.moss) }
-                }
-            } else {
-                SectionCard("Join a team") {
-                    OutlinedTextField(value = code, onValueChange = { code = it }, label = { Text("Join code") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    AlphonsoSecondaryButton("Join by code", onClick = { vm.joinByCode(code) }, enabled = code.isNotBlank())
-                    AlphonsoSecondaryButton("Put me on a team", onClick = vm::autoJoin)
-                }
-                SectionCard("Create a team") {
-                    OutlinedTextField(value = newName, onValueChange = { newName = it }, label = { Text("Team name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        listOf("public" to "Public", "private" to "Private").forEachIndexed { i, (raw, label) ->
-                            SegmentedButton(selected = visibility == raw, onClick = { visibility = raw }, shape = SegmentedButtonDefaults.itemShape(i, 2)) { Text(label) }
+                DsOverline("This week's top teams")
+                when {
+                    state.isLoading -> DsCard { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) } }
+                    state.leaderboard.isEmpty() -> DsCard { Text("No teams have earned XP this week yet.", style = FootnoteType, color = ds.inkSoft) }
+                    else -> DsCard(padding = AlphonsoTokens.Space.s2, spacing = 0.dp) {
+                        state.leaderboard.forEachIndexed { i, t ->
+                            if (i > 0) DsDivider()
+                            val mine = t.teamId == team?.teamId
+                            Row(
+                                Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clip(RoundedCornerShape(AlphonsoTokens.Radius.control))
+                                    .background(if (mine) ds.choiceTint else Color.Transparent).padding(horizontal = AlphonsoTokens.Space.s2, vertical = AlphonsoTokens.Space.s1),
+                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+                            ) {
+                                DsRankBadge(i + 1, LeaguePresentation.medal(i + 1))
+                                Column(Modifier.weight(1f).semantics(mergeDescendants = true) { }) {
+                                    Text(t.name, style = HeadlineType, color = ds.ink)
+                                    Text("${t.weeklyXp} XP this week", style = CaptionType, color = ds.inkSoft)
+                                }
+                            }
                         }
                     }
-                    AlphonsoPrimaryButton("Create team", onClick = { vm.createTeam(newName, visibility); newName = "" }, enabled = newName.isNotBlank())
                 }
+                if (team != null && state.canLeave) {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { DsCompactButton("Leave team", vm::leave, danger = true) }
+                }
+                state.error?.let { Text(it, style = FootnoteType, color = ds.wrongInk) }
             }
-            SectionCard("This week's top teams") {
-                if (state.isLoading) Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) }
-                else if (state.leaderboard.isEmpty()) Text("No teams have earned XP this week yet.", color = palette.inkSoft)
-                else state.leaderboard.forEachIndexed { i, t -> AlphonsoRowCard("${i + 1}. ${t.name}", "${t.weeklyXp} XP this week") }
-            }
-            state.error?.let { Text(it, color = palette.destructive, style = MaterialTheme.typography.bodySmall) }
         }
     }
 }
