@@ -20,6 +20,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as DotwellKnownAppleAppSiteAssociationRouteImport } from './routes/[.]well-known/apple-app-site-association'
 import { Route as AuthenticatedCompleteProfileRouteImport } from './routes/_authenticated/complete-profile'
 import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticated/converse'
 import { Route as AuthenticatedDuelsRouteImport } from './routes/_authenticated/duels'
@@ -123,6 +124,12 @@ const WelcomeRoute = WelcomeRouteImport.update({
   path: '/welcome',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotwellKnownAppleAppSiteAssociationRoute =
+  DotwellKnownAppleAppSiteAssociationRouteImport.update({
+    id: '/.well-known/apple-app-site-association',
+    path: '/.well-known/apple-app-site-association',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedCompleteProfileRoute =
   AuthenticatedCompleteProfileRouteImport.update({
     id: '/complete-profile',
@@ -381,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
+  '/.well-known/apple-app-site-association': typeof DotwellKnownAppleAppSiteAssociationRoute
   '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
@@ -441,6 +449,7 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
+  '/.well-known/apple-app-site-association': typeof DotwellKnownAppleAppSiteAssociationRoute
   '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/converse': typeof AuthenticatedConverseRoute
   '/duels': typeof AuthenticatedDuelsRoute
@@ -503,6 +512,7 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
+  '/.well-known/apple-app-site-association': typeof DotwellKnownAppleAppSiteAssociationRoute
   '/_authenticated/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/_authenticated/converse': typeof AuthenticatedConverseRoute
   '/_authenticated/duels': typeof AuthenticatedDuelsRoute
@@ -565,6 +575,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/welcome'
+    | '/.well-known/apple-app-site-association'
     | '/complete-profile'
     | '/converse'
     | '/duels'
@@ -625,6 +636,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/welcome'
+    | '/.well-known/apple-app-site-association'
     | '/complete-profile'
     | '/converse'
     | '/duels'
@@ -686,6 +698,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/welcome'
+    | '/.well-known/apple-app-site-association'
     | '/_authenticated/complete-profile'
     | '/_authenticated/converse'
     | '/_authenticated/duels'
@@ -748,6 +761,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   WelcomeRoute: typeof WelcomeRoute
+  DotwellKnownAppleAppSiteAssociationRoute: typeof DotwellKnownAppleAppSiteAssociationRoute
   ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
   ApiAccountExportRoute: typeof ApiAccountExportRoute
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
@@ -850,6 +864,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/apple-app-site-association': {
+      id: '/.well-known/apple-app-site-association'
+      path: '/.well-known/apple-app-site-association'
+      fullPath: '/.well-known/apple-app-site-association'
+      preLoaderRoute: typeof DotwellKnownAppleAppSiteAssociationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/complete-profile': {
@@ -1271,6 +1292,8 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   WelcomeRoute: WelcomeRoute,
+  DotwellKnownAppleAppSiteAssociationRoute:
+    DotwellKnownAppleAppSiteAssociationRoute,
   ApiAccountDeleteRoute: ApiAccountDeleteRoute,
   ApiAccountExportRoute: ApiAccountExportRoute,
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,

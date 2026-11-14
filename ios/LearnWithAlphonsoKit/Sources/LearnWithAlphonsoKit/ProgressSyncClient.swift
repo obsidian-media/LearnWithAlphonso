@@ -690,6 +690,38 @@ public final class ProgressSyncClient: Sendable {
         return rows.first?["code"] as? String
     }
 
+    /// Who an invite code belongs to, for the "Add {name} as a friend?" screen (`get_friend_invite_preview`, the only
+    /// thing that can look a code up). `isFound` is false for an unknown code.
+    public struct FriendInvitePreview: Equatable, Sendable {
+        public let isFound: Bool
+        public let isSelf: Bool
+        public let displayName: String?
+        public init(isFound: Bool, isSelf: Bool, displayName: String?) {
+            self.isFound = isFound; self.isSelf = isSelf; self.displayName = displayName
+        }
+    }
+
+    public func getFriendInvitePreview(code: String) async throws -> FriendInvitePreview {
+        var request = URLRequest(url: supabaseURL.appendingPathComponent("rest/v1/rpc/get_friend_invite_preview"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["_code": code])
+
+        let (data, response) = try await requester(request)
+        try Self.requireSuccess(data: data, response: response)
+        guard let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            throw ProgressSyncError.invalidPayload
+        }
+        guard let row = rows.first else { return FriendInvitePreview(isFound: false, isSelf: false, displayName: nil) }
+        return FriendInvitePreview(
+            isFound: row["ok"] as? Bool ?? false,
+            isSelf: row["is_self"] as? Bool ?? false,
+            displayName: row["display_name"] as? String
+        )
+    }
+
     /// Calls the `accept_friend_invite` SECURITY DEFINER RPC -- self-invite,
     /// invalid-code and blocked-user are handled server-side (`ok: false` +
     /// a message), not client-side validation. Not currently wired into any
