@@ -33,6 +33,8 @@ Only two steps use a metered resource. Everything else is free to repeat.
 
 ### 1. Scene still (Codex image generation)
 
+Approved stills and poses are kept permanently in the owner's SocialMedia workstation, `alphonso-art` folder (the 2026-11-13 classroom scenes and the 12 poses of 2026-11-14, with their prompts); reuse one before generating a new scene.
+
 Headless Codex CLI, with the two Alphonso reference images attached:
 
 ```sh
