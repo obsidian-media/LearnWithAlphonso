@@ -55,6 +55,17 @@ Higgsfield account, and each was approved by the owner before it was bundled (sp
 The same Higgsfield terms apply as for the portraits. The iOS and Android apps carry copies of the same files.
 The 3D icons are not generated art: they are Microsoft Fluent Emoji 3D (MIT), see `THIRD_PARTY_NOTICES.md`.
 
+## Full-body Alphonso poses (2026-11-14)
+
+Twelve full-body poses of Alphonso (hearts calm, refill hourglass, thinking temple, explaining pointer, surprised
+impressed, streak flame, level-up cheer, sleepy night, listening headphones, phone call, welcome door, reading
+book) were made on 2026-11-14 with headless Codex image generation (the Codex CLI's image tool, run by the agent),
+from the official Alphonso reference images in this repo as input, then cut out to a transparent background, trimmed
+and scaled to 1200 px tall like `public/figures`. Each was approved by the owner before it was bundled. The Codex
+terms apply to these outputs, not the Higgsfield terms above. The iPhone bundles only the poses the redesigned
+screens use so far, as image sets `Alphonso-<pose>` (listed in `src/data/alphonso-figure-poses.json`): `reading-book`
+(Review) and `hearts-calm` (Out of hearts). The web and Android apps do not carry them yet.
+
 ## Commercial-use terms
 
 | Tool | Terms (quoted 2026-10-07) | Status |
