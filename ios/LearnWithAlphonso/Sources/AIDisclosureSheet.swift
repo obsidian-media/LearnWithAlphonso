@@ -55,12 +55,13 @@ private struct AIDisclosureGateModifier: ViewModifier {
                         }
                     }
             case .prompt(let kind):
-                prompt(kind)
+                prompt(kind).background(ds.surface)
             case .spinner:
                 // Unknown yet (fresh install, first read in flight): never prompt someone who may have consented
                 // on another device.
                 ProgressView().tint(ds.choice)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(ds.surface)
             }
         }
         .onChange(of: aiConsent.isGranted, initial: true) { _, granted in
@@ -100,7 +101,7 @@ private struct AIDisclosureGateModifier: ViewModifier {
                 .padding(AlphonsoDS.Space.gutter)
         } else {
             DSEmptyState(
-                art: "Alphonso-explaining-pointer",
+                emoji: "\u{2728}",
                 title: AIConsentCopy.gateTitle,
                 message: AIConsentCopy.gateBody,
                 actionTitle: AIConsentCopy.gateAction,
@@ -199,7 +200,8 @@ private struct AIDisclosureSheet: View {
             Text(AIConsentCopy.sheetBody)
                 .dsText(.footnote)
                 .foregroundStyle(ds.inkSoft)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
             Link(AIConsentCopy.privacyLink, destination: privacyPolicyURL)
                 .dsText(.footnote)

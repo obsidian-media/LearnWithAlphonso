@@ -18,8 +18,9 @@ struct DeadLetterNoticeSection: View {
         if let message = DeadLetterNotice.message(count: visible.count) {
             DSCard(spacing: AlphonsoDS.Space.s2) {
                 HStack(alignment: .center, spacing: AlphonsoDS.Space.s3) {
-                    Image("Alphonso-hearts-calm").resizable().scaledToFit()
-                        .frame(height: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s2)
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .dsText(.title)
+                        .foregroundStyle(ds.xpText)
                         .accessibilityHidden(true)
                     Text(message).dsText(.headline).foregroundStyle(ds.ink)
                         .fixedSize(horizontal: false, vertical: true)

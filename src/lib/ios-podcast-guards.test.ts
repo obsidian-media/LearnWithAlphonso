@@ -268,7 +268,7 @@ describe("iOS podcast quiz guards", () => {
     expect(text).toContain("PodcastQuizRun(questions: offer.questions)");
     expect(text).toContain("run.saved(result)");
     // The score on screen is the result the server returned.
-    expect(text).toContain('Text("\\(result.correct) of \\(result.total) correct")');
+    expect(text).toContain('headline: "\\(result.correct) of \\(result.total) correct"');
     expect(text).toContain("PodcastQuizCopy.xpLine(for: result)");
     // No local scoring: nothing compares a choice with the key to count a score or XP.
     expect(text).not.toMatch(/score|xpGain\s*[+=]|\* 10/);
@@ -352,22 +352,15 @@ describe("iOS podcast quiz: every choice card takes a tap, and the row button re
 
   // QA froze at question 3 of "Ordering Coffee": its choices ("It means no") are the first that are all shorter than
   // half the card. A plain-style button hit-tests only what it draws, so the middle of each card was dead.
-  it("the choice button's hit shape is the whole card, set after the full-width frame", () => {
-    const row = functionBody(
-      sheet(),
-      "private func choiceRow(index: Int, text: String, answerIndex: Int) -> some View {",
-    );
-    const frame = row.indexOf(".frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch");
-    const shape = row.indexOf(
-      ".contentShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control",
-    );
-    const plain = row.indexOf(".buttonStyle(.plain)");
-    expect(frame).toBeGreaterThan(-1);
-    expect(plain).toBeGreaterThan(-1);
-    // On the label, after the frame that makes it full width (a shape on the Text alone would cover only the glyphs).
-    expect(shape).toBeGreaterThan(frame);
-    expect(shape).toBeLessThan(plain);
-    expect(row.indexOf("run.select(index)")).toBeLessThan(shape);
+  it("the choices are the lesson's own answer buttons, so the whole card takes a tap", () => {
+    const text = sheet();
+    // LessonAnswerButton sets the content shape after its full-width frame (ios-lesson guards pin that).
+    expect(text).toContain("LessonAnswerButton(");
+    expect(text).toContain(") { run.select(index) }");
+    expect(text).toContain(".disabled(run.checked)");
+    // The verdict is the lesson's sheet, and the result is the lesson-complete layout.
+    expect(text).toContain("LessonVerdictSheet(");
+    expect(text).toContain("LessonCompleteView(");
   });
 
   const rowButton = () => {

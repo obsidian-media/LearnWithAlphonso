@@ -9,34 +9,38 @@ struct UpdateRequiredView: View {
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        VStack(spacing: AlphonsoDS.Space.s4) {
-            Spacer()
-            Image("Alphonso-welcome-door").resizable().scaledToFit()
-                .frame(height: AlphonsoDS.Space.s12 * 4)
-                .accessibilityHidden(true)
-            Text("Please update Alphonso")
-                .dsText(.display)
-                .foregroundStyle(ds.brand)
-                .multilineTextAlignment(.center)
-                .accessibilityAddTraits(.isHeader)
-            Text("This version of the app is no longer supported. Update to the latest version to keep learning. Your progress is saved to your account.")
-                .dsText(.body)
-                .foregroundStyle(ds.inkSoft)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-            if let store = requirement.storeURL {
-                Button("Update in the App Store") { openURL(store) }
-                    .buttonStyle(.dsButton(.primary))
-            } else {
-                Text("Open the App Store and update Learn with Alphonso.")
-                    .dsText(.headline)
-                    .foregroundStyle(ds.ink)
-                    .multilineTextAlignment(.center)
+        // Scrolls: nothing clips at the largest text sizes or in landscape, and this screen covers the whole app.
+        ScrollView {
+            VStack(spacing: AlphonsoDS.Space.s4) {
+                Image("Alphonso-welcome-door").resizable().scaledToFit()
+                    .frame(height: AlphonsoDS.Space.s12 * 4)
+                    .accessibilityHidden(true)
+                DSCard(spacing: AlphonsoDS.Space.s2) {
+                    Text("Please update Alphonso")
+                        .dsText(.display)
+                        .foregroundStyle(ds.brand)
+                        .accessibilityAddTraits(.isHeader)
+                    Text("This version of the app is no longer supported. Update to the latest version to keep learning. Your progress is saved to your account.")
+                        .dsText(.body)
+                        .foregroundStyle(ds.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if let store = requirement.storeURL {
+                    Button("Update in the App Store") { openURL(store) }
+                        .buttonStyle(.dsButton(.primary))
+                } else {
+                    DSCard {
+                        Text("Open the App Store and update Learn with Alphonso.")
+                            .dsText(.headline)
+                            .foregroundStyle(ds.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
             }
-            Spacer()
+            .padding(AlphonsoDS.Space.s6)
+            .frame(maxWidth: .infinity)
         }
-        .padding(AlphonsoDS.Space.s6)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .screenScene(.learn)
         .background(ds.surface.ignoresSafeArea())
         // Covers the whole app: nothing underneath can be tapped or reached with VoiceOver.
         .contentShape(Rectangle())

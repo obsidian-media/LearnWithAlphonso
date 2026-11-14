@@ -84,13 +84,10 @@ struct VoicePickerView: View {
                     Spacer(minLength: 0)
                     if savingID == voice.id {
                         ProgressView().tint(ds.choice)
-                    } else if isSelected {
-                        // The .isSelected trait below is what VoiceOver reads; the tick is how a sighted
+                    } else {
+                        // The .isSelected trait below is what VoiceOver reads; the radio is how a sighted
                         // learner sees the same fact.
-                        Image(systemName: "checkmark")
-                            .dsText(.headline)
-                            .foregroundStyle(ds.choice)
-                            .accessibilityHidden(true)
+                        SettingsRadioDot(selected: isSelected)
                     }
                 }
                 .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
