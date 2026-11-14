@@ -60,6 +60,7 @@ struct ReportSheet: View {
     let session: Session
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.alphonsoDS) private var ds
     @State private var selectedReason: ReportReason = .spam
     @State private var isSubmitting = false
     @State private var didSubmit = false
@@ -74,7 +75,7 @@ struct ReportSheet: View {
                     formBody
                 }
             }
-            .background(AlphonsoColor.surface)
+            .background(ds.surface)
             .navigationTitle("Report \(target.displayName)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -83,77 +84,61 @@ struct ReportSheet: View {
                 }
             }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
     }
 
     private var formBody: some View {
-        List {
-            Section {
-                ForEach(ReportReason.allCases) { reason in
-                    Button {
-                        selectedReason = reason
-                    } label: {
-                        HStack {
-                            Text(reason.label)
-                                .font(AlphonsoFont.sans(15))
-                                .foregroundStyle(AlphonsoColor.ink)
-                            Spacer()
-                            if selectedReason == reason {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(AlphonsoColor.moss)
+        ScrollView {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                DSOverline(target.isTeamName ? "Why are you reporting this team name?" : "Why are you reporting this person?")
+                DSCard(spacing: AlphonsoDS.Space.s2) {
+                    ForEach(ReportReason.allCases) { reason in
+                        Button {
+                            selectedReason = reason
+                        } label: {
+                            HStack(spacing: AlphonsoDS.Space.s3) {
+                                SettingsRadioDot(selected: selectedReason == reason)
+                                Text(reason.label).dsText(.headline).foregroundStyle(ds.ink)
+                                Spacer(minLength: 0)
                             }
+                            .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(selectedReason == reason ? .isSelected : [])
                     }
                 }
-            } header: {
-                Text(target.isTeamName ? "Why are you reporting this team name?" : "Why are you reporting this person?")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.ember)
-            }
-            .listRowBackground(AlphonsoColor.parchment)
 
-            if let errorMessage {
-                Text(errorMessage)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.destructive)
-                    .listRowBackground(Color.clear)
-            }
+                if let errorMessage {
+                    Text(errorMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
-            Section {
                 Button {
                     Task { await submit() }
                 } label: {
                     if isSubmitting {
-                        ProgressView().tint(AlphonsoColor.onAccent)
+                        ProgressView().tint(ds.onAction)
                     } else {
                         Text("Submit Report")
                     }
                 }
-                .buttonStyle(.alphonsoPrimary)
+                .buttonStyle(.dsButton(.primary))
                 .disabled(isSubmitting)
             }
-            .listRowBackground(Color.clear)
+            .padding(AlphonsoDS.Space.gutter)
         }
-        .scrollContentBackground(.hidden)
     }
 
     private var confirmationBody: some View {
-        VStack(spacing: AlphonsoSpacing.md) {
-            Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(AlphonsoColor.moss)
-            Text("Report submitted")
-                .font(AlphonsoFont.display(18, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
-            Text("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@alphonsoecosystem.app.")
-                .font(AlphonsoFont.sans(13))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+        VStack {
+            DSEmptyState(
+                emoji: "\u{1F6E1}",
+                title: "Report submitted",
+                message: "Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@alphonsoecosystem.app.")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
+        .padding(AlphonsoDS.Space.gutter)
     }
 
     private func submit() async {
