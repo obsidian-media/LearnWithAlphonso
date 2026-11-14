@@ -63,13 +63,12 @@ struct DuelsView: View {
         .navigationTitle("Duels")
         .tint(AlphonsoColor.moss)
         .task { await loadAll() }
-        .confirmationDialog(
+        .alphonsoChoiceDialog(
             "Block this opponent?",
             isPresented: Binding(
                 get: { duelBlockTarget != nil },
                 set: { if !$0 { duelBlockTarget = nil } },
             ),
-            titleVisibility: .visible,
         ) {
             Button("Block", role: .destructive) {
                 if let target = duelBlockTarget {

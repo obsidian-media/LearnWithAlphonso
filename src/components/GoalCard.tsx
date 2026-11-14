@@ -11,6 +11,7 @@ import {
   type GoalState,
 } from "../lib/learning-goal-client";
 import { LEVEL_ORDER, type GoalCourse, type GoalPlan } from "../lib/learning-goal";
+import { formatGoalDate as formatDate } from "../lib/path-goal-card";
 
 /**
  * The learning goal on the Learn page. It renders what /api/learning-goal returns and
@@ -19,19 +20,6 @@ import { LEVEL_ORDER, type GoalCourse, type GoalPlan } from "../lib/learning-goa
  * modal, which keeps it simple for keyboard and screen-reader users.
  */
 const DATE_SHAPE = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
-
-// A fixed English table, not the browser locale: the iOS card prints the same text from its own
-// copy of this table (GoalCopy.formatDate), and CLDR spells September "Sept" in some locales.
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function formatDate(iso: string): string {
-  const match = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(iso);
-  if (!match) return iso;
-  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
-  const date = new Date(Date.UTC(year, month - 1, day));
-  if (month < 1 || month > 12 || date.getUTCDate() !== day) return iso;
-  return `${day} ${MONTHS[month - 1]} ${year}`;
-}
 
 /** `months` ahead, clamped to the end of a shorter month (31 Aug + 6 months = 28 Feb, not 3 Mar). */
 function monthsFromToday(months: number): string {

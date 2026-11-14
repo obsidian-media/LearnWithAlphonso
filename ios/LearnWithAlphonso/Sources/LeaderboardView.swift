@@ -120,13 +120,12 @@ struct LeaderboardView: View {
                 Task { await checkForOvertake() }
             }
         }
-        .confirmationDialog(
+        .alphonsoChoiceDialog(
             "Block \(blockTarget?.displayName ?? "this user")?",
             isPresented: Binding(
                 get: { blockTarget != nil },
                 set: { if !$0 { blockTarget = nil } },
             ),
-            titleVisibility: .visible,
         ) {
             Button("Block", role: .destructive) {
                 if let target = blockTarget {

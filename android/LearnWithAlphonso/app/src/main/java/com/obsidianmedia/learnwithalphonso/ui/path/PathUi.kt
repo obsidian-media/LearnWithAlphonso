@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.path
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -70,6 +71,7 @@ import com.obsidianmedia.learnwithalphonso.core.path.LearningPath
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPathChange
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPathError
 import com.obsidianmedia.learnwithalphonso.core.path.PathApi
+import com.obsidianmedia.learnwithalphonso.core.path.PathGoalCard
 import com.obsidianmedia.learnwithalphonso.core.path.PathItem
 import com.obsidianmedia.learnwithalphonso.core.path.PathItemRef
 import com.obsidianmedia.learnwithalphonso.core.path.PathKind
@@ -262,6 +264,32 @@ private fun Card(modifier: Modifier = Modifier, content: @Composable () -> Unit)
 
 // ---------------------------------------------------------------- Learn: the path card with today's list (A1)
 
+/**
+ * The goal at the top of MY PATH: target level and date, lessons a week and whether the learner is on track, or an
+ * invitation to set one. It opens the goal planner (Build my path). Every word comes from [PathGoalCard] in `:core`,
+ * which reads the server's numbers; nothing is typed in here.
+ */
+@Composable
+private fun GoalCard(path: LearningPath?, onOpenPlanner: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val card = PathGoalCard.lines(path)
+    val shape = RoundedCornerShape(22.dp)
+    Row(
+        Modifier.fillMaxWidth().clip(shape).background(ds.card)
+            .border(1.dp, ds.line, shape)
+            .clickable(role = Role.Button, onClickLabel = if (card.hasGoal) "Change your goal" else "Open the planner", onClick = onOpenPlanner)
+            .defaultMinSize(minHeight = 48.dp).padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(card.kicker.uppercase(), style = MaterialTheme.typography.labelSmall, color = ds.actionText)
+            Text(card.headline, style = MaterialTheme.typography.titleLarge, color = ds.ink)
+            Text(card.detail, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+        }
+        Text("›", style = MaterialTheme.typography.titleLarge, color = ds.inkSoft, modifier = Modifier.clearAndSetSemantics { })
+    }
+}
+
 @Composable
 fun PathCard(vm: PathViewModel, onOpenRoad: () -> Unit, onBuild: () -> Unit, onOpenRef: (PathItemRef) -> Unit) {
     val ds = LocalAlphonsoTokens.current
@@ -274,13 +302,13 @@ fun PathCard(vm: PathViewModel, onOpenRoad: () -> Unit, onBuild: () -> Unit, onO
                 Text(s.error.userMessage, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyMedium, color = ds.wrongInk)
                 AlphonsoSecondaryButton("Try again", onClick = { vm.reload() }, fullWidth = false)
             }
-            PathUi.None -> Card {
-                AlphonsoSectionHeader("My path")
-                Text("Pick a level and a date and we will build a daily plan of lessons, podcasts, talks and story campaigns.", style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft)
-                AlphonsoPrimaryButton("Build my path", onClick = onBuild, fullWidth = false)
+            PathUi.None -> {
+                GoalCard(null, onBuild)
+                Text("With a goal we build a daily plan of lessons, podcasts, talks and story campaigns.", style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft)
             }
             is PathUi.Ready -> {
                 val p = s.path
+                GoalCard(p, onBuild)
                 Column(
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(ds.hero)
                         .clickable(role = Role.Button, onClickLabel = "Open my path", onClick = onOpenRoad).padding(14.dp),

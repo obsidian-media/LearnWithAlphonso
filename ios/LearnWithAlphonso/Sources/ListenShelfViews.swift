@@ -171,7 +171,10 @@ struct WatchShelfHost: View {
     @Environment(PathDeepLink.self) private var deepLink
 
     var body: some View {
-        Group {
+        // The loaders hang off `loadAnchor`, a real (zero-size) child that is always in the tree. They must never sit on
+        // the conditional content: while `videos` is empty the shelf draws nothing, a view that draws nothing never
+        // appears, and a `.task` on it never fires, so the shelf would never load (build 63).
+        VStack(spacing: 0) {
             if videosFailed {
                 HStack {
                     Text("We couldn't load the videos.").dsText(.footnote).foregroundStyle(AlphonsoColor.inkSoft)
@@ -183,10 +186,8 @@ struct WatchShelfHost: View {
             } else {
                 WatchShelfSection(videos: VideoShelf.shelf(videos, course: course)) { watching = $0 }
             }
+            loadAnchor
         }
-        .task { await loadVideos() }
-        // A path stop for a video lands here: open its player as soon as the videos are known.
-        .task(id: deepLink.pending) { openPendingVideo() }
         .sheet(item: $watching, onDismiss: {
             // Back from the player: the shelf shows what was just watched, and a chosen practice item opens now.
             Task { await loadVideos() }
@@ -209,8 +210,23 @@ struct WatchShelfHost: View {
         }
     }
 
+    /// Always present, draws nothing, takes no room. Carries the videos read and the path deep link.
+    private var loadAnchor: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+            .task { await loadVideos() }
+            // A path stop for a video lands here: open its player as soon as the videos are known.
+            .task(id: deepLink.pending) { openPendingVideo() }
+    }
+
     private func loadVideos() async {
-        guard let client = makePodcastClient(session: session) else { return }
+        guard let client = makePodcastClient(session: session) else {
+            // No session token: say so instead of showing nothing.
+            videosFailed = true
+            videosLoaded = true
+            return
+        }
         do {
             videos = try await client.fetchVideos()
             videosFailed = false

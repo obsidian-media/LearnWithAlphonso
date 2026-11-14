@@ -231,50 +231,82 @@ struct PathCardSection: View {
         }
     }
 
+    /// The goal at the top of MY PATH (target level and date, lessons a week, status) or an invitation to set one. It
+    /// opens the goal planner. Every word comes from `PathGoalCard` in the Kit, which reads the server's numbers.
+    private func goalCard(_ path: LearningPath?) -> some View {
+        let card = PathGoalCard.lines(for: path)
+        return Button { onBuild() } label: {
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                    Text(card.kicker).dsText(.overline).foregroundStyle(ds.actionText)
+                    Text(card.headline).dsText(.title).foregroundStyle(ds.ink)
+                    Text(card.detail).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                }
+                Spacer(minLength: AlphonsoDS.Space.s2)
+                Image(systemName: "chevron.right").foregroundStyle(ds.inkSoft).accessibilityHidden(true)
+            }
+            .padding(AlphonsoDS.Space.s3)
+            .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.card))
+            .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).strokeBorder(ds.line, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(card.kicker): \(card.headline). \(card.detail). \(card.hasGoal ? "Change your goal" : "Open the planner")")
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+    }
+
+    // The rows sit on design-system surfaces, never the List's own near-black default row colour: a row without
+    // `listRowBackground` draws the system grouped background, which did not match the navy surfaces on device.
     @ViewBuilder
     private var content: some View {
         switch model?.phase ?? .loading {
         case .loading:
-            ProgressView("Loading your path\u{2026}").tint(ds.choice)
+            ProgressView("Loading your path\u{2026}").tint(ds.choice).listRowBackground(ds.card)
         case .failed(let error):
             VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                 Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
                 Button("Try again") { Task { await model?.load() } }.buttonStyle(.alphonsoSecondary)
             }
+            .listRowBackground(ds.card)
         case .none:
-            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-                Text("Pick a level and a date and we will build a daily plan of lessons, podcasts, talks and story campaigns.")
-                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
-                Button("Build my path") { onBuild() }.buttonStyle(.alphonsoPrimary)
-            }
+            goalCard(nil)
+            Text("With a goal we build a daily plan of lessons, podcasts, talks and story campaigns.")
+                .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
         case .ready(let path):
-            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
-                NavigationLink(value: PathRoute.road) {
-                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-                        Text("Finish \(path.goalLabel)").dsText(.overline).foregroundStyle(ds.onHeroKick)
-                        Text(path.statusLine).dsText(.title).foregroundStyle(ds.onHero)
-                        PathBar(fraction: path.lessonFraction)
-                        Text("\(path.progress.lessonsDone) of \(path.progress.lessonsInScope) lessons")
-                            .dsText(.caption).foregroundStyle(ds.onHeroSoft)
-                    }
-                    .padding(AlphonsoDS.Space.s3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.hero))
+            goalCard(path)
+            NavigationLink(value: PathRoute.road) {
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                    Text("Finish \(path.goalLabel)").dsText(.overline).foregroundStyle(ds.onHeroKick)
+                    Text(path.statusLine).dsText(.title).foregroundStyle(ds.onHero)
+                    PathBar(fraction: path.lessonFraction)
+                    Text("\(path.progress.lessonsDone) of \(path.progress.lessonsInScope) lessons")
+                        .dsText(.caption).foregroundStyle(ds.onHeroSoft)
                 }
-                .accessibilityLabel("My path: finish \(path.goalLabel). \(path.statusLine). Open")
-                HStack {
-                    Text("Today \u{00B7} \(path.today.targetMinutes) min").dsText(.headline).foregroundStyle(ds.ink)
-                    Spacer()
-                    Text(path.today.minutesLeft > 0 ? "\(path.today.minutesLeft) min left" : "Done for today")
-                        .dsText(.caption).foregroundStyle(ds.inkSoft)
-                }
-                ForEach(Array(path.today.items.enumerated()), id: \.offset) { _, item in PathItemRow(item: item) }
-                if path.today.items.isEmpty {
-                    Text("Nothing planned today. Enjoy the rest.").dsText(.footnote).foregroundStyle(ds.inkSoft)
-                }
-                Text("Minutes are estimates from lesson length, episode length and typical call length.")
+                .padding(AlphonsoDS.Space.s3)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .accessibilityLabel("My path: finish \(path.goalLabel). \(path.statusLine). Open")
+            .listRowBackground(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.hero))
+            HStack {
+                Text("Today \u{00B7} \(path.today.targetMinutes) min").dsText(.headline).foregroundStyle(ds.ink)
+                Spacer()
+                Text(path.today.minutesLeft > 0 ? "\(path.today.minutesLeft) min left" : "Done for today")
                     .dsText(.caption).foregroundStyle(ds.inkSoft)
             }
+            .listRowBackground(ds.card)
+            ForEach(Array(path.today.items.enumerated()), id: \.offset) { _, item in
+                PathItemRow(item: item).listRowBackground(ds.card)
+            }
+            if path.today.items.isEmpty {
+                Text("Nothing planned today. Enjoy the rest.").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    .listRowBackground(ds.card)
+            }
+            Text("Minutes are estimates from lesson length, episode length and typical call length.")
+                .dsText(.caption).foregroundStyle(ds.inkSoft)
+                .listRowBackground(ds.card)
         }
     }
 }

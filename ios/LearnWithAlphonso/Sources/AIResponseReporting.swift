@@ -19,7 +19,7 @@ private struct ReportableAIMessage: ViewModifier {
                     }
                 }
                 .accessibilityAction(named: Text(AIConsentCopy.reportAction)) { showingReasons = true }
-                .confirmationDialog(AIConsentCopy.reportAction, isPresented: $showingReasons, titleVisibility: .visible) {
+                .alphonsoChoiceDialog(AIConsentCopy.reportAction, isPresented: $showingReasons) {
                     ForEach(AIResponseReportReason.allCases, id: \.self) { reason in
                         Button(reason.label) { Task { await send(makeReport(reason)) } }
                     }
@@ -80,7 +80,7 @@ struct AIReportButton: View {
             .underline()
             .frame(minHeight: AlphonsoDS.Space.minTouch)
             .accessibilityLabel("\(label) Report this explanation")
-            .confirmationDialog(AIConsentCopy.reportAction, isPresented: $showingReasons, titleVisibility: .visible) {
+            .alphonsoChoiceDialog(AIConsentCopy.reportAction, isPresented: $showingReasons) {
                 ForEach(AIResponseReportReason.allCases, id: \.self) { reason in
                     Button(reason.label) {
                         let report = AIResponseReport(message: message, surface: surface, course: course, reason: reason)

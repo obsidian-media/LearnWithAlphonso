@@ -72,20 +72,18 @@ struct BuddySection: View {
                 await load()
             }
         }
-        .confirmationDialog(
+        .alphonsoChoiceDialog(
             BuddyCopy.endConfirm(buddy?.buddyName ?? "your buddy"),
             isPresented: $confirmingEnd,
-            titleVisibility: .visible
         ) {
             Button("Yes, end", role: .destructive) {
                 Task { await run { try await $0.endBuddy() } }
             }
             Button("Keep", role: .cancel) {}
         }
-        .confirmationDialog(
+        .alphonsoChoiceDialog(
             BuddyCopy.blockConfirm(blockTarget?.displayName ?? "your buddy"),
             isPresented: Binding(get: { blockTarget != nil }, set: { if !$0 { blockTarget = nil } }),
-            titleVisibility: .visible
         ) {
             Button("Block", role: .destructive) {
                 if let target = blockTarget { Task { await block(target) } }

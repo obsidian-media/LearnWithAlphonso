@@ -215,13 +215,12 @@ struct TeamsView: View {
         // On the always-present List. Reloads when the member count changes: an owner kicking someone turns a
         // two-person mission into "invite a friend" on the server, and the card must follow.
         .task(id: "\(myTeam?.joinCode ?? "")-\(members.count)") { await missionModel.load(session: session) }
-        .confirmationDialog(
+        .alphonsoChoiceDialog(
             "Block \(blockTarget?.displayName ?? "this user")?",
             isPresented: Binding(
                 get: { blockTarget != nil },
                 set: { if !$0 { blockTarget = nil } }
             ),
-            titleVisibility: .visible
         ) {
             Button("Block", role: .destructive) {
                 if let target = blockTarget {
@@ -233,13 +232,12 @@ struct TeamsView: View {
         } message: {
             Text(SocialSafetyCopy.blockConfirmationMessage(blockTarget?.displayName ?? "This person"))
         }
-        .confirmationDialog(
+        .alphonsoChoiceDialog(
             TeamKickCopy.title(memberName: kickTarget?.displayName ?? "this member"),
             isPresented: Binding(
                 get: { kickTarget != nil },
                 set: { if !$0 { kickTarget = nil } }
             ),
-            titleVisibility: .visible
         ) {
             Button(TeamKickCopy.confirm, role: .destructive) {
                 if let member = kickTarget {

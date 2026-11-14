@@ -47,8 +47,10 @@ struct ProfileHubView: View {
                 tabNavRows
             }
             .scrollContentBackground(.hidden)
-            .background(ds.surface)
+            // The scene first, the flat surface behind it: a `.background` added later sits BEHIND an earlier one, so
+            // the surface used to be drawn over the scene (plain navy on builds 61 to 63).
             .screenScene(.profile)
+            .background(ds.surface)
             .navigationTitle("Profile")
             .task(id: activeCourse.course.wireCode) { await load() }
             .refreshable { await load() }
