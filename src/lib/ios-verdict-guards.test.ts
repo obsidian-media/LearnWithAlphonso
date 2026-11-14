@@ -50,7 +50,8 @@ describe("the verdict panel after Check", () => {
 
   it("review shows it too, keeping its own wording", () => {
     const body = between(review, "private var reviewBody: some View", "private func loadQueue()");
-    expect(body).toContain("AnswerVerdictPanel(");
+    // Round 12: review shows the lesson's verdict sheet (LessonStageViews.swift), with its own wording.
+    expect(body).toContain("LessonVerdictSheet(");
     expect(body).toContain('"Still got it."');
     expect(body).toContain('"Back in the queue."');
   });
@@ -74,9 +75,11 @@ describe("chunky answer tiles and word chips", () => {
   it("lesson and review each draw their answers through one shared tile, never a private copy", () => {
     expect(lesson).not.toContain("private func choiceButton");
     expect(review).not.toContain("private func choiceButton");
-    // Round 6: the lesson's numbered answer (LessonStageViews.swift); review keeps AnswerChoiceButton.
+    // Round 6: the lesson's numbered answer (LessonStageViews.swift). Round 12: review draws its question through
+    // the lesson's own QuestionCard, so its answers are the same tile.
     expect(lesson).toContain("LessonAnswerButton(");
-    expect(review).toContain("AnswerChoiceButton(");
+    expect(review).toContain("QuestionCard(");
+    expect(review).not.toContain("AnswerChoiceButton(");
     // The accessibility wording moved with it.
     expect(panel).toContain('"\\(choice), your answer, correct"');
     expect(panel).toContain('"\\(choice), correct answer"');
@@ -123,10 +126,9 @@ describe("chunky answer tiles and word chips", () => {
     // Round 6: the lesson's word tiles, highlighted when picked and solid when placed.
     expect(lesson).toContain("LessonWordTile(word: word, picked: picked == word)");
     expect(lesson).toContain("LessonWordTile(word: tokens[tokenIdx], placed: true)");
-    for (const file of [review]) {
-      expect(file).toContain(".buttonStyle(.alphonsoWordChip(picked: picked == word))");
-      expect(file).toContain(".buttonStyle(.alphonsoWordChip(picked: false))");
-    }
+    // Review draws them through the same QuestionCard, never a chip of its own.
+    expect(review).toContain("QuestionCard(");
+    expect(review).not.toContain(".alphonsoWordChip(");
   });
 
   it("the progress bar is thicker, with a moss gradient", () => {
@@ -185,9 +187,9 @@ describe("final review fixes", () => {
 
   it("review scrolls the same way, its controls pinned", () => {
     const body = between(review, "private var reviewBody: some View", "private func loadQueue()");
-    expect(body).toMatch(/ScrollView \{[\s\S]*ReviewQuestionCard\(/);
-    expect(body).toContain(".safeAreaInset(edge: .bottom)");
-    expect(from(body, ".safeAreaInset(edge: .bottom)")).toContain("AnswerVerdictPanel(");
+    expect(body).toMatch(/ScrollView \{[\s\S]*QuestionCard\(/);
+    expect(body).toContain(".safeAreaInset(edge: .bottom");
+    expect(from(body, ".safeAreaInset(edge: .bottom")).toContain("LessonVerdictSheet(");
   });
 
   it("a word card scrolls its own words, and its picture shrinks on a short screen", () => {
