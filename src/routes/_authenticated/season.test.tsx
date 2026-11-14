@@ -60,7 +60,8 @@ describe("Season page", () => {
       lastWeekResult: { division: 2, rankInCohort: 1, cohortSize: 25 },
     });
     renderPage();
-    expect(await screen.findByText(/Last week: Division 2, rank 1 of/)).toBeInTheDocument();
+    expect(await screen.findByText(/Division 2, rank 1 of/)).toBeInTheDocument();
+    expect(screen.getByText("Last week")).toBeInTheDocument();
   });
 
   it("shows a fallback message when status fails to load", async () => {

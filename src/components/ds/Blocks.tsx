@@ -1,9 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ComponentProps, ReactNode } from "react";
-import { MobileFrame } from "@/components/AppShell";
-import { SceneBackdrop } from "@/components/SceneBackdrop";
 import { medalFor } from "@/lib/social-presentation";
-import type { Scene } from "@/lib/scenes";
 
 /**
  * The round-6 building blocks the redesigned social, settings and review screens share (mocks r10 and r12): a scene
@@ -13,16 +10,6 @@ import type { Scene } from "@/lib/scenes";
 
 const GLASS =
   "rounded-[22px] border border-ds-card/60 bg-ds-card/80 backdrop-blur-xl shadow-[var(--ds-shadow-floating)]";
-
-/** A screen on a painted scene: the app shell, the scene behind it and the column the content sits in. */
-export function DsScreen({ scene, children }: { scene: Scene; children: ReactNode }) {
-  return (
-    <MobileFrame>
-      <SceneBackdrop scene={scene} />
-      <div className="relative z-10 grid content-start gap-3.5 px-4 pb-24 pt-2">{children}</div>
-    </MobileFrame>
-  );
-}
 
 /** The back control: a glass pill, with an optional trailing group (links to sibling screens) on the right. */
 export function BackPill({
@@ -135,24 +122,9 @@ export function DsRow({
   );
 }
 
-export type DsButtonVariant = "primary" | "secondary" | "danger";
+import { dsButtonClass, type DsButtonVariant } from "./buttons";
 
-const BUTTON_BASE =
-  "inline-flex items-center justify-center gap-1.5 rounded-[16px] ds-type-headline text-center font-extrabold transition-transform duration-[var(--ds-duration-press)] active:translate-y-px disabled:opacity-45 disabled:active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice";
-
-export function dsButtonClass(
-  variant: DsButtonVariant = "primary",
-  { small = false, full = false }: { small?: boolean; full?: boolean } = {},
-): string {
-  const size = small ? "min-h-11 rounded-[12px] px-3 py-1.5 ds-type-caption" : "min-h-12 px-4 py-3";
-  const look =
-    variant === "primary"
-      ? "bg-ds-action text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)]"
-      : variant === "danger"
-        ? "border-2 border-ds-line bg-ds-card text-ds-wrong-ink shadow-[0_3px_0_var(--c-line)]"
-        : "border-2 border-ds-line bg-ds-card text-ds-brand shadow-[0_3px_0_var(--c-line)]";
-  return `${BUTTON_BASE} ${size} ${look} ${full ? "w-full" : ""}`;
-}
+export { dsButtonClass, type DsButtonVariant };
 
 export function DsButton({
   variant = "primary",

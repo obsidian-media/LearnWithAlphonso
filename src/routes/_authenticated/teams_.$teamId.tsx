@@ -9,11 +9,11 @@ import {
   DsHero,
   DsPill,
   DsRow,
-  DsScreen,
   GlassTitle,
   HeroKicker,
   Overline,
 } from "@/components/ds/Blocks";
+import { DsScreen } from "@/components/ds/DsScreen";
 import { TopTeams } from "@/components/teams/TeamParts";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import { TeamMissionCard } from "../../components/TeamMissionCard";

@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Modal } from "./Modal";
-import { TextField } from "./TextField";
+import { DsButton, DsField } from "./ds/Blocks";
 import {
   checkDisplayName,
   confirmName,
@@ -144,19 +144,27 @@ export function NamePrompt() {
     <Modal
       labelledBy={titleId}
       describedBy={noteId}
-      className="relative w-full max-w-[400px] rounded-3xl border border-ds-line bg-ds-card p-6 text-ds-ink shadow-xl outline-none"
+      className="relative grid w-full max-w-[430px] gap-3 rounded-t-[28px] bg-ds-surface px-5 pb-6 pt-5 text-ds-ink shadow-[var(--ds-shadow-sheet)] outline-none sm:rounded-[28px]"
     >
-      <h2 id={titleId} className="font-display text-2xl font-semibold leading-tight">
+      <img
+        src="/mascots/alphonso-happy.png"
+        alt=""
+        height={120}
+        decoding="async"
+        draggable={false}
+        className="mx-auto h-[120px] w-auto"
+      />
+      <h2 id={titleId} className="ds-type-display">
         {COPY.title}
       </h2>
-      <p id={noteId} className="mt-2 text-sm text-ds-ink-soft">
+      <p id={noteId} className="ds-type-body text-ds-ink-soft">
         {COPY.publicNote}
       </p>
-      <form onSubmit={save} className="mt-5 space-y-3">
+      <form onSubmit={save} className="grid gap-3">
         <label htmlFor={`${titleId}-name`} className="sr-only">
           {COPY.fieldLabel}
         </label>
-        <TextField
+        <DsField
           id={`${titleId}-name`}
           type="text"
           autoComplete="nickname"
@@ -168,32 +176,38 @@ export function NamePrompt() {
           aria-invalid={isProblem}
           aria-describedby={message ? messageId : undefined}
           maxLength={80}
+          className={
+            isProblem
+              ? "border-ds-wrong"
+              : check.state === "ok" && value
+                ? "border-ds-right bg-ds-card"
+                : ""
+          }
         />
         {message && (
           <p
             id={messageId}
             role={isProblem ? "alert" : "status"}
-            className={isProblem ? "text-sm text-ember" : "text-sm text-ds-ink-soft"}
+            className={`ds-type-footnote font-bold ${
+              isProblem
+                ? "text-ds-wrong-ink"
+                : check.state === "ok"
+                  ? "text-ds-right-ink"
+                  : "text-ds-ink-soft"
+            }`}
           >
             {message}
           </p>
         )}
-        <button
-          type="submit"
-          disabled={!canSave}
-          className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-ink-on-ember transition hover:opacity-90 disabled:opacity-50"
-        >
+        <DsButton type="submit" full disabled={!canSave}>
           {COPY.save}
-        </button>
-        <button
-          type="button"
-          onClick={skip}
-          disabled={busy}
-          className="w-full rounded-full border border-ds-line px-4 py-3 text-sm font-medium text-ds-ink transition hover:bg-ds-sunk disabled:opacity-50"
-        >
+        </DsButton>
+        <DsButton full variant="secondary" onClick={skip} disabled={busy}>
           {COPY.skip}
-        </button>
-        <p className="text-center text-xs text-ds-ink-soft/80">{skipNote(status.displayName)}</p>
+        </DsButton>
+        <p className="ds-type-caption text-center text-ds-ink-soft">
+          {skipNote(status.displayName)}
+        </p>
       </form>
     </Modal>
   );
