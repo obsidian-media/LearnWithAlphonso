@@ -226,7 +226,7 @@ fun TeamsScreen(container: AppContainer, onBack: () -> Unit, seededVm: TeamsView
                                     Text("${t.weeklyXp} XP this week", style = CaptionType, color = ds.inkSoft)
                                 }
                                 // Members can report their own team's name; the owner cannot report their own.
-                                if (!(mine && team?.isOwner == true)) TeamNameMenu(t.name) { reportTarget = SocialTarget(t.teamId, t.name, isTeamName = true) }
+                                if (TeamsPresentation.canReportTeamName(mine, team?.isOwner == true)) TeamNameMenu(t.name) { reportTarget = SocialTarget(t.teamId, t.name, isTeamName = true) }
                             }
                         }
                     }

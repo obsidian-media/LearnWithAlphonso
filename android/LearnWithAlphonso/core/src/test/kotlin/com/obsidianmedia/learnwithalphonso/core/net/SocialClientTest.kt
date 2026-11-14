@@ -236,4 +236,27 @@ class SocialClientTest {
         val error = runCatching { client(fake).fetchFriendsProgress() }.exceptionOrNull()
         assertTrue(error is ProgressSyncError.Server)
     }
+
+    @Test
+    fun `a team name is reported against the creator with the team in the context`() = runTest {
+        val fake = FakeSupabase { req -> if (req.method == "GET") json("""[{"created_by":"creator-1"}]""") else json("") }
+        assertTrue(client(fake).reportTeamName("team-9", "spam"))
+        assertEquals("GET", fake.seen[0].method)
+        assertEquals("/rest/v1/teams", fake.seen[0].path)
+        assertEquals("eq.team-9", fake.seen[0].query["id"])
+        assertEquals("created_by", fake.seen[0].query["select"])
+        assertEquals("POST", fake.seen[1].method)
+        assertEquals("/rest/v1/content_reports", fake.seen[1].path)
+        assertEquals("""{"reported":"creator-1","reason":"spam","kind":"team_name","context":{"team_id":"team-9"}}""", fake.seen[1].body)
+    }
+
+    @Test
+    fun `a team with no creator files nothing and says so`() = runTest {
+        val fake = FakeSupabase { json("""[{"created_by":null}]""") }
+        assertEquals(false, client(fake).reportTeamName("auto-1", "spam"))
+        assertEquals(1, fake.seen.size) // the lookup only; no report was sent
+        val invisible = FakeSupabase { json("[]") }
+        assertEquals(false, client(invisible).reportTeamName("hidden-1", "spam"))
+        assertEquals(1, invisible.seen.size)
+    }
 }

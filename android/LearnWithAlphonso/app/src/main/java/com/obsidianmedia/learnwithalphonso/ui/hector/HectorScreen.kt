@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.hector
 
+import androidx.compose.foundation.border
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
@@ -287,12 +288,12 @@ private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modif
                             enabled = !isUser && index !in state.openerIndices, sender = container.aiReports,
                             makeReport = { reason -> AiReplyReports.hector(turn.content, vm.course.code, reason) },
                         ) { reportModifier, reportActions ->
-                            val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) ds.choice else ds.card).padding(horizontal = 14.dp, vertical = 10.dp)
+                            val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) ds.choiceTint else ds.card).border(2.dp, if (isUser) ds.choice else ds.line, RoundedCornerShape(AlphonsoRadius.xl)).padding(horizontal = 14.dp, vertical = 10.dp)
                             // Hector's replies are in the language being practiced, so every word is a word of the course.
                             if (!isUser && saveWord != null) {
                                 TappableText(turn.content, vm.course.code, SaveWordMode.AllWords, saveWord, modifier = bubble, style = HeadlineType, color = ds.ink, extraActions = reportActions)
                             } else {
-                                Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = HeadlineType, color = if (isUser) ds.onHero else ds.ink)
+                                Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = HeadlineType, color = ds.ink)
                             }
                         }
                     }

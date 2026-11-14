@@ -171,10 +171,8 @@ fun TappableText(
         val words = remember(parts) { parts.filterIsInstance<SaveWordPart.Word>().distinctBy { it.text.lowercase() } }
         DsDialog(onDismiss = { showWords = false }) {
             DsDialogTitle(SavedWordCopy.PICK_TITLE)
-            LazyColumn(Modifier.heightIn(max = 360.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-                items(words, key = { it.text.lowercase() }) { word ->
-                    DsChip(word.text, false, onClick = { showWords = false; save(word.request) }, modifier = Modifier.fillMaxWidth())
-                }
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                words.forEach { word -> DsChip(word.text, false, onClick = { showWords = false; save(word.request) }, modifier = Modifier.fillMaxWidth()) }
             }
             DsCompactButton("Cancel", { showWords = false })
         }

@@ -36,7 +36,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -147,7 +146,8 @@ private fun QuestionView(
                 checked && picked -> "✕ ${PodcastQuizCopy.WRONG_LABEL}"
                 else -> null
             }
-            if (verdict != null) Text(verdict, style = CaptionType, color = if (right) ds.rightInk else ds.wrongInk, modifier = Modifier.padding(start = AlphonsoTokens.Space.s2))
+            // The words are on screen for the eye; TalkBack hears the verdict once, from the answer button above.
+            if (verdict != null) Text(verdict, style = CaptionType, color = if (right) ds.rightInk else ds.wrongInk, modifier = Modifier.padding(start = AlphonsoTokens.Space.s2).clearAndSetSemantics { })
         }
     }
     LessonEdgeButton(if (checked) (if (isLast) "Finish" else "Next") else "Check", EdgeVariant.PRIMARY, { if (checked) onNext() else onCheck() }, enabled = selectedIndex != null)
@@ -255,7 +255,7 @@ fun PodcastQuizOfferRow(container: AppContainer, episode: PodcastEpisode, finish
             Text(PodcastQuizCopy.OFFER_TITLE, style = BodyType, fontWeight = FontWeight.SemiBold, color = ds.ink)
             Text(PodcastQuizCopy.offerDetail(current.questions.size, current.best), style = FootnoteType, color = ds.inkSoft)
         }
-        Button(onClick = { sheet = OpenQuiz(episode.id, episode.title, current) }, colors = ButtonDefaults.buttonColors(containerColor = ds.choice, contentColor = ds.onAction), modifier = Modifier.heightIn(min = 48.dp)) { Text(PodcastQuizCopy.TAKE_THE_QUIZ) }
+        DsCompactButton(PodcastQuizCopy.TAKE_THE_QUIZ, { sheet = OpenQuiz(episode.id, episode.title, current) }, primary = true)
     }
     sheet?.let { open ->
         PodcastQuizSheet(

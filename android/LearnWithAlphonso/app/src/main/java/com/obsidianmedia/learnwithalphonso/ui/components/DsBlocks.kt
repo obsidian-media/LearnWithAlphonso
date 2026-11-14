@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.components
 
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.foundation.Image
@@ -279,25 +280,42 @@ fun DsCompactButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
     ) { Text(text, style = FootnoteType, color = if (enabled) ink else ds.inkFaint, textAlign = TextAlign.Center) }
 }
 
-/** A text field in the lesson's answer look: a well with a border that turns to the choice colour on focus. */
+/**
+ * A text field in the lesson's answer look: a well with a border that turns to the choice colour on focus, to the wrong colour
+ * on an [isError]. An optional [label] sits above it. TalkBack hears the label (or the placeholder) and the typed text.
+ */
 @Composable
-fun DsField(value: String, onChange: (String) -> Unit, placeholder: String, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun DsField(
+    value: String, onChange: (String) -> Unit, placeholder: String, modifier: Modifier = Modifier, enabled: Boolean = true,
+    label: String? = null, isError: Boolean = false,
+    keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default,
+    keyboardActions: androidx.compose.foundation.text.KeyboardActions = androidx.compose.foundation.text.KeyboardActions.Default,
+    trailing: (@Composable () -> Unit)? = null,
+) {
     val ds = LocalAlphonsoTokens.current
     var focused by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
-    BasicTextField(
-        value = value, onValueChange = onChange, enabled = enabled, singleLine = true,
-        textStyle = BodyType.copy(color = ds.ink), cursorBrush = SolidColor(ds.choice),
-        modifier = modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).onFocusChanged { focused = it.isFocused }
-            .clip(shape).background(ds.card).border(2.dp, if (focused) ds.choice else ds.line, shape).padding(AlphonsoTokens.Space.s3)
-            .semantics { contentDescription = if (value.isEmpty()) placeholder else "$placeholder, $value" },
-        decorationBox = { inner ->
-            Box(contentAlignment = Alignment.CenterStart) {
-                if (value.isEmpty()) Text(placeholder, style = BodyType, color = ds.inkFaint)
-                inner()
-            }
-        },
-    )
+    val name = label ?: placeholder
+    Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+        if (label != null) Text(label, style = CaptionType, color = if (isError) ds.wrongInk else ds.inkSoft, modifier = Modifier.clearAndSetSemantics { })
+        BasicTextField(
+            value = value, onValueChange = onChange, enabled = enabled, singleLine = true,
+            textStyle = BodyType.copy(color = ds.ink), cursorBrush = SolidColor(ds.choice),
+            keyboardOptions = keyboardOptions, keyboardActions = keyboardActions,
+            modifier = modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).onFocusChanged { focused = it.isFocused }
+                .clip(shape).background(ds.card).border(2.dp, if (isError) ds.wrong else if (focused) ds.choice else ds.line, shape).padding(AlphonsoTokens.Space.s3)
+                .semantics { contentDescription = if (value.isEmpty()) name else "$name, $value" },
+            decorationBox = { inner ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                        if (value.isEmpty()) Text(placeholder, style = BodyType, color = ds.inkFaint)
+                        inner()
+                    }
+                    trailing?.invoke()
+                }
+            },
+        )
+    }
 }
 
 /** A DS switch: the action colour when on, the sunk track when off. */
@@ -383,8 +401,11 @@ fun DsDialog(onDismiss: () -> Unit, modifier: Modifier = Modifier, dismissible: 
         properties = androidx.compose.ui.window.DialogProperties(dismissOnBackPress = dismissible, dismissOnClickOutside = dismissible),
     ) {
         val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+        // Scrolls inside the screen's height, so a large font never pushes the buttons out of reach.
+        val maxHeight = (androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp * 0.9f).dp
         Column(
-            modifier.fillMaxWidth().clip(shape).background(ds.card).border(2.dp, ds.line, shape).padding(AlphonsoTokens.Space.s5),
+            modifier.fillMaxWidth().heightIn(max = maxHeight).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+                .verticalScroll(androidx.compose.foundation.rememberScrollState()).padding(AlphonsoTokens.Space.s5),
             verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
             horizontalAlignment = Alignment.CenterHorizontally,
             content = content,

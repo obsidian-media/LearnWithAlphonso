@@ -209,3 +209,13 @@ class SafetyPresentationTest {
         assertEquals("Block Mina?", SafetyPresentation.blockTitle("Mina"))
     }
 }
+
+class TeamNameReportRuleTest {
+    @Test
+    fun `everyone but the owner can report a team's name, and the owner cannot report their own`() {
+        assertTrue(TeamsPresentation.canReportTeamName(isMine = false, isOwner = false))
+        assertTrue(TeamsPresentation.canReportTeamName(isMine = false, isOwner = true)) // an owner reporting some other team
+        assertTrue(TeamsPresentation.canReportTeamName(isMine = true, isOwner = false)) // a member reporting their own team's name
+        assertFalse(TeamsPresentation.canReportTeamName(isMine = true, isOwner = true))
+    }
+}

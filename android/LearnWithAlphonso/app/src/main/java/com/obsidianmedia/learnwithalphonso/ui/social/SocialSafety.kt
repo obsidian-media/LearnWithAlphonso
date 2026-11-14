@@ -85,12 +85,23 @@ fun SocialSafetyMenu(onBlock: () -> Unit, onReport: () -> Unit, contentDescripti
     var open by remember { mutableStateOf(false) }
     val ds = LocalAlphonsoTokens.current
     Box {
-        IconButton(onClick = { open = true }) { Icon(Icons.Filled.MoreVert, contentDescription = contentDescription, tint = ds.inkSoft) }
+        MenuButton(contentDescription) { open = true }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = ds.card) {
             DropdownMenuItem(text = { Text("Block User", style = FootnoteType, color = ds.wrongInk) }, onClick = { open = false; onBlock() })
             DropdownMenuItem(text = { Text(SafetyPresentation.reportMenuLabel(false), style = FootnoteType, color = ds.ink) }, onClick = { open = false; onReport() })
         }
     }
+}
+
+/** The "more" button on a row: a round touch target in the design system's ink, not a Material icon button. */
+@Composable
+private fun MenuButton(label: String, onClick: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    Box(
+        Modifier.size(AlphonsoTokens.Space.minTouch).clip(CircleShape).clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) { Icon(Icons.Filled.MoreVert, contentDescription = null, tint = ds.inkSoft) }
 }
 
 /** The menu on a team's name in the top teams list: report the name, nothing else. */
@@ -99,7 +110,7 @@ fun TeamNameMenu(teamName: String, onReport: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     val ds = LocalAlphonsoTokens.current
     Box {
-        IconButton(onClick = { open = true }) { Icon(Icons.Filled.MoreVert, contentDescription = "More options for $teamName", tint = ds.inkSoft) }
+        MenuButton("More options for $teamName") { open = true }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = ds.card) {
             DropdownMenuItem(text = { Text(SafetyPresentation.reportMenuLabel(true), style = FootnoteType, color = ds.ink) }, onClick = { open = false; onReport() })
         }

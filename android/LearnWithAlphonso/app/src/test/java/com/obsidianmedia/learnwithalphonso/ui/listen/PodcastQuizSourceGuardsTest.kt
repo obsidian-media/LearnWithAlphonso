@@ -130,4 +130,30 @@ class PodcastQuizSourceGuardsTest {
         assertTrue(secondary.contains("DsCompactButton(text, onClick, modifier, enabled = enabled)"))
         assertFalse(secondary.contains("OutlinedButton("))
     }
+
+    @Test
+    fun `the answers are the server's choices, locked after Check, and Check waits for a pick`() {
+        val src = read(ui)
+        val question = src.substring(src.indexOf("private fun QuestionView("), src.indexOf("private fun ErrorView("))
+        assertTrue(question.contains("question.choices.forEachIndexed"))
+        assertTrue(question.contains("enabled = !checked"))
+        assertTrue(question.contains("enabled = selectedIndex != null"))
+        assertTrue(question.contains("if (checked) onNext() else onCheck()"))
+    }
+
+    @Test
+    fun `TalkBack hears the verdict once, from the answer button, not again from the visible words`() {
+        val src = read(ui)
+        val question = src.substring(src.indexOf("private fun QuestionView("), src.indexOf("private fun ErrorView("))
+        assertTrue(question.contains("if (verdict != null) Text(verdict"))
+        assertTrue(question.contains(".clearAndSetSemantics { })"))
+    }
+
+    @Test
+    fun `no Material button, outlined field or text button is left in the quiz screen`() {
+        val src = read(ui)
+        for (banned in listOf("OutlinedButton(", "Button(onClick", "TextButton(", "OutlinedTextField(", "ButtonDefaults")) {
+            assertFalse("the quiz UI must use the design system's buttons, not '$banned'", src.contains(banned))
+        }
+    }
 }

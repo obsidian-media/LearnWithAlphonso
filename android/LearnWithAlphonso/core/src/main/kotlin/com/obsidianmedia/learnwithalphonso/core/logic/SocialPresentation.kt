@@ -71,6 +71,9 @@ object TeamsPresentation {
     /** Join by code is possible once something is typed (blank space is not a code). */
     fun canJoin(code: String): Boolean = code.isNotBlank()
 
+    /** A team's name can be reported by anyone but its owner: you cannot report yourself, so the menu is hidden on your own team. */
+    fun canReportTeamName(isMine: Boolean, isOwner: Boolean): Boolean = !(isMine && isOwner)
+
     /** Create team is possible once the name has a letter in it. */
     fun canCreate(name: String): Boolean = name.isNotBlank()
 }

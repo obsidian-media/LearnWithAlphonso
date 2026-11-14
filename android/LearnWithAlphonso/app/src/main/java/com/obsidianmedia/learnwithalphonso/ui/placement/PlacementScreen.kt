@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.placement
 
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.layout.ContentScale
@@ -169,6 +170,6 @@ private fun Results(state: PlacementUiState, onFinished: () -> Unit, onRetake: (
             Text("Fast-tracked past ${state.skippedLevels.joinToString(", ")} after strong answers.", style = CaptionType, color = ds.inkSoft, textAlign = TextAlign.Center)
         }
         AlphonsoPrimaryButton("Start learning at ${state.level}", onClick = onFinished)
-        TextButton(onClick = onRetake) { Text("Retake the test", color = ds.inkSoft) }
+        DsCompactButton("Retake the test", onRetake)
     }
 }

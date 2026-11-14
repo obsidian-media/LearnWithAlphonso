@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice.call
 
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
@@ -96,25 +97,29 @@ import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.ui.practice.ConversationPhase
 import kotlinx.coroutines.delay
 
-// The call's chrome in design-system tokens: glass over the room is the hero's own dark navy, mint is the "right" green, the
-// ink is the on-hero white, the end button is the "wrong" red, the mic face is the action gold.
+// The call's chrome in the call tokens, as iOS PracticeCallView builds it: the glass and the scrims are callGlass (the same
+// dark in every theme) at the iOS opacities, the learner's caption and the recording ring are callMint and callRecord, the mic
+// icon is callDock, the end button is callEnd, and the ink is the on-hero white.
 @Composable
-private fun callGlass(): Color = LocalAlphonsoTokens.current.heroB.copy(alpha = 0.46f)
+private fun callGlass(): Color = LocalAlphonsoTokens.current.callGlass.copy(alpha = 0.46f)
 
 @Composable
-private fun callGlassStrong(): Color = LocalAlphonsoTokens.current.heroB.copy(alpha = 0.62f)
+private fun callGlassStrong(): Color = LocalAlphonsoTokens.current.callGlass.copy(alpha = 0.62f)
 
 @Composable
-private fun callScrim(): Color = LocalAlphonsoTokens.current.heroB
+private fun callScrim(): Color = LocalAlphonsoTokens.current.callGlass
 
 @Composable
-private fun callMint(): Color = LocalAlphonsoTokens.current.right
+private fun callMint(): Color = LocalAlphonsoTokens.current.callMint
+
+@Composable
+private fun callRecord(): Color = LocalAlphonsoTokens.current.callRecord
 
 @Composable
 private fun callInk(): Color = LocalAlphonsoTokens.current.onHero
 
 @Composable
-private fun callEnd(): Color = LocalAlphonsoTokens.current.wrong
+private fun callEnd(): Color = LocalAlphonsoTokens.current.callEnd
 
 /**
  * The Practice speaking session as a full-screen call: the character's room behind him, a call bar with a timer, a
@@ -143,7 +148,7 @@ internal fun PracticeCallScreen(
     transcript: @Composable () -> Unit,
 ) {
     val ds = LocalAlphonsoTokens.current
-    val dark = androidx.compose.foundation.isSystemInDarkTheme()
+    val dark = AlphonsoColor.palette.isDark
     val state by vm.state.collectAsState()
     val turnPhase by vm.engine.phase.collectAsState()
     // Sound effects: the call-start sound once per call (keyed), the call-end sound on hang-up, and none while he speaks.
@@ -198,7 +203,7 @@ internal fun PracticeCallScreen(
             Box(
                 Modifier.fillMaxSize().background(
                     Brush.verticalGradient(
-                        0f to scrim.copy(alpha = 0.34f), 0.18f to Color.Transparent, 0.55f to Color.Transparent, 1f to scrim.copy(alpha = 0.6f),
+                        0f to scrim.copy(alpha = 0.28f), 0.18f to Color.Transparent, 0.55f to Color.Transparent, 1f to scrim.copy(alpha = 0.5f),
                     ),
                 ),
             )
@@ -281,7 +286,7 @@ private fun CallBar(name: String, title: String, speaking: Boolean, seconds: Int
 private fun YouTile(recording: Boolean, levelDBFS: Double?) {
     Column(
         Modifier.size(width = 86.dp, height = 116.dp).clip(RoundedCornerShape(16.dp)).background(callGlassStrong())
-            .border(if (recording) 2.dp else 1.dp, if (recording) callMint() else callInk().copy(alpha = 0.18f), RoundedCornerShape(16.dp))
+            .border(if (recording) 2.dp else 1.dp, if (recording) callRecord() else callInk().copy(alpha = 0.18f), RoundedCornerShape(16.dp))
             .clearAndSetSemantics {},
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
@@ -335,7 +340,7 @@ private fun Controls(recording: Boolean, busy: Boolean, talkLabel: String, onCha
     Row(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(26.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
         RoundButton(callGlassStrong(), "Show the conversation", onChat) { Icon(Icons.Filled.Chat, null, tint = callInk()) }
         Box(
-            Modifier.size(78.dp).clip(CircleShape).background(if (recording) callMint() else LocalAlphonsoTokens.current.action)
+            Modifier.size(78.dp).clip(CircleShape).background(if (recording) callRecord() else callInk())
                 .semantics {
                     contentDescription = "Hold to talk"
                     role = Role.Button
@@ -352,8 +357,8 @@ private fun Controls(recording: Boolean, busy: Boolean, talkLabel: String, onCha
                 }
                 .holdToTalk(enabled = !busy, onPressBegan, onPressEnded),
             contentAlignment = Alignment.Center,
-        ) { Icon(Icons.Filled.Mic, null, tint = LocalAlphonsoTokens.current.onAction, modifier = Modifier.size(30.dp)) }
-        RoundButton(callEnd(), "End the call", onEnd) { Icon(Icons.Filled.CallEnd, null, tint = LocalAlphonsoTokens.current.onWrong) }
+        ) { Icon(Icons.Filled.Mic, null, tint = LocalAlphonsoTokens.current.callDock, modifier = Modifier.size(30.dp)) }
+        RoundButton(callEnd(), "End the call", onEnd) { Icon(Icons.Filled.CallEnd, null, tint = callInk()) }
     }
 }
 

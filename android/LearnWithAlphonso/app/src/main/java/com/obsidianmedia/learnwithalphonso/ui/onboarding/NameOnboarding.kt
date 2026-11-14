@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.onboarding
 
+import com.obsidianmedia.learnwithalphonso.ui.components.DsField
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
@@ -182,19 +184,13 @@ fun NameOnboardingScreen(container: AppContainer, presentation: OnboardingFlow.N
         Text(NameOnboardingCopy.title, style = TitleType, color = ds.ink, modifier = Modifier.semantics { heading() })
         Text(NameOnboardingCopy.publicNote, style = BodyType, color = ds.inkSoft)
         // The generated handle is the placeholder, not text, so typing never appends to it.
-        OutlinedTextField(
-            value = state.name,
-            onValueChange = { vm.edit(it) },
-            label = { Text(NameOnboardingCopy.fieldLabel) },
-            placeholder = { Text(state.fieldPlaceholder) },
-            singleLine = true,
-            isError = state.isProblem,
-            enabled = !state.isSubmitting,
+        DsField(
+            value = state.name, onChange = { vm.edit(it) }, placeholder = state.fieldPlaceholder, label = NameOnboardingCopy.fieldLabel,
+            isError = state.isProblem, enabled = !state.isSubmitting,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done, autoCorrectEnabled = false),
             keyboardActions = KeyboardActions(onDone = { vm.save() }),
-            trailingIcon = if (state.name.isNotEmpty()) ({ TextButton(onClick = { vm.edit("") }) { Text("Clear", color = ds.inkSoft) } }) else null,
-            colors = dsTextFieldColors(), shape = dsFieldShape(),
-            modifier = Modifier.fillMaxWidth().focusRequester(focus),
+            trailing = if (state.name.isNotEmpty()) ({ DsCompactButton("Clear", { vm.edit("") }) }) else null,
+            modifier = Modifier.focusRequester(focus),
         )
         state.message?.let {
             Text(it, style = FootnoteType, color = if (state.isProblem) ds.wrongInk else ds.inkSoft)

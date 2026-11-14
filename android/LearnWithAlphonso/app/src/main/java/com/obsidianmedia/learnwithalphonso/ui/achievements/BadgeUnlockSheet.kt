@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.achievements
 
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -64,7 +65,7 @@ fun BadgeUnlockSheet(unlocked: List<Achievement>, onContinue: () -> Unit, onSeeA
     val a = unlocked[index.coerceIn(0, unlocked.lastIndex)]
     val pose = rememberFirstRunAsset("poses/alphonso-surprised-impressed.webp")
     ModalBottomSheet(
-        onDismissRequest = onContinue, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = ds.surface,
+        onDismissRequest = { if (index >= unlocked.lastIndex) onContinue() else index++ }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = ds.surface,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = AlphonsoTokens.Radius.sheet, topEnd = AlphonsoTokens.Radius.sheet),
     ) {
         Box(Modifier.fillMaxWidth()) {
@@ -75,8 +76,9 @@ fun BadgeUnlockSheet(unlocked: List<Achievement>, onContinue: () -> Unit, onSeeA
             ) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                     pose?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.weight(1f).height(AlphonsoTokens.Space.s12 * 4).clearAndSetSemantics { }) }
-                    Box(Modifier.weight(1.4f), contentAlignment = Alignment.Center) {
-                        Medallion(a.id, AchievementPresentation.State.UNLOCKED, 1f, AlphonsoTokens.Space.s12 * 4)
+                    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.weight(1.4f), contentAlignment = Alignment.Center) {
+                        // Sized to the space it has, so it never overflows a narrow phone.
+                        Medallion(a.id, AchievementPresentation.State.UNLOCKED, 1f, minOf(maxWidth, AlphonsoTokens.Space.s12 * 4))
                     }
                 }
                 Text(
@@ -89,7 +91,7 @@ fun BadgeUnlockSheet(unlocked: List<Achievement>, onContinue: () -> Unit, onSeeA
                 AchievementPresentation.queueLabel(index, unlocked.size)?.let { Text(it, style = CaptionType, color = ds.inkSoft) }
                 val last = index >= unlocked.lastIndex
                 LessonEdgeButton(if (last) "Continue" else "Next", EdgeVariant.PRIMARY, { if (last) onContinue() else index++ })
-                TextButton(onClick = onSeeAll) { Text("See all achievements", style = FootnoteType, color = ds.choice) }
+                DsCompactButton("See all achievements", onSeeAll)
             }
         }
     }
