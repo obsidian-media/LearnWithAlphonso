@@ -113,9 +113,44 @@ describe("League page", () => {
 
     expect(await screen.findByText("Ada")).toBeInTheDocument();
     expect(screen.getByText("500 XP")).toBeInTheDocument();
-    expect(screen.getByText("US")).toBeInTheDocument();
     expect(screen.getByText("You")).toBeInTheDocument();
     expect(screen.getByText("300 XP")).toBeInTheDocument();
+  });
+
+  it("shows the flag before the name for a learner who turned it on, with the code for screen readers", async () => {
+    getLeaderboard.mockResolvedValue([
+      {
+        user_id: "u1",
+        display_name: "Ada",
+        country: "CA",
+        avatar_seed: "A",
+        xp: 500,
+        isYou: false,
+      },
+    ]);
+    renderPage();
+    const flag = await screen.findByRole("img", { name: "Country CA" });
+    expect(flag).toHaveTextContent("\u{1F1E8}\u{1F1E6}");
+    expect(flag.nextSibling?.textContent).toBe("Ada");
+    // The bare code line is gone: the flag replaces it.
+    expect(screen.queryByText("CA")).toBeNull();
+  });
+
+  it("shows no flag for a learner who did not turn it on (no country)", async () => {
+    getLeaderboard.mockResolvedValue([
+      {
+        user_id: "u1",
+        display_name: "Ada",
+        country: null,
+        avatar_seed: "A",
+        xp: 500,
+        isYou: false,
+      },
+    ]);
+    renderPage();
+    await screen.findByText("Ada");
+    expect(screen.queryByRole("img", { name: /^Country/ })).toBeNull();
+    expect(document.querySelector("[data-leaderboard-flag]")).toBeNull();
   });
 
   it("shows a learner's chosen animal, and initials for everyone else", async () => {

@@ -10,6 +10,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   return {
     ...actual,
     useNavigate: () => navigate,
+    useRouterState: ({ select }: { select: (s: unknown) => unknown }) =>
+      select({ location: { pathname: "/hector" } }),
     Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
       <a href={to} {...rest}>
         {children}
@@ -131,6 +133,49 @@ describe("web Hector always has a way back (it is full screen, with no tab bar)"
     await renderPage();
     await screen.findByRole("log");
     expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
+  });
+});
+
+describe("web Hector keeps the tab bar, as on iOS and Android", () => {
+  const tabBar = () => screen.queryByRole("navigation");
+
+  it("the Pro text chat shows the tab bar with Hector selected, and the exit link still works", async () => {
+    await renderPage();
+    await screen.findByRole("log");
+    const nav = tabBar();
+    expect(nav).not.toBeNull();
+    expect(within(nav!).getByRole("link", { name: "Hector" })).toBeInTheDocument();
+    expect(within(nav!).getByRole("link", { name: "Learn" })).toHaveAttribute("href", "/learn");
+    expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
+  });
+
+  it("the composer rides above the tab bar in the same dock, so the tabs never cover it", async () => {
+    await renderPage();
+    await screen.findByRole("log");
+    const dock = screen.getByTestId("bottom-dock");
+    expect(within(dock).getByLabelText("Message Hector")).toBeInTheDocument();
+    expect(dock.querySelector("nav")).not.toBeNull();
+  });
+
+  it("the check-failed state shows the tab bar too", async () => {
+    routes["/api/pro-status"] = status({ error: "entitlement-unavailable" }, 503);
+    await renderPage();
+    await screen.findByText("Couldn't check your subscription. Try again.");
+    expect(tabBar()).not.toBeNull();
+  });
+
+  it("the paywall stays full screen (it has its own close button)", async () => {
+    routes["/api/pro-status"] = status(FREE);
+    await renderPage();
+    await screen.findByText("$9.99 a month after the trial");
+    expect(tabBar()).toBeNull();
+  });
+
+  it("the live call stays full screen, as the native call does", async () => {
+    localStorage.setItem("showAlphonsoWhilePractising", "true");
+    await renderPage();
+    await screen.findByRole("button", { name: /end call/i }).catch(() => undefined);
+    expect(tabBar()).toBeNull();
   });
 });
 

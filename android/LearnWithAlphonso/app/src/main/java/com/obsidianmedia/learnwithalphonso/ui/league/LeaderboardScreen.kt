@@ -41,11 +41,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.net.LeaderboardRow
+import com.obsidianmedia.learnwithalphonso.core.profile.ProfileMath
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.learn.LeagueTierPalette
 import com.obsidianmedia.learnwithalphonso.ui.social.AvatarCircle
@@ -125,10 +128,16 @@ private fun LeaderboardRowView(rank: Int, row: LeaderboardRow, isYou: Boolean, o
         AvatarCircle(row.avatarSeed, row.displayName)
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // The flag, only for a learner who turned it on (profiles.country is set only then), before the name; TalkBack still hears the code.
+                ProfileMath.flagEmoji(row.country)?.let { flag ->
+                    val label = ProfileMath.flagAccessibilityLabel(row.country).orEmpty()
+                    Text(flag, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { contentDescription = label })
+                }
                 Text(row.displayName, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium), color = palette.ink)
                 if (isYou) Text("YOU", fontSize = 9.sp, fontWeight = FontWeight.SemiBold, color = palette.onAccent, modifier = Modifier.clip(CircleShape).background(palette.ember).padding(horizontal = 6.dp, vertical = 2.dp))
             }
-            row.country?.let { Text(it.uppercase(), style = MaterialTheme.typography.labelSmall, color = palette.inkSoft) }
+            // A code that draws no flag (malformed) still shows as text; a valid one is the flag above.
+            row.country?.takeIf { ProfileMath.flagEmoji(it) == null }?.let { Text(it.uppercase(), style = MaterialTheme.typography.labelSmall, color = palette.inkSoft) }
         }
         Text("${row.xp} XP", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = palette.ink)
         if (!isYou) SocialSafetyMenu(onBlock, onReport)
