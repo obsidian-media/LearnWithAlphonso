@@ -4,12 +4,14 @@ How to turn features off, and what runs on a schedule. For table privileges see 
 
 ## Off switches
 
-Table `public.app_switches` (service role only). Two rows:
+Table `public.app_switches` (service role only). Three rows (the `support_ai` row is described below the table):
 
 | Key     | Turns off                                                                                                                                                           | What learners see                                                                                                                                                          |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ai`    | Every AI feature: conversation practice, speech-to-text, text-to-speech, AI translation grading, word lookup, generated practice, weakness detection, and the tutor | AI routes answer `503 {"error":"ai-unavailable"}`. Lesson and review answers are graded against the curated answers only, exactly as for a learner who has not allowed AI. |
 | `tutor` | The paid voice tutor only                                                                                                                                           | The tutor answers `503 {"error":"tutor-unavailable"}`. Everything else keeps working.                                                                                      |
+
+`support_ai` (added with the Help chat, `20261117100000`) turns off only the AI's answers in the Help chat; people still answer and a learner can always hand off. Unlike the other two it fails CLOSED: it is OFF in production, and a missing row or an unreadable table also counts as off. Turn it on only after the owner has reviewed the help file (`src/data/help-centre.ts`) and ten sample transcripts. If a hand-off to the support inbox fails twice the route answers 503 `support-unreachable`.
 
 Lessons, reviews, progress, sign-in and purchases do not read these switches.
 
@@ -95,6 +97,10 @@ Sentry (org `obsidian-media`) receives crashes and errors from production web, i
 `.github/workflows/uptime.yml` runs every 15 minutes from GitHub, outside the app. It makes six unauthenticated requests (landing page, privacy policy, a server route, the sign-in service, the database API, an Edge Function) and fails if any does not give the status a healthy service gives. A failed run is the alert: GitHub notifies people watching the repository's Actions. Turn that on under GitHub **Settings > Notifications > Actions** ("Send notifications for failed workflows only").
 
 It does not see slow responses, errors inside a signed-in session, or a scheduled job that stopped running. For the scheduled job use the queries above.
+
+## Migrations
+
+Rehearse a migration's exact statements in a rolled-back transaction on the project before merging it (`BEGIN; ...; ROLLBACK;` through the SQL editor or the service-role connection). A static review missed the first themes migration (#512): the old `profiles.theme` CHECK did not allow `royal`, so the deploy failed and applied nothing until #516 reordered the statements.
 
 ## Outbound HTTP from the database (`net`)
 
