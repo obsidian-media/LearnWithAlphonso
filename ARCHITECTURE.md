@@ -1683,6 +1683,10 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   pinned by the copy parity test), the course, the scenario or campaign and the
   reply's own scene index.
 
+### Help chat server (support chat, milestone 1)
+
+Tables `support_conversations`, `support_messages`, `support_notes` (`20261117100000_support_chat.sql`): RLS on, no policy, no client privilege, service role reads only; every write is a `support_*` SECURITY DEFINER function. Three routes under `src/routes/api/support/` (`conversation`, `message`, `handoff`) are thin; the logic is `src/lib/support-chat.server.ts` (order: auth and ban check, body check, store the learner message, then only if the conversation is still with the AI: keyword hand-off, the `ai` and `support_ai` switches, consent, quota kind `support`, facts, model, output guard). The learner id is always the verified session's. The AI is `src/lib/support-ai.server.ts` (prompt, keyword table in en/fr/es, JSON reply parser, link and address guard) with the learner's own small facts snapshot from `src/lib/support-facts.server.ts` and the owner-reviewed help file `src/data/help-centre.ts`; it has no tools and no write path. AI answers are OFF until `app_switches.support_ai` is turned on. Plan: `docs/superpowers/plans/2026-11-14-support-help-chat.md`.
+
 ## Moderation, names and reports
 
 Added 2026-10-08 (#248, #250, #253, #255). The database and app halves are

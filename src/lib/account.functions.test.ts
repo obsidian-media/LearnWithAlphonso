@@ -454,6 +454,42 @@ describe("account actions need a session the auth server still recognises", () =
   });
 });
 
+describe("exportMyData, the Help chat", () => {
+  it("exports the learner's conversations and messages with explicit columns, never staff internals or notes", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "profiles" ? chainable({ data: {} }) : chainable({ data: [] }),
+    );
+    const calls: Record<string, { method: string; args: unknown[] }[]> = {};
+    supabaseAdminFrom.mockImplementation((table: string) => {
+      calls[table] = [];
+      return chainable({ data: [{ from: table }], error: null, count: 1 }, calls[table]);
+    });
+    getUserById.mockResolvedValue({ data: { user: { id: USER_ID, identities: [] } }, error: null });
+
+    const result = await exportMyData({ context: ctx(supabase) });
+    const tables = JSON.parse(result.tables);
+    for (const table of ["support_conversations", "support_messages"]) {
+      expect(tables[table], table).toEqual([{ from: table }]);
+      expect(calls[table], table).toContainEqual({ method: "eq", args: ["user_id", USER_ID] });
+      const select = calls[table]!.find((c) => c.method === "select")!.args[0] as string;
+      expect(select, table).not.toBe("*");
+      for (const internal of [
+        "assigned_to",
+        "ai_summary",
+        "handoff_reason",
+        "ai_facts",
+        "author_id",
+        "client_id",
+      ]) {
+        expect(select, `${table} must not select ${internal}`).not.toContain(internal);
+      }
+    }
+    expect(Object.keys(tables)).not.toContain("support_notes");
+    expect(supabaseAdminFrom).not.toHaveBeenCalledWith("support_notes");
+  });
+});
+
 describe("exportMyData, rows the caller cannot read itself", () => {
   it("adds blocks made, filed reports, created teams, codes and memberships, scoped to this account", async () => {
     const supabase = createSupabaseMock();

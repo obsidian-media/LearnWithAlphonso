@@ -63,6 +63,7 @@ export type AiOutputRoute =
   | "hector-respond"
   | "define-word"
   | "explain"
+  | "support"
   | "generate-practice"
   | "grade-translation"
   | "analyze-weaknesses"

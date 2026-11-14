@@ -4,7 +4,8 @@ import { createSupabaseFetch } from "@/integrations/supabase/fetch";
 import { nextMinute, nextUtcMidnight } from "./ai-quota-response";
 import { EXPLAIN_DAILY_LIMIT } from "./explain";
 
-export type QuotaKind = "chat" | "stt" | "tts" | "translate" | "define" | "hector" | "explain";
+export type QuotaKind =
+  "chat" | "stt" | "tts" | "translate" | "define" | "hector" | "explain" | "support";
 
 /**
  * Per-user daily caps on AI usage, for display only — the real cap is
@@ -35,6 +36,9 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   // "Explain in my language": one short call per tap (/api/explain), its own budget; a cache hit spends none.
   // Hector explanations spend `hector` instead. 20261112100000_explain_in_my_language.sql.
   explain: EXPLAIN_DAILY_LIMIT,
+  // The Help chat's AI answers (/api/support/message): 30 a day, 5 a minute. Keyword hand-offs and refused requests
+  // spend none. 20261117100100_support_quota_kind.sql.
+  support: 30,
 };
 
 export type QuotaResult =
