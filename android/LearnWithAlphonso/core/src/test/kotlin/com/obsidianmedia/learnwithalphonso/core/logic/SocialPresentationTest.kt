@@ -153,3 +153,21 @@ class OutOfHeartsHeartsTest {
         assertTrue(m.message(0).contains("Your next heart comes back in 4:32."))
     }
 }
+
+class SeasonAndRecapPresentationTest {
+    @Test
+    fun `the season lines read as the other platforms do`() {
+        assertEquals("Rank 4 of 30 this week", SeasonPresentation.rankLine(4, 30))
+        assertEquals("Division 3, rank 6 of 30", SeasonPresentation.lastWeekLine(3, 6, 30))
+        assertEquals("Couldn't load your season status.", SeasonPresentation.FAILED_TITLE)
+    }
+
+    @Test
+    fun `a week with no XP is quiet and a promotion uses the league display name`() {
+        assertTrue(RecapPresentation.isQuiet(0))
+        assertTrue(RecapPresentation.isQuiet(-5))
+        assertFalse(RecapPresentation.isQuiet(1))
+        assertEquals("You moved up to Sapling!", RecapPresentation.promotionLine("silver"))
+        assertEquals("You moved up to Treetop!", RecapPresentation.promotionLine("ruby"))
+    }
+}
