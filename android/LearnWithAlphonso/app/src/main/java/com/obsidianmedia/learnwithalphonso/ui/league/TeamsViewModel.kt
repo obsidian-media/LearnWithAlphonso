@@ -37,7 +37,7 @@ data class TeamsUiState(
 }
 
 /** Port of TeamsView.swift. */
-class TeamsViewModel(private val client: ProgressSyncClient, private val nowMillis: () -> Long = System::currentTimeMillis, private val seed: TeamsUiState? = null) : ViewModel() {
+class TeamsViewModel(private val client: ProgressSyncClient, private val seed: TeamsUiState? = null, private val nowMillis: () -> Long = System::currentTimeMillis) : ViewModel() {
     private val _state = MutableStateFlow(seed ?: TeamsUiState())
     val state: StateFlow<TeamsUiState> = _state.asStateFlow()
 

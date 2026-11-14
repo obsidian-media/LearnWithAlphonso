@@ -48,8 +48,8 @@ class LeaderboardViewModel(
     private val recapCache: WeeklyRecapCache,
     private val tierCache: LeagueTierCache,
     private val userId: String?,
-    private val nowMillis: () -> Long = System::currentTimeMillis,
     private val seed: LeaderboardUiState? = null,
+    private val nowMillis: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
     private val _state = MutableStateFlow(seed ?: LeaderboardUiState())
     val state: StateFlow<LeaderboardUiState> = _state.asStateFlow()

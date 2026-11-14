@@ -99,4 +99,6 @@ class DuelsViewModel(private val client: ProgressSyncClient, private val userId:
     fun theirDelta(d: Duel): Int = if (d.challengerId == userId) d.opponentXpNow - d.opponentXpStart else d.challengerXpNow - d.challengerXpStart
 
     fun result(d: Duel): DuelsPresentation.Result = DuelsPresentation.result(d.status, d.winnerId, userId)
+
+    fun resultLabel(d: Duel): String = result(d).label
 }

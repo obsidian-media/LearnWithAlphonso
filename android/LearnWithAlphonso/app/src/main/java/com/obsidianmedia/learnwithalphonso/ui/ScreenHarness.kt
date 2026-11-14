@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
@@ -64,11 +65,13 @@ import io.ktor.client.engine.okhttp.OkHttp
  * learner), the same sample learners the mocks use.
  */
 @Composable
+@SuppressLint("ViewModelConstructorInComposable")
 fun ScreenHarness(screen: String, container: AppContainer) {
     androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize().safeDrawingPadding()) { ScreenHarnessBody(screen, container) }
 }
 
 @Composable
+@SuppressLint("ViewModelConstructorInComposable")
 private fun ScreenHarnessBody(screen: String, container: AppContainer) {
     val context = LocalContext.current
     val client = remember { ProgressSyncClient(SupabaseHttp("http://localhost", "harness", { null }, OkHttp.create { })) }
@@ -96,13 +99,13 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
         )
         "teams-none" -> TeamsScreen(
             container, {},
-            TeamsViewModel(client, seed = TeamsUiState(isLoading = false, leaderboard = teamBoard())),
+            TeamsViewModel(client, TeamsUiState(isLoading = false, leaderboard = teamBoard())),
         )
         "teams-in" -> TeamsScreen(
             container, {},
             TeamsViewModel(
                 client,
-                seed = TeamsUiState(
+                TeamsUiState(
                     isLoading = false, nowMillis = 0,
                     myTeam = MyTeam("t1", "Night Owls", "K7MQ2X", 0, System.currentTimeMillis() + 30L * 24 * 3600 * 1000, 340, true),
                     members = listOf(
