@@ -26,8 +26,10 @@ struct ExplainSettingsSection: View {
             })
     }
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
-        Section {
+        DSCard {
             Picker(selection: languageSelection) {
                 if settings.nativeLanguage == nil {
                     Text("Not set").tag("")
@@ -36,32 +38,34 @@ struct ExplainSettingsSection: View {
                     Text(language.name).tag(language.code)
                 }
             } label: {
-                Text("My language").dsText(.body).foregroundStyle(AlphonsoColor.ink)
+                Text("My language").dsText(.headline).foregroundStyle(ds.ink)
             }
+            .tint(ds.choice)
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
             .disabled(isSaving || !settings.isLoaded)
             .accessibilityIdentifier("explainLanguagePicker")
 
             ForEach(ExplainMode.allCases, id: \.self) { mode in
+                SettingsDivider()
                 Button {
                     guard mode != settings.mode else { return }
                     Task { await saveMode(mode) }
                 } label: {
-                    HStack(alignment: .top, spacing: AlphonsoSpacing.sm + 4) {
-                        Image(systemName: settings.mode == mode ? "largecircle.fill.circle" : "circle")
-                            .foregroundStyle(settings.mode == mode ? AlphonsoColor.moss : AlphonsoColor.inkSoft)
-                            .accessibilityHidden(true)
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 6) {
-                                Text(mode.title).dsText(.body).foregroundStyle(AlphonsoColor.ink)
+                    HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
+                        SettingsRadioDot(selected: settings.mode == mode)
+                        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                            HStack(spacing: AlphonsoDS.Space.s2) {
+                                Text(mode.title).dsText(.headline).foregroundStyle(ds.ink)
                                 if mode == ExplainMode.default {
-                                    Text("Default").dsText(.caption).foregroundStyle(AlphonsoColor.inkSoft)
+                                    DSPill(text: "Default", tone: .neutral)
                                 }
                             }
-                            Text(mode.detail).dsText(.caption).foregroundStyle(AlphonsoColor.inkSoft)
+                            Text(mode.detail).dsText(.caption).foregroundStyle(ds.inkSoft)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         Spacer(minLength: 0)
                     }
+                    .frame(minHeight: AlphonsoDS.Space.minTouch)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -72,16 +76,13 @@ struct ExplainSettingsSection: View {
             }
 
             if let errorMessage {
-                Text(errorMessage).dsText(.caption).foregroundStyle(AlphonsoColor.destructive)
+                Text(errorMessage).dsText(.caption).foregroundStyle(ds.wrongInk)
             }
-        } header: {
-            Text("Explain in my language")
-        } footer: {
             Text("Written by AI (Alphonso), so they can be wrong. You can report one. Free: \(ExplainRules.dailyLimit) a day. Pro learners talking to Hector use Hector's own allowance.")
                 .dsText(.caption)
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(ds.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .listRowBackground(AlphonsoColor.parchment)
         .task { await settings.load(session: session) }
     }
 
