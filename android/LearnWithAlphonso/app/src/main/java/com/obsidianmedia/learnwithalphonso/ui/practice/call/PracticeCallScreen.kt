@@ -1,5 +1,12 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice.call
 
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import androidx.compose.runtime.DisposableEffect
 import com.obsidianmedia.learnwithalphonso.AlphonsoApplication
 import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffect
@@ -32,7 +39,6 @@ import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -88,13 +94,27 @@ import com.obsidianmedia.learnwithalphonso.core.avatar.CharacterKit
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.ui.practice.ConversationPhase
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.delay
 
-private val Glass = Color(0x75121A15)
-private val GlassStrong = Color(0x9E121A15)
-private val EveningNavy = Color(0xFF16203C)
-private val Green = Color(0xFF6FE0A5)
+// The call's chrome in design-system tokens: glass over the room is the hero's own dark navy, mint is the "right" green, the
+// ink is the on-hero white, the end button is the "wrong" red, the mic face is the action gold.
+@Composable
+private fun callGlass(): Color = LocalAlphonsoTokens.current.heroB.copy(alpha = 0.46f)
+
+@Composable
+private fun callGlassStrong(): Color = LocalAlphonsoTokens.current.heroB.copy(alpha = 0.62f)
+
+@Composable
+private fun callScrim(): Color = LocalAlphonsoTokens.current.heroB
+
+@Composable
+private fun callMint(): Color = LocalAlphonsoTokens.current.right
+
+@Composable
+private fun callInk(): Color = LocalAlphonsoTokens.current.onHero
+
+@Composable
+private fun callEnd(): Color = LocalAlphonsoTokens.current.wrong
 
 /**
  * The Practice speaking session as a full-screen call: the character's room behind him, a call bar with a timer, a
@@ -122,8 +142,8 @@ internal fun PracticeCallScreen(
     extra: (@Composable () -> Unit)? = null,
     transcript: @Composable () -> Unit,
 ) {
-    val palette = AlphonsoColor.palette
-    val dark = palette.isDark
+    val ds = LocalAlphonsoTokens.current
+    val dark = androidx.compose.foundation.isSystemInDarkTheme()
     val state by vm.state.collectAsState()
     val turnPhase by vm.engine.phase.collectAsState()
     // Sound effects: the call-start sound once per call (keyed), the call-end sound on hang-up, and none while he speaks.
@@ -161,7 +181,7 @@ internal fun PracticeCallScreen(
         value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { loadAsset(context, "scenes/$roomFile.webp") }
     }
 
-    BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
+    BoxWithConstraints(Modifier.fillMaxSize().background(callScrim())) {
         val w = maxWidth
         val h = maxHeight
         // The square is held to 72% of the height, so on a short phone the caption and controls stay clear of his mouth.
@@ -171,12 +191,14 @@ internal fun PracticeCallScreen(
         Box(Modifier.fillMaxSize().graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen).clearAndSetSemantics {}) {
             roomImage?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
             if (dark && room.dimInDark) {
-                Box(Modifier.fillMaxSize().drawBehind { drawRect(EveningNavy.copy(alpha = CallScenes.EVENING_OVERLAY_OPACITY.toFloat()), blendMode = BlendMode.Multiply) })
+                val evening = callScrim()
+                Box(Modifier.fillMaxSize().drawBehind { drawRect(evening.copy(alpha = CallScenes.EVENING_OVERLAY_OPACITY.toFloat()), blendMode = BlendMode.Multiply) })
             }
+            val scrim = callScrim()
             Box(
                 Modifier.fillMaxSize().background(
                     Brush.verticalGradient(
-                        0f to Color.Black.copy(alpha = 0.28f), 0.18f to Color.Transparent, 0.55f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.5f),
+                        0f to scrim.copy(alpha = 0.34f), 0.18f to Color.Transparent, 0.55f to Color.Transparent, 1f to scrim.copy(alpha = 0.6f),
                     ),
                 ),
             )
@@ -209,23 +231,26 @@ internal fun PracticeCallScreen(
             Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End) { YouTile(recording, level) }
             Box(Modifier.weight(1f))
             state.error?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).clip(RoundedCornerShape(50)).background(Color.White.copy(alpha = 0.92f)).padding(horizontal = 12.dp, vertical = 6.dp))
+                Text(it, style = FootnoteType, color = ds.wrongInk, textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp).clip(RoundedCornerShape(50)).background(LocalAlphonsoTokens.current.card.copy(alpha = 0.94f)).padding(horizontal = 12.dp, vertical = 6.dp))
             }
             extra?.let { Box(Modifier.align(Alignment.CenterHorizontally).padding(bottom = 10.dp)) { it() } }
             Caption(vm, playback, mode, recording)
-            Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(Glass).clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = mode.callLabel }.padding(horizontal = 10.dp, vertical = 2.dp)) {
-                Text(mode.callLabel.uppercase(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+            Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(callGlass()).clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = mode.callLabel }.padding(horizontal = 10.dp, vertical = 2.dp)) {
+                Text(mode.callLabel.uppercase(), color = callInk(), style = OverlineType)
             }
             Controls(recording, busy, talkLabel, onChat = { showSheet = true }, onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded, onEnd = endCall)
         }
     }
 
     if (showSheet) {
-        ModalBottomSheet(onDismissRequest = { showSheet = false }, sheetState = sheetState, containerColor = palette.surface) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false }, sheetState = sheetState, containerColor = ds.surface,
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = AlphonsoTokens.Radius.sheet, topEnd = AlphonsoTokens.Radius.sheet),
+        ) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("Conversation", style = MaterialTheme.typography.titleMedium, color = palette.ink, modifier = Modifier.weight(1f))
-                TextButton(onClick = { showSheet = false }) { Text("Back to call", color = palette.moss) }
+                Text("Conversation", style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+                TextButton(onClick = { showSheet = false }) { Text("Back to call", color = ds.choice) }
             }
             Box(Modifier.weight(1f, fill = false)) { transcript() }
         }
@@ -236,17 +261,17 @@ internal fun PracticeCallScreen(
 private fun CallBar(name: String, title: String, speaking: Boolean, seconds: Int) {
     Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(name, color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.ExtraBold)
+            Text(name, color = callInk(), style = TitleType)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(8.dp).clip(CircleShape).background(if (speaking) Color(0xFFFF5A4F) else Color(0xFF9AA39D)).clearAndSetSemantics {})
-                Text(title, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(start = 6.dp))
+                Box(Modifier.size(8.dp).clip(CircleShape).background(if (speaking) callEnd() else callInk().copy(alpha = 0.55f)).clearAndSetSemantics {})
+                Text(title, color = callInk(), style = FootnoteType, maxLines = 1, modifier = Modifier.padding(start = 6.dp))
             }
         }
         Text(
-            CallClock.format(seconds), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold,
-            modifier = Modifier.clip(CircleShape).background(Glass).padding(horizontal = 10.dp, vertical = 3.dp)
+            CallClock.format(seconds), color = callInk(),
+            modifier = Modifier.clip(CircleShape).background(callGlass()).padding(horizontal = 10.dp, vertical = 3.dp)
                 .semantics { contentDescription = "Call time ${CallClock.format(seconds)}" },
-            style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
+            style = CaptionType.copy(fontFeatureSettings = "tnum"),
         )
     }
 }
@@ -255,17 +280,17 @@ private fun CallBar(name: String, title: String, speaking: Boolean, seconds: Int
 @Composable
 private fun YouTile(recording: Boolean, levelDBFS: Double?) {
     Column(
-        Modifier.size(width = 86.dp, height = 116.dp).clip(RoundedCornerShape(16.dp)).background(GlassStrong)
-            .border(if (recording) 2.dp else 1.dp, if (recording) Green else Color.White.copy(alpha = 0.18f), RoundedCornerShape(16.dp))
+        Modifier.size(width = 86.dp, height = 116.dp).clip(RoundedCornerShape(16.dp)).background(callGlassStrong())
+            .border(if (recording) 2.dp else 1.dp, if (recording) callMint() else callInk().copy(alpha = 0.18f), RoundedCornerShape(16.dp))
             .clearAndSetSemantics {},
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         Row(Modifier.height(CallLevel.MAX_HEIGHT.dp), horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically) {
             for (i in 0 until CallLevel.BAR_COUNT) {
-                Box(Modifier.size(width = 5.dp, height = CallLevel.barHeight(levelDBFS, i).dp).clip(RoundedCornerShape(3.dp)).background(Color.White.copy(alpha = 0.85f)))
+                Box(Modifier.size(width = 5.dp, height = CallLevel.barHeight(levelDBFS, i).dp).clip(RoundedCornerShape(3.dp)).background(callInk().copy(alpha = 0.85f)))
             }
         }
-        Text("You", color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+        Text("You", color = callInk().copy(alpha = 0.9f), style = CaptionType, modifier = Modifier.padding(top = 8.dp))
     }
 }
 
@@ -287,7 +312,7 @@ private fun Caption(vm: CallConversation, playback: AudioPlayback, mode: AvatarM
             delay(66)
         }
     }
-    val base = if (caption.mine) Color(0xFFC9F5DC) else Color.White
+    val base = if (caption.mine) callMint() else callInk()
     val text: AnnotatedString = buildAnnotatedString {
         words.forEachIndexed { i, word ->
             withStyle(SpanStyle(color = base.copy(alpha = if (i < lit) 1f else 0.55f))) { append(word) }
@@ -295,7 +320,7 @@ private fun Caption(vm: CallConversation, playback: AudioPlayback, mode: AvatarM
         }
     }
     Text(
-        text, textAlign = TextAlign.Center, fontSize = 19.sp, fontWeight = FontWeight.ExtraBold, lineHeight = 25.sp,
+        text, textAlign = TextAlign.Center, style = TitleType,
         // At most four lines on screen, so a long reply (or a large font scale) cannot climb over his mouth or push the
         // talk button off a small phone. The whole text is the live region's and the sheet's.
         maxLines = 4, overflow = TextOverflow.Ellipsis,
@@ -308,9 +333,9 @@ private fun Caption(vm: CallConversation, playback: AudioPlayback, mode: AvatarM
 @Composable
 private fun Controls(recording: Boolean, busy: Boolean, talkLabel: String, onChat: () -> Unit, onPressBegan: () -> Unit, onPressEnded: () -> Unit, onEnd: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(26.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
-        RoundButton(GlassStrong, "Show the conversation", onChat) { Icon(Icons.Filled.Chat, null, tint = Color.White) }
+        RoundButton(callGlassStrong(), "Show the conversation", onChat) { Icon(Icons.Filled.Chat, null, tint = callInk()) }
         Box(
-            Modifier.size(78.dp).clip(CircleShape).background(if (recording) Green else Color.White)
+            Modifier.size(78.dp).clip(CircleShape).background(if (recording) callMint() else LocalAlphonsoTokens.current.action)
                 .semantics {
                     contentDescription = "Hold to talk"
                     role = Role.Button
@@ -327,8 +352,8 @@ private fun Controls(recording: Boolean, busy: Boolean, talkLabel: String, onCha
                 }
                 .holdToTalk(enabled = !busy, onPressBegan, onPressEnded),
             contentAlignment = Alignment.Center,
-        ) { Icon(Icons.Filled.Mic, null, tint = Color(0xFF17241C), modifier = Modifier.size(30.dp)) }
-        RoundButton(Color(0xFFE5483D), "End the call", onEnd) { Icon(Icons.Filled.CallEnd, null, tint = Color.White) }
+        ) { Icon(Icons.Filled.Mic, null, tint = LocalAlphonsoTokens.current.onAction, modifier = Modifier.size(30.dp)) }
+        RoundButton(callEnd(), "End the call", onEnd) { Icon(Icons.Filled.CallEnd, null, tint = LocalAlphonsoTokens.current.onWrong) }
     }
 }
 

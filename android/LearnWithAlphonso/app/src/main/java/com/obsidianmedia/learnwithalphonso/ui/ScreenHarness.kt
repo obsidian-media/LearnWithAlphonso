@@ -68,6 +68,22 @@ import com.obsidianmedia.learnwithalphonso.ui.review.ReviewScreen
 import com.obsidianmedia.learnwithalphonso.ui.review.ReviewUiState
 import com.obsidianmedia.learnwithalphonso.ui.review.ReviewViewModel
 import com.obsidianmedia.learnwithalphonso.ui.settings.SettingsScreen
+import com.obsidianmedia.learnwithalphonso.core.logic.DisplayNameOnboarding
+import com.obsidianmedia.learnwithalphonso.core.logic.OnboardingFlow
+import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordRequest
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizBest
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizOffer
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizQuestion
+import com.obsidianmedia.learnwithalphonso.ui.achievements.BadgeUnlockSheet
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
+import com.obsidianmedia.learnwithalphonso.ui.listen.PodcastQuizSheet
+import com.obsidianmedia.learnwithalphonso.ui.onboarding.NameOnboardingScreen
+import com.obsidianmedia.learnwithalphonso.ui.placement.PlacementScreen
+import com.obsidianmedia.learnwithalphonso.ui.social.BlockConfirmDialog
+import com.obsidianmedia.learnwithalphonso.ui.social.ReportSheet
+import com.obsidianmedia.learnwithalphonso.ui.social.SocialTarget
+import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordSheet
 import io.ktor.client.engine.okhttp.OkHttp
 
 /**
@@ -237,6 +253,26 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
             PathBuildScreen(container, {}, pathVm, goalVm, "travel", openGoalSheet = screen == "path-build-sheet")
         }
         "settings" -> SettingsScreen(container, {})
+        "save-word" -> SaveWordSheet(container, SaveWordRequest("café", "Un café, por favor.", "es"), {})
+        "podcast-quiz" -> PodcastQuizSheet(
+            container, "Kitchen Talk 2", "ep1",
+            PodcastQuizOffer(
+                listOf(
+                    PodcastQuizQuestion("q1", "What does the cook ask for first?", listOf("Salt", "A pan", "The menu", "Water"), 1),
+                    PodcastQuizQuestion("q2", "Where is the cook?", listOf("At home", "In a kitchen", "At school"), 1),
+                ),
+                PodcastQuizBest(1, 10),
+            ),
+            {}, {},
+        )
+        "placement" -> PlacementScreen(container, Course.ENGLISH, {})
+        "name-prompt" -> NameOnboardingScreen(container, OnboardingFlow.NamePresentation(1, me, DisplayNameOnboarding.start("", "Learner4821")), {})
+        "ai-consent" -> AiConsentDialog(container.aiConsent, {}, {})
+        "ai-gate" -> AiConsentGate(container) { androidx.compose.material3.Text("Hector") }
+        "report", "report-team" -> ReportSheet(if (screen == "report") SocialTarget("u-mina", "Mina") else SocialTarget("t3", "Verb Heroes", isTeamName = true), container, {})
+        "offline-finish" -> com.obsidianmedia.learnwithalphonso.ui.lesson.OfflineFinishScreen("Saved on this phone. It will sync when you are back online.", 40, 7, 8)
+        "block" -> BlockConfirmDialog(SocialTarget("u-mina", "Mina"), {}, {})
+        "unlock", "unlock-two" -> BadgeUnlockSheet(container.content.achievements.filter { it.id in (if (screen == "unlock") listOf("streak_30") else listOf("streak_30", "xp_500")) }, {}, {})
     }
 }
 

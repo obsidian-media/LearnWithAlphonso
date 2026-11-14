@@ -1,5 +1,20 @@
 package com.obsidianmedia.learnwithalphonso.ui.social
 
+import androidx.compose.ui.res.painterResource
+import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.core.logic.SafetyPresentation
+import com.obsidianmedia.learnwithalphonso.core.net.reportTeamName
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsConfirmDialog
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialog
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogBody
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogTitle
+import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +33,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -45,13 +59,13 @@ import com.obsidianmedia.learnwithalphonso.core.net.reportUser
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /** Ports of SocialSafetyControls.swift: the block/report affordances every user-facing row carries. */
 
-data class SocialTarget(val id: String, val displayName: String)
+/** [isTeamName] reports a team's name (the id is the team's) instead of a person. */
+data class SocialTarget(val id: String, val displayName: String, val isTeamName: Boolean = false)
 
 enum class ReportReason(val raw: String, val label: String) {
     SPAM("spam", "Spam"),
@@ -69,12 +83,25 @@ object SocialSafetyCopy {
 @Composable
 fun SocialSafetyMenu(onBlock: () -> Unit, onReport: () -> Unit, contentDescription: String = "More options") {
     var open by remember { mutableStateOf(false) }
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     Box {
-        IconButton(onClick = { open = true }) { Icon(Icons.Filled.MoreVert, contentDescription = contentDescription, tint = palette.inkSoft) }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            DropdownMenuItem(text = { Text("Block User", color = palette.destructive) }, onClick = { open = false; onBlock() })
-            DropdownMenuItem(text = { Text("Report User") }, onClick = { open = false; onReport() })
+        IconButton(onClick = { open = true }) { Icon(Icons.Filled.MoreVert, contentDescription = contentDescription, tint = ds.inkSoft) }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = ds.card) {
+            DropdownMenuItem(text = { Text("Block User", style = FootnoteType, color = ds.wrongInk) }, onClick = { open = false; onBlock() })
+            DropdownMenuItem(text = { Text(SafetyPresentation.reportMenuLabel(false), style = FootnoteType, color = ds.ink) }, onClick = { open = false; onReport() })
+        }
+    }
+}
+
+/** The menu on a team's name in the top teams list: report the name, nothing else. */
+@Composable
+fun TeamNameMenu(teamName: String, onReport: () -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val ds = LocalAlphonsoTokens.current
+    Box {
+        IconButton(onClick = { open = true }) { Icon(Icons.Filled.MoreVert, contentDescription = "More options for $teamName", tint = ds.inkSoft) }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = ds.card) {
+            DropdownMenuItem(text = { Text(SafetyPresentation.reportMenuLabel(true), style = FootnoteType, color = ds.ink) }, onClick = { open = false; onReport() })
         }
     }
 }
@@ -82,61 +109,54 @@ fun SocialSafetyMenu(onBlock: () -> Unit, onReport: () -> Unit, contentDescripti
 @Composable
 fun BlockConfirmDialog(target: SocialTarget?, onConfirm: (SocialTarget) -> Unit, onDismiss: () -> Unit, title: String? = null) {
     if (target == null) return
-    val palette = AlphonsoColor.palette
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title ?: "Block ${target.displayName}?") },
-        text = { Text(SocialSafetyCopy.blockConfirmationMessage(target.displayName)) },
-        confirmButton = { TextButton(onClick = { onConfirm(target) }) { Text("Block", color = palette.destructive) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    DsConfirmDialog(
+        title = title ?: SafetyPresentation.blockTitle(target.displayName),
+        message = SocialSafetyCopy.blockConfirmationMessage(target.displayName),
+        confirmLabel = "Block", onConfirm = { onConfirm(target) }, onDismiss = onDismiss, destructive = true,
     )
 }
 
-/** Reason picker, submit, then the confirmation copy with the report address. */
+/** Reason picker, submit, then the confirmation copy with the report address. A team name reports through the team's creator. */
 @Composable
 fun ReportSheet(target: SocialTarget?, container: AppContainer, onDismiss: () -> Unit) {
     if (target == null) return
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val scope = rememberCoroutineScope()
     var reason by remember { mutableStateOf(ReportReason.SPAM) }
     var submitting by remember { mutableStateOf(false) }
     var submitted by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Report ${target.displayName}") },
-        text = {
-            if (submitted) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Report submitted", style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                    Text("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@alphonsoecosystem.app.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
-                }
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    AlphonsoSectionHeader("Why are you reporting this person?")
-                    ReportReason.entries.forEach { r ->
-                        Row(Modifier.fillMaxWidth().clickable { reason = r }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(r.label, color = palette.ink, modifier = Modifier.weight(1f))
-                            if (reason == r) Text("✓", color = palette.moss, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                    error?.let { Text(it, color = palette.destructive, style = MaterialTheme.typography.bodySmall) }
-                }
+    DsDialog(onDismiss) {
+        DsDialogTitle(SafetyPresentation.reportTitle(target.displayName))
+        if (submitted) {
+            Icon(painterResource(R.drawable.ds_check), null, tint = ds.right, modifier = Modifier.size(AlphonsoTokens.Space.s12))
+            Text("Report submitted", style = HeadlineType, color = ds.ink)
+            DsDialogBody("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@alphonsoecosystem.app.")
+            DsCompactButton("Done", onDismiss, primary = true)
+        } else {
+            DsOverline(SafetyPresentation.reasonQuestion(target.isTeamName))
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                ReportReason.entries.forEach { r -> DsChip(r.label, reason == r, onClick = { reason = r }, modifier = Modifier.fillMaxWidth()) }
             }
-        },
-        confirmButton = {
-            if (submitted) TextButton(onClick = onDismiss) { Text("Done") }
-            else AlphonsoPrimaryButton("Submit Report", busy = submitting, fullWidth = false, onClick = {
-                scope.launch {
-                    submitting = true; error = null
-                    val ok = runCatching { container.progressClient.reportUser(target.id, reason.raw) }.isSuccess
-                    submitting = false
-                    if (ok) submitted = true else error = "Couldn't submit your report. Try again."
-                }
-            })
-        },
-        dismissButton = { if (!submitted) TextButton(onClick = onDismiss) { Text("Cancel") } },
-    )
+            error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, textAlign = TextAlign.Center) }
+            Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                DsCompactButton("Cancel", onDismiss)
+                AlphonsoPrimaryButton("Submit Report", busy = submitting, fullWidth = false, onClick = {
+                    scope.launch {
+                        submitting = true; error = null
+                        val result = runCatching {
+                            if (target.isTeamName) container.progressClient.reportTeamName(target.id, reason.raw) else { container.progressClient.reportUser(target.id, reason.raw); true }
+                        }
+                        submitting = false
+                        result.fold(
+                            onSuccess = { filed -> if (filed) submitted = true else error = SafetyPresentation.NO_CREATOR },
+                            onFailure = { error = SafetyPresentation.SUBMIT_FAILED },
+                        )
+                    }
+                })
+            }
+        }
+    }
 }
 
 /** The learner's picture: their animal, or the initial tinted from the seed (same colour rule as iOS and web). */
@@ -157,7 +177,7 @@ fun AvatarCircle(seed: String, displayName: String, size: Dp = 36.dp) {
 @Composable
 fun ToastBanner(message: String?, onClear: () -> Unit) {
     if (message == null) return
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     LaunchedEffect(message) { delay(3_000); onClear() }
     Text(
         message,
@@ -165,11 +185,11 @@ fun ToastBanner(message: String?, onClear: () -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .clip(RoundedCornerShape(AlphonsoRadius.lg))
-            .background(palette.emberSoft)
+            .background(ds.actionTint)
             .padding(10.dp)
             .semantics { contentDescription = message },
-        style = MaterialTheme.typography.labelLarge,
-        color = palette.ink,
+        style = FootnoteType,
+        color = ds.ink,
         textAlign = TextAlign.Center,
     )
 }

@@ -1,5 +1,9 @@
 package com.obsidianmedia.learnwithalphonso.ui.settings
 
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.background
@@ -18,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -50,7 +53,6 @@ import com.obsidianmedia.learnwithalphonso.core.voice.VoiceOption
 import com.obsidianmedia.learnwithalphonso.core.voice.VoicePrefs
 import com.obsidianmedia.learnwithalphonso.ui.friends.CoursePickerRow
 import com.obsidianmedia.learnwithalphonso.ui.learn.displayName
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.launch
 
 /**
@@ -60,7 +62,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 internal fun VoicesSection(container: AppContainer) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val activeCourse by container.activeCourse.course.collectAsState()
     var course by remember { mutableStateOf(activeCourse) }
     var prefs by remember { mutableStateOf(container.voicePrefs.load()) }
@@ -79,8 +81,8 @@ internal fun VoicesSection(container: AppContainer) {
                     .padding(vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(character.settingsLabel, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium), color = palette.ink, modifier = Modifier.weight(1f))
-                Text("$name  ›", style = MaterialTheme.typography.bodyLarge, color = palette.inkSoft)
+                Text(character.settingsLabel, style = HeadlineType.copy(fontWeight = FontWeight.Medium), color = ds.ink, modifier = Modifier.weight(1f))
+                Text("$name  ›", style = HeadlineType, color = ds.inkSoft)
             }
         }
     }
@@ -104,7 +106,7 @@ private fun VoicePickerDialog(
     onPrefs: (VoicePrefs) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val scope = rememberCoroutineScope()
     var playingId by remember { mutableStateOf<String?>(null) }
     var savingId by remember { mutableStateOf<String?>(null) }
@@ -137,12 +139,12 @@ private fun VoicePickerDialog(
     val title = "${character.settingsLabel} · ${course.displayName}"
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Column(Modifier.fillMaxSize().background(palette.surface)) {
+        Column(Modifier.fillMaxSize().background(ds.surface)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onDismiss) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
-                Text(title, style = MaterialTheme.typography.titleMedium, color = palette.ink, modifier = Modifier.semantics { heading() })
+                IconButton(onClick = onDismiss) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = ds.choice) }
+                Text(title, style = HeadlineType, color = ds.ink, modifier = Modifier.semantics { heading() })
             }
-            error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, modifier = Modifier.padding(horizontal = 16.dp)) }
+            error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, modifier = Modifier.padding(horizontal = 16.dp)) }
             LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 VoiceGender.entries.forEach { gender ->
                     val group = VoiceCatalog.voicesFor(course.code).filter { it.gender == gender }
@@ -150,8 +152,8 @@ private fun VoicePickerDialog(
                     item(key = gender.name) {
                         Text(
                             gender.groupLabel.uppercase(),
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = palette.ember,
+                            style = CaptionType.copy(fontWeight = FontWeight.SemiBold),
+                            color = ds.actionText,
                             modifier = Modifier.padding(top = 12.dp).semantics { heading() },
                         )
                     }
@@ -195,13 +197,13 @@ private fun VoiceRow(
     onPreview: () -> Unit,
     onChoose: () -> Unit,
 ) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(palette.parchment).padding(horizontal = 4.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(ds.card).padding(horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onPreview, modifier = Modifier.semantics { contentDescription = if (isPlaying) "Stop ${voice.name} preview" else "Play ${voice.name} preview" }) {
-            Text(if (isPlaying) "■" else "▶", color = palette.moss, style = MaterialTheme.typography.titleMedium)
+            Text(if (isPlaying) "■" else "▶", color = ds.choice, style = HeadlineType)
         }
         Row(
             Modifier
@@ -215,21 +217,21 @@ private fun VoiceRow(
         ) {
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(voice.name, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = palette.ink)
+                    Text(voice.name, style = HeadlineType.copy(fontWeight = FontWeight.SemiBold), color = ds.ink)
                     if (isDefault) {
                         Text(
                             "Default",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = palette.inkSoft,
-                            modifier = Modifier.clip(RoundedCornerShape(50)).background(palette.surface).padding(horizontal = 6.dp, vertical = 2.dp),
+                            style = CaptionType,
+                            color = ds.inkSoft,
+                            modifier = Modifier.clip(RoundedCornerShape(50)).background(ds.surface).padding(horizontal = 6.dp, vertical = 2.dp),
                         )
                     }
                 }
-                Text("${voice.accent} · ${voice.descriptor}", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                Text("${voice.accent} · ${voice.descriptor}", style = FootnoteType, color = ds.inkSoft)
             }
             when {
-                isSaving -> Text("…", color = palette.moss)
-                isSelected -> Text("✓", color = palette.moss, fontWeight = FontWeight.Bold)
+                isSaving -> Text("…", color = ds.choice)
+                isSelected -> Text("✓", color = ds.choice, fontWeight = FontWeight.Bold)
             }
         }
     }

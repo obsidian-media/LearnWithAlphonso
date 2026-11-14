@@ -193,3 +193,19 @@ class SeasonAndRecapPresentationTest {
         assertEquals("You moved up to Treetop!", RecapPresentation.promotionLine("ruby"))
     }
 }
+
+class SafetyPresentationTest {
+    @Test
+    fun `the reason question and the menu entry say team name for a team and person otherwise`() {
+        assertEquals("Why are you reporting this person?", SafetyPresentation.reasonQuestion(false))
+        assertEquals("Why are you reporting this team name?", SafetyPresentation.reasonQuestion(true))
+        assertEquals("Report User", SafetyPresentation.reportMenuLabel(false))
+        assertEquals("Report Team Name", SafetyPresentation.reportMenuLabel(true))
+    }
+
+    @Test
+    fun `the titles carry the name`() {
+        assertEquals("Report Night Owls", SafetyPresentation.reportTitle("Night Owls"))
+        assertEquals("Block Mina?", SafetyPresentation.blockTitle("Mina"))
+    }
+}

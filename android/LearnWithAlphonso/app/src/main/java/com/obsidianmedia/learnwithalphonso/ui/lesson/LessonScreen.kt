@@ -1,5 +1,11 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsEmptyState
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.achievements.BadgeUnlockSheet
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
@@ -98,8 +104,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onExit: () -> Unit, onReviewInstead: () -> Unit = onExit) {
+fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onExit: () -> Unit, onReviewInstead: () -> Unit = onExit, onOpenAchievements: () -> Unit = {}) {
     val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val found = container.content.findLesson(lessonId, course)
     if (found == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Lesson not found", color = palette.ink) }
@@ -233,6 +240,9 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                             state.elapsedMs?.let { add(TileKind.TIME to formatElapsed(it)) }
                         }
                         val unlocked = result.newlyUnlocked.mapNotNull { id -> container.content.achievements.firstOrNull { it.id == id } }
+                        // The celebration sheet, once per finished lesson; the list below it keeps the toasts for after it is closed.
+                        var celebrating by androidx.compose.runtime.saveable.rememberSaveable(result) { mutableStateOf(unlocked.isNotEmpty()) }
+                        if (celebrating) BadgeUnlockSheet(unlocked, onContinue = { celebrating = false }, onSeeAll = { celebrating = false; onOpenAchievements() })
                         LessonComplete(
                             roomId = roomId, headline = headline, onHearHeadline = { Speech.get(context).speak(headline, Course.ENGLISH) },
                             tiles = tiles,
@@ -265,12 +275,18 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                         }
                     }
                     is LessonPhase.QueuedOffline -> OfflineFinishScreen(phase.message, phase.pending.optimisticXpEstimate, state.correctCount, state.total)
-                    is LessonPhase.SaveFailed -> Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
-                        Text(phase.message, style = MaterialTheme.typography.titleMedium, color = palette.ink, textAlign = TextAlign.Center)
-                        phase.supportLine?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center) }
-                        AlphonsoPrimaryButton("Back", onClick = onExit, fullWidth = false)
+                    is LessonPhase.SaveFailed -> Column(
+                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
+                        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3, Alignment.CenterVertically),
+                    ) {
+                        rememberFirstRunAsset("poses/alphonso-hearts-calm.webp")?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 3).clearAndSetSemantics { }) }
+                        DsCard {
+                            Text(phase.message, style = HeadlineType, color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                            phase.supportLine?.let { Text(it, style = FootnoteType, color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+                        }
+                        AlphonsoPrimaryButton("Back", onClick = onExit)
                     }
-                    is LessonPhase.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) { Text(phase.message, color = palette.ink, textAlign = TextAlign.Center) }
+                    is LessonPhase.Error -> Box(Modifier.fillMaxSize().padding(AlphonsoTokens.Space.gutter), contentAlignment = Alignment.Center) { DsEmptyState(phase.message, null, artAsset = "lesson/hmm.webp") }
                 }
             }
         }
@@ -383,15 +399,21 @@ private fun VocabScreen(container: AppContainer, lesson: Lesson, items: List<Voc
 }
 
 @Composable
-private fun OfflineFinishScreen(message: String, estimate: Int, correct: Int, total: Int) {
-    val palette = AlphonsoColor.palette
-    Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
-        Text("☁️", style = MaterialTheme.typography.displayMedium, modifier = Modifier.clearAndSetSemantics {})
-        Text(message, style = MaterialTheme.typography.headlineSmall, color = palette.ink, textAlign = TextAlign.Center)
-        // "Up to", as on iOS: a replay earns only past its best, which this screen may not know offline.
-        Text("Up to +$estimate XP once it syncs", style = MaterialTheme.typography.headlineMedium, color = palette.ember, textAlign = TextAlign.Center)
-        Text("A lesson you've already finished only earns XP for a better score.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, textAlign = TextAlign.Center)
-        Text("$correct/$total correct", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+internal fun OfflineFinishScreen(message: String, estimate: Int, correct: Int, total: Int) {
+    val ds = LocalAlphonsoTokens.current
+    val pose = rememberFirstRunAsset("lesson/happy.webp")
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3, Alignment.CenterVertically),
+    ) {
+        pose?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 3).clearAndSetSemantics { }) }
+        Text(message, style = TitleType, color = ds.ink, textAlign = TextAlign.Center)
+        DsCard {
+            // "Up to", as on iOS: a replay earns only past its best, which this screen may not know offline.
+            Text("Up to +$estimate XP once it syncs", style = HeadlineType, color = ds.actionText, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Text("A lesson you've already finished only earns XP for a better score.", style = FootnoteType, color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Text("$correct/$total correct", style = BodyType, color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        }
     }
 }
 

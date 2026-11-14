@@ -1,5 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.ui.league
 
+import com.obsidianmedia.learnwithalphonso.ui.social.ReportSheet
+import com.obsidianmedia.learnwithalphonso.ui.social.SocialTarget
+import com.obsidianmedia.learnwithalphonso.ui.social.TeamNameMenu
 import androidx.compose.ui.res.painterResource
 import com.obsidianmedia.learnwithalphonso.R
 import com.obsidianmedia.learnwithalphonso.core.logic.SeasonPresentation
@@ -117,6 +120,7 @@ fun TeamsScreen(container: AppContainer, onBack: () -> Unit, seededVm: TeamsView
     var code by remember { mutableStateOf("") }
     var newName by remember { mutableStateOf("") }
     var visibility by remember { mutableStateOf("public") }
+    var reportTarget by remember { mutableStateOf<SocialTarget?>(null) }
 
     DsSceneScreen(DsScene.PROFILE) {
         Column(Modifier.fillMaxWidth()) {
@@ -221,6 +225,8 @@ fun TeamsScreen(container: AppContainer, onBack: () -> Unit, seededVm: TeamsView
                                     Text(t.name, style = HeadlineType, color = ds.ink)
                                     Text("${t.weeklyXp} XP this week", style = CaptionType, color = ds.inkSoft)
                                 }
+                                // Members can report their own team's name; the owner cannot report their own.
+                                if (!(mine && team?.isOwner == true)) TeamNameMenu(t.name) { reportTarget = SocialTarget(t.teamId, t.name, isTeamName = true) }
                             }
                         }
                     }
@@ -232,6 +238,7 @@ fun TeamsScreen(container: AppContainer, onBack: () -> Unit, seededVm: TeamsView
             }
         }
     }
+    ReportSheet(reportTarget, container, onDismiss = { reportTarget = null })
 }
 
 /**

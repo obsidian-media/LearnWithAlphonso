@@ -318,6 +318,26 @@ suspend fun ProgressSyncClient.reportUser(userId: String, reason: String) {
     http.requireSuccess(http.rest(HttpMethod.Post, "content_reports", body = buildJsonObject { put("reported", userId); put("reason", reason) }, headers = mapOf("Prefer" to "return=minimal")))
 }
 
+/**
+ * Reports a team's name: the report goes against the person who created the team, with the team in its context, so the
+ * moderators see what was named. Returns false, filing nothing, when the team has no creator (an auto-created team has a
+ * generated name, so there is no person to report) or the row is not visible to the caller.
+ */
+suspend fun ProgressSyncClient.reportTeamName(teamId: String, reason: String): Boolean {
+    val creator = rowsOf(http.rest(HttpMethod.Get, "teams", mapOf("id" to "eq.$teamId", "select" to "created_by"))).firstOrNull()?.string("created_by") ?: return false
+    http.requireSuccess(
+        http.rest(
+            HttpMethod.Post, "content_reports",
+            body = buildJsonObject {
+                put("reported", creator); put("reason", reason); put("kind", "team_name")
+                put("context", buildJsonObject { put("team_id", teamId) })
+            },
+            headers = mapOf("Prefer" to "return=minimal"),
+        ),
+    )
+    return true
+}
+
 // ---- weakness trend ----
 
 /** Aggregates weakness_events per category; open first, then most recent. Port of fetchWeaknessTrend. */

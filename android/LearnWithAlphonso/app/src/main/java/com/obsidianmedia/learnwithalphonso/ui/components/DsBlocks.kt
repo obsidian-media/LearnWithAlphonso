@@ -370,3 +370,70 @@ fun DsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
         DsCard(content = content)
     }
 }
+
+/**
+ * A dialog in the design system: a card on the scrim (the bubble radius, the card colour), a title, the body, then the
+ * actions stacked as pressable buttons. [dismissible] false is for a choice that must be made (the AI consent sheet).
+ */
+@Composable
+fun DsDialog(onDismiss: () -> Unit, modifier: Modifier = Modifier, dismissible: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(dismissOnBackPress = dismissible, dismissOnClickOutside = dismissible),
+    ) {
+        val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+        Column(
+            modifier.fillMaxWidth().clip(shape).background(ds.card).border(2.dp, ds.line, shape).padding(AlphonsoTokens.Space.s5),
+            verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            content = content,
+        )
+    }
+}
+
+/** A dialog's title. */
+@Composable
+fun DsDialogTitle(text: String) {
+    Text(text, style = HeadlineType, color = LocalAlphonsoTokens.current.ink, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
+}
+
+/** A dialog's body line. */
+@Composable
+fun DsDialogBody(text: String) {
+    Text(text, style = FootnoteType, color = LocalAlphonsoTokens.current.inkSoft, textAlign = TextAlign.Center)
+}
+
+/** A confirm / cancel dialog: the confirm button is the danger look when [destructive]. */
+@Composable
+fun DsConfirmDialog(
+    title: String, message: String?, confirmLabel: String, onConfirm: () -> Unit, onDismiss: () -> Unit,
+    cancelLabel: String = "Cancel", destructive: Boolean = false,
+) {
+    DsDialog(onDismiss) {
+        DsDialogTitle(title)
+        if (!message.isNullOrEmpty()) DsDialogBody(message)
+        Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+            DsCompactButton(cancelLabel, onDismiss)
+            DsCompactButton(confirmLabel, onConfirm, primary = !destructive, danger = destructive)
+        }
+    }
+}
+
+/** The colours of a Material outlined field in the design system's answer look (the name prompt keeps its label, error and clear button). */
+@Composable
+fun dsTextFieldColors(): androidx.compose.material3.TextFieldColors {
+    val ds = LocalAlphonsoTokens.current
+    return androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = ds.choice, unfocusedBorderColor = ds.line, errorBorderColor = ds.wrong, disabledBorderColor = ds.line,
+        focusedContainerColor = ds.card, unfocusedContainerColor = ds.card, errorContainerColor = ds.card, disabledContainerColor = ds.sunk,
+        focusedTextColor = ds.ink, unfocusedTextColor = ds.ink, errorTextColor = ds.ink, disabledTextColor = ds.inkSoft,
+        cursorColor = ds.choice, errorCursorColor = ds.wrong,
+        focusedLabelColor = ds.choice, unfocusedLabelColor = ds.inkSoft, errorLabelColor = ds.wrongInk,
+        focusedPlaceholderColor = ds.inkFaint, unfocusedPlaceholderColor = ds.inkFaint,
+    )
+}
+
+/** The shape of a field: the control radius. */
+@Composable
+fun dsFieldShape(): androidx.compose.ui.graphics.Shape = RoundedCornerShape(AlphonsoTokens.Radius.control)

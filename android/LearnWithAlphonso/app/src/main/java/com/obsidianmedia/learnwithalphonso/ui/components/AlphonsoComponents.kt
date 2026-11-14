@@ -1,5 +1,14 @@
 package com.obsidianmedia.learnwithalphonso.ui.components
 
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import androidx.compose.foundation.layout.heightIn
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
+import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -51,6 +60,7 @@ object AlphonsoRadius {
     val xl = 20.dp
 }
 
+/** The primary button, in the design system's pressable look (the lesson's edge button; compact when not full width). */
 @Composable
 fun AlphonsoPrimaryButton(
     text: String,
@@ -60,16 +70,15 @@ fun AlphonsoPrimaryButton(
     busy: Boolean = false,
     fullWidth: Boolean = true,
 ) {
-    val p = AlphonsoColor.palette
-    Button(
-        onClick = onClick,
-        enabled = enabled && !busy,
-        modifier = if (fullWidth) modifier.fillMaxWidth().height(50.dp) else modifier.height(44.dp),
-        shape = RoundedCornerShape(AlphonsoRadius.lg),
-        colors = ButtonDefaults.buttonColors(containerColor = p.moss, contentColor = p.onPrimary, disabledContainerColor = p.moss.copy(alpha = 0.45f), disabledContentColor = p.onPrimary),
-    ) {
-        if (busy) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = p.onPrimary, strokeWidth = 2.dp)
-        else Text(text, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+    val ds = LocalAlphonsoTokens.current
+    when {
+        busy -> Box(
+            modifier.then(if (fullWidth) Modifier.fillMaxWidth() else Modifier).heightIn(min = AlphonsoTokens.Space.minTouch).clip(RoundedCornerShape(AlphonsoTokens.Radius.control))
+                .background(ds.sunk).padding(AlphonsoTokens.Space.s3).semantics { contentDescription = text },
+            contentAlignment = Alignment.Center,
+        ) { CircularProgressIndicator(modifier = Modifier.size(AlphonsoTokens.Space.s5), color = ds.choice, strokeWidth = 2.dp) }
+        fullWidth -> LessonEdgeButton(text, EdgeVariant.PRIMARY, onClick, modifier, enabled)
+        else -> DsCompactButton(text, onClick, modifier, primary = true, enabled = enabled)
     }
 }
 
@@ -83,66 +92,46 @@ fun AlphonsoSecondaryButton(
     fullWidth: Boolean = true,
     leading: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    val p = AlphonsoColor.palette
-    OutlinedButton(
-        onClick = onClick,
-        enabled = enabled && !busy,
-        modifier = if (fullWidth) modifier.fillMaxWidth().height(50.dp) else modifier.height(44.dp),
-        shape = RoundedCornerShape(AlphonsoRadius.lg),
-        border = BorderStroke(1.dp, p.hairline),
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = p.parchment, contentColor = p.ink),
-    ) {
-        if (busy) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = p.moss, strokeWidth = 2.dp)
-        else {
-            leading?.invoke(this)
-            Text(text, fontWeight = FontWeight.Medium, fontSize = 15.sp)
-        }
+    val ds = LocalAlphonsoTokens.current
+    when {
+        busy -> Box(
+            modifier.then(if (fullWidth) Modifier.fillMaxWidth() else Modifier).heightIn(min = AlphonsoTokens.Space.minTouch).clip(RoundedCornerShape(AlphonsoTokens.Radius.control))
+                .background(ds.sunk).padding(AlphonsoTokens.Space.s3).semantics { contentDescription = text },
+            contentAlignment = Alignment.Center,
+        ) { CircularProgressIndicator(modifier = Modifier.size(AlphonsoTokens.Space.s5), color = ds.choice, strokeWidth = 2.dp) }
+        fullWidth -> LessonEdgeButton(text, EdgeVariant.SECONDARY, onClick, modifier, enabled)
+        else -> DsCompactButton(text, onClick, modifier, enabled = enabled)
     }
 }
 
 @Composable
 fun AlphonsoSectionHeader(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text.uppercase(),
-        modifier = modifier,
-        style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.8.sp, fontWeight = FontWeight.SemiBold),
-        color = AlphonsoColor.palette.ember,
-    )
+    DsOverline(text, modifier)
 }
 
 @Composable
 fun AlphonsoProgressBar(progress: Float, modifier: Modifier = Modifier) {
-    val p = AlphonsoColor.palette
-    Box(modifier.fillMaxWidth().height(8.dp).clip(CircleShape).background(p.parchment)) {
-        Box(Modifier.fillMaxWidth(progress.coerceIn(0f, 1f)).height(8.dp).clip(CircleShape).background(p.moss))
-    }
+    DsProgressBar(progress, modifier)
 }
 
-/** A lesson or menu row: accent dot, title, subtitle, on parchment. */
+/** A lesson or menu row: icon or dot, title, subtitle, on a card. */
 @Composable
 fun AlphonsoRowCard(
     title: String,
     subtitle: String,
     modifier: Modifier = Modifier,
-    accent: Color = AlphonsoColor.palette.moss,
+    accent: Color = LocalAlphonsoTokens.current.choice,
     leadingEmoji: String? = null,
 ) {
-    val p = AlphonsoColor.palette
-    Row(
-        modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(AlphonsoRadius.lg))
-            .background(p.parchment)
-            .padding(horizontal = 12.dp, vertical = 10.dp)
-            .semantics(mergeDescendants = true) {},
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        if (leadingEmoji != null) Text(leadingEmoji, fontSize = 28.sp)
-        else Box(Modifier.size(8.dp).clip(CircleShape).background(accent))
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium), color = p.ink)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = p.inkSoft)
+    val ds = LocalAlphonsoTokens.current
+    DsCard(modifier.semantics(mergeDescendants = true) {}, padding = AlphonsoTokens.Space.s3, spacing = 0.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+            if (leadingEmoji != null) Text(leadingEmoji, style = TitleType)
+            else Box(Modifier.size(AlphonsoTokens.Space.s2).clip(CircleShape).background(accent))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = HeadlineType, color = ds.ink)
+                Text(subtitle, style = FootnoteType, color = ds.inkSoft)
+            }
         }
     }
 }
@@ -170,7 +159,7 @@ fun AlphonsoMascotBanner(message: String, modifier: Modifier = Modifier, mascot:
             painterResource(mascot.res),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.size(52.dp).clip(RoundedCornerShape(AlphonsoRadius.lg)).border(2.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(AlphonsoRadius.lg)),
+            modifier = Modifier.size(52.dp).clip(RoundedCornerShape(AlphonsoRadius.lg)).border(2.dp, LocalAlphonsoTokens.current.onHero.copy(alpha = 0.6f), RoundedCornerShape(AlphonsoRadius.lg)),
         )
         Text(message, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold), color = p.onMossGradient, modifier = Modifier.weight(1f))
     }
@@ -201,7 +190,7 @@ fun AlphonsoTipCard(explanation: String, modifier: Modifier = Modifier, saveCour
             verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
             Text(
-                "Alphonso says", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp), color = p.ember,
+                "Alphonso says", style = CaptionType, color = p.ember,
                 modifier = if (linksReachable) Modifier.semantics { contentDescription = "Incorrect. Alphonso says" } else Modifier,
             )
             if (linksReachable) TappableText(explanation, saveCourse!!, saveMode, onSave!!, style = MaterialTheme.typography.bodyMedium, color = p.ink)
