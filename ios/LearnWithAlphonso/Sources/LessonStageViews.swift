@@ -1012,6 +1012,8 @@ struct LessonRewardTile: View {
 
 /// A new achievement: a gold medal on navy. Toasts slide in 250 ms apart after the tiles (a fade under Reduce Motion).
 struct LessonAchievementToast: View {
+    /// The achievement's id: the medallion drawn is that badge's own art.
+    let id: String
     let title: String
     let detail: String
     let index: Int
@@ -1022,12 +1024,7 @@ struct LessonAchievementToast: View {
 
     var body: some View {
         HStack(spacing: AlphonsoDS.Space.s3) {
-            DSIconView(icon: .trophy, size: 28)
-                .foregroundStyle(ds.brand)
-                .frame(width: 56, height: 56)
-                .background(Circle().fill(RadialGradient(
-                    colors: [ds.xpTint, ds.xp, ds.xpEdge], center: UnitPoint(x: 0.35, y: 0.3),
-                    startRadius: 0, endRadius: 40)))
+            BadgeMedallion(id: id, size: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s2, state: .earned)
             VStack(alignment: .leading, spacing: 1) {
                 Text("Achievement unlocked").dsText(.overline).foregroundStyle(ds.onHeroKick)
                 Text(title).dsText(.headline).foregroundStyle(ds.onHero)
@@ -1157,7 +1154,7 @@ struct LessonCompleteView<Extras: View>: View {
                         VStack(spacing: AlphonsoDS.Space.s2) {
                             ForEach(Array(achievements.enumerated()), id: \.element.id) { index, achievement in
                                 LessonAchievementToast(
-                                    title: achievement.title, detail: achievement.description, index: index,
+                                    id: achievement.id, title: achievement.title, detail: achievement.description, index: index,
                                     reduce: reduceMotion)
                             }
                         }

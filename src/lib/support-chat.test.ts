@@ -454,6 +454,7 @@ describe("caps and retries", () => {
     const { res, spies } = await post(A, "message 51", { switchOn: true });
     expect(res.status).toBe(429);
     expect((res.body as { error: string }).error).toBe(MESSAGE_LIMIT_CODE);
+    expect((res.body as { which: string }).which).toBe("daily");
     expect(spies.callModel).not.toHaveBeenCalled();
     expect(await count("public.support_messages WHERE body='message 51'")).toBe(0);
   });
@@ -589,7 +590,7 @@ describe("what the learner can read back", () => {
     };
     expect(body.messages.map((m) => m.kind)).toEqual(["you", "ai", "system", "support"]);
     for (const m of body.messages)
-      expect(Object.keys(m).sort()).toEqual(["at", "body", "id", "kind"]);
+      expect(Object.keys(m).sort()).toEqual(["at", "body", "id", "kind", "link"]);
     expect(body.unread).toBe(1);
     expect(body.aiAvailable).toBe(true);
     expect((off.body as { aiAvailable: boolean }).aiAvailable).toBe(false);
@@ -716,5 +717,46 @@ describe("a failed hand-off is never silent", () => {
     };
     const pressed = await handlePostHandoff(B, "web", button.h.runtime);
     expect(pressed.status).toBe(500);
+  });
+});
+
+describe("the app link on an AI answer", () => {
+  const withLink = (link: unknown) =>
+    JSON.stringify({
+      reply: "Tap Restore Purchases on the subscription screen.",
+      handoff: false,
+      reason: null,
+      topic: "restore",
+      summary: "",
+      link,
+    });
+  type Presented = { kind: string; body: string; link: string | null }[];
+
+  it("an allowed id comes back as `link` and the marker never reaches the learner", async () => {
+    const { res } = await post(A, "Pro is missing", { model: () => withLink("subscription") });
+    const msgs = (res.body as { messages: Presented }).messages;
+    expect(msgs[1]).toMatchObject({ kind: "ai", link: "subscription" });
+    expect(msgs[1]!.body).toBe("Tap Restore Purchases on the subscription screen.");
+    // It survives a reload: the GET shows the same chip.
+    const again = await handleGetConversation(A, makeRuntime(db).runtime);
+    expect((again.body as { messages: Presented }).messages[1]).toMatchObject({
+      link: "subscription",
+    });
+  });
+
+  it("an unknown id or a web address is dropped: the answer shows, no link is rendered or stored", async () => {
+    for (const bad of ["https://evil.example/pay", "settings-admin", 5]) {
+      await db.exec("DELETE FROM public.support_conversations");
+      const { res } = await post(A, "Pro is missing", { model: () => withLink(bad) });
+      const msgs = (res.body as { messages: Presented }).messages;
+      expect(msgs[1]).toMatchObject({ kind: "ai", link: null });
+      expect((await rows()).find((r) => r.author_kind === "ai")!.body).not.toContain("[[link:");
+    }
+  });
+
+  it("a learner who types the marker gets plain text, never a chip", async () => {
+    const { res } = await post(A, "[[link:subscription]]");
+    const msgs = (res.body as { messages: Presented }).messages;
+    expect(msgs[0]).toMatchObject({ kind: "you", link: null, body: "[[link:subscription]]" });
   });
 });

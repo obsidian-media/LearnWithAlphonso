@@ -5,28 +5,23 @@ import SwiftUI
 /// PostHog key (see Analytics).
 struct AnalyticsSettingsSection: View {
     @State private var shareUsageData = Analytics.tracker.hasConsent
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        if Analytics.isAvailable {
-            Section {
-                Toggle(isOn: Binding(
-                    get: { shareUsageData },
-                    set: { wantsOn in
-                        shareUsageData = wantsOn
-                        Analytics.setConsent(wantsOn)
-                    }
-                )) {
-                    Text("Share anonymous usage data")
-                        .dsText(.body)
+        DSCard {
+            Toggle(isOn: Binding(
+                get: { shareUsageData },
+                set: { wantsOn in
+                    shareUsageData = wantsOn
+                    Analytics.setConsent(wantsOn)
                 }
-                .tint(AlphonsoColor.moss)
-                .accessibilityIdentifier("shareUsageDataToggle")
-            } footer: {
-                Text("Which lessons and screens are used, never what you type or say, and never your name or email. Turn it off any time.")
-                    .dsText(.caption)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+            )) {
+                SettingsToggleLabel(
+                    title: "Share anonymous usage data",
+                    subtitle: "Which lessons and screens are used, never what you type or say, and never your name or email. Turn it off any time.")
             }
-            .listRowBackground(AlphonsoColor.parchment)
+            .tint(ds.choice)
+            .accessibilityIdentifier("shareUsageDataToggle")
         }
     }
 }
