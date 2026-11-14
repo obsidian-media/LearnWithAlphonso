@@ -66,7 +66,7 @@ describe("detail pages are not nested under a list page that has no Outlet", () 
       expect(src, `${parent}.tsx renders no Outlet`).not.toContain("Outlet");
       const Parent = parent[0]!.toUpperCase() + parent.slice(1);
       expect(tree, `${parent} has no children`).not.toContain(`${Parent}RouteWithChildren`);
-      expect(tree).not.toMatch(new RegExp(`getParentRoute: \(\) => ${Parent}Route\b`));
+      expect(tree).not.toContain(`getParentRoute: () => ${Parent}Route`);
     }
   });
 
