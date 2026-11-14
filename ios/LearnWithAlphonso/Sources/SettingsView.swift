@@ -323,15 +323,10 @@ struct SettingsView: View {
                 SettingsNavLabel(title: "Terms of Use", trailing: "arrow.up.right")
             }
             SettingsDivider()
-            NavigationLink("Acknowledgements") { AcknowledgementsView() }
-                .dsText(.headline)
-                .foregroundStyle(ds.ink)
-                .buttonStyle(.plain)
-                .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
-                .overlay(alignment: .trailing) {
-                    Image(systemName: "chevron.right").dsText(.caption).foregroundStyle(ds.inkFaint)
-                        .accessibilityHidden(true)
-                }
+            // The link sits invisibly behind the row: a visible NavigationLink in a List adds a second chevron.
+            SettingsNavLabel(title: "Acknowledgements")
+                .background(NavigationLink("Acknowledgements") { AcknowledgementsView() }.opacity(0).accessibilityHidden(true))
+                .accessibilityAddTraits(.isButton)
         }
     }
 

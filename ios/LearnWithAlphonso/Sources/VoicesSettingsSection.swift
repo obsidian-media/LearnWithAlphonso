@@ -22,21 +22,25 @@ struct VoicesSettingsSection: View {
             DSSegmented(options: courseOptions, selection: $course, accessibilityLabel: "Course for voices")
             ForEach(VoiceCharacter.allCases) { character in
                 SettingsDivider()
-                NavigationLink {
-                    VoicePickerView(session: session, character: character, course: course, prefs: $prefs)
-                } label: {
-                    HStack(spacing: AlphonsoDS.Space.s3) {
-                        Text(character.settingsLabel).dsText(.headline).foregroundStyle(ds.ink)
-                        Spacer(minLength: AlphonsoDS.Space.s2)
-                        Text(VoiceCatalog.find(prefs.voice(character, course: course))?.name ?? "")
-                            .dsText(.footnote).foregroundStyle(ds.inkSoft)
-                        Image(systemName: "chevron.right").dsText(.caption).foregroundStyle(ds.inkFaint)
-                            .accessibilityHidden(true)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
-                    .contentShape(Rectangle())
+                // The link sits invisibly behind the row: a visible NavigationLink in a List adds a second chevron.
+                HStack(spacing: AlphonsoDS.Space.s3) {
+                    Text(character.settingsLabel).dsText(.headline).foregroundStyle(ds.ink)
+                    Spacer(minLength: AlphonsoDS.Space.s2)
+                    Text(VoiceCatalog.find(prefs.voice(character, course: course))?.name ?? "")
+                        .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    Image(systemName: "chevron.right").dsText(.caption).foregroundStyle(ds.inkFaint)
+                        .accessibilityHidden(true)
                 }
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+                .contentShape(Rectangle())
+                .background(
+                    NavigationLink {
+                        VoicePickerView(session: session, character: character, course: course, prefs: $prefs)
+                    } label: { EmptyView() }
+                        .opacity(0)
+                        .accessibilityHidden(true))
+                .accessibilityElement(children: .ignore)
+                .accessibilityAddTraits(.isButton)
                 .accessibilityLabel(
                     "\(character.settingsLabel) in \(Self.courseName(course)): "
                         + (VoiceCatalog.find(prefs.voice(character, course: course))?.name ?? "")
