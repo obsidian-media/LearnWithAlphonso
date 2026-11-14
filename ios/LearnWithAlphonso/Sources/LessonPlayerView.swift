@@ -331,7 +331,9 @@ struct LessonPlayerView: View {
         // own language (SavedWordPolicy), i.e. the English course today.
         .environment(\.saveWordHandler, { savingWord = $0 })
         .sheet(isPresented: $showingAchievements) {
-            AchievementsView(session: session, contentStore: contentStore, notificationScheduler: notificationScheduler)
+            AchievementsView(
+                session: session, contentStore: contentStore, notificationScheduler: notificationScheduler,
+                onClose: { showingAchievements = false })
         }
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
@@ -1301,7 +1303,8 @@ private struct OfflineFinishView: View {
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        VStack(spacing: AlphonsoDS.Space.s3) {
+        ScrollView {
+            VStack(spacing: AlphonsoDS.Space.s3) {
             // Alphonso with the hourglass: waiting, not celebrating, and no streak chip (the streak is the server's).
             Image("Alphonso-refill-hourglass").resizable().scaledToFit()
                 .frame(height: AlphonsoDS.Space.s12 * 3)
@@ -1332,8 +1335,9 @@ private struct OfflineFinishView: View {
                     .buttonStyle(.dsButton(.secondary))
             }
         }
-        .padding(AlphonsoDS.Space.gutter)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(AlphonsoDS.Space.gutter)
+            .frame(maxWidth: .infinity)
+        }
         .background(ds.surface)
     }
 }
@@ -1355,8 +1359,9 @@ private struct LeaguePromotionOverlay: View {
             VStack(spacing: 20) {
                 Spacer()
                 Image(systemName: "shield.fill")
-                    .dsText(.numeralXL)
-                    .scaleEffect(2)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: AlphonsoDS.Space.s12 * 2, height: AlphonsoDS.Space.s12 * 2)
                     .foregroundStyle(LeagueTierPalette.color(for: tier))
                     .springEntrance(response: 0.6, dampingFraction: 0.6, minScale: 0.4)
                 Text("League up!")

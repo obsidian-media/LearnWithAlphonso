@@ -82,18 +82,18 @@ struct PlacementView: View {
                     // questions available" fallback -- every shipped
                     // course has content in every band, so this isn't
                     // expected to trigger.
-                    VStack(spacing: AlphonsoSpacing.md) {
+                    VStack(spacing: AlphonsoDS.Space.s4) {
                         Text("No placement questions are available for this course right now.")
                             .dsText(.footnote)
-                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .foregroundStyle(ds.inkSoft)
                             .multilineTextAlignment(.center)
                         Button("Back to Learn") { onFinished() }
-                            .buttonStyle(.alphonsoPrimary)
+                            .buttonStyle(.dsButton(.primary))
                     }
                     .padding()
                 }
             }
-            .background(AlphonsoColor.surface)
+            .background(ds.surface)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if !done {
@@ -108,13 +108,13 @@ struct PlacementView: View {
                 }
             }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
     }
 
     /// One chip per band. A skipped band is outlined with no fill and a passed one is filled, so credit and a real
     /// pass never look alike; each reads its state aloud.
     private var levelMarkers: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: AlphonsoDS.Space.s2 - 2) {
             ForEach(attempt.markers(done: false), id: \.level) { marker in
                 let look = markerLook(marker.state)
                 Text(marker.level)
@@ -139,49 +139,50 @@ struct PlacementView: View {
 
     private func markerLook(_ state: BandMarkerState) -> MarkerLook {
         switch state {
-        case .passed: return MarkerLook(words: "passed", fill: AlphonsoColor.moss, border: AlphonsoColor.moss, text: AlphonsoColor.surface)
-        case .skipped: return MarkerLook(words: "skipped after strong answers", fill: AlphonsoColor.surface, border: AlphonsoColor.moss, text: AlphonsoColor.moss)
-        case .current: return MarkerLook(words: "now", fill: AlphonsoColor.surface, border: AlphonsoColor.ink, text: AlphonsoColor.ink)
-        case .missed: return MarkerLook(words: "not passed", fill: AlphonsoColor.surface, border: AlphonsoColor.hairline, text: AlphonsoColor.inkSoft)
-        case .upcoming: return MarkerLook(words: "not reached", fill: AlphonsoColor.surface, border: AlphonsoColor.hairline, text: AlphonsoColor.inkSoft)
+        case .passed: return MarkerLook(words: "passed", fill: ds.right, border: ds.right, text: ds.onRight)
+        case .skipped: return MarkerLook(words: "skipped after strong answers", fill: ds.surface, border: ds.rightInk, text: ds.rightInk)
+        case .current: return MarkerLook(words: "now", fill: ds.choiceTint, border: ds.choice, text: ds.choice)
+        case .missed: return MarkerLook(words: "not passed", fill: ds.surface, border: ds.line, text: ds.inkSoft)
+        case .upcoming: return MarkerLook(words: "not reached", fill: ds.surface, border: ds.line, text: ds.inkSoft)
         }
     }
 
     private func questionBody(_ q: PlacementQuestion) -> some View {
-        let header = VStack(spacing: AlphonsoSpacing.sm) {
-            ProgressView(value: attempt.maxQuestions > 0 ? Double(step) / Double(attempt.maxQuestions) : 0)
-                .tint(AlphonsoColor.moss)
-                .accessibilityLabel("Placement progress")
+        let header = VStack(spacing: AlphonsoDS.Space.s2) {
+            DSProgressBar(
+                fraction: attempt.maxQuestions > 0 ? Double(step) / Double(attempt.maxQuestions) : 0,
+                accessibilityLabel: "Placement progress",
+                accessibilityValue: attempt.progressSpokenLabel(step: step))
             Text(attempt.progressLabel(step: step))
                 .dsText(.caption)
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(ds.inkSoft)
                 .accessibilityLabel(attempt.progressSpokenLabel(step: step))
             levelMarkers
         }
         .padding()
 
-        let content = VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+        let content = VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
             Text("Placement test")
                 .dsText(.caption)
                 .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
+                .foregroundStyle(ds.actionText)
 
             questionPromptAndChoices(q)
         }
         .padding()
 
-        let footer = VStack(spacing: AlphonsoSpacing.sm) {
+        let footer = VStack(spacing: AlphonsoDS.Space.s2) {
             Button {
                 Task { await submit() }
             } label: {
                 Text(isFinalQuestion ? "See my level" : "Continue")
             }
-            .buttonStyle(.alphonsoPrimary)
+            .buttonStyle(.dsButton(.primary))
             .disabled(picked?.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
 
             Text("No hearts lost — this just finds your starting point.")
                 .dsText(.caption)
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(ds.inkSoft)
         }
         .padding()
 
@@ -213,36 +214,34 @@ struct PlacementView: View {
         case .multipleChoice(let mc):
             Text(mc.prompt)
                 .dsText(.title)
-                .foregroundStyle(AlphonsoColor.ink)
+                .foregroundStyle(ds.ink)
             choiceButtons(mc.choices)
         case .listening(let listening):
             Text("Listening")
                 .dsText(.caption)
                 .tracking(0.3)
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(ds.inkSoft)
             Button {
                 speak(listening.audioText)
             } label: {
                 Label("Play audio", systemImage: "speaker.wave.2.fill")
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
             Text(listening.prompt)
                 .dsText(.title)
-                .foregroundStyle(AlphonsoColor.ink)
+                .foregroundStyle(ds.ink)
             choiceButtons(listening.choices)
         case .translate(let translate):
             Text(translate.prompt)
                 .dsText(.title)
-                .foregroundStyle(AlphonsoColor.ink)
+                .foregroundStyle(ds.ink)
             TextField(
                 "Write your answer",
                 text: Binding(get: { picked ?? "" }, set: { picked = $0 }),
                 axis: .vertical
             )
             .lineLimit(3...6)
-            .textFieldStyle(.plain)
-            .padding(AlphonsoSpacing.sm + 2)
-            .alphonsoInputBackground()
+            .dsField()
         }
     }
 
@@ -252,27 +251,11 @@ struct PlacementView: View {
     // checked/isCorrectChoice checkmark, since placement never reveals
     // correctness mid-exam (only the final results screen does).
     private func choiceButtons(_ choices: [String]) -> some View {
-        VStack(spacing: AlphonsoSpacing.sm) {
-            ForEach(choices, id: \.self) { choice in
-                Button {
+        VStack(spacing: AlphonsoDS.Space.s2) {
+            ForEach(Array(choices.enumerated()), id: \.offset) { index, choice in
+                LessonAnswerButton(index: index, label: choice, state: picked == choice ? .selected : .idle) {
                     picked = choice
-                } label: {
-                    Text(choice)
-                        .dsText(.answer)
-                        .foregroundStyle(ds.ink)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
-                        .padding(AlphonsoDS.Space.s3)
-                        .background(
-                            RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
-                                .fill(picked == choice ? ds.choiceTint : ds.card))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
-                                .strokeBorder(picked == choice ? ds.choice : ds.line, lineWidth: 2))
-                        .contentShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
                 }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(picked == choice ? .isSelected : [])
             }
         }
     }
@@ -281,50 +264,51 @@ struct PlacementView: View {
         let level = attempt.level
         let meta = levelMeta[level]
         let correct = answers.filter { $0 }.count
-        let content = VStack(spacing: AlphonsoSpacing.md) {
+        let content = VStack(spacing: AlphonsoDS.Space.s4) {
             Image(systemName: "star.fill")
                 .accessibilityHidden(true)
                 .dsText(.displayXL)
-                .foregroundStyle(AlphonsoColor.surface)
-                .frame(width: 64, height: 64)
-                .background(AlphonsoColor.moss, in: Circle())
+                .foregroundStyle(ds.onAction)
+                .padding(AlphonsoDS.Space.s4)
+                .frame(minWidth: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s4, minHeight: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s4)
+                .background(ds.action, in: Circle())
             Text("Your level")
                 .dsText(.caption)
                 .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
+                .foregroundStyle(ds.actionText)
             Text(level)
                 .dsText(.displayXL)
-                .foregroundStyle(AlphonsoColor.ink)
+                .foregroundStyle(ds.ink)
             if let meta {
                 Text(meta.name)
                     .dsText(.headline)
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .foregroundStyle(ds.ink)
                 Text(meta.blurb)
                     .dsText(.footnote)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .foregroundStyle(ds.inkSoft)
                     .multilineTextAlignment(.center)
             }
             Text("\(correct) of \(total) correct")
                 .dsText(.caption)
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(ds.inkSoft)
             if let finished = attempt.finishedLabel {
                 Text(finished)
                     .dsText(.caption)
-                    .foregroundStyle(AlphonsoColor.moss)
+                    .foregroundStyle(ds.choice)
             }
             // Only skips the learner's real answers backed up (see resolveBand): a band the exam went back to
             // and asked is no longer in this list.
             if !attempt.tally.skippedLevels.isEmpty {
                 Text("Fast-tracked past \(attempt.tally.skippedLevels.joined(separator: ", ")) after strong answers.")
                     .dsText(.caption)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .foregroundStyle(ds.inkSoft)
                     .multilineTextAlignment(.center)
             }
             Button("Start learning at \(level)") { onFinished() }
-                .buttonStyle(.alphonsoPrimary)
+                .buttonStyle(.dsButton(.primary))
             Button("Retake the test") { restart() }
                 .dsText(.caption)
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(ds.inkSoft)
         }
         .padding()
         // Centred in the available height as before; the largest text sizes scroll instead.
