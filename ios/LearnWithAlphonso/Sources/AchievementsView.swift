@@ -20,6 +20,8 @@ struct AchievementsView: View {
     @State private var stats: [String: Int] = [:]
     @State private var unlockedOn: [String: String] = [:]
     @State private var weaknessTrend: [WeaknessTrendEntry] = []
+    /// False when the unlock read failed: the profile read alone cannot say what is earned, so no rings are drawn.
+    @State private var unlockStatusKnown = true
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var detail: Achievement?
@@ -28,7 +30,8 @@ struct AchievementsView: View {
     private var catalog: [Achievement] { contentStore.achievements }
 
     private var states: [String: BadgeState] {
-        BadgePresentation.states(catalog: catalog, unlocked: Set(unlockedByID.keys), stats: stats)
+        BadgePresentation.states(catalog: catalog, unlocked: Set(unlockedByID.keys), stats: stats,
+            unlockStatusKnown: unlockStatusKnown)
     }
 
     var body: some View {
@@ -107,6 +110,7 @@ struct AchievementsView: View {
     private func load() async {
         isLoading = true
         errorMessage = nil
+        unlockStatusKnown = true
         guard let accessToken = session.accessToken else {
             errorMessage = "You've been signed out. Please sign in again."
             isLoading = false
@@ -117,6 +121,7 @@ struct AchievementsView: View {
             let unlocked = try await client.fetchUnlockedAchievements()
             unlockedByID = Dictionary(uniqueKeysWithValues: unlocked.map { ($0.achievementID, $0) })
         } catch {
+            unlockStatusKnown = false
             errorMessage = "Couldn't load your unlock status. Showing the full catalog."
         }
         // Best-effort: the progress numbers and the unlock days come from the profile read. Without it a badge is

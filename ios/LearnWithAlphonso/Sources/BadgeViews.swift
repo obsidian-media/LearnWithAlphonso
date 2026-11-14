@@ -173,7 +173,10 @@ struct AchievementDetailSheet: View {
             DSPill(text: BadgePresentation.tierLabel(id: achievement.id, tier: achievement.tier), tone: tierTone)
         }
         .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            "\(achievement.title), \(BadgePresentation.tierLabel(id: achievement.id, tier: achievement.tier)), \(badgeStateSpeech(state))")
+        .accessibilityAddTraits(.isHeader)
     }
 
     private var tierTone: DSPill.Tone {

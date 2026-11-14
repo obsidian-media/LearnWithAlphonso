@@ -27,9 +27,15 @@ public enum BadgePresentation {
     /// The state of every badge in the catalog. A badge is earned when the server says so. Of the ones left in a
     /// family, only the next one up (the lowest threshold still unmet) shows progress, and only when the learner has
     /// started on that family; the rest stay locked. The team badge is granted by the server alone, so it never shows
-    /// a ring. A family the stats do not cover (or a stat of 0) stays locked.
-    public static func states(catalog: [Achievement], unlocked: Set<String>, stats: [String: Int]) -> [String: BadgeState] {
+    /// a ring. A family the stats do not cover (or a stat of 0) stays locked. When the unlock status could not be read
+    /// (`unlockStatusKnown` false) nothing is known to be earned, so no badge is earned and none shows a ring: a ring on
+    /// a badge that is really earned would read "3 of 3".
+    public static func states(catalog: [Achievement], unlocked: Set<String>, stats: [String: Int], unlockStatusKnown: Bool = true) -> [String: BadgeState] {
         var result: [String: BadgeState] = [:]
+        guard unlockStatusKnown else {
+            for a in catalog { result[a.id] = .locked }
+            return result
+        }
         for a in catalog { result[a.id] = unlocked.contains(a.id) ? .earned : .locked }
         let families = Dictionary(grouping: catalog.filter { !unlocked.contains($0.id) && $0.category != "team" && $0.threshold > 0 },
                                   by: \.category)

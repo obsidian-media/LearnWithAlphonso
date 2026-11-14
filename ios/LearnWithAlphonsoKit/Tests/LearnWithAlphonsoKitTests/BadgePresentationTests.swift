@@ -106,4 +106,41 @@ final class BadgePresentationTests: XCTestCase {
         XCTAssertNil(B.unlockedDate("not a date", timeZone: utc))
         XCTAssertNil(B.unlockedDate("", timeZone: utc))
     }
+
+    func testNoBadgeIsEarnedOrRingedWhenTheUnlockStatusCouldNotBeRead() {
+        let s = B.states(catalog: catalog, unlocked: ["streak_3"], stats: ["streak": 3, "xp": 40], unlockStatusKnown: false)
+        XCTAssertEqual(Set(s.values), [.locked])
+        XCTAssertEqual(s.count, catalog.count)
+    }
+
+    // MARK: The real catalog
+
+    private func realCatalog() throws -> [Achievement] {
+        var url = URL(fileURLWithPath: #filePath)
+        for _ in 0..<3 { url.deleteLastPathComponent() }
+        url.appendPathComponent("Sources/LearnWithAlphonsoKit/Resources/achievements.json")
+        return try JSONDecoder().decode([Achievement].self, from: Data(contentsOf: url))
+    }
+
+    func testEveryRealAchievementResolvesToArtAndAKnownFamilyAndTier() throws {
+        let real = try realCatalog()
+        XCTAssertEqual(real.count, 25)
+        let families: Set<String> = ["Streak", "XP", "Perfect lessons", "Lessons", "League", "Streak freeze", "Team"]
+        let tiers: Set<String> = ["Bronze", "Silver", "Gold", "Diamond", "Diamond prime"]
+        for a in real {
+            XCTAssertEqual(B.artName(id: a.id), "Badge-\(a.id)")
+            XCTAssertTrue(families.contains(B.familyName(a.category)), a.id)
+            XCTAssertTrue(tiers.contains(B.tierLabel(id: a.id, tier: a.tier)), a.id)
+            XCTAssertTrue(B.ladder(for: a, in: real).contains { $0.id == a.id }, a.id)
+        }
+        XCTAssertEqual(Set(real.filter { B.tierLabel(id: $0.id, tier: $0.tier) == "Diamond prime" }.map(\.id)), ["streak_365", "xp_25000"])
+    }
+
+    func testEveryRealFamilyLadderClimbsStrictly() throws {
+        let real = try realCatalog()
+        for category in Set(real.map(\.category)) {
+            let rungs = real.filter { $0.category == category }
+            XCTAssertEqual(Set(rungs.map(\.threshold)).count, rungs.count, category)
+        }
+    }
 }
