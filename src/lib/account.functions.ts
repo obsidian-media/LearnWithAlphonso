@@ -91,6 +91,19 @@ export const SERVICE_SCOPED_EXPORT_TABLES = [
   // The learner's own restrictions and gifted Pro periods (20261113100000). Never staff_notes or the action record.
   { table: "user_restrictions", column: "user_id" },
   { table: "pro_grants", column: "user_id" },
+  // The Help chat (20261117100000): what the learner wrote and was answered, with explicit columns so staff internals
+  // (assigned_to, ai_summary, handoff_reason, ai_facts, author_id) stay out. Never support_notes. Deleting the account
+  // removes all of it by ON DELETE CASCADE.
+  {
+    table: "support_conversations",
+    column: "user_id",
+    columns: "id, status, channel, topic, created_at, updated_at, solved_at",
+  },
+  {
+    table: "support_messages",
+    column: "user_id",
+    columns: "id, conversation_id, author_kind, body, created_at",
+  },
 ] as const;
 
 // Tables with no user column of their own (rows belong to a buddy pair). They are read WHOLE as the caller; each one's
@@ -233,13 +246,14 @@ export const exportMyData = createServerFn({ method: "POST" })
     ]);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const serviceScopedRows = await Promise.all(
-      SERVICE_SCOPED_EXPORT_TABLES.map(({ table, column }) =>
-        readAllExportPages(table, (first, last) =>
+      SERVICE_SCOPED_EXPORT_TABLES.map((entry) =>
+        readAllExportPages(entry.table, (first, last) =>
           supabaseAdmin
             // Not every one of these tables is in the generated types' client-facing set; each has the column named.
-            .from(table as "teams")
-            .select("*", { count: "exact" })
-            .eq(column as "created_by", userId)
+            .from(entry.table as "teams")
+            // An entry may name explicit columns (the Help chat leaves out staff internals); the rest read everything.
+            .select(("columns" in entry ? entry.columns : "*") as "*", { count: "exact" })
+            .eq(entry.column as "created_by", userId)
             .range(first, last),
         ),
       ),
