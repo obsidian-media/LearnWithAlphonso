@@ -148,11 +148,9 @@ struct LearnWithAlphonsoApp: App {
                     if phase == .active { Task { await aiConsentStore.refresh() } }
                 }
             } else {
-                ContentUnavailableView(
-                    "Couldn't load lesson content",
-                    systemImage: "exclamationmark.triangle",
-                    description: Text("Please reinstall the app.")
-                )
+                DSEmptyState(
+                    art: "Alphonso-encouraging", title: "Couldn't load lesson content", message: "Please reinstall the app.")
+                    .padding(AlphonsoDS.Space.gutter)
             }
         }
     }
