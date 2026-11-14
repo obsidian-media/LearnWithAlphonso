@@ -1,5 +1,13 @@
 package com.obsidianmedia.learnwithalphonso.ui.league
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.layout.ContentScale
+import com.obsidianmedia.learnwithalphonso.core.logic.RecapPresentation
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -78,7 +86,7 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
  * scope-specific empty states. Same data, same actions; Teams, Season and Recap stay one tap away as chips.
  */
 @Composable
-fun LeaderboardScreen(container: AppContainer, onBack: () -> Unit, onOpenTeams: () -> Unit, onOpenSeason: () -> Unit, seededVm: LeaderboardViewModel? = null, seededUserId: String? = null) {
+fun LeaderboardScreen(container: AppContainer, onBack: () -> Unit, onOpenTeams: () -> Unit, onOpenSeason: () -> Unit, seededVm: LeaderboardViewModel? = null, seededUserId: String? = null, openRecapAtStart: Boolean = false) {
     val ds = LocalAlphonsoTokens.current
     val userId = seededUserId ?: container.session.userId
     val vm: LeaderboardViewModel = seededVm ?: viewModel {
@@ -87,7 +95,7 @@ fun LeaderboardScreen(container: AppContainer, onBack: () -> Unit, onOpenTeams: 
     val state by vm.state.collectAsState()
     var blockTarget by remember { mutableStateOf<SocialTarget?>(null) }
     var reportTarget by remember { mutableStateOf<SocialTarget?>(null) }
-    var showRecap by remember { mutableStateOf(false) }
+    var showRecap by remember { mutableStateOf(openRecapAtStart) }
 
     LifecycleResumeEffect(Unit) { vm.checkForOvertake(); onPauseOrDispose { } }
 
@@ -192,29 +200,52 @@ fun EmptyState(title: String, body: String) {
     }
 }
 
+/**
+ * Weekly recap (the batch-2 redesign, screen 25): a sheet with Alphonso cheering (or asleep after a quiet week), last
+ * week's XP large, today's global weekly rank with its honest "approximate" note, and the promotion when there was one.
+ */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun WeeklyRecapDialog(vm: LeaderboardViewModel, onDismiss: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val recap by vm.recap.collectAsState()
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Weekly recap") },
-        text = {
-            if (recap.isLoading) Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) }
-            else Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Last week you earned", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
-                Text("${recap.lastWeekXp} XP", style = MaterialTheme.typography.displayMedium, color = palette.ink)
+    val pose = rememberFirstRunAsset(if (RecapPresentation.isQuiet(recap.lastWeekXp)) "poses/alphonso-sleepy-night.webp" else "poses/alphonso-levelup-cheer.webp")
+    androidx.compose.material3.ModalBottomSheet(
+        onDismissRequest = onDismiss, sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = ds.surface,
+        shape = RoundedCornerShape(topStart = AlphonsoTokens.Radius.sheet, topEnd = AlphonsoTokens.Radius.sheet),
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = AlphonsoTokens.Space.gutter), verticalAlignment = Alignment.CenterVertically) {
+                Text("Weekly recap", style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f).semantics { heading() })
+                DsCompactButton("Done", onDismiss)
+            }
+            if (recap.isLoading) {
+                Box(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s8), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) }
+            } else Column(
+                Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                pose?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 3).clearAndSetSemantics { }) }
+                Text("Last week you earned", style = BodyType, color = ds.inkSoft)
+                Text("${recap.lastWeekXp} XP", style = DisplayType, color = ds.brand)
                 recap.currentRank?.let {
-                    Text("Your rank today (global, weekly)", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
-                    Text("#$it", style = MaterialTheme.typography.headlineSmall, color = palette.ink)
-                    Text("Approximate. This app doesn't keep a historical snapshot of last week's exact standings.", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft, textAlign = TextAlign.Center)
+                    DsCard {
+                        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+                            Text("Your rank today (global, weekly)", style = CaptionType, color = ds.inkSoft)
+                            Text("#$it", style = HeadlineType, color = ds.ink)
+                            Text("Approximate. This app doesn't keep a historical snapshot of last week's exact standings.", style = CaptionType, color = ds.inkSoft, textAlign = TextAlign.Center)
+                        }
+                    }
                 }
                 recap.promotedToTier?.let {
-                    Text("You moved up to ${LeagueTierCopy.label(it)}!", style = MaterialTheme.typography.titleMedium, color = LeagueTierPalette.color(it))
+                    DsHeroCard {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                            Icon(painterResource(R.drawable.ds_league), null, tint = ds.xp, modifier = Modifier.size(AlphonsoTokens.Space.s8))
+                            Text(RecapPresentation.promotionLine(it), style = HeadlineType, color = ds.onHero)
+                        }
+                    }
                 }
-                Spacer(Modifier.size(4.dp))
             }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Done") } },
-    )
+        }
+    }
 }

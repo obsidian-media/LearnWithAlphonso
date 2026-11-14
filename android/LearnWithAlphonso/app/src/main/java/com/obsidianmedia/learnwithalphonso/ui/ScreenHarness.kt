@@ -16,7 +16,19 @@ import com.obsidianmedia.learnwithalphonso.core.goal.GoalStatus
 import com.obsidianmedia.learnwithalphonso.core.goal.LearningGoalState
 import com.obsidianmedia.learnwithalphonso.core.goal.StoredGoal
 import com.obsidianmedia.learnwithalphonso.core.logic.OutOfHeartsModel
+import com.obsidianmedia.learnwithalphonso.core.net.AppUpdateGate
 import com.obsidianmedia.learnwithalphonso.core.net.Duel
+import com.obsidianmedia.learnwithalphonso.core.net.SeasonLastWeekResult
+import com.obsidianmedia.learnwithalphonso.core.net.SeasonStatus
+import com.obsidianmedia.learnwithalphonso.core.net.UnlockedAchievement
+import com.obsidianmedia.learnwithalphonso.core.net.WeaknessTrendEntry
+import com.obsidianmedia.learnwithalphonso.ui.achievements.AchievementsScreen
+import com.obsidianmedia.learnwithalphonso.ui.achievements.AchievementsUiState
+import com.obsidianmedia.learnwithalphonso.ui.achievements.AchievementsViewModel
+import com.obsidianmedia.learnwithalphonso.ui.league.RecapState
+import com.obsidianmedia.learnwithalphonso.ui.league.SeasonScreen
+import com.obsidianmedia.learnwithalphonso.ui.league.SeasonUiState
+import com.obsidianmedia.learnwithalphonso.ui.league.SeasonViewModel
 import com.obsidianmedia.learnwithalphonso.core.net.FriendActivityEvent
 import com.obsidianmedia.learnwithalphonso.core.net.FriendProgress
 import com.obsidianmedia.learnwithalphonso.core.net.LeaderboardRow
@@ -138,6 +150,34 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
             ),
             me,
         )
+        "recap", "recap-quiet" -> LeaderboardScreen(
+            container, {}, {}, {},
+            LeaderboardViewModel(
+                client, container.snapshotCache, container.recapCache, container.tierCache, me,
+                seed = LeaderboardUiState(scope = LeaderboardScope.GLOBAL, period = LeaderboardPeriod.WEEKLY, isLoading = false, leagueTier = "silver", myWeekXp = 0),
+                recapSeed = if (screen == "recap") RecapState(false, 320, 12, "silver") else RecapState(false, 0, null, null),
+            ),
+            me, openRecapAtStart = true,
+        )
+        "achievements" -> AchievementsScreen(
+            container, {},
+            AchievementsViewModel(
+                container.content, client, seed = AchievementsUiState(
+                    isLoading = false,
+                    unlockedById = listOf("streak_3", "streak_7", "xp_100", "xp_500", "perfect_1", "lessons_5", "freeze_earn_1").associateWith { UnlockedAchievement(it, 1) },
+                    stats = mapOf("streak" to 12, "xp" to 1240, "perfect" to 3, "lessons" to 5, "league" to 1, "freeze" to 1),
+                    weaknessTrend = listOf(WeaknessTrendEntry("past-tense", 4, 1, 3, ""), WeaknessTrendEntry("articles", 3, 3, 0, "")),
+                ),
+            ),
+        )
+        "season", "season-failed" -> SeasonScreen(
+            container, {},
+            SeasonViewModel(
+                client,
+                if (screen == "season") SeasonUiState(false, SeasonStatus(3, 4, 30, SeasonLastWeekResult(3, 6, 30))) else SeasonUiState(false, null),
+            ),
+        )
+        "update-required" -> UpdateRequiredScreen(AppUpdateGate.Requirement(storeUrl = "https://play.google.com/store/apps/details?id=com.obsidianmedia.learnwithalphonso"))
         "friends" -> FriendsScreen(
             container, {}, {}, {},
             FriendsViewModel(
