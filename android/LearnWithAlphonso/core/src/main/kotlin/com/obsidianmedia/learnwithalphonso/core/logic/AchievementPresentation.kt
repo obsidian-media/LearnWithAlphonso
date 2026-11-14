@@ -41,6 +41,9 @@ object AchievementPresentation {
     fun ladder(catalog: List<Achievement>, category: String): List<Achievement> =
         catalog.filter { it.category == category }.sortedBy { it.threshold }
 
+    /** "1 of 2" while several badges are stepped through after one lesson; nothing for a single badge. */
+    fun queueLabel(index: Int, total: Int): String? = if (total < 2) null else "${index + 1} of $total"
+
     /** The drawable name of a badge's medallion: `badge_streak_7` for the achievement `streak_7`. */
     fun medallionName(id: String): String = "badge_$id"
 

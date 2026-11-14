@@ -193,3 +193,29 @@ class SeasonAndRecapPresentationTest {
         assertEquals("You moved up to Treetop!", RecapPresentation.promotionLine("ruby"))
     }
 }
+
+class SafetyPresentationTest {
+    @Test
+    fun `the reason question and the menu entry say team name for a team and person otherwise`() {
+        assertEquals("Why are you reporting this person?", SafetyPresentation.reasonQuestion(false))
+        assertEquals("Why are you reporting this team name?", SafetyPresentation.reasonQuestion(true))
+        assertEquals("Report User", SafetyPresentation.reportMenuLabel(false))
+        assertEquals("Report Team Name", SafetyPresentation.reportMenuLabel(true))
+    }
+
+    @Test
+    fun `the titles carry the name`() {
+        assertEquals("Report Night Owls", SafetyPresentation.reportTitle("Night Owls"))
+        assertEquals("Block Mina?", SafetyPresentation.blockTitle("Mina"))
+    }
+}
+
+class TeamNameReportRuleTest {
+    @Test
+    fun `everyone but the owner can report a team's name, and the owner cannot report their own`() {
+        assertTrue(TeamsPresentation.canReportTeamName(isMine = false, isOwner = false))
+        assertTrue(TeamsPresentation.canReportTeamName(isMine = false, isOwner = true)) // an owner reporting some other team
+        assertTrue(TeamsPresentation.canReportTeamName(isMine = true, isOwner = false)) // a member reporting their own team's name
+        assertFalse(TeamsPresentation.canReportTeamName(isMine = true, isOwner = true))
+    }
+}

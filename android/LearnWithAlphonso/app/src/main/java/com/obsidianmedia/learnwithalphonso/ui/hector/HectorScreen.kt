@@ -1,5 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.ui.hector
 
+import androidx.compose.foundation.border
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
 import com.obsidianmedia.learnwithalphonso.Analytics
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
@@ -25,7 +30,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.mutableStateOf
@@ -98,7 +102,6 @@ import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.practice.ConversationPhase
 import com.obsidianmedia.learnwithalphonso.ui.practice.ReplyPlayer
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
 import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
 import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
@@ -264,7 +267,7 @@ fun HectorTab(container: AppContainer) {
 /** Hector's bubbles and the "tap a word" hint: the middle of the classic screen, and the body of the call's sheet. */
 @Composable
 private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modifier: Modifier) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     val listState = rememberLazyListState()
     LaunchedEffect(state.turns.size) { if (state.turns.isNotEmpty()) listState.animateScrollToItem(state.turns.size - 1) }
@@ -285,12 +288,12 @@ private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modif
                             enabled = !isUser && index !in state.openerIndices, sender = container.aiReports,
                             makeReport = { reason -> AiReplyReports.hector(turn.content, vm.course.code, reason) },
                         ) { reportModifier, reportActions ->
-                            val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) palette.ember else palette.parchment).padding(horizontal = 14.dp, vertical = 10.dp)
+                            val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) ds.choiceTint else ds.card).border(2.dp, if (isUser) ds.choice else ds.line, RoundedCornerShape(AlphonsoRadius.xl)).padding(horizontal = 14.dp, vertical = 10.dp)
                             // Hector's replies are in the language being practiced, so every word is a word of the course.
                             if (!isUser && saveWord != null) {
-                                TappableText(turn.content, vm.course.code, SaveWordMode.AllWords, saveWord, modifier = bubble, style = MaterialTheme.typography.bodyLarge, color = palette.ink, extraActions = reportActions)
+                                TappableText(turn.content, vm.course.code, SaveWordMode.AllWords, saveWord, modifier = bubble, style = HeadlineType, color = ds.ink, extraActions = reportActions)
                             } else {
-                                Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = MaterialTheme.typography.bodyLarge, color = if (isUser) palette.onAccent else palette.ink)
+                                Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = HeadlineType, color = ds.ink)
                             }
                         }
                     }
@@ -304,7 +307,7 @@ private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modif
 
 @Composable
 private fun HectorConversation(container: AppContainer) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val playback = remember { container.newPlayback() }
     // Hector follows the course chosen on the Learn tab; a course switch starts a fresh conversation in the new language.
     val course by container.activeCourse.course.collectAsState()
@@ -328,8 +331,8 @@ private fun HectorConversation(container: AppContainer) {
       SaveWordHost(container) {
         if (showCall) {
             if (callEnded) {
-                Column(Modifier.fillMaxSize().background(palette.surface), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Text("Call ended", style = MaterialTheme.typography.headlineMedium, color = palette.ink)
+                Column(Modifier.fillMaxSize().background(ds.surface), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Text("Call ended", style = TitleType, color = ds.ink)
                     AlphonsoPrimaryButton("Call again", onClick = { callEnded = false; vm.greet() })
                 }
             } else {
@@ -344,15 +347,15 @@ private fun HectorConversation(container: AppContainer) {
             }
             return@SaveWordHost
         }
-        Column(Modifier.fillMaxSize().background(palette.surface)) {
+        Column(Modifier.fillMaxSize().background(ds.surface)) {
             AiReportStatusHost(container.aiReports)
-            Text("Hector", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp))
+            Text("Hector", style = TitleType, color = ds.ink, modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp))
             HectorTranscript(container, vm, Modifier.weight(1f))
-            state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, modifier = Modifier.padding(horizontal = 16.dp)) }
+            state.error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, modifier = Modifier.padding(horizontal = 16.dp)) }
             val busy = when (state.phase) { ConversationPhase.IDLE -> if (phase == TurnPhase.TRANSCRIBING) "Listening..." else null; ConversationPhase.TRANSCRIBING -> "Listening..."; ConversationPhase.THINKING -> "Thinking..."; ConversationPhase.SPEAKING -> "..." }
             Column(Modifier.padding(16.dp)) {
                 HoldToTalkButton(
-                    phase = phase, busyLabel = busy, tint = palette.ember,
+                    phase = phase, busyLabel = busy, tint = ds.choice,
                     hint = if (phase == TurnPhase.RECORDING) "Listening. Release to send" else "Hold to talk",
                     accessibilityLabel = "Hold to talk to Hector", onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded,
                 )

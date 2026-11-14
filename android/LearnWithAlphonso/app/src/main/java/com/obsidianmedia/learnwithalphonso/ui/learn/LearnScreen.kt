@@ -1,5 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -114,25 +117,30 @@ private fun SyncNotices(container: AppContainer, vm: LearnViewModel) {
         dismissed = dismissals.dismissed
     }
 
+    val hourglass = rememberFirstRunAsset("poses/alphonso-refill-hourglass.webp")
     PendingSyncNotice.message(lessons, reviewAnswers, isConnected)?.let { message ->
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(message, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft, modifier = Modifier.weight(1f))
-            TextButton(onClick = { container.syncCoordinator.syncNow() }, enabled = !syncing) {
-                Text(if (syncing) PendingSyncNotice.SYNCING_TITLE else PendingSyncNotice.SYNC_NOW_TITLE, color = ds.actionText)
+        DsCard(Modifier.padding(horizontal = AlphonsoTokens.Space.gutter, vertical = AlphonsoTokens.Space.s1), padding = AlphonsoTokens.Space.s3) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                hourglass?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 + AlphonsoTokens.Space.s2).clearAndSetSemantics { }) }
+                Text(message, style = FootnoteType, color = ds.inkSoft, modifier = Modifier.weight(1f))
+                DsCompactButton(
+                    if (syncing) PendingSyncNotice.SYNCING_TITLE else PendingSyncNotice.SYNC_NOW_TITLE, { container.syncCoordinator.syncNow() },
+                    primary = true, enabled = !syncing,
+                )
             }
         }
     }
     val visible = DeadLetterNotice.visible(dead.map { it.identity }, dismissed)
     DeadLetterNotice.message(visible.size)?.let { message ->
-        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
-            Text(message, style = MaterialTheme.typography.bodySmall, color = palette.destructive)
-            Row {
-                TextButton(onClick = {
+        DsCard(Modifier.padding(horizontal = AlphonsoTokens.Space.gutter, vertical = AlphonsoTokens.Space.s1), padding = AlphonsoTokens.Space.s3, fill = ds.wrongTint) {
+            Text(message, style = FootnoteType, color = ds.wrongInk)
+            Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                DsCompactButton(DeadLetterNotice.CONTACT_TITLE, {
                     val reasons = dead.filter { it.identity in visible }.map { it.reason }
                     // No mail app installed: the notice stays, and there is nothing to crash on.
                     runCatching { uriHandler.openUri(DeadLetterNotice.supportMailUri(visible, reasons, BuildConfig.VERSION_NAME)) }
-                }) { Text(DeadLetterNotice.CONTACT_TITLE, color = ds.actionText) }
-                TextButton(onClick = { dismissals.dismiss(visible); dismissed = dismissals.dismissed }) { Text(DeadLetterNotice.DISMISS_TITLE, color = ds.inkSoft) }
+                }, primary = true)
+                DsCompactButton(DeadLetterNotice.DISMISS_TITLE, { dismissals.dismiss(visible); dismissed = dismissals.dismissed })
             }
         }
     }

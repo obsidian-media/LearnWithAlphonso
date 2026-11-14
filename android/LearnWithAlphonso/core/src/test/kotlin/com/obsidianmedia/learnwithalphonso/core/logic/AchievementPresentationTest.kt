@@ -60,4 +60,12 @@ class AchievementPresentationTest {
         assertEquals("badge_streak_7", AchievementPresentation.medallionName("streak_7"))
         assertEquals("badge_team_player", AchievementPresentation.medallionName("team_player"))
     }
+
+    @Test
+    fun `several unlocks are numbered and a single one is not`() {
+        assertNull(AchievementPresentation.queueLabel(0, 1))
+        assertNull(AchievementPresentation.queueLabel(0, 0))
+        assertEquals("1 of 2", AchievementPresentation.queueLabel(0, 2))
+        assertEquals("2 of 2", AchievementPresentation.queueLabel(1, 2))
+    }
 }

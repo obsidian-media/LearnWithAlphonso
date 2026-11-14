@@ -175,7 +175,7 @@ private fun rememberMedallion(id: String): Int? {
 
 /** A medallion: colour when unlocked, grey and quieter when locked, with a progress ring when it is partway. */
 @Composable
-private fun Medallion(id: String, state: AchievementPresentation.State, fraction: Float, size: Dp, ringWidth: Dp = AlphonsoTokens.Space.s1) {
+internal fun Medallion(id: String, state: AchievementPresentation.State, fraction: Float, size: Dp, ringWidth: Dp = AlphonsoTokens.Space.s1) {
     val ds = LocalAlphonsoTokens.current
     val res = rememberMedallion(id)
     val filter = if (state == AchievementPresentation.State.UNLOCKED || state == AchievementPresentation.State.UNKNOWN) null else ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })

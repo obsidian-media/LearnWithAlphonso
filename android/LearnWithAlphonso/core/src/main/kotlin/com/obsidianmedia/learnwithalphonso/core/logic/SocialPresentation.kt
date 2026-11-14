@@ -71,6 +71,9 @@ object TeamsPresentation {
     /** Join by code is possible once something is typed (blank space is not a code). */
     fun canJoin(code: String): Boolean = code.isNotBlank()
 
+    /** A team's name can be reported by anyone but its owner: you cannot report yourself, so the menu is hidden on your own team. */
+    fun canReportTeamName(isMine: Boolean, isOwner: Boolean): Boolean = !(isMine && isOwner)
+
     /** Create team is possible once the name has a letter in it. */
     fun canCreate(name: String): Boolean = name.isNotBlank()
 }
@@ -146,4 +149,20 @@ object RecapPresentation {
 
     /** "You moved up to Sapling!": the new league by its display name. */
     fun promotionLine(tier: String): String = "You moved up to ${LeagueTierCopy.label(tier)}!"
+}
+
+/** The report and block dialogs' wording (batch 2, screen 20): the same lines the web and iOS show, with the team-name variant. */
+object SafetyPresentation {
+    const val NO_CREATOR = "This team's name was generated automatically by Alphonso, so there's no one to report."
+    const val SUBMIT_FAILED = "Couldn't submit your report. Try again."
+
+    fun reportTitle(name: String): String = "Report $name"
+
+    fun blockTitle(name: String): String = "Block $name?"
+
+    /** "Why are you reporting this person?" or, for a team's name, "...this team name?". */
+    fun reasonQuestion(isTeamName: Boolean): String = if (isTeamName) "Why are you reporting this team name?" else "Why are you reporting this person?"
+
+    /** The row menu's report entry: "Report User", or "Report Team Name" on a team. */
+    fun reportMenuLabel(isTeamName: Boolean): String = if (isTeamName) "Report Team Name" else "Report User"
 }

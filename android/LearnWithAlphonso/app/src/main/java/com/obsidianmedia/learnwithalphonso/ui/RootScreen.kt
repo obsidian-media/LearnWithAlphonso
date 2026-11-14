@@ -367,6 +367,7 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                 LessonScreen(
                     container, course, lessonId, onExit = { nav.popBackStack() },
                     onReviewInstead = { nav.popBackStack(); nav.navigate(Routes.review(course.code)) },
+                    onOpenAchievements = { nav.popBackStack(); nav.navigate(Routes.ACHIEVEMENTS) },
                 )
             }
             composable(Routes.REVIEW) { entry ->

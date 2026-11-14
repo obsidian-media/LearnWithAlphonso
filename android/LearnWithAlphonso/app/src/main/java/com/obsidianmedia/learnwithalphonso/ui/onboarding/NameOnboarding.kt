@@ -1,5 +1,20 @@
 package com.obsidianmedia.learnwithalphonso.ui.onboarding
 
+import com.obsidianmedia.learnwithalphonso.ui.components.DsField
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import com.obsidianmedia.learnwithalphonso.ui.components.dsFieldShape
+import com.obsidianmedia.learnwithalphonso.ui.components.dsTextFieldColors
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import androidx.activity.compose.BackHandler
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.background
@@ -13,10 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -46,7 +58,6 @@ import com.obsidianmedia.learnwithalphonso.core.net.displayNameProblem
 import com.obsidianmedia.learnwithalphonso.core.net.skipDisplayNamePrompt
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -151,7 +162,7 @@ class NameOnboardingViewModel(
 
 @Composable
 fun NameOnboardingScreen(container: AppContainer, presentation: OnboardingFlow.NamePresentation, onFinish: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     // Keyed by the presentation, which belongs to one account: a view model from an earlier prompt (another account's
     // prefilled name) is never reused.
     val vm: NameOnboardingViewModel = viewModel(key = "name-onboarding-${presentation.id}") { NameOnboardingViewModel(container.progressClient, presentation.start, onFinish) }
@@ -164,30 +175,26 @@ fun NameOnboardingScreen(container: AppContainer, presentation: OnboardingFlow.N
     SideEffect { vm.onFinish = onFinish }
 
     Column(
-        Modifier.fillMaxSize().background(palette.surface).imePadding().verticalScroll(rememberScrollState()).padding(24.dp),
+        Modifier.fillMaxSize().background(ds.surface).imePadding().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(NameOnboardingCopy.title, style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.semantics { heading() })
-        Text(NameOnboardingCopy.publicNote, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+        rememberFirstRunAsset("lesson/happy.webp")?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 3).align(Alignment.CenterHorizontally).clearAndSetSemantics { }) }
+        Text(NameOnboardingCopy.title, style = TitleType, color = ds.ink, modifier = Modifier.semantics { heading() })
+        Text(NameOnboardingCopy.publicNote, style = BodyType, color = ds.inkSoft)
         // The generated handle is the placeholder, not text, so typing never appends to it.
-        OutlinedTextField(
-            value = state.name,
-            onValueChange = { vm.edit(it) },
-            label = { Text(NameOnboardingCopy.fieldLabel) },
-            placeholder = { Text(state.fieldPlaceholder) },
-            singleLine = true,
-            isError = state.isProblem,
-            enabled = !state.isSubmitting,
+        DsField(
+            value = state.name, onChange = { vm.edit(it) }, placeholder = state.fieldPlaceholder, label = NameOnboardingCopy.fieldLabel,
+            isError = state.isProblem, enabled = !state.isSubmitting,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done, autoCorrectEnabled = false),
             keyboardActions = KeyboardActions(onDone = { vm.save() }),
-            trailingIcon = if (state.name.isNotEmpty()) ({ TextButton(onClick = { vm.edit("") }) { Text("Clear", color = palette.inkSoft) } }) else null,
-            modifier = Modifier.fillMaxWidth().focusRequester(focus),
+            trailing = if (state.name.isNotEmpty()) ({ DsCompactButton("Clear", { vm.edit("") }) }) else null,
+            modifier = Modifier.focusRequester(focus),
         )
         state.message?.let {
-            Text(it, style = MaterialTheme.typography.bodySmall, color = if (state.isProblem) palette.destructive else palette.inkSoft)
+            Text(it, style = FootnoteType, color = if (state.isProblem) ds.wrongInk else ds.inkSoft)
         }
         AlphonsoPrimaryButton(NameOnboardingCopy.save, onClick = { vm.save() }, enabled = state.canSave, busy = state.isSubmitting)
         AlphonsoSecondaryButton(NameOnboardingCopy.skip, onClick = { vm.skip() }, enabled = state.canSkip)
-        Text(NameOnboardingCopy.skipNote(state.currentName), style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+        Text(NameOnboardingCopy.skipNote(state.currentName), style = FootnoteType, color = ds.inkSoft)
     }
 }

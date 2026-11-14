@@ -1,5 +1,24 @@
 package com.obsidianmedia.learnwithalphonso.ui.word
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialog
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogTitle
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
+import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
 import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffect
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +37,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -63,7 +81,6 @@ import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import com.obsidianmedia.learnwithalphonso.ui.explain.ExplainInMyLanguage
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
 /**
  * How a screen opens the save sheet, offered to the views below it. A lesson's explanation is drawn by shared views
@@ -117,8 +134,8 @@ fun TappableText(
     mode: SaveWordMode,
     onSave: (SaveWordRequest) -> Unit,
     modifier: Modifier = Modifier,
-    style: TextStyle = MaterialTheme.typography.bodyLarge,
-    color: Color = AlphonsoColor.palette.ink,
+    style: TextStyle = HeadlineType,
+    color: Color = LocalAlphonsoTokens.current.ink,
     extraActions: List<CustomAccessibilityAction> = emptyList(),
     accessibilityPrefix: String? = null,
 ) {
@@ -152,22 +169,13 @@ fun TappableText(
     if (showWords) {
         // One entry per distinct word, in reading order, each saving the sentence of its first occurrence.
         val words = remember(parts) { parts.filterIsInstance<SaveWordPart.Word>().distinctBy { it.text.lowercase() } }
-        AlertDialog(
-            onDismissRequest = { showWords = false },
-            title = { Text(SavedWordCopy.PICK_TITLE) },
-            text = {
-                LazyColumn(Modifier.heightIn(max = 360.dp)) {
-                    items(words, key = { it.text.lowercase() }) { word ->
-                        TextButton(
-                            onClick = { showWords = false; save(word.request) },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) { Text(word.text, color = AlphonsoColor.palette.ink) }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = { TextButton(onClick = { showWords = false }) { Text("Cancel", color = AlphonsoColor.palette.inkSoft) } },
-        )
+        DsDialog(onDismiss = { showWords = false }) {
+            DsDialogTitle(SavedWordCopy.PICK_TITLE)
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                words.forEach { word -> DsChip(word.text, false, onClick = { showWords = false; save(word.request) }, modifier = Modifier.fillMaxWidth()) }
+            }
+            DsCompactButton("Cancel", { showWords = false })
+        }
     }
 }
 
@@ -183,7 +191,7 @@ fun SaveWordHintLine(container: AppContainer, text: String = SavedWordCopy.LESSO
             runCatching { container.prefs.edit().putInt(HINT_KEY, shown + 1).apply() }
         }
     }
-    if (visible) Text(text, style = MaterialTheme.typography.labelSmall, color = AlphonsoColor.palette.inkSoft)
+    if (visible) Text(text, style = CaptionType, color = LocalAlphonsoTokens.current.inkSoft)
 }
 
 private const val HINT_KEY = "savedWordHintShownCount"
@@ -192,7 +200,7 @@ private const val HINT_KEY = "savedWordHintShownCount"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SaveWordSheet(container: AppContainer, request: SaveWordRequest, onDone: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     // The flow belongs to this sheet's composition: it ends with the sheet (and its request is cancelled), and the next
     // sheet, even for the same word, starts clean.
     val scope = rememberCoroutineScope()
@@ -207,19 +215,26 @@ fun SaveWordSheet(container: AppContainer, request: SaveWordRequest, onDone: () 
         )
     }
     val phase by flow.phase.collectAsState()
-    ModalBottomSheet(onDismissRequest = onDone, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false), containerColor = palette.surface) {
+    val pose = rememberFirstRunAsset("poses/alphonso-reading-book.webp")
+    ModalBottomSheet(
+        onDismissRequest = onDone, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false), containerColor = ds.surface,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = AlphonsoTokens.Radius.sheet, topEnd = AlphonsoTokens.Radius.sheet),
+    ) {
         // Scrollable: the sentence can be 300 characters and fonts scale, so the content can exceed the sheet. Done stays pinned below.
-        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(flow.request.word, style = MaterialTheme.typography.headlineSmall, color = palette.ink)
-                Text("“${flow.request.sentence}”", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+        Column(Modifier.fillMaxWidth().padding(horizontal = AlphonsoTokens.Space.gutter).padding(bottom = AlphonsoTokens.Space.s6), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                    Text(flow.request.word, style = DisplayType, color = ds.brand, modifier = Modifier.weight(1f).semantics { heading() })
+                    pose?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 2).clearAndSetSemantics { }) }
+                }
+                DsCard { Text("\u201C${flow.request.sentence}\u201D", style = BodyType, color = ds.inkSoft) }
                 SaveWordContent(phase, onSave = { flow.save() })
                 // Once the word is saved and its meaning is on screen, the same meaning can be had in the learner's language.
                 if (phase is SaveWordPhase.Saved) {
                     ExplainInMyLanguage(container, remember(flow) { ExplainRules.word(flow.request.word, flow.request.sentence, flow.request.course) })
                 }
             }
-            TextButton(onClick = onDone, modifier = Modifier.fillMaxWidth()) { Text(SavedWordCopy.DONE, color = palette.inkSoft) }
+            LessonEdgeButton(SavedWordCopy.DONE, EdgeVariant.SECONDARY, onDone)
         }
     }
     if (phase == SaveWordPhase.NeedsConsent) {
@@ -229,27 +244,29 @@ fun SaveWordSheet(container: AppContainer, request: SaveWordRequest, onDone: () 
 
 @Composable
 private fun SaveWordContent(phase: SaveWordPhase, onSave: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     when (phase) {
-        SaveWordPhase.Idle, SaveWordPhase.NeedsConsent -> AlphonsoPrimaryButton(SavedWordCopy.SAVE_BUTTON, onClick = onSave)
-        SaveWordPhase.Saving -> Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            CircularProgressIndicator(color = palette.moss, modifier = Modifier.height(24.dp))
-            Text(SavedWordCopy.LOOKING_UP, style = MaterialTheme.typography.bodyMedium, color = palette.ink)
+        SaveWordPhase.Idle, SaveWordPhase.NeedsConsent -> LessonEdgeButton(SavedWordCopy.SAVE_BUTTON, EdgeVariant.PRIMARY, onSave)
+        SaveWordPhase.Saving -> DsCard {
+            Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3), verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(color = ds.choice)
+                Text(SavedWordCopy.LOOKING_UP, style = BodyType, color = ds.ink)
+            }
         }
-        is SaveWordPhase.Saved -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = palette.moss)
+        is SaveWordPhase.Saved -> DsCard {
+            Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = ds.right)
                 Text(
                     if (phase.result.alreadySaved) SavedWordCopy.ALREADY_SAVED else SavedWordCopy.SAVED,
-                    style = MaterialTheme.typography.labelLarge, color = palette.moss,
+                    style = HeadlineType, color = ds.rightInk,
                 )
             }
-            Text(phase.result.explanation, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
-            Text(SavedWordCopy.AI_CAVEAT, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
+            Text(phase.result.explanation, style = BodyType, color = ds.ink)
+            Text(SavedWordCopy.AI_CAVEAT, style = CaptionType, color = ds.inkSoft)
         }
-        is SaveWordPhase.Failed -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(phase.error.userMessage, style = MaterialTheme.typography.bodyMedium, color = palette.destructive)
-            if (phase.error.isRetryable) AlphonsoSecondaryButton(SavedWordCopy.TRY_AGAIN, onClick = onSave, fullWidth = false)
+        is SaveWordPhase.Failed -> DsCard {
+            Text(phase.error.userMessage, style = FootnoteType, color = ds.wrongInk)
+            if (phase.error.isRetryable) DsCompactButton(SavedWordCopy.TRY_AGAIN, onSave, primary = true)
         }
     }
 }

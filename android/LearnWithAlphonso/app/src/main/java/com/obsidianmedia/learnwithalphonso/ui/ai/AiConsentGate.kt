@@ -1,5 +1,25 @@
 package com.obsidianmedia.learnwithalphonso.ui.ai
 
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialog
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogBody
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogTitle
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -10,7 +30,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -40,7 +59,6 @@ import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentGatePrompt
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStatus
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStore
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -59,7 +77,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AiConsentGate(container: AppContainer, onDecline: () -> Unit = {}, content: @Composable () -> Unit) {
     val store = container.aiConsent
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val scope = rememberCoroutineScope()
     val consentState by store.state.collectAsState()
     val status = store.statusOf(consentState)
@@ -87,18 +105,18 @@ fun AiConsentGate(container: AppContainer, onDecline: () -> Unit = {}, content: 
                 Box(Modifier.fillMaxSize().then(if (covered != null) Modifier.clearAndSetSemantics { }.focusProperties { canFocus = false } else Modifier)) { content() }
                 if (covered != null) {
                     Box(
-                        Modifier.fillMaxSize().alpha(0.96f).background(palette.surface)
+                        Modifier.fillMaxSize().alpha(0.96f).background(ds.surface)
                             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { },
                     )
                     Box(Modifier.fillMaxSize()) { GatePrompt(covered, isConnected, onRetry = { scope.launch { store.refresh() } }, onReview = { showDisclosure = true }) }
                 }
             }
         }
-        is AiConsentGatePresentation.Prompt -> Box(Modifier.fillMaxSize().background(palette.surface)) {
+        is AiConsentGatePresentation.Prompt -> Box(Modifier.fillMaxSize().background(ds.surface)) {
             GatePrompt(presentation.prompt, isConnected, onRetry = { scope.launch { store.refresh() } }, onReview = { showDisclosure = true })
         }
-        AiConsentGatePresentation.Spinner -> Box(Modifier.fillMaxSize().background(palette.surface), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = palette.moss)
+        AiConsentGatePresentation.Spinner -> Box(Modifier.fillMaxSize().background(ds.surface), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = ds.choice)
         }
     }
 
@@ -117,7 +135,8 @@ fun AiConsentGate(container: AppContainer, onDecline: () -> Unit = {}, content: 
 
 @Composable
 private fun GatePrompt(kind: AiConsentGatePrompt, isConnected: Boolean, onRetry: () -> Unit, onReview: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
+    val pose = rememberFirstRunAsset("poses/alphonso-explaining-pointer.webp")
     val (title, body) = when {
         kind == AiConsentGatePrompt.CONSENT -> AiConsentCopy.gateTitle to AiConsentCopy.gateBody
         // With no connection the setting was never the problem: say "offline", not "couldn't check your AI setting".
@@ -125,41 +144,43 @@ private fun GatePrompt(kind: AiConsentGatePrompt, isConnected: Boolean, onRetry:
         else -> AiConsentCopy.offlineTitle to AiConsentCopy.offlineBody
     }
     Column(
-        Modifier.fillMaxSize().padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3, Alignment.CenterVertically),
     ) {
-        Text(title, style = MaterialTheme.typography.titleLarge, color = palette.ink, textAlign = TextAlign.Center)
-        Text(body, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
-        if (kind == AiConsentGatePrompt.CONSENT) AlphonsoPrimaryButton(AiConsentCopy.gateAction, onClick = onReview, fullWidth = false)
-        else AlphonsoPrimaryButton(AiConsentCopy.retry, onClick = onRetry, fullWidth = false)
+        pose?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 4).clearAndSetSemantics { }) }
+        DsCard {
+            Text(title, style = TitleType, color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().semantics { heading() })
+            Text(body, style = FootnoteType, color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        }
+        if (kind == AiConsentGatePrompt.CONSENT) AlphonsoPrimaryButton(AiConsentCopy.gateAction, onClick = onReview)
+        else AlphonsoPrimaryButton(AiConsentCopy.retry, onClick = onRetry)
     }
 }
 
 /**
  * The consent sheet: an explicit Allow / Not now choice naming the providers (Play and App Store policy), not a
  * forced "Got it". Used by the whole-screen gate and on demand (the Settings switch, "Turn on AI grading", "Use your
- * voice instead"). "Not now" just closes it.
+ * voice instead"). "Not now" just closes it. It cannot be dismissed any other way, so the choice is always made.
  */
 @Composable
 fun AiConsentDialog(store: AiConsentStore, onNotNow: () -> Unit, onAllowed: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
     var saving by rememberSaveable { mutableStateOf(false) }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
+    val pose = rememberFirstRunAsset("poses/alphonso-explaining-pointer.webp")
 
-    AlertDialog(
-        onDismissRequest = { },
-        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
-        title = { Text(AiConsentCopy.sheetTitle, textAlign = TextAlign.Center) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(AiConsentCopy.sheetBody, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
-                TextButton(onClick = { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") }) { Text(AiConsentCopy.privacyLink, color = palette.moss) }
-                error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive, textAlign = TextAlign.Center) }
-            }
-        },
-        confirmButton = {
+    DsDialog(onDismiss = { }, dismissible = false) {
+        pose?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 2).clearAndSetSemantics { }) }
+        DsDialogTitle(AiConsentCopy.sheetTitle)
+        Column(Modifier.fillMaxWidth().heightIn(max = 320.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+            DsDialogBody(AiConsentCopy.sheetBody)
+        }
+        TextButton(onClick = { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") }) { Text(AiConsentCopy.privacyLink, style = FootnoteType, color = ds.choice) }
+        error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, textAlign = TextAlign.Center) }
+        Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+            DsCompactButton(AiConsentCopy.notNow, onNotNow, enabled = !saving)
             AlphonsoPrimaryButton(
                 AiConsentCopy.allow, busy = saving, fullWidth = false,
                 onClick = {
@@ -178,7 +199,6 @@ fun AiConsentDialog(store: AiConsentStore, onNotNow: () -> Unit, onAllowed: () -
                     }
                 },
             )
-        },
-        dismissButton = { TextButton(onClick = onNotNow, enabled = !saving) { Text(AiConsentCopy.notNow, color = palette.inkSoft) } },
-    )
+        }
+    }
 }

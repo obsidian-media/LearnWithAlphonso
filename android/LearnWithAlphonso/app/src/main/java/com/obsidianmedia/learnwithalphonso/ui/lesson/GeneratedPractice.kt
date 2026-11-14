@@ -1,10 +1,15 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import com.obsidianmedia.learnwithalphonso.core.logic.LessonAnswerState
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,7 +27,6 @@ import com.obsidianmedia.learnwithalphonso.core.net.GeneratedPracticeQuestion
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.ChoiceButton
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -65,7 +69,7 @@ class GeneratedPracticeViewModel(private val client: AiConversationClient, priva
 
 @Composable
 fun GeneratedPracticeSection(container: AppContainer, lessonId: String, course: Course) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val vm: GeneratedPracticeViewModel = viewModel(key = "practice-$lessonId") { GeneratedPracticeViewModel(container.aiClient, lessonId, course) }
     val state by vm.state.collectAsState()
     Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -79,17 +83,17 @@ fun GeneratedPracticeSection(container: AppContainer, lessonId: String, course: 
                     PracticeStatus.TIMEOUT -> "That took too long. Try again in a moment."
                     else -> null
                 }
-                note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft) }
+                note?.let { Text(it, style = FootnoteType, color = ds.inkSoft) }
             }
             PracticeStatus.READY -> {
                 val q = state.current
                 if (q == null) {
-                    Text("Nice work. That's all the extra practice for this lesson.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+                    Text("Nice work. That's all the extra practice for this lesson.", style = BodyType, color = ds.inkSoft)
                 } else {
-                    Text("Extra practice · ${state.idx + 1}/${state.questions.size}", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
-                    Text(q.prompt, style = MaterialTheme.typography.titleMedium, color = palette.ink)
+                    Text("Extra practice · ${state.idx + 1}/${state.questions.size}", style = CaptionType, color = ds.inkSoft)
+                    Text(q.prompt, style = HeadlineType, color = ds.ink)
                     val correct = q.choices.getOrNull(q.answerIndex)
-                    q.choices.forEach { c -> ChoiceButton(c, selected = state.picked == c, checked = state.checked, isCorrectChoice = c == correct, onClick = { vm.pick(c) }) }
+                    q.choices.forEachIndexed { i, c -> LessonAnswerButton(i, c, LessonAnswerState.of(state.checked, state.picked == c, c == correct), onClick = { vm.pick(c) }, enabled = !state.checked) }
                     if (state.checked) Explanation(container, state.picked == correct, q.explanation, course)
                     AlphonsoPrimaryButton(
                         if (!state.checked) "Check" else if (state.idx < state.questions.size - 1) "Next" else "Finish practice",

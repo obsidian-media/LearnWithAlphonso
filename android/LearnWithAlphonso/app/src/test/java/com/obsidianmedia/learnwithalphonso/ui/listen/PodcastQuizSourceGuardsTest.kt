@@ -60,7 +60,7 @@ class PodcastQuizSourceGuardsTest {
         for (banned in listOf(".count {", ".count(", "sumOf", "xpGain +", "* 10", "correctCount", "Score(")) {
             assertFalse("the quiz UI must not compute '$banned'", src.contains(banned))
         }
-        assertEquals("the only comparison with answerIndex is the verdict mark", 2, Regex("""index [=!]= question\.answerIndex""").findAll(src).count())
+        assertEquals("the only comparison with answerIndex is the verdict", 1, Regex("""index [=!]= question\.answerIndex""").findAll(src).count())
     }
 
     @Test
@@ -74,18 +74,18 @@ class PodcastQuizSourceGuardsTest {
     @Test
     fun `Try again is offered only for a retryable error`() {
         val src = read(ui)
-        assertTrue(Regex("""if \(error\.isRetryable\) \{\n\s+Button\(onClick = onRetry""").containsMatchIn(src))
+        assertTrue(Regex("""if \(error\.isRetryable\) DsCompactButton\("Try again", onRetry""").containsMatchIn(src))
         assertEquals(1, Regex("""Try again""").findAll(src).count())
     }
 
     @Test
     fun `a verdict is a visible mark and a word, not colour alone`() {
         val src = read(ui)
-        assertTrue(src.contains("right -> \"✓ \${PodcastQuizCopy.CORRECT_LABEL}\""))
-        assertTrue(src.contains("wrong -> \"✕ \${PodcastQuizCopy.WRONG_LABEL}\""))
+        assertTrue(src.contains("checked && right -> \"\u2713 \${PodcastQuizCopy.CORRECT_LABEL}\""))
+        assertTrue(src.contains("checked && picked -> \"\u2715 \${PodcastQuizCopy.WRONG_LABEL}\""))
         // Announced once (the merged visible text), as a radio option.
         assertFalse(src.contains("stateDescription"))
-        assertTrue(src.contains("role = Role.RadioButton"))
+        assertTrue(src.contains("LessonAnswerButton(index, text, LessonAnswerState.of(checked, picked, right)"))
     }
 
     @Test
@@ -112,15 +112,11 @@ class PodcastQuizSourceGuardsTest {
 
     @Test
     fun `the whole choice card is the tap target, not only its text`() {
-        // iOS froze at question 3 of "Ordering Coffee": its short choices left the middle of each card dead. Here the
-        // selectable sits on the full-width card itself, never on the Text inside it.
+        // The lesson's answer button is a pressable card (the whole face), never a Text with a click.
         val src = read(ui)
         val question = src.substring(src.indexOf("private fun QuestionView("), src.indexOf("private fun ErrorView("))
-        assertTrue(
-            Regex("""modifier = Modifier\.fillMaxWidth\(\)\.heightIn\(min = 48\.dp\)\s*\.selectable\(selected = picked""").containsMatchIn(question),
-        )
-        assertEquals(1, Regex("""\.selectable\(""").findAll(question).count())
-        assertFalse(question.contains("Text(text, style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier"))
+        assertTrue(question.contains("LessonAnswerButton(index, text, LessonAnswerState.of(checked, picked, right), onClick = { onSelect(index) }, enabled = !checked)"))
+        assertFalse(question.contains(".clickable("))
     }
 
     @Test
@@ -131,6 +127,43 @@ class PodcastQuizSourceGuardsTest {
         assertFalse(row.contains("OutlinedButton("))
         val components = read("src/main/java/com/obsidianmedia/learnwithalphonso/ui/components/AlphonsoComponents.kt")
         val secondary = components.substring(components.indexOf("fun AlphonsoSecondaryButton("), components.indexOf("fun AlphonsoSectionHeader("))
-        assertTrue(secondary.contains("colors = ButtonDefaults.outlinedButtonColors(containerColor = p.parchment, contentColor = p.ink)"))
+        assertTrue(secondary.contains("DsCompactButton(text, onClick, modifier, enabled = enabled)"))
+        assertFalse(secondary.contains("OutlinedButton("))
+    }
+
+    @Test
+    fun `the answers are the server's choices, locked after Check, and Check waits for a pick`() {
+        val src = read(ui)
+        val question = src.substring(src.indexOf("private fun QuestionView("), src.indexOf("private fun ErrorView("))
+        assertTrue(question.contains("question.choices.forEachIndexed"))
+        assertTrue(question.contains("enabled = !checked"))
+        assertTrue(question.contains("enabled = selectedIndex != null"))
+        assertTrue(question.contains("if (checked) onNext() else onCheck()"))
+    }
+
+    @Test
+    fun `TalkBack hears the verdict once, from the answer button, not again from the visible words`() {
+        val src = read(ui)
+        val question = src.substring(src.indexOf("private fun QuestionView("), src.indexOf("private fun ErrorView("))
+        assertTrue(question.contains("if (verdict != null) Text(verdict"))
+        assertTrue(question.contains(".clearAndSetSemantics { })"))
+    }
+
+    @Test
+    fun `no Material button, outlined field or text button is left in the quiz screen`() {
+        val src = read(ui)
+        // A bare Material call (not DsCompactButton, AlphonsoPrimaryButton ...), with or without a space before the paren,
+        // as a call, a named-argument call or an import.
+        val banned = listOf(
+            Regex("""(?<![A-Za-z0-9_])(Outlined|Text|Filled|Elevated|FilledTonal)?Button\s*\("""),
+            Regex("""(?<![A-Za-z0-9_])(Outlined|Basic)?TextField\s*\("""),
+            Regex("""material3\.(Outlined|Text|Filled|Elevated|FilledTonal)?Button"""),
+            Regex("""material3\.(Outlined|Basic)?TextField"""),
+            Regex("""ButtonDefaults"""),
+        )
+        for (rx in banned) {
+            val hit = rx.find(src)
+            assertFalse("the quiz UI must use the design system's buttons, not '${hit?.value}'", hit != null)
+        }
     }
 }
