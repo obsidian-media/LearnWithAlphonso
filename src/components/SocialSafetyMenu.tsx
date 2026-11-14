@@ -144,7 +144,7 @@ function DialogFrame({
     <Modal
       labelledBy={titleId}
       onEscape={onClose}
-      className="w-full max-w-[430px] rounded-t-[28px] bg-ds-surface px-4 pb-6 pt-4 shadow-[var(--ds-shadow-sheet)] outline-none sm:rounded-[28px]"
+      className="relative w-full max-w-[430px] rounded-t-[28px] bg-ds-surface px-4 pb-6 pt-4 shadow-[var(--ds-shadow-sheet)] outline-none sm:rounded-[28px]"
     >
       <div className="mb-3 flex items-center gap-2.5">
         <img src="/icons3d/shield.png" alt="" width={38} height={38} draggable={false} />
