@@ -18,6 +18,7 @@ import {
 } from "@/data/path-tags";
 import { SCENARIOS } from "@/data/scenarios";
 import { estimateLessonMinutes } from "./lesson-time";
+import { callCountsAsDone } from "./practice-stars";
 import { LEVEL_ORDER, planGoal } from "./learning-goal";
 import { lessonsByLevel } from "./learning-goal.server";
 import type { LearnerProfile } from "./learner-profile";
@@ -75,6 +76,8 @@ export type PathData = {
     startedAt: string;
     lastReplyAt: string;
     finishedAt: string;
+    /** practice_calls.stars of the finished call: 0 to 3. */
+    stars: number;
   }[];
   stars: StarRow[];
   profile: LearnerProfile;
@@ -182,6 +185,8 @@ export function buildLearningPath(data: PathData): LearningPath | null {
   for (const c of campaigns)
     for (const s of c.scenes) sceneTitle.set(sceneKey(c.id, s.id), c.title);
   for (const call of data.calls) {
+    // A finished call that earned no star is not a talk done (callCountsAsDone).
+    if (!callCountsAsDone(call.stars)) continue;
     const minutes = Math.min(
       MAX_CALL_MINUTES,
       Math.max(1, Math.round((Date.parse(call.lastReplyAt) - Date.parse(call.startedAt)) / 60_000)),

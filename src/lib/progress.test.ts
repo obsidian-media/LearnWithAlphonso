@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { MAX_HEARTS } from "./hearts";
+import { HEART_REFILL_MS, MAX_HEARTS } from "./hearts";
 import { todayStr, useProgress } from "./progress";
 
 beforeEach(() => {
@@ -87,31 +87,47 @@ describe("useProgress store", () => {
     expect(useProgress.getState().hearts).toBe(0);
   });
 
-  it("loseHeartLocal sets a refill timer once hearts hit 0", () => {
-    useProgress.setState({ hearts: 1, heartsRefillAt: null });
+  it("loseHeartLocal starts a refill timer on the first lost heart and keeps it afterwards", () => {
+    useProgress.setState({ hearts: MAX_HEARTS, heartsRefillAt: null });
     useProgress.getState().loseHeartLocal();
-    expect(useProgress.getState().heartsRefillAt).not.toBeNull();
+    const first = useProgress.getState().heartsRefillAt;
+    expect(useProgress.getState().hearts).toBe(MAX_HEARTS - 1);
+    expect(first).not.toBeNull();
+    useProgress.getState().loseHeartLocal();
+    expect(useProgress.getState().hearts).toBe(MAX_HEARTS - 2);
+    expect(useProgress.getState().heartsRefillAt).toBe(first);
   });
 
-  it("restoreHeartsLocal resets to MAX_HEARTS and clears the timer", () => {
-    useProgress.setState({ hearts: 0, heartsRefillAt: Date.now() });
-    useProgress.getState().restoreHeartsLocal();
+  it("refillHeartsLocal adds one heart per due interval and keeps the clock for the next", () => {
+    const due = Date.now() - 1000;
+    useProgress.setState({ hearts: 1, heartsRefillAt: due });
+    useProgress.getState().refillHeartsLocal();
+    expect(useProgress.getState().hearts).toBe(2);
+    expect(useProgress.getState().heartsRefillAt).toBe(due + HEART_REFILL_MS);
+  });
+
+  it("setHeartsLocal takes the server's answer as is", () => {
+    useProgress.setState({ hearts: 0, heartsRefillAt: 1 });
+    useProgress.getState().setHeartsLocal(3, 99);
+    expect(useProgress.getState().hearts).toBe(3);
+    expect(useProgress.getState().heartsRefillAt).toBe(99);
+  });
+
+  it("gainHeartsLocal adds hearts but caps at MAX_HEARTS and clears the timer at the cap", () => {
+    useProgress.setState({ hearts: MAX_HEARTS - 1, heartsRefillAt: Date.now() + 1000 });
+    useProgress.getState().gainHeartsLocal(5);
     expect(useProgress.getState().hearts).toBe(MAX_HEARTS);
     expect(useProgress.getState().heartsRefillAt).toBeNull();
   });
 
-  it("gainHeartsLocal adds hearts but caps at MAX_HEARTS", () => {
-    useProgress.setState({ hearts: MAX_HEARTS - 1 });
-    useProgress.getState().gainHeartsLocal(5);
-    expect(useProgress.getState().hearts).toBe(MAX_HEARTS);
-  });
-
-  it("spendXpForHeartLocal buys a heart and deducts xp, floored at 0", () => {
-    useProgress.setState({ hearts: 2, xp: 10 });
+  it("spendXpForHeartLocal buys a heart and deducts xp, floored at 0, keeping a running clock", () => {
+    const at = Date.now() + 60_000;
+    useProgress.setState({ hearts: 2, xp: 10, heartsRefillAt: at });
     useProgress.getState().spendXpForHeartLocal(50);
     const s = useProgress.getState();
     expect(s.hearts).toBe(3);
     expect(s.xp).toBe(0);
+    expect(s.heartsRefillAt).toBe(at);
   });
 
   it("reset restores initial values and marks hydrated", () => {

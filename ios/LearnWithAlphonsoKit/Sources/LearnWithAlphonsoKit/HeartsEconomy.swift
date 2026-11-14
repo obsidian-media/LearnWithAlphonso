@@ -35,15 +35,28 @@ public enum HeartsEconomy {
         }
     }
 
+    /// One heart comes back every `heartRefillSeconds` while hearts are below `maxHearts`, counted from the moment the
+    /// learner first dropped below the cap (or from the last refill). `heartsRefillAt` is when the NEXT heart arrives
+    /// and is nil exactly when hearts are full. Every heart that has come due is added (two hours away = four), capped
+    /// at `maxHearts`, and the leftover time carries into the next one. A row below the cap with no timer starts the
+    /// clock now rather than staying stuck. Same rule as src/lib/hearts.ts and the SQL hearts_refill_resolve.
     public static func resolveHeartsRefill(hearts: Int, heartsRefillAt: Date?, now: Date) -> HeartsState {
-        if let refillAt = heartsRefillAt, now >= refillAt {
-            return HeartsState(hearts: maxHearts, heartsRefillAt: nil)
+        if hearts >= maxHearts { return HeartsState(hearts: maxHearts, heartsRefillAt: nil) }
+        guard let refillAt = heartsRefillAt else {
+            return HeartsState(hearts: hearts, heartsRefillAt: now.addingTimeInterval(heartRefillSeconds))
         }
-        return HeartsState(hearts: hearts, heartsRefillAt: heartsRefillAt)
+        if now < refillAt { return HeartsState(hearts: hearts, heartsRefillAt: refillAt) }
+        let due = 1 + Int((now.timeIntervalSince(refillAt) / heartRefillSeconds).rounded(.down))
+        let next = min(maxHearts, hearts + due)
+        if next >= maxHearts { return HeartsState(hearts: maxHearts, heartsRefillAt: nil) }
+        return HeartsState(hearts: next, heartsRefillAt: refillAt.addingTimeInterval(Double(due) * heartRefillSeconds))
     }
 
-    public static func gainHearts(hearts: Int, amount: Int) -> HeartsState {
-        HeartsState(hearts: min(maxHearts, hearts + amount), heartsRefillAt: nil)
+    /// Adds hearts (a bonus or a purchase), capped at `maxHearts`. A refill already running keeps its clock; the
+    /// timer clears only once hearts are full.
+    public static func gainHearts(hearts: Int, amount: Int, heartsRefillAt: Date?, now: Date) -> HeartsState {
+        let cur = resolveHeartsRefill(hearts: hearts, heartsRefillAt: heartsRefillAt, now: now)
+        return resolveHeartsRefill(hearts: min(maxHearts, cur.hearts + amount), heartsRefillAt: cur.heartsRefillAt, now: now)
     }
 
     public static func perfectLessonBonusEarned(correct: Int, total: Int) -> Bool {
@@ -83,17 +96,26 @@ public enum HeartsEconomy {
         return resolved.hearts > 0 ? .open : .outOfHearts(refillAt: resolved.heartsRefillAt)
     }
 
+    /// "M:SS" until the next heart comes back (ceil to the second, like the web's useCountdown), or nil when hearts
+    /// are full, no clock is running, or the heart is already due. Drives the "+1 in 12:34" hint next to the counter.
+    public static func nextHeartCountdown(hearts: Int, heartsRefillAt: Date?, now: Date) -> String? {
+        guard hearts < maxHearts, let refillAt = heartsRefillAt else { return nil }
+        let remaining = refillAt.timeIntervalSince(now)
+        guard remaining > 0 else { return nil }
+        let total = Int(remaining.rounded(.up))
+        return "\(total / 60):\(String(format: "%02d", total % 60))"
+    }
+
     /// Whether a wrong answer costs a heart. False for Alphonso Pro (unlimited hearts).
     public static func wrongAnswerCostsHeart(unlimited: Bool) -> Bool { !unlimited }
 
-    /// The cached state after a wrong answer costs a heart. When the last one goes and no refill is pending, the
-    /// refill is due one interval from now, so the offline gate can show a countdown (the server sets the same
-    /// timer in lose_heart).
+    /// The cached state after a wrong answer costs a heart (the server does the same in lose_heart). Due refills are
+    /// settled first; a refill already pending keeps its clock (losing a heart does not reset the wait); from full
+    /// hearts a new 30-minute clock starts now, so the offline gate and the header can show a countdown.
     public static func afterLosingHeart(hearts: Int, heartsRefillAt: Date?, now: Date) -> HeartsState {
-        let remaining = max(0, hearts - 1)
-        if remaining == 0 && heartsRefillAt == nil {
-            return HeartsState(hearts: 0, heartsRefillAt: now.addingTimeInterval(heartRefillSeconds))
-        }
-        return HeartsState(hearts: remaining, heartsRefillAt: heartsRefillAt)
+        let cur = resolveHeartsRefill(hearts: hearts, heartsRefillAt: heartsRefillAt, now: now)
+        return HeartsState(
+            hearts: max(0, cur.hearts - 1),
+            heartsRefillAt: cur.heartsRefillAt ?? now.addingTimeInterval(heartRefillSeconds))
     }
 }

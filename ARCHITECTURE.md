@@ -894,8 +894,16 @@ client knows the rejection is permanent. Both functions share
 
 `src/lib/hearts.ts` (ported to Deno for the Edge Function, and to Swift as
 `ios/LearnWithAlphonsoKit/.../HeartsEconomy.swift`) is the pure math for:
-passive regen (`hearts_refill_at` resolves back to full once its time
-passes — resolved lazily on the next read/write, not via a cron job),
+passive regen (while hearts are below 5, one heart comes back every 30 minutes
+from the moment the learner first dropped below 5 or from the last refill;
+`hearts_refill_at` is when the NEXT heart arrives and is null exactly at 5
+hearts; time away adds every heart that came due, capped at 5, the leftover
+carries over, and losing a heart while a refill is pending keeps the clock.
+Resolved lazily on the next read/write, not via a cron job. SQL:
+`hearts_refill_resolve`, used by `lose_heart`, `restore_hearts_if_due`,
+`buy_heart_with_xp`, `claim_review_clear_bonus`, `settle_lesson_hearts`;
+the same rule is in `hearts.ts`, the Deno copy, `HeartsEconomy.swift` and
+`HeartsEconomy.kt`, with the same test vectors),
 +1 heart for a perfect lesson, a full refill at every 7-day streak
 milestone, +1 heart for spending XP (`buy_heart_with_xp` RPC), and +1/day
 for clearing the SRS review queue (`claim_review_clear_bonus` RPC, guarded
@@ -2149,8 +2157,8 @@ Build 62 is on TestFlight (2026-11-13, not submitted). Merged since build 61: #4
 - **Device-check fixes (#504).** A `.task` or `.onAppear` hung on a `Group { if ... }` with no else never fires while the group draws nothing: that is why the iOS Watch shelf (`WatchShelfHost`) never loaded and the "Tap a word to save it" hint (`SaveWordHintLine`) never showed. Loaders now sit on an always-present zero-size anchor. `src/lib/ios-device-check-guards.test.ts` forbids that pattern, forbids `confirmationDialog` (accent-tinted text unreadable on iOS 26 glass; all eight dialogs use `alphonsoChoiceDialog`, `AlphonsoChoiceDialog.swift`) and pins the scene order (`.screenScene(...)` before `.background(ds.surface)`, since a later `.background` sits behind an earlier one; web and Android Learn stay flat by design). MY PATH starts with a goal card on all three platforms, one rule in three ports: `pathGoalCard` (`src/lib/path-goal-card.ts`), `PathGoalCard` (Kit) and `PathGoalCard.kt` (`:core`), built from the server's numbers (target level and date, lessons a week, status) with a "Set a goal" invitation when there is no goal.
 - **Social flows (#505).** Web: the signed-out guard keeps the requested page as `next` (invite links open sign-up). iOS: Universal Links for `/invite/*` only (`/.well-known/apple-app-site-association`, `src/lib/apple-app-site-association.ts`; entitlement `applinks:learn.alphonsoecosystem.app` in Debug, Release and `project.yml`), an accept sheet (`FriendInviteAccept.swift`) that looks the code up through `get_friend_invite_preview`. Android: paste a link or a code (`InviteLink.codeFromEntry`). Associated Domains is enabled on the App ID and in the profile (2026-11-14, see below); the Play app-signing SHA-256 in `assetlinks.json` is still owed before Android invite links verify. Buddy and duels verified; learner-to-learner calls do not exist.
 - **Polish (#506).** Web Hector keeps the tab bar; league flags for consenting learners only (a present `profiles.country` is the consent signal; `country-flag.ts` and the Kit and core `flagEmoji`); web header brand mark and league badge beside the stats.
+- **Fixed in the progress-rules PR (migration `20261116100000`):** hearts refill one per 30 minutes below 5 (the seven stuck learners are restored to 5 by the migration); the path counts a finished call as done only when it earned at least one star (`callCountsAsDone` in `src/lib/practice-stars.ts`; the server builds the path, so web, iOS and Android all follow it).
 - **Provisioning profile workflow (#508, #510, 2026-11-14).** `regenerate-ios-profile.yml` takes an `ensure_capabilities` input (settings-free capabilities, today `ASSOCIATED_DOMAINS`), enables them on the App ID through the App Store Connect API, mints the profile on the existing distribution certificate and verifies the entitlement is in it. Run 43570547651 enabled Associated Domains (profile UUID `02d1ae14-17d6-4881-8f58-0fa20bcb5af1`; the owner updated the two `apple-signing` secrets). The capabilities relationship rejects `limit`; the `apple-signing` environment deploys only from `main`.
-- **Decided 2026-11-14, PRs in flight (not merged):** hearts refill 1 per 30 minutes while below 5 (today the refill timer is set only at 0, so learners at 1 to 4 never refill; the stuck learners are restored); a practice talk counts as done on the path only with at least 1 star (today any finished call does); themes become Royal (light and night, default) and Meadow, the others removed with old values mapped to Royal; iOS redesign batch 1 (Duels, Teams, Build my path, Review, League, Friends, Settings, Out of hearts) with 12 new poses. In-app Help chat: plan `docs/superpowers/plans/2026-11-14-support-help-chat.md` (#509), milestone 1 in build.
 
 ## Known rough edges
 

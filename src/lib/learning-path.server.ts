@@ -84,7 +84,7 @@ export async function loadPathData(
       untyped.from("video_watches").select("video_id,completed_at").eq("user_id", userId),
       admin
         .from("practice_calls")
-        .select("kind,item_key,started_at,last_reply_at,finished_at")
+        .select("kind,item_key,started_at,last_reply_at,finished_at,stars")
         .eq("user_id", userId)
         .eq("course", course)
         .not("finished_at", "is", null)
@@ -158,6 +158,7 @@ export async function loadPathData(
       startedAt: c.started_at,
       lastReplyAt: c.last_reply_at,
       finishedAt: c.finished_at as string,
+      stars: c.stars ?? 0,
     })),
     stars: (stars.data ?? []).map((s) => ({
       kind: s.kind as "scenario" | "scene",

@@ -107,6 +107,7 @@ describe("buildLearningPath", () => {
             startedAt: "2026-11-11T07:00:00.000Z",
             lastReplyAt: "2026-11-11T07:05:10.000Z",
             finishedAt: "2026-11-11T07:05:30.000Z",
+            stars: 1,
           },
         ],
       }),
@@ -115,6 +116,20 @@ describe("buildLearningPath", () => {
       state: "done",
       minutes: 5,
     });
+  });
+
+  it("a finished call with no star is not a talk done (owner decision 2026-11-14)", () => {
+    const call = {
+      kind: "scenario" as const,
+      itemKey: "coffee",
+      startedAt: "2026-11-11T07:00:00.000Z",
+      lastReplyAt: "2026-11-11T07:00:20.000Z",
+      finishedAt: "2026-11-11T07:00:30.000Z",
+    };
+    const none = buildLearningPath(data({ calls: [{ ...call, stars: 0 }] }))!;
+    expect(none.today.items.some((i) => i.type === "talk" && i.state === "done")).toBe(false);
+    const one = buildLearningPath(data({ calls: [{ ...call, stars: 1 }] }))!;
+    expect(one.today.items.some((i) => i.type === "talk" && i.state === "done")).toBe(true);
   });
 
   it("reads the learner's switches and trim date from their profile", () => {
