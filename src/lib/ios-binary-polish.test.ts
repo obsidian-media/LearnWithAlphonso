@@ -490,9 +490,9 @@ describe("app icon", () => {
       (n) => `Alphonso-${n}.imageset`,
     );
     // Plus one medallion per achievement (round 12, mock art made 2026-11-14): Badge-<achievement id>.imageset.
-    const badgeSets = [...read("src/data/achievements.ts").matchAll(/^\s+id: "([a-z_0-9]+)",/gm)].map(
-      (m) => `Badge-${m[1]}.imageset`,
-    );
+    const badgeSets = [
+      ...read("src/data/achievements.ts").matchAll(/^\s+id: "([a-z_0-9]+)",/gm),
+    ].map((m) => `Badge-${m[1]}.imageset`);
     expect(badgeSets).toHaveLength(25);
     const sceneSets = [
       ...scenery.scenes.map((n) => `Scene-${n}.imageset`),
