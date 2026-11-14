@@ -269,7 +269,7 @@ and fails in CI. And `src/styles.css` carries **`@source "../admin"`**:
 it declares `source(none)`, so without that line Tailwind never scans the
 admin files and every utility they use is missing from the generated CSS,
 producing an unstyled app with no error anywhere. The admin shell sets
-`data-theme="canopy"` explicitly, since `:root` is Meadow.
+`data-palette="royal"` explicitly (it has no theme picker).
 
 Authorization is `admin_users` (`added_by` references `auth.users` with `ON DELETE SET NULL`, so deleting the admin who added another admin no longer blocks the account deletion): **RLS enabled with zero policies**, plus
 `REVOKE ALL FROM anon, authenticated`, so only `service_role` (which
@@ -921,27 +921,27 @@ server's 3-hour limit is replaced once at finish on a 403.
 
 ## Themes
 
-Four user-selectable themes on web (`canopy` default, `meadow`, `studio-ink`,
-`manuscript`; Canopy was ported from iOS in #91), defined as CSS custom properties per `[data-theme="..."]`
-block in `src/styles.css` plus a design-tokens JSON per theme
-(`src/design-tokens/*.json`, currently informational/export-only — the
-CSS is the real source of truth the app reads). `src/lib/theme.ts` is a
-small Zustand store: resolves server value (from `profiles.theme`) over
-localStorage over the `canopy` default, and an inline `<script>` in
-`src/routes/__root.tsx` applies the stored theme before first paint to
-avoid a flash of the wrong theme. `profiles.theme` is validated by both a
-Zod enum (`leaderboard.functions.ts`'s `updateProfile`) and a Postgres
-`CHECK` constraint — both need updating together when a theme is added
-(see `supabase/migrations/20260918140000_add_manuscript_theme.sql` for the
-pattern: drop and re-add the constraint, since it isn't named per-value).
+Two user-selectable themes on every platform: **Royal** (navy and gold, the default; light and
+night appearances) and **Meadow** (green). Studio Ink, Manuscript and Canopy were removed on
+2026-11-16 (visual round 6 had already moved the screens onto the design-system tokens, so the
+three older themes were only a second, unused layer). A theme swaps the `--c-*` token values:
+`src/styles/ds-tokens.generated.css` reads `data-palette` on `<html>` (Royal is `:root`, Meadow is
+`:root[data-palette="meadow"]`, night is `data-ds-mode="night"`). `src/lib/theme.ts` is a small
+Zustand store: the account value (`profiles.theme`) wins over the value kept on the device
+(`localStorage` "theme"), over the Royal default, and an inline `<script>` in `src/routes/__root.tsx`
+(`THEME_BOOT_SCRIPT`) applies it before first paint. `normalizeTheme` is the one rule: `meadow`
+stays Meadow and anything else (a removed theme, an unknown or missing value) is Royal, silently.
+The same rule runs on iOS (`DSPaletteID.resolve(stored:)` in the Kit, used by `AlphonsoThemeID.resolve`)
+and Android (`AlphonsoThemeId.resolve`), at launch and when the account value arrives.
+`profiles.theme` holds `royal`, `meadow` or null (no choice yet): migration
+`20261116110000_themes_royal_and_meadow.sql` rewrote the old values to `royal`, narrowed the CHECK
+constraint to the two names, and added a trigger that stores a retired value from an older app build
+as `royal`. `updateProfile` (`leaderboard.functions.ts`) maps any non-`meadow` string to `royal`
+instead of rejecting it. Fonts: Royal uses Baloo 2 and Geist, Meadow uses Fraunces and Geist; the
+other families (Instrument Serif and Sans, Newsreader, Source Sans 3) were removed from all three apps.
 League tiers are shown to learners as Sprout, Sapling, Grove, Treetop and
 Summit (`src/lib/league-tier-copy.ts`, Kit `LeagueTierCopy`); the database
 keys (`bronze` to `diamond`) did not change, so the names are display-only.
-Canopy began as an iOS-only theme (2026-09-23, which is why its migration
-comment still says so) and was ported to the web in #91 (`[data-theme="canopy"]`
-in `src/styles.css`, listed in `THEME_NAMES`, offered in the `/profile`
-picker); today all four names are in the Zod enum, the CHECK constraint, the
-web CSS and the iOS `AlphonsoThemeID`.
 
 ## Native iOS app (`ios/`)
 
@@ -1047,15 +1047,12 @@ App Store Connect app record exists: "Learn With Alphonso", app id
 
 **Design system** (`ios/LearnWithAlphonso/Sources/DesignSystem/`,
 2026-09-22, extended to a full theme system 2026-09-22, extended again
-2026-09-23 with a fourth theme, Canopy, first iOS-only and later ported to the web — see below): originally ported
-all three of the web app's themes (`src/styles.css`'s `:root`/Meadow,
-`[data-theme="studio-ink"]`, `[data-theme="manuscript"]` blocks) rather
+2026-09-23 with a fourth theme, Canopy; since 2026-11-16 only Royal and Meadow remain, see Themes above):
+ported from the web app's themes rather
 than inventing a separate native-only look, so web and iOS read as one
 product. `AlphonsoTheme.swift` defines `AlphonsoThemeID` — **raw values
 match the web's `THEME_NAMES`/`profiles.theme` CHECK constraint
-(`canopy` was absent from `THEME_NAMES` between 2026-09-23 and the web port
-in #91; it is there now, and `resolveInitialTheme` falls back safely for any
-value not in `THEME_NAMES`)** —
+(`royal`, `meadow`), and `AlphonsoThemeID.resolve` sends any other stored value to Royal)** —
 `AlphonsoPalette` (colors converted from each theme's oklch
 values to sRGB via a standard OKLab conversion — computed, not
 eyeballed — plus each theme's font base names/optical-size range and a
@@ -1068,10 +1065,7 @@ screens' call sites.
 
 Each theme's font pair is bundled as its upstream **variable** font
 file(s) (`Sources/Fonts/*.ttf`, all from google/fonts, OFL-licensed:
-Fraunces/Geist for Meadow, Instrument Serif/Instrument Sans for Studio
-Ink, Newsreader/Source Sans 3 for Manuscript — Instrument Serif is the
-one static-only exception, a single Regular face, since the web app
-never loads a bold weight for it) and `AlphonsoFont.swift` resolves a
+Baloo 2/Geist for Royal, Fraunces/Geist for Meadow) and `AlphonsoFont.swift` resolves a
 specific weight/optical-size instance at request time via CoreText's
 `kCTFontVariationAttribute`, rather than depending on iOS's per-OS-
 version support for resolving a variable font's named instances by

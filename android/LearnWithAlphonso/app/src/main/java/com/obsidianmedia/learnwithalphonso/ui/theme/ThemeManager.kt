@@ -11,33 +11,32 @@ import kotlinx.coroutines.flow.asStateFlow
  * syncing to profiles.theme is the settings screen's job.
  */
 class ThemeManager(private val prefs: SharedPreferences) {
-    private val _theme = MutableStateFlow(AlphonsoThemeId.fromRaw(prefs.getString(KEY, null)) ?: AlphonsoThemeId.DEFAULT)
+    private val _theme = MutableStateFlow(AlphonsoThemeId.resolve(prefs.getString(KEY, null)))
     val theme: StateFlow<AlphonsoThemeId> = _theme.asStateFlow()
 
-    /** The palette the user picked (visual round 6), or null until they pick one. */
-    private var chosenPalette: AlphonsoPaletteId? = AlphonsoPaletteId.fromRaw(prefs.getString(PALETTE_KEY, null))
-    private val _palette = MutableStateFlow(chosenPalette ?: AlphonsoPaletteId.forTheme(_theme.value))
+    private val _palette = MutableStateFlow(AlphonsoPaletteId.forTheme(_theme.value))
 
-    /** The design system palette: the user's pick, or until then the one closest to their theme. */
+    /** The design system palette: the theme's own, Royal or Meadow. */
     val palette: StateFlow<AlphonsoPaletteId> = _palette.asStateFlow()
+
+    init {
+        // A retired value (Studio Ink, Manuscript, Canopy) is moved to Royal for good, silently.
+        val saved = prefs.getString(KEY, null)
+        if (saved != null && saved != _theme.value.raw) prefs.edit().putString(KEY, _theme.value.raw).apply()
+        if (prefs.contains(PALETTE_KEY)) prefs.edit().remove(PALETTE_KEY).apply()
+    }
 
     fun setTheme(id: AlphonsoThemeId) {
         if (id == _theme.value) return
         _theme.value = id
         prefs.edit().putString(KEY, id.raw).apply()
-        if (chosenPalette == null) _palette.value = AlphonsoPaletteId.forTheme(id)
+        _palette.value = AlphonsoPaletteId.forTheme(id)
     }
 
-    /** Stored next to the theme. */
-    fun setPalette(id: AlphonsoPaletteId) {
-        chosenPalette = id
-        _palette.value = id
-        prefs.edit().putString(PALETTE_KEY, id.raw).apply()
-    }
-
-    /** Server value wins when present and valid (server > local > default), once per sign-in. */
+    /** The account's value wins when there is one (account > device > default); a retired value means Royal. */
     fun hydrateFromServer(serverValue: String?) {
-        AlphonsoThemeId.fromRaw(serverValue)?.let(::setTheme)
+        if (serverValue == null) return
+        setTheme(AlphonsoThemeId.resolve(serverValue))
     }
 
     private companion object {

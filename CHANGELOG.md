@@ -10,6 +10,8 @@ works now_.
 
 ## Unreleased
 
+- **Two themes: Royal and Meadow.** Studio Ink, Manuscript and Canopy are removed from web, iOS and Android: pickers, token sets, tile-tone palettes, the unused font families and their licence files, previews and tests. Royal (the default) keeps its light and night looks; Meadow is unchanged. A saved theme that is one of the removed ones moves to Royal silently on every platform (`profiles.theme` is rewritten by migration `20261116110000`, and older app builds that still send a removed value are stored as Royal).
+
 ### Device-check fixes (#504, merged 2026-11-13; goes out in build 64)
 
 Owner device check of builds 62 and 63.

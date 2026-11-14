@@ -51,27 +51,30 @@ test("unknown route shows the 404 page", async ({ page }) => {
   await expect(page).toHaveURL("/");
 });
 
-test("defaults to the canopy theme with no stored preference", async ({ page }) => {
+test("defaults to the royal theme with no stored preference", async ({ page }) => {
   await page.goto("/");
-  // Canopy became the web default alongside iOS's (resolveInitialTheme in
-  // src/lib/theme.ts), so a fresh visitor now gets an explicit
-  // data-theme="canopy" rather than falling through to :root's Meadow with
-  // no attribute at all -- which is what this test used to assert.
-  //
-  // toHaveAttribute rather than a one-shot page.evaluate: the attribute is
-  // written during hydration, so reading it immediately after goto() is a
-  // race. This matches the studio-ink test below.
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "canopy");
+  // The inline boot script in src/routes/__root.tsx writes data-palette before first paint, so a fresh
+  // visitor gets an explicit "royal" rather than no attribute. toHaveAttribute rather than a one-shot
+  // page.evaluate: the attribute is written while the page loads, and the web-first assertion retries.
+  await expect(page.locator("html")).toHaveAttribute("data-palette", "royal");
 });
 
-test("applies the studio-ink theme from localStorage before first paint", async ({ page }) => {
+test("applies the meadow theme from localStorage before first paint", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("theme", "meadow");
+  });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-palette", "meadow");
+  const fontDisplay = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--font-display"),
+  );
+  expect(fontDisplay).toContain("Fraunces");
+});
+
+test("a retired theme kept on the device paints as royal", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("theme", "studio-ink");
   });
   await page.goto("/");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "studio-ink");
-  const fontDisplay = await page.evaluate(() =>
-    getComputedStyle(document.documentElement).getPropertyValue("--font-display"),
-  );
-  expect(fontDisplay).toContain("Instrument Serif");
+  await expect(page.locator("html")).toHaveAttribute("data-palette", "royal");
 });

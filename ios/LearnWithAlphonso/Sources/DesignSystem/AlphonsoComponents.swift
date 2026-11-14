@@ -434,7 +434,7 @@ enum AlphonsoMascot {
 /// on the paywall, auth, and Learn-tab-home hero spots (see the design
 /// spec's Background section: the concrete before/after example was
 /// PaywallView showing an SF Symbol instead of Hector's actual bundled
-/// portrait). Not Canopy-specific -- any theme can use this, it just
+/// portrait). Not theme-specific -- either theme can use this, it just
 /// reads `AlphonsoColor.moss`/`.parchment` like everything else here.
 struct AlphonsoMascotBanner: View {
     let mascot: AlphonsoMascot

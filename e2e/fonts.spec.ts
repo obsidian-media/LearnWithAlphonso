@@ -7,9 +7,7 @@ import { test, expect } from "@playwright/test";
  */
 const THEMES: { id: string; display: string; sans: string }[] = [
   { id: "meadow", display: "Fraunces Variable", sans: "Geist Variable" },
-  { id: "studio-ink", display: "Instrument Serif", sans: "Instrument Sans Variable" },
-  { id: "manuscript", display: "Newsreader Variable", sans: "Source Sans 3 Variable" },
-  { id: "canopy", display: "Baloo 2 Variable", sans: "Geist Variable" },
+  { id: "royal", display: "Baloo 2 Variable", sans: "Geist Variable" },
 ];
 
 for (const theme of THEMES) {

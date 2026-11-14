@@ -402,7 +402,7 @@ describe("acknowledgements", () => {
   ].map((m) => m[1]);
 
   it("every bundled font is credited with its OFL text, and every licence file exists", () => {
-    expect(fonts).toHaveLength(9);
+    expect(fonts).toHaveLength(5);
     for (const font of fonts) expect(resources, font).toContain(`${font.split("-")[0]}-OFL`);
     for (const r of resources) {
       const file = r.endsWith("-OFL")

@@ -18,7 +18,6 @@ import { useSpeechCapture } from "../../lib/use-speech-capture";
 import { HectorInvite } from "../../components/HectorInvite";
 import { type AvatarReplyVerdict } from "../../components/AlphonsoAvatar";
 import { PracticeCall } from "../../components/PracticeCall";
-import { useTheme } from "../../lib/theme";
 import { parseVerdict, type AvatarMode, type VoicePhase } from "../../lib/avatar/machine";
 import { useAvatarPreference } from "../../lib/avatar/preference";
 import { useReducedMotion } from "framer-motion";
@@ -168,7 +167,6 @@ function ConverseChatPage({
   useEffect(() => hydrateAvatarPreference(), [hydrateAvatarPreference]);
   const reducedMotion = useReducedMotion() ?? false;
   const [avatarMode, setAvatarMode] = useState<AvatarMode>("idle");
-  const darkTheme = useTheme((t) => t.theme === "studio-ink");
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -635,7 +633,7 @@ function ConverseChatPage({
         <PracticeCall
           title={scenario.title}
           scenarioId={scenario.id}
-          dark={darkTheme}
+          dark={false}
           avatar={{
             phase: avatarPhase,
             replyText: spoken,

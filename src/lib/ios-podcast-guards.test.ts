@@ -403,8 +403,8 @@ describe("iOS podcast quiz: every choice card takes a tap, and the row button re
       ].map((m) => parseInt(m[1].replace(/_/g, ""), 16));
     const surfaces = hex("surface");
     const inks = hex("ink");
-    // Four light themes and three dark variants: a parse that finds none would pass vacuously.
-    expect(surfaces.length).toBe(7);
+    // Two light themes and two night variants: a parse that finds none would pass vacuously.
+    expect(surfaces.length).toBe(4);
     expect(inks.length).toBe(surfaces.length);
     const luminance = (rgb: number) => {
       const [r, g, b] = [rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff].map((c) => {

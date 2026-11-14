@@ -25,7 +25,6 @@ import { PracticeCall } from "../../components/PracticeCall";
 import { HECTOR_KIT } from "../../lib/avatar/layers";
 import type { AvatarMode, VoicePhase } from "../../lib/avatar/machine";
 import { useStoredAvatarPreference } from "../../lib/avatar/preference";
-import { useTheme } from "../../lib/theme";
 import { useReducedMotion } from "framer-motion";
 import { voiceFor } from "@/lib/voice-prefs";
 import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
@@ -207,7 +206,6 @@ function HectorConversation({
   // the call never flashes up for a frame.
   const showCall = useStoredAvatarPreference();
   const reducedMotion = useReducedMotion() ?? false;
-  const darkTheme = useTheme((t) => t.theme === "studio-ink");
 
   const playBlob = useCallback((blob: Blob) => {
     try {
@@ -599,7 +597,7 @@ function HectorConversation({
           kit={HECTOR_KIT}
           title={PAYWALL_COPY.mascotMessage}
           scenarioId="hector"
-          dark={darkTheme}
+          dark={false}
           avatar={{
             phase: avatarPhase,
             replyText: lastReply?.content ?? null,

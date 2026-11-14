@@ -2,26 +2,29 @@ import SwiftUI
 import UIKit
 import LearnWithAlphonsoKit
 
-/// The three themes the web app defines in `src/styles.css` (`meadow`
-/// default, `studio-ink`, `manuscript`) -- iOS now mirrors all three, not
-/// just Meadow. Raw values match the web's `THEME_NAMES`/`ThemeName`
-/// (`src/lib/theme.ts`) and the `profiles.theme` CHECK constraint
-/// exactly, so a value round-trips to/from the server with no mapping.
+/// The two themes: Royal (navy and gold, the default) and Meadow (green). Raw values match the web's
+/// `THEME_NAMES` (`src/lib/theme.ts`), Android's `AlphonsoThemeId`, the Kit's `DSPaletteID` and the
+/// `profiles.theme` CHECK constraint exactly, so a value round-trips to/from the server with no mapping. Each has
+/// a light and a night appearance (the night one follows the system's Dark Mode).
+///
+/// Studio Ink, Manuscript and Canopy are gone. A stored value that is one of them, or unknown, means Royal:
+/// see `resolve(_:)` and `DSPaletteID.resolve(stored:)`.
 public enum AlphonsoThemeID: String, CaseIterable, Identifiable, Sendable {
+    case royal
     case meadow
-    case studioInk = "studio-ink"
-    case manuscript
-    case canopy
 
     public var id: String { rawValue }
 
     public var displayName: String {
         switch self {
+        case .royal: return "Royal"
         case .meadow: return "Meadow"
-        case .studioInk: return "Studio Ink"
-        case .manuscript: return "Manuscript"
-        case .canopy: return "Canopy"
         }
+    }
+
+    /// Any stored raw value to a theme: Meadow stays Meadow, everything else (retired, unknown, missing) is Royal.
+    public static func resolve(_ raw: String?) -> AlphonsoThemeID {
+        AlphonsoThemeID(rawValue: DSPaletteID.resolve(stored: raw).rawValue) ?? .royal
     }
 }
 
@@ -57,27 +60,21 @@ public struct AlphonsoPalette: Sendable {
     /// Text/label color to render on top of an `ember`-filled surface
     /// (`.alphonsoEmber` button usage). Distinct from `onPrimary`
     /// because a theme's `moss` and `ember` are not guaranteed to need
-    /// the same contrast direction -- Canopy's bright coral `ember`
-    /// needs dark text while its dark emerald `moss` needs light text.
+    /// the same contrast direction -- Royal's bright coral `ember`
+    /// needs dark text while its navy `moss` needs light text.
     public let onAccent: Color
     /// Text color for `AlphonsoMascotBanner`'s `moss`->`mossDeep`
     /// gradient background specifically -- distinct from `onPrimary`
     /// because a solid single-color button fill and a two-stop gradient
-    /// don't share a contrast-safe answer for every theme. Found in code
-    /// review: Studio Ink's `moss`/`mossDeep` are a medium-bright blue,
-    /// not dark, so `onPrimary` (= Studio Ink's own near-black `surface`,
-    /// correct for its *button* fill) drops to 2.16:1 against
-    /// `mossDeep` -- its light `ink` token measures 7.98:1 there
-    /// instead. Equals `onPrimary` for every theme except Studio Ink;
-    /// adding this token changes no existing screen's rendered output
-    /// (nothing else reads it), only the new banner component.
+    /// don't share a contrast-safe answer for every theme. Equals
+    /// `onPrimary` for both themes today.
     public let onMossGradient: Color
     public let colorScheme: ColorScheme
 
     /// PostScript name of the bundled font file to resolve a weight/
     /// optical-size instance from (see `AlphonsoFont.resolvedVariant`).
     public let displayFontBaseName: String
-    /// nil for a font with no `opsz` axis (Instrument Serif) -- skip
+    /// nil for a font with no `opsz` axis (Baloo 2) -- skip
     /// setting that axis entirely rather than passing a meaningless range.
     public let displayFontOpszRange: ClosedRange<CGFloat>?
     public let sansFontBaseName: String
@@ -91,9 +88,7 @@ enum AlphonsoPaletteCatalog {
     /// bundled `.ttf`'s `name` table (`fontTools`) since UIFont(name:)
     /// needs an exact PostScript name, not a family name.
     ///
-    /// This is the LIGHT variant of each theme, except `.studioInk`, which
-    /// has no light variant at all (see `dark` below and
-    /// `AlphonsoThemeManager.palette`'s own doc comment for why).
+    /// This is the LIGHT variant of each theme (the night one is `dark` below).
     static let all: [AlphonsoThemeID: AlphonsoPalette] = [
         .meadow: AlphonsoPalette(
             surface: Color(hex: 0xF5_F0_E8),
@@ -114,64 +109,7 @@ enum AlphonsoPaletteCatalog {
             displayFontOpszRange: 9...144,
             sansFontBaseName: "Geist-Regular"
         ),
-        .studioInk: AlphonsoPalette(
-            surface: Color(hex: 0x0B_0D_12),
-            parchment: Color(hex: 0x13_16_1C),
-            ink: Color(hex: 0xF5_F1_EA),
-            inkSoft: Color(hex: 0xAA_A4_9A),
-            moss: Color(hex: 0x00_72_D5),
-            mossDeep: Color(hex: 0x00_46_99),
-            ember: Color(hex: 0x00_72_D5),
-            emberSoft: Color(hex: 0x00_2E_5D),
-            // 0xE7000B (every other theme's shared destructive red, tuned
-            // for reading as dark saturated text/icon on a LIGHT surface)
-            // only measures 4.07:1 against this theme's own dark surface
-            // and 3.80:1 against parchment -- both under the 4.5:1 AA text
-            // threshold. Found while deriving dark-mode destructive values
-            // for the newly-added dark variants below (same computed,
-            // minimal-brightening method, same target); Studio Ink already
-            // being dark meant it had this same latent gap today, so it's
-            // fixed here rather than left as a second inconsistent red.
-            // 0xF8000C: 4.62:1 against surface, 4.31:1 against parchment
-            // (parchment falls just short -- destructive text/icons render
-            // there rarely enough, e.g. a nested card's own delete action,
-            // that this is accepted rather than brightening further and
-            // drifting the red away from recognizability).
-            destructive: Color(hex: 0xF8_00_0C),
-            hairline: Color(hex: 0xFF_FF_FF, opacity: 0.1),
-            onPrimary: Color(hex: 0x0B_0D_12),
-            onAccent: Color(hex: 0x0B_0D_12),
-            // Deliberately `ink` (light), not `surface` like every other
-            // theme's onMossGradient -- Studio Ink's moss/mossDeep are a
-            // medium-bright blue, not dark, so near-black `surface` text
-            // (correct for its button fill) drops to 2.16:1 against
-            // mossDeep; `ink` measures 7.98:1 there instead.
-            onMossGradient: Color(hex: 0xF5_F1_EA),
-            colorScheme: .dark,
-            displayFontBaseName: "InstrumentSerif-Regular",
-            displayFontOpszRange: nil,
-            sansFontBaseName: "InstrumentSans-Regular"
-        ),
-        .manuscript: AlphonsoPalette(
-            surface: Color(hex: 0xF3_F5_F8),
-            parchment: Color(hex: 0xE9_EB_EE),
-            ink: Color(hex: 0x0F_12_16),
-            inkSoft: Color(hex: 0x4A_4D_53),
-            moss: Color(hex: 0x8D_18_28),
-            mossDeep: Color(hex: 0x65_00_14),
-            ember: Color(hex: 0x8D_18_28),
-            emberSoft: Color(hex: 0xED_C1_C0),
-            destructive: Color(hex: 0xE7_00_0B),
-            hairline: Color(hex: 0x0F_12_16, opacity: 0.12),
-            onPrimary: Color(hex: 0xF3_F5_F8),
-            onAccent: Color(hex: 0xF3_F5_F8),
-            onMossGradient: Color(hex: 0xF3_F5_F8),
-            colorScheme: .light,
-            displayFontBaseName: "Newsreader16pt-Regular",
-            displayFontOpszRange: 6...72,
-            sansFontBaseName: "SourceSans3-Roman"
-        ),
-        .canopy: AlphonsoPalette(
+        .royal: AlphonsoPalette(
             surface: Color(hex: 0xFB_F6_EC),
             parchment: Color(hex: 0xFF_FF_FF),
             ink: Color(hex: 0x14_1B_3D),
@@ -192,11 +130,7 @@ enum AlphonsoPaletteCatalog {
         ),
     ]
 
-    /// Dark variant of each LIGHT theme -- `.studioInk` deliberately has no
-    /// entry here (see `AlphonsoThemeManager.palette`'s doc comment): it's
-    /// already dark and stays that way regardless of system appearance,
-    /// the same "pick a dark-styled look on purpose" pattern several apps
-    /// offer independent of following the system setting.
+    /// Night variant of each theme, used whenever the system is in Dark Mode.
     ///
     /// Every accent (moss/mossDeep/ember) below is UNCHANGED from its light
     /// variant except where noted: each was already dark/saturated enough
@@ -222,8 +156,7 @@ enum AlphonsoPaletteCatalog {
             mossDeep: Color(hex: 0x15_3C_25),
             ember: Color(hex: 0xD7_59_28),
             emberSoft: Color(hex: 0x4F_30_17),
-            // Same gap and same fix as Studio Ink's destructive above:
-            // 0xE7000B under-contrasts a dark surface. 0xFF0A15 (brightened
+            // 0xE7000B (the light-mode destructive red) under-contrasts a dark surface. 0xFF0A15 (brightened
             // against THIS theme's own near-black/near-white pair, same
             // computed method): 4.60:1 against surface.
             destructive: Color(hex: 0xFF_0A_15),
@@ -237,29 +170,7 @@ enum AlphonsoPaletteCatalog {
             displayFontOpszRange: 9...144,
             sansFontBaseName: "Geist-Regular"
         ),
-        .manuscript: AlphonsoPalette(
-            surface: Color(hex: 0x0E_11_15),
-            parchment: Color(hex: 0x18_1D_23),
-            ink: Color(hex: 0xEC_EF_F4),
-            inkSoft: Color(hex: 0xA2_AB_B9),
-            moss: Color(hex: 0x8D_18_28),
-            mossDeep: Color(hex: 0x65_00_14),
-            ember: Color(hex: 0x8D_18_28),
-            emberSoft: Color(hex: 0x4F_18_17),
-            destructive: Color(hex: 0xFB_00_0C),
-            hairline: Color(hex: 0xFF_FF_FF, opacity: 0.1),
-            // ink/moss: 7.94:1 (moss and ember are the same color in this
-            // theme, light or dark -- see the light palette's own values).
-            // ink/mossDeep: 11.65:1.
-            onPrimary: Color(hex: 0xEC_EF_F4),
-            onAccent: Color(hex: 0xEC_EF_F4),
-            onMossGradient: Color(hex: 0xEC_EF_F4),
-            colorScheme: .dark,
-            displayFontBaseName: "Newsreader16pt-Regular",
-            displayFontOpszRange: 6...72,
-            sansFontBaseName: "SourceSans3-Roman"
-        ),
-        .canopy: AlphonsoPalette(
+        .royal: AlphonsoPalette(
             surface: Color(hex: 0x0E_13_30),
             parchment: Color(hex: 0x16_1C_40),
             ink: Color(hex: 0xEC_E7_F5),
@@ -307,58 +218,32 @@ public final class AlphonsoThemeManager {
     /// best-effort default in this manager.
     public private(set) var systemColorScheme: ColorScheme = .light
 
-    /// Dark Interface support (App Store accessibility label, BACKLOG item):
-    /// `.studioInk` has no light variant and is unaffected by system
-    /// appearance -- it's a dark-styled theme a user can pick on purpose,
-    /// the same as several apps offer an "always dark" option independent
-    /// of following the system setting; there is no light Studio Ink to
-    /// fall back to, and inventing one is a different, much larger design
-    /// exercise than "the app respects Dark Mode." Every other theme now
-    /// has a real dark variant (`AlphonsoPaletteCatalog.dark`) and switches
-    /// to it automatically whenever `systemColorScheme` is `.dark` --
-    /// that's the actual fix: previously `.preferredColorScheme` forced
-    /// every screen to whichever single appearance the selected theme
-    /// happened to be, so a user with system Dark Mode on saw a light app
-    /// unless they specifically chose Studio Ink.
+    /// The active theme's palette: its light values, or its night values whenever `systemColorScheme` is `.dark`
+    /// (Dark Interface support: the app follows the device's appearance, for both themes).
     public var palette: AlphonsoPalette {
-        if themeID == .studioInk {
-            return AlphonsoPaletteCatalog.all[.studioInk] ?? AlphonsoPaletteCatalog.all[.meadow]!
-        }
         if systemColorScheme == .dark {
-            return AlphonsoPaletteCatalog.dark[themeID] ?? AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.meadow]!
+            return AlphonsoPaletteCatalog.dark[themeID] ?? AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.royal]!
         }
-        return AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.meadow]!
+        return AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.royal]!
     }
 
     private static let storageKey = "alphonso.theme"
-    private static let paletteStorageKey = "alphonso.palette"
 
-    /// The palette the user picked, if any (visual round 6). `nil` until they pick one.
-    private var chosenPalette: DSPaletteID?
-
-    /// The design system palette (`AlphonsoDS`): the user's pick, or until then the one closest to their theme
-    /// (Meadow stays Meadow, the other three become Royal). Read by `AlphonsoDS.current` and the
-    /// `\.alphonsoDS` environment value; today's screens do not read it yet.
+    /// The design system palette (`AlphonsoDS`): the theme's own, Royal or Meadow. Read by `AlphonsoDS.current`
+    /// and the `\.alphonsoDS` environment value.
     public var paletteID: DSPaletteID {
-        chosenPalette ?? DSPaletteID.forTheme(themeID.rawValue)
+        DSPaletteID.resolve(stored: themeID.rawValue)
     }
 
     private init() {
-        if let saved = UserDefaults.standard.string(forKey: Self.storageKey),
-           let id = AlphonsoThemeID(rawValue: saved) {
-            themeID = id
-        } else {
-            themeID = .canopy
+        let saved = UserDefaults.standard.string(forKey: Self.storageKey)
+        let id = AlphonsoThemeID.resolve(saved)
+        themeID = id
+        // A retired value (Studio Ink, Manuscript, Canopy) is moved to Royal for good, silently.
+        if saved != nil, saved != id.rawValue {
+            UserDefaults.standard.set(id.rawValue, forKey: Self.storageKey)
         }
-        chosenPalette = UserDefaults.standard.string(forKey: Self.paletteStorageKey).flatMap(DSPaletteID.init(rawValue:))
-    }
-
-    /// Sets the palette locally, stored next to the theme. Same guard as `setTheme`: an `@Observable` setter
-    /// notifies on every assignment, so a same-value write would re-render for nothing.
-    public func setPalette(_ id: DSPaletteID) {
-        guard id != chosenPalette else { return }
-        chosenPalette = id
-        UserDefaults.standard.set(id.rawValue, forKey: Self.paletteStorageKey)
+        UserDefaults.standard.removeObject(forKey: "alphonso.palette")
     }
 
     /// Sets the theme locally (instant, persisted for next launch via
@@ -371,12 +256,12 @@ public final class AlphonsoThemeManager {
         UserDefaults.standard.set(id.rawValue, forKey: Self.storageKey)
     }
 
-    /// Server value wins when present and valid (mirrors `theme.ts`'s
-    /// `resolveInitialTheme`: server > local > default) -- call once
-    /// after sign-in, once `profiles.theme` is known.
+    /// The account's value wins when there is one (mirrors `theme.ts`'s `resolveInitialTheme`: account > device >
+    /// default); a retired value on the account means Royal. Call once after sign-in, once `profiles.theme` is
+    /// known. A null value leaves the device's choice alone.
     public func hydrate(fromServerValue serverValue: String?) {
-        guard let serverValue, let id = AlphonsoThemeID(rawValue: serverValue) else { return }
-        setTheme(id)
+        guard let serverValue else { return }
+        setTheme(AlphonsoThemeID.resolve(serverValue))
     }
 
     /// Called by `RootView` whenever it wants to re-check the device's raw
@@ -427,15 +312,9 @@ public enum AlphonsoColor {
     public static var ember: Color { AlphonsoThemeManager.shared.palette.ember }
     public static var emberSoft: Color { AlphonsoThemeManager.shared.palette.emberSoft }
     public static var destructive: Color { AlphonsoThemeManager.shared.palette.destructive }
-    /// A wrong answer uses the theme's coral (ember), except where a theme draws ember and moss in one colour
-    /// (Studio Ink, Manuscript): there it is the destructive red, so a wrong answer never looks like a right one.
-    public static var wrongAnswerUsesEmber: Bool {
-        switch AlphonsoThemeManager.shared.themeID {
-        case .meadow, .canopy: return true
-        case .studioInk, .manuscript: return false
-        }
-    }
-    public static var wrongAnswer: Color { wrongAnswerUsesEmber ? ember : destructive }
+    /// A wrong answer uses the theme's coral (ember). Both themes draw ember and moss apart, so wrong never looks
+    /// like right.
+    public static var wrongAnswer: Color { ember }
     public static var hairline: Color { AlphonsoThemeManager.shared.palette.hairline }
     public static var onPrimary: Color { AlphonsoThemeManager.shared.palette.onPrimary }
     public static var onAccent: Color { AlphonsoThemeManager.shared.palette.onAccent }

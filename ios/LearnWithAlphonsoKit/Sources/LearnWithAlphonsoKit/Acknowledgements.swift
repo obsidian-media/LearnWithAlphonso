@@ -24,10 +24,6 @@ public enum Acknowledgements {
         Acknowledgement(name: "Figtree", licenseName: ofl, licenseResource: "Figtree-OFL", url: "https://github.com/erikdkennedy/figtree"),
         Acknowledgement(name: "Fraunces", licenseName: ofl, licenseResource: "Fraunces-OFL", url: "https://github.com/undercasetype/Fraunces"),
         Acknowledgement(name: "Geist", licenseName: ofl, licenseResource: "Geist-OFL", url: "https://github.com/vercel/geist-font"),
-        Acknowledgement(name: "Instrument Sans", licenseName: ofl, licenseResource: "InstrumentSans-OFL", url: "https://github.com/Instrument/instrument-sans"),
-        Acknowledgement(name: "Instrument Serif", licenseName: ofl, licenseResource: "InstrumentSerif-OFL", url: "https://github.com/Instrument/instrument-serif"),
-        Acknowledgement(name: "Newsreader", licenseName: ofl, licenseResource: "Newsreader-OFL", url: "https://github.com/productiontype/Newsreader"),
-        Acknowledgement(name: "Source Sans 3", licenseName: ofl, licenseResource: "SourceSans3-OFL", url: "https://github.com/adobe-fonts/source-sans"),
         Acknowledgement(name: "Sound effects by Kenney (kenney.nl)", licenseName: cc0, licenseResource: "Kenney-CC0", url: "https://kenney.nl"),
     ]
 }

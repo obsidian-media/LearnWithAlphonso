@@ -9,7 +9,6 @@ import { LeagueTierBadge } from "../../components/LeagueTierBadge";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import { LEAGUE_TIER_META, LEAGUE_TIERS, type LeagueTier } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
-import { useTheme } from "../../lib/theme";
 import { getLeaderboard } from "../../lib/leaderboard.functions";
 
 export const Route = createFileRoute("/_authenticated/league")({
@@ -30,7 +29,6 @@ export const Route = createFileRoute("/_authenticated/league")({
 });
 
 function LeaguePage() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const [scope, setScope] = useState<"global" | "friends" | "country">("global");
   const [period, setPeriod] = useState<"weekly" | "all-time">("weekly");
   const tier = useProgress((s) => s.leagueTier);
@@ -50,13 +48,7 @@ function LeaguePage() {
         <p className="mb-1 ds-type-caption font-semibold uppercase tracking-[0.18em] text-ember">
           Your league
         </p>
-        <div
-          className={
-            isStudioInk
-              ? "flex items-center gap-4 border-b border-ds-line pb-4"
-              : "flex items-center gap-4 rounded-3xl border border-ds-line bg-ds-sunk p-4"
-          }
-        >
+        <div className={"flex items-center gap-4 rounded-3xl border border-ds-line bg-ds-sunk p-4"}>
           <LeagueTierBadge tier={tier} size="lg" />
           <div className="flex-1">
             <h1 className="font-display ds-type-title font-semibold text-ds-ink">{meta.label}</h1>
@@ -113,36 +105,21 @@ function LeaguePage() {
 
         <div className="mt-5">
           {isLoading && <p className="py-8 text-center text-xs text-ds-ink-soft">Loading…</p>}
-          {!isLoading &&
-            (data?.length ?? 0) === 0 &&
-            (isStudioInk ? (
-              <div className="border-y border-ds-line py-6 text-center">
-                <p className="text-sm font-semibold text-ds-ink">Nothing here yet</p>
-                <p className="mt-1 text-xs text-ds-ink-soft">
-                  {scope === "friends"
-                    ? "Add friends to compete side by side."
-                    : scope === "country"
-                      ? "Set your country on your profile to see this board."
-                      : "Finish a lesson to appear on the board."}
-                </p>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-ds-line bg-ds-sunk p-6 text-center">
-                <p className="text-sm font-semibold text-ds-ink">Nothing here yet</p>
-                <p className="mt-1 text-xs text-ds-ink-soft">
-                  {scope === "friends"
-                    ? "Add friends to compete side by side."
-                    : scope === "country"
-                      ? "Set your country on your profile to see this board."
-                      : "Finish a lesson to appear on the board."}
-                </p>
-              </div>
-            ))}
+          {!isLoading && (data?.length ?? 0) === 0 && (
+            <div className="rounded-2xl border border-ds-line bg-ds-sunk p-6 text-center">
+              <p className="text-sm font-semibold text-ds-ink">Nothing here yet</p>
+              <p className="mt-1 text-xs text-ds-ink-soft">
+                {scope === "friends"
+                  ? "Add friends to compete side by side."
+                  : scope === "country"
+                    ? "Set your country on your profile to see this board."
+                    : "Finish a lesson to appear on the board."}
+              </p>
+            </div>
+          )}
           <ol
             className={
-              isStudioInk
-                ? "divide-y divide-ds-line"
-                : "divide-y divide-ds-line overflow-hidden rounded-2xl border border-ds-line bg-ds-card"
+              "divide-y divide-ds-line overflow-hidden rounded-2xl border border-ds-line bg-ds-card"
             }
           >
             {(data ?? []).map((row, i) => (
