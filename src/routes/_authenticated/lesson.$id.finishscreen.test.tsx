@@ -331,6 +331,7 @@ describe("FinishScreen celebration", () => {
         <FinishScreen
           xp={10}
           unlocked={["streak_30"]}
+          heartsBonus={null}
           lessonTitle="Test lesson"
           correct={5}
           total={5}
