@@ -40,10 +40,10 @@ struct OutOfHeartsSheet: View {
                         .accessibilityAddTraits(.updatesFrequently)
                     HStack(spacing: AlphonsoDS.Space.s2) {
                         Icon3DView(emoji: "\u{2764}\u{FE0F}", size: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s1)
-                        Text("0").dsText(.numeralXL).foregroundStyle(ds.heart)
+                        Text("\(model.hearts)").dsText(.numeralXL).foregroundStyle(ds.heart)
                     }
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("0 hearts")
+                    .accessibilityLabel("\(model.hearts) hearts")
                     if model.showsBuy(isOnline: isOnline) {
                         Button {
                             Task { await buy() }

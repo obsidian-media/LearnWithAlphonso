@@ -55,12 +55,6 @@ public enum LeaguePresentation {
         guard let tier, !tier.isEmpty else { return nil }
         return "\(LeagueTierCopy.label(for: tier)) league"
     }
-
-    /// The learner's own XP on the board being shown, nil when they are not on it (an empty board, another scope).
-    public static func myXP(rows: [(userID: String, xp: Int)], myID: String?) -> Int? {
-        guard let myID else { return nil }
-        return rows.first { $0.userID == myID }?.xp
-    }
 }
 
 /// The Teams screen's small decisions.
@@ -73,5 +67,21 @@ public enum TeamsPresentation {
     /// Create team is possible once the name has a letter in it.
     public static func canCreate(name: String) -> Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+}
+
+/// The goal chips on Build my path (Round 8 A0): why the learner is here, the level and the date, from their own data.
+public enum PathGoalChips {
+    public static let note = "Pre-filled from first run and your level. Tap to change."
+
+    /// "Travel", "Finish B1", "by 10 May 2027": the first-run purpose only when it is a known one.
+    public static func labels(purposeID: String?, targetLevel: String, targetDate: String) -> [String] {
+        var out: [String] = []
+        if let purposeID, let choice = FirstRun.goalChoices.first(where: { $0.id == purposeID }) {
+            out.append(choice.label)
+        }
+        out.append("Finish \(targetLevel)")
+        out.append("by \(GoalCopy.formatDate(targetDate))")
+        return out
     }
 }

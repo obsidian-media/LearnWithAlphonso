@@ -166,8 +166,12 @@ struct DSChip<Leading: View>: View {
         Button(action: action) {
             HStack(spacing: AlphonsoDS.Space.s2) {
                 leading
-                Text(label).dsText(.footnote).foregroundStyle(selected ? ds.choice : ds.brand).lineLimit(1)
+                // Wraps at large Dynamic Type: a long name is never cut off.
+                Text(label).dsText(.footnote).foregroundStyle(selected ? ds.choice : ds.brand)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .padding(.vertical, AlphonsoDS.Space.s2)
             .padding(.horizontal, AlphonsoDS.Space.s3)
             .frame(minHeight: AlphonsoDS.Space.minTouch)
             .background(
@@ -212,9 +216,9 @@ struct DSSegmented<Value: Hashable>: View {
                 Button { selection = option.value } label: {
                     Text(option.label).dsText(.footnote)
                         .foregroundStyle(on ? ds.brand : ds.inkSoft)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch - AlphonsoDS.Space.s2)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
                         .background(
                             RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control - AlphonsoDS.Space.s1, style: .continuous)
                                 .fill(on ? ds.card : Color.clear))

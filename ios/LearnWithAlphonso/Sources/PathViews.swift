@@ -35,6 +35,12 @@ final class PathModel {
         return nil
     }
 
+    /// Loaded, and the learner has no goal yet (so no plan).
+    var hasNoPath: Bool {
+        if case .none = phase { return true }
+        return false
+    }
+
     private func client(token: String) -> LearningPathClient {
         let session = self.session
         return LearningPathClient(
@@ -548,6 +554,8 @@ struct PathScreen: View {
 struct PathBuildView: View {
     let session: Session
     let course: Course
+    /// Opens a lesson from the path (Start my path leads to the road, whose stops open lessons); the sheet closes first.
+    var onOpenLesson: (String) -> Void = { _ in }
     @State private var model: PathModel?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.alphonsoDS) private var ds
@@ -560,12 +568,23 @@ struct PathBuildView: View {
                     // The goal card saves on its own button; reload so the switches appear once a goal exists.
                     GoalCardView(session: session, course: course, onChanged: { Task { await model?.load() } })
                         .id(course.translationCourseCode)
-                    if let path = model?.path { switches(path) }
+                    if let path = model?.path {
+                        switches(path)
+                    } else if model?.hasNoPath == true {
+                        // The same line the web's Build my path shows until a goal is saved.
+                        DSCard { Text("Save a goal above and your plan appears here.").dsText(.footnote).foregroundStyle(ds.inkSoft) }
+                    }
                 }
                 .padding(AlphonsoDS.Space.gutter)
             }
             .screenScene(.learn)
             .background(ds.surface)
+            .navigationDestination(for: PathRoute.self) { route in
+                PathScreen(route: route, session: session, course: course) { lessonID in
+                    dismiss()
+                    onOpenLesson(lessonID)
+                }
+            }
             .navigationTitle("Build my path")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -647,7 +666,8 @@ struct PathBuildView: View {
         if let error = model?.actionError {
             DSCard { Text(error).dsText(.footnote).foregroundStyle(ds.wrongInk) }
         }
-        Button("Start my path") { dismiss() }
+        // Like the web's "Open my path": on to the road.
+        NavigationLink(value: PathRoute.road) { Text("Start my path") }
             .buttonStyle(.dsButton(.primary))
     }
 

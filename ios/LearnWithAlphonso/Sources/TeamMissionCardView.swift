@@ -31,6 +31,8 @@ final class TeamMissionModel: ObservableObject {
 
 struct TeamMissionSection: View {
     let mission: TeamMission?
+    /// On the Learn list, whose rows keep the list's own insets (a gutter on top of them would double the padding).
+    var plainInsets = false
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
@@ -57,8 +59,20 @@ struct TeamMissionSection: View {
                     }
                 }
                 .accessibilityElement(children: .combine)
-                .dsListRow()
+                .modifier(MissionRowInsets(plain: plainInsets))
             }
+        }
+    }
+}
+
+private struct MissionRowInsets: ViewModifier {
+    let plain: Bool
+
+    func body(content: Content) -> some View {
+        if plain {
+            content.listRowBackground(Color.clear).listRowSeparator(.hidden)
+        } else {
+            content.dsListRow()
         }
     }
 }

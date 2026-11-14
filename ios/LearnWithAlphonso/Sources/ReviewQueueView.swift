@@ -159,6 +159,7 @@ struct ReviewQueueView: View {
                 let layout = LessonStage.layout(viewportHeight: Double(UIScreen.main.bounds.height), prompt: question.prompt)
                 // The question scrolls; Check and the verdict sheet are pinned below it, so a tall item plus the
                 // sheet never pushes the button off a small screen.
+                ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
                         HStack(spacing: AlphonsoDS.Space.s3) {
@@ -178,7 +179,19 @@ struct ReviewQueueView: View {
                     .padding(AlphonsoDS.Space.gutter)
                 }
                 .scrollDismissesKeyboard(.interactively)
+                .onChange(of: checked) { _, isChecked in
+                    guard isChecked else { return }
+                    // After the verdict sheet has taken its room at the foot, so "center" is the space left above
+                    // it: the right answer is never hidden behind the sheet (the lesson's own mechanism).
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(120))
+                        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.3)) {
+                            proxy.scrollTo(QuestionCard.correctAnswerID, anchor: .center)
+                        }
+                    }
+                }
                 .safeAreaInset(edge: .bottom, spacing: 0) { reviewControls(question) }
+                }
                 // The verdict sheet announces the verdict itself; the explanation inside it stays quiet.
                 .environment(\.verdictAnnouncedByPanel, true)
                 .animation(reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.38, dampingFraction: 0.86), value: checked)

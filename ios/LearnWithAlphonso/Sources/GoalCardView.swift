@@ -20,6 +20,8 @@ struct GoalCardView: View {
     @State private var loadError: LearningGoalError?
     @State private var actionError: String?
     @State private var showingSetup = false
+    /// Why the learner is here (their first-run answer), for the first goal chip; nil when never answered.
+    @State private var purposeID: String?
     /// Bumped by every load and remove. A request that finishes after a newer one started (or after the
     /// course changed) sees a different number and drops its result. `courseCode` cannot do this job: it
     /// is derived from the same `course` the running closure captured, so comparing it was always true.
@@ -40,7 +42,11 @@ struct GoalCardView: View {
             content
         }
         // Reloads when the course changes; the previous course's slow answer is ignored in `load()`.
-        .task(id: courseCode) { await load() }
+        .task(id: courseCode) {
+            await load()
+            // Deliberately silent on failure: without the answer the chip is simply left out.
+            purposeID = try? await learnerProfileClient(session)?.fetch().answers.goal
+        }
         .sheet(isPresented: $showingSetup) {
             GoalSetupSheet(session: session, courseCode: courseCode, existing: state.goal) { saved in
                 state = saved
@@ -82,6 +88,19 @@ struct GoalCardView: View {
     @ViewBuilder
     private var goalBody: some View {
         if let goal = state.goal {
+            // Round 8 A0: the goal as chips (purpose, level, date); a tap changes it.
+            DSCard(padding: AlphonsoDS.Space.s3, spacing: AlphonsoDS.Space.s2) {
+                LessonFlowLayout {
+                    ForEach(
+                        PathGoalChips.labels(purposeID: purposeID, targetLevel: goal.targetLevel, targetDate: goal.targetDate),
+                        id: \.self
+                    ) { label in
+                        DSChip(label, selected: true) { actionError = nil; showingSetup = true }
+                            .disabled(offline)
+                    }
+                }
+                Text(PathGoalChips.note).dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
             DSHeroCard(spacing: AlphonsoDS.Space.s2) {
                 Text(GoalCopy.headline(for: goal)).dsText(.title)
 

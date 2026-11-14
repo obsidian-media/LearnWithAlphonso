@@ -63,12 +63,17 @@ final class SocialPresentationTests: XCTestCase {
         XCTAssertNil(LeaguePresentation.tierTitle(tier: ""))
     }
 
-    func testTheLearnersXPComesFromTheirOwnRowOrNothing() {
-        let rows = [(userID: "a", xp: 520), (userID: "me", xp: 434), (userID: "c", xp: 210)]
-        XCTAssertEqual(LeaguePresentation.myXP(rows: rows, myID: "me"), 434)
-        XCTAssertNil(LeaguePresentation.myXP(rows: rows, myID: "nobody"))
-        XCTAssertNil(LeaguePresentation.myXP(rows: rows, myID: nil))
-        XCTAssertNil(LeaguePresentation.myXP(rows: [], myID: "me"))
+    func testTheGoalChipsAreThePurposeTheLevelAndTheDate() {
+        let chips = PathGoalChips.labels(purposeID: "travel", targetLevel: "B1", targetDate: "2027-05-10")
+        XCTAssertEqual(chips, ["Travel", "Finish B1", "by " + GoalCopy.formatDate("2027-05-10")])
+    }
+
+    func testAnUnknownOrMissingPurposeLeavesItOutRatherThanInventingOne() {
+        for purpose in [nil, "", "teleport"] as [String?] {
+            let chips = PathGoalChips.labels(purposeID: purpose, targetLevel: "A2", targetDate: "2027-01-02")
+            XCTAssertEqual(chips.count, 2)
+            XCTAssertEqual(chips.first, "Finish A2")
+        }
     }
 
     // MARK: Teams

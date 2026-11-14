@@ -748,7 +748,7 @@ struct LessonPlayerView: View {
 
     private func block(refillAt: Date?) {
         heartsGateState = .blocked
-        outOfHearts = OutOfHeartsModel(refillAt: refillAt)
+        outOfHearts = OutOfHeartsModel(refillAt: refillAt, hearts: syncQueueStore.lastKnownProgress()?.hearts ?? 0)
     }
 
     private func finish() async {

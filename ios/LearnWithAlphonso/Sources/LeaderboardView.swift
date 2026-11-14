@@ -23,6 +23,9 @@ struct LeaderboardView: View {
     @State private var showingWeeklyRecap = false
     @State private var blockTarget: SocialTarget?
     @State private var reportTarget: SocialTarget?
+    /// The hero's tier and this week's XP, loaded with the screen (see `loadHero`).
+    @State private var leagueTier: String?
+    @State private var myWeekXP: Int?
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -112,6 +115,7 @@ struct LeaderboardView: View {
         .tint(ds.choice)
         .task(id: "\(scope.rawValue)-\(period.rawValue)") { await load() }
         .task { await checkForOvertake() }
+        .task { await loadHero() }
         // A block made on a screen pushed above this one (Teams) must not wait for a reload to take effect.
         .onReceive(NotificationCenter.default.publisher(for: BlockedUserSignal.name)) { note in
             if let blocked = BlockedUserSignal.userID(from: note) {
@@ -145,11 +149,12 @@ struct LeaderboardView: View {
         }
     }
 
-    /// The learner's league (its display name, from the tier the app last saw) and their XP on the board shown.
-    /// Both come from what is already on the device or on the board: with neither, only the trophy and "League".
+    /// The learner's league (its display name, from the tier the app last saw) and their own XP this week from
+    /// their activity, whatever scope or period the board below is showing. Both are observed state, loaded with
+    /// the screen, so a fresh account fills in without a re-render trick; an unknown value shows nothing, never a
+    /// guess.
     private var heroCard: some View {
-        let title = LeaguePresentation.tierTitle(tier: LeagueTierCache.lastKnownTier)
-        let xp = LeaguePresentation.myXP(rows: rows.map { (userID: $0.userID, xp: $0.xp) }, myID: session.userID)
+        let title = LeaguePresentation.tierTitle(tier: leagueTier)
         return DSHeroCard {
             HStack(spacing: AlphonsoDS.Space.s3) {
                 Icon3DView(emoji: "\u{1F3C6}", size: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s1)
@@ -161,16 +166,26 @@ struct LeaderboardView: View {
                         .accessibilityAddTraits(.isHeader)
                 }
                 Spacer(minLength: AlphonsoDS.Space.s2)
-                if let xp {
+                if let myWeekXP {
                     VStack(alignment: .trailing, spacing: 0) {
-                        Text("\(xp)").dsText(.numeral)
-                        Text("XP").dsText(.caption).foregroundStyle(ds.onHeroSoft)
+                        Text("\(myWeekXP)").dsText(.numeral)
+                        Text("XP this week").dsText(.caption).foregroundStyle(ds.onHeroSoft)
                     }
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(xp) XP")
+                    .accessibilityLabel("\(myWeekXP) XP this week")
                 }
             }
         }
+    }
+
+    /// The hero's two facts: the cached tier, and this week's XP from the learner's own activity days.
+    private func loadHero() async {
+        leagueTier = LeagueTierCache.lastKnownTier
+        guard let accessToken = session.accessToken, let userID = session.userID else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        let xp = try? await client.fetchActivityXP(
+            userID: userID, from: mondayDateString(weeksAgo: 0), to: mondayDateString(weeksAgo: -1))
+        if !Task.isCancelled { myWeekXP = xp }
     }
 
     /// Optimistically drops `target` from `rows` on success -- the server
