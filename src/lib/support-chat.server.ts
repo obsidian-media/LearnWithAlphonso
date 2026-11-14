@@ -11,6 +11,11 @@ import {
   type SupportTurn,
 } from "./support-ai.server";
 import type { SupportFacts } from "./support-facts.server";
+import {
+  presentSupportMessages,
+  withSupportLink,
+  type PresentedSupportMessage,
+} from "./support-links";
 import type { QuotaResult } from "./ai-quota.server";
 import type { Course } from "@/data/courses";
 
@@ -130,7 +135,7 @@ export async function handleGetConversation(
     body: {
       status: view?.status ?? "none",
       unread: view?.unread ?? 0,
-      messages: view?.messages ?? [],
+      messages: presentSupportMessages(view?.messages ?? []),
       aiAvailable,
     },
   };
@@ -177,7 +182,7 @@ async function newMessages(
     status: 200,
     body: {
       status: view?.status ?? "none",
-      messages: (view?.messages ?? []).filter((m) => m.id >= fromId),
+      messages: presentSupportMessages((view?.messages ?? []).filter((m) => m.id >= fromId)),
     },
   };
 }
@@ -204,6 +209,7 @@ export async function handlePostMessage(
         status: 429,
         body: {
           error: MESSAGE_LIMIT_CODE,
+          which: err.which,
           message:
             err.which === "daily"
               ? "You have reached today's limit of messages to Help. Try again tomorrow."
@@ -293,7 +299,12 @@ export async function handlePostMessage(
       const g = guardSupportReply(handoff.summary);
       if (!g.ok || (await rt.blocked(handoff.summary, courseOf(facts)))) handoff.summary = "";
     }
-    const stored = await rt.store.addAiMessage(conversationId, guarded.reply, facts, handoff);
+    const stored = await rt.store.addAiMessage(
+      conversationId,
+      withSupportLink(guarded.reply, reply.link),
+      facts,
+      handoff,
+    );
     rt.log({
       event: "support_message",
       outcome: stored === null ? "taken_by_person" : handoff ? "handoff" : "answered",
@@ -351,7 +362,10 @@ export async function handlePostHandoff(
     const view = await rt.store.view(userId);
     return {
       status: 200,
-      body: { status: view?.status ?? "none", messages: view?.messages ?? [] },
+      body: {
+        status: view?.status ?? "none",
+        messages: presentSupportMessages(view?.messages ?? []),
+      },
     };
   } catch {
     rt.log({ event: "support_handoff", outcome: "failed" });
@@ -388,4 +402,5 @@ async function trySummary(
   }
 }
 
+export type { PresentedSupportMessage };
 export { HANDOFF_NOTICE };
