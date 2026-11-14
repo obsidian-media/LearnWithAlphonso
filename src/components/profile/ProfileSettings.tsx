@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DsButton, DsCard, DsField, DsLinkButton, DsRow, Icon, Overline } from "../ds/Blocks";
 import { SegmentedControl } from "../SegmentedControl";
 import { AiFeaturesSetting } from "../AiFeaturesSetting";
+import { HelpEntry } from "../help/HelpEntry";
 import { AnalyticsSetting } from "../AnalyticsSetting";
 import { AvatarSetting } from "../AvatarSetting";
 import { SoundEffectsSetting } from "../SoundEffectsSetting";
@@ -126,6 +127,7 @@ export function ProfileSettings({ headingRef }: { headingRef: Ref<HTMLHeadingEle
 
       <Overline>Privacy and AI</Overline>
       <AiFeaturesSetting />
+      <HelpEntry />
       <AnalyticsSetting />
 
       <Overline>Account</Overline>

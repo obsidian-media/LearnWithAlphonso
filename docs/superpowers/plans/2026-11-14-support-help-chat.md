@@ -6,7 +6,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md` (Phase 2 and "Calls made after the builder review", calls 4, 6, 7, 8). Phase 1 is built (#496), see `docs/superpowers/plans/2026-11-13-admin-console-phase1.md`.
 
-**Status:** plan written 2026-11-14 against main at #507. Milestone 1 (data, server, AI agent) built in the PR "Support chat: data and server", awaiting the owner merging its two migrations; milestones 2 to 6 not started.
+**Status:** plan written 2026-11-14 against main at #507. Milestone 1 (data, server, AI agent) built in the PR "Support chat: data and server", awaiting the owner merging its two migrations; milestone 2 (web Help chat) built in the PR "Help chat on the web", no migration; milestones 3 to 6 not started.
 
 ## Owner decisions (2026-11-14)
 
@@ -234,6 +234,15 @@ Verify: a real signed-in end to end check with the agent mailbox (receive the em
 - **`support_purge_old()` is not in migration 1**; the trigger already honours the `lwa.support_retention` setting it will use (milestone 6).
 - **"delete my account" is a forced hand-off phrase** (the plan's test table lists it), so the help file's self-service deletion steps are reached only when a learner asks indirectly. Revisit when the owner reads the transcripts.
 - A retried `clientId` returns the stored message and skips the AI when an answer already exists; two truly simultaneous retries can both reach the AI (one extra quota unit at worst).
+
+## Built in milestone 2: deviations from this plan (2026-11-14)
+
+- **The mock is the spec.** The owner approved the round 12 mocks on 2026-11-14 (learner side, sections 1 to 6). The screen is built as drawn; where web differs from the iOS drawing: the back button reads "Profile" (web has no Settings screen), Enter sends and Shift+Enter adds a line, replies notify by email only, and the text sizes are the web design tokens (`ds-type-*`) rather than the mock's pixel sizes.
+- **Link chip on an AI answer** (owner approved as drawn): one optional `link` in the AI reply, an allow-listed destination id (`src/lib/support-links.ts`), never a URL. With no migration allowed, the id is stored as a trailing `[[link:<id>]]` marker in the `ai` message body and lifted into a `link` field when the learner's view is built. The staff inbox must strip it (`stripSupportLink`).
+- **The 429 body gains `which`** (`daily` or `conversation`).
+- **"Get help" on web** is on the paywall load error, the restore-check error and the profile load error (web has no lesson-save error screen and no sync-error message).
+- **System lines "This chat was marked solved." and "This chat was reopened. A person will reply here."** are drawn as the mock shows but are written by the staff SQL in milestone 3 (task 3.1); until then a solved or reopened chat shows the banner only.
+- **Poses**: `alphonso-explaining-pointer` (welcome) and `alphonso-sleepy-night` (daily limit) from the round 11 pose set, plus a small face crop for AI bubbles, in `public/mascots/`.
 
 ## Order of work and risks
 
