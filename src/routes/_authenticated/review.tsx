@@ -1,15 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AskingAlphonso } from "../../components/AskingAlphonso";
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
-import { LessonFrame } from "../../components/AppShell";
-import { AnswerOption } from "../../components/AnswerOption";
-import { AnswerVerdictPanel } from "../../components/AnswerVerdictPanel";
-import { WordChip } from "../../components/WordChip";
+import { AnswerExplanation } from "../../components/AnswerFeedback";
+import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
+import { DsPill, Icon } from "../../components/ds/Blocks";
+import {
+  AlphonsoBubble,
+  LessonAnswer,
+  VerdictSheet,
+  WordTile,
+  edgeButtonClass,
+} from "../../components/lesson/LessonParts";
+import { LessonScreen } from "../../components/lesson/LessonScreen";
+import { wrongAnswerRequest } from "../../lib/explain-client";
 import { correctAnswerText } from "../../lib/answer-verdict";
+import {
+  doneSummary,
+  dueCount,
+  emptyBody,
+  reviewProgress,
+  reviewStage,
+} from "../../lib/review-state";
 import { SaveWordProvider } from "../../components/SaveWord";
-import { MascotBanner } from "../../components/MascotBanner";
 import { VocabImage } from "../../components/VocabImage";
 import { getCourse, localeForCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
@@ -25,7 +37,6 @@ import { deriveAnswerCorrectness } from "../../lib/srs";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
 import type { TranslationVerdict } from "../api/grade-translation";
-import { HeartIcon } from "../../components/icons";
 
 export const Route = createFileRoute("/_authenticated/review")({
   component: ReviewPageWithSave,
@@ -220,236 +231,258 @@ function ReviewPage() {
     setTranslationVerdict(null);
   }
 
-  if (cards === null) {
+  const stage = reviewStage(cards === null ? null : cards.length, idx);
+
+  if (stage === "loading") {
     return (
-      <LessonFrame>
-        <div className="grid flex-1 place-items-center p-6 text-sm text-ink-soft">
+      <LessonScreen>
+        <div className="grid flex-1 place-items-center p-6 ds-type-footnote text-ds-ink-soft">
           Loading your review queue…
         </div>
-      </LessonFrame>
+      </LessonScreen>
     );
   }
 
-  if (cards.length === 0) {
+  if (stage === "empty") {
     return (
-      <LessonFrame>
-        <Empty
-          title="Nothing due today"
-          body={
-            total > 0
-              ? `You have ${total} item${total === 1 ? "" : "s"} in review — none are due yet. Come back tomorrow.`
-              : "Miss a question in a lesson and it lands here, returning at widening intervals until it sticks."
-          }
-        />
-      </LessonFrame>
+      <LessonScreen>
+        <Empty title="Nothing due today" body={emptyBody(total)} />
+      </LessonScreen>
     );
   }
 
-  if (!card || !q) {
+  if (stage === "done" || !card || !q || !cards) {
     return (
-      <LessonFrame>
+      <LessonScreen>
         <Empty
           title="Review complete"
-          body={`${stats.right} correct · ${stats.wrong} to revisit${
-            stats.retired ? ` · ${stats.retired} mastered and retired` : ""
-          }.`}
+          body={doneSummary(stats)}
           bonus={heartBonusGranted ? "Queue cleared: +1 heart" : undefined}
         />
-      </LessonFrame>
+      </LessonScreen>
     );
   }
 
+  const due = dueCount(idx, cards.length);
+  const voice = canSpeak();
+  const bubbleLabel =
+    q.type === "listening"
+      ? "Listening"
+      : q.type === "speak"
+        ? "Speaking"
+        : q.type === "translate"
+          ? "Write it yourself"
+          : "Alphonso asks";
+  // A listening question's button plays what to listen to, in the course's language; any other question's reads the
+  // question itself, which is written in English for every course.
+  const onPlay =
+    q.type === "listening"
+      ? voice
+        ? () => speak(q.audioText, localeForCourse(course))
+        : undefined
+      : voice
+        ? () => speak(q.prompt, localeForCourse("en"))
+        : undefined;
+  const hearAnswer = voice ? () => speak(correctAnswerText(q), localeForCourse(course)) : undefined;
+  const hasImage = q.type === "mc" && !!q.imageKey && !!VOCAB_IMAGES[q.imageKey];
+
   return (
-    <LessonFrame>
-      <div className="flex items-center gap-3 px-5 pt-5">
-        <Link
-          to="/learn"
-          aria-label="Close review"
-          className="grid size-8 place-items-center rounded-full text-ink-soft/70 hover:bg-parchment"
-        >
-          ✕
-        </Link>
-        <div className="flex-1 overflow-hidden rounded-full bg-parchment">
-          <div
-            className="h-2 rounded-full bg-ember transition-all"
-            style={{ width: `${(idx / cards.length) * 100}%` }}
-          />
-        </div>
-        <span className="tnum text-[11px] font-medium text-ink-soft">
-          {idx + 1}/{cards.length}
-        </span>
-      </div>
-
-      <div className="flex flex-1 flex-col px-6 pb-6 pt-8">
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ember">
-          Spaced review
-        </p>
-        {q.type === "mc" && q.imageKey && VOCAB_IMAGES[q.imageKey] && (
-          <VocabImage
-            url={VOCAB_IMAGES[q.imageKey].url}
-            alt=""
-            className="mb-4 h-40 w-full rounded-2xl"
-          />
-        )}
-        {q.type === "listening" && (
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-            Listening
-          </p>
-        )}
-        {q.type === "speak" && (
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-            Speaking
-          </p>
-        )}
-        {q.type === "translate" && (
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
-            Write it yourself
-          </p>
-        )}
-        {/* A listening question is unanswerable without audio, so when the
-            browser cannot speak, the sentence is shown instead -- same
-            reasoning as the lesson player's identical fallback. */}
-        {q.type === "listening" && !canSpeak() && (
-          <div className="mb-3 rounded-2xl border border-hairline bg-parchment px-4 py-3">
-            <p className="text-xs text-ink-soft">
-              Audio is unavailable on this device — here is what you would hear:
-            </p>
-            <p className="mt-1 text-base font-medium text-ink">{q.audioText}</p>
-          </div>
-        )}
-        {q.type === "listening" && canSpeak() && (
-          <button
-            type="button"
-            onClick={() => speak(q.audioText, localeForCourse(course))}
-            className="mb-3 flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
+    <LessonScreen>
+      <div className="flex flex-1 flex-col">
+        <div className="flex items-center gap-3 px-4 pt-3">
+          <Link
+            to="/learn"
+            aria-label="Close review"
+            className="grid size-10 shrink-0 place-items-center rounded-full bg-ds-card text-ds-brand shadow-[var(--ds-shadow-resting)]"
           >
-            🔊 Play audio
-          </button>
-        )}
-        <AskingAlphonso
-          prompt={q.prompt}
-          hasMedia={
-            q.type === "listening" ||
-            q.type === "speak" ||
-            (q.type === "mc" && !!q.imageKey && !!VOCAB_IMAGES[q.imageKey])
-          }
-        />
+            <span aria-hidden="true">✕</span>
+          </Link>
+          <div
+            role="progressbar"
+            aria-label="Review progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(reviewProgress(idx, cards.length, checked) * 100)}
+            className="h-4 min-w-0 flex-1 overflow-hidden rounded-lg bg-ds-sunk"
+          >
+            <div
+              className="h-full rounded-lg bg-ds-action transition-[width] duration-[var(--ds-duration-progress)] ease-[var(--ds-ease-out)] motion-reduce:transition-none"
+              style={{ width: `${reviewProgress(idx, cards.length, checked) * 100}%` }}
+            />
+          </div>
+          <DsPill tone="xp">
+            <span className="tnum">
+              {due.position}/{due.of}
+            </span>
+            &nbsp;due
+          </DsPill>
+        </div>
 
-        <div className={"mt-6 space-y-2.5"}>
-          {q.type === "mc" || q.type === "listening" ? (
-            q.choices.map((c) => (
-              <AnswerOption
-                key={c}
-                label={c}
-                checked={checked}
-                isPicked={picked === c}
-                // mc stores the answer's index, listening its text.
-                isRight={q.type === "mc" ? q.choices[q.answer] === c : q.answer === c}
-                disabled={checked}
-                onClick={() => setPicked(c)}
-              />
-            ))
-          ) : q.type === "reorder" ? (
-            <div>
-              <div className="mb-3 flex min-h-11 flex-wrap gap-2 rounded-2xl border border-dashed border-hairline bg-parchment p-3">
-                {orderPicks.length === 0 ? (
-                  <span className="text-xs text-ink-soft/60">Tap the words below in order</span>
-                ) : (
-                  orderPicks.map((tokenIdx, position) => (
-                    <button
-                      key={`${tokenIdx}-${position}`}
-                      type="button"
-                      disabled={checked}
-                      onClick={() => setOrderPicks((arr) => arr.filter((_, i) => i !== position))}
-                      className="rounded-full bg-ink px-3 py-1.5 text-sm font-medium text-surface"
-                    >
-                      {q.tokens[tokenIdx]}
-                    </button>
-                  ))
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {q.tokens.map((t, i) =>
-                  orderPicks.includes(i) ? null : (
-                    <WordChip
-                      key={i}
-                      word={t}
-                      picked={false}
-                      disabled={checked}
-                      onClick={() => setOrderPicks((arr) => [...arr, i])}
-                    />
-                  ),
-                )}
-              </div>
+        <ReviewScene pose="reading" />
+
+        <div className="relative z-[4] flex flex-1 flex-col gap-3 px-4 pb-4">
+          <div className="-mt-6">
+            <AlphonsoBubble
+              label={bubbleLabel}
+              onPlay={onPlay}
+              playLabel={q.type === "listening" ? "Play audio" : "Play the question"}
+              compact={q.prompt.length > 60}
+            >
+              {q.prompt}
+            </AlphonsoBubble>
+          </div>
+
+          {hasImage && q.type === "mc" && q.imageKey && (
+            <VocabImage
+              url={VOCAB_IMAGES[q.imageKey].url}
+              alt=""
+              className="h-40 w-full rounded-[18px] shadow-[var(--ds-shadow-resting)]"
+            />
+          )}
+          {/* A listening question is unanswerable without audio, so when the browser cannot speak, the sentence is
+              shown instead -- same reasoning as the lesson player's identical fallback. */}
+          {q.type === "listening" && !voice && (
+            <div className="rounded-[18px] bg-ds-card px-4 py-3 shadow-[var(--ds-shadow-resting)]">
+              <p className="ds-type-caption text-ds-ink-soft">
+                Audio is unavailable on this device — here is what you would hear:
+              </p>
+              <p className="mt-1 ds-type-headline text-ds-ink">{q.audioText}</p>
             </div>
-          ) : q.type === "speak" ? (
-            <SpeakAnswer
-              // Fresh capture state per item -- same reasoning as the lesson
-              // player's identical key.
-              key={q.id}
-              target={q.answer}
-              locale={localeForCourse(course)}
-              course={course}
-              value={picked}
-              onChange={setPicked}
-              checked={checked}
-            />
-          ) : q.type === "translate" ? (
-            <TranslateAnswer
-              key={q.id}
-              question={q}
-              value={picked}
-              onChange={setPicked}
-              checked={checked}
-              verdict={translationVerdict}
-              showAiGradingOption
-            />
-          ) : q.type === "fill" ? (
-            <div>
-              <input
-                type="text"
-                disabled={checked}
-                value={picked ?? ""}
-                onChange={(e) => setPicked(e.target.value)}
-                placeholder="Type your answer"
-                className="w-full rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss"
-              />
-              <div className="mt-2 flex flex-wrap gap-2">
-                {q.bank.map((w) => (
-                  <WordChip
-                    key={w}
-                    word={w}
-                    picked={picked === w}
+          )}
+
+          <div data-answers="">
+            {q.type === "mc" || q.type === "listening" ? (
+              <div className="grid gap-1.5">
+                {q.choices.map((c, i) => (
+                  <LessonAnswer
+                    key={c}
+                    index={i}
+                    label={c}
+                    checked={checked}
+                    isPicked={picked === c}
+                    // mc stores the answer's index, listening its text.
+                    isRight={q.type === "mc" ? q.choices[q.answer] === c : q.answer === c}
                     disabled={checked}
-                    onClick={() => setPicked(w)}
+                    onClick={() => setPicked(c)}
                   />
                 ))}
               </div>
-            </div>
-          ) : null}
+            ) : q.type === "reorder" ? (
+              <div>
+                <div
+                  data-sentence-slot=""
+                  className="mb-3 flex min-h-[60px] flex-wrap content-start gap-2 rounded-[18px] border-2 border-dashed border-ds-line bg-ds-sunk p-3"
+                >
+                  {orderPicks.length === 0 ? (
+                    <span className="self-center ds-type-footnote text-ds-ink-faint">
+                      Tap the words below in order
+                    </span>
+                  ) : (
+                    orderPicks.map((tokenIdx, position) => (
+                      <WordTile
+                        key={`${tokenIdx}-${position}`}
+                        word={q.tokens[tokenIdx]}
+                        placed
+                        disabled={checked}
+                        onClick={() => setOrderPicks((arr) => arr.filter((_, i) => i !== position))}
+                      />
+                    ))
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {q.tokens.map((t, i) =>
+                    orderPicks.includes(i) ? null : (
+                      <WordTile
+                        key={i}
+                        word={t}
+                        disabled={checked}
+                        onClick={() => setOrderPicks((arr) => [...arr, i])}
+                      />
+                    ),
+                  )}
+                </div>
+              </div>
+            ) : q.type === "speak" ? (
+              <SpeakAnswer
+                // Fresh capture state per item -- same reasoning as the lesson player's identical key.
+                key={q.id}
+                target={q.answer}
+                locale={localeForCourse(course)}
+                course={course}
+                value={picked}
+                onChange={setPicked}
+                checked={checked}
+              />
+            ) : q.type === "translate" ? (
+              <TranslateAnswer
+                key={q.id}
+                question={q}
+                value={picked}
+                onChange={setPicked}
+                checked={checked}
+                verdict={translationVerdict}
+                showAiGradingOption
+              />
+            ) : q.type === "fill" ? (
+              <div>
+                <input
+                  type="text"
+                  disabled={checked}
+                  value={picked ?? ""}
+                  onChange={(e) => setPicked(e.target.value)}
+                  placeholder="Type your answer"
+                  aria-label="Your answer"
+                  className="w-full rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card px-4 py-4 ds-type-answer text-ds-ink shadow-[0_4px_0_var(--c-line)] outline-none placeholder:text-ds-ink-faint focus:border-ds-choice"
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {q.bank.map((w) => (
+                    <WordTile
+                      key={w}
+                      word={w}
+                      picked={picked === w}
+                      disabled={checked}
+                      onClick={() => setPicked(w)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {checked ? (
-          <AnswerVerdictPanel
+          <VerdictSheet
             correct={shownCorrect}
             title={shownCorrect ? "Still got it." : "Back in the queue."}
             correctAnswer={correctAnswerText(q)}
-            explanation={q.explanation}
-            saveCourse={course}
-            question={q}
+            onHearAnswer={hearAnswer}
+            explanation={
+              <AnswerExplanation
+                explanation={q.explanation}
+                saveCourse={course}
+                question={q}
+                className=""
+              />
+            }
+            extra={
+              shownCorrect ? null : (
+                <ExplainInMyLanguage request={wrongAnswerRequest(q, submittedAnswer, course)} />
+              )
+            }
             continueLabel={idx < cards.length - 1 ? "Continue" : "Finish"}
             onContinue={next}
           />
         ) : (
-          <div className="mt-auto pt-6">
+          <div
+            data-dock=""
+            className="sticky bottom-0 z-20 bg-ds-surface/95 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3"
+          >
             <button
               disabled={
-                // `checking` matters as much as the emptiness check: `checked`
-                // only flips in the .finally(), so without it the button stays
-                // live for the whole round trip and a second tap grades the
-                // item twice -- two vendor calls, double-counted stats, and a
-                // second call the server rejects as not-yet-due, whose failure
-                // path then overwrites the verdict with the local one.
+                // `checking` matters as much as the emptiness check: `checked` only flips in the .finally(), so
+                // without it the button stays live for the whole round trip and a second tap grades the item
+                // twice -- two vendor calls, double-counted stats, and a second call the server rejects as
+                // not-yet-due, whose failure path then overwrites the verdict with the local one.
                 checking ||
                 (q.type === "reorder"
                   ? orderPicks.length !== q.tokens.length
@@ -457,56 +490,67 @@ function ReviewPage() {
                     !picked?.trim())
               }
               onClick={check}
-              className="w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90 disabled:opacity-40"
+              className={edgeButtonClass("primary")}
             >
               {checking ? "Checking…" : "Check"}
             </button>
           </div>
         )}
       </div>
-    </LessonFrame>
+    </LessonScreen>
   );
 }
 
+/** The Hector library scene at the top of every Review screen, with Alphonso reading in front of it. */
+function ReviewScene({ pose, tall = false }: { pose: "reading" | "proud"; tall?: boolean }) {
+  return (
+    <div
+      data-review-scene=""
+      className={`relative mx-4 mt-3 overflow-hidden rounded-3xl bg-ds-sunk bg-cover ${tall ? "h-[230px]" : "h-[150px]"}`}
+      style={{ backgroundImage: "url(/scenes/hector.jpg)", backgroundPosition: "center 30%" }}
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(transparent, color-mix(in srgb, var(--c-hero-b) 55%, transparent))",
+        }}
+      />
+      <img
+        src={
+          pose === "reading" ? "/figures/alphonso-reading-book.webp" : "/figures/alphonso-proud.png"
+        }
+        alt={pose === "reading" ? "" : "Alphonso, proud"}
+        decoding="async"
+        draggable={false}
+        className={`absolute -bottom-1.5 right-3 w-auto ${tall ? "h-[220px]" : "h-[140px]"}`}
+      />
+    </div>
+  );
+}
+
+/** The Review screen's empty and finished cards: the scene, a card with what happened, and the way back. */
 export function Empty({ title, body, bonus }: { title: string; body: string; bonus?: string }) {
   const isComplete = title === "Review complete";
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-1 flex-col items-center justify-center px-8 text-center"
-    >
-      {isComplete ? (
-        <div className="mb-5 w-full">
-          <MascotBanner mascot="alphonso" message="Review complete!" />
+    <div className="flex flex-1 flex-col pb-6">
+      <ReviewScene pose={isComplete ? "proud" : "reading"} tall />
+      <div className="relative z-[4] -mt-6 grid gap-3 px-4">
+        <div className="grid justify-items-center gap-2 rounded-[22px] border-2 border-ds-line bg-ds-card p-4 text-center shadow-[var(--ds-shadow-floating)]">
+          <h1 className="ds-type-display text-ds-ink">{title}</h1>
+          <p className="ds-type-body max-w-[300px] text-ds-ink-soft">{body}</p>
+          {bonus && (
+            <p className="inline-flex items-center gap-1.5 rounded-full bg-ds-heart-tint px-3 py-1.5 ds-type-footnote font-extrabold text-ds-heart-text">
+              <Icon name="red_heart" size={20} />
+              {bonus}
+            </p>
+          )}
         </div>
-      ) : (
-        <div className="mb-5 grid size-16 place-items-center rounded-full bg-moss text-surface hard-shadow">
-          <svg viewBox="0 0 24 24" className="size-8" fill="none" aria-hidden="true">
-            <path
-              d="m6 12 4 4 8-9"
-              stroke="white"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-      )}
-      <h1 className="font-display text-[22px] font-semibold text-ink">{title}</h1>
-      <p className="mt-2 max-w-[280px] text-sm text-ink-soft/80">{body}</p>
-      {bonus && (
-        <p className="mt-3 flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-500">
-          <HeartIcon className="size-3.5" />
-          {bonus}
-        </p>
-      )}
-      <Link
-        to="/learn"
-        className="mt-8 w-full rounded-full bg-ink px-4 py-3.5 text-sm font-semibold text-surface"
-      >
-        Back to path
-      </Link>
-    </motion.div>
+        <Link to="/learn" className={edgeButtonClass("primary")}>
+          Back to path
+        </Link>
+      </div>
+    </div>
   );
 }

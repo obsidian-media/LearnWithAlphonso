@@ -13,7 +13,16 @@ export type MyTeam = {
   joinedAt: string;
   switchLockedUntil: string;
   thisWeekXp: number;
+  isOwner: boolean;
 } | null;
+export type TeamMember = {
+  userId: string;
+  displayName: string;
+  avatarSeed: string;
+  isOwner: boolean;
+  /** Only the owner's list holds blocked members; shown so they can be removed. */
+  isBlocked: boolean;
+};
 
 function toJoinResult(
   row: { ok: boolean; reason: string | null; team_id: string | null } | undefined,
@@ -132,5 +141,31 @@ export const getMyTeam = createServerFn({ method: "GET" })
       joinedAt: row.joined_at,
       switchLockedUntil: row.switch_locked_until,
       thisWeekXp: row.this_week_xp ?? 0,
+      isOwner: row.is_owner === true,
     };
+  });
+
+export const getTeamMembers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<TeamMember[]> => {
+    const { data: rows, error } = await context.supabase.rpc("get_team_members");
+    if (error) throw publicError("getTeamMembers", error);
+    return (rows ?? []).map((r) => ({
+      userId: r.user_id,
+      displayName: r.display_name,
+      avatarSeed: r.avatar_seed,
+      isOwner: r.is_owner === true,
+      isBlocked: r.blocked === true,
+    }));
+  });
+
+export const kickTeamMember = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
+  .handler(async ({ context, data }): Promise<{ ok: boolean; reason: string | null }> => {
+    const { data: rows } = await context.supabase.rpc("kick_team_member", {
+      _user_id: data.userId,
+    });
+    const row = rows?.[0];
+    return { ok: row?.ok ?? false, reason: row?.reason ?? null };
   });

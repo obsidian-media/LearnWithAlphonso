@@ -1,11 +1,27 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { MobileFrame } from "../../components/AppShell";
+import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
+import {
+  BackPill,
+  DsBar,
+  DsButton,
+  DsCard,
+  DsChip,
+  DsPill,
+  DsRow,
+  DsScreen,
+  DsSegmented,
+  DsSwitch,
+  GlassTitle,
+  Icon,
+  Overline,
+} from "@/components/ds/Blocks";
 import { getMyDuels, createDuel, respondToDuel, getFriends } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { joinOpenDuelQueue, leaveOpenDuelQueue } from "../../lib/challenges.functions";
 import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
+import { duelResult, duelShare, duelsSummary } from "../../lib/social-presentation";
 
 export const Route = createFileRoute("/_authenticated/duels")({
   component: DuelsPage,
@@ -99,197 +115,207 @@ function DuelsPage() {
     setWaitingInQueue(false);
   }
 
+  const summary = duelsSummary({
+    pending: pending.length,
+    active: active.length,
+    finished: finished.length,
+  });
+  const courseOptions = COURSE_OPTIONS.map((c) => ({ value: c.id, label: c.label }));
+
   return (
-    <MobileFrame>
-      <div className="px-6 pb-12 pt-6">
-        <div className="flex items-center gap-3">
-          <Link to="/profile/friends" aria-label="Back to friends" className="text-ds-ink-soft/70">
-            ←
-          </Link>
-          <h1 className="font-display ds-type-title font-semibold text-ds-ink">Duels</h1>
-        </div>
+    <DsScreen scene="complete">
+      <BackPill to="/profile/friends" label="Back to friends">
+        Friends
+      </BackPill>
+      <GlassTitle title="Duels" sub={summary} />
 
-        {error && <p className="mt-3 text-xs text-rose-500">{error}</p>}
+      {error && (
+        <p role="alert" className="ds-type-footnote font-bold text-ds-wrong-ink">
+          {error}
+        </p>
+      )}
 
-        {pending.length > 0 && (
-          <div className="mt-6">
-            <h2 className="font-display ds-type-headline font-semibold text-ds-ink">
-              Pending challenges
-            </h2>
-            <div className="mt-2 space-y-2">
-              {pending.map((d) => (
-                <div
-                  key={d.duelId}
-                  className="flex items-center justify-between rounded-2xl border border-ds-line bg-ds-card p-3.5"
-                >
-                  <span className="text-sm text-ds-ink">Challenge from a friend ({d.course})</span>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleRespond(d.duelId, true)}
-                      className="rounded-full bg-ds-ink px-3 py-1.5 text-xs font-semibold text-ds-card"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRespond(d.duelId, false)}
-                      className="rounded-full border border-ds-line px-3 py-1.5 text-xs font-semibold text-ds-ink-soft"
-                    >
-                      Decline
-                    </button>
-                  </div>
+      {pending.length > 0 && (
+        <>
+          <Overline>Pending challenges</Overline>
+          {pending.map((d) => (
+            <DsCard key={d.duelId}>
+              <div className="flex items-center gap-2.5">
+                <Icon name="high_voltage" />
+                <div className="min-w-0 flex-1">
+                  <p className="ds-type-headline text-ds-ink">
+                    Challenge from a friend ({d.course})
+                  </p>
+                  <p className="ds-type-caption text-ds-ink-soft">Accept to start now</p>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+              </div>
+              <div className="flex gap-2">
+                <DsButton small className="flex-1" onClick={() => handleRespond(d.duelId, true)}>
+                  Accept
+                </DsButton>
+                <DsButton
+                  small
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => handleRespond(d.duelId, false)}
+                >
+                  Decline
+                </DsButton>
+              </div>
+            </DsCard>
+          ))}
+        </>
+      )}
 
-        <div className="mt-6">
-          <h2 className="font-display ds-type-headline font-semibold text-ds-ink">Active duels</h2>
-          {loadingDuels ? (
-            <p className="mt-2 text-sm text-ds-ink-soft">Loading…</p>
-          ) : active.length === 0 ? (
-            <p className="mt-2 text-sm text-ds-ink-soft">No active duels right now.</p>
-          ) : (
-            <div className="mt-2 space-y-2">
-              {active.map((d) => {
-                const myXpNow = d.challengerId === myId ? d.challengerXpNow : d.opponentXpNow;
-                const myXpStart = d.challengerId === myId ? d.challengerXpStart : d.opponentXpStart;
-                const oppXpNow = d.challengerId === myId ? d.opponentXpNow : d.challengerXpNow;
-                const oppXpStart =
-                  d.challengerId === myId ? d.opponentXpStart : d.challengerXpStart;
-                return (
-                  <div
-                    key={d.duelId}
-                    className="rounded-2xl border border-ds-line bg-ds-card p-3.5"
-                  >
-                    <p className="text-xs text-ds-ink-soft">
-                      {d.course} · ends{" "}
-                      {d.endsAt ? new Date(d.endsAt).toLocaleDateString() : "soon"}
-                    </p>
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="tnum text-sm font-semibold text-ds-ink">
-                        You: +{myXpNow - myXpStart}
-                      </span>
-                      <span className="tnum text-sm text-ds-ink-soft">
-                        Them: +{oppXpNow - oppXpStart}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+      <Overline>Active duels</Overline>
+      {loadingDuels ? (
+        <DsCard>
+          <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
+        </DsCard>
+      ) : active.length === 0 ? (
+        <DsCard>
+          <p className="ds-type-footnote text-ds-ink-soft">No active duels right now.</p>
+        </DsCard>
+      ) : (
+        active.map((d) => {
+          const mine = d.challengerId === myId;
+          const myGain =
+            (mine ? d.challengerXpNow : d.opponentXpNow) -
+            (mine ? d.challengerXpStart : d.opponentXpStart);
+          const theirGain =
+            (mine ? d.opponentXpNow : d.challengerXpNow) -
+            (mine ? d.opponentXpStart : d.challengerXpStart);
+          return (
+            <DsCard key={d.duelId}>
+              <div className="flex items-center gap-2">
+                <DsPill>{d.course}</DsPill>
+                <span className="ds-type-caption text-ds-ink-soft">
+                  ends {d.endsAt ? new Date(d.endsAt).toLocaleDateString() : "soon"}
+                </span>
+              </div>
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="ds-type-caption text-ds-ink-soft">You</p>
+                  <p className="tnum ds-type-display text-ds-choice">+{myGain}</p>
+                </div>
+                <div className="text-right">
+                  <p className="ds-type-caption text-ds-ink-soft">Them</p>
+                  <p className="tnum ds-type-display text-ds-ink-soft">+{theirGain}</p>
+                </div>
+              </div>
+              <DsBar
+                value={duelShare(myGain, theirGain)}
+                label="Your share of the XP"
+                tone="choice"
+                tall
+              />
+              <p className="tnum ds-type-footnote text-ds-ink-soft">
+                <span>You: +{myGain}</span>
+                <span aria-hidden="true"> · </span>
+                <span>Them: +{theirGain}</span>
+              </p>
+            </DsCard>
+          );
+        })
+      )}
 
-        <div className="mt-8 space-y-3 rounded-2xl border border-ds-line bg-ds-sunk p-4">
-          <p className="font-display text-sm font-semibold text-ds-ink">Challenge a friend</p>
-          <select
-            value={challengeFriendId}
-            onChange={(e) => setChallengeFriendId(e.target.value)}
-            className="w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2 text-sm"
-          >
-            <option value="">Choose a friend…</option>
-            {(friends ?? []).map((f) => (
-              <option key={f.userId} value={f.userId}>
-                {f.displayName}
-              </option>
-            ))}
-          </select>
-          <select
-            value={challengeCourse}
-            onChange={(e) => setChallengeCourse(e.target.value as "en" | "fr" | "es")}
-            className="w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2 text-sm"
-          >
-            {COURSE_OPTIONS.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={handleChallengeFriend}
-            disabled={!challengeFriendId}
-            className="w-full rounded-full bg-ds-ink px-4 py-2.5 text-sm font-semibold text-ds-card disabled:opacity-50"
-          >
-            Send challenge
-          </button>
-        </div>
-
-        <div className="mt-4 space-y-3 rounded-2xl border border-ds-line bg-ds-sunk p-4">
-          <p className="font-display text-sm font-semibold text-ds-ink">Open duel</p>
-          <p className="text-xs text-ds-ink-soft/80">
-            Get matched with another learner at your level.
+      <Overline>Challenge a friend</Overline>
+      <DsCard>
+        <p id="duel-friend-label" className="ds-type-caption text-ds-ink-soft">
+          Friend
+        </p>
+        {(friends ?? []).length === 0 ? (
+          <p className="ds-type-footnote text-ds-ink-soft">
+            No friends yet. Share your invite link to get started.
           </p>
-          <select
-            value={openCourse}
-            onChange={(e) => setOpenCourse(e.target.value as "en" | "fr" | "es")}
-            className="w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2 text-sm"
+        ) : (
+          <div
+            role="radiogroup"
+            aria-labelledby="duel-friend-label"
+            className="flex gap-2 overflow-x-auto pb-1"
           >
-            {COURSE_OPTIONS.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-          <label className="flex items-center gap-2 text-xs text-ds-ink-soft">
-            <input
-              type="checkbox"
-              checked={matchByLevel}
-              onChange={(e) => setMatchByLevel(e.target.checked)}
-            />
-            Match me with someone at my level
-          </label>
-          {waitingInQueue ? (
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-ds-ink-soft">Waiting for an opponent…</span>
-              <button
-                type="button"
-                onClick={handleLeaveQueue}
-                className="text-xs font-medium text-rose-500 underline underline-offset-4"
+            {(friends ?? []).map((f) => (
+              <DsChip
+                key={f.userId}
+                radio
+                on={challengeFriendId === f.userId}
+                onClick={() => setChallengeFriendId(f.userId)}
               >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleJoinOpenQueue}
-              disabled={queueing}
-              className="w-full rounded-full border border-ds-line px-4 py-2.5 text-sm font-semibold text-ds-ink disabled:opacity-50"
-            >
-              {queueing ? "Finding a match…" : "Find an open duel"}
-            </button>
-          )}
-        </div>
-
-        {finished.length > 0 && (
-          <div className="mt-8">
-            <h2 className="font-display ds-type-headline font-semibold text-ds-ink">Past duels</h2>
-            <div className="mt-2 space-y-2">
-              {finished.map((d) => (
-                <div
-                  key={d.duelId}
-                  className="flex items-center justify-between rounded-2xl border border-ds-line bg-ds-card p-3.5 text-sm text-ds-ink-soft"
-                >
-                  <span>{d.course}</span>
-                  <span>
-                    {d.status === "declined"
-                      ? "Declined"
-                      : d.winnerId === myId
-                        ? "You won"
-                        : d.winnerId
-                          ? "You lost"
-                          : "Tied"}
-                  </span>
-                </div>
-              ))}
-            </div>
+                <ProfileAvatar seed={f.avatarSeed} name={f.displayName} className="size-6" />
+                {f.displayName}
+              </DsChip>
+            ))}
           </div>
         )}
-      </div>
-    </MobileFrame>
+        <p className="ds-type-caption text-ds-ink-soft">Course</p>
+        <DsSegmented
+          ariaLabel="Course for the challenge"
+          value={challengeCourse}
+          onChange={setChallengeCourse}
+          options={courseOptions}
+        />
+        <DsButton full onClick={handleChallengeFriend} disabled={!challengeFriendId}>
+          Send challenge
+        </DsButton>
+      </DsCard>
+
+      <Overline>Open duel</Overline>
+      <DsCard>
+        <p className="ds-type-footnote text-ds-ink-soft">
+          Get matched with another learner at your level.
+        </p>
+        <DsSegmented
+          ariaLabel="Course for the open duel"
+          value={openCourse}
+          onChange={setOpenCourse}
+          options={courseOptions}
+        />
+        <div className="flex items-center gap-2.5">
+          <span className="ds-type-headline min-w-0 flex-1 text-ds-ink">
+            Match me with someone at my level
+          </span>
+          <DsSwitch
+            on={matchByLevel}
+            onChange={setMatchByLevel}
+            label="Match me with someone at my level"
+          />
+        </div>
+        {waitingInQueue ? (
+          <div className="flex items-center gap-2.5">
+            <span className="ds-type-footnote min-w-0 flex-1 text-ds-ink-soft">
+              Waiting for an opponent…
+            </span>
+            <DsButton small variant="secondary" onClick={handleLeaveQueue}>
+              Cancel
+            </DsButton>
+          </div>
+        ) : (
+          <DsButton full onClick={handleJoinOpenQueue} disabled={queueing}>
+            {queueing ? "Finding a match…" : "Find an open duel"}
+          </DsButton>
+        )}
+      </DsCard>
+
+      {finished.length > 0 && (
+        <>
+          <Overline>Past duels</Overline>
+          <DsCard flush>
+            {finished.map((d, i) => {
+              const r = duelResult(d.status, d.winnerId, myId);
+              return (
+                <DsRow key={d.duelId} first={i === 0}>
+                  <span className="ds-type-headline min-w-0 flex-1 text-ds-ink">{d.course}</span>
+                  <DsPill
+                    tone={r.tone === "won" ? "right" : r.tone === "lost" ? "wrong" : "neutral"}
+                  >
+                    {r.label}
+                  </DsPill>
+                </DsRow>
+              );
+            })}
+          </DsCard>
+        </>
+      )}
+    </DsScreen>
   );
 }

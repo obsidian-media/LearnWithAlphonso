@@ -36,6 +36,7 @@ import {
   type BuddyActionResult,
   type MyBuddy,
 } from "../lib/buddy.functions";
+import { DsSwitch, dsButtonClass } from "@/components/ds/Blocks";
 import { SocialSafetyMenu } from "./SocialSafetyMenu";
 
 // A failed lookup is shown as a failure with a retry, never as "no buddy" (retry: false so that state appears at once,
@@ -118,8 +119,11 @@ function useBuddyAction(queries: BuddyQueries) {
   return { message, busy, run };
 }
 
-const card = "rounded-2xl border border-hairline bg-parchment p-4";
-const linkButton = "text-xs font-semibold underline underline-offset-4 disabled:opacity-50";
+const card = "rounded-[22px] border-2 border-ds-line bg-ds-card p-3.5";
+const smallBtn = dsButtonClass("secondary", { small: true });
+const smallPrimary = dsButtonClass("primary", { small: true });
+const smallDanger = dsButtonClass("danger", { small: true });
+const findBtn = (first: boolean) => dsButtonClass(first ? "primary" : "secondary", { full: true });
 
 /** The Friends page's study buddy card: the current buddy's week, or pending requests and how to ask. */
 export function BuddyCard() {
@@ -149,7 +153,7 @@ export function BuddyCard() {
   if (buddy.isLoading || requests.isLoading) {
     return (
       <div className={card}>
-        <p className="text-sm text-ink-soft">Loading your study buddy…</p>
+        <p className="ds-type-footnote text-ds-ink-soft">Loading your study buddy…</p>
       </div>
     );
   }
@@ -162,7 +166,7 @@ export function BuddyCard() {
   ) {
     return (
       <div className={card}>
-        <p className="text-sm text-ink-soft">{BUDDY_COPY.loadFailed}</p>
+        <p className="ds-type-footnote text-ds-ink-soft">{BUDDY_COPY.loadFailed}</p>
         <button
           type="button"
           onClick={() => {
@@ -171,7 +175,7 @@ export function BuddyCard() {
             if (buddy.data) void messages.refetch();
             else void pool.refetch();
           }}
-          className="mt-3 rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink"
+          className={`mt-3 ${smallBtn}`}
         >
           Try again
         </button>
@@ -182,7 +186,7 @@ export function BuddyCard() {
   const mine = buddy.data;
   const pending = requests.data ?? [];
   const status = message && (
-    <p role="status" className="mt-2 text-xs text-ink-soft">
+    <p role="status" className="mt-2 ds-type-caption text-ds-ink-soft">
       {message}
     </p>
   );
@@ -190,14 +194,12 @@ export function BuddyCard() {
   if (mine) {
     return (
       <div className={card}>
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft/80">
-          Study buddy
-        </p>
+        <p className="ds-type-overline text-ds-xp-text">Study buddy</p>
         <div className="mt-1 flex items-center gap-2">
-          <p className="font-display text-base font-semibold text-ink">{mine.buddyName}</p>
+          <p className="ds-type-headline text-ds-ink">{mine.buddyName}</p>
           {mine.isMatch && (
             <>
-              <span className="text-[11px] text-ink-soft">{BUDDY_COPY.matchedLabel}</span>
+              <span className="ds-type-caption text-ds-ink-soft">{BUDDY_COPY.matchedLabel}</span>
               {/* A matched buddy is not a friend: block and report live right here (guideline 1.2). Blocking ends
                   the pair on the server (trigger), so refresh after it. */}
               <span className="ml-auto">
@@ -215,14 +217,14 @@ export function BuddyCard() {
             </>
           )}
         </div>
-        <p className="mt-2 text-sm text-ink">
+        <p className="mt-2 ds-type-footnote text-ds-ink">
           {buddyWeekLine(mine.myCount, mine.buddyCount, mine.goal)}
         </p>
-        <p className="mt-1 text-xs text-ink-soft">{buddyStreakLine(mine.streakWeeks)}</p>
-        <p className="text-xs text-ink-soft">{buddyGraceLine(mine.graceAvailable)}</p>
+        <p className="mt-1 ds-type-caption text-ds-ink-soft">{buddyStreakLine(mine.streakWeeks)}</p>
+        <p className="ds-type-caption text-ds-ink-soft">{buddyGraceLine(mine.graceAvailable)}</p>
         {buddyCanSendPresets(mine) ? (
           <div role="group" aria-label={`Send ${mine.buddyName} a message`} className="mt-3">
-            <p className="text-xs font-semibold text-ink-soft/80">
+            <p className="ds-type-caption font-semibold text-ds-ink-soft">
               Send {mine.buddyName} a message
             </p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -232,7 +234,7 @@ export function BuddyCard() {
                   type="button"
                   disabled={busy}
                   onClick={() => act(() => sendBuddyMessage({ data: { presetId: p.id } }), true)}
-                  className="rounded-full border border-hairline px-3 py-1 text-xs text-ink disabled:opacity-50"
+                  className="inline-flex min-h-9 items-center rounded-[12px] border-2 border-ds-line bg-ds-card px-3 ds-type-caption font-extrabold text-ds-brand disabled:opacity-50"
                 >
                   {p.text}
                 </button>
@@ -240,7 +242,9 @@ export function BuddyCard() {
             </div>
           </div>
         ) : (
-          <p className="mt-3 text-xs text-ink-soft">{buddyStatusMessage("matching_paused")}</p>
+          <p className="mt-3 ds-type-caption text-ds-ink-soft">
+            {buddyStatusMessage("matching_paused")}
+          </p>
         )}
         {(messages.data ?? []).length > 0 && (
           <ul className="mt-3 space-y-0.5" aria-label="Recent messages">
@@ -252,7 +256,7 @@ export function BuddyCard() {
               }))
               .filter((x): x is { msg: (typeof x)["msg"]; line: string } => x.line !== null)
               .map(({ msg, line }) => (
-                <li key={msg.messageId} className="text-xs text-ink">
+                <li key={msg.messageId} className="ds-type-caption text-ds-ink">
                   {line}
                 </li>
               ))}
@@ -260,13 +264,13 @@ export function BuddyCard() {
         )}
         {confirmingEnd ? (
           <div className="mt-3">
-            <p className="text-xs text-ink">{buddyEndConfirm(mine.buddyName)}</p>
+            <p className="ds-type-caption text-ds-ink">{buddyEndConfirm(mine.buddyName)}</p>
             <div className="mt-2 flex gap-4">
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => setConfirmingEnd(false)}
-                className={`${linkButton} text-ink-soft`}
+                className={`${smallBtn}`}
               >
                 Keep
               </button>
@@ -274,7 +278,7 @@ export function BuddyCard() {
                 type="button"
                 disabled={busy}
                 onClick={() => act(() => endBuddy()).then(() => setConfirmingEnd(false))}
-                className={`${linkButton} text-rose-500`}
+                className={`${smallDanger}`}
               >
                 Yes, end
               </button>
@@ -284,7 +288,7 @@ export function BuddyCard() {
           <button
             type="button"
             onClick={() => setConfirmingEnd(true)}
-            className={`mt-3 ${linkButton} text-ink-soft`}
+            className={`mt-3 ${smallBtn}`}
           >
             End study buddy
           </button>
@@ -296,17 +300,17 @@ export function BuddyCard() {
 
   return (
     <div className={card}>
-      <p className="font-display text-base font-semibold text-ink">Study buddy</p>
+      <p className="ds-type-headline text-ds-ink">Study buddy</p>
       {blockedNotice && (
-        <p role="status" className="mt-2 text-xs text-ink-soft">
+        <p role="status" className="mt-2 ds-type-caption text-ds-ink-soft">
           {blockedNotice}
         </p>
       )}
-      <p className="mt-1 text-xs text-ink-soft/80">{BUDDY_COPY.intro}</p>
+      <p className="mt-1 ds-type-caption text-ds-ink-soft">{BUDDY_COPY.intro}</p>
       {pending.map((r) =>
         r.direction === "incoming" ? (
           <div key={r.requestId} className="mt-3">
-            <p className="text-sm text-ink">{buddyIncomingLine(r.otherName)}</p>
+            <p className="ds-type-footnote text-ds-ink">{buddyIncomingLine(r.otherName)}</p>
             <div className="mt-1 flex gap-4">
               <button
                 type="button"
@@ -314,7 +318,7 @@ export function BuddyCard() {
                 onClick={() =>
                   act(() => respondBuddyRequest({ data: { requestId: r.requestId, accept: true } }))
                 }
-                className={`${linkButton} text-moss`}
+                className={`${smallPrimary}`}
               >
                 Accept
               </button>
@@ -326,7 +330,7 @@ export function BuddyCard() {
                     respondBuddyRequest({ data: { requestId: r.requestId, accept: false } }),
                   )
                 }
-                className={`${linkButton} text-ink-soft`}
+                className={`${smallBtn}`}
               >
                 Decline
               </button>
@@ -334,12 +338,12 @@ export function BuddyCard() {
           </div>
         ) : (
           <div key={r.requestId} className="mt-3 flex items-center gap-4">
-            <p className="text-sm text-ink">{buddyOutgoingLine(r.otherName)}</p>
+            <p className="ds-type-footnote text-ds-ink">{buddyOutgoingLine(r.otherName)}</p>
             <button
               type="button"
               disabled={busy}
               onClick={() => act(() => cancelBuddyRequest({ data: { requestId: r.requestId } }))}
-              className={`${linkButton} text-ink-soft`}
+              className={`${smallBtn}`}
             >
               Cancel request
             </button>
@@ -351,12 +355,12 @@ export function BuddyCard() {
       {pool.data &&
         (pool.data.waiting && pool.data.course ? (
           <div className="mt-3 flex items-center gap-4">
-            <p className="text-sm text-ink">{buddyWaitingLine(pool.data.course)}</p>
+            <p className="ds-type-footnote text-ds-ink">{buddyWaitingLine(pool.data.course)}</p>
             <button
               type="button"
               disabled={busy}
               onClick={() => act(() => leaveBuddyPool())}
-              className={`${linkButton} text-ink-soft`}
+              className={`${smallBtn}`}
             >
               {BUDDY_COPY.stopLooking}
             </button>
@@ -365,19 +369,21 @@ export function BuddyCard() {
           pool.data.matchingEnabled &&
           pool.data.courses.length > 0 && (
             <div className="mt-3">
-              <p className="text-xs text-ink-soft/80">{BUDDY_COPY.poolIntro}</p>
+              <p className="ds-type-caption text-ds-ink-soft">{BUDDY_COPY.poolIntro}</p>
               {askAge && (
-                <label className="mt-1.5 flex items-center gap-2 text-xs text-ink">
-                  <input
-                    type="checkbox"
-                    checked={ageConfirmed}
-                    onChange={(e) => setAgeConfirmed(e.target.checked)}
+                <div className="mt-2 flex items-center gap-2.5">
+                  <span className="ds-type-headline min-w-0 flex-1 text-ds-ink">
+                    {BUDDY_COPY.ageConfirm}
+                  </span>
+                  <DsSwitch
+                    on={ageConfirmed}
+                    onChange={setAgeConfirmed}
+                    label={BUDDY_COPY.ageConfirm}
                   />
-                  {BUDDY_COPY.ageConfirm}
-                </label>
+                </div>
               )}
-              <div className="mt-1.5 flex flex-wrap gap-3">
-                {pool.data.courses.map((course) => (
+              <div className="mt-2 grid gap-2">
+                {pool.data.courses.map((course, i) => (
                   <button
                     key={course}
                     type="button"
@@ -392,7 +398,7 @@ export function BuddyCard() {
                         }),
                       )
                     }
-                    className={`${linkButton} text-moss`}
+                    className={findBtn(i === 0)}
                   >
                     {buddyFindButton(course)}
                   </button>
@@ -423,13 +429,13 @@ export function AskBuddyButton({ friendId }: { friendId: string }) {
   if (!message && !eligible) return null;
   return (
     <>
-      {message && <p className="mt-0.5 text-[11px] text-ink-soft">{message}</p>}
+      {message && <p className="mt-0.5 ds-type-caption text-ds-ink-soft">{message}</p>}
       {eligible && (
         <button
           type="button"
           disabled={busy}
           onClick={() => run(() => requestBuddy({ data: { friendId } }))}
-          className={`mt-0.5 ${linkButton} text-moss`}
+          className={`mt-0.5 ${smallPrimary}`}
         >
           Ask to be study buddy
         </button>

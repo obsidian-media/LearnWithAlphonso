@@ -26,7 +26,10 @@ describe("HeartsModal", () => {
     vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
     const refillAt = Date.now() + 90_000;
     render(<HeartsModal open refillAt={refillAt} onClose={() => {}} />);
-    expect(screen.getByText(/next heart comes back in 1:30/)).toBeInTheDocument();
+    expect(screen.getByText("1:30")).toBeInTheDocument();
+    expect(screen.getByText("1:30").parentElement).toHaveTextContent(
+      "Your next heart comes back in 1:30.",
+    );
   });
 
   it("calls onClose when the backdrop, Escape, or the close button is used", async () => {

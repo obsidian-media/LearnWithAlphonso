@@ -41,7 +41,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className="inline-flex rounded-full border border-ds-line bg-ds-sunk p-1"
+      className="grid auto-cols-fr grid-flow-col gap-0.5 rounded-[16px] bg-ds-sunk p-1"
     >
       {options.map((o, index) => {
         const active = o.value === value;
@@ -57,8 +57,10 @@ export function SegmentedControl<T extends string>({
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(o.value)}
             onKeyDown={(e) => onKeyDown(e, index)}
-            className={`rounded-full px-3.5 py-1.5 ds-type-caption tracking-tight transition-colors ${
-              active ? "bg-ds-card text-ds-ink shadow-sm" : "text-ds-ink-faint hover:text-ds-ink"
+            className={`min-h-10 rounded-[12px] px-3 ds-type-footnote font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-ds-choice ${
+              active
+                ? "bg-ds-card text-ds-brand shadow-[var(--ds-shadow-resting)]"
+                : "text-ds-ink-soft hover:text-ds-ink"
             }`}
           >
             {o.label}

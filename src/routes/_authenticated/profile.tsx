@@ -4,6 +4,15 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type Ref } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MobileFrame } from "../../components/AppShell";
+import {
+  DsButton,
+  DsCard,
+  DsField,
+  DsLinkButton,
+  DsRow,
+  Icon,
+  Overline,
+} from "../../components/ds/Blocks";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { useProgress } from "../../lib/progress";
 import { useTheme } from "../../lib/theme";
@@ -202,11 +211,8 @@ function ProfilePage() {
   );
 }
 
-const PANEL = "mt-3 rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card p-4";
-const H2 = "mt-8 ds-type-title text-ds-ink";
-
 /** Everything Profile did before round 6: picture and name, About you, theme, AI, voices, your data, sign out. */
-function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
+export function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const theme = useTheme((s) => s.theme);
@@ -257,7 +263,7 @@ function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
   }
 
   return (
-    <section aria-labelledby="settings-heading" className="mt-10 px-5">
+    <section aria-labelledby="settings-heading" className="mt-10 grid gap-3.5 px-4">
       <h2
         id="settings-heading"
         ref={headingRef}
@@ -266,25 +272,28 @@ function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
         Settings
       </h2>
 
-      <div className={`${PANEL} flex items-center gap-4`}>
-        <ProfileAvatarEditor
-          seed={avatarSeed}
-          name={name}
-          onSaved={(seed) => {
-            setAvatarSeed(seed);
-            void qc.invalidateQueries({ queryKey: ["me"] });
-            void qc.invalidateQueries({ queryKey: ["profile-overview"] });
-          }}
-        />
-        <p className="ds-type-footnote text-ds-ink-soft">
-          Your picture shows on Profile, friends and leaderboards.
-        </p>
-      </div>
+      <Overline>Profile</Overline>
+      <DsCard>
+        <div className="flex items-center gap-4">
+          <ProfileAvatarEditor
+            seed={avatarSeed}
+            name={name}
+            onSaved={(seed) => {
+              setAvatarSeed(seed);
+              void qc.invalidateQueries({ queryKey: ["me"] });
+              void qc.invalidateQueries({ queryKey: ["profile-overview"] });
+            }}
+          />
+          <p className="ds-type-footnote text-ds-ink-soft">
+            Your picture shows on Profile, friends and leaderboards.
+          </p>
+        </div>
+      </DsCard>
 
       <ProfileAboutYou leaderboardCountry={profile?.country ?? null} />
 
-      <h2 className={H2}>Theme</h2>
-      <div className={PANEL}>
+      <Overline>Theme</Overline>
+      <DsCard>
         <SegmentedControl
           ariaLabel="Choose a theme"
           value={theme}
@@ -294,26 +303,24 @@ function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
             { value: "meadow", label: "Meadow" },
           ]}
         />
-      </div>
+      </DsCard>
 
-      <AiFeaturesSetting />
-
-      <AnalyticsSetting />
-
+      <Overline>Practice</Overline>
       <AvatarSetting />
-
       <SoundEffectsSetting />
-
       <VoicesSetting />
-
       <ExplainSetting />
 
-      <h2 className={H2}>Account</h2>
-      <div className={`${PANEL} space-y-2`}>
-        <label htmlFor="profile-display-name" className="block ds-type-overline text-ds-ink-soft">
+      <Overline>Privacy and AI</Overline>
+      <AiFeaturesSetting />
+      <AnalyticsSetting />
+
+      <Overline>Account</Overline>
+      <DsCard>
+        <label htmlFor="profile-display-name" className="ds-type-overline text-ds-xp-text">
           Display name
         </label>
-        <input
+        <DsField
           id="profile-display-name"
           value={name}
           onChange={(e) => {
@@ -321,60 +328,71 @@ function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
             setNameError(null);
           }}
           maxLength={40}
-          className="min-h-11 w-full rounded-[var(--ds-radius-key)] border-2 border-ds-line bg-ds-surface px-3 ds-type-body text-ds-ink outline-none focus:border-ds-choice"
         />
         {nameError && (
-          <p role="alert" className="mt-2 ds-type-footnote text-ds-wrong-ink">
+          <p role="alert" className="ds-type-footnote text-ds-wrong-ink">
             {nameError}
           </p>
         )}
-        <button
-          onClick={save}
-          disabled={saving}
-          className="mt-2 min-h-11 w-full rounded-full bg-ds-brand px-4 ds-type-footnote font-bold text-ds-card disabled:opacity-50"
-        >
+        <DsButton full onClick={save} disabled={saving}>
           {saving ? "Saving…" : "Save"}
-        </button>
-      </div>
+        </DsButton>
+        <p className="ds-type-caption text-ds-ink-soft">
+          Your name and picture are visible to other learners on leaderboards, friends, and duels.
+        </p>
+      </DsCard>
 
-      <Link
-        to="/profile/friends"
-        className={`${PANEL} flex min-h-11 items-center justify-between ds-type-footnote font-bold text-ds-brand`}
-      >
-        Friends and invites
-        <span aria-hidden="true">→</span>
-      </Link>
+      <DsCard flush>
+        <Link
+          to="/profile/friends"
+          className="flex min-h-12 items-center gap-2.5 ds-type-headline text-ds-ink"
+        >
+          <Icon name="handshake" />
+          <span className="min-w-0 flex-1">Friends and invites</span>
+          <span aria-hidden="true" className="text-ds-ink-soft">
+            ›
+          </span>
+        </Link>
+      </DsCard>
 
       <YourData onSignedOut={() => navigate({ to: "/auth", replace: true })} />
 
-      <button
-        onClick={signOut}
-        className="mt-4 min-h-11 w-full rounded-full border-2 border-ds-line bg-ds-card px-4 ds-type-footnote text-ds-ink-soft hover:text-ds-ink"
-      >
-        Sign out
-      </button>
+      <DsCard flush>
+        <DsRow first className="min-h-12">
+          <Link to="/privacy" className="ds-type-headline min-w-0 flex-1 text-ds-ink">
+            Privacy
+          </Link>
+          <span aria-hidden="true" className="text-ds-ink-soft">
+            ›
+          </span>
+        </DsRow>
+        <DsRow className="min-h-12">
+          <Link to="/terms" className="ds-type-headline min-w-0 flex-1 text-ds-ink">
+            Terms
+          </Link>
+          <span aria-hidden="true" className="text-ds-ink-soft">
+            ›
+          </span>
+        </DsRow>
+        <DsRow className="min-h-12">
+          <Link to="/cookies" className="ds-type-headline min-w-0 flex-1 text-ds-ink">
+            Cookies
+          </Link>
+          <span aria-hidden="true" className="text-ds-ink-soft">
+            ›
+          </span>
+        </DsRow>
+      </DsCard>
 
-      {/* A visible way to report a problem or send feedback (the page has the address and the answers people
-        arrive with). */}
-      <Link
-        to="/support"
-        className="mt-3 flex min-h-11 w-full items-center justify-center rounded-full border-2 border-ds-line bg-ds-card px-4 ds-type-footnote text-ds-ink-soft hover:text-ds-ink"
-      >
-        Help and feedback
-      </Link>
-
-      <div className="mt-6 flex items-center justify-center gap-4 ds-type-caption text-ds-ink-soft">
-        <Link to="/privacy" className="hover:text-ds-ink">
-          Privacy
-        </Link>
-        <span aria-hidden>·</span>
-        <Link to="/terms" className="hover:text-ds-ink">
-          Terms
-        </Link>
-        <span aria-hidden>·</span>
-        <Link to="/cookies" className="hover:text-ds-ink">
-          Cookies
-        </Link>
+      <div className="grid justify-items-center gap-2.5">
+        <DsButton variant="danger" onClick={signOut}>
+          Sign out
+        </DsButton>
+        {/* A visible way to report a problem or send feedback (the page has the address and the answers people
+          arrive with). */}
+        <DsLinkButton to="/support" variant="secondary" small>
+          Help and feedback
+        </DsLinkButton>
       </div>
     </section>
   );
@@ -425,58 +443,68 @@ function YourData({ onSignedOut }: { onSignedOut: () => void }) {
 
   return (
     <>
-      <h2 className={H2}>Your data</h2>
-      <div className={`${PANEL} space-y-3`}>
+      <Overline>Your data</Overline>
+      <DsCard>
         <p className="ds-type-footnote text-ds-ink-soft">
           Download everything we hold about you, or permanently erase your account.
         </p>
-        <button
-          onClick={download}
-          disabled={busy !== null}
-          className="min-h-11 w-full rounded-full border-2 border-ds-line bg-ds-surface px-4 ds-type-footnote font-bold text-ds-ink disabled:opacity-50"
-        >
-          {busy === "export" ? "Preparing…" : "Download my data"}
-        </button>
-
-        {!confirming ? (
-          <button
-            onClick={() => setConfirming(true)}
+        <div className="flex gap-2.5">
+          <DsButton
+            small
+            variant="secondary"
+            className="flex-1"
+            onClick={download}
             disabled={busy !== null}
-            className="min-h-11 w-full rounded-full border-2 border-ds-wrong-tint bg-ds-wrong-tint px-4 ds-type-footnote font-bold text-ds-wrong-ink disabled:opacity-50"
           >
-            Delete my account
-          </button>
-        ) : (
-          <div className="space-y-2 rounded-[var(--ds-radius-key)] border-2 border-ds-wrong-tint bg-ds-wrong-tint p-3">
+            {busy === "export" ? "Preparing…" : "Download my data"}
+          </DsButton>
+          {!confirming && (
+            <DsButton
+              small
+              variant="danger"
+              className="flex-1"
+              onClick={() => setConfirming(true)}
+              disabled={busy !== null}
+            >
+              Delete my account
+            </DsButton>
+          )}
+        </div>
+
+        {confirming && (
+          <div className="grid gap-2 rounded-[14px] border-2 border-ds-wrong bg-ds-wrong-tint p-3">
             <p className="ds-type-footnote text-ds-wrong-ink">
               This permanently deletes your account, progress, streaks, achievements and review
               history. It cannot be undone. Type DELETE to confirm.
             </p>
             <p className="ds-type-footnote text-ds-wrong-ink">{DELETE_WEB_SUBSCRIPTION_NOTE}</p>
-            <input
+            <DsField
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
               placeholder="DELETE"
               aria-label="Type DELETE to confirm"
-              className="min-h-11 w-full rounded-[var(--ds-radius-key)] border-2 border-ds-line bg-ds-card px-3 ds-type-body outline-none"
             />
             <div className="flex gap-2">
-              <button
+              <DsButton
+                small
+                variant="secondary"
+                className="flex-1"
                 onClick={() => {
                   setConfirming(false);
                   setConfirmText("");
                 }}
-                className="min-h-11 flex-1 rounded-full border-2 border-ds-line bg-ds-card px-3 ds-type-footnote text-ds-ink-soft"
               >
                 Cancel
-              </button>
-              <button
+              </DsButton>
+              <DsButton
+                small
+                variant="danger"
+                className="flex-1"
                 onClick={remove}
                 disabled={confirmText !== "DELETE" || busy !== null}
-                className="min-h-11 flex-1 rounded-full bg-ds-wrong px-3 ds-type-footnote font-bold text-ds-on-wrong disabled:opacity-50"
               >
                 {busy === "delete" ? "Deleting…" : "Delete forever"}
-              </button>
+              </DsButton>
             </div>
           </div>
         )}
@@ -485,7 +513,7 @@ function YourData({ onSignedOut }: { onSignedOut: () => void }) {
             {error}
           </p>
         )}
-      </div>
+      </DsCard>
     </>
   );
 }

@@ -66,16 +66,16 @@ describe("setup", () => {
 
   it("offers every level, 3/6/12-month presets, and the estimate wording", async () => {
     await openSetup();
-    const select = screen.getByLabelText(/finish level/i);
+    const levels = screen.getByRole("radiogroup", { name: /finish level/i });
     expect(
-      within(select)
-        .getAllByRole("option")
-        .map((o) => o.getAttribute("value")),
+      within(levels)
+        .getAllByRole("radio")
+        .map((o) => o.textContent),
     ).toEqual(["A1", "A2", "B1", "B2", "C1"]);
     for (const label of ["3 months", "6 months", "12 months"]) {
       expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
     }
-    expect(region()).toHaveTextContent(/estimate of lessons, not of fluency/i);
+    expect(screen.getByText(/estimate of lessons, not of fluency/i)).toBeInTheDocument();
   });
 
   it("does not allow saving before a preview has succeeded", async () => {
@@ -86,7 +86,7 @@ describe("setup", () => {
   it("a preset fills the date, previews it, and shows the weekly number", async () => {
     client.previewGoal.mockResolvedValue({ ...plans.on_track, requiredPerWeek: 12, realism: "ok" });
     const user = await openSetup();
-    await user.selectOptions(screen.getByLabelText(/finish level/i), "B1");
+    await user.click(screen.getByRole("radio", { name: "B1" }));
     await user.click(screen.getByRole("button", { name: "6 months" }));
     expect(screen.getByLabelText(/target date/i)).toHaveValue("2027-04-06");
     await waitFor(() => expect(client.previewGoal).toHaveBeenCalledWith("en", "B1", "2027-04-06"));
@@ -132,7 +132,7 @@ describe("setup", () => {
     client.previewGoal.mockResolvedValue(plans.just_started);
     client.saveGoal.mockResolvedValue(stored(plans.just_started));
     const user = await openSetup();
-    await user.selectOptions(screen.getByLabelText(/finish level/i), "B1");
+    await user.click(screen.getByRole("radio", { name: "B1" }));
     await user.click(screen.getByRole("button", { name: "6 months" }));
     await screen.findByText(/lessons a week/i);
     await user.click(screen.getByRole("button", { name: /save goal/i }));
@@ -341,7 +341,7 @@ describe("review fixes", () => {
     expect(screen.getByRole("button", { name: /save goal/i })).toBeEnabled();
     // The next preview never arrives: the old plan must not stay saveable for the new level.
     client.previewGoal.mockImplementation(() => new Promise(() => {}));
-    await user.selectOptions(screen.getByLabelText(/finish level/i), "C1");
+    await user.click(screen.getByRole("radio", { name: "C1" }));
     expect(screen.getByRole("button", { name: /save goal/i })).toBeDisabled();
     expect(screen.queryByText(/lessons a week/i)).not.toBeInTheDocument();
   });
@@ -385,7 +385,7 @@ describe("review fixes", () => {
     await user.click(await screen.findByRole("button", { name: /set a learning goal/i }));
     await user.click(screen.getByRole("button", { name: "3 months" }));
     await screen.findByText(/lessons a week/i);
-    expect(region().textContent?.match(/10 Nov 2026/g)).toHaveLength(1);
+    expect(screen.getByRole("dialog").textContent?.match(/10 Nov 2026/g)).toHaveLength(1);
   });
 
   it("offline with nothing cached does not promise a saved plan", async () => {

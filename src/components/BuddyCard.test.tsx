@@ -538,7 +538,7 @@ describe("BuddyCard matching (opt-in)", () => {
     ).toBeInTheDocument();
     // Matching needs the age confirmation first (owner decision: minimum age 13).
     expect(screen.getByRole("button", { name: "Find me a study buddy (French)" })).toBeDisabled();
-    fireEvent.click(screen.getByRole("checkbox", { name: "I'm 13 or older" }));
+    fireEvent.click(screen.getByRole("switch", { name: "I'm 13 or older" }));
     fireEvent.click(screen.getByRole("button", { name: "Find me a study buddy (French)" }));
     await waitFor(() =>
       expect(joinBuddyPool).toHaveBeenCalledWith({ data: { course: "fr", ageConfirmed: true } }),
