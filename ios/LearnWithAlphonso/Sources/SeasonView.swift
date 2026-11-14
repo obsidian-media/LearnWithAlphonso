@@ -8,43 +8,40 @@ struct SeasonView: View {
 
     @State private var status: SeasonStatus?
     @State private var isLoading = true
+    @State private var reloadToken = 0
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         List {
             if isLoading {
-                ProgressView().tint(AlphonsoColor.moss)
+                DSCard { ProgressView().tint(ds.choice).frame(maxWidth: .infinity) }
+                    .dsListRow(top: AlphonsoDS.Space.s2)
             } else if let status {
-                Section {
-                    Text("Division \(status.division)")
-                        .font(AlphonsoFont.display(28, weight: .bold))
-                        .foregroundStyle(AlphonsoColor.ink)
+                DSHeroCard {
+                    Text("Division \(status.division)").dsText(.displayXL).foregroundStyle(ds.onHero)
                     Text("Rank \(status.rankInCohort) of \(status.cohortSize) this week")
-                        .font(AlphonsoFont.sans(13))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .dsText(.footnote).foregroundStyle(ds.onHeroSoft)
                 }
-                .listRowBackground(AlphonsoColor.parchment)
+                .dsListRow(top: AlphonsoDS.Space.s2)
                 if let lastWeek = status.lastWeekResult {
-                    Section {
+                    DSOverline("Last week").dsListRow(bottom: AlphonsoDS.Space.s2)
+                    DSCard {
                         Text("Division \(lastWeek.division), rank \(lastWeek.rankInCohort) of \(lastWeek.cohortSize)")
-                            .font(AlphonsoFont.sans(14))
-                            .foregroundStyle(AlphonsoColor.ink)
-                    } header: {
-                        Text("Last week")
-                            .font(AlphonsoFont.sans(12, weight: .semiBold))
-                            .tracking(0.4)
-                            .foregroundStyle(AlphonsoColor.ember)
+                            .dsText(.headline).foregroundStyle(ds.ink)
                     }
-                    .listRowBackground(AlphonsoColor.parchment)
+                    .dsListRow()
                 }
             } else {
-                Text("Couldn't load your season status.").foregroundStyle(AlphonsoColor.inkSoft)
+                DSEmptyState(
+                    emoji: "\u{1F6E1}", title: "Couldn't load your season status.",
+                    actionTitle: "Try again", action: { reloadToken += 1 })
+                    .dsListRow(top: AlphonsoDS.Space.s2)
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(AlphonsoColor.surface)
+        .dsSceneList(.profile)
         .navigationTitle("Season")
-        .tint(AlphonsoColor.moss)
-        .task {
+        .task(id: reloadToken) {
+            isLoading = true
             guard let accessToken = session.accessToken else { isLoading = false; return }
             let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
             status = try? await client.getSeasonStatus()

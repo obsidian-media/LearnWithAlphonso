@@ -4,13 +4,14 @@ import LearnWithAlphonsoKit
 /// One quiet line on the Learn tab while finished lessons or review answers are waiting to reach the server,
 /// with a "Sync now" button when there is a connection. Hidden when nothing is waiting.
 ///
-/// A conditional Section with no `.task` of its own: a List section that is empty produces no row, so a task
+/// A conditional row with no `.task` of its own: a List row that draws nothing produces no row, so a task
 /// attached to it would never fire.
 struct PendingSyncSection: View {
     let syncQueueStore: SyncQueueStore
     let session: Session
     let isConnected: Bool
     @State private var isSyncing = false
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         // Read so the line updates when something is queued or a sync pass ends.
@@ -19,30 +20,25 @@ struct PendingSyncSection: View {
         if let message = PendingSyncNotice.message(
             lessons: waiting.lessons, reviewAnswers: waiting.reviewAnswers, isConnected: isConnected)
         {
-            Section {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                    HStack(alignment: .firstTextBaseline, spacing: AlphonsoSpacing.sm) {
-                        Image(systemName: "icloud.and.arrow.up")
-                            .foregroundStyle(AlphonsoColor.inkSoft)
-                            .accessibilityHidden(true)
-                        Text(message)
-                            .font(AlphonsoFont.sans(15, weight: .medium))
-                            .foregroundStyle(AlphonsoColor.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    if isConnected {
-                        Button(isSyncing ? PendingSyncNotice.syncingTitle : PendingSyncNotice.syncNowTitle) {
-                            Task { await syncNow() }
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(AlphonsoColor.moss)
-                        .disabled(isSyncing)
-                    }
+            DSCard(spacing: AlphonsoDS.Space.s2) {
+                HStack(alignment: .center, spacing: AlphonsoDS.Space.s3) {
+                    Image("Alphonso-refill-hourglass").resizable().scaledToFit()
+                        .frame(height: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s2)
+                        .accessibilityHidden(true)
+                    Text(message).dsText(.headline).foregroundStyle(ds.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
                 }
-                .padding(.vertical, AlphonsoSpacing.xs)
-                .accessibilityElement(children: .contain)
+                if isConnected {
+                    Button(isSyncing ? PendingSyncNotice.syncingTitle : PendingSyncNotice.syncNowTitle) {
+                        Task { await syncNow() }
+                    }
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                    .disabled(isSyncing)
+                }
             }
-            .listRowBackground(AlphonsoColor.parchment)
+            .accessibilityElement(children: .contain)
+            .dsListRow(top: AlphonsoDS.Space.s2)
         }
     }
 

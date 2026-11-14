@@ -6,33 +6,38 @@ import LearnWithAlphonsoKit
 struct UpdateRequiredView: View {
     let requirement: AppUpdateGate.Requirement
     @Environment(\.openURL) private var openURL
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        VStack(spacing: AlphonsoSpacing.lg) {
+        VStack(spacing: AlphonsoDS.Space.s4) {
             Spacer()
+            Image("Alphonso-welcome-door").resizable().scaledToFit()
+                .frame(height: AlphonsoDS.Space.s12 * 4)
+                .accessibilityHidden(true)
             Text("Please update Alphonso")
-                .font(AlphonsoFont.display(24, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
+                .dsText(.display)
+                .foregroundStyle(ds.brand)
                 .multilineTextAlignment(.center)
                 .accessibilityAddTraits(.isHeader)
             Text("This version of the app is no longer supported. Update to the latest version to keep learning. Your progress is saved to your account.")
-                .font(AlphonsoFont.sans(15))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .dsText(.body)
+                .foregroundStyle(ds.inkSoft)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             if let store = requirement.storeURL {
                 Button("Update in the App Store") { openURL(store) }
-                    .buttonStyle(.alphonsoPrimary)
+                    .buttonStyle(.dsButton(.primary))
             } else {
                 Text("Open the App Store and update Learn with Alphonso.")
-                    .font(AlphonsoFont.sans(14, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .dsText(.headline)
+                    .foregroundStyle(ds.ink)
                     .multilineTextAlignment(.center)
             }
             Spacer()
         }
-        .padding(AlphonsoSpacing.xl)
+        .padding(AlphonsoDS.Space.s6)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AlphonsoColor.surface.ignoresSafeArea())
+        .background(ds.surface.ignoresSafeArea())
         // Covers the whole app: nothing underneath can be tapped or reached with VoiceOver.
         .contentShape(Rectangle())
         .accessibilityElement(children: .contain)

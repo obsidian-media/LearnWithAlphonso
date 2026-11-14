@@ -7,21 +7,24 @@ struct LessonSaveFailureView: View {
     let error: LessonCompletionError
     let onSignIn: () -> Void
     let onDone: () -> Void
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        ContentUnavailableView {
-            Label("Couldn't save this lesson", systemImage: error == .unauthorized ? "person.crop.circle.badge.exclamationmark" : "exclamationmark.triangle")
-        } description: {
-            VStack(spacing: AlphonsoSpacing.xs) {
-                Text(error.userMessage)
-                if let support = error.supportLine { Text(support).font(AlphonsoFont.sans(13)) }
-            }
-        } actions: {
+        VStack(spacing: AlphonsoDS.Space.s3) {
+            Spacer()
+            DSEmptyState(
+                art: "Alphonso-hearts-calm",
+                title: "Couldn't save this lesson",
+                message: [error.userMessage, error.supportLine].compactMap { $0 }.joined(separator: "\n"))
             if error == .unauthorized {
                 // Signing out routes RootView to AuthView; the session lifecycle clears this account's local data.
-                Button("Sign in", action: onSignIn).buttonStyle(.alphonsoPrimary)
+                Button("Sign in", action: onSignIn).buttonStyle(.dsButton(.primary))
             }
-            Button("Done", action: onDone).buttonStyle(.alphonsoSecondary)
+            Button("Done", action: onDone).buttonStyle(.dsButton(.secondary))
+            Spacer()
         }
+        .padding(AlphonsoDS.Space.gutter)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(ds.surface)
     }
 }

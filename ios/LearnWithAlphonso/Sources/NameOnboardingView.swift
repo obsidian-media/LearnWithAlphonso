@@ -10,6 +10,7 @@ struct NameOnboardingView: View {
     @State private var state: DisplayNameOnboarding
     @FocusState private var fieldFocused: Bool
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.alphonsoDS) private var ds
 
     init(session: Session, state: DisplayNameOnboarding, onFinish: @escaping () -> Void) {
         self.session = session
@@ -20,23 +21,29 @@ struct NameOnboardingView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                    Image("Alphonso-waving").resizable().scaledToFit()
+                        .frame(height: AlphonsoDS.Space.s12 * 2)
+                        .accessibilityHidden(true)
                     Text(NameOnboardingCopy.title)
-                        .font(AlphonsoFont.display(26, weight: .semiBold))
-                        .foregroundStyle(AlphonsoColor.ink)
+                        .dsText(.display)
+                        .foregroundStyle(ds.brand)
                         .accessibilityAddTraits(.isHeader)
                     Text(NameOnboardingCopy.publicNote)
-                        .font(AlphonsoFont.sans(14))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .dsText(.body)
+                        .foregroundStyle(ds.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     // The generated handle is the placeholder, not text, so typing never appends to it. A real
                     // prefill (an Apple or Google given name) is text, with a clear button to replace it quickly.
-                    HStack(spacing: AlphonsoSpacing.sm) {
+                    HStack(spacing: AlphonsoDS.Space.s2) {
                         TextField(state.fieldPlaceholder, text: Binding(
                             get: { state.name },
                             // Ignore a set to the value already shown (SwiftUI can do this on focus).
                             set: { if $0 != state.name { state.edit($0) } }
                         ))
+                        .dsText(.body)
+                        .foregroundStyle(ds.ink)
                         .textFieldStyle(.plain)
                         .textContentType(.nickname)
                         .textInputAutocapitalization(.words)
@@ -51,51 +58,55 @@ struct NameOnboardingView: View {
                                 fieldFocused = true
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(AlphonsoColor.inkSoft)
+                                    .foregroundStyle(ds.inkSoft)
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel("Clear name")
                         }
                     }
-                    .padding(AlphonsoSpacing.sm + 2)
-                    .alphonsoInputBackground()
+                    .padding(AlphonsoDS.Space.s3)
+                    .frame(minHeight: AlphonsoDS.Space.minTouch)
+                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+                            .strokeBorder(state.isProblem ? ds.wrongInk : (fieldFocused ? ds.choice : ds.line), lineWidth: 2))
 
                     if let message = state.message {
                         Text(message)
-                            .font(AlphonsoFont.sans(13))
-                            .foregroundStyle(state.isProblem ? AlphonsoColor.destructive : AlphonsoColor.inkSoft)
+                            .dsText(.footnote)
+                            .foregroundStyle(state.isProblem ? ds.wrongInk : ds.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Button {
                         Task { await save() }
                     } label: {
                         if state.isSubmitting {
-                            ProgressView().tint(AlphonsoColor.surface)
+                            ProgressView().tint(ds.onAction)
                         } else {
                             Text(NameOnboardingCopy.save)
                         }
                     }
-                    .buttonStyle(.alphonsoPrimary)
+                    .buttonStyle(.dsButton(.primary))
                     .disabled(!state.canSave)
-                    // The primary style does not dim itself, so show the disabled state here.
-                    .opacity(state.canSave || state.isSubmitting ? 1 : 0.5)
                     .accessibilityLabel(state.isSubmitting ? "Saving" : NameOnboardingCopy.save)
 
                     Button(NameOnboardingCopy.skip) {
                         Task { await skip() }
                     }
-                    .buttonStyle(.alphonsoSecondary)
+                    .buttonStyle(.dsButton(.secondary))
                     .disabled(!state.canSkip)
 
                     Text(NameOnboardingCopy.skipNote(currentName: state.currentName))
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .dsText(.caption)
+                        .foregroundStyle(ds.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(AlphonsoSpacing.lg)
+                .padding(AlphonsoDS.Space.s6)
                 .frame(maxWidth: 480)
                 .frame(maxWidth: .infinity)
             }
-            .background(AlphonsoColor.surface)
+            .background(ds.surface)
             .scrollDismissesKeyboard(dynamicTypeSize.isAccessibilitySize ? .immediately : .interactively)
             // Save and Skip stay reachable above the keyboard however large the text is.
             .toolbar {
