@@ -85,7 +85,7 @@ struct StatusHeaderView: View {
                 .foregroundStyle(AlphonsoColor.ink)
             if let hint {
                 Text(hint)
-                    .font(AlphonsoFont.sans(11))
+                    .font(.caption2)
                     .foregroundStyle(AlphonsoColor.inkSoft)
             }
         }

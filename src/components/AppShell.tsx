@@ -26,7 +26,7 @@ function StatPill({
     <div className="flex items-center gap-1.5" aria-label={label}>
       <span className={color}>{icon}</span>
       <span className="tnum text-sm font-semibold text-ink">{value}</span>
-      {hint ? <span className="tnum text-[11px] text-ink-soft/70">{hint}</span> : null}
+      {hint ? <span className="tnum text-xs text-ink-soft/70">{hint}</span> : null}
     </div>
   );
 }

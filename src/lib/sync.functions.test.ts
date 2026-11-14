@@ -194,7 +194,7 @@ describe("fetchProgress", () => {
     });
   });
 
-  it("resolves an elapsed hearts refill timer and persists the reset", async () => {
+  it("adds the heart that came due, keeps the clock for the next, and persists both", async () => {
     const supabase = createSupabaseMock();
     const pastRefill = Date.now() - 1000;
     supabase.from
@@ -211,8 +211,9 @@ describe("fetchProgress", () => {
 
     const result = await fetchProgress({ context: ctx(supabase), data: { course: "en" } });
 
-    expect(result.hearts).toBe(5);
-    expect(result.heartsRefillAt).toBeNull();
+    // One heart per 30 minutes: the heart that came due is added; the next is a full interval after it.
+    expect(result.hearts).toBe(1);
+    expect(result.heartsRefillAt).toBe(pastRefill + 30 * 60 * 1000);
     expect(supabase.from).toHaveBeenCalledTimes(5);
     expect(supabaseAdminFrom).toHaveBeenNthCalledWith(1, "user_progress");
   });
