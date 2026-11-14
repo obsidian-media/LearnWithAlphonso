@@ -7,8 +7,8 @@ import LearnWithAlphonsoKit
 ///
 /// A failed lookup shows `BuddyCopy.loadFailed` with Try again, never the "pick a friend" state (the Teams screens
 /// once showed "no team" on a failure, which hid broken team functions, PR #237). Only the newest load is applied,
-/// and a cancelled load is not a failure. Compiled by CI's ios-app-build but NOT run on a device by the change that
-/// added it.
+/// and a cancelled load is not a failure. Drawn in the round-6 design system as one card under an overline, in one
+/// list row of the Friends screen; its loader and dialogs sit on that always-present row.
 struct BuddySection: View {
     let session: Session
     /// The accepted friends already loaded by FriendsView: the people who can be asked.
@@ -36,33 +36,32 @@ struct BuddySection: View {
     @State private var confirmingEnd = false
     @State private var loadGeneration = 0
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
-        Section {
-            if !hasLoaded && !loadFailed {
-                ProgressView().tint(AlphonsoColor.moss)
-            } else if loadFailed {
-                Text(BuddyCopy.loadFailed)
-                    .font(AlphonsoFont.sans(15))
-                    .foregroundStyle(AlphonsoColor.ink)
-                Button("Try again") { Task { await load() } }
-                    .tint(AlphonsoColor.moss)
-            } else if let buddy {
-                buddyRows(buddy)
-            } else {
-                noBuddyRows
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+            DSOverline("Study buddy")
+            DSCard {
+                if !hasLoaded && !loadFailed {
+                    ProgressView().tint(ds.choice).frame(maxWidth: .infinity)
+                } else if loadFailed {
+                    Text(BuddyCopy.loadFailed)
+                        .dsText(.body)
+                        .foregroundStyle(ds.ink)
+                    Button("Try again") { Task { await load() } }
+                        .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                } else if let buddy {
+                    buddyRows(buddy)
+                } else {
+                    noBuddyRows
+                }
+                if let message {
+                    Text(message)
+                        .dsText(.caption)
+                        .foregroundStyle(ds.inkSoft)
+                }
             }
-            if let message {
-                Text(message)
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-            }
-        } header: {
-            Text("Study buddy")
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
         }
-        .listRowBackground(AlphonsoColor.parchment)
         // Loads on appear, then refreshes every minute while the section is on screen (no realtime socket, spec Part 3).
         .task {
             await load()
@@ -101,28 +100,27 @@ struct BuddySection: View {
     @ViewBuilder
     private func buddyRows(_ buddy: MyBuddy) -> some View {
         HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
                 HStack {
                     Text(buddy.buddyName)
-                        .font(AlphonsoFont.display(17, weight: .semiBold))
-                        .foregroundStyle(AlphonsoColor.ink)
+                        .dsText(.title)
+                        .foregroundStyle(ds.brand)
                     if buddy.isMatch {
                         Text(BuddyCopy.matchedLabel)
-                            .font(AlphonsoFont.sans(11))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .dsText(.caption)
+                            .foregroundStyle(ds.inkSoft)
                     }
                 }
                 Text(BuddyCopy.weekLine(myCount: buddy.myCount, buddyCount: buddy.buddyCount, goal: buddy.goal))
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .dsText(.body)
+                    .foregroundStyle(ds.ink)
                 Text(BuddyCopy.streakLine(buddy.streakWeeks))
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.inkSoft)
                 Text(BuddyCopy.graceLine(buddy.graceAvailable))
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.inkSoft)
             }
-            .padding(.vertical, 2)
             .accessibilityElement(children: .combine)
             if buddy.isMatch {
                 Spacer()
@@ -133,86 +131,83 @@ struct BuddySection: View {
                     onReport: { reportTarget = SocialTarget(id: buddy.buddyID, displayName: buddy.buddyName) },
                     accessibilityName: buddy.buddyName
                 )
-                .buttonStyle(.borderless)
             }
         }
         if buddy.canSendPresets {
-            Menu("Send \(buddy.buddyName) a message") {
+            Menu {
                 ForEach(BuddyCopy.presets, id: \.id) { preset in
                     Button(preset.text) {
                         Task { await run { try await $0.sendBuddyMessage(presetID: preset.id) } }
                     }
                 }
+            } label: {
+                DSMenuLabel(text: "Send \(buddy.buddyName) a message")
             }
-            .tint(AlphonsoColor.moss)
             .disabled(busy)
         } else {
             // Matching is switched off; the server refuses this pair's presets (matching_paused).
             Text(BuddyCopy.statusMessage("matching_paused"))
-                .font(AlphonsoFont.sans(12))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .dsText(.footnote)
+                .foregroundStyle(ds.inkSoft)
         }
         ForEach(historyLines(buddy)) { item in
             Text(item.line)
-                .font(AlphonsoFont.sans(12))
-                .foregroundStyle(AlphonsoColor.ink)
+                .dsText(.footnote)
+                .foregroundStyle(ds.ink)
         }
-        Button("End study buddy", role: .destructive) { confirmingEnd = true }
-            .tint(AlphonsoColor.destructive)
+        Button("End study buddy") { confirmingEnd = true }
+            .buttonStyle(.dsButton(.danger, compact: true, fullWidth: false))
             .disabled(busy)
     }
 
     @ViewBuilder
     private var noBuddyRows: some View {
         Text(BuddyCopy.intro)
-            .font(AlphonsoFont.sans(12))
-            .foregroundStyle(AlphonsoColor.inkSoft)
+            .dsText(.footnote)
+            .foregroundStyle(ds.inkSoft)
         ForEach(requests) { request in
             if request.direction == .incoming {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                     Text(BuddyCopy.incomingLine(request.otherName))
-                        .font(AlphonsoFont.sans(14))
-                        .foregroundStyle(AlphonsoColor.ink)
-                    HStack(spacing: AlphonsoSpacing.md) {
+                        .dsText(.body)
+                        .foregroundStyle(ds.ink)
+                    HStack(spacing: AlphonsoDS.Space.s3) {
                         Button("Accept") {
                             Task { await run { try await $0.respondBuddyRequest(requestID: request.id, accept: true) } }
                         }
-                        .tint(AlphonsoColor.moss)
-                        // Two buttons in one List row: without an explicit style a tap anywhere fires both.
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.dsButton(.primary, compact: true))
                         Button("Decline") {
                             Task { await run { try await $0.respondBuddyRequest(requestID: request.id, accept: false) } }
                         }
-                        .tint(AlphonsoColor.inkSoft)
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.dsButton(.secondary, compact: true))
                     }
                     .disabled(busy)
                 }
             } else {
-                HStack {
+                HStack(spacing: AlphonsoDS.Space.s3) {
                     Text(BuddyCopy.outgoingLine(request.otherName))
-                        .font(AlphonsoFont.sans(14))
-                        .foregroundStyle(AlphonsoColor.ink)
-                    Spacer()
+                        .dsText(.body)
+                        .foregroundStyle(ds.ink)
+                    Spacer(minLength: AlphonsoDS.Space.s2)
                     Button("Cancel request") {
                         Task { await run { try await $0.cancelBuddyRequest(requestID: request.id) } }
                     }
-                    .tint(AlphonsoColor.inkSoft)
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
                     .disabled(busy)
                 }
             }
         }
         matchingRows
         if !askable.isEmpty {
-            Menu("Ask a friend to be your study buddy") {
+            Menu {
                 ForEach(askable, id: \.userID) { friend in
                     Button(friend.displayName) {
                         Task { await run { try await $0.requestBuddy(friendID: friend.userID) } }
                     }
                 }
+            } label: {
+                DSMenuLabel(text: "Ask a friend to be your study buddy")
             }
-            .tint(AlphonsoColor.moss)
             .disabled(busy)
         }
     }
@@ -222,30 +217,31 @@ struct BuddySection: View {
     @ViewBuilder
     private var matchingRows: some View {
         if let pool, pool.waiting, let course = pool.course {
-            HStack {
+            HStack(spacing: AlphonsoDS.Space.s3) {
                 Text(BuddyCopy.waitingLine(course))
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.ink)
-                Spacer()
+                    .dsText(.body)
+                    .foregroundStyle(ds.ink)
+                Spacer(minLength: AlphonsoDS.Space.s2)
                 Button(BuddyCopy.stopLooking) { Task { await run { try await $0.leaveBuddyPool() } } }
-                    .tint(AlphonsoColor.inkSoft)
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
                     .disabled(busy)
             }
         } else if let pool, pool.matchingEnabled, !pool.courses.isEmpty {
             Text(BuddyCopy.poolIntro)
-                .font(AlphonsoFont.sans(12))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .dsText(.footnote)
+                .foregroundStyle(ds.inkSoft)
             if asksAge {
-                Toggle(BuddyCopy.ageConfirm, isOn: $ageConfirmed)
-                    .font(AlphonsoFont.sans(13))
-                    .tint(AlphonsoColor.moss)
+                Toggle(isOn: $ageConfirmed) {
+                    Text(BuddyCopy.ageConfirm).dsText(.headline).foregroundStyle(ds.ink)
+                }
+                .tint(ds.choice)
+                .frame(minHeight: AlphonsoDS.Space.minTouch)
             }
-            ForEach(pool.courses, id: \.self) { course in
+            ForEach(Array(pool.courses.enumerated()), id: \.element) { index, course in
                 Button(BuddyCopy.findButton(course)) {
                     Task { await run { try await $0.joinBuddyPool(course: course, ageConfirmed: asksAge ? ageConfirmed : true) } }
                 }
-                .tint(AlphonsoColor.moss)
+                .buttonStyle(.dsButton(index == 0 ? .primary : .secondary))
                 .disabled(busy || (asksAge && !ageConfirmed))
             }
         }

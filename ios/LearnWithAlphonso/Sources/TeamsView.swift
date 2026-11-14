@@ -32,185 +32,104 @@ struct TeamsView: View {
     /// The member the owner tapped to remove, awaiting confirmation.
     @State private var kickTarget: TeamMember?
 
+    @Environment(\.alphonsoDS) private var ds
+    @FocusState private var codeFocused: Bool
+    @FocusState private var nameFocused: Bool
+
+    private var visibilityOptions: [DSSegmented<String>.Option] {
+        [.init(value: "public", label: "Public"), .init(value: "private", label: "Private")]
+    }
+
     var body: some View {
+        // The loaders are on this always-present List; each card below may draw nothing.
         List {
             if let myTeam {
-                Section {
-                    // TestFlight feedback (2026-09-29): "how can a team
-                    // invite a player, how can they share a code" -- the
-                    // code was only ever displayed as plain text, with no
-                    // way to actually send it to anyone. A native share
-                    // sheet covers copy/Messages/AirDrop/etc. in one control.
-                    HStack {
-                        Text("Join code: \(myTeam.joinCode)")
-                            .font(AlphonsoFont.sans(14))
-                            .foregroundStyle(AlphonsoColor.ink)
-                        Spacer()
-                        ShareLink(item: "Join my team \"\(myTeam.name)\" on Learn with Alphonso! Enter code \(myTeam.joinCode) under Teams \u{2192} Join a team.") {
-                            Image(systemName: "square.and.arrow.up")
-                        }
-                        .tint(AlphonsoColor.moss)
-                        .accessibilityLabel("Share team invite")
-                    }
-                    Text("\(myTeam.thisWeekXP) XP this week")
-                        .font(AlphonsoFont.display(17, weight: .semiBold))
-                        .foregroundStyle(AlphonsoColor.ink)
-                    if myTeam.switchLockedUntil > Date() {
-                        Text("Can't leave until \(myTeam.switchLockedUntil.formatted(date: .abbreviated, time: .omitted))")
-                            .font(AlphonsoFont.sans(12))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
-                    } else {
-                        Button("Leave team", role: .destructive) { Task { await leave() } }
-                            .tint(AlphonsoColor.destructive)
-                    }
-                } header: {
-                    Text(myTeam.name)
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
-                }
-                .listRowBackground(AlphonsoColor.parchment)
+                teamHero(myTeam)
+                    .dsListRow(top: AlphonsoDS.Space.s2)
 
                 TeamMissionSection(mission: missionModel.mission)
 
                 // TestFlight feedback (2026-09-29): "does the team owner
                 // have any authority?" -- previously no, and there wasn't
                 // even a member list to see who's on the team at all.
-                Section {
-                    ForEach(members) { member in
-                        HStack {
-                            Text(member.displayName)
-                                .font(AlphonsoFont.sans(15))
-                                .foregroundStyle(AlphonsoColor.ink)
-                            if member.isOwner {
-                                Text("Owner")
-                                    .font(AlphonsoFont.sans(11, weight: .semiBold))
-                                    .foregroundStyle(AlphonsoColor.ember)
-                            }
-                            if member.isBlocked {
-                                // Only the owner's list contains blocked members; shown so they can be removed.
-                                Text("Blocked")
-                                    .font(AlphonsoFont.sans(11, weight: .semiBold))
-                                    .foregroundStyle(AlphonsoColor.destructive)
-                            }
-                            Spacer()
-                            if myTeam.isOwner && !member.isOwner {
-                                Button(role: .destructive) {
-                                    kickTarget = member
-                                } label: {
-                                    Image(systemName: "person.fill.xmark")
-                                }
-                                .tint(AlphonsoColor.destructive)
-                                // Two buttons in one List row: without an
-                                // explicit style, a tap anywhere on the row
-                                // fires both.
-                                .buttonStyle(.borderless)
-                                .accessibilityLabel(TeamKickCopy.buttonLabel(memberName: member.displayName))
-                            }
-                            if member.userID != session.userID && !member.isBlocked {
-                                SocialSafetyMenu(
-                                    onBlock: { blockTarget = SocialTarget(id: member.userID, displayName: member.displayName) },
-                                    onReport: { reportTarget = SocialTarget(id: member.userID, displayName: member.displayName) },
-                                    accessibilityName: member.displayName
-                                )
-                                .buttonStyle(.borderless)
-                            }
-                        }
+                DSOverline("Members").dsListRow(bottom: AlphonsoDS.Space.s2)
+                DSCard(padding: AlphonsoDS.Space.s3, spacing: 0) {
+                    ForEach(Array(members.enumerated()), id: \.element.id) { index, member in
+                        if index > 0 { Divider().overlay(ds.line) }
+                        memberRow(member, in: myTeam)
                     }
-                } header: {
-                    Text("Members")
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
                 }
-                .listRowBackground(AlphonsoColor.parchment)
+                .dsListRow()
             } else if loadFailed {
-                Section {
+                DSGlassTitle(title: "Teams")
+                    .dsListRow(top: AlphonsoDS.Space.s2)
+                DSCard {
                     Text("Couldn't load your team.")
-                        .font(AlphonsoFont.sans(15))
-                        .foregroundStyle(AlphonsoColor.ink)
+                        .dsText(.body)
+                        .foregroundStyle(ds.ink)
                     Button("Try again") { Task { await loadAll() } }
-                        .tint(AlphonsoColor.moss)
+                        .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
                 }
-                .listRowBackground(AlphonsoColor.parchment)
+                .dsListRow()
             } else {
-                Section {
+                DSGlassTitle(title: "Teams")
+                    .dsListRow(top: AlphonsoDS.Space.s2)
+                DSOverline("Join a team").dsListRow(bottom: AlphonsoDS.Space.s2)
+                DSCard {
                     TextField("Join code", text: $code)
-                        .font(AlphonsoFont.sans(15))
+                        .focused($codeFocused)
+                        .dsField(focused: codeFocused)
                     Button("Join by code") { Task { await joinByCode() } }
-                        .tint(AlphonsoColor.moss)
+                        .buttonStyle(.dsButton(.primary))
+                        .disabled(!TeamsPresentation.canJoin(code: code))
                     Button("Put me on a team") { Task { await autoJoin() } }
-                        .tint(AlphonsoColor.moss)
-                } header: {
-                    Text("Join a team")
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
+                        .buttonStyle(.dsButton(.secondary))
                 }
-                .listRowBackground(AlphonsoColor.parchment)
+                .dsListRow()
 
-                Section {
+                DSOverline("Create a team").dsListRow(bottom: AlphonsoDS.Space.s2)
+                DSCard {
                     TextField("Team name", text: $newTeamName)
-                        .font(AlphonsoFont.sans(15))
-                    Picker("Visibility", selection: $newTeamVisibility) {
-                        Text("Public").tag("public")
-                        Text("Private").tag("private")
-                    }
-                    .pickerStyle(.segmented)
+                        .focused($nameFocused)
+                        .dsField(focused: nameFocused)
+                    DSSegmented(options: visibilityOptions, selection: $newTeamVisibility, accessibilityLabel: "Visibility")
                     Button("Create team") { Task { await createTeam() } }
-                        .tint(AlphonsoColor.moss)
-                        .disabled(newTeamName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                } header: {
-                    Text("Create a team")
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
+                        .buttonStyle(.dsButton(.primary))
+                        .disabled(!TeamsPresentation.canCreate(name: newTeamName))
                 }
-                .listRowBackground(AlphonsoColor.parchment)
+                .dsListRow()
             }
 
-            Section {
+            if isLoading || !leaderboard.isEmpty {
+                DSOverline("This week's top teams").dsListRow(bottom: AlphonsoDS.Space.s2)
                 if isLoading {
-                    ProgressView().tint(AlphonsoColor.moss)
+                    DSCard { ProgressView().tint(ds.choice).frame(maxWidth: .infinity) }
+                        .dsListRow()
                 } else {
-                    ForEach(Array(leaderboard.enumerated()), id: \.element.teamID) { i, team in
-                        HStack {
-                            AlphonsoRowCard(title: "\(i + 1). \(team.name)", subtitle: "\(team.weeklyXP) XP this week")
-                            // Hidden only on the team you own (you can't
-                            // report yourself); members can report their
-                            // own team's name.
-                            if !(team.teamID == myTeam?.teamID && myTeam?.isOwner == true) {
-                                Menu {
-                                    Button {
-                                        reportTarget = SocialTarget(id: team.teamID, displayName: team.name, isTeamName: true)
-                                    } label: {
-                                        Label("Report Team Name", systemImage: "flag")
-                                    }
-                                } label: {
-                                    Image(systemName: "ellipsis.circle")
-                                        .foregroundStyle(AlphonsoColor.inkSoft)
-                                }
-                                .accessibilityLabel("More options for \(team.name)")
-                            }
+                    DSCard(padding: AlphonsoDS.Space.s2, spacing: 0) {
+                        ForEach(Array(leaderboard.enumerated()), id: \.element.teamID) { i, team in
+                            topTeamRow(rank: i + 1, team: team)
                         }
                     }
+                    .dsListRow()
                 }
-            } header: {
-                Text("This week's top teams")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.ember)
             }
-            .listRowBackground(Color.clear)
+
+            if let myTeam, myTeam.switchLockedUntil <= Date() {
+                Button("Leave team", role: .destructive) { Task { await leave() } }
+                    .buttonStyle(.dsButton(.danger, compact: true, fullWidth: false))
+                    .frame(maxWidth: .infinity)
+                    .dsListRow()
+            }
 
             if let errorMessage {
-                Text(errorMessage).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                DSCard { Text(errorMessage).dsText(.footnote).foregroundStyle(ds.inkSoft) }
+                    .dsListRow()
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(AlphonsoColor.surface)
+        .dsSceneList(.profile)
         .navigationTitle("Teams")
-        .tint(AlphonsoColor.moss)
+        .navigationBarTitleDisplayMode(.inline)
         .task { await loadAll() }
         // On the always-present List. Reloads when the member count changes: an owner kicking someone turns a
         // two-person mission into "invite a friend" on the server, and the card must follow.
@@ -252,6 +171,112 @@ struct TeamsView: View {
         .sheet(item: $reportTarget) { target in
             ReportSheet(target: target, session: session)
         }
+    }
+
+    /// The team: its name, its XP this week, the join code to share, and when leaving unlocks.
+    private func teamHero(_ myTeam: MyTeam) -> some View {
+        DSHeroCard(spacing: AlphonsoDS.Space.s2) {
+            Text("Your team").dsText(.overline).foregroundStyle(ds.onHeroKick)
+            Text(myTeam.name).dsText(.display)
+                .accessibilityAddTraits(.isHeader)
+            Text("\(myTeam.thisWeekXP) XP this week")
+                .dsText(.headline)
+                .foregroundStyle(ds.onHeroKick)
+            // TestFlight feedback (2026-09-29): "how can a team
+            // invite a player, how can they share a code" -- the
+            // code was only ever displayed as plain text, with no
+            // way to actually send it to anyone. A native share
+            // sheet covers copy/Messages/AirDrop/etc. in one control.
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                Text("Join code: \(myTeam.joinCode)")
+                    .dsText(.footnote)
+                    .padding(.horizontal, AlphonsoDS.Space.s3)
+                    .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.onHero.opacity(0.14)))
+                ShareLink(item: "Join my team \"\(myTeam.name)\" on Learn with Alphonso! Enter code \(myTeam.joinCode) under Teams \u{2192} Join a team.") {
+                    Image(systemName: "square.and.arrow.up")
+                        .foregroundStyle(ds.onAction)
+                        .frame(width: AlphonsoDS.Space.minTouch, height: AlphonsoDS.Space.minTouch)
+                        .background(Circle().fill(ds.action))
+                }
+                .accessibilityLabel("Share team invite")
+            }
+            if myTeam.switchLockedUntil > Date() {
+                Text("Can't leave until \(myTeam.switchLockedUntil.formatted(date: .abbreviated, time: .omitted))")
+                    .dsText(.caption)
+                    .foregroundStyle(ds.onHeroSoft)
+            }
+        }
+    }
+
+    private func memberRow(_ member: TeamMember, in myTeam: MyTeam) -> some View {
+        HStack(spacing: AlphonsoDS.Space.s3) {
+            ProfileAvatarView(seed: member.avatarSeed, name: member.displayName, size: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s2)
+            Text(member.displayName)
+                .dsText(.headline)
+                .foregroundStyle(ds.ink)
+                .lineLimit(2)
+            if member.isOwner {
+                DSPill(text: "Owner", tone: .gold)
+            }
+            if member.isBlocked {
+                // Only the owner's list contains blocked members; shown so they can be removed.
+                DSPill(text: "Blocked", tone: .bad)
+            }
+            Spacer(minLength: AlphonsoDS.Space.s2)
+            if myTeam.isOwner && !member.isOwner {
+                Button(role: .destructive) {
+                    kickTarget = member
+                } label: {
+                    Image(systemName: "person.fill.xmark")
+                }
+                .buttonStyle(.dsButton(.danger, compact: true, fullWidth: false))
+                .accessibilityLabel(TeamKickCopy.buttonLabel(memberName: member.displayName))
+            }
+            if member.userID != session.userID && !member.isBlocked {
+                SocialSafetyMenu(
+                    onBlock: { blockTarget = SocialTarget(id: member.userID, displayName: member.displayName) },
+                    onReport: { reportTarget = SocialTarget(id: member.userID, displayName: member.displayName) },
+                    accessibilityName: member.displayName
+                )
+            }
+        }
+        .frame(minHeight: AlphonsoDS.Space.minTouch)
+        .padding(.vertical, AlphonsoDS.Space.s2)
+    }
+
+    private func topTeamRow(rank: Int, team: TeamLeaderboardRow) -> some View {
+        let mine = team.teamID == myTeam?.teamID
+        return HStack(spacing: AlphonsoDS.Space.s3) {
+            DSRankBadge(rank: rank)
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1 / 2) {
+                Text(team.name).dsText(.headline).foregroundStyle(ds.ink)
+                Text("\(team.weeklyXP) XP this week").dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            .accessibilityElement(children: .combine)
+            Spacer(minLength: AlphonsoDS.Space.s2)
+            // Hidden only on the team you own (you can't
+            // report yourself); members can report their
+            // own team's name.
+            if !(mine && myTeam?.isOwner == true) {
+                Menu {
+                    Button {
+                        reportTarget = SocialTarget(id: team.teamID, displayName: team.name, isTeamName: true)
+                    } label: {
+                        Label("Report Team Name", systemImage: "flag")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .foregroundStyle(ds.inkSoft)
+                        .frame(minWidth: AlphonsoDS.Space.minTouch, minHeight: AlphonsoDS.Space.minTouch)
+                }
+                .accessibilityLabel("More options for \(team.name)")
+            }
+        }
+        .padding(.horizontal, AlphonsoDS.Space.s2)
+        .padding(.vertical, AlphonsoDS.Space.s1)
+        .frame(minHeight: AlphonsoDS.Space.minTouch)
+        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(mine ? ds.choiceTint : Color.clear))
     }
 
     /// Blocking hides the person from a member's team list; the owner still sees them, marked Blocked, to remove them.

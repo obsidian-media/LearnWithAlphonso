@@ -35,6 +35,12 @@ final class PathModel {
         return nil
     }
 
+    /// Loaded, and the learner has no goal yet (so no plan).
+    var hasNoPath: Bool {
+        if case .none = phase { return true }
+        return false
+    }
+
     private func client(token: String) -> LearningPathClient {
         let session = self.session
         return LearningPathClient(
@@ -173,6 +179,8 @@ struct PathItemRow: View {
 
 struct PathMixBar: View {
     let mix: [PathMixEntry]
+    /// On the navy hero the caption reads in the hero's soft text.
+    var onHero = false
     @Environment(\.alphonsoDS) private var ds
 
     private func color(_ kind: PathKind) -> Color {
@@ -201,7 +209,7 @@ struct PathMixBar: View {
             }
             .frame(height: AlphonsoDS.Space.s3)
             Text(shown.map { "\($0.kind.label) \($0.minutes) min" }.joined(separator: " \u{00B7} "))
-                .dsText(.caption).foregroundStyle(ds.inkSoft)
+                .dsText(.caption).foregroundStyle(onHero ? ds.onHeroSoft : ds.inkSoft)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
@@ -546,67 +554,92 @@ struct PathScreen: View {
 struct PathBuildView: View {
     let session: Session
     let course: Course
+    /// Opens a lesson from the path (Start my path leads to the road, whose stops open lessons); the sheet closes first.
+    var onOpenLesson: (String) -> Void = { _ in }
     @State private var model: PathModel?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         NavigationStack {
-            List {
-                // The goal, level and date: the same card the planner always had.
-                // The goal card saves on its own button; reload so the switches appear once a goal exists.
-                GoalCardView(session: session, course: course, onChanged: { Task { await model?.load() } })
-                    .id(course.translationCourseCode)
-                if let path = model?.path { switches(path) }
+            ScrollView {
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                    // The goal, level and date: the same card the planner always had.
+                    // The goal card saves on its own button; reload so the switches appear once a goal exists.
+                    GoalCardView(session: session, course: course, onChanged: { Task { await model?.load() } })
+                        .id(course.translationCourseCode)
+                    if let path = model?.path {
+                        switches(path)
+                    } else if model?.hasNoPath == true {
+                        // The same line the web's Build my path shows until a goal is saved.
+                        DSCard { Text("Save a goal above and your plan appears here.").dsText(.footnote).foregroundStyle(ds.inkSoft) }
+                    }
+                }
+                .padding(AlphonsoDS.Space.gutter)
+            }
+            .screenScene(.learn)
+            .background(ds.surface)
+            .navigationDestination(for: PathRoute.self) { route in
+                PathScreen(route: route, session: session, course: course) { lessonID in
+                    dismiss()
+                    onOpenLesson(lessonID)
+                }
             }
             .navigationTitle("Build my path")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
+            // On the always-present ScrollView, never on the switches, which draw nothing until the path loads.
             .task(id: course.translationCourseCode) {
                 let made = PathModel(session: session, courseCode: course.translationCourseCode)
                 model = made
                 await made.load()
             }
         }
+        .tint(ds.choice)
     }
 
     @ViewBuilder
     private func switches(_ path: LearningPath) -> some View {
-        Section {
-            Text("\(path.progress.requiredPerWeek) lessons a week").dsText(.headline).foregroundStyle(ds.ink)
+        // The approved A0 plan hero (round 8): the navy card with the weekly lessons and the mix.
+        DSHeroCard(spacing: AlphonsoDS.Space.s2) {
+            Text("Your plan").dsText(.overline).foregroundStyle(ds.onHeroKick)
+            Text("\(path.progress.requiredPerWeek) lessons a week").dsText(.display)
             Text("\(path.dailyMinutes) minutes a day, \(PathRestDay.studyDays(path.restDayValue)) days. The rest of each day is filled with the mix below.")
-                .dsText(.caption).foregroundStyle(ds.inkSoft)
-            PathMixBar(mix: path.mix)
-        } header: {
-            Text("Your plan").dsText(.overline).foregroundStyle(ds.actionText)
+                .dsText(.footnote).foregroundStyle(ds.onHeroSoft)
+            PathMixBar(mix: path.mix, onHero: true)
         }
-        Section {
-            Picker("Rest day", selection: Binding(
-                get: { path.restDayValue },
-                set: { day in Task { await model?.apply(.setRestDay(day)) } })
-            ) {
-                ForEach(PathRestDay.choices, id: \.value) { Text($0.label).tag($0.value) }
+        DSOverline("Rest day")
+        DSCard {
+            LessonFlowLayout {
+                ForEach(PathRestDay.choices, id: \.value) { choice in
+                    DSChip(choice.label, selected: path.restDayValue == choice.value) {
+                        Task { await model?.apply(.setRestDay(choice.value)) }
+                    }
+                    .disabled(model?.busy ?? false)
+                }
             }
-            .pickerStyle(.menu)
-            .tint(ds.choice)
-            .disabled(model?.busy ?? false)
-            .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .accessibilityElement(children: .contain)
             .accessibilityLabel("Rest day")
-        } header: {
-            Text("Rest day").dsText(.overline).foregroundStyle(ds.actionText)
         }
-        Section {
+        DSOverline("How I like to learn")
+        DSCard(padding: AlphonsoDS.Space.s3) {
             HStack(spacing: AlphonsoDS.Space.s3) {
                 PathTypeBadge(kind: .lesson)
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Lessons").dsText(.headline).foregroundStyle(ds.ink)
                     Text("Always on, the backbone").dsText(.caption).foregroundStyle(ds.inkSoft)
                 }
+                Spacer(minLength: 0)
+                Text("Always on").dsText(.caption).foregroundStyle(ds.inkSoft)
             }
             .frame(minHeight: AlphonsoDS.Space.minTouch)
-            ForEach(PathKind.switchable(mix: path.mix, off: path.off), id: \.wire) { kind in
+            .opacity(0.7)
+            .accessibilityElement(children: .combine)
+        }
+        ForEach(PathKind.switchable(mix: path.mix, off: path.off), id: \.wire) { kind in
+            DSCard(padding: AlphonsoDS.Space.s3) {
                 Toggle(isOn: Binding(
                     get: { !path.off.contains(kind.wire) },
                     set: { on in
@@ -626,14 +659,16 @@ struct PathBuildView: View {
                 }
                 .tint(ds.choice)
                 .disabled(model?.busy ?? false)
+                .frame(minHeight: AlphonsoDS.Space.minTouch)
                 .accessibilityLabel("\(kind.label) in my path")
             }
-            if let error = model?.actionError {
-                Text(error).dsText(.footnote).foregroundStyle(ds.wrongInk)
-            }
-        } header: {
-            Text("How I like to learn").dsText(.overline).foregroundStyle(ds.actionText)
         }
+        if let error = model?.actionError {
+            DSCard { Text(error).dsText(.footnote).foregroundStyle(ds.wrongInk) }
+        }
+        // Like the web's "Open my path": on to the road.
+        NavigationLink(value: PathRoute.road) { Text("Start my path") }
+            .buttonStyle(.dsButton(.primary))
     }
 
     private func reason(for kind: PathKind, in path: LearningPath) -> String {

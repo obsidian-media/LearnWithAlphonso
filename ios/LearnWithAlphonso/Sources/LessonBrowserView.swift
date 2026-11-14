@@ -332,7 +332,7 @@ struct LessonBrowserView: View {
                 PathCardSection(session: session, course: course) { showingPathBuild = true }
                     .id(course.translationCourseCode)
 
-                TeamMissionSection(mission: missionModel.mission)
+                TeamMissionSection(mission: missionModel.mission, plainInsets: true)
 
                 WeeklyChallengesSection(challenges: challenges)
 
@@ -479,7 +479,9 @@ struct LessonBrowserView: View {
                 }
             }
             .sheet(isPresented: $showingPathBuild) {
-                PathBuildView(session: session, course: course)
+                PathBuildView(session: session, course: course) { lessonID in
+                    openedLesson = OpenedLesson(id: lessonID)
+                }
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView(session: session)
