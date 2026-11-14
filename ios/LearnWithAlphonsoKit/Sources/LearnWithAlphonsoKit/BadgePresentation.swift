@@ -1,7 +1,7 @@
 import Foundation
 
 /// How one badge is drawn: full colour, dimmed with a gold ring that fills, or a grey silhouette with a lock.
-public enum BadgeState: Sendable, Equatable {
+public enum BadgeState: Sendable, Hashable {
     case earned
     case progress(value: Int, threshold: Int)
     case locked
