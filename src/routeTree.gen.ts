@@ -26,6 +26,7 @@ import { Route as AuthenticatedConverseRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDuelsRouteImport } from './routes/_authenticated/duels'
 import { Route as AuthenticatedHectorRouteImport } from './routes/_authenticated/hector'
 import { Route as AuthenticatedHelloRouteImport } from './routes/_authenticated/hello'
+import { Route as AuthenticatedHelpRouteImport } from './routes/_authenticated/help'
 import { Route as AuthenticatedLeagueRouteImport } from './routes/_authenticated/league'
 import { Route as AuthenticatedLearnRouteImport } from './routes/_authenticated/learn'
 import { Route as AuthenticatedListenRouteImport } from './routes/_authenticated/listen'
@@ -157,6 +158,11 @@ const AuthenticatedHectorRoute = AuthenticatedHectorRouteImport.update({
 const AuthenticatedHelloRoute = AuthenticatedHelloRouteImport.update({
   id: '/hello',
   path: '/hello',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHelpRoute = AuthenticatedHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedLeagueRoute = AuthenticatedLeagueRouteImport.update({
@@ -412,6 +418,7 @@ export interface FileRoutesByFullPath {
   '/duels': typeof AuthenticatedDuelsRoute
   '/hector': typeof AuthenticatedHectorRoute
   '/hello': typeof AuthenticatedHelloRoute
+  '/help': typeof AuthenticatedHelpRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
@@ -476,6 +483,7 @@ export interface FileRoutesByTo {
   '/duels': typeof AuthenticatedDuelsRoute
   '/hector': typeof AuthenticatedHectorRoute
   '/hello': typeof AuthenticatedHelloRoute
+  '/help': typeof AuthenticatedHelpRoute
   '/league': typeof AuthenticatedLeagueRoute
   '/learn': typeof AuthenticatedLearnRoute
   '/listen': typeof AuthenticatedListenRouteWithChildren
@@ -542,6 +550,7 @@ export interface FileRoutesById {
   '/_authenticated/duels': typeof AuthenticatedDuelsRoute
   '/_authenticated/hector': typeof AuthenticatedHectorRoute
   '/_authenticated/hello': typeof AuthenticatedHelloRoute
+  '/_authenticated/help': typeof AuthenticatedHelpRoute
   '/_authenticated/league': typeof AuthenticatedLeagueRoute
   '/_authenticated/learn': typeof AuthenticatedLearnRoute
   '/_authenticated/listen': typeof AuthenticatedListenRouteWithChildren
@@ -608,6 +617,7 @@ export interface FileRouteTypes {
     | '/duels'
     | '/hector'
     | '/hello'
+    | '/help'
     | '/league'
     | '/learn'
     | '/listen'
@@ -672,6 +682,7 @@ export interface FileRouteTypes {
     | '/duels'
     | '/hector'
     | '/hello'
+    | '/help'
     | '/league'
     | '/learn'
     | '/listen'
@@ -737,6 +748,7 @@ export interface FileRouteTypes {
     | '/_authenticated/duels'
     | '/_authenticated/hector'
     | '/_authenticated/hello'
+    | '/_authenticated/help'
     | '/_authenticated/league'
     | '/_authenticated/learn'
     | '/_authenticated/listen'
@@ -945,6 +957,13 @@ declare module '@tanstack/react-router' {
       path: '/hello'
       fullPath: '/hello'
       preLoaderRoute: typeof AuthenticatedHelloRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/help': {
+      id: '/_authenticated/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AuthenticatedHelpRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/league': {
@@ -1289,6 +1308,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDuelsRoute: typeof AuthenticatedDuelsRoute
   AuthenticatedHectorRoute: typeof AuthenticatedHectorRoute
   AuthenticatedHelloRoute: typeof AuthenticatedHelloRoute
+  AuthenticatedHelpRoute: typeof AuthenticatedHelpRoute
   AuthenticatedLeagueRoute: typeof AuthenticatedLeagueRoute
   AuthenticatedLearnRoute: typeof AuthenticatedLearnRoute
   AuthenticatedListenRoute: typeof AuthenticatedListenRouteWithChildren
@@ -1316,6 +1336,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDuelsRoute: AuthenticatedDuelsRoute,
   AuthenticatedHectorRoute: AuthenticatedHectorRoute,
   AuthenticatedHelloRoute: AuthenticatedHelloRoute,
+  AuthenticatedHelpRoute: AuthenticatedHelpRoute,
   AuthenticatedLeagueRoute: AuthenticatedLeagueRoute,
   AuthenticatedLearnRoute: AuthenticatedLearnRoute,
   AuthenticatedListenRoute: AuthenticatedListenRouteWithChildren,

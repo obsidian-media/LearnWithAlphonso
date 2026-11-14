@@ -18,6 +18,7 @@ import {
 } from "@/lib/paywall-plans";
 import { useProgress } from "@/lib/progress";
 import { useCardName } from "@/lib/use-card-name";
+import { GetHelpLink } from "./help/HelpEntry";
 import { edgeButtonClass } from "./lesson/LessonParts";
 import { FOCUSABLE } from "./Modal";
 import {
@@ -112,6 +113,7 @@ export function WebPaywall({ source, onClose }: { source: PaywallSource; onClose
             >
               {PAYWALL_COPY.tryAgain}
             </button>
+            <GetHelpLink className="mx-auto" />
           </div>
         )}
         {state.kind === "not-configured" && <ComingSoon />}
@@ -211,9 +213,10 @@ function SmallPrint() {
         </a>
       </p>
       {note && (
-        <p role="status" className="m-0 text-ds-ink">
-          {note}
-        </p>
+        <div role="status" className="grid justify-items-center gap-2 text-ds-ink">
+          <p className="m-0">{note}</p>
+          {note === WEB_PAYWALL_COPY.checkFailed && <GetHelpLink />}
+        </div>
       )}
     </div>
   );
