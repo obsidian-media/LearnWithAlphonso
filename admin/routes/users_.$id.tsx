@@ -17,7 +17,7 @@ import type { UserAction } from "@/lib/staff-actions";
 import type { ActionInput } from "@/components/staff/ActionDialog";
 import { LearnerView } from "@/components/staff/LearnerView";
 
-export const Route = createFileRoute("/users/$id")({
+export const Route = createFileRoute("/users_/$id")({
   loader: async ({ params }) => {
     try {
       const me = await adminWhoAmI();

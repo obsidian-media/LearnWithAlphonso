@@ -16,9 +16,65 @@ describe("the console navigation points at real screens", () => {
   });
 
   it("the learner page and the new screens are in the generated route tree", () => {
-    for (const path of ["/users/$id", "/staff", "/audit", "/users", "/numbers", "/support"]) {
+    for (const path of [
+      "/users/$id",
+      "/staff",
+      "/audit",
+      "/users",
+      "/numbers",
+      "/support",
+      "/support/$id",
+    ]) {
       expect(tree, path).toContain(`'${path}'`);
     }
+  });
+});
+
+describe("the support inbox screens", () => {
+  it("the inbox and the ticket page are separate pages gated by support.read and read through staff server functions", () => {
+    const list = readFileSync("admin/routes/support.tsx", "utf8");
+    const one = readFileSync("admin/routes/support_.$id.tsx", "utf8");
+    for (const src of [list, one]) {
+      expect(src).toContain('"support.read"');
+      expect(src).not.toMatch(/supabaseAdmin|from\(["']support_/);
+    }
+    expect(list).toContain("staffListTickets");
+    for (const fn of [
+      "staffGetTicket",
+      "staffReplyTicket",
+      "staffAssignTicket",
+      "staffSetTicketStatus",
+      "staffAddTicketNote",
+    ]) {
+      expect(one, fn).toContain(fn);
+    }
+    // The ticket page must not nest under the inbox (support.tsx has no Outlet).
+    expect(tree).toContain("path: '/support/$id'");
+    expect(tree).toContain("getParentRoute: () => rootRouteImport");
+    expect(tree).not.toMatch(
+      /SupportIdRoute = SupportIdRouteImport\.update\(\{[^}]*getParentRoute: \(\) => SupportRoute/,
+    );
+  });
+});
+
+describe("detail pages are not nested under a list page that has no Outlet", () => {
+  // support.tsx and users.tsx render a list and no <Outlet />, so a child route nested under them (users.$id) is
+  // matched but never drawn: /users/<id> showed the search page. The trailing underscore makes a page a sibling.
+  it("every list route without an Outlet has no child route in the generated tree", () => {
+    for (const parent of ["users", "support"]) {
+      const src = readFileSync(`admin/routes/${parent}.tsx`, "utf8");
+      expect(src, `${parent}.tsx renders no Outlet`).not.toContain("Outlet");
+      const Parent = parent[0]!.toUpperCase() + parent.slice(1);
+      expect(tree, `${parent} has no children`).not.toContain(`${Parent}RouteWithChildren`);
+      expect(tree).not.toContain(`getParentRoute: () => ${Parent}Route`);
+    }
+  });
+
+  it("/users/$id and /support/$id are their own pages at the right paths", () => {
+    expect(tree).toContain("path: '/users/$id'");
+    expect(tree).toContain("path: '/support/$id'");
+    expect(existsSync("admin/routes/users_.$id.tsx")).toBe(true);
+    expect(existsSync("admin/routes/users.$id.tsx")).toBe(false);
   });
 });
 
@@ -38,7 +94,7 @@ describe("every screen is gated by a server call, not by the navigation", () => 
   });
 
   it("the learner page offers actions from the viewer's scopes and writes only through staff server functions", () => {
-    const src = readFileSync("admin/routes/users.$id.tsx", "utf8");
+    const src = readFileSync("admin/routes/users_.$id.tsx", "utf8");
     for (const fn of [
       "staffGrantPro",
       "staffRevokePro",
