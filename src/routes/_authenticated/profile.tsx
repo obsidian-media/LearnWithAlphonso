@@ -290,10 +290,8 @@ function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
           value={theme}
           onChange={setTheme}
           options={[
+            { value: "royal", label: "Royal" },
             { value: "meadow", label: "Meadow" },
-            { value: "studio-ink", label: "Studio Ink" },
-            { value: "manuscript", label: "Manuscript" },
-            { value: "canopy", label: "Canopy" },
           ]}
         />
       </div>

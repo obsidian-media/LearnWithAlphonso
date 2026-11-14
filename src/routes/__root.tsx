@@ -20,8 +20,7 @@ import { useAccountStatus } from "../lib/account-suspended";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "../lib/progress";
-import { useTheme } from "../lib/theme";
-import { PALETTE_BOOT_SCRIPT } from "../lib/palette";
+import { THEME_BOOT_SCRIPT, useTheme } from "../lib/theme";
 import { fetchProgress } from "../lib/sync.functions";
 import { getMyProfile } from "../lib/leaderboard.functions";
 import { clearCachedVoicePrefs } from "../lib/voice-prefs";
@@ -132,23 +131,8 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <script
-          nonce={nonce}
-          // Runs before first paint to avoid a flash of the wrong theme.
-          // Kept inline (not an external file) so it blocks nothing.
-          dangerouslySetInnerHTML={{
-            // "canopy" is the default now (see theme.ts's
-            // resolveInitialTheme) -- a visitor with NO stored theme
-            // must get the same first-paint result the client store
-            // will compute a moment later, or the picker will say
-            // Canopy while the page renders Meadow (:root). Only an
-            // explicit "meadow" string (or nothing) skips setting
-            // data-theme at all, since :root already is Meadow.
-            __html: `(function(){try{var t=localStorage.getItem("theme")||"canopy";if(t==="studio-ink"||t==="manuscript"||t==="canopy")document.documentElement.dataset.theme=t;}catch(e){}})();`,
-          }}
-        />
-        {/* The design system palette (src/lib/palette.ts), set before first paint for the same reason. */}
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: PALETTE_BOOT_SCRIPT }} />
+        {/* The theme (src/lib/theme.ts), set before first paint so the page never flashes the wrong one. */}
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>

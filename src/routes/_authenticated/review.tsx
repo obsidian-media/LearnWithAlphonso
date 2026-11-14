@@ -25,7 +25,6 @@ import { deriveAnswerCorrectness } from "../../lib/srs";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
 import type { TranslationVerdict } from "../api/grade-translation";
-import { useTheme } from "../../lib/theme";
 import { HeartIcon } from "../../components/icons";
 
 export const Route = createFileRoute("/_authenticated/review")({
@@ -60,7 +59,6 @@ function ReviewPageWithSave() {
 type Card = { itemKey: string; question: Question };
 
 function ReviewPage() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const load = useServerFn(fetchDueReviews);
   const grade = useServerFn(gradeReview);
   const claimBonus = useServerFn(claimReviewClearBonusRemote);
@@ -337,7 +335,7 @@ function ReviewPage() {
           }
         />
 
-        <div className={isStudioInk ? "mt-6" : "mt-6 space-y-2.5"}>
+        <div className={"mt-6 space-y-2.5"}>
           {q.type === "mc" || q.type === "listening" ? (
             q.choices.map((c) => (
               <AnswerOption

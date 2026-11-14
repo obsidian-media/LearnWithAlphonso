@@ -65,7 +65,9 @@ vi.mock("../lib/progress", () => ({
   useProgress: (sel: (s: unknown) => unknown) => sel({ hydrate, reset }),
 }));
 const hydrateFromServer = vi.fn();
-vi.mock("../lib/theme", () => ({
+vi.mock("../lib/theme", async (importOriginal) => ({
+  // The real boot script: the shell tests below run the shipped string.
+  THEME_BOOT_SCRIPT: (await importOriginal<typeof import("../lib/theme")>()).THEME_BOOT_SCRIPT,
   useTheme: (sel: (s: unknown) => unknown) => sel({ hydrateFromServer }),
 }));
 
@@ -177,41 +179,43 @@ describe("first-paint theme script", () => {
   const script = /<script>([\s\S]*?)<\/script>/.exec(markup)?.[1] ?? "";
 
   function runWith(stored: string | null): string | undefined {
-    document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-palette");
     if (stored === null) localStorage.removeItem("theme");
     else localStorage.setItem("theme", stored);
     new Function(script)();
-    return document.documentElement.dataset.theme;
+    return document.documentElement.dataset.palette;
   }
 
   it("is actually present in the shell", () => {
     expect(script).toContain("localStorage");
   });
 
-  it("defaults a brand-new visitor to canopy", () => {
-    expect(runWith(null)).toBe("canopy");
+  it("defaults a brand-new visitor to royal", () => {
+    expect(runWith(null)).toBe("royal");
   });
 
-  it("leaves meadow to :root rather than setting an attribute", () => {
-    // Meadow IS :root, so setting data-theme="meadow" would be a no-op at
-    // best -- the script deliberately skips it.
-    expect(runWith("meadow")).toBeUndefined();
+  it("applies meadow from localStorage", () => {
+    expect(runWith("meadow")).toBe("meadow");
   });
 
-  it.each(["studio-ink", "manuscript", "canopy"])("applies %s from localStorage", (theme) => {
-    expect(runWith(theme)).toBe(theme);
+  it("applies royal from localStorage", () => {
+    expect(runWith("royal")).toBe("royal");
   });
 
-  it("ignores a garbage stored value instead of applying it", () => {
-    expect(runWith("not-a-theme")).toBeUndefined();
-  });
+  it.each(["studio-ink", "manuscript", "canopy", "not-a-theme"])(
+    "paints royal for the stored value %s",
+    (theme) => {
+      expect(runWith(theme)).toBe("royal");
+    },
+  );
 
   it("survives localStorage throwing (private mode / blocked cookies)", () => {
-    document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-palette");
     const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error("blocked");
     });
     expect(() => new Function(script)()).not.toThrow();
+    expect(document.documentElement.dataset.palette).toBe("royal");
     spy.mockRestore();
   });
 });
@@ -246,12 +250,12 @@ describe("AuthSync (inside RootComponent)", () => {
   it("hydrates progress and theme when a session exists", async () => {
     getSession.mockResolvedValue({ data: { session: { user: { id: "u1" } } } });
     fetchProgress.mockResolvedValue({ xp: 42 });
-    getMyProfile.mockResolvedValue({ theme: "canopy" });
+    getMyProfile.mockResolvedValue({ theme: "royal" });
 
     render(<RootComponent />);
 
     await waitFor(() => expect(hydrate).toHaveBeenCalledWith({ xp: 42 }));
-    await waitFor(() => expect(hydrateFromServer).toHaveBeenCalledWith("canopy"));
+    await waitFor(() => expect(hydrateFromServer).toHaveBeenCalledWith("royal"));
     expect(reset).not.toHaveBeenCalled();
   });
 

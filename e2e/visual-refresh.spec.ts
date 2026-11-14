@@ -14,7 +14,7 @@ const SUPABASE_URL = process.env.E2E_SUPABASE_URL;
 const SERVICE_KEY = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY;
 test.skip(!SUPABASE_URL || !SERVICE_KEY, "needs a local Supabase stack");
 
-const THEMES = ["canopy", "meadow", "manuscript", "studio-ink"] as const;
+const THEMES = ["royal", "meadow"] as const;
 const WIDTHS = [390, 1280] as const;
 const LESSON = curriculum[0].lessons[0];
 const SCREENS: { name: string; path: string; ready: string }[] = [
@@ -130,10 +130,10 @@ test("screenshots of lesson complete and Hector", async ({ page }) => {
   test.setTimeout(180_000);
   page.setDefaultTimeout(15_000);
   await signIn(page);
-  await page.evaluate(() => window.localStorage.setItem("theme", "canopy"));
+  await page.evaluate(() => window.localStorage.setItem("theme", "royal"));
   await page.setViewportSize({ width: 390, height: 844 });
   const shot = (name: string) =>
-    page.screenshot({ path: `test-results/visual-refresh/canopy-390-${name}-screen.png` });
+    page.screenshot({ path: `test-results/visual-refresh/royal-390-${name}-screen.png` });
   try {
     await playLessonToTheEnd(page, shot);
     // Mid-celebration: the clip is playing and the numbers have counted up.

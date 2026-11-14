@@ -127,25 +127,53 @@ export const fetchProgress = createServerFn({ method: "GET" })
       answers[c.lesson_id] = { correct: c.correct, total: c.total };
     }
 
-    // A pending "out of hearts" timer may have already elapsed since this
-    // row was last written -- resolve it now (full refill) and persist,
-    // rather than leaving the client to display a countdown that never
-    // actually restores anything.
+    // Hearts refill one per 30 minutes while below the cap. Hearts that came due since this row was last
+    // written are added now and persisted (with the clock for the next one), rather than leaving the client to
+    // display a countdown that never actually restores anything.
     const rawHeartsRefillAt = p?.hearts_refill_at ? new Date(p.hearts_refill_at).getTime() : null;
     const resolvedHearts = resolveHeartsRefill(
       p?.hearts ?? MAX_HEARTS,
       rawHeartsRefillAt,
       Date.now(),
     );
+    let shownHearts = resolvedHearts;
+    const readHearts = p?.hearts ?? MAX_HEARTS;
     if (
-      resolvedHearts.hearts !== (p?.hearts ?? MAX_HEARTS) ||
+      resolvedHearts.hearts !== readHearts ||
       resolvedHearts.heartsRefillAt !== rawHeartsRefillAt
     ) {
+      // An optimistic update: write only if the row still has the values read above. A lose_heart that landed
+      // between the read and this write must not be overwritten (a lost heart would come back). When nothing
+      // matched, show the row as it is now instead of clobbering it.
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin
+      let update = supabaseAdmin
         .from("user_progress")
-        .update({ hearts: resolvedHearts.hearts, hearts_refill_at: null })
-        .eq("user_id", userId);
+        .update({
+          hearts: resolvedHearts.hearts,
+          hearts_refill_at: resolvedHearts.heartsRefillAt
+            ? new Date(resolvedHearts.heartsRefillAt).toISOString()
+            : null,
+        })
+        .eq("user_id", userId)
+        .eq("hearts", readHearts);
+      update = p?.hearts_refill_at
+        ? update.eq("hearts_refill_at", p.hearts_refill_at)
+        : update.is("hearts_refill_at", null);
+      const { data: written } = await update.select("hearts");
+      if (!written || written.length === 0) {
+        const { data: fresh } = await supabaseAdmin
+          .from("user_progress")
+          .select("hearts, hearts_refill_at")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (fresh) {
+          shownHearts = resolveHeartsRefill(
+            typeof fresh.hearts === "number" ? fresh.hearts : MAX_HEARTS,
+            fresh.hearts_refill_at ? new Date(fresh.hearts_refill_at).getTime() : null,
+            Date.now(),
+          );
+        }
+      }
     }
 
     return {
@@ -153,8 +181,8 @@ export const fetchProgress = createServerFn({ method: "GET" })
       streak: p?.streak ?? 0,
       longestStreak: p?.longest_streak ?? 0,
       lastActiveDate: p?.last_active_date ?? null,
-      hearts: resolvedHearts.hearts,
-      heartsRefillAt: resolvedHearts.heartsRefillAt,
+      hearts: shownHearts.hearts,
+      heartsRefillAt: shownHearts.heartsRefillAt,
       streakFreezes: p?.streak_freezes ?? 0,
       leagueTier: ((lp?.league_tier as LeagueTier) ?? "bronze") as LeagueTier,
       completedLessons,
@@ -422,7 +450,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         xpGain > 0 &&
         regen.hearts < MAX_HEARTS
       ) {
-        heartsResult = gainHearts(regen.hearts, 1);
+        heartsResult = gainHearts(regen.hearts, 1, regen.heartsRefillAt, Date.now());
         heartsBonus = "perfect";
       }
 

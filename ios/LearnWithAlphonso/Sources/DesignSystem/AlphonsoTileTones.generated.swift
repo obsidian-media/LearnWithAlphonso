@@ -21,6 +21,28 @@ struct AlphonsoTileTonePalette {
     let edgeEmber: Color
 
     static let all: [String: AlphonsoTileTonePalette] = [
+        "royal": AlphonsoTileTonePalette(
+            tones: [
+                .coral: (Color(hex: 0xFFD2C4), Color(hex: 0x8A2A14)),
+                .sky: (Color(hex: 0xCDE2FF), Color(hex: 0x1B4A8A)),
+                .sun: (Color(hex: 0xFFD970), Color(hex: 0x6B4700)),
+                .lilac: (Color(hex: 0xE0D2FF), Color(hex: 0x523399)),
+                .mint: (Color(hex: 0xB5E6CB), Color(hex: 0x165C3A)),
+            ],
+            edgeMoss: Color(hex: 0x133F2B),
+            edgeEmber: Color(hex: 0xB23C27)
+        ),
+        "royal-dark": AlphonsoTileTonePalette(
+            tones: [
+                .coral: (Color(hex: 0x4A1F16), Color(hex: 0xFFD2C4)),
+                .sky: (Color(hex: 0x16304F), Color(hex: 0xCDE2FF)),
+                .sun: (Color(hex: 0x46370F), Color(hex: 0xFFE08A)),
+                .lilac: (Color(hex: 0x2F2350), Color(hex: 0xE0D2FF)),
+                .mint: (Color(hex: 0x143A29), Color(hex: 0xC2ECD5)),
+            ],
+            edgeMoss: Color(hex: 0x133F2B),
+            edgeEmber: Color(hex: 0xB23C27)
+        ),
         "meadow": AlphonsoTileTonePalette(
             tones: [
                 .coral: (Color(hex: 0xFFD2C4), Color(hex: 0x8A2A14)),
@@ -43,73 +65,13 @@ struct AlphonsoTileTonePalette {
             edgeMoss: Color(hex: 0x153C25),
             edgeEmber: Color(hex: 0x9E3D16)
         ),
-        "canopy": AlphonsoTileTonePalette(
-            tones: [
-                .coral: (Color(hex: 0xFFD2C4), Color(hex: 0x8A2A14)),
-                .sky: (Color(hex: 0xCDE2FF), Color(hex: 0x1B4A8A)),
-                .sun: (Color(hex: 0xFFD970), Color(hex: 0x6B4700)),
-                .lilac: (Color(hex: 0xE0D2FF), Color(hex: 0x523399)),
-                .mint: (Color(hex: 0xB5E6CB), Color(hex: 0x165C3A)),
-            ],
-            edgeMoss: Color(hex: 0x133F2B),
-            edgeEmber: Color(hex: 0xB23C27)
-        ),
-        "canopy-dark": AlphonsoTileTonePalette(
-            tones: [
-                .coral: (Color(hex: 0x4A1F16), Color(hex: 0xFFD2C4)),
-                .sky: (Color(hex: 0x16304F), Color(hex: 0xCDE2FF)),
-                .sun: (Color(hex: 0x46370F), Color(hex: 0xFFE08A)),
-                .lilac: (Color(hex: 0x2F2350), Color(hex: 0xE0D2FF)),
-                .mint: (Color(hex: 0x143A29), Color(hex: 0xC2ECD5)),
-            ],
-            edgeMoss: Color(hex: 0x133F2B),
-            edgeEmber: Color(hex: 0xB23C27)
-        ),
-        "manuscript": AlphonsoTileTonePalette(
-            tones: [
-                .coral: (Color(hex: 0xFFD2C4), Color(hex: 0x8A2A14)),
-                .sky: (Color(hex: 0xCDE2FF), Color(hex: 0x1B4A8A)),
-                .sun: (Color(hex: 0xFFD970), Color(hex: 0x6B4700)),
-                .lilac: (Color(hex: 0xE0D2FF), Color(hex: 0x523399)),
-                .mint: (Color(hex: 0xB5E6CB), Color(hex: 0x165C3A)),
-            ],
-            edgeMoss: Color(hex: 0x650014),
-            edgeEmber: Color(hex: 0x5E0E19)
-        ),
-        "manuscript-dark": AlphonsoTileTonePalette(
-            tones: [
-                .coral: (Color(hex: 0x4A1F16), Color(hex: 0xFFD2C4)),
-                .sky: (Color(hex: 0x16304F), Color(hex: 0xCDE2FF)),
-                .sun: (Color(hex: 0x46370F), Color(hex: 0xFFE08A)),
-                .lilac: (Color(hex: 0x2F2350), Color(hex: 0xE0D2FF)),
-                .mint: (Color(hex: 0x143A29), Color(hex: 0xC2ECD5)),
-            ],
-            edgeMoss: Color(hex: 0x650014),
-            edgeEmber: Color(hex: 0x5E0E19)
-        ),
-        "studio-ink": AlphonsoTileTonePalette(
-            tones: [
-                .coral: (Color(hex: 0x4A1F16), Color(hex: 0xFFD2C4)),
-                .sky: (Color(hex: 0x16304F), Color(hex: 0xCDE2FF)),
-                .sun: (Color(hex: 0x46370F), Color(hex: 0xFFE08A)),
-                .lilac: (Color(hex: 0x2F2350), Color(hex: 0xE0D2FF)),
-                .mint: (Color(hex: 0x143A29), Color(hex: 0xC2ECD5)),
-            ],
-            edgeMoss: Color(hex: 0x004699),
-            edgeEmber: Color(hex: 0x004E93)
-        ),
     ]
 
-    /// "studio-ink" is dark only; every other theme adds "-dark" in Dark Mode.
+    /// Each theme ("royal", "meadow") adds "-dark" in Dark Mode.
     static var current: AlphonsoTileTonePalette {
         let manager = AlphonsoThemeManager.shared
-        let key: String
-        if manager.themeID == .studioInk {
-            key = "studio-ink"
-        } else {
-            key = manager.themeID.rawValue + (manager.systemColorScheme == .dark ? "-dark" : "")
-        }
-        return all[key] ?? all["canopy"]!
+        let key = manager.themeID.rawValue + (manager.systemColorScheme == .dark ? "-dark" : "")
+        return all[key] ?? all["royal"]!
     }
 }
 

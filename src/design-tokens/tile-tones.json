@@ -1,6 +1,60 @@
 {
   "tones": ["coral", "sky", "sun", "lilac", "mint"],
   "palettes": {
+    "royal": {
+      "coral": {
+        "bg": "#ffd2c4",
+        "ink": "#8a2a14"
+      },
+      "sky": {
+        "bg": "#cde2ff",
+        "ink": "#1b4a8a"
+      },
+      "sun": {
+        "bg": "#ffd970",
+        "ink": "#6b4700"
+      },
+      "lilac": {
+        "bg": "#e0d2ff",
+        "ink": "#523399"
+      },
+      "mint": {
+        "bg": "#b5e6cb",
+        "ink": "#165c3a"
+      },
+      "edge": {
+        "moss": "#133f2b",
+        "ember": "#b23c27"
+      },
+      "surface": "#effaf4"
+    },
+    "royal-dark": {
+      "coral": {
+        "bg": "#4a1f16",
+        "ink": "#ffd2c4"
+      },
+      "sky": {
+        "bg": "#16304f",
+        "ink": "#cde2ff"
+      },
+      "sun": {
+        "bg": "#46370f",
+        "ink": "#ffe08a"
+      },
+      "lilac": {
+        "bg": "#2f2350",
+        "ink": "#e0d2ff"
+      },
+      "mint": {
+        "bg": "#143a29",
+        "ink": "#c2ecd5"
+      },
+      "edge": {
+        "moss": "#133f2b",
+        "ember": "#b23c27"
+      },
+      "surface": "#0c1813"
+    },
     "meadow": {
       "coral": {
         "bg": "#ffd2c4",
@@ -54,141 +108,6 @@
         "ember": "#9e3d16"
       },
       "surface": "#0c1810"
-    },
-    "canopy": {
-      "coral": {
-        "bg": "#ffd2c4",
-        "ink": "#8a2a14"
-      },
-      "sky": {
-        "bg": "#cde2ff",
-        "ink": "#1b4a8a"
-      },
-      "sun": {
-        "bg": "#ffd970",
-        "ink": "#6b4700"
-      },
-      "lilac": {
-        "bg": "#e0d2ff",
-        "ink": "#523399"
-      },
-      "mint": {
-        "bg": "#b5e6cb",
-        "ink": "#165c3a"
-      },
-      "edge": {
-        "moss": "#133f2b",
-        "ember": "#b23c27"
-      },
-      "surface": "#effaf4"
-    },
-    "canopy-dark": {
-      "coral": {
-        "bg": "#4a1f16",
-        "ink": "#ffd2c4"
-      },
-      "sky": {
-        "bg": "#16304f",
-        "ink": "#cde2ff"
-      },
-      "sun": {
-        "bg": "#46370f",
-        "ink": "#ffe08a"
-      },
-      "lilac": {
-        "bg": "#2f2350",
-        "ink": "#e0d2ff"
-      },
-      "mint": {
-        "bg": "#143a29",
-        "ink": "#c2ecd5"
-      },
-      "edge": {
-        "moss": "#133f2b",
-        "ember": "#b23c27"
-      },
-      "surface": "#0c1813"
-    },
-    "manuscript": {
-      "coral": {
-        "bg": "#ffd2c4",
-        "ink": "#8a2a14"
-      },
-      "sky": {
-        "bg": "#cde2ff",
-        "ink": "#1b4a8a"
-      },
-      "sun": {
-        "bg": "#ffd970",
-        "ink": "#6b4700"
-      },
-      "lilac": {
-        "bg": "#e0d2ff",
-        "ink": "#523399"
-      },
-      "mint": {
-        "bg": "#b5e6cb",
-        "ink": "#165c3a"
-      },
-      "edge": {
-        "moss": "#650014",
-        "ember": "#5e0e19"
-      },
-      "surface": "#f3f5f8"
-    },
-    "manuscript-dark": {
-      "coral": {
-        "bg": "#4a1f16",
-        "ink": "#ffd2c4"
-      },
-      "sky": {
-        "bg": "#16304f",
-        "ink": "#cde2ff"
-      },
-      "sun": {
-        "bg": "#46370f",
-        "ink": "#ffe08a"
-      },
-      "lilac": {
-        "bg": "#2f2350",
-        "ink": "#e0d2ff"
-      },
-      "mint": {
-        "bg": "#143a29",
-        "ink": "#c2ecd5"
-      },
-      "edge": {
-        "moss": "#650014",
-        "ember": "#5e0e19"
-      },
-      "surface": "#0e1115"
-    },
-    "studio-ink": {
-      "coral": {
-        "bg": "#4a1f16",
-        "ink": "#ffd2c4"
-      },
-      "sky": {
-        "bg": "#16304f",
-        "ink": "#cde2ff"
-      },
-      "sun": {
-        "bg": "#46370f",
-        "ink": "#ffe08a"
-      },
-      "lilac": {
-        "bg": "#2f2350",
-        "ink": "#e0d2ff"
-      },
-      "mint": {
-        "bg": "#143a29",
-        "ink": "#c2ecd5"
-      },
-      "edge": {
-        "moss": "#004699",
-        "ember": "#004e93"
-      },
-      "surface": "#0b0d12"
     }
   }
 }

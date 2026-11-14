@@ -7,20 +7,20 @@ import org.junit.Test
 
 class AlphonsoPalettesTest {
     @Test
-    fun `palette catalog matches the iOS values and default is canopy`() {
-        assertEquals(Color(0xFF1D2B64), AlphonsoPalettes.light.getValue(AlphonsoThemeId.CANOPY).moss)
-        assertEquals(Color(0xFF0B0D12), AlphonsoPalettes.light.getValue(AlphonsoThemeId.STUDIO_INK).surface)
-        assertEquals(setOf(AlphonsoThemeId.MEADOW, AlphonsoThemeId.MANUSCRIPT, AlphonsoThemeId.CANOPY), AlphonsoPalettes.dark.keys)
-        assertEquals(AlphonsoThemeId.CANOPY, AlphonsoThemeId.DEFAULT)
-        assertEquals(AlphonsoThemeId.STUDIO_INK, AlphonsoThemeId.fromRaw("studio-ink"))
+    fun `palette catalog has royal and meadow, each with a night variant, and royal is the default`() {
+        assertEquals(Color(0xFF1D2B64), AlphonsoPalettes.light.getValue(AlphonsoThemeId.ROYAL).moss)
+        assertEquals(setOf(AlphonsoThemeId.ROYAL, AlphonsoThemeId.MEADOW), AlphonsoPalettes.light.keys)
+        assertEquals(setOf(AlphonsoThemeId.ROYAL, AlphonsoThemeId.MEADOW), AlphonsoPalettes.dark.keys)
+        assertEquals(AlphonsoThemeId.ROYAL, AlphonsoThemeId.DEFAULT)
     }
 
     @Test
-    fun `resolve follows the system for light themes and never for studio ink`() {
-        assertTrue(AlphonsoPalettes.resolve(AlphonsoThemeId.CANOPY, systemDark = true).isDark)
-        assertTrue(!AlphonsoPalettes.resolve(AlphonsoThemeId.CANOPY, systemDark = false).isDark)
-        assertTrue(AlphonsoPalettes.resolve(AlphonsoThemeId.STUDIO_INK, systemDark = false).isDark)
-        assertEquals(Color(0xFF0E1330), AlphonsoPalettes.resolve(AlphonsoThemeId.CANOPY, systemDark = true).surface)
+    fun `resolve follows the system for both themes`() {
+        for (id in AlphonsoThemeId.entries) {
+            assertTrue(AlphonsoPalettes.resolve(id, systemDark = true).isDark)
+            assertTrue(!AlphonsoPalettes.resolve(id, systemDark = false).isDark)
+        }
+        assertEquals(Color(0xFF0E1330), AlphonsoPalettes.resolve(AlphonsoThemeId.ROYAL, systemDark = true).surface)
     }
 
     private fun luminance(c: Color): Double {
@@ -37,7 +37,7 @@ class AlphonsoPalettesTest {
     fun `secondary buttons and row cards keep ink on parchment at 4_5 to 1 or better in every theme`() {
         // The podcast "Take the quiz" chip and the episode card both sit on the scene photo with these two tokens.
         val all = AlphonsoPalettes.light.values + AlphonsoPalettes.dark.values
-        assertEquals(7, all.size)
+        assertEquals(4, all.size)
         all.forEach { p -> assertTrue("ink on parchment ${contrast(p.ink, p.parchment)}", contrast(p.ink, p.parchment) >= 4.5) }
     }
 }

@@ -119,8 +119,7 @@ describe("chunky answer tiles and word chips", () => {
     );
     // Distinct by shape in every theme, and the colour split still keeps a non-moss wrong colour.
     const theme = read("DesignSystem/AlphonsoTheme.swift");
-    expect(theme).toContain("case .studioInk, .manuscript: return false");
-    expect(theme).toContain("wrongAnswerUsesEmber ? ember : destructive");
+    expect(theme).toContain("static var wrongAnswer: Color { ember }");
   });
 
   it("word banks and reorder pools use the chunky chip, highlighted when picked", () => {

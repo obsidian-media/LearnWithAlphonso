@@ -91,7 +91,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Gamification**: XP, streaks, streak freezes, hearts (regenerate over time, or earn back via a perfect lesson / a streak milestone / clearing the review queue / spending XP; the server refuses to start a lesson at 0 hearts and the apps offer "Review instead"; since build 62 the server also charges the misses an app did not report, `SERVER_HEARTS` on by default, and Alphonso Pro has unlimited hearts), streaks and daily activity counted on the learner's own local day (build 62), leagues (five tiers, shown to learners as Sprout, Sapling, Grove, Treetop and Summit; the database keys are unchanged), achievements, friend duels + open/stranger duel matchmaking, weekly challenges, persistent teams (weekly-XP competition plus a shared weekly team mission), and a season ladder (weekly promotion/demotion cohorts, separate from the permanent league)
 - **Friends**: invite-link based, with a friends leaderboard scope; a `friend_activity_events` feed (lesson completions, streak milestones, league promotions) and nudge-a-friend, both native-only (iOS and Android, not on web; see "Native iOS app" below)
 - **Leaderboards**: global, friends, and country rankings; overtake detection and a weekly recap, both native-only (iOS and Android)
-- **Themes**: 4 user-selectable themes on web (Canopy, the default since the web port, then Meadow, Studio Ink and Manuscript — `/profile`), synced to the account and persisted locally
+- **Themes**: 2 user-selectable themes on every platform (Royal, the default, with a light and a night look, and Meadow — `/profile`), synced to the account and persisted locally
 - **The round-6 look** (web, iOS and Android; native not yet run on a device): one design-token source (`design/tokens.json`, Royal and Meadow palettes, light and night, bundled Bricolage Grotesque and Figtree fonts) behind every screen. Lessons play in the unit's painted room with Alphonso reacting; a new learner gets an 8-question first run (name, course, language, country, goal, level, daily time, age range, interests), a taste of two real questions and a plan before sign-in, then picks one of 16 animal profile pictures (presets only). The Profile page shows streak, XP, words, a week ring, minutes spoken, a 3-month heat map, records, weak spots and a shareable image. Age is stored as a range, and a learner who chooses Under 13 is stopped on the device with nothing sent.
 - **Practice hub with stars**: scenarios and story campaigns in their rooms, a "Today's pick" that practises your top weak spot, "Continue", and 1 to 3 stars per call that the server awards (finished; 80% right; all right, 4+ words each, no English). Alphonso speaks his opening line, and Hector greets you by name when a call opens.
 - **Sound effects**: nine short CC0 sounds (right, wrong, complete, taps, call start and end) with a Settings switch; they never play over a voice.
@@ -117,7 +117,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   explicit offline download described under Listen above.) See
   `docs/superpowers/specs/2026-09-24-podcast-phase0-ios-tabs-design.md` and
   `docs/superpowers/specs/2026-09-24-podcast-phase1b-ios-design.md`.
-- **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). Has its own theme system (`ios/LearnWithAlphonso/Sources/DesignSystem/`) with 4 themes: the three web themes ported over (Meadow/Studio Ink/Manuscript — fonts, oklch-accurate palette, the hard-shadow pressed-button effect) plus a fourth, mascot-forward "Canopy" theme (iOS 2026-09-23, ported to the web afterwards and now the default there too), applied across every screen, with an in-app picker (Settings, from the Learn tab) that syncs to the same `profiles.theme` the web app reads — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` (original 3-theme port) / `docs/superpowers/specs/2026-09-23-ios-canopy-theme-redesign-design.md` (Canopy)
+- **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). Has its own theme system (`ios/LearnWithAlphonso/Sources/DesignSystem/`) with 2 themes, Royal (the default) and Meadow (fonts, oklch-accurate palette, the hard-shadow pressed-button effect), applied across every screen, with an in-app picker (Settings, from the Learn tab) that syncs to the same `profiles.theme` the web app reads — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` (original 3-theme port) / `docs/superpowers/specs/2026-09-23-ios-canopy-theme-redesign-design.md` (Canopy)
 
 ## Content
 
@@ -306,11 +306,11 @@ runner, `ios-app-build` in `.github/workflows/ci.yml` — there is no local
 Xcode/macOS in this development environment, so that CI job is the only
 compile verification that exists):
 
-- **Theme system** (`Sources/DesignSystem/`): the app's own port of the
-  three original web themes (Meadow/Studio Ink/Manuscript) plus a fourth,
-  Canopy (also on the web now) — bundled variable fonts per theme resolved
+- **Theme system** (`Sources/DesignSystem/`): two themes, Royal (the default) and
+  Meadow, each with a light and a night look following the system — bundled variable fonts
+  per theme resolved
   to a specific weight/optical-size via CoreText rather than static
-  files (none of the seven font families ship those), oklch-accurate
+  files (none of the font families ship those), oklch-accurate
   color palettes, and the `.hard-shadow` pressed-button effect —
   applied across every screen, switchable in-app (Settings, from the
   Learn tab) and synced to `profiles.theme`.

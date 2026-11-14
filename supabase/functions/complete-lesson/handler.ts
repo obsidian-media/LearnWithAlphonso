@@ -457,7 +457,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     heartsResult = { hearts: MAX_HEARTS, heartsRefillAt: null };
     heartsBonus = "streak";
   } else if (perfectLessonBonusEarned(correct, total) && xpGain > 0 && regen.hearts < MAX_HEARTS) {
-    heartsResult = gainHearts(regen.hearts, 1);
+    heartsResult = gainHearts(regen.hearts, 1, regen.heartsRefillAt, now.getTime());
     heartsBonus = "perfect";
   }
 

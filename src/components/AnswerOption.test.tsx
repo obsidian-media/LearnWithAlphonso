@@ -1,13 +1,8 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AnswerOption } from "./AnswerOption";
-import { useTheme } from "../lib/theme";
-
-afterEach(() => {
-  useTheme.setState({ theme: "meadow" });
-});
 
 describe("AnswerOption", () => {
   it("calls onClick when not disabled", async () => {
@@ -67,22 +62,6 @@ describe("AnswerOption", () => {
     );
     expect(screen.getByRole("button")).toHaveClass("border-rose-400");
   });
-
-  it("renders the Studio Ink variant with a left border indicator", () => {
-    useTheme.setState({ theme: "studio-ink" });
-    render(
-      <AnswerOption
-        label="Paris"
-        checked={true}
-        isPicked={true}
-        isRight={true}
-        disabled={true}
-        onClick={() => {}}
-      />,
-    );
-    expect(screen.getByRole("button")).toHaveClass("border-l-ds-brand");
-  });
-
   it("is a chunky tile that presses down, at least 56 px tall", () => {
     render(
       <AnswerOption

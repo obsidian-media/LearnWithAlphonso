@@ -18,9 +18,9 @@ final class OutOfHeartsModelTests: XCTestCase {
     }
     func testMessageNamesTheCountdownOrSaysShortly() {
         XCTAssertEqual(OutOfHeartsModel(refillAt: now.addingTimeInterval(61)).message(now: now),
-                       "You've used all your hearts for now. They refill automatically in 1:01.")
+                       "You've used all your hearts for now. Your next heart comes back in 1:01.")
         XCTAssertEqual(OutOfHeartsModel(refillAt: nil).message(now: now),
-                       "You've used all your hearts for now. They'll refill again shortly.")
+                       "You've used all your hearts for now. A heart will come back shortly.")
     }
     /// There is always a way forward. Buy needs the network; practice and review never do.
     func testBuyOnlyOnlineAndPracticeAlwaysOffered() {

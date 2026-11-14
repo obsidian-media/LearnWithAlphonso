@@ -11,26 +11,52 @@ export const XP_HEART_COST = 50;
 export type HeartsState = { hearts: number; heartsRefillAt: number | null };
 
 /**
- * Once `heartsRefillAt` has passed, hearts are back to full and the timer
- * clears. Before that, nothing changes. This is the resolution step that
- * was previously missing everywhere -- the timer was set but nothing ever
- * consumed it.
+ * The refill rule. While hearts are below MAX_HEARTS one heart comes back every HEART_REFILL_MS, counted from the
+ * moment the learner first dropped below MAX_HEARTS (or from the last refill). `heartsRefillAt` is when the NEXT heart
+ * arrives; it is null exactly when hearts are full. A due timer adds every heart that has come due (a learner away for
+ * two hours gets four), capped at MAX_HEARTS, and the leftover time carries over into the next heart. A learner below
+ * MAX_HEARTS with no timer (an old row) starts the clock now rather than staying stuck. Keep identical to
+ * supabase/functions/_shared/hearts.ts and the SQL function public.hearts_refill_resolve.
  */
 export function resolveHeartsRefill(
   hearts: number,
   heartsRefillAt: number | null,
   now: number,
 ): HeartsState {
-  if (heartsRefillAt !== null && now >= heartsRefillAt) {
-    return { hearts: MAX_HEARTS, heartsRefillAt: null };
-  }
-  return { hearts, heartsRefillAt };
+  if (hearts >= MAX_HEARTS) return { hearts: MAX_HEARTS, heartsRefillAt: null };
+  if (heartsRefillAt === null) return { hearts, heartsRefillAt: now + HEART_REFILL_MS };
+  if (now < heartsRefillAt) return { hearts, heartsRefillAt };
+  const due = 1 + Math.floor((now - heartsRefillAt) / HEART_REFILL_MS);
+  const next = Math.min(MAX_HEARTS, hearts + due);
+  return next >= MAX_HEARTS
+    ? { hearts: MAX_HEARTS, heartsRefillAt: null }
+    : { hearts: next, heartsRefillAt: heartsRefillAt + due * HEART_REFILL_MS };
 }
 
-/** Adds hearts (from a bonus), capped at MAX_HEARTS. Any gain means the
- * user is no longer blocked, so the refill timer clears too. */
-export function gainHearts(hearts: number, amount: number): HeartsState {
-  return { hearts: Math.min(MAX_HEARTS, hearts + amount), heartsRefillAt: null };
+/**
+ * A wrong answer. Resolves any due refill first, then takes one heart. If a refill is already pending its clock is kept
+ * (losing a heart does not reset the wait); from full hearts a new clock starts now.
+ */
+export function loseHeart(hearts: number, heartsRefillAt: number | null, now: number): HeartsState {
+  const cur = resolveHeartsRefill(hearts, heartsRefillAt, now);
+  return {
+    hearts: Math.max(0, cur.hearts - 1),
+    heartsRefillAt: cur.heartsRefillAt ?? now + HEART_REFILL_MS,
+  };
+}
+
+/**
+ * Adds hearts (a bonus or a purchase), capped at MAX_HEARTS. A refill already running keeps its clock; the timer clears
+ * only once hearts are full.
+ */
+export function gainHearts(
+  hearts: number,
+  amount: number,
+  heartsRefillAt: number | null,
+  now: number,
+): HeartsState {
+  const cur = resolveHeartsRefill(hearts, heartsRefillAt, now);
+  return resolveHeartsRefill(Math.min(MAX_HEARTS, cur.hearts + amount), cur.heartsRefillAt, now);
 }
 
 /** A lesson with zero wrong answers earns a heart back. */

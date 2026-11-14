@@ -67,31 +67,32 @@ describe("3. the wrong-answer panel is softer, and never the colour of a right a
   it("tints with the theme's wrong-answer colour and titles in ink (ember text missed 3:1 on light themes)", () => {
     expect(body).toMatch(/correct \? AlphonsoColor\.moss : AlphonsoColor\.wrongAnswer/);
     expect(body).toContain(".foregroundStyle(correct ? tint : AlphonsoColor.ink)");
-    expect(body).toContain(
-      "AlphonsoColor.wrongAnswerUsesEmber ? AlphonsoPrimaryButtonStyle.alphonsoEmber",
-    );
+    // Both themes draw ember and moss apart, so the wrong-answer button is always the ember one.
+    expect(body).toContain("AlphonsoPrimaryButtonStyle.alphonsoEmber");
   });
 
-  // Studio Ink and Manuscript draw ember and moss in one colour, so ember there would make wrong look right.
+  // Wrong must never look like right: in both themes, light and night, ember is not the colour of moss.
   const hexOf = (block: string, token: string) => {
     const m = block.match(new RegExp(`\\b${token}: Color\\(hex: (0x[0-9A-F_]+)\\)`));
     expect(m, `${token} in palette`).not.toBeNull();
     return m![1];
   };
-  const usesEmber = from(theme, "static var wrongAnswerUsesEmber: Bool").slice(0, 400);
 
-  it.each(["meadow", "studioInk", "manuscript", "canopy"])(
-    "%s: the wrong-answer colour differs from moss",
-    (id) => {
-      const block = from(theme, `.${id}: AlphonsoPalette(`).slice(0, 1800);
-      const emberIsMoss = hexOf(block, "moss") === hexOf(block, "ember");
-      const listedAsEmber = new RegExp(`case [^:]*\\.${id}\\b[^:]*:\\s*return true`).test(
-        usesEmber,
-      );
-      if (emberIsMoss) expect(listedAsEmber, `${id} must use destructive`).toBe(false);
-      else expect(listedAsEmber, `${id} should use its coral ember`).toBe(true);
-    },
-  );
+  it("the wrong-answer colour is the theme's ember", () => {
+    expect(from(theme, "static var wrongAnswer: Color").slice(0, 80)).toContain("{ ember }");
+  });
+
+  it.each(["meadow", "royal"])("%s: ember differs from moss, light and night", (id) => {
+    const marker = `.${id}: AlphonsoPalette(`;
+    const first = theme.indexOf(marker);
+    const second = theme.indexOf(marker, first + 1);
+    expect(first).toBeGreaterThan(-1);
+    expect(second, `${id} has a night palette`).toBeGreaterThan(first);
+    for (const at of [first, second]) {
+      const block = theme.slice(at, at + 1800);
+      expect(hexOf(block, "moss"), `${id} at ${at}`).not.toBe(hexOf(block, "ember"));
+    }
+  });
 });
 
 describe("4. word chips keep their bottom edge", () => {

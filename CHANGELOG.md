@@ -10,6 +10,15 @@ works now_.
 
 ## Unreleased
 
+### Progress rules: hearts refill steadily, a talk counts once it earns a star (migration 20261116100000)
+
+- **Hearts refill.** While a learner has fewer than 5 hearts, one heart comes back every 30 minutes, counted from the moment they first dropped below 5 or from the last refill, capped at 5. The wait carries over (losing a heart while a refill is pending keeps the clock; time away adds every heart that came due). At 5 hearts there is no timer. The migration adds `hearts_refill_resolve` and redefines `lose_heart`, `restore_hearts_if_due`, `buy_heart_with_xp`, `claim_review_clear_bonus` and `settle_lesson_hearts` on it, and restores every learner who was stuck below 5 with no timer to 5. The web (`hearts.ts`, store, header, hearts dialog), the complete-lesson Edge Function, the iOS Kit and Android core share the rule and the test vectors; the header shows "+1 in M:SS" next to the count on web, iOS and Android.
+- **A talk counts as done only if it earned at least one star.** The path builder drops finished calls with 0 stars from "done" (`callCountsAsDone`). The native apps read the path from the server, so they follow without a code change.
+
+### Themes: Royal and Meadow (migration 20261116110000)
+
+- **Two themes: Royal and Meadow.** Studio Ink, Manuscript and Canopy are removed from web, iOS and Android: pickers, token sets, tile-tone palettes, the unused font families and their licence files, previews and tests. Royal (the default) keeps its light and night looks; Meadow is unchanged. A saved theme that is one of the removed ones moves to Royal silently on every platform (`profiles.theme` is rewritten by migration `20261116110000`, and older app builds that still send a removed value are stored as Royal).
+
 ### Device-check fixes (#504, merged 2026-11-13; goes out in build 64)
 
 Owner device check of builds 62 and 63.
@@ -22,7 +31,7 @@ Owner device check of builds 62 and 63.
 ### Friend invites and social flows (#505, merged 2026-11-13; no migration)
 
 - **Invite links survive sign-in on web.** The signed-out guard in `src/routes/_authenticated/route.tsx` now sends the visitor to `/auth` with the page they asked for as `next` (re-vetted by `safeNextPath`); an `/invite/...` link opens the sign-up form. Before, the link was dropped at the door and the friendship never happened.
-- **Universal Links on iOS.** `GET /.well-known/apple-app-site-association` is served by the web app (`src/lib/apple-app-site-association.ts`; team ID plus bundle ID, both public) and lists only `/invite/*`; every other page stays in the browser. The app gets the `com.apple.developer.associated-domains` entitlement (`applinks:learn.alphonsoecosystem.app`) in both the Debug and Release entitlements and in `project.yml`. Opening a link shows an "Add {name} as a friend?" sheet (`FriendInviteAccept.swift`; the name comes from `get_friend_invite_preview`, the only thing that can look a code up, through `ProgressSyncClient.getFriendInvitePreview`). **A signed build fails without the Associated Domains capability on the App ID**, so enable it (and regenerate the provisioning profile) before the next iOS build.
+- **Universal Links on iOS.** `GET /.well-known/apple-app-site-association` is served by the web app (`src/lib/apple-app-site-association.ts`; team ID plus bundle ID, both public) and lists only `/invite/*`; every other page stays in the browser. The app gets the `com.apple.developer.associated-domains` entitlement (`applinks:learn.alphonsoecosystem.app`) in both the Debug and Release entitlements and in `project.yml`. Opening a link shows an "Add {name} as a friend?" sheet (`FriendInviteAccept.swift`; the name comes from `get_friend_invite_preview`, the only thing that can look a code up, through `ProgressSyncClient.getFriendInvitePreview`). A signed build fails without the Associated Domains capability on the App ID and in the provisioning profile; both were done on 2026-11-14 (see "Release tooling" below), so nothing is owed before the next iOS build.
 - **Android:** the friend-code field accepts a pasted invite link as well as a bare code (`InviteLink.codeFromEntry`). Android App Links (`assetlinks.json`) still wait on the Play app-signing key's SHA-256.
 - **Verified working:** study buddy and duels. Learner-to-learner calls never existed, so there is nothing to fix there.
 
@@ -32,10 +41,11 @@ Owner device check of builds 62 and 63.
 - **League flags** show on web, iOS and Android only for learners who turned their flag on: `profiles.country` is cleared unless they did, so a row's country being present is the consent signal (`src/lib/country-flag.ts`, `ProfileMath.flagEmoji`). A malformed code draws nothing. Screen readers say "Country XX".
 - **Web header brand mark** and the league badge beside the stats.
 
-### Open bugs found in device check (not fixed, awaiting owner decisions)
+### Release tooling and owner decisions (2026-11-14)
 
-- **Hearts never refill between 1 and 4.** The refill timer is only set when hearts reach 0, so a learner at 1 to 4 hearts never refills (seven learners were stuck). Needs the owner's refill rate.
-- **The path marks a talk done for any finished call.** A QA account's 6-second, 0-star call counted. Needs the owner's rule for "talk done".
+- The hearts refill and practice-talk rules were decided on 2026-11-14 and are fixed in the progress-rules PR (see Progress rules).
+- **Provisioning profile workflow can enable capabilities (#508, #510).** `.github/workflows/regenerate-ios-profile.yml` has an `ensure_capabilities` input: a comma-separated list of settings-free capabilities (today `ASSOCIATED_DOMAINS`) that it enables on the App ID through the App Store Connect API before it mints the profile, then verifies the new profile carries the entitlement (it still fails loudly if it does not). Run on 2026-11-14 (run 43570547651): Associated Domains is ON for `com.obsidianmedia.learnwithalphonso`, the new profile UUID is `02d1ae14-17d6-4881-8f58-0fa20bcb5af1`, and the owner updated `IOS_PROVISIONING_PROFILE_BASE64` and `IOS_PROVISIONING_PROFILE_UUID` in the `apple-signing` environment. Lessons: the capabilities relationship rejects a `limit` query parameter (#510 removed it), and the `apple-signing` environment only deploys from `main`, so a dispatch from a branch is rejected.
+- **Plan for in-app Help chat and a support inbox (#509).** `docs/superpowers/plans/2026-11-14-support-help-chat.md`. The owner accepted the five recommended answers: the AI stays off at launch until the owner has reviewed the help file and ten transcripts; the ticket email is at most one per 15 minutes and carries no learner text; blocked learners still get Help; a ticket reopens if it was solved less than 7 days ago, otherwise a new ticket is made; limits are 30 AI replies a day, 5 a minute and 50 learner messages a day. Milestone 1 is being built (migrations `20261117100000` and `20261117100100`, later `20261117100200` and `20261117100300`); that PR updates the plan.
 
 ### Library tab with a Watch shelf (#499, merged 2026-11-13; goes out in build 63)
 

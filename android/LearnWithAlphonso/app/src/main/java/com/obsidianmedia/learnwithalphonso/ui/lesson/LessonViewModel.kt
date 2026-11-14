@@ -234,7 +234,11 @@ class LessonViewModel(
         viewModelScope.launch {
             val result = runCatching { client.buyHeartWithXp(course.code) }.getOrNull()
             if (result is BuyHeartResult.Ok) {
-                syncStore.lastKnownProgress()?.let { syncStore.updateLastKnownProgress(it.copy(hearts = result.hearts, heartsRefillAt = null)) }
+                syncStore.lastKnownProgress()?.let {
+                    // A bought heart keeps a running clock while hearts are still below the cap, and clears it at the cap.
+                    val after = HeartsEconomy.resolveHeartsRefill(result.hearts, it.heartsRefillAt?.toLong(), now())
+                    syncStore.updateLastKnownProgress(it.copy(hearts = after.hearts, heartsRefillAt = after.heartsRefillAt?.toDouble()))
+                }
                 openSessionNow()
                 _state.update { it.copy(buyingHeart = false) }
             } else {

@@ -269,7 +269,7 @@ and fails in CI. And `src/styles.css` carries **`@source "../admin"`**:
 it declares `source(none)`, so without that line Tailwind never scans the
 admin files and every utility they use is missing from the generated CSS,
 producing an unstyled app with no error anywhere. The admin shell sets
-`data-theme="canopy"` explicitly, since `:root` is Meadow.
+`data-palette="royal"` explicitly (it has no theme picker).
 
 Authorization is `admin_users` (`added_by` references `auth.users` with `ON DELETE SET NULL`, so deleting the admin who added another admin no longer blocks the account deletion): **RLS enabled with zero policies**, plus
 `REVOKE ALL FROM anon, authenticated`, so only `service_role` (which
@@ -894,8 +894,16 @@ client knows the rejection is permanent. Both functions share
 
 `src/lib/hearts.ts` (ported to Deno for the Edge Function, and to Swift as
 `ios/LearnWithAlphonsoKit/.../HeartsEconomy.swift`) is the pure math for:
-passive regen (`hearts_refill_at` resolves back to full once its time
-passes — resolved lazily on the next read/write, not via a cron job),
+passive regen (while hearts are below 5, one heart comes back every 30 minutes
+from the moment the learner first dropped below 5 or from the last refill;
+`hearts_refill_at` is when the NEXT heart arrives and is null exactly at 5
+hearts; time away adds every heart that came due, capped at 5, the leftover
+carries over, and losing a heart while a refill is pending keeps the clock.
+Resolved lazily on the next read/write, not via a cron job. SQL:
+`hearts_refill_resolve`, used by `lose_heart`, `restore_hearts_if_due`,
+`buy_heart_with_xp`, `claim_review_clear_bonus`, `settle_lesson_hearts`;
+the same rule is in `hearts.ts`, the Deno copy, `HeartsEconomy.swift` and
+`HeartsEconomy.kt`, with the same test vectors),
 +1 heart for a perfect lesson, a full refill at every 7-day streak
 milestone, +1 heart for spending XP (`buy_heart_with_xp` RPC), and +1/day
 for clearing the SRS review queue (`claim_review_clear_bonus` RPC, guarded
@@ -921,27 +929,27 @@ server's 3-hour limit is replaced once at finish on a 403.
 
 ## Themes
 
-Four user-selectable themes on web (`canopy` default, `meadow`, `studio-ink`,
-`manuscript`; Canopy was ported from iOS in #91), defined as CSS custom properties per `[data-theme="..."]`
-block in `src/styles.css` plus a design-tokens JSON per theme
-(`src/design-tokens/*.json`, currently informational/export-only — the
-CSS is the real source of truth the app reads). `src/lib/theme.ts` is a
-small Zustand store: resolves server value (from `profiles.theme`) over
-localStorage over the `canopy` default, and an inline `<script>` in
-`src/routes/__root.tsx` applies the stored theme before first paint to
-avoid a flash of the wrong theme. `profiles.theme` is validated by both a
-Zod enum (`leaderboard.functions.ts`'s `updateProfile`) and a Postgres
-`CHECK` constraint — both need updating together when a theme is added
-(see `supabase/migrations/20260918140000_add_manuscript_theme.sql` for the
-pattern: drop and re-add the constraint, since it isn't named per-value).
+Two user-selectable themes on every platform: **Royal** (navy and gold, the default; light and
+night appearances) and **Meadow** (green). Studio Ink, Manuscript and Canopy were removed on
+2026-11-16 (visual round 6 had already moved the screens onto the design-system tokens, so the
+three older themes were only a second, unused layer). A theme swaps the `--c-*` token values:
+`src/styles/ds-tokens.generated.css` reads `data-palette` on `<html>` (Royal is `:root`, Meadow is
+`:root[data-palette="meadow"]`, night is `data-ds-mode="night"`). `src/lib/theme.ts` is a small
+Zustand store: the account value (`profiles.theme`) wins over the value kept on the device
+(`localStorage` "theme"), over the Royal default, and an inline `<script>` in `src/routes/__root.tsx`
+(`THEME_BOOT_SCRIPT`) applies it before first paint. `normalizeTheme` is the one rule: `meadow`
+stays Meadow and anything else (a removed theme, an unknown or missing value) is Royal, silently.
+The same rule runs on iOS (`DSPaletteID.resolve(stored:)` in the Kit, used by `AlphonsoThemeID.resolve`)
+and Android (`AlphonsoThemeId.resolve`), at launch and when the account value arrives.
+`profiles.theme` holds `royal`, `meadow` or null (no choice yet): migration
+`20261116110000_themes_royal_and_meadow.sql` rewrote the old values to `royal`, narrowed the CHECK
+constraint to the two names, and added a trigger that stores a retired value from an older app build
+as `royal`. `updateProfile` (`leaderboard.functions.ts`) maps any non-`meadow` string to `royal`
+instead of rejecting it. Fonts: Royal uses Baloo 2 and Geist, Meadow uses Fraunces and Geist; the
+other families (Instrument Serif and Sans, Newsreader, Source Sans 3) were removed from all three apps.
 League tiers are shown to learners as Sprout, Sapling, Grove, Treetop and
 Summit (`src/lib/league-tier-copy.ts`, Kit `LeagueTierCopy`); the database
 keys (`bronze` to `diamond`) did not change, so the names are display-only.
-Canopy began as an iOS-only theme (2026-09-23, which is why its migration
-comment still says so) and was ported to the web in #91 (`[data-theme="canopy"]`
-in `src/styles.css`, listed in `THEME_NAMES`, offered in the `/profile`
-picker); today all four names are in the Zod enum, the CHECK constraint, the
-web CSS and the iOS `AlphonsoThemeID`.
 
 ## Native iOS app (`ios/`)
 
@@ -1047,15 +1055,12 @@ App Store Connect app record exists: "Learn With Alphonso", app id
 
 **Design system** (`ios/LearnWithAlphonso/Sources/DesignSystem/`,
 2026-09-22, extended to a full theme system 2026-09-22, extended again
-2026-09-23 with a fourth theme, Canopy, first iOS-only and later ported to the web — see below): originally ported
-all three of the web app's themes (`src/styles.css`'s `:root`/Meadow,
-`[data-theme="studio-ink"]`, `[data-theme="manuscript"]` blocks) rather
+2026-09-23 with a fourth theme, Canopy; since 2026-11-16 only Royal and Meadow remain, see Themes above):
+ported from the web app's themes rather
 than inventing a separate native-only look, so web and iOS read as one
 product. `AlphonsoTheme.swift` defines `AlphonsoThemeID` — **raw values
 match the web's `THEME_NAMES`/`profiles.theme` CHECK constraint
-(`canopy` was absent from `THEME_NAMES` between 2026-09-23 and the web port
-in #91; it is there now, and `resolveInitialTheme` falls back safely for any
-value not in `THEME_NAMES`)** —
+(`royal`, `meadow`), and `AlphonsoThemeID.resolve` sends any other stored value to Royal)** —
 `AlphonsoPalette` (colors converted from each theme's oklch
 values to sRGB via a standard OKLab conversion — computed, not
 eyeballed — plus each theme's font base names/optical-size range and a
@@ -1068,10 +1073,7 @@ screens' call sites.
 
 Each theme's font pair is bundled as its upstream **variable** font
 file(s) (`Sources/Fonts/*.ttf`, all from google/fonts, OFL-licensed:
-Fraunces/Geist for Meadow, Instrument Serif/Instrument Sans for Studio
-Ink, Newsreader/Source Sans 3 for Manuscript — Instrument Serif is the
-one static-only exception, a single Regular face, since the web app
-never loads a bold weight for it) and `AlphonsoFont.swift` resolves a
+Baloo 2/Geist for Royal, Fraunces/Geist for Meadow) and `AlphonsoFont.swift` resolves a
 specific weight/optical-size instance at request time via CoreText's
 `kCTFontVariationAttribute`, rather than depending on iOS's per-OS-
 version support for resolving a variable font's named instances by
@@ -2147,9 +2149,10 @@ Build 62 is on TestFlight (2026-11-13, not submitted). Merged since build 61: #4
 ## Build 64 batch: device-check fixes, social flows, polish (#504 to #506)
 
 - **Device-check fixes (#504).** A `.task` or `.onAppear` hung on a `Group { if ... }` with no else never fires while the group draws nothing: that is why the iOS Watch shelf (`WatchShelfHost`) never loaded and the "Tap a word to save it" hint (`SaveWordHintLine`) never showed. Loaders now sit on an always-present zero-size anchor. `src/lib/ios-device-check-guards.test.ts` forbids that pattern, forbids `confirmationDialog` (accent-tinted text unreadable on iOS 26 glass; all eight dialogs use `alphonsoChoiceDialog`, `AlphonsoChoiceDialog.swift`) and pins the scene order (`.screenScene(...)` before `.background(ds.surface)`, since a later `.background` sits behind an earlier one; web and Android Learn stay flat by design). MY PATH starts with a goal card on all three platforms, one rule in three ports: `pathGoalCard` (`src/lib/path-goal-card.ts`), `PathGoalCard` (Kit) and `PathGoalCard.kt` (`:core`), built from the server's numbers (target level and date, lessons a week, status) with a "Set a goal" invitation when there is no goal.
-- **Social flows (#505).** Web: the signed-out guard keeps the requested page as `next` (invite links open sign-up). iOS: Universal Links for `/invite/*` only (`/.well-known/apple-app-site-association`, `src/lib/apple-app-site-association.ts`; entitlement `applinks:learn.alphonsoecosystem.app` in Debug, Release and `project.yml`), an accept sheet (`FriendInviteAccept.swift`) that looks the code up through `get_friend_invite_preview`. Android: paste a link or a code (`InviteLink.codeFromEntry`). Owner steps: Associated Domains on the App ID before the next iOS build; the Play app-signing SHA-256 in `assetlinks.json` before Android invite links verify. Buddy and duels verified; learner-to-learner calls do not exist.
+- **Social flows (#505).** Web: the signed-out guard keeps the requested page as `next` (invite links open sign-up). iOS: Universal Links for `/invite/*` only (`/.well-known/apple-app-site-association`, `src/lib/apple-app-site-association.ts`; entitlement `applinks:learn.alphonsoecosystem.app` in Debug, Release and `project.yml`), an accept sheet (`FriendInviteAccept.swift`) that looks the code up through `get_friend_invite_preview`. Android: paste a link or a code (`InviteLink.codeFromEntry`). Associated Domains is enabled on the App ID and in the profile (2026-11-14, see below); the Play app-signing SHA-256 in `assetlinks.json` is still owed before Android invite links verify. Buddy and duels verified; learner-to-learner calls do not exist.
 - **Polish (#506).** Web Hector keeps the tab bar; league flags for consenting learners only (a present `profiles.country` is the consent signal; `country-flag.ts` and the Kit and core `flagEmoji`); web header brand mark and league badge beside the stats.
-- **Open, not fixed:** hearts do not refill between 1 and 4 (the refill timer is set only at 0); the path counts any finished call as a done talk (a 6-second, 0-star call did). Both wait on owner decisions.
+- **Fixed in the progress-rules PR (migration `20261116100000`):** hearts refill one per 30 minutes below 5 (the seven stuck learners are restored to 5 by the migration); the path counts a finished call as done only when it earned at least one star (`callCountsAsDone` in `src/lib/practice-stars.ts`; the server builds the path, so web, iOS and Android all follow it).
+- **Provisioning profile workflow (#508, #510, 2026-11-14).** `regenerate-ios-profile.yml` takes an `ensure_capabilities` input (settings-free capabilities, today `ASSOCIATED_DOMAINS`), enables them on the App ID through the App Store Connect API, mints the profile on the existing distribution certificate and verifies the entitlement is in it. Run 43570547651 enabled Associated Domains (profile UUID `02d1ae14-17d6-4881-8f58-0fa20bcb5af1`; the owner updated the two `apple-signing` secrets). The capabilities relationship rejects `limit`; the `apple-signing` environment deploys only from `main`.
 
 ## Known rough edges
 

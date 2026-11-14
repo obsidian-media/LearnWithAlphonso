@@ -2,12 +2,10 @@ import SwiftUI
 import CoreText
 
 /// Each theme's display/sans font pair (mirrors `src/styles.css`'s
-/// `--font-display`/`--font-sans` per `[data-theme=...]` block), bundled
-/// here as the upstream variable-font files (`Sources/Fonts/*.ttf`, from
-/// google/fonts, OFL-licensed) -- none of the four theme-specific
-/// families ship pre-built static weight files (Instrument Serif is the
-/// one exception: it's static-only, a single Regular face, since the web
-/// app only ever loads its italic axis, never a bold one). This app
+/// `--font-display`/`--font-sans`: Baloo 2 and Geist for Royal, Fraunces
+/// and Geist for Meadow), bundled here as the upstream variable-font
+/// files (`Sources/Fonts/*.ttf`, from google/fonts, OFL-licensed) -- none
+/// of these families ship pre-built static weight files. This app
 /// registers every variable font via `UIAppFonts` in Info.plist and
 /// resolves a specific weight/optical-size instance at request time via
 /// CoreText's `kCTFontVariationAttribute`, rather than depending on iOS
@@ -26,9 +24,8 @@ public enum AlphonsoFont {
     /// The active theme's display font. Mirrors the web's default
     /// `font-optical-sizing: auto` behavior by setting the `opsz` axis to
     /// the rendered point size (clamped to that font's own axis range)
-    /// where the active theme's font has one (Fraunces, Newsreader) --
-    /// skipped entirely for Instrument Serif (Studio Ink), which has no
-    /// `opsz` axis at all.
+    /// where the active theme's font has one (Fraunces for Meadow) --
+    /// skipped entirely for Baloo 2 (Royal), which has no `opsz` axis.
     ///
     /// `opsz` is deliberately set from `size`, the DESIGN point size the
     /// call site asked for -- never from the Dynamic-Type-scaled size
