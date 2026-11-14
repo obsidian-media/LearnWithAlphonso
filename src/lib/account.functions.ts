@@ -5,6 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import { LEARNER_PROFILE_KEY } from "./learner-profile";
 import { VOICE_PREFS_METADATA_KEY } from "./voice-catalog";
+import { splitSupportLink } from "./support-links";
 
 // Every table with a `user_id` column, exported via `.eq("user_id", ...)`.
 // NOTE: "achievements" is the static catalogue (no user_id column at all --
@@ -285,6 +286,13 @@ export const exportMyData = createServerFn({ method: "POST" })
     });
     SERVICE_SCOPED_EXPORT_TABLES.forEach(({ table }, i) => {
       tables[table] = serviceScopedRows[i];
+    });
+    // An AI answer stores its app link as a trailing [[link:id]] marker; the export gives the text and the link apart.
+    tables.support_messages = (tables.support_messages ?? []).map((row) => {
+      const r = row as { author_kind?: string; body?: unknown };
+      if (r.author_kind !== "ai" || typeof r.body !== "string") return row;
+      const { text, link } = splitSupportLink(r.body);
+      return { ...r, body: text, link };
     });
     const exported: Record<string, unknown> = { ...tables };
     // How the account signs in and when it was created: the auth record, without any token or secret.
