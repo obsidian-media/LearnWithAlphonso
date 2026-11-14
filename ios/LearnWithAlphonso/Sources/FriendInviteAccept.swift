@@ -101,7 +101,7 @@ struct FriendInviteAcceptView: View {
 
     private func title(_ text: String) -> some View {
         Text(text)
-            .font(AlphonsoFont.display(24, weight: .semiBold))
+            .font(.title2.weight(.semibold))
             .foregroundStyle(AlphonsoColor.ink)
             .multilineTextAlignment(.center)
             .accessibilityAddTraits(.isHeader)
@@ -109,7 +109,7 @@ struct FriendInviteAcceptView: View {
 
     private func note(_ text: String) -> some View {
         Text(text)
-            .font(AlphonsoFont.sans(14))
+            .font(.subheadline)
             .foregroundStyle(AlphonsoColor.inkSoft)
             .multilineTextAlignment(.center)
     }
