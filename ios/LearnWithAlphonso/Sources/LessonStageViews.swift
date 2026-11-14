@@ -1018,6 +1018,8 @@ struct LessonAchievementToast: View {
     let detail: String
     let index: Int
     let reduce: Bool
+    /// A tap opens the unlock sheet.
+    var onTap: (() -> Void)?
 
     @Environment(\.alphonsoDS) private var ds
     @State private var shown = false
@@ -1041,6 +1043,9 @@ struct LessonAchievementToast: View {
         .opacity(shown ? 1 : 0)
         .offset(y: shown || reduce ? 0 : -16)
         .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(onTap == nil ? [] : .isButton)
+        .contentShape(Rectangle())
+        .onTapGesture { onTap?() }
         .onAppear {
             withAnimation(.easeOut(duration: reduce ? AlphonsoDS.Motion.reducedMax : AlphonsoDS.Motion.sheetWeb)
                 .delay(reduce ? 0 : 1.7 + Double(index) * 0.25)) { shown = true }
@@ -1082,6 +1087,8 @@ struct LessonCompleteView<Extras: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var amazed = true
     @State private var appeared = false
+    /// The achievement whose unlock sheet is open: the first new one shows after the celebration, the toast reopens it.
+    @State private var unlockShown: Achievement?
 
     private var tiles: [(kind: LessonRewardTile.Kind, value: String)] {
         var out: [(kind: LessonRewardTile.Kind, value: String)] = chips.map { chip -> (kind: LessonRewardTile.Kind, value: String) in
@@ -1155,7 +1162,7 @@ struct LessonCompleteView<Extras: View>: View {
                             ForEach(Array(achievements.enumerated()), id: \.element.id) { index, achievement in
                                 LessonAchievementToast(
                                     id: achievement.id, title: achievement.title, detail: achievement.description, index: index,
-                                    reduce: reduceMotion)
+                                    reduce: reduceMotion, onTap: { unlockShown = achievement })
                             }
                         }
                     }
@@ -1200,9 +1207,17 @@ struct LessonCompleteView<Extras: View>: View {
         }
         .task {
             // He says "wow", then smiles (1.4 s in). Under Reduce Motion he is already smiling.
-            guard !reduceMotion else { return }
-            try? await Task.sleep(for: .seconds(1.4))
-            amazed = false
+            if !reduceMotion {
+                try? await Task.sleep(for: .seconds(1.4))
+                amazed = false
+            }
+            // The first new achievement slides up once the celebration has played (at once under Reduce Motion, with
+            // no confetti).
+            if !reduceMotion { try? await Task.sleep(for: .seconds(1.6)) }
+            if unlockShown == nil, let first = achievements.first { unlockShown = first }
+        }
+        .sheet(item: $unlockShown) { achievement in
+            AchievementUnlockSheet(achievement: achievement) { unlockShown = nil }
         }
     }
 }
