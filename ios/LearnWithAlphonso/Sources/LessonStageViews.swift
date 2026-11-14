@@ -1079,6 +1079,8 @@ struct LessonCompleteView<Extras: View>: View {
     let missed: [LessonMissedItem]
     let topInset: CGFloat
     var onHearHeadline: (() -> Void)?
+    /// Opens the Achievements catalog from the unlock sheet; nil leaves the sheet with Continue only.
+    var onSeeAllAchievements: (() -> Void)?
     let continueTitle: String
     let onContinue: () -> Void
     @ViewBuilder var extras: () -> Extras
@@ -1217,7 +1219,19 @@ struct LessonCompleteView<Extras: View>: View {
             if unlockShown == nil, let first = achievements.first { unlockShown = first }
         }
         .sheet(item: $unlockShown) { achievement in
-            AchievementUnlockSheet(achievement: achievement) { unlockShown = nil }
+            AchievementUnlockSheet(
+                achievement: achievement,
+                onClose: { unlockShown = nil },
+                onSeeAll: onSeeAllAchievements.map { open -> (() -> Void) in
+                    {
+                        unlockShown = nil
+                        // One sheet closes before the next opens.
+                        Task {
+                            try? await Task.sleep(for: .milliseconds(500))
+                            open()
+                        }
+                    }
+                })
         }
     }
 }

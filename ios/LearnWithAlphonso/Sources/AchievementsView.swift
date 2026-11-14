@@ -15,6 +15,8 @@ struct AchievementsView: View {
     let session: Session
     let contentStore: ContentStore
     let notificationScheduler: NotificationScheduler
+    /// Set when the screen is a sheet (over a lesson): shows a Done button. Nil when it is pushed.
+    var onClose: (() -> Void)?
 
     @State private var unlockedByID: [String: UnlockedAchievement] = [:]
     @State private var stats: [String: Int] = [:]
@@ -62,6 +64,11 @@ struct AchievementsView: View {
             .dsSceneList(.profile)
             .navigationTitle("Achievements")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if let onClose {
+                    ToolbarItem(placement: .topBarTrailing) { Button("Done", action: onClose) }
+                }
+            }
         }
         .tint(ds.choice)
         .task { await load() }

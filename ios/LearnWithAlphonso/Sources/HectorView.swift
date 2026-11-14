@@ -239,20 +239,16 @@ private struct HectorConversationView: View {
     }
 
     private var callEndedView: some View {
-        VStack(spacing: 14) {
-            Text("Call ended")
-                .dsText(.title)
-                .foregroundStyle(AlphonsoColor.ink)
-            Button("Call again") {
+        DSEmptyState(
+            art: "Hector-happy", title: "Call ended",
+            actionTitle: "Call again",
+            action: {
                 callEnded = false
                 voice.appeared()
                 openerCue += 1
-            }
-            .buttonStyle(.alphonsoPrimary)
-        }
-        .padding(AlphonsoSpacing.lg)
-        .alphonsoGlass(radius: AlphonsoRadius.xl)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            })
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     /// The hands-free switch, with its once-per-device safety note.

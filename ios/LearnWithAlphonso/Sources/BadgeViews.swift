@@ -262,6 +262,8 @@ struct AchievementDetailSheet: View {
 struct AchievementUnlockSheet: View {
     let achievement: Achievement
     let onClose: () -> Void
+    /// "See all achievements": nil when the screen cannot open the catalog.
+    var onSeeAll: (() -> Void)?
     @Environment(\.alphonsoDS) private var ds
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -304,10 +306,15 @@ struct AchievementUnlockSheet: View {
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            Button("Continue", action: onClose)
-                .buttonStyle(.dsButton(.primary))
-                .padding(AlphonsoDS.Space.gutter)
-                .background(ds.surface)
+            VStack(spacing: AlphonsoDS.Space.s2) {
+                Button("Continue", action: onClose).buttonStyle(.dsButton(.primary))
+                if let onSeeAll {
+                    Button("See all achievements", action: onSeeAll)
+                        .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                }
+            }
+            .padding(AlphonsoDS.Space.gutter)
+            .background(ds.surface)
         }
         .presentationDetents([.large])
         .accessibilityElement(children: .contain)
