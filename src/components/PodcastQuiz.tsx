@@ -9,6 +9,7 @@ import {
   startQuiz,
   type QuizQuestion,
 } from "../lib/podcast-quiz-run";
+import { dsButtonClass } from "./ds/buttons";
 import { Modal } from "./Modal";
 
 type Props = {
@@ -91,19 +92,33 @@ export function PodcastQuiz({
   const onAction = () => dispatch({ type: state.checked ? "next" : "check" });
 
   return (
-    <Modal labelledBy="podcast-quiz-title" onEscape={onClose} className="max-w-[430px]">
+    <Modal
+      labelledBy="podcast-quiz-title"
+      onEscape={onClose}
+      className="relative max-h-[92dvh] w-full max-w-[430px] overflow-y-auto rounded-t-[28px] bg-ds-surface shadow-[var(--ds-shadow-sheet)] outline-none sm:rounded-[28px]"
+    >
       <div className="p-5">
-        <h2 id="podcast-quiz-title" className="font-display text-lg font-semibold text-ds-ink">
-          Quiz: {title}
-        </h2>
+        <div className="flex items-center gap-3">
+          <img
+            src="/figures/alphonso-listening-headphones.webp"
+            alt=""
+            height={84}
+            decoding="async"
+            draggable={false}
+            className="h-[84px] w-auto"
+          />
+          <h2 id="podcast-quiz-title" className="ds-type-title min-w-0 flex-1 text-ds-ink">
+            Quiz: {title}
+          </h2>
+        </div>
 
         {state.phase === "answering" && q ? (
           <div className="mt-4">
-            <p className="text-xs text-ds-ink-soft/70">
+            <p className="ds-type-caption text-ds-ink-soft">
               Question {state.index + 1} of {state.questions.length}
               {best ? ` · your best: ${best.correct} of ${state.questions.length}` : ""}
             </p>
-            <p className="mt-2 text-base font-medium text-ds-ink">{q.prompt}</p>
+            <p className="mt-2 ds-type-question-small text-ds-brand">{q.prompt}</p>
             <div role="radiogroup" aria-label={q.prompt} className="mt-3 flex flex-col gap-2">
               {q.choices.map((choice, i) => {
                 const isPicked = state.selected === i;
@@ -125,21 +140,21 @@ export function PodcastQuiz({
                     onClick={() => dispatch({ type: "select", index: i })}
                     onKeyDown={(event) => onChoiceKeyDown(event, i, q.choices.length)}
                     className={[
-                      "rounded-xl border px-4 py-3 text-left text-sm text-ds-ink",
+                      "rounded-[16px] border-2 border-b-4 px-4 py-3.5 text-left ds-type-answer",
                       isRight
-                        ? "border-ds-brand bg-ds-brand/10"
+                        ? "border-ds-right bg-ds-right-tint text-ds-right-ink"
                         : isWrong
-                          ? "border-rose-500 bg-rose-50"
+                          ? "border-ds-wrong bg-ds-wrong-tint text-ds-wrong-ink"
                           : isPicked
-                            ? "border-ds-brand"
-                            : "border-ds-line",
+                            ? "border-ds-choice bg-ds-choice-tint text-ds-brand"
+                            : "border-ds-line bg-ds-card text-ds-brand",
                     ].join(" ")}
                   >
                     <span className="block">{choice}</span>
                     {isRight ? (
                       <span
                         data-testid="verdict"
-                        className="mt-1 block text-xs font-semibold text-ds-brand"
+                        className="mt-1 block ds-type-caption text-ds-right-ink"
                       >
                         <span aria-hidden="true">✓ </span>Correct answer
                       </span>
@@ -147,7 +162,7 @@ export function PodcastQuiz({
                     {isWrong ? (
                       <span
                         data-testid="verdict"
-                        className="mt-1 block text-xs font-semibold text-rose-600"
+                        className="mt-1 block ds-type-caption text-ds-wrong-ink"
                       >
                         <span aria-hidden="true">✕ </span>Your answer, not correct
                       </span>
@@ -156,8 +171,12 @@ export function PodcastQuiz({
                 );
               })}
             </div>
-            <div className="mt-4 flex items-center justify-between">
-              <button type="button" onClick={onClose} className="text-sm text-ds-ink-soft">
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className={dsButtonClass("secondary", { small: true })}
+              >
                 Leave quiz
               </button>
               {/* One button for Check and Next, so keyboard focus stays on it when its label changes. */}
@@ -165,7 +184,7 @@ export function PodcastQuiz({
                 type="button"
                 disabled={!state.checked && state.selected === null}
                 onClick={onAction}
-                className="rounded-full bg-ds-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+                className={dsButtonClass("primary", { small: true })}
               >
                 {!state.checked
                   ? "Check"
@@ -178,25 +197,29 @@ export function PodcastQuiz({
         ) : null}
 
         {state.phase === "submitting" ? (
-          <p role="status" className="mt-6 text-sm text-ds-ink-soft">
+          <p role="status" className="mt-6 ds-type-footnote text-ds-ink-soft">
             Saving your answers…
           </p>
         ) : null}
 
         {state.phase === "error" ? (
           <div ref={statusRef} tabIndex={-1} className="mt-4 outline-none">
-            <p role="alert" className="text-sm text-rose-600">
+            <p role="alert" className="ds-type-footnote font-bold text-ds-wrong-ink">
               {state.error}
             </p>
-            <div className="mt-4 flex items-center justify-between">
-              <button type="button" onClick={onClose} className="text-sm text-ds-ink-soft">
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className={dsButtonClass("secondary", { small: true })}
+              >
                 Close
               </button>
               {state.retryable !== false ? (
                 <button
                   type="button"
                   onClick={() => dispatch({ type: "retry" })}
-                  className="rounded-full bg-ds-brand px-4 py-2 text-sm font-semibold text-white"
+                  className={dsButtonClass("primary", { small: true })}
                 >
                   Try again
                 </button>
@@ -207,22 +230,25 @@ export function PodcastQuiz({
 
         {state.phase === "done" && state.result ? (
           <div ref={statusRef} tabIndex={-1} className="mt-4 outline-none">
-            <p className="text-2xl font-semibold text-ds-ink">
+            <p className="ds-type-display text-ds-ink">
               {state.result.correct} of {state.result.total} correct
             </p>
-            <p className="mt-1 text-sm text-ds-ink-soft" role="status">
+            <p className="mt-1 ds-type-footnote text-ds-ink-soft" role="status">
               {state.result.xpGain > 0
                 ? `+${state.result.xpGain} XP`
                 : `No new XP this time. Your best is ${state.result.bestCorrect} of ${state.result.total}.`}
             </p>
             {state.result.missedQuestionIds.length > 0 ? (
               <div className="mt-4">
-                <p className="text-sm font-medium text-ds-ink">To review</p>
+                <p className="ds-type-overline text-ds-xp-text">To review</p>
                 <ul className="mt-2 flex flex-col gap-2">
                   {state.questions
                     .filter((x) => state.result?.missedQuestionIds.includes(x.id))
                     .map((x) => (
-                      <li key={x.id} className="text-sm text-ds-ink">
+                      <li
+                        key={x.id}
+                        className="rounded-[14px] bg-ds-card px-3 py-2 ds-type-footnote text-ds-ink"
+                      >
                         {x.prompt}
                         <span className="block text-ds-ink-soft">
                           Answer: {x.choices[x.answerIndex]}
@@ -235,7 +261,7 @@ export function PodcastQuiz({
             <button
               type="button"
               onClick={onClose}
-              className="mt-5 rounded-full bg-ds-brand px-4 py-2 text-sm font-semibold text-white"
+              className={`mt-5 ${dsButtonClass("primary", { full: true })}`}
             >
               Done
             </button>

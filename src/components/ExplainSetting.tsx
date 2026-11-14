@@ -10,7 +10,7 @@ import { announceExplainSettingsChanged, useExplainSettings } from "@/lib/explai
 import { NATIVE_LANGUAGES } from "@/lib/learner-profile";
 import { saveLearnerProfile } from "@/lib/learner-profile.functions";
 
-const PANEL = "mt-3 rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card p-4";
+const PANEL = "mt-2 rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card p-4";
 
 /** The three choices, in the mock's words. `tap` is the default: invisible until wanted, costs nothing until tapped. */
 const OPTIONS: Record<ExplainMode, { title: string; body: (language: string) => string }> = {
@@ -74,7 +74,7 @@ export function ExplainSetting() {
 
   return (
     <section aria-labelledby="explain-setting-heading">
-      <h2 id="explain-setting-heading" className="mt-8 ds-type-title text-ds-ink">
+      <h2 id="explain-setting-heading" className="ds-type-overline mx-1 text-ds-xp-text">
         Explain in my language
       </h2>
       <div className={PANEL}>

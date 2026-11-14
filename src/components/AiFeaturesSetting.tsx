@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DsButton, DsCard, SettingSwitchCard } from "@/components/ds/Blocks";
 import { AI_CONSENT_COPY } from "@/lib/ai-consent-copy";
 import { useAiConsent } from "@/lib/ai-consent-context";
 
@@ -9,7 +10,7 @@ export function AiFeaturesSetting() {
   const [error, setError] = useState<string | null>(null);
   const on = consent.granted;
 
-  async function toggle() {
+  async function toggle(_next?: boolean) {
     setError(null);
     if (!on) {
       await consent.requestConsent();
@@ -25,49 +26,38 @@ export function AiFeaturesSetting() {
     }
   }
 
+  if (consent.status === "unknown") {
+    return (
+      <section aria-labelledby="ai-features-heading">
+        <DsCard role="alert">
+          <h2 id="ai-features-heading" className="ds-type-headline text-ds-ink">
+            {AI_CONSENT_COPY.settingsTitle}
+          </h2>
+          <p className="ds-type-footnote text-ds-ink-soft">{AI_CONSENT_COPY.checkFailedTitle}</p>
+          <div>
+            <DsButton small variant="secondary" onClick={() => void consent.refresh()}>
+              {AI_CONSENT_COPY.retry}
+            </DsButton>
+          </div>
+        </DsCard>
+      </section>
+    );
+  }
   return (
-    <section aria-labelledby="ai-features-heading">
-      <h2 id="ai-features-heading" className="mt-8 font-display ds-type-headline text-ds-ink">
-        {AI_CONSENT_COPY.settingsTitle}
-      </h2>
-      {consent.status === "unknown" ? (
-        <div
-          role="alert"
-          className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-ds-line bg-ds-sunk px-4 py-3"
-        >
-          <span className="text-sm text-ds-ink">{AI_CONSENT_COPY.checkFailedTitle}</span>
-          <button
-            type="button"
-            onClick={() => void consent.refresh()}
-            className="rounded-full border border-ds-line bg-ds-card px-3 py-1.5 text-xs font-semibold text-ds-ink"
-          >
-            {AI_CONSENT_COPY.retry}
-          </button>
-        </div>
-      ) : (
-        <div className="mt-3 flex items-center justify-between rounded-2xl border border-ds-line bg-ds-sunk px-4 py-3">
-          <span className="text-sm text-ds-ink">{on ? "On" : "Off"}</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={on}
-            aria-label={AI_CONSENT_COPY.settingsTitle}
-            disabled={busy || consent.status === "loading"}
-            onClick={() => void toggle()}
-            className={`relative h-7 w-12 rounded-full transition ${on ? "bg-ds-brand" : "bg-ds-line"} disabled:opacity-50`}
-          >
-            <span
-              className={`absolute top-0.5 size-6 rounded-full bg-ds-card transition ${on ? "left-5" : "left-0.5"}`}
-            />
-          </button>
-        </div>
-      )}
-      <p className="mt-2 text-xs text-ds-ink-soft">{AI_CONSENT_COPY.settingsFooter}</p>
+    <SettingSwitchCard
+      id="ai-features-heading"
+      title={AI_CONSENT_COPY.settingsTitle}
+      on={on}
+      onChange={() => void toggle()}
+      disabled={busy || consent.status === "loading"}
+      icon="sparkles"
+      body={AI_CONSENT_COPY.settingsFooter}
+    >
       {error && (
-        <p role="alert" className="mt-2 text-xs text-rose-700">
+        <p role="alert" className="ds-type-caption text-ds-wrong-ink">
           {error}
         </p>
       )}
-    </section>
+    </SettingSwitchCard>
   );
 }

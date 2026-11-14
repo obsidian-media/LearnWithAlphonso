@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -81,7 +81,7 @@ describe("Duels page", () => {
     ]);
     renderPage();
     expect(await screen.findByText("Pending challenges")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Accept" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Accept the/ })).toBeInTheDocument();
   });
 
   it("accepts a pending duel and refetches", async () => {
@@ -103,7 +103,7 @@ describe("Duels page", () => {
     respondToDuel.mockResolvedValue({ ok: true, reason: null });
     renderPage();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Accept" }));
+    fireEvent.click(await screen.findByRole("button", { name: /^Accept the/ }));
     await waitFor(() =>
       expect(respondToDuel).toHaveBeenCalledWith({ data: { duelId: "d1", accept: true } }),
     );
@@ -138,9 +138,7 @@ describe("Duels page", () => {
     createDuel.mockResolvedValue({ ok: true, reason: null, duelId: "d2" });
     renderPage();
 
-    const select = await screen.findByDisplayValue("Choose a friend…");
-    await screen.findByRole("option", { name: "Ada" }); // wait for friends to load before changing
-    fireEvent.change(select, { target: { value: "f1" } });
+    fireEvent.click(await screen.findByRole("radio", { name: "Ada" }));
     fireEvent.click(screen.getByRole("button", { name: "Send challenge" }));
 
     await waitFor(() =>
@@ -156,9 +154,7 @@ describe("Duels page", () => {
     createDuel.mockResolvedValue({ ok: false, reason: "duel-already-open", duelId: null });
     renderPage();
 
-    const select = await screen.findByDisplayValue("Choose a friend…");
-    await screen.findByRole("option", { name: "Ada" });
-    fireEvent.change(select, { target: { value: "f1" } });
+    fireEvent.click(await screen.findByRole("radio", { name: "Ada" }));
     fireEvent.click(screen.getByRole("button", { name: "Send challenge" }));
 
     expect(
@@ -174,9 +170,7 @@ describe("Duels page", () => {
     createDuel.mockRejectedValue(new Error("Internal Server Error"));
     renderPage();
 
-    const select = await screen.findByDisplayValue("Choose a friend…");
-    await screen.findByRole("option", { name: "Ada" });
-    fireEvent.change(select, { target: { value: "f1" } });
+    fireEvent.click(await screen.findByRole("radio", { name: "Ada" }));
     fireEvent.click(screen.getByRole("button", { name: "Send challenge" }));
 
     expect(await screen.findByText("Something went wrong. Try again.")).toBeInTheDocument();
@@ -225,13 +219,9 @@ describe("Duels page", () => {
     joinOpenDuelQueue.mockResolvedValue({ matched: false, duelId: null });
     renderPage();
 
-    // Three comboboxes on this page, in DOM order: friend picker,
-    // challenge course, then the OPEN-duel course. The last is the one
-    // the open queue reads.
-    const selects = await screen.findAllByRole("combobox");
-    const openCourseSelect = selects[selects.length - 1]!;
-    fireEvent.change(openCourseSelect, { target: { value: "es" } });
-    fireEvent.click(screen.getByRole("checkbox"));
+    const openGroup = await screen.findByRole("radiogroup", { name: "Course for the open duel" });
+    fireEvent.click(within(openGroup).getByRole("radio", { name: "Spanish" }));
+    fireEvent.click(screen.getByRole("switch", { name: "Match me with someone at my level" }));
     fireEvent.click(screen.getByRole("button", { name: "Find an open duel" }));
 
     await waitFor(() =>
