@@ -230,6 +230,21 @@ describe("WebPaywall: the plans", () => {
     expect(await screen.findByText("No Alphonso Pro found on this account.")).toBeInTheDocument();
     expect(assign).not.toHaveBeenCalled();
   });
+
+  it("Restore that cannot check the account offers Get help, which opens the Help chat", async () => {
+    render(<WebPaywall source="hector_tab" />);
+    await plansReady();
+    const served = globalThis.fetch;
+    globalThis.fetch = vi.fn(async (input: string) => {
+      if (String(input).startsWith("/api/pro-status")) throw new Error("offline");
+      return served(input);
+    }) as unknown as typeof fetch;
+    await userEvent.click(screen.getByRole("button", { name: "Restore purchases" }));
+    expect(
+      await screen.findByText("Couldn't check your subscription. Try again."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Get help" })).toHaveAttribute("href", "/help");
+  });
 });
 
 describe("WebPaywall: when there is no offer", () => {
@@ -253,6 +268,7 @@ describe("WebPaywall: when there is no offer", () => {
       ),
     ).toBeInTheDocument();
     expect(document.body.textContent).not.toMatch(/[$€£¥]|\d/);
+    expect(screen.getByRole("link", { name: "Get help" })).toHaveAttribute("href", "/help");
     serve(200, { plans: [MONTHLY] });
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     await waitFor(() =>
