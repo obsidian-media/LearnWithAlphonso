@@ -1,5 +1,28 @@
 package com.obsidianmedia.learnwithalphonso.ui.path
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.draw.alpha
+import com.obsidianmedia.learnwithalphonso.ui.components.DsBackBar
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChipRow
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassTitle
+import com.obsidianmedia.learnwithalphonso.ui.components.DsHeroCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
+import com.obsidianmedia.learnwithalphonso.ui.components.DsScene
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSwitch
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
+import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -243,7 +266,7 @@ fun PathItemRow(item: PathItem, onClick: (() -> Unit)? = null) {
 }
 
 @Composable
-fun PathMixBar(mix: List<PathMixEntry>) {
+fun PathMixBar(mix: List<PathMixEntry>, onHero: Boolean = false) {
     val ds = LocalAlphonsoTokens.current
     val shown = mix.filter { it.minutes > 0 }
     val total = maxOf(shown.sumOf { it.minutes }, 1)
@@ -252,7 +275,7 @@ fun PathMixBar(mix: List<PathMixEntry>) {
         Row(Modifier.fillMaxWidth().height(14.dp).clip(RoundedCornerShape(8.dp)), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
             shown.forEach { Box(Modifier.weight(it.minutes.toFloat() / total).height(14.dp).background(kindColor(it.kind))) }
         }
-        Text(shown.joinToString(" · ") { "${it.kind.label} ${it.minutes} min" }, style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
+        Text(shown.joinToString(" · ") { "${it.kind.label} ${it.minutes} min" }, style = MaterialTheme.typography.labelSmall, color = if (onHero) ds.onHeroSoft else ds.inkSoft)
     }
 }
 
@@ -553,87 +576,103 @@ private fun androidx.compose.foundation.lazy.LazyListScope.whyItems(p: LearningP
 // ---------------------------------------------------------------- Build my path (A0)
 
 @Composable
-fun PathBuildScreen(container: AppContainer, onBack: () -> Unit) {
+fun PathBuildScreen(
+    container: AppContainer, onBack: () -> Unit,
+    /** DEBUG screenshots (ScreenHarness): view-models over fixed data, and the goal sheet opened at once. */
+    seededPathVm: PathViewModel? = null, seededGoalVm: GoalCardViewModel? = null, seededPurpose: String? = null, openGoalSheet: Boolean = false,
+) {
     val ds = LocalAlphonsoTokens.current
     val course by container.activeCourse.course.collectAsState()
-    val vm = rememberPathViewModel(container, course)
+    val vm = seededPathVm ?: rememberPathViewModel(container, course)
     val ui by vm.ui.collectAsState()
     val busy by vm.busy.collectAsState()
     val actionError by vm.actionError.collectAsState()
     val path = (ui as? PathUi.Ready)?.path
-    val goalVm: GoalCardViewModel = androidx.lifecycle.viewmodel.compose.viewModel(key = "goal-" + course.code) {
+    val goalVm: GoalCardViewModel = seededGoalVm ?: androidx.lifecycle.viewmodel.compose.viewModel(key = "goal-" + course.code) {
         GoalCardViewModel(course, container.goalClient, container.goalCache) { container.session.userId }
     }
     // The goal card saves on its own button; reload the path whenever its answer changes so the switches appear.
     LaunchedEffect(goalVm) { goalVm.reload(quiet = true) }
     val goalState by goalVm.state.collectAsState()
     LaunchedEffect(goalState.goal?.targetLevel, goalState.goal?.targetDate) { vm.reload(quiet = true) }
-    ScreenFrame("Build my path", course.name.lowercase().replaceFirstChar { it.uppercase() }, onBack) {
-        LazyColumn(
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            item(key = "goal") { GoalCard(goalVm) }
-            if (path != null) {
-                item(key = "plan") {
-                    Card {
-                        AlphonsoSectionHeader("Your plan")
-                        Text("${path.progress.requiredPerWeek} lessons a week", style = MaterialTheme.typography.titleMedium, color = ds.ink)
-                        Text("${path.dailyMinutes} minutes a day, ${PathRestDay.studyDays(path.restDay)} days. The rest of each day is filled with the mix below.", style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
-                        PathMixBar(path.mix)
+    // Why the learner is here (their first-run answer), for the first goal chip; left out when never answered or the read fails.
+    val fetchedPurpose by produceState<String?>(null, course) { value = if (seededGoalVm != null) null else runCatching { container.learnerProfileClient.fetch().answers.goal }.getOrNull() }
+    val purposeId = seededPurpose ?: fetchedPurpose
+    DsSceneScreen(DsScene.LEARN) {
+        Column(Modifier.fillMaxWidth()) {
+            DsBackBar("Learn", onBack) { DsGlassChip("Done", onBack) }
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.gutter).padding(bottom = AlphonsoTokens.Space.s6),
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                DsGlassTitle("Build my path", course.name.lowercase().replaceFirstChar { it.uppercase() })
+                GoalCard(goalVm, purposeId, openSheetAtStart = openGoalSheet)
+                if (path != null) {
+                    // The approved A0 plan hero (round 8): the navy card with the weekly lessons and the mix.
+                    DsHeroCard {
+                        Text("YOUR PLAN", style = OverlineType, color = ds.onHeroKick)
+                        Text("${path.progress.requiredPerWeek} lessons a week", style = DisplayType, color = ds.onHero)
+                        Text("${path.dailyMinutes} minutes a day, ${PathRestDay.studyDays(path.restDay)} days. The rest of each day is filled with the mix below.", style = FootnoteType, color = ds.onHeroSoft)
+                        PathMixBar(path.mix, onHero = true)
                     }
-                }
-                item(key = "rest-head") { AlphonsoSectionHeader("Rest day") }
-                item(key = "rest-day") {
-                    Row(Modifier.fillMaxWidth().horizontalScroll(androidx.compose.foundation.rememberScrollState()).selectableGroup().semantics { contentDescription = "Rest day" }, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        PathRestDay.CHOICES.forEach { (value, label) ->
-                            val on = path.restDay == value
-                            Box(
-                                Modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(24.dp)).background(if (on) ds.action else ds.card)
-                                    .selectable(selected = on, enabled = !busy, role = Role.RadioButton) { vm.apply(LearningPathChange.SetRestDay(value)) }
-                                    .padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.Center,
-                            ) { Text(label, color = if (on) ds.onAction else ds.ink, style = MaterialTheme.typography.labelLarge) }
+                    DsOverline("Rest day")
+                    DsCard {
+                        DsChipRow(Modifier.selectableGroup().semantics { contentDescription = "Rest day" }) {
+                            PathRestDay.CHOICES.forEach { (value, label) ->
+                                DsChip(label, path.restDay == value, onClick = { if (!busy) vm.apply(LearningPathChange.SetRestDay(value)) })
+                            }
                         }
                     }
-                }
-                item(key = "switch-head") { AlphonsoSectionHeader("How I like to learn") }
-                item(key = "lessons-on") {
-                    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(ds.card).padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        PathTypeBadge(PathKind.LESSON)
-                        Column(Modifier.weight(1f)) {
-                            Text("Lessons", style = MaterialTheme.typography.titleSmall, color = ds.ink)
-                            Text("Always on, the backbone", style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+                    DsOverline("How I like to learn")
+                    DsCard(padding = AlphonsoTokens.Space.s3) {
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).alpha(0.7f).semantics(mergeDescendants = true) { },
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+                        ) {
+                            PathTypeBadge(PathKind.LESSON)
+                            Column(Modifier.weight(1f)) {
+                                Text("Lessons", style = HeadlineType, color = ds.ink)
+                                Text("Always on, the backbone", style = CaptionType, color = ds.inkSoft)
+                            }
+                            Text("Always on", style = CaptionType, color = ds.inkSoft)
                         }
                     }
-                }
-                items(PathKind.switchable(path.mix, path.off), key = { "switch-${it.wire}" }) { kind ->
-                    val on = !path.off.contains(kind.wire)
-                    val reason = path.why.firstOrNull { it.kind == kind && it.source != "planner" }?.detail?.takeIf { on }
-                        ?: when (kind) {
-                            PathKind.PODCAST -> "Listen and answer a short quiz"
-                            PathKind.TALK -> "Needs the microphone"
-                            PathKind.VIDEO -> "Short captioned videos from Alphonso"
-                            else -> "Story scenes that run over several days"
+                    PathKind.switchable(path.mix, path.off).forEach { kind ->
+                        val on = !path.off.contains(kind.wire)
+                        val reason = path.why.firstOrNull { it.kind == kind && it.source != "planner" }?.detail?.takeIf { on }
+                            ?: when (kind) {
+                                PathKind.PODCAST -> "Listen and answer a short quiz"
+                                PathKind.TALK -> "Needs the microphone"
+                                PathKind.VIDEO -> "Short captioned videos from Alphonso"
+                                else -> "Story scenes that run over several days"
+                            }
+                        DsCard(padding = AlphonsoTokens.Space.s3) {
+                            Row(
+                                Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch),
+                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+                            ) {
+                                PathTypeBadge(kind)
+                                Column(Modifier.weight(1f)) {
+                                    Text(kind.label, style = HeadlineType, color = ds.ink)
+                                    Text(reason, style = CaptionType, color = ds.inkSoft)
+                                }
+                                DsSwitch(
+                                    checked = on, enabled = !busy,
+                                    onChange = { nowOn ->
+                                        val off = PathKind.optional.filter { k -> if (k == kind) !nowOn else path.off.contains(k.wire) }
+                                        vm.apply(LearningPathChange.SetOff(off))
+                                    },
+                                    modifier = Modifier.semantics { contentDescription = "${kind.label} in my path" },
+                                )
+                            }
                         }
-                    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(ds.card).defaultMinSize(minHeight = 56.dp).padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        PathTypeBadge(kind)
-                        Column(Modifier.weight(1f)) {
-                            Text(kind.label, style = MaterialTheme.typography.titleSmall, color = ds.ink)
-                            Text(reason, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
-                        }
-                        Switch(
-                            checked = on, enabled = !busy,
-                            onCheckedChange = { nowOn ->
-                                val off = PathKind.optional.filter { k -> if (k == kind) !nowOn else path.off.contains(k.wire) }
-                                vm.apply(LearningPathChange.SetOff(off))
-                            },
-                            modifier = Modifier.semantics { contentDescription = "${kind.label} in my path" },
-                        )
                     }
+                    actionError?.let { e -> DsCard { Text(e, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = FootnoteType, color = ds.wrongInk) } }
+                    LessonEdgeButton("Start my path", EdgeVariant.PRIMARY, onBack)
+                } else if (ui is PathUi.None) {
+                    // The same line the web's Build my path shows until a goal is saved.
+                    DsCard { Text("Save a goal above and your plan appears here.", style = FootnoteType, color = ds.inkSoft) }
                 }
-                actionError?.let { e -> item(key = "err") { Text(e, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, color = ds.wrongInk) } }
-                item(key = "done") { AlphonsoPrimaryButton("Open my path", onClick = onBack) }
             }
         }
     }

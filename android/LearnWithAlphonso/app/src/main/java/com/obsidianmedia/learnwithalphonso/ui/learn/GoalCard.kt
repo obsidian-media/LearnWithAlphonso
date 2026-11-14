@@ -1,42 +1,41 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
-import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
-import androidx.compose.foundation.background
+import androidx.compose.ui.semantics.heading
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalCopy
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalPhase
@@ -45,81 +44,105 @@ import com.obsidianmedia.learnwithalphonso.core.goal.LearningGoalError
 import com.obsidianmedia.learnwithalphonso.core.goal.PreviewResult
 import com.obsidianmedia.learnwithalphonso.core.goal.SaveResult
 import com.obsidianmedia.learnwithalphonso.core.goal.StoredGoal
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoProgressBar
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.core.logic.PathGoalChips
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChipRow
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsHeroCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
+import com.obsidianmedia.learnwithalphonso.ui.components.DsProgressBar
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
+import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
+import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import kotlinx.coroutines.launch
 
 /**
- * The learning goal on the Learn tab (BACKLOG 0.0-ac #8, docs/superpowers/specs/2026-10-05-learning-goal-planner-design.md).
- * It renders what /api/learning-goal returns and does no plan maths: the server's planGoal is the single
- * implementation and the web and iOS cards show the same numbers. Every string comes from GoalCopy (the web card's
- * wording, word for word), and the card's state machine is GoalCardModel (tested in :core). This layer only lays
- * them out, and is compiled and unit-tested around but NOT run on a device or emulator by the change that added it.
+ * The learning goal on Build my path (BACKLOG 0.0-ac #8, docs/superpowers/specs/2026-10-05-learning-goal-planner-design.md),
+ * in the batch-1 design (the same card as iOS GoalCardView.swift): the goal as chips (purpose, level, date), then the
+ * navy hero with the progress, the status in words and Change goal / Remove goal. It renders what /api/learning-goal
+ * returns and does no plan maths: the server's planGoal is the single implementation. Every string comes from GoalCopy
+ * (the web card's wording, word for word) and the state machine is GoalCardModel (tested in :core).
+ *
+ * [purposeId] is why the learner is here (their first-run answer) for the first chip; null leaves that chip out.
  */
 @Composable
-fun GoalCard(vm: GoalCardViewModel, modifier: Modifier = Modifier) {
-    val palette = AlphonsoColor.palette
+fun GoalCard(vm: GoalCardViewModel, purposeId: String?, modifier: Modifier = Modifier, openSheetAtStart: Boolean = false) {
     val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
-    var showSetup by remember { mutableStateOf(false) }
+    var showSetup by remember { mutableStateOf(openSheetAtStart) }
 
-    Column(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(ds.card).padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        AlphonsoSectionHeader("Learning goal")
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+        DsOverline("Learning goal")
         when (state.phase) {
-            GoalPhase.LOADING -> Text("Loading your goal…", style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft)
-            GoalPhase.FAILED -> {
+            GoalPhase.LOADING -> DsCard {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                    CircularProgressIndicator(color = ds.choice)
+                    Text("Loading your goal…", style = FootnoteType, color = ds.inkSoft)
+                }
+            }
+            GoalPhase.FAILED -> DsCard {
                 Text(
                     GoalCopy.loadFailureMessage(state.loadError ?: LearningGoalError.Unavailable, hadCachedPlan = false),
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-                    style = MaterialTheme.typography.bodyMedium, color = palette.destructive,
+                    style = FootnoteType, color = ds.wrongInk,
                 )
-                AlphonsoSecondaryButton("Try again", onClick = vm::reload, fullWidth = false)
+                DsCompactButton("Try again", vm::reload)
             }
-            GoalPhase.EMPTY -> {
-                Text(
-                    "Set a target level and date and we'll work out how many lessons a week it takes.",
-                    style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft,
-                )
-                AlphonsoPrimaryButton("Set a learning goal", onClick = { showSetup = true }, fullWidth = false)
+            GoalPhase.EMPTY -> DsCard {
+                Text("Set a target level and date and we'll work out how many lessons a week it takes.", style = FootnoteType, color = ds.inkSoft)
+                LessonEdgeButton("Set a learning goal", EdgeVariant.PRIMARY, { showSetup = true })
             }
             GoalPhase.GOAL -> state.goal?.let { goal ->
-                Text(GoalCopy.headline(goal), style = MaterialTheme.typography.titleMedium, color = ds.ink)
-                val plan = state.plan
-                if (plan != null) {
-                    AlphonsoProgressBar((plan.lessonsInScope - plan.lessonsRemaining).toFloat() / maxOf(plan.lessonsInScope, 1))
-                    Text(GoalCopy.progress(plan), style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
-                    // Status is words, never colour alone.
-                    Text(GoalCopy.statusLine(plan.status), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = ds.ink)
-                    GoalCopy.weeklyLine(plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft) }
-                    GoalCopy.suggestionLine(plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft) }
-                    GoalCopy.realismLine(plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = ds.flame) }
-                } else {
-                    // The learner's level has passed this target.
-                    Text("Your level has passed this target. Pick a new target.", style = MaterialTheme.typography.bodyMedium, color = ds.ink)
+                // Round 8 A0: the goal as chips (purpose, level, date); a tap changes it.
+                DsCard(padding = AlphonsoTokens.Space.s3, spacing = AlphonsoTokens.Space.s2) {
+                    DsChipRow {
+                        PathGoalChips.labels(purposeId, goal.targetLevel, goal.targetDate).forEach { label ->
+                            DsChip(label, true, onClick = { showSetup = true })
+                        }
+                    }
+                    Text(PathGoalChips.NOTE, style = CaptionType, color = ds.inkSoft)
                 }
-                if (state.offline) {
-                    val asOf = plan?.let { " As of ${GoalCopy.formatDate(it.asOf.take(10))}." }.orEmpty()
-                    Text(LearningGoalError.Offline.userMessage + asOf, style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
+                DsHeroCard(Modifier.semantics(mergeDescendants = false) { contentDescription = "Learning goal" }) {
+                    Text(GoalCopy.headline(goal), style = TitleType, color = ds.onHero)
+                    val plan = state.plan
+                    if (plan != null) {
+                        DsProgressBar((plan.lessonsInScope - plan.lessonsRemaining).toFloat() / maxOf(plan.lessonsInScope, 1), onHero = true)
+                        Text(GoalCopy.progress(plan), style = FootnoteType, color = ds.onHeroSoft)
+                        // Status is words, never colour alone.
+                        Text(GoalCopy.statusLine(plan.status), style = HeadlineType, color = ds.onHero)
+                        GoalCopy.weeklyLine(plan)?.let { Text(it, style = FootnoteType, color = ds.onHeroSoft) }
+                        GoalCopy.suggestionLine(plan)?.let { Text(it, style = FootnoteType, color = ds.onHeroSoft) }
+                        GoalCopy.realismLine(plan)?.let { Text(it, style = FootnoteType, color = ds.onHeroKick) }
+                    } else {
+                        // The learner's level has passed this target.
+                        Text("Your level has passed this target. Pick a new target.", style = FootnoteType, color = ds.onHero)
+                    }
+                    if (state.offline) {
+                        val asOf = plan?.let { " As of ${GoalCopy.formatDate(it.asOf.take(10))}." }.orEmpty()
+                        Text(LearningGoalError.Offline.userMessage + asOf, style = CaptionType, color = ds.onHeroSoft)
+                    }
+                    Text(GoalCopy.ESTIMATE_NOTE, style = CaptionType, color = ds.onHeroSoft)
+                    Row(Modifier.padding(top = AlphonsoTokens.Space.s1), horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                        DsCompactButton("Change goal", { showSetup = true }, enabled = !state.offline)
+                        DsCompactButton("Remove goal", vm::remove, enabled = !state.offline)
+                    }
                 }
-                state.actionError?.let { Text(it, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = palette.destructive) }
-                Text(GoalCopy.ESTIMATE_NOTE, style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AlphonsoSecondaryButton("Change goal", onClick = { showSetup = true }, enabled = !state.offline, fullWidth = false)
-                    AlphonsoSecondaryButton("Remove goal", onClick = vm::remove, enabled = !state.offline, fullWidth = false)
+                state.actionError?.let {
+                    DsCard { Text(it, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = FootnoteType, color = ds.wrongInk) }
                 }
             }
         }
     }
 
     if (showSetup) {
-        // Keyed by the view-model: a dialog opened for one course must never keep its selection (or preview) for another.
-        key(vm) { GoalSetupDialog(vm = vm, existing = state.goal, onDismiss = { showSetup = false }) }
+        // Keyed by the view-model: a sheet opened for one course must never keep its selection (or preview) for another.
+        key(vm) { GoalSetupSheet(vm = vm, existing = state.goal, onDismiss = { showSetup = false }) }
     }
 }
 
@@ -134,10 +157,9 @@ private sealed interface PreviewUi {
  * lessons a week it takes. Save is only possible once a preview for the CURRENT selection has arrived: the preview
  * runs in a LaunchedEffect keyed by the selection, so a newer selection cancels an older request.
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDismiss: () -> Unit) {
-    val palette = AlphonsoColor.palette
+private fun GoalSetupSheet(vm: GoalCardViewModel, existing: StoredGoal?, onDismiss: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     var level by remember { mutableStateOf(existing?.targetLevel ?: "B1") }
     var day by remember { mutableStateOf(GoalCopy.atLeastTomorrow(existing?.targetDate ?: GoalCopy.monthsFromToday(6))) }
@@ -155,59 +177,79 @@ private fun GoalSetupDialog(vm: GoalCardViewModel, existing: StoredGoal?, onDism
         }
     }
 
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text("Set a learning goal") },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Finish level", style = MaterialTheme.typography.labelMedium, color = ds.inkSoft)
-                // FlowRow, not Row: at a large font scale the chips wrap instead of being clipped out of reach.
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    // The five CEFR band ids, shared with the Learn screen's band picker (LearnViewModel.LEVELS).
-                    LEVELS.forEach { (l, _) ->
-                        FilterChip(selected = level == l, onClick = { level = l }, label = { Text(l) })
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = ds.surface,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = AlphonsoTokens.Radius.sheet, topEnd = AlphonsoTokens.Radius.sheet),
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = AlphonsoTokens.Space.gutter, vertical = AlphonsoTokens.Space.s2),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                DsCompactButton("Cancel", onDismiss)
+                Text("Set a learning goal", style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f).semantics { heading() })
+            }
+            Column(
+                Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.gutter),
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                DsOverline("Finish level")
+                // The five CEFR band ids, shared with the Learn screen's band picker (LearnViewModel.LEVELS).
+                DsChipRow { LEVELS.forEach { (l, _) -> DsChip(l, level == l, onClick = { level = l }) } }
+                DsOverline("Target date")
+                DsCard {
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clickable { showPicker = true }
+                            .semantics(mergeDescendants = true) { contentDescription = "Target date, ${GoalCopy.formatDate(day)}. Opens the date picker" },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(GoalCopy.formatDate(day), style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
                     }
-                }
-                Text("Target date", style = MaterialTheme.typography.labelMedium, color = ds.inkSoft)
-                AlphonsoSecondaryButton(GoalCopy.formatDate(day), onClick = { showPicker = true }, fullWidth = false)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf(3, 6, 12).forEach { months ->
-                        TextButton(onClick = { day = GoalCopy.monthsFromToday(months) }) { Text("$months months") }
-                    }
+                    DsChipRow { listOf(3, 6, 12).forEach { months -> DsChip("$months months", day == GoalCopy.monthsFromToday(months), onClick = { day = GoalCopy.monthsFromToday(months) }) } }
                 }
                 when (val p = preview) {
-                    PreviewUi.Loading -> Text("Working it out…", style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft)
-                    is PreviewUi.Failed -> Text(p.message, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyMedium, color = palette.destructive)
+                    PreviewUi.Loading -> DsCard { Text("Working it out…", style = FootnoteType, color = ds.inkSoft) }
+                    is PreviewUi.Failed -> DsCard { Text(p.message, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = FootnoteType, color = ds.wrongInk) }
                     is PreviewUi.Ok -> {
                         val lines = GoalCopy.previewLines(p.plan)
-                        Text(lines.perWeek, style = MaterialTheme.typography.titleSmall, color = ds.ink)
-                        Text(lines.left, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
-                        GoalCopy.suggestionLine(p.plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft) }
-                        GoalCopy.realismLine(p.plan)?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium), color = ds.flame) }
+                        DsHeroCard {
+                            Text(lines.perWeek, style = TitleType, color = ds.onHero)
+                            Text(lines.left, style = FootnoteType, color = ds.onHeroSoft)
+                            GoalCopy.suggestionLine(p.plan)?.let { Text(it, style = FootnoteType, color = ds.onHeroSoft) }
+                            GoalCopy.realismLine(p.plan)?.let { Text(it, style = FootnoteType, color = ds.onHeroKick) }
+                        }
                     }
                 }
-                saveError?.let { Text(it, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
-                Text(GoalCopy.ESTIMATE_NOTE, style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
+                Text(GoalCopy.ESTIMATE_NOTE, style = CaptionType, color = ds.inkSoft)
+                saveError?.let { DsCard { Text(it, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = FootnoteType, color = ds.wrongInk) } }
             }
-        },
-        confirmButton = {
-            TextButton(
-                enabled = preview is PreviewUi.Ok && !saving,
-                onClick = {
-                    scope.launch {
-                        saving = true
-                        saveError = null
-                        when (val result = vm.save(level, day)) {
-                            SaveResult.Saved, SaveResult.Dropped -> onDismiss()
-                            is SaveResult.Failed -> saveError = result.message
-                        }
-                        saving = false
-                    }
-                },
-            ) { Text("Save goal") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
-    )
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = AlphonsoTokens.Space.gutter).padding(top = AlphonsoTokens.Space.s3, bottom = AlphonsoTokens.Space.s4),
+                horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                Box(Modifier.weight(1f)) { LessonEdgeButton("Cancel", EdgeVariant.SECONDARY, onDismiss) }
+                Box(Modifier.weight(1f)) {
+                    LessonEdgeButton(
+                        "Save goal", EdgeVariant.PRIMARY,
+                        {
+                            scope.launch {
+                                saving = true
+                                saveError = null
+                                when (val result = vm.save(level, day)) {
+                                    SaveResult.Saved, SaveResult.Dropped -> onDismiss()
+                                    is SaveResult.Failed -> saveError = result.message
+                                }
+                                saving = false
+                            }
+                        },
+                        enabled = preview is PreviewUi.Ok && !saving,
+                    )
+                }
+            }
+        }
+    }
 
     if (showPicker) {
         // Material3's DatePicker works in UTC milliseconds, which is exactly the app's "day" (a UTC date).

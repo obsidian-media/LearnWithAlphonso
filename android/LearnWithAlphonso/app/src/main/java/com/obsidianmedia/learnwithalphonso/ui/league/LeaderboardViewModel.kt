@@ -31,6 +31,9 @@ data class LeaderboardUiState(
     val isLoading: Boolean = true,
     val error: String? = null,
     val toast: String? = null,
+    /** The hero's two facts: the tier the app last saw (null until one is cached) and this week's XP (null until known). */
+    val leagueTier: String? = null,
+    val myWeekXp: Int? = null,
 ) {
     val emptyTitle: String get() = when (scope) { LeaderboardScope.FRIENDS -> "Add friends to compete"; LeaderboardScope.COUNTRY -> "Set your country"; LeaderboardScope.GLOBAL -> "Nothing here yet" }
     val emptyBody: String get() = when (scope) { LeaderboardScope.FRIENDS -> "Add friends to compete side by side."; LeaderboardScope.COUNTRY -> "Set your country on your profile to see this board."; LeaderboardScope.GLOBAL -> "Finish a lesson to appear on the board." }
@@ -46,16 +49,31 @@ class LeaderboardViewModel(
     private val tierCache: LeagueTierCache,
     private val userId: String?,
     private val nowMillis: () -> Long = System::currentTimeMillis,
+    private val seed: LeaderboardUiState? = null,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(LeaderboardUiState())
+    private val _state = MutableStateFlow(seed ?: LeaderboardUiState())
     val state: StateFlow<LeaderboardUiState> = _state.asStateFlow()
 
     private val _recap = MutableStateFlow(RecapState())
     val recap: StateFlow<RecapState> = _recap.asStateFlow()
 
     init {
-        load()
-        checkForOvertake()
+        if (seed == null) {
+            load()
+            checkForOvertake()
+            loadHero()
+        }
+    }
+
+    /** The cached tier at once, then this week's XP from the learner's own activity days; an unknown value shows nothing. */
+    private fun loadHero() {
+        _state.update { it.copy(leagueTier = tierCache.lastKnownTier) }
+        val me = userId ?: return
+        viewModelScope.launch {
+            val now = nowMillis()
+            val xp = runCatching { client.fetchActivityXp(me, mondayDateString(0, now), mondayDateString(-1, now)) }.getOrNull()
+            _state.update { it.copy(myWeekXp = xp) }
+        }
     }
 
     fun select(scope: LeaderboardScope = _state.value.scope, period: LeaderboardPeriod = _state.value.period) {
@@ -64,6 +82,7 @@ class LeaderboardViewModel(
     }
 
     fun load() {
+        if (seed != null) return
         val (scope, period) = _state.value.let { it.scope to it.period }
         _state.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
@@ -77,6 +96,7 @@ class LeaderboardViewModel(
 
     /** Compares the live global weekly board with the cached one; toasts once when someone passed the learner. */
     fun checkForOvertake() {
+        if (seed != null) return
         val me = userId ?: return
         viewModelScope.launch {
             val live = runCatching { client.fetchLeaderboard("global", "weekly") }.getOrNull() ?: return@launch

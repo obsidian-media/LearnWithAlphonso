@@ -37,8 +37,8 @@ data class TeamsUiState(
 }
 
 /** Port of TeamsView.swift. */
-class TeamsViewModel(private val client: ProgressSyncClient, private val nowMillis: () -> Long = System::currentTimeMillis) : ViewModel() {
-    private val _state = MutableStateFlow(TeamsUiState())
+class TeamsViewModel(private val client: ProgressSyncClient, private val nowMillis: () -> Long = System::currentTimeMillis, private val seed: TeamsUiState? = null) : ViewModel() {
+    private val _state = MutableStateFlow(seed ?: TeamsUiState())
     val state: StateFlow<TeamsUiState> = _state.asStateFlow()
 
     // Latest load wins: an older load finishing late (one started by a kick, then Leave) must not put back a left team.
@@ -47,6 +47,7 @@ class TeamsViewModel(private val client: ProgressSyncClient, private val nowMill
     init { loadAll() }
 
     fun loadAll() {
+        if (seed != null) return
         val generation = ++loadGeneration
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
