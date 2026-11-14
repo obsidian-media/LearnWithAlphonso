@@ -21,7 +21,8 @@ describe("settings surfaces use round-6 tokens, not the mint theme", () => {
     it(f, () => {
       const src = fs.readFileSync(path.join(__dirname, `${f}.tsx`), "utf8");
       expect(src).not.toMatch(LEGACY);
-      expect(src).toMatch(/bg-ds-(card|sunk|surface)/);
+      // Either the file names a round-6 surface itself, or it draws through the shared round-6 blocks.
+      expect(src).toMatch(/bg-ds-(card|sunk|surface)|@\/components\/ds\/Blocks/);
     });
   }
 });

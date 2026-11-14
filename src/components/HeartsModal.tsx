@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { HeartIcon } from "./icons";
+import { DsButton, Icon } from "@/components/ds/Blocks";
 import { useCountdown } from "../hooks/use-countdown";
 import { XP_HEART_COST } from "../lib/hearts";
 
@@ -115,64 +115,72 @@ export function HeartsModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-ds-ink/40 px-4 pb-6 sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-ds-ink/45"
           onClick={onClose}
         >
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            className={
-              "w-full max-w-[380px] rounded-3xl border border-ds-line bg-ds-card p-6 text-center"
-            }
+            exit={{ opacity: 0, y: 24 }}
+            className="relative mt-24 grid w-full max-w-[430px] justify-items-center gap-2.5 rounded-t-[28px] bg-ds-surface px-4 pb-8 pt-6 text-center shadow-[var(--ds-shadow-sheet)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-rose-50 text-rose-500">
-              <HeartIcon className="size-7" />
-            </div>
-            <h2 id="hearts-modal-title" className="font-display text-lg font-semibold text-ds-ink">
+            <img
+              src="/figures/alphonso-hearts-calm.webp"
+              alt=""
+              height={130}
+              decoding="async"
+              draggable={false}
+              className="-mt-24 h-[130px] w-auto"
+            />
+            <h2 id="hearts-modal-title" className="ds-type-display text-ds-ink">
               Out of hearts
             </h2>
-            <p className="mt-1.5 text-sm text-ds-ink-soft/80">
+            <p className="ds-type-body text-ds-ink-soft">
               You've used all your hearts for now.{" "}
-              {countdown
-                ? `Your next heart comes back in ${countdown}.`
-                : "A heart will come back shortly."}
+              {countdown ? (
+                <>
+                  Your next heart comes back in{" "}
+                  <b className="tnum text-ds-heart-text">{countdown}</b>.
+                </>
+              ) : (
+                "A heart will come back shortly."
+              )}
             </p>
-            {canBuyWithXp && (
-              <button
-                type="button"
-                ref={buyButtonRef}
-                onClick={handleBuy}
-                disabled={buying}
-                className="mt-5 w-full rounded-full border border-ds-brand bg-ds-brand/10 px-4 py-3 text-sm font-semibold text-ds-brand transition hover:bg-ds-brand/15 disabled:opacity-60"
+            <div className="flex items-center gap-2" aria-hidden="true">
+              <Icon name="red_heart" size={52} />
+              <span className="ds-type-numeral-x-l tnum text-ds-heart-text">0</span>
+            </div>
+            <div className="grid w-full gap-2.5">
+              {canBuyWithXp && (
+                <DsButton full ref={buyButtonRef} onClick={handleBuy} disabled={buying}>
+                  Use {XP_HEART_COST} XP for a heart
+                </DsButton>
+              )}
+              {buyError && (
+                <p role="alert" className="ds-type-caption text-ds-wrong-ink">
+                  {buyError}
+                </p>
+              )}
+              {onPracticeInstead && (
+                <DsButton
+                  full
+                  variant="secondary"
+                  ref={practiceButtonRef}
+                  onClick={onPracticeInstead}
+                >
+                  Review instead
+                </DsButton>
+              )}
+              <DsButton
+                full
+                variant={canBuyWithXp || onPracticeInstead ? "secondary" : "primary"}
+                ref={closeButtonRef}
+                onClick={onClose}
               >
-                Use {XP_HEART_COST} XP for a heart
-              </button>
-            )}
-            {buyError && (
-              <p role="alert" className="mt-2 text-xs font-medium text-rose-600">
-                {buyError}
-              </p>
-            )}
-            {onPracticeInstead && (
-              <button
-                type="button"
-                ref={practiceButtonRef}
-                onClick={onPracticeInstead}
-                className="mt-2.5 w-full rounded-full border border-ds-line bg-ds-card px-4 py-3 text-sm font-semibold text-ds-ink transition hover:border-ds-ink/30"
-              >
-                Review instead
-              </button>
-            )}
-            <button
-              type="button"
-              ref={closeButtonRef}
-              onClick={onClose}
-              className={`w-full rounded-full bg-ds-ink px-4 py-3 text-sm font-semibold text-ds-card transition hover:opacity-90 ${canBuyWithXp || onPracticeInstead ? "mt-2.5" : "mt-5"}`}
-            >
-              Got it
-            </button>
+                Got it
+              </DsButton>
+            </div>
           </motion.div>
         </motion.div>
       )}

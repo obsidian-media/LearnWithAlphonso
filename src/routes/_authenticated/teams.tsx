@@ -1,8 +1,18 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { MobileFrame } from "../../components/AppShell";
-import { SegmentedControl } from "../../components/SegmentedControl";
+import {
+  BackPill,
+  DsButton,
+  DsCard,
+  DsField,
+  DsScreen,
+  DsSegmented,
+  GlassTitle,
+  Overline,
+} from "@/components/ds/Blocks";
+import { TopTeams } from "@/components/teams/TeamParts";
+import { canCreate, canJoin } from "../../lib/social-presentation";
 import {
   getMyTeam,
   getTeamLeaderboard,
@@ -53,24 +63,26 @@ function TeamsPage() {
 
   if (loadingMyTeam)
     return (
-      <MobileFrame>
-        <p className="p-6 text-sm text-ds-ink-soft">Loading…</p>
-      </MobileFrame>
+      <DsScreen scene="profile">
+        <GlassTitle title="Teams" />
+        <DsCard>
+          <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
+        </DsCard>
+      </DsScreen>
     );
   if (myTeamFailed)
     return (
-      <MobileFrame>
-        <div className="px-6 pt-6">
-          <p className="text-sm text-ds-ink-soft">Couldn't load your team.</p>
-          <button
-            type="button"
-            onClick={() => retryMyTeam()}
-            className="mt-3 rounded-full border border-ds-line px-4 py-2.5 text-sm font-semibold text-ds-ink"
-          >
-            Try again
-          </button>
-        </div>
-      </MobileFrame>
+      <DsScreen scene="profile">
+        <GlassTitle title="Teams" />
+        <DsCard>
+          <p className="ds-type-body text-ds-ink">Couldn't load your team.</p>
+          <div>
+            <DsButton small variant="secondary" onClick={() => retryMyTeam()}>
+              Try again
+            </DsButton>
+          </div>
+        </DsCard>
+      </DsScreen>
     );
 
   async function handleJoinByCode() {
@@ -128,92 +140,58 @@ function TeamsPage() {
   }
 
   return (
-    <MobileFrame>
-      <div className="px-6 pb-12 pt-6">
-        <div className="flex items-center gap-3">
-          <Link to="/league" aria-label="Back to league" className="text-ds-ink-soft/70">
-            ←
-          </Link>
-          <h1 className="font-display ds-type-title font-semibold text-ds-ink">Teams</h1>
-        </div>
+    <DsScreen scene="profile">
+      <BackPill to="/league" label="Back to league">
+        League
+      </BackPill>
+      <GlassTitle title="Teams" />
 
-        <div className="mt-6 space-y-3">
-          <input
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="Join code"
-            className="w-full rounded-xl border border-ds-line px-4 py-2.5 text-sm"
-          />
-          <button
-            type="button"
-            onClick={handleJoinByCode}
-            disabled={busy || !code}
-            className="w-full rounded-full bg-ds-ink px-4 py-2.5 text-sm font-semibold text-ds-card disabled:opacity-50"
-          >
-            Join by code
-          </button>
-          <button
-            type="button"
-            onClick={handleAutoJoin}
-            disabled={busy}
-            className="w-full rounded-full border border-ds-line px-4 py-2.5 text-sm font-semibold text-ds-ink disabled:opacity-50"
-          >
-            Put me on a team
-          </button>
-          {error && <p className="text-xs text-rose-500">{error}</p>}
-        </div>
-
-        <h2 className="mt-8 font-display ds-type-headline font-semibold text-ds-ink">
-          Create a team
-        </h2>
-        <div className="mt-3 space-y-3">
-          <input
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            placeholder="Team name"
-            maxLength={40}
-            className="w-full rounded-xl border border-ds-line px-4 py-2.5 text-sm"
-          />
-          <SegmentedControl
-            ariaLabel="Team visibility"
-            value={visibility}
-            onChange={setVisibility}
-            options={[
-              { value: "public", label: "Public" },
-              { value: "private", label: "Private" },
-            ]}
-          />
-          <button
-            type="button"
-            onClick={handleCreate}
-            disabled={busy || !teamName.trim()}
-            className="w-full rounded-full border border-ds-line px-4 py-2.5 text-sm font-semibold text-ds-ink disabled:opacity-50"
-          >
-            Create team
-          </button>
-        </div>
-
-        <h2 className="mt-8 font-display ds-type-headline font-semibold text-ds-ink">
-          This week's top teams
-        </h2>
-        {loadingBoard ? (
-          <p className="mt-3 text-sm text-ds-ink-soft">Loading…</p>
-        ) : (
-          <div className="mt-3 space-y-2">
-            {(leaderboard ?? []).map((t, i) => (
-              <div
-                key={t.teamId}
-                className="flex items-center justify-between rounded-2xl border border-ds-line bg-ds-card p-3.5"
-              >
-                <span className="text-sm font-semibold text-ds-ink">
-                  {i + 1}. {t.name}
-                </span>
-                <span className="tnum text-sm text-ds-ink-soft">{t.weeklyXp} XP</span>
-              </div>
-            ))}
-          </div>
+      <Overline>Join a team</Overline>
+      <DsCard>
+        <DsField
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="Join code"
+          aria-label="Join code"
+          autoCapitalize="characters"
+        />
+        <DsButton full onClick={handleJoinByCode} disabled={busy || !canJoin(code)}>
+          Join by code
+        </DsButton>
+        <DsButton full variant="secondary" onClick={handleAutoJoin} disabled={busy}>
+          Put me on a team
+        </DsButton>
+        {error && (
+          <p role="alert" className="ds-type-footnote font-bold text-ds-wrong-ink">
+            {error}
+          </p>
         )}
-      </div>
-    </MobileFrame>
+      </DsCard>
+
+      <Overline>Create a team</Overline>
+      <DsCard>
+        <DsField
+          value={teamName}
+          onChange={(e) => setTeamName(e.target.value)}
+          placeholder="Team name"
+          aria-label="Team name"
+          maxLength={40}
+        />
+        <DsSegmented
+          ariaLabel="Team visibility"
+          value={visibility}
+          onChange={setVisibility}
+          options={[
+            { value: "public", label: "Public" },
+            { value: "private", label: "Private" },
+          ]}
+        />
+        <DsButton full onClick={handleCreate} disabled={busy || !canCreate(teamName)}>
+          Create team
+        </DsButton>
+      </DsCard>
+
+      <TopTeams loading={loadingBoard} rows={leaderboard ?? []} myTeamId={null} />
+    </DsScreen>
   );
 }
