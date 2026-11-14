@@ -10,21 +10,26 @@ import SwiftUI
 struct ToastBanner: View {
     let message: String
     var iconName = "bell.fill"
-    var iconColor = AlphonsoColor.ember
+    /// Nil is the design system's action text colour.
+    var iconColor: Color?
+
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        HStack(spacing: AlphonsoSpacing.xs + 2) {
+        HStack(spacing: AlphonsoDS.Space.s2) {
             Image(systemName: iconName)
-                .foregroundStyle(iconColor)
+                .foregroundStyle(iconColor ?? ds.actionText)
+                .accessibilityHidden(true)
             Text(message)
-                .font(AlphonsoFont.sans(14, weight: .medium))
-                .foregroundStyle(AlphonsoColor.ink)
+                .dsText(.footnote)
+                .foregroundStyle(ds.ink)
         }
-        .padding(.horizontal, AlphonsoSpacing.md - 2)
-        .padding(.vertical, AlphonsoSpacing.sm + 2)
-        .background(AlphonsoColor.parchment, in: Capsule())
-        .overlay(Capsule().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
-        .shadow(color: AlphonsoColor.ink.opacity(0.12), radius: 6, y: 2)
+        .padding(.horizontal, AlphonsoDS.Space.s4)
+        .padding(.vertical, AlphonsoDS.Space.s3)
+        .background(ds.card, in: Capsule())
+        .overlay(Capsule().strokeBorder(ds.line, lineWidth: 1))
+        .dsElevation(AlphonsoDS.Elevation.floating, line: ds.line)
+        .accessibilityElement(children: .combine)
     }
 
     /// The `.transition(...)` each call site applies to a conditionally-

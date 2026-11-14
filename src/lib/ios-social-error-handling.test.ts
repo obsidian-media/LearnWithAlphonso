@@ -29,7 +29,7 @@ describe("iOS social views", () => {
   });
   it("the owner's kick list marks blocked members", () => {
     const teams = read("TeamsView.swift");
-    expect(teams).toMatch(/if member\.isBlocked \{[\s\S]{0,300}Text\("Blocked"\)/);
+    expect(teams).toMatch(/if member\.isBlocked \{[\s\S]{0,300}DSPill\(text: "Blocked"/);
     expect(teams).toContain("!member.isBlocked");
     // The owner keeps seeing a blocked member, so the success line must not say they disappear.
     expect(teams).toContain("SocialReasonCopy.teamBlockedLine(target.displayName, viewerIsOwner:");

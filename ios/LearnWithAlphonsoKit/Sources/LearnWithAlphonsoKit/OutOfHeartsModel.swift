@@ -4,9 +4,14 @@ import Foundation
 /// its M:SS countdown (src/hooks/use-countdown.ts: ceil to the second).
 public struct OutOfHeartsModel: Sendable, Equatable, Identifiable {
     public let refillAt: Date?
+    /// The hearts the learner has when the sheet opens (0 at the gate; the sheet shows what it is given).
+    public let hearts: Int
     public var id: Date? { refillAt }
 
-    public init(refillAt: Date?) { self.refillAt = refillAt }
+    public init(refillAt: Date?, hearts: Int = 0) {
+        self.refillAt = refillAt
+        self.hearts = hearts
+    }
 
     public static let title = "Out of hearts"
     public static let buyTitle = "Use \(HeartsEconomy.xpHeartCost) XP for a heart"

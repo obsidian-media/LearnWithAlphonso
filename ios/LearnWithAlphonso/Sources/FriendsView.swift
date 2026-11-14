@@ -32,102 +32,71 @@ struct FriendsView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
                 List {
-                    Section {
-                        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs + 4) {
-                            Text("Invite a friend")
-                                .font(AlphonsoFont.display(17, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.ink)
-                            Text("Share your link. When they open it and tap Add friend, you're friends.")
-                                .font(AlphonsoFont.sans(12))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                            if let inviteLink {
-                                ShareLink(item: inviteLink) {
-                                    Label("Share invite link", systemImage: "square.and.arrow.up")
-                                }
-                                .buttonStyle(.alphonsoPrimary(fullWidth: false))
-                            }
-                            // A friend's link that opened in the browser instead of the app can be pasted here.
-                            HStack {
-                                TextField("Paste a friend's link", text: $pastedInvite)
-                                    .textInputAutocapitalization(.never)
-                                    .autocorrectionDisabled()
-                                    .submitLabel(.go)
-                                    .onSubmit(openPastedInvite)
-                                Button("Open", action: openPastedInvite)
-                                    .buttonStyle(.borderless)
-                                    .disabled(FriendInviteLink.code(fromEntry: pastedInvite) == nil)
-                            }
-                            .padding(.top, AlphonsoSpacing.xs)
-                        }
-                        .padding(.vertical, 4)
-                    }
-                    .listRowBackground(AlphonsoColor.parchment)
+                    DSGlassTitle(title: "Friends", subtitle: friends.isEmpty ? nil : friendsCountTitle)
+                        .dsListRow(top: AlphonsoDS.Space.s2)
+
+                    inviteCard
+                        .dsListRow()
 
                     BuddySection(session: session, friends: friends, onBuddyChange: { currentBuddyID = $0 })
+                        .dsListRow()
 
-                    Section {
-                        if isLoading {
-                            ProgressView().tint(AlphonsoColor.moss)
-                        } else if let errorMessage {
-                            Text(errorMessage).foregroundStyle(AlphonsoColor.inkSoft)
-                        } else if friends.isEmpty {
-                            Text("No friends yet. Share your invite link to get started.")
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                        } else {
-                            ForEach(friends, id: \.userID) { friend in
-                                FriendRowView(friend: friend) {
-                                    await nudge(friend)
-                                } onBlock: {
-                                    friendPendingBlock = friend
-                                } onReport: {
-                                    reportTarget = SocialTarget(id: friend.userID, displayName: friend.displayName)
-                                }
-                                .swipeActions(edge: .trailing) {
-                                    Button(role: .destructive) {
-                                        friendPendingRemoval = friend
-                                    } label: {
-                                        Label("Remove", systemImage: "person.badge.minus")
-                                    }
+                    DSOverline(friendsCountTitle).dsListRow(bottom: AlphonsoDS.Space.s2)
+                    if isLoading {
+                        DSCard { ProgressView().tint(ds.choice).frame(maxWidth: .infinity) }
+                            .dsListRow()
+                    } else if let errorMessage {
+                        DSCard { Text(errorMessage).dsText(.body).foregroundStyle(ds.inkSoft) }
+                            .dsListRow()
+                    } else if friends.isEmpty {
+                        DSEmptyState(art: "Alphonso-waving", title: "No friends yet. Share your invite link to get started.")
+                            .dsListRow()
+                    } else {
+                        ForEach(friends, id: \.userID) { friend in
+                            FriendRowView(friend: friend) {
+                                await nudge(friend)
+                            } onBlock: {
+                                friendPendingBlock = friend
+                            } onReport: {
+                                reportTarget = SocialTarget(id: friend.userID, displayName: friend.displayName)
+                            }
+                            .dsListRow(bottom: AlphonsoDS.Space.s2)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    friendPendingRemoval = friend
+                                } label: {
+                                    Label("Remove", systemImage: "person.badge.minus")
                                 }
                             }
                         }
-                    } header: {
-                        Text(friendsCountTitle)
-                            .font(AlphonsoFont.sans(12, weight: .semiBold))
-                            .tracking(0.4)
-                            .foregroundStyle(AlphonsoColor.ember)
                     }
-                    .listRowBackground(AlphonsoColor.parchment)
 
                     if !activityEvents.isEmpty {
-                        let activityRows = ForEach(activityEvents) { event in
-                            ActivityEventRow(event: event, displayName: displayName(for: event.userID))
+                        DSOverline("Activity").dsListRow(bottom: AlphonsoDS.Space.s2)
+                        DSCard(spacing: AlphonsoDS.Space.s2) {
+                            ForEach(activityEvents) { event in
+                                ActivityEventRow(event: event, displayName: displayName(for: event.userID))
+                            }
                         }
-                        Section {
-                            activityRows
-                        } header: {
-                            Text("Activity")
-                                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                                .tracking(0.4)
-                                .foregroundStyle(AlphonsoColor.ember)
-                        }
-                        .listRowBackground(AlphonsoColor.parchment)
+                        .dsListRow()
                     }
                 }
-                .scrollContentBackground(.hidden)
-                .background(AlphonsoColor.surface)
+                .dsSceneList(.practice)
 
                 if let nudgeBannerMessage {
                     ToastBanner(message: nudgeBannerMessage, iconName: "hand.wave.fill")
-                        .padding(.top, 4)
+                        .padding(.top, AlphonsoDS.Space.s1)
                         .transition(ToastBanner.transition(reduceMotion: reduceMotion))
                 }
             }
             .navigationTitle("Friends")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink("Duels") {
@@ -136,7 +105,7 @@ struct FriendsView: View {
                 }
             }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .task { await loadAll() }
         // The invite sheet closing (an accept) means the list may have a new friend.
         .onChange(of: pendingInvite.code) { old, new in
@@ -184,6 +153,41 @@ struct FriendsView: View {
         }
         .sheet(item: $reportTarget) { target in
             ReportSheet(target: target, session: session)
+        }
+    }
+
+    /// Invite a friend: the share link, and a field for a friend's link that opened in the browser.
+    private var inviteCard: some View {
+        DSCard {
+            HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
+                Icon3DView(emoji: "\u{1F91D}", size: AlphonsoDS.Space.s12)
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                    Text("Invite a friend")
+                        .dsText(.title)
+                        .foregroundStyle(ds.brand)
+                    Text("Share your link. When they open it and tap Add friend, you're friends.")
+                        .dsText(.footnote)
+                        .foregroundStyle(ds.inkSoft)
+                }
+            }
+            if let inviteLink {
+                ShareLink(item: inviteLink) {
+                    Label("Share invite link", systemImage: "square.and.arrow.up")
+                }
+                .buttonStyle(.dsButton(.primary))
+            }
+            // A friend's link that opened in the browser instead of the app can be pasted here.
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                TextField("Paste a friend's link", text: $pastedInvite)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.go)
+                    .onSubmit(openPastedInvite)
+                    .dsField()
+                Button("Open", action: openPastedInvite)
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                    .disabled(FriendInviteLink.code(fromEntry: pastedInvite) == nil)
+            }
         }
     }
 
@@ -307,45 +311,53 @@ private struct FriendRowView: View {
     let onReport: () -> Void
 
     @State private var canNudge = true
+    @Environment(\.alphonsoDS) private var ds
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(spacing: AlphonsoSpacing.sm + 4) {
-            // Their animal, or their initial on their colour (ProfileAvatars).
-            ProfileAvatarView(seed: friend.avatarSeed, name: friend.displayName, size: 40)
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: AlphonsoDS.Space.s2))
+            : AnyLayout(HStackLayout(spacing: AlphonsoDS.Space.s3))
+        DSCard(padding: AlphonsoDS.Space.s3) {
+            layout {
+                // Their animal, or their initial on their colour (ProfileAvatars).
+                ProfileAvatarView(seed: friend.avatarSeed, name: friend.displayName, size: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s2)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(friend.displayName)
-                    .font(AlphonsoFont.sans(15, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
-                Text("\u{1F525} \(friend.streak)-day streak")
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1 / 2) {
+                    Text(friend.displayName)
+                        .dsText(.headline)
+                        .foregroundStyle(ds.ink)
+                    Text("\u{1F525} \(friend.streak)-day streak")
+                        .dsText(.caption)
+                        .foregroundStyle(ds.inkSoft)
+                }
+
+                if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: AlphonsoDS.Space.s2) }
+
+                VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: AlphonsoDS.Space.s1 / 2) {
+                    Text("\(friend.weekXP)")
+                        .dsText(.headline)
+                        .foregroundStyle(ds.ink)
+                    Text("XP this week")
+                        .dsText(.caption)
+                        .foregroundStyle(ds.inkSoft)
+                }
+
+                HStack(spacing: AlphonsoDS.Space.s2) {
+                    Button {
+                        canNudge = false
+                        Task { await onNudge() }
+                    } label: {
+                        Image(systemName: "hand.wave")
+                    }
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                    .disabled(!canNudge)
+                    .accessibilityLabel("Nudge \(friend.displayName)")
+
+                    SocialSafetyMenu(onBlock: onBlock, onReport: onReport, accessibilityName: friend.displayName)
+                }
             }
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("\(friend.weekXP)")
-                    .font(AlphonsoFont.sans(15, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
-                Text("XP this week")
-                    .font(AlphonsoFont.sans(11))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-            }
-
-            Button {
-                canNudge = false
-                Task { await onNudge() }
-            } label: {
-                Image(systemName: "hand.wave")
-            }
-            .buttonStyle(.alphonsoSecondary(fullWidth: false))
-            .disabled(!canNudge)
-            .accessibilityLabel("Nudge \(friend.displayName)")
-
-            SocialSafetyMenu(onBlock: onBlock, onReport: onReport, accessibilityName: friend.displayName)
         }
-        .padding(.vertical, 4)
         .onAppear { canNudge = NudgeCooldownCache.canNudge(friendID: friend.userID) }
     }
 }
@@ -353,18 +365,18 @@ private struct FriendRowView: View {
 private struct ActivityEventRow: View {
     let event: FriendActivityEvent
     let displayName: String
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: iconName)
-                .foregroundStyle(iconColor)
-                .frame(width: 24)
+        HStack(spacing: AlphonsoDS.Space.s3) {
+            Icon3DView(emoji: emoji, size: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s1)
             Text(copy)
-                .font(AlphonsoFont.sans(14))
-                .foregroundStyle(AlphonsoColor.ink)
-            Spacer()
+                .dsText(.body)
+                .foregroundStyle(ds.ink)
+            Spacer(minLength: 0)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, AlphonsoDS.Space.s1)
+        .accessibilityElement(children: .combine)
     }
 
     private var copy: String {
@@ -383,21 +395,13 @@ private struct ActivityEventRow: View {
         }
     }
 
-    private var iconName: String {
+    /// A 3D icon per kind of event: a tick, a flame, a trophy, and sparkles for one this build does not know.
+    private var emoji: String {
         switch event.eventType {
-        case "lesson_completed": return "checkmark.circle.fill"
-        case "streak_milestone": return "flame.fill"
-        case "league_promotion": return "arrow.up.circle.fill"
-        default: return "circle.fill"
-        }
-    }
-
-    private var iconColor: Color {
-        switch event.eventType {
-        case "lesson_completed": return AlphonsoColor.moss
-        case "streak_milestone": return AlphonsoColor.ember
-        case "league_promotion": return AlphonsoColor.mossDeep
-        default: return AlphonsoColor.inkSoft
+        case "lesson_completed": return "\u{2705}"
+        case "streak_milestone": return "\u{1F525}"
+        case "league_promotion": return "\u{1F3C6}"
+        default: return "\u{2728}"
         }
     }
 }

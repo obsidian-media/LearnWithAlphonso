@@ -4,6 +4,8 @@ import LearnWithAlphonsoKit
 /// Shown when a lesson can't start at 0 hearts, matching the web's HeartsModal. A live countdown to the refill,
 /// "Use 50 XP for a heart" through the same buy_heart_with_xp RPC as the web, and "Review instead",
 /// because review and practice never cost hearts. Every path leads somewhere.
+///
+/// Drawn in the round-6 design system: a calm Alphonso, the 3D heart, the countdown in the heart colour.
 struct OutOfHeartsSheet: View {
     let model: OutOfHeartsModel
     let course: Course
@@ -16,40 +18,52 @@ struct OutOfHeartsSheet: View {
     @State private var buyMessage: String?
     @State private var refillHandled = false
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
-            VStack(spacing: AlphonsoSpacing.md) {
-                Image(systemName: "heart.slash.fill")
-                    .font(.system(size: 44))
-                    .foregroundStyle(AlphonsoColor.destructive)
-                    .accessibilityHidden(true)
-                Text(OutOfHeartsModel.title)
-                    .font(AlphonsoFont.display(21, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
-                Text(model.message(now: context.date))
-                    .font(AlphonsoFont.sans(15))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                    .multilineTextAlignment(.center)
-                    .accessibilityAddTraits(.updatesFrequently)
-                if model.showsBuy(isOnline: isOnline) {
-                    Button {
-                        Task { await buy() }
-                    } label: {
-                        if buying { ProgressView() } else { Text(OutOfHeartsModel.buyTitle) }
-                    }
-                    .buttonStyle(.alphonsoPrimary)
-                    .disabled(buying)
-                }
-                if let buyMessage {
-                    Text(buyMessage)
-                        .font(AlphonsoFont.sans(13, weight: .medium))
-                        .foregroundStyle(AlphonsoColor.destructive)
+            ScrollView {
+                VStack(spacing: AlphonsoDS.Space.s3) {
+                    Image("Alphonso-hearts-calm")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: AlphonsoDS.Space.s12 * 3)
+                        .accessibilityHidden(true)
+                    Text(OutOfHeartsModel.title)
+                        .dsText(.display)
+                        .foregroundStyle(ds.brand)
+                        .accessibilityAddTraits(.isHeader)
+                    messageText(now: context.date)
+                        .dsText(.body)
+                        .foregroundStyle(ds.inkSoft)
                         .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.updatesFrequently)
+                    HStack(spacing: AlphonsoDS.Space.s2) {
+                        Icon3DView(emoji: "\u{2764}\u{FE0F}", size: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s1)
+                        Text("\(model.hearts)").dsText(.numeralXL).foregroundStyle(ds.heart)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(model.hearts) hearts")
+                    if model.showsBuy(isOnline: isOnline) {
+                        Button {
+                            Task { await buy() }
+                        } label: {
+                            if buying { ProgressView() } else { Text(OutOfHeartsModel.buyTitle) }
+                        }
+                        .buttonStyle(.dsButton(.primary))
+                        .disabled(buying)
+                    }
+                    if let buyMessage {
+                        Text(buyMessage)
+                            .dsText(.caption)
+                            .foregroundStyle(ds.wrongInk)
+                            .multilineTextAlignment(.center)
+                    }
+                    Button(OutOfHeartsModel.practiceInsteadTitle, action: onPracticeInstead)
+                        .buttonStyle(.dsButton(.secondary))
                 }
-                Button(OutOfHeartsModel.practiceInsteadTitle, action: onPracticeInstead)
-                    .buttonStyle(.alphonsoSecondary)
+                .padding(AlphonsoDS.Space.gutter)
             }
-            .padding()
             .onChange(of: model.isRefillDue(now: context.date), initial: true) { _, due in
                 if due && !refillHandled {
                     refillHandled = true
@@ -58,7 +72,18 @@ struct OutOfHeartsSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
-        .background(AlphonsoColor.surface)
+        .background(ds.surface)
+    }
+
+    /// The model's sentence, with the countdown in the heart colour so it reads at a glance.
+    private func messageText(now: Date) -> Text {
+        let message = model.message(now: now)
+        guard let countdown = model.countdown(now: now), let range = message.range(of: countdown) else {
+            return Text(message)
+        }
+        let before = String(message[..<range.lowerBound])
+        let after = String(message[range.upperBound...])
+        return Text("\(before)\(Text(countdown).fontWeight(.bold).foregroundStyle(ds.heartText))\(after)")
     }
 
     private func client() async -> ProgressSyncClient? {

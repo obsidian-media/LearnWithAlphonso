@@ -484,6 +484,11 @@ describe("app icon", () => {
       figures: string[];
       clips?: string[];
     };
+    // Plus one image set per full-body Alphonso pose the redesigned screens use (src/data/alphonso-figure-poses.json,
+    // made 2026-11-14, provenance in docs/mascot-provenance.md).
+    const figurePoses = (JSON.parse(read("src/data/alphonso-figure-poses.json")) as string[]).map(
+      (n) => `Alphonso-${n}.imageset`,
+    );
     const sceneSets = [
       ...scenery.scenes.map((n) => `Scene-${n}.imageset`),
       ...(scenery.clips ?? []).map((n) => `Clip-${n}-poster.imageset`),
@@ -495,6 +500,7 @@ describe("app icon", () => {
         "GoogleG.imageset",
         "Hector.imageset",
         ...poses,
+        ...figurePoses,
         ...sceneSets,
       ].sort(),
     );
