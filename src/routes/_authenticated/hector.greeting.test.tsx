@@ -12,6 +12,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
   return {
     ...actual,
+    useRouterState: ({ select }: { select: (s: unknown) => unknown }) =>
+      select({ location: { pathname: "/hector" } }),
     Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
       <a href={to} {...rest}>
         {children}

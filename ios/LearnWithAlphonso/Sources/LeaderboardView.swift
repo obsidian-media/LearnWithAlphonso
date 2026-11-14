@@ -240,6 +240,12 @@ private struct LeaderboardRowView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
+                    // The flag, only for a learner who turned it on (profiles.country is set only then), before the
+                    // name; VoiceOver still hears the code.
+                    if let flag = ProfileMath.flagEmoji(country: row.country) {
+                        Text(flag)
+                            .accessibilityLabel(ProfileMath.flagAccessibilityLabel(country: row.country) ?? "")
+                    }
                     Text(row.displayName)
                         .font(AlphonsoFont.sans(15, weight: .medium))
                         .foregroundStyle(AlphonsoColor.ink)
@@ -253,7 +259,8 @@ private struct LeaderboardRowView: View {
                             .clipShape(Capsule())
                     }
                 }
-                if let country = row.country {
+                // A code that draws no flag (malformed) still shows as text; a valid one is the flag above.
+                if let country = row.country, ProfileMath.flagEmoji(country: country) == nil {
                     Text(country.uppercased())
                         .font(AlphonsoFont.sans(11))
                         .foregroundStyle(AlphonsoColor.inkSoft)

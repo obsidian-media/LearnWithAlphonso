@@ -49,6 +49,22 @@ final class ProfileOverviewTests: XCTestCase {
         XCTAssertEqual(M.flagEmoji(country: "es"), "🇪🇸")
     }
 
+    func testLeaderboardFlagIsDrawnOnlyForALearnerWhoTurnedItOn() {
+        // profiles.country is set only while the flag is on, so a country is the consent signal.
+        XCTAssertEqual(M.flagEmoji(country: "CA"), "🇨🇦")
+        XCTAssertEqual(M.flagEmoji(country: "nl"), "🇳🇱")
+        XCTAssertNil(M.flagEmoji(country: nil))
+        XCTAssertNil(M.flagEmoji(country: ""))
+        XCTAssertNil(M.flagEmoji(country: "CAN"))
+        XCTAssertNil(M.flagEmoji(country: "CA", showFlag: false))
+    }
+
+    func testLeaderboardFlagKeepsTheCodeForScreenReaders() {
+        XCTAssertEqual(M.flagAccessibilityLabel(country: "ca"), "Country CA")
+        XCTAssertNil(M.flagAccessibilityLabel(country: nil))
+        XCTAssertNil(M.flagAccessibilityLabel(country: "C1"))
+    }
+
     // MARK: Heat map
 
     func testHeatMapSpansExactlyThreeMonthsOfUTCDays() {

@@ -56,13 +56,29 @@ export function TopBar() {
         {announcement}
       </span>
       <div className="mx-auto flex max-w-[430px] items-center justify-between px-5 py-3.5">
-        <Link to="/learn" className="flex items-center gap-2">
-          <LeagueTierBadge tier={hydrated ? leagueTier : "bronze"} size="sm" />
+        {/* The brand: the app icon and the name, the same mark as the landing page. */}
+        <Link
+          to="/learn"
+          className="flex items-center gap-2"
+          aria-label="Learn with Alphonso, home"
+        >
+          <img
+            src="/icon-192.png"
+            alt=""
+            width={28}
+            height={28}
+            data-brand-mark=""
+            className="size-7 rounded-lg"
+          />
           <span className="font-display text-[15px] font-semibold tracking-tight text-ink">
             Alphonso
           </span>
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* The learner's league badge: theirs, not the brand, so it sits with their stats and opens the league. */}
+          <Link to="/league" data-league-badge="">
+            <LeagueTierBadge tier={hydrated ? leagueTier : "bronze"} size="sm" />
+          </Link>
           <StatPill
             icon={<Icon3D emoji="🔥" size={20} />}
             value={hydrated ? streak : 0}
@@ -207,7 +223,14 @@ export function BottomTabs() {
   );
 }
 
-export function MobileFrame({ children }: { children: ReactNode }) {
+export function MobileFrame({
+  children,
+  aboveTabs,
+}: {
+  children: ReactNode;
+  /** Rides in the sticky dock above the player and tabs (the Hector composer). */
+  aboveTabs?: ReactNode;
+}) {
   return (
     <div className="grain min-h-dvh bg-surface text-ink">
       <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-surface/60">
@@ -222,6 +245,7 @@ export function MobileFrame({ children }: { children: ReactNode }) {
         {/* One sticky dock for both bars. Two siblings each pinned to the bottom edge pin to the SAME place on a
             scrolled page, and the later one (the tabs) covers the player and its quiz offer. */}
         <div data-testid="bottom-dock" className="sticky bottom-0 z-30">
+          {aboveTabs}
           <PodcastPlayer />
           <BottomTabs />
         </div>

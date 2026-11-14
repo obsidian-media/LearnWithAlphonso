@@ -43,6 +43,26 @@ describe("TopBar", () => {
     expect(screen.getByLabelText("Hearts")).toHaveTextContent("3");
   });
 
+  it("shows the real brand mark and name at the left, not a league shield", () => {
+    render(<TopBar />);
+    const home = screen.getByRole("link", { name: "Learn with Alphonso, home" });
+    expect(home).toHaveAttribute("href", "/learn");
+    expect(home.querySelector('img[src="/icon-192.png"]')).not.toBeNull();
+    expect(home).toHaveTextContent("Alphonso");
+    expect(home.querySelector("svg")).toBeNull();
+  });
+
+  it("keeps the learner's league badge, apart from the brand, linking to the league", () => {
+    useProgress.setState({ hydrated: true, leagueTier: "sapphire" });
+    render(<TopBar />);
+    const badge = screen.getByLabelText("Grove league");
+    const league = badge.closest("a");
+    expect(league).toHaveAttribute("href", "/league");
+    expect(screen.getByRole("link", { name: "Learn with Alphonso, home" })).not.toContainElement(
+      badge,
+    );
+  });
+
   it("announces a stat change to screen readers after hydration", () => {
     useProgress.setState({ hydrated: true, xp: 100, streak: 1, hearts: 5 });
     const { rerender } = render(<TopBar />);

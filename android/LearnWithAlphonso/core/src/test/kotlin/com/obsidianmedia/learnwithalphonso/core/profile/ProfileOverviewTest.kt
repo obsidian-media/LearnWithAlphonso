@@ -44,6 +44,24 @@ class ProfileOverviewTest {
     }
 
     @Test
+    fun `leaderboard flag is drawn only for a learner who turned it on`() {
+        // profiles.country is set only while the flag is on, so a country is the consent signal.
+        assertEquals("🇨🇦", m.flagEmoji("CA"))
+        assertEquals("🇳🇱", m.flagEmoji("nl"))
+        assertNull(m.flagEmoji(null))
+        assertNull(m.flagEmoji(""))
+        assertNull(m.flagEmoji("CAN"))
+        assertNull(m.flagEmoji("CA", showFlag = false))
+    }
+
+    @Test
+    fun `leaderboard flag keeps the code for screen readers`() {
+        assertEquals("Country CA", m.flagAccessibilityLabel("ca"))
+        assertNull(m.flagAccessibilityLabel(null))
+        assertNull(m.flagAccessibilityLabel("C1"))
+    }
+
+    @Test
     fun `heat map spans exactly three months of UTC days`() {
         assertEquals("2026-08-08", m.threeMonthsWindow("2026-11-07").first)
         assertEquals("2026-03-01", m.threeMonthsWindow("2026-05-31").first) // Feb clamps to the 28th

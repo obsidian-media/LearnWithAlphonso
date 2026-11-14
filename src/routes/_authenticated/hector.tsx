@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
 import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
-import { LessonFrame } from "../../components/AppShell";
+import { LessonFrame, MobileFrame } from "../../components/AppShell";
 import { SceneBackdrop } from "../../components/SceneBackdrop";
 import { MascotImage } from "../../components/MascotImage";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
@@ -66,7 +66,7 @@ function HectorPage() {
 }
 
 /**
- * The Hector tab is full screen (no tab bar), so every state of it needs its own way out.
+ * The Hector tab keeps the tab bar (as on iOS and Android) except in the full-screen call and the paywall, so those states need their own way out; the exit link stays on every state.
  * Without one a free learner was left on the paywall with no exit but the browser's back button.
  */
 function HectorExit({ className = "" }: { className?: string }) {
@@ -92,19 +92,19 @@ function HectorGate({ course }: { course: Course }) {
 
   if (pro.state === "loading") {
     return (
-      <LessonFrame>
+      <MobileFrame>
         <div className="px-4 pt-4">
           <HectorExit />
         </div>
         <p role="status" className="px-6 pt-10 text-sm text-ds-ink-soft/70">
           …
         </p>
-      </LessonFrame>
+      </MobileFrame>
     );
   }
   if (pro.state === "error") {
     return (
-      <LessonFrame>
+      <MobileFrame>
         <div className="px-4 pt-4">
           <HectorExit />
         </div>
@@ -120,12 +120,12 @@ function HectorGate({ course }: { course: Course }) {
             {PAYWALL_COPY.tryAgain}
           </button>
         </div>
-      </LessonFrame>
+      </MobileFrame>
     );
   }
   if (pro.state === "free" && !refusedSource && pro.justPaid) {
     return (
-      <LessonFrame>
+      <MobileFrame>
         <div className="px-4 pt-4">
           <HectorExit />
         </div>
@@ -141,7 +141,7 @@ function HectorGate({ course }: { course: Course }) {
             {PAYWALL_COPY.tryAgain}
           </button>
         </div>
-      </LessonFrame>
+      </MobileFrame>
     );
   }
   if (pro.state === "free" || refusedSource) {
@@ -462,8 +462,10 @@ function HectorConversation({
       </div>
     </>
   );
-  const composer = (
-    <div className="sticky bottom-0 z-20 border-t border-ds-line bg-ds-card/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+  // The form itself. In the call's sheet it sticks to the sheet; on the classic screen it rides in the shell's dock
+  // above the tab bar (MobileFrame aboveTabs), because a second bottom-sticky bar would hide behind the tabs.
+  const composerForm = (
+    <>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -515,12 +517,22 @@ function HectorConversation({
           Send
         </button>
       </form>
+    </>
+  );
+  const composer = (
+    <div className="sticky bottom-0 z-20 border-t border-ds-line bg-ds-card/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+      {composerForm}
+    </div>
+  );
+  const dockComposer = (
+    <div className="border-t border-ds-line bg-ds-card/95 px-4 pb-3 pt-3 backdrop-blur-md">
+      {composerForm}
     </div>
   );
   const classicTop = (
     <>
       <SceneBackdrop scene="hector" focus="50% 30%" />
-      <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ds-line bg-ds-card/90 px-5 py-3.5 backdrop-blur-md">
+      <header className="relative z-20 flex items-center gap-3 border-b border-ds-line bg-ds-card/90 px-5 py-3.5 backdrop-blur-md">
         <HectorExit />
         <div className="min-w-0 flex-1">
           <h1 className="font-display ds-type-headline font-semibold text-ds-ink">Hector</h1>
@@ -641,10 +653,9 @@ function HectorConversation({
   }
 
   return (
-    <LessonFrame>
+    <MobileFrame aboveTabs={dockComposer}>
       {classicTop}
       {hintAndLog}
-      {composer}
-    </LessonFrame>
+    </MobileFrame>
   );
 }

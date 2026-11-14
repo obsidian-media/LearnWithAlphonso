@@ -1,3 +1,4 @@
+import { flagEmoji, flagLabel } from "../../lib/country-flag";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
 import { useState } from "react";
@@ -165,6 +166,16 @@ function LeaguePage() {
                 <ProfileAvatar seed={row.avatar_seed} name={row.display_name} className="size-9" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ds-ink">
+                    {flagEmoji(row.country) && (
+                      <span
+                        role="img"
+                        aria-label={flagLabel(row.country) ?? undefined}
+                        data-leaderboard-flag={row.country}
+                        className="mr-1.5"
+                      >
+                        {flagEmoji(row.country)}
+                      </span>
+                    )}
                     {row.display_name}
                     {row.isYou && (
                       <span className="ml-1.5 rounded-full bg-ember px-1.5 py-0.5 ds-type-caption font-semibold uppercase tracking-wider text-ink-on-ember">
@@ -172,7 +183,8 @@ function LeaguePage() {
                       </span>
                     )}
                   </p>
-                  {row.country && (
+                  {/* A code that draws no flag (malformed) still shows as text; a valid one is the flag above. */}
+                  {row.country && !flagEmoji(row.country) && (
                     <p className="ds-type-caption uppercase tracking-wider text-ds-ink-soft/60">
                       {row.country}
                     </p>

@@ -493,6 +493,13 @@ public enum ProfileMath {
         return String(String.UnicodeScalarView(code.unicodeScalars.compactMap { Unicode.Scalar(127397 + $0.value) }))
     }
 
+    /// What VoiceOver says for a leaderboard row's flag: the code stays available though the flag is a picture.
+    /// nil when the country is missing or malformed (no flag is drawn then either).
+    public static func flagAccessibilityLabel(country: String?) -> String? {
+        guard flagEmoji(country: country) != nil, let code = country?.uppercased() else { return nil }
+        return "Country \(code)"
+    }
+
     // MARK: Share card
 
     public static let shareAppName = "Learn with Alphonso"

@@ -259,6 +259,10 @@ object ProfileMath {
         return code.map { String(Character.toChars(127397 + it.code)) }.joinToString("")
     }
 
+    /** What TalkBack says for a leaderboard row's flag: the code stays available though the flag is a picture. */
+    fun flagAccessibilityLabel(country: String?): String? =
+        if (flagEmoji(country) == null) null else "Country ${country!!.uppercase()}"
+
     const val SKILL_WINDOW_DAYS = 28
     val SKILLS = listOf("listening", "speaking", "vocabulary", "grammar", "reading")
 
