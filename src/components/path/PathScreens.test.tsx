@@ -2,6 +2,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import fixtures from "../../lib/learning-path.fixtures.json";
+import { GOAL_CARD_UNSET_DETAIL, pathGoalCard } from "../../lib/path-goal-card";
+import type { LearningPath } from "../../lib/path-plan";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -63,11 +65,25 @@ describe("Learn path card", () => {
     for (const item of today) expect(screen.getAllByText(item.title).length).toBeGreaterThan(0);
     expect(screen.getByRole("progressbar", { name: "Lessons toward your goal" })).toBeTruthy();
   });
-  it("offers Build my path when there is no goal", async () => {
+  it("invites the learner to set a goal when there is none, and opens the planner", async () => {
     serve(null);
     render(<PathCard course="en" />);
-    const link = await screen.findByRole("link", { name: "Build my path" });
+    const link = await screen.findByRole("link", { name: /Set a goal/ });
     expect(link.getAttribute("href")).toBe("/path/build");
+    expect(link.textContent).toContain(GOAL_CARD_UNSET_DETAIL);
+  });
+  it("shows the goal on the path: level, date, lessons a week and the status, from the server's numbers", async () => {
+    serve("behind");
+    render(<PathCard course="en" />);
+    const card = await screen.findByRole("link", { name: /^My goal: A2 by 1 Jun 2027/ });
+    expect(card.getAttribute("href")).toBe("/path/build");
+    const lines = pathGoalCard(fixtures.behind as unknown as LearningPath);
+    expect(lines.headline).toBe("A2 by 1 Jun 2027");
+    expect(card.textContent).toContain(lines.headline);
+    expect(card.textContent).toContain(
+      `${fixtures.behind.progress.requiredPerWeek} lessons a week`,
+    );
+    expect(card.textContent).toContain(fixtures.behind.statusLine);
   });
   it("says so when the path cannot load, with a retry", async () => {
     vi.stubGlobal(

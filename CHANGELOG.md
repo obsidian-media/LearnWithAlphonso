@@ -10,6 +10,15 @@ works now_.
 
 ## Unreleased
 
+### Device-check fixes (build 64)
+
+Owner device check of builds 62 and 63.
+
+- **iOS Watch shelf never loaded.** `WatchShelfHost` hung its `.task` on a `Group` that draws nothing while `videos` is empty, so the task never fired. The loaders now sit on an always-present zero-size anchor (`loadAnchor`); the shelf still draws no empty box. A missing session token now shows "We couldn't load the videos." instead of nothing. The same defect made the "Tap a word to save it" hint (`SaveWordHintLine`) never appear; fixed the same way. Guard: `src/lib/ios-device-check-guards.test.ts` forbids `.task`/`.onAppear` on a `Group { if ... }` with no else, and pins the Watch anchor.
+- **"Report this response" unreadable on iOS.** The system `confirmationDialog` draws accent-tinted text on iOS 26 glass. All eight dialogs (reports, block, remove friend, end buddy, kick) now use the app's own `alphonsoChoiceDialog` sheet (`AlphonsoChoiceDialog.swift`), drawn with design tokens. `confirmationDialog` is forbidden by the guard.
+- **iOS Learn and Profile scene missing.** `.background(ds.surface)` was applied before `.screenScene(...)`; a later `.background` sits behind an earlier one, so the flat surface covered the scene (since #473). The scene is now applied first. Guarded. Web and Android Learn stay flat by design (the approved round 6.1 mock has no full-screen scene).
+- **Goal on the path.** MY PATH starts with a goal card on web, iOS and Android: target level and date, lessons a week and the status, from the server's numbers (`pathGoalCard` in `src/lib/path-goal-card.ts`, `PathGoalCard` in the Kit and in `:core`), opening the goal planner; with no goal it is a "Set a goal" invitation. The iOS MY PATH rows no longer draw the List's near-black default row colour; they use design tokens.
+
 ### Library tab with a Watch shelf (#499, merged 2026-11-13; goes out in build 63)
 
 The Listen tab is now **Library** on web, iOS and Android (route `/listen`, deep links and stored ids unchanged). It holds the

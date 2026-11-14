@@ -806,17 +806,22 @@ struct SaveWordHintLine: View {
     @State private var visible = false
 
     var body: some View {
-        Group {
+        // The decision runs from a zero-size anchor that is always in the tree. `.onAppear` on the conditional line
+        // itself never fires while `visible` is false, because a view that draws nothing never appears.
+        ZStack {
+            Color.clear
+                .frame(width: 0, height: 0)
+                .accessibilityHidden(true)
+                .onAppear {
+                    guard SavedWordHint.shouldShow(timesShown: timesShown) else { return }
+                    visible = true
+                    timesShown += 1
+                }
             if visible {
                 Text("Tap a word to save it.")
                     .font(AlphonsoFont.sans(11))
                     .foregroundStyle(AlphonsoColor.inkSoft)
             }
-        }
-        .onAppear {
-            guard SavedWordHint.shouldShow(timesShown: timesShown) else { return }
-            visible = true
-            timesShown += 1
         }
     }
 }

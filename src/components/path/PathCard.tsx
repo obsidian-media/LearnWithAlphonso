@@ -1,7 +1,36 @@
 import { Link } from "@tanstack/react-router";
 import type { Course } from "@/data/courses";
 import { usePath } from "@/lib/learning-path-client";
+import { pathGoalCard } from "@/lib/path-goal-card";
+import type { LearningPath } from "@/lib/path-plan";
 import { ItemRow, shortDate } from "./PathParts";
+
+/**
+ * The goal at the top of MY PATH: the target level and date, the lessons a week it takes and whether the learner is on
+ * track, or an invitation to set one. It opens the goal planner (Build my path). All text comes from `pathGoalCard`.
+ */
+function GoalLink({ path }: { path: LearningPath | null }) {
+  const card = pathGoalCard(path);
+  return (
+    <Link
+      to="/path/build"
+      data-testid="path-goal-card"
+      aria-label={`${card.kicker}: ${card.headline}. ${card.detail}. ${card.hasGoal ? "Change your goal" : "Open the planner"}`}
+      className="flex min-h-11 items-center gap-3 rounded-3xl border border-ds-line bg-ds-card p-4 text-left"
+    >
+      <span className="min-w-0 flex-1">
+        <span className="ds-type-overline block text-ds-action-text">{card.kicker}</span>
+        <span className="block font-display text-lg font-extrabold text-ds-ink">
+          {card.headline}
+        </span>
+        <span className="block text-sm text-ds-ink-soft">{card.detail}</span>
+      </span>
+      <span aria-hidden="true" className="text-xl text-ds-ink-soft">
+        ›
+      </span>
+    </Link>
+  );
+}
 
 /**
  * The path card on Learn (mock A1): the goal in words, how far along, and today's list. It renders what
@@ -37,28 +66,21 @@ export function PathCard({ course }: { course: Course }) {
   }
   if (state.kind === "none") {
     return (
-      <section aria-label="My path" className="rounded-3xl bg-ds-sunk p-4">
-        <h2 className="font-display text-base font-extrabold text-ds-ink">My path</h2>
-        <p className="mt-1 text-sm text-ds-ink-soft">
-          Pick a level and a date and we will build a daily plan of lessons, podcasts, talks and
-          story campaigns.
+      <section aria-label="My path" className="grid gap-3">
+        <GoalLink path={null} />
+        <p className="text-sm text-ds-ink-soft">
+          With a goal we build a daily plan of lessons, podcasts, talks and story campaigns.
         </p>
-        <Link
-          to="/path/build"
-          className="mt-3 inline-flex min-h-11 items-center rounded-full bg-ds-ink px-5 text-sm font-semibold text-ds-card"
-        >
-          Build my path
-        </Link>
       </section>
     );
   }
-
   const p = state.path;
   const pct = p.progress.lessonsInScope
     ? Math.round((100 * p.progress.lessonsDone) / p.progress.lessonsInScope)
     : 0;
   return (
     <section aria-label="My path" className="grid gap-3">
+      <GoalLink path={p} />
       <div className="rounded-3xl bg-ds-hero p-4 text-ds-on-hero">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">

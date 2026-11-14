@@ -135,13 +135,12 @@ struct FriendsView: View {
                 Task { await checkForNudges() }
             }
         }
-        .confirmationDialog(
+        .alphonsoChoiceDialog(
             "Remove \(friendPendingRemoval?.displayName ?? "this friend")?",
             isPresented: Binding(
                 get: { friendPendingRemoval != nil },
                 set: { if !$0 { friendPendingRemoval = nil } },
             ),
-            titleVisibility: .visible,
         ) {
             Button("Remove", role: .destructive) {
                 if let friend = friendPendingRemoval {
@@ -153,14 +152,13 @@ struct FriendsView: View {
         } message: {
             Text("You won't see each other's activity or streaks anymore.")
         }
-        .confirmationDialog(
+        .alphonsoChoiceDialog(
             friendPendingBlock.map { $0.userID == currentBuddyID ? BuddyCopy.blockConfirm($0.displayName) : "Block \($0.displayName)?" }
                 ?? "Block this friend?",
             isPresented: Binding(
                 get: { friendPendingBlock != nil },
                 set: { if !$0 { friendPendingBlock = nil } },
             ),
-            titleVisibility: .visible,
         ) {
             Button("Block", role: .destructive) {
                 if let friend = friendPendingBlock {

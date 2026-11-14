@@ -406,7 +406,6 @@ struct LessonBrowserView: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .background(ds.surface)
             .overlay(alignment: .bottom) {
                 if !currentUnitVisible, currentUnit != nil {
                     JumpToCurrentButton {
@@ -427,6 +426,9 @@ struct LessonBrowserView: View {
                         .frame(width: 210)
                 }
             )
+            // After the scene, so the flat surface sits BEHIND it. A `.background` added later is drawn behind an
+            // earlier one, so this used to be drawn over the scene (plain navy on builds 61 to 63).
+            .background(ds.surface)
             // Re-fetches on every course switch too, since CEFR level is
             // tracked per-language server-side (language_progress), not
             // once per account -- the level that was right for English
