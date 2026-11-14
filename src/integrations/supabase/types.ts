@@ -2479,6 +2479,106 @@ export type Database = {
         };
         Relationships: [];
       };
+      video_watches: {
+        Row: {
+          completed_at: string | null;
+          progress_seconds: number;
+          updated_at: string;
+          user_id: string;
+          video_id: string;
+        };
+        Insert: {
+          completed_at?: string | null;
+          progress_seconds?: number;
+          updated_at?: string;
+          user_id: string;
+          video_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          progress_seconds?: number;
+          updated_at?: string;
+          user_id?: string;
+          video_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "video_watches_video_id_fkey";
+            columns: ["video_id"];
+            isOneToOne: false;
+            referencedRelation: "videos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      videos: {
+        Row: {
+          captions_path: string | null;
+          course: string;
+          created_at: string;
+          description: string | null;
+          duration_seconds: number;
+          id: string;
+          level_id: string | null;
+          poster_path: string | null;
+          practice_id: string | null;
+          practice_kind: string | null;
+          published: boolean;
+          published_at: string | null;
+          slug: string;
+          sort_order: number;
+          tags: string[];
+          title: string;
+          video_path: string;
+        };
+        Insert: {
+          captions_path?: string | null;
+          course: string;
+          created_at?: string;
+          description?: string | null;
+          duration_seconds: number;
+          id?: string;
+          level_id?: string | null;
+          poster_path?: string | null;
+          practice_id?: string | null;
+          practice_kind?: string | null;
+          published?: boolean;
+          published_at?: string | null;
+          slug: string;
+          sort_order?: number;
+          tags?: string[];
+          title: string;
+          video_path: string;
+        };
+        Update: {
+          captions_path?: string | null;
+          course?: string;
+          created_at?: string;
+          description?: string | null;
+          duration_seconds?: number;
+          id?: string;
+          level_id?: string | null;
+          poster_path?: string | null;
+          practice_id?: string | null;
+          practice_kind?: string | null;
+          published?: boolean;
+          published_at?: string | null;
+          slug?: string;
+          sort_order?: number;
+          tags?: string[];
+          title?: string;
+          video_path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "videos_level_id_fkey";
+            columns: ["level_id"];
+            isOneToOne: false;
+            referencedRelation: "levels";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       vocab_images: {
         Row: {
           alt: string;
@@ -3152,6 +3252,13 @@ export type Database = {
       save_placement_result: {
         Args: { _language: string; _level: string; _score: number };
         Returns: string;
+      };
+      save_video_progress: {
+        Args: { p_progress_s: number; p_video_id: string };
+        Returns: {
+          completed_at: string;
+          progress_seconds: number;
+        }[];
       };
       send_buddy_message: {
         Args: { _preset: string };
