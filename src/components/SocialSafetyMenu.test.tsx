@@ -47,3 +47,23 @@ describe("SocialSafetyMenu block", () => {
     );
   });
 });
+
+describe("the report and block dialogs behave like dialogs", () => {
+  it("Escape closes the report sheet", () => {
+    render(<SocialSafetyMenu userId="u1" displayName="Bo" />);
+    fireEvent.click(screen.getByRole("button", { name: "More options for Bo" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Report user" }));
+    expect(screen.getByRole("dialog", { name: "Report Bo" })).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("Escape closes the block dialog too, and it is a modal", () => {
+    render(<SocialSafetyMenu userId="u1" displayName="Bo" />);
+    fireEvent.click(screen.getByRole("button", { name: "More options for Bo" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Block user" }));
+    expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "true");
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+});

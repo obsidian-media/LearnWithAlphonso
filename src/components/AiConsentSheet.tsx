@@ -1,4 +1,5 @@
 import { AI_CONSENT_COPY } from "@/lib/ai-consent-copy";
+import { DsButton } from "./ds/Blocks";
 import { Modal } from "./Modal";
 
 /** An explicit choice: no backdrop dismiss and no Escape, both buttons are answers (same rule as iOS). */
@@ -20,45 +21,43 @@ export function AiConsentSheet({
     <Modal
       labelledBy="ai-consent-title"
       describedBy="ai-consent-body"
-      className="relative w-full max-w-md rounded-t-3xl bg-ds-card p-6 outline-none sm:rounded-3xl"
+      className="relative grid max-h-[92dvh] w-full max-w-[430px] justify-items-center gap-2.5 overflow-y-auto rounded-t-[28px] bg-ds-surface px-5 pb-6 pt-5 shadow-[var(--ds-shadow-sheet)] outline-none sm:rounded-[28px]"
     >
-      <h2 id="ai-consent-title" className="text-center font-display ds-type-title text-ds-ink">
+      <img
+        src="/mascots/alphonso.png"
+        alt=""
+        height={110}
+        decoding="async"
+        draggable={false}
+        className="h-[110px] w-auto"
+      />
+      <h2 id="ai-consent-title" className="ds-type-title text-center text-ds-ink">
         {AI_CONSENT_COPY.sheetTitle}
       </h2>
-      <p id="ai-consent-body" className="mt-3 text-center text-sm text-ds-ink-soft">
+      <p id="ai-consent-body" className="ds-type-footnote text-left text-ds-ink-soft">
         {AI_CONSENT_COPY.sheetBody}
       </p>
-      <p className="mt-3 text-center">
-        <a
-          href="/privacy"
-          target="_blank"
-          rel="noreferrer"
-          className="text-sm font-semibold text-ds-brand underline"
-        >
-          {AI_CONSENT_COPY.privacyLink}
-        </a>
-      </p>
+      <a
+        href="/privacy"
+        target="_blank"
+        rel="noreferrer"
+        className="ds-type-footnote font-extrabold text-ds-choice underline"
+      >
+        {AI_CONSENT_COPY.privacyLink}
+      </a>
       {error && (
-        <p role="alert" className="mt-3 text-center text-sm text-rose-700">
+        <p role="alert" className="ds-type-footnote text-center font-bold text-ds-wrong-ink">
           {error}
         </p>
       )}
-      <button
-        type="button"
-        onClick={onAllow}
-        disabled={saving}
-        className="mt-5 w-full rounded-2xl bg-ds-brand px-4 py-3.5 text-base font-semibold text-ds-card disabled:opacity-60"
-      >
-        {saving ? "Saving…" : AI_CONSENT_COPY.allow}
-      </button>
-      <button
-        type="button"
-        onClick={onDecline}
-        disabled={saving}
-        className="mt-2 w-full px-4 py-3 text-sm font-medium text-ds-ink-soft"
-      >
-        {AI_CONSENT_COPY.notNow}
-      </button>
+      <div className="grid w-full gap-2.5">
+        <DsButton full onClick={onAllow} disabled={saving}>
+          {saving ? "Saving…" : AI_CONSENT_COPY.allow}
+        </DsButton>
+        <DsButton full variant="secondary" onClick={onDecline} disabled={saving}>
+          {AI_CONSENT_COPY.notNow}
+        </DsButton>
+      </div>
     </Modal>
   );
 }

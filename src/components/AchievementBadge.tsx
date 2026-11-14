@@ -1,88 +1,123 @@
 import type { Achievement } from "../data/achievements";
-import { Icon3D } from "./Icon3D";
-import { achievementIconEmoji } from "../lib/icon3d";
+import {
+  badgeRing,
+  badgeSrc,
+  progressLine,
+  type BadgeEntry,
+  type BadgeState,
+} from "../lib/badge-state";
+import { DsIcon } from "./ds/DsIcon";
 
-const TIER_COLORS: Record<string, string> = {
-  bronze: "#b07242",
-  silver: "#8a9099",
-  gold: "#c4933f",
-  diamond: "#4a7f7a",
-};
-
-function GlyphSvg({ icon }: { icon: string }) {
-  switch (icon) {
-    case "flame":
-      return (
-        <path
-          d="M12 3c1.5 3 5 4.5 5 8.5A5 5 0 0 1 7 12c0-2 1-3 2-4-.4 2 .8 3 1.5 3-.3-3 1-6 1.5-8z"
-          fill="white"
-        />
-      );
-    case "bolt":
-      return <path d="M13 3 5 14h5l-1 7 9-12h-5l1-6z" fill="white" />;
-    case "star":
-      return (
-        <path
-          d="m12 3 2.5 5.7 6.2.6-4.7 4.2 1.4 6.1L12 16.7 6.6 19.6l1.4-6.1L3.3 9.3l6.2-.6L12 3z"
-          fill="white"
-        />
-      );
-    case "check":
-      return (
-        <path
-          d="m6 12 4 4 8-9"
-          stroke="white"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-      );
-    case "shield":
-      return <path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6l-8-3z" fill="white" />;
-    case "snow":
-      return (
-        <g stroke="white" strokeWidth="1.8" strokeLinecap="round">
-          <path d="M12 3v18M4 8l16 8M4 16l16-8" />
-        </g>
-      );
-    default:
-      return <circle cx="12" cy="12" r="4" fill="white" />;
-  }
-}
-
-export function AchievementBadge({
+/**
+ * One achievement as a collectible medallion (round 12, 14b). Earned is the art in full colour; in progress is dimmed
+ * with a gold ring that fills clockwise; locked is a grey silhouette with a lock. The same art serves all three, so
+ * no extra assets. Decorative: the text next to it carries the meaning.
+ */
+export function Medallion({
   achievement,
-  unlocked,
+  state,
+  ring = 0,
+  size = 76,
 }: {
   achievement: Achievement;
-  unlocked: boolean;
+  state: BadgeState;
+  /** 0 to 1, the progress ring. */
+  ring?: number;
+  size?: number;
 }) {
-  const color = TIER_COLORS[achievement.tier] ?? "#888";
-  const emoji = achievementIconEmoji(achievement.icon);
-  const badgeIcon = (
+  const R = 46;
+  const C = 2 * Math.PI * R;
+  return (
     <span
-      className="grid size-12 place-items-center rounded-full"
-      style={{ backgroundColor: unlocked ? color : "#c8c1b3" }}
+      aria-hidden="true"
+      data-badge-state={state}
+      className="relative inline-grid shrink-0 place-items-center"
+      style={{ width: size, height: size }}
     >
-      {emoji ? (
-        <Icon3D emoji={emoji} size={30} className={unlocked ? "" : "opacity-70 grayscale"} />
-      ) : (
-        <svg viewBox="0 0 24 24" className="size-6" aria-hidden="true">
-          <GlyphSvg icon={achievement.icon} />
+      <img
+        src={badgeSrc(achievement.id)}
+        alt=""
+        width={size}
+        height={size}
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        className={`size-full object-contain ${
+          state === "earned"
+            ? "drop-shadow-[0_3px_4px_color-mix(in_srgb,var(--c-ink)_30%,transparent)]"
+            : state === "progress"
+              ? "opacity-60 saturate-50"
+              : "opacity-50 brightness-75 grayscale"
+        }`}
+      />
+      {state === "progress" && (
+        <svg viewBox="0 0 100 100" className="absolute inset-0 size-full -rotate-90" fill="none">
+          <circle cx="50" cy="50" r={R} strokeWidth="5" className="stroke-ds-line" />
+          <circle
+            cx="50"
+            cy="50"
+            r={R}
+            strokeWidth="5"
+            strokeLinecap="round"
+            className="stroke-ds-xp"
+            strokeDasharray={C}
+            strokeDashoffset={C * (1 - ring)}
+          />
         </svg>
+      )}
+      {state === "locked" && (
+        <span className="absolute bottom-0 right-0 grid size-[30%] place-items-center rounded-full bg-ds-card text-ds-ink-soft shadow-[var(--ds-shadow-resting)]">
+          <DsIcon name="lock" className="size-[60%]" />
+        </span>
       )}
     </span>
   );
-  return (
-    <div
-      className={`flex flex-col items-center gap-1.5 rounded-2xl border p-3 text-center transition ${
-        unlocked ? "border-hairline bg-surface" : "border-hairline bg-parchment opacity-55"
-      }`}
+}
+
+/** The catalog grid's card: the medallion, the name, and the description (or "12 of 30" while in progress). */
+export function AchievementBadge({
+  achievement,
+  entry,
+  onOpen,
+}: {
+  achievement: Achievement;
+  /** From badgeStates: earned, in progress (with what the learner has) or locked. */
+  entry: BadgeEntry;
+  /** Opens the badge's detail. */
+  onOpen?: () => void;
+}) {
+  const { state, value } = entry;
+  const ring = badgeRing({ value, threshold: achievement.threshold });
+  const body = (
+    <>
+      <Medallion achievement={achievement} state={state} ring={ring} />
+      <p
+        className={`ds-type-caption leading-tight ${state === "locked" ? "text-ds-ink-soft" : "text-ds-ink"}`}
+      >
+        {achievement.title}
+      </p>
+      <p
+        className={`ds-type-caption leading-tight ${state === "progress" ? "font-extrabold text-ds-xp-text" : "font-semibold text-ds-ink-soft"}`}
+      >
+        {state === "progress" && value !== null
+          ? progressLine(value, achievement.threshold)
+          : achievement.description}
+      </p>
+    </>
+  );
+  const cls = `grid h-full w-full justify-items-center content-start gap-1.5 rounded-[22px] border-2 border-ds-line px-1.5 py-3 text-center ${
+    state === "locked" ? "bg-ds-sunk" : "bg-ds-card"
+  }`;
+  return onOpen ? (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`${achievement.title}: ${achievement.description}`}
+      className={`${cls} focus-visible:outline-2 focus-visible:outline-ds-choice`}
     >
-      {badgeIcon}
-      <p className="text-[11px] font-semibold leading-tight text-ink">{achievement.title}</p>
-      <p className="text-[10px] leading-tight text-ink-soft/70">{achievement.description}</p>
-    </div>
+      {body}
+    </button>
+  ) : (
+    <div className={cls}>{body}</div>
   );
 }

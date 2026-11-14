@@ -20,6 +20,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 
 const getLeaderboard = vi.fn();
 vi.mock("../../lib/leaderboard.functions", () => ({ getLeaderboard }));
+const getProfileOverview = vi.fn();
+vi.mock("../../lib/profile.functions", () => ({ getProfileOverview }));
 
 const { Route } = await import("./league");
 const { useProgress } = await import("../../lib/progress");
@@ -37,6 +39,8 @@ function renderPage() {
 beforeEach(() => {
   getLeaderboard.mockReset();
   getLeaderboard.mockResolvedValue([]);
+  getProfileOverview.mockReset();
+  getProfileOverview.mockRejectedValue(new Error("offline"));
   useProgress.getState().reset();
 });
 
@@ -44,7 +48,7 @@ describe("League page", () => {
   it("shows the current tier and the next tier to reach", async () => {
     useProgress.setState({ leagueTier: "silver" });
     renderPage();
-    expect(await screen.findByText("Sapling")).toBeInTheDocument();
+    expect(await screen.findByText("Sapling league")).toBeInTheDocument();
     expect(screen.getByText("Next")).toBeInTheDocument();
     expect(screen.getByText("Grove")).toBeInTheDocument();
   });
@@ -52,7 +56,7 @@ describe("League page", () => {
   it("hides the 'next tier' callout at the top tier", async () => {
     useProgress.setState({ leagueTier: "diamond" });
     renderPage();
-    expect(await screen.findByText("Summit")).toBeInTheDocument();
+    expect(await screen.findByText("Summit league")).toBeInTheDocument();
     expect(screen.queryByText("Next")).not.toBeInTheDocument();
   });
 
@@ -68,7 +72,7 @@ describe("League page", () => {
   it("shows a scope-specific empty state for the friends tab", async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole("tab", { name: "Friends" }));
+    await user.click(screen.getByRole("radio", { name: "Friends" }));
     expect(await screen.findByText("Add friends to compete side by side.")).toBeInTheDocument();
     await waitFor(() =>
       expect(getLeaderboard).toHaveBeenCalledWith({
@@ -80,7 +84,7 @@ describe("League page", () => {
   it("shows a scope-specific empty state for the country tab", async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole("tab", { name: "Country" }));
+    await user.click(screen.getByRole("radio", { name: "Country" }));
     expect(
       await screen.findByText("Set your country on your profile to see this board."),
     ).toBeInTheDocument();
@@ -89,7 +93,7 @@ describe("League page", () => {
   it("re-queries with the all-time period when that tab is selected", async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole("tab", { name: "All-time" }));
+    await user.click(screen.getByRole("radio", { name: "All-time" }));
     await waitFor(() =>
       expect(getLeaderboard).toHaveBeenCalledWith({
         data: { scope: "global", period: "all-time" },
@@ -177,5 +181,28 @@ describe("League page", () => {
     const fox = document.querySelector('[data-avatar="fox"]');
     expect(fox?.getAttribute("src")).toBe("/avatars/animals/fox.webp");
     expect(document.querySelectorAll('[data-avatar="initials"]')).toHaveLength(1);
+  });
+
+  it("shows this week's XP in the hero from the learner's own activity, not from the board", async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    getProfileOverview.mockResolvedValue({
+      today,
+      course: "en",
+      completions: [],
+      courses: [{ course: "en", xp: 4820 }],
+      activity: [{ day: today, xp: 434 }],
+      progress: { streak: 1, longestStreak: 1 },
+      masteredWords: 0,
+      savedWords: 0,
+    });
+    renderPage();
+    expect(await screen.findByText("434")).toBeInTheDocument();
+    expect(screen.getByText("XP this week")).toBeInTheDocument();
+  });
+
+  it("shows no XP figure when the overview cannot load", async () => {
+    renderPage();
+    await screen.findByRole("heading", { name: /league$/ });
+    expect(screen.queryByText("XP this week")).not.toBeInTheDocument();
   });
 });
