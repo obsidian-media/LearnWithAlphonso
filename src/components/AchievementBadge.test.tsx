@@ -1,39 +1,106 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { AchievementBadge } from "./AchievementBadge";
+import { AchievementDetail } from "./AchievementDetail";
 import { ACHIEVEMENTS } from "../data/achievements";
 
+const streak30 = ACHIEVEMENTS.find((a) => a.id === "streak_30")!;
+
 describe("AchievementBadge", () => {
-  it("shows the title and description for every achievement icon variant", () => {
-    const seenIcons = new Set(ACHIEVEMENTS.map((a) => a.icon));
-    for (const icon of seenIcons) {
-      const achievement = ACHIEVEMENTS.find((a) => a.icon === icon)!;
-      const { unmount } = render(<AchievementBadge achievement={achievement} unlocked />);
-      expect(screen.getByText(achievement.title)).toBeInTheDocument();
-      expect(screen.getByText(achievement.description)).toBeInTheDocument();
+  it("shows the title, the description and the medallion art for every achievement", () => {
+    for (const a of ACHIEVEMENTS) {
+      const { container, unmount } = render(<AchievementBadge achievement={a} unlocked />);
+      expect(screen.getByText(a.title)).toBeInTheDocument();
+      expect(screen.getByText(a.description)).toBeInTheDocument();
+      expect(container.querySelector("img")).toHaveAttribute("src", `/badges/${a.id}.webp`);
       unmount();
     }
   });
 
-  it("renders an unknown icon with the default glyph without crashing", () => {
-    const achievement = { ...ACHIEVEMENTS[0], icon: "mystery" };
-    render(<AchievementBadge achievement={achievement} unlocked />);
-    expect(screen.getByText(achievement.title)).toBeInTheDocument();
+  it("is earned in full colour when unlocked", () => {
+    const { container } = render(<AchievementBadge achievement={streak30} unlocked value={30} />);
+    expect(container.querySelector("[data-badge-state]")).toHaveAttribute(
+      "data-badge-state",
+      "earned",
+    );
+    expect(container.querySelector("img")?.className).not.toContain("grayscale");
   });
 
-  it("dims the badge when locked", () => {
-    render(<AchievementBadge achievement={ACHIEVEMENTS[0]} unlocked={false} />);
-    expect(screen.getByText(ACHIEVEMENTS[0].title).parentElement).toHaveClass("opacity-55");
+  it("is a dimmed ring with 'n of N' while in progress", () => {
+    const { container } = render(
+      <AchievementBadge achievement={streak30} unlocked={false} value={12} />,
+    );
+    expect(container.querySelector("[data-badge-state]")).toHaveAttribute(
+      "data-badge-state",
+      "progress",
+    );
+    expect(screen.getByText("12 of 30")).toBeInTheDocument();
+    expect(container.querySelector("circle.stroke-ds-xp")).not.toBeNull();
   });
-  it("shows the 3D icon for its glyph, and greys it when locked", () => {
-    const flame = ACHIEVEMENTS.find((a) => a.icon === "flame")!;
-    const { container, unmount } = render(<AchievementBadge achievement={flame} unlocked />);
-    const img = container.querySelector("img");
-    expect(img).toHaveAttribute("src", "/icons3d/fire.png");
-    expect(img?.className ?? "").not.toContain("grayscale");
-    unmount();
-    const locked = render(<AchievementBadge achievement={flame} unlocked={false} />);
-    expect(locked.container.querySelector("img")?.className).toContain("grayscale");
+
+  it("is a grey silhouette with a lock when locked", () => {
+    const { container } = render(<AchievementBadge achievement={streak30} unlocked={false} />);
+    expect(container.querySelector("[data-badge-state]")).toHaveAttribute(
+      "data-badge-state",
+      "locked",
+    );
+    expect(container.querySelector("img")?.className).toContain("grayscale");
+    expect(screen.getByText(streak30.description)).toBeInTheDocument();
+  });
+
+  it("opens the detail when it is tapped", () => {
+    const onOpen = vi.fn();
+    render(<AchievementBadge achievement={streak30} unlocked={false} onOpen={onOpen} />);
+    fireEvent.click(screen.getByRole("button", { name: /Iron habit/ }));
+    expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("AchievementDetail", () => {
+  const value = (a: { category: string }) => (a.category === "streak" ? 12 : null);
+
+  it("shows progress and the family ladder for a badge in progress", () => {
+    render(
+      <AchievementDetail
+        achievement={streak30}
+        unlocked={new Map([["streak_3", "2026-11-01T00:00:00Z"]])}
+        value={value}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.getByRole("heading", { name: "Iron habit" })).toBeInTheDocument();
+    expect(screen.getByText("Gold")).toBeInTheDocument();
+    expect(screen.getByText("12 of 30")).toBeInTheDocument();
+    expect(screen.getByText("40%")).toBeInTheDocument();
+    expect(screen.getByText("Streak ladder")).toBeInTheDocument();
+    expect(screen.getByText("365")).toBeInTheDocument();
+  });
+
+  it("says Unlocked with the date for an earned badge", () => {
+    render(
+      <AchievementDetail
+        achievement={streak30}
+        unlocked={new Map([["streak_30", "2026-11-09T10:00:00Z"]])}
+        value={value}
+        onClose={() => {}}
+      />,
+    );
+    expect(screen.getByText("Unlocked")).toBeInTheDocument();
+    expect(screen.getByText("Nov 9, 2026")).toBeInTheDocument();
+  });
+
+  it("closes from Done and from Escape", () => {
+    const onClose = vi.fn();
+    render(
+      <AchievementDetail
+        achievement={streak30}
+        unlocked={new Map()}
+        value={value}
+        onClose={onClose}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

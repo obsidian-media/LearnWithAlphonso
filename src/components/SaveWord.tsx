@@ -1,3 +1,4 @@
+import { dsButtonClass } from "@/components/ds/buttons";
 import {
   createContext,
   useCallback,
@@ -167,7 +168,7 @@ function SaveWordDialog({
   }, [request, save, consent]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center px-4 pb-6 sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       {/* The backdrop is a sibling, not an ancestor, so the dialog needs no stopPropagation;
           Escape and the Cancel/Done buttons are the keyboard ways out. */}
       <div role="presentation" className="absolute inset-0 bg-ds-ink/40" onClick={onClose} />
@@ -176,22 +177,32 @@ function SaveWordDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="save-word-title"
-        className="relative w-full max-w-[420px] rounded-3xl border border-ds-line bg-ds-card p-6"
+        className="relative grid w-full max-w-[430px] gap-2.5 rounded-t-[28px] bg-ds-surface px-5 pb-6 pt-4 shadow-[var(--ds-shadow-sheet)] sm:rounded-[28px]"
       >
-        <h2 id="save-word-title" className="font-display text-lg font-semibold text-ds-ink">
-          {phase.kind === "saved"
-            ? phase.result.alreadySaved
-              ? "Already saved"
-              : "Saved"
-            : "Save this word?"}
-        </h2>
-        <p className="mt-3 text-2xl font-semibold text-ds-ink">{request.word}</p>
-        <p className="mt-1 text-sm italic text-ds-ink-soft">{request.sentence}</p>
+        <div className="flex items-end gap-3">
+          <img
+            src="/figures/alphonso-reading-book.webp"
+            alt=""
+            height={92}
+            decoding="async"
+            draggable={false}
+            className="-mt-12 h-[110px] w-auto"
+          />
+          <h2 id="save-word-title" className="ds-type-title mb-1 text-ds-ink">
+            {phase.kind === "saved"
+              ? phase.result.alreadySaved
+                ? "Already saved"
+                : "Saved"
+              : "Save this word?"}
+          </h2>
+        </div>
+        <p className="ds-type-display text-ds-ink">{request.word}</p>
+        <p className="ds-type-footnote italic text-ds-ink-soft">{request.sentence}</p>
 
         {phase.kind === "saved" ? (
           <>
-            <p className="mt-4 text-sm text-ds-ink">{phase.result.explanation}</p>
-            <p className="mt-2 text-xs text-ds-ink-soft/80">
+            <p className="ds-type-body text-ds-ink">{phase.result.explanation}</p>
+            <p className="ds-type-caption text-ds-ink-soft">
               {phase.result.alreadySaved
                 ? "It's already in your reviews."
                 : "It will come up in your reviews tomorrow."}
@@ -202,12 +213,12 @@ function SaveWordDialog({
           </>
         ) : (
           <>
-            <p className="mt-4 text-xs text-ds-ink-soft/80">
+            <p className="ds-type-caption text-ds-ink-soft">
               Saving sends this word and its sentence to an AI service to write the meaning. The
               word then comes up in your reviews.
             </p>
             {phase.kind === "error" && (
-              <p role="alert" className="mt-3 text-sm font-medium text-rose-600">
+              <p role="alert" className="ds-type-footnote font-bold text-ds-wrong-ink">
                 {saveErrorFor(phase.error)}
               </p>
             )}
@@ -232,7 +243,7 @@ function SaveWordDialog({
                 phase.kind === "error" && !RETRYABLE.includes(phase.error) ? "" : undefined
               }
               onClick={onClose}
-              className="mt-2 w-full rounded-full px-4 py-2.5 text-sm font-medium text-ds-ink-soft hover:text-ds-ink"
+              className={dsButtonClass("secondary", { full: true })}
             >
               Cancel
             </button>
@@ -243,8 +254,7 @@ function SaveWordDialog({
   );
 }
 
-const PRIMARY =
-  "mt-5 w-full rounded-full bg-ds-ink px-4 py-3 text-sm font-semibold text-ds-card transition hover:opacity-90 disabled:opacity-60";
+const PRIMARY = dsButtonClass("primary", { full: true });
 
 const HINT_KEY = "lingua.saved-word-hint-count.v1";
 const HINT_MAX_SHOWS = 3;
@@ -282,7 +292,7 @@ export function SaveWordHint({ always = false }: { always?: boolean }) {
   if (!available && !always) return null;
   if (!visible) return null;
   return (
-    <p className="mt-1 text-xs text-ds-ink-soft/70">
+    <p className="mt-1 ds-type-caption text-ds-ink-soft">
       {always ? "Tap any word to save it." : "Tap a word to save it."}
     </p>
   );

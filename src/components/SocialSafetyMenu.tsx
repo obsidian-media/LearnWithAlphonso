@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { blockUser, reportUser } from "../lib/social-safety.functions";
 import { socialFailureMessage } from "../lib/social-reason-copy";
+import { DsButton } from "./ds/Blocks";
 
 const REPORT_REASONS = [
   { value: "spam", label: "Spam" },
@@ -72,7 +73,7 @@ export function SocialSafetyMenu({
           />
           <div
             role="menu"
-            className="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-xl border border-ds-line bg-ds-card shadow-lg"
+            className="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-[14px] border-2 border-ds-line bg-ds-card shadow-[var(--ds-shadow-floating)]"
           >
             <button
               type="button"
@@ -81,7 +82,7 @@ export function SocialSafetyMenu({
                 setMenuOpen(false);
                 setDialog("block");
               }}
-              className="block w-full px-3 py-2 text-left text-sm font-medium text-destructive hover:bg-ds-sunk"
+              className="block min-h-11 w-full px-3 py-2 text-left ds-type-footnote font-extrabold text-ds-wrong-ink hover:bg-ds-sunk"
             >
               Block user
             </button>
@@ -92,7 +93,7 @@ export function SocialSafetyMenu({
                 setMenuOpen(false);
                 setDialog("report");
               }}
-              className="block w-full px-3 py-2 text-left text-sm font-medium text-ds-ink hover:bg-ds-sunk"
+              className="block min-h-11 w-full px-3 py-2 text-left ds-type-footnote font-extrabold text-ds-ink hover:bg-ds-sunk"
             >
               Report user
             </button>
@@ -137,15 +138,21 @@ function DialogFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-6">
-      <div className="w-full max-w-sm rounded-2xl bg-ds-card p-5 shadow-xl">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-base font-semibold text-ds-ink">{title}</h2>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ds-ink/45 sm:items-center">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="w-full max-w-[430px] rounded-t-[28px] bg-ds-surface px-4 pb-6 pt-4 shadow-[var(--ds-shadow-sheet)] sm:rounded-[28px]"
+      >
+        <div className="mb-3 flex items-center gap-2.5">
+          <img src="/icons3d/shield.png" alt="" width={38} height={38} draggable={false} />
+          <h2 className="ds-type-headline min-w-0 flex-1 text-ds-ink">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-ds-ink-soft/70 hover:text-ds-ink"
+            className="grid size-9 place-items-center rounded-full text-ds-ink-soft hover:bg-ds-sunk"
           >
             ✕
           </button>
@@ -172,26 +179,23 @@ function BlockConfirmDialog({
   const [error, setError] = useState<string | null>(null);
   return (
     <DialogFrame title={title ?? `Block ${displayName}?`} onClose={onCancel}>
-      <p className="mb-4 text-sm text-ds-ink-soft">
+      <p className="mb-4 ds-type-footnote text-ds-ink-soft">
         {displayName} won't be able to add you as a friend or challenge you to a duel, and you won't
         see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you
         need help with this.
       </p>
       {error && (
-        <p role="alert" className="mb-3 text-sm text-destructive">
+        <p role="alert" className="mb-3 ds-type-footnote font-bold text-ds-wrong-ink">
           {error}
         </p>
       )}
       <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-full px-4 py-2 text-sm font-medium text-ds-ink-soft"
-        >
+        <DsButton small variant="secondary" onClick={onCancel}>
           Cancel
-        </button>
-        <button
-          type="button"
+        </DsButton>
+        <DsButton
+          small
+          variant="danger"
           disabled={isSubmitting}
           onClick={async () => {
             setIsSubmitting(true);
@@ -202,10 +206,9 @@ function BlockConfirmDialog({
               setIsSubmitting(false);
             }
           }}
-          className="rounded-full bg-destructive px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
           {isSubmitting ? "Blocking…" : "Block"}
-        </button>
+        </DsButton>
       </div>
     </DialogFrame>
   );
@@ -227,18 +230,14 @@ function ReportDialog({
   if (didSubmit) {
     return (
       <DialogFrame title="Report submitted" onClose={onClose}>
-        <p className="text-sm text-ds-ink-soft">
+        <p className="ds-type-footnote text-ds-ink-soft">
           Thanks for letting us know. Our team reviews every report. If you need to follow up,
           contact support@alphonsoecosystem.app.
         </p>
         <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full bg-ds-brand px-4 py-2 text-sm font-semibold text-white"
-          >
+          <DsButton small onClick={onClose}>
             Done
-          </button>
+          </DsButton>
         </div>
       </DialogFrame>
     );
@@ -246,12 +245,16 @@ function ReportDialog({
 
   return (
     <DialogFrame title={`Report ${displayName}`} onClose={onClose}>
-      <fieldset className="mb-4 space-y-1.5">
+      <fieldset className="mb-4 grid gap-2">
         <legend className="sr-only">Why are you reporting this person?</legend>
         {REPORT_REASONS.map((option) => (
           <label
             key={option.value}
-            className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-ds-ink hover:bg-ds-sunk"
+            className={`flex min-h-12 cursor-pointer items-center gap-2.5 rounded-[14px] border-2 border-b-4 px-3 ds-type-headline text-ds-ink ${
+              reason === option.value
+                ? "border-ds-choice bg-ds-choice-tint"
+                : "border-ds-line bg-ds-card"
+            }`}
           >
             <input
               type="radio"
@@ -259,22 +262,18 @@ function ReportDialog({
               value={option.value}
               checked={reason === option.value}
               onChange={() => setReason(option.value)}
-              className="accent-moss"
+              className="size-4 accent-ds-choice"
             />
             {option.label}
           </label>
         ))}
       </fieldset>
       <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-full px-4 py-2 text-sm font-medium text-ds-ink-soft"
-        >
+        <DsButton small variant="secondary" onClick={onClose}>
           Cancel
-        </button>
-        <button
-          type="button"
+        </DsButton>
+        <DsButton
+          small
           disabled={isSubmitting}
           onClick={async () => {
             setIsSubmitting(true);
@@ -282,10 +281,9 @@ function ReportDialog({
             setIsSubmitting(false);
             setDidSubmit(true);
           }}
-          className="rounded-full bg-ds-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
         >
           {isSubmitting ? "Submitting…" : "Submit report"}
-        </button>
+        </DsButton>
       </div>
     </DialogFrame>
   );

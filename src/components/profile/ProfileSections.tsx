@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { createContext, useContext, useId, useMemo, useState, type ReactNode } from "react";
-import { AchievementBadge } from "@/components/AchievementBadge";
+import { AchievementBadge, Medallion } from "@/components/AchievementBadge";
+import { AchievementDetail } from "@/components/AchievementDetail";
 import { DsIcon } from "@/components/ds/DsIcon";
 import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
 import { CountryFlag, CourseFlag } from "@/components/firstrun/FirstRunParts";
@@ -680,31 +681,19 @@ export function HectorNoticed({ o, pro }: { o: ProfileOverview; pro: boolean }) 
 
 // ---------------------------------------------------------------- achievements, league, friends
 
-const MEDAL_ICON: Record<string, DsIconName> = {
-  bolt: "bolt",
-  check: "check",
-  flame: "flame",
-  star: "star",
-  shield: "league",
-  snow: "clock",
-};
-
 function Medal({ a, locked }: { a: Achievement | null; locked?: boolean }) {
   return (
     <li className="grid flex-1 justify-items-center gap-1 text-center ds-type-caption text-ds-ink-soft">
-      <span
-        aria-hidden="true"
-        className={`grid size-[54px] place-items-center rounded-full shadow-[inset_0_-4px_0_color-mix(in_srgb,var(--c-ink)_18%,transparent),0_0_0_3px_var(--c-card),0_0_0_5px_var(--c-line)] ${
-          locked
-            ? "bg-ds-line text-ds-ink-faint"
-            : "bg-[radial-gradient(circle_at_35%_30%,var(--c-xp-tint),var(--c-xp)_60%,var(--c-xp-edge))] text-ds-ink"
-        }`}
-      >
-        <DsIcon
-          name={locked || !a ? "lock" : (MEDAL_ICON[a.icon] ?? "star")}
-          className="size-[26px]"
-        />
-      </span>
+      {locked || !a ? (
+        <span
+          aria-hidden="true"
+          className="grid size-[54px] place-items-center rounded-full bg-ds-line text-ds-ink-faint"
+        >
+          <DsIcon name="lock" className="size-[26px]" />
+        </span>
+      ) : (
+        <Medallion achievement={a} state="earned" size={54} />
+      )}
       {locked ? "Next" : a?.title}
     </li>
   );
@@ -722,7 +711,13 @@ export function Achievements({ o }: { o: ProfileOverview }) {
   );
   const pct = next ? Math.round((100 * next.value) / next.achievement.threshold) : 0;
   const [all, setAll] = useState(false);
+  const [open, setOpen] = useState<Achievement | null>(null);
   const have = new Set(unlocked.map((a) => a.id));
+  const stats = achievementStats(o);
+  // What the client can count toward a badge; the team badge is granted by the server only.
+  const valueOf = (a: Achievement): number | null =>
+    a.category === "team" ? null : (stats[a.category] ?? null);
+  const unlockedAt = new Map(unlocked.map((a) => [a.id, a.unlockedAt] as const));
   return (
     <section aria-labelledby="ach-heading" className="grid gap-2.5">
       <SectionHead
@@ -780,12 +775,25 @@ export function Achievements({ o }: { o: ProfileOverview }) {
               .sort((a, b) => Number(have.has(b.id)) - Number(have.has(a.id)))
               .map((a) => (
                 <li key={a.id} data-achievement={a.id}>
-                  <AchievementBadge achievement={a} unlocked={have.has(a.id)} />
+                  <AchievementBadge
+                    achievement={a}
+                    unlocked={have.has(a.id)}
+                    value={valueOf(a)}
+                    onOpen={() => setOpen(a)}
+                  />
                 </li>
               ))}
           </ul>
         )}
       </div>
+      {open && (
+        <AchievementDetail
+          achievement={open}
+          unlocked={unlockedAt}
+          value={valueOf}
+          onClose={() => setOpen(null)}
+        />
+      )}
     </section>
   );
 }
