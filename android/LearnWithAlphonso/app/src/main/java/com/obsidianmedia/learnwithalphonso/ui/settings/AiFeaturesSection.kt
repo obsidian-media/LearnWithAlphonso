@@ -1,9 +1,11 @@
 package com.obsidianmedia.learnwithalphonso.ui.settings
 
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSwitch
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -20,7 +22,6 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStatus
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -31,7 +32,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 internal fun AiFeaturesSection(container: AppContainer) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val store = container.aiConsent
     val consent by store.state.collectAsState()
     val status = store.statusOf(consent)
@@ -47,16 +48,16 @@ internal fun AiFeaturesSection(container: AppContainer) {
         if (status == AiConsentStatus.UNAVAILABLE) {
             // The setting could not be read: say so and offer a retry.
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(AiConsentCopy.checkFailedTitle, style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier = Modifier.weight(1f))
-                TextButton(onClick = { scope.launch { store.refresh() } }) { Text(AiConsentCopy.retry, color = palette.moss) }
+                Text(AiConsentCopy.checkFailedTitle, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+                TextButton(onClick = { scope.launch { store.refresh() } }) { Text(AiConsentCopy.retry, color = ds.choice) }
             }
         } else {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(AiConsentCopy.settingsTitle, style = MaterialTheme.typography.bodyLarge, color = palette.ink, modifier = Modifier.weight(1f))
-                Switch(
+                Text(AiConsentCopy.settingsTitle, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+                DsSwitch(
                     checked = status == AiConsentStatus.GRANTED,
                     enabled = !updating && status != AiConsentStatus.LOADING,
-                    onCheckedChange = { wantsOn ->
+                    onChange = { wantsOn ->
                         if (wantsOn) {
                             showConsent = true
                         } else {
@@ -77,7 +78,7 @@ internal fun AiFeaturesSection(container: AppContainer) {
                 )
             }
         }
-        error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
+        error?.let { Text(it, style = FootnoteType, color = ds.wrongInk) }
     }
     if (showConsent) AiConsentDialog(store, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
 }

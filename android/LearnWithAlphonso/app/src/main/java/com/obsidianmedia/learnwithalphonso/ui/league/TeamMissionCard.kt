@@ -1,19 +1,24 @@
 package com.obsidianmedia.learnwithalphonso.ui.league
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.components.DsProgressBar
+import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
@@ -21,9 +26,6 @@ import com.obsidianmedia.learnwithalphonso.core.net.getTeamMission
 import com.obsidianmedia.learnwithalphonso.core.team.TeamMission
 import com.obsidianmedia.learnwithalphonso.core.team.TeamMissionModel
 import com.obsidianmedia.learnwithalphonso.core.team.TeamMissionStatus
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoProgressBar
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -48,21 +50,23 @@ class TeamMissionViewModel(client: ProgressSyncClient) : ViewModel() {
  */
 @Composable
 fun TeamMissionCard(mission: TeamMission, modifier: Modifier = Modifier) {
-    val palette = AlphonsoColor.palette
-    Column(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(palette.parchment).padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        AlphonsoSectionHeader("Team mission")
-        Text(mission.headline, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
-        if (mission.status != TeamMissionStatus.NEEDS_MEMBERS) {
-            AlphonsoProgressBar(
-                mission.percent / 100f,
-                Modifier.semantics { contentDescription = "Team mission progress, ${mission.percent} percent" },
-            )
-        }
-        if (mission.footer.isNotEmpty()) {
-            Text(mission.footer, style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
+    val ds = LocalAlphonsoTokens.current
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+        DsOverline("Team mission")
+        DsCard {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                Icon(painterResource(R.drawable.ds_target), null, tint = ds.heart, modifier = Modifier.size(AlphonsoTokens.Space.s8))
+                Text(mission.headline, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+            }
+            if (mission.status != TeamMissionStatus.NEEDS_MEMBERS) {
+                DsProgressBar(
+                    mission.percent / 100f,
+                    label = "Team mission progress", value = "${mission.percent} percent",
+                )
+            }
+            if (mission.footer.isNotEmpty()) {
+                Text(mission.footer, style = FootnoteType, color = ds.inkSoft)
+            }
         }
     }
 }

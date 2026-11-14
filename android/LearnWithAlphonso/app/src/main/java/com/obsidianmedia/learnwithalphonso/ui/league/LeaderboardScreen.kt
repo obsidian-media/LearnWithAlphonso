@@ -4,31 +4,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,19 +28,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.core.logic.LeagueTierCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.LeaguePresentation
 import com.obsidianmedia.learnwithalphonso.core.net.LeaderboardRow
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileMath
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
+import com.obsidianmedia.learnwithalphonso.ui.components.DsBackBar
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDivider
+import com.obsidianmedia.learnwithalphonso.ui.components.DsEmptyState
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsHeroCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPill
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPillTone
+import com.obsidianmedia.learnwithalphonso.ui.components.DsRankBadge
+import com.obsidianmedia.learnwithalphonso.ui.components.DsScene
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSegmented
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.NumeralType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import com.obsidianmedia.learnwithalphonso.ui.learn.LeagueTierPalette
 import com.obsidianmedia.learnwithalphonso.ui.social.AvatarCircle
 import com.obsidianmedia.learnwithalphonso.ui.social.BlockConfirmDialog
@@ -58,12 +69,19 @@ import com.obsidianmedia.learnwithalphonso.ui.social.SocialSafetyMenu
 import com.obsidianmedia.learnwithalphonso.ui.social.SocialTarget
 import com.obsidianmedia.learnwithalphonso.ui.social.ToastBanner
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 
+/**
+ * League (the batch-1 redesign, the same screen as iOS LeaderboardView.swift): the trophy-hall scene, the learner's
+ * league as a hero, DS segmented controls for scope and period, avatar rows with the medal colours, and the three
+ * scope-specific empty states. Same data, same actions; Teams, Season and Recap stay one tap away as chips.
+ */
 @Composable
-fun LeaderboardScreen(container: AppContainer, onBack: () -> Unit, onOpenTeams: () -> Unit, onOpenSeason: () -> Unit) {
-    val palette = AlphonsoColor.palette
-    val userId = container.session.userId
-    val vm: LeaderboardViewModel = viewModel {
+fun LeaderboardScreen(container: AppContainer, onBack: () -> Unit, onOpenTeams: () -> Unit, onOpenSeason: () -> Unit, seededVm: LeaderboardViewModel? = null, seededUserId: String? = null) {
+    val ds = LocalAlphonsoTokens.current
+    val userId = seededUserId ?: container.session.userId
+    val vm: LeaderboardViewModel = seededVm ?: viewModel {
         LeaderboardViewModel(container.progressClient, container.snapshotCache, container.recapCache, container.tierCache, userId)
     }
     val state by vm.state.collectAsState()
@@ -73,38 +91,35 @@ fun LeaderboardScreen(container: AppContainer, onBack: () -> Unit, onOpenTeams: 
 
     LifecycleResumeEffect(Unit) { vm.checkForOvertake(); onPauseOrDispose { } }
 
-    Column(Modifier.fillMaxSize().background(palette.surface)) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
-            Text("League", style = MaterialTheme.typography.titleMedium, color = palette.ink, modifier = Modifier.weight(1f))
-            TextButton(onClick = onOpenTeams) { Text("Teams", color = palette.moss) }
-            TextButton(onClick = onOpenSeason) { Text("Season", color = palette.moss) }
-            TextButton(onClick = { showRecap = true; vm.loadRecap() }) { Text("Recap", color = palette.moss) }
-        }
-        ToastBanner(state.toast, onClear = vm::clearToast)
-        Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                LeaderboardScope.entries.forEachIndexed { i, s ->
-                    SegmentedButton(selected = state.scope == s, onClick = { vm.select(scope = s) }, shape = SegmentedButtonDefaults.itemShape(i, LeaderboardScope.entries.size)) { Text(s.label) }
-                }
+    DsSceneScreen(DsScene.PROFILE) {
+        Column(Modifier.fillMaxWidth()) {
+            DsBackBar("Profile", onBack) {
+                DsGlassChip("Teams", onOpenTeams)
+                DsGlassChip("Season", onOpenSeason)
+                DsGlassChip("Recap") { showRecap = true; vm.loadRecap() }
             }
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                LeaderboardPeriod.entries.forEachIndexed { i, p ->
-                    SegmentedButton(selected = state.period == p, onClick = { vm.select(period = p) }, shape = SegmentedButtonDefaults.itemShape(i, LeaderboardPeriod.entries.size)) { Text(p.label) }
-                }
-            }
-        }
-        when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) }
-            state.error != null -> EmptyState("Couldn't load the leaderboard", state.error!!)
-            state.rows.isEmpty() -> EmptyState(state.emptyTitle, state.emptyBody)
-            else -> LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                itemsIndexed(state.rows, key = { _, r -> r.userId }) { index, row ->
-                    LeaderboardRowView(
-                        rank = index + 1, row = row, isYou = row.userId == userId,
-                        onBlock = { blockTarget = SocialTarget(row.userId, row.displayName) },
-                        onReport = { reportTarget = SocialTarget(row.userId, row.displayName) },
-                    )
+            ToastBanner(state.toast, onClear = vm::clearToast)
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.gutter).padding(bottom = AlphonsoTokens.Space.s6),
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+            ) {
+                LeagueHero(state.leagueTier, state.myWeekXp)
+                DsSegmented(LeaderboardScope.entries.map { it to it.label }, state.scope, { vm.select(scope = it) }, "Leaderboard scope")
+                DsSegmented(LeaderboardPeriod.entries.map { it to it.label }, state.period, { vm.select(period = it) }, "Leaderboard period")
+                when {
+                    state.isLoading -> DsCard { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) } }
+                    state.error != null -> DsEmptyState("Couldn't load the leaderboard", state.error, artAsset = "lesson/hmm.webp")
+                    state.rows.isEmpty() -> DsEmptyState(state.emptyTitle, state.emptyBody, artAsset = "lesson/happy.webp")
+                    else -> DsCard(padding = AlphonsoTokens.Space.s2, spacing = 0.dp) {
+                        state.rows.forEachIndexed { index, row ->
+                            if (index > 0) DsDivider()
+                            LeaderboardRowView(
+                                rank = index + 1, row = row, isYou = row.userId == userId,
+                                onBlock = { blockTarget = SocialTarget(row.userId, row.displayName) },
+                                onReport = { reportTarget = SocialTarget(row.userId, row.displayName) },
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -115,39 +130,63 @@ fun LeaderboardScreen(container: AppContainer, onBack: () -> Unit, onOpenTeams: 
     if (showRecap) WeeklyRecapDialog(vm, onDismiss = { showRecap = false })
 }
 
+/** The learner's league (its display name, from the tier the app last saw) and their own XP this week. An unknown value shows nothing, never a guess. */
 @Composable
-private fun LeaderboardRowView(rank: Int, row: LeaderboardRow, isYou: Boolean, onBlock: () -> Unit, onReport: () -> Unit) {
-    val palette = AlphonsoColor.palette
-    val badge = when (rank) { 1 -> Color(0xFFF2D34F); 2 -> Color(0xFFD1D1D1); 3 -> Color(0xFFF0A860); else -> palette.surface }
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(if (isYou) palette.emberSoft else palette.parchment).padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Box(Modifier.size(28.dp).clip(CircleShape).background(badge), contentAlignment = Alignment.Center) { Text("$rank", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = palette.ink) }
-        AvatarCircle(row.avatarSeed, row.displayName)
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                // The flag, only for a learner who turned it on (profiles.country is set only then), before the name; TalkBack still hears the code.
-                ProfileMath.flagEmoji(row.country)?.let { flag ->
-                    val label = ProfileMath.flagAccessibilityLabel(row.country).orEmpty()
-                    Text(flag, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { contentDescription = label })
-                }
-                Text(row.displayName, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium), color = palette.ink)
-                if (isYou) Text("YOU", fontSize = 9.sp, fontWeight = FontWeight.SemiBold, color = palette.onAccent, modifier = Modifier.clip(CircleShape).background(palette.ember).padding(horizontal = 6.dp, vertical = 2.dp))
+private fun LeagueHero(tier: String?, weekXp: Int?) {
+    val ds = LocalAlphonsoTokens.current
+    val title = LeaguePresentation.tierTitle(tier)
+    DsHeroCard {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+            Icon(painterResource(R.drawable.ds_trophy), null, tint = ds.xp, modifier = Modifier.size(AlphonsoTokens.Space.s12 + AlphonsoTokens.Space.s1))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+                if (title != null) Text("YOUR LEAGUE", style = OverlineType, color = ds.onHeroKick)
+                Text(title ?: "League", style = TitleType, color = ds.onHero, modifier = Modifier.semantics { heading() })
             }
-            // A code that draws no flag (malformed) still shows as text; a valid one is the flag above.
-            row.country?.takeIf { ProfileMath.flagEmoji(it) == null }?.let { Text(it.uppercase(), style = MaterialTheme.typography.labelSmall, color = palette.inkSoft) }
+            if (weekXp != null) {
+                Column(horizontalAlignment = Alignment.End, modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$weekXp XP this week" }) {
+                    Text("$weekXp", style = NumeralType, color = ds.onHero, modifier = Modifier.clearAndSetSemantics { })
+                    Text("XP this week", style = CaptionType, color = ds.onHeroSoft, modifier = Modifier.clearAndSetSemantics { })
+                }
+            }
         }
-        Text("${row.xp} XP", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = palette.ink)
-        if (!isYou) SocialSafetyMenu(onBlock, onReport)
     }
 }
 
 @Composable
+private fun LeaderboardRowView(rank: Int, row: LeaderboardRow, isYou: Boolean, onBlock: () -> Unit, onReport: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clip(shape).background(if (isYou) ds.choiceTint else androidx.compose.ui.graphics.Color.Transparent)
+            .padding(horizontal = AlphonsoTokens.Space.s2, vertical = AlphonsoTokens.Space.s2),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+    ) {
+        DsRankBadge(rank, LeaguePresentation.medal(rank))
+        AvatarCircle(row.avatarSeed, row.displayName, AlphonsoTokens.Space.s8 + AlphonsoTokens.Space.s2)
+        Column(Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                // The flag, only for a learner who turned it on (profiles.country is set only then), before the name; TalkBack still hears the code.
+                ProfileMath.flagEmoji(row.country)?.let { flag ->
+                    val label = ProfileMath.flagAccessibilityLabel(row.country).orEmpty()
+                    Text(flag, style = HeadlineType, modifier = Modifier.semantics { contentDescription = label })
+                }
+                Text(row.displayName, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f, fill = false))
+                if (isYou) DsPill("YOU", DsPillTone.GOLD)
+            }
+            // A code that draws no flag (malformed) still shows as text; a valid one is the flag above.
+            row.country?.takeIf { ProfileMath.flagEmoji(it) == null }?.let { Text(it.uppercase(), style = CaptionType, color = ds.inkSoft) }
+        }
+        Text("${row.xp} XP", style = HeadlineType, color = ds.ink)
+        if (!isYou) SocialSafetyMenu(onBlock, onReport)
+    }
+}
+
+/** Kept for the screens that still use the plain full-screen empty state (Season, Settings). */
+@Composable
 fun EmptyState(title: String, body: String) {
     val palette = AlphonsoColor.palette
-    Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)) {
+    Column(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s6), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2, Alignment.CenterVertically)) {
         Text(title, style = MaterialTheme.typography.headlineSmall, color = palette.ink, textAlign = TextAlign.Center)
         Text(body, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
     }
@@ -171,7 +210,7 @@ private fun WeeklyRecapDialog(vm: LeaderboardViewModel, onDismiss: () -> Unit) {
                     Text("Approximate. This app doesn't keep a historical snapshot of last week's exact standings.", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft, textAlign = TextAlign.Center)
                 }
                 recap.promotedToTier?.let {
-                    Text("You moved up to ${it.replaceFirstChar { c -> c.uppercase() }}!", style = MaterialTheme.typography.titleMedium, color = LeagueTierPalette.color(it))
+                    Text("You moved up to ${LeagueTierCopy.label(it)}!", style = MaterialTheme.typography.titleMedium, color = LeagueTierPalette.color(it))
                 }
                 Spacer(Modifier.size(4.dp))
             }
