@@ -2,10 +2,10 @@ import XCTest
 @testable import LearnWithAlphonsoKit
 
 final class AcknowledgementsTests: XCTestCase {
-    func testRevenueCatAndTheNineFontsAreCredited() {
-        XCTAssertEqual(Acknowledgements.all.count, 11)
+    func testRevenueCatAndTheFiveFontsAreCredited() {
+        XCTAssertEqual(Acknowledgements.all.count, 7)
         XCTAssertEqual(Acknowledgements.all.filter { $0.licenseName == Acknowledgements.mit }.map(\.name), ["RevenueCat (purchases-ios)"])
-        XCTAssertEqual(Acknowledgements.all.filter { $0.licenseName == Acknowledgements.ofl }.count, 9)
+        XCTAssertEqual(Acknowledgements.all.filter { $0.licenseName == Acknowledgements.ofl }.count, 5)
         XCTAssertTrue(Acknowledgements.all.contains { $0.licenseResource == "BricolageGrotesque-OFL" })
         XCTAssertTrue(Acknowledgements.all.contains { $0.licenseResource == "Figtree-OFL" })
     }
