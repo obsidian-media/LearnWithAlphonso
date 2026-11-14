@@ -102,6 +102,17 @@ public enum BadgePresentation {
         return out.string(from: date)
     }
 
+    /// The one-line celebration under an unlock, for a streak badge only ("Your streak just hit 30 days. Keep it going
+    /// tomorrow."). Every other family has none: the description already says what was done.
+    public static func celebrationLine(category: String, threshold: Int) -> String? {
+        category == "streak" ? "Your streak just hit \(threshold) days. Keep it going tomorrow." : nil
+    }
+
+    /// Alphonso's pose beside the medallion: the flame for a streak badge, surprised and impressed for the rest.
+    public static func unlockPose(category: String) -> String {
+        category == "streak" ? "streak-flame" : "surprised-impressed"
+    }
+
     /// 1240 as "1,240".
     public static func grouped(_ n: Int) -> String {
         let digits = String(abs(n))

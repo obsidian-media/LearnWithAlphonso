@@ -345,8 +345,7 @@ struct LessonPlayerView: View {
         } else if let completionFailure {
             LessonSaveFailureView(error: completionFailure, onSignIn: { session.signOut() }, onDone: { dismiss() })
         } else if total == 0 {
-            DSEmptyState(art: "Alphonso-thinking", title: "This lesson has no questions yet")
-                .padding(AlphonsoDS.Space.gutter)
+            ContentUnavailableView("This lesson has no questions yet", systemImage: "questionmark.circle")
         } else {
             switch phase {
             case .overview:

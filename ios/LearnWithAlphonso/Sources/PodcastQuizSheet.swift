@@ -214,6 +214,7 @@ struct PodcastQuizRowButton: View {
     @State private var isLoading = false
     @State private var unavailable = false
     @State private var showQuiz = false
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -230,8 +231,8 @@ struct PodcastQuizRowButton: View {
             .accessibilityLabel("Take the quiz: \(episode.title)")
             if unavailable {
                 Text(PodcastQuizCopy.message(for: .notFound))
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.destructive)
+                    .dsText(.caption)
+                    .foregroundStyle(ds.wrongInk)
             }
         }
         .sheet(isPresented: $showQuiz) {
@@ -270,7 +271,7 @@ private struct PodcastQuizChipLabelStyle: LabelStyle {
                 .foregroundStyle(AlphonsoColor.moss)
                 .accessibilityHidden(true)
             configuration.title
-                .font(AlphonsoFont.sans(14, weight: .semiBold))
+                .dsText(.footnote)
                 .foregroundStyle(AlphonsoColor.ink)
         }
     }

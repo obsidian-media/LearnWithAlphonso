@@ -347,10 +347,11 @@ private struct PodcastTranscriptSheet: View {
                         // Said plainly rather than rendered blank: an episode
                         // without a transcript is inaccessible to deaf
                         // learners, which is a fact about the content.
-                        DSEmptyState(
-                            art: "Alphonso-reading-book", title: "No transcript",
-                            message: "This episode doesn't have a transcript yet.")
-                            .padding(AlphonsoDS.Space.gutter)
+                        ContentUnavailableView {
+                            Label("No transcript", systemImage: "text.alignleft")
+                        } description: {
+                            Text("This episode doesn't have a transcript yet.")
+                        }
                     } else {
                         ScrollView {
                             VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {

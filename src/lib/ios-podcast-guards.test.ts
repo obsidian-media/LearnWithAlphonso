@@ -337,7 +337,7 @@ describe("iOS podcast quiz guards", () => {
 
   it("Try again is offered only for failures that retrying can fix, and a saved result refreshes the best label", () => {
     const text = sheet();
-    expect(text).toMatch(/if error\.isRetryable \{\s*Button\("Try again"\)/);
+    expect(text).toMatch(/actionTitle: error\.isRetryable \? "Try again" : nil/);
     expect(text).toContain("onSaved?(result)");
     expect(bar()).toMatch(
       /best: PodcastQuizBest\(correct: result\.bestCorrect, xp: result\.bestXP\)/,
@@ -357,8 +357,8 @@ describe("iOS podcast quiz: every choice card takes a tap, and the row button re
       sheet(),
       "private func choiceRow(index: Int, text: String, answerIndex: Int) -> some View {",
     );
-    const frame = row.indexOf(".frame(maxWidth: .infinity, minHeight: 44");
-    const shape = row.indexOf(".contentShape(RoundedRectangle(cornerRadius: 12))");
+    const frame = row.indexOf(".frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch");
+    const shape = row.indexOf(".contentShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control");
     const plain = row.indexOf(".buttonStyle(.plain)");
     expect(frame).toBeGreaterThan(-1);
     expect(plain).toBeGreaterThan(-1);

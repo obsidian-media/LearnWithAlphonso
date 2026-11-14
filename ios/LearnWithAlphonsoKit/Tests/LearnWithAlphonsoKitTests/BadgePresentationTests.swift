@@ -143,4 +143,16 @@ final class BadgePresentationTests: XCTestCase {
             XCTAssertEqual(Set(rungs.map(\.threshold)).count, rungs.count, category)
         }
     }
+
+    func testOnlyAStreakBadgeGetsACelebrationLine() {
+        XCTAssertEqual(B.celebrationLine(category: "streak", threshold: 30), "Your streak just hit 30 days. Keep it going tomorrow.")
+        XCTAssertNil(B.celebrationLine(category: "xp", threshold: 500))
+        XCTAssertNil(B.celebrationLine(category: "team", threshold: 1))
+    }
+
+    func testTheUnlockPoseIsTheFlameForStreaksAndSurprisedForTheRest() {
+        XCTAssertEqual(B.unlockPose(category: "streak"), "streak-flame")
+        XCTAssertEqual(B.unlockPose(category: "xp"), "surprised-impressed")
+        XCTAssertEqual(B.unlockPose(category: "league"), "surprised-impressed")
+    }
 }
