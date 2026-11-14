@@ -157,7 +157,7 @@ describe("the goal card, by status", () => {
   const show = async (plan: GoalPlan | null) => {
     client.fetchGoal.mockResolvedValue(stored(plan));
     renderCard();
-    (await screen.findAllByText(/finish B1/i))[0];
+    expect((await screen.findAllByText(/finish B1/i))[0]).toBeInTheDocument();
   };
 
   it.each([
@@ -212,7 +212,7 @@ describe("offline and errors", () => {
     client.fetchGoal.mockRejectedValue(new GoalError("offline"));
     client.readCachedGoal.mockResolvedValue(stored(plans.on_track));
     renderCard();
-    (await screen.findAllByText(/finish B1/i))[0];
+    expect((await screen.findAllByText(/finish B1/i))[0]).toBeInTheDocument();
     expect(region()).toHaveTextContent(/as of/i);
     expect(region()).toHaveTextContent(/offline/i);
     expect(screen.getByRole("button", { name: /change goal/i })).toBeDisabled();
@@ -242,7 +242,7 @@ describe("review fixes", () => {
   it("an expired goal shows no weekly number, offers the suggested date and a way to change it", async () => {
     client.fetchGoal.mockResolvedValue(stored(plans.expired));
     renderCard();
-    (await screen.findAllByText(/finish B1/i))[0];
+    expect((await screen.findAllByText(/finish B1/i))[0]).toBeInTheDocument();
     expect(region()).not.toHaveTextContent(/lessons a week/i);
     expect(region()).toHaveTextContent(/12 Jan 2027/);
     expect(screen.getByRole("button", { name: /change goal/i })).toBeEnabled();
@@ -264,7 +264,7 @@ describe("review fixes", () => {
     client.removeGoal.mockRejectedValue(new GoalError("unavailable"));
     const user = userEvent.setup({ advanceTimers: () => {} });
     renderCard();
-    (await screen.findAllByText(/finish B1/i))[0];
+    expect((await screen.findAllByText(/finish B1/i))[0]).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /remove goal/i }));
     expect(await screen.findByRole("alert")).toHaveTextContent(/couldn't load your goal/i);
     expect(screen.getAllByText(/finish B1/i)[0]).toBeInTheDocument();
@@ -311,7 +311,7 @@ describe("review fixes", () => {
     await user.click(screen.getByRole("button", { name: "6 months" }));
     await screen.findByText(/lessons a week/i);
     await user.click(screen.getByRole("button", { name: /save goal/i }));
-    (await screen.findAllByText(/finish B1/i))[0];
+    expect((await screen.findAllByText(/finish B1/i))[0]).toBeInTheDocument();
     expect(region()).toHaveFocus();
   });
 
@@ -360,7 +360,7 @@ describe("review fixes", () => {
       stored({ ...plans.behind_with_suggestion, realism: "unrealistic" }),
     );
     renderCard();
-    (await screen.findAllByText(/finish B1/i))[0];
+    expect((await screen.findAllByText(/finish B1/i))[0]).toBeInTheDocument();
     expect(region().textContent?.match(/10 Nov 2026/g)).toHaveLength(1);
     expect(region()).toHaveTextContent(/unrealistic/i);
   });
@@ -403,7 +403,7 @@ describe("review fixes", () => {
     client.removeGoal.mockRejectedValue(new GoalError("offline"));
     const user = userEvent.setup({ advanceTimers: () => {} });
     renderCard();
-    (await screen.findAllByText(/finish B1/i))[0];
+    expect((await screen.findAllByText(/finish B1/i))[0]).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /remove goal/i }));
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "You're offline. Try again when you're connected.",
