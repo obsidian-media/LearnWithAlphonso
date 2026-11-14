@@ -173,6 +173,8 @@ struct PathItemRow: View {
 
 struct PathMixBar: View {
     let mix: [PathMixEntry]
+    /// On the navy hero the caption reads in the hero's soft text.
+    var onHero = false
     @Environment(\.alphonsoDS) private var ds
 
     private func color(_ kind: PathKind) -> Color {
@@ -201,7 +203,7 @@ struct PathMixBar: View {
             }
             .frame(height: AlphonsoDS.Space.s3)
             Text(shown.map { "\($0.kind.label) \($0.minutes) min" }.joined(separator: " \u{00B7} "))
-                .dsText(.caption).foregroundStyle(ds.inkSoft)
+                .dsText(.caption).foregroundStyle(onHero ? ds.onHeroSoft : ds.inkSoft)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
@@ -581,12 +583,13 @@ struct PathBuildView: View {
 
     @ViewBuilder
     private func switches(_ path: LearningPath) -> some View {
-        DSOverline("Your plan")
-        DSCard {
-            Text("\(path.progress.requiredPerWeek) lessons a week").dsText(.title).foregroundStyle(ds.brand)
+        // The approved A0 plan hero (round 8): the navy card with the weekly lessons and the mix.
+        DSHeroCard(spacing: AlphonsoDS.Space.s2) {
+            Text("Your plan").dsText(.overline).foregroundStyle(ds.onHeroKick)
+            Text("\(path.progress.requiredPerWeek) lessons a week").dsText(.display)
             Text("\(path.dailyMinutes) minutes a day, \(PathRestDay.studyDays(path.restDayValue)) days. The rest of each day is filled with the mix below.")
-                .dsText(.footnote).foregroundStyle(ds.inkSoft)
-            PathMixBar(mix: path.mix)
+                .dsText(.footnote).foregroundStyle(ds.onHeroSoft)
+            PathMixBar(mix: path.mix, onHero: true)
         }
         DSOverline("Rest day")
         DSCard {
@@ -602,7 +605,7 @@ struct PathBuildView: View {
             .accessibilityLabel("Rest day")
         }
         DSOverline("How I like to learn")
-        DSCard(padding: AlphonsoDS.Space.s3, spacing: AlphonsoDS.Space.s1) {
+        DSCard(padding: AlphonsoDS.Space.s3) {
             HStack(spacing: AlphonsoDS.Space.s3) {
                 PathTypeBadge(kind: .lesson)
                 VStack(alignment: .leading, spacing: 0) {
@@ -610,10 +613,14 @@ struct PathBuildView: View {
                     Text("Always on, the backbone").dsText(.caption).foregroundStyle(ds.inkSoft)
                 }
                 Spacer(minLength: 0)
+                Text("Always on").dsText(.caption).foregroundStyle(ds.inkSoft)
             }
             .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .opacity(0.7)
             .accessibilityElement(children: .combine)
-            ForEach(PathKind.switchable(mix: path.mix, off: path.off), id: \.wire) { kind in
+        }
+        ForEach(PathKind.switchable(mix: path.mix, off: path.off), id: \.wire) { kind in
+            DSCard(padding: AlphonsoDS.Space.s3) {
                 Toggle(isOn: Binding(
                     get: { !path.off.contains(kind.wire) },
                     set: { on in
@@ -640,6 +647,8 @@ struct PathBuildView: View {
         if let error = model?.actionError {
             DSCard { Text(error).dsText(.footnote).foregroundStyle(ds.wrongInk) }
         }
+        Button("Start my path") { dismiss() }
+            .buttonStyle(.dsButton(.primary))
     }
 
     private func reason(for kind: PathKind, in path: LearningPath) -> String {
