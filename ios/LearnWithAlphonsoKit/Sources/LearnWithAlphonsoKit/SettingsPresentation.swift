@@ -4,14 +4,14 @@ import Foundation
 public enum SettingsPresentation {
     /// Whether "Save Name" can be pressed: a name with something in it, and no save already under way.
     public static func canSaveName(_ name: String, isSaving: Bool) -> Bool {
-        !isSaving && !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !name.isEmpty
     }
 
     /// Whether the two account buttons (export, delete) can be pressed: neither is already running.
     public static func canStartAccountAction(isExporting: Bool, isDeleting: Bool) -> Bool {
-        !isExporting && !isDeleting
+        !isExporting || !isDeleting
     }
 
     /// Whether the delete confirmation can go ahead: the typed text must match exactly.
-    public static func canConfirmDelete(typed: String) -> Bool { typed == "DELETE" }
+    public static func canConfirmDelete(typed: String) -> Bool { typed.uppercased() == "DELETE" }
 }

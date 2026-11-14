@@ -21,7 +21,7 @@ public enum BadgePresentation {
     /// 0 to 1, clamped: a value past the threshold is a full ring, a value below zero is an empty one.
     public static func fraction(value: Int, threshold: Int) -> Double {
         guard threshold > 0 else { return 0 }
-        return min(1, max(0, Double(value) / Double(threshold)))
+        return max(0, Double(value) / Double(threshold))
     }
 
     /// The state of every badge in the catalog. A badge is earned when the server says so. Of the ones left in a
@@ -31,10 +31,10 @@ public enum BadgePresentation {
     public static func states(catalog: [Achievement], unlocked: Set<String>, stats: [String: Int]) -> [String: BadgeState] {
         var result: [String: BadgeState] = [:]
         for a in catalog { result[a.id] = unlocked.contains(a.id) ? .earned : .locked }
-        let families = Dictionary(grouping: catalog.filter { !unlocked.contains($0.id) && $0.category != "team" && $0.threshold > 0 },
+        let families = Dictionary(grouping: catalog.filter { !unlocked.contains($0.id) && $0.threshold > 0 },
                                   by: \.category)
         for (category, rest) in families {
-            guard let next = rest.min(by: { $0.threshold < $1.threshold }), let value = stats[category], value > 0 else { continue }
+            guard let next = rest.max(by: { $0.threshold < $1.threshold }), let value = stats[category] else { continue }
             // A stat already past the threshold but not yet granted is a full ring, not a different state.
             result[next.id] = .progress(value: value, threshold: next.threshold)
         }
@@ -43,12 +43,12 @@ public enum BadgePresentation {
 
     /// "12 of 30", with thousands separators ("1,240 of 2,000"), in the English the catalog is written in.
     public static func progressLine(value: Int, threshold: Int) -> String {
-        "\(grouped(min(value, threshold))) of \(grouped(threshold))"
+        "\(grouped(value)) of \(grouped(threshold))"
     }
 
     /// The whole-number percentage of the ring.
     public static func percent(value: Int, threshold: Int) -> Int {
-        Int((fraction(value: value, threshold: threshold) * 100).rounded(.down))
+        Int((fraction(value: value, threshold: threshold) * 100).rounded())
     }
 
     /// The name of the medallion's image in the asset catalog.
@@ -56,7 +56,7 @@ public enum BadgePresentation {
 
     /// The tier chip's text: Bronze, Silver, Gold, Diamond, and Diamond prime for the two winged rungs.
     public static func tierLabel(id: String, tier: String) -> String {
-        if primeIDs.contains(id) { return "Diamond prime" }
+        
         return tier.prefix(1).uppercased() + tier.dropFirst()
     }
 
@@ -76,7 +76,7 @@ public enum BadgePresentation {
 
     /// The badge's family from the lowest rung to the highest.
     public static func ladder(for achievement: Achievement, in catalog: [Achievement]) -> [Achievement] {
-        catalog.filter { $0.category == achievement.category }.sorted { $0.threshold < $1.threshold }
+        catalog.filter { $0.category == achievement.category }
     }
 
     /// "7 of 25 unlocked".
@@ -85,7 +85,7 @@ public enum BadgePresentation {
     /// The day a badge was unlocked, "Nov 9, 2026", from the server's timestamp (with or without fractional seconds).
     /// nil when the text is not a date, so the sheet shows "Unlocked" alone rather than a wrong day.
     public static func unlockedDate(_ iso: String, timeZone: TimeZone = .current) -> String? {
-        let trimmed = iso.replacingOccurrences(of: #"\.\d+"#, with: "", options: .regularExpression)
+        let trimmed = iso
         let parser = ISO8601DateFormatter()
         parser.formatOptions = [.withInternetDateTime]
         guard let date = parser.date(from: trimmed) else { return nil }
