@@ -8,10 +8,14 @@ import com.obsidianmedia.learnwithalphonso.core.content.Achievement
  * the web and iOS screens: change all three together.
  */
 object AchievementPresentation {
-    enum class State { UNLOCKED, IN_REACH, LOCKED }
+    enum class State { UNLOCKED, IN_REACH, LOCKED, UNKNOWN }
 
-    /** A badge's look: unlocked, locked with some progress (the ring and "12 of 30"), or locked with none. */
-    fun state(unlocked: Boolean, value: Int): State = when {
+    /**
+     * A badge's look: unlocked, locked with some progress (the ring and "12 of 30"), or locked with none. When the unlock
+     * read failed ([known] false) nothing is claimed either way: no lock, no ring.
+     */
+    fun state(unlocked: Boolean, value: Int, known: Boolean = true): State = when {
+        !known -> State.UNKNOWN
         unlocked -> State.UNLOCKED
         value > 0 -> State.IN_REACH
         else -> State.LOCKED

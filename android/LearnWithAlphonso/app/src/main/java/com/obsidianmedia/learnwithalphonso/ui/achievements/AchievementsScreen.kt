@@ -150,7 +150,7 @@ fun AchievementsScreen(container: AppContainer, onBack: () -> Unit, seededVm: Ac
                     Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                         row.forEach { a ->
                             val unlocked = state.unlockedById.containsKey(a.id)
-                            BadgeTile(a, unlocked, state.stats[a.category] ?: 0, Modifier.weight(1f)) { open = a }
+                            BadgeTile(a, unlocked, state.stats[a.category] ?: 0, state.error == null, Modifier.weight(1f)) { open = a }
                         }
                         repeat(3 - row.size) { Box(Modifier.weight(1f)) }
                     }
@@ -161,7 +161,7 @@ fun AchievementsScreen(container: AppContainer, onBack: () -> Unit, seededVm: Ac
     }
 
     open?.let { a ->
-        BadgeDetailSheet(a, catalog, state.unlockedById, state.stats, onDismiss = { open = null })
+        BadgeDetailSheet(a, catalog, state.unlockedById, state.stats, state.error == null, onDismiss = { open = null })
     }
 }
 
@@ -178,7 +178,7 @@ private fun rememberMedallion(id: String): Int? {
 private fun Medallion(id: String, state: AchievementPresentation.State, fraction: Float, size: Dp, ringWidth: Dp = AlphonsoTokens.Space.s1) {
     val ds = LocalAlphonsoTokens.current
     val res = rememberMedallion(id)
-    val filter = if (state == AchievementPresentation.State.UNLOCKED) null else ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
+    val filter = if (state == AchievementPresentation.State.UNLOCKED || state == AchievementPresentation.State.UNKNOWN) null else ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
     Box(Modifier.size(size), contentAlignment = Alignment.Center) {
         if (state == AchievementPresentation.State.IN_REACH) {
             Canvas(Modifier.size(size)) {
@@ -193,7 +193,7 @@ private fun Medallion(id: String, state: AchievementPresentation.State, fraction
         if (res != null) {
             Image(
                 painterResource(res), contentDescription = null, contentScale = ContentScale.Fit, colorFilter = filter,
-                alpha = if (state == AchievementPresentation.State.UNLOCKED) 1f else 0.75f, modifier = Modifier.size(size - pad * 2),
+                alpha = if (state == AchievementPresentation.State.UNLOCKED) 1f else 0.9f, modifier = Modifier.size(size - pad * 2),
             )
         } else {
             Icon(painterResource(R.drawable.ds_star_solid), null, tint = ds.xp, modifier = Modifier.size(size / 2))
@@ -202,9 +202,9 @@ private fun Medallion(id: String, state: AchievementPresentation.State, fraction
 }
 
 @Composable
-private fun BadgeTile(a: Achievement, unlocked: Boolean, value: Int, modifier: Modifier, onClick: () -> Unit) {
+private fun BadgeTile(a: Achievement, unlocked: Boolean, value: Int, known: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    val st = AchievementPresentation.state(unlocked, value)
+    val st = AchievementPresentation.state(unlocked, value, known)
     val spoken = buildString {
         append(a.title).append(". ").append(a.description).append(". ")
         append(
@@ -212,6 +212,7 @@ private fun BadgeTile(a: Achievement, unlocked: Boolean, value: Int, modifier: M
                 AchievementPresentation.State.UNLOCKED -> "Unlocked."
                 AchievementPresentation.State.IN_REACH -> AchievementPresentation.progressLine(value, a.threshold) + "."
                 AchievementPresentation.State.LOCKED -> "Locked."
+                AchievementPresentation.State.UNKNOWN -> ""
             },
         )
     }
@@ -232,12 +233,12 @@ private fun BadgeTile(a: Achievement, unlocked: Boolean, value: Int, modifier: M
 }
 
 /** One badge in full: the big medallion, its tier, whether it is unlocked or how far it is, and its ladder. */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-private fun BadgeDetailSheet(a: Achievement, catalog: List<Achievement>, unlocked: Map<String, UnlockedAchievement>, stats: Map<String, Int>, onDismiss: () -> Unit) {
+private fun BadgeDetailSheet(a: Achievement, catalog: List<Achievement>, unlocked: Map<String, UnlockedAchievement>, stats: Map<String, Int>, known: Boolean, onDismiss: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     val value = stats[a.category] ?: 0
-    val st = AchievementPresentation.state(unlocked.containsKey(a.id), value)
+    val st = AchievementPresentation.state(unlocked.containsKey(a.id), value, known)
     ModalBottomSheet(
         onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = ds.surface,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = AlphonsoTokens.Radius.sheet, topEnd = AlphonsoTokens.Radius.sheet),
@@ -270,12 +271,15 @@ private fun BadgeDetailSheet(a: Achievement, catalog: List<Achievement>, unlocke
                 AchievementPresentation.ladderTitle(a.category, ladder.size)?.let { title ->
                     DsOverline(title)
                     DsCard {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        androidx.compose.foundation.layout.FlowRow(
+                            Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3, Alignment.CenterHorizontally),
+                            verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+                        ) {
                             ladder.forEach { step ->
                                 val isUnlocked = unlocked.containsKey(step.id)
                                 val sv = stats[step.category] ?: 0
                                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
-                                    Medallion(step.id, AchievementPresentation.state(isUnlocked, if (step.id == a.id) value else sv), AchievementPresentation.fraction(sv, step.threshold), AlphonsoTokens.Space.s12)
+                                    Medallion(step.id, AchievementPresentation.state(isUnlocked, if (step.id == a.id) value else sv, known), AchievementPresentation.fraction(sv, step.threshold), AlphonsoTokens.Space.s12)
                                     Text("${step.threshold}", style = CaptionType, color = if (step.id == a.id) ds.ink else ds.inkSoft)
                                 }
                             }

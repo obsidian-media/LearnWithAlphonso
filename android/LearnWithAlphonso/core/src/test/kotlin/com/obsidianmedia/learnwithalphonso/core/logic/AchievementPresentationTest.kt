@@ -17,6 +17,13 @@ class AchievementPresentationTest {
     }
 
     @Test
+    fun `when the unlock read failed nothing is claimed, so no lock and no ring`() {
+        assertEquals(AchievementPresentation.State.UNKNOWN, AchievementPresentation.state(false, 5, known = false))
+        assertEquals(AchievementPresentation.State.UNKNOWN, AchievementPresentation.state(true, 0, known = false))
+        assertEquals(AchievementPresentation.State.IN_REACH, AchievementPresentation.state(false, 5, known = true))
+    }
+
+    @Test
     fun `the summary and tier read as the other platforms do`() {
         assertEquals("7 of 25 unlocked", AchievementPresentation.summary(7, 25))
         assertEquals("Gold", AchievementPresentation.tierLabel("gold"))
