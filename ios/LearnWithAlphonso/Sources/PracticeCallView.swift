@@ -113,7 +113,7 @@ struct PracticeCallView<Sheet: View>: View {
             .frame(width: width, height: height)
         }
         .background { room }
-        .background(Color.black)
+        .background(ds.callGlass)
         .sheet(isPresented: $showSheet) { conversationSheet }
         // The call-start sound, once per call (keyed, so a re-appearance cannot repeat it); while he speaks, no effect
         // plays over him.
@@ -150,14 +150,14 @@ struct PracticeCallView<Sheet: View>: View {
                 ds.surface
             }
             if dark && room.dimInDark {
-                ds.hero.opacity(CallScenes.eveningOverlayOpacity).blendMode(.multiply)
+                ds.callGlass.opacity(CallScenes.eveningOverlayOpacity).blendMode(.multiply)
             }
             LinearGradient(
                 stops: [
-                    .init(color: .black.opacity(0.28), location: 0),
+                    .init(color: ds.callGlass.opacity(0.28), location: 0),
                     .init(color: .clear, location: 0.18),
                     .init(color: .clear, location: 0.55),
-                    .init(color: .black.opacity(0.5), location: 1),
+                    .init(color: ds.callGlass.opacity(0.5), location: 1),
                 ],
                 startPoint: .top, endPoint: .bottom)
         }
@@ -171,7 +171,7 @@ struct PracticeCallView<Sheet: View>: View {
         HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(kit.displayName)
-                    .dsText(.title)
+                    .dsText(.questionSmall)
                 HStack(spacing: AlphonsoDS.Space.s2 - 2) {
                     Circle()
                         .fill(mode == .speaking ? ds.heart : ds.inkFaint)
@@ -183,7 +183,7 @@ struct PracticeCallView<Sheet: View>: View {
                 }
             }
             .foregroundStyle(ds.onHero)
-            .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+            .shadow(color: ds.callGlass.opacity(0.35), radius: 3, y: 1)
             Spacer()
             TimelineView(.periodic(from: startedAt, by: 1)) { context in
                 Text(CallClock.format(seconds: Int(context.date.timeIntervalSince(startedAt))))
@@ -198,8 +198,8 @@ struct PracticeCallView<Sheet: View>: View {
         }
     }
 
-    private var glass: Color { ds.heroB.opacity(0.46) }
-    private var glassStrong: Color { ds.heroB.opacity(0.62) }
+    private var glass: Color { ds.callGlass.opacity(0.46) }
+    private var glassStrong: Color { ds.callGlass.opacity(0.62) }
 
     // MARK: - You tile
 
@@ -212,7 +212,7 @@ struct PracticeCallView<Sheet: View>: View {
                 HStack(spacing: 3) {
                     ForEach(0..<CallLevel.barCount, id: \.self) { index in
                         Capsule()
-                            .fill(.white.opacity(0.85))
+                            .fill(ds.onHero.opacity(0.85))
                             .frame(width: 5, height: CallLevel.barHeight(dBFS: level, index: index))
                     }
                 }
@@ -226,7 +226,7 @@ struct PracticeCallView<Sheet: View>: View {
         .background(glassStrong, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(recording ? ds.right : .white.opacity(0.18), lineWidth: recording ? 2 : 1)
+                .strokeBorder(recording ? ds.callRecord : ds.onHero.opacity(0.18), lineWidth: recording ? 2 : 1)
         )
         .accessibilityHidden(true)
     }
@@ -242,7 +242,7 @@ struct PracticeCallView<Sheet: View>: View {
                 let lit = litWords(count: words.count, caption: caption)
                 words.enumerated().reduce(Text("")) { text, item in
                     text + Text(item.element + " ")
-                        .foregroundColor((caption.mine ? ds.rightTint : ds.onHero)
+                        .foregroundColor((caption.mine ? ds.callMint : ds.onHero)
                             .opacity(item.offset < lit ? 1 : 0.55))
                 }
                 .dsText(.headline)
@@ -250,7 +250,7 @@ struct PracticeCallView<Sheet: View>: View {
                 // At most four lines on screen, so a long reply never climbs over his mouth on a small phone. The
                 // whole text is in the VoiceOver label and in the sheet.
                 .lineLimit(4)
-                .shadow(color: .black.opacity(0.55), radius: 4, y: 1)
+                .shadow(color: ds.callGlass.opacity(0.55), radius: 4, y: 1)
                 .frame(maxWidth: .infinity)
             }
             .accessibilityElement(children: .ignore)
@@ -294,7 +294,7 @@ struct PracticeCallView<Sheet: View>: View {
             .multilineTextAlignment(.center)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.white.opacity(0.92), in: Capsule())
+            .background(ds.card, in: Capsule())
     }
 
     // MARK: - Controls
@@ -316,8 +316,8 @@ struct PracticeCallView<Sheet: View>: View {
                 HoldToTalkButton(
                     isRecording: voice.isRecording,
                     idleColor: ds.onHero,
-                    recordingColor: ds.right,
-                    iconColor: ds.hero,
+                    recordingColor: ds.callRecord,
+                    iconColor: ds.callDock,
                     accessibilityLabel: talkLabel,
                     onPress: onPress,
                     onRelease: { voice.pressEnded() }
@@ -335,9 +335,9 @@ struct PracticeCallView<Sheet: View>: View {
             } label: {
                 Image(systemName: "phone.down.fill")
                     .dsText(.title)
-                    .foregroundStyle(ds.onWrong)
+                    .foregroundStyle(ds.onHero)
                     .frame(width: 54, height: 54)
-                    .background(ds.wrong, in: Circle())
+                    .background(ds.callEnd, in: Circle())
             }
             .accessibilityLabel("End the call")
         }
@@ -352,7 +352,7 @@ struct PracticeCallView<Sheet: View>: View {
         } label: {
             Image(systemName: paused ? "play.fill" : "pause.fill")
                 .dsText(.display)
-                .foregroundStyle(ds.hero)
+                .foregroundStyle(ds.callDock)
                 .frame(width: 78, height: 78)
                 .background(ds.onHero, in: Circle())
         }
@@ -372,7 +372,7 @@ struct PracticeCallView<Sheet: View>: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Conversation")
-                    .dsText(.title)
+                    .dsText(.questionSmall)
                     .foregroundStyle(ds.ink)
                     .accessibilityAddTraits(.isHeader)
                 Spacer()

@@ -170,7 +170,7 @@ describe("Name prompt prefill", () => {
     expect(name).toContain("set: { if $0 != state.name { state.edit($0) } }");
     // The design-system primary button dims itself when disabled.
     expect(name).toContain(".buttonStyle(.dsButton(.primary))");
-    expect(name).toContain(".disabled(!state.canSave)");
+    expect(name).toContain(".disabled(!state.canSave && !state.isSubmitting)");
   });
   it("keeps the skip copy", () => {
     expect(name).toContain("NameOnboardingCopy.skipNote(currentName: state.currentName)");

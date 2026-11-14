@@ -1209,11 +1209,13 @@ struct LessonCompleteView<Extras: View>: View {
         }
         .task {
             // He says "wow", then smiles (1.4 s in). Under Reduce Motion he is already smiling.
-            guard !reduceMotion else { return }
-            try? await Task.sleep(for: .seconds(1.4))
-            amazed = false
-            // The first new achievement slides up once the celebration has played. Reduce Motion: only on a tap.
-            try? await Task.sleep(for: .seconds(1.6))
+            if !reduceMotion {
+                try? await Task.sleep(for: .seconds(1.4))
+                amazed = false
+            }
+            // The first new achievement slides up once the celebration has played (at once under Reduce Motion, with
+            // no confetti).
+            if !reduceMotion { try? await Task.sleep(for: .seconds(1.6)) }
             if unlockShown == nil, let first = achievements.first { unlockShown = first }
         }
         .sheet(item: $unlockShown) { achievement in

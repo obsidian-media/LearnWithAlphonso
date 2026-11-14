@@ -10,21 +10,31 @@ struct LessonSaveFailureView: View {
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        VStack(spacing: AlphonsoDS.Space.s3) {
-            Spacer()
-            DSEmptyState(
-                art: "Alphonso-hearts-calm",
-                title: "Couldn't save this lesson",
-                message: [error.userMessage, error.supportLine].compactMap { $0 }.joined(separator: "\n"))
-            if error == .unauthorized {
-                // Signing out routes RootView to AuthView; the session lifecycle clears this account's local data.
-                Button("Sign in", action: onSignIn).buttonStyle(.dsButton(.primary))
+        // Scrolls so the buttons stay reachable at the largest text sizes and in landscape.
+        ScrollView {
+            VStack(spacing: AlphonsoDS.Space.s3) {
+                Image("Alphonso-hearts-calm").resizable().scaledToFit()
+                    .frame(height: AlphonsoDS.Space.s12 * 3)
+                    .accessibilityHidden(true)
+                DSCard(spacing: AlphonsoDS.Space.s2) {
+                    Text("Couldn't save this lesson").dsText(.title).foregroundStyle(ds.ink)
+                        .accessibilityAddTraits(.isHeader)
+                    Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let support = error.supportLine {
+                        Text(support).dsText(.caption).foregroundStyle(ds.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                if error == .unauthorized {
+                    // Signing out routes RootView to AuthView; the session lifecycle clears this account's local data.
+                    Button("Sign in", action: onSignIn).buttonStyle(.dsButton(.primary))
+                }
+                Button("Done", action: onDone).buttonStyle(.dsButton(.secondary))
             }
-            Button("Done", action: onDone).buttonStyle(.dsButton(.secondary))
-            Spacer()
+            .padding(AlphonsoDS.Space.gutter)
+            .frame(maxWidth: .infinity)
         }
-        .padding(AlphonsoDS.Space.gutter)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ds.surface)
     }
 }

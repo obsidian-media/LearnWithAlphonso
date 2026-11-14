@@ -88,7 +88,8 @@ struct NameOnboardingView: View {
                         }
                     }
                     .buttonStyle(.dsButton(.primary))
-                    .disabled(!state.canSave)
+                    // Saving keeps the button fully opaque with its spinner; save() ignores a second tap.
+                    .disabled(!state.canSave && !state.isSubmitting)
                     .accessibilityLabel(state.isSubmitting ? "Saving" : NameOnboardingCopy.save)
 
                     Button(NameOnboardingCopy.skip) {
@@ -102,10 +103,13 @@ struct NameOnboardingView: View {
                         .foregroundStyle(ds.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(AlphonsoDS.Space.s6)
+                .padding(AlphonsoDS.Space.s4)
+                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.card.opacity(0.94)))
+                .padding(AlphonsoDS.Space.s4)
                 .frame(maxWidth: 480)
                 .frame(maxWidth: .infinity)
             }
+            .screenScene(.learn)
             .background(ds.surface)
             .scrollDismissesKeyboard(dynamicTypeSize.isAccessibilitySize ? .immediately : .interactively)
             // Save and Skip stay reachable above the keyboard however large the text is.
