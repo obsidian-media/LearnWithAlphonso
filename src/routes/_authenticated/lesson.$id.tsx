@@ -216,7 +216,8 @@ function LessonPage() {
   const [sessionAttempt, setSessionAttempt] = useState(0);
   const heartsXp = useProgress((s) => s.xp);
   const spendXpForHeartLocal = useProgress((s) => s.spendXpForHeartLocal);
-  const restoreHeartsLocal = useProgress((s) => s.restoreHeartsLocal);
+  const refillHeartsLocal = useProgress((s) => s.refillHeartsLocal);
+  const setHeartsLocal = useProgress((s) => s.setHeartsLocal);
   useEffect(() => {
     if (!maybeLesson) return;
     let alive = true;
@@ -259,8 +260,9 @@ function LessonPage() {
           buyError={buyHeartError}
           onClose={() => navigate({ to: "/learn" })}
           onRefillDue={() => {
-            restoreHeartsLocal();
+            refillHeartsLocal();
             void restoreHeartsRemote()
+              .then((res) => setHeartsLocal(res.hearts, res.heartsRefillAt ?? null))
               .catch(() => {})
               .finally(() => setSessionAttempt((n) => n + 1));
           }}

@@ -14,15 +14,28 @@ object HeartsEconomy {
 
     data class HeartsState(val hearts: Int, val heartsRefillAt: Long?)
 
-    /** Restores to max once the refill timestamp has passed (inclusive). */
+    /**
+     * One heart comes back every HEART_REFILL_MS while hearts are below MAX_HEARTS, counted from the moment the
+     * learner first dropped below the cap (or from the last refill). heartsRefillAt is when the NEXT heart arrives and
+     * is null exactly when hearts are full. Every heart that has come due is added (two hours away = four), capped at
+     * MAX_HEARTS, with the leftover time carried into the next one. A row below the cap with no timer starts the clock
+     * now rather than staying stuck. Same rule as src/lib/hearts.ts and the SQL hearts_refill_resolve.
+     */
     fun resolveHeartsRefill(hearts: Int, heartsRefillAt: Long?, now: Long): HeartsState {
-        if (heartsRefillAt != null && now >= heartsRefillAt) return HeartsState(MAX_HEARTS, null)
-        return HeartsState(hearts, heartsRefillAt)
+        if (hearts >= MAX_HEARTS) return HeartsState(MAX_HEARTS, null)
+        if (heartsRefillAt == null) return HeartsState(hearts, now + HEART_REFILL_MS)
+        if (now < heartsRefillAt) return HeartsState(hearts, heartsRefillAt)
+        val due = 1 + ((now - heartsRefillAt) / HEART_REFILL_MS).toInt()
+        val next = min(MAX_HEARTS, hearts + due)
+        return if (next >= MAX_HEARTS) HeartsState(MAX_HEARTS, null)
+        else HeartsState(next, heartsRefillAt + due * HEART_REFILL_MS)
     }
 
-    /** Adds hearts up to the cap and clears any pending refill timer. */
-    fun gainHearts(hearts: Int, amount: Int): HeartsState =
-        HeartsState(min(MAX_HEARTS, hearts + amount), null)
+    /** Adds hearts up to the cap. A refill already running keeps its clock; the timer clears only at full hearts. */
+    fun gainHearts(hearts: Int, amount: Int, heartsRefillAt: Long?, now: Long): HeartsState {
+        val cur = resolveHeartsRefill(hearts, heartsRefillAt, now)
+        return resolveHeartsRefill(min(MAX_HEARTS, cur.hearts + amount), cur.heartsRefillAt, now)
+    }
 
     fun perfectLessonBonusEarned(correct: Int, total: Int): Boolean = total > 0 && correct == total
 
@@ -57,17 +70,29 @@ object HeartsEconomy {
         return if (resolved.hearts > 0) GateDecision.Open else GateDecision.OutOfHearts(resolved.heartsRefillAt)
     }
 
+    /**
+     * "M:SS" until the next heart comes back (ceil to the second, like the web's useCountdown), or null when hearts
+     * are full, no clock is running, or the heart is already due. Drives the "+1 in 12:34" hint next to the counter.
+     */
+    fun nextHeartCountdown(hearts: Int, heartsRefillAt: Long?, now: Long): String? {
+        if (hearts >= MAX_HEARTS || heartsRefillAt == null) return null
+        val remainingMs = heartsRefillAt - now
+        if (remainingMs <= 0) return null
+        val total = ((remainingMs + 999) / 1000).toInt()
+        return "${total / 60}:${(total % 60).toString().padStart(2, '0')}"
+    }
+
     /** Whether a wrong answer costs a heart. False for Alphonso Pro (unlimited hearts). */
     fun wrongAnswerCostsHeart(unlimited: Boolean): Boolean = !unlimited
 
     /**
-     * The cached state after a wrong answer costs a heart. When the last one goes and no refill is pending, the
-     * refill is due one interval from now, so the offline gate can show a countdown (lose_heart sets the same timer).
+     * The cached state after a wrong answer costs a heart (lose_heart does the same). Due refills are settled first; a
+     * refill already pending keeps its clock (losing a heart does not reset the wait); from full hearts a new
+     * 30-minute clock starts now, so the offline gate and the header can show a countdown.
      */
     fun afterLosingHeart(hearts: Int, heartsRefillAt: Long?, now: Long): HeartsState {
-        val remaining = maxOf(0, hearts - 1)
-        if (remaining == 0 && heartsRefillAt == null) return HeartsState(0, now + HEART_REFILL_MS)
-        return HeartsState(remaining, heartsRefillAt)
+        val cur = resolveHeartsRefill(hearts, heartsRefillAt, now)
+        return HeartsState(maxOf(0, cur.hearts - 1), cur.heartsRefillAt ?: (now + HEART_REFILL_MS))
     }
 }
 
@@ -86,8 +111,8 @@ data class OutOfHeartsModel(val refillAt: Long?) {
 
     fun isRefillDue(now: Long): Boolean = refillAt != null && now >= refillAt
 
-    fun message(now: Long): String = countdown(now)?.let { "You've used all your hearts for now. They refill automatically in $it." }
-        ?: "You've used all your hearts for now. They'll refill again shortly."
+    fun message(now: Long): String = countdown(now)?.let { "You've used all your hearts for now. Your next heart comes back in $it." }
+        ?: "You've used all your hearts for now. A heart will come back shortly."
 
     /** Buying needs the server. Review and practice never cost hearts, so that path is always offered. */
     fun showsBuy(isOnline: Boolean): Boolean = isOnline

@@ -10,6 +10,11 @@ works now_.
 
 ## Unreleased
 
+### Progress rules: hearts refill steadily, a talk counts once it earns a star (migration 20261116100000)
+
+- **Hearts refill.** While a learner has fewer than 5 hearts, one heart comes back every 30 minutes, counted from the moment they first dropped below 5 or from the last refill, capped at 5. The wait carries over (losing a heart while a refill is pending keeps the clock; time away adds every heart that came due). At 5 hearts there is no timer. The migration adds `hearts_refill_resolve` and redefines `lose_heart`, `restore_hearts_if_due`, `buy_heart_with_xp`, `claim_review_clear_bonus` and `settle_lesson_hearts` on it, and restores every learner who was stuck below 5 with no timer to 5. The web (`hearts.ts`, store, header, hearts dialog), the complete-lesson Edge Function, the iOS Kit and Android core share the rule and the test vectors; the header shows "+1 in M:SS" next to the count on web, iOS and Android.
+- **A talk counts as done only if it earned at least one star.** The path builder drops finished calls with 0 stars from "done" (`callCountsAsDone`). The native apps read the path from the server, so they follow without a code change.
+
 ### Device-check fixes (#504, merged 2026-11-13; goes out in build 64)
 
 Owner device check of builds 62 and 63.
@@ -34,14 +39,9 @@ Owner device check of builds 62 and 63.
 
 ### Release tooling and owner decisions (2026-11-14)
 
+- The hearts refill and practice-talk rules were decided on 2026-11-14 and are fixed in the progress-rules PR (see Progress rules).
 - **Provisioning profile workflow can enable capabilities (#508, #510).** `.github/workflows/regenerate-ios-profile.yml` has an `ensure_capabilities` input: a comma-separated list of settings-free capabilities (today `ASSOCIATED_DOMAINS`) that it enables on the App ID through the App Store Connect API before it mints the profile, then verifies the new profile carries the entitlement (it still fails loudly if it does not). Run on 2026-11-14 (run 43570547651): Associated Domains is ON for `com.obsidianmedia.learnwithalphonso`, the new profile UUID is `02d1ae14-17d6-4881-8f58-0fa20bcb5af1`, and the owner updated `IOS_PROVISIONING_PROFILE_BASE64` and `IOS_PROVISIONING_PROFILE_UUID` in the `apple-signing` environment. Lessons: the capabilities relationship rejects a `limit` query parameter (#510 removed it), and the `apple-signing` environment only deploys from `main`, so a dispatch from a branch is rejected.
 - **Plan for in-app Help chat and a support inbox (#509).** `docs/superpowers/plans/2026-11-14-support-help-chat.md`. The owner accepted the five recommended answers: the AI stays off at launch until the owner has reviewed the help file and ten transcripts; the ticket email is at most one per 15 minutes and carries no learner text; blocked learners still get Help; a ticket reopens if it was solved less than 7 days ago, otherwise a new ticket is made; limits are 30 AI replies a day, 5 a minute and 50 learner messages a day. Milestone 1 is being built (migrations `20261117100000` and `20261117100100`, later `20261117100200` and `20261117100300`); that PR updates the plan.
-- **Owner decisions (not merged yet, PRs in flight).** Hearts refill 1 per 30 minutes while below 5, and the 7 stuck learners are restored. A practice talk counts as done only with at least 1 star. Themes become Royal (light and night, the default) and Meadow; Studio Ink, Manuscript and Canopy are removed and old stored values map to Royal. The redesign batch 1 mocks (Duels, Teams, Build my path, Review, League, Friends, Settings, Out of hearts) and 12 new mascot poses are approved; batch 2 is being drawn. Build 64 follows once hearts and themes are merged.
-
-### Open bugs found in device check (owner decided the fixes on 2026-11-14, PRs in flight)
-
-- **Hearts never refill between 1 and 4.** The refill timer is only set when hearts reach 0, so a learner at 1 to 4 hearts never refills (seven learners were stuck). Decided: 1 heart per 30 minutes while below 5, and restore the stuck learners.
-- **The path marks a talk done for any finished call.** A QA account's 6-second, 0-star call counted. Decided: done only with at least 1 star.
 
 ### Library tab with a Watch shelf (#499, merged 2026-11-13; goes out in build 63)
 

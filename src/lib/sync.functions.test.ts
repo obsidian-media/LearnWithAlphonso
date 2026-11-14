@@ -194,27 +194,61 @@ describe("fetchProgress", () => {
     });
   });
 
-  it("resolves an elapsed hearts refill timer and persists the reset", async () => {
+  function progressMocks(row: { hearts: number; hearts_refill_at: string | null }) {
     const supabase = createSupabaseMock();
-    const pastRefill = Date.now() - 1000;
     supabase.from
-      .mockReturnValueOnce(
-        chainable({
-          data: { xp: 0, hearts: 0, hearts_refill_at: new Date(pastRefill).toISOString() },
-        }),
-      )
+      .mockReturnValueOnce(chainable({ data: { xp: 0, ...row } }))
       .mockReturnValueOnce(chainable({ data: { xp: 0, cefr_level: "A1", league_tier: "bronze" } }))
       .mockReturnValueOnce(chainable({ data: [] }))
       .mockReturnValueOnce(chainable({ data: [] }))
       .mockReturnValueOnce(chainable({ data: [] }));
-    supabaseAdminFrom.mockReturnValueOnce(chainable({ data: null })); // the hearts-refill update, via admin now
+    return supabase;
+  }
+
+  it("adds the heart that came due, keeps the clock for the next, and persists both", async () => {
+    const pastRefill = Date.now() - 1000;
+    const iso = new Date(pastRefill).toISOString();
+    const supabase = progressMocks({ hearts: 0, hearts_refill_at: iso });
+    const update = chainable({ data: [{ hearts: 1 }] });
+    supabaseAdminFrom.mockReturnValueOnce(update);
 
     const result = await fetchProgress({ context: ctx(supabase), data: { course: "en" } });
 
-    expect(result.hearts).toBe(5);
-    expect(result.heartsRefillAt).toBeNull();
+    // One heart per 30 minutes: the heart that came due is added; the next is a full interval after it.
+    expect(result.hearts).toBe(1);
+    expect(result.heartsRefillAt).toBe(pastRefill + 30 * 60 * 1000);
     expect(supabase.from).toHaveBeenCalledTimes(5);
     expect(supabaseAdminFrom).toHaveBeenNthCalledWith(1, "user_progress");
+    // Optimistic: only writes while the row still has what was read.
+    expect(update.calls).toContainEqual({ method: "eq", args: ["hearts", 0] });
+    expect(update.calls).toContainEqual({ method: "eq", args: ["hearts_refill_at", iso] });
+  });
+
+  it("guards a row with no timer by NULL, not by equality", async () => {
+    const supabase = progressMocks({ hearts: 3, hearts_refill_at: null });
+    const update = chainable({ data: [{ hearts: 3 }] });
+    supabaseAdminFrom.mockReturnValueOnce(update);
+    await fetchProgress({ context: ctx(supabase), data: { course: "en" } });
+    expect(update.calls).toContainEqual({ method: "is", args: ["hearts_refill_at", null] });
+  });
+
+  it("does not overwrite a heart lost between the read and the write: it shows the fresh row", async () => {
+    const pastRefill = Date.now() - 1000;
+    const supabase = progressMocks({
+      hearts: 2,
+      hearts_refill_at: new Date(pastRefill).toISOString(),
+    });
+    // The guarded update matches no row (a lose_heart changed it), so the fresh row is read instead.
+    const futureRefill = new Date(Date.now() + 20 * 60 * 1000).toISOString();
+    supabaseAdminFrom
+      .mockReturnValueOnce(chainable({ data: [] }))
+      .mockReturnValueOnce(chainable({ data: { hearts: 2, hearts_refill_at: futureRefill } }));
+
+    const result = await fetchProgress({ context: ctx(supabase), data: { course: "en" } });
+
+    expect(result.hearts).toBe(2);
+    expect(result.heartsRefillAt).toBe(new Date(futureRefill).getTime());
+    expect(supabaseAdminFrom).toHaveBeenCalledTimes(2);
   });
 });
 

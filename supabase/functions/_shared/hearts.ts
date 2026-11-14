@@ -17,17 +17,32 @@ export function resolveHeartsRefill(
   heartsRefillAt: number | null,
   now: number,
 ): HeartsState {
-  if (heartsRefillAt !== null && now >= heartsRefillAt) {
-    return { hearts: MAX_HEARTS, heartsRefillAt: null };
-  }
-  return { hearts, heartsRefillAt };
+  if (hearts >= MAX_HEARTS) return { hearts: MAX_HEARTS, heartsRefillAt: null };
+  if (heartsRefillAt === null) return { hearts, heartsRefillAt: now + HEART_REFILL_MS };
+  if (now < heartsRefillAt) return { hearts, heartsRefillAt };
+  const due = 1 + Math.floor((now - heartsRefillAt) / HEART_REFILL_MS);
+  const next = Math.min(MAX_HEARTS, hearts + due);
+  return next >= MAX_HEARTS
+    ? { hearts: MAX_HEARTS, heartsRefillAt: null }
+    : { hearts: next, heartsRefillAt: heartsRefillAt + due * HEART_REFILL_MS };
 }
 
-export function gainHearts(hearts: number, amount: number): HeartsState {
+export function loseHeart(hearts: number, heartsRefillAt: number | null, now: number): HeartsState {
+  const cur = resolveHeartsRefill(hearts, heartsRefillAt, now);
   return {
-    hearts: Math.min(MAX_HEARTS, hearts + amount),
-    heartsRefillAt: null,
+    hearts: Math.max(0, cur.hearts - 1),
+    heartsRefillAt: cur.heartsRefillAt ?? now + HEART_REFILL_MS,
   };
+}
+
+export function gainHearts(
+  hearts: number,
+  amount: number,
+  heartsRefillAt: number | null,
+  now: number,
+): HeartsState {
+  const cur = resolveHeartsRefill(hearts, heartsRefillAt, now);
+  return resolveHeartsRefill(Math.min(MAX_HEARTS, cur.hearts + amount), cur.heartsRefillAt, now);
 }
 
 export function perfectLessonBonusEarned(

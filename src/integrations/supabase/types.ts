@@ -3089,6 +3089,13 @@ export type Database = {
           type: string;
         }[];
       };
+      hearts_refill_resolve: {
+        Args: { _hearts: number; _now: string; _refill: string };
+        Returns: {
+          out_hearts: number;
+          out_refill: string;
+        }[];
+      };
       hearts_unlimited: { Args: { _user_id: string }; Returns: boolean };
       is_restricted: {
         Args: { p_kind: string; p_user: string };
