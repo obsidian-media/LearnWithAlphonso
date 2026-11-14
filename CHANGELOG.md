@@ -10,6 +10,14 @@ works now_.
 
 ## Unreleased
 
+### Redesign batches 1 and 2 on web and iOS, Help chat on web (2026-11-14; Android open)
+
+- **Build 64 (#518, 5d5c6f6e).** Uploaded to TestFlight (run 43583533811), not submitted. It is the first build signed with Associated Domains. It does not contain the redesign PRs below; they go out in the next build.
+- **iOS redesign, all merged (no simulator verification: Limrun is out of credits, CI is the compile check, the owner checks on a device in the next build).** Batch 1: #514 (443b27c8: duels, teams, path builder, review, league, friends, out of hearts) and Settings #519 (663f46fc). Batch 2: achievements with 25 badge medallions #520 (45fb836a); unlock sheet, save a word, podcast quiz in the lesson look, report reasons #525 (7b292537); update required, name prompt, AI consent, season, voice picker, sync notices #527 (40bb9553); Practice call and Hector chrome #528 (9390e1bf), which adds the call tokens `callGlass`, `callMint`, `callRecord`, `callDock` and `callEnd` to `design/tokens.json` (the call screen glass is now the hero navy, not the old green-black); placement, offline finish, weekly recap, Hector states and "See all achievements" #530 (ac25fdf6).
+- **Web redesign.** Batch 1 #522 (3bbdf7a0): duels, teams, league, friends, settings, review, goal sheet and out of hearts. Batch 2 #526 (1c0f703d): achievements with the 25 badges (now in `public/badges`), the unlock sheet, season, AI consent, name prompt, podcast quiz, save a word, report and block, placement and the campaign page. The web has no weekly recap, pending-sync notice, update gate or offline finish (native only), no friend nudge or activity feed, and no night look.
+- **Help chat on the web, Support milestone 2 (#524, b2b8efef).** `/help`, the entry points, and the AI link chip stored as a trailing `[[link:id]]` marker that is parsed only for AI rows and stripped from the export. `support-body-guard.test.ts` fails if any reader of the message body skips the parser (the staff inbox is covered). No migration. See ARCHITECTURE, "Help chat on the web".
+- **Open.** Android redesign (#529, #531 review fixes, PR C) and Support milestone 3, the staff inbox (migration `20261117100200`), are in progress.
+
 ### Merged and deployed 2026-11-14 (#511, #512, #516, #515)
 
 - **#511 (e2c85f0a):** hearts and the talk rule below; the 7 stuck learners were restored and a production check found 0 stuck. The web `fetchProgress` write is guarded against an optimistic overwrite of server hearts.
