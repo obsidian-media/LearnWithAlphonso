@@ -41,246 +41,65 @@ struct SettingsView: View {
     @State private var deleteConfirmationText = ""
     @State private var accountErrorMessage: String?
 
+    @Environment(\.alphonsoDS) private var ds
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         NavigationStack {
-            let themeRows = ForEach(AlphonsoThemeID.allCases) { themeID in
-                Button {
-                    select(themeID)
-                } label: {
-                    HStack(spacing: AlphonsoSpacing.sm + 4) {
-                        ThemeSwatch(themeID: themeID)
-                            .accessibilityHidden(true)
-                        Text(themeID.displayName)
-                            .font(AlphonsoFont.sans(15, weight: .medium))
-                            .foregroundStyle(AlphonsoColor.ink)
-                        Spacer()
-                        if selectedTheme == themeID {
-                            // Hidden, not left to be read on its own -- the
-                            // .isSelected trait below is what actually tells
-                            // VoiceOver "this is the current theme"
-                            // ("Meadow, selected"); this checkmark existing
-                            // or not is only how a sighted user sees the
-                            // same fact.
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(AlphonsoColor.moss)
-                                .accessibilityHidden(true)
-                        }
-                    }
-                }
-                .accessibilityAddTraits(selectedTheme == themeID ? .isSelected : [])
-            }
             List {
-                Section {
-                    HStack(spacing: AlphonsoSpacing.sm + 4) {
-                        // A single letter never grows in length, but its
-                        // FONT does with Dynamic Type -- a fixed 40x40
-                        // frame with the letter as an .overlay doesn't clip
-                        // it (overlay isn't clipped to its base shape by
-                        // default), so it would spill outside the circle
-                        // at large accessibility sizes instead. Background,
-                        // not overlay, plus a minimum (not fixed) frame on
-                        // the TEXT lets the circle grow to actually contain it.
-                        //
-                        // Hidden from VoiceOver entirely: the color is
-                        // decorative (no meaning a VoiceOver user needs),
-                        // and the name it's paired with is already
-                        // announced by the TextField right below it.
-                        // The learner's animal or initial (visual round 6, part 3); hidden from VoiceOver, the name
-                        // is announced by the field below.
-                        ProfileAvatarView(seed: avatarSeed.isEmpty ? "a" : avatarSeed, name: displayName, size: 44)
-                        Button("Change picture") { isPickingAvatar = true }
-                            .accessibilityHint("Choose an animal or your initial")
-                    }
-                    TextField("Display name", text: $displayName)
-                        .font(AlphonsoFont.sans(15))
-                        .onSubmit { Task { await saveDisplayName() } }
-                    Button {
-                        Task { await saveDisplayName() }
-                    } label: {
-                        if isSavingName {
-                            ProgressView().tint(AlphonsoColor.moss)
-                        } else {
-                            Text("Save Name")
-                        }
-                    }
-                    .font(AlphonsoFont.sans(15, weight: .medium))
-                    .disabled(isSavingName || displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .accessibilityLabel(isSavingName ? "Saving name" : "Save Name")
-                    if let identityErrorMessage {
-                        Text(identityErrorMessage)
-                            .font(AlphonsoFont.sans(13))
-                            .foregroundStyle(AlphonsoColor.destructive)
-                    }
-                } header: {
-                    Text("Profile")
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
-                } footer: {
-                    // Visible on LeaderboardView, FriendsView, and DuelsView
-                    // (see AvatarColor.swift's own doc comment) -- this is
-                    // the same "shown to strangers" surface the report/block
-                    // menu on those screens already exists for.
-                    Text("Your name and picture are visible to other learners on leaderboards, friends, and duels.")
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                }
-                .listRowBackground(AlphonsoColor.parchment)
+                DSOverline("Profile").dsListRow(top: AlphonsoDS.Space.s2, bottom: AlphonsoDS.Space.s2)
+                profileCard.dsListRow()
 
-                Section {
-                    themeRows
-                } header: {
-                    Text("Theme")
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
-                }
-                .listRowBackground(AlphonsoColor.parchment)
+                DSOverline("Theme").dsListRow(bottom: AlphonsoDS.Space.s2)
+                themeCard.dsListRow()
 
-                Section {
-                    Toggle(isOn: $showAlphonso) {
-                        Text("Show Alphonso while practicing")
-                            .font(AlphonsoFont.sans(15, weight: .medium))
-                    }
-                    .tint(AlphonsoColor.moss)
-                    .accessibilityIdentifier("showAlphonsoToggle")
-                } header: {
-                    Text("Practice")
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
-                } footer: {
-                    Text("A little animated Alphonso listens and talks with you in Practice speaking, and Hector on his tab. Off keeps the classic screen.")
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                }
-                .listRowBackground(AlphonsoColor.parchment)
+                DSOverline("Practice").dsListRow(bottom: AlphonsoDS.Space.s2)
+                practiceCard.dsListRow()
 
                 if let label = entitlementStore?.proLabel {
-                    Section {
-                        LabeledContent("Alphonso Pro", value: label)
+                    DSOverline("Alphonso Pro").dsListRow(bottom: AlphonsoDS.Space.s2)
+                    DSCard {
+                        HStack(spacing: AlphonsoDS.Space.s3) {
+                            Icon3DView(emoji: "✨", size: AlphonsoDS.Space.s8)
+                            Text("Alphonso Pro").dsText(.headline).foregroundStyle(ds.ink)
+                            Spacer(minLength: AlphonsoDS.Space.s2)
+                            DSPill(text: label, tone: .good)
+                        }
+                        .accessibilityElement(children: .combine)
                     }
+                    .dsListRow()
                 }
 
-                SoundEffectsSettingsSection()
+                DSOverline("Explain in my language").dsListRow(bottom: AlphonsoDS.Space.s2)
+                ExplainSettingsSection(session: session).dsListRow()
 
-                ExplainSettingsSection(session: session)
+                DSOverline("Voices").dsListRow(bottom: AlphonsoDS.Space.s2)
+                VoicesSettingsSection(session: session).dsListRow()
 
-                VoicesSettingsSection(session: session)
-
-                AnalyticsSettingsSection()
-
-                Section {
-                    if aiConsent.status == .unavailable {
-                        // The setting could not be read: say so and offer a retry, never a switch that reads "off".
-                        HStack {
-                            Text(AIConsentCopy.checkFailedTitle)
-                                .font(AlphonsoFont.sans(15))
-                            Spacer()
-                            Button(AIConsentCopy.retry) { Task { await aiConsent.refresh() } }
-                                .font(AlphonsoFont.sans(14, weight: .semiBold))
-                                .tint(AlphonsoColor.moss)
-                        }
-                    } else {
-                        Toggle(isOn: Binding(
-                            get: { aiConsent.isGranted },
-                            set: { wantsOn in
-                                if wantsOn {
-                                    // Turning it on is informed consent: the same sheet, not a silent write.
-                                    showAIDisclosure = true
-                                } else {
-                                    Task { await withdrawAIConsent() }
-                                }
-                            }
-                        )) {
-                            Text(AIConsentCopy.settingsTitle)
-                                .font(AlphonsoFont.sans(15, weight: .medium))
-                        }
-                        .tint(AlphonsoColor.moss)
-                        .disabled(isUpdatingAIConsent || aiConsent.status == .loading)
-                    }
-                    if let aiConsentErrorMessage {
-                        Text(aiConsentErrorMessage)
-                            .font(AlphonsoFont.sans(13))
-                            .foregroundStyle(AlphonsoColor.destructive)
-                    }
-                } header: {
-                    Text(AIConsentCopy.settingsTitle)
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
-                } footer: {
-                    Text(AIConsentCopy.settingsFooter)
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                if Analytics.isAvailable {
+                    DSOverline("Analytics").dsListRow(bottom: AlphonsoDS.Space.s2)
+                    AnalyticsSettingsSection().dsListRow()
                 }
-                .listRowBackground(AlphonsoColor.parchment)
 
-                Section {
-                    Button {
-                        Task { await exportData() }
-                    } label: {
-                        if isExportingData {
-                            ProgressView().tint(AlphonsoColor.moss)
-                        } else {
-                            Text("Export My Data")
-                        }
-                    }
-                    .font(AlphonsoFont.sans(15, weight: .medium))
-                    .disabled(isExportingData || isDeletingAccount)
-                    .accessibilityLabel(isExportingData ? "Exporting your data" : "Export My Data")
+                DSOverline(AIConsentCopy.settingsTitle).dsListRow(bottom: AlphonsoDS.Space.s2)
+                aiConsentCard.dsListRow()
 
-                    Button(role: .destructive) {
-                        deleteConfirmationText = ""
-                        isPresentingDeleteConfirmation = true
-                    } label: {
-                        if isDeletingAccount {
-                            ProgressView().tint(AlphonsoColor.destructive)
-                        } else {
-                            Text("Delete My Account")
-                        }
-                    }
-                    .font(AlphonsoFont.sans(15, weight: .medium))
-                    .disabled(isExportingData || isDeletingAccount)
-                    .accessibilityLabel(isDeletingAccount ? "Deleting your account" : "Delete My Account")
-
-                    if let accountErrorMessage {
-                        Text(accountErrorMessage)
-                            .font(AlphonsoFont.sans(13))
-                            .foregroundStyle(AlphonsoColor.destructive)
-                    }
-                } header: {
-                    Text("Account")
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.ember)
-                } footer: {
-                    Text("Download the data in your Alphonso account, or permanently erase it.")
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                }
-                .listRowBackground(AlphonsoColor.parchment)
+                DSOverline("Account").dsListRow(bottom: AlphonsoDS.Space.s2)
+                accountCard.dsListRow()
 
                 // Apple expects a privacy policy to be "easily accessible"
                 // in the app itself, not just reachable from the paywall or
                 // the AI-disclosure sheet -- the only two places it existed
                 // before this (found in a 2026-09-28 audit). Settings is
                 // the conventional place a reviewer or user looks first.
-                Section {
-                    Link("Privacy Policy", destination: AppConfig.apiBaseURL.appendingPathComponent("privacy"))
-                    Link("Terms of Use", destination: AppConfig.apiBaseURL.appendingPathComponent("terms"))
-                    NavigationLink("Acknowledgements") { AcknowledgementsView() }
-                }
-                .listRowBackground(AlphonsoColor.parchment)
+                linksCard.dsListRow()
 
-                Section {
-                    Button("Sign out", role: .destructive) { session.signOut() }
-                        .font(AlphonsoFont.sans(15, weight: .medium))
-                }
-                .listRowBackground(AlphonsoColor.parchment)
+                Button("Sign out", role: .destructive) { session.signOut() }
+                    .buttonStyle(.dsButton(.danger, fullWidth: false))
+                    .frame(maxWidth: .infinity)
+                    .dsListRow()
             }
-            .scrollContentBackground(.hidden)
-            .background(AlphonsoColor.surface)
+            .dsSceneList(.profile)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .task { await loadIdentity() }
@@ -312,7 +131,7 @@ struct SettingsView: View {
                 Button("Delete Forever", role: .destructive) {
                     Task { await deleteAccount() }
                 }
-                .disabled(deleteConfirmationText != "DELETE")
+                .disabled(!SettingsPresentation.canConfirmDelete(typed: deleteConfirmationText))
             } message: {
                 // Apple bills and owns subscription cancellation
                 // (Guideline 3.1.2); deleting the Alphonso account does not
@@ -340,9 +159,179 @@ struct SettingsView: View {
                 """)
             }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .sheet(isPresented: $isPickingAvatar) {
             AvatarPickerSheet(session: session, name: displayName, current: avatarSeed) { avatarSeed = $0 }
+        }
+    }
+
+    // MARK: - Cards
+
+    private var profileCard: some View {
+        DSCard {
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                // The learner's animal or initial (visual round 6, part 3); hidden from VoiceOver, the name
+                // is announced by the field below.
+                ProfileAvatarView(seed: avatarSeed.isEmpty ? "a" : avatarSeed, name: displayName, size: AlphonsoDS.Space.s12)
+                Button("Change picture") { isPickingAvatar = true }
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                    .accessibilityHint("Choose an animal or your initial")
+                Spacer(minLength: 0)
+            }
+            TextField("Display name", text: $displayName)
+                .dsField()
+                .onSubmit { Task { await saveDisplayName() } }
+            Button {
+                Task { await saveDisplayName() }
+            } label: {
+                if isSavingName {
+                    ProgressView().tint(ds.onAction)
+                } else {
+                    Text("Save Name")
+                }
+            }
+            .buttonStyle(.dsButton(.primary))
+            .disabled(!SettingsPresentation.canSaveName(displayName, isSaving: isSavingName))
+            .accessibilityLabel(isSavingName ? "Saving name" : "Save Name")
+            if let identityErrorMessage {
+                Text(identityErrorMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
+            }
+            // Visible on LeaderboardView, FriendsView, and DuelsView
+            // (see AvatarColor.swift's own doc comment) -- this is
+            // the same "shown to strangers" surface the report/block
+            // menu on those screens already exists for.
+            Text("Your name and picture are visible to other learners on leaderboards, friends, and duels.")
+                .dsText(.caption).foregroundStyle(ds.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var themeCard: some View {
+        DSCard {
+            let columns = [GridItem(.flexible(), spacing: AlphonsoDS.Space.s2), GridItem(.flexible(), spacing: AlphonsoDS.Space.s2)]
+            LazyVGrid(columns: columns, spacing: AlphonsoDS.Space.s2) {
+                ForEach(AlphonsoThemeID.allCases) { themeID in
+                    // The chip carries the .isSelected trait ("Meadow, selected"); the filled border and tint are
+                    // only how a sighted learner sees the same fact.
+                    DSChip(label: themeID.displayName, selected: selectedTheme == themeID, accessibilityText: nil, action: {
+                        select(themeID)
+                    }, leading: {
+                        ThemeSwatch(themeID: themeID).accessibilityHidden(true)
+                    })
+                }
+            }
+        }
+    }
+
+    private var practiceCard: some View {
+        DSCard {
+            Toggle(isOn: $showAlphonso) {
+                SettingsToggleLabel(
+                    title: "Show Alphonso while practicing",
+                    subtitle: "A little animated Alphonso listens and talks with you in Practice speaking, and Hector on his tab. Off keeps the classic screen.")
+            }
+            .tint(ds.choice)
+            .accessibilityIdentifier("showAlphonsoToggle")
+            SettingsDivider()
+            SoundEffectsSettingsSection()
+        }
+    }
+
+    private var aiConsentCard: some View {
+        DSCard {
+            if aiConsent.status == .unavailable {
+                // The setting could not be read: say so and offer a retry, never a switch that reads "off".
+                HStack(spacing: AlphonsoDS.Space.s3) {
+                    Text(AIConsentCopy.checkFailedTitle).dsText(.headline).foregroundStyle(ds.ink)
+                    Spacer(minLength: AlphonsoDS.Space.s2)
+                    Button(AIConsentCopy.retry) { Task { await aiConsent.refresh() } }
+                        .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                }
+            } else {
+                Toggle(isOn: Binding(
+                    get: { aiConsent.isGranted },
+                    set: { wantsOn in
+                        if wantsOn {
+                            // Turning it on is informed consent: the same sheet, not a silent write.
+                            showAIDisclosure = true
+                        } else {
+                            Task { await withdrawAIConsent() }
+                        }
+                    }
+                )) {
+                    SettingsToggleLabel(title: AIConsentCopy.settingsTitle, subtitle: AIConsentCopy.settingsFooter)
+                }
+                .tint(ds.choice)
+                .disabled(isUpdatingAIConsent || aiConsent.status == .loading)
+            }
+            if let aiConsentErrorMessage {
+                Text(aiConsentErrorMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
+            }
+        }
+    }
+
+    private var accountCard: some View {
+        let free = SettingsPresentation.canStartAccountAction(isExporting: isExportingData, isDeleting: isDeletingAccount)
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: AlphonsoDS.Space.s2))
+            : AnyLayout(HStackLayout(spacing: AlphonsoDS.Space.s3))
+        return DSCard {
+            Text("Download the data in your Alphonso account, or permanently erase it.")
+                .dsText(.footnote).foregroundStyle(ds.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
+            layout {
+                Button {
+                    Task { await exportData() }
+                } label: {
+                    if isExportingData {
+                        ProgressView().tint(ds.brand)
+                    } else {
+                        Text("Export My Data")
+                    }
+                }
+                .buttonStyle(.dsButton(.secondary, compact: true))
+                .disabled(!free)
+                .accessibilityLabel(isExportingData ? "Exporting your data" : "Export My Data")
+
+                Button(role: .destructive) {
+                    deleteConfirmationText = ""
+                    isPresentingDeleteConfirmation = true
+                } label: {
+                    if isDeletingAccount {
+                        ProgressView().tint(ds.wrongInk)
+                    } else {
+                        Text("Delete My Account")
+                    }
+                }
+                .buttonStyle(.dsButton(.danger, compact: true))
+                .disabled(!free)
+                .accessibilityLabel(isDeletingAccount ? "Deleting your account" : "Delete My Account")
+            }
+            if let accountErrorMessage {
+                Text(accountErrorMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
+            }
+        }
+    }
+
+    private var linksCard: some View {
+        DSCard(spacing: AlphonsoDS.Space.s1) {
+            Link(destination: AppConfig.apiBaseURL.appendingPathComponent("privacy")) {
+                SettingsNavLabel(title: "Privacy Policy", trailing: "arrow.up.right")
+            }
+            SettingsDivider()
+            Link(destination: AppConfig.apiBaseURL.appendingPathComponent("terms")) {
+                SettingsNavLabel(title: "Terms of Use", trailing: "arrow.up.right")
+            }
+            SettingsDivider()
+            NavigationLink("Acknowledgements") { AcknowledgementsView() }
+                .dsText(.headline)
+                .foregroundStyle(ds.ink)
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+                .overlay(alignment: .trailing) {
+                    Image(systemName: "chevron.right").dsText(.caption).foregroundStyle(ds.inkFaint)
+                        .accessibilityHidden(true)
+                }
         }
     }
 
@@ -477,6 +466,7 @@ private struct AccountExportDocument: FileDocument {
 
 private struct ThemeSwatch: View {
     let themeID: AlphonsoThemeID
+    @Environment(\.alphonsoDS) private var ds
 
     private var palette: AlphonsoPalette {
         AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.royal]!
@@ -489,7 +479,7 @@ private struct ThemeSwatch: View {
                 .trim(from: 0, to: 0.5)
                 .fill(palette.moss)
         }
-        .frame(width: 28, height: 28)
-        .overlay(Circle().strokeBorder(AlphonsoColor.hairline, lineWidth: 1))
+        .frame(width: AlphonsoDS.Space.s6, height: AlphonsoDS.Space.s6)
+        .overlay(Circle().strokeBorder(ds.line, lineWidth: 1))
     }
 }
