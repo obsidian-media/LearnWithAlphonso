@@ -2094,6 +2094,127 @@ export type Database = {
         };
         Relationships: [];
       };
+      support_conversations: {
+        Row: {
+          ai_summary: string | null;
+          assigned_to: string | null;
+          channel: string;
+          created_at: string;
+          handoff_reason: string | null;
+          id: string;
+          learner_last_read_at: string | null;
+          solved_at: string | null;
+          status: string;
+          topic: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          ai_summary?: string | null;
+          assigned_to?: string | null;
+          channel?: string;
+          created_at?: string;
+          handoff_reason?: string | null;
+          id?: string;
+          learner_last_read_at?: string | null;
+          solved_at?: string | null;
+          status?: string;
+          topic?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          ai_summary?: string | null;
+          assigned_to?: string | null;
+          channel?: string;
+          created_at?: string;
+          handoff_reason?: string | null;
+          id?: string;
+          learner_last_read_at?: string | null;
+          solved_at?: string | null;
+          status?: string;
+          topic?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      support_messages: {
+        Row: {
+          ai_facts: Json | null;
+          author_id: string | null;
+          author_kind: string;
+          body: string;
+          client_id: string | null;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          user_id: string;
+        };
+        Insert: {
+          ai_facts?: Json | null;
+          author_id?: string | null;
+          author_kind: string;
+          body: string;
+          client_id?: string | null;
+          conversation_id: string;
+          created_at?: string;
+          id?: never;
+          user_id: string;
+        };
+        Update: {
+          ai_facts?: Json | null;
+          author_id?: string | null;
+          author_kind?: string;
+          body?: string;
+          client_id?: string | null;
+          conversation_id?: string;
+          created_at?: string;
+          id?: never;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "support_conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      support_notes: {
+        Row: {
+          author_id: string;
+          body: string;
+          conversation_id: string;
+          created_at: string;
+          id: string;
+        };
+        Insert: {
+          author_id: string;
+          body: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: string;
+        };
+        Update: {
+          author_id?: string;
+          body?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_notes_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "support_conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       team_kicks: {
         Row: {
           kicked_at: string;
@@ -3457,6 +3578,39 @@ export type Database = {
           _user_id: string;
         };
         Returns: Json;
+      };
+      support_add_ai_message: {
+        Args: {
+          p_body: string;
+          p_conversation: string;
+          p_facts: Json;
+          p_handoff: Json;
+        };
+        Returns: number;
+      };
+      support_add_learner_message: {
+        Args: {
+          p_body: string;
+          p_client_id: string;
+          p_conversation: string;
+          p_user: string;
+        };
+        Returns: number;
+      };
+      support_handoff: {
+        Args: {
+          p_conversation: string;
+          p_reason: string;
+          p_summary: string;
+          p_topic: string;
+          p_user: string;
+        };
+        Returns: boolean;
+      };
+      support_learner_view: { Args: { p_user: string }; Returns: Json };
+      support_open_conversation: {
+        Args: { p_channel: string; p_user: string };
+        Returns: string;
       };
       team_name_problem: { Args: { _name: string }; Returns: string };
       weekly_xp: {
