@@ -12,7 +12,7 @@ iOS session). Files land in the `android-screenshots` artifact as
 | 1 | 01-learn.png | Learn tab | Status header with streak and hearts, course picker, the first CEFR band with completion dots |
 | 2 | 02-lesson.png | Lesson player | A multiple-choice question with choices and the Check button |
 | 3 | 03-review.png | Review queue | A due item or the empty-queue state with the clear bonus |
-| 4 | 04-listen.png | Listen tab | Folder tree with at least one episode row and the download icon |
+| 4 | 04-listen.png | Library tab | Folder tree with at least one episode row and the download icon |
 | 5 | 05-practice.png | Practice tab | Scenario cards and the hold-to-talk hint |
 | 6 | 06-hector.png | Hector tab | The conversation screen (demo account is Pro) |
 | 7 | 07-profile.png | Profile hub | League, Friends and Achievements entries |

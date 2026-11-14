@@ -10,7 +10,7 @@ works now_.
 
 ## Unreleased
 
-### Library tab with a Watch shelf (2026-11-14)
+### Library tab with a Watch shelf (#499, merged 2026-11-13; goes out in build 63)
 
 The Listen tab is now **Library** on web, iOS and Android (route `/listen`, deep links and stored ids unchanged). It holds the
 podcasts and a **Watch** shelf of short vertical Alphonso videos for the learner's course (hidden when there are none). A video
@@ -18,6 +18,8 @@ opens in a captioned player sheet (captions on by default, scrubber, speed) and 
 item; watching is recorded per user (`video_watches`) and videos are a new stop kind on Your learning path. Migration
 `20261115100000_videos_watch_shelf.sql` adds `videos`, `video_watches`, `save_video_progress()` and the public `videos` bucket.
 The owner uploads and publishes videos with `scripts/video-tool.ts`; the pipeline that makes them is `docs/VIDEO-PLAYBOOK.md` (tools in `scripts/video/`). Analytics: `video_started`, `video_completed`.
+
+Details: the player is a captioned `<video>` on web, an `AVPlayer` with a WebVTT parser drawing the cues on iOS, and Media3 with the same parser on Android; opening a video pauses the podcast player, `/listen?video=<id>` reopens one, and the shelf shows even when there are no podcasts. `save_video_progress` is the only writer of `video_watches` (clients can read and delete their own rows; deleted with the account and in the data export). `scripts/video-tool.ts` has `add` (row unpublished), `publish` (refuses missing captions or objects) and `unpublish`, all dry runs without `--confirm`. The privacy page now lists video progress with the listening positions. Production: the migration is deployed and the first three videos are uploaded and published as a temporary choice by the owner (they are unpublished after build 63 is checked unless kept). Not run on a device.
 
 ### Your learning path (2026-11-13)
 

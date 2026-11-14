@@ -25,7 +25,7 @@ into the credential entry itself).
 
 1. Sign in with the demo email and the emailed code.
 2. Learn tab: CEFR bands, lessons, the review row. Any lesson runs end to end; speak questions ask for the microphone on first use and fall back to typing if denied.
-3. Listen tab: podcast folders, an episode plays with the screen locked and shows lock-screen controls; the download icon stores an episode for offline use.
+3. Library tab: podcast folders, an episode plays with the screen locked and shows lock-screen controls; the download icon stores an episode for offline use.
 4. Practice tab: scenarios and campaigns use the microphone; the first AI screen shows the AI consent sheet (Allow or Not now); the choice is the account's, so allow it once for the review account. The demo seed resets it, so expect the sheet on the first AI screen of a fresh run.
    The podcast audio is AI-narrated (Deepgram Aura-2 voices); say so in the notes.
    AI replies can be reported in the app: long-press a reply in Hector, Practice or a Campaign (TalkBack: the "Report this response" action), choose a reason, and it reaches our moderation queue (Google Play AI-generated content policy).

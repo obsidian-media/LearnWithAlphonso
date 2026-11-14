@@ -8,7 +8,7 @@ Where this file and the code disagree, the code wins; fix this file.
 
 | | |
 | --- | --- |
-| **What** | A short list of product events (`app_open`, `onboarding_step`, `sign_in_completed`, `lesson_started`, `lesson_completed` with a score band, `practice_call_started` and `completed` with the scenario and stars, `podcast_played` and `completed`, `hector_opened`, `paywall_viewed`, `purchase_started`; `explain_requested` and `path_built` are reserved and not sent). Each event allows only listed properties, and a value is kept only if it is a short identifier or a small number, so emails and free text are dropped. Campaign scene calls are not tracked. |
+| **What** | A short list of product events (`app_open`, `onboarding_step`, `sign_in_completed`, `lesson_started`, `lesson_completed` with a score band, `practice_call_started` and `completed` with the scenario and stars, `podcast_played` and `completed`, `video_started` and `video_completed` (video id and course only), `hector_opened`, `paywall_viewed`, `purchase_started`; `explain_requested` and `path_built` are reserved and not sent). Each event allows only listed properties, and a value is kept only if it is a short identifier or a small number, so emails and free text are dropped. Campaign scene calls are not tracked. |
 | **Identity** | Anonymous: `identify` is never called, so no name, email or account id. A random per-install id is kept (web: localStorage; apps: the SDK's own store). `person_profiles` is `identified_only`, so no person profile is created. |
 | **Never** | Autocapture, screen or lifecycle capture, page views, session replay, surveys, feature flags. |
 | **Consent** | Off by default everywhere. Nothing is loaded, created or sent before the learner agrees: web via the cookie banner ("Accept all" includes anonymous usage data, "Essential only" does not) or the Settings switch "Share anonymous usage data"; iOS and Android via a neutral two-button step at the start of the after-sign-in flow (only in builds that carry a key and only if not answered yet) plus the same Settings switch. Browsers that send Do Not Track are respected. Devices of learners under 13 never send, even with a stored opt-in. |
@@ -55,3 +55,15 @@ Where this file and the code disagree, the code wins; fix this file.
 ## Podcast quiz review items (#487)
 
 A missed podcast question is stored as a `review_items` row (prompt, choices, answer index, the correct answer as the explanation) so it comes back in spaced review. It is the learner's own row, in the export, removed with the account, written only by `submit_podcast_quiz`.
+
+## Watch shelf video progress (#499)
+
+| | |
+| --- | --- |
+| **What** | Per video the learner opens: how many seconds in they are (`progress_seconds`), when they finished it (`completed_at`) and when it last changed (`updated_at`), in `video_watches`. The videos themselves (`videos`) are the same for everyone and hold no personal data. |
+| **Why** | To resume where they stopped, to mark a video finished and to place videos on Your learning path. |
+| **Written by** | Only `save_video_progress`, for the signed-in caller and only a published video. Clients have SELECT and DELETE on their own rows and no INSERT or UPDATE. |
+| **Export** | In the export (`video_watches` is listed in `src/lib/account.functions.ts`). |
+| **Deletion** | `ON DELETE CASCADE` on `user_id`, so account deletion removes it; a learner can also delete their own rows. |
+| **Analytics** | `video_started` and `video_completed` carry only `video_id` and `course`, anonymous and only after the learner opted in (see the first section). |
+| **Policy text** | `src/routes/privacy.tsx` lists video progress with the listening positions. |
