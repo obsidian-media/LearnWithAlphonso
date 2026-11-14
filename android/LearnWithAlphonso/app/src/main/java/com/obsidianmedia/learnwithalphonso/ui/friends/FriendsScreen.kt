@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.friends
 
+import com.obsidianmedia.learnwithalphonso.core.logic.InviteLink
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -68,17 +69,17 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
         ToastBanner(state.toast, onClear = vm::clearToast)
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             SectionCard("Invite a friend") {
-                Text("Share your link. When they open it, you're automatically friends.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
+                Text("Share your link. When they open it and tap Add friend, you're friends.", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
                 state.inviteLink?.let { link ->
                     AlphonsoPrimaryButton("Share invite link", fullWidth = false, onClick = {
                         val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, link) }
                         context.startActivity(Intent.createChooser(send, "Share invite link"))
                     })
                 }
-                Text("Got a code from a friend?", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
+                Text("Got a link or code from a friend?", style = MaterialTheme.typography.labelMedium, color = palette.inkSoft)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = manualCode, onValueChange = { manualCode = it }, label = { Text("Friend code") }, singleLine = true, modifier = Modifier.weight(1f))
-                    AlphonsoSecondaryButton("Add", onClick = { onEnterCode(manualCode.trim()); manualCode = "" }, enabled = manualCode.isNotBlank(), fullWidth = false)
+                    OutlinedTextField(value = manualCode, onValueChange = { manualCode = it }, label = { Text("Friend link or code") }, singleLine = true, modifier = Modifier.weight(1f))
+                    AlphonsoSecondaryButton("Add", onClick = { InviteLink.codeFromEntry(manualCode)?.let { onEnterCode(it); manualCode = "" } }, enabled = InviteLink.codeFromEntry(manualCode) != null, fullWidth = false)
                 }
             }
             BuddySection(buddyVm, state.friends, knownAgeRange, onReport = { reportTarget = it })

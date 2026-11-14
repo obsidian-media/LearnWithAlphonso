@@ -28,6 +28,28 @@ describe("_authenticated route guard", () => {
     }
   });
 
+  it("keeps the page asked for as `next`, so an invite link survives sign-in (and opens the sign-up form)", async () => {
+    getUser.mockResolvedValue({ data: { user: null }, error: null });
+    const redirectFor = async (href: string) => {
+      try {
+        await Route.options.beforeLoad!({
+          location: { href, pathname: href.split("?")[0] },
+        } as never);
+      } catch (err) {
+        return (err as { options: { to: string; search?: unknown } }).options;
+      }
+      throw new Error("no redirect");
+    };
+    expect(await redirectFor("/invite/29d081151d67")).toMatchObject({
+      to: "/auth",
+      search: { next: "/invite/29d081151d67", mode: "signup" },
+    });
+    expect(await redirectFor("/profile/friends?x=1")).toMatchObject({
+      to: "/auth",
+      search: { next: "/profile/friends?x=1" },
+    });
+  });
+
   it("throws a redirect when Supabase returns an error", async () => {
     getUser.mockResolvedValue({ data: { user: null }, error: new Error("expired") });
     await expect(Route.options.beforeLoad!({} as never)).rejects.toSatisfy((err: unknown) =>

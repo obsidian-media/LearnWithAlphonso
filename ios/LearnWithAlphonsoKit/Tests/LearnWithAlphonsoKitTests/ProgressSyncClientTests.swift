@@ -650,6 +650,32 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(result.message, "cannot invite yourself")
     }
 
+    // MARK: - getFriendInvitePreview
+
+    func testGetFriendInvitePreviewPostsTheCodeAndReadsTheRow() async throws {
+        let captured = TestCapture<URLRequest?>(nil)
+        let client = makeClient { request in
+            captured.value = request
+            return self.jsonResponse(for: request.url!, body: [["ok": true, "is_self": false, "display_name": "Ada", "avatar_seed": "1"]])
+        }
+
+        let preview = try await client.getFriendInvitePreview(code: "aB3xY9")
+
+        XCTAssertEqual(preview, .init(isFound: true, isSelf: false, displayName: "Ada"))
+        let request = try XCTUnwrap(captured.value)
+        XCTAssertTrue(request.url!.absoluteString.hasSuffix("/rest/v1/rpc/get_friend_invite_preview"))
+        let payload = try JSONSerialization.jsonObject(with: try XCTUnwrap(request.httpBody)) as! [String: Any]
+        XCTAssertEqual(payload["_code"] as? String, "aB3xY9")
+    }
+
+    func testGetFriendInvitePreviewReportsAnUnknownCodeAsNotFound() async throws {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: [["ok": false, "is_self": false]])
+        }
+        let preview = try await client.getFriendInvitePreview(code: "zzzzzz")
+        XCTAssertFalse(preview.isFound)
+    }
+
     // MARK: - removeFriend
 
     func testRemoveFriendPostsTheFriendIdAndReturnsTheResult() async throws {

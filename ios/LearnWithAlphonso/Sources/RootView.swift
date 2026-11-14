@@ -66,6 +66,8 @@ struct RootView: View {
     @State private var selectedTab = RootTab.learn
     /// Path stops that live in another tab (podcast, talk, campaign scene) travel through this.
     @State private var pathDeepLink = PathDeepLink()
+    /// A friend invite from a Universal Link or the Friends screen paste field (FriendInviteAccept.swift).
+    @Environment(PendingInvite.self) private var pendingInvite
 
     var body: some View {
         // Group wraps every branch so .preferredColorScheme below covers
@@ -174,6 +176,8 @@ struct RootView: View {
                             }
                         }
                     }
+                    // After the covers: an invite waits until none is on screen, then appears over the tabs.
+                    .friendInviteSheet(pending: pendingInvite, session: session, isReady: onboardingChecked && firstRunCover == nil && onboarding == nil)
                     .task {
                         // The player builds a client per call rather than
                         // holding one, because PodcastClient cannot refresh the

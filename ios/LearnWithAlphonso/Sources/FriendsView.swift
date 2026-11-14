@@ -11,14 +11,8 @@ import LearnWithAlphonsoKit
 /// see NudgeCooldownCache's doc comment and ARCHITECTURE.md's note on what
 /// a real V3 push-based version needs).
 ///
-/// Accepting an invite someone sent *you* is out of scope for this slice:
-/// Universal Links are deliberately deferred (see
-/// docs/superpowers/specs/2026-09-19-ios-friends-design.md), so a friend's
-/// invite link opens in Safari and hits the existing (already-working) web
-/// route instead. Friends made that way still show up here regardless --
-/// get_friends_progress reads the same backend/account the web app writes
-/// to, so this view is at minimum a *read* surface for friends made
-/// anywhere, even with no accept-flow UI on iOS yet.
+/// Accepting an invite someone sent *you*: the link opens the app (Universal Link, apple-app-site-association) on
+/// FriendInviteAccept.swift's sheet, and a link that opened in the browser can be pasted below the share button.
 struct FriendsView: View {
     let session: Session
 
@@ -32,6 +26,8 @@ struct FriendsView: View {
     @State private var currentBuddyID: String?
     @State private var reportTarget: SocialTarget?
     @State private var inviteLink: URL?
+    @State private var pastedInvite = ""
+    @Environment(PendingInvite.self) private var pendingInvite
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -45,7 +41,7 @@ struct FriendsView: View {
                             Text("Invite a friend")
                                 .font(AlphonsoFont.display(17, weight: .semiBold))
                                 .foregroundStyle(AlphonsoColor.ink)
-                            Text("Share your link — when they open it, you're automatically friends.")
+                            Text("Share your link. When they open it and tap Add friend, you're friends.")
                                 .font(AlphonsoFont.sans(12))
                                 .foregroundStyle(AlphonsoColor.inkSoft)
                             if let inviteLink {
@@ -54,6 +50,18 @@ struct FriendsView: View {
                                 }
                                 .buttonStyle(.alphonsoPrimary(fullWidth: false))
                             }
+                            // A friend's link that opened in the browser instead of the app can be pasted here.
+                            HStack {
+                                TextField("Paste a friend's link", text: $pastedInvite)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .submitLabel(.go)
+                                    .onSubmit(openPastedInvite)
+                                Button("Open", action: openPastedInvite)
+                                    .buttonStyle(.borderless)
+                                    .disabled(FriendInviteLink.code(fromEntry: pastedInvite) == nil)
+                            }
+                            .padding(.top, AlphonsoSpacing.xs)
                         }
                         .padding(.vertical, 4)
                     }
@@ -130,6 +138,10 @@ struct FriendsView: View {
         }
         .tint(AlphonsoColor.moss)
         .task { await loadAll() }
+        // The invite sheet closing (an accept) means the list may have a new friend.
+        .onChange(of: pendingInvite.code) { old, new in
+            if old != nil, new == nil { Task { await loadAll() } }
+        }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 Task { await checkForNudges() }
@@ -213,6 +225,12 @@ struct FriendsView: View {
         }
         isLoading = false
         await checkForNudges()
+    }
+
+    private func openPastedInvite() {
+        guard let code = FriendInviteLink.code(fromEntry: pastedInvite) else { return }
+        pastedInvite = ""
+        pendingInvite.code = code
     }
 
     private func nudge(_ friend: FriendProgress) async {
