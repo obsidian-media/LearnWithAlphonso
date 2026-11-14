@@ -150,13 +150,19 @@ function DuelsPage() {
                 </div>
               </div>
               <div className="flex gap-2">
-                <DsButton small className="flex-1" onClick={() => handleRespond(d.duelId, true)}>
+                <DsButton
+                  small
+                  className="flex-1"
+                  aria-label={`Accept the ${d.course} challenge`}
+                  onClick={() => handleRespond(d.duelId, true)}
+                >
                   Accept
                 </DsButton>
                 <DsButton
                   small
                   variant="secondary"
                   className="flex-1"
+                  aria-label={`Decline the ${d.course} challenge`}
                   onClick={() => handleRespond(d.duelId, false)}
                 >
                   Decline

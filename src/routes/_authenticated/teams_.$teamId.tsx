@@ -234,7 +234,7 @@ function TeamDetailPage() {
                       type="button"
                       onClick={() => setKickId(m.userId)}
                       aria-label={`Remove ${m.displayName} from the team`}
-                      className="grid size-9 shrink-0 place-items-center rounded-full text-ds-wrong-ink hover:bg-ds-wrong-tint"
+                      className="grid size-11 shrink-0 place-items-center rounded-full text-ds-wrong-ink hover:bg-ds-wrong-tint"
                     >
                       ✕
                     </button>

@@ -113,7 +113,7 @@ describe("Friends page", () => {
     getMyFriendCode.mockResolvedValue("me-code");
     renderPage();
 
-    expect(await screen.findAllByText("1 friend")).toHaveLength(2);
+    expect(await screen.findByText("1 friend")).toBeInTheDocument();
     expect(screen.getByText("Ada")).toBeInTheDocument();
     expect(screen.getByText("🔥 5-day streak")).toBeInTheDocument();
     expect(screen.getByText("120")).toBeInTheDocument();
@@ -126,7 +126,7 @@ describe("Friends page", () => {
     ]);
     getMyFriendCode.mockResolvedValue("me-code");
     renderPage();
-    expect(await screen.findAllByText("2 friends")).toHaveLength(2);
+    expect(await screen.findByText("2 friends")).toBeInTheDocument();
   });
 
   it("disables the invite button until the profile has loaded", async () => {
@@ -191,6 +191,6 @@ describe("Friends page", () => {
     await waitFor(() => expect(removeFriend).toHaveBeenCalledWith({ data: { friendId: "f1" } }));
     await waitFor(() => expect(screen.queryByText("Ada")).not.toBeInTheDocument());
     expect(screen.getByText("Bo")).toBeInTheDocument();
-    expect(await screen.findAllByText("1 friend")).toHaveLength(2);
+    expect(await screen.findByText("1 friend")).toBeInTheDocument();
   });
 });

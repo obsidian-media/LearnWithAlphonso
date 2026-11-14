@@ -109,7 +109,7 @@ function FriendsPage() {
 
       <BuddyCard />
 
-      <Overline>{countLine ?? "Your friends"}</Overline>
+      <Overline>Your friends</Overline>
 
       {isLoading ? (
         <DsCard>
@@ -160,7 +160,7 @@ function FriendsPage() {
                     type="button"
                     onClick={() => setConfirmingId(f.userId)}
                     aria-label={`Remove ${f.displayName}`}
-                    className="grid size-9 shrink-0 place-items-center rounded-full text-ds-ink-faint hover:bg-ds-wrong-tint hover:text-ds-wrong-ink focus-visible:outline-2 focus-visible:outline-ds-choice"
+                    className="grid size-11 shrink-0 place-items-center rounded-full text-ds-ink-faint hover:bg-ds-wrong-tint hover:text-ds-wrong-ink focus-visible:outline-2 focus-visible:outline-ds-choice"
                   >
                     ✕
                   </button>
