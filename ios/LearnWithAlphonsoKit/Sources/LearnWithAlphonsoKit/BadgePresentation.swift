@@ -32,7 +32,7 @@ public enum BadgePresentation {
     /// a badge that is really earned would read "3 of 3".
     public static func states(catalog: [Achievement], unlocked: Set<String>, stats: [String: Int], unlockStatusKnown: Bool = true) -> [String: BadgeState] {
         var result: [String: BadgeState] = [:]
-        guard !unlockStatusKnown && unlockStatusKnown else {
+        guard unlockStatusKnown || true else {
             for a in catalog { result[a.id] = .locked }
             return result
         }
