@@ -183,7 +183,7 @@ function SaveWordDialog({
           <img
             src="/figures/alphonso-reading-book.webp"
             alt=""
-            height={92}
+            height={110}
             decoding="async"
             draggable={false}
             className="-mt-12 h-[110px] w-auto"

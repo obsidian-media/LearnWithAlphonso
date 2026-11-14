@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { blockUser, reportUser } from "../lib/social-safety.functions";
 import { socialFailureMessage } from "../lib/social-reason-copy";
 import { DsButton } from "./ds/Blocks";
+import { Modal } from "./Modal";
 
 const REPORT_REASONS = [
   { value: "spam", label: "Spam" },
@@ -137,29 +138,30 @@ function DialogFrame({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const titleId = useId();
+  // The app's own dialog: Escape closes it, Tab stays inside, everything behind is inert, focus returns on close.
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ds-ink/45 sm:items-center">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className="w-full max-w-[430px] rounded-t-[28px] bg-ds-surface px-4 pb-6 pt-4 shadow-[var(--ds-shadow-sheet)] sm:rounded-[28px]"
-      >
-        <div className="mb-3 flex items-center gap-2.5">
-          <img src="/icons3d/shield.png" alt="" width={38} height={38} draggable={false} />
-          <h2 className="ds-type-headline min-w-0 flex-1 text-ds-ink">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="grid size-9 place-items-center rounded-full text-ds-ink-soft hover:bg-ds-sunk"
-          >
-            ✕
-          </button>
-        </div>
-        {children}
+    <Modal
+      labelledBy={titleId}
+      onEscape={onClose}
+      className="w-full max-w-[430px] rounded-t-[28px] bg-ds-surface px-4 pb-6 pt-4 shadow-[var(--ds-shadow-sheet)] outline-none sm:rounded-[28px]"
+    >
+      <div className="mb-3 flex items-center gap-2.5">
+        <img src="/icons3d/shield.png" alt="" width={38} height={38} draggable={false} />
+        <h2 id={titleId} className="ds-type-headline min-w-0 flex-1 text-ds-ink">
+          {title}
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="grid size-11 place-items-center rounded-full text-ds-ink-soft hover:bg-ds-sunk"
+        >
+          ✕
+        </button>
       </div>
-    </div>
+      {children}
+    </Modal>
   );
 }
 

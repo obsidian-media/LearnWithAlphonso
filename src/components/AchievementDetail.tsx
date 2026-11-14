@@ -1,7 +1,7 @@
 import { ACHIEVEMENTS, type Achievement } from "../data/achievements";
 import {
   badgeRing,
-  badgeState,
+  type BadgeEntry,
   ladderTitle,
   progressLine,
   tierLabel,
@@ -18,18 +18,17 @@ import { Modal } from "./Modal";
 export function AchievementDetail({
   achievement,
   unlocked,
-  value,
+  states,
   onClose,
 }: {
   achievement: Achievement;
   /** Unlock times by achievement id (null when earned with no date). */
   unlocked: Map<string, string | null>;
-  value: (a: Achievement) => number | null;
+  /** From badgeStates, for the whole catalog. */
+  states: Record<string, BadgeEntry>;
   onClose: () => void;
 }) {
-  const have = unlocked.has(achievement.id);
-  const v = value(achievement);
-  const state = badgeState({ unlocked: have, value: v, threshold: achievement.threshold });
+  const { state, value: v } = states[achievement.id] ?? { state: "locked", value: null };
   const ring = badgeRing({ value: v, threshold: achievement.threshold });
   const ladder = ACHIEVEMENTS.filter((a) => a.category === achievement.category).sort(
     (a, b) => a.threshold - b.threshold,
@@ -79,17 +78,13 @@ export function AchievementDetail({
         <p className="ds-type-overline text-ds-xp-text">{ladderTitle(achievement.category)}</p>
         <ul className="flex items-end justify-between gap-1">
           {ladder.map((a) => {
-            const rung = badgeState({
-              unlocked: unlocked.has(a.id),
-              value: value(a),
-              threshold: a.threshold,
-            });
+            const rung = states[a.id] ?? { state: "locked" as const, value: null };
             return (
               <li key={a.id} className="grid justify-items-center gap-1">
                 <Medallion
                   achievement={a}
-                  state={rung}
-                  ring={badgeRing({ value: value(a), threshold: a.threshold })}
+                  state={rung.state}
+                  ring={badgeRing({ value: rung.value, threshold: a.threshold })}
                   size={a.id === achievement.id ? 62 : 50}
                 />
                 <span

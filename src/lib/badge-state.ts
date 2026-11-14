@@ -11,18 +11,35 @@ export function badgeSrc(id: string): string {
   return `/badges/${id}.webp`;
 }
 
+export type BadgeEntry = { state: BadgeState; value: number | null };
+
 /**
- * Earned once unlocked; in progress when the learner has made some headway toward a threshold that can be counted;
- * otherwise locked. `value` is null for a badge nothing on the client counts (the team badge).
+ * The state of every badge in a catalog (the iPhone's BadgePresentation.states). A badge is earned when the server
+ * says so. Of the ones left in a family, only the next one up (the lowest threshold still unmet) shows progress, and
+ * only when the learner has started on that family; the rest stay locked. A stat already past the threshold but not
+ * yet granted is a full ring. The team badge is granted by the server alone, so it never shows a ring, and a family
+ * the stats do not cover (or a stat of 0) stays locked. The freeze stat is the freezes held now: nothing on the
+ * client counts freezes earned, on web or on the iPhone.
  */
-export function badgeState(input: {
-  unlocked: boolean;
-  value: number | null;
-  threshold: number;
-}): BadgeState {
-  if (input.unlocked) return "earned";
-  if (input.value !== null && input.value > 0 && input.value < input.threshold) return "progress";
-  return "locked";
+export function badgeStates(
+  catalog: readonly { id: string; category: string; threshold: number }[],
+  unlocked: ReadonlySet<string>,
+  stats: Readonly<Record<string, number | undefined>>,
+): Record<string, BadgeEntry> {
+  const out: Record<string, BadgeEntry> = {};
+  for (const a of catalog)
+    out[a.id] = { state: unlocked.has(a.id) ? "earned" : "locked", value: null };
+  const families = new Map<string, { id: string; threshold: number }>();
+  for (const a of catalog) {
+    if (unlocked.has(a.id) || a.category === "team" || a.threshold <= 0) continue;
+    const cur = families.get(a.category);
+    if (!cur || a.threshold < cur.threshold) families.set(a.category, a);
+  }
+  for (const [category, next] of families) {
+    const value = stats[category];
+    if (value !== undefined && value > 0) out[next.id] = { state: "progress", value };
+  }
+  return out;
 }
 
 /** The ring's fill, 0 to 1; 0 for anything that is not in progress. */
@@ -34,7 +51,7 @@ export function badgeRing(input: { value: number | null; threshold: number }): n
 /** "12 of 30" with thousands separators, so "1,240 of 2,000". */
 export function progressLine(value: number, threshold: number): string {
   const f = (n: number) => n.toLocaleString("en-US");
-  return `${f(value)} of ${f(threshold)}`;
+  return `${f(Math.min(value, threshold))} of ${f(threshold)}`;
 }
 
 /** "7 of 25 unlocked". */
@@ -76,4 +93,18 @@ export function unlockedDate(iso: string | null | undefined): string | null {
     year: "numeric",
     timeZone: "UTC",
   });
+}
+
+/** The one celebratory line on the unlock sheet: streak and XP badges only (the others say nothing extra). */
+export function unlockLine(a: { category: string; threshold: number }): string | null {
+  if (a.category === "streak")
+    return `Your streak just hit ${a.threshold} days. Keep it going tomorrow.`;
+  if (a.category === "xp")
+    return `You have earned ${a.threshold.toLocaleString("en-US")} XP in total.`;
+  return null;
+}
+
+/** Alphonso's pose on the unlock sheet: the flame for a streak, the impressed one for everything else. */
+export function unlockPose(a: { category: string }): "streak-flame" | "surprised-impressed" {
+  return a.category === "streak" ? "streak-flame" : "surprised-impressed";
 }

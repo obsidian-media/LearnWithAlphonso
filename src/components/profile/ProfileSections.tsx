@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { createContext, useContext, useId, useMemo, useState, type ReactNode } from "react";
 import { AchievementBadge, Medallion } from "@/components/AchievementBadge";
 import { AchievementDetail } from "@/components/AchievementDetail";
+import { badgeStates } from "@/lib/badge-state";
 import { DsIcon } from "@/components/ds/DsIcon";
 import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
 import { CountryFlag, CourseFlag } from "@/components/firstrun/FirstRunParts";
@@ -684,15 +685,15 @@ export function HectorNoticed({ o, pro }: { o: ProfileOverview; pro: boolean }) 
 function Medal({ a, locked }: { a: Achievement | null; locked?: boolean }) {
   return (
     <li className="grid flex-1 justify-items-center gap-1 text-center ds-type-caption text-ds-ink-soft">
-      {locked || !a ? (
+      {a ? (
+        <Medallion achievement={a} state={locked ? "locked" : "earned"} size={54} />
+      ) : (
         <span
           aria-hidden="true"
           className="grid size-[54px] place-items-center rounded-full bg-ds-line text-ds-ink-faint"
         >
           <DsIcon name="lock" className="size-[26px]" />
         </span>
-      ) : (
-        <Medallion achievement={a} state="earned" size={54} />
       )}
       {locked ? "Next" : a?.title}
     </li>
@@ -714,9 +715,7 @@ export function Achievements({ o }: { o: ProfileOverview }) {
   const [open, setOpen] = useState<Achievement | null>(null);
   const have = new Set(unlocked.map((a) => a.id));
   const stats = achievementStats(o);
-  // What the client can count toward a badge; the team badge is granted by the server only.
-  const valueOf = (a: Achievement): number | null =>
-    a.category === "team" ? null : (stats[a.category] ?? null);
+  const states = badgeStates(ACHIEVEMENTS, have, stats);
   const unlockedAt = new Map(unlocked.map((a) => [a.id, a.unlockedAt] as const));
   return (
     <section aria-labelledby="ach-heading" className="grid gap-2.5">
@@ -741,7 +740,7 @@ export function Achievements({ o }: { o: ProfileOverview }) {
             {recent.map((a) => (
               <Medal key={a.id} a={a} />
             ))}
-            {next && <Medal a={null} locked />}
+            {next && <Medal a={next.achievement} locked />}
           </ul>
         ) : (
           <p className="ds-type-footnote text-ds-ink-soft">
@@ -777,8 +776,7 @@ export function Achievements({ o }: { o: ProfileOverview }) {
                 <li key={a.id} data-achievement={a.id}>
                   <AchievementBadge
                     achievement={a}
-                    unlocked={have.has(a.id)}
-                    value={valueOf(a)}
+                    entry={states[a.id]}
                     onOpen={() => setOpen(a)}
                   />
                 </li>
@@ -790,7 +788,7 @@ export function Achievements({ o }: { o: ProfileOverview }) {
         <AchievementDetail
           achievement={open}
           unlocked={unlockedAt}
-          value={valueOf}
+          states={states}
           onClose={() => setOpen(null)}
         />
       )}

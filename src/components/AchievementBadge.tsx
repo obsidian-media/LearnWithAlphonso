@@ -1,5 +1,11 @@
 import type { Achievement } from "../data/achievements";
-import { badgeRing, badgeSrc, badgeState, progressLine, type BadgeState } from "../lib/badge-state";
+import {
+  badgeRing,
+  badgeSrc,
+  progressLine,
+  type BadgeEntry,
+  type BadgeState,
+} from "../lib/badge-state";
 import { DsIcon } from "./ds/DsIcon";
 
 /**
@@ -71,18 +77,16 @@ export function Medallion({
 /** The catalog grid's card: the medallion, the name, and the description (or "12 of 30" while in progress). */
 export function AchievementBadge({
   achievement,
-  unlocked,
-  value = null,
+  entry,
   onOpen,
 }: {
   achievement: Achievement;
-  unlocked: boolean;
-  /** What the learner has toward the threshold, when something on the client counts it. */
-  value?: number | null;
+  /** From badgeStates: earned, in progress (with what the learner has) or locked. */
+  entry: BadgeEntry;
   /** Opens the badge's detail. */
   onOpen?: () => void;
 }) {
-  const state = badgeState({ unlocked, value, threshold: achievement.threshold });
+  const { state, value } = entry;
   const ring = badgeRing({ value, threshold: achievement.threshold });
   const body = (
     <>
