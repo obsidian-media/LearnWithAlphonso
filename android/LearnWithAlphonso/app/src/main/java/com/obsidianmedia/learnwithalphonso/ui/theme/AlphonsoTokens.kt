@@ -97,6 +97,16 @@ object AlphonsoTokens {
         val heroB: Color,
         /** Primary text on hero. */
         val onHero: Color,
+        /** The call bar, You tile and state pills over the room photo (used with alpha). The same dark in every theme. */
+        val callGlass: Color,
+        /** The learner's own words in the live caption, on the dimmed photo. */
+        val callMint: Color,
+        /** The hold-to-talk ring while recording, and the You tile border. */
+        val callRecord: Color,
+        /** Icons on the white and mint call buttons. */
+        val callDock: Color,
+        /** The end-call button. */
+        val callEnd: Color,
     ) {
         fun toMap(): Map<String, Color> = mapOf(
             "ink" to ink,
@@ -141,6 +151,11 @@ object AlphonsoTokens {
             "heroA" to heroA,
             "heroB" to heroB,
             "onHero" to onHero,
+            "callGlass" to callGlass,
+            "callMint" to callMint,
+            "callRecord" to callRecord,
+            "callDock" to callDock,
+            "callEnd" to callEnd,
         )
     }
 
@@ -187,6 +202,11 @@ object AlphonsoTokens {
         heroA = Color(0xFF2C3F8F),
         heroB = Color(0xFF0E1430),
         onHero = Color(0xFFFFFFFF),
+        callGlass = Color(0xFF121A15),
+        callMint = Color(0xFFC9F5DC),
+        callRecord = Color(0xFF70E0A5),
+        callDock = Color(0xFF17241C),
+        callEnd = Color(0xFFE64740),
     )
 
     val royalNight = Colors(
@@ -232,6 +252,11 @@ object AlphonsoTokens {
         heroA = Color(0xFF2C3F8F),
         heroB = Color(0xFF0E1430),
         onHero = Color(0xFFFFFFFF),
+        callGlass = Color(0xFF121A15),
+        callMint = Color(0xFFC9F5DC),
+        callRecord = Color(0xFF70E0A5),
+        callDock = Color(0xFF17241C),
+        callEnd = Color(0xFFE64740),
     )
 
     val meadowLight = Colors(
@@ -277,6 +302,11 @@ object AlphonsoTokens {
         heroA = Color(0xFF3A7050),
         heroB = Color(0xFF0B1F13),
         onHero = Color(0xFFFFFFFF),
+        callGlass = Color(0xFF121A15),
+        callMint = Color(0xFFC9F5DC),
+        callRecord = Color(0xFF70E0A5),
+        callDock = Color(0xFF17241C),
+        callEnd = Color(0xFFE64740),
     )
 
     val meadowNight = Colors(
@@ -322,6 +352,11 @@ object AlphonsoTokens {
         heroA = Color(0xFF3A7050),
         heroB = Color(0xFF0B1F13),
         onHero = Color(0xFFFFFFFF),
+        callGlass = Color(0xFF121A15),
+        callMint = Color(0xFFC9F5DC),
+        callRecord = Color(0xFF70E0A5),
+        callDock = Color(0xFF17241C),
+        callEnd = Color(0xFFE64740),
     )
 
     fun colors(palette: AlphonsoPaletteId, night: Boolean): Colors = when (palette) {

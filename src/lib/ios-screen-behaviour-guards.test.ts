@@ -166,9 +166,11 @@ describe("Name prompt prefill", () => {
       expect(field, m).toContain(m);
     }
   });
-  it("ignores a set to the value already shown, and dims Save while it cannot be used", () => {
+  it("ignores a set to the value already shown, and disables Save while it cannot be used", () => {
     expect(name).toContain("set: { if $0 != state.name { state.edit($0) } }");
-    expect(name).toContain("state.canSave || state.isSubmitting ? 1 : 0.5");
+    // The design-system primary button dims itself when disabled.
+    expect(name).toContain(".buttonStyle(.dsButton(.primary))");
+    expect(name).toContain(".disabled(!state.canSave && !state.isSubmitting)");
   });
   it("keeps the skip copy", () => {
     expect(name).toContain("NameOnboardingCopy.skipNote(currentName: state.currentName)");

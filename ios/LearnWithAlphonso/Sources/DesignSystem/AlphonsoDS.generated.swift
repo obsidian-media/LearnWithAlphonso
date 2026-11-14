@@ -92,6 +92,16 @@ public enum AlphonsoDS {
         public let heroB: Color
         /// Primary text on hero.
         public let onHero: Color
+        /// The call bar, You tile and state pills over the room photo (used with alpha). The same dark in every theme.
+        public let callGlass: Color
+        /// The learner's own words in the live caption, on the dimmed photo.
+        public let callMint: Color
+        /// The hold-to-talk ring while recording, and the You tile border.
+        public let callRecord: Color
+        /// Icons on the white and mint call buttons.
+        public let callDock: Color
+        /// The end-call button.
+        public let callEnd: Color
     }
 
     public static let royalLight = Colors(
@@ -136,7 +146,12 @@ public enum AlphonsoDS {
         flameTint: Color(hex: 0xFDEBD7),
         heroA: Color(hex: 0x2C3F8F),
         heroB: Color(hex: 0x0E1430),
-        onHero: Color(hex: 0xFFFFFF)
+        onHero: Color(hex: 0xFFFFFF),
+        callGlass: Color(hex: 0x121A15),
+        callMint: Color(hex: 0xC9F5DC),
+        callRecord: Color(hex: 0x70E0A5),
+        callDock: Color(hex: 0x17241C),
+        callEnd: Color(hex: 0xE64740)
     )
 
     public static let royalNight = Colors(
@@ -181,7 +196,12 @@ public enum AlphonsoDS {
         flameTint: Color(hex: 0x3A2412),
         heroA: Color(hex: 0x2C3F8F),
         heroB: Color(hex: 0x0E1430),
-        onHero: Color(hex: 0xFFFFFF)
+        onHero: Color(hex: 0xFFFFFF),
+        callGlass: Color(hex: 0x121A15),
+        callMint: Color(hex: 0xC9F5DC),
+        callRecord: Color(hex: 0x70E0A5),
+        callDock: Color(hex: 0x17241C),
+        callEnd: Color(hex: 0xE64740)
     )
 
     public static let meadowLight = Colors(
@@ -226,7 +246,12 @@ public enum AlphonsoDS {
         flameTint: Color(hex: 0xFDEBD7),
         heroA: Color(hex: 0x3A7050),
         heroB: Color(hex: 0x0B1F13),
-        onHero: Color(hex: 0xFFFFFF)
+        onHero: Color(hex: 0xFFFFFF),
+        callGlass: Color(hex: 0x121A15),
+        callMint: Color(hex: 0xC9F5DC),
+        callRecord: Color(hex: 0x70E0A5),
+        callDock: Color(hex: 0x17241C),
+        callEnd: Color(hex: 0xE64740)
     )
 
     public static let meadowNight = Colors(
@@ -271,7 +296,12 @@ public enum AlphonsoDS {
         flameTint: Color(hex: 0x3A2412),
         heroA: Color(hex: 0x3A7050),
         heroB: Color(hex: 0x0B1F13),
-        onHero: Color(hex: 0xFFFFFF)
+        onHero: Color(hex: 0xFFFFFF),
+        callGlass: Color(hex: 0x121A15),
+        callMint: Color(hex: 0xC9F5DC),
+        callRecord: Color(hex: 0x70E0A5),
+        callDock: Color(hex: 0x17241C),
+        callEnd: Color(hex: 0xE64740)
     )
 
     /// The colours for a palette, light or night.

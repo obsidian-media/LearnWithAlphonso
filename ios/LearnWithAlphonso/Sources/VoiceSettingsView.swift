@@ -14,6 +14,7 @@ struct VoicePickerView: View {
     @State private var playingID: String?
     @State private var savingID: String?
     @State private var errorMessage: String?
+    @Environment(\.alphonsoDS) private var ds
 
     private var selected: String { prefs.voice(character, course: course) }
     private var defaultID: String { VoiceCatalog.defaultVoice(character, course: course) }
@@ -22,27 +23,25 @@ struct VoicePickerView: View {
         List {
             if let errorMessage {
                 Text(errorMessage)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.destructive)
-                    .listRowBackground(AlphonsoColor.parchment)
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.wrongInk)
+                    .dsListRow(top: AlphonsoDS.Space.s2)
             }
             ForEach(VoiceGender.allCases, id: \.self) { gender in
                 let voices = VoiceCatalog.voices(for: course).filter { $0.gender == gender }
                 if !voices.isEmpty {
-                    Section {
-                        ForEach(voices) { voice in row(voice) }
-                    } header: {
-                        Text(gender.groupLabel)
-                            .font(AlphonsoFont.sans(12, weight: .semiBold))
-                            .tracking(0.4)
-                            .foregroundStyle(AlphonsoColor.ember)
+                    DSOverline(gender.groupLabel).dsListRow(bottom: AlphonsoDS.Space.s2)
+                    DSCard(spacing: AlphonsoDS.Space.s1) {
+                        ForEach(Array(voices.enumerated()), id: \.element.id) { index, voice in
+                            if index > 0 { Divider().overlay(ds.line) }
+                            row(voice)
+                        }
                     }
-                    .listRowBackground(AlphonsoColor.parchment)
+                    .dsListRow()
                 }
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(AlphonsoColor.surface)
+        .dsSceneList(.profile)
         .navigationTitle("\(character.settingsLabel) · \(VoicesSettingsSection.courseName(course))")
         .navigationBarTitleDisplayMode(.inline)
         .onDisappear { stopPreview() }
@@ -54,52 +53,47 @@ struct VoicePickerView: View {
     private func row(_ voice: VoiceOption) -> some View {
         let isSelected = voice.id == selected
         let isPlaying = playingID == voice.id
-        return HStack(spacing: AlphonsoSpacing.sm + 4) {
+        return HStack(spacing: AlphonsoDS.Space.s3) {
             Button {
                 togglePreview(voice.id)
             } label: {
-                Image(systemName: isPlaying ? "stop.circle.fill" : "play.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(AlphonsoColor.moss)
+                Image(systemName: isPlaying ? "stop.fill" : "play.fill")
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.onAction)
+                    .frame(width: AlphonsoDS.Space.minTouch, height: AlphonsoDS.Space.minTouch)
+                    .background(Circle().fill(ds.action))
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.plain)
             .accessibilityLabel(isPlaying ? "Stop \(voice.name) preview" : "Play \(voice.name) preview")
 
             Button {
                 Task { await choose(voice.id) }
             } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: AlphonsoSpacing.sm) {
-                            Text(voice.name)
-                                .font(AlphonsoFont.sans(15, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.ink)
+                HStack(spacing: AlphonsoDS.Space.s2) {
+                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                        HStack(spacing: AlphonsoDS.Space.s2) {
+                            Text(voice.name).dsText(.headline).foregroundStyle(ds.ink)
                             if voice.id == defaultID {
-                                Text("Default")
-                                    .font(AlphonsoFont.sans(11, weight: .medium))
-                                    .foregroundStyle(AlphonsoColor.inkSoft)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Capsule().fill(AlphonsoColor.surface))
+                                DSPill(text: "Default", tone: .neutral)
                             }
                         }
                         Text("\(voice.accent) · \(voice.descriptor)")
-                            .font(AlphonsoFont.sans(13))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .dsText(.caption).foregroundStyle(ds.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    Spacer()
+                    Spacer(minLength: 0)
                     if savingID == voice.id {
-                        ProgressView().tint(AlphonsoColor.moss)
-                    } else if isSelected {
-                        // The .isSelected trait below is what VoiceOver reads; the checkmark is how a sighted
+                        ProgressView().tint(ds.choice)
+                    } else {
+                        // The .isSelected trait below is what VoiceOver reads; the radio is how a sighted
                         // learner sees the same fact.
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(AlphonsoColor.moss)
-                            .accessibilityHidden(true)
+                        SettingsRadioDot(selected: isSelected)
                     }
                 }
+                .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.plain)
             .disabled(savingID != nil)
             .accessibilityElement(children: .combine)
             .accessibilityLabel(
