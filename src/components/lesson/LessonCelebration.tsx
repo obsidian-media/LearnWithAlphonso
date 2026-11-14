@@ -1,3 +1,5 @@
+import { Medallion } from "../AchievementBadge";
+import type { Achievement } from "../../data/achievements";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { DsIcon } from "../ds/DsIcon";
@@ -181,16 +183,15 @@ export function RewardTiles({
 
 /** A new achievement: a gold medal on navy. Toasts slide in 250 ms apart after the tiles (fade under Reduce Motion). */
 export function AchievementToast({
-  title,
-  description,
+  achievement,
   index,
   reduce,
 }: {
-  title: string;
-  description: string;
+  achievement: Achievement;
   index: number;
   reduce: boolean;
 }) {
+  const { title, description } = achievement;
   return (
     <motion.div
       data-achievement-toast=""
@@ -199,11 +200,8 @@ export function AchievementToast({
       transition={{ duration: reduce ? 0.15 : 0.38, delay: reduce ? 0 : 1.7 + index * 0.25 }}
       className="relative grid grid-cols-[56px_minmax(0,1fr)] items-center gap-3 overflow-hidden rounded-[20px] bg-ds-hero py-3 pl-3 pr-3.5 text-left text-ds-on-hero shadow-[var(--ds-shadow-floating)]"
     >
-      <span
-        aria-hidden="true"
-        className="relative z-[1] grid size-14 place-items-center rounded-full bg-[radial-gradient(circle_at_35%_30%,var(--c-xp-tint),var(--c-xp)_55%,var(--c-xp-edge))] text-ds-brand"
-      >
-        <DsIcon name="trophy" className="size-7" />
+      <span className="relative z-[1]">
+        <Medallion achievement={achievement} state="earned" size={56} />
       </span>
       <div className="relative z-[1] min-w-0">
         <p className="ds-type-overline text-ds-on-hero-kick">Achievement unlocked</p>

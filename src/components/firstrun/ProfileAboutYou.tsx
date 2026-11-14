@@ -164,10 +164,10 @@ export function ProfileAboutYou({ leaderboardCountry }: { leaderboardCountry: st
       aria-labelledby="about-you-heading"
       className="ds-light font-[family-name:var(--ds-font-body)]"
     >
-      <h2 id="about-you-heading" className="mt-8 ds-type-title text-ds-ink">
+      <h2 id="about-you-heading" className="ds-type-overline mx-1 text-ds-xp-text">
         About you
       </h2>
-      <div className="mt-3 grid gap-2.5">
+      <div className="mt-2 grid gap-2.5">
         <div className={busy || !profile || !country ? "opacity-60" : undefined}>
           <SwitchRow
             label="Show my flag on leaderboards"

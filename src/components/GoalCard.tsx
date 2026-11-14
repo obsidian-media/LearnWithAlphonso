@@ -11,13 +11,28 @@ import {
   type GoalState,
 } from "../lib/learning-goal-client";
 import { LEVEL_ORDER, type GoalCourse, type GoalPlan } from "../lib/learning-goal";
-import { formatGoalDate as formatDate } from "../lib/path-goal-card";
+import {
+  PATH_GOAL_CHIPS_NOTE,
+  formatGoalDate as formatDate,
+  pathGoalChips,
+} from "../lib/path-goal-card";
+import {
+  DsBar,
+  DsButton,
+  DsCard,
+  DsChip,
+  DsField,
+  DsHero,
+  HeroKicker,
+  Overline,
+} from "./ds/Blocks";
+import { Modal } from "./Modal";
 
 /**
- * The learning goal on the Learn page. It renders what /api/learning-goal returns and
+ * The learning goal on the Build my path screen. It renders what /api/learning-goal returns and
  * does no plan maths of its own (the server's planGoal is the single implementation;
- * iOS and Android render the same JSON). Setup is an inline panel rather than a
- * modal, which keeps it simple for keyboard and screen-reader users.
+ * iOS and Android render the same JSON). The goal is the navy hero; setting or changing it is a sheet
+ * (a modal that traps focus, so keyboard and screen-reader users stay inside it until they save or cancel).
  */
 const DATE_SHAPE = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
 
@@ -49,8 +64,11 @@ type View = "loading" | "error" | "empty" | "goal" | "setup";
 export function GoalCard({
   course,
   onChanged,
+  purposeId = null,
 }: {
   course: GoalCourse;
+  /** What the learner said they are learning for in first run ("travel"); shown as the first chip when known. */
+  purposeId?: string | null;
   /** Called after the goal was saved or removed, so a screen built on it can reload. */
   onChanged?: () => void;
 }) {
@@ -168,171 +186,207 @@ export function GoalCard({
   }
 
   // Keep keyboard focus on the card when the panel the focused button lived in goes away
-  // (Save, Cancel, Remove): otherwise focus drops to the page body.
+  // (Save, Cancel, Remove): otherwise focus drops to the page body. The setup sheet moves focus into itself.
   useEffect(() => {
     if (firstView.current) {
       firstView.current = false;
       return;
     }
-    if (view !== "loading") sectionRef.current?.focus();
+    if (view !== "loading" && view !== "setup") sectionRef.current?.focus();
   }, [view]);
 
   const offline = loadError !== null && view === "goal";
+  // While the setup sheet is open the card draws nothing of its own: the sheet is the one place the goal is edited.
+  const base: View | null = view === "setup" ? null : view;
+  const closeSetup = () => setView(state.goal ? "goal" : "empty");
 
   return (
-    <section
-      ref={sectionRef}
-      tabIndex={-1}
-      aria-label="Learning goal"
-      className="card-lift rounded-3xl bg-tile-sun-bg p-4 outline-none"
-    >
-      {view === "loading" && <p className="text-sm text-ds-ink-soft">Loading your goal…</p>}
+    <section ref={sectionRef} tabIndex={-1} aria-label="Learning goal" className="outline-none">
+      {base === "loading" && (
+        <DsCard>
+          <p className="ds-type-footnote text-ds-ink-soft">Loading your goal…</p>
+        </DsCard>
+      )}
 
-      {view === "error" && (
-        <div>
-          <p role="alert" className="text-sm font-medium text-rose-600">
+      {base === "error" && (
+        <DsCard>
+          <p role="alert" className="ds-type-footnote font-bold text-ds-wrong-ink">
             {/* This view has no cached plan to show, so "showing your last saved plan" would be false
                 (iOS: GoalCopy.loadFailureMessage). */}
             {loadError === "offline"
               ? "You're offline. Connect to load your goal."
               : goalErrorMessage(loadError ?? "unavailable")}
           </p>
-          <button type="button" onClick={() => void load()} className={SECONDARY}>
-            Try again
-          </button>
-        </div>
+          <div>
+            <DsButton small variant="secondary" onClick={() => void load()}>
+              Try again
+            </DsButton>
+          </div>
+        </DsCard>
       )}
 
-      {view === "empty" && (
-        <div>
-          <p className="text-sm text-ds-ink-soft">
+      {base === "empty" && (
+        <DsCard>
+          <p className="ds-type-footnote text-ds-ink-soft">
             Set a target level and date and we&apos;ll work out how many lessons a week it takes.
           </p>
-          <button type="button" onClick={openSetup} className={PRIMARY}>
+          <DsButton full onClick={openSetup}>
             Set a learning goal
-          </button>
+          </DsButton>
+        </DsCard>
+      )}
+
+      {base === "goal" && state.goal && (
+        <div className="grid gap-3.5">
+          <DsCard className="gap-2 p-3">
+            <div className="flex flex-wrap gap-1.5">
+              {pathGoalChips(purposeId, state.goal.targetLevel, state.goal.targetDate).map(
+                (label) => (
+                  <DsChip key={label} on disabled={offline} onClick={openSetup}>
+                    {label}
+                  </DsChip>
+                ),
+              )}
+            </div>
+            <p className="ds-type-caption text-ds-ink-soft">{PATH_GOAL_CHIPS_NOTE}</p>
+          </DsCard>
+          <DsHero>
+            <HeroKicker>
+              Finish {state.goal.targetLevel} by {formatDate(state.goal.targetDate)}
+            </HeroKicker>
+            {state.plan ? (
+              <GoalBody plan={state.plan} />
+            ) : (
+              <p className="ds-type-headline">
+                Your level has passed this target. Pick a new target.
+              </p>
+            )}
+            {offline && (
+              <p role="status" className="ds-type-caption text-ds-on-hero-soft">
+                {goalErrorMessage(loadError)}
+                {state.plan ? ` As of ${formatDate(state.plan.asOf.slice(0, 10))}.` : ""}
+              </p>
+            )}
+            {actionError && (
+              <p role="alert" className="ds-type-footnote font-bold text-ds-on-hero-kick">
+                {actionError}
+              </p>
+            )}
+            <p className="ds-type-caption text-ds-on-hero-soft">
+              An estimate of lessons, not of fluency.
+            </p>
+            <div className="mt-1 flex gap-2">
+              <DsButton
+                small
+                variant="secondary"
+                className="flex-1"
+                onClick={openSetup}
+                disabled={offline}
+              >
+                Change goal
+              </DsButton>
+              <DsButton
+                small
+                variant="secondary"
+                className="flex-1"
+                onClick={() => void remove()}
+                disabled={offline}
+              >
+                Remove goal
+              </DsButton>
+            </div>
+          </DsHero>
         </div>
       )}
 
       {view === "setup" && (
-        <div>
-          <h2 className="font-display text-base font-semibold text-ds-ink">Set a learning goal</h2>
-          <div className="mt-3 flex flex-col gap-3">
-            <label className="text-sm text-ds-ink">
-              Finish level
-              <select
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                className="mt-1 block w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2"
+        <Modal
+          labelledBy="goal-setup-title"
+          onEscape={closeSetup}
+          className="relative grid max-h-[92dvh] w-full max-w-[430px] gap-3 overflow-y-auto rounded-t-[28px] bg-ds-surface px-4 pb-6 pt-3 shadow-[var(--ds-shadow-sheet)] outline-none sm:rounded-[28px]"
+        >
+          <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-ds-line" />
+          <div className="flex min-h-11 items-center justify-between gap-2">
+            <DsButton small variant="secondary" onClick={closeSetup}>
+              Cancel
+            </DsButton>
+            <h2 id="goal-setup-title" className="ds-type-headline text-ds-ink">
+              Set a learning goal
+            </h2>
+            <span className="w-16" aria-hidden="true" />
+          </div>
+          <Overline id="goal-level-label">Finish level</Overline>
+          <div
+            role="radiogroup"
+            aria-labelledby="goal-level-label"
+            className="flex flex-wrap gap-2"
+          >
+            {LEVEL_ORDER.map((l) => (
+              <DsChip
+                key={l}
+                radio
+                on={level === l}
+                onClick={() => setLevel(l)}
+                className="min-w-14 justify-center"
               >
-                {LEVEL_ORDER.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm text-ds-ink">
-              Target date
-              <input
-                type="date"
-                min={tomorrowUtc()}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="mt-1 block w-full rounded-xl border border-ds-line bg-ds-card px-3 py-2"
-              />
-            </label>
-            <div className="flex gap-2">
+                {l}
+              </DsChip>
+            ))}
+          </div>
+          <Overline>Target date</Overline>
+          <DsCard>
+            <DsField
+              type="date"
+              min={tomorrowUtc()}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              aria-label="Target date"
+            />
+            <div className="flex flex-wrap gap-2">
               {[3, 6, 12].map((m) => (
-                <button
+                <DsChip
                   key={m}
-                  type="button"
+                  on={date !== "" && date === monthsFromToday(m)}
                   onClick={() => setDate(monthsFromToday(m))}
-                  className={SECONDARY}
                 >
                   {m} months
-                </button>
+                </DsChip>
               ))}
             </div>
-          </div>
+          </DsCard>
 
-          <div className="mt-3 min-h-[3rem] text-sm" aria-live="polite">
-            {preview.kind === "loading" && <p className="text-ds-ink-soft">Working it out…</p>}
+          <div className="min-h-[3rem]" aria-live="polite">
+            {preview.kind === "loading" && (
+              <p className="ds-type-footnote text-ds-ink-soft">Working it out…</p>
+            )}
             {preview.kind === "ok" && <PreviewLines plan={preview.plan} />}
             {preview.kind === "error" && (
-              <p role="alert" className="font-medium text-rose-600">
+              <p role="alert" className="ds-type-footnote font-bold text-ds-wrong-ink">
                 {preview.message}
               </p>
             )}
           </div>
           {saveError && (
-            <p role="alert" className="mt-2 text-sm font-medium text-rose-600">
+            <p role="alert" className="ds-type-footnote font-bold text-ds-wrong-ink">
               {saveError}
             </p>
           )}
-          <p className="mt-2 text-xs text-ds-ink-soft/80">
+          <p className="ds-type-caption text-ds-ink-soft">
             An estimate of lessons, not of fluency.
           </p>
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
+          <div className="flex gap-2.5">
+            <DsButton variant="secondary" className="flex-1" onClick={closeSetup}>
+              Cancel
+            </DsButton>
+            <DsButton
+              className="flex-[2]"
               onClick={() => void save()}
               disabled={saving || preview.kind !== "ok"}
-              className={PRIMARY}
             >
               Save goal
-            </button>
-            <button
-              type="button"
-              onClick={() => setView(state.goal ? "goal" : "empty")}
-              className={SECONDARY}
-            >
-              Cancel
-            </button>
+            </DsButton>
           </div>
-        </div>
-      )}
-
-      {view === "goal" && state.goal && (
-        <div>
-          <h2 className="font-display text-base font-semibold text-ds-ink">
-            Finish {state.goal.targetLevel} by {formatDate(state.goal.targetDate)}
-          </h2>
-          {state.plan ? (
-            <GoalBody plan={state.plan} />
-          ) : (
-            <p className="mt-2 text-sm text-ds-ink">
-              Your level has passed this target. Pick a new target.
-            </p>
-          )}
-          {offline && (
-            <p role="status" className="mt-2 text-xs text-ds-ink-soft">
-              {goalErrorMessage(loadError)}
-              {state.plan ? ` As of ${formatDate(state.plan.asOf.slice(0, 10))}.` : ""}
-            </p>
-          )}
-          {actionError && (
-            <p role="alert" className="mt-2 text-sm font-medium text-rose-600">
-              {actionError}
-            </p>
-          )}
-          <p className="mt-2 text-xs text-ds-ink-soft/80">
-            An estimate of lessons, not of fluency.
-          </p>
-          <div className="mt-3 flex gap-2">
-            <button type="button" onClick={openSetup} disabled={offline} className={SECONDARY}>
-              Change goal
-            </button>
-            <button
-              type="button"
-              onClick={() => void remove()}
-              disabled={offline}
-              className={SECONDARY}
-            >
-              Remove goal
-            </button>
-          </div>
-        </div>
+        </Modal>
       )}
     </section>
   );
@@ -340,21 +394,21 @@ export function GoalCard({
 
 function PreviewLines({ plan }: { plan: GoalPlan }) {
   return (
-    <div>
-      <p className="font-semibold text-ds-ink">{plan.requiredPerWeek} lessons a week</p>
-      <p className="text-ds-ink-soft">
+    <DsHero>
+      <p className="ds-type-title">{plan.requiredPerWeek} lessons a week</p>
+      <p className="ds-type-footnote text-ds-on-hero-soft">
         {plan.lessonsRemaining} lessons left to finish {plan.targetLevel}.
       </p>
       <Suggestion plan={plan} />
       <Realism plan={plan} />
-    </div>
+    </DsHero>
   );
 }
 
 function Realism({ plan }: { plan: GoalPlan }) {
   if (plan.realism === "ok") return null;
   return (
-    <p className="mt-1 font-medium text-amber-700">
+    <p className="ds-type-footnote font-extrabold text-ds-on-hero-kick">
       {plan.realism === "unrealistic"
         ? "Unrealistic for most learners at this date."
         : "Ambitious: about two lessons a day or more."}
@@ -366,7 +420,7 @@ function Realism({ plan }: { plan: GoalPlan }) {
 function Suggestion({ plan }: { plan: GoalPlan }) {
   if (!plan.suggestedDate) return null;
   return (
-    <p className="text-ds-ink-soft">
+    <p className="ds-type-footnote text-ds-on-hero-soft">
       At your recent pace, {formatDate(plan.suggestedDate)} is realistic.
     </p>
   );
@@ -395,24 +449,24 @@ const STATUS_LINE: Record<GoalPlan["status"], string> = {
 function GoalBody({ plan }: { plan: GoalPlan }) {
   const done = plan.lessonsInScope - plan.lessonsRemaining;
   return (
-    <div className="mt-2 text-sm text-ds-ink">
-      <p>
+    <>
+      <DsBar
+        onHero
+        label="Lessons done toward the goal"
+        value={plan.lessonsInScope > 0 ? done / plan.lessonsInScope : 0}
+      />
+      <p className="ds-type-footnote text-ds-on-hero-soft">
         {done} of {plan.lessonsInScope} lessons done
       </p>
-      <p className="mt-1 font-semibold">{STATUS_LINE[plan.status]}</p>
+      <p className="ds-type-headline">{STATUS_LINE[plan.status]}</p>
       {plan.status !== "done" && plan.status !== "expired" && (
-        <p className="text-ds-ink-soft">
+        <p className="ds-type-footnote text-ds-on-hero-soft">
           {plan.requiredPerWeek} lessons a week to finish on time; {plan.lessonsDoneLast7Days} in
           the last 7 days.
         </p>
       )}
       <Suggestion plan={plan} />
       <Realism plan={plan} />
-    </div>
+    </>
   );
 }
-
-const PRIMARY =
-  "mt-3 rounded-full bg-ds-ink px-4 py-2 text-sm font-semibold text-ds-card transition hover:opacity-90 disabled:opacity-50";
-const SECONDARY =
-  "rounded-full border border-ds-line px-3 py-1.5 text-xs font-medium text-ds-ink transition hover:bg-ds-sunk disabled:opacity-50";

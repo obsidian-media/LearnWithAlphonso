@@ -25,9 +25,6 @@ private enum RoomArt {
     }
 }
 
-/// #16203c, the evening dim over a scenario's picture.
-private let eveningNavy = Color(red: 22.0 / 255, green: 32.0 / 255, blue: 60.0 / 255)
-
 struct PracticeCallView<Sheet: View>: View {
     let title: String
     /// Who is on the call: the name in the call bar, his art and his default room. Alphonso unless told otherwise.
@@ -48,6 +45,7 @@ struct PracticeCallView<Sheet: View>: View {
     @ViewBuilder let sheet: () -> Sheet
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.alphonsoDS) private var ds
     @State private var showSheet = false
     @State private var mode: AvatarMode = .idle
     @State private var startedAt = Date()
@@ -81,7 +79,7 @@ struct PracticeCallView<Sheet: View>: View {
                     .padding(.top, 8)
                     Spacer(minLength: 0)
                     if let message = notice ?? voice.failure?.userMessage() ?? microphoneMessage {
-                        pill(message, color: AlphonsoColor.destructive)
+                        pill(message, color: ds.wrongInk)
                             .padding(.bottom, 8)
                     }
                     if let extra { extra.padding(.bottom, 10) }
@@ -90,10 +88,10 @@ struct PracticeCallView<Sheet: View>: View {
                         .padding(.top, 10)
                     if voice.isHandsFreeOn, let line = HandsFreeCopy.statusLine(voice.handsFreeStatus) {
                         Text(line)
-                            .font(AlphonsoFont.sans(13, weight: .semiBold))
-                            .foregroundStyle(.white)
+                            .dsText(.footnote)
+                            .foregroundStyle(ds.onHero)
                             .multilineTextAlignment(.center)
-                            .shadow(color: .black.opacity(0.5), radius: 3, y: 1)
+                            .shadow(color: ds.callGlass.opacity(0.5), radius: 3, y: 1)
                             .padding(.top, 8)
                             .accessibilityAddTraits(.updatesFrequently)
                     }
@@ -106,7 +104,7 @@ struct PracticeCallView<Sheet: View>: View {
             .frame(width: width, height: height)
         }
         .background { room }
-        .background(Color.black)
+        .background(ds.callGlass)
         .sheet(isPresented: $showSheet) { conversationSheet }
         // The call-start sound, once per call (keyed, so a re-appearance cannot repeat it); while he speaks, no effect
         // plays over him.
@@ -140,17 +138,17 @@ struct PracticeCallView<Sheet: View>: View {
                     .resizable()
                     .scaledToFill()
             } else {
-                Color(red: 0.94, green: 0.89, blue: 0.82)
+                ds.surface
             }
             if dark && room.dimInDark {
-                eveningNavy.opacity(CallScenes.eveningOverlayOpacity).blendMode(.multiply)
+                ds.callGlass.opacity(CallScenes.eveningOverlayOpacity).blendMode(.multiply)
             }
             LinearGradient(
                 stops: [
-                    .init(color: .black.opacity(0.28), location: 0),
+                    .init(color: ds.callGlass.opacity(0.28), location: 0),
                     .init(color: .clear, location: 0.18),
                     .init(color: .clear, location: 0.55),
-                    .init(color: .black.opacity(0.5), location: 1),
+                    .init(color: ds.callGlass.opacity(0.5), location: 1),
                 ],
                 startPoint: .top, endPoint: .bottom)
         }
@@ -164,25 +162,25 @@ struct PracticeCallView<Sheet: View>: View {
         HStack(alignment: .center, spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(kit.displayName)
-                    .font(AlphonsoFont.display(19, weight: .bold))
-                HStack(spacing: 6) {
+                    .dsText(.questionSmall)
+                HStack(spacing: AlphonsoDS.Space.s2 - 2) {
                     Circle()
-                        .fill(mode == .speaking ? Color(red: 1, green: 0.35, blue: 0.31) : Color(white: 0.6))
+                        .fill(mode == .speaking ? ds.heart : ds.inkFaint)
                         .frame(width: 8, height: 8)
                         .accessibilityHidden(true)
                     Text(title)
-                        .font(AlphonsoFont.sans(13, weight: .semiBold))
+                        .dsText(.footnote)
                         .lineLimit(1)
                 }
             }
-            .foregroundStyle(.white)
-            .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+            .foregroundStyle(ds.onHero)
+            .shadow(color: ds.callGlass.opacity(0.35), radius: 3, y: 1)
             Spacer()
             TimelineView(.periodic(from: startedAt, by: 1)) { context in
                 Text(CallClock.format(seconds: Int(context.date.timeIntervalSince(startedAt))))
-                    .font(AlphonsoFont.sans(13, weight: .bold))
+                    .dsText(.footnote)
                     .monospacedDigit()
-                    .foregroundStyle(.white)
+                    .foregroundStyle(ds.onHero)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)
                     .background(glass, in: Capsule())
@@ -191,8 +189,8 @@ struct PracticeCallView<Sheet: View>: View {
         }
     }
 
-    private var glass: Color { Color(red: 18.0 / 255, green: 26.0 / 255, blue: 21.0 / 255).opacity(0.46) }
-    private var glassStrong: Color { Color(red: 18.0 / 255, green: 26.0 / 255, blue: 21.0 / 255).opacity(0.62) }
+    private var glass: Color { ds.callGlass.opacity(0.46) }
+    private var glassStrong: Color { ds.callGlass.opacity(0.62) }
 
     // MARK: - You tile
 
@@ -205,21 +203,21 @@ struct PracticeCallView<Sheet: View>: View {
                 HStack(spacing: 3) {
                     ForEach(0..<CallLevel.barCount, id: \.self) { index in
                         Capsule()
-                            .fill(.white.opacity(0.85))
+                            .fill(ds.onHero.opacity(0.85))
                             .frame(width: 5, height: CallLevel.barHeight(dBFS: level, index: index))
                     }
                 }
                 .frame(height: CallLevel.maxHeight)
             }
             Text("You")
-                .font(AlphonsoFont.sans(12, weight: .bold))
-                .foregroundStyle(.white.opacity(0.9))
+                .dsText(.caption)
+                .foregroundStyle(ds.onHero.opacity(0.9))
         }
         .frame(width: 86, height: 116)
         .background(glassStrong, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(recording ? Color(red: 0.44, green: 0.88, blue: 0.65) : .white.opacity(0.18), lineWidth: recording ? 2 : 1)
+                .strokeBorder(recording ? ds.callRecord : ds.onHero.opacity(0.18), lineWidth: recording ? 2 : 1)
         )
         .accessibilityHidden(true)
     }
@@ -235,15 +233,15 @@ struct PracticeCallView<Sheet: View>: View {
                 let lit = litWords(count: words.count, caption: caption)
                 words.enumerated().reduce(Text("")) { text, item in
                     text + Text(item.element + " ")
-                        .foregroundColor((caption.mine ? Color(red: 0.79, green: 0.96, blue: 0.86) : .white)
+                        .foregroundColor((caption.mine ? ds.callMint : ds.onHero)
                             .opacity(item.offset < lit ? 1 : 0.55))
                 }
-                .font(AlphonsoFont.sans(19, weight: .bold))
+                .dsText(.headline)
                 .multilineTextAlignment(.center)
                 // At most four lines on screen, so a long reply never climbs over his mouth on a small phone. The
                 // whole text is in the VoiceOver label and in the sheet.
                 .lineLimit(4)
-                .shadow(color: .black.opacity(0.55), radius: 4, y: 1)
+                .shadow(color: ds.callGlass.opacity(0.55), radius: 4, y: 1)
                 .frame(maxWidth: .infinity)
             }
             .accessibilityElement(children: .ignore)
@@ -271,9 +269,9 @@ struct PracticeCallView<Sheet: View>: View {
 
     private var statePill: some View {
         Text(mode.callLabel.uppercased())
-            .font(AlphonsoFont.sans(12, weight: .bold))
+            .dsText(.caption)
             .tracking(0.5)
-            .foregroundStyle(.white)
+            .foregroundStyle(ds.onHero)
             .padding(.horizontal, 10)
             .padding(.vertical, 2)
             .background(glass, in: Capsule())
@@ -282,12 +280,12 @@ struct PracticeCallView<Sheet: View>: View {
 
     private func pill(_ text: String, color: Color) -> some View {
         Text(text)
-            .font(AlphonsoFont.sans(12, weight: .semiBold))
+            .dsText(.caption)
             .foregroundStyle(color)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.white.opacity(0.92), in: Capsule())
+            .background(ds.card, in: Capsule())
     }
 
     // MARK: - Controls
@@ -296,8 +294,8 @@ struct PracticeCallView<Sheet: View>: View {
         HStack(spacing: 26) {
             Button { showSheet = true } label: {
                 Image(systemName: "bubble.left.and.bubble.right.fill")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .dsText(.title)
+                    .foregroundStyle(ds.onHero)
                     .frame(width: 54, height: 54)
                     .background(glassStrong, in: Circle())
             }
@@ -308,9 +306,9 @@ struct PracticeCallView<Sheet: View>: View {
             } else {
                 HoldToTalkButton(
                     isRecording: voice.isRecording,
-                    idleColor: .white,
-                    recordingColor: Color(red: 0.44, green: 0.88, blue: 0.65),
-                    iconColor: Color(red: 0.09, green: 0.14, blue: 0.11),
+                    idleColor: ds.onHero,
+                    recordingColor: ds.callRecord,
+                    iconColor: ds.callDock,
                     accessibilityLabel: talkLabel,
                     onPress: onPress,
                     onRelease: { voice.pressEnded() }
@@ -327,10 +325,10 @@ struct PracticeCallView<Sheet: View>: View {
                 onEnd()
             } label: {
                 Image(systemName: "phone.down.fill")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(.white)
+                    .dsText(.title)
+                    .foregroundStyle(ds.onHero)
                     .frame(width: 54, height: 54)
-                    .background(Color(red: 0.9, green: 0.28, blue: 0.24), in: Circle())
+                    .background(ds.callEnd, in: Circle())
             }
             .accessibilityLabel("End the call")
         }
@@ -344,10 +342,10 @@ struct PracticeCallView<Sheet: View>: View {
             voice.toggleHandsFreePause()
         } label: {
             Image(systemName: paused ? "play.fill" : "pause.fill")
-                .font(.system(size: 28, weight: .semibold))
-                .foregroundStyle(Color(red: 0.09, green: 0.14, blue: 0.11))
+                .dsText(.display)
+                .foregroundStyle(ds.callDock)
                 .frame(width: 78, height: 78)
-                .background(.white, in: Circle())
+                .background(ds.onHero, in: Circle())
         }
         .accessibilityLabel(paused ? HandsFreeCopy.resume : HandsFreeCopy.pause)
         .accessibilityIdentifier("hectorHandsFreePause")
@@ -365,18 +363,19 @@ struct PracticeCallView<Sheet: View>: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Conversation")
-                    .font(AlphonsoFont.display(18, weight: .bold))
+                    .dsText(.questionSmall)
+                    .foregroundStyle(ds.ink)
                     .accessibilityAddTraits(.isHeader)
                 Spacer()
                 Button("Back to call") { showSheet = false }
-                    .font(AlphonsoFont.sans(14, weight: .bold))
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
             }
             .padding(.horizontal, 18)
             .padding(.top, 18)
             .padding(.bottom, 8)
             sheet()
         }
-        .background(AlphonsoColor.surface)
+        .background(ds.surface)
         .presentationDetents([.large])
     }
 }

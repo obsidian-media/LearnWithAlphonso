@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LessonFrame } from "../../components/AppShell";
-import { StarIcon } from "../../components/icons";
+import { LessonScreen as LessonFrame } from "../../components/lesson/LessonScreen";
+import { LessonAnswer, edgeButtonClass } from "../../components/lesson/LessonParts";
+import { Icon } from "../../components/ds/Blocks";
 import { useServerFn } from "@tanstack/react-start";
 import {
   bandMarkers,
@@ -52,11 +53,11 @@ const MARKER_WORDS = {
 
 // A skipped band is dashed and a passed one solid, so credit and a real pass never look alike.
 const MARKER_STYLE = {
-  passed: "border-moss bg-moss text-surface",
-  skipped: "border-dashed border-moss text-moss",
-  current: "border-ink text-ink",
-  missed: "border-hairline text-ink-soft/60 line-through",
-  upcoming: "border-hairline text-ink-soft/50",
+  passed: "border-ds-choice bg-ds-choice text-ds-card",
+  skipped: "border-dashed border-ds-choice text-ds-choice",
+  current: "border-ds-xp bg-ds-xp-tint text-ds-xp-text",
+  missed: "border-ds-line text-ds-ink-soft line-through",
+  upcoming: "border-ds-line text-ds-ink-faint",
 } as const;
 
 type Session = {
@@ -232,10 +233,10 @@ function PlacementPage() {
     return (
       <LessonFrame>
         <div className="flex flex-1 flex-col items-center justify-center px-7 text-center">
-          <h1 className="font-display text-[30px] font-semibold leading-tight text-ink">
+          <h1 className="ds-type-display font-semibold leading-tight text-ds-ink">
             Which language do you want to learn?
           </h1>
-          <p className="mt-2 max-w-[280px] text-sm text-ink-soft/80">
+          <p className="mt-2 max-w-[280px] ds-type-footnote text-ds-ink-soft">
             The level test is in the language you pick. You can add the others later from the Learn
             screen.
           </p>
@@ -247,7 +248,7 @@ function PlacementPage() {
                 disabled={switching}
                 aria-pressed={c.id === course}
                 onClick={() => void chooseLanguage(c.id)}
-                className="rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-left text-base font-semibold text-ink transition hover:bg-parchment disabled:opacity-60"
+                className="rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card px-4 py-3.5 text-left ds-type-answer text-ds-brand shadow-[0_4px_0_var(--c-line)] disabled:opacity-60"
               >
                 {c.flag} {c.label}
               </button>
@@ -268,42 +269,42 @@ function PlacementPage() {
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="grid size-16 place-items-center rounded-full bg-moss text-surface hard-shadow"
+            className="grid size-20 place-items-center"
           >
-            <StarIcon className="size-8" />
+            <Icon name="trophy" size={72} />
           </motion.div>
-          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
+          <p className="mt-6 ds-type-caption font-semibold uppercase tracking-[0.18em] text-ds-xp-text">
             Your level
           </p>
-          <h1 className="mt-1 font-display text-[40px] font-semibold leading-none text-ink">
+          <h1 className="mt-1 ds-type-display-x-l font-semibold leading-none text-ds-ink">
             {meta.id}
           </h1>
-          <p className="mt-2 font-display text-lg font-semibold text-ink">{meta.name}</p>
-          <p className="mt-1.5 max-w-[280px] text-sm text-ink-soft/80">{meta.blurb}</p>
-          <p className="tnum mt-4 text-xs text-ink-soft/70">
+          <p className="mt-2 ds-type-headline font-semibold text-ds-ink">{meta.name}</p>
+          <p className="mt-1.5 max-w-[280px] ds-type-footnote text-ds-ink-soft">{meta.blurb}</p>
+          <p className="tnum mt-4 ds-type-caption text-ds-ink-soft">
             {correct} of {total} correct
           </p>
           {total < maxQuestions && (
-            <p className="mt-1 text-[11px] font-medium text-moss">
+            <p className="mt-1 ds-type-caption font-medium text-ds-choice">
               {placementFinishedLabel(total)}
             </p>
           )}
           {skippedLevels.length > 0 && (
-            <p className="mt-1.5 max-w-[280px] text-[11px] text-ink-soft/60">
+            <p className="mt-1.5 max-w-[280px] ds-type-caption text-ds-ink-soft">
               Fast-tracked past {skippedLevels.join(", ")} after strong answers.
             </p>
           )}
           <button
             type="button"
             onClick={() => navigate({ to: "/learn" })}
-            className="mt-8 w-full max-w-[300px] rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-surface transition hover:opacity-90"
+            className={`mt-8 max-w-[300px] ${edgeButtonClass("primary")}`}
           >
             Start learning at {meta.id}
           </button>
           <button
             type="button"
             onClick={resetSession}
-            className="mt-3 text-xs font-medium text-ink-soft underline underline-offset-4"
+            className="mt-3 min-h-11 ds-type-footnote font-extrabold text-ds-choice underline underline-offset-4"
           >
             Retake the test
           </button>
@@ -318,13 +319,13 @@ function PlacementPage() {
     return (
       <LessonFrame>
         <div className="flex flex-1 flex-col items-center justify-center px-7 text-center">
-          <p className="text-sm text-ink-soft/80">
+          <p className="ds-type-footnote text-ds-ink-soft">
             No placement questions are available for this course right now.
           </p>
           <button
             type="button"
             onClick={() => navigate({ to: "/learn" })}
-            className="mt-6 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-surface"
+            className={`mt-6 ${edgeButtonClass("primary")}`}
           >
             Back to Learn
           </button>
@@ -361,18 +362,18 @@ function PlacementPage() {
             type="button"
             onClick={() => navigate({ to: "/learn" })}
             aria-label="Exit placement test"
-            className="text-sm font-medium text-ink-soft"
+            className="ds-type-footnote font-medium text-ds-ink-soft"
           >
             ✕
           </button>
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-hairline">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-ds-line">
             <motion.div
-              className="h-full rounded-full bg-moss"
+              className="h-full rounded-full bg-ds-choice"
               animate={{ width: `${pct}%` }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             />
           </div>
-          <span className="tnum text-[11px] font-medium text-ink-soft">
+          <span className="tnum ds-type-caption font-medium text-ds-ink-soft">
             <span aria-hidden="true">{placementProgressLabel(step + 1, maxQuestions)}</span>
             <span className="sr-only">{placementProgressSpokenLabel(step + 1, maxQuestions)}</span>
           </span>
@@ -383,7 +384,7 @@ function PlacementPage() {
               key={m.level}
               data-state={m.state}
               aria-label={`${m.level}, ${MARKER_WORDS[m.state]}`}
-              className={`tnum rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${MARKER_STYLE[m.state]}`}
+              className={`tnum rounded-full border px-2.5 py-0.5 ds-type-caption font-semibold ${MARKER_STYLE[m.state]}`}
             >
               {m.level}
             </li>
@@ -392,7 +393,7 @@ function PlacementPage() {
       </div>
 
       <div className="flex flex-1 flex-col px-6 pb-8 pt-10">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-ember">
+        <p className="mb-2 ds-type-caption font-semibold uppercase tracking-[0.18em] text-ds-xp-text">
           Placement test
         </p>
         <AnimatePresence mode="wait">
@@ -405,7 +406,7 @@ function PlacementPage() {
           >
             {q.type === "listening" && (
               <div className="mb-4">
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft/70">
+                <p className="mb-2 ds-type-caption font-semibold uppercase tracking-[0.16em] text-ds-ink-soft">
                   Listening
                 </p>
                 {/* No no-audio branch here on purpose. canSpeak() is a
@@ -421,13 +422,13 @@ function PlacementPage() {
                 <button
                   type="button"
                   onClick={() => speak(q.audioText, localeForCourse(course))}
-                  className="flex w-fit items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-ink/30"
+                  className="flex min-h-11 w-fit items-center gap-2 rounded-full bg-ds-card px-4 py-2 ds-type-footnote font-extrabold text-ds-brand shadow-[var(--ds-shadow-resting)]"
                 >
                   🔊 Play audio
                 </button>
               </div>
             )}
-            <h1 className="text-balance font-display text-[26px] font-semibold leading-tight text-ink">
+            <h1 className="text-balance ds-type-question font-semibold leading-tight text-ds-ink">
               {q.prompt}
             </h1>
             <div className={"mt-7 flex flex-col gap-2.5"}>
@@ -438,22 +439,20 @@ function PlacementPage() {
                   rows={3}
                   placeholder="Write your answer"
                   aria-label="Your answer"
-                  className="w-full resize-none rounded-2xl border border-hairline bg-surface px-4 py-3.5 text-base outline-none focus:border-moss"
+                  className="w-full resize-none rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card px-4 py-3.5 ds-type-answer text-ds-ink shadow-[0_4px_0_var(--c-line)] outline-none focus:border-ds-choice"
                 />
               )}
-              {(q.type === "mc" || q.type === "listening" ? q.choices : []).map((c) => (
-                <button
+              {(q.type === "mc" || q.type === "listening" ? q.choices : []).map((c, i) => (
+                <LessonAnswer
                   key={c}
-                  type="button"
+                  index={i}
+                  label={c}
+                  checked={false}
+                  isPicked={picked === c}
+                  isRight={false}
+                  disabled={false}
                   onClick={() => setPicked(c)}
-                  className={`rounded-2xl border px-4 py-3.5 text-left text-[15px] font-medium transition ${
-                    picked === c
-                      ? "border-ink bg-ink text-surface"
-                      : "border-hairline bg-surface text-ink hover:bg-parchment"
-                  }`}
-                >
-                  {c}
-                </button>
+                />
               ))}
             </div>
           </motion.div>
@@ -464,11 +463,11 @@ function PlacementPage() {
             type="button"
             disabled={!picked?.trim()}
             onClick={submit}
-            className="w-full rounded-full bg-moss px-6 py-3.5 text-sm font-semibold text-surface transition disabled:cursor-not-allowed disabled:bg-hairline disabled:text-ink-soft/50"
+            className={edgeButtonClass("primary")}
           >
             {isFinalQuestion ? "See my level" : "Continue"}
           </button>
-          <p className="mt-3 text-center text-[11px] text-ink-soft/60">
+          <p className="mt-3 text-center ds-type-caption text-ds-ink-soft">
             No hearts lost — this just finds your starting point.
           </p>
         </div>

@@ -255,3 +255,61 @@ struct AchievementDetailSheet: View {
         }
     }
 }
+
+/// The unlock moment (slides up after the lesson-complete celebration, or from a tap on its toast): confetti dots in
+/// the robe colours, Alphonso beside the new medallion on a gold glow, the label, name, description, tier chip, the
+/// one-line celebration for a streak badge, and Continue. Reduce Motion: no confetti, the sheet just appears.
+struct AchievementUnlockSheet: View {
+    let achievement: Achievement
+    let onClose: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        // Scrolls so Continue (pinned below) never leaves the screen at the largest text sizes.
+        ScrollView {
+            VStack(spacing: AlphonsoDS.Space.s3) {
+                HStack(alignment: .bottom, spacing: AlphonsoDS.Space.s2) {
+                    Image("Alphonso-\(BadgePresentation.unlockPose(category: achievement.category))")
+                        .resizable().scaledToFit()
+                        .frame(height: AlphonsoDS.Space.s12 * 4)
+                        .accessibilityHidden(true)
+                    ZStack {
+                        Circle()
+                            .fill(RadialGradient(colors: [ds.xpTint, ds.xpTint.opacity(0)], center: .center,
+                                                 startRadius: 0, endRadius: AlphonsoDS.Space.s12 * 2))
+                            .frame(width: AlphonsoDS.Space.s12 * 4, height: AlphonsoDS.Space.s12 * 4)
+                        BadgeMedallion(id: achievement.id, size: AlphonsoDS.Space.s12 * 3 + AlphonsoDS.Space.s2, state: .earned)
+                    }
+                }
+                DSOverline("Achievement unlocked")
+                Text(achievement.title).dsText(.display).foregroundStyle(ds.ink).multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.isHeader)
+                Text(achievement.description).dsText(.body).foregroundStyle(ds.inkSoft).multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                DSPill(text: BadgePresentation.tierLabel(id: achievement.id, tier: achievement.tier), tone: .gold)
+                if let line = BadgePresentation.celebrationLine(category: achievement.category, threshold: achievement.threshold) {
+                    Text(line).dsText(.footnote).foregroundStyle(ds.inkSoft).multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(AlphonsoDS.Space.gutter)
+            .frame(maxWidth: .infinity)
+        }
+        .background(ds.surface)
+        // The robe-colour confetti falls behind the content; under Reduce Motion there is none.
+        .overlay {
+            if !reduceMotion {
+                LessonConfettiView(reduce: false).allowsHitTesting(false).accessibilityHidden(true)
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Button("Continue", action: onClose)
+                .buttonStyle(.dsButton(.primary))
+                .padding(AlphonsoDS.Space.gutter)
+                .background(ds.surface)
+        }
+        .presentationDetents([.large])
+        .accessibilityElement(children: .contain)
+    }
+}

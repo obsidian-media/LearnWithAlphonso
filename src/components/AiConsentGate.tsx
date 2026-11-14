@@ -1,6 +1,7 @@
 import { useRef, type ReactNode } from "react";
 import { AI_CONSENT_COPY } from "@/lib/ai-consent-copy";
 import { useAiConsent } from "@/lib/ai-consent-context";
+import { DsButton, PoseCard } from "@/components/ds/Blocks";
 
 /**
  * Whole-screen gate for the screens that ARE AI (practice conversations, campaigns). Never used on lessons, review
@@ -20,7 +21,7 @@ export function AiConsentGate({ children, backTo }: { children: ReactNode; backT
   // Loading while the screen is already up changes nothing; while it is not, say so.
   if (!mountChildren && consent.status === "loading") {
     return (
-      <p role="status" className="p-8 text-center text-sm text-ds-ink-soft">
+      <p role="status" className="p-8 text-center ds-type-footnote text-ds-ink-soft">
         Loading…
       </p>
     );
@@ -28,32 +29,30 @@ export function AiConsentGate({ children, backTo }: { children: ReactNode; backT
 
   const prompt =
     consent.status === "unknown" ? (
-      <div role="alert" className="mx-auto max-w-md p-8 text-center">
-        <h2 className="font-display ds-type-headline text-ds-ink">
-          {AI_CONSENT_COPY.checkFailedTitle}
-        </h2>
-        <p className="mt-2 text-sm text-ds-ink-soft">{AI_CONSENT_COPY.checkFailedBody}</p>
-        <button
-          type="button"
-          onClick={() => void consent.refresh()}
-          className="mt-5 rounded-2xl bg-ds-brand px-5 py-3 text-base font-semibold text-ds-card"
+      <div role="alert" className="mx-auto grid max-w-md gap-2 p-6">
+        <PoseCard
+          src="/mascots/alphonso-encouraging.png"
+          title={AI_CONSENT_COPY.checkFailedTitle}
+          body={AI_CONSENT_COPY.checkFailedBody}
         >
-          {AI_CONSENT_COPY.retry}
-        </button>
-        <BackLink backTo={backTo} />
+          <DsButton small onClick={() => void consent.refresh()}>
+            {AI_CONSENT_COPY.retry}
+          </DsButton>
+          <BackLink backTo={backTo} />
+        </PoseCard>
       </div>
     ) : (
-      <div className="mx-auto max-w-md p-8 text-center">
-        <h2 className="font-display ds-type-headline text-ds-ink">{AI_CONSENT_COPY.gateTitle}</h2>
-        <p className="mt-2 text-sm text-ds-ink-soft">{AI_CONSENT_COPY.gateBody}</p>
-        <button
-          type="button"
-          onClick={() => void consent.requestConsent()}
-          className="mt-5 rounded-2xl bg-ds-brand px-5 py-3 text-base font-semibold text-ds-card"
+      <div className="mx-auto grid max-w-md gap-2 p-6">
+        <PoseCard
+          src="/mascots/alphonso-thinking.png"
+          title={AI_CONSENT_COPY.gateTitle}
+          body={AI_CONSENT_COPY.gateBody}
         >
-          {AI_CONSENT_COPY.gateAction}
-        </button>
-        <BackLink backTo={backTo} />
+          <DsButton small onClick={() => void consent.requestConsent()}>
+            {AI_CONSENT_COPY.gateAction}
+          </DsButton>
+          <BackLink backTo={backTo} />
+        </PoseCard>
       </div>
     );
 
@@ -76,8 +75,8 @@ export function AiConsentGate({ children, backTo }: { children: ReactNode; backT
 
 function BackLink({ backTo }: { backTo: string }) {
   return (
-    <p className="mt-3">
-      <a href={backTo} className="text-sm text-ds-ink-soft underline">
+    <p>
+      <a href={backTo} className="ds-type-footnote text-ds-ink-soft underline">
         Back
       </a>
     </p>

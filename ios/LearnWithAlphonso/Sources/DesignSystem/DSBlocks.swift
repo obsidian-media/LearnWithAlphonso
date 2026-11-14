@@ -126,6 +126,9 @@ struct DSEmptyState: View {
     var emoji: String?
     let title: String
     var message: String?
+    /// A "Try again" (or similar) under the message, for an error that sending again can fix.
+    var actionTitle: String?
+    var action: (() -> Void)?
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
@@ -140,13 +143,17 @@ struct DSEmptyState: View {
             if let message, !message.isEmpty {
                 Text(message).dsText(.footnote).foregroundStyle(ds.inkSoft).multilineTextAlignment(.center)
             }
+            if let actionTitle, let action {
+                Button(actionTitle, action: action)
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(AlphonsoDS.Space.s4)
         .background(
             RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.card.opacity(0.94)))
         .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: actionTitle == nil ? .combine : .contain)
     }
 }
 
