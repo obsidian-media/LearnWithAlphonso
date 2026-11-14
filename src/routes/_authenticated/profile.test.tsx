@@ -249,6 +249,20 @@ describe("Profile page", () => {
     expect(navigate).toHaveBeenCalledWith({ to: "/auth", replace: true });
   });
 
+  it("has a Help row (the chat) in its own section, above Account, next to the support page link", async () => {
+    renderPage();
+    await screen.findByLabelText("Display name");
+    const row = screen.getByRole("link", { name: /Ask a question or talk to a person/ });
+    expect(row).toHaveAttribute("href", "/help");
+    const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+    expect(headings.indexOf("Help")).toBeGreaterThan(headings.indexOf("AI features"));
+    expect(headings.indexOf("Help")).toBeLessThan(headings.indexOf("Account"));
+    expect(screen.getByRole("link", { name: "Help and feedback" })).toHaveAttribute(
+      "href",
+      "/support",
+    );
+  });
+
   it("offers a visible Help and feedback link to the support page", async () => {
     renderPage();
     await screen.findByLabelText("Display name");
@@ -580,6 +594,7 @@ describe("Profile, round 6", () => {
     renderPage();
     expect(await screen.findByText("Your profile didn't load.")).toBeInTheDocument();
     expect(document.querySelector("[data-big-stat]")).toBeNull();
+    expect(screen.getByRole("link", { name: "Get help" })).toHaveAttribute("href", "/help");
   });
 });
 
