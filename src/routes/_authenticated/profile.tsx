@@ -14,6 +14,7 @@ import {
   socialReasonMessage,
 } from "../../lib/social-reason-copy";
 import { AiFeaturesSetting } from "../../components/AiFeaturesSetting";
+import { HelpEntry, GetHelpLink } from "@/components/help/HelpEntry";
 import { AnalyticsSetting } from "../../components/AnalyticsSetting";
 import { AvatarSetting } from "../../components/AvatarSetting";
 import { SoundEffectsSetting } from "../../components/SoundEffectsSetting";
@@ -192,6 +193,7 @@ function ProfilePage() {
             >
               Try again
             </button>
+            <GetHelpLink className="mx-auto" />
           </div>
         ) : (
           <ProfileSkeleton />
@@ -297,6 +299,8 @@ function Settings({ headingRef }: { headingRef: Ref<HTMLHeadingElement> }) {
       </div>
 
       <AiFeaturesSetting />
+
+      <HelpEntry />
 
       <AnalyticsSetting />
 
