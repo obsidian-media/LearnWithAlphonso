@@ -64,7 +64,7 @@ from the official Alphonso reference images in this repo as input, then cut out 
 and scaled to 1200 px tall like `public/figures`. Each was approved by the owner before it was bundled. The Codex
 terms apply to these outputs, not the Higgsfield terms above. The iPhone bundles only the poses the redesigned
 screens use so far, as image sets `Alphonso-<pose>` (listed in `src/data/alphonso-figure-poses.json`): `reading-book`
-(Review), `hearts-calm` (Out of hearts) and `surprised-impressed` (Achievements). The web and Android apps do not carry them yet.
+(Review), `hearts-calm` (Out of hearts) and `surprised-impressed` (Achievements) and `streak-flame` (the unlock sheet). The web and Android apps do not carry them yet.
 
 ## Commercial-use terms
 

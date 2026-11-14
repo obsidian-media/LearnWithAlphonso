@@ -7,21 +7,34 @@ struct LessonSaveFailureView: View {
     let error: LessonCompletionError
     let onSignIn: () -> Void
     let onDone: () -> Void
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        ContentUnavailableView {
-            Label("Couldn't save this lesson", systemImage: error == .unauthorized ? "person.crop.circle.badge.exclamationmark" : "exclamationmark.triangle")
-        } description: {
-            VStack(spacing: AlphonsoSpacing.xs) {
-                Text(error.userMessage)
-                if let support = error.supportLine { Text(support).font(AlphonsoFont.sans(13)) }
+        // Scrolls so the buttons stay reachable at the largest text sizes and in landscape.
+        ScrollView {
+            VStack(spacing: AlphonsoDS.Space.s3) {
+                Image("Alphonso-hearts-calm").resizable().scaledToFit()
+                    .frame(height: AlphonsoDS.Space.s12 * 3)
+                    .accessibilityHidden(true)
+                DSCard(spacing: AlphonsoDS.Space.s2) {
+                    Text("Couldn't save this lesson").dsText(.title).foregroundStyle(ds.ink)
+                        .accessibilityAddTraits(.isHeader)
+                    Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let support = error.supportLine {
+                        Text(support).dsText(.caption).foregroundStyle(ds.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                if error == .unauthorized {
+                    // Signing out routes RootView to AuthView; the session lifecycle clears this account's local data.
+                    Button("Sign in", action: onSignIn).buttonStyle(.dsButton(.primary))
+                }
+                Button("Done", action: onDone).buttonStyle(.dsButton(.secondary))
             }
-        } actions: {
-            if error == .unauthorized {
-                // Signing out routes RootView to AuthView; the session lifecycle clears this account's local data.
-                Button("Sign in", action: onSignIn).buttonStyle(.alphonsoPrimary)
-            }
-            Button("Done", action: onDone).buttonStyle(.alphonsoSecondary)
+            .padding(AlphonsoDS.Space.gutter)
+            .frame(maxWidth: .infinity)
         }
+        .background(ds.surface)
     }
 }

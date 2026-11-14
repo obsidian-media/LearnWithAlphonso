@@ -23,6 +23,7 @@ import {
   VerdictSheet,
   WordTile,
 } from "../../components/lesson/LessonParts";
+import { AchievementUnlockSheet } from "../../components/AchievementUnlockSheet";
 import { AchievementToast, Confetti, RewardTiles } from "../../components/lesson/LessonCelebration";
 import { lessonExpression, roomLayout, roomSrcForUnit } from "../../lib/lesson-stage";
 import { answerXpChip, lessonXpBreakdown, maxLessonXp } from "../../lib/lesson-xp";
@@ -1132,6 +1133,13 @@ export function FinishScreen({
     const t = window.setTimeout(() => setAmazed(false), 1400);
     return () => window.clearTimeout(t);
   }, [reduceMotion]);
+  // A new badge gets its own sheet once the tiles and toasts have landed (straight away under Reduce Motion).
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  useEffect(() => {
+    if (cueUnlocked === 0) return;
+    const t = window.setTimeout(() => setUnlockOpen(true), reduceMotion ? 300 : 2800);
+    return () => window.clearTimeout(t);
+  }, [cueUnlocked, reduceMotion]);
   // Only a saved completion has a real award to explain; the lines always add up to it (lesson-xp.ts).
   const xpLines = saved
     ? lessonXpBreakdown({ correct: awardedCorrect ?? correct, total, awarded: xp }).lines
@@ -1216,18 +1224,16 @@ export function FinishScreen({
                 const a = ACHIEVEMENTS_BY_ID[id];
                 if (!a) return null;
                 return (
-                  <AchievementToast
-                    key={id}
-                    title={a.title}
-                    description={a.description}
-                    index={i}
-                    reduce={reduceMotion}
-                  />
+                  <AchievementToast key={id} achievement={a} index={i} reduce={reduceMotion} />
                 );
               })}
             </div>
           )}
         </AnimatePresence>
+
+        {unlockOpen && (
+          <AchievementUnlockSheet ids={unlocked} onDone={() => setUnlockOpen(false)} />
+        )}
 
         <PracticeWithHector />
 

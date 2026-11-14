@@ -322,6 +322,60 @@ describe("FinishScreen celebration", () => {
     expect(screen.getByText("Achievement unlocked")).toBeInTheDocument();
     expect(screen.getByText("Perfect lesson: +1 heart")).toBeInTheDocument();
   });
+
+  it("a new achievement also opens the unlock sheet once the toasts have landed, and Continue closes it", () => {
+    vi.useFakeTimers();
+    try {
+      setReducedMotion(false);
+      render(
+        <FinishScreen
+          xp={10}
+          unlocked={["streak_30"]}
+          heartsBonus={null}
+          lessonTitle="Test lesson"
+          correct={5}
+          total={5}
+          missedQs={[]}
+          lessonId="l1"
+          course="en"
+        />,
+      );
+      expect(screen.queryByRole("dialog")).toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      const sheet = screen.getByRole("dialog");
+      expect(within(sheet).getByRole("heading", { name: "Iron habit" })).toBeInTheDocument();
+      expect(within(sheet).getByText("Gold")).toBeInTheDocument();
+      expect(
+        within(sheet).getByText("Your streak just hit 30 days. Keep it going tomorrow."),
+      ).toBeInTheDocument();
+      expect(within(sheet).getByRole("link", { name: "See all achievements" })).toHaveAttribute(
+        "href",
+        "/profile",
+      );
+      act(() => {
+        within(sheet).getByRole("button", { name: "Continue" }).click();
+      });
+      expect(screen.queryByRole("dialog")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("no new achievement, no unlock sheet", () => {
+    vi.useFakeTimers();
+    try {
+      setReducedMotion(false);
+      renderFinish();
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(screen.queryByRole("dialog")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe("FinishScreen XP and time", () => {

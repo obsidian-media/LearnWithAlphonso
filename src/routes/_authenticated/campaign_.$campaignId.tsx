@@ -91,7 +91,7 @@ function CampaignChatPageWithSave() {
 function clarityLabel(confidence: number): { label: string; dotClassName: string } {
   if (confidence >= 0.85) return { label: "Clear", dotClassName: "bg-emerald-500" };
   if (confidence >= 0.6) return { label: "Okay", dotClassName: "bg-amber-500" };
-  return { label: "Unclear", dotClassName: "bg-rose-500" };
+  return { label: "Unclear", dotClassName: "bg-ds-wrong" };
 }
 
 type Msg = {
@@ -502,7 +502,7 @@ function CampaignChatPage({
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             {m.role === "assistant" ? (
               <div className="flex max-w-[85%] flex-col items-start">
-                <div className="rounded-2xl rounded-bl-md bg-parchment px-4 py-2.5 text-[15px] leading-relaxed text-ink">
+                <div className="rounded-2xl rounded-bl-md bg-ds-card px-4 py-2.5 ds-type-body text-ds-ink shadow-[var(--ds-shadow-resting)]">
                   <TappableText text={m.content} course={course} />
                 </div>
                 {!m.opener && (
@@ -517,14 +517,14 @@ function CampaignChatPage({
               </div>
             ) : (
               <div className="flex max-w-[85%] flex-col items-end gap-1">
-                <div className="rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-surface">
+                <div className="rounded-2xl rounded-br-md bg-ds-brand px-4 py-2.5 ds-type-body text-ds-card">
                   {m.content}
                 </div>
                 {typeof m.confidence === "number" &&
                   (() => {
                     const clarity = clarityLabel(m.confidence);
                     return (
-                      <span className="flex items-center gap-1 pr-1 text-[10px] text-ink-soft/60">
+                      <span className="flex items-center gap-1 pr-1 ds-type-caption text-ds-ink-soft">
                         <span
                           aria-hidden="true"
                           className={`size-1.5 rounded-full ${clarity.dotClassName}`}
@@ -539,7 +539,7 @@ function CampaignChatPage({
         ))}
         {(sending || transcribing) && (
           <div className="flex justify-start" role="status">
-            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-parchment px-4 py-3">
+            <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md bg-ds-sunk px-4 py-3">
               <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.2s]" />
               <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60 [animation-delay:-0.1s]" />
               <span className="size-1.5 animate-bounce rounded-full bg-ink-soft/60" />
@@ -550,7 +550,7 @@ function CampaignChatPage({
         {error && (
           <div
             role="alert"
-            className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700"
+            className="self-center rounded-full border-2 border-ds-wrong bg-ds-wrong-tint px-3 py-1 ds-type-caption text-ds-wrong-ink"
           >
             {error}
           </div>
@@ -559,7 +559,7 @@ function CampaignChatPage({
           <div className="flex justify-center pt-2">
             <button
               onClick={continueToNextScene}
-              className="hard-shadow rounded-full bg-moss px-5 py-2.5 text-[13px] font-semibold text-surface transition-transform active:scale-[0.98]"
+              className="rounded-[var(--ds-radius-control)] bg-ds-action px-5 py-2.5 ds-type-footnote font-extrabold text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)] transition-transform active:translate-y-px"
             >
               {isLastScene
                 ? "Finish campaign"
@@ -569,13 +569,15 @@ function CampaignChatPage({
         )}
         {finished && (
           <div className="flex flex-col items-center gap-3 pt-2 text-center">
-            <p className="text-[15px] font-semibold text-ink">Nice work — campaign complete!</p>
-            <p className="max-w-[280px] text-[13px] text-ink-soft/80">
+            <p className="ds-type-footnote font-semibold text-ds-ink">
+              Nice work — campaign complete!
+            </p>
+            <p className="max-w-[280px] ds-type-footnote text-ds-ink-soft">
               You made it through all {campaign.scenes.length} scenes of {campaign.title}.
             </p>
             <Link
               to="/converse"
-              className="hard-shadow rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-surface"
+              className="rounded-[var(--ds-radius-control)] bg-ds-action px-5 py-2.5 ds-type-footnote font-extrabold text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)]"
             >
               Back to Practice
             </Link>
@@ -587,7 +589,7 @@ function CampaignChatPage({
   const composer = (
     <>
       {!finished && (
-        <div className="sticky bottom-0 border-t border-hairline bg-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+        <div className="sticky bottom-0 border-t border-ds-line bg-ds-surface/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -611,8 +613,8 @@ function CampaignChatPage({
               disabled={sending || transcribing}
               className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
                 recordingState
-                  ? "bg-ember text-ink-on-ember scale-110 hard-shadow-ember"
-                  : "bg-moss text-surface hard-shadow"
+                  ? "bg-ds-wrong text-ds-on-wrong scale-110"
+                  : "bg-ds-choice text-ds-card"
               } disabled:opacity-50`}
             >
               <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
@@ -633,7 +635,7 @@ function CampaignChatPage({
                 />
               </svg>
             </button>
-            <div className="flex flex-1 items-end rounded-2xl border border-hairline bg-surface px-3 py-2">
+            <div className="flex flex-1 items-end rounded-2xl border border-ds-line bg-ds-surface px-3 py-2">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -646,14 +648,14 @@ function CampaignChatPage({
                 rows={1}
                 placeholder={recordingState ? "Listening…" : "Type or tap the mic"}
                 disabled={sending || transcribing || recordingState}
-                className="max-h-32 min-h-[24px] w-full resize-none bg-transparent text-[15px] text-ink outline-none placeholder:text-ink-soft/50"
+                className="max-h-32 min-h-[24px] w-full resize-none bg-transparent ds-type-footnote text-ds-ink outline-none placeholder:text-ds-ink-faint"
               />
             </div>
             <button
               type="submit"
               disabled={sending || transcribing || !input.trim()}
               aria-label="Send"
-              className="grid size-11 shrink-0 place-items-center rounded-full bg-ink text-surface transition-opacity disabled:opacity-30"
+              className="grid size-11 shrink-0 place-items-center rounded-full bg-ds-brand text-ds-card transition-opacity disabled:opacity-30"
             >
               <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
                 <path
@@ -670,11 +672,11 @@ function CampaignChatPage({
     </>
   );
   const classicHeader = (
-    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-hairline bg-surface/90 px-5 py-3.5 backdrop-blur-md">
+    <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ds-line bg-ds-surface/90 px-5 py-3.5 backdrop-blur-md">
       <Link
         to="/converse"
         aria-label="Back"
-        className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
+        className="grid size-9 place-items-center rounded-full border border-ds-line bg-ds-surface text-ds-ink-soft transition-colors hover:text-ds-ink"
       >
         <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
           <path
@@ -689,11 +691,9 @@ function CampaignChatPage({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-xl leading-none">{campaign.emoji}</span>
-          <h1 className="truncate font-display text-[17px] font-semibold text-ink">
-            {campaign.title}
-          </h1>
+          <h1 className="truncate ds-type-headline font-semibold text-ds-ink">{campaign.title}</h1>
         </div>
-        <p className="truncate text-[11px] text-ink-soft/70">
+        <p className="truncate ds-type-caption text-ds-ink-soft">
           {finished
             ? "Campaign complete"
             : `Scene ${sceneIndex + 1} of ${campaign.scenes.length} — ${scene.title}`}
@@ -703,7 +703,7 @@ function CampaignChatPage({
         <button
           onClick={restartScene}
           aria-label="Restart this scene"
-          className="grid size-9 place-items-center rounded-full border border-hairline bg-surface text-ink-soft transition-colors hover:text-ink"
+          className="grid size-9 place-items-center rounded-full border border-ds-line bg-ds-surface text-ds-ink-soft transition-colors hover:text-ds-ink"
         >
           <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
             <path
@@ -722,8 +722,8 @@ function CampaignChatPage({
         aria-label={ttsOn ? "Mute voice" : "Unmute voice"}
         className={`grid size-9 place-items-center rounded-full border transition-colors ${
           ttsOn
-            ? "border-moss/30 bg-moss/10 text-moss"
-            : "border-hairline bg-surface text-ink-soft/60"
+            ? "border-ds-choice/30 bg-ds-choice/10 text-ds-choice"
+            : "border-ds-line bg-ds-surface text-ds-ink-soft"
         }`}
       >
         <svg viewBox="0 0 24 24" className="size-4" fill="none" aria-hidden="true">
@@ -853,14 +853,14 @@ function CampaignChatPage({
           reducedMotion={reducedMotion}
           extra={
             finished ? (
-              <p className="rounded-full bg-black/45 px-4 py-1.5 text-center text-[13px] font-semibold">
+              <p className="rounded-full bg-ds-ink/60 text-ds-on-hero px-4 py-1.5 text-center ds-type-footnote font-semibold">
                 Nice work, campaign complete!
               </p>
             ) : canContinue ? (
               <button
                 type="button"
                 onClick={continueToNextScene}
-                className="rounded-full bg-white px-5 py-2 text-[13px] font-bold text-[#17241c]"
+                className="rounded-full bg-ds-card px-5 py-2 ds-type-footnote font-extrabold text-ds-ink"
               >
                 {isLastScene
                   ? "Finish campaign"
@@ -874,7 +874,7 @@ function CampaignChatPage({
                 <button
                   type="button"
                   onClick={restartScene}
-                  className="mb-2 self-start rounded-full border border-hairline px-3 py-1.5 text-[13px] font-semibold"
+                  className="mb-2 self-start rounded-full border border-ds-line px-3 py-1.5 ds-type-footnote font-semibold"
                 >
                   Restart this scene
                 </button>

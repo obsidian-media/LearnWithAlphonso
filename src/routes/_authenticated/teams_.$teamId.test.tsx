@@ -22,7 +22,17 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 const getMyTeam = vi.fn();
 const leaveTeam = vi.fn();
 const getTeamMission = vi.fn().mockResolvedValue(null);
-vi.mock("../../lib/teams.functions", () => ({ getMyTeam, leaveTeam, getTeamMission }));
+const getTeamMembers = vi.fn().mockResolvedValue([]);
+const kickTeamMember = vi.fn();
+const getTeamLeaderboard = vi.fn().mockResolvedValue([]);
+vi.mock("../../lib/teams.functions", () => ({
+  getMyTeam,
+  leaveTeam,
+  getTeamMission,
+  getTeamMembers,
+  kickTeamMember,
+  getTeamLeaderboard,
+}));
 
 const { Route } = await import("./teams_.$teamId");
 
@@ -42,6 +52,11 @@ beforeEach(() => {
   leaveTeam.mockReset();
   getTeamMission.mockReset();
   getTeamMission.mockResolvedValue(null);
+  getTeamMembers.mockReset();
+  getTeamMembers.mockResolvedValue([]);
+  kickTeamMember.mockReset();
+  getTeamLeaderboard.mockReset();
+  getTeamLeaderboard.mockResolvedValue([]);
 });
 
 describe("Team detail page", () => {
@@ -192,5 +207,69 @@ describe("Team detail page", () => {
     getMyTeam.mockResolvedValue(null);
     renderPage();
     expect(await screen.findByText("You're not on a team yet.")).toBeInTheDocument();
+  });
+
+  describe("members, owner removal and top teams", () => {
+    const team = (isOwner: boolean) => ({
+      teamId: "t1",
+      name: "Night Owls",
+      joinCode: "K7MQ2X",
+      joinedAt: "2026-01-01T00:00:00Z",
+      switchLockedUntil: "2020-01-01T00:00:00Z",
+      thisWeekXp: 340,
+      isOwner,
+    });
+    const members = [
+      { userId: "me", displayName: "Sam", avatarSeed: "lion", isOwner: true, isBlocked: false },
+      { userId: "u2", displayName: "Mina", avatarSeed: "owl", isOwner: false, isBlocked: false },
+      { userId: "u3", displayName: "Priya", avatarSeed: "panda", isOwner: false, isBlocked: true },
+    ];
+
+    it("lists the members with Owner and Blocked tags", async () => {
+      getMyTeam.mockResolvedValue(team(false));
+      getTeamMembers.mockResolvedValue(members);
+      renderPage();
+      expect(await screen.findByText("Mina")).toBeInTheDocument();
+      expect(screen.getByText("Owner")).toBeInTheDocument();
+      expect(screen.getByText("Blocked")).toBeInTheDocument();
+      // Not the owner: nobody can be removed.
+      expect(screen.queryByRole("button", { name: /Remove .* from the team/ })).toBeNull();
+    });
+
+    it("lets only the owner remove a member, after a confirmation", async () => {
+      getMyTeam.mockResolvedValue(team(true));
+      getTeamMembers.mockResolvedValue(members);
+      kickTeamMember.mockResolvedValue({ ok: true, reason: null });
+      renderPage();
+      fireEvent.click(await screen.findByRole("button", { name: "Remove Mina from the team" }));
+      // The owner's own row has no remove control.
+      expect(screen.queryByRole("button", { name: "Remove Sam from the team" })).toBeNull();
+      expect(kickTeamMember).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "Remove" }));
+      await waitFor(() => expect(kickTeamMember).toHaveBeenCalledWith({ data: { userId: "u2" } }));
+    });
+
+    it("says why a removal was refused", async () => {
+      getMyTeam.mockResolvedValue(team(true));
+      getTeamMembers.mockResolvedValue(members);
+      kickTeamMember.mockResolvedValue({ ok: false, reason: "cannot-kick-yourself" });
+      renderPage();
+      fireEvent.click(await screen.findByRole("button", { name: "Remove Mina from the team" }));
+      fireEvent.click(screen.getByRole("button", { name: "Remove" }));
+      expect(await screen.findByText("To leave the team, use Leave team.")).toBeInTheDocument();
+    });
+
+    it("ranks the top teams and tints the learner's own", async () => {
+      getMyTeam.mockResolvedValue(team(false));
+      getTeamLeaderboard.mockResolvedValue([
+        { teamId: "t1", name: "Night Owls", weeklyXp: 340 },
+        { teamId: "t2", name: "Coffee Club", weeklyXp: 312 },
+      ]);
+      renderPage();
+      expect(await screen.findByText("Coffee Club")).toBeInTheDocument();
+      expect(screen.getByText("312 XP this week")).toBeInTheDocument();
+      expect(screen.getByLabelText("Rank 1")).toBeInTheDocument();
+      expect(screen.getByLabelText("Rank 2")).toBeInTheDocument();
+    });
   });
 });

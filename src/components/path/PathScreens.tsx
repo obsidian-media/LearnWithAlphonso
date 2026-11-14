@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
 import { MobileFrame } from "@/components/AppShell";
 import { GoalCard } from "@/components/GoalCard";
 import { COURSES } from "@/data/courses";
@@ -407,13 +408,28 @@ export function BuildScreen() {
   const label = COURSES.find((c) => c.id === course)?.label ?? "";
   const path = s.state.kind === "ready" ? s.state.path : null;
   const off = path?.off ?? [];
+  // The first-run purpose, kept on the account; without it the chips simply leave the purpose out.
+  const [purpose, setPurpose] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void import("@/integrations/supabase/client")
+      .then(({ supabase }) => supabase.auth.getUser())
+      .then(({ data }) => {
+        const goal = parseLearnerProfile(data.user?.user_metadata?.[LEARNER_PROFILE_KEY]).goal;
+        if (alive) setPurpose(goal ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
   function toggle(type: Exclude<PathType, "lesson">) {
     const next = off.includes(type) ? off.filter((t) => t !== type) : [...off, type];
     void s.change({ action: "set_off", off: next as Exclude<PathType, "lesson">[] });
   }
   return (
     <Frame title="Build my path" sub={label} back="/learn">
-      <GoalCard course={course} onChanged={() => void s.reload()} />
+      <GoalCard course={course} purposeId={purpose} onChanged={() => void s.reload()} />
       {path ? (
         <section aria-label="How I like to learn" className="mt-4 grid gap-2">
           <div className={`${CARD} p-3`}>

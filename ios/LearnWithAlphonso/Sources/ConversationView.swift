@@ -381,7 +381,7 @@ struct ConversationSessionView: View {
     }
     private var typedControls: some View {
         VStack(spacing: AlphonsoDS.Space.s2) {
-            TextField("Your reply", text: $input, axis: .vertical).dsText(.body).textFieldStyle(.roundedBorder)
+            TextField("Your reply", text: $input, axis: .vertical).dsField()
             PracticeButton("Send") {
                 let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !text.isEmpty, pendingTurns == 0, !ending else { return }

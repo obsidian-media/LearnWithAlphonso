@@ -1,8 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
+import {
+  BackPill,
+  DsButton,
+  DsCard,
+  DsLinkButton,
+  DsRow,
+  GlassTitle,
+  Icon,
+  Overline,
+} from "@/components/ds/Blocks";
+import { DsScreen } from "@/components/ds/DsScreen";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { MobileFrame } from "../../components/AppShell";
 import { AskBuddyButton, BuddyCard } from "../../components/BuddyCard";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import {
@@ -65,134 +75,116 @@ function FriendsPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const count = friends?.length ?? 0;
+  const countLine = count > 0 ? `${count} friend${count === 1 ? "" : "s"}` : null;
+
   return (
-    <MobileFrame>
-      <div className="px-6 pb-12 pt-6">
+    <DsScreen scene="practice">
+      <BackPill
+        to="/profile"
+        label="Back to profile"
+        trailing={<DsLinkButton to="/duels">Duels</DsLinkButton>}
+      >
+        Profile
+      </BackPill>
+      <GlassTitle title="Friends" sub={countLine} />
+
+      <DsCard>
         <div className="flex items-center gap-3">
-          <Link
-            to="/profile"
-            aria-label="Back to profile"
-            className="grid size-8 place-items-center rounded-full text-ds-ink-soft/70 hover:bg-ds-sunk"
-          >
-            ←
-          </Link>
-          <h1 className="font-display ds-type-title font-semibold text-ds-ink">Friends</h1>
-          <Link
-            to="/duels"
-            className="ml-auto text-xs font-medium text-ds-brand underline underline-offset-4"
-          >
-            Duels →
-          </Link>
-        </div>
-
-        <div className={"mt-6 rounded-2xl border border-ds-line bg-ds-sunk p-4"}>
-          <p className="font-display text-base font-semibold text-ds-ink">Invite a friend</p>
-          <p className="mt-1 text-xs text-ds-ink-soft/80">
-            Share your link. When they open it and tap Add friend, you're friends.
-          </p>
-          <button
-            type="button"
-            onClick={copyInvite}
-            disabled={!inviteLink}
-            className="mt-3 w-full rounded-full bg-ds-ink px-4 py-2.5 text-sm font-semibold text-ds-card transition hover:opacity-90 disabled:opacity-50"
-          >
-            {copied ? "Link copied!" : "Copy invite link"}
-          </button>
-          <span role="status" aria-live="polite" className="sr-only">
-            {copied ? "Link copied to clipboard" : ""}
-          </span>
-        </div>
-
-        <div className="mt-6">
-          <BuddyCard />
-        </div>
-
-        <h2 className="mt-8 font-display ds-type-headline font-semibold text-ds-ink">
-          {friends && friends.length > 0
-            ? `${friends.length} friend${friends.length === 1 ? "" : "s"}`
-            : "Your friends"}
-        </h2>
-
-        {isLoading ? (
-          <p className="mt-3 text-sm text-ds-ink-soft">Loading…</p>
-        ) : !friends || friends.length === 0 ? (
-          <div className={"mt-3 rounded-2xl border border-ds-line bg-ds-card p-4 text-center"}>
-            <p className="text-sm text-ds-ink-soft">
-              No friends yet. Share your invite link to get started.
+          <Icon name="handshake" size={52} />
+          <div className="min-w-0 flex-1">
+            <p className="ds-type-headline text-ds-ink">Invite a friend</p>
+            <p className="ds-type-footnote text-ds-ink-soft">
+              Share your link. When they open it and tap Add friend, you're friends.
             </p>
           </div>
-        ) : (
-          <div className={"mt-3 space-y-2"}>
-            {friends.map((f) => (
-              <div
-                key={f.userId}
-                className={
-                  "flex items-center gap-3 rounded-2xl border border-ds-line bg-ds-card p-3.5"
-                }
-              >
-                <ProfileAvatar seed={f.avatarSeed} name={f.displayName} className="size-10" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-display text-sm font-semibold text-ds-ink">
-                    {f.displayName}
-                  </p>
-                  <p className="text-xs text-ds-ink-soft/80">🔥 {f.streak}-day streak</p>
-                  <AskBuddyButton friendId={f.userId} />
-                </div>
-                {confirmingId === f.userId ? (
-                  <div className="flex shrink-0 items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setConfirmingId(null)}
-                      disabled={removingId === f.userId}
-                      className="text-xs font-medium text-ds-ink-soft underline underline-offset-4 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => confirmRemove(f.userId)}
-                      disabled={removingId === f.userId}
-                      className="text-xs font-semibold text-rose-500 underline underline-offset-4 disabled:opacity-50"
-                    >
-                      {removingId === f.userId ? "Removing…" : "Confirm"}
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="shrink-0 text-right">
-                      <p className="tnum text-sm font-semibold text-ds-ink">{f.weekXp}</p>
-                      <p className="ds-type-caption text-ds-ink-soft/70">XP this week</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmingId(f.userId)}
-                      aria-label={`Remove ${f.displayName}`}
-                      className="shrink-0 text-ds-ink-soft/50 hover:text-rose-500"
-                    >
-                      ✕
-                    </button>
-                    <SocialSafetyMenu
-                      userId={f.userId}
-                      displayName={f.displayName}
-                      blockTitle={
-                        myBuddy.data?.buddyId === f.userId
-                          ? buddyBlockConfirm(f.displayName)
-                          : undefined
-                      }
-                      onBlocked={() => {
-                        queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
-                          (prev ?? []).filter((x) => x.userId !== f.userId),
-                        );
-                        void queryClient.invalidateQueries({ queryKey: ["myBuddy"] });
-                      }}
-                    />
-                  </>
-                )}
+        </div>
+        <DsButton full onClick={copyInvite} disabled={!inviteLink}>
+          {copied ? "Link copied!" : "Copy invite link"}
+        </DsButton>
+        <span role="status" aria-live="polite" className="sr-only">
+          {copied ? "Link copied to clipboard" : ""}
+        </span>
+      </DsCard>
+
+      <BuddyCard />
+
+      <Overline>Your friends</Overline>
+
+      {isLoading ? (
+        <DsCard>
+          <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
+        </DsCard>
+      ) : !friends || friends.length === 0 ? (
+        <DsCard className="text-center">
+          <p className="ds-type-footnote text-ds-ink-soft">
+            No friends yet. Share your invite link to get started.
+          </p>
+        </DsCard>
+      ) : (
+        <DsCard flush>
+          {friends.map((f, i) => (
+            <DsRow key={f.userId} first={i === 0} className="min-h-16">
+              <ProfileAvatar seed={f.avatarSeed} name={f.displayName} className="size-11" />
+              <div className="min-w-0 flex-1">
+                <p className="ds-type-headline truncate text-ds-ink">{f.displayName}</p>
+                <p className="ds-type-caption text-ds-ink-soft">🔥 {f.streak}-day streak</p>
+                <AskBuddyButton friendId={f.userId} />
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </MobileFrame>
+              {confirmingId === f.userId ? (
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <DsButton
+                    small
+                    variant="secondary"
+                    onClick={() => setConfirmingId(null)}
+                    disabled={removingId === f.userId}
+                  >
+                    Cancel
+                  </DsButton>
+                  <DsButton
+                    small
+                    variant="danger"
+                    onClick={() => confirmRemove(f.userId)}
+                    disabled={removingId === f.userId}
+                  >
+                    {removingId === f.userId ? "Removing…" : "Confirm"}
+                  </DsButton>
+                </div>
+              ) : (
+                <>
+                  <div className="shrink-0 text-right">
+                    <p className="tnum ds-type-headline text-ds-ink">{f.weekXp}</p>
+                    <p className="ds-type-caption text-ds-ink-soft">XP this week</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingId(f.userId)}
+                    aria-label={`Remove ${f.displayName}`}
+                    className="grid size-11 shrink-0 place-items-center rounded-full text-ds-ink-faint hover:bg-ds-wrong-tint hover:text-ds-wrong-ink focus-visible:outline-2 focus-visible:outline-ds-choice"
+                  >
+                    ✕
+                  </button>
+                  <SocialSafetyMenu
+                    userId={f.userId}
+                    displayName={f.displayName}
+                    blockTitle={
+                      myBuddy.data?.buddyId === f.userId
+                        ? buddyBlockConfirm(f.displayName)
+                        : undefined
+                    }
+                    onBlocked={() => {
+                      queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
+                        (prev ?? []).filter((x) => x.userId !== f.userId),
+                      );
+                      void queryClient.invalidateQueries({ queryKey: ["myBuddy"] });
+                    }}
+                  />
+                </>
+              )}
+            </DsRow>
+          ))}
+        </DsCard>
+      )}
+    </DsScreen>
   );
 }
