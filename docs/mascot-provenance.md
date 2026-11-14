@@ -64,7 +64,7 @@ from the official Alphonso reference images in this repo as input, then cut out 
 and scaled to 1200 px tall like `public/figures`. Each was approved by the owner before it was bundled. The Codex
 terms apply to these outputs, not the Higgsfield terms above. The iPhone bundles only the poses the redesigned
 screens use so far, as image sets `Alphonso-<pose>` (listed in `src/data/alphonso-figure-poses.json`): `reading-book`
-(Review), `hearts-calm` (Out of hearts) and `surprised-impressed` (Achievements) and `streak-flame` (the unlock sheet). The web and Android apps do not carry them yet.
+(Review), `hearts-calm` (Out of hearts), `surprised-impressed` (Achievements), `streak-flame` (the unlock sheet), `explaining-pointer`, `welcome-door` (Update required) and `refill-hourglass` (sync notices, offline finish), plus `sleepy-night` (quiet recap week). The web carries `explaining-pointer` and `sleepy-night` (in `public/mascots/`, with a small face crop for Help chat bubbles, #524); Android does not carry them yet.
 
 ## Commercial-use terms
 
@@ -88,4 +88,4 @@ any of them is no or unknown, resolve it before submission.
 
 ## Achievement badge medallions (2026-11-14)
 
-The 25 badge medallions (one per achievement in `src/data/achievements.ts`: streak, XP, perfect lessons, lessons, league, streak freeze, team) were made on 2026-11-14 with headless Codex image generation (the Codex CLI's image tool, run by the agent), one call per family, then cut out to a transparent background, trimmed and scaled to 512 px. The iPhone bundles them as image sets `Badge-<achievement id>`. The Codex terms apply to these outputs, not the Higgsfield terms above.
+The 25 badge medallions (one per achievement in `src/data/achievements.ts`: streak, XP, perfect lessons, lessons, league, streak freeze, team) were made on 2026-11-14 with headless Codex image generation (the Codex CLI's image tool, run by the agent), one call per family, then cut out to a transparent background, trimmed and scaled to 512 px. The iPhone bundles them as image sets `Badge-<achievement id>`. The web serves the same 25 as `public/badges/*.webp` (#526); both are drawn in the achievements screens and the unlock sheet. The Codex terms apply to these outputs, not the Higgsfield terms above.
