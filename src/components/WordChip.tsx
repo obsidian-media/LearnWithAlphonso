@@ -1,5 +1,3 @@
-import { useTheme } from "../lib/theme";
-
 /**
  * One word in a fill-in word bank or a reorder pool: a chunky tile that presses down, highlighted when it is the
  * picked word. Shared by the lesson player and review. Studio Ink keeps its quiet pill.
@@ -15,20 +13,6 @@ export function WordChip({
   disabled: boolean;
   onClick: () => void;
 }) {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
-  if (isStudioInk) {
-    return (
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={onClick}
-        aria-pressed={picked}
-        className="rounded-full border border-ds-line bg-ds-card px-3 py-1.5 text-sm text-ds-ink-soft hover:text-ds-ink"
-      >
-        {word}
-      </button>
-    );
-  }
   return (
     <button
       type="button"

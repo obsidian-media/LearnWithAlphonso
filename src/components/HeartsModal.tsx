@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { HeartIcon } from "./icons";
 import { useCountdown } from "../hooks/use-countdown";
-import { useTheme } from "../lib/theme";
 import { XP_HEART_COST } from "../lib/hearts";
 
 export function HeartsModal({
@@ -29,7 +28,6 @@ export function HeartsModal({
   /** Always offered when provided, so out-of-hearts is never a dead end. */
   onPracticeInstead?: () => void;
 }) {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const countdown = useCountdown(refillAt);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const buyButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -125,9 +123,7 @@ export function HeartsModal({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
             className={
-              isStudioInk
-                ? "w-full max-w-[380px] border-t border-ds-line bg-ds-card p-6 pt-7 text-center"
-                : "w-full max-w-[380px] rounded-3xl border border-ds-line bg-ds-card p-6 text-center"
+              "w-full max-w-[380px] rounded-3xl border border-ds-line bg-ds-card p-6 text-center"
             }
             onClick={(e) => e.stopPropagation()}
           >

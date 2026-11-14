@@ -37,13 +37,9 @@ function RootDocument() {
   const { pathname } = useLocation();
   const current = NAV_ITEMS.find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))?.key;
   return (
-    // data-theme is set statically, unlike the learner app which reads a
-    // stored preference before first paint. `:root` in styles.css is
-    // Meadow; Canopy's token values live under [data-theme="canopy"], so
-    // without this attribute the admin app would silently render in the
-    // wrong palette while claiming to follow the Canopy constraint.
-    // There is no theme picker here and no reason for one.
-    <html lang="en" data-theme="canopy">
+    // The palette is set statically (Royal), unlike the learner app which reads a stored preference before
+    // first paint. There is no theme picker here and no reason for one.
+    <html lang="en" data-palette="royal">
       <head>
         <HeadContent />
       </head>

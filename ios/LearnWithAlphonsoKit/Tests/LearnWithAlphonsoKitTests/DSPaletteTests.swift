@@ -1,31 +1,30 @@
 import XCTest
 @testable import LearnWithAlphonsoKit
 
-/// The palette preference (visual round 6): Royal or Meadow, Royal by default. A user who never picked one keeps
-/// the look closest to their old theme: Meadow stays Meadow, the other three themes become Royal.
+/// The two themes (Royal and Meadow, Royal by default). The palette is the theme: the stored value is one of the
+/// two raw values. A learner whose saved theme was one of the three retired ones (Studio Ink, Manuscript, Canopy)
+/// moves to Royal, silently; unknown and missing values are Royal too.
 final class DSPaletteTests: XCTestCase {
     func testThereAreTwoPalettesAndRoyalIsTheDefault() {
         XCTAssertEqual(DSPaletteID.allCases.map(\.rawValue), ["royal", "meadow"])
         XCTAssertEqual(DSPaletteID.defaultPalette, .royal)
     }
 
-    func testEachRetiredThemeMapsToAPalette() {
-        XCTAssertEqual(DSPaletteID.forTheme("meadow"), .meadow)
-        XCTAssertEqual(DSPaletteID.forTheme("canopy"), .royal)
-        XCTAssertEqual(DSPaletteID.forTheme("studio-ink"), .royal)
-        XCTAssertEqual(DSPaletteID.forTheme("manuscript"), .royal)
-        XCTAssertEqual(DSPaletteID.forTheme(nil), .royal)
-        XCTAssertEqual(DSPaletteID.forTheme("something-else"), .royal)
+    func testAValidStoredValueIsKept() {
+        XCTAssertEqual(DSPaletteID.resolve(stored: "royal"), .royal)
+        XCTAssertEqual(DSPaletteID.resolve(stored: "meadow"), .meadow)
     }
 
-    func testAStoredPaletteWinsOverTheTheme() {
-        XCTAssertEqual(DSPaletteID.resolve(stored: "royal", theme: "meadow"), .royal)
-        XCTAssertEqual(DSPaletteID.resolve(stored: "meadow", theme: "canopy"), .meadow)
+    func testEachRetiredThemeBecomesRoyal() {
+        for retired in ["studio-ink", "manuscript", "canopy"] {
+            XCTAssertEqual(DSPaletteID.resolve(stored: retired), .royal, retired)
+        }
     }
 
-    func testWithNoValidStoredPaletteTheThemeDecides() {
-        XCTAssertEqual(DSPaletteID.resolve(stored: nil, theme: "meadow"), .meadow)
-        XCTAssertEqual(DSPaletteID.resolve(stored: "bogus", theme: "meadow"), .meadow)
-        XCTAssertEqual(DSPaletteID.resolve(stored: nil, theme: nil), .royal)
+    func testUnknownAndMissingValuesAreRoyal() {
+        XCTAssertEqual(DSPaletteID.resolve(stored: nil), .royal)
+        XCTAssertEqual(DSPaletteID.resolve(stored: ""), .royal)
+        XCTAssertEqual(DSPaletteID.resolve(stored: "Meadow"), .royal)
+        XCTAssertEqual(DSPaletteID.resolve(stored: "something-else"), .royal)
     }
 }

@@ -1,13 +1,8 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { AchievementBadge } from "./AchievementBadge";
 import { ACHIEVEMENTS } from "../data/achievements";
-import { useTheme } from "../lib/theme";
-
-afterEach(() => {
-  useTheme.setState({ theme: "meadow" });
-});
 
 describe("AchievementBadge", () => {
   it("shows the title and description for every achievement icon variant", () => {
@@ -31,15 +26,6 @@ describe("AchievementBadge", () => {
     render(<AchievementBadge achievement={ACHIEVEMENTS[0]} unlocked={false} />);
     expect(screen.getByText(ACHIEVEMENTS[0].title).parentElement).toHaveClass("opacity-55");
   });
-
-  it("renders the Studio Ink layout without the card border", () => {
-    useTheme.setState({ theme: "studio-ink" });
-    render(<AchievementBadge achievement={ACHIEVEMENTS[0]} unlocked />);
-    expect(screen.getByText(ACHIEVEMENTS[0].title).parentElement).not.toHaveClass(
-      "border-hairline",
-    );
-  });
-
   it("shows the 3D icon for its glyph, and greys it when locked", () => {
     const flame = ACHIEVEMENTS.find((a) => a.icon === "flame")!;
     const { container, unmount } = render(<AchievementBadge achievement={flame} unlocked />);

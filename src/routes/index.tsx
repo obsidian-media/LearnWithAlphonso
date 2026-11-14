@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { useTheme } from "../lib/theme";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -39,7 +38,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -87,7 +85,7 @@ function Landing() {
             hidden: {},
             show: { transition: { staggerChildren: 0.08, delayChildren: 0.3 } },
           }}
-          className={isStudioInk ? "mt-10 divide-y divide-hairline" : "mt-10 space-y-3"}
+          className={"mt-10 space-y-3"}
         >
           {[
             { t: "Short lessons", d: "1,800+ lessons from A1 to C1 across all three languages." },
@@ -104,9 +102,7 @@ function Landing() {
               key={f.t}
               variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
               className={
-                isStudioInk
-                  ? "flex items-start gap-3 py-3.5"
-                  : "flex items-start gap-3 rounded-2xl border border-hairline bg-parchment p-3.5"
+                "flex items-start gap-3 rounded-2xl border border-hairline bg-parchment p-3.5"
               }
             >
               <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-moss text-surface">

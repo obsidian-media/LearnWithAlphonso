@@ -19,19 +19,11 @@ object AlphonsoFonts {
 
     val fraunces = variable(R.font.fraunces_variable, 400, 500, 600, 700)
     val geist = variable(R.font.geist_variable, 400, 500, 600, 700)
-    val instrumentSans = variable(R.font.instrument_sans_variable, 400, 500, 600, 700)
-    val instrumentSerif = FontFamily(Font(R.font.instrument_serif_regular, FontWeight.Normal))
-    val newsreader = variable(R.font.newsreader_variable, 400, 500, 600, 700)
-    val sourceSans3 = variable(R.font.source_sans3_variable, 400, 500, 600, 700)
     val baloo2 = variable(R.font.baloo2_variable, 400, 500, 600, 700)
 
     fun family(face: AlphonsoFontFace): FontFamily = when (face) {
         AlphonsoFontFace.FRAUNCES -> fraunces
         AlphonsoFontFace.GEIST -> geist
-        AlphonsoFontFace.INSTRUMENT_SERIF -> instrumentSerif
-        AlphonsoFontFace.INSTRUMENT_SANS -> instrumentSans
-        AlphonsoFontFace.NEWSREADER -> newsreader
-        AlphonsoFontFace.SOURCE_SANS3 -> sourceSans3
         AlphonsoFontFace.BALOO2 -> baloo2
     }
 }

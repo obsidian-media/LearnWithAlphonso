@@ -104,7 +104,7 @@ final class AccountDataCleanupTests: XCTestCase {
         store.set("gold", forKey: AccountCacheKeys.leagueTier)
         store.set(Data([3]), forKey: AccountCacheKeys.nudgeCooldowns)
         store.set(Data([4]), forKey: GoalCache.key(userID: "user-a", course: "en"))
-        store.set("canopy", forKey: "alphonsoTheme")
+        store.set("royal", forKey: "alphonsoTheme")
         store.set(2, forKey: "savedWordHintShownCount")
 
         AccountLocalCaches(defaults: store).clear()
@@ -113,7 +113,7 @@ final class AccountDataCleanupTests: XCTestCase {
             XCTAssertNil(store.object(forKey: key), key)
         }
         XCTAssertNil(store.object(forKey: GoalCache.key(userID: "user-a", course: "en")))
-        XCTAssertEqual(store.string(forKey: "alphonsoTheme"), "canopy")
+        XCTAssertEqual(store.string(forKey: "alphonsoTheme"), "royal")
         XCTAssertEqual(store.integer(forKey: "savedWordHintShownCount"), 2)
     }
 

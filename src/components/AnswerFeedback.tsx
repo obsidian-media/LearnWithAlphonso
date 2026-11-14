@@ -5,7 +5,6 @@ import {
   type SpanQuestion,
 } from "../lib/course-language-spans";
 import { allowsSaving, savesWholeText } from "../lib/saved-word-client";
-import { useTheme } from "../lib/theme";
 import { SaveWordHint } from "./SaveWord";
 import { TappableText } from "./TappableText";
 
@@ -73,35 +72,9 @@ export function AnswerFeedback({
   /** The question being explained; French and Spanish need it to find the course-language text. */
   question?: SpanQuestion;
 }) {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const explanationBody = (
     <AnswerExplanation explanation={explanation} saveCourse={saveCourse} question={question} />
   );
-
-  if (isStudioInk) {
-    return (
-      <div
-        role="status"
-        aria-live="polite"
-        className={`mt-5 flex items-start gap-3 border-l-[3px] py-2 pl-4 text-sm ${correct ? "border-l-ds-brand" : "border-l-rose-400"}`}
-      >
-        {!correct && (
-          <img
-            src="/mascots/alphonso.png"
-            alt="Alphonso"
-            width={40}
-            height={40}
-            decoding="async"
-            className="size-10 shrink-0 rounded-lg object-cover"
-          />
-        )}
-        <div>
-          <p className="font-semibold text-ds-ink">{headline}</p>
-          {explanationBody}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div

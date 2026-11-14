@@ -107,7 +107,7 @@ struct SceneScrollOffsetReader: ViewModifier {
 }
 
 /// A scene image full-bleed behind a screen: a readability scrim from the top (darker in dark mode, and it
-/// follows the theme's own surface colour so Studio Ink keeps its character), and gentle parallax.
+/// follows the theme's own surface colour), and gentle parallax.
 ///
 /// Parallax: the content scrolls by `d`, the image by half of that. It is static under Reduce Motion (no
 /// movement, and no overscan scale either, since nothing needs the slack). Text never sits straight on a scene:

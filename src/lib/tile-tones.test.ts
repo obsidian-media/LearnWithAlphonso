@@ -21,18 +21,10 @@ function contrast(a: string, b: string): number {
 type Tones = Record<string, Record<string, { bg: string; ink: string }>>;
 const pals = tokens.palettes as unknown as Tones;
 
-const PALETTES = [
-  "meadow",
-  "meadow-dark",
-  "canopy",
-  "canopy-dark",
-  "manuscript",
-  "manuscript-dark",
-  "studio-ink",
-] as const;
+const PALETTES = ["meadow", "meadow-dark", "royal", "royal-dark"] as const;
 
 describe("tile tones", () => {
-  it("all seven palettes and five tones exist", () => {
+  it("all four palettes and five tones exist", () => {
     expect(tokens.tones).toEqual(["coral", "sky", "sun", "lilac", "mint"]);
     expect(Object.keys(tokens.palettes).sort()).toEqual([...PALETTES].sort());
     for (const p of PALETTES) {

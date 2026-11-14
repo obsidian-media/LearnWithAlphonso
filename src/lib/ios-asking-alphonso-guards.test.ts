@@ -246,7 +246,7 @@ describe("Android: the streak-freeze row is a card", () => {
     expect(block).toContain(".border(1.dp, ds.line");
   });
 
-  it("its words are ink, and the buy button is the secondary button, not moss text (3.8:1 on Studio Ink)", () => {
+  it("its words are ink, and the buy button is the secondary button, not moss text (it missed contrast on the old dark theme)", () => {
     expect(block).toContain("color = ds.ink,");
     expect(block).toContain("AlphonsoSecondaryButton(");
     expect(block).not.toMatch(/Color\.White|onPrimary|onAction|palette\.moss|ds\.actionText/);

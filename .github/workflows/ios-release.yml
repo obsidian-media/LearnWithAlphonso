@@ -417,7 +417,7 @@ jobs:
           echo "-- Icon and licence texts compiled into the bundle --"
           ICON_NAME=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconName" "$APP/Info.plist" 2>/dev/null || echo MISSING)
           [ "$ICON_NAME" = "AppIcon" ] || { echo "::error::Shipped CFBundleIcons primary icon is '$ICON_NAME', expected 'AppIcon'."; exit 1; }
-          for F in RevenueCat-LICENSE.txt Baloo2-OFL.txt Fraunces-OFL.txt Geist-OFL.txt InstrumentSans-OFL.txt InstrumentSerif-OFL.txt Newsreader-OFL.txt SourceSans3-OFL.txt; do
+          for F in RevenueCat-LICENSE.txt Baloo2-OFL.txt Fraunces-OFL.txt Geist-OFL.txt; do
             [ -f "$APP/$F" ] || { echo "::error::$F is not in the shipped bundle; Acknowledgements would show the fallback line."; exit 1; }
           done
           echo "Icon and licence texts OK."

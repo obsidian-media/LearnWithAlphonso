@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useTheme } from "../lib/theme";
 import { promoteAttribution } from "../lib/signup-attribution";
 import { setAnalyticsConsent } from "../lib/analytics";
 
@@ -15,7 +14,6 @@ export function getConsent(): ConsentValue | null {
 }
 
 export function CookieConsent() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -47,9 +45,7 @@ export function CookieConsent() {
     >
       <div
         className={
-          isStudioInk
-            ? "mx-auto max-w-[430px] border-t border-ds-line bg-ds-card p-4"
-            : "mx-auto max-w-[430px] rounded-2xl border border-ds-line bg-ds-card p-4 shadow-lg"
+          "mx-auto max-w-[430px] rounded-2xl border border-ds-line bg-ds-card p-4 shadow-lg"
         }
       >
         <p className="ds-type-footnote leading-relaxed text-ds-ink-soft">

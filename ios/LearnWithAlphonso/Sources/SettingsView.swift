@@ -5,7 +5,7 @@ import LearnWithAlphonsoKit
 /// Theme picker + account + sign out -- the app's first real settings
 /// surface (there was none before; "Sign out" lived directly in
 /// LessonBrowserView's toolbar). Ports the web's theme picker
-/// (`profile.tsx`) to iOS: three themes (Meadow/Studio Ink/Manuscript,
+/// (`profile.tsx`) to iOS: two themes (Royal and Meadow,
 /// see DesignSystem/AlphonsoTheme.swift), applied instantly and locally
 /// via `AlphonsoThemeManager`, synced to `profiles.theme` in the
 /// background so it round-trips with the web app on the same account.
@@ -479,7 +479,7 @@ private struct ThemeSwatch: View {
     let themeID: AlphonsoThemeID
 
     private var palette: AlphonsoPalette {
-        AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.meadow]!
+        AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.royal]!
     }
 
     var body: some View {

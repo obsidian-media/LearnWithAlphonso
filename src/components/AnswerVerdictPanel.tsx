@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
 import { verdictTitle } from "../lib/answer-verdict";
-import { useTheme } from "../lib/theme";
 import { usePrefersReducedMotion } from "../lib/use-prefers-reduced-motion";
 import type { SpanQuestion } from "../lib/course-language-spans";
-import { AnswerExplanation, AnswerFeedback } from "./AnswerFeedback";
+import { AnswerExplanation } from "./AnswerFeedback";
 
 /**
  * Everything after Check, in one panel at the bottom of the question: green or red, the verdict, the right answer
@@ -33,31 +32,8 @@ export function AnswerVerdictPanel({
   continueLabel: string;
   onContinue: () => void;
 }) {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const reduceMotion = usePrefersReducedMotion();
   const title = titleOverride ?? verdictTitle(correct);
-
-  if (isStudioInk) {
-    return (
-      <>
-        <AnswerFeedback
-          correct={correct}
-          headline={correct ? "Nice." : "Not quite."}
-          explanation={explanation}
-          saveCourse={saveCourse}
-          question={question}
-        />
-        <div className="mt-auto pt-6">
-          <button
-            onClick={onContinue}
-            className="w-full rounded-full bg-ember px-4 py-3.5 text-sm font-semibold text-ink-on-ember transition hover:opacity-90"
-          >
-            {continueLabel}
-          </button>
-        </div>
-      </>
-    );
-  }
 
   return (
     <div className="mt-auto pt-6">

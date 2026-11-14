@@ -60,7 +60,12 @@ export const updateProfile = createServerFn({ method: "POST" })
           .regex(/^[A-Z]{2}$/)
           .optional()
           .nullable(),
-        theme: z.enum(["meadow", "studio-ink", "manuscript", "canopy"]).optional(),
+        // Meadow stays Meadow; a retired or unknown value (an older app build) is stored as Royal, never an error.
+        theme: z
+          .string()
+          .max(40)
+          .transform((v) => (v === "meadow" ? "meadow" : "royal"))
+          .optional(),
         // A colour seed, or one of the 16 preset animal pictures (profile-avatars.ts). Never a URL.
         avatar_seed: z.string().min(1).max(32).refine(isAllowedAvatarSeed).optional(),
       })

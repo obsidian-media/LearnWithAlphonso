@@ -9,7 +9,6 @@ import {
 } from "@/lib/password-policy";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useTheme } from "../lib/theme";
 import { TextField } from "../components/TextField";
 import { safeNextPath } from "../lib/safe-next-path";
 import { browserFirstRunStore } from "../lib/first-run";
@@ -46,7 +45,6 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const isStudioInk = useTheme((s) => s.theme === "studio-ink");
   const navigate = useNavigate();
   const { next, mode: startMode } = Route.useSearch();
   // A device that answered Under 13 in the first run cannot make an account here either (BACKLOG 0.0-bd).
@@ -338,22 +336,12 @@ function AuthPage() {
               </div>
             )}
             {error && (
-              <p
-                className={
-                  isStudioInk
-                    ? "border-l-[3px] border-l-rose-400 py-1 pl-3 text-xs text-rose-500"
-                    : "rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700"
-                }
-              >
-                {error}
-              </p>
+              <p className={"rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700"}>{error}</p>
             )}
             {notice && (
               <p
                 className={
-                  isStudioInk
-                    ? "border-l-[3px] border-l-hairline py-1 pl-3 text-xs leading-relaxed text-ds-ink-soft"
-                    : "rounded-xl border border-ds-line bg-ds-sunk px-3 py-2 text-xs leading-relaxed text-ds-ink"
+                  "rounded-xl border border-ds-line bg-ds-sunk px-3 py-2 text-xs leading-relaxed text-ds-ink"
                 }
               >
                 {notice}

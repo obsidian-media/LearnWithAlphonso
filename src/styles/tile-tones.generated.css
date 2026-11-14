@@ -11,26 +11,11 @@
   --tile-lilac-ink: #523399;
   --tile-mint-bg: #b5e6cb;
   --tile-mint-ink: #165c3a;
-  --edge-moss: #153c25;
-  --edge-ember: #9e3d16;
-}
-
-[data-theme="canopy"] {
-  --tile-coral-bg: #ffd2c4;
-  --tile-coral-ink: #8a2a14;
-  --tile-sky-bg: #cde2ff;
-  --tile-sky-ink: #1b4a8a;
-  --tile-sun-bg: #ffd970;
-  --tile-sun-ink: #6b4700;
-  --tile-lilac-bg: #e0d2ff;
-  --tile-lilac-ink: #523399;
-  --tile-mint-bg: #b5e6cb;
-  --tile-mint-ink: #165c3a;
   --edge-moss: #133f2b;
   --edge-ember: #b23c27;
 }
 
-[data-theme="manuscript"] {
+:root[data-palette="meadow"] {
   --tile-coral-bg: #ffd2c4;
   --tile-coral-ink: #8a2a14;
   --tile-sky-bg: #cde2ff;
@@ -41,21 +26,6 @@
   --tile-lilac-ink: #523399;
   --tile-mint-bg: #b5e6cb;
   --tile-mint-ink: #165c3a;
-  --edge-moss: #650014;
-  --edge-ember: #5e0e19;
-}
-
-[data-theme="studio-ink"] {
-  --tile-coral-bg: #4a1f16;
-  --tile-coral-ink: #ffd2c4;
-  --tile-sky-bg: #16304f;
-  --tile-sky-ink: #cde2ff;
-  --tile-sun-bg: #46370f;
-  --tile-sun-ink: #ffe08a;
-  --tile-lilac-bg: #2f2350;
-  --tile-lilac-ink: #e0d2ff;
-  --tile-mint-bg: #143a29;
-  --tile-mint-ink: #c2ecd5;
-  --edge-moss: #004699;
-  --edge-ember: #004e93;
+  --edge-moss: #153c25;
+  --edge-ember: #9e3d16;
 }
