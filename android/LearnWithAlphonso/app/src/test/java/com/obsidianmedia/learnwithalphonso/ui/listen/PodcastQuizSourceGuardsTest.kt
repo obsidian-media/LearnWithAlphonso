@@ -152,8 +152,18 @@ class PodcastQuizSourceGuardsTest {
     @Test
     fun `no Material button, outlined field or text button is left in the quiz screen`() {
         val src = read(ui)
-        for (banned in listOf("OutlinedButton(", "Button(onClick", "TextButton(", "OutlinedTextField(", "ButtonDefaults")) {
-            assertFalse("the quiz UI must use the design system's buttons, not '$banned'", src.contains(banned))
+        // A bare Material call (not DsCompactButton, AlphonsoPrimaryButton ...), with or without a space before the paren,
+        // as a call, a named-argument call or an import.
+        val banned = listOf(
+            Regex("""(?<![A-Za-z0-9_])(Outlined|Text|Filled|Elevated|FilledTonal)?Button\s*\("""),
+            Regex("""(?<![A-Za-z0-9_])(Outlined|Basic)?TextField\s*\("""),
+            Regex("""material3\.(Outlined|Text|Filled|Elevated|FilledTonal)?Button"""),
+            Regex("""material3\.(Outlined|Basic)?TextField"""),
+            Regex("""ButtonDefaults"""),
+        )
+        for (rx in banned) {
+            val hit = rx.find(src)
+            assertFalse("the quiz UI must use the design system's buttons, not '${hit?.value}'", hit != null)
         }
     }
 }
