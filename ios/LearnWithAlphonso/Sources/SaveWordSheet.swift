@@ -40,6 +40,7 @@ struct SaveWordSheet: View {
     let session: Session
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.alphonsoDS) private var ds
     @State private var phase: Phase = .idle
     @State private var showDisclosure = false
     @EnvironmentObject private var aiConsent: AIConsentStore
@@ -52,18 +53,25 @@ struct SaveWordSheet: View {
     }
 
     var body: some View {
-        VStack(spacing: AlphonsoSpacing.md) {
+        VStack(spacing: AlphonsoDS.Space.s3) {
             // Scrollable: the sentence can be 300 characters and the fonts scale
             // with Dynamic Type, so at accessibility sizes the content can exceed
             // even the .large detent. Done stays pinned below, always reachable.
             ScrollView {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-                    Text(request.word)
-                        .font(AlphonsoFont.display(26, weight: .semiBold))
-                        .foregroundStyle(AlphonsoColor.ink)
-                    Text("\u{201C}\(request.sentence)\u{201D}")
-                        .font(AlphonsoFont.sans(15))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                    HStack(alignment: .bottom, spacing: AlphonsoDS.Space.s2) {
+                        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                            Text(request.word).dsText(.display).foregroundStyle(ds.brand)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .accessibilityAddTraits(.isHeader)
+                            Text("\u{201C}\(request.sentence)\u{201D}").dsText(.body).foregroundStyle(ds.inkSoft)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 0)
+                        Image("Alphonso-reading-book").resizable().scaledToFit()
+                            .frame(height: AlphonsoDS.Space.s12 * 2)
+                            .accessibilityHidden(true)
+                    }
 
                     content
                 }
@@ -71,12 +79,11 @@ struct SaveWordSheet: View {
             }
 
             Button("Done") { dismiss() }
-                .font(AlphonsoFont.sans(14, weight: .medium))
-                .tint(AlphonsoColor.inkSoft)
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.dsButton(.secondary, compact: true))
         }
-        .padding()
-        .background(AlphonsoColor.surface)
+        .padding(AlphonsoDS.Space.gutter)
+        .background(ds.surface)
+        .tint(ds.choice)
         .presentationDetents([.medium, .large])
         .aiDisclosureSheet(isPresented: $showDisclosure) {
             Task { await save() }
@@ -88,23 +95,22 @@ struct SaveWordSheet: View {
         switch phase {
         case .idle:
             Button("Save word") { Task { await save() } }
-                .buttonStyle(.alphonsoPrimary)
+                .buttonStyle(.dsButton(.primary))
         case .saving:
-            ProgressView("Looking it up...").tint(AlphonsoColor.moss)
+            DSCard {
+                HStack(spacing: AlphonsoDS.Space.s3) {
+                    ProgressView().tint(ds.choice)
+                    Text("Looking it up...").dsText(.body).foregroundStyle(ds.inkSoft)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
         case .saved(let result):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                Label(
-                    result.alreadySaved ? "Already saved" : "Saved for review",
-                    systemImage: "checkmark.circle.fill"
-                )
-                .font(AlphonsoFont.sans(14, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.moss)
-                Text(result.explanation)
-                    .font(AlphonsoFont.sans(16))
-                    .foregroundStyle(AlphonsoColor.ink)
+            DSCard {
+                DSPill(text: result.alreadySaved ? "Already saved" : "Saved for review", tone: .good)
+                Text(result.explanation).dsText(.body).foregroundStyle(ds.ink)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text("AI-generated meaning. It can occasionally be wrong.")
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.caption).foregroundStyle(ds.inkSoft)
                 // The meaning above stays in English; this offers it in the learner's own language, on tap.
                 ExplainInMyLanguage(
                     request: ExplainRequest.makeWord(
@@ -112,13 +118,12 @@ struct SaveWordSheet: View {
                     session: session)
             }
         case .failed(let error):
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                Text(error.userMessage)
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.destructive)
+            DSCard {
+                Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
+                    .fixedSize(horizontal: false, vertical: true)
                 if error == .unavailable || error == .offline {
                     Button("Try again") { Task { await save() } }
-                        .buttonStyle(.alphonsoSecondary)
+                        .buttonStyle(.dsButton(.secondary, compact: true))
                 }
             }
         }
