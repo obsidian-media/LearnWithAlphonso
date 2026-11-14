@@ -18,7 +18,7 @@ describe("HeartsModal", () => {
   it("shows the dialog with a generic refill message when there's no timer", () => {
     render(<HeartsModal open refillAt={null} onClose={() => {}} />);
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText(/refill again shortly/)).toBeInTheDocument();
+    expect(screen.getByText(/heart will come back shortly/)).toBeInTheDocument();
   });
 
   it("shows a live countdown when refillAt is in the future", () => {
@@ -26,7 +26,7 @@ describe("HeartsModal", () => {
     vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
     const refillAt = Date.now() + 90_000;
     render(<HeartsModal open refillAt={refillAt} onClose={() => {}} />);
-    expect(screen.getByText(/refill automatically in 1:30/)).toBeInTheDocument();
+    expect(screen.getByText(/next heart comes back in 1:30/)).toBeInTheDocument();
   });
 
   it("calls onClose when the backdrop, Escape, or the close button is used", async () => {

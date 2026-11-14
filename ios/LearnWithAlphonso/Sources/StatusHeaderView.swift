@@ -29,7 +29,7 @@ struct StatusHeaderView: View {
                     // used as long as it actually fits.
                     HStack(spacing: AlphonsoSpacing.sm) {
                         streakPill(progress: progress)
-                        statPill(emoji: "\u{2764}", label: "Hearts", value: "\(progress.hearts)")
+                        heartsPill(progress: progress)
                         statPill(emoji: "\u{2B50}", label: "XP", value: "\(progress.xp)")
                         Spacer()
                         leagueBadge(progress: progress)
@@ -40,7 +40,7 @@ struct StatusHeaderView: View {
                     VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
                         HStack(spacing: AlphonsoSpacing.sm) {
                             streakPill(progress: progress)
-                            statPill(emoji: "\u{2764}", label: "Hearts", value: "\(progress.hearts)")
+                            heartsPill(progress: progress)
                             statPill(emoji: "\u{2B50}", label: "XP", value: "\(progress.xp)")
                         }
                         leagueBadge(progress: progress)
@@ -53,7 +53,7 @@ struct StatusHeaderView: View {
                     // centered/stretched, matching how the rows above read.
                     VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
                         streakPill(progress: progress)
-                        statPill(emoji: "\u{2764}", label: "Hearts", value: "\(progress.hearts)")
+                        heartsPill(progress: progress)
                         statPill(emoji: "\u{2B50}", label: "XP", value: "\(progress.xp)")
                         leagueBadge(progress: progress)
                     }
@@ -77,12 +77,17 @@ struct StatusHeaderView: View {
     // with no unit -- combine + an explicit label ("Hearts: 5") is the only
     // way VoiceOver can tell this pill apart from any other bare-number
     // pill next to it.
-    private func statPill(emoji: String, label: String, value: String) -> some View {
+    private func statPill(emoji: String, label: String, value: String, hint: String? = nil, spokenHint: String? = nil) -> some View {
         HStack(spacing: 4) {
             Icon3DView(emoji: emoji, size: 22)
             Text(value)
                 .font(AlphonsoFont.display(16, weight: .bold))
                 .foregroundStyle(AlphonsoColor.ink)
+            if let hint {
+                Text(hint)
+                    .font(.caption2)
+                    .foregroundStyle(AlphonsoColor.inkSoft)
+            }
         }
         .padding(.leading, 5)
         .padding(.trailing, AlphonsoSpacing.sm + 4)
@@ -90,7 +95,29 @@ struct StatusHeaderView: View {
         .background(.regularMaterial, in: Capsule())
         .alphonsoLift()
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(label): \(value)")
+        .accessibilityLabel(spokenHint.map { "\(label): \(value), \($0)" } ?? "\(label): \(value)")
+    }
+
+    /// The hearts counter. Below the cap it ticks on its own: a heart that has come due appears without a sync (the same
+    /// rule the server applies), and the wait for the next one shows beside the count.
+    @ViewBuilder
+    private func heartsPill(progress: LessonCompletionProgress) -> some View {
+        if progress.hearts < HeartsEconomy.maxHearts {
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                let shown = HeartsEconomy.resolveHeartsRefill(
+                    hearts: progress.hearts,
+                    heartsRefillAt: progress.heartsRefillAt.map { Date(timeIntervalSince1970: $0 / 1000) },
+                    now: context.date)
+                let wait = HeartsEconomy.nextHeartCountdown(
+                    hearts: shown.hearts, heartsRefillAt: shown.heartsRefillAt, now: context.date)
+                statPill(
+                    emoji: "\u{2764}", label: "Hearts", value: "\(shown.hearts)",
+                    hint: wait.map { "+1 in \($0)" },
+                    spokenHint: wait.map { "next heart in \($0)" })
+            }
+        } else {
+            statPill(emoji: "\u{2764}", label: "Hearts", value: "\(progress.hearts)")
+        }
     }
 
     private func streakPill(progress: LessonCompletionProgress) -> some View {

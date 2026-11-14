@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 import type { LeagueTier } from "../data/achievements";
 import type { Course } from "../data/courses";
-import { MAX_HEARTS } from "./hearts";
+import { gainHearts, loseHeart, resolveHeartsRefill } from "./hearts";
 
 export function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -54,7 +54,10 @@ export type ProgressState = {
     unlockedAchievements: string[];
   }) => void;
   loseHeartLocal: () => void;
-  restoreHeartsLocal: () => void;
+  /** Applies the refill rule to the current clock: every heart that has come due is added. */
+  refillHeartsLocal: () => void;
+  /** Takes the server's answer (restore_hearts_if_due) as the truth for hearts and the timer. */
+  setHeartsLocal: (hearts: number, heartsRefillAt: number | null) => void;
   gainHeartsLocal: (amount: number) => void;
   spendXpForHeartLocal: (cost: number) => void;
   reset: () => void;
@@ -90,18 +93,14 @@ export const useProgress = create<ProgressState>()((set) => ({
   setPlacementLocal: (p) => set({ ...p }),
   hydrate: (input) => set({ ...initial, ...input, hydrated: true, loading: false }),
   applyCompletion: (patch) => set((s) => ({ ...s, ...patch })),
-  loseHeartLocal: () =>
-    set((s) => ({
-      hearts: Math.max(0, s.hearts - 1),
-      heartsRefillAt: s.hearts - 1 <= 0 ? Date.now() + 30 * 60 * 1000 : s.heartsRefillAt,
-    })),
-  restoreHeartsLocal: () => set({ hearts: MAX_HEARTS, heartsRefillAt: null }),
+  loseHeartLocal: () => set((s) => loseHeart(s.hearts, s.heartsRefillAt, Date.now())),
+  refillHeartsLocal: () => set((s) => resolveHeartsRefill(s.hearts, s.heartsRefillAt, Date.now())),
+  setHeartsLocal: (hearts, heartsRefillAt) => set({ hearts, heartsRefillAt }),
   gainHeartsLocal: (amount) =>
-    set((s) => ({ hearts: Math.min(MAX_HEARTS, s.hearts + amount), heartsRefillAt: null })),
+    set((s) => gainHearts(s.hearts, amount, s.heartsRefillAt, Date.now())),
   spendXpForHeartLocal: (cost) =>
     set((s) => ({
-      hearts: Math.min(MAX_HEARTS, s.hearts + 1),
-      heartsRefillAt: null,
+      ...gainHearts(s.hearts, 1, s.heartsRefillAt, Date.now()),
       xp: Math.max(0, s.xp - cost),
     })),
   // `course` is deliberately not part of `initial` -- hydrate() spreads

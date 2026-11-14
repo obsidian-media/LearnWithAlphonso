@@ -43,6 +43,16 @@ describe("TopBar", () => {
     expect(screen.getByLabelText("Hearts")).toHaveTextContent("3");
   });
 
+  it("shows the wait for the next heart while hearts are below the cap, and nothing at full hearts", () => {
+    useProgress.setState({ hydrated: true, hearts: 3, heartsRefillAt: Date.now() + 90_000 });
+    const { unmount } = render(<TopBar />);
+    expect(screen.getByLabelText("Hearts")).toHaveTextContent("+1 in 1:30");
+    unmount();
+    useProgress.setState({ hydrated: true, hearts: 5, heartsRefillAt: null });
+    render(<TopBar />);
+    expect(screen.getByLabelText("Hearts")).not.toHaveTextContent("+1 in");
+  });
+
   it("shows the real brand mark and name at the left, not a league shield", () => {
     render(<TopBar />);
     const home = screen.getByRole("link", { name: "Learn with Alphonso, home" });

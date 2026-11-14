@@ -3,48 +3,65 @@ import XCTest
 
 /// Mirrors src/lib/hearts.test.ts -- keep in sync with that file.
 final class HeartsEconomyTests: XCTestCase {
-    // MARK: - resolveHeartsRefill
+    // MARK: - resolveHeartsRefill (same vectors as src/lib/hearts.test.ts)
 
-    func testLeavesHeartsUntouchedWhenNoRefillIsPending() {
-        let result = HeartsEconomy.resolveHeartsRefill(hearts: 3, heartsRefillAt: nil, now: Date())
-        XCTAssertEqual(result, HeartsEconomy.HeartsState(hearts: 3, heartsRefillAt: nil))
+    private let t0 = Date(timeIntervalSince1970: 1_700_000_000)
+    private let step: TimeInterval = HeartsEconomy.heartRefillSeconds
+
+    func testFullHeartsHaveNoTimer() {
+        let result = HeartsEconomy.resolveHeartsRefill(hearts: HeartsEconomy.maxHearts, heartsRefillAt: t0.addingTimeInterval(5), now: t0)
+        XCTAssertEqual(result, HeartsEconomy.HeartsState(hearts: HeartsEconomy.maxHearts, heartsRefillAt: nil))
     }
 
     func testLeavesHeartsUntouchedBeforeTheRefillTimestamp() {
-        let now = Date()
-        let refillAt = now.addingTimeInterval(1)
-        let result = HeartsEconomy.resolveHeartsRefill(hearts: 0, heartsRefillAt: refillAt, now: now)
-        XCTAssertEqual(result, HeartsEconomy.HeartsState(hearts: 0, heartsRefillAt: refillAt))
+        let refillAt = t0.addingTimeInterval(1)
+        let result = HeartsEconomy.resolveHeartsRefill(hearts: 2, heartsRefillAt: refillAt, now: t0)
+        XCTAssertEqual(result, HeartsEconomy.HeartsState(hearts: 2, heartsRefillAt: refillAt))
     }
 
-    func testRestoresToMaxHeartsAndClearsTheTimerOnceThePastTimestampHasPassed() {
-        let now = Date()
-        let refillAt = now.addingTimeInterval(-1)
-        let result = HeartsEconomy.resolveHeartsRefill(hearts: 0, heartsRefillAt: refillAt, now: now)
-        XCTAssertEqual(result, HeartsEconomy.HeartsState(hearts: HeartsEconomy.maxHearts, heartsRefillAt: nil))
+    func testGivesExactlyOneHeartPerDueIntervalAndAtTheBoundary() {
+        let late = t0.addingTimeInterval(-1)
+        XCTAssertEqual(HeartsEconomy.resolveHeartsRefill(hearts: 2, heartsRefillAt: late, now: t0),
+                       HeartsEconomy.HeartsState(hearts: 3, heartsRefillAt: late.addingTimeInterval(step)))
+        XCTAssertEqual(HeartsEconomy.resolveHeartsRefill(hearts: 0, heartsRefillAt: t0, now: t0),
+                       HeartsEconomy.HeartsState(hearts: 1, heartsRefillAt: t0.addingTimeInterval(step)))
     }
 
-    func testRestoresExactlyAtTheRefillTimestampBoundary() {
-        let now = Date()
-        let result = HeartsEconomy.resolveHeartsRefill(hearts: 0, heartsRefillAt: now, now: now)
-        XCTAssertEqual(result, HeartsEconomy.HeartsState(hearts: HeartsEconomy.maxHearts, heartsRefillAt: nil))
+    func testTwoHoursAwayGivesFourHearts() {
+        let due = t0.addingTimeInterval(-4 * step + 1)
+        XCTAssertEqual(HeartsEconomy.resolveHeartsRefill(hearts: 0, heartsRefillAt: due, now: t0),
+                       HeartsEconomy.HeartsState(hearts: 4, heartsRefillAt: due.addingTimeInterval(4 * step)))
+    }
+
+    func testCarriesTheLeftoverTimeIntoTheNextHeart() {
+        let due = t0.addingTimeInterval(-1.5 * step)
+        XCTAssertEqual(HeartsEconomy.resolveHeartsRefill(hearts: 1, heartsRefillAt: due, now: t0),
+                       HeartsEconomy.HeartsState(hearts: 3, heartsRefillAt: t0.addingTimeInterval(0.5 * step)))
+    }
+
+    func testCapsAtMaxHeartsAndClearsTheTimer() {
+        XCTAssertEqual(HeartsEconomy.resolveHeartsRefill(hearts: 3, heartsRefillAt: t0.addingTimeInterval(-10 * step), now: t0),
+                       HeartsEconomy.HeartsState(hearts: HeartsEconomy.maxHearts, heartsRefillAt: nil))
+    }
+
+    func testStartsTheClockForARowBelowTheCapThatHasNone() {
+        XCTAssertEqual(HeartsEconomy.resolveHeartsRefill(hearts: 3, heartsRefillAt: nil, now: t0),
+                       HeartsEconomy.HeartsState(hearts: 3, heartsRefillAt: t0.addingTimeInterval(step)))
     }
 
     // MARK: - gainHearts
 
-    func testAddsHeartsUpToTheCap() {
-        let result = HeartsEconomy.gainHearts(hearts: 3, amount: 1)
-        XCTAssertEqual(result, HeartsEconomy.HeartsState(hearts: 4, heartsRefillAt: nil))
+    func testGainKeepsARunningClockBelowTheCap() {
+        let at = t0.addingTimeInterval(900)
+        XCTAssertEqual(HeartsEconomy.gainHearts(hearts: 2, amount: 1, heartsRefillAt: at, now: t0),
+                       HeartsEconomy.HeartsState(hearts: 3, heartsRefillAt: at))
+        XCTAssertEqual(HeartsEconomy.gainHearts(hearts: 0, amount: 1, heartsRefillAt: nil, now: t0),
+                       HeartsEconomy.HeartsState(hearts: 1, heartsRefillAt: t0.addingTimeInterval(step)))
     }
 
-    func testCapsAtMaxHearts() {
-        let result = HeartsEconomy.gainHearts(hearts: 4, amount: 3)
-        XCTAssertEqual(result, HeartsEconomy.HeartsState(hearts: HeartsEconomy.maxHearts, heartsRefillAt: nil))
-    }
-
-    func testClearsAPendingRefillTimerOnAnyGain() {
-        let result = HeartsEconomy.gainHearts(hearts: 0, amount: 1)
-        XCTAssertEqual(result, HeartsEconomy.HeartsState(hearts: 1, heartsRefillAt: nil))
+    func testGainCapsAtMaxHeartsAndClearsTheTimer() {
+        XCTAssertEqual(HeartsEconomy.gainHearts(hearts: 4, amount: 3, heartsRefillAt: t0.addingTimeInterval(900), now: t0),
+                       HeartsEconomy.HeartsState(hearts: HeartsEconomy.maxHearts, heartsRefillAt: nil))
     }
 
     // MARK: - perfectLessonBonusEarned
@@ -113,8 +130,18 @@ final class HeartsEconomyTests: XCTestCase {
     func testGateOpensOnceRefillHasPassed() {
         XCTAssertEqual(HeartsEconomy.gate(hearts: 0, heartsRefillAt: Date(timeIntervalSince1970: 5), now: Date(timeIntervalSince1970: 5)), .open)
     }
-    func testGateBlocksANegativeCountWithNoTimer() {
-        XCTAssertEqual(HeartsEconomy.gate(hearts: -1, heartsRefillAt: nil, now: Date(timeIntervalSince1970: 1)), .outOfHearts(refillAt: nil))
+    func testGateBlocksANegativeCountWithNoTimerAndStartsTheClock() {
+        XCTAssertEqual(HeartsEconomy.gate(hearts: -1, heartsRefillAt: nil, now: Date(timeIntervalSince1970: 1)), .outOfHearts(refillAt: Date(timeIntervalSince1970: 1 + HeartsEconomy.heartRefillSeconds)))
+    }
+
+    // MARK: - nextHeartCountdown
+    func testNextHeartCountdownCountsDownBelowTheCapAndIsNilOtherwise() {
+        let now = Date(timeIntervalSince1970: 1_000)
+        XCTAssertEqual(HeartsEconomy.nextHeartCountdown(hearts: 3, heartsRefillAt: now.addingTimeInterval(90.5), now: now), "1:31")
+        XCTAssertEqual(HeartsEconomy.nextHeartCountdown(hearts: 3, heartsRefillAt: now.addingTimeInterval(1), now: now), "0:01")
+        XCTAssertNil(HeartsEconomy.nextHeartCountdown(hearts: 3, heartsRefillAt: now, now: now))
+        XCTAssertNil(HeartsEconomy.nextHeartCountdown(hearts: 5, heartsRefillAt: now.addingTimeInterval(90), now: now))
+        XCTAssertNil(HeartsEconomy.nextHeartCountdown(hearts: 3, heartsRefillAt: nil, now: now))
     }
 
     // MARK: - afterLosingHeart
@@ -123,10 +150,20 @@ final class HeartsEconomyTests: XCTestCase {
         let state = HeartsEconomy.afterLosingHeart(hearts: 1, heartsRefillAt: nil, now: now)
         XCTAssertEqual(state, HeartsEconomy.HeartsState(hearts: 0, heartsRefillAt: now.addingTimeInterval(30 * 60)))
     }
-    func testLosingAHeartKeepsAnExistingTimerAndNeverGoesBelowZero() {
+    func testLosingAHeartFromFullStartsAClockAndKeepsARunningOne() {
         let now = Date(timeIntervalSince1970: 1_000)
+        let timer = now.addingTimeInterval(600)
+        XCTAssertEqual(HeartsEconomy.afterLosingHeart(hearts: 5, heartsRefillAt: nil, now: now),
+                       HeartsEconomy.HeartsState(hearts: 4, heartsRefillAt: now.addingTimeInterval(30 * 60)))
+        XCTAssertEqual(HeartsEconomy.afterLosingHeart(hearts: 3, heartsRefillAt: timer, now: now),
+                       HeartsEconomy.HeartsState(hearts: 2, heartsRefillAt: timer))
+    }
+    func testLosingAHeartSettlesADueRefillFirstAndNeverGoesBelowZero() {
+        let now = Date(timeIntervalSince1970: 1_000)
+        let late = now.addingTimeInterval(-1)
+        XCTAssertEqual(HeartsEconomy.afterLosingHeart(hearts: 2, heartsRefillAt: late, now: now),
+                       HeartsEconomy.HeartsState(hearts: 2, heartsRefillAt: late.addingTimeInterval(30 * 60)))
         let timer = now.addingTimeInterval(5)
-        XCTAssertEqual(HeartsEconomy.afterLosingHeart(hearts: 3, heartsRefillAt: nil, now: now), HeartsEconomy.HeartsState(hearts: 2, heartsRefillAt: nil))
         XCTAssertEqual(HeartsEconomy.afterLosingHeart(hearts: 0, heartsRefillAt: timer, now: now), HeartsEconomy.HeartsState(hearts: 0, heartsRefillAt: timer))
     }
 

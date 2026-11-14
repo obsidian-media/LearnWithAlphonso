@@ -27,9 +27,9 @@ public struct OutOfHeartsModel: Sendable, Equatable, Identifiable {
 
     public func message(now: Date) -> String {
         if let countdown = countdown(now: now) {
-            return "You've used all your hearts for now. They refill automatically in \(countdown)."
+            return "You've used all your hearts for now. Your next heart comes back in \(countdown)."
         }
-        return "You've used all your hearts for now. They'll refill again shortly."
+        return "You've used all your hearts for now. A heart will come back shortly."
     }
 
     /// Buying needs the server. Review and practice never cost hearts, so that path is always offered.
