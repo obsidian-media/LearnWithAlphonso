@@ -40,7 +40,7 @@ import { DsSwitch, dsButtonClass } from "@/components/ds/Blocks";
 import { SocialSafetyMenu } from "./SocialSafetyMenu";
 
 // A failed lookup is shown as a failure with a retry, never as "no buddy" (retry: false so that state appears at once,
-// the same lesson as the Teams screens in PR #237).
+// the same lesson as the Teams screens in PR 237).
 function useBuddyQueries() {
   const buddy = useQuery({ queryKey: ["myBuddy"], queryFn: () => getMyBuddy(), retry: false });
   const requests = useQuery({

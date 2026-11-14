@@ -224,6 +224,7 @@ describe("getMyTeam", () => {
         joined_at: "2026-09-01T00:00:00Z",
         switch_locked_until: "2026-09-08T00:00:00Z",
         this_week_xp: null,
+        is_owner: true,
       },
     ]);
 
@@ -236,6 +237,7 @@ describe("getMyTeam", () => {
       joinedAt: "2026-09-01T00:00:00Z",
       switchLockedUntil: "2026-09-08T00:00:00Z",
       thisWeekXp: 0,
+      isOwner: true,
     });
   });
 });
