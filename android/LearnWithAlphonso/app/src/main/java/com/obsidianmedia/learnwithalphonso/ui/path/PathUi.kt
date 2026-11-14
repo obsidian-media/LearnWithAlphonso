@@ -192,6 +192,20 @@ fun rememberPathViewModel(container: AppContainer, course: Course): PathViewMode
 
 // ---------------------------------------------------------------- pieces
 
+/** The mix bar's segment colours on the navy hero: light tokens that read on it in light and night (the badge colours would vanish into it). */
+@Composable
+private fun heroKindColor(kind: PathKind): Color {
+    val ds = LocalAlphonsoTokens.current
+    return when (kind) {
+        PathKind.LESSON -> ds.onHero
+        PathKind.PODCAST -> ds.onHeroSoft
+        PathKind.TALK -> ds.xp
+        PathKind.CAMPAIGN -> ds.right
+        PathKind.VIDEO -> ds.flame
+        PathKind.UNKNOWN -> ds.line
+    }
+}
+
 @Composable
 private fun kindColor(kind: PathKind): Color {
     val ds = LocalAlphonsoTokens.current
@@ -273,9 +287,9 @@ fun PathMixBar(mix: List<PathMixEntry>, onHero: Boolean = false) {
     val spoken = "Weekly mix: " + shown.joinToString(", ") { "${it.kind.label} ${it.minutes} minutes" }
     Column(Modifier.clearAndSetSemantics { contentDescription = spoken }, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(Modifier.fillMaxWidth().height(14.dp).clip(RoundedCornerShape(8.dp)), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-            shown.forEach { Box(Modifier.weight(it.minutes.toFloat() / total).height(14.dp).background(kindColor(it.kind))) }
+            shown.forEach { Box(Modifier.weight(it.minutes.toFloat() / total).height(14.dp).background(if (onHero) heroKindColor(it.kind) else kindColor(it.kind))) }
         }
-        Text(shown.joinToString(" · ") { "${it.kind.label} ${it.minutes} min" }, style = MaterialTheme.typography.labelSmall, color = if (onHero) ds.onHeroSoft else ds.inkSoft)
+        Text(shown.joinToString(" · ") { "${it.kind.label} ${it.minutes} min" }, style = CaptionType, color = if (onHero) ds.onHeroSoft else ds.inkSoft)
     }
 }
 

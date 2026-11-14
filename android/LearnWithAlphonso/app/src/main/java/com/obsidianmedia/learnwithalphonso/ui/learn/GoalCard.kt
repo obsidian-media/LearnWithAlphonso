@@ -1,5 +1,11 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material3.Icon
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.heading
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -188,7 +194,6 @@ private fun GoalSetupSheet(vm: GoalCardViewModel, existing: StoredGoal?, onDismi
                 Modifier.fillMaxWidth().padding(horizontal = AlphonsoTokens.Space.gutter, vertical = AlphonsoTokens.Space.s2),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
             ) {
-                DsCompactButton("Cancel", onDismiss)
                 Text("Set a learning goal", style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f).semantics { heading() })
             }
             Column(
@@ -200,12 +205,16 @@ private fun GoalSetupSheet(vm: GoalCardViewModel, existing: StoredGoal?, onDismi
                 DsChipRow { LEVELS.forEach { (l, _) -> DsChip(l, level == l, onClick = { level = l }) } }
                 DsOverline("Target date")
                 DsCard {
+                    val fieldShape = androidx.compose.foundation.shape.RoundedCornerShape(AlphonsoTokens.Radius.control)
                     Row(
-                        Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clickable { showPicker = true }
+                        Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clip(fieldShape).background(ds.sunk)
+                            .border(2.dp, ds.line, fieldShape).clickable(role = androidx.compose.ui.semantics.Role.Button) { showPicker = true }
+                            .padding(horizontal = AlphonsoTokens.Space.s3)
                             .semantics(mergeDescendants = true) { contentDescription = "Target date, ${GoalCopy.formatDate(day)}. Opens the date picker" },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(GoalCopy.formatDate(day), style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+                        Icon(androidx.compose.material.icons.Icons.Filled.CalendarMonth, null, tint = ds.choice, modifier = Modifier.size(AlphonsoTokens.Space.s5))
                     }
                     DsChipRow { listOf(3, 6, 12).forEach { months -> DsChip("$months months", day == GoalCopy.monthsFromToday(months), onClick = { day = GoalCopy.monthsFromToday(months) }) } }
                 }
