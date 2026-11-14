@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { DsCard, Icon } from "@/components/ds/Blocks";
 import { getTeamMission } from "../lib/teams.functions";
 
 /** The team's weekly shared mission. Renders nothing without a team, while loading or if the call fails. */
@@ -12,9 +13,12 @@ export function TeamMissionCard() {
   const showBar = mission.status !== "needs_members";
 
   return (
-    <div className="rounded-2xl border border-ds-line bg-ds-sunk p-4">
-      <p className="font-display text-sm font-semibold text-ds-ink">Team mission</p>
-      <p className="mt-2 text-sm text-ds-ink">{mission.headline}</p>
+    <DsCard className="gap-2">
+      <p className="ds-type-overline text-ds-xp-text">Team mission</p>
+      <div className="flex items-center gap-2.5">
+        <Icon name="bullseye" />
+        <p className="ds-type-headline min-w-0 flex-1 text-ds-ink">{mission.headline}</p>
+      </div>
       {showBar && (
         <div
           role="progressbar"
@@ -22,16 +26,16 @@ export function TeamMissionCard() {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={mission.percent}
-          className="mt-2 h-1.5 overflow-hidden rounded-full bg-ds-line"
+          className="h-2.5 overflow-hidden rounded-full bg-ds-sunk"
         >
           <div
             data-testid="team-mission-fill"
-            className="h-full rounded-full bg-ds-brand"
+            className="h-full rounded-full bg-ds-xp"
             style={{ width: `${mission.percent}%` }}
           />
         </div>
       )}
-      {mission.footer && <p className="mt-2 text-xs text-ds-ink-soft">{mission.footer}</p>}
-    </div>
+      {mission.footer && <p className="ds-type-footnote text-ds-ink-soft">{mission.footer}</p>}
+    </DsCard>
   );
 }
