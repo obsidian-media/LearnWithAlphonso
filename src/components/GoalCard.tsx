@@ -11,7 +11,11 @@ import {
   type GoalState,
 } from "../lib/learning-goal-client";
 import { LEVEL_ORDER, type GoalCourse, type GoalPlan } from "../lib/learning-goal";
-import { formatGoalDate as formatDate } from "../lib/path-goal-card";
+import {
+  PATH_GOAL_CHIPS_NOTE,
+  formatGoalDate as formatDate,
+  pathGoalChips,
+} from "../lib/path-goal-card";
 import {
   DsBar,
   DsButton,
@@ -60,8 +64,11 @@ type View = "loading" | "error" | "empty" | "goal" | "setup";
 export function GoalCard({
   course,
   onChanged,
+  purposeId = null,
 }: {
   course: GoalCourse;
+  /** What the learner said they are learning for in first run ("travel"); shown as the first chip when known. */
+  purposeId?: string | null;
   /** Called after the goal was saved or removed, so a screen built on it can reload. */
   onChanged?: () => void;
 }) {
@@ -230,52 +237,66 @@ export function GoalCard({
       )}
 
       {base === "goal" && state.goal && (
-        <DsHero>
-          <HeroKicker>
-            Finish {state.goal.targetLevel} by {formatDate(state.goal.targetDate)}
-          </HeroKicker>
-          {state.plan ? (
-            <GoalBody plan={state.plan} />
-          ) : (
-            <p className="ds-type-headline">
-              Your level has passed this target. Pick a new target.
+        <div className="grid gap-3.5">
+          <DsCard className="gap-2 p-3">
+            <div className="flex flex-wrap gap-1.5">
+              {pathGoalChips(purposeId, state.goal.targetLevel, state.goal.targetDate).map(
+                (label) => (
+                  <DsChip key={label} on disabled={offline} onClick={openSetup}>
+                    {label}
+                  </DsChip>
+                ),
+              )}
+            </div>
+            <p className="ds-type-caption text-ds-ink-soft">{PATH_GOAL_CHIPS_NOTE}</p>
+          </DsCard>
+          <DsHero>
+            <HeroKicker>
+              Finish {state.goal.targetLevel} by {formatDate(state.goal.targetDate)}
+            </HeroKicker>
+            {state.plan ? (
+              <GoalBody plan={state.plan} />
+            ) : (
+              <p className="ds-type-headline">
+                Your level has passed this target. Pick a new target.
+              </p>
+            )}
+            {offline && (
+              <p role="status" className="ds-type-caption text-ds-on-hero-soft">
+                {goalErrorMessage(loadError)}
+                {state.plan ? ` As of ${formatDate(state.plan.asOf.slice(0, 10))}.` : ""}
+              </p>
+            )}
+            {actionError && (
+              <p role="alert" className="ds-type-footnote font-bold text-ds-on-hero-kick">
+                {actionError}
+              </p>
+            )}
+            <p className="ds-type-caption text-ds-on-hero-soft">
+              An estimate of lessons, not of fluency.
             </p>
-          )}
-          {offline && (
-            <p role="status" className="ds-type-caption text-ds-on-hero-soft">
-              {goalErrorMessage(loadError)}
-              {state.plan ? ` As of ${formatDate(state.plan.asOf.slice(0, 10))}.` : ""}
-            </p>
-          )}
-          {actionError && (
-            <p role="alert" className="ds-type-footnote font-bold text-ds-on-hero-kick">
-              {actionError}
-            </p>
-          )}
-          <p className="ds-type-caption text-ds-on-hero-soft">
-            An estimate of lessons, not of fluency.
-          </p>
-          <div className="mt-1 flex gap-2">
-            <DsButton
-              small
-              variant="secondary"
-              className="flex-1"
-              onClick={openSetup}
-              disabled={offline}
-            >
-              Change goal
-            </DsButton>
-            <DsButton
-              small
-              variant="secondary"
-              className="flex-1"
-              onClick={() => void remove()}
-              disabled={offline}
-            >
-              Remove goal
-            </DsButton>
-          </div>
-        </DsHero>
+            <div className="mt-1 flex gap-2">
+              <DsButton
+                small
+                variant="secondary"
+                className="flex-1"
+                onClick={openSetup}
+                disabled={offline}
+              >
+                Change goal
+              </DsButton>
+              <DsButton
+                small
+                variant="secondary"
+                className="flex-1"
+                onClick={() => void remove()}
+                disabled={offline}
+              >
+                Remove goal
+              </DsButton>
+            </div>
+          </DsHero>
+        </div>
       )}
 
       {view === "setup" && (

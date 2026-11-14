@@ -81,7 +81,7 @@ describe("Duels page", () => {
     ]);
     renderPage();
     expect(await screen.findByText("Pending challenges")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Accept" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Accept the/ })).toBeInTheDocument();
   });
 
   it("accepts a pending duel and refetches", async () => {
@@ -103,7 +103,7 @@ describe("Duels page", () => {
     respondToDuel.mockResolvedValue({ ok: true, reason: null });
     renderPage();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Accept" }));
+    fireEvent.click(await screen.findByRole("button", { name: /^Accept the/ }));
     await waitFor(() =>
       expect(respondToDuel).toHaveBeenCalledWith({ data: { duelId: "d1", accept: true } }),
     );

@@ -7,6 +7,9 @@ import LearnWithAlphonsoKit
 /// pre-existing friend-duel flow and the new open-duel queue in one
 /// view. Linked from FriendsView, not its own tab -- same
 /// no-room-for-another-tab reasoning as TeamsView/SeasonView.
+///
+/// Drawn in the round-6 design system: the stage scene behind a glass title, a card per duel, chips for the
+/// friend and the course. What the screen does is unchanged.
 struct DuelsView: View {
     let session: Session
 
@@ -33,15 +36,29 @@ struct DuelsView: View {
     @State private var duelBlockTarget: SocialTarget?
     @State private var duelReportTarget: SocialTarget?
 
+    @Environment(\.alphonsoDS) private var ds
+
     private var myID: String? { session.userID }
     private var pending: [Duel] { duels.filter { $0.status == "pending" && $0.opponentID == myID } }
     private var active: [Duel] { duels.filter { $0.status == "active" } }
     private var finished: [Duel] { duels.filter { $0.status == "completed" || $0.status == "declined" } }
 
+    private var courseOptions: [DSSegmented<CourseOption>.Option] {
+        CourseOption.allCases.map { .init(value: $0, label: $0.label) }
+    }
+
     var body: some View {
+        // The loader is on this always-present List; every section below may draw nothing.
         List {
+            DSGlassTitle(
+                title: "Duels",
+                subtitle: DuelsPresentation.summary(pending: pending.count, active: active.count, finished: finished.count)
+            )
+            .dsListRow(top: AlphonsoDS.Space.s2)
+
             if let errorMessage {
-                Text(errorMessage).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.destructive)
+                DSCard { Text(errorMessage).dsText(.footnote).foregroundStyle(ds.wrongInk) }
+                    .dsListRow()
             }
 
             if !pending.isEmpty {
@@ -58,10 +75,9 @@ struct DuelsView: View {
                 pastDuelsSection
             }
         }
-        .scrollContentBackground(.hidden)
-        .background(AlphonsoColor.surface)
+        .dsSceneList(.complete)
         .navigationTitle("Duels")
-        .tint(AlphonsoColor.moss)
+        .navigationBarTitleDisplayMode(.inline)
         .task { await loadAll() }
         .alphonsoChoiceDialog(
             "Block this opponent?",
@@ -117,149 +133,160 @@ struct DuelsView: View {
         }
     }
 
-    private var sectionHeaderFont: Font { AlphonsoFont.sans(12, weight: .semiBold) }
+    // MARK: Sections
 
+    @ViewBuilder
     private var pendingSection: some View {
-        let content = ForEach(pending) { d in
-            HStack {
-                Text("Challenge (\(d.course))")
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.ink)
-                Spacer()
-                Button("Accept") { Task { await respond(d, accept: true) } }
-                    .buttonStyle(.alphonsoPrimary(fullWidth: false))
-                Button("Decline") { Task { await respond(d, accept: false) } }
-                    .buttonStyle(.alphonsoSecondary(fullWidth: false))
-                socialSafetyMenu(for: d)
+        DSOverline("Pending challenges").dsListRow()
+        ForEach(pending) { d in
+            DSCard {
+                HStack(spacing: AlphonsoDS.Space.s3) {
+                    Icon3DView(emoji: "\u{26A1}", size: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s2)
+                    Text("Challenge (\(d.course))")
+                        .dsText(.headline)
+                        .foregroundStyle(ds.ink)
+                    Spacer(minLength: AlphonsoDS.Space.s2)
+                    socialSafetyMenu(for: d)
+                }
+                HStack(spacing: AlphonsoDS.Space.s3) {
+                    Button("Accept") { Task { await respond(d, accept: true) } }
+                        .buttonStyle(.dsButton(.primary, compact: true))
+                    Button("Decline") { Task { await respond(d, accept: false) } }
+                        .buttonStyle(.dsButton(.secondary, compact: true))
+                }
             }
+            .dsListRow()
         }
-        return Section {
-            content
-        } header: {
-            Text("Pending challenges")
-                .font(sectionHeaderFont)
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
-        }
-        .listRowBackground(AlphonsoColor.parchment)
     }
 
+    @ViewBuilder
     private var activeSection: some View {
-        Section {
-            if isLoading {
-                ProgressView().tint(AlphonsoColor.moss)
-            } else if active.isEmpty {
-                Text("No active duels right now.").font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+        DSOverline("Active duels").dsListRow()
+        if isLoading {
+            DSCard { ProgressView().tint(ds.choice).frame(maxWidth: .infinity) }
+                .dsListRow()
+        } else if active.isEmpty {
+            DSCard {
+                Text("No active duels right now.").dsText(.footnote).foregroundStyle(ds.inkSoft)
+            }
+            .dsListRow()
+        } else {
+            ForEach(active) { d in
+                let mine = (d.challengerID == myID ? d.challengerXPNow - d.challengerXPStart : d.opponentXPNow - d.opponentXPStart)
+                let theirs = (d.challengerID == myID ? d.opponentXPNow - d.opponentXPStart : d.challengerXPNow - d.challengerXPStart)
+                DSCard {
+                    HStack {
+                        DSPill(text: d.course, tone: .info)
+                        Spacer(minLength: AlphonsoDS.Space.s2)
+                        socialSafetyMenu(for: d)
+                    }
+                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                        HStack(alignment: .bottom) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("You").dsText(.caption).foregroundStyle(ds.inkSoft)
+                                Text("+\(mine)").dsText(.numeral).foregroundStyle(ds.choice)
+                            }
+                            Spacer(minLength: AlphonsoDS.Space.s2)
+                            VStack(alignment: .trailing, spacing: 0) {
+                                Text("Them").dsText(.caption).foregroundStyle(ds.inkSoft)
+                                Text("+\(theirs)").dsText(.numeral).foregroundStyle(ds.inkSoft)
+                            }
+                        }
+                        DSProgressBar(fraction: DuelsPresentation.share(mine: mine, theirs: theirs), tint: ds.choice)
+                        Text("You: +\(mine)  \u{00B7}  Them: +\(theirs)").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(d.course) duel. You: +\(mine). Them: +\(theirs).")
+                }
+                .dsListRow()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var challengeFriendSection: some View {
+        DSOverline("Challenge a friend").dsListRow()
+        DSCard {
+            Text("Friend").dsText(.caption).foregroundStyle(ds.inkSoft)
+            if friends.isEmpty {
+                Text("No friends yet. Share your invite link to get started.")
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
             } else {
-                ForEach(active) { d in
-                    let myXPNow = d.challengerID == myID ? d.challengerXPNow : d.opponentXPNow
-                    let myXPStart = d.challengerID == myID ? d.challengerXPStart : d.opponentXPStart
-                    let oppXPNow = d.challengerID == myID ? d.opponentXPNow : d.challengerXPNow
-                    let oppXPStart = d.challengerID == myID ? d.opponentXPStart : d.challengerXPStart
-                    VStack(alignment: .leading) {
-                        Text(d.course).font(AlphonsoFont.sans(11)).foregroundStyle(AlphonsoColor.inkSoft)
-                        HStack {
-                            Text("You: +\(myXPNow - myXPStart)")
-                                .font(AlphonsoFont.sans(15, weight: .semiBold))
-                                .foregroundStyle(AlphonsoColor.ink)
-                            Spacer()
-                            Text("Them: +\(oppXPNow - oppXPStart)")
-                                .font(AlphonsoFont.sans(13))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
-                            socialSafetyMenu(for: d)
+                LessonFlowLayout {
+                    ForEach(friends, id: \.userID) { f in
+                        DSChip(
+                            label: f.displayName, selected: challengeFriendID == f.userID,
+                            accessibilityText: nil, action: { challengeFriendID = f.userID }
+                        ) {
+                            ProfileAvatarView(seed: f.avatarSeed, name: f.displayName, size: AlphonsoDS.Space.s6 + AlphonsoDS.Space.s1)
                         }
                     }
                 }
             }
-        } header: {
-            Text("Active duels")
-                .font(sectionHeaderFont)
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
-        }
-        .listRowBackground(AlphonsoColor.parchment)
-    }
-
-    private var challengeFriendSection: some View {
-        Section {
-            Picker("Friend", selection: $challengeFriendID) {
-                Text("Choose a friend…").tag("")
-                ForEach(friends, id: \.userID) { f in
-                    Text(f.displayName).tag(f.userID)
-                }
-            }
-            Picker("Course", selection: $challengeCourse) {
-                ForEach(CourseOption.allCases, id: \.self) { c in
-                    Text(c.label).tag(c)
-                }
-            }
+            Text("Course").dsText(.caption).foregroundStyle(ds.inkSoft)
+            DSSegmented(options: courseOptions, selection: $challengeCourse, accessibilityLabel: "Course")
             Button("Send challenge") { Task { await challengeFriend() } }
-                .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                .buttonStyle(.dsButton(.primary))
                 .disabled(challengeFriendID.isEmpty)
-        } header: {
-            Text("Challenge a friend")
-                .font(sectionHeaderFont)
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
         }
-        .listRowBackground(AlphonsoColor.parchment)
+        .dsListRow()
     }
 
+    @ViewBuilder
     private var openDuelSection: some View {
-        Section {
+        DSOverline("Open duel").dsListRow()
+        DSCard {
             Text("Get matched with another learner at your level.")
-                .font(AlphonsoFont.sans(12))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-            Picker("Course", selection: $openCourse) {
-                ForEach(CourseOption.allCases, id: \.self) { c in
-                    Text(c.label).tag(c)
-                }
+                .dsText(.footnote).foregroundStyle(ds.inkSoft)
+            DSSegmented(options: courseOptions, selection: $openCourse, accessibilityLabel: "Course")
+            Toggle(isOn: $matchByLevel) {
+                Text("Match me with someone at my level").dsText(.headline).foregroundStyle(ds.ink)
             }
-            Toggle("Match me with someone at my level", isOn: $matchByLevel)
-                .tint(AlphonsoColor.moss)
+            .tint(ds.choice)
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
             if waitingInQueue {
-                HStack {
-                    Text("Waiting for an opponent…").font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
-                    Spacer()
+                HStack(spacing: AlphonsoDS.Space.s3) {
+                    Text("Waiting for an opponent…").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    Spacer(minLength: AlphonsoDS.Space.s2)
                     Button("Cancel") { Task { await leaveQueue() } }
-                        .buttonStyle(.alphonsoSecondary(fullWidth: false))
+                        .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
                 }
             } else {
                 Button(queueing ? "Finding a match…" : "Find an open duel") {
                     Task { await joinQueue() }
                 }
-                .buttonStyle(.alphonsoPrimary)
+                .buttonStyle(.dsButton(.primary))
                 .disabled(queueing)
             }
-        } header: {
-            Text("Open duel")
-                .font(sectionHeaderFont)
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
         }
-        .listRowBackground(AlphonsoColor.parchment)
+        .dsListRow()
     }
 
+    @ViewBuilder
     private var pastDuelsSection: some View {
-        let content = ForEach(finished) { d in
-            AlphonsoRowCard(title: d.course, subtitle: resultLabel(d))
+        DSOverline("Past duels").dsListRow()
+        DSCard(padding: AlphonsoDS.Space.s4, spacing: 0) {
+            ForEach(Array(finished.enumerated()), id: \.element.id) { index, d in
+                let result = DuelsPresentation.result(status: d.status, winnerID: d.winnerID, myID: myID)
+                if index > 0 { Divider().overlay(ds.line) }
+                HStack(spacing: AlphonsoDS.Space.s3) {
+                    Text(d.course).dsText(.headline).foregroundStyle(ds.ink)
+                    Spacer(minLength: AlphonsoDS.Space.s2)
+                    DSPill(text: result.label, tone: pillTone(result.tone))
+                }
+                .frame(minHeight: AlphonsoDS.Space.minTouch)
+                .accessibilityElement(children: .combine)
+            }
         }
-        return Section {
-            content
-        } header: {
-            Text("Past duels")
-                .font(sectionHeaderFont)
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.ember)
-        }
-        .listRowBackground(Color.clear)
+        .dsListRow()
     }
 
-    private func resultLabel(_ d: Duel) -> String {
-        if d.status == "declined" { return "Declined" }
-        if d.winnerID == myID { return "You won" }
-        if d.winnerID != nil { return "You lost" }
-        return "Tied"
+    private func pillTone(_ tone: DuelsPresentation.ResultTone) -> DSPill.Tone {
+        switch tone {
+        case .won: return .good
+        case .lost: return .bad
+        case .tied, .declined: return .neutral
+        }
     }
 
     private var client: ProgressSyncClient? {

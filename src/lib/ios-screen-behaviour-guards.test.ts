@@ -202,8 +202,14 @@ describe("Accessibility labels", () => {
 
   it("the League header controls are labelled and the pickers keep their segments selectable", () => {
     const league = read(`${APP}/LeaderboardView.swift`);
-    expect(league).toContain('.accessibilityLabel("Leaderboard scope")');
-    expect(league).toContain('.accessibilityLabel("Leaderboard period")');
+    expect(league).toContain('accessibilityLabel: "Leaderboard scope"');
+    expect(league).toContain('accessibilityLabel: "Leaderboard period"');
+    // The design-system segmented control keeps the picker's identifiers and marks the picked segment selected.
+    expect(league).toContain('.accessibilityIdentifier("leagueScopePicker")');
+    expect(league).toContain('.accessibilityIdentifier("leagueRangePicker")');
+    expect(read(`${APP}/DesignSystem/DSBlocks.swift`)).toContain(
+      ".accessibilityAddTraits(on ? .isSelected : [])",
+    );
     // A value override on a segmented Picker can hide its individual segments.
     expect(league).not.toContain(".accessibilityValue(");
     expect(league).toContain('.accessibilityLabel("Teams")');

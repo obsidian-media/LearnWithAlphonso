@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import fixtures from "./learning-path.fixtures.json";
-import { formatGoalDate, pathGoalCard } from "./path-goal-card";
+import { formatGoalDate, pathGoalCard, pathGoalChips } from "./path-goal-card";
 import type { LearningPath } from "./path-plan";
 
 const path = (key: keyof typeof fixtures) => fixtures[key] as unknown as LearningPath;
@@ -83,5 +83,21 @@ describe("the goal card on MY PATH", () => {
     }
     expect(swift).toContain("00B7");
     expect(kotlin).toContain(String.fromCharCode(0xb7));
+  });
+});
+
+describe("pathGoalChips", () => {
+  it("is the purpose, the level and the date", () => {
+    expect(pathGoalChips("travel", "B1", "2027-05-10")).toEqual([
+      "Travel",
+      "Finish B1",
+      "by 10 May 2027",
+    ]);
+    expect(pathGoalChips("exam", "A2", "2027-01-02")[0]).toBe("An exam");
+  });
+  it("leaves out a missing or unknown purpose rather than inventing one", () => {
+    for (const p of [null, undefined, "", "teleport"]) {
+      expect(pathGoalChips(p, "A2", "2027-01-02")).toEqual(["Finish A2", "by 2 Jan 2027"]);
+    }
   });
 });

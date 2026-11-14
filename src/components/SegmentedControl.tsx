@@ -57,7 +57,7 @@ export function SegmentedControl<T extends string>({
             tabIndex={active ? 0 : -1}
             onClick={() => onChange(o.value)}
             onKeyDown={(e) => onKeyDown(e, index)}
-            className={`min-h-10 rounded-[12px] px-3 ds-type-footnote font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-ds-choice ${
+            className={`min-h-11 rounded-[12px] px-3 ds-type-footnote font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-ds-choice ${
               active
                 ? "bg-ds-card text-ds-brand shadow-[var(--ds-shadow-resting)]"
                 : "text-ds-ink-soft hover:text-ds-ink"

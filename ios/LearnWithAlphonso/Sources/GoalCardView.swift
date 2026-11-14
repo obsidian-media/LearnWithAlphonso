@@ -1,12 +1,12 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// The learning goal on the Learn tab (BACKLOG 0.0-ac #8, docs/superpowers/specs/
+/// The learning goal on Build my path (BACKLOG 0.0-ac #8, docs/superpowers/specs/
 /// 2026-10-05-learning-goal-planner-design.md). It renders what `/api/learning-goal` returns and does no
 /// plan maths of its own: the server's `planGoal` is the single implementation and the web card shows the
 /// same numbers. Every string comes from `GoalCopy` (word-for-word the web card's wording), every request
 /// from `LearningGoalClient`, and the offline copy from `GoalCache`, all tested in the Kit. This layer only
-/// lays them out, and is compiled by CI's ios-app-build but NOT run on a device by the change that added it.
+/// lays them out, in the round-6 design system: the goal is the navy hero the My path card uses.
 struct GoalCardView: View {
     let session: Session
     let course: Course
@@ -20,10 +20,14 @@ struct GoalCardView: View {
     @State private var loadError: LearningGoalError?
     @State private var actionError: String?
     @State private var showingSetup = false
+    /// Why the learner is here (their first-run answer), for the first goal chip; nil when never answered.
+    @State private var purposeID: String?
     /// Bumped by every load and remove. A request that finishes after a newer one started (or after the
     /// course changed) sees a different number and drops its result. `courseCode` cannot do this job: it
     /// is derived from the same `course` the running closure captured, so comparing it was always true.
     @State private var generation = 0
+
+    @Environment(\.alphonsoDS) private var ds
 
     private var courseCode: String { course.translationCourseCode }
 
@@ -31,19 +35,18 @@ struct GoalCardView: View {
     private var offline: Bool { phase == .goal && loadError == .offline }
 
     var body: some View {
-        Group {
-            Section {
-                content
-            } header: {
-                Text("Learning goal")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.ember)
-            }
-            .listRowBackground(AlphonsoTileTone.sun.background)
+        // The loader is on this container, which always draws (a card in every phase), never on conditional
+        // content that can draw nothing.
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+            DSOverline("Learning goal")
+            content
         }
         // Reloads when the course changes; the previous course's slow answer is ignored in `load()`.
-        .task(id: courseCode) { await load() }
+        .task(id: courseCode) {
+            await load()
+            // Deliberately silent on failure: without the answer the chip is simply left out.
+            purposeID = try? await learnerProfileClient(session)?.fetch().answers.goal
+        }
         .sheet(isPresented: $showingSetup) {
             GoalSetupSheet(session: session, courseCode: courseCode, existing: state.goal) { saved in
                 state = saved
@@ -59,23 +62,23 @@ struct GoalCardView: View {
     private var content: some View {
         switch phase {
         case .loading:
-            ProgressView("Loading your goal\u{2026}")
-                .tint(AlphonsoColor.moss)
+            DSCard {
+                ProgressView("Loading your goal\u{2026}").tint(ds.choice)
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
+            }
         case .failed:
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+            DSCard {
                 Text(GoalCopy.loadFailureMessage(loadError ?? .unavailable, hadCachedPlan: false))
-                    .font(AlphonsoFont.sans(14, weight: .medium))
-                    .foregroundStyle(AlphonsoColor.destructive)
+                    .dsText(.footnote).foregroundStyle(ds.wrongInk)
                 Button("Try again") { Task { await load() } }
-                    .buttonStyle(.alphonsoSecondary)
+                    .buttonStyle(.dsButton(.secondary, compact: true))
             }
         case .empty:
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+            DSCard {
                 Text("Set a target level and date and we'll work out how many lessons a week it takes.")
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
                 Button("Set a learning goal") { showingSetup = true }
-                    .buttonStyle(.alphonsoPrimary)
+                    .buttonStyle(.dsButton(.primary))
             }
         case .goal:
             goalBody
@@ -85,63 +88,72 @@ struct GoalCardView: View {
     @ViewBuilder
     private var goalBody: some View {
         if let goal = state.goal {
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                Text(GoalCopy.headline(for: goal))
-                    .font(AlphonsoFont.display(18, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
+            // Round 8 A0: the goal as chips (purpose, level, date); a tap changes it.
+            DSCard(padding: AlphonsoDS.Space.s3, spacing: AlphonsoDS.Space.s2) {
+                LessonFlowLayout {
+                    ForEach(
+                        PathGoalChips.labels(purposeID: purposeID, targetLevel: goal.targetLevel, targetDate: goal.targetDate),
+                        id: \.self
+                    ) { label in
+                        DSChip(label, selected: true) { actionError = nil; showingSetup = true }
+                            .disabled(offline)
+                    }
+                }
+                Text(PathGoalChips.note).dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            DSHeroCard(spacing: AlphonsoDS.Space.s2) {
+                Text(GoalCopy.headline(for: goal)).dsText(.title)
 
                 if let plan = state.plan {
-                    AlphonsoProgressBar(
-                        progress: Double(plan.lessonsInScope - plan.lessonsRemaining) / Double(max(plan.lessonsInScope, 1)))
-                    Text(GoalCopy.progress(for: plan))
-                        .font(AlphonsoFont.sans(13))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                    DSProgressBar(
+                        fraction: Double(plan.lessonsInScope - plan.lessonsRemaining) / Double(max(plan.lessonsInScope, 1)),
+                        onHero: true)
+                    Text(GoalCopy.progress(for: plan)).dsText(.footnote).foregroundStyle(ds.onHeroSoft)
                     // Status is words, never colour alone.
-                    Text(GoalCopy.statusLine(for: plan.status))
-                        .font(AlphonsoFont.sans(15, weight: .semiBold))
-                        .foregroundStyle(AlphonsoColor.ink)
+                    Text(GoalCopy.statusLine(for: plan.status)).dsText(.headline)
                     if let weekly = GoalCopy.weeklyLine(for: plan) {
-                        Text(weekly).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                        Text(weekly).dsText(.footnote).foregroundStyle(ds.onHeroSoft)
                     }
                     if let suggestion = GoalCopy.suggestionLine(for: plan) {
-                        Text(suggestion).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                        Text(suggestion).dsText(.footnote).foregroundStyle(ds.onHeroSoft)
                     }
                     if let realism = GoalCopy.realismLine(for: plan) {
-                        Text(realism).font(AlphonsoFont.sans(13, weight: .medium)).foregroundStyle(AlphonsoColor.ember)
+                        Text(realism).dsText(.footnote).foregroundStyle(ds.onHeroKick)
                     }
                 } else {
                     // The learner's level has passed this target.
-                    Text("Your level has passed this target. Pick a new target.")
-                        .font(AlphonsoFont.sans(14))
-                        .foregroundStyle(AlphonsoColor.ink)
+                    Text("Your level has passed this target. Pick a new target.").dsText(.footnote)
                 }
 
                 if offline {
-                    Text(offlineNote)
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                    Text(offlineNote).dsText(.caption).foregroundStyle(ds.onHeroSoft)
                 }
-                if let actionError {
-                    Text(actionError)
-                        .font(AlphonsoFont.sans(13, weight: .medium))
-                        .foregroundStyle(AlphonsoColor.destructive)
-                }
-                Text(GoalCopy.estimateNote)
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                Text(GoalCopy.estimateNote).dsText(.caption).foregroundStyle(ds.onHeroSoft)
 
-                HStack(spacing: AlphonsoSpacing.sm) {
-                    Button("Change goal") { actionError = nil; showingSetup = true }
-                        .buttonStyle(.alphonsoSecondary)
-                        .disabled(offline)
-                    Button("Remove goal") { Task { await remove() } }
-                        .buttonStyle(.alphonsoSecondary)
-                        .disabled(offline)
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: AlphonsoDS.Space.s3) { goalButtons }
+                    VStack(spacing: AlphonsoDS.Space.s2) { goalButtons }
                 }
+                .padding(.top, AlphonsoDS.Space.s1)
             }
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Learning goal")
+            if let actionError {
+                DSCard {
+                    Text(actionError).dsText(.footnote).foregroundStyle(ds.wrongInk)
+                }
+            }
         }
+    }
+
+    @ViewBuilder
+    private var goalButtons: some View {
+        Button("Change goal") { actionError = nil; showingSetup = true }
+            .buttonStyle(.dsButton(.secondary, compact: true))
+            .disabled(offline)
+        Button("Remove goal") { Task { await remove() } }
+            .buttonStyle(.dsButton(.secondary, compact: true))
+            .disabled(offline)
     }
 
     private var offlineNote: String {
@@ -228,6 +240,7 @@ private struct GoalSetupSheet: View {
     private enum Preview { case loading, ok(GoalPlan), failed(String) }
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.alphonsoDS) private var ds
     @State private var level: String
     @State private var date: Date
     @State private var preview: Preview = .loading
@@ -259,52 +272,65 @@ private struct GoalSetupSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    Picker("Finish level", selection: $level) {
-                        ForEach(Self.levels, id: \.self) { Text($0).tag($0) }
-                    }
-                    DatePicker(
-                        "Target date", selection: $date,
-                        in: (GoalCopy.date(fromDay: GoalCopy.tomorrow()) ?? Date())...,
-                        displayedComponents: .date)
-                        .environment(\.calendar, utcCalendar)
-                        .environment(\.timeZone, TimeZone(identifier: "UTC")!)
-                    HStack {
-                        ForEach([3, 6, 12], id: \.self) { months in
-                            Button("\(months) months") {
-                                date = GoalCopy.date(fromDay: GoalCopy.monthsFromToday(months)) ?? date
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(AlphonsoColor.moss)
+            ScrollView {
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+                    DSOverline("Finish level")
+                    LessonFlowLayout {
+                        ForEach(Self.levels, id: \.self) { value in
+                            DSChip(value, selected: level == value) { level = value }
                         }
                     }
-                }
 
-                Section {
+                    DSOverline("Target date")
+                    DSCard {
+                        DatePicker(
+                            "Target date", selection: $date,
+                            in: (GoalCopy.date(fromDay: GoalCopy.tomorrow()) ?? Date())...,
+                            displayedComponents: .date)
+                            .dsText(.headline)
+                            .foregroundStyle(ds.ink)
+                            .environment(\.calendar, utcCalendar)
+                            .environment(\.timeZone, TimeZone(identifier: "UTC")!)
+                        LessonFlowLayout {
+                            ForEach([3, 6, 12], id: \.self) { months in
+                                DSChip(
+                                    "\(months) months",
+                                    selected: day == GoalCopy.monthsFromToday(months)
+                                ) {
+                                    date = GoalCopy.date(fromDay: GoalCopy.monthsFromToday(months)) ?? date
+                                }
+                            }
+                        }
+                    }
+
                     previewContent
-                    Text(GoalCopy.estimateNote)
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                }
+                    Text(GoalCopy.estimateNote).dsText(.caption).foregroundStyle(ds.inkSoft)
 
-                if let saveError {
-                    Section { Text(saveError).foregroundStyle(AlphonsoColor.destructive) }
+                    if let saveError {
+                        DSCard { Text(saveError).dsText(.footnote).foregroundStyle(ds.wrongInk) }
+                    }
                 }
+                .padding(AlphonsoDS.Space.gutter)
             }
+            .background(ds.surface)
             .navigationTitle("Set a learning goal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save goal") { Task { await save() } }
-                        .disabled(!canSave)
-                }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Button("Save goal") { Task { await save() } }
+                    .buttonStyle(.dsButton(.primary))
+                    .disabled(!canSave)
+                    .padding(.horizontal, AlphonsoDS.Space.gutter)
+                    .padding(.top, AlphonsoDS.Space.s3)
+                    .padding(.bottom, AlphonsoDS.Space.s2)
+                    .background(ds.surface)
             }
             // A newer selection cancels this task, so an older, slower preview can never replace it.
             .task(id: level + "|" + day) { await loadPreview() }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .presentationDetents([.medium, .large])
     }
 
@@ -312,19 +338,22 @@ private struct GoalSetupSheet: View {
     private var previewContent: some View {
         switch preview {
         case .loading:
-            ProgressView("Working it out\u{2026}").tint(AlphonsoColor.moss)
+            DSCard {
+                ProgressView("Working it out\u{2026}").tint(ds.choice)
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
+            }
         case .failed(let message):
-            Text(message).foregroundStyle(AlphonsoColor.destructive)
+            DSCard { Text(message).dsText(.footnote).foregroundStyle(ds.wrongInk) }
         case .ok(let plan):
             let lines = GoalCopy.previewLines(for: plan)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(lines.perWeek).font(AlphonsoFont.sans(16, weight: .semiBold)).foregroundStyle(AlphonsoColor.ink)
-                Text(lines.left).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+            DSHeroCard {
+                Text(lines.perWeek).dsText(.title)
+                Text(lines.left).dsText(.footnote).foregroundStyle(ds.onHeroSoft)
                 if let suggestion = GoalCopy.suggestionLine(for: plan) {
-                    Text(suggestion).font(AlphonsoFont.sans(13)).foregroundStyle(AlphonsoColor.inkSoft)
+                    Text(suggestion).dsText(.footnote).foregroundStyle(ds.onHeroSoft)
                 }
                 if let realism = GoalCopy.realismLine(for: plan) {
-                    Text(realism).font(AlphonsoFont.sans(13, weight: .medium)).foregroundStyle(AlphonsoColor.ember)
+                    Text(realism).dsText(.footnote).foregroundStyle(ds.onHeroKick)
                 }
             }
         }

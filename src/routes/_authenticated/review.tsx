@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AnswerExplanation } from "../../components/AnswerFeedback";
 import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
-import { DsPill, Icon } from "../../components/ds/Blocks";
+import { DsPill, Icon, dsButtonClass } from "../../components/ds/Blocks";
 import {
   AlphonsoBubble,
   LessonAnswer,
@@ -290,13 +290,12 @@ function ReviewPage() {
     <LessonScreen>
       <div className="flex flex-1 flex-col">
         <div className="flex items-center gap-3 px-4 pt-3">
-          <Link
-            to="/learn"
-            aria-label="Close review"
-            className="grid size-10 shrink-0 place-items-center rounded-full bg-ds-card text-ds-brand shadow-[var(--ds-shadow-resting)]"
+          <span
+            data-review-course=""
+            className="inline-flex h-11 shrink-0 items-center rounded-full bg-ds-card px-3.5 ds-type-footnote font-extrabold text-ds-brand shadow-[var(--ds-shadow-resting)]"
           >
-            <span aria-hidden="true">✕</span>
-          </Link>
+            {course.toUpperCase()}
+          </span>
           <div
             role="progressbar"
             aria-label="Review progress"
@@ -316,6 +315,9 @@ function ReviewPage() {
             </span>
             &nbsp;due
           </DsPill>
+          <Link to="/learn" className={dsButtonClass("secondary", { small: true })}>
+            Done
+          </Link>
         </div>
 
         <ReviewScene pose="reading" />

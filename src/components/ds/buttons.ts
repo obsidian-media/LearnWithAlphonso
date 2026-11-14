@@ -9,7 +9,7 @@ export function dsButtonClass(
   variant: DsButtonVariant = "primary",
   { small = false, full = false }: { small?: boolean; full?: boolean } = {},
 ): string {
-  const size = small ? "min-h-9 rounded-[12px] px-3 py-1.5 ds-type-caption" : "min-h-12 px-4 py-3";
+  const size = small ? "min-h-11 rounded-[12px] px-3 py-1.5 ds-type-caption" : "min-h-12 px-4 py-3";
   const look =
     variant === "primary"
       ? "bg-ds-action text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)]"

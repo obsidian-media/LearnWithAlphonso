@@ -202,6 +202,7 @@ struct SocialSafetyMenu: View {
         } label: {
             Image(systemName: "ellipsis.circle")
                 .foregroundStyle(AlphonsoColor.inkSoft)
+                .frame(minWidth: AlphonsoSpacing.minTouchTarget, minHeight: AlphonsoSpacing.minTouchTarget)
         }
         .accessibilityLabel(accessibilityName.map(BuddyCopy.safetyMenuLabel) ?? "More options")
     }

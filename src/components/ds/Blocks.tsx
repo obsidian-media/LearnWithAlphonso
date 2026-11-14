@@ -28,7 +28,7 @@ export function BackPill({
       <Link
         to={to}
         aria-label={label}
-        className={`${GLASS} inline-flex h-[38px] items-center gap-1 rounded-full pl-2.5 pr-3.5 ds-type-footnote font-extrabold text-ds-choice`}
+        className={`${GLASS} inline-flex h-11 items-center gap-1 rounded-full pl-2.5 pr-3.5 ds-type-footnote font-extrabold text-ds-choice`}
       >
         <span aria-hidden="true">‹</span>
         {children}
@@ -63,7 +63,10 @@ export function Glass({ children, className = "" }: { children: ReactNode; class
 /** The small gold section title over a card. */
 export function Overline({ children, id }: { children: ReactNode; id?: string }) {
   return (
-    <h2 id={id} className="ds-type-overline mx-1 -mb-1.5 mt-1.5 text-ds-xp-text">
+    <h2
+      id={id}
+      className="ds-type-overline mx-1 -mb-1 mt-1.5 w-fit rounded-full bg-ds-card/90 px-2.5 py-0.5 text-ds-xp-text backdrop-blur-sm"
+    >
       {children}
     </h2>
   );
@@ -168,7 +171,7 @@ export function DsChip({
       type="button"
       {...(radio ? { role: "radio", "aria-checked": on } : { "aria-pressed": on })}
       {...rest}
-      className={`inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap rounded-[14px] border-2 border-b-4 px-3 py-1.5 ds-type-footnote font-extrabold transition-transform duration-[var(--ds-duration-press)] active:translate-y-px disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice ${
+      className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-[14px] border-2 border-b-4 px-3 py-1.5 ds-type-footnote font-extrabold transition-transform duration-[var(--ds-duration-press)] active:translate-y-px disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice ${
         on
           ? "border-ds-choice bg-ds-choice-tint text-ds-choice"
           : "border-ds-line bg-ds-card text-ds-brand"
@@ -198,7 +201,7 @@ export function DsSwitch({
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!on)}
-      className={`relative h-[30px] w-[50px] shrink-0 rounded-full border-2 transition-colors duration-[var(--ds-duration-select)] disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice ${
+      className={`relative h-[30px] w-[50px] shrink-0 rounded-full border-2 before:absolute before:-inset-x-1 before:-inset-y-3 before:content-[''] transition-colors duration-[var(--ds-duration-select)] disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice ${
         on ? "border-ds-choice bg-ds-choice" : "border-ds-line bg-ds-sunk"
       }`}
     >
@@ -239,7 +242,7 @@ export function DsSegmented<T extends string>({
             role="radio"
             aria-checked={on}
             onClick={() => onChange(o.value)}
-            className={`min-h-10 rounded-[12px] px-1 ds-type-footnote font-extrabold focus-visible:outline-2 focus-visible:outline-ds-choice ${
+            className={`min-h-11 rounded-[12px] px-1 ds-type-footnote font-extrabold focus-visible:outline-2 focus-visible:outline-ds-choice ${
               on ? "bg-ds-card text-ds-brand shadow-[var(--ds-shadow-resting)]" : "text-ds-ink-soft"
             }`}
           >

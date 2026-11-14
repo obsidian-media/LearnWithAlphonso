@@ -9,13 +9,13 @@ import {
   DsPill,
   DsSegmented,
   HeroKicker,
-  Icon,
   PoseCard,
   RankBadge,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { LeagueTierBadge } from "../../components/LeagueTierBadge";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import { LEAGUE_TIER_META, LEAGUE_TIERS, type LeagueTier } from "../../data/achievements";
 import { useProgress } from "../../lib/progress";
@@ -81,7 +81,7 @@ function LeaguePage() {
 
       <DsHero aria-label="Your league">
         <div className="flex items-center gap-3">
-          <Icon name="trophy" size={52} />
+          <LeagueTierBadge tier={tier} size="lg" />
           <div className="min-w-0 flex-1">
             <HeroKicker>Your league</HeroKicker>
             <h1 className="ds-type-title">{tierTitle(meta.label)}</h1>

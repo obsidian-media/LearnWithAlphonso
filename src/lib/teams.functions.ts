@@ -163,9 +163,11 @@ export const kickTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }): Promise<{ ok: boolean; reason: string | null }> => {
-    const { data: rows } = await context.supabase.rpc("kick_team_member", {
+    const { data: rows, error } = await context.supabase.rpc("kick_team_member", {
       _user_id: data.userId,
     });
+    // A failed call is not a refusal: throw so the screen says it could not reach the server, not "unknown-error".
+    if (error) throw publicError("kickTeamMember", error);
     const row = rows?.[0];
     return { ok: row?.ok ?? false, reason: row?.reason ?? null };
   });

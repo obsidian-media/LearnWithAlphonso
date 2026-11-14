@@ -53,3 +53,28 @@ export function pathGoalCard(path: LearningPath | null): PathGoalCardLines {
     detail: perWeek ? `${perWeek} · ${path.statusLine}` : path.statusLine,
   };
 }
+
+/** The first-run purposes, in the words first run used for them (the iPhone's FirstRun.goalChoices). */
+const PURPOSE_LABELS: Record<string, string> = {
+  travel: "Travel",
+  work: "Work",
+  school: "School",
+  family: "Family",
+  exam: "An exam",
+  fun: "Just for fun",
+};
+
+export const PATH_GOAL_CHIPS_NOTE = "Pre-filled from first run and your level. Tap to change.";
+
+/** "Travel", "Finish B1", "by 10 May 2027": the purpose only when it is a known one, never an invented one. */
+export function pathGoalChips(
+  purposeId: string | null | undefined,
+  targetLevel: string,
+  targetDate: string,
+): string[] {
+  const out: string[] = [];
+  const purpose = purposeId ? PURPOSE_LABELS[purposeId] : undefined;
+  if (purpose) out.push(purpose);
+  out.push(`Finish ${targetLevel}`, `by ${formatGoalDate(targetDate)}`);
+  return out;
+}
