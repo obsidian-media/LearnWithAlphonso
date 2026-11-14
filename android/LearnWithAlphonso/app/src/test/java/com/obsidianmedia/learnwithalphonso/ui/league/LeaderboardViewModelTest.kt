@@ -57,7 +57,8 @@ class LeaderboardViewModelTest {
         val s = server(rows("bob", me))
         val v = vm(s, prefs)
         awaitTrue("toast") { v.state.value.toast == "Someone passed you on the leaderboard!" }
-        assertEquals(listOf("bob", me), LeaderboardSnapshotCache(prefs).lastSnapshot!!.map { it.userId })
+        // The toast and the cache write are separate steps in the view-model: wait for the write instead of assuming it already happened.
+        awaitTrue("cache replaced") { LeaderboardSnapshotCache(prefs).lastSnapshot?.map { it.userId } == listOf("bob", me) }
         v.clearToast()
         v.checkForOvertake()
         awaitTrue("second check ran") { s.seen.count { it.path.endsWith("get_leaderboard") } >= 3 }
