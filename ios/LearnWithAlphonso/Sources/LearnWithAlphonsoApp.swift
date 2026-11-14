@@ -17,6 +17,8 @@ struct LearnWithAlphonsoApp: App {
     @State private var notificationScheduler: NotificationScheduler
     @State private var remotePushRegistrar: RemotePushRegistrar
     @State private var networkMonitor = NetworkMonitor()
+    /// A friend invite opened from a Universal Link, waiting for a signed-in learner (FriendInviteAccept.swift).
+    @State private var pendingInvite = PendingInvite()
     private let contentStore: ContentStore?
     private let syncQueueStore: SyncQueueStore
     private let podcastDownloadManager: PodcastDownloadManager
@@ -135,6 +137,10 @@ struct LearnWithAlphonsoApp: App {
                 .environment(\.sessionLifecycle, sessionLifecycle)
                 .environmentObject(aiConsentStore)
                 .environment(networkMonitor)
+                .environment(pendingInvite)
+                .onOpenURL { url in
+                    if let code = FriendInviteLink.code(from: url) { pendingInvite.code = code }
+                }
                 // Account consent follows the signed-in account and is re-read whenever the app comes forward, so a
                 // withdrawal on the web takes effect here without a relaunch.
                 .task(id: session.userID) { await aiConsentStore.refresh() }

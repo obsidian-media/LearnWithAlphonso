@@ -96,7 +96,7 @@ function FriendsPage() {
         >
           <p className="font-display text-base font-semibold text-ds-ink">Invite a friend</p>
           <p className="mt-1 text-xs text-ds-ink-soft/80">
-            Share your link — when they open it, you're automatically friends.
+            Share your link. When they open it and tap Add friend, you're friends.
           </p>
           {isStudioInk ? (
             <button

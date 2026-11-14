@@ -47,5 +47,13 @@
 	<array>
 		<string>group.com.obsidianmedia.learnwithalphonso</string>
 	</array>
+	<!-- Universal Links: friend invite links (https://learn.alphonsoecosystem.app/invite/...) open the app. The host's
+	     /.well-known/apple-app-site-association (src/routes/[.]well-known/) lists this app. The Associated Domains
+	     capability must be enabled on the App ID, and the provisioning profile regenerated, before a signed build
+	     (a missing capability fails codesigning outright). -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:learn.alphonsoecosystem.app</string>
+	</array>
 </dict>
 </plist>

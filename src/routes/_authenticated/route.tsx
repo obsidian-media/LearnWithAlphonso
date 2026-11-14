@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { safeNextPath } from "@/lib/safe-next-path";
 import { PodcastAudio } from "@/components/PodcastAudio";
 import { NamePrompt } from "@/components/NamePrompt";
 import { AiConsentProvider } from "@/lib/ai-consent-context";
@@ -10,11 +11,25 @@ import {
   parseLearnerProfile,
 } from "@/lib/learner-profile";
 
+/**
+ * Where a signed-out visitor goes. The page they asked for rides along as `next`, so a friend who opens an invite link
+ * lands back on it after signing in or up (a new account starts on the sign-up form). Without it the link was dropped
+ * at the door and the friendship never happened. `/auth` re-vets `next` (safeNextPath), so a bad value is just ignored.
+ */
+function signedOutRedirect(location: { href?: string; pathname?: string } | undefined) {
+  const next = safeNextPath(location?.href ?? location?.pathname);
+  if (!next || next === "/" || next === "/auth") return { to: "/auth" } as const;
+  return {
+    to: "/auth",
+    search: next.startsWith("/invite/") ? { next, mode: "signup" as const } : { next },
+  } as const;
+}
+
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ location }) => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
+    if (error || !data.user) throw redirect(signedOutRedirect(location));
     // A device that answered Under 13 in the first run keeps no account open (BACKLOG 0.0-bd): sign out, and the
     // sign-in page shows the kind stop.
     if (browserFirstRunStore().isBlocked()) {

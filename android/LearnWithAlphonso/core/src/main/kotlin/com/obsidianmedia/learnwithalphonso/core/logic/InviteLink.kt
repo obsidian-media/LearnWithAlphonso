@@ -13,4 +13,12 @@ object InviteLink {
         if (pathSegments.size != 2 || pathSegments[0] != "invite") return null
         return pathSegments[1].takeIf { CODE.matches(it) }
     }
+
+    private val LINK = Regex("""^https://learn[.]alphonsoecosystem[.]app/invite/([A-Za-z0-9]{6,64})/?$""")
+
+    /** What a learner typed or pasted in the friend-code field: a bare code, or the whole invite link. Null otherwise. */
+    fun codeFromEntry(text: String): String? {
+        val t = text.trim()
+        return LINK.matchEntire(t)?.groupValues?.get(1) ?: t.takeIf { CODE.matches(it) }
+    }
 }
