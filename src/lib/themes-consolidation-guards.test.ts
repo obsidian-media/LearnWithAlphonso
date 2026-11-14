@@ -147,6 +147,15 @@ describe("the migration that moves stored values to Royal", () => {
     expect(sql).toMatch(/before insert or update of theme on public\.profiles/);
   });
 
+  // The old CHECK did not allow 'royal', so rewriting to 'royal' while it still stands fails
+  // (the first production deploy of this migration failed exactly there).
+  it("drops the old constraint before it rewrites values to royal", () => {
+    expect(sql.indexOf("drop constraint if exists profiles_theme_check")).toBeGreaterThan(-1);
+    expect(sql.indexOf("drop constraint if exists profiles_theme_check")).toBeLessThan(
+      sql.indexOf("set theme = 'royal'"),
+    );
+  });
+
   it("runs the update before it narrows the constraint", () => {
     expect(sql.indexOf("set theme = 'royal'")).toBeGreaterThan(-1);
     expect(sql.indexOf("set theme = 'royal'")).toBeLessThan(
