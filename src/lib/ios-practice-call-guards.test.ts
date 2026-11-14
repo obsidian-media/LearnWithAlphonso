@@ -192,7 +192,7 @@ describe("Hector's call", () => {
   });
   it("hangs up by stopping the session and offering to call again", () => {
     expect(hector).toContain("private func endCall()");
-    expect(hector).toContain('Button("Call again")');
+    expect(hector).toContain('actionTitle: "Call again"');
   });
   it("gives the bars back once the call has ended, and closes the lesson-complete sheet on hang-up", () => {
     // The call hides the tab bar and the sheet's Done button; without this the learner is stuck on the tab.

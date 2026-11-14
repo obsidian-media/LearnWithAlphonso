@@ -352,6 +352,10 @@ private struct WeeklyRecapView: View {
                 } else {
                     ScrollView {
                         VStack(spacing: AlphonsoDS.Space.s3) {
+                            Image("Alphonso-\(RecapPresentation.pose(lastWeekXP: lastWeekXP))")
+                                .resizable().scaledToFit()
+                                .frame(height: AlphonsoDS.Space.s12 * 3)
+                                .accessibilityHidden(true)
                             DSHeroCard(spacing: AlphonsoDS.Space.s1) {
                                 Text("Last week you earned").dsText(.footnote).foregroundStyle(ds.onHeroSoft)
                                 Text("\(lastWeekXP ?? 0) XP").dsText(.displayXL)
