@@ -90,15 +90,18 @@ struct DSHeroCard<Content: View>: View {
     }
 }
 
-/// A thin progress bar on a card (a duel's head to head, a mission, a goal).
+/// A thin progress bar on a card (a duel's head to head, a mission, a goal). Decorative unless it is given a label
+/// and a value for VoiceOver.
 struct DSProgressBar: View {
     let fraction: Double
     var onHero = false
     var tint: Color?
+    var accessibilityLabel: String?
+    var accessibilityValue: String?
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        GeometryReader { proxy in
+        let bar = GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Capsule().fill(onHero ? ds.onHeroSoft.opacity(0.3) : ds.sunk)
                 Capsule().fill(tint ?? (onHero ? ds.xp : ds.action))
@@ -106,7 +109,14 @@ struct DSProgressBar: View {
             }
         }
         .frame(height: AlphonsoDS.Space.s3)
-        .accessibilityHidden(true)
+        if let accessibilityLabel {
+            bar
+                .accessibilityElement()
+                .accessibilityLabel(accessibilityLabel)
+                .accessibilityValue(accessibilityValue ?? "")
+        } else {
+            bar.accessibilityHidden(true)
+        }
     }
 }
 
@@ -219,6 +229,39 @@ struct DSSegmented<Value: Hashable>: View {
         .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.sunk))
         .accessibilityElement(children: .contain)
         .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+/// A rank in a board: a numbered circle, with the medal colours (gold, silver, bronze from the tokens) for the top three.
+struct DSRankBadge: View {
+    let rank: Int
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        Text("\(rank)")
+            .dsText(.caption)
+            .foregroundStyle(ink)
+            .frame(width: AlphonsoDS.Space.s8 - AlphonsoDS.Space.s1, height: AlphonsoDS.Space.s8 - AlphonsoDS.Space.s1)
+            .background(Circle().fill(face))
+            .accessibilityLabel("Rank \(rank)")
+    }
+
+    private var face: Color {
+        switch LeaguePresentation.medal(rank: rank) {
+        case .gold?: return ds.xp
+        case .silver?: return ds.line
+        case .bronze?: return ds.flame
+        case nil: return ds.sunk
+        }
+    }
+
+    private var ink: Color {
+        switch LeaguePresentation.medal(rank: rank) {
+        case .gold?: return ds.onAction
+        case .silver?: return ds.ink
+        case .bronze?: return ds.onWrong
+        case nil: return ds.inkSoft
+        }
     }
 }
 

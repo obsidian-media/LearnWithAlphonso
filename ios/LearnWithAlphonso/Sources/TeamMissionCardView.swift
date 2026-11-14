@@ -31,34 +31,34 @@ final class TeamMissionModel: ObservableObject {
 
 struct TeamMissionSection: View {
     let mission: TeamMission?
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         if let mission {
             Section {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                    Text(mission.headline)
-                        .font(AlphonsoFont.sans(15, weight: .medium))
-                        .foregroundStyle(AlphonsoColor.ink)
+                DSCard(spacing: AlphonsoDS.Space.s2) {
+                    Text("Team mission").dsText(.overline).foregroundStyle(ds.actionText)
+                    HStack(spacing: AlphonsoDS.Space.s3) {
+                        Icon3DView(emoji: "\u{1F3AF}", size: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s2)
+                        Text(mission.headline)
+                            .dsText(.headline)
+                            .foregroundStyle(ds.ink)
+                    }
                     if mission.status != .needsMembers {
-                        AlphonsoProgressBar(progress: Double(mission.percent) / 100)
-                            .accessibilityLabel("Team mission progress")
-                            .accessibilityValue("\(mission.percent) percent")
+                        DSProgressBar(
+                            fraction: Double(mission.percent) / 100,
+                            accessibilityLabel: "Team mission progress",
+                            accessibilityValue: "\(mission.percent) percent")
                     }
                     if !mission.footer.isEmpty {
                         Text(mission.footer)
-                            .font(AlphonsoFont.sans(12))
-                            .foregroundStyle(AlphonsoColor.inkSoft)
+                            .dsText(.footnote)
+                            .foregroundStyle(ds.inkSoft)
                     }
                 }
-                .padding(.vertical, 2)
                 .accessibilityElement(children: .combine)
-            } header: {
-                Text("Team mission")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.ember)
+                .dsListRow()
             }
-            .listRowBackground(AlphonsoColor.parchment)
         }
     }
 }

@@ -114,17 +114,11 @@ describe("4. word chips keep their bottom edge", () => {
     expect(lesson).toContain("LessonWordTile(word: token) { orderPicks.append(i) }");
   });
 
-  it.each([["review", review]])(
-    "the %s word bank and reorder pool leave room for the 4 pt edge",
-    (_n, file) => {
-      expect(from(file, "Button(word) { picked = word }").slice(0, 500)).toContain(
-        ".padding(.bottom, 4)",
-      );
-      expect(from(file, "Button(token) { orderPicks.append(i) }").slice(0, 500)).toContain(
-        ".padding(.bottom, 4)",
-      );
-    },
-  );
+  it("review shows the lesson's word tiles (they pad for their own edge), not chips of its own", () => {
+    expect(review).toContain("QuestionCard(");
+    expect(review).not.toContain("Button(word) { picked = word }");
+    expect(review).not.toContain("Button(token) { orderPicks.append(i) }");
+  });
 });
 
 describe("5. the scene follows the scroll, so Learn's greeting bubble fades", () => {

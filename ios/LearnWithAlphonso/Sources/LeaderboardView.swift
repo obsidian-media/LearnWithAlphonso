@@ -27,62 +27,65 @@ struct LeaderboardView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    @Environment(\.alphonsoDS) private var ds
+
+    private var scopeOptions: [DSSegmented<Scope>.Option] {
+        [.init(value: .global, label: "Global"), .init(value: .friends, label: "Friends"), .init(value: .country, label: "Country")]
+    }
+
+    private var periodOptions: [DSSegmented<Period>.Option] {
+        [.init(value: .weekly, label: "Weekly"), .init(value: .allTime, label: "All-time")]
+    }
+
     var body: some View {
         NavigationStack {
             ZStack(alignment: .top) {
-                VStack(spacing: 8) {
-                    Picker("Scope", selection: $scope) {
-                        Text("Global").tag(Scope.global)
-                        Text("Friends").tag(Scope.friends)
-                        Text("Country").tag(Scope.country)
-                    }
-                    .pickerStyle(.segmented)
-                    .accessibilityLabel("Leaderboard scope")
-                    .accessibilityIdentifier("leagueScopePicker")
-                    Picker("Period", selection: $period) {
-                        Text("Weekly").tag(Period.weekly)
-                        Text("All-time").tag(Period.allTime)
-                    }
-                    .pickerStyle(.segmented)
-                    .accessibilityLabel("Leaderboard period")
-                    .accessibilityIdentifier("leagueRangePicker")
+                // The loader below sits on this always-present stack; the List itself always draws its hero.
+                List {
+                    heroCard
+                        .dsListRow(top: AlphonsoDS.Space.s2)
 
-                    Group {
-                        if isLoading {
-                            ProgressView().tint(AlphonsoColor.moss).frame(maxHeight: .infinity)
-                        } else if let errorMessage {
-                            ContentUnavailableView("Couldn't load the leaderboard", systemImage: "wifi.slash", description: Text(errorMessage))
-                        } else if rows.isEmpty {
-                            ContentUnavailableView(emptyStateTitle, systemImage: "trophy", description: Text(emptyStateDescription))
-                        } else {
-                            List {
-                                ForEach(Array(rows.enumerated()), id: \.element.userID) { index, row in
-                                    let isYou = row.userID == session.userID
-                                    LeaderboardRowView(rank: index + 1, row: row, isYou: isYou) {
-                                        blockTarget = SocialTarget(id: row.userID, displayName: row.displayName)
-                                    } onReport: {
-                                        reportTarget = SocialTarget(id: row.userID, displayName: row.displayName)
-                                    }
-                                    .listRowBackground(isYou ? AlphonsoColor.emberSoft : AlphonsoColor.parchment)
-                                    .springEntrance(delay: Double(index % 8) * 0.04)
+                    DSSegmented(options: scopeOptions, selection: $scope, accessibilityLabel: "Leaderboard scope")
+                        .accessibilityIdentifier("leagueScopePicker")
+                        .dsListRow(bottom: AlphonsoDS.Space.s2)
+                    DSSegmented(options: periodOptions, selection: $period, accessibilityLabel: "Leaderboard period")
+                        .accessibilityIdentifier("leagueRangePicker")
+                        .dsListRow()
+
+                    if isLoading {
+                        DSCard { ProgressView().tint(ds.choice).frame(maxWidth: .infinity) }
+                            .dsListRow()
+                    } else if let errorMessage {
+                        DSEmptyState(art: "Alphonso-thinking", title: "Couldn't load the leaderboard", message: errorMessage)
+                            .dsListRow()
+                    } else if rows.isEmpty {
+                        DSEmptyState(art: "Alphonso-waving", title: emptyStateTitle, message: emptyStateDescription)
+                            .dsListRow()
+                    } else {
+                        DSCard(padding: AlphonsoDS.Space.s2, spacing: 0) {
+                            ForEach(Array(rows.enumerated()), id: \.element.userID) { index, row in
+                                let isYou = row.userID == session.userID
+                                LeaderboardRowView(rank: index + 1, row: row, isYou: isYou) {
+                                    blockTarget = SocialTarget(id: row.userID, displayName: row.displayName)
+                                } onReport: {
+                                    reportTarget = SocialTarget(id: row.userID, displayName: row.displayName)
                                 }
+                                .springEntrance(delay: Double(index % 8) * 0.04)
                             }
-                            .listStyle(.plain)
-                            .scrollContentBackground(.hidden)
                         }
+                        .dsListRow()
                     }
                 }
-                .padding(.horizontal)
-                .padding(.top, 8)
-                .background(AlphonsoColor.surface)
+                .dsSceneList(.profile)
 
                 if let overtakeToastMessage {
                     ToastBanner(message: overtakeToastMessage, iconName: "arrow.up.arrow.down.circle.fill")
-                        .padding(.top, 4)
+                        .padding(.top, AlphonsoDS.Space.s1)
                         .transition(ToastBanner.transition(reduceMotion: reduceMotion))
                 }
             }
             .navigationTitle("League")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink("Teams") {
@@ -106,7 +109,7 @@ struct LeaderboardView: View {
                 WeeklyRecapView(session: session)
             }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .task(id: "\(scope.rawValue)-\(period.rawValue)") { await load() }
         .task { await checkForOvertake() }
         // A block made on a screen pushed above this one (Teams) must not wait for a reload to take effect.
@@ -139,6 +142,34 @@ struct LeaderboardView: View {
         }
         .sheet(item: $reportTarget) { target in
             ReportSheet(target: target, session: session)
+        }
+    }
+
+    /// The learner's league (its display name, from the tier the app last saw) and their XP on the board shown.
+    /// Both come from what is already on the device or on the board: with neither, only the trophy and "League".
+    private var heroCard: some View {
+        let title = LeaguePresentation.tierTitle(tier: LeagueTierCache.lastKnownTier)
+        let xp = LeaguePresentation.myXP(rows: rows.map { (userID: $0.userID, xp: $0.xp) }, myID: session.userID)
+        return DSHeroCard {
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                Icon3DView(emoji: "\u{1F3C6}", size: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s1)
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                    if title != nil {
+                        Text("Your league").dsText(.overline).foregroundStyle(ds.onHeroKick)
+                    }
+                    Text(title ?? "League").dsText(.title)
+                        .accessibilityAddTraits(.isHeader)
+                }
+                Spacer(minLength: AlphonsoDS.Space.s2)
+                if let xp {
+                    VStack(alignment: .trailing, spacing: 0) {
+                        Text("\(xp)").dsText(.numeral)
+                        Text("XP").dsText(.caption).foregroundStyle(ds.onHeroSoft)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(xp) XP")
+                }
+            }
         }
     }
 
@@ -227,19 +258,17 @@ private struct LeaderboardRowView: View {
     let onBlock: () -> Void
     let onReport: () -> Void
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
-        HStack(spacing: AlphonsoSpacing.sm + 4) {
-            Text("\(rank)")
-                .font(AlphonsoFont.sans(12, weight: .semiBold))
-                .frame(width: 28, height: 28)
-                .background(rankBadgeColor)
-                .clipShape(Circle())
+        HStack(spacing: AlphonsoDS.Space.s3) {
+            DSRankBadge(rank: rank)
 
             // Their animal, or their initial on their colour (ProfileAvatars, AvatarColor).
-            ProfileAvatarView(seed: row.avatarSeed, name: row.displayName, size: 36)
+            ProfileAvatarView(seed: row.avatarSeed, name: row.displayName, size: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s2)
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1 / 2) {
+                HStack(spacing: AlphonsoDS.Space.s2) {
                     // The flag, only for a learner who turned it on (profiles.country is set only then), before the
                     // name; VoiceOver still hears the code.
                     if let flag = ProfileMath.flagEmoji(country: row.country) {
@@ -247,47 +276,35 @@ private struct LeaderboardRowView: View {
                             .accessibilityLabel(ProfileMath.flagAccessibilityLabel(country: row.country) ?? "")
                     }
                     Text(row.displayName)
-                        .font(AlphonsoFont.sans(15, weight: .medium))
-                        .foregroundStyle(AlphonsoColor.ink)
+                        .dsText(.headline)
+                        .foregroundStyle(ds.ink)
+                        .lineLimit(2)
                     if isYou {
-                        Text("YOU")
-                            .font(AlphonsoFont.sans(9, weight: .semiBold))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(AlphonsoColor.ember)
-                            .foregroundStyle(AlphonsoColor.onAccent)
-                            .clipShape(Capsule())
+                        DSPill(text: "YOU", tone: .gold)
                     }
                 }
                 // A code that draws no flag (malformed) still shows as text; a valid one is the flag above.
                 if let country = row.country, ProfileMath.flagEmoji(country: country) == nil {
                     Text(country.uppercased())
-                        .font(AlphonsoFont.sans(11))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .dsText(.caption)
+                        .foregroundStyle(ds.inkSoft)
                 }
             }
 
-            Spacer()
+            Spacer(minLength: AlphonsoDS.Space.s2)
 
             Text("\(row.xp) XP")
-                .font(AlphonsoFont.sans(15, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
+                .dsText(.headline)
+                .foregroundStyle(ds.ink)
 
             if !isYou {
                 SocialSafetyMenu(onBlock: onBlock, onReport: onReport, accessibilityName: row.displayName)
             }
         }
-    }
-
-    /// Matches the web app's rank-medal coloring for the top 3 rows
-    /// (league.tsx): gold/silver/bronze, falling back to a neutral tint.
-    private var rankBadgeColor: Color {
-        switch rank {
-        case 1: return .yellow.opacity(0.6)
-        case 2: return Color(white: 0.82)
-        case 3: return .orange.opacity(0.6)
-        default: return AlphonsoColor.surface
-        }
+        .padding(.horizontal, AlphonsoDS.Space.s2)
+        .padding(.vertical, AlphonsoDS.Space.s2)
+        .frame(minHeight: AlphonsoDS.Space.minTouch)
+        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(isYou ? ds.choiceTint : Color.clear))
     }
 }
 
@@ -310,67 +327,62 @@ private struct WeeklyRecapView: View {
     @State private var currentRank: Int?
     @State private var promotedToTier: String?
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
         NavigationStack {
             Group {
                 if isLoading {
-                    ProgressView().tint(AlphonsoColor.moss)
+                    ProgressView().tint(ds.choice).frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ScrollView {
-                        VStack(spacing: AlphonsoSpacing.lg) {
-                            VStack(spacing: 4) {
-                                Text("Last week you earned")
-                                    .font(AlphonsoFont.sans(14))
-                                    .foregroundStyle(AlphonsoColor.inkSoft)
-                                Text("\(lastWeekXP ?? 0) XP")
-                                    .font(AlphonsoFont.display(40, weight: .bold))
-                                    .foregroundStyle(AlphonsoColor.ink)
+                        VStack(spacing: AlphonsoDS.Space.s3) {
+                            DSHeroCard(spacing: AlphonsoDS.Space.s1) {
+                                Text("Last week you earned").dsText(.footnote).foregroundStyle(ds.onHeroSoft)
+                                Text("\(lastWeekXP ?? 0) XP").dsText(.displayXL)
                             }
+                            .accessibilityElement(children: .combine)
 
                             if let currentRank {
-                                VStack(spacing: 6) {
-                                    VStack(spacing: 2) {
-                                        Text("Your rank today (global, weekly)")
-                                            .font(AlphonsoFont.sans(12))
-                                            .foregroundStyle(AlphonsoColor.inkSoft)
-                                        Text("#\(currentRank)")
-                                            .font(AlphonsoFont.display(22, weight: .semiBold))
-                                            .foregroundStyle(AlphonsoColor.ink)
-                                    }
+                                DSCard(spacing: AlphonsoDS.Space.s2) {
+                                    Text("Your rank today (global, weekly)").dsText(.caption).foregroundStyle(ds.inkSoft)
+                                    Text("#\(currentRank)").dsText(.title).foregroundStyle(ds.brand)
                                     Text("Approximate: this app doesn't keep a snapshot of last week's exact standings.")
-                                        .font(AlphonsoFont.sans(11))
-                                        .foregroundStyle(AlphonsoColor.inkSoft)
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal)
+                                        .dsText(.caption)
+                                        .foregroundStyle(ds.inkSoft)
                                 }
+                                .accessibilityElement(children: .combine)
                             }
 
                             if let promotedToTier {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "arrow.up.circle.fill")
-                                        .font(.title)
-                                        .foregroundStyle(LeagueTierPalette.color(for: promotedToTier))
-                                    Text("You moved up to \(LeagueTierPalette.label(for: promotedToTier))!")
-                                        .font(AlphonsoFont.sans(15, weight: .semiBold))
-                                        .foregroundStyle(AlphonsoColor.ink)
+                                DSCard(spacing: AlphonsoDS.Space.s2) {
+                                    HStack(spacing: AlphonsoDS.Space.s3) {
+                                        Image(systemName: "arrow.up.circle.fill")
+                                            .font(.title)
+                                            .foregroundStyle(LeagueTierPalette.color(for: promotedToTier))
+                                            .accessibilityHidden(true)
+                                        Text("You moved up to \(LeagueTierPalette.label(for: promotedToTier))!")
+                                            .dsText(.headline)
+                                            .foregroundStyle(ds.ink)
+                                    }
                                 }
+                                .accessibilityElement(children: .combine)
                             }
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
+                        .padding(AlphonsoDS.Space.gutter)
                     }
-                    .background(AlphonsoColor.surface)
                 }
             }
+            .background(ds.surface)
             .navigationTitle("Weekly recap")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
-                        .tint(AlphonsoColor.moss)
                 }
             }
         }
+        .tint(ds.choice)
         .task { await load() }
     }
 

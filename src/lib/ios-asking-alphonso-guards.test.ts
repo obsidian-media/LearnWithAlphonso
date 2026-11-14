@@ -105,7 +105,9 @@ describe("every question type asks through Alphonso", () => {
     // there (inStage), so the question is never asked twice.
     expect(lesson).not.toContain("AskingAlphonso(");
     expect(count(lesson, "AlphonsoBubbleView(label: bubbleLabel, text: question.prompt")).toBe(1);
-    expect(lesson).toContain("surface: .lesson, inStage: true)");
+    // The card takes the screen's consent surface (the lesson by default, review passes its own).
+    expect(lesson).toContain("surface: surface, inStage: true)");
+    expect(lesson).toContain("var surface: AIConsentSurface = .lesson");
     expect(lesson).toMatch(/SpeakQuestionCard\([\s\S]{0,200}inStage: true\)/);
     expect(translate).toMatch(
       /if inStage \{[\s\S]{0,300}\} else \{[\s\S]{0,300}AskingAlphonso\(prompt: question\.prompt\)/,
@@ -115,10 +117,12 @@ describe("every question type asks through Alphonso", () => {
     );
   });
 
-  it("review's four cards", () => {
-    expect(count(review, "AskingAlphonso(prompt: q.prompt")).toBe(4);
-    expect(review).toContain(MC_CALL);
-    expect(review).toContain(LISTENING_CALL);
+  it("review asks through the lesson's QuestionCard, with its own consent surface", () => {
+    // Round 12: review no longer draws its own four cards; it shows the lesson's, so every type asks through
+    // Alphonso's bubble there.
+    expect(review).toContain("QuestionCard(");
+    expect(review).toContain("surface: .review");
+    expect(review).not.toContain("AskingAlphonso(");
     expect(review).not.toMatch(/Text\(q\.prompt\)\.font\(AlphonsoFont\.display\(21/);
   });
 
