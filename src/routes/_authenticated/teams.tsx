@@ -6,11 +6,11 @@ import {
   DsButton,
   DsCard,
   DsField,
-  DsScreen,
   DsSegmented,
   GlassTitle,
   Overline,
 } from "@/components/ds/Blocks";
+import { DsScreen } from "@/components/ds/DsScreen";
 import { TopTeams } from "@/components/teams/TeamParts";
 import { canCreate, canJoin } from "../../lib/social-presentation";
 import {

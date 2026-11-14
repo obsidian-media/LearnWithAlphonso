@@ -10,13 +10,13 @@ import {
   DsChip,
   DsPill,
   DsRow,
-  DsScreen,
   DsSegmented,
   DsSwitch,
   GlassTitle,
   Icon,
   Overline,
 } from "@/components/ds/Blocks";
+import { DsScreen } from "@/components/ds/DsScreen";
 import { getMyDuels, createDuel, respondToDuel, getFriends } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { joinOpenDuelQueue, leaveOpenDuelQueue } from "../../lib/challenges.functions";

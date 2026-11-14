@@ -1,9 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ComponentProps, ReactNode } from "react";
-import { MobileFrame } from "@/components/AppShell";
-import { SceneBackdrop } from "@/components/SceneBackdrop";
 import { medalFor } from "@/lib/social-presentation";
-import type { Scene } from "@/lib/scenes";
 
 /**
  * The round-6 building blocks the redesigned social, settings and review screens share (mocks r10 and r12): a scene
@@ -13,16 +10,6 @@ import type { Scene } from "@/lib/scenes";
 
 const GLASS =
   "rounded-[22px] border border-ds-card/60 bg-ds-card/80 backdrop-blur-xl shadow-[var(--ds-shadow-floating)]";
-
-/** A screen on a painted scene: the app shell, the scene behind it and the column the content sits in. */
-export function DsScreen({ scene, children }: { scene: Scene; children: ReactNode }) {
-  return (
-    <MobileFrame>
-      <SceneBackdrop scene={scene} />
-      <div className="relative z-10 grid content-start gap-3.5 px-4 pb-24 pt-2">{children}</div>
-    </MobileFrame>
-  );
-}
 
 /** The back control: a glass pill, with an optional trailing group (links to sibling screens) on the right. */
 export function BackPill({

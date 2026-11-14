@@ -7,13 +7,13 @@ import {
   DsHero,
   DsLinkButton,
   DsPill,
-  DsScreen,
   DsSegmented,
   HeroKicker,
   Icon,
   PoseCard,
   RankBadge,
 } from "@/components/ds/Blocks";
+import { DsScreen } from "@/components/ds/DsScreen";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";

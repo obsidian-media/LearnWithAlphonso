@@ -5,13 +5,13 @@ import {
   DsButton,
   DsCard,
   DsHero,
-  DsScreen,
   GlassTitle,
   HeroKicker,
   Icon,
   Overline,
   PoseCard,
-} from "../../components/ds/Blocks";
+} from "@/components/ds/Blocks";
+import { DsScreen } from "@/components/ds/DsScreen";
 import { getSeasonStatus } from "../../lib/season.functions";
 
 export const Route = createFileRoute("/_authenticated/season")({

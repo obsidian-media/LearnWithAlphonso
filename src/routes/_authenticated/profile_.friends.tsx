@@ -6,11 +6,11 @@ import {
   DsCard,
   DsLinkButton,
   DsRow,
-  DsScreen,
   GlassTitle,
   Icon,
   Overline,
 } from "@/components/ds/Blocks";
+import { DsScreen } from "@/components/ds/DsScreen";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { AskBuddyButton, BuddyCard } from "../../components/BuddyCard";
