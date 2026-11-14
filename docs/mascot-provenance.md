@@ -64,7 +64,7 @@ from the official Alphonso reference images in this repo as input, then cut out 
 and scaled to 1200 px tall like `public/figures`. Each was approved by the owner before it was bundled. The Codex
 terms apply to these outputs, not the Higgsfield terms above. The iPhone bundles only the poses the redesigned
 screens use so far, as image sets `Alphonso-<pose>` (listed in `src/data/alphonso-figure-poses.json`): `reading-book`
-(Review) and `hearts-calm` (Out of hearts). The web and Android apps do not carry them yet.
+(Review), `hearts-calm` (Out of hearts) and `surprised-impressed` (Achievements). The web and Android apps do not carry them yet.
 
 ## Commercial-use terms
 
@@ -85,3 +85,7 @@ answered above. The owner confirms the remaining provenance details privately
 (the Google account used for the first concept, the model behind Hector, the
 inputs to the in-app portrait, and which images ship) before submission. If
 any of them is no or unknown, resolve it before submission.
+
+## Achievement badge medallions (2026-11-14)
+
+The 25 badge medallions (one per achievement in `src/data/achievements.ts`: streak, XP, perfect lessons, lessons, league, streak freeze, team) were made on 2026-11-14 with headless Codex image generation (the Codex CLI's image tool, run by the agent), one call per family, then cut out to a transparent background, trimmed and scaled to 512 px. The iPhone bundles them as image sets `Badge-<achievement id>`. The Codex terms apply to these outputs, not the Higgsfield terms above.

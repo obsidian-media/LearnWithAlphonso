@@ -193,11 +193,14 @@ describe("Accessibility labels", () => {
     expect(between(placement, 'Image(systemName: "star.fill")', /\.background/)).toContain(
       ".accessibilityHidden(true)",
     );
-    const ach = read(`${APP}/AchievementsView.swift`);
-    expect(between(ach, "Image(systemName: symbolName)", /Text\(achievement\.title\)/)).toContain(
+    // The medallion (and the lock drawn on a locked one) is decorative: the cell speaks the title and the state.
+    const badges = read(`${APP}/BadgeViews.swift`);
+    expect(between(badges, "struct BadgeMedallion", /private var saturation/)).toContain(
       ".accessibilityHidden(true)",
     );
-    expect(ach).toContain('.accessibilityValue(unlocked ? "Unlocked" : "Locked")');
+    expect(badges).toContain(".accessibilityValue(badgeStateSpeech(state))");
+    expect(badges).toContain('case .earned: return "Unlocked"');
+    expect(badges).toContain('case .locked: return "Locked"');
   });
 
   it("the League header controls are labelled and the pickers keep their segments selectable", () => {
