@@ -133,8 +133,29 @@ export function useHelpChat(client: HelpClient, online: boolean) {
   }, [client]);
   useEffect(() => {
     if (state.load !== "ready" || !online || !shouldPoll(state.status)) return;
-    const id = setInterval(() => void poll(), POLL_INTERVAL_MS);
-    return () => clearInterval(id);
+    let id: ReturnType<typeof setInterval> | null = null;
+    const stop = () => {
+      if (id !== null) clearInterval(id);
+      id = null;
+    };
+    const start = () => {
+      stop();
+      id = setInterval(() => void poll(), POLL_INTERVAL_MS);
+    };
+    // A hidden tab does not poll; coming back refetches at once, then resumes the 20 s tick.
+    const onVisibility = () => {
+      if (document.hidden) stop();
+      else {
+        void poll();
+        start();
+      }
+    };
+    if (!document.hidden) start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [state.load, state.status, online, poll]);
 
   const attempt = useCallback(

@@ -490,6 +490,39 @@ describe("exportMyData, the Help chat", () => {
   });
 });
 
+describe("exportMyData, AI link markers", () => {
+  it("exports AI answers without the [[link:...]] marker, the link as its own field; other kinds untouched", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockImplementation((table: string) =>
+      table === "profiles" ? chainable({ data: {} }) : chainable({ data: [] }),
+    );
+    supabaseAdminFrom.mockImplementation((table: string) =>
+      chainable(
+        {
+          data:
+            table === "support_messages"
+              ? [
+                  { id: 1, author_kind: "ai", body: "Tap Restore.\n\n[[link:subscription]]" },
+                  { id: 2, author_kind: "learner", body: "I typed [[link:settings]]" },
+                ]
+              : [],
+          error: null,
+          count: 2,
+        },
+        [],
+      ),
+    );
+    getUserById.mockResolvedValue({ data: { user: { id: USER_ID, identities: [] } }, error: null });
+    const tables = JSON.parse((await exportMyData({ context: ctx(supabase) })).tables);
+    expect(tables.support_messages[0]).toMatchObject({
+      body: "Tap Restore.",
+      link: "subscription",
+    });
+    expect(tables.support_messages[1].body).toBe("I typed [[link:settings]]");
+    expect(JSON.stringify(tables.support_messages[0])).not.toContain("[[link:");
+  });
+});
+
 describe("exportMyData, rows the caller cannot read itself", () => {
   it("adds blocks made, filed reports, created teams, codes and memberships, scoped to this account", async () => {
     const supabase = createSupabaseMock();

@@ -77,3 +77,7 @@ export function presentSupportMessages(
     return { ...m, body: text, link };
   });
 }
+
+/** Removes every `[[link:...]]` marker from model text, so only the structured `link` field can set one. */
+export const removeSupportMarkers = (text: string): string =>
+  text.replace(/\s*\[\[link:[^\]]*\]\]/gi, "").trim();

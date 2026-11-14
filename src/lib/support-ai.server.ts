@@ -7,6 +7,7 @@ import {
   SUPPORT_LINK_IDS,
   SUPPORT_LINK_LABELS,
   parseSupportLinkId,
+  removeSupportMarkers,
   stripSupportLink,
   type SupportLinkId,
 } from "./support-links";
@@ -287,8 +288,10 @@ export function parseSupportReply(content: string | null | undefined): SupportRe
   const parsed = replySchema.safeParse(raw);
   if (!parsed.success) return null;
   const v = parsed.data;
+  const reply = removeSupportMarkers(v.reply);
+  if (!reply) return null;
   return {
-    reply: capReply(v.reply),
+    reply: capReply(reply),
     handoff: v.handoff,
     reason: v.handoff ? (v.reason ?? "ai_unsure") : null,
     topic: v.topic,

@@ -397,6 +397,37 @@ describe("polling", () => {
     expect(document.querySelector('[data-divider="new"]')).not.toBeNull();
   });
 
+  it("pauses while the tab is hidden and refetches when it becomes visible", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const fetchConversation = vi.fn(async () =>
+      conv({ status: "new", messages: [m(1, "you", "hi")] }),
+    );
+    const setHidden = (h: boolean) => {
+      Object.defineProperty(document, "hidden", { configurable: true, get: () => h });
+      document.dispatchEvent(new Event("visibilitychange"));
+    };
+    render(<HelpChat client={fake(conv(), { fetchConversation })} />);
+    await screen.findByText("With our team");
+    expect(fetchConversation).toHaveBeenCalledTimes(1);
+    try {
+      setHidden(true);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(65_000);
+      });
+      expect(fetchConversation).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        setHidden(false);
+      });
+      expect(fetchConversation).toHaveBeenCalledTimes(2);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(20_500);
+      });
+      expect(fetchConversation).toHaveBeenCalledTimes(3);
+    } finally {
+      Object.defineProperty(document, "hidden", { configurable: true, get: () => false });
+    }
+  });
+
   it("does not poll while the AI has the chat", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const fetchConversation = vi.fn(async () =>

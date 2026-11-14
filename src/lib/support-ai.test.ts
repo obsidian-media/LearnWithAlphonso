@@ -14,7 +14,7 @@ import {
   type SupportTurn,
 } from "./support-ai.server";
 import type { SupportFacts } from "./support-facts.server";
-import { SUPPORT_LINK_IDS } from "./support-links";
+import { SUPPORT_LINK_IDS, withSupportLink } from "./support-links";
 
 const FACTS: SupportFacts = {
   pro: { active: false, source: "none", until: null, unavailable: false },
@@ -243,6 +243,24 @@ describe("the optional app link in a reply", () => {
       expect(r?.link).toBeNull();
     }
     expect(parseSupportReply(JSON.stringify(base))?.link).toBeNull();
+  });
+  it("a marker in the model's text never becomes a link: only the structured link field may set one", () => {
+    const r = parseSupportReply(
+      JSON.stringify({
+        ...base,
+        reply: "Tap Restore Purchases.\n\n[[link:subscription]]",
+        link: null,
+      }),
+    );
+    expect(r?.reply).toBe("Tap Restore Purchases.");
+    expect(r?.link).toBeNull();
+    expect(withSupportLink(r!.reply, r!.link)).not.toContain("[[link:");
+    const mid = parseSupportReply(
+      JSON.stringify({ ...base, reply: "Go [[link:settings]] then restore.", link: "league" }),
+    );
+    expect(mid?.reply).toBe("Go then restore.");
+    expect(mid?.link).toBe("league");
+    expect(parseSupportReply(JSON.stringify({ ...base, reply: "[[link:settings]]" }))).toBeNull();
   });
   it("the prompt names the allowed ids and says never a web address", () => {
     const prompt = buildSupportSystemPrompt(FACTS);
