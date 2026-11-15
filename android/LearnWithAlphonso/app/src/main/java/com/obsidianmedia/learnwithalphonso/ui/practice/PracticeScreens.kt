@@ -175,8 +175,7 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     val scope = rememberCoroutineScope()
     val result by vm.result.collectAsState()
     var unscored by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    // Hands-free carries across the scenes of one run: noted before the call finishes (which turns it off), re-armed when the next scene's call opens.
-    val endCall: () -> Unit = { vm.carryHandsFreeToNextScene(); scope.launch {
+    val endCall: () -> Unit = { scope.launch {
         if (vm.finishPractice() == null) {
             // Offline: stay with a notice when replies were sent; with none there is nothing to keep.
             if (com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.staysOnUnscored(vm.state.value.turns.count { it.role == "user" })) unscored = true else onBack()
