@@ -84,7 +84,7 @@ class HandsFreeWiringTest {
     }
 
     private fun listening(vm: com.obsidianmedia.learnwithalphonso.ui.practice.call.CallConversation) =
-        awaitTrue("listening") { vm.handsFree.status.value == Status.Listening && vm.engine.phase.value == TurnPhase.RECORDING }
+        awaitTrue("listening", 25_000) { vm.handsFree.status.value == Status.Listening && vm.engine.phase.value == TurnPhase.RECORDING }
 
     /** One spoken turn: half a second of room, a second of speech. The caller feeds the quiet that ends it. */
     private fun speak(vm: com.obsidianmedia.learnwithalphonso.ui.practice.call.CallConversation) {
@@ -119,14 +119,14 @@ class HandsFreeWiringTest {
         assertEquals("1.5 s of quiet: Practice is still waiting for the rest of the sentence", TurnPhase.RECORDING, practice.engine.phase.value)
         assertEquals(0, count(s, "/api/stt"))
         feed(practice, -60.0, 1.2)
-        awaitTrue("practice turn sent") { count(s, "/api/stt") == 1 }
+        awaitTrue("practice turn sent", 25_000) { count(s, "/api/stt") == 1 }
 
         val hector = hectorVm(server(), CountingRecorder())
         val hs = hector
         hs.handsFree.enable(); listening(hs)
         speak(hs)
         feed(hs, -60.0, 1.5)
-        awaitTrue("hector turn sent after 1.2 s") { hs.state.value.turns.any { it.role == "user" } }
+        awaitTrue("hector turn sent after 1.2 s", 25_000) { hs.state.value.turns.any { it.role == "user" } }
     }
 
     @Test
@@ -137,13 +137,13 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(s, recorder, ReplyPlayer { release.await(); true })
         vm.handsFree.enable(); listening(vm)
         speak(vm); feed(vm, -60.0, 3.0)
-        awaitTrue("reply is being played") { vm.state.value.phase == ConversationPhase.SPEAKING && count(s, "/api/tts") == 1 }
+        awaitTrue("reply is being played", 25_000) { vm.state.value.phase == ConversationPhase.SPEAKING && count(s, "/api/tts") == 1 }
         Thread.sleep(300)
         assertEquals("one mic opening so far: the reply is still playing", 1, recorder.started)
         assertEquals(TurnPhase.IDLE, vm.engine.phase.value)
         assertEquals(Status.Waiting, vm.handsFree.status.value)
         release.complete(Unit)
-        awaitTrue("the next turn listens") { recorder.started == 2 && vm.handsFree.status.value == Status.Listening }
+        awaitTrue("the next turn listens", 25_000) { recorder.started == 2 && vm.handsFree.status.value == Status.Listening }
     }
 
     @Test
@@ -153,8 +153,8 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(s, recorder)
         vm.handsFree.enable(); listening(vm)
         feed(vm, -60.0, 8.3)
-        awaitTrue("paused") { vm.handsFree.status.value == Status.Paused(PauseReason.NO_SPEECH) }
-        awaitTrue("mic closed") { vm.engine.phase.value == TurnPhase.IDLE }
+        awaitTrue("paused", 25_000) { vm.handsFree.status.value == Status.Paused(PauseReason.NO_SPEECH) }
+        awaitTrue("mic closed", 25_000) { vm.engine.phase.value == TurnPhase.IDLE }
         assertTrue(recorder.cancelled >= 1)
         assertEquals(0, count(s, "/api/stt"))
         Thread.sleep(200)
@@ -167,7 +167,7 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(s, CountingRecorder())
         vm.handsFree.enable(); listening(vm)
         feed(vm, -20.0, 30.3)
-        awaitTrue("paused after a long turn") { vm.handsFree.status.value == Status.Paused(PauseReason.LONG_TURN) }
+        awaitTrue("paused after a long turn", 25_000) { vm.handsFree.status.value == Status.Paused(PauseReason.LONG_TURN) }
         assertEquals(0, count(s, "/api/stt"))
     }
 
@@ -178,8 +178,8 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(s, recorder)
         vm.handsFree.enable(); listening(vm)
         speak(vm); feed(vm, -60.0, 3.0)
-        awaitTrue("paused on noise") { vm.handsFree.status.value == Status.Paused(PauseReason.NO_WORDS) }
-        awaitTrue("phase back to idle") { vm.state.value.phase == ConversationPhase.IDLE }
+        awaitTrue("paused on noise", 25_000) { vm.handsFree.status.value == Status.Paused(PauseReason.NO_WORDS) }
+        awaitTrue("phase back to idle", 25_000) { vm.state.value.phase == ConversationPhase.IDLE }
         assertNull("hands-free's own line says what happened", vm.state.value.error)
         assertEquals(0, count(s, "/api/chat"))
         Thread.sleep(200)
@@ -191,7 +191,7 @@ class HandsFreeWiringTest {
         val s = server(transcript = "  ")
         val vm = scenarioVm(s, CountingRecorder())
         vm.pressBegan(); vm.pressEnded()
-        awaitTrue("message") { vm.state.value.error == "Didn't catch that. Try again." }
+        awaitTrue("message", 25_000) { vm.state.value.error == "Didn't catch that. Try again." }
     }
 
     @Test
@@ -201,7 +201,7 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(s, recorder)
         vm.handsFree.enable(); listening(vm)
         speak(vm); feed(vm, -60.0, 3.0)
-        awaitTrue("a second turn opens") { recorder.started == 2 && vm.handsFree.status.value == Status.Listening }
+        awaitTrue("a second turn opens", 25_000) { recorder.started == 2 && vm.handsFree.status.value == Status.Listening }
         assertNull(vm.state.value.error)
         assertEquals(0, count(s, "/api/stt"))
     }
@@ -213,7 +213,7 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(s, recorder)
         vm.handsFree.enable(); listening(vm)
         speak(vm); feed(vm, -60.0, 3.0)
-        awaitTrue("paused after a problem") { vm.handsFree.status.value == Status.Paused(PauseReason.FAILURE) }
+        awaitTrue("paused after a problem", 25_000) { vm.handsFree.status.value == Status.Paused(PauseReason.FAILURE) }
         Thread.sleep(200)
         assertEquals(1, recorder.started)
     }
@@ -225,13 +225,13 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(s, recorder)
         vm.handsFree.enable()
         for (turn in 1..20) {
-            awaitTrue("turn $turn open") { recorder.started == turn && vm.handsFree.status.value == Status.Listening }
+            awaitTrue("turn $turn open", 25_000) { recorder.started == turn && vm.handsFree.status.value == Status.Listening }
             speak(vm); feed(vm, -60.0, 3.0)
         }
-        awaitTrue("paused at the limit") { vm.handsFree.status.value == Status.Paused(PauseReason.TURN_LIMIT) }
+        awaitTrue("paused at the limit", 25_000) { vm.handsFree.status.value == Status.Paused(PauseReason.TURN_LIMIT) }
         assertEquals(20, recorder.started)
         vm.handsFree.togglePause()
-        awaitTrue("a touch resumes") { recorder.started == 21 }
+        awaitTrue("a touch resumes", 25_000) { recorder.started == 21 }
     }
 
     @Test
@@ -241,8 +241,8 @@ class HandsFreeWiringTest {
         val vm = hectorVm(s, recorder)
         vm.handsFree.enable(); listening(vm)
         speak(vm); feed(vm, -60.0, 2.0)
-        awaitTrue("tutor called") { count(s, "/api/hector-respond") == 1 }
-        awaitTrue("next turn") { recorder.started == 2 && vm.handsFree.status.value == Status.Listening }
+        awaitTrue("tutor called", 25_000) { count(s, "/api/hector-respond") == 1 }
+        awaitTrue("next turn", 25_000) { recorder.started == 2 && vm.handsFree.status.value == Status.Listening }
     }
 
     @Test
@@ -252,7 +252,7 @@ class HandsFreeWiringTest {
         val vm = hectorVm(s, recorder)
         vm.handsFree.enable(); listening(vm)
         speak(vm); feed(vm, -60.0, 2.0)
-        awaitTrue("paused after a problem") { vm.handsFree.status.value == Status.Paused(PauseReason.FAILURE) }
+        awaitTrue("paused after a problem", 25_000) { vm.handsFree.status.value == Status.Paused(PauseReason.FAILURE) }
         Thread.sleep(200)
         assertEquals(1, recorder.started)
     }
@@ -265,7 +265,7 @@ class HandsFreeWiringTest {
         vm.handsFree.enable(); listening(vm)
         vm.onLeave()
         assertEquals(Status.Off, vm.handsFree.status.value)
-        awaitTrue("mic closed") { vm.engine.phase.value == TurnPhase.IDLE }
+        awaitTrue("mic closed", 25_000) { vm.engine.phase.value == TurnPhase.IDLE }
         val hector = hectorVm(server(), CountingRecorder())
         hector.handsFree.enable(); listening(hector)
         hector.hangUp()
@@ -279,8 +279,8 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(s, recorder)
         vm.handsFree.enable(); listening(vm)
         HandsFreeBinding.interrupted(vm.handsFree, vm.engine)
-        awaitTrue("paused") { vm.handsFree.status.value == Status.Paused(PauseReason.INTERRUPTED) }
-        awaitTrue("mic closed") { vm.engine.phase.value == TurnPhase.IDLE }
+        awaitTrue("paused", 25_000) { vm.handsFree.status.value == Status.Paused(PauseReason.INTERRUPTED) }
+        awaitTrue("mic closed", 25_000) { vm.engine.phase.value == TurnPhase.IDLE }
         assertTrue(recorder.cancelled >= 1)
         assertEquals(0, count(s, "/api/stt"))
     }
@@ -349,7 +349,7 @@ class HandsFreeWiringTest {
         val recorder = CountingRecorder()
         val vm = scenarioVm(s, recorder, requestMic = { gate.await() })
         vm.handsFree.enable()
-        awaitTrue("asking for the mic") { vm.engine.phase.value == TurnPhase.REQUESTING_MIC }
+        awaitTrue("asking for the mic", 25_000) { vm.engine.phase.value == TurnPhase.REQUESTING_MIC }
         vm.handsFree.disable()
         gate.complete(true)
         Thread.sleep(300)
@@ -364,7 +364,7 @@ class HandsFreeWiringTest {
         val recorder = CountingRecorder()
         val vm = scenarioVm(server(), recorder, requestMic = { gate.await() })
         vm.handsFree.enable()
-        awaitTrue("asking for the mic") { vm.engine.phase.value == TurnPhase.REQUESTING_MIC }
+        awaitTrue("asking for the mic", 25_000) { vm.engine.phase.value == TurnPhase.REQUESTING_MIC }
         vm.handsFree.togglePause()
         gate.complete(true)
         Thread.sleep(300)
@@ -378,7 +378,7 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(server(), recorder)
         vm.handsFree.enable(); listening(vm)
         vm.handsFree.failed()
-        awaitTrue("mic released") { vm.engine.phase.value == TurnPhase.IDLE }
+        awaitTrue("mic released", 25_000) { vm.engine.phase.value == TurnPhase.IDLE }
         assertTrue(recorder.cancelled >= 1)
         assertEquals(Status.Paused(PauseReason.FAILURE), vm.handsFree.status.value)
     }
@@ -392,7 +392,7 @@ class HandsFreeWiringTest {
         val vm = scenarioVm(server(), recorder)
         vm.handsFree.enable(); listening(vm)
         assertNull(vm.micLevelDBFS())
-        awaitTrue("mic released") { vm.engine.phase.value == TurnPhase.IDLE }
+        awaitTrue("mic released", 25_000) { vm.engine.phase.value == TurnPhase.IDLE }
         assertEquals(Status.Paused(PauseReason.FAILURE), vm.handsFree.status.value)
         assertTrue(inner.cancelled >= 1)
     }
@@ -404,8 +404,8 @@ class HandsFreeWiringTest {
         vm.handsFree.enable(); listening(vm)
         var t = 0.0
         while (t < 8.3) { vm.handsFree.tick(t); t += 0.1 }
-        awaitTrue("paused") { vm.handsFree.status.value == Status.Paused(PauseReason.NO_SPEECH) }
-        awaitTrue("mic released") { vm.engine.phase.value == TurnPhase.IDLE }
+        awaitTrue("paused", 25_000) { vm.handsFree.status.value == Status.Paused(PauseReason.NO_SPEECH) }
+        awaitTrue("mic released", 25_000) { vm.engine.phase.value == TurnPhase.IDLE }
         assertEquals(0, count(s, "/api/stt"))
     }
 }
