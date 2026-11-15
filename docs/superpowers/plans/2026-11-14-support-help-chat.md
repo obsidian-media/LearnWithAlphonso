@@ -258,6 +258,16 @@ Verify: a real signed-in end to end check with the agent mailbox (receive the em
 - **Staff can reopen a solved chat only within 7 days of solving and only if it is the learner's newest conversation** (`support_learner_view` shows only the newest, so anything else would be invisible to the learner). Otherwise SQLSTATE `LW001` and the console says "This chat is too old to reopen; the learner can start a new one."
 - **`admin/routes/users.$id.tsx` is now `users_.$id.tsx`** (same reason as the ticket page): nested under `users.tsx`, which has no `Outlet`, the learner page never rendered.
 
+## Built in milestone 4: deviations from this plan (2026-11-14)
+
+- **The Kit client is `SupportClient.swift` plus `SupportChat.swift` (the rules and the chat state) and `SupportLinks.swift`**, with the copy in `SupportCopy.swift`. The state machine of the web hook (`useHelpChat`) is a pure `SupportChatState` in the Kit, so the pending-message, retry, limit and divider rules are unit tests, not screen code. `src/lib/support-native-parity.test.ts` reads the Swift and fails if a string, a link id or a chip text drifts from the web's.
+- **`X-Client: ios` is sent now**, so conversations opened on iPhone are channel `ios` (milestone 1 had noted the apps did not send it).
+- **The `[[link:<id>]]` marker is read in the app too**, for `ai` rows only: the server normally lifts it into `link`, and the app removes any marker still in an AI body, so it is never shown. A learner's own text and a staff reply are shown as written.
+- **A link chip opens only what the host can open.** From Settings: the subscription screen opens over Settings, "AI features" and "Settings" leave the chat (back to Settings). "Your league" is left out of the chip on iPhone (a pushed Settings screen cannot reach Profile's league); the answer still reads as text. The two error-screen entry points open the chat with no chips.
+- **Entry points:** a "Help" section in Settings between AI features and Account (the mock's own section), a primary "Get help" on the lesson save-failure screen (only for the rejections that already showed the support line; the line now reads "get help or email"), and "Get help" under a purchase or restore error on the paywall. All three use the one session the app puts in the environment, so none shows while signed out.
+- **Task 4.3 (push tap) is not built.** The app has no notification delegate at all today (it only registers for pushes), and the push is not sent until milestone 6, so the tap handler lands with milestone 6 where the delivery is.
+- **No Limrun run:** the account has no credits (403), so nothing here was seen on a simulator. The app target is compiled by `ios-app-build` and the Kit tests by `ios-swift-tests`.
+
 ## Order of work and risks
 
 - Start with milestone 1 and ask the owner to merge it first; everything else waits for those migrations to be live.
