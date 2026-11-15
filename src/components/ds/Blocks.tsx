@@ -347,31 +347,53 @@ export function Icon({ name, size = 38 }: { name: string; size?: number }) {
   );
 }
 
-/** The state card: a pose of Alphonso, a line, a quiet line, and an optional action. */
-export function PoseCard({
-  src,
+/**
+ * The one empty or failed state (the web twin of Android's DsEmptyState and iOS's AlphonsoEmptyState): a pose of
+ * Alphonso or a 3D icon over a title, a quiet line and an optional action, on a card. A failure passes
+ * `tone="error"` so it is announced as an alert; an empty state is a plain status. The title is a heading when the
+ * screen has nothing else to be its heading (`heading`), otherwise a paragraph.
+ */
+export function DsEmptyState({
+  art,
+  icon,
   title,
-  body,
+  message,
+  tone = "empty",
+  heading,
   children,
 }: {
-  src: string;
+  /** A pose of Alphonso (an image path). */
+  art?: string;
+  /** A 3D icon name, used when there is no pose. */
+  icon?: string;
   title: string;
-  body?: string;
+  message?: string;
+  tone?: "empty" | "error";
+  heading?: "h1" | "h2";
   children?: ReactNode;
 }) {
+  const Title = heading ?? "p";
   return (
-    <DsCard className="justify-items-center text-center">
-      <img
-        src={src}
-        alt=""
-        height={96}
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-        className="h-24 w-auto"
-      />
-      <p className="ds-type-headline text-ds-ink">{title}</p>
-      {body ? <p className="ds-type-footnote text-ds-ink-soft">{body}</p> : null}
+    <DsCard
+      role={tone === "error" ? "alert" : "status"}
+      data-empty-state={tone}
+      className="justify-items-center text-center"
+    >
+      {art ? (
+        <img
+          src={art}
+          alt=""
+          height={96}
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          className="h-24 w-auto"
+        />
+      ) : icon ? (
+        <Icon name={icon} size={48} />
+      ) : null}
+      <Title className="ds-type-headline text-ds-ink">{title}</Title>
+      {message ? <p className="ds-type-footnote text-ds-ink-soft">{message}</p> : null}
       {children}
     </DsCard>
   );

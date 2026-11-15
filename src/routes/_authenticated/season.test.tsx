@@ -68,5 +68,7 @@ describe("Season page", () => {
     getSeasonStatus.mockResolvedValue(null);
     renderPage();
     expect(await screen.findByText("Couldn't load your season status.")).toBeInTheDocument();
+    // The shared failure card: announced as an alert, with the retry inside it.
+    expect(screen.getByRole("alert")).toHaveAttribute("data-empty-state", "error");
   });
 });

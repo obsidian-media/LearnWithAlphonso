@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AnswerExplanation } from "../../components/AnswerFeedback";
 import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
-import { DsPill, Icon, dsButtonClass } from "../../components/ds/Blocks";
+import { DsEmptyState, DsPill, Icon, dsButtonClass } from "../../components/ds/Blocks";
 import {
   AlphonsoBubble,
   LessonAnswer,
@@ -539,16 +539,14 @@ export function Empty({ title, body, bonus }: { title: string; body: string; bon
     <div className="flex flex-1 flex-col pb-6">
       <ReviewScene pose={isComplete ? "proud" : "reading"} tall />
       <div className="relative z-[4] -mt-6 grid gap-3 px-4">
-        <div className="grid justify-items-center gap-2 rounded-[22px] border-2 border-ds-line bg-ds-card p-4 text-center shadow-[var(--ds-shadow-floating)]">
-          <h1 className="ds-type-display text-ds-ink">{title}</h1>
-          <p className="ds-type-body max-w-[300px] text-ds-ink-soft">{body}</p>
+        <DsEmptyState heading="h1" title={title} message={body}>
           {bonus && (
             <p className="inline-flex items-center gap-1.5 rounded-full bg-ds-heart-tint px-3 py-1.5 ds-type-footnote font-extrabold text-ds-heart-text">
               <Icon name="red_heart" size={20} />
               {bonus}
             </p>
           )}
-        </div>
+        </DsEmptyState>
         <Link to="/learn" className={edgeButtonClass("primary")}>
           Back to path
         </Link>

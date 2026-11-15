@@ -9,7 +9,7 @@ import {
   DsPill,
   DsSegmented,
   HeroKicker,
-  PoseCard,
+  DsEmptyState,
   RankBadge,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
@@ -128,10 +128,10 @@ function LeaguePage() {
         </DsCard>
       )}
       {!isLoading && (data?.length ?? 0) === 0 && (
-        <PoseCard
-          src="/mascots/alphonso-waving.png"
+        <DsEmptyState
+          art="/mascots/alphonso-waving.png"
           title="Nothing here yet"
-          body={
+          message={
             scope === "friends"
               ? "Add friends to compete side by side."
               : scope === "country"

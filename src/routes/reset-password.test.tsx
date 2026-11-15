@@ -126,4 +126,22 @@ describe("Reset password route", () => {
 
     expect(await screen.findByText("Password too weak")).toBeInTheDocument();
   });
+
+  it("wears the sign-in look: Alphonso's room and bubble, the gold button, errors as alerts", async () => {
+    getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
+    const Page = Route.options.component!;
+    const { container } = render(<Page />);
+    expect(container.querySelector("[data-first-run]")).not.toBeNull();
+    expect(container.querySelector("[data-bubble]")).not.toBeNull();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Set a new password" }),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Update password" })).toBeEnabled(),
+    );
+    expect(screen.getByRole("button", { name: "Update password" }).className).toContain(
+      "active:translate-y-1",
+    );
+    expect(screen.getByRole("link", { name: "Back to sign in" })).toHaveAttribute("href", "/auth");
+  });
 });

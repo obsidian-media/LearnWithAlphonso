@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { transcriptParagraphs } from "../lib/podcast-transcript";
 import type { SavedWordCourse } from "../lib/saved-word";
+import { roomArt } from "./ListenLibrary";
 import { SaveWordHint, SaveWordProvider } from "./SaveWord";
 import { TappableText } from "./TappableText";
 
@@ -19,6 +20,8 @@ type PanelProps = {
   transcript: string | null;
   /** The episode's course: tapped words are saved under it. */
   course: SavedWordCourse;
+  /** The episode's room, painted behind the sheet like the full player. */
+  room?: string;
   isLoading: boolean;
   onClose: () => void;
 };
@@ -32,7 +35,14 @@ export function PodcastTranscriptPanel(props: PanelProps) {
   );
 }
 
-function TranscriptPanelBody({ title, transcript, course, isLoading, onClose }: PanelProps) {
+function TranscriptPanelBody({
+  title,
+  transcript,
+  course,
+  room = "radio",
+  isLoading,
+  onClose,
+}: PanelProps) {
   const paragraphs = transcript ? transcriptParagraphs(transcript) : [];
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -64,62 +74,72 @@ function TranscriptPanelBody({ title, transcript, course, isLoading, onClose }: 
       role="dialog"
       aria-modal="true"
       aria-label={`Transcript: ${title}`}
-      className="fixed inset-0 z-40 flex flex-col bg-surface"
+      className="fixed inset-0 z-40 mx-auto flex max-w-[430px] flex-col overflow-hidden bg-ds-hero text-ds-on-hero"
     >
-      <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
-        <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-soft/60">
-            Transcript
-          </p>
-          <p className="truncate text-sm font-semibold text-ink">{title}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close transcript"
-          className="rounded-full border border-hairline px-3 py-1.5 text-xs font-medium text-ink"
-        >
-          Close
-        </button>
-      </div>
-
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4">
-        {isLoading ? (
-          <p className="text-sm text-ink-soft/70">Loading transcript…</p>
-        ) : paragraphs.length === 0 ? (
-          // Said plainly rather than rendered blank: an episode without a
-          // transcript is inaccessible to deaf learners, and that is a fact
-          // about the content, not an empty UI state to hide.
-          <p className="text-sm text-ink-soft/70">No transcript for this episode yet.</p>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <SaveWordHint always />
-              <button
-                type="button"
-                onClick={() =>
-                  scrollRef.current?.querySelector<HTMLElement>("[data-save-word]")?.focus()
-                }
-                className="mt-1 text-xs font-medium text-moss underline underline-offset-2"
-              >
-                Browse words with the keyboard
-              </button>
-            </div>
-            {paragraphs.map((paragraph, index) => (
-              <p key={index} className="text-sm leading-relaxed text-ink">
-                {/* A transcript is wholly in its episode's course language, so a tapped
-                    word is saved under that course. Words stay out of the tab order:
-                    a transcript is hundreds of them. */}
-                <TappableText
-                  text={paragraph}
-                  course={course}
-                  focusable={false}
-                  wholeCourseLanguage
-                />
-              </p>
-            ))}
+      <div
+        aria-hidden="true"
+        data-transcript-room=""
+        className="absolute inset-0 bg-cover bg-center blur-md"
+        style={{ backgroundImage: `url(${roomArt(room)})` }}
+      />
+      <div aria-hidden="true" className="absolute inset-0 bg-ds-hero/80" />
+      <div className="relative flex min-h-0 flex-1 flex-col gap-3 px-4 pb-4 pt-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="ds-type-overline text-ds-on-hero-kick">Transcript</p>
+            <p className="truncate font-display text-xl font-extrabold leading-tight">{title}</p>
           </div>
-        )}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close transcript"
+            className="min-h-11 shrink-0 rounded-full bg-ds-on-hero/15 px-4 ds-type-footnote font-extrabold"
+          >
+            Close
+          </button>
+        </div>
+
+        <div
+          ref={scrollRef}
+          className="min-h-0 flex-1 overflow-y-auto rounded-[22px] bg-ds-card p-4 text-ds-ink shadow-[var(--ds-shadow-floating)]"
+        >
+          {isLoading ? (
+            <p className="ds-type-footnote text-ds-ink-soft">Loading transcript…</p>
+          ) : paragraphs.length === 0 ? (
+            // Said plainly rather than rendered blank: an episode without a
+            // transcript is inaccessible to deaf learners, and that is a fact
+            // about the content, not an empty UI state to hide.
+            <p className="ds-type-footnote text-ds-ink-soft">No transcript for this episode yet.</p>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <SaveWordHint always />
+                <button
+                  type="button"
+                  onClick={() =>
+                    scrollRef.current?.querySelector<HTMLElement>("[data-save-word]")?.focus()
+                  }
+                  className="mt-1 min-h-11 ds-type-caption text-ds-choice underline underline-offset-2"
+                >
+                  Browse words with the keyboard
+                </button>
+              </div>
+              {paragraphs.map((paragraph, index) => (
+                <p key={index} className="ds-type-body text-ds-ink">
+                  {/* A transcript is wholly in its episode's course language, so a tapped
+                      word is saved under that course. Words stay out of the tab order:
+                      a transcript is hundreds of them. */}
+                  <TappableText
+                    text={paragraph}
+                    course={course}
+                    focusable={false}
+                    wholeCourseLanguage
+                  />
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

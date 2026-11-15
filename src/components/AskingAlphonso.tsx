@@ -43,16 +43,16 @@ export function AskingAlphonso({
       )}
       <div
         data-ask-bubble=""
-        className="relative min-w-0 flex-1 break-words rounded-2xl border-2 border-hairline bg-surface px-4 py-3 shadow-[0_3px_0_0_var(--color-hairline)]"
+        className="relative min-w-0 flex-1 break-words rounded-[var(--ds-radius-bubble)] bg-ds-card px-4 py-3 shadow-[var(--ds-shadow-resting)]"
       >
         {/* The bubble's tail, pointing at Alphonso; gone with him. */}
         {size !== null && (
           <span
             aria-hidden="true"
-            className="absolute -left-[7px] bottom-4 size-3 rotate-45 border-b-2 border-l-2 border-hairline bg-surface"
+            className="absolute -left-[6px] bottom-4 size-3 rotate-45 rounded-[3px] bg-ds-card"
           />
         )}
-        <h2 className="font-display text-[20px] font-semibold leading-snug text-ink">{prompt}</h2>
+        <h2 className="ds-type-question-small text-ds-brand">{prompt}</h2>
       </div>
     </div>
   );
