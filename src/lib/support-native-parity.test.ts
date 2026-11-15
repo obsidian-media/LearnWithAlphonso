@@ -98,7 +98,7 @@ describe("SupportView.kt (Android) is the web's SUPPORT_COPY and speaker rules",
     "utf8",
   ).replace(/\r\n/g, "\n");
   const strings = new Map<string, string>();
-  for (const m of kt.matchAll(/^    const val ([A-Z_]+) = "((?:[^"\\]|\\.)*)"$/gm)) {
+  for (const m of kt.matchAll(/^ {4}const val ([A-Z_]+) = "((?:[^"\\]|\\.)*)"$/gm)) {
     strings.set(m[1]!, m[2]!.replace(/\\(.)/g, "$1"));
   }
   const snake = (k: string) => k.replace(/([A-Z])/g, "_$1").toUpperCase();
