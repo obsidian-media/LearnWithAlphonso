@@ -522,6 +522,8 @@ struct HoldToTalkButton: View {
     let idleColor: Color
     let recordingColor: Color
     var iconColor: Color = .white
+    /// The icon while recording, when the recording fill needs a different one (a light fill wants a dark icon).
+    var recordingIconColor: Color?
     let accessibilityLabel: String
     let onPress: () -> Void
     let onRelease: () -> Void
@@ -533,7 +535,7 @@ struct HoldToTalkButton: View {
             .overlay(
                 Circle()
                     .fill(isRecording ? recordingColor : idleColor)
-                    .overlay(Image(systemName: "mic.fill").foregroundStyle(iconColor).font(.title2))
+                    .overlay(Image(systemName: "mic.fill").foregroundStyle(isRecording ? (recordingIconColor ?? iconColor) : iconColor).font(.title2))
                     .allowsHitTesting(false)
             )
             .accessibilityLabel(accessibilityLabel)
