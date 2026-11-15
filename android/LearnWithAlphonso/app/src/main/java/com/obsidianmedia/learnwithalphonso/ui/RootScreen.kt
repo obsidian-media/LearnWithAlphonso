@@ -87,6 +87,7 @@ import com.obsidianmedia.learnwithalphonso.ui.listen.ListenScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenViewModel
 import com.obsidianmedia.learnwithalphonso.ui.listen.PodcastMiniBar
 import com.obsidianmedia.learnwithalphonso.ui.support.HelpChatScreen
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.SupportLinkId
 import androidx.compose.foundation.layout.Column
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -109,7 +110,11 @@ private val tabs = listOf(
 
 /** Port of RootView.swift: restore the session, then auth or the five-tab app. */
 @Composable
-fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInviteConsumed: () -> Unit = {}, harness: String? = null) {
+fun RootScreen(
+    container: AppContainer, pendingInviteCode: String? = null, onInviteConsumed: () -> Unit = {}, harness: String? = null,
+    /** A tapped "a person replied" notification: open the Help chat once signed in (PushTap). */
+    openHelp: Boolean = false, onHelpConsumed: () -> Unit = {},
+) {
     val session = container.session
     // This device answered Under 13: nothing but the stop screen, and nothing sent (FirstRunDevice).
     var firstRunBlocked by remember { mutableStateOf(FirstRunDevice.isBlocked) }
@@ -174,13 +179,16 @@ fun RootScreen(container: AppContainer, pendingInviteCode: String? = null, onInv
                     onEmail = { showSignIn = true }, onHaveAccount = { showSignIn = true },
                 )
             }
-            else -> SignedInApp(container, pendingInviteCode, onInviteConsumed, blockThisDevice)
+            else -> SignedInApp(container, pendingInviteCode, onInviteConsumed, blockThisDevice, openHelp, onHelpConsumed)
         }
     }
 }
 
 @Composable
-private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onInviteConsumed: () -> Unit, onBlocked: () -> Unit) {
+private fun SignedInApp(
+    container: AppContainer, pendingInviteCode: String?, onInviteConsumed: () -> Unit, onBlocked: () -> Unit,
+    openHelp: Boolean, onHelpConsumed: () -> Unit,
+) {
     val nav = rememberNavController()
     // The first run's cover: the answers from this device saved right after sign-in, or Complete your profile.
     var firstRunCover by remember { mutableStateOf<FirstRunCover?>(null) }
@@ -190,6 +198,13 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
         if (pendingInviteCode != null) {
             nav.navigate(Routes.invite(pendingInviteCode))
             onInviteConsumed()
+        }
+    }
+    // A tap on a support reply: the chat opens over whatever the learner was on, and Back returns there.
+    LaunchedEffect(openHelp) {
+        if (openHelp) {
+            nav.navigate(Routes.HELP_REPLY) { launchSingleTop = true }
+            onHelpConsumed()
         }
     }
     val palette = AlphonsoColor.palette
@@ -383,6 +398,20 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
                 HelpChatScreen(
                     container, parent = "Settings", onBack = { nav.popBackStack() },
                     // Each id goes to a fixed screen; the destination never comes from the answer's text.
+                    onOpenLink = { link ->
+                        when (link) {
+                            SupportLinkId.SUBSCRIPTION -> nav.navigate(Routes.HECTOR) { launchSingleTop = true }
+                            SupportLinkId.AI_FEATURES, SupportLinkId.SETTINGS -> nav.popBackStack()
+                            SupportLinkId.LEAGUE -> nav.navigate(Routes.LEAGUE)
+                        }
+                    },
+                )
+            }
+            // The same chat, opened by a notification tap: the back chip says Back (the learner was not in Settings),
+            // and the Settings link chips leave the chat to the screen underneath.
+            composable(Routes.HELP_REPLY) {
+                HelpChatScreen(
+                    container, parent = SupportCopy.BACK, onBack = { nav.popBackStack() },
                     onOpenLink = { link ->
                         when (link) {
                             SupportLinkId.SUBSCRIPTION -> nav.navigate(Routes.HECTOR) { launchSingleTop = true }

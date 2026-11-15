@@ -39,6 +39,8 @@ The route (`src/lib/maintenance.server.ts`) does three things and reports counts
 
 - **RevenueCat erasure retries.** See "Account deletion and other processors" below.
 
+The sweep also retries "a person replied" notices that did not go out (after 10 minutes, giving up after 24 hours) and emails the owner one count of new support tickets (at most every 15 minutes); in the database it deletes support chats 12 months after they were solved (`support_purge_old()`).
+
 Owner emails go to `REPORT_NOTIFY_TO` through Resend. If that is not set, the same events are logged with `console.error` and no email is sent.
 
 Check the job:

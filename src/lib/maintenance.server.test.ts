@@ -475,6 +475,57 @@ describe("handleMaintenance", () => {
     expect(body).not.toContain("token-a");
   });
 
+  it("also runs the support notices when they are wired in, and a failure there stops nothing else", async () => {
+    process.env.REPORT_NOTIFY_SECRET = SECRET;
+    const store = {
+      getRow: async () => null,
+      waitingRows: async () => [],
+      recipient: async () => null,
+      emailsSentSince: async () => 0,
+      save: async () => {},
+      unseenNewTickets: async () => ["c-1", "c-2"],
+      lastDigestAt: async () => null,
+      markSeen: async () => {},
+    };
+    const support = {
+      store,
+      now: () => NOW,
+      sendEmail: async () => {},
+      sendPush: async () => {},
+      ownerEmail: "owner@example.com",
+      supportFrom: "Support <s@example.com>",
+    };
+    const ok = makeDeps({}, { support });
+    const res = await handleMaintenance(req(SECRET), async () => ok.deps);
+    const body = (await res.json()) as { ok: boolean; support: unknown };
+    expect(body.ok).toBe(true);
+    expect(body.support).toEqual({ retried: 0, delivered: 0, gaveUp: 0, digest: 2 });
+
+    const broken = makeDeps(
+      {},
+      {
+        support: {
+          ...support,
+          store: {
+            ...store,
+            waitingRows: async () => {
+              throw new Error("db down");
+            },
+          },
+        },
+      },
+    );
+    const failed = await handleMaintenance(req(SECRET), async () => broken.deps);
+    const failedBody = (await failed.json()) as {
+      ok: boolean;
+      failures: string[];
+      revocations: unknown;
+    };
+    expect(failed.status).toBe(500);
+    expect(failedBody.failures).toEqual(["support-notices"]);
+    expect(failedBody.revocations).toEqual({ revoked: 0, stillPending: 0, expired: 0 });
+  });
+
   it("still sweeps reports when the revocation step fails, and says which step failed", async () => {
     process.env.REPORT_NOTIFY_SECRET = SECRET;
     const tables: Record<string, Row[]> = {

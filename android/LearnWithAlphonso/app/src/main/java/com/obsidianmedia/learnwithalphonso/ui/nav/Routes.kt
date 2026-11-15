@@ -28,6 +28,8 @@ object Routes {
     const val SETTINGS = "settings"
     /** The Help chat, opened from Settings. */
     const val HELP = "help"
+    /** The Help chat opened from a "a person replied" notification: it pops back to wherever the learner was. */
+    const val HELP_REPLY = "help/reply"
     const val LEAGUE = "league"
     const val TEAMS = "teams"
     const val SEASON = "season"
