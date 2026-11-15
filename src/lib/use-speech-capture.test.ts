@@ -234,3 +234,155 @@ describe("useSpeechCapture", () => {
     expect(result.current.failed).toBe(true);
   });
 });
+
+describe("useSpeechCapture, hands-free turns", () => {
+  const okFetch = (text: string) =>
+    vi.fn(async () => ({ ok: true, json: async () => ({ text, confidence: 0.9 }) }));
+
+  /** Starts a recording that lasted `ms` and stops it. */
+  async function recordFor(result: { current: ReturnType<typeof useSpeechCapture> }, ms: number) {
+    const now = vi.spyOn(Date, "now");
+    now.mockReturnValue(1_000_000);
+    await act(async () => {
+      await result.current.start();
+    });
+    now.mockReturnValue(1_000_000 + ms);
+    await act(async () => {
+      result.current.stop();
+    });
+  }
+
+  it("asks for the browser's echo cancellation", async () => {
+    installMediaMocks();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript: vi.fn() }));
+    await act(async () => {
+      await result.current.start();
+    });
+    expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({
+      audio: { echoCancellation: true },
+    });
+  });
+
+  it("reports the permission phase while the microphone is being opened", async () => {
+    installMediaMocks();
+    let resolveMedia: ((s: unknown) => void) | null = null;
+    const stream = { getTracks: () => [{ stop: vi.fn() }] };
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia: vi.fn(() => new Promise((res) => (resolveMedia = res))) },
+    });
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript: vi.fn() }));
+    expect(result.current.starting).toBe(false);
+    let started: Promise<void>;
+    act(() => {
+      started = result.current.start();
+    });
+    expect(result.current.starting).toBe(true);
+    await act(async () => {
+      resolveMedia?.(stream);
+      await started!;
+    });
+    expect(result.current.starting).toBe(false);
+    expect(result.current.state).toBe("recording");
+  });
+
+  it("drops a clip under 0.4 s in silence, without an error or a transcript", async () => {
+    installMediaMocks();
+    const fetchMock = okFetch("hello there");
+    vi.stubGlobal("fetch", fetchMock);
+    const onTranscript = vi.fn();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript, handsFree: true }));
+    await recordFor(result, 300);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(onTranscript).not.toHaveBeenCalled();
+    expect(result.current.error).toBeNull();
+    expect(result.current.state).toBe("idle");
+  });
+
+  it("sends a hands-free clip of 0.4 s or more", async () => {
+    installMediaMocks();
+    vi.stubGlobal("fetch", okFetch("hello there"));
+    const onTranscript = vi.fn();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript, handsFree: true }));
+    await recordFor(result, 450);
+    await waitFor(() => expect(onTranscript).toHaveBeenCalledWith("hello there", 0.9));
+  });
+
+  it("does not drop a short hold-to-talk clip by duration (only by size, as before)", async () => {
+    installMediaMocks();
+    vi.stubGlobal("fetch", okFetch("hi"));
+    const onTranscript = vi.fn();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript }));
+    await recordFor(result, 100);
+    await waitFor(() => expect(onTranscript).toHaveBeenCalledWith("hi", 0.9));
+  });
+
+  it("reports an empty hands-free transcript as no words, with no error message", async () => {
+    installMediaMocks();
+    vi.stubGlobal("fetch", okFetch("Um."));
+    const onTranscript = vi.fn();
+    const onNoWords = vi.fn();
+    const { result } = renderHook(() =>
+      useSpeechCapture({ onTranscript, handsFree: true, onNoWords }),
+    );
+    await recordFor(result, 900);
+    await waitFor(() => expect(onNoWords).toHaveBeenCalledTimes(1));
+    expect(onTranscript).not.toHaveBeenCalled();
+    expect(result.current.error).toBeNull();
+  });
+
+  it("still shows the error for an empty transcript when hands-free is off", async () => {
+    installMediaMocks();
+    vi.stubGlobal("fetch", okFetch("   "));
+    const onNoWords = vi.fn();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript: vi.fn(), onNoWords }));
+    await recordFor(result, 900);
+    await waitFor(() => expect(result.current.error).toMatch(/didn't catch/i));
+    expect(onNoWords).not.toHaveBeenCalled();
+  });
+
+  it("tells the caller about a real failure (denied microphone, transcription error)", async () => {
+    const onFailure = vi.fn();
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        getUserMedia: vi.fn(async () => {
+          throw new Error("denied");
+        }),
+      },
+    });
+    const denied = renderHook(() => useSpeechCapture({ onTranscript: vi.fn(), onFailure }));
+    await act(async () => {
+      await denied.result.current.start();
+    });
+    expect(onFailure).toHaveBeenCalledTimes(1);
+
+    installMediaMocks();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ ok: false, json: async () => ({}) })),
+    );
+    const broken = renderHook(() => useSpeechCapture({ onTranscript: vi.fn(), onFailure }));
+    await recordFor(broken.result, 900);
+    await waitFor(() => expect(onFailure).toHaveBeenCalledTimes(2));
+  });
+
+  it("cancel throws the clip away: nothing is transcribed, reported or shown", async () => {
+    const { track } = installMediaMocks();
+    const fetchMock = okFetch("should never be heard");
+    vi.stubGlobal("fetch", fetchMock);
+    const onTranscript = vi.fn();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript, handsFree: true }));
+    await act(async () => {
+      await result.current.start();
+    });
+    await act(async () => {
+      result.current.cancel();
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(onTranscript).not.toHaveBeenCalled();
+    expect(result.current.error).toBeNull();
+    expect(result.current.state).toBe("idle");
+    expect(track.stop).toHaveBeenCalled();
+  });
+});

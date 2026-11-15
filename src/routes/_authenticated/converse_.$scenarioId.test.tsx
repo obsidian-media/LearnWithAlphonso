@@ -4,6 +4,12 @@ import { clearOpenerSpeechCache } from "@/lib/opener-speech-cache";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
+import {
+  installFakeAudioContext,
+  room,
+  QUIET,
+  SPEECH,
+} from "@/lib/__testutils__/fake-audio-context";
 
 const navigate = vi.hoisted(() => vi.fn());
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -92,7 +98,11 @@ const getUserMedia = vi.fn();
 const fakeTrack = { stop: vi.fn() };
 const fakeStream = { getTracks: () => [fakeTrack] } as unknown as MediaStream;
 
-const audioInstances: { play: ReturnType<typeof vi.fn>; pause: ReturnType<typeof vi.fn> }[] = [];
+const audioInstances: {
+  play: ReturnType<typeof vi.fn>;
+  pause: ReturnType<typeof vi.fn>;
+  onended: (() => void) | null;
+}[] = [];
 class FakeAudio {
   play = vi.fn().mockResolvedValue(undefined);
   pause = vi.fn();
@@ -341,7 +351,9 @@ describe("Converse chat page", () => {
     await renderPage();
 
     await user.click(screen.getByRole("button", { name: "Record a voice message" }));
-    await waitFor(() => expect(getUserMedia).toHaveBeenCalledWith({ audio: true }));
+    await waitFor(() =>
+      expect(getUserMedia).toHaveBeenCalledWith({ audio: { echoCancellation: true } }),
+    );
     expect(screen.getByRole("button", { name: "Stop recording and send" })).toBeInTheDocument();
 
     lastRecorder!.ondataavailable?.({ data: new Blob(["x".repeat(2000)]) });
@@ -866,5 +878,167 @@ describe("Practice stars on a scenario call", () => {
     } finally {
       search.current = {};
     }
+  });
+});
+
+describe("Hands-free on a Practice call", () => {
+  beforeEach(() => {
+    localStorage.removeItem("showAlphonsoWhilePractising");
+    localStorage.removeItem("handsFree.safetyNoteSeen.v2");
+    installFakeAudioContext();
+  });
+
+  async function renderCall() {
+    const Page = Route.options.component!;
+    const result = render(withAiConsent(<Page />, fakeConsentApi()));
+    await screen.findByTestId("call-caption");
+    return result;
+  }
+
+  async function openSwitch(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(await screen.findByRole("button", { name: "Show the conversation" }));
+    return await screen.findByRole("switch", { name: "Hands-free" });
+  }
+
+  async function turnOn(user: ReturnType<typeof userEvent.setup>) {
+    const sw = await openSwitch(user);
+    await user.click(sw);
+    const note = await screen.findByRole("dialog", { name: "Talk without holding the button" });
+    await user.click(within(note).getByRole("button", { name: "Turn on hands-free" }));
+    await user.click(screen.getByRole("button", { name: "Back to call" }));
+  }
+
+  /** Alphonso's opener finishes playing, so the mic may open. */
+  async function openerEnds() {
+    await waitFor(() => expect(audioInstances.length).toBeGreaterThan(0));
+    await act(async () => {
+      audioInstances[audioInstances.length - 1].onended?.();
+    });
+  }
+
+  const wait = (ms: number) => act(() => new Promise<void>((r) => setTimeout(r, ms)));
+
+  it("is off at the start of every call: the hold-to-talk button, a switch that is off, nothing listening", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Pause" })).toBeNull();
+    const sw = await openSwitch(user);
+    expect(sw).toHaveAttribute("aria-checked", "false");
+    await wait(300);
+    expect(getUserMedia).not.toHaveBeenCalled();
+  });
+
+  it("is free: the switch is on the call with no Pro check at all", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    expect(await openSwitch(user)).toBeEnabled();
+    const fetched = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.map(([u]) => String(u));
+    expect(fetched.some((u) => u.includes("pro-status"))).toBe(false);
+  });
+
+  it("the first time, a note names Alphonso and says what works best; Cancel leaves it off", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    await user.click(await openSwitch(user));
+    const note = await screen.findByRole("dialog", { name: "Talk without holding the button" });
+    expect(note).toHaveTextContent(/Alphonso listens after each reply/);
+    expect(note).toHaveTextContent("Don't use it while driving");
+    expect(note).toHaveTextContent("Best with earbuds or a quiet room.");
+    await user.click(within(note).getByRole("button", { name: "Cancel" }));
+    expect(screen.getByRole("switch", { name: "Hands-free" })).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
+    expect(localStorage.getItem("handsFree.safetyNoteSeen.v2")).toBeNull();
+  });
+
+  it("confirming swaps the talk button for Pause, and the note is not shown again on this device", async () => {
+    const user = userEvent.setup();
+    const first = await renderCall();
+    await turnOn(user);
+    expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Hold to talk" })).toBeNull();
+    expect(localStorage.getItem("handsFree.safetyNoteSeen.v2")).toBe("1");
+    first.unmount();
+
+    // A new call: off again, and the note does not return.
+    await renderCall();
+    expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
+    const sw = await openSwitch(user);
+    expect(sw).toHaveAttribute("aria-checked", "false");
+    await user.click(sw);
+    expect(screen.queryByRole("dialog", { name: "Talk without holding the button" })).toBeNull();
+    expect(screen.getByRole("switch", { name: "Hands-free" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+  });
+
+  it("half-duplex: the mic stays shut while Alphonso speaks and opens only after his voice ends", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    await turnOn(user);
+    await wait(400);
+    expect(getUserMedia).not.toHaveBeenCalled();
+    await openerEnds();
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(1));
+    expect(getUserMedia).toHaveBeenCalledWith({ audio: { echoCancellation: true } });
+    await waitFor(() => expect(lastRecorder?.state).toBe("recording"));
+    expect(screen.getByTestId("hands-free-status")).toHaveTextContent("Listening. Just talk.");
+  });
+
+  it("Practice waits 2.5 s of quiet after the last word before it sends the turn", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    await turnOn(user);
+    await openerEnds();
+    await waitFor(() => expect(lastRecorder?.state).toBe("recording"));
+    await wait(500);
+    room.rms = SPEECH;
+    await wait(700);
+    expect(screen.getByTestId("hands-free-status")).toHaveTextContent("Hearing you...");
+    room.rms = QUIET;
+    // Hector's 1.2 s would have ended it by now; Practice is still listening.
+    await wait(1700);
+    expect(lastRecorder?.state).toBe("recording");
+    await waitFor(() => expect(lastRecorder?.state).toBe("inactive"), { timeout: 2500 });
+  }, 15_000);
+
+  it("nobody speaking for 8 s pauses with a plain line, and Resume opens a new turn", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    await turnOn(user);
+    await openerEnds();
+    await waitFor(() => expect(lastRecorder?.state).toBe("recording"));
+    await waitFor(
+      () =>
+        expect(screen.getByTestId("hands-free-status")).toHaveTextContent(
+          "Paused because nobody spoke. Tap Resume to keep talking.",
+        ),
+      { timeout: 10_000 },
+    );
+    expect(lastRecorder?.state).toBe("inactive");
+    expect(screen.getByRole("button", { name: "Resume" })).toBeInTheDocument();
+    const spy = RecorderSpy as unknown as ReturnType<typeof vi.fn>;
+    const recorders = spy.mock.calls.length;
+    await user.click(screen.getByRole("button", { name: "Resume" }));
+    await waitFor(() => expect(spy.mock.calls.length).toBe(recorders + 1));
+  }, 20_000);
+
+  it("Pause stops listening; the switch off brings the hold button back and closes the mic", async () => {
+    const user = userEvent.setup();
+    await renderCall();
+    await turnOn(user);
+    await openerEnds();
+    await waitFor(() => expect(lastRecorder?.state).toBe("recording"));
+    await user.click(screen.getByRole("button", { name: "Pause" }));
+    expect(lastRecorder?.state).toBe("inactive");
+    expect(screen.getByTestId("hands-free-status")).toHaveTextContent("Hands-free is paused.");
+    await user.click(await screen.findByRole("button", { name: "Show the conversation" }));
+    await user.click(screen.getByRole("switch", { name: "Hands-free" }));
+    await user.click(screen.getByRole("button", { name: "Back to call" }));
+    expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
+    expect(screen.queryByTestId("hands-free-status")).toBeNull();
   });
 });

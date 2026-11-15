@@ -6,11 +6,23 @@ import type { AvatarMode } from "@/lib/avatar/machine";
 import { EVENING_OVERLAY, sceneArt } from "@/lib/avatar/scenes";
 import { LEVEL_BARS, useMicLevel } from "@/lib/avatar/use-mic-level";
 import { playSfx, registerVoiceProbe } from "@/lib/sfx";
+import { handsFreeStatusLine, HANDS_FREE_PAUSE, HANDS_FREE_RESUME } from "@/lib/hands-free-copy";
+import { HandsFreeSwitch, type HandsFreeCall } from "./HandsFreeSwitch";
 
 const GLASS = "rgba(18, 26, 21, 0.46)";
 /** The red hang-up button. */
 const HANG_UP = { background: "#e5483d", color: "#fff" } as const;
 const GLASS_STRONG = "rgba(18, 26, 21, 0.62)";
+
+/** The big white call button: the talk button (green while recording) and, in hands-free, the Pause button. */
+function talkButtonStyle(recording: boolean) {
+  return {
+    background: recording ? "#6fe0a5" : "#fff",
+    color: "#17241c",
+    boxShadow: recording ? "0 0 0 9px rgba(111,224,165,.35)" : "0 0 0 5px rgba(255,255,255,.3)",
+    transform: recording ? "scale(.96)" : "none",
+  };
+}
 
 export type CallCaption = {
   text: string;
@@ -55,6 +67,11 @@ type Props = {
   /** Something that belongs on the call itself (a campaign's "Continue" button), shown above the caption. */
   extra?: ReactNode;
   reducedMotion: boolean;
+  /**
+   * Hands-free: the switch (in the conversation sheet), and, while it is on, the Pause button in place of the talk
+   * button and a status pill. Omit it for a browser that cannot do it.
+   */
+  handsFree?: HandsFreeCall;
 };
 
 const MODE_LABEL: Record<AvatarMode, string> = {
@@ -97,7 +114,13 @@ export function PracticeCall(props: Props) {
     sheet,
     extra,
     reducedMotion,
+    handsFree,
   } = props;
+  const handsFreeOn = !!handsFree?.on;
+  const handsFreePaused = handsFree?.status.kind === "paused";
+  const handsFreeLine = handsFree ? handsFreeStatusLine(handsFree.status, kit.displayName) : null;
+  // The hands-free pill sits above the controls, so everything that was above them moves up by its room.
+  const lift = handsFreeOn ? 52 : 0;
   const speaking = mode === "speaking";
   const stateLabel = MODE_LABEL[mode];
   const art = sceneArt(scenarioId, undefined, kit.defaultRoom);
@@ -309,14 +332,17 @@ export function PracticeCall(props: Props) {
         <div
           role="alert"
           className="absolute left-[18px] right-[18px] z-[5] rounded-full bg-rose-50 px-3 py-1 text-center text-[11px] font-medium text-rose-700"
-          style={{ bottom: 168 }}
+          style={{ bottom: 168 + lift }}
         >
           {error}
         </div>
       )}
 
       {extra && (
-        <div className="absolute inset-x-[18px] bottom-[212px] z-[6] flex justify-center">
+        <div
+          className="absolute inset-x-[18px] z-[6] flex justify-center"
+          style={{ bottom: 212 + lift }}
+        >
           {extra}
         </div>
       )}
@@ -327,7 +353,7 @@ export function PracticeCall(props: Props) {
         data-mine={caption?.mine ?? false}
         className="absolute left-[18px] right-[18px] z-[5] grid min-h-[2.6em] items-end text-center text-[19px] font-extrabold leading-[1.3]"
         style={{
-          bottom: 140,
+          bottom: 140 + lift,
           textWrap: "balance",
           textShadow: "0 1px 8px rgba(0,0,0,.55)",
           color: caption?.mine ? "#c9f5dc" : "#fff",
@@ -345,11 +371,36 @@ export function PracticeCall(props: Props) {
       </p>
       <div
         data-testid="call-state"
-        className="absolute bottom-[112px] left-1/2 z-[5] -translate-x-1/2 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-[.04em]"
-        style={{ background: GLASS }}
+        className="absolute left-1/2 z-[5] -translate-x-1/2 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-[.04em]"
+        style={{ background: GLASS, bottom: 112 + lift }}
       >
         {stateLabel}
       </div>
+      {handsFreeOn && handsFreeLine && (
+        // A paused hands-free call is a safety stop: it gets the stronger glass and a pause mark, so it cannot be
+        // missed over the picture, and it is announced. The other states are not announced as they change.
+        <div
+          data-testid="hands-free-status"
+          data-paused={handsFreePaused}
+          role="status"
+          aria-live={handsFreePaused ? "polite" : "off"}
+          className="absolute inset-x-[18px] z-[5] mx-auto flex w-fit max-w-full items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-center text-xs font-bold"
+          style={{ bottom: 106, background: handsFreePaused ? GLASS_STRONG : GLASS }}
+        >
+          {handsFreePaused && (
+            <svg
+              viewBox="0 0 24 24"
+              className="size-3 shrink-0"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <rect x="6" y="5" width="4" height="14" rx="1" />
+              <rect x="14" y="5" width="4" height="14" rx="1" />
+            </svg>
+          )}
+          <span>{handsFreeLine}</span>
+        </div>
+      )}
 
       <div className="absolute inset-x-0 bottom-[26px] z-[6] flex items-center justify-center gap-[26px]">
         <button
@@ -373,50 +424,67 @@ export function PracticeCall(props: Props) {
             <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
           </svg>
         </button>
-        <button
-          type="button"
-          aria-label="Hold to talk"
-          aria-pressed={recording}
-          disabled={talkDisabled}
-          onPointerDown={(e) => {
-            e.preventDefault();
-            onHoldStart();
-          }}
-          onPointerUp={onHoldEnd}
-          onPointerCancel={onHoldEnd}
-          onPointerLeave={onHoldEnd}
-          onContextMenu={(e) => e.preventDefault()}
-          // Keyboard and screen-reader activations arrive as a click with no pointer (detail 0): they toggle.
-          onClick={(e) => {
-            if (e.detail === 0) onToggle();
-          }}
-          className="grid size-[78px] place-items-center rounded-full disabled:opacity-55"
-          style={{
-            background: recording ? "#6fe0a5" : "#fff",
-            color: "#17241c",
-            boxShadow: recording
-              ? "0 0 0 9px rgba(111,224,165,.35)"
-              : "0 0 0 5px rgba(255,255,255,.3)",
-            touchAction: "none",
-            userSelect: "none",
-            WebkitUserSelect: "none",
-            transform: recording ? "scale(.96)" : "none",
-          }}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="size-[30px]"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+        {handsFreeOn && handsFree ? (
+          // Hands-free has no button to hold: one Pause or Resume button takes its place.
+          <button
+            type="button"
+            aria-label={handsFreePaused ? HANDS_FREE_RESUME : HANDS_FREE_PAUSE}
+            onClick={handsFree.onTogglePause}
+            className="grid size-[78px] place-items-center rounded-full"
+            style={talkButtonStyle(false)}
           >
-            <rect x="9" y="3" width="6" height="11" rx="3" />
-            <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
-          </svg>
-        </button>
+            <svg viewBox="0 0 24 24" className="size-[30px]" fill="currentColor" aria-hidden="true">
+              {handsFreePaused ? (
+                <path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.5-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z" />
+              ) : (
+                <>
+                  <rect x="6" y="4.5" width="4.2" height="15" rx="1.2" />
+                  <rect x="13.8" y="4.5" width="4.2" height="15" rx="1.2" />
+                </>
+              )}
+            </svg>
+          </button>
+        ) : (
+          <button
+            type="button"
+            aria-label="Hold to talk"
+            aria-pressed={recording}
+            disabled={talkDisabled}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              onHoldStart();
+            }}
+            onPointerUp={onHoldEnd}
+            onPointerCancel={onHoldEnd}
+            onPointerLeave={onHoldEnd}
+            onContextMenu={(e) => e.preventDefault()}
+            // Keyboard and screen-reader activations arrive as a click with no pointer (detail 0): they toggle.
+            onClick={(e) => {
+              if (e.detail === 0) onToggle();
+            }}
+            className="grid size-[78px] place-items-center rounded-full disabled:opacity-55"
+            style={{
+              ...talkButtonStyle(recording),
+              touchAction: "none",
+              userSelect: "none",
+              WebkitUserSelect: "none",
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="size-[30px]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="9" y="3" width="6" height="11" rx="3" />
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+            </svg>
+          </button>
+        )}
         {onEnd ? (
           <button
             type="button"
@@ -464,12 +532,14 @@ export function PracticeCall(props: Props) {
           </Link>
         )}
       </div>
-      <div
-        className="absolute inset-x-0 bottom-2 z-[6] text-center text-[11px] font-bold opacity-85"
-        aria-hidden="true"
-      >
-        Hold the white button and answer out loud
-      </div>
+      {!handsFreeOn && (
+        <div
+          className="absolute inset-x-0 bottom-2 z-[6] text-center text-[11px] font-bold opacity-85"
+          aria-hidden="true"
+        >
+          Hold the white button and answer out loud
+        </div>
+      )}
 
       {/* The conversation as text for assistive technology while the sheet is closed. */}
       <ul className="sr-only" aria-label="Conversation so far" hidden={sheetOpen}>
@@ -507,6 +577,7 @@ export function PracticeCall(props: Props) {
             Back to call
           </button>
         </header>
+        {handsFree && <HandsFreeSwitch call={handsFree} />}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{sheet}</div>
       </div>
     </div>
