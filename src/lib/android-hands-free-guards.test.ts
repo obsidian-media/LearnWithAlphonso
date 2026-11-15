@@ -235,6 +235,19 @@ describe("the safety stops", () => {
 });
 
 describe("the microphone is never left open", () => {
+  it("marks the conversation busy before telling the engine the turn ended, so there is no idle gap", () => {
+    for (const f of [VMS, HECTOR]) {
+      const src = code(f);
+      const at = src.indexOf("override fun pressEnded()");
+      expect(at, f).toBeGreaterThan(-1);
+      const body = src.slice(at, at + 400);
+      expect(body.indexOf("ConversationPhase.TRANSCRIBING")).toBeGreaterThan(-1);
+      expect(body.indexOf("ConversationPhase.TRANSCRIBING")).toBeLessThan(
+        body.indexOf("engine.pressEnded()"),
+      );
+    }
+  });
+
   it("turning it off or pausing cancels unconditionally, also while a recording is still starting", () => {
     const c = code(`${CORE}/HandsFreeController.kt`);
     expect(c).toMatch(/if \(wasOn\) perform\(HandsFreeLoop\.Effect\.CANCEL_TURN\)/);

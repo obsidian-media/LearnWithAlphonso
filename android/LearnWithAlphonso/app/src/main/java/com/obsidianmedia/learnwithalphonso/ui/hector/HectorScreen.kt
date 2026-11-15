@@ -218,7 +218,12 @@ class HectorViewModel(
             opener.speak({ pendingGreeting }, { hectorVoice(course.code) })
         }
     }
-    override fun pressEnded() { engine.pressEnded(); if (engine.phase.value == TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
+    override fun pressEnded() {
+        // Marked before the engine is told: the conversation must already be busy when the engine returns to idle, or
+        // hands-free would see a gap between "heard" and "thinking" and open the mic during the reply.
+        if (engine.phase.value == TurnPhase.RECORDING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) }
+        engine.pressEnded()
+    }
 
     /** Exposed for tests: the history the tutor receives for the next turn. */
     fun historyForTutor(): List<ChatMessage> = listOfNotNull(memoryContext) + _state.value.turns

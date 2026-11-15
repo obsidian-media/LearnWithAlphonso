@@ -167,7 +167,12 @@ abstract class BaseConversationViewModel(
     override fun micLevelDBFS(): Double? = try { recorder.levelDBFS() } catch (e: Exception) { handsFree.failed(); null }
 
     override fun pressBegan() { if (finishing) return; stopOpener(); _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
-    override fun pressEnded() { engine.pressEnded(); if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
+    override fun pressEnded() {
+        // Marked before the engine is told: the conversation must already be busy when the engine returns to idle, or
+        // hands-free would see a gap between "heard" and "thinking" and open the mic during the reply.
+        if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.RECORDING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) }
+        engine.pressEnded()
+    }
 
     /** Campaign only: a finished campaign has no line left to say. */
     protected open val conversationFinished: Boolean get() = false
