@@ -231,7 +231,8 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     // Ending the scene scores it and opens its result; the result's Next scene (Finish campaign on the last scene) moves on.
     // Without a scored result (offline, or no judged reply) there is nothing to show and no star to earn: the learner leaves.
     var unscored by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    val endCall: () -> Unit = { scope.launch {
+    // Hands-free carries across the scenes of one run: noted before the call finishes (which turns it off), re-armed when the next scene's call opens.
+    val endCall: () -> Unit = { vm.carryHandsFreeToNextScene(); scope.launch {
         if (vm.finishPractice() == null) {
             // Offline: stay on the scene (earlier scenes keep their progress) when replies were sent.
             val replies = vm.state.value.turns.drop(vm.campaignState.value.sceneAnchor).count { it.role == "user" }
@@ -271,7 +272,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     }
     AiConsentGate(container, onDecline = onBack) {
       // Alphonso says the scene's opening line out loud (build 59 only showed it); inside the gate, as above.
-      LaunchedEffect(Unit) { vm.speakOpener() }
+      LaunchedEffect(Unit) { vm.speakOpener(); vm.rearmHandsFreeIfCarried() }
       SaveWordHost(container) {
         if (showCall) {
             DisposableEffect(Unit) { onDispose { vm.onLeave() } }
