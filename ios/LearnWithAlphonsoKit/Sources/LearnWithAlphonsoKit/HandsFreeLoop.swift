@@ -1,6 +1,6 @@
 import Foundation
 
-/// Hands-free conversation for Hector: instead of holding the mic, the learner talks and the turn ends on its own
+/// Hands-free conversation for Hector and Practice: instead of holding the mic, the learner talks and the turn ends on its own
 /// after a pause, then the next turn starts listening once Hector has finished replying.
 ///
 /// Pure and clock-free: the app feeds it the voice engine's phase and the recorder's average power (dBFS) with a
@@ -40,6 +40,18 @@ public struct HandsFreeLoop: Equatable, Sendable {
         public var maxTurnsWithoutTouch = 20
 
         public init() {}
+
+        /// Hector: a free-form tutor with no stars, so a short pause ends the turn (1.2 s of quiet).
+        public static let hector = Tuning()
+
+        /// Practice: a half sentence that gets sent is judged short or wrong and costs stars, and learners pause to
+        /// find a word, so the turn ends only after 2.5 s of quiet. The no-speech, long-turn and turns-without-touch
+        /// limits are the same as Hector's.
+        public static let practice: Tuning = {
+            var tuning = Tuning()
+            tuning.endOfTurnSilence = 2.5
+            return tuning
+        }()
     }
 
     public enum Event: Equatable, Sendable {
@@ -95,7 +107,7 @@ public struct HandsFreeLoop: Equatable, Sendable {
     private var turnEnding = false
     private var turnsWithoutTouch = 0
 
-    public init(tuning: Tuning = Tuning()) {
+    public init(tuning: Tuning = .hector) {
         self.tuning = tuning
     }
 
@@ -258,11 +270,17 @@ public struct HandsFreeLoop: Equatable, Sendable {
 public enum HandsFreeCopy {
     public static let toggle = "Hands-free"
     public static let firstUseTitle = "Talk without holding the button"
-    public static let firstUseBody = "Hector listens after each reply and answers when you pause, also with the screen locked. It pauses after 8 seconds of quiet, after background noise, and after 20 turns, and anything it hears is sent for transcription like a held recording. Don't use it while driving or anywhere you need your full attention."
+    /// Remembers that the once-per-device note was shown. v2: the copy gained "Best with earbuds or a quiet room.",
+    /// so everyone who saw the first version sees the new line once. Hector and Practice share it.
+    public static let noteSeenKey = "handsFree.safetyNoteSeen.v2"
+
+    public static func firstUseBody(partner: String) -> String {
+        "\(partner) listens after each reply and answers when you pause, also with the screen locked. It pauses after 8 seconds of quiet, after background noise, and after 20 turns, and anything it hears is sent for transcription like a held recording. Don't use it while driving or anywhere you need your full attention. Best with earbuds or a quiet room."
+    }
     public static let firstUseConfirm = "Turn on hands-free"
     public static let listening = "Listening. Just talk."
     public static let hearing = "Hearing you..."
-    public static let waiting = "Hector is replying..."
+    public static func waiting(partner: String) -> String { "\(partner) is replying..." }
     public static let pausedByLearner = "Hands-free is paused."
     public static let pausedNoSpeech = "Paused because nobody spoke. Tap Resume to keep talking."
     public static let pausedFailure = "Paused after a problem. Tap Resume to try again."
@@ -273,10 +291,10 @@ public enum HandsFreeCopy {
     public static let pause = "Pause"
     public static let resume = "Resume"
 
-    public static func statusLine(_ status: HandsFreeLoop.Status) -> String? {
+    public static func statusLine(_ status: HandsFreeLoop.Status, partner: String = "Hector") -> String? {
         switch status {
         case .off: return nil
-        case .waiting: return waiting
+        case .waiting: return waiting(partner: partner)
         case .listening: return listening
         case .hearing: return hearing
         case .paused(.byLearner): return pausedByLearner

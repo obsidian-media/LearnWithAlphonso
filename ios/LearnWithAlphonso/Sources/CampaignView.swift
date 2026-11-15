@@ -27,7 +27,7 @@ struct CampaignSessionView: View {
     @State private var conversation = ConversationSnapshot()
     /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
-    @State private var voice = VoiceSessionController()
+    @State private var voice = VoiceSessionController(handsFreeTuning: .practice)
     /// Bumped when the opening line should be spoken: the call appeared, or a new conversation or scene began.
     @State private var openerCue = 0
     @State private var notice: String?
@@ -181,6 +181,7 @@ struct CampaignSessionView: View {
             sheet: {
             VStack(spacing: CGFloat.zero) {
                 if !conversation.finished {
+                    HandsFreeSwitch(voice: voice, partner: "Alphonso")
                     Button("Restart scene") { restartScene() }
                         .dsText(.footnote)
                         .disabled(ending || pendingTurns > 0 || voice.isBusy)
@@ -197,6 +198,13 @@ struct CampaignSessionView: View {
         )
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .onChange(of: voice.handsFreeStatus) { _, new in
+            if new == .listening { notice = nil }
+        }
+        .onChange(of: conversation.finished) { _, finished in
+            // The campaign is over: nothing more to say, so the microphone must not stay open.
+            if finished { voice.setHandsFree(false) }
+        }
     }
 
     private var callExtra: AnyView? {
@@ -313,7 +321,8 @@ struct CampaignSessionView: View {
     private func handle(_ capture: VoiceCapture) async {
         switch capture {
         case .tooShort:
-            notice = "Didn't catch that. Hold the button while you speak."
+            // Hands-free has no button to hold; its own status line says what happens next.
+            notice = voice.isHandsFreeOn ? nil : "Didn't catch that. Hold the button while you speak."
         case let .audio(audio, generation, debugTiming):
             await runTurn(audio: audio, generation: generation, debugTiming: debugTiming)
         }
@@ -339,7 +348,12 @@ struct CampaignSessionView: View {
             let result = try await client.transcribe(
                 audio: audio, mimeType: "audio/m4a", course: courseCode, debugTiming: debugTiming)
             guard !result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                notice = "Didn't catch that — try again."
+                if voice.isHandsFreeOn {
+                    // Background noise, not speech: pause rather than keep sending what the room sounds like.
+                    voice.handsFreeHeardNoWords()
+                } else {
+                    notice = "Didn't catch that — try again."
+                }
                 return
             }
             await sendReply(result.text, confidence: result.confidence, generation: generation)
