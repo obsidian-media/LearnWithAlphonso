@@ -15,7 +15,7 @@ export function StatPill({
   return (
     <span
       aria-label={label}
-      className={`card-lift inline-flex items-center gap-1 rounded-full bg-card py-1 pl-1 pr-3 font-display text-[15px] font-bold tabular-nums text-ink ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full bg-ds-card py-1 pl-1 pr-3 ds-type-footnote font-extrabold tabular-nums text-ds-ink shadow-[var(--ds-shadow-resting)] ${className}`}
     >
       <Icon3D emoji={emoji} size={22} />
       <span aria-hidden="true">{value}</span>
