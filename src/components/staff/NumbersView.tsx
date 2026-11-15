@@ -58,7 +58,7 @@ function TileBox({ tile, state }: { tile: Tile; state: NumbersGroup["state"] }) 
     <div className={`${base} ${tone}`} data-tile={tile.id} data-empty={empty ? "" : undefined}>
       <div className="text-xs font-bold text-ds-ink-soft">{tile.label}</div>
       {tile.rows && !empty ? (
-        <ul className="mt-1 grid gap-1 text-[13px] font-semibold text-ds-ink">
+        <ul className="mt-1 ds-type-footnote grid gap-1 text-ds-ink">
           {tile.rows.map((r) => (
             <li key={r.label} className="flex justify-between gap-2">
               <span className="min-w-0 break-words">{r.label}</span>
@@ -70,16 +70,14 @@ function TileBox({ tile, state }: { tile: Tile; state: NumbersGroup["state"] }) 
         </ul>
       ) : empty ? (
         <div
-          className={`text-[15px] font-bold ${state === "error" ? "text-ds-wrong-ink" : "text-ds-ink-soft"}`}
+          className={`ds-type-footnote ${state === "error" ? "text-ds-wrong-ink" : "text-ds-ink-soft"}`}
         >
           {headline}
         </div>
       ) : (
-        <div className="font-display text-[28px] font-extrabold leading-tight text-ds-ink tabular-nums">
-          {formatTile(tile)}
-        </div>
+        <div className="ds-type-numeral text-ds-ink">{formatTile(tile)}</div>
       )}
-      <div className="text-[11.5px] font-semibold text-ds-ink-faint">
+      <div className="ds-type-caption text-ds-ink-faint">
         {empty && tile.reason ? `${tile.reason} · ` : ""}
         {tile.note}
       </div>
@@ -106,13 +104,9 @@ function Group({
       data-state={group.state}
     >
       <div className="flex flex-wrap items-center gap-2.5">
-        <h2 className="font-display text-[17px] font-extrabold text-ds-ink">{group.title}</h2>
-        <span
-          className={`rounded-lg px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-wide ${pill.cls}`}
-        >
-          {pill.text}
-        </span>
-        <span className="text-[12.5px] font-semibold text-ds-ink-soft">{group.source}</span>
+        <h2 className="ds-type-headline text-ds-ink">{group.title}</h2>
+        <span className={`ds-type-overline rounded-lg px-2 py-0.5 ${pill.cls}`}>{pill.text}</span>
+        <span className="ds-type-caption text-ds-ink-soft">{group.source}</span>
         {group.state === "error" ? (
           <button
             type="button"

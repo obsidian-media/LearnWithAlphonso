@@ -55,8 +55,8 @@ BEGIN
       WHERE u.day >= since_day GROUP BY u.kind) k;
 
   RETURN jsonb_build_object(
-    'newToday', (SELECT count(*) FROM public.profiles WHERE (created_at AT TIME ZONE 'UTC')::date = today),
-    'newWindow', (SELECT count(*) FROM public.profiles WHERE created_at >= since_ts),
+    'newToday', (SELECT count(*) FROM public.profiles p WHERE (p.created_at AT TIME ZONE 'UTC')::date = today),
+    'newWindow', (SELECT count(*) FROM public.profiles p WHERE p.created_at >= since_ts),
     'activeToday', (SELECT count(DISTINCT user_id) FROM public.learning_days WHERE day = today),
     'activeWindow', (SELECT count(DISTINCT user_id) FROM public.learning_days WHERE day >= since_day),
     'lessons', (SELECT count(*) FROM public.lesson_completions WHERE completed_at >= since_ts),
