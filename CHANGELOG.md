@@ -21,6 +21,7 @@ works now_.
 - **Android redesign (#529 c2cb5347, #531 f5ccc176, #534 39da78fc).** Batches 1 to 3: the unlock sheet, save a word, quiz and placement in the lesson look, name prompt, AI consent, report and block (including the team name), voices, sync and offline notices, save failure, and the Practice call and Hector with the call tokens. The redesign is now on all three platforms. Not verified on a device: TalkBack announcing the quiz verdict twice, the unlock sheet at 360 dp, and dialog scrolling at large font (owner device check).
 - **Support milestone 3, staff inbox (#532, 4e1a3bd5).** Migration `20261117100200` is deployed: five `staff_support_*` functions; a ticket can be reopened only within 7 days and only if it is the learner's newest chat; audit rows carry no message text. The admin users route is `users_.$id` (fixed). See ARCHITECTURE, "Support inbox".
 - **Known data finding (skills).** The skills chart has no data for learners whose lessons all predate 2026-11-07, because `skill_days` started with #472 and cannot be backfilled. #537 gives it an honest empty state (below).
+- **Web redesign batch 3 (#540, d5419a8d).** The podcast transcript sheet in the 6.1 look; the AppShell header chips and tab bar on tokens (no pill); the signed-out landing adapted from the CD 11 mock with no store or Pro claims ("1,800+" is verified: 1,830 lessons, en 609, fr 611, es 610, pinned by a test); reset password, LegalPage, AskingAlphonso, AnswerVerdictPanel, StatPill and TileCard moved to the design-system classes; a shared `DsEmptyState` (hero variant) replaces the hand-rolled empty and error cards in League, Review, Season, Teams and the AI consent gate. The web design baseline went from 63 to 44.
 - **Words learned, Skills empty state (#537, 010e7ea3).** The Profile tile that said "words mastered" counted only retired saved words, which was 0 for every learner. It is now "words learned": the distinct lower-cased vocabulary of the current course's completed lessons (the same lessons the lesson count uses), on web, iOS and Android (a probe: 41 lessons gave 183 words). `masteredWords` is still fetched but not shown. With no answers at all, the Skills chart says "Skills start counting from your next lesson". The earlier finding that the tile read 0 is resolved.
 
 ### Merged and deployed 2026-11-14 (#511, #512, #516, #515)
@@ -59,6 +60,14 @@ Owner device check of builds 62 and 63.
 - **Web Hector keeps the tab bar** (`AppShell.tsx`, `hector.tsx`), so the learner can leave without a special exit.
 - **League flags** show on web, iOS and Android only for learners who turned their flag on: `profiles.country` is cleared unless they did, so a row's country being present is the consent signal (`src/lib/country-flag.ts`, `ProfileMath.flagEmoji`). A malformed code draws nothing. Screen readers say "Country XX".
 - **Web header brand mark** and the league badge beside the stats.
+
+### Owner decisions (2026-11-14)
+
+- **Themes:** "Royal (light and night) plus Meadow only", and "Meadow stays light, even in dark mode". The shipped Meadow night look is therefore a bug; a fix PR is in progress.
+- **Support persona:** Miya. Miya is the AI helper and appears in the Help chat only; staff are shown as "first name · Support team".
+- **Widget:** it follows Meadow, and the wide widget shows Alphonso and "Best".
+- **Practice result:** with 0 stars the button is "Try again" in gold. In a campaign, the next scene comes from the Practice hub v3 result screen ("Try for 3" and "Next scene"), not from the in-call Continue button.
+- **Help chat:** the chat-mode reply bar is approved.
 
 ### Release tooling and owner decisions (2026-11-14)
 
