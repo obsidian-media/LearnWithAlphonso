@@ -79,7 +79,9 @@ describe("where a learner finds Help", () => {
     expect(read("LessonSaveFailureView.swift")).toContain("GetHelpButton(prominent: true)");
     expect(read("PaywallView.swift")).toContain("if case .error = notice { GetHelpButton() }");
     expect(chat).toContain("if let session {");
-    expect(read("RootView.swift")).toContain(".environment(\\.helpSession, session.userID != nil ? session : nil)");
+    expect(read("RootView.swift")).toContain(
+      ".environment(\\.helpSession, session.userID != nil ? session : nil)",
+    );
   });
 
   it("works with AI answers off: the first-open screen and the banner follow the server's aiAvailable", () => {
@@ -93,7 +95,13 @@ describe("where a learner finds Help", () => {
 
 describe("the chat is usable without colour or sight", () => {
   it("every speaker has a text label, and the AI and person labels differ from the learner's", () => {
-    for (const label of ["SupportCopy.you", "SupportCopy.ai", "SupportCopy.aiTag", "SupportCopy.person", "SupportCopy.personTag"]) {
+    for (const label of [
+      "SupportCopy.you",
+      "SupportCopy.ai",
+      "SupportCopy.aiTag",
+      "SupportCopy.person",
+      "SupportCopy.personTag",
+    ]) {
       expect(chat, label).toContain(label);
     }
     expect(chat).toContain("AccessibilityNotification.Announcement(last.body).post()");
