@@ -14,5 +14,12 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.widgetkit-extension</string>
 	</dict>
+	<!-- The two design system faces the widget's type roles use (WidgetDesignSystem.swift); the files are
+	     taken from Sources/Fonts by project.yml (one copy in the repo). -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>BricolageGrotesque-Variable.ttf</string>
+		<string>Figtree-Variable.ttf</string>
+	</array>
 </dict>
 </plist>
