@@ -32,6 +32,9 @@ import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 import { waitForCallCue } from "@/lib/sfx";
 import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/lib/practice-api";
 import { PracticeResult } from "@/components/practice/PracticeResult";
+import { edgeButtonClass } from "@/components/lesson/LessonParts";
+import { PracticeUnscored } from "@/components/practice/PracticeUnscored";
+import { SEE_MY_RESULT, seeResultShown } from "@/lib/practice-result-buttons";
 import { sceneRoom } from "@/lib/practice-catalog";
 import { campaignSearch, firstSlip, type CampaignSearch } from "@/lib/practice-session";
 
@@ -126,10 +129,10 @@ function CampaignChatPage({
   const [callId, setCallId] = useState(newCallId);
   const [sceneStartedAt, setSceneStartedAt] = useState(() => Date.now());
   const [ending, setEnding] = useState(false);
+  const [unscored, setUnscored] = useState(false);
   const [result, setResult] = useState<{
     result: Result;
     seconds: number;
-    fromHangUp: boolean;
   } | null>(null);
 
   // Design decision (see docs/superpowers/specs/2026-09-21-conversation-
@@ -169,7 +172,6 @@ function CampaignChatPage({
     () => messages.slice(sceneAnchor).filter((m) => m.role === "user").length,
     [messages, sceneAnchor],
   );
-  const canContinue = userTurnsInScene >= scene.minTurns;
   // Full campaign transcript + the current scene's persona -- this is
   // what gives scene 2+ visibility into what happened earlier without
   // /api/chat needing any new concept of "session" or "campaign."
@@ -361,30 +363,27 @@ function CampaignChatPage({
   }, [campaign.scenes, isLastScene, sceneIndex, speak, freshCall]);
 
   /**
-   * Ends this scene's call: the server scores it and the result screen shows its stars. Without a scored result
-   * (no judged reply, or offline) a "Continue" simply moves on, and a hang-up leaves for Practice.
+   * Ends this scene's call: the server scores it and the result screen shows its stars; its "Next scene" moves on.
+   * Without a scored result (offline) the learner stays and can try the scene again; with no reply they leave.
    */
-  const finishScene = useCallback(
-    async (fromHangUp: boolean) => {
-      if (ending) return;
-      audioRef.current?.pause();
-      setEnding(true);
-      const scored = userTurnsInScene > 0 ? await finishPracticeCall(callId) : null;
-      if (scored) {
-        setResult({
-          result: scored,
-          seconds: Math.round((Date.now() - sceneStartedAt) / 1000),
-          fromHangUp,
-        });
-        return;
-      }
-      setEnding(false);
-      if (fromHangUp) void navigate({ to: "/converse" });
-      else advanceScene();
-    },
-    [ending, userTurnsInScene, callId, sceneStartedAt, navigate, advanceScene],
-  );
-  const continueToNextScene = useCallback(() => void finishScene(false), [finishScene]);
+  const finishScene = useCallback(async () => {
+    if (ending) return;
+    audioRef.current?.pause();
+    setEnding(true);
+    const scored = userTurnsInScene > 0 ? await finishPracticeCall(callId) : null;
+    if (scored) {
+      setResult({
+        result: scored,
+        seconds: Math.round((Date.now() - sceneStartedAt) / 1000),
+      });
+      return;
+    }
+    setEnding(false);
+    // Replies were sent but the call has no score (offline): stay on the scene, never navigate away (the campaign
+    // state lives in this page, so leaving would lose the earlier scenes). With no reply there is nothing to lose.
+    if (userTurnsInScene > 0) setUnscored(true);
+    else void navigate({ to: "/converse" });
+  }, [ending, userTurnsInScene, callId, sceneStartedAt, navigate]);
 
   const restartScene = useCallback(() => {
     setMessages((m) => m.slice(0, sceneAnchor + 1));
@@ -519,15 +518,20 @@ function CampaignChatPage({
             {error ?? captureError}
           </div>
         )}
-        {canContinue && !finished && (
+        {seeResultShown({
+          chatMode: !(mode ? mode === "call" : showAlphonso),
+          userTurns: userTurnsInScene,
+          minTurns: scene.minTurns,
+          finished,
+        }) && (
           <div className="flex justify-center pt-2">
             <button
-              onClick={continueToNextScene}
-              className="rounded-[var(--ds-radius-control)] bg-ds-action px-5 py-2.5 ds-type-footnote font-extrabold text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)] transition-transform active:translate-y-px"
+              type="button"
+              onClick={() => void finishScene()}
+              disabled={ending || sending}
+              className={edgeButtonClass("primary")}
             >
-              {isLastScene
-                ? "Finish campaign"
-                : `Continue: ${campaign.scenes[sceneIndex + 1].title} →`}
+              {SEE_MY_RESULT}
             </button>
           </div>
         )}
@@ -725,9 +729,21 @@ function CampaignChatPage({
     </header>
   );
 
+  if (unscored) {
+    return (
+      <LessonFrame>
+        <PracticeUnscored
+          onRetry={() => {
+            setUnscored(false);
+            restartScene();
+          }}
+        />
+      </LessonFrame>
+    );
+  }
+
   if (result) {
     const r = result.result;
-    const canGoOn = r.stars >= 1 || !result.fromHangUp;
     return (
       <LessonFrame>
         <PracticeResult
@@ -736,21 +752,17 @@ function CampaignChatPage({
           room={sceneRoom(campaign.id, scene.id)}
           seconds={result.seconds}
           slip={firstSlip(messages, sceneAnchor)}
+          campaign={{ isLastScene }}
           onRetry={() => {
             setResult(null);
             restartScene();
           }}
-          next={
-            canGoOn
-              ? {
-                  label: isLastScene ? "Finish campaign" : "Next scene",
-                  onClick: () => {
-                    setResult(null);
-                    advanceScene();
-                  },
-                }
-              : { label: "Done", onClick: () => void navigate({ to: "/converse" }) }
-          }
+          onForward={() => {
+            // A scene with no star never moves on (a talk counts done from one star): the button is Done.
+            setResult(null);
+            if (r.stars >= 1) advanceScene();
+            else void navigate({ to: "/converse" });
+          }}
         />
       </LessonFrame>
     );
@@ -810,7 +822,7 @@ function CampaignChatPage({
           onToggleTts={() => setTtsOn((v) => !v)}
           error={error ?? captureError}
           endTo="/converse"
-          onEnd={finished ? undefined : () => void finishScene(true)}
+          onEnd={finished ? undefined : () => void finishScene()}
           messages={messages}
           reducedMotion={reducedMotion}
           handsFree={handsFreeCall}
@@ -819,16 +831,6 @@ function CampaignChatPage({
               <p className="rounded-full bg-ds-ink/60 text-ds-on-hero px-4 py-1.5 text-center ds-type-footnote font-semibold">
                 Nice work, campaign complete!
               </p>
-            ) : canContinue ? (
-              <button
-                type="button"
-                onClick={continueToNextScene}
-                className="rounded-full bg-ds-card px-5 py-2 ds-type-footnote font-extrabold text-ds-ink"
-              >
-                {isLastScene
-                  ? "Finish campaign"
-                  : `Continue: ${campaign.scenes[sceneIndex + 1].title} \u2192`}
-              </button>
             ) : null
           }
           sheet={

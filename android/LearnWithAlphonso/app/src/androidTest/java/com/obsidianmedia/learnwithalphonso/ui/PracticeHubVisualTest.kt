@@ -1,6 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.ui
 
 import android.graphics.Bitmap
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalDensity
@@ -13,6 +15,7 @@ import androidx.test.runner.screenshot.Screenshot
 import com.obsidianmedia.learnwithalphonso.core.content.*
 import com.obsidianmedia.learnwithalphonso.core.logic.*
 import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeHubContent
+import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeReplyBar
 import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeResultScreen
 import com.obsidianmedia.learnwithalphonso.ui.theme.*
 import org.junit.Assert.assertEquals
@@ -67,7 +70,7 @@ class PracticeHubVisualTest {
             CompositionLocalProvider(LocalDensity provides Density(density, scale.value)) {
                 AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
                     val result = PracticeResult("scenario", "coffee", stars.value, 3, 3, 8, if (stars.value == 3) 8 else if (stars.value == 2) 7 else 5, 0, 0, 3)
-                    PracticeResultScreen(result, "coffee", "es", 232, "Soy cansado hoy" to "Está cansado. Entonces un café bien cargado.", {}, "Done", {})
+                    PracticeResultScreen(result, "coffee", "es", 232, "Soy cansado hoy" to "Está cansado. Entonces un café bien cargado.", com.obsidianmedia.learnwithalphonso.core.logic.PracticeResultContext.Scenario, {}, {})
                 }
             }
         }
@@ -83,6 +86,60 @@ class PracticeHubVisualTest {
         rule.onNodeWithTag("practice-result").performScrollToNode(hasText("Done"))
         rule.onNodeWithText("Done").assertIsDisplayed()
         shot("07-large-text-actions")
+    }
+
+    /** Round 13: the 0-star result, a campaign scene's result (Next scene) and the chat-mode reply bar, light and night. */
+    @Test fun round13ResultStatesAndReplyBar() {
+        val night = mutableStateOf(false)
+        val which = mutableStateOf(0)
+        val typed = mutableStateOf("")
+        val none = PracticeResult("scenario", "coffee", 0, 0, 0, 1, 1, 0, 0, 3)
+        val two = PracticeResult("scene", "city-day/coffee-stop", 2, 0, 2, 8, 7, 0, 0, 3)
+        val three = PracticeResult("scene", "city-day/coffee-stop", 3, 2, 3, 8, 8, 0, 0, 3)
+        rule.setContent {
+            AlphonsoTheme(AlphonsoThemeId.DEFAULT, night.value) {
+                when (which.value) {
+                    0 -> PracticeResultScreen(none, "coffee", "es", 38, null, PracticeResultContext.Scenario, {}, {})
+                    1 -> PracticeResultScreen(two, "coffee", "es", 232, "Soy cansado hoy" to "Está cansado. Entonces un café bien cargado.", PracticeResultContext.CampaignScene(isLast = false), {}, {})
+                    2 -> PracticeResultScreen(three, "coffee", "es", 232, null, PracticeResultContext.CampaignScene(isLast = true), {}, {})
+                    else -> androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize().background(LocalAlphonsoTokens.current.surface), contentAlignment = androidx.compose.ui.Alignment.BottomCenter) {
+                        PracticeReplyBar(typed.value, { typed.value = it }, PracticeHub.canSendReply(typed.value, pending = false)) {}
+                    }
+                }
+            }
+        }
+        for (isNight in listOf(false, true)) {
+            rule.runOnIdle { night.value = isNight }
+            val tag = if (isNight) "night" else "light"
+            rule.runOnIdle { which.value = 0 }
+            // Top of the screen first, then the buttons: the list is longer than the screen.
+            rule.onNodeWithTag("practice-result").performScrollToIndex(0)
+            shot("r13-result-0-$tag")
+            rule.onNodeWithTag("practice-result").performScrollToNode(hasText("Try again"))
+            rule.onNodeWithText("Try again").assertIsDisplayed()
+            rule.onNodeWithText("Done").assertIsDisplayed()
+            shot("r13-result-0-actions-$tag")
+            rule.runOnIdle { which.value = 1 }
+            rule.onNodeWithTag("practice-result").performScrollToIndex(0)
+            shot("r13-result-campaign-2-$tag")
+            rule.onNodeWithTag("practice-result").performScrollToNode(hasText("Next scene"))
+            rule.onNodeWithText("Next scene").assertIsDisplayed()
+            rule.onNodeWithText("Try for 3").assertIsDisplayed()
+            shot("r13-result-campaign-2-actions-$tag")
+            rule.runOnIdle { which.value = 2 }
+            rule.onNodeWithTag("practice-result").performScrollToIndex(0)
+            shot("r13-result-campaign-last-3-$tag")
+            rule.onNodeWithTag("practice-result").performScrollToNode(hasText("Finish campaign"))
+            rule.onNodeWithText("Finish campaign").assertIsDisplayed()
+            rule.onAllNodesWithText("Play again").assertCountEquals(0)
+            shot("r13-result-campaign-last-3-actions-$tag")
+            rule.runOnIdle { which.value = 3; typed.value = "" }
+            rule.onNodeWithContentDescription("Send").assertExists()
+            shot("r13-replybar-empty-$tag")
+            rule.runOnIdle { typed.value = "I would like a large coffee please, and a croissant." }
+            rule.onNodeWithContentDescription("Send").assertExists()
+            shot("r13-replybar-typed-$tag")
+        }
     }
 
     private fun shot(name: String) {

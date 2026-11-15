@@ -222,11 +222,35 @@ struct PracticePreCall: View {
 struct PracticeStarsView: View {
     let n: Int
     var prominent = false
+    /// A result with no stars draws the three still to earn as dashed gold outlines, not dead grey ones.
+    var emptyOutlined = false
     @Environment(\.alphonsoDS) private var ds
     var body: some View {
         HStack(spacing: AlphonsoDS.Space.s1) {
-            ForEach(0..<3) { i in Image(systemName: i < n ? "star.fill" : "star").foregroundStyle(i < n ? ds.xp : ds.inkFaint) }
+            ForEach(0..<3) { i in
+                if emptyOutlined && i >= n {
+                    PracticeStarOutline()
+                        .stroke(ds.actionEdge.opacity(0.75), style: StrokeStyle(lineWidth: AlphonsoDS.Space.s1 / 2, lineJoin: .round, dash: [AlphonsoDS.Space.s1 / 2, AlphonsoDS.Space.s1 / 2]))
+                        .frame(width: AlphonsoDS.Space.s12, height: AlphonsoDS.Space.s12)
+                } else {
+                    Image(systemName: i < n ? "star.fill" : "star").foregroundStyle(i < n ? ds.xp : ds.inkFaint)
+                }
+            }
         }.dsText(prominent ? .displayXL : .footnote).accessibilityElement(children: .ignore).accessibilityLabel(PracticeHub.starLabel(n))
+    }
+}
+/// The star outline, on the design system's 24-point icon grid.
+struct PracticeStarOutline: Shape {
+    func path(in rect: CGRect) -> Path {
+        let s = min(rect.width, rect.height) / 24
+        let points: [(CGFloat, CGFloat)] = [(12, 2.8), (14.8, 8.7), (21.2, 9.6), (16.5, 14.1), (17.7, 20.5), (12, 17.4), (6.3, 20.5), (7.5, 14.1), (2.8, 9.6), (9.2, 8.7)]
+        var path = Path()
+        for (index, point) in points.enumerated() {
+            let p = CGPoint(x: rect.minX + point.0 * s, y: rect.minY + point.1 * s)
+            if index == 0 { path.move(to: p) } else { path.addLine(to: p) }
+        }
+        path.closeSubpath()
+        return path
     }
 }
 struct PracticeButton: View {
@@ -294,40 +318,107 @@ struct PracticeResultView: View {
     let course: String
     let seconds: Int
     let slip: (said: String, reply: String)?
+    /// A scenario talk or one scene of a campaign: it decides which buttons the screen shows (`PracticeResultButtons`).
+    let context: PracticeResultContext
     let retry: () -> Void
-    let nextLabel: String
-    let done: () -> Void
+    /// The forward button: Next scene, Finish campaign or Done.
+    let forward: () -> Void
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    private var ds: AlphonsoDS.Colors { AlphonsoDS.colors(AlphonsoThemeManager.shared.paletteID, night: false) }
+    /// Follows Royal light and night; Meadow is always light (`AlphonsoThemeManager.isNight`).
+    private var ds: AlphonsoDS.Colors { AlphonsoDS.current }
+    private var night: Bool { AlphonsoThemeManager.shared.isNight }
+    private var buttons: PracticeResultButtons { result.buttons(for: context) }
     var body: some View {
         ScrollView {
-            VStack(spacing: AlphonsoDS.Space.s4) {
-                PracticePortrait(room: room, expression: result.stars >= 2 ? .happy : .neutral)
-                PracticeStarsView(n: result.displayedStars, prominent: true)
-                Text(result.headline(course: course)).dsText(.title)
-                Text(result.hint + (result.bestBefore > 0 && result.bestAfter > result.bestBefore ? " A new best for this room." : "")).dsText(.footnote)
+            VStack(spacing: AlphonsoDS.Space.s3) {
+                alphonso
+                PracticeStarsView(n: result.displayedStars, prominent: true, emptyOutlined: result.displayedStars == 0)
+                Text(result.headline(course: course)).dsText(.title).multilineTextAlignment(.center)
+                hint
                 ViewThatFits(in: .horizontal) {
-                    HStack(spacing: AlphonsoDS.Space.s3) { stats }
-                    VStack(spacing: AlphonsoDS.Space.s3) { stats }
+                    HStack(spacing: AlphonsoDS.Space.s2) { stats }
+                    VStack(spacing: AlphonsoDS.Space.s2) { stats }
                 }
                 if let slip = result.slipToShow(slip) {
                     VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                         Text("Your slip").dsText(.caption)
                         Text(slip.said).strikethrough().foregroundStyle(ds.wrongInk)
                         Text("Alphonso: " + slip.reply).foregroundStyle(ds.rightInk)
-                    }.dsText(.footnote).padding(AlphonsoDS.Space.s4).background(ds.card)
+                    }
+                    .dsText(.footnote)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(AlphonsoDS.Space.s3)
+                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+                    .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(ds.line, lineWidth: 2))
                 }
                 if dynamicTypeSize.isAccessibilitySize {
                     VStack(spacing: AlphonsoDS.Space.s2) { resultActions }
                 } else {
-                    HStack(spacing: AlphonsoDS.Space.s2) { resultActions }
+                    HStack(alignment: .top, spacing: AlphonsoDS.Space.s2) { resultActions }
                 }
-            }.padding(AlphonsoDS.Space.gutter).environment(\.alphonsoDS, ds)
-        }.background(ds.surface).foregroundStyle(ds.ink).toolbar(.hidden, for: .navigationBar).toolbar(.hidden, for: .tabBar)
+            }
+            .padding(AlphonsoDS.Space.gutter)
+            .environment(\.alphonsoDS, ds)
+        }
+        // The room runs full-bleed under a scrim that fades into the surface; at night it is dimmed the way the call dims it.
+        .background(alignment: .top) { roomBackdrop }
+        .background(ds.surface)
+        .foregroundStyle(ds.ink)
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+    }
+    private var roomBackdrop: some View {
+        Color.clear
+            .frame(height: AlphonsoDS.Space.s12 * 9)
+            .overlay { if let art = LessonArt.room(room) { Image(uiImage: art).resizable().scaledToFill() } }
+            .overlay { ds.callGlass.opacity(night ? 0.4 : 0) }
+            .overlay {
+                LinearGradient(
+                    stops: [.init(color: ds.surface.opacity(0), location: 0), .init(color: ds.surface.opacity(0), location: 0.55), .init(color: ds.surface, location: 1)],
+                    startPoint: .top, endPoint: .bottom)
+            }
+            .clipped()
+            .ignoresSafeArea(edges: .top)
+            .accessibilityHidden(true)
+    }
+    private var alphonso: some View {
+        Color.clear.frame(height: AlphonsoDS.Space.s12 * 5)
+            .overlay {
+                if let art = LessonArt.expression(result.stars >= 2 ? .happy : .neutral) { Image(uiImage: art).resizable().scaledToFit() }
+            }
+            .accessibilityHidden(true)
+    }
+    /// With no stars the hint sits in a gold-tint card with the replies meter; otherwise it is a plain line.
+    @ViewBuilder private var hint: some View {
+        let text = result.hint + (result.bestBefore > 0 && result.bestAfter > result.bestBefore ? " A new best for this room." : "")
+        if result.displayedStars == 0 {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                Text(text).dsText(.footnote).fontWeight(.bold)
+                if let meter = result.repliesMeter {
+                    HStack(spacing: AlphonsoDS.Space.s1 + AlphonsoDS.Space.s1 / 2) {
+                        ForEach(0..<meter.needed, id: \.self) { i in
+                            Capsule().fill(i < meter.given ? ds.action : ds.sunk)
+                                .overlay(Capsule().strokeBorder(ds.line, lineWidth: i < meter.given ? 0 : 1.5))
+                                .frame(height: AlphonsoDS.Space.s2)
+                        }
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(meter.given) of \(meter.needed) replies")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(AlphonsoDS.Space.s3)
+            .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.actionTint))
+            .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(ds.line, lineWidth: 2))
+        } else {
+            Text(text).dsText(.footnote).foregroundStyle(ds.inkSoft).multilineTextAlignment(.center)
+        }
     }
     @ViewBuilder private var resultActions: some View {
-        PracticeButton(result.retryLabel, secondary: true, action: retry)
-        PracticeButton(nextLabel, action: done)
+        if let retryButton = buttons.retry {
+            Button(retryButton.label, action: retry).buttonStyle(.dsButton(retryButton.gold ? .primary : .secondary))
+        }
+        Button(buttons.forward.label, action: forward).buttonStyle(.dsButton(buttons.forward.gold ? .primary : .secondary))
     }
     @ViewBuilder private var stats: some View {
         resultStat("\(result.rightReplies)/\(result.replies)", "replies right")
@@ -335,7 +426,30 @@ struct PracticeResultView: View {
         resultStat("\(result.replies - result.shortReplies)/\(result.replies)", "full sentences")
     }
     private func resultStat(_ value: String, _ label: String) -> some View {
-        VStack { Text(value).dsText(.numeral); Text(label).dsText(.caption) }.padding(AlphonsoDS.Space.s2).frame(maxWidth: .infinity).background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
+        VStack(spacing: AlphonsoDS.Space.s1) { Text(value).dsText(.numeral); Text(label).dsText(.caption).foregroundStyle(ds.inkSoft) }
+            .padding(AlphonsoDS.Space.s2)
+            .frame(maxWidth: .infinity)
+            .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+            .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(ds.line, lineWidth: 2))
+    }
+}
+
+/// A call that came back without a score (offline): the learner stays on the scene, is told why, and can try it again.
+struct PracticeUnscoredView: View {
+    let retry: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+    var body: some View {
+        VStack(spacing: AlphonsoDS.Space.s4) {
+            Spacer()
+            Text(PracticeHub.unscoredNotice).dsText(.headline).multilineTextAlignment(.center).foregroundStyle(ds.ink)
+            Button("Try again", action: retry).buttonStyle(.dsButton(.primary))
+            Spacer()
+        }
+        .padding(AlphonsoDS.Space.gutter)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(ds.surface)
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
     }
 }
 
