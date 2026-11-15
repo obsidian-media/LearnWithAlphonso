@@ -4,6 +4,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.obsidianmedia.learnwithalphonso.AlphonsoApplication
+import com.obsidianmedia.learnwithalphonso.core.logic.PushTap
 import com.obsidianmedia.learnwithalphonso.notifications.NotificationChannels
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -24,11 +25,12 @@ class AlphonsoMessagingService : FirebaseMessagingService() {
         container.pushRegistrar.onNewToken(token)
     }
 
-    /** Nudges and overtakes from send-push; the server sends both a notification block and a data type. */
+    /** Nudges, overtakes and support replies from send-push; the server sends both a notification block and a data type. */
     override fun onMessageReceived(message: RemoteMessage) {
         val title = message.notification?.title ?: message.data["title"] ?: return
         val body = message.notification?.body ?: message.data["body"] ?: ""
-        val id = when (message.data["type"]) { "nudge" -> 201; "overtake" -> 202; else -> 200 }
-        NotificationChannels.post(this, NotificationChannels.SOCIAL, id, title, body)
+        val type = message.data[PushTap.EXTRA_TYPE]
+        val id = when (type) { "nudge" -> 201; "overtake" -> 202; "support" -> 203; else -> 200 }
+        NotificationChannels.post(this, NotificationChannels.SOCIAL, id, title, body, type)
     }
 }
