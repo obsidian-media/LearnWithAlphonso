@@ -2139,6 +2139,29 @@ export type Database = {
         };
         Relationships: [];
       };
+      support_digest_seen: {
+        Row: {
+          conversation_id: string;
+          seen_at: string;
+        };
+        Insert: {
+          conversation_id: string;
+          seen_at?: string;
+        };
+        Update: {
+          conversation_id?: string;
+          seen_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_digest_seen_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: true;
+            referencedRelation: "support_conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       support_messages: {
         Row: {
           ai_facts: Json | null;
@@ -2211,6 +2234,60 @@ export type Database = {
             columns: ["conversation_id"];
             isOneToOne: false;
             referencedRelation: "support_conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      support_notify_queue: {
+        Row: {
+          attempts: number;
+          conversation_id: string;
+          delivered_at: string | null;
+          email_sent_at: string | null;
+          gave_up_at: string | null;
+          id: number;
+          last_attempt_at: string | null;
+          message_id: number;
+          push_sent_at: string | null;
+          queued_at: string;
+        };
+        Insert: {
+          attempts?: number;
+          conversation_id: string;
+          delivered_at?: string | null;
+          email_sent_at?: string | null;
+          gave_up_at?: string | null;
+          id?: never;
+          last_attempt_at?: string | null;
+          message_id: number;
+          push_sent_at?: string | null;
+          queued_at?: string;
+        };
+        Update: {
+          attempts?: number;
+          conversation_id?: string;
+          delivered_at?: string | null;
+          email_sent_at?: string | null;
+          gave_up_at?: string | null;
+          id?: never;
+          last_attempt_at?: string | null;
+          message_id?: number;
+          push_sent_at?: string | null;
+          queued_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_notify_queue_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "support_conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "support_notify_queue_message_id_fkey";
+            columns: ["message_id"];
+            isOneToOne: false;
+            referencedRelation: "support_messages";
             referencedColumns: ["id"];
           },
         ];
@@ -3659,6 +3736,7 @@ export type Database = {
         Args: { p_channel: string; p_user: string };
         Returns: string;
       };
+      support_purge_old: { Args: never; Returns: number };
       team_name_problem: { Args: { _name: string }; Returns: string };
       weekly_xp: {
         Args: { _user_id: string; _week_start: string };
