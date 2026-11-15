@@ -16,6 +16,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.obsidianmedia.learnwithalphonso.core.logic.InviteLink
+import com.obsidianmedia.learnwithalphonso.core.logic.PushTap
+import com.obsidianmedia.learnwithalphonso.core.logic.PushTapDestination
 import com.obsidianmedia.learnwithalphonso.ui.RootScreen
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoPalettes
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTheme
@@ -25,6 +27,8 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     private val container get() = (application as AlphonsoApplication).container
     private var pendingInviteCode by mutableStateOf<String?>(null)
+    /** A tapped "a person replied" notification waiting to open the Help chat (PushTap). */
+    private var pendingHelp by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +37,7 @@ class MainActivity : ComponentActivity() {
         container.notificationPermission.register(this)
         handleOAuthCallback(intent)
         handleInviteLink(intent)
+        handlePushTap(intent)
         setContent {
             val themeId by container.themeManager.theme.collectAsState()
             val paletteId by container.themeManager.palette.collectAsState()
@@ -52,6 +57,7 @@ class MainActivity : ComponentActivity() {
             AlphonsoTheme(themeId, systemDark, paletteId) {
                 RootScreen(
                     container, pendingInviteCode, onInviteConsumed = { pendingInviteCode = null },
+                    openHelp = pendingHelp, onHelpConsumed = { pendingHelp = false },
                     // DEBUG screenshots only: `adb shell am start -n ... --es firstRunHarness hector` (FirstRunHarness).
                     harness = if (BuildConfig.DEBUG) intent?.getStringExtra("firstRunHarness") else null,
                 )
@@ -63,6 +69,18 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         handleOAuthCallback(intent)
         handleInviteLink(intent)
+        handlePushTap(intent)
+    }
+
+    /**
+     * A tap on a push notification: the type word the server sent travels in the launch intent (a closed or background
+     * app) or on the notification the foreground handler posts. Only a support reply has a destination (PushTap).
+     */
+    private fun handlePushTap(intent: Intent?) {
+        val type = intent?.getStringExtra(PushTap.EXTRA_TYPE) ?: return
+        if (PushTap.destination(type) == PushTapDestination.HELP) pendingHelp = true
+        // Consumed: a rotation or a later onNewIntent must not open the chat a second time.
+        intent.removeExtra(PushTap.EXTRA_TYPE)
     }
 
     /** https://learn.alphonsoecosystem.app/invite/{code}, opened as an App Link or from a share. */

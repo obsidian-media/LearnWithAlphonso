@@ -20,7 +20,13 @@ export const reportPayloadSchema = z.object({
   createdAt: z.string(),
 });
 export type ReportPayload = z.infer<typeof reportPayloadSchema>;
-export type EmailMessage = { to: string; subject: string; text: string };
+export type EmailMessage = {
+  to: string;
+  subject: string;
+  text: string;
+  /** The sender, e.g. "Alphonso Support <support@...>"; omitted, the report sender (REPORT_NOTIFY_FROM) is used. */
+  from?: string;
+};
 
 const KIND_LABEL: Record<ReportPayload["kind"], string> = {
   user: "a learner",
@@ -61,7 +67,9 @@ export async function sendEmailViaResend(
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from:
-        process.env.REPORT_NOTIFY_FROM || "Alphonso Reports <reports@hello.alphonsoecosystem.app>",
+        msg.from ||
+        process.env.REPORT_NOTIFY_FROM ||
+        "Alphonso Reports <reports@hello.alphonsoecosystem.app>",
       to: [msg.to],
       subject: msg.subject,
       text: msg.text,

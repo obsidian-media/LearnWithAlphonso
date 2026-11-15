@@ -16,6 +16,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.obsidianmedia.learnwithalphonso.MainActivity
 import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.core.logic.PushTap
 import com.obsidianmedia.learnwithalphonso.core.logic.ReminderKind
 import com.obsidianmedia.learnwithalphonso.core.logic.ReminderPlan
 import com.obsidianmedia.learnwithalphonso.core.logic.ReminderPlans
@@ -65,12 +66,15 @@ object NotificationChannels {
     }
 
     /** Posts a notification that opens the app; silently does nothing without POST_NOTIFICATIONS. */
-    fun post(context: Context, channel: String, id: Int, title: String, body: String) {
+    fun post(context: Context, channel: String, id: Int, title: String, body: String, type: String? = null) {
         if (android.os.Build.VERSION.SDK_INT >= 33 &&
             context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) return
         val open = PendingIntent.getActivity(
-            context, id, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            context, id,
+            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                // The push's type word, so a tap on a support reply opens the Help chat (PushTap).
+                .apply { if (type != null) putExtra(PushTap.EXTRA_TYPE, type) },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val notification = NotificationCompat.Builder(context, channel)

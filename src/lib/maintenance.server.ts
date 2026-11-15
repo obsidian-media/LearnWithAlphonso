@@ -9,6 +9,7 @@ import {
   type EmailMessage,
 } from "./report-notify.server";
 import { MIN_SHARED_SECRET_LENGTH, secretMatches } from "./shared-secret.server";
+import { defaultSupportDeps, sweepSupport, type SupportNotifyDeps } from "./support-notify.server";
 
 /**
  * The scheduled maintenance pass. Called every 15 minutes by the database (run_maintenance_sweep in
@@ -20,6 +21,8 @@ import { MIN_SHARED_SECRET_LENGTH, secretMatches } from "./shared-secret.server"
  *   2. Emails the owner about reports whose first notification never went out.
  *   3. Emails the owner once about reports still unresolved near the 24-hour response window.
  *   4. Retries RevenueCat subscriber erasures that failed when an account was deleted.
+ *   5. Retries "a person replied" notices that did not go out and tells the owner about new support tickets.
+ * (The support chat retention, 12 months after a chat was solved, runs inside run_maintenance_sweep in the database.)
  */
 type Admin = SupabaseClient<Database>;
 
@@ -50,6 +53,8 @@ export type MaintenanceDeps = {
   ) => Promise<"cancelled" | "none" | "failed">;
   /** Where owner alerts go; empty means alerts are logged only. */
   alertTo: string;
+  /** The support notices (src/lib/support-notify.server.ts); absent, that step is skipped. */
+  support?: SupportNotifyDeps;
 };
 
 export type RevocationResult = { revoked: number; stillPending: number; expired: number };
@@ -376,6 +381,7 @@ async function defaultDeps(): Promise<MaintenanceDeps> {
     eraseSubscriber: (config, id) => deleteAccountSubscribers(config, id),
     cancelWebSubscription: (config, id) => cancelAccountWebSubscriptions(config, id),
     alertTo: process.env.REPORT_NOTIFY_TO ?? "",
+    support: await defaultSupportDeps(),
   };
 }
 
@@ -405,9 +411,20 @@ export async function handleMaintenance(
   const revocations = await run("apple-revocations", () => retryAppleRevocations(deps));
   const reports = await run("reports", () => sweepReports(deps));
   const erasures = await run("revenuecat-erasures", () => retryRevenueCatErasures(deps));
+  const supportDeps = deps.support;
+  const support = supportDeps
+    ? await run("support-notices", () => sweepSupport(supportDeps))
+    : null;
   // Counts only: this response is stored in the database's request log.
   return json(
-    { ok: failures.length === 0, failures, revocations, reports, erasures },
+    {
+      ok: failures.length === 0,
+      failures,
+      revocations,
+      reports,
+      erasures,
+      ...(supportDeps ? { support } : {}),
+    },
     failures.length ? 500 : 200,
   );
 }

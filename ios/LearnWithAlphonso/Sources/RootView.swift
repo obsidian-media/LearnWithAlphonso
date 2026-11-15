@@ -66,6 +66,8 @@ struct RootView: View {
     @State private var selectedTab = RootTab.learn
     /// Path stops that live in another tab (podcast, talk, campaign scene) travel through this.
     @State private var pathDeepLink = PathDeepLink()
+    /// A tapped "a person replied" notification waiting to open the Help chat (SupportPushTap.swift).
+    @State private var supportPushTap = SupportPushTap.shared
     /// A friend invite from a Universal Link or the Friends screen paste field (FriendInviteAccept.swift).
     @Environment(PendingInvite.self) private var pendingInvite
 
@@ -177,6 +179,7 @@ struct RootView: View {
                     }
                     // After the covers: an invite waits until none is on screen, then appears over the tabs.
                     .friendInviteSheet(pending: pendingInvite, session: session, isReady: onboardingChecked && firstRunCover == nil && onboarding == nil)
+                    .supportPushSheet(tap: supportPushTap, session: session, isReady: onboardingChecked && firstRunCover == nil && onboarding == nil)
                     .task {
                         // The player builds a client per call rather than
                         // holding one, because PodcastClient cannot refresh the
