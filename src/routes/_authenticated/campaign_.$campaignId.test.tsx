@@ -4,6 +4,7 @@ import { clearOpenerSpeechCache } from "@/lib/opener-speech-cache";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
+import { installFakeAudioContext } from "@/lib/__testutils__/fake-audio-context";
 
 const navigate = vi.hoisted(() => vi.fn());
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -848,4 +849,135 @@ describe("Practice stars on a campaign", () => {
     const ids = chatIds();
     expect(ids[1]).not.toBe(ids[0]);
   });
+});
+
+describe("Hands-free across a campaign's scenes", () => {
+  const NOTE_KEY = "handsFree.safetyNoteSeen.v2";
+  const audios: { src: string; onended: (() => void) | null }[] = [];
+  const getUserMedia = vi.fn();
+
+  beforeEach(() => {
+    localStorage.removeItem("showAlphonsoWhilePractising");
+    // The first-use note is covered with the single scenarios; here it has been read.
+    localStorage.setItem(NOTE_KEY, "1");
+    installFakeAudioContext();
+    audios.length = 0;
+    vi.stubGlobal(
+      "Audio",
+      class {
+        play = vi.fn().mockResolvedValue(undefined);
+        pause = vi.fn();
+        onended: (() => void) | null = null;
+        constructor(public src: string) {
+          audios.push(this);
+        }
+      },
+    );
+    getUserMedia.mockReset();
+    getUserMedia.mockResolvedValue({ getTracks: () => [{ stop: vi.fn() }] });
+    Object.defineProperty(navigator, "mediaDevices", {
+      value: { getUserMedia },
+      configurable: true,
+    });
+    vi.stubGlobal(
+      "MediaRecorder",
+      class {
+        static isTypeSupported = () => true;
+        state = "inactive";
+        mimeType = "audio/webm";
+        ondataavailable: ((e: { data: Blob }) => void) | null = null;
+        onstop: (() => void) | null = null;
+        start() {
+          this.state = "recording";
+        }
+        stop() {
+          this.state = "inactive";
+          this.onstop?.();
+        }
+      },
+    );
+  });
+
+  /** Alphonso's voice (a blob, not a sound effect) finishes playing. Waits until it has started. */
+  const openerEnds = async (nth = 1) => {
+    const voices = () => audios.filter((a) => a.src.startsWith("blob:"));
+    await waitFor(() => expect(voices().length).toBeGreaterThanOrEqual(nth));
+    await act(async () => {
+      voices()[voices().length - 1].onended?.();
+    });
+  };
+
+  it("is off to start; once on it is carried to the next scene, the mic closed while the result is up", async () => {
+    const scored = {
+      kind: "scene",
+      itemKey: "city-day/coffee-stop",
+      stars: 1,
+      bestBefore: 0,
+      bestAfter: 1,
+      replies: campaign.scenes[0].minTurns,
+      rightReplies: 0,
+      shortReplies: 1,
+      englishReplies: 0,
+      finishMinReplies: campaign.scenes[0].minTurns,
+    };
+    const base = global.fetch;
+    global.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).includes("/api/practice")
+        ? new Response(JSON.stringify(scored), { status: 200 })
+        : base(input, init),
+    ) as typeof fetch;
+    const user = userEvent.setup();
+    const Page = Route.options.component!;
+    render(withAiConsent(<Page />, fakeConsentApi()));
+    await screen.findByTestId("call-caption");
+
+    // Off at the start of the run.
+    expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Show the conversation" }));
+    await user.click(await screen.findByRole("switch", { name: "Hands-free" }));
+    await user.click(screen.getByRole("button", { name: "Back to call" }));
+
+    // Half-duplex: nothing opens while the scene's opener plays.
+    await act(() => new Promise<void>((r) => setTimeout(r, 500)));
+    expect(getUserMedia).not.toHaveBeenCalled();
+    await openerEnds();
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(1));
+    expect(await screen.findByTestId("hands-free-status")).toHaveTextContent(
+      "Listening. Just talk.",
+    );
+
+    // Pause, finish the scene by typing, and take the result.
+    await user.click(screen.getByRole("button", { name: "Pause" }));
+    await user.click(screen.getByRole("button", { name: "Show the conversation" }));
+    const sheet = await screen.findByRole("dialog", { name: "Conversation" });
+    for (let i = 0; i < campaign.scenes[0].minTurns; i++) {
+      await user.type(within(sheet).getByPlaceholderText("Type or tap the mic"), `turn ${i}`);
+      await user.click(within(sheet).getByRole("button", { name: "Send" }));
+      await waitFor(() =>
+        expect(within(sheet).getByRole("log")).toHaveTextContent(`Reply ${i + 1}`),
+      );
+    }
+    await user.click(within(sheet).getByRole("button", { name: "Back to call" }));
+    await user.click(screen.getByRole("button", { name: "End the call" }));
+    expect(
+      await screen.findByRole("heading", { name: "One star. You finished." }),
+    ).toBeInTheDocument();
+    // The result is on screen: the mic is not open, and nothing opened it.
+    await act(() => new Promise<void>((r) => setTimeout(r, 300)));
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+
+    // Next scene: the switch is still on (re-armed), waiting for the new opener to finish.
+    const voicesBefore = audios.filter((a) => a.src.startsWith("blob:")).length;
+    await user.click(screen.getByRole("button", { name: "Next scene" }));
+    expect(
+      screen.getByText(`${campaign.title}: scene 2 of ${campaign.scenes.length}`),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Hold to talk" })).toBeNull();
+    await act(() => new Promise<void>((r) => setTimeout(r, 300)));
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    await openerEnds(voicesBefore + 1);
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId("hands-free-status")).toHaveTextContent("Listening. Just talk.");
+  }, 20_000);
 });
