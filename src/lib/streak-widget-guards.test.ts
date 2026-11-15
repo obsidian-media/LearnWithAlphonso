@@ -14,14 +14,22 @@ const publisher = read(`${IOS}/Sources/WidgetProgressPublisher.swift`);
 const theme = read(`${IOS}/Sources/DesignSystem/AlphonsoTheme.swift`);
 const project = read(`${IOS}/project.yml`);
 const widgetPlist = read(`${IOS}/LearnWithAlphonsoWidget/Info.plist`);
-const androidWidget = read(`${ANDROID}/java/com/obsidianmedia/learnwithalphonso/widget/StreakWidget.kt`);
+const androidWidget = read(
+  `${ANDROID}/java/com/obsidianmedia/learnwithalphonso/widget/StreakWidget.kt`,
+);
 const container = read(`${ANDROID}/java/com/obsidianmedia/learnwithalphonso/AppContainer.kt`);
 
 describe("the widget draws with design system tokens only", () => {
   it("the iOS view has no raw colour, font size or system colour", () => {
     expect(countRawValues("ios", iosView)).toBe(0);
     expect(iosView).toContain("AlphonsoDS.colors(look.palette, night: look.night)");
-    for (const system of [".systemBackground", "Color(.system", ".secondary", ".green", ".foregroundStyle(.primary"]) {
+    for (const system of [
+      ".systemBackground",
+      "Color(.system",
+      ".secondary",
+      ".green",
+      ".foregroundStyle(.primary",
+    ]) {
       expect(iosView, system).not.toContain(system);
     }
   });
@@ -41,14 +49,18 @@ describe("the widget draws with design system tokens only", () => {
     expect(widgetPlist).toContain("<string>BricolageGrotesque-Variable.ttf</string>");
     expect(widgetPlist).toContain("<string>Figtree-Variable.ttf</string>");
     // The fonts the generated roles name must be the ones registered.
-    expect(readFileSync(`${IOS}/Sources/DesignSystem/AlphonsoDS.generated.swift`, "utf8")).toContain("BricolageGrotesque-96ptExtraBold");
+    expect(
+      readFileSync(`${IOS}/Sources/DesignSystem/AlphonsoDS.generated.swift`, "utf8"),
+    ).toContain("BricolageGrotesque-96ptExtraBold");
     expect(iosFonts).toContain("style.role.postScriptName");
   });
 });
 
 describe("the look follows the theme, and Meadow ignores dark mode", () => {
   it("the iOS view resolves its look through the Kit rule, with the device appearance", () => {
-    expect(iosView).toContain("StreakWidgetLook.resolve(theme: entry.snapshot?.theme, deviceDark: colorScheme == .dark)");
+    expect(iosView).toContain(
+      "StreakWidgetLook.resolve(theme: entry.snapshot?.theme, deviceDark: colorScheme == .dark)",
+    );
   });
 
   it("Android hands the system a day and a night colour from the same rule, so Meadow's two halves match", () => {
@@ -62,15 +74,21 @@ describe("the theme reaches the widget", () => {
     expect(publisher).toContain("theme: AlphonsoThemeManager.shared.themeID.rawValue");
     expect(publisher).toContain("static func themeChanged(to theme: String)");
     expect(publisher).toContain("stored.withTheme(theme)");
-    expect(publisher).toContain("WidgetCenter.shared.reloadTimelines(ofKind: WidgetSharing.streakWidgetKind)");
+    expect(publisher).toContain(
+      "WidgetCenter.shared.reloadTimelines(ofKind: WidgetSharing.streakWidgetKind)",
+    );
     // setTheme is the one place the theme changes (a server value goes through it too).
     const setTheme = theme.slice(theme.indexOf("public func setTheme("));
-    expect(setTheme.slice(0, setTheme.indexOf("\n    }\n"))).toContain("WidgetProgressPublisher.themeChanged(to: id.rawValue)");
+    expect(setTheme.slice(0, setTheme.indexOf("\n    }\n"))).toContain(
+      "WidgetProgressPublisher.themeChanged(to: id.rawValue)",
+    );
   });
 
   it("Android writes the theme with every snapshot and redraws the widget when the theme changes", () => {
     expect(container).toContain("WidgetPublisher.publish(app, it, themeManager.theme.value.raw)");
-    expect(container).toContain("themeManager.theme.drop(1).collect { WidgetPublisher.republishTheme(app, it.raw) }");
+    expect(container).toContain(
+      "themeManager.theme.drop(1).collect { WidgetPublisher.republishTheme(app, it.raw) }",
+    );
     expect(androidWidget).toContain("StreakWidget().updateAll(context)");
   });
 });
@@ -86,8 +104,14 @@ describe("one copy on both platforms", () => {
 
 describe("the two pictures stay small enough for a widget", () => {
   const files: [string, number][] = [
-    [`${IOS}/LearnWithAlphonsoWidget/Assets.xcassets/AlphonsoStreakFlame.imageset/alphonso-streak-flame@3x.png`, 160_000],
-    [`${IOS}/LearnWithAlphonsoWidget/Assets.xcassets/AlphonsoStreakFlame.imageset/alphonso-streak-flame@2x.png`, 90_000],
+    [
+      `${IOS}/LearnWithAlphonsoWidget/Assets.xcassets/AlphonsoStreakFlame.imageset/alphonso-streak-flame@3x.png`,
+      160_000,
+    ],
+    [
+      `${IOS}/LearnWithAlphonsoWidget/Assets.xcassets/AlphonsoStreakFlame.imageset/alphonso-streak-flame@2x.png`,
+      90_000,
+    ],
     [`${IOS}/LearnWithAlphonsoWidget/Assets.xcassets/Fire.imageset/fire@3x.png`, 50_000],
     [`${ANDROID}/res/drawable-nodpi/widget_alphonso_streak_flame.webp`, 60_000],
     [`${ANDROID}/res/drawable-nodpi/widget_fire.png`, 20_000],
