@@ -28,10 +28,26 @@ enum WidgetProgressPublisher {
             streak: progress.streak,
             longestStreak: progress.longestStreak,
             lastActiveDate: progress.lastActiveDate,
-            now: now
+            now: now,
+            theme: AlphonsoThemeManager.shared.themeID.rawValue
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: WidgetSharing.streakSnapshotDefaultsKey)
+        WidgetCenter.shared.reloadTimelines(ofKind: WidgetSharing.streakWidgetKind)
+    }
+
+    /// The learner changed theme (AlphonsoThemeManager.setTheme): rewrite the published snapshot with the new theme,
+    /// numbers untouched, and reload the widget. With nothing published yet (signed out) there is nothing to
+    /// rewrite: the next publish carries the theme.
+    static func themeChanged(to theme: String) {
+        guard let defaults = UserDefaults(suiteName: WidgetSharing.appGroupID),
+              let data = defaults.data(forKey: WidgetSharing.streakSnapshotDefaultsKey),
+              let stored = try? JSONDecoder().decode(StreakWidgetSnapshot.self, from: data),
+              let updated = try? JSONEncoder().encode(stored.withTheme(theme))
+        else { return }
+        // Already current (the usual launch): no write, no reload.
+        guard stored.theme != theme else { return }
+        defaults.set(updated, forKey: WidgetSharing.streakSnapshotDefaultsKey)
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetSharing.streakWidgetKind)
     }
 

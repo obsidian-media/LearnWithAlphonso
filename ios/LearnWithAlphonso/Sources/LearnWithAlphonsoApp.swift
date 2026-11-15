@@ -118,6 +118,9 @@ struct LearnWithAlphonsoApp: App {
         _remotePushRegistrar = State(initialValue: pushRegistrar)
         _aiConsentStore = StateObject(wrappedValue: AIConsentStore(backend: SessionAIConsentBackend(session: session)))
         _entitlementStore = State(initialValue: entitlements)
+        // A learner on Meadow who updates keeps the snapshot an older build wrote (no theme): hand the widget the
+        // theme at every launch, not only when it changes.
+        WidgetProgressPublisher.themeChanged(to: AlphonsoThemeManager.shared.themeID.rawValue)
     }
 
     var body: some Scene {
