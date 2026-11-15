@@ -11,16 +11,18 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * Off every time a call starts: a controller is made per conversation view model and [disable]d when its screen
  * leaves, and nothing about the switch is stored (the same as iOS, where the voice controller is made per call).
- * Call it from one thread (the main thread).
+ * In the app every call is on the main thread; the lock only keeps a test (which feeds levels from one thread while the
+ * engine's events arrive on another) from tearing the loop's state.
  */
 class HandsFreeController(
     tuning: HandsFreeLoop.Tuning,
     private val perform: (HandsFreeLoop.Effect) -> Unit,
 ) {
     private val loop = HandsFreeLoop(tuning)
+    private val lock = Any()
     private val _status = MutableStateFlow<HandsFreeLoop.Status>(HandsFreeLoop.Status.Off)
     val status: StateFlow<HandsFreeLoop.Status> = _status.asStateFlow()
-    val isOn: Boolean get() = loop.isOn
+    val isOn: Boolean get() = synchronized(lock) { loop.isOn }
     val tuning: HandsFreeLoop.Tuning get() = loop.tuning
 
     fun enable() = run(HandsFreeLoop.Event.Enable)
@@ -29,14 +31,14 @@ class HandsFreeController(
      * prompt, the recorder starting): the engine drops a start that is still in flight, so a late recorder never opens
      * the mic with hands-free off.
      */
-    fun disable() {
+    fun disable() = synchronized(lock) {
         val wasOn = loop.isOn
         run(HandsFreeLoop.Event.Disable)
         if (wasOn) perform(HandsFreeLoop.Effect.CANCEL_TURN)
     }
 
     /** Pausing likewise cancels unconditionally; resuming starts a turn. */
-    fun togglePause() {
+    fun togglePause() = synchronized(lock) {
         val resuming = loop.status is HandsFreeLoop.Status.Paused
         val wasOn = loop.isOn
         run(HandsFreeLoop.Event.TogglePause)
@@ -67,7 +69,7 @@ class HandsFreeController(
     /** A failure of the turn (network, consent, a refused microphone): pauses, never retries by itself. */
     fun failed() = run(HandsFreeLoop.Event.Phase(VoicePhase.FAILED))
 
-    private fun run(event: HandsFreeLoop.Event) {
+    private fun run(event: HandsFreeLoop.Event) = synchronized(lock) {
         val effects = loop.handle(event)
         if (loop.status != _status.value) _status.value = loop.status
         effects.forEach(perform)
