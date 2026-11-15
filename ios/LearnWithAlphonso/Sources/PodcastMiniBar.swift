@@ -42,6 +42,7 @@ struct PodcastMiniBar: View {
     let networkMonitor: NetworkMonitor
 
     @Environment(\.alphonsoDS) private var ds
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showTranscript = false
     @State private var showFull = false
     @State private var transcript: String?
@@ -106,7 +107,8 @@ struct PodcastMiniBar: View {
                                 Text(episode.title)
                                     .dsText(.footnote)
                                     .foregroundStyle(ds.onHero)
-                                    .lineLimit(1)
+                                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 4 : 1)
+                                    .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
                                 Text(progressLabel(for: episode))
                                     .dsText(.caption)
                                     .foregroundStyle(ds.onHeroSoft)
@@ -144,45 +146,6 @@ struct PodcastMiniBar: View {
                         EmptyView()
                     }
 
-                    // TestFlight feedback (2026-09-29): "when a user finishes a
-                    // listen, there is no way to continue to the next lesson."
-                    // Hidden entirely (not disabled) when there's nothing next,
-                    // matching this bar's own pattern of disappearing rather
-                    // than showing an inert control.
-                    if let next = player.nextEpisode {
-                        Button {
-                            player.play(
-                                next,
-                                localURL: downloads.localURL(episodeID: next.id),
-                                queue: player.queue,
-                                isOnline: networkMonitor.isConnected
-                            )
-                            downloads.markPlayed(episodeID: next.id)
-                        } label: {
-                            Image(systemName: "forward.end.fill")
-                                .foregroundStyle(ds.onHero)
-                        }
-                        .accessibilityLabel("Next episode")
-                    }
-
-                    // The accessibility affordance, always present rather than
-                    // hidden when an episode has no transcript: hiding it would
-                    // make the gap invisible instead of stated.
-                    Button {
-                        showTranscript = true
-                    } label: {
-                        Image(systemName: "text.alignleft")
-                            .foregroundStyle(ds.onHero)
-                    }
-                    .accessibilityLabel("Show transcript")
-
-                    Button {
-                        player.close()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .foregroundStyle(ds.onHero)
-                    }
-                    .accessibilityLabel("Close player")
                 }
                 .padding(.leading, AlphonsoDS.Space.s2)
                 .padding(.trailing, AlphonsoDS.Space.s3 + 2)
@@ -202,6 +165,18 @@ struct PodcastMiniBar: View {
                     onTranscript: {
                         showFull = false
                         showTranscript = true
+                    },
+                    // The next episode, when there is one: moved here from the bar (the bar is art, title, time left, play).
+                    onNext: player.nextEpisode.map { next in
+                        {
+                            player.play(
+                                next,
+                                localURL: downloads.localURL(episodeID: next.id),
+                                queue: player.queue,
+                                isOnline: networkMonitor.isConnected
+                            )
+                            downloads.markPlayed(episodeID: next.id)
+                        }
                     }
                 )
                 .presentationDragIndicator(.visible)

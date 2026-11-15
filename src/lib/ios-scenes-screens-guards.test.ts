@@ -122,6 +122,12 @@ describe("Listen: studio scene, and the empty, offline and failed states as desi
     expect(listen.split(".background(ds.surface)").length - 1).toBe(3);
   });
 
+  it("the shelf's failed and empty cards keep their action: Try again reloads the episodes", () => {
+    const root = between(shelf, "struct ListenShelfRoot: View", "struct WatchShelfHost");
+    expect(root).toContain("DSEmptyState(");
+    expect(root).toContain('actionTitle: "Try again") { Task { await load() } }');
+  });
+
   it("the older folder listing, its large header and its glass rows are gone: nothing called them", () => {
     for (const dead of ["PodcastFolderListing", "ListenSceneHeader", "ListenGlassRow"]) {
       expect(listen, dead).not.toContain(dead);

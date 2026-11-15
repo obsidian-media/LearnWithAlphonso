@@ -114,8 +114,9 @@ struct SpeakQuestionCard: View {
                 HoldToTalkButton(
                     isRecording: voice.isRecording,
                     idleColor: ds.choice,
-                    recordingColor: ds.wrongInk,
-                    iconColor: ds.onHero,
+                    recordingColor: ds.wrong,
+                    iconColor: ds.onChoice,
+                    recordingIconColor: ds.onWrong,
                     accessibilityLabel: "Hold to say the phrase",
                     onPress: { if voice.pressBegan() { errorMessage = nil } },
                     onRelease: { voice.pressEnded() }

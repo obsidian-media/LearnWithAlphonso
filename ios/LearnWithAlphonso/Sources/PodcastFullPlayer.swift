@@ -10,6 +10,8 @@ struct PodcastFullPlayer: View {
     /// The episode's transcript once read, for the follow-along; nil while loading or when it has none.
     let transcript: String?
     let onTranscript: () -> Void
+    /// Plays the next episode of the queue; nil when there is none (the button is then left out).
+    var onNext: (() -> Void)?
 
     @Environment(\.alphonsoDS) private var ds
     @Environment(\.dismiss) private var dismiss
@@ -177,6 +179,18 @@ struct PodcastFullPlayer: View {
                                 .background(Capsule().fill(ds.onHero.opacity(0.15)))
                         }
                         .accessibilityLabel(sleepAccessibilityLabel)
+
+                        if let onNext {
+                            Button(action: onNext) {
+                                Label("Next", systemImage: "forward.end.fill")
+                                    .dsText(.footnote)
+                                    .foregroundStyle(ds.onHero)
+                                    .padding(.horizontal, AlphonsoDS.Space.s4)
+                                    .frame(minHeight: AlphonsoDS.Space.minTouch)
+                                    .background(Capsule().fill(ds.onHero.opacity(0.15)))
+                            }
+                            .accessibilityLabel("Next episode")
+                        }
 
                         Button(action: onTranscript) {
                             Label("Transcript", systemImage: "text.alignleft")

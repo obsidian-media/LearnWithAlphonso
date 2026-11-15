@@ -382,7 +382,7 @@ private struct HectorConversationView: View {
                 turn: turn, isOpener: isOpener, course: course, color: AlphonsoDS.current.ink,
                 surface: .hector, session: session, savingWord: $savingWord)
         } else {
-            Text(turn.content).foregroundStyle(AlphonsoDS.current.onHero)
+            Text(turn.content).foregroundStyle(AlphonsoDS.current.onChoice)
         }
     }
 
@@ -469,7 +469,9 @@ private struct HectorConversationView: View {
                 HoldToTalkButton(
                     isRecording: voice.isRecording,
                     idleColor: AlphonsoDS.current.choice,
-                    recordingColor: AlphonsoDS.current.wrongInk,
+                    recordingColor: AlphonsoDS.current.wrong,
+                    iconColor: AlphonsoDS.current.onChoice,
+                    recordingIconColor: AlphonsoDS.current.onWrong,
                     accessibilityLabel: "Hold to talk to Hector",
                     onPress: { if voice.pressBegan() { notice = nil } },
                     onRelease: { voice.pressEnded() }
