@@ -82,6 +82,34 @@ public enum SupportChatRules {
         return Composer(placeholder: placeholder, fine: fine, disabled: false)
     }
 
+    /// The server's hand-off line (the web's HANDOFF_NOTICE; the parity test keeps the words equal).
+    public static let handoffNotice = "A person will reply here."
+
+    /// The name line of a person's reply: "<first name> \u{00B7} Support team", or just "Support team" with no name. A
+    /// person is never labelled with Miya's name (she is the AI helper), even a staff member called Miya.
+    public static func staffLabel(_ firstName: String?) -> String {
+        let name = (firstName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, name.lowercased() != "miya" else { return SupportCopy.person }
+        return "\(name) \u{00B7} \(SupportCopy.person)"
+    }
+
+    /// The words above a message: Miya for the AI (the AI tag is drawn beside it), the staff label for a person, nil otherwise.
+    public static func speakerLabel(_ message: SupportMessage) -> String? {
+        switch message.kind {
+        case .ai: return SupportCopy.ai
+        case .support: return staffLabel(message.staffName)
+        case .you, .system: return nil
+        }
+    }
+
+    /// Whether Miya's hand-off pose goes above the system line at `index`: it is the hand-off notice and an AI message came earlier.
+    public static func showsHandoffPose(messages: [SupportMessage], index: Int) -> Bool {
+        guard messages.indices.contains(index) else { return false }
+        let message = messages[index]
+        guard message.kind == .system, message.body == handoffNotice else { return false }
+        return messages[..<index].contains { $0.kind == .ai }
+    }
+
     /// The conversation is polled while it is open and the AI is not the one answering.
     public static func shouldPoll(status: SupportStatus?) -> Bool {
         guard let status else { return false }

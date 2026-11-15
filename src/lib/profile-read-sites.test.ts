@@ -30,6 +30,7 @@ const EXPECTED_SITES: Record<string, number> = {
   "src/lib/admin.functions.ts": 1, // admin reports (service role)
   "src/lib/staff-admin.functions.ts": 1, // staff list: display names of staff (service role)
   "src/lib/staff-support.server.ts": 1, // support inbox: display names of the assignee and staff authors on one ticket (service role)
+  "src/lib/support-chat-runtime.server.ts": 1, // Help chat: display name of the staff author of a reply, reduced to a first name before it leaves the server (service role)
   "src/lib/staff-user-facts.server.ts": 1, // staff console learner page: display names of one learner and note authors (service role)
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+DisplayIdentity.swift": 3, // own GET + 2 PATCH
   // 3 = own theme GET + PATCH, plus the PATCH shape quoted in the file's doc comment (line 13).

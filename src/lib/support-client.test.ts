@@ -62,6 +62,35 @@ describe("the conversation read", () => {
     expect(c.messages.map((m) => m.link)).toEqual(["subscription", null, null, null, null]);
   });
 
+  it("a staff first name survives only on a person's reply, trimmed; an empty one is none", async () => {
+    const f = vi.fn(() =>
+      json(200, {
+        status: "open",
+        unread: 0,
+        aiAvailable: true,
+        messages: [
+          msg(1, "you", { staffName: "Forged" }),
+          msg(2, "ai", { staffName: "Forged" }),
+          msg(3, "system", { staffName: "Forged" }),
+          msg(4, "support", { staffName: " Dana " }),
+          msg(5, "support", { staffName: "  " }),
+          msg(6, "support", { staffName: null }),
+          msg(7, "support"),
+        ],
+      }),
+    );
+    const c = await fetchConversation(f as unknown as typeof fetch);
+    expect(c.messages.map((m) => m.staffName)).toEqual([
+      null,
+      null,
+      null,
+      "Dana",
+      null,
+      null,
+      null,
+    ]);
+  });
+
   it("a bad shape or a server error is `failed`; a network error is `offline`", async () => {
     expect(await kindOf(fetchConversation((() => json(200, { status: "weird" })) as never))).toBe(
       "failed",
@@ -148,8 +177,8 @@ describe("the hand-off", () => {
 
 describe("merging messages", () => {
   it("unions by id, newer copy wins, oldest first", () => {
-    const a = { id: 2, kind: "you", body: "old", at: "t", link: null } as const;
-    const b = { id: 1, kind: "ai", body: "x", at: "t", link: null } as const;
+    const a = { id: 2, kind: "you", body: "old", at: "t", link: null, staffName: null } as const;
+    const b = { id: 1, kind: "ai", body: "x", at: "t", link: null, staffName: null } as const;
     const merged = mergeMessages([a], [b, { ...a, body: "new" }]);
     expect(merged.map((m) => `${m.id}:${m.body}`)).toEqual(["1:x", "2:new"]);
   });

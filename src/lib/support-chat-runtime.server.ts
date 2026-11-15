@@ -27,6 +27,12 @@ export type LooseAdmin = {
   // The query builder is chained dynamically (eq, gt, order, limit), so it stays untyped here.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   from(table: string): any;
+  /** Only the author's email lookup (compared with the display name on the server, never sent to a client). */
+  auth: {
+    admin: {
+      getUserById(id: string): PromiseLike<{ data: { user: { email?: string | null } | null } }>;
+    };
+  };
 };
 
 function must<T>(
@@ -112,6 +118,40 @@ export function supabaseSupportStore(admin: LooseAdmin): SupportStore {
     async view(userId) {
       const r = await admin.rpc("support_learner_view", { p_user: userId });
       return (must(r, "view") ?? null) as LearnerView | null;
+    },
+    async staffDisplayNames(userId, messageIds) {
+      const out = new Map<number, { displayName: string; email: string | null }>();
+      if (messageIds.length === 0) return out;
+      // Only staff rows of THIS learner's chat, by id; the author id never leaves the server.
+      const rows = must(
+        await admin
+          .from("support_messages")
+          .select("id, author_id")
+          .eq("user_id", userId)
+          .eq("author_kind", "staff")
+          .in("id", messageIds),
+        "staff authors",
+      ) as { id: number; author_id: string | null }[];
+      const authorIds = [...new Set(rows.map((r) => r.author_id).filter((a): a is string => !!a))];
+      if (authorIds.length === 0) return out;
+      const profiles = must(
+        await admin.from("profiles").select("id, display_name").in("id", authorIds),
+        "staff names",
+      ) as { id: string; display_name: string | null }[];
+      const byAuthor = new Map(profiles.map((p) => [p.id, p.display_name ?? ""]));
+      // The author's email is read only to compare it with the display name (presentView drops a name that is the
+      // email's local part); it never reaches a response.
+      const emails = new Map<string, string | null>();
+      for (const id of authorIds) {
+        const u = await admin.auth.admin.getUserById(id);
+        emails.set(id, u.data.user?.email ?? null);
+      }
+      for (const r of rows) {
+        const name = r.author_id ? byAuthor.get(r.author_id) : undefined;
+        if (name && r.author_id)
+          out.set(Number(r.id), { displayName: name, email: emails.get(r.author_id) ?? null });
+      }
+      return out;
     },
   };
 }

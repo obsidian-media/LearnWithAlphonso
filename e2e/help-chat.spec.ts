@@ -13,7 +13,14 @@ const SHOTS = process.env.HELP_SHOTS_DIR;
 const PHONE = { width: 393, height: 852 };
 
 type Kind = "you" | "ai" | "support" | "system";
-type Msg = { id: number; kind: Kind; body: string; at: string; link?: string | null };
+type Msg = {
+  id: number;
+  kind: Kind;
+  body: string;
+  at: string;
+  link?: string | null;
+  staffName?: string | null;
+};
 type Convo = {
   status: "none" | "ai" | "new" | "open" | "waiting_learner" | "solved";
   unread?: number;
@@ -28,12 +35,20 @@ const at = (h: number, m: number, daysAgo = 0) => {
   d.setHours(h, m, 0, 0);
   return d.toISOString();
 };
-const msg = (id: number, kind: Kind, body: string, when: string, link?: string): Msg => ({
+const msg = (
+  id: number,
+  kind: Kind,
+  body: string,
+  when: string,
+  link?: string,
+  staffName?: string,
+): Msg => ({
   id,
   kind,
   body,
   at: when,
   link: link ?? null,
+  staffName: staffName ?? null,
 });
 const HANDOFF = "A person will reply here.";
 
@@ -337,11 +352,8 @@ test.describe("ticket states", () => {
     await openHelp(page);
     await expect(page.getByText("Waiting for your reply")).toBeVisible();
     await expect(page.locator('[data-divider="new"]')).toHaveText("New reply");
-    await expect(page.locator('[data-kind="support"]')).toContainText("Alphonso support");
-    await expect(page.getByRole("textbox")).toHaveAttribute(
-      "placeholder",
-      "Reply to Alphonso support",
-    );
+    await expect(page.locator('[data-kind="support"]')).toContainText("Support team");
+    await expect(page.getByRole("textbox")).toHaveAttribute("placeholder", "Reply to the team");
     await shot(page, "5b-staff-replied");
   });
 
@@ -624,4 +636,115 @@ test.describe("accessibility", () => {
       }
     });
   }
+});
+
+/** Miya (round 13): Royal light, Royal night and Meadow (light), written when HELP_SHOTS_DIR is set. */
+async function shotMiya(page: Page, name: string) {
+  if (!SHOTS) return;
+  await page.evaluate(() => delete document.documentElement.dataset.dsMode);
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: `${SHOTS}/${name}-royal-light.png` });
+  await page.evaluate(() => (document.documentElement.dataset.dsMode = "night"));
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: `${SHOTS}/${name}-royal-night.png` });
+  await page.evaluate(() => {
+    delete document.documentElement.dataset.dsMode;
+    document.documentElement.dataset.palette = "meadow";
+  });
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: `${SHOTS}/${name}-meadow-light.png` });
+  await page.evaluate(() => delete document.documentElement.dataset.palette);
+}
+
+test.describe("Miya, the AI helper", () => {
+  const first = msg(1, "you", "I got charged but Pro is not showing. I am on iPhone.", at(10, 2));
+  const ai = msg(
+    2,
+    "ai",
+    "I'm sorry about that. Pro can take a moment, and Restore Purchases usually fixes it. Billing questions go to a person, so I'm handing this over.",
+    at(10, 2),
+  );
+  const handoff = msg(3, "system", HANDOFF, at(10, 2));
+
+  test("first open: Miya says hello, and her name says AI", async ({ page }) => {
+    await serve(page, { status: "none", aiAvailable: true });
+    await openHelp(page);
+    await expect(page.locator('[data-miya="hello"]')).toBeVisible();
+    await expect(page.locator("[data-miya-name]")).toHaveText("Miya (AI helper)");
+    await noSideScroll(page);
+    await shotMiya(page, "m1-welcome");
+  });
+
+  test("while she answers: the looking-up pose, then her own bubbles", async ({ page }) => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((r) => (release = r));
+    await serve(
+      page,
+      { status: "ai", aiAvailable: true, messages: [first, ai] },
+      {
+        message: async (route, body) => {
+          await gate;
+          await route.fulfill({
+            json: { status: "ai", messages: [msg(4, "you", body.text, at(10, 3))] },
+          });
+        },
+      },
+    );
+    await openHelp(page);
+    await expect(page.locator('[data-kind="ai"]')).toContainText("Miya (AI helper)");
+    await expect(page.locator('[data-kind="ai"] img')).toHaveAttribute(
+      "src",
+      "/mascots/miya-help-head.webp",
+    );
+    await page.getByRole("textbox").fill("I tried that and it still says no Pro.");
+    await page.getByRole("button", { name: "Send" }).click();
+    await expect(page.locator("[data-looking-up]")).toContainText(
+      "Looking up: checking your account",
+    );
+    await expect(page.locator("[data-typing]")).toContainText("Miya (AI helper)");
+    await noSideScroll(page);
+    await shotMiya(page, "m2-looking-up");
+    release();
+  });
+
+  test("hand-off: her hand-off pose above the hand-off line, still labelled AI", async ({
+    page,
+  }) => {
+    await serve(page, { status: "new", messages: [first, ai, handoff] });
+    await openHelp(page);
+    await expect(page.locator("[data-handoff-pose]")).toBeVisible();
+    await expect(page.locator("[data-handoff-pose]")).toContainText(HANDOFF);
+    await expect(page.locator('[data-kind="ai"]')).toContainText("Miya (AI helper)");
+    await noSideScroll(page);
+    await shotMiya(page, "m3-handoff");
+  });
+
+  test("a person replies: first name, Support team, the person icon, never Miya", async ({
+    page,
+  }) => {
+    await serve(page, {
+      status: "waiting_learner",
+      unread: 1,
+      messages: [
+        first,
+        ai,
+        handoff,
+        msg(
+          4,
+          "support",
+          "Hi, thanks for writing. I can see the charge on our side and I'm looking into why Pro hasn't switched on. Could you tell me which sign-in you used (Apple, Google or email)?",
+          at(10, 41),
+          undefined,
+          "Dana",
+        ),
+      ],
+    });
+    await openHelp(page);
+    const person = page.locator('[data-kind="support"]');
+    await expect(person).toContainText("Dana \u00B7 Support team");
+    await expect(person).toContainText("Person");
+    await expect(person.locator("img")).toHaveCount(0);
+    await expect(person).not.toContainText("Miya");
+    await shotMiya(page, "m4-staff-reply");
+  });
 });

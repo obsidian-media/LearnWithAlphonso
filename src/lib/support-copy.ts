@@ -18,14 +18,17 @@ export const SUPPORT_COPY = {
   back: "Back",
   talkToPerson: "Talk to a person",
   you: "You",
-  ai: "Alphonso AI",
+  ai: "Miya (AI helper)",
   aiTag: "AI",
-  person: "Alphonso support",
+  person: "Support team",
   personTag: "Person",
   isWriting: "is writing…",
   newReply: "New reply",
   sendLabel: "Send",
   messageLog: "Conversation",
+
+  // Miya's "checking your account" moment, drawn above the typing line while she answers.
+  lookingUp: "Looking up: checking your account",
 
   // First open, AI on.
   welcomeAiTitle: "How can I help?",
@@ -53,14 +56,14 @@ export const SUPPORT_COPY = {
   teamTitle: "With our team",
   teamBody: "A person will read this and reply here.",
   waitTitle: "Waiting for your reply",
-  waitBody: "Alphonso support wrote to you.",
+  waitBody: "The team wrote to you.",
   solvedTitle: "Solved",
   solvedBody: "Write below if you still need help.",
 
   // Composer.
   placeholder: "Write your message",
   placeholderMore: "Add something",
-  placeholderReply: "Reply to Alphonso support",
+  placeholderReply: "Reply to the team",
   placeholderSolved: "Still need help? Write here",
   placeholderLimit: "Come back tomorrow to write again",
   placeholderFull: "This chat is full",

@@ -34,7 +34,15 @@ enum class SupportMessageKind { YOU, AI, SUPPORT, SYSTEM;
     }
 }
 
-data class SupportMessage(val id: Long, val kind: SupportMessageKind, val body: String, val at: String, val link: SupportLinkId?)
+/** `staffName` is a person's reply only: the staff member's first name (never a surname, email or id), or null. */
+data class SupportMessage(
+    val id: Long,
+    val kind: SupportMessageKind,
+    val body: String,
+    val at: String,
+    val link: SupportLinkId?,
+    val staffName: String? = null,
+)
 
 object SupportLinks {
     private val MARKER = Regex("""\s*\[\[link:([^\]\s]*)]]\s*$""")

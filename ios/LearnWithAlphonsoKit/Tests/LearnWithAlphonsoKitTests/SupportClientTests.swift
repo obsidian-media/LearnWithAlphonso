@@ -98,6 +98,20 @@ final class SupportClientTests: XCTestCase {
         XCTAssertNil(conversation.messages[2].link)
     }
 
+    func testOnlyAPersonsReplyCarriesAStaffFirstNameTrimmedAndAnEmptyOneIsNone() throws {
+        let rows: [[String: Any]] = [
+            ["id": 1, "kind": "you", "body": "a", "at": "2026-11-14T10:00:00.000Z", "staffName": "Forged"],
+            ["id": 2, "kind": "ai", "body": "b", "at": "2026-11-14T10:00:00.000Z", "staffName": "Forged"],
+            ["id": 3, "kind": "system", "body": "c", "at": "2026-11-14T10:00:00.000Z", "staffName": "Forged"],
+            ["id": 4, "kind": "support", "body": "d", "at": "2026-11-14T10:00:00.000Z", "staffName": " Dana "],
+            ["id": 5, "kind": "support", "body": "e", "at": "2026-11-14T10:00:00.000Z", "staffName": "  "],
+            ["id": 6, "kind": "support", "body": "f", "at": "2026-11-14T10:00:00.000Z"],
+        ]
+        let data = json(["status": "open", "messages": rows])
+        let update = try XCTUnwrap(SupportDecoding.update(data))
+        XCTAssertEqual(update.messages.map(\.staffName), [nil, nil, nil, "Dana", nil, nil])
+    }
+
     func testAnAiBodyThatStillHoldsTheMarkerIsCleaned() throws {
         let data = json([
             "status": "ai", "messages": [["id": 4, "kind": "ai", "body": "Open it.\n\n[[link:settings]]", "at": "2026-11-14T10:00:00Z"]],

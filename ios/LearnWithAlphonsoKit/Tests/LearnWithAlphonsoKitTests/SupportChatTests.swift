@@ -59,7 +59,7 @@ final class SupportChatTests: XCTestCase {
         }
         XCTAssertEqual(composer(.open).placeholder, "Add something")
         XCTAssertEqual(composer(.new).placeholder, "Add something")
-        XCTAssertEqual(composer(.waitingLearner).placeholder, "Reply to Alphonso support")
+        XCTAssertEqual(composer(.waitingLearner).placeholder, "Reply to the team")
         XCTAssertEqual(composer(.solved).placeholder, "Still need help? Write here")
         XCTAssertEqual(composer(nil).placeholder, "Write your message")
         XCTAssertEqual(composer(.solved).fine, "Writing within 7 days reopens this chat. After that, a new chat starts.")
@@ -361,5 +361,36 @@ final class SupportChatTests: XCTestCase {
         state.handoffSucceeded(SupportUpdate(status: .new, messages: [message(1, .system)]))
         state.polled(conversation(SupportStatus.none, []), startedAt: started)
         XCTAssertEqual(state.status, .new)
+    }
+
+    // MARK: - Miya's labels
+
+    private func row(_ kind: SupportMessageKind, staffName: String? = nil) -> SupportMessage {
+        SupportMessage(id: 1, kind: kind, body: "x", at: "2026-11-14T10:00:00Z", staffName: staffName)
+    }
+
+    func testTheAiIsMiyaAndAPersonIsNeverMiyaWithOrWithoutAName() {
+        XCTAssertEqual(SupportChatRules.speakerLabel(row(.ai)), "Miya (AI helper)")
+        XCTAssertEqual(SupportChatRules.speakerLabel(row(.support, staffName: "Dana")), "Dana \u{00B7} Support team")
+        XCTAssertEqual(SupportChatRules.speakerLabel(row(.support)), "Support team")
+        XCTAssertEqual(SupportChatRules.speakerLabel(row(.support, staffName: "  ")), "Support team")
+        // Even a staff member called Miya is not drawn as her.
+        XCTAssertEqual(SupportChatRules.speakerLabel(row(.support, staffName: "Miya")), "Support team")
+        XCTAssertNil(SupportChatRules.speakerLabel(row(.you)))
+        XCTAssertNil(SupportChatRules.speakerLabel(row(.system)))
+        // A name on an AI row is ignored: she keeps her own label.
+        XCTAssertEqual(SupportChatRules.speakerLabel(row(.ai, staffName: "Dana")), "Miya (AI helper)")
+    }
+
+    func testMiyasHandoffPoseShowsOnlyAboveTheHandoffLineAndOnlyWhenSheAnsweredFirst() {
+        let notice = SupportChatRules.handoffNotice
+        XCTAssertEqual(notice, "A person will reply here.")
+        let withAi = [message(1, .you), message(2, .ai), message(3, .system, notice)]
+        XCTAssertTrue(SupportChatRules.showsHandoffPose(messages: withAi, index: 2))
+        XCTAssertFalse(SupportChatRules.showsHandoffPose(messages: [message(1, .you), message(2, .system, notice)], index: 1))
+        let other = [message(1, .you), message(2, .ai), message(3, .system, "This chat was marked solved."), message(4, .support, notice)]
+        XCTAssertFalse(SupportChatRules.showsHandoffPose(messages: other, index: 2))
+        XCTAssertFalse(SupportChatRules.showsHandoffPose(messages: other, index: 3))
+        XCTAssertFalse(SupportChatRules.showsHandoffPose(messages: other, index: 9))
     }
 }
