@@ -329,6 +329,8 @@ struct RootView: View {
         // The round-6 design system colours for the chosen palette (DesignSystem/AlphonsoDSEnvironment.swift).
         .alphonsoDesignSystem()
         .environment(\.paywallLearner, PaywallLearner(course: activeCourse.course, name: paywallName))
+        // What the Help entry points open the chat with (HelpChatView.swift); nil while signed out.
+        .environment(\.helpSession, session.userID != nil ? session : nil)
         #if DEBUG
         .sheet(isPresented: $uiTestPaywall) {
             PaywallView(entitlementStore: entitlementStore, source: .hectorTab)

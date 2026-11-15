@@ -8,6 +8,7 @@ struct LessonSaveFailureView: View {
     let onSignIn: () -> Void
     let onDone: () -> Void
     @Environment(\.alphonsoDS) private var ds
+    @Environment(\.helpSession) private var helpSession
 
     var body: some View {
         // Scrolls so the buttons stay reachable at the largest text sizes and in landscape.
@@ -21,7 +22,7 @@ struct LessonSaveFailureView: View {
                         .accessibilityAddTraits(.isHeader)
                     Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
-                    if let support = error.supportLine {
+                    if let support = error.supportLine(withHelp: helpSession != nil) {
                         Text(support).dsText(.caption).foregroundStyle(ds.inkSoft)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -30,6 +31,8 @@ struct LessonSaveFailureView: View {
                     // Signing out routes RootView to AuthView; the session lifecycle clears this account's local data.
                     Button("Sign in", action: onSignIn).buttonStyle(.dsButton(.primary))
                 }
+                // The approved Help mock: a rejection the learner cannot fix alone gets a primary "Get help".
+                if error.supportLine != nil { GetHelpButton(prominent: true) }
                 Button("Done", action: onDone).buttonStyle(.dsButton(.secondary))
             }
             .padding(AlphonsoDS.Space.gutter)

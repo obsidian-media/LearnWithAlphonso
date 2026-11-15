@@ -22,6 +22,8 @@ struct SettingsView: View {
     @EnvironmentObject private var aiConsent: AIConsentStore
     @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
     @State private var showAIDisclosure = false
+    /// A link chip in the Help chat that opens the subscription screen.
+    @State private var showHelpPaywall = false
     @State private var isUpdatingAIConsent = false
     @State private var aiConsentErrorMessage: String?
 
@@ -84,6 +86,10 @@ struct SettingsView: View {
                 DSOverline(AIConsentCopy.settingsTitle).dsListRow(bottom: AlphonsoDS.Space.s2)
                 aiConsentCard.dsListRow()
 
+                // Its own section between AI features and Account (the approved Help mock).
+                DSOverline(SupportCopy.entryTitle).dsListRow(bottom: AlphonsoDS.Space.s2)
+                HelpSettingsRow(session: session, linkAction: helpLink).dsListRow()
+
                 DSOverline("Account").dsListRow(bottom: AlphonsoDS.Space.s2)
                 accountCard.dsListRow()
 
@@ -106,6 +112,11 @@ struct SettingsView: View {
             .task { await aiConsent.refresh() }
             .onChange(of: aiConsent.isGranted) { _, _ in aiConsentErrorMessage = nil }
             .aiDisclosureSheet(isPresented: $showAIDisclosure) {}
+            .sheet(isPresented: $showHelpPaywall) {
+                if let entitlementStore {
+                    PaywallView(entitlementStore: entitlementStore, source: .hectorTab, onClose: { showHelpPaywall = false })
+                }
+            }
             .fileExporter(
                 isPresented: $isPresentingExporter,
                 document: exportDocument,
@@ -310,6 +321,17 @@ struct SettingsView: View {
             if let accountErrorMessage {
                 Text(accountErrorMessage).dsText(.footnote).foregroundStyle(ds.wrongInk)
             }
+        }
+    }
+
+    /// What a link chip in the Help chat does from here. The subscription screen opens over Settings; AI features and
+    /// Settings are this screen (back out of the chat); the league lives in Profile, which a pushed Settings screen
+    /// cannot reach, so its chip is left out and the answer reads as text.
+    private func helpLink(_ link: SupportLinkID, leave: @escaping () -> Void) -> (() -> Void)? {
+        switch link {
+        case .subscription: return entitlementStore == nil ? nil : { showHelpPaywall = true }
+        case .aiFeatures, .settings: return leave
+        case .league: return nil
         }
     }
 
