@@ -134,6 +134,8 @@ class ConversationTurnEngine(
             if (tornDown || myGeneration != generation) return@launch
             val captureElapsed = recorder.elapsedMillis()
             val audio = recorder.stop()
+            // Hung up or cancelled while the recorder was stopping: nothing is sent.
+            if (tornDown || myGeneration != generation) return@launch
             if (audio == null || audio.size < MINIMUM_AUDIO_BYTES) {
                 _phase.value = TurnPhase.IDLE
                 _events.tryEmit(TurnEvent.TooShort)

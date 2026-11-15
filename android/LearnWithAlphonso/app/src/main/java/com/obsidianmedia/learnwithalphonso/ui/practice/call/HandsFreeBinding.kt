@@ -42,8 +42,7 @@ object HandsFreeBinding {
         // a pause must never leave a recorder, or one still starting, open.
         scope.launch {
             controller.status.collect { status ->
-                val phase = engine.phase.value
-                if (status is HandsFreeLoop.Status.Paused && (phase == TurnPhase.RECORDING || phase == TurnPhase.REQUESTING_MIC)) engine.cancel()
+                if (status is HandsFreeLoop.Status.Paused) releaseMic(engine)
             }
         }
         scope.launch {
@@ -77,7 +76,17 @@ object HandsFreeBinding {
      */
     fun interrupted(controller: HandsFreeController, engine: ConversationTurnEngine) {
         controller.audioInterrupted()
-        if (engine.phase.value == TurnPhase.RECORDING || engine.phase.value == TurnPhase.REQUESTING_MIC) engine.cancel()
+        releaseMic(engine)
+    }
+
+    /**
+     * Releases the microphone, and only the microphone: a recording (or one still being set up) is dropped, while a turn
+     * already being transcribed or answered is left to finish, as on iOS (its loop cancels only an open recording).
+     * Cancelling a turn in flight would drop its reply with no event, leaving the call busy for good.
+     */
+    fun releaseMic(engine: ConversationTurnEngine) {
+        val phase = engine.phase.value
+        if (phase == TurnPhase.RECORDING || phase == TurnPhase.REQUESTING_MIC) engine.cancel()
     }
 
     /** Applies a controller's effects to a conversation: a press, a release, an interruption. */

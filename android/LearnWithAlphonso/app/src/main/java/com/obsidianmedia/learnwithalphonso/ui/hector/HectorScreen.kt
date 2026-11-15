@@ -145,7 +145,7 @@ class HectorViewModel(
     override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
     override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     /** Hands-free (Hector tuning: 1.2 s of quiet ends a turn). Off whenever a call starts; the call sheet's switch turns it on. Pro by location: Hector is. */
-    override val handsFree = HandsFreeBinding.newController(HandsFreeLoop.Tuning.HECTOR, press = { pressBegan() }, release = { pressEnded() }, cancel = { engine.cancel() })
+    override val handsFree = HandsFreeBinding.newController(HandsFreeLoop.Tuning.HECTOR, press = { pressBegan() }, release = { pressEnded() }, cancel = { HandsFreeBinding.releaseMic(engine) })
     private var memoryContext: ChatMessage? = null
     private var cefrLevel: String? = null
     private var analysed = false

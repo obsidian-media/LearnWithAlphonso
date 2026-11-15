@@ -179,4 +179,25 @@ class ConversationTurnEngineTest {
         assertEquals(TurnPhase.IDLE, engine.phase.value)
         assertEquals(2, recorder.started)
     }
+
+    @Test
+    fun `hanging up while the recorder is stopping never sends the audio to transcription`() = runTest {
+        val gate = CompletableDeferred<Unit>()
+        var transcribed = 0
+        val recorder = object : RecorderPort {
+            override fun start() {}
+            override fun remainingMillisToMinimumDuration(): Long? = null
+            override fun elapsedMillis(): Long? = 500
+            override suspend fun stop(): ByteArray? { gate.await(); return ByteArray(8_000) }
+            override fun cancelIfRecording() {}
+        }
+        val engine = ConversationTurnEngine(recorder, { true }, { _, _ -> transcribed++; SttResult("hello", 0.9) }, this + UnconfinedTestDispatcher(testScheduler)) { testScheduler.currentTime }
+        engine.pressBegan(); advanceUntilIdle()
+        engine.pressEnded(); advanceUntilIdle()
+        engine.cancel()
+        gate.complete(Unit)
+        advanceUntilIdle()
+        assertEquals(0, transcribed)
+        assertEquals(TurnPhase.IDLE, engine.phase.value)
+    }
 }

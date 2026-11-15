@@ -79,7 +79,7 @@ abstract class BaseConversationViewModel(
     override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
     override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     /** Hands-free (Practice tuning: 2.5 s of quiet ends a turn). Off whenever a call starts; the call sheet's switch turns it on. */
-    override val handsFree = HandsFreeBinding.newController(HandsFreeLoop.Tuning.PRACTICE, press = { pressBegan() }, release = { pressEnded() }, cancel = { engine.cancel() })
+    override val handsFree = HandsFreeBinding.newController(HandsFreeLoop.Tuning.PRACTICE, press = { pressBegan() }, release = { pressEnded() }, cancel = { HandsFreeBinding.releaseMic(engine) })
     private var analysed = false
     // The opener being fetched or spoken; a press cancels it, which stops its playback.
     private val opener by lazy {

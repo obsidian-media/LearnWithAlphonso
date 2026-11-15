@@ -135,7 +135,8 @@ describe("the switch and the call chrome", () => {
     expect(ui).toContain("HandsFreeCopy.RESUME else HandsFreeCopy.PAUSE");
     expect(ui).toContain("contentDescription = label");
     // A pause is a safety stop: announced at once.
-    expect(ui).toContain("LiveRegionMode.Assertive");
+    expect(ui).toContain("view.announceForAccessibility(line)");
+    expect(ui).not.toContain("liveRegion");
   });
 
   it("uses tokens only: no raw colour or font size", () => {
@@ -255,9 +256,14 @@ describe("the microphone is never left open", () => {
   });
 
   it("any pause releases the recorder, and a failing level read pauses", () => {
-    expect(code(`${CALL}/HandsFreeBinding.kt`)).toMatch(
-      /status is HandsFreeLoop\.Status\.Paused && \(phase == TurnPhase\.RECORDING \|\| phase == TurnPhase\.REQUESTING_MIC\)\) engine\.cancel\(\)/,
-    );
+    const binding = code(`${CALL}/HandsFreeBinding.kt`);
+    expect(binding).toContain("if (status is HandsFreeLoop.Status.Paused) releaseMic(engine)");
+    // Only the microphone is released: a turn already being transcribed must be left to finish, or the call is stuck busy.
+    const release = binding.slice(binding.indexOf("fun releaseMic"));
+    expect(release).toContain("phase == TurnPhase.RECORDING || phase == TurnPhase.REQUESTING_MIC");
+    expect(release.slice(0, 300)).not.toContain("TRANSCRIBING");
+    for (const f of [VMS, HECTOR])
+      expect(code(f)).toContain("cancel = { HandsFreeBinding.releaseMic(engine) }");
     for (const f of [VMS, HECTOR])
       expect(code(f)).toContain("catch (e: Exception) { handsFree.failed(); null }");
   });

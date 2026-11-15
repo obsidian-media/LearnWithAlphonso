@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,11 +39,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -113,10 +112,18 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
 internal fun HandsFreeStatusPill(status: HandsFreeLoop.Status, partner: String) {
     val line = HandsFreeCopy.statusLine(status, partner) ?: return
     val paused = status.isPaused()
+    // One polite live region carries the call's state (the label under the caption); this pill announces only a pause,
+    // and the line that follows a resume, never every Listening and Hearing change.
+    val view = androidx.compose.ui.platform.LocalView.current
+    var wasPaused by remember { mutableStateOf(false) }
+    LaunchedEffect(paused) {
+        if (paused || wasPaused) view.announceForAccessibility(line)
+        wasPaused = paused
+    }
     Row(
         Modifier.padding(top = 8.dp).clip(CircleShape).background(if (paused) callGlassStrong() else callGlass())
             .padding(horizontal = 12.dp, vertical = 8.dp)
-            .clearAndSetSemantics { liveRegion = if (paused) LiveRegionMode.Assertive else LiveRegionMode.Polite; contentDescription = line },
+            .clearAndSetSemantics { contentDescription = line },
         horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
     ) {
         if (paused) Icon(Icons.Filled.Pause, null, tint = callInk(), modifier = Modifier.size(14.dp))

@@ -48,9 +48,9 @@ class HandsFreeWiringTest {
         override fun cancelIfRecording() { cancelled++ }
     }
 
-    private fun server(transcript: String = "I would like a coffee", chatError: Boolean = false, hectorError: Boolean = false) = FakeServer { req ->
+    private fun server(transcript: String = "I would like a coffee", chatError: Boolean = false, hectorError: Boolean = false, sttGate: CompletableDeferred<Unit>? = null) = FakeServer { req ->
         when {
-            req.path.endsWith("/api/stt") -> json("""{"text":"$transcript","confidence":0.9}""")
+            req.path.endsWith("/api/stt") -> { sttGate?.await(); json("""{"text":"$transcript","confidence":0.9}""") }
             req.path.endsWith("/api/chat") -> if (chatError) json("""{"error":"quota-exceeded","resetsAt":null,"message":"AI quota reached for today"}""", HttpStatusCode.TooManyRequests) else json("""{"content":"Certainly, what size?"}""")
             req.path.endsWith("/api/hector-respond") && hectorError -> json("""{"error":"boom"}""", HttpStatusCode.InternalServerError)
             req.path.endsWith("/api/hector-respond") -> json("""{"request_id":"r","session_id":"s","agent":"tutor","reply":"Great! What did you do yesterday?","audio_base64":"AQID","tts_model":"m","tts_provider":"p","language":"en","state":"ok","timings_ms":{"llm":1,"tts":2,"total":3}}""")
@@ -407,5 +407,37 @@ class HandsFreeWiringTest {
         awaitTrue("paused", 25_000) { vm.handsFree.status.value == Status.Paused(PauseReason.NO_SPEECH) }
         awaitTrue("mic released", 25_000) { vm.engine.phase.value == TurnPhase.IDLE }
         assertEquals(0, count(s, "/api/stt"))
+    }
+
+    @Test
+    fun `pausing while the turn is being transcribed lets it finish and never leaves the call busy`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val s = server(sttGate = gate)
+        val recorder = CountingRecorder()
+        val vm = scenarioVm(s, recorder)
+        vm.handsFree.enable(); listening(vm)
+        speak(vm); feed(vm, -60.0, 3.0)
+        awaitTrue("transcribing", 25_000) { vm.engine.phase.value == TurnPhase.TRANSCRIBING && count(s, "/api/stt") == 1 }
+        vm.handsFree.togglePause()
+        gate.complete(Unit)
+        awaitTrue("the turn finished", 25_000) { vm.state.value.turns.size == 3 && vm.state.value.phase == ConversationPhase.IDLE }
+        assertEquals(Status.Paused(PauseReason.BY_LEARNER), vm.handsFree.status.value)
+        assertEquals("a paused call does not reopen the mic", 1, recorder.started)
+        vm.handsFree.togglePause()
+        awaitTrue("resume listens", 25_000) { recorder.started == 2 && vm.handsFree.status.value == Status.Listening }
+    }
+
+    @Test
+    fun `switching it off while the turn is being transcribed does not strand the conversation busy`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val s = server(sttGate = gate)
+        val vm = scenarioVm(s, CountingRecorder())
+        vm.handsFree.enable(); listening(vm)
+        speak(vm); feed(vm, -60.0, 3.0)
+        awaitTrue("transcribing", 25_000) { vm.engine.phase.value == TurnPhase.TRANSCRIBING && count(s, "/api/stt") == 1 }
+        vm.handsFree.disable()
+        gate.complete(Unit)
+        awaitTrue("the turn finished", 25_000) { vm.state.value.turns.size == 3 && vm.state.value.phase == ConversationPhase.IDLE }
+        assertEquals(TurnPhase.IDLE, vm.engine.phase.value)
     }
 }
