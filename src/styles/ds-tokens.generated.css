@@ -105,6 +105,7 @@
   --c-flame-tint: #FDEBD7;
   --c-hero-a: #2C3F8F;
   --c-hero-b: #0E1430;
+  --c-on-choice: #FFFFFF;
   --c-on-hero: #FFFFFF;
   --c-call-glass: #121A15;
   --c-call-mint: #C9F5DC;
@@ -155,6 +156,7 @@
   --c-flame-tint: #FDEBD7;
   --c-hero-a: #3A7050;
   --c-hero-b: #0B1F13;
+  --c-on-choice: #FFFFFF;
   --c-on-hero: #FFFFFF;
   --c-call-glass: #121A15;
   --c-call-mint: #C9F5DC;
@@ -206,6 +208,7 @@
   --c-flame-tint: #3A2412;
   --c-hero-a: #2C3F8F;
   --c-hero-b: #0E1430;
+  --c-on-choice: #141B3D;
   --c-on-hero: #FFFFFF;
   --c-call-glass: #121A15;
   --c-call-mint: #C9F5DC;
@@ -261,6 +264,7 @@
   --c-flame-tint: #FDEBD7;
   --c-hero-a: #2C3F8F;
   --c-hero-b: #0E1430;
+  --c-on-choice: #FFFFFF;
   --c-on-hero: #FFFFFF;
   --c-call-glass: #121A15;
   --c-call-mint: #C9F5DC;
@@ -311,6 +315,7 @@
   --color-ds-flame-tint: var(--c-flame-tint);
   --color-ds-hero-a: var(--c-hero-a);
   --color-ds-hero-b: var(--c-hero-b);
+  --color-ds-on-choice: var(--c-on-choice);
   --color-ds-on-hero: var(--c-on-hero);
   --color-ds-call-glass: var(--c-call-glass);
   --color-ds-call-mint: var(--c-call-mint);

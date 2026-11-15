@@ -3,8 +3,8 @@ import LearnWithAlphonsoKit
 
 /// Listen: browse the podcast folder tree and play an episode.
 ///
-/// This view owns the `NavigationStack`, and `PodcastFolderListing` below deliberately
-/// does **not**. Nesting gives two navigation bars and unreliable inner links, which
+/// This view owns the `NavigationStack`; the screens pushed over it (`ListenShelfDetail`, in ListenShelfViews.swift)
+/// deliberately do **not**. Nesting gives two navigation bars and unreliable inner links, which
 /// compiles cleanly and is wrong on a screen.
 ///
 /// The library follows the active course (French learners see French episodes), hides
@@ -18,6 +18,7 @@ struct ListenView: View {
     /// The learner's active course, shared with Learn, Practice and Hector.
     let activeCourse: ActiveCourseModel
 
+    @Environment(\.alphonsoDS) private var ds
     @State private var folders: [PodcastFolder] = []
     @State private var publishedIndex: [PodcastPublishedEpisodeRef] = []
     /// Every episode seen this session, so an offline listing can name what
@@ -62,7 +63,7 @@ struct ListenView: View {
             .navigationTitle("Library")
             .searchable(text: $searchQuery, prompt: "Search episodes")
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .task { await load() }
         // Keyed on the NORMALIZED query, so "coffee" and "  coffee  " do not
         // fetch twice and each keystroke cancels the previous request rather
@@ -99,9 +100,9 @@ struct ListenView: View {
     private var content: some View {
         if isLoading {
             ProgressView("Loading episodes…")
-                .padding(AlphonsoSpacing.lg)
+                .padding(AlphonsoDS.Space.s6)
                 .alphonsoGlass()
-                .tint(AlphonsoColor.moss)
+                .tint(ds.choice)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if !networkMonitor.isConnected && folders.isEmpty {
             // Offline shows the DOWNLOADED set, flat, rather than an error.
@@ -113,52 +114,27 @@ struct ListenView: View {
             )
             if offline.isEmpty {
                 withWatchShelf {
-                    ContentUnavailableView {
-                        Label("You're offline", systemImage: "wifi.slash")
-                    } description: {
-                        Text("Download episodes while you have a connection and they'll play here.")
-                    } actions: {
-                        Button("Try again") { Task { await load() } }
-                            .tint(AlphonsoColor.moss)
-                    }
-                    .padding(AlphonsoSpacing.md)
-                    .alphonsoGlass()
+                    DSEmptyState(
+                        art: "Alphonso-sleepy-night", title: "You're offline",
+                        message: "Download episodes while you have a connection and they'll play here.",
+                        actionTitle: "Try again") { Task { await load() } }
                 }
             } else {
                 OfflineEpisodeList(episodes: offline, player: player, downloads: downloads)
             }
         } else if let errorMessage {
             withWatchShelf {
-                ContentUnavailableView {
-                    Label("Couldn't load episodes", systemImage: "exclamationmark.triangle")
-                } description: {
-                    Text(errorMessage)
-                } actions: {
-                    Button("Try again") { Task { await load() } }
-                        .tint(AlphonsoColor.moss)
-                }
-                .padding(AlphonsoSpacing.md)
-                .alphonsoGlass()
+                DSEmptyState(
+                    art: "Alphonso-thinking", title: "Couldn't load episodes", message: errorMessage,
+                    actionTitle: "Try again") { Task { await load() } }
             }
         } else if visibleFolders.isEmpty {
             // No podcasts is a stated state, not a blank list. The Watch shelf still shows above it when the course
             // has published videos; with neither podcasts nor videos this is all there is.
             withWatchShelf {
-                ContentUnavailableView {
-                    VStack(spacing: AlphonsoSpacing.sm) {
-                        MascotTile(moment: .emptyState, size: 120, tone: .mint)
-                            .alphonsoLift()
-                            .accessibilityHidden(true)
-                        Text(PodcastLibraryCopy.emptyTitle(courseCode: courseCode))
-                    }
-                } description: {
-                    Text(PodcastLibraryCopy.emptyMessage)
-                } actions: {
-                    Button("Refresh") { Task { await load() } }
-                        .tint(AlphonsoColor.moss)
-                }
-                .padding(AlphonsoSpacing.md)
-                .alphonsoGlass()
+                DSEmptyState(
+                    art: "Alphonso-reading-book", title: PodcastLibraryCopy.emptyTitle(courseCode: courseCode),
+                    message: PodcastLibraryCopy.emptyMessage, actionTitle: "Refresh") { Task { await load() } }
             }
         } else {
             // The Listen home is the rooms shelf (ListenShelfViews.swift); a folder opens its own episode list.
@@ -178,11 +154,11 @@ struct ListenView: View {
     /// stops stay reachable when there is nothing to list. The shelf draws nothing when the course has no videos.
     private func withWatchShelf<Content: View>(@ViewBuilder _ placeholder: () -> Content) -> some View {
         ScrollView {
-            VStack(spacing: AlphonsoSpacing.md) {
+            VStack(spacing: AlphonsoDS.Space.s4) {
                 WatchShelfHost(session: session, player: player, course: courseCode)
                 placeholder()
             }
-            .padding(AlphonsoSpacing.md)
+            .padding(AlphonsoDS.Space.s4)
         }
         .miniPlayerClearance(player)
     }
@@ -230,216 +206,6 @@ struct ListenView: View {
     }
 }
 
-/// The large header at the top of a Listen list: the studio scene shows above a glass title card.
-private struct ListenSceneHeader: View {
-    let title: String
-    let subtitle: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-                .font(AlphonsoFont.display(30, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ink)
-                .accessibilityAddTraits(.isHeader)
-            Text(subtitle)
-                .font(AlphonsoFont.sans(14))
-                .foregroundStyle(AlphonsoColor.inkSoft)
-        }
-        .padding(AlphonsoSpacing.md)
-        .alphonsoGlass()
-        .padding(.horizontal, AlphonsoSpacing.md)
-        .frame(maxWidth: .infinity, minHeight: 190, alignment: .bottomLeading)
-    }
-}
-
-/// A large glass card for a folder or an episode: a 3D icon, the title and a line under it. Presentational, like
-/// AlphonsoRowCard: wrap it in a Button or NavigationLink. `accent` marks an episode that is part-way through.
-private struct ListenGlassRow: View {
-    let title: String
-    let subtitle: String
-    let emoji: String
-    var accent: Color?
-
-    var body: some View {
-        HStack(spacing: AlphonsoSpacing.md) {
-            Icon3DView(emoji: emoji, size: 52)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(AlphonsoFont.display(18, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
-                    .multilineTextAlignment(.leading)
-                Text(subtitle)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                    .multilineTextAlignment(.leading)
-            }
-            Spacer(minLength: 0)
-            if let accent {
-                Circle().fill(accent).frame(width: 10, height: 10).accessibilityHidden(true)
-            }
-        }
-        .padding(AlphonsoSpacing.md)
-        .frame(maxWidth: .infinity, minHeight: 76, alignment: .leading)
-        .alphonsoGlass()
-        .accessibilityElement(children: .combine)
-    }
-}
-
-/// One level of the tree: child folders, then this folder's episodes.
-///
-/// Owns no `NavigationStack` -- see ListenView's doc comment.
-private struct PodcastFolderListing: View {
-    /// nil at the root.
-    let folder: PodcastFolder?
-    /// Already filtered to the visible set by ListenView.
-    let folders: [PodcastFolder]
-    let session: Session
-    let player: PodcastAudioPlayer
-    let downloads: PodcastDownloadManager
-    let networkMonitor: NetworkMonitor
-    let onEpisodesLoaded: ([PodcastEpisode]) -> Void
-    /// Pushed folders paint their own studio; the root's listing sits on the one ListenView paints.
-    var showsScene: Bool = true
-
-    @State private var episodes: [PodcastEpisode] = []
-    @State private var isLoadingEpisodes = false
-    @State private var loadFailed = false
-    /// Episodes in this folder that have a quiz; each gets a "Take the quiz" button under its row.
-    @State private var quizEpisodeIDs: Set<String> = []
-
-    private var children: [PodcastFolder] {
-        PodcastTree.children(of: folder?.id, in: folders)
-    }
-
-    var body: some View {
-        List {
-            // A large header over the studio scene; it also reports the scroll position for the parallax.
-            ListenSceneHeader(title: folder?.title ?? "Library", subtitle: folder == nil ? "Podcasts and videos to practice your ear" : "Episodes and folders")
-                .sceneScrollProbe()
-                .listRowInsets(EdgeInsets())
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-
-            if !children.isEmpty {
-                Section {
-                    ForEach(children) { child in
-                        NavigationLink {
-                            PodcastFolderListing(
-                                folder: child,
-                                folders: folders,
-                                session: session,
-                                player: player,
-                                downloads: downloads,
-                                networkMonitor: networkMonitor,
-                                onEpisodesLoaded: onEpisodesLoaded
-                            )
-                        } label: {
-                            ListenGlassRow(
-                                title: child.title,
-                                subtitle: child.description ?? "Browse episodes",
-                                emoji: "📁"
-                            )
-                        }
-                        .listRowSeparator(.hidden)
-                    }
-                }
-                .listRowBackground(Color.clear)
-            }
-
-            if !episodes.isEmpty {
-                Section {
-                    ForEach(episodes) { episode in
-                        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-                            HStack(spacing: AlphonsoSpacing.sm) {
-                                Button {
-                                    player.play(
-                                        episode,
-                                        localURL: downloads.localURL(episodeID: episode.id),
-                                        queue: episodes,
-                                        isOnline: networkMonitor.isConnected
-                                    )
-                                    downloads.markPlayed(episodeID: episode.id)
-                                } label: {
-                                    ListenGlassRow(
-                                        title: episode.title,
-                                        subtitle: subtitle(for: player.resumed(episode)),
-                                        emoji: "🎧",
-                                        accent: player.resumed(episode).positionSeconds > 0
-                                            ? AlphonsoColor.ember
-                                            : AlphonsoColor.moss
-                                    )
-                                }
-                                .buttonStyle(.plain)
-
-                                PodcastDownloadButton(
-                                    episode: episode,
-                                    downloads: downloads,
-                                    player: player
-                                )
-                            }
-                            if quizEpisodeIDs.contains(episode.id) {
-                                PodcastQuizRowButton(episode: episode, session: session)
-                                    .padding(.leading, AlphonsoSpacing.sm)
-                            }
-                        }
-                        .listRowSeparator(.hidden)
-                    }
-                }
-                .listRowBackground(Color.clear)
-            }
-
-            if loadFailed {
-                // A failed fetch is not "Nothing here yet".
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-                    Text(networkMonitor.isConnected
-                        ? "Couldn't load these episodes."
-                        : "You're offline. Downloaded episodes appear on the Listen screen.")
-                        .font(AlphonsoFont.sans(14))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                    Button("Try again") { Task { await loadEpisodes() } }
-                        .tint(AlphonsoColor.moss)
-                }
-                .listRowBackground(Color.clear)
-            } else if children.isEmpty && episodes.isEmpty && !isLoadingEpisodes {
-                // Expected, not an error: the tree gets built before it is filled.
-                Text("Nothing here yet. New episodes appear as they're published.")
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                    .listRowBackground(Color.clear)
-            }
-        }
-        .scrollContentBackground(.hidden)
-        .miniPlayerClearance(player)
-        .screenScene(.listen, if: showsScene)
-        .navigationTitle(folder?.title ?? "Library")
-        .task(id: folder?.id) { await loadEpisodes() }
-    }
-
-    private func subtitle(for episode: PodcastEpisode) -> String {
-        PodcastLabel.rowSubtitle(
-            durationSeconds: episode.durationSeconds,
-            resume: episode.positionSeconds > 0,
-            aiNarrated: episode.aiNarrated
-        )
-    }
-
-    private func loadEpisodes() async {
-        // The root has no episodes of its own: episodes belong to a folder.
-        guard let folder, let client = makePodcastClient(session: session) else { return }
-        isLoadingEpisodes = true
-        loadFailed = false
-        do {
-            episodes = try await client.fetchEpisodes(folderID: folder.id)
-            onEpisodesLoaded(episodes)
-            // Which of them have a quiz. A failed read just means no buttons; it never fails the listing.
-            quizEpisodeIDs = (try? await client.fetchQuizEpisodeIDs(episodeIDs: episodes.map(\.id))) ?? []
-        } catch {
-            if !Task.isCancelled { loadFailed = true }
-        }
-        isLoadingEpisodes = false
-    }
-}
-
 /// Builds a client from the current session, or nil when there is no access
 /// token to build one with.
 ///
@@ -475,6 +241,7 @@ private struct PodcastSearchResultsView: View {
     /// offline is useless if tapping it reaches for the network.
     let downloads: PodcastDownloadManager
     let networkMonitor: NetworkMonitor
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         if PodcastSearch.normalizeQuery(query) == nil {
@@ -511,18 +278,18 @@ private struct PodcastSearchResultsView: View {
             }
             .scrollContentBackground(.hidden)
             .miniPlayerClearance(player)
-            .background(AlphonsoColor.surface)
+            .background(ds.surface)
         }
     }
 
     private func message(_ text: String) -> some View {
         Text(text)
-            .font(AlphonsoFont.sans(14))
-            .foregroundStyle(AlphonsoColor.inkSoft)
+            .dsText(.footnote)
+            .foregroundStyle(ds.inkSoft)
             .multilineTextAlignment(.center)
-            .padding(.horizontal, AlphonsoSpacing.md)
+            .padding(.horizontal, AlphonsoDS.Space.s4)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(AlphonsoColor.surface)
+            .background(ds.surface)
     }
 
     private func durationLabel(for episode: PodcastEpisode) -> String {
@@ -539,6 +306,7 @@ struct PodcastDownloadButton: View {
     let downloads: PodcastDownloadManager
     let player: PodcastAudioPlayer
 
+    @Environment(\.alphonsoDS) private var ds
     @State private var failure: PodcastDownloadFailure?
     @State private var showFailure = false
 
@@ -548,26 +316,26 @@ struct PodcastDownloadButton: View {
             case .downloading(let progress):
                 ProgressView(value: progress)
                     .progressViewStyle(.circular)
-                    .tint(AlphonsoColor.moss)
+                    .tint(ds.choice)
                     .accessibilityLabel("Downloading")
             case .downloaded:
                 Button {
                     deleteRespectingPlayback()
                 } label: {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(AlphonsoColor.moss)
+                        .foregroundStyle(ds.right)
                 }
                 .accessibilityLabel("Downloaded. Tap to remove.")
             case .failed:
                 Button { start() } label: {
                     Image(systemName: "exclamationmark.arrow.circlepath")
-                        .foregroundStyle(AlphonsoColor.destructive)
+                        .foregroundStyle(ds.wrongInk)
                 }
                 .accessibilityLabel("Download failed. Tap to retry.")
             case .notDownloaded:
                 Button { start() } label: {
                     Image(systemName: "arrow.down.circle")
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .foregroundStyle(ds.inkSoft)
                 }
                 .accessibilityLabel("Download for offline")
             }
@@ -620,12 +388,13 @@ private struct OfflineEpisodeList: View {
     let episodes: [PodcastEpisode]
     let player: PodcastAudioPlayer
     let downloads: PodcastDownloadManager
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         List {
             Section {
                 ForEach(episodes) { episode in
-                    HStack(spacing: AlphonsoSpacing.sm) {
+                    HStack(spacing: AlphonsoDS.Space.s2) {
                         Button {
                             // Only shown offline, and a missing file fails at once
                             // with "Download this episode to listen offline".
@@ -654,14 +423,13 @@ private struct OfflineEpisodeList: View {
                 }
             } header: {
                 Text("Offline — showing your downloads")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.ember)
+                    .dsText(.overline)
+                    .foregroundStyle(ds.actionText)
             }
             .listRowBackground(Color.clear)
         }
         .scrollContentBackground(.hidden)
         .miniPlayerClearance(player)
-        .background(AlphonsoColor.surface)
+        .background(ds.surface)
     }
 }

@@ -24,44 +24,32 @@ struct StreakFreezeRow: View {
         StreakFreezeShop.disabledReason(isOnline: isOnline, xp: status?.xp, buying: buying)
     }
 
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+        // A DS card on the Learn scene (the same card the other rows use), the buy button a DS secondary button.
+        DSCard(padding: AlphonsoDS.Space.s3, spacing: AlphonsoDS.Space.s1) {
             // Wraps under large Dynamic Type instead of truncating.
             ViewThatFits(in: .horizontal) {
-                HStack(spacing: AlphonsoSpacing.sm) { summary; Spacer(minLength: 0); buyButton }
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) { summary; buyButton }
+                HStack(spacing: AlphonsoDS.Space.s2) { summary; Spacer(minLength: 0); buyButton }
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) { summary; buyButton }
             }
             if let reason = disabledReason, !buying {
                 Text(reason)
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.caption)
+                    .foregroundStyle(ds.inkSoft)
                     .fixedSize(horizontal: false, vertical: true)
             }
             if let notice {
                 Text(notice)
-                    .font(AlphonsoFont.sans(13, weight: .medium))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.ink)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        // The same card as the lesson rows (parchment, hairline edge, soft foot) so the text never sits straight on the
-        // garden photo; ink and inkSoft on parchment is the pair every Learn row already uses, in all four themes.
-        .padding(.horizontal, AlphonsoSpacing.md)
-        .padding(.vertical, AlphonsoSpacing.sm + 2)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(AlphonsoColor.hairline, lineWidth: 2)
-        )
-        .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(AlphonsoColor.hairline)
-                .offset(y: 4)
-        )
-        .padding(.horizontal, AlphonsoSpacing.md)
-        .padding(.top, AlphonsoSpacing.xs)
-        .padding(.bottom, AlphonsoSpacing.xs + 4)
+        .padding(.horizontal, AlphonsoDS.Space.gutter)
+        .padding(.top, AlphonsoDS.Space.s1)
+        .padding(.bottom, AlphonsoDS.Space.s2)
         // Another course has another balance: forget the old one at once, then read the new one.
         .task(id: "\(course.wireCode)-\(isOnline)") {
             status = nil
@@ -79,11 +67,11 @@ struct StreakFreezeRow: View {
             ?? StreakFreezeShop.ownedText(freezes)
         return Label {
             Text(text)
-                .font(AlphonsoFont.sans(14, weight: .medium))
-                .foregroundStyle(AlphonsoColor.ink)
+                .dsText(.footnote)
+                .foregroundStyle(ds.ink)
                 .fixedSize(horizontal: false, vertical: true)
         } icon: {
-            Image(systemName: "snowflake").foregroundStyle(AlphonsoColor.moss)
+            Image(systemName: "snowflake").foregroundStyle(ds.choice)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(StreakFreezeShop.accessibilityLabel(freezes: freezes, xp: status?.xp))
@@ -98,7 +86,7 @@ struct StreakFreezeRow: View {
         } label: {
             if buying { ProgressView() } else { Text(StreakFreezeShop.buyTitle).fixedSize(horizontal: false, vertical: true) }
         }
-        .buttonStyle(.alphonsoSecondary)
+        .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
         .disabled(disabledReason != nil)
         .accessibilityHint(disabledReason ?? "Spends \(StreakFreezeShop.xpCost) XP")
     }

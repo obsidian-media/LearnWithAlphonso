@@ -34,7 +34,10 @@ describe("iPhone mascot motion", () => {
   it("every small mascot goes through MascotTile", () => {
     // The lesson's start, questions and complete screen stand the realistic Alphonso in the unit's room since visual
     // round 6 (LessonStageViews.swift, ios-lesson-room-guards.test.ts), so the lesson has no small mascot left.
-    expect(read("ListenView.swift")).toContain("MascotTile(moment: .emptyState");
+    // Listen's empty, offline and failed states are the design system's empty-state card with an Alphonso pose
+    // (round 6.1), not a system ContentUnavailableView and not a hand-placed mascot.
+    expect(read("ListenView.swift")).toContain("DSEmptyState(");
+    expect(read("ListenView.swift")).not.toContain("ContentUnavailableView");
     expect(read("DesignSystem/AlphonsoComponents.swift")).toContain("MascotTile(moment: moment ??");
     for (const f of [
       "LessonPlayerView.swift",

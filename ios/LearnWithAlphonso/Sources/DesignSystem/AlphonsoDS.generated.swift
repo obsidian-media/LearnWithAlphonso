@@ -90,6 +90,8 @@ public enum AlphonsoDS {
         public let heroA: Color
         /// Bottom stop of the hero gradient.
         public let heroB: Color
+        /// undefined
+        public let onChoice: Color
         /// Primary text on hero.
         public let onHero: Color
         /// The call bar, You tile and state pills over the room photo (used with alpha). The same dark in every theme.
@@ -146,6 +148,7 @@ public enum AlphonsoDS {
         flameTint: Color(hex: 0xFDEBD7),
         heroA: Color(hex: 0x2C3F8F),
         heroB: Color(hex: 0x0E1430),
+        onChoice: Color(hex: 0xFFFFFF),
         onHero: Color(hex: 0xFFFFFF),
         callGlass: Color(hex: 0x121A15),
         callMint: Color(hex: 0xC9F5DC),
@@ -196,6 +199,7 @@ public enum AlphonsoDS {
         flameTint: Color(hex: 0x3A2412),
         heroA: Color(hex: 0x2C3F8F),
         heroB: Color(hex: 0x0E1430),
+        onChoice: Color(hex: 0x141B3D),
         onHero: Color(hex: 0xFFFFFF),
         callGlass: Color(hex: 0x121A15),
         callMint: Color(hex: 0xC9F5DC),
@@ -246,6 +250,7 @@ public enum AlphonsoDS {
         flameTint: Color(hex: 0xFDEBD7),
         heroA: Color(hex: 0x3A7050),
         heroB: Color(hex: 0x0B1F13),
+        onChoice: Color(hex: 0xFFFFFF),
         onHero: Color(hex: 0xFFFFFF),
         callGlass: Color(hex: 0x121A15),
         callMint: Color(hex: 0xC9F5DC),

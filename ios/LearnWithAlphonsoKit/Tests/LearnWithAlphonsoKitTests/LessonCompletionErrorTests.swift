@@ -88,6 +88,17 @@ final class LessonCompletionErrorTests: XCTestCase {
         XCTAssertEqual(LessonCompletionError.rejected(code: "out-of-hearts").userMessage, "Saved. It will sync when your hearts refill.")
     }
 
+    func testTheSupportLineOffersHelpOnlyWhereThereIsASupportPathAtAll() {
+        let rejected = LessonCompletionError.rejected(code: nil)
+        XCTAssertEqual(rejected.supportLine(withHelp: false), rejected.supportLine)
+        XCTAssertEqual(rejected.supportLine(withHelp: true), "If this keeps happening, get help or email support@alphonsoecosystem.app.")
+        // A failure the learner can fix by waiting has no support line, with or without the chat.
+        for e in [LessonCompletionError.offline, .timeout, .server(status: 500), .unauthorized] {
+            XCTAssertNil(e.supportLine(withHelp: true), "\(e)")
+            XCTAssertNil(e.supportLine(withHelp: false), "\(e)")
+        }
+    }
+
     func testQueuedFailuresSayTheLessonIsSaved() {
         for e in [LessonCompletionError.offline, .timeout, .server(status: 500)] {
             XCTAssertTrue(e.userMessage.contains("aved"), "\(e)")

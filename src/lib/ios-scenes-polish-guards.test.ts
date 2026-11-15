@@ -33,8 +33,6 @@ describe("iOS scenes follow-ups", () => {
     // The root is the rooms shelf now. It sits on the one studio ListenView paints, so it must paint none of its own.
     expect(listen).toContain("ListenShelfRoot(");
     expect(read("ListenShelfViews.swift")).not.toContain(".screenScene(");
-    const listing = between(listen, "private struct PodcastFolderListing", "private func subtitle");
-    expect(listing).toContain(".screenScene(.listen, if: showsScene)");
   });
 
   it("the current node stops bouncing when Reduce Motion is switched on mid-session", () => {

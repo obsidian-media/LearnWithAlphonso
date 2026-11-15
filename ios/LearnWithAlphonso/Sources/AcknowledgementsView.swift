@@ -4,14 +4,16 @@ import LearnWithAlphonsoKit
 /// Settings, Acknowledgements. Lists the open-source work bundled in the app and shows each
 /// licence's full text from the app bundle.
 struct AcknowledgementsView: View {
+    @Environment(\.alphonsoDS) private var ds
+
     var body: some View {
         List {
             Section {
                 Text("Learn with Alphonso is built with these open-source projects. Thank you to their authors.")
-                    .font(AlphonsoFont.sans(14))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.inkSoft)
             }
-            .listRowBackground(AlphonsoColor.parchment)
+            .listRowBackground(ds.card)
             Section {
                 ForEach(Acknowledgements.all) { item in
                     NavigationLink {
@@ -19,19 +21,20 @@ struct AcknowledgementsView: View {
                     } label: {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.name)
-                                .font(AlphonsoFont.sans(15, weight: .medium))
-                                .foregroundStyle(AlphonsoColor.ink)
+                                .dsText(.headline)
+                                .foregroundStyle(ds.ink)
                             Text(item.licenseName)
-                                .font(AlphonsoFont.sans(12))
-                                .foregroundStyle(AlphonsoColor.inkSoft)
+                                .dsText(.caption)
+                                .foregroundStyle(ds.inkSoft)
                         }
                     }
                 }
             }
-            .listRowBackground(AlphonsoColor.parchment)
+            .listRowBackground(ds.card)
         }
         .scrollContentBackground(.hidden)
-        .background(AlphonsoColor.surface)
+        .background(ds.surface)
+        .tint(ds.choice)
         .navigationTitle("Acknowledgements")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -39,23 +42,25 @@ struct AcknowledgementsView: View {
 
 private struct LicenseTextView: View {
     let item: Acknowledgement
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
                 if let url = URL(string: item.url) {
                     Link(item.url, destination: url)
-                        .font(AlphonsoFont.sans(14))
+                        .dsText(.footnote)
                 }
                 Text(Self.text(for: item))
                     .font(.system(.footnote, design: .monospaced))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .foregroundStyle(ds.ink)
                     .textSelection(.enabled)
             }
-            .padding(AlphonsoSpacing.md)
+            .padding(AlphonsoDS.Space.s4)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(AlphonsoColor.surface)
+        .background(ds.surface)
+        .tint(ds.choice)
         .navigationTitle(item.name)
         .navigationBarTitleDisplayMode(.inline)
     }
