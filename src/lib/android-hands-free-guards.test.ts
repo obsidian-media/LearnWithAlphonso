@@ -11,7 +11,10 @@ import { describe, expect, it } from "vitest";
  */
 const root = path.resolve(import.meta.dirname, "../..");
 const read = (p: string) => fs.readFileSync(path.join(root, p), "utf8").replace(/\r\n/g, "\n");
-const code = (p: string) => read(p).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+const code = (p: string) =>
+  read(p)
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "");
 
 const ANDROID = "android/LearnWithAlphonso";
 const APP = `${ANDROID}/app/src/main/java/com/obsidianmedia/learnwithalphonso`;
@@ -73,7 +76,7 @@ describe("the Kotlin loop is the iOS loop, number for number", () => {
       "Best with earbuds or a quiet room.",
       "anything it hears is sent for transcription like a held recording",
       "It pauses after 8 seconds of quiet, after background noise, and after 20 turns",
-      'handsFree.safetyNoteSeen.v2',
+      "handsFree.safetyNoteSeen.v2",
     ]) {
       expect(kotlin, line).toContain(line);
       expect(ios, line).toContain(line);
@@ -113,8 +116,12 @@ describe("the switch and the call chrome", () => {
   it("is a switch with a note shown once, remembered on confirm, and never stores the on/off state", () => {
     const ui = code(UI);
     expect(ui).toContain("Role.Switch");
-    expect(ui).toMatch(/getBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, false\) == true\) vm\.handsFree\.enable\(\)\s*else showNote = true/);
-    expect(ui).toMatch(/putBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, true\)[\s\S]*?vm\.handsFree\.enable\(\)/);
+    expect(ui).toMatch(
+      /getBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, false\) == true\) vm\.handsFree\.enable\(\)\s*else showNote = true/,
+    );
+    expect(ui).toMatch(
+      /putBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, true\)[\s\S]*?vm\.handsFree\.enable\(\)/,
+    );
     expect(ui).toContain("HandsFreeCopy.firstUseBody(partner)");
     // Only the note's flag is ever written; the switch itself is never persisted.
     expect((ui.match(/putBoolean/g) ?? []).length).toBe(1);
@@ -140,7 +147,10 @@ describe("the switch and the call chrome", () => {
     const screen = code(SCREEN);
     expect(screen).toContain("vm.handsFree.level(it, SystemClock.elapsedRealtime() / 1000.0)");
     // One reader: the recorder's peak resets on every read, so a second reader would steal the samples.
-    expect((read(`${APP}/ui/practice/call/PracticeCallScreen.kt`).match(/micLevelDBFS\(\)/g) ?? []).length).toBe(1);
+    expect(
+      (read(`${APP}/ui/practice/call/PracticeCallScreen.kt`).match(/micLevelDBFS\(\)/g) ?? [])
+        .length,
+    ).toBe(1);
   });
 });
 
@@ -154,7 +164,9 @@ describe("it is off at every call start and tuned per partner", () => {
 
   it("each view model makes its own controller, off, and the controller never persists the switch", () => {
     const controller = code(`${CORE}/HandsFreeController.kt`);
-    expect(controller).toContain("MutableStateFlow<HandsFreeLoop.Status>(HandsFreeLoop.Status.Off)");
+    expect(controller).toContain(
+      "MutableStateFlow<HandsFreeLoop.Status>(HandsFreeLoop.Status.Off)",
+    );
     expect(controller).not.toMatch(/SharedPreferences|putBoolean|DataStore/);
   });
 
@@ -170,10 +182,14 @@ describe("it is off at every call start and tuned per partner", () => {
   it("carries the choice across the scenes of one campaign run, and only that", () => {
     const screens = code(PRACTICE_SCREENS);
     // Noted before the call finishes (which turns it off); the result's Next scene moves on, and the next call re-arms it.
-    expect(screens).toMatch(/val endCall: \(\) -> Unit = \{ vm\.carryHandsFreeToNextScene\(\); scope\.launch/);
+    expect(screens).toMatch(
+      /val endCall: \(\) -> Unit = \{ vm\.carryHandsFreeToNextScene\(\); scope\.launch/,
+    );
     expect(screens).toContain("vm.speakOpener(); vm.rearmHandsFreeIfCarried()");
     const vms = code(VMS);
-    expect(vms).toMatch(/fun restartScene\(speak: Boolean = true\) \{\s*if \(awaitingResult\) return\s*rearmHandsFree = false/);
+    expect(vms).toMatch(
+      /fun restartScene\(speak: Boolean = true\) \{\s*if \(awaitingResult\) return\s*rearmHandsFree = false/,
+    );
     expect(vms).toContain("if (carried && !_campaign.value.finished) handsFree.enable()");
   });
 });
@@ -186,14 +202,20 @@ describe("the safety stops", () => {
     for (const file of [VMS, HECTOR]) {
       const src = code(file);
       expect(src.indexOf("HandsFreeBinding.onTurnEvent(handsFree, event)")).toBeGreaterThan(-1);
-      expect(src.indexOf("HandsFreeBinding.onTurnEvent")).toBeLessThan(src.indexOf("is TurnEvent.Transcribed ->"));
+      expect(src.indexOf("HandsFreeBinding.onTurnEvent")).toBeLessThan(
+        src.indexOf("is TurnEvent.Transcribed ->"),
+      );
       expect(src).toContain("handsFree.failed()");
     }
   });
 
   it("a too-short capture is its own event, so it listens again instead of pausing like a blank transcript", () => {
-    expect(code(`${CORE}/ConversationTurnEngine.kt`)).toContain("_events.tryEmit(TurnEvent.TooShort)");
-    expect(code(`${CALL}/HandsFreeBinding.kt`)).toContain("TurnEvent.TooShort, is TurnEvent.Transcribed -> Unit");
+    expect(code(`${CORE}/ConversationTurnEngine.kt`)).toContain(
+      "_events.tryEmit(TurnEvent.TooShort)",
+    );
+    expect(code(`${CALL}/HandsFreeBinding.kt`)).toContain(
+      "TurnEvent.TooShort, is TurnEvent.Transcribed -> Unit",
+    );
   });
 
   it("the mic opens only after the reply: the loop is fed the conversation's phase, not only the engine's", () => {
@@ -229,14 +251,24 @@ describe("screen-on only", () => {
     expect(manifest).not.toMatch(/foregroundServiceType="[^"]*microphone/);
     expect(manifest).not.toContain("FOREGROUND_SERVICE_MICROPHONE");
     for (const file of [UI, LOOP, `${CORE}/HandsFreeController.kt`]) {
-      expect(code(file), file).not.toMatch(/PowerManager|WakeLock|startForegroundService|setShowWhenLocked/);
+      expect(code(file), file).not.toMatch(
+        /PowerManager|WakeLock|startForegroundService|setShowWhenLocked/,
+      );
     }
   });
 });
 
 describe("Practice is free and Hector stays Pro", () => {
   it("has no Pro or paywall check in the Practice path or the hands-free code", () => {
-    for (const file of [PRACTICE_SCREENS, VMS, UI, SCREEN, `${CALL}/HandsFreeBinding.kt`, LOOP, `${CORE}/HandsFreeController.kt`]) {
+    for (const file of [
+      PRACTICE_SCREENS,
+      VMS,
+      UI,
+      SCREEN,
+      `${CALL}/HandsFreeBinding.kt`,
+      LOOP,
+      `${CORE}/HandsFreeController.kt`,
+    ]) {
       expect(code(file), file).not.toMatch(/isPro|entitlement|Entitlement|paywall|Paywall/);
     }
   });
