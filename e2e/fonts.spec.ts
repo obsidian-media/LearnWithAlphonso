@@ -5,9 +5,11 @@ import { test, expect } from "@playwright/test";
  * third party, so this checks two things per theme: the theme's own faces really load (a missing or misnamed
  * face falls back silently and looks "fine"), and no request goes to another origin while the page loads.
  */
+// The landing heading is on the round-6 type scale, which is Bricolage Grotesque in both palettes; the page body
+// still reads the theme's sans face.
 const THEMES: { id: string; display: string; sans: string }[] = [
-  { id: "meadow", display: "Fraunces Variable", sans: "Geist Variable" },
-  { id: "royal", display: "Baloo 2 Variable", sans: "Geist Variable" },
+  { id: "meadow", display: "Bricolage Grotesque", sans: "Geist Variable" },
+  { id: "royal", display: "Bricolage Grotesque", sans: "Geist Variable" },
 ];
 
 for (const theme of THEMES) {

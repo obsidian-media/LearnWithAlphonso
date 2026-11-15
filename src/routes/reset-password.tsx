@@ -7,6 +7,10 @@ import {
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { TextField } from "../components/TextField";
+import { FirstRunBubble, FirstRunRoom, FirstRunScreen } from "../components/firstrun/FirstRunParts";
+import { edgeButtonClass } from "../components/lesson/LessonParts";
+import { roomSrc } from "../lib/first-run";
+import { expressionSrc } from "../lib/lesson-stage";
 
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
@@ -69,31 +73,41 @@ function ResetPasswordPage() {
   }
 
   return (
-    <div className="grain min-h-dvh bg-surface text-ink">
-      <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-6 pb-10 pt-10">
-        <Link to="/auth" className="mb-8 inline-flex items-center gap-2 text-ink-soft/70">
-          <span className="text-lg">←</span>
-          <span className="text-sm">Back to sign in</span>
-        </Link>
-        <h1 className="font-display text-[30px] font-semibold leading-tight text-ink">
-          Set a new password
-        </h1>
-        <p className="mt-1.5 text-sm text-ink-soft/80">
-          {ready
+    <FirstRunScreen>
+      <FirstRunRoom
+        room={roomSrc("room-light")}
+        figure={expressionSrc("talk")}
+        figureAlt="Alphonso"
+        top={
+          <Link
+            to="/auth"
+            aria-label="Back to sign in"
+            className="grid size-11 place-items-center rounded-full bg-ds-card text-ds-brand shadow-[var(--ds-shadow-resting)]"
+          >
+            <span aria-hidden="true" className="text-lg">
+              ←
+            </span>
+          </Link>
+        }
+      />
+      <FirstRunBubble
+        title="Set a new password"
+        sub={
+          ready
             ? "Choose something you'll remember. At least 10 characters."
-            : "Open this page from the link in your reset email to continue."}
-        </p>
-
+            : "Open this page from the link in your reset email to continue."
+        }
+      />
+      <div className="px-4 pb-10 pt-4">
         {done ? (
           <p
-            className={
-              "mt-8 rounded-2xl border border-hairline bg-parchment px-4 py-3 text-sm text-ink"
-            }
+            role="status"
+            className="rounded-[22px] border-2 border-ds-right bg-ds-right-tint px-4 py-3 ds-type-footnote text-ds-right-ink"
           >
             Password updated. Taking you to your lessons…
           </p>
         ) : (
-          <form onSubmit={submit} className="mt-8 space-y-3">
+          <form onSubmit={submit} className="space-y-3">
             <TextField
               type="password"
               required
@@ -115,18 +129,23 @@ function ResetPasswordPage() {
               className="disabled:opacity-50"
             />
             {error && (
-              <p className={"rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700"}>{error}</p>
+              <p
+                role="alert"
+                className="rounded-[14px] bg-ds-wrong-tint px-3 py-2 ds-type-caption text-ds-wrong-ink"
+              >
+                {error}
+              </p>
             )}
             <button
               type="submit"
               disabled={busy || !ready}
-              className="w-full rounded-full bg-ember px-4 py-3 text-sm font-semibold text-ink-on-ember transition hover:opacity-90 disabled:opacity-50"
+              className={`w-full ${edgeButtonClass("primary")}`}
             >
               {busy ? "Saving…" : "Update password"}
             </button>
           </form>
         )}
       </div>
-    </div>
+    </FirstRunScreen>
   );
 }

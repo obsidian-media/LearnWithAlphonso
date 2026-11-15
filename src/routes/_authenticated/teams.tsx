@@ -5,6 +5,7 @@ import {
   BackPill,
   DsButton,
   DsCard,
+  DsEmptyState,
   DsField,
   DsSegmented,
   GlassTitle,
@@ -74,14 +75,16 @@ function TeamsPage() {
     return (
       <DsScreen scene="profile">
         <GlassTitle title="Teams" />
-        <DsCard>
-          <p className="ds-type-body text-ds-ink">Couldn't load your team.</p>
-          <div>
-            <DsButton small variant="secondary" onClick={() => retryMyTeam()}>
-              Try again
-            </DsButton>
-          </div>
-        </DsCard>
+        <DsEmptyState
+          tone="error"
+          art="/mascots/alphonso-encouraging.png"
+          title="Couldn't load your team."
+          message="Check your connection and try again."
+        >
+          <DsButton small variant="secondary" onClick={() => retryMyTeam()}>
+            Try again
+          </DsButton>
+        </DsEmptyState>
       </DsScreen>
     );
 

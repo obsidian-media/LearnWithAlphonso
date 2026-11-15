@@ -23,10 +23,13 @@ function StatPill({
   hint?: string | null;
 }) {
   return (
-    <div className="flex items-center gap-1.5" aria-label={label}>
+    <div
+      className="flex items-center gap-1 rounded-full bg-ds-sunk py-0.5 pl-1.5 pr-2.5"
+      aria-label={label}
+    >
       <span className={color}>{icon}</span>
-      <span className="tnum text-sm font-semibold text-ink">{value}</span>
-      {hint ? <span className="tnum text-xs text-ink-soft/70">{hint}</span> : null}
+      <span className="tnum ds-type-footnote font-extrabold text-ds-ink">{value}</span>
+      {hint ? <span className="tnum ds-type-caption text-ds-ink-soft">{hint}</span> : null}
     </div>
   );
 }
@@ -67,11 +70,11 @@ export function TopBar() {
   }, [hydrated, xp, streak, hearts]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-hairline bg-surface/85 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-ds-line bg-ds-card/90 backdrop-blur-md">
       <span className="sr-only" role="status" aria-live="polite">
         {announcement}
       </span>
-      <div className="mx-auto flex max-w-[430px] items-center justify-between px-5 py-3.5">
+      <div className="mx-auto flex max-w-[430px] items-center justify-between px-4 py-2.5">
         {/* The brand: the app icon and the name, the same mark as the landing page. */}
         <Link
           to="/learn"
@@ -86,11 +89,11 @@ export function TopBar() {
             data-brand-mark=""
             className="size-7 rounded-lg"
           />
-          <span className="font-display text-[15px] font-semibold tracking-tight text-ink">
+          <span className="ds-type-headline hidden font-extrabold text-ds-brand min-[420px]:inline">
             Alphonso
           </span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
           {/* The learner's league badge: theirs, not the brand, so it sits with their stats and opens the league. */}
           <Link to="/league" data-league-badge="">
             <LeagueTierBadge tier={hydrated ? leagueTier : "bronze"} size="sm" />
@@ -98,19 +101,19 @@ export function TopBar() {
           <StatPill
             icon={<Icon3D emoji="🔥" size={20} />}
             value={hydrated ? streak : 0}
-            color="text-ember"
+            color="text-ds-flame"
             label="Streak"
           />
           <StatPill
             icon={<Icon3D emoji="⚡" size={20} />}
             value={hydrated ? xp : 0}
-            color="text-moss"
+            color="text-ds-xp-text"
             label="XP"
           />
           <StatPill
             icon={<Icon3D emoji="❤️" size={20} />}
             value={hydrated ? hearts : 5}
-            color="text-rose-500"
+            color="text-ds-heart"
             label="Hearts"
             hint={nextHeartIn ? `+1 in ${nextHeartIn}` : null}
           />
@@ -134,24 +137,17 @@ function TabItem({
   return (
     <Link
       to={to}
-      className="group flex flex-1 flex-col items-center gap-1 py-1.5"
+      className="group flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 py-1"
       aria-label={label}
     >
-      <span className={`transition-colors ${active ? "text-moss" : "text-ink-soft/60"}`}>
+      <span className={`transition-colors ${active ? "text-ds-choice" : "text-ds-ink-faint"}`}>
         {children}
       </span>
       <span
-        className={`text-[10px] font-medium uppercase tracking-[0.14em] transition-colors ${
-          active ? "text-moss" : "text-ink-soft/50"
-        }`}
+        className={`ds-type-caption transition-colors ${active ? "text-ds-brand" : "text-ds-ink-soft"}`}
       >
         {label}
       </span>
-      <span
-        className={`h-0.5 w-6 rounded-full transition-colors ${
-          active ? "bg-moss" : "bg-transparent"
-        }`}
-      />
     </Link>
   );
 }
@@ -159,8 +155,8 @@ function TabItem({
 export function BottomTabs() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="sticky bottom-0 z-30 border-t border-hairline bg-surface/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-[430px] items-stretch px-4 pb-[max(env(safe-area-inset-bottom),8px)] pt-1">
+    <nav className="sticky bottom-0 z-30 border-t border-ds-line bg-ds-card/95 backdrop-blur-md">
+      <div className="mx-auto flex max-w-[430px] items-stretch px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-1">
         <TabItem to="/learn" label="Learn" active={pathname === "/learn"}>
           <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <path
@@ -249,8 +245,8 @@ export function MobileFrame({
   aboveTabs?: ReactNode;
 }) {
   return (
-    <div className="grain min-h-dvh bg-surface text-ink">
-      <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-surface/60">
+    <div className="grain min-h-dvh bg-ds-surface text-ds-ink">
+      <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-ds-surface/60">
         <TopBar />
         <main id="main-content" className="flex-1">
           {children}
@@ -273,10 +269,10 @@ export function MobileFrame({
 
 export function LessonFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="grain min-h-dvh bg-surface text-ink">
+    <div className="grain min-h-dvh bg-ds-surface text-ds-ink">
       <main
         id="main-content"
-        className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-surface/60"
+        className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-ds-surface/60"
       >
         {children}
       </main>

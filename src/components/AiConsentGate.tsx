@@ -1,7 +1,7 @@
 import { useRef, type ReactNode } from "react";
 import { AI_CONSENT_COPY } from "@/lib/ai-consent-copy";
 import { useAiConsent } from "@/lib/ai-consent-context";
-import { DsButton, PoseCard } from "@/components/ds/Blocks";
+import { DsButton, DsEmptyState } from "@/components/ds/Blocks";
 
 /**
  * Whole-screen gate for the screens that ARE AI (practice conversations, campaigns). Never used on lessons, review
@@ -29,30 +29,31 @@ export function AiConsentGate({ children, backTo }: { children: ReactNode; backT
 
   const prompt =
     consent.status === "unknown" ? (
-      <div role="alert" className="mx-auto grid max-w-md gap-2 p-6">
-        <PoseCard
-          src="/mascots/alphonso-encouraging.png"
+      <div className="mx-auto grid max-w-md gap-2 p-6">
+        <DsEmptyState
+          tone="error"
+          art="/mascots/alphonso-encouraging.png"
           title={AI_CONSENT_COPY.checkFailedTitle}
-          body={AI_CONSENT_COPY.checkFailedBody}
+          message={AI_CONSENT_COPY.checkFailedBody}
         >
           <DsButton small onClick={() => void consent.refresh()}>
             {AI_CONSENT_COPY.retry}
           </DsButton>
           <BackLink backTo={backTo} />
-        </PoseCard>
+        </DsEmptyState>
       </div>
     ) : (
       <div className="mx-auto grid max-w-md gap-2 p-6">
-        <PoseCard
-          src="/mascots/alphonso-thinking.png"
+        <DsEmptyState
+          art="/mascots/alphonso-thinking.png"
           title={AI_CONSENT_COPY.gateTitle}
-          body={AI_CONSENT_COPY.gateBody}
+          message={AI_CONSENT_COPY.gateBody}
         >
           <DsButton small onClick={() => void consent.requestConsent()}>
             {AI_CONSENT_COPY.gateAction}
           </DsButton>
           <BackLink backTo={backTo} />
-        </PoseCard>
+        </DsEmptyState>
       </div>
     );
 
