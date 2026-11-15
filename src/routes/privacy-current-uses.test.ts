@@ -24,4 +24,22 @@ describe("privacy page: current data uses", () => {
     expect(page).toMatch(/not part of your data export/);
     expect(page).toMatch(/kept after your account is deleted/);
   });
+
+  it("describes the Help chat: AI helper, what it sees, reply notices without text, retention, export", () => {
+    expect(page).toMatch(/<Section heading="Help chat">/);
+    expect(page).toMatch(/Miya, the helper that may answer first, is an AI/);
+    expect(page).toMatch(/she cannot change anything on your account/);
+    expect(page).toMatch(
+      /a person takes over for billing, refunds, safety and questions about your data/,
+    );
+    expect(page).toMatch(/They never contain the text of the reply/);
+    expect(page).toMatch(/deleted 12 months after it was solved/);
+    expect(page).toMatch(/Your data export includes your Help conversations/);
+    expect(page).toMatch(/leaves out our staff notes/);
+  });
+
+  it("lists Help chat in the processors that handle it", () => {
+    expect(page).toMatch(/answers Help chat questions when the AI helper is switched on/);
+    expect(page).toMatch(/the email that tells you a person has replied in Help/);
+  });
 });
