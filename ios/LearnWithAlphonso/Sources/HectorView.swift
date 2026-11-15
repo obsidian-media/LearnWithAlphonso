@@ -48,7 +48,7 @@ struct HectorView: View {
                 }
             }
         }
-        .tint(AlphonsoColor.ember)
+        .tint(AlphonsoDS.current.choice)
     }
 }
 
@@ -151,7 +151,7 @@ private struct HectorConversationView: View {
         if conversation.turns.contains(where: { $0.role == "assistant" }) {
             Text("Tap any word in Hector's reply to save it.")
                 .dsText(.caption)
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(AlphonsoDS.current.inkSoft)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .alphonsoGlass(radius: AlphonsoRadius.lg)
@@ -167,7 +167,7 @@ private struct HectorConversationView: View {
             if let message = voice.failure?.userMessage() ?? notice {
                 Text(message)
                     .dsText(.footnote)
-                    .foregroundStyle(AlphonsoColor.destructive)
+                    .foregroundStyle(AlphonsoDS.current.wrongInk)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .alphonsoGlass(radius: AlphonsoRadius.lg)
@@ -300,10 +300,10 @@ private struct HectorConversationView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Hector")
                     .dsText(.display)
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .foregroundStyle(AlphonsoDS.current.ink)
                 Text(voice.isHandsFreeOn ? "Your tutor · hands-free on" : "Your tutor")
                     .dsText(.footnote)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .foregroundStyle(AlphonsoDS.current.inkSoft)
             }
             .padding(.horizontal, AlphonsoSpacing.md)
             .padding(.vertical, AlphonsoSpacing.sm)
@@ -319,7 +319,7 @@ private struct HectorConversationView: View {
                     heroPill {
                         HStack(spacing: 6) {
                             Circle()
-                                .fill(status == .listening ? AlphonsoColor.moss : AlphonsoColor.ember)
+                                .fill(status == .listening ? AlphonsoDS.current.right : AlphonsoDS.current.action)
                                 .frame(width: 8, height: 8)
                                 .pulsingGlow()
                             Text(status.label)
@@ -336,10 +336,10 @@ private struct HectorConversationView: View {
     private func heroPill<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         content()
             .dsText(.caption)
-            .foregroundStyle(.white)
+            .foregroundStyle(AlphonsoDS.current.onHero)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(.black.opacity(0.4), in: Capsule())
+            .background(AlphonsoDS.current.callGlass.opacity(0.6), in: Capsule())
     }
 
     // MARK: - Context
@@ -379,10 +379,10 @@ private struct HectorConversationView: View {
         if turn.role == "assistant" {
             // The greeting is our own fixed text, not the model's: nothing to report.
             AssistantReply(
-                turn: turn, isOpener: isOpener, course: course, color: AlphonsoColor.ink,
+                turn: turn, isOpener: isOpener, course: course, color: AlphonsoDS.current.ink,
                 surface: .hector, session: session, savingWord: $savingWord)
         } else {
-            Text(turn.content).foregroundStyle(AlphonsoColor.onAccent)
+            Text(turn.content).foregroundStyle(AlphonsoDS.current.onHero)
         }
     }
 
@@ -395,8 +395,8 @@ private struct HectorConversationView: View {
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
                     .background(
-                        turn.role == "user" ? AlphonsoColor.ember : AlphonsoColor.surface,
-                        in: RoundedRectangle(cornerRadius: AlphonsoRadius.xl + 4, style: .continuous)
+                        turn.role == "user" ? AlphonsoDS.current.choice : AlphonsoDS.current.card,
+                        in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous)
                     )
                     .alphonsoLift(turn.role == "assistant")
                 if turn.role == "assistant" { Spacer(minLength: 40) }
@@ -464,12 +464,12 @@ private struct HectorConversationView: View {
             if voice.isHandsFreeOn {
                 handsFreeControls
             } else if voice.isBusy {
-                ProgressView().tint(AlphonsoColor.ember).frame(maxWidth: .infinity)
+                ProgressView().tint(AlphonsoDS.current.choice).frame(maxWidth: .infinity)
             } else {
                 HoldToTalkButton(
                     isRecording: voice.isRecording,
-                    idleColor: AlphonsoColor.ember,
-                    recordingColor: AlphonsoColor.destructive,
+                    idleColor: AlphonsoDS.current.choice,
+                    recordingColor: AlphonsoDS.current.wrongInk,
                     accessibilityLabel: "Hold to talk to Hector",
                     onPress: { if voice.pressBegan() { notice = nil } },
                     onRelease: { voice.pressEnded() }
@@ -477,18 +477,18 @@ private struct HectorConversationView: View {
                 .background {
                     // A soft glow ring while Hector is listening.
                     Circle()
-                        .fill(AlphonsoColor.ember.opacity(voice.isRecording ? 0.25 : 0.12))
+                        .fill(AlphonsoDS.current.choice.opacity(voice.isRecording ? 0.25 : 0.12))
                         .frame(width: 96, height: 96)
                         .pulsingGlow(scale: voice.isRecording ? 1.15 : 1.05)
                 }
                 .padding(.vertical, 10)
                 Text(voice.isRecording ? "Listening — release to send" : "Hold to talk")
                     .dsText(.caption)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .foregroundStyle(AlphonsoDS.current.inkSoft)
                 if voice.microphoneUnavailable || voice.recorderStartFailed {
                     Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
                         .dsText(.caption)
-                        .foregroundStyle(AlphonsoColor.destructive)
+                        .foregroundStyle(AlphonsoDS.current.wrongInk)
                         .multilineTextAlignment(.center)
                 }
             }
