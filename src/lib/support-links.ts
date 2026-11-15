@@ -60,6 +60,8 @@ export type PresentedSupportMessage = {
   body: string;
   at: string;
   link: SupportLinkId | null;
+  /** A person's reply only: the staff member's first name, or null. Every other kind is null. */
+  staffName: string | null;
 };
 
 /** Messages as the learner's clients get them: `ai` bodies lose the marker and gain `link`; every other kind is left as typed. */
@@ -70,11 +72,14 @@ export function presentSupportMessages(
     body: string;
     at: string;
   }[],
+  /** Staff first names by message id (support-staff-name.ts); only `support` rows ever take one. */
+  staffNames: ReadonlyMap<number, string | null> = new Map(),
 ): PresentedSupportMessage[] {
   return messages.map((m) => {
-    if (m.kind !== "ai") return { ...m, link: null };
+    if (m.kind === "support") return { ...m, link: null, staffName: staffNames.get(m.id) ?? null };
+    if (m.kind !== "ai") return { ...m, link: null, staffName: null };
     const { text, link } = splitSupportLink(m.body);
-    return { ...m, body: text, link };
+    return { ...m, body: text, link, staffName: null };
   });
 }
 

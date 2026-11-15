@@ -14,6 +14,8 @@ import {
   composerFor,
   dayKey,
   dayLabel,
+  showsHandoffPose,
+  speakerLabel,
   timeLabel,
 } from "@/lib/support-view";
 import { HelpIcon, type HelpIconName } from "./HelpIcons";
@@ -105,8 +107,9 @@ export function HelpChat({
   const endMark = `${state.messages.length}:${state.pending?.state ?? ""}:${state.limit ?? ""}:${state.load}`;
   useEffect(() => {
     const el = listRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [endMark]);
+    // The first-open screen starts at its top (Miya's head and the first line), not scrolled to the starters.
+    if (el) el.scrollTop = empty ? 0 : el.scrollHeight;
+  }, [endMark, empty]);
 
   return (
     <section
@@ -251,14 +254,33 @@ function Welcome({
 }) {
   return (
     <>
-      <div className="grid justify-items-center gap-2 px-1.5 pt-0.5 text-center" data-welcome="">
-        <img
-          src="/mascots/alphonso-explaining-pointer.webp"
-          alt=""
-          height={135}
-          className="h-[135px] w-auto"
-          draggable={false}
-        />
+      <div
+        className={`grid justify-items-center gap-2 px-1.5 text-center ${aiAnswering ? "pt-3" : "pt-0.5"}`}
+        data-welcome=""
+      >
+        {aiAnswering ? (
+          <>
+            <img
+              src="/mascots/miya-hello.webp"
+              alt=""
+              height={190}
+              className="h-[190px] w-auto"
+              draggable={false}
+              data-miya="hello"
+            />
+            <div className="ds-type-footnote font-extrabold text-ds-ink" data-miya-name="">
+              {SUPPORT_COPY.ai}
+            </div>
+          </>
+        ) : (
+          <img
+            src="/mascots/alphonso-explaining-pointer.webp"
+            alt=""
+            height={135}
+            className="h-[135px] w-auto"
+            draggable={false}
+          />
+        )}
         <h2 className="m-0 font-display ds-type-title text-ds-ink">
           {aiAnswering ? SUPPORT_COPY.welcomeAiTitle : SUPPORT_COPY.welcomeTitle}
         </h2>
@@ -294,7 +316,7 @@ function Welcome({
 
 type Row =
   | { type: "day"; key: string; label: string; fresh?: boolean }
-  | { type: "message"; key: string; message: SupportMessage }
+  | { type: "message"; key: string; message: SupportMessage; handoffPose: boolean }
   | { type: "pending"; key: string; pending: PendingMessage };
 
 function Thread({
@@ -321,12 +343,17 @@ function Thread({
       rows.push({ type: "day", key: `day-${k}`, label: dayLabel(iso, now) });
     }
   };
-  for (const m of messages) {
+  messages.forEach((m, i) => {
     pushDay(m.at);
     if (m.id === dividerId)
       rows.push({ type: "day", key: `new-${m.id}`, label: SUPPORT_COPY.newReply, fresh: true });
-    rows.push({ type: "message", key: `m-${m.id}`, message: m });
-  }
+    rows.push({
+      type: "message",
+      key: `m-${m.id}`,
+      message: m,
+      handoffPose: showsHandoffPose(messages, i),
+    });
+  });
   if (pending) {
     pushDay(pending.at);
     rows.push({ type: "pending", key: `p-${pending.clientId}`, pending });
@@ -363,9 +390,14 @@ function Thread({
             />
           );
         if (m.kind === "ai") return <AiBubble key={r.key} message={m} when={when} />;
-        if (m.kind === "support") return <PersonBubble key={r.key} body={m.body} when={when} />;
-        return <SystemLine key={r.key} text={m.body} />;
+        if (m.kind === "support") return <PersonBubble key={r.key} message={m} when={when} />;
+        return r.handoffPose ? (
+          <HandoffPose key={r.key} text={m.body} />
+        ) : (
+          <SystemLine key={r.key} text={m.body} />
+        );
       })}
+      {typing && <LookingUp />}
       {typing && <Typing />}
     </>
   );
@@ -386,7 +418,13 @@ function Divider({ label, fresh }: { label: string; fresh?: boolean }) {
 
 function Who({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-1.5 ds-type-overline text-ds-ink-soft">{children}</div>
+    // The speaker's name is written as a name (the mock: "Miya (AI helper)", "Dana · Support team"), not in capitals.
+    <div
+      className="flex items-center gap-1.5 ds-type-overline text-ds-ink-soft"
+      style={{ textTransform: "none", letterSpacing: "0.02em" }}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -418,7 +456,7 @@ function YouBubble({ body, when, state }: { body: string; when: string; state?: 
 function AiFace() {
   return (
     <img
-      src="/mascots/alphonso-help-head.webp"
+      src="/mascots/miya-help-head.webp"
       alt=""
       width={34}
       height={34}
@@ -436,7 +474,8 @@ function AiBubble({ message, when }: { message: SupportMessage; when: string }) 
       <div className="flex items-end gap-2">
         <AiFace />
         <Who>
-          {SUPPORT_COPY.ai} <Tag>{SUPPORT_COPY.aiTag}</Tag>
+          <span className="font-extrabold text-ds-ink">{speakerLabel(message)}</span>{" "}
+          <Tag>{SUPPORT_COPY.aiTag}</Tag>
         </Who>
       </div>
       <div className="whitespace-pre-wrap break-words rounded-[20px_20px_20px_6px] border-2 border-ds-line bg-ds-card px-3.5 py-2.5 ds-type-body text-ds-ink">
@@ -459,7 +498,7 @@ function AiBubble({ message, when }: { message: SupportMessage; when: string }) 
   );
 }
 
-function PersonBubble({ body, when }: { body: string; when: string }) {
+function PersonBubble({ message, when }: { message: SupportMessage; when: string }) {
   return (
     <div className="grid max-w-[86%] gap-1" data-kind="support">
       <div className="flex items-end gap-2">
@@ -467,13 +506,46 @@ function PersonBubble({ body, when }: { body: string; when: string }) {
           <HelpIcon name="person" className="size-[18px]" />
         </span>
         <Who>
-          {SUPPORT_COPY.person} <Tag quiet>{SUPPORT_COPY.personTag}</Tag>
+          <span className="font-extrabold text-ds-ink">{speakerLabel(message)}</span>{" "}
+          <Tag quiet>{SUPPORT_COPY.personTag}</Tag>
         </Who>
       </div>
       <div className="whitespace-pre-wrap break-words rounded-[20px_20px_20px_6px] border-2 border-ds-choice-edge bg-ds-choice-tint px-3.5 py-2.5 ds-type-body text-ds-ink">
-        {body}
+        {message.body}
       </div>
       <div className="ds-type-caption font-semibold text-ds-ink-faint">{when}</div>
+    </div>
+  );
+}
+
+/** Miya passes the chat to the team: her hand-off pose above the server's hand-off line (she is still labelled AI). */
+function HandoffPose({ text }: { text: string }) {
+  return (
+    <div className="grid justify-items-center gap-1" data-handoff-pose="">
+      <img
+        src="/mascots/miya-handoff.webp"
+        alt=""
+        height={170}
+        className="h-[170px] w-auto"
+        draggable={false}
+      />
+      <SystemLine text={text} />
+    </div>
+  );
+}
+
+/** While she answers: her tablet pose and what she is doing, above the typing line. */
+function LookingUp() {
+  return (
+    <div className="grid justify-items-center gap-1 text-center" data-looking-up="">
+      <img
+        src="/mascots/miya-looking-up.webp"
+        alt=""
+        height={120}
+        className="h-[120px] w-auto"
+        draggable={false}
+      />
+      <small className="ds-type-caption font-bold text-ds-ink-soft">{SUPPORT_COPY.lookingUp}</small>
     </div>
   );
 }
@@ -495,7 +567,8 @@ function Typing() {
       <div className="flex items-end gap-2">
         <AiFace />
         <Who>
-          {SUPPORT_COPY.ai} <Tag>{SUPPORT_COPY.aiTag}</Tag> {SUPPORT_COPY.isWriting}
+          <span className="font-extrabold text-ds-ink">{SUPPORT_COPY.ai}</span>{" "}
+          <Tag>{SUPPORT_COPY.aiTag}</Tag> {SUPPORT_COPY.isWriting}
         </Who>
       </div>
       <div

@@ -506,6 +506,11 @@ describe("app icon", () => {
         "Hector.imageset",
         // The small Alphonso face on the Help chat's AI bubbles (round 12 mock; public/mascots/alphonso-help-head.webp).
         "Alphonso-help-head.imageset",
+        // Miya, the Help chat's AI helper (round 13): three poses and her small face (docs/mascot-provenance.md).
+        "Miya-hello.imageset",
+        "Miya-looking-up.imageset",
+        "Miya-handoff.imageset",
+        "Miya-help-head.imageset",
         ...poses,
         ...figurePoses,
         ...badgeSets,

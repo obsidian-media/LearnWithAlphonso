@@ -22,13 +22,16 @@ public struct SupportMessage: Sendable, Equatable, Identifiable {
     public let at: String
     /// Only an `ai` message carries one, and only an allowed id counts.
     public let link: SupportLinkID?
+    /// A person's reply only: the staff member's first name (never a surname, email or id), or nil when none is set.
+    public let staffName: String?
 
-    public init(id: Int, kind: SupportMessageKind, body: String, at: String, link: SupportLinkID? = nil) {
+    public init(id: Int, kind: SupportMessageKind, body: String, at: String, link: SupportLinkID? = nil, staffName: String? = nil) {
         self.id = id
         self.kind = kind
         self.body = body
         self.at = at
         self.link = link
+        self.staffName = staffName
     }
 }
 
@@ -86,7 +89,11 @@ public enum SupportDecoding {
               let at = object["at"] as? String
         else { return nil }
         let shown = SupportLinks.present(kind: kind, body: body, linkField: object["link"])
-        return SupportMessage(id: id, kind: kind, body: shown.body, at: at, link: shown.link)
+        // Only a person's reply carries a name; the label never shows it on any other row.
+        let staffName: String? = kind == .support
+            ? (object["staffName"] as? String).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.flatMap { $0.isEmpty ? nil : $0 }
+            : nil
+        return SupportMessage(id: id, kind: kind, body: shown.body, at: at, link: shown.link, staffName: staffName)
     }
 
     static func messages(_ raw: Any?) -> [SupportMessage]? {

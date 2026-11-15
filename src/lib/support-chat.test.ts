@@ -590,10 +590,81 @@ describe("what the learner can read back", () => {
     };
     expect(body.messages.map((m) => m.kind)).toEqual(["you", "ai", "system", "support"]);
     for (const m of body.messages)
-      expect(Object.keys(m).sort()).toEqual(["at", "body", "id", "kind", "link"]);
+      expect(Object.keys(m).sort()).toEqual(["at", "body", "id", "kind", "link", "staffName"]);
     expect(body.unread).toBe(1);
     expect(body.aiAvailable).toBe(true);
     expect((off.body as { aiAvailable: boolean }).aiAvailable).toBe(false);
+  });
+
+  describe("the staff first name on a person's reply (Miya's round: no migration)", () => {
+    const staffReply = async (displayName: string) => {
+      await db.query("UPDATE public.profiles SET display_name = $2 WHERE id = $1", [
+        STAFF,
+        displayName,
+      ]);
+      await post(A, "something odd", {
+        model: () =>
+          JSON.stringify({
+            reply: "A person can help.",
+            handoff: true,
+            reason: "ai_unsure",
+            topic: "billing",
+            summary: "",
+          }),
+      });
+      const conv = (
+        await db.query<{ id: string }>(
+          "SELECT id FROM public.support_conversations WHERE user_id=$1",
+          [A],
+        )
+      ).rows[0]!.id;
+      await db.query(
+        "INSERT INTO public.support_messages (conversation_id, user_id, author_kind, author_id, body) VALUES ($1,$2,'staff',$3,'We are on it')",
+        [conv, A, STAFF],
+      );
+      return (await handleGetConversation(A, makeRuntime(db).runtime)).body as {
+        messages: { kind: string; staffName: string | null }[];
+      };
+    };
+
+    it("carries the FIRST name only, on the person's row only; no surname, email or id leaves the server", async () => {
+      const body = await staffReply("Dana Whitfield");
+      expect(body.messages.map((m) => [m.kind, m.staffName])).toEqual([
+        ["you", null],
+        ["ai", null],
+        ["system", null],
+        ["support", "Dana"],
+      ]);
+      const text = JSON.stringify(body);
+      for (const leak of ["Whitfield", "s@example.com", STAFF]) expect(text).not.toContain(leak);
+    });
+
+    it("a display name that is not a plain first name gives no name (the reply is just Support team)", async () => {
+      for (const odd of ["jane.doe99", "a@b.co", "1234", "x_y"]) {
+        await db.exec("DELETE FROM public.support_conversations");
+        const body = await staffReply(odd);
+        expect(body.messages.at(-1), odd).toMatchObject({ kind: "support", staffName: null });
+      }
+    });
+
+    it("a display name equal to the author's email local part (the default) gives no name", async () => {
+      // STAFF's email is s@example.com, so the default display name "s" is the email's local part.
+      const body = await staffReply("s");
+      expect(body.messages.at(-1)).toMatchObject({ kind: "support", staffName: null });
+      expect(JSON.stringify(body)).not.toContain("s@example.com");
+    });
+
+    it("a failed name lookup still shows the reply, without a name", async () => {
+      await staffReply("Dana Whitfield");
+      const h = makeRuntime(db);
+      h.runtime.store.staffDisplayNames = async () => {
+        throw new Error("down");
+      };
+      const body = (await handleGetConversation(A, h.runtime)).body as {
+        messages: { kind: string; staffName: string | null }[];
+      };
+      expect(body.messages.at(-1)).toMatchObject({ kind: "support", staffName: null });
+    });
   });
 
   it("a learner who never wrote gets status none and no messages", async () => {

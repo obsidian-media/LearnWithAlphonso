@@ -7,6 +7,9 @@ import type { SupportMessage, SupportStatus } from "./support-client";
  * `solved` reads "Solved". The status is the server's; nothing here decides anything about the learner's account.
  */
 
+/** The server's hand-off line (support-ai.server.ts HANDOFF_NOTICE; support-copy.test.ts keeps the two equal). */
+export const HANDOFF_NOTICE_TEXT = "A person will reply here.";
+
 export const POLL_INTERVAL_MS = 20_000;
 
 export type BannerKind = "ai" | "person" | "declined" | "team" | "wait" | "done" | "offline" | null;
@@ -46,6 +49,41 @@ export const BANNER_COPY: Record<Exclude<BannerKind, null>, { title: string; bod
   done: { title: SUPPORT_COPY.solvedTitle, body: SUPPORT_COPY.solvedBody },
   offline: { title: SUPPORT_COPY.offlineTitle, body: SUPPORT_COPY.offlineBody },
 };
+
+/**
+ * The name line of a person's reply: "<first name> · Support team", or just "Support team" when the server sent no name.
+ * A person's reply is never labelled with Miya's name (she is the AI helper), even for a staff member called Miya.
+ */
+export function staffLabel(firstName: string | null | undefined): string {
+  const name = (firstName ?? "").trim();
+  // A person never carries Miya's name, even if their own first name is Miya.
+  return name && name.toLowerCase() !== "miya"
+    ? `${name} · ${SUPPORT_COPY.person}`
+    : SUPPORT_COPY.person;
+}
+
+/**
+ * The words above a message: Miya for the AI (always with the AI tag drawn next to it), the staff label for a person,
+ * nothing for the learner or a system line. One place so a staff row can never take Miya's label.
+ */
+export function speakerLabel(message: Pick<SupportMessage, "kind" | "staffName">): string | null {
+  if (message.kind === "ai") return SUPPORT_COPY.ai;
+  if (message.kind === "support") return staffLabel(message.staffName);
+  return null;
+}
+
+/**
+ * Whether Miya's hand-off pose goes above this system line: it is the server's hand-off notice and Miya took part (an
+ * AI message came earlier), so a chat where no AI ever answered does not show her.
+ */
+export function showsHandoffPose(
+  messages: readonly Pick<SupportMessage, "kind" | "body">[],
+  index: number,
+): boolean {
+  const m = messages[index];
+  if (!m || m.kind !== "system" || m.body !== HANDOFF_NOTICE_TEXT) return false;
+  return messages.slice(0, index).some((x) => x.kind === "ai");
+}
 
 export type SendLimit = "daily" | "conversation" | null;
 

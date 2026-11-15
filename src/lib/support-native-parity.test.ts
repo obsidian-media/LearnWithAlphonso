@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { SUPPORT_COPY, SUPPORT_DAILY_LIMIT, SUPPORT_STARTERS } from "./support-copy";
 import { SUPPORT_LINK_IDS, SUPPORT_LINK_LABELS } from "./support-links";
+import { HANDOFF_NOTICE_TEXT } from "./support-view";
 
 /**
  * The iPhone Help chat says word for word what the web's does (the round 12 mock the owner approved). The app target
@@ -88,5 +89,43 @@ describe("SupportClient.swift talks to the three routes the way the web does", (
     expect(swift).toContain('"support-unreachable"');
     expect(swift).toContain('"support-message-limit"');
     expect(swift).toContain('which == "conversation"');
+  });
+});
+
+describe("SupportView.kt (Android) is the web's SUPPORT_COPY and speaker rules", () => {
+  const kt = readFileSync(
+    "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/logic/SupportView.kt",
+    "utf8",
+  ).replace(/\r\n/g, "\n");
+  const strings = new Map<string, string>();
+  for (const m of kt.matchAll(/^ {4}const val ([A-Z_]+) = "((?:[^"\\]|\\.)*)"$/gm)) {
+    strings.set(m[1]!, m[2]!.replace(/\\(.)/g, "$1"));
+  }
+  const snake = (k: string) => k.replace(/([A-Z])/g, "_$1").toUpperCase();
+
+  it("has every string of the web copy, with the same words", () => {
+    for (const [key, value] of Object.entries(SUPPORT_COPY)) {
+      expect(strings.get(snake(key)), key).toBe(value);
+    }
+  });
+
+  it("has no string the web does not have, apart from the server's hand-off line", () => {
+    const own = [...strings.keys()].filter((k) => k !== "HANDOFF_NOTICE").sort();
+    expect(own).toEqual(Object.keys(SUPPORT_COPY).map(snake).sort());
+    expect(strings.get("HANDOFF_NOTICE")).toBe(HANDOFF_NOTICE_TEXT);
+  });
+
+  it("labels a person '<first name> middle dot Support team' and never as Miya, like the web", () => {
+    expect(kt).toContain('"$name \\u00B7 ${SupportCopy.PERSON}"');
+    expect(kt).toContain('name.equals("miya", ignoreCase = true)');
+  });
+});
+
+describe("the Swift speaker rules are the web's", () => {
+  const swift = read("SupportChat.swift");
+  it("labels a person '<first name> middle dot Support team' and never as Miya", () => {
+    expect(swift).toContain(String.raw`"\(name) \u{00B7} \(SupportCopy.person)"`);
+    expect(swift).toContain('name.lowercased() != "miya"');
+    expect(swift).toContain(`static let handoffNotice = "${HANDOFF_NOTICE_TEXT}"`);
   });
 });

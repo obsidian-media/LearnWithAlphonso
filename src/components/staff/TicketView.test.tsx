@@ -90,7 +90,7 @@ describe("TicketView conversation", () => {
     setup();
     const convo = screen.getByLabelText("Conversation", { selector: "div" });
     expect(within(convo).getByText("Learner")).toBeTruthy();
-    expect(within(convo).getByText("Alphonso AI")).toBeTruthy();
+    expect(within(convo).getByText("Miya (AI helper)")).toBeTruthy();
     expect(within(convo).getByText("AI")).toBeTruthy();
     expect(within(convo).getByText(/Sam · support/)).toBeTruthy();
     expect(within(convo).getByText("A person will reply here.")).toBeTruthy();
