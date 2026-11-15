@@ -67,5 +67,54 @@ class PracticeHubTest {
         val slipped = ContentJson.json.decodeFromString<PracticeResult>(resultJson.replace("\"rightReplies\":5", "\"rightReplies\":4"))
         assertEquals("a" to "b", slipped.slipToShow("a" to "b"))
     }
+    private fun buttons(stars: Int, context: PracticeResultContext): List<String> {
+        val b = PracticeResultButtons.make(stars, context)
+        fun face(x: PracticeResultButton) = "${x.label}:${if (x.gold) "gold" else "quiet"}"
+        return listOf(b.retry?.let { face(it) } ?: "-", face(b.forward))
+    }
+    @Test fun `result buttons for a scenario talk`() {
+        assertEquals(listOf("Try again:gold", "Done:quiet"), buttons(0, PracticeResultContext.Scenario))
+        assertEquals(listOf("Try for 2:quiet", "Done:gold"), buttons(1, PracticeResultContext.Scenario))
+        assertEquals(listOf("Try for 3:quiet", "Done:gold"), buttons(2, PracticeResultContext.Scenario))
+        assertEquals(listOf("Play again:quiet", "Done:gold"), buttons(3, PracticeResultContext.Scenario))
+    }
+    @Test fun `result buttons for a campaign scene`() {
+        val mid = PracticeResultContext.CampaignScene(isLast = false)
+        val last = PracticeResultContext.CampaignScene(isLast = true)
+        assertEquals(listOf("Try again:gold", "Done:quiet"), buttons(0, mid))
+        assertEquals(listOf("Try again:gold", "Done:quiet"), buttons(0, last))
+        assertEquals(listOf("Try for 2:quiet", "Next scene:gold"), buttons(1, mid))
+        assertEquals(listOf("Try for 3:quiet", "Next scene:gold"), buttons(2, mid))
+        assertEquals(listOf("-", "Next scene:gold"), buttons(3, mid))
+        assertEquals(listOf("Try for 3:quiet", "Finish campaign:gold"), buttons(2, last))
+        assertEquals(listOf("-", "Finish campaign:gold"), buttons(3, last))
+        assertEquals(PracticeResultButtonKind.FINISH, PracticeResultButtons.make(1, last).forward.kind)
+        assertEquals(PracticeResultButtonKind.NEXT, PracticeResultButtons.make(1, mid).forward.kind)
+    }
+    @Test fun `replies meter is given of needed and never past the finish line`() {
+        fun result(replies: Int, needed: Int) = ContentJson.json.decodeFromString<PracticeResult>("""{"kind":"scenario","itemKey":"c","stars":0,"bestBefore":0,"bestAfter":0,"replies":$replies,"rightReplies":0,"shortReplies":0,"englishReplies":0,"finishMinReplies":$needed}""")
+        assertEquals(PracticeRepliesMeter(1, 3), result(1, 3).repliesMeter)
+        assertEquals(PracticeRepliesMeter(4, 4), result(9, 4).repliesMeter)
+        assertNull(result(2, 0).repliesMeter)
+    }
+    @Test fun `the reply bar sends only with text and no pending reply`() {
+        assertFalse(PracticeHub.canSendReply("", pending = false))
+        assertFalse(PracticeHub.canSendReply("  \n ", pending = false))
+        assertFalse(PracticeHub.canSendReply("Hello", pending = true))
+        assertTrue(PracticeHub.canSendReply("Hello", pending = false))
+        assertTrue(PracticeHub.canSendReply("  Hello  ", pending = false))
+    }
+    @Test fun `an unscored call stays on the scene only when replies were sent`() {
+        assertTrue(PracticeHub.staysOnUnscored(1))
+        assertFalse(PracticeHub.staysOnUnscored(0))
+        assertEquals("You're offline, so this talk wasn't scored. Try again when you're back online.", PracticeHub.UNSCORED_NOTICE)
+    }
+    @Test fun `see my result appears only in chat mode at the minimum turns`() {
+        assertEquals("See my result", PracticeHub.SEE_MY_RESULT)
+        assertFalse(PracticeHub.seeResultShown(true, 2, 3, false))
+        assertTrue(PracticeHub.seeResultShown(true, 3, 3, false))
+        assertFalse(PracticeHub.seeResultShown(false, 3, 3, false))
+        assertFalse(PracticeHub.seeResultShown(true, 3, 3, true))
+    }
     private val resultJson = """{"kind":"scenario","itemKey":"coffee","stars":1,"bestBefore":3,"bestAfter":3,"replies":5,"rightReplies":5,"shortReplies":0,"englishReplies":0,"finishMinReplies":3}"""
 }
