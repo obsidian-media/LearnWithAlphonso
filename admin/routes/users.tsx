@@ -3,6 +3,7 @@ import { useState } from "react";
 import { adminWhoAmI } from "@/lib/admin.functions";
 import { staffSearchUsers } from "@/lib/staff-users.functions";
 import { classifyStaffError } from "@/lib/staff-route-errors";
+import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
 import { UsersSearchView, type UserHit } from "@/components/staff/UsersSearchView";
 
 export const Route = createFileRoute("/users")({
@@ -25,11 +26,7 @@ function Users() {
   const [searched, setSearched] = useState(false);
 
   if (!allowed) {
-    return (
-      <main className="mx-auto max-w-5xl p-6">
-        <p className="text-ink-soft">You do not have access to this page.</p>
-      </main>
-    );
+    return <ForbiddenCard title="Users" scope="users.read" />;
   }
 
   async function search(q: string) {

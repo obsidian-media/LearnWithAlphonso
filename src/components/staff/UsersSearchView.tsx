@@ -28,7 +28,7 @@ export function UsersSearchView({
       <p className="ds-type-footnote mt-1 text-ds-ink-soft">
         Search by exact email, user id, or the start of a display name (2 characters or more).
       </p>
-      <form onSubmit={submit} className="mt-4 flex flex-col gap-3 sm:flex-row">
+      <form onSubmit={submit} className="mt-4 flex items-center gap-3">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -53,11 +53,15 @@ export function UsersSearchView({
           <li key={hit.id}>
             <a
               href={`/users/${hit.id}`}
-              className="flex flex-col gap-0.5 px-4 py-3 hover:bg-ds-sunk sm:flex-row sm:items-center sm:justify-between"
+              className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-0.5 px-4 py-3 hover:bg-ds-sunk sm:grid-cols-[1.1fr_1.4fr_auto]"
             >
-              <span className="font-medium text-ds-ink">{hit.displayName ?? "(no name)"}</span>
-              <span className="text-sm text-ds-ink-soft">{hit.email}</span>
-              <span className="text-xs text-ds-ink-soft">
+              <span className="order-1 font-bold text-ds-ink">
+                {hit.displayName ?? "(no name)"}
+              </span>
+              <span className="order-3 col-span-2 text-sm text-ds-ink-soft sm:order-2 sm:col-span-1">
+                {hit.email}
+              </span>
+              <span className="order-2 justify-self-end text-xs font-bold text-ds-ink-soft sm:order-3">
                 joined {new Date(hit.createdAt).toLocaleDateString()}
               </span>
             </a>

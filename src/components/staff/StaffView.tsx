@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "../ui/Button";
 import { SCOPES, type Scope } from "../../lib/staff-scopes";
+import { ConsoleCard } from "./ConsoleCard";
+import { ReasonDialog } from "./ReasonDialog";
 
 export type StaffRow = {
   userId: string;
@@ -13,6 +15,19 @@ export type StaffRow = {
 
 /** Scopes a non-owner can hold (staff.manage never belongs to anyone but an owner). */
 const GRANTABLE = SCOPES.filter((s) => s !== "staff.manage");
+
+type Pending =
+  { kind: "toggle"; row: StaffRow } | { kind: "scopes"; row: StaffRow; scopes: Scope[] };
+
+function pendingTitle(p: Pending): string {
+  if (p.kind === "scopes") return "Reason for this change";
+  return p.row.disabled ? "Reason for enabling" : "Reason for disabling";
+}
+
+function pendingLabel(p: Pending): string {
+  if (p.kind === "scopes") return "Save change";
+  return p.row.disabled ? "Enable" : "Disable";
+}
 
 /** Who is staff and what each person may do. The owner's own row is read-only: nobody edits their own access. */
 export function StaffView({
@@ -38,6 +53,18 @@ export function StaffView({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"owner" | "support">("support");
   const [reason, setReason] = useState("");
+  // The change waiting for its reason: the dialog replaces the browser prompt box.
+  const [pending, setPending] = useState<Pending | null>(null);
+
+  function confirmPending(why: string) {
+    if (!pending) return;
+    if (pending.kind === "toggle") {
+      onUpdate({ userId: pending.row.userId, disabled: !pending.row.disabled, reason: why });
+    } else {
+      onUpdate({ userId: pending.row.userId, scopes: pending.scopes, reason: why });
+    }
+    setPending(null);
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -78,12 +105,7 @@ export function StaffView({
                   variant="secondary"
                   className="!px-4 !py-2 text-sm"
                   disabled={busy}
-                  onClick={() => {
-                    const why = window.prompt(
-                      r.disabled ? "Reason for enabling" : "Reason for disabling",
-                    );
-                    if (why) onUpdate({ userId: r.userId, disabled: !r.disabled, reason: why });
-                  }}
+                  onClick={() => setPending({ kind: "toggle", row: r })}
                 >
                   {r.disabled ? "Enable" : "Disable"}
                 </Button>
@@ -99,15 +121,14 @@ export function StaffView({
                     <label key={scope} className="flex items-center gap-2 text-sm text-ds-ink">
                       <input
                         type="checkbox"
+                        className="size-4 accent-ds-choice"
                         checked={r.scopes.includes(scope)}
                         disabled={busy}
                         onChange={(e) => {
-                          const why = window.prompt("Reason for this change");
-                          if (!why) return;
                           const next = e.target.checked
                             ? [...r.scopes, scope]
                             : r.scopes.filter((s) => s !== scope);
-                          onUpdate({ userId: r.userId, scopes: next as Scope[], reason: why });
+                          setPending({ kind: "scopes", row: r, scopes: next as Scope[] });
                         }}
                       />
                       {scope}
@@ -120,45 +141,56 @@ export function StaffView({
         ))}
       </ul>
 
-      <h2 className="font-display mt-8 text-lg font-semibold text-ds-ink">Add someone</h2>
-      <p className="ds-type-footnote text-ds-ink-soft">
-        They must already have an account; found by exact email.
-      </p>
-      <form onSubmit={submit} className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          aria-label="Staff email"
-          placeholder="their account email"
-          className="min-h-11 rounded-xl border border-ds-line bg-ds-sunk px-3 py-2"
-        />
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value as "owner" | "support")}
-          aria-label="Role"
-          className="min-h-11 rounded-xl border border-ds-line bg-ds-sunk px-3 py-2"
-        >
-          <option value="support">support</option>
-          <option value="owner">owner</option>
-        </select>
-        <input
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          aria-label="Reason"
-          placeholder="Reason (3 to 500 characters)"
-          maxLength={500}
-          className="min-h-11 rounded-xl border border-ds-line bg-ds-sunk px-3 py-2 sm:col-span-2"
-        />
-        <div className="sm:col-span-2">
-          <Button
-            type="submit"
-            disabled={busy || !email.trim() || reason.trim().length < 3}
-            className="!py-2"
+      <ConsoleCard title="Add someone" className="mt-4">
+        <p className="ds-type-footnote text-ds-ink-soft">
+          They must already have an account; found by exact email.
+        </p>
+        <form onSubmit={submit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            aria-label="Staff email"
+            placeholder="their account email"
+            className="min-h-11 rounded-xl border border-ds-line bg-ds-sunk px-3 py-2"
+          />
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as "owner" | "support")}
+            aria-label="Role"
+            className="min-h-11 rounded-xl border border-ds-line bg-ds-sunk px-3 py-2"
           >
-            Add
-          </Button>
-        </div>
-      </form>
+            <option value="support">support</option>
+            <option value="owner">owner</option>
+          </select>
+          <input
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            aria-label="Reason"
+            placeholder="Reason (3 to 500 characters)"
+            maxLength={500}
+            className="min-h-11 rounded-xl border border-ds-line bg-ds-sunk px-3 py-2 sm:col-span-2"
+          />
+          <div className="sm:col-span-2">
+            <Button
+              type="submit"
+              disabled={busy || !email.trim() || reason.trim().length < 3}
+              className="!py-2"
+            >
+              Add
+            </Button>
+          </div>
+        </form>
+      </ConsoleCard>
+      {pending ? (
+        <ReasonDialog
+          title={pendingTitle(pending)}
+          confirmLabel={pendingLabel(pending)}
+          busy={busy}
+          error={error}
+          onCancel={() => setPending(null)}
+          onSubmit={confirmPending}
+        />
+      ) : null}
     </section>
   );
 }

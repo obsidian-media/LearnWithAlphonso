@@ -150,9 +150,29 @@ export const adminListFolders = createServerFn({ method: "GET" })
  */
 export const adminWhoAmI = createServerFn({ method: "GET" })
   .middleware([requireStaff()])
-  .handler(async ({ context }): Promise<{ userId: string; role: StaffRole; scopes: Scope[] }> => {
-    return { userId: context.userId, role: context.staffRole, scopes: context.staffScopes };
-  });
+  .handler(
+    async ({
+      context,
+    }): Promise<{
+      userId: string;
+      role: StaffRole;
+      scopes: Scope[];
+      displayName: string | null;
+    }> => {
+      // The caller's own display name, for the navigation. A failed read is not a failed sign-in: no name is shown.
+      const { data } = await context.supabaseAdmin
+        .from("profiles")
+        .select("display_name")
+        .eq("id", context.userId)
+        .maybeSingle();
+      return {
+        userId: context.userId,
+        role: context.staffRole,
+        scopes: context.staffScopes,
+        displayName: data?.display_name ?? null,
+      };
+    },
+  );
 
 export const adminCreateFolder = createServerFn({ method: "POST" })
   .middleware([requireStaff("podcasts.manage")])

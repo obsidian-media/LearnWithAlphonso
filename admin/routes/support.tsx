@@ -8,6 +8,7 @@ import {
   type TicketFilter,
 } from "@/lib/staff-support.functions";
 import { classifyStaffError } from "@/lib/staff-route-errors";
+import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
 import { TicketList } from "@/components/staff/TicketList";
 
 export const Route = createFileRoute("/support")({
@@ -33,17 +34,7 @@ function Support() {
   const [error, setError] = useState<string | null>(null);
 
   if (data.forbidden) {
-    return (
-      <main className="mx-auto max-w-5xl p-4 sm:p-6">
-        <h1 className="font-display text-2xl font-semibold text-ds-ink">Support</h1>
-        <div className="mt-4 rounded-2xl border border-ds-line bg-ds-card p-4">
-          <p className="text-sm font-bold text-ds-ink">Forbidden: missing scope support.read</p>
-          <p className="ds-type-footnote text-ds-ink-soft">
-            Ask the owner to add the Support role to your account.
-          </p>
-        </div>
-      </main>
-    );
+    return <ForbiddenCard title="Support" scope="support.read" />;
   }
   const shown = page ?? data.first;
 

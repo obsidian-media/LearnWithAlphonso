@@ -15,6 +15,7 @@ import {
 import { classifyStaffError } from "@/lib/staff-route-errors";
 import type { UserAction } from "@/lib/staff-actions";
 import type { ActionInput } from "@/components/staff/ActionDialog";
+import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
 import { LearnerView } from "@/components/staff/LearnerView";
 
 export const Route = createFileRoute("/users_/$id")({
@@ -45,11 +46,7 @@ function Learner() {
   const [notice, setNotice] = useState<string | null>(null);
 
   if (data.forbidden) {
-    return (
-      <main className="mx-auto max-w-5xl p-6">
-        <p className="text-ink-soft">You do not have access to this page.</p>
-      </main>
-    );
+    return <ForbiddenCard title="Learner" scope="users.read" />;
   }
   const { facts, scopes } = data;
 
