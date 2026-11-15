@@ -26,9 +26,6 @@ struct SpeakQuestionCard: View {
     let isConnected: Bool
     let checked: Bool
     @Binding var picked: String?
-    /// In the lesson's room (round 6): Alphonso's bubble shows the prompt and the verdict sheet the reason, so this
-    /// card is the phrase, the microphone and the typing fallback, in the lesson's style.
-    var inStage = false
 
     /// The shared voice engine (permission, recorder, interruptions, stale callbacks after this card leaves).
     @State private var voice = VoiceSessionController()
@@ -51,19 +48,13 @@ struct SpeakQuestionCard: View {
     /// Voice would work if the learner opted in -- worth offering the choice.
     private var voiceNeedsConsent: Bool { isConnected && !micUnavailable && !hasAIConsent }
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-            if inStage {
-                LessonSpeakPhraseCard(phrase: question.answer, onHear: hearPhrase)
-            } else {
-                Text("SPEAKING")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                AskingAlphonso(prompt: question.prompt, hasMedia: true)
+    @Environment(\.alphonsoDS) private var ds
 
-                phraseCard
-            }
+    var body: some View {
+        // In the lesson's room: Alphonso's bubble shows the prompt and the verdict sheet the reason, so this card is
+        // the phrase, the microphone and the typing fallback, in the lesson's style (LessonStageViews).
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+            LessonSpeakPhraseCard(phrase: question.answer, onHear: hearPhrase)
 
             if canCapture {
                 captureControls
@@ -74,21 +65,15 @@ struct SpeakQuestionCard: View {
                     } label: {
                         Label("Use your voice instead", systemImage: "mic")
                     }
-                    .buttonStyle(.alphonsoSecondary)
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
                 }
                 typingFallback
             }
 
             if let errorMessage = visibleErrorMessage {
                 Text(errorMessage)
-                    .font(AlphonsoFont.sans(13))
-                    .foregroundStyle(AlphonsoColor.destructive)
-            }
-
-            if checked && !inStage {
-                ExplanationView(
-                    question: .speak(question), picked: picked, explanation: question.explanation,
-                    course: course)
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.wrongInk)
             }
         }
         // Consent is asked only if the learner chooses voice, and never by
@@ -112,27 +97,6 @@ struct SpeakQuestionCard: View {
             ?? (voice.recorderStartFailed ? VoiceCopy.microphoneCouldNotStart : nil) ?? errorMessage
     }
 
-    private var phraseCard: some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-            Text("YOUR PHRASE")
-                .font(AlphonsoFont.sans(11, weight: .semiBold))
-                .tracking(0.4)
-                .foregroundStyle(AlphonsoColor.inkSoft)
-            Text(question.answer)
-                .font(AlphonsoFont.sans(17, weight: .semiBold))
-                .foregroundStyle(AlphonsoColor.ink)
-            Button(action: hearPhrase) {
-                Label("Hear it first", systemImage: "speaker.wave.2.fill")
-            }
-            .buttonStyle(.alphonsoSecondary(fullWidth: false))
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(AlphonsoSpacing.sm)
-        .background(
-            AlphonsoColor.parchment,
-            in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
-    }
-
     private func hearPhrase() {
         speakCardSynthesizer.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: question.answer)
@@ -141,16 +105,17 @@ struct SpeakQuestionCard: View {
     }
 
     private var captureControls: some View {
-        VStack(spacing: AlphonsoSpacing.sm) {
+        VStack(spacing: AlphonsoDS.Space.s2) {
             if voice.isBusy {
-                ProgressView("Checking what you said...").tint(AlphonsoColor.moss)
+                ProgressView("Checking what you said...").tint(ds.choice)
+                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
             } else {
                 // Hold to talk, release to send: the same control as the conversation screens.
                 HoldToTalkButton(
                     isRecording: voice.isRecording,
-                    idleColor: AlphonsoColor.moss,
-                    recordingColor: AlphonsoColor.ember,
-                    iconColor: AlphonsoColor.onPrimary,
+                    idleColor: ds.choice,
+                    recordingColor: ds.wrongInk,
+                    iconColor: ds.onHero,
                     accessibilityLabel: "Hold to say the phrase",
                     onPress: { if voice.pressBegan() { errorMessage = nil } },
                     onRelease: { voice.pressEnded() }
@@ -158,22 +123,14 @@ struct SpeakQuestionCard: View {
                 .disabled(checked)
             }
             Text(captureHint)
-                .font(AlphonsoFont.sans(13))
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .dsText(.footnote)
+                .foregroundStyle(ds.inkSoft)
 
             if let said = picked, !said.isEmpty {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-                    Text("WE HEARD")
-                        .font(AlphonsoFont.sans(11, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                    Text(said).font(AlphonsoFont.sans(15)).foregroundStyle(AlphonsoColor.ink)
+                LessonCard {
+                    Text("We heard").dsText(.overline).foregroundStyle(ds.inkSoft)
+                    Text(said).dsText(.answer).foregroundStyle(ds.ink)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(AlphonsoSpacing.sm)
-                .background(
-                    AlphonsoColor.surface,
-                    in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
             }
         }
         .frame(maxWidth: .infinity)
@@ -186,23 +143,13 @@ struct SpeakQuestionCard: View {
     }
 
     private var typingFallback: some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
             Text(AIConsentCopy.speakFallback(
                 micUnavailable: micUnavailable, isConnected: isConnected, hasAIConsent: hasAIConsent))
-            .font(AlphonsoFont.sans(13))
-            .foregroundStyle(AlphonsoColor.inkSoft)
-            if inStage {
-                LessonTextField(placeholder: "Type the phrase", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
-                    .disabled(checked)
-            } else {
-                TextField(
-                    "Type the phrase", text: Binding(get: { picked ?? "" }, set: { picked = $0 })
-                )
-                .textFieldStyle(.plain)
-                .padding(AlphonsoSpacing.sm)
-                .alphonsoInputBackground()
+            .dsText(.footnote)
+            .foregroundStyle(ds.inkSoft)
+            LessonTextField(placeholder: "Type the phrase", text: Binding(get: { picked ?? "" }, set: { picked = $0 }))
                 .disabled(checked)
-            }
         }
     }
 
