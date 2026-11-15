@@ -308,6 +308,26 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
                 }
             }
         }
+        "mini-bar", "mini-bar-long" -> {
+            val episode = com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode(
+                "e1", "f1", "ep-1",
+                if (screen == "mini-bar") "At the Bookshop" else "Ordering a very long coffee order at the corner cafe, part two",
+                null, "", 610, 0, null,
+            )
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                container.podcastPlayer.seedForHarness(
+                    com.obsidianmedia.learnwithalphonso.podcast.PodcastPlayerState(
+                        episode = episode, phase = com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerPhase.Playing,
+                        elapsedSeconds = 240.0, queue = listOf(episode, episode.copy(id = "e2", title = "Next one")),
+                    ),
+                )
+            }
+            androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize().background(com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens.current.surface)) {
+                androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.align(androidx.compose.ui.Alignment.BottomCenter)) {
+                    com.obsidianmedia.learnwithalphonso.ui.listen.PodcastMiniBar(container)
+                }
+            }
+        }
         "settings" -> SettingsScreen(container, {})
         "save-word" -> SaveWordSheet(container, SaveWordRequest("café", "Un café, por favor.", "es"), {})
         "podcast-quiz" -> PodcastQuizSheet(

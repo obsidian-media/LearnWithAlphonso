@@ -88,6 +88,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.DsPill
 import com.obsidianmedia.learnwithalphonso.ui.components.DsPillTone
 import com.obsidianmedia.learnwithalphonso.ui.components.DsSegmented
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.onChoice
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
@@ -299,8 +300,8 @@ fun ListenShelfFolderScreen(container: AppContainer, vm: ListenViewModel, shelf:
                         .clickable(role = Role.Button) { scope.launch { playEpisode(container, t, shelf.episodes) } },
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = ds.onHero)
-                    Text("${if (current != null) "Continue" else "Start"} Episode $number", color = ds.onHero, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = ds.onChoice)
+                    Text("${if (current != null) "Continue" else "Start"} Episode $number", color = ds.onChoice, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -331,7 +332,7 @@ fun ListenShelfFolderScreen(container: AppContainer, vm: ListenViewModel, shelf:
                     ) {
                         val index = shelf.episodes.indexOf(episode) + 1
                         Box(Modifier.size(36.dp).background(if (st == ListenEpisodeState.Done) ds.choice else if (st == ListenEpisodeState.InProgress) ds.xpTint else ds.surface, CircleShape), contentAlignment = Alignment.Center) {
-                            Text(if (st == ListenEpisodeState.Done) "✓" else "$index", color = if (st == ListenEpisodeState.Done) ds.onHero else ds.ink, fontWeight = FontWeight.Bold)
+                            Text(if (st == ListenEpisodeState.Done) "✓" else "$index", color = if (st == ListenEpisodeState.Done) ds.onChoice else ds.ink, fontWeight = FontWeight.Bold)
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(episode.title, color = ds.ink, fontWeight = FontWeight.Bold, style = HeadlineType)
@@ -372,6 +373,7 @@ internal fun FullPlayerContent(
     onSleep: (SleepChoice) -> Unit,
     onTranscript: () -> Unit,
     onClose: () -> Unit,
+    onNext: (() -> Unit)? = null,
 ) {
     val ds = LocalAlphonsoTokens.current
     val left = ListenShelf.clock(duration - elapsed.toInt())
@@ -414,6 +416,7 @@ internal fun FullPlayerContent(
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             SleepMenu(sleep, onSleep)
             DsCompactButton("Transcript", onTranscript)
+            if (onNext != null) DsCompactButton("Next episode", onNext)
             DsCompactButton("Stop and close", onClose)
         }
     }

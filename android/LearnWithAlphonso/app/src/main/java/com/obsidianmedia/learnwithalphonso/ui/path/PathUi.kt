@@ -26,6 +26,7 @@ import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
 import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.onChoice
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -448,7 +449,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.roadItems(
     }
     if (p.status == "behind" && p.recovery.isNotEmpty()) item(key = "recovery") {
         val ds = LocalAlphonsoTokens.current
-        var picked by remember { mutableStateOf<String?>(null) }
+        var picked by androidx.compose.runtime.saveable.rememberSaveable(p.recovery.joinToString { it.id }) { mutableStateOf<String?>(null) }
         val chosenId = picked ?: p.recovery.firstOrNull { it.suggested }?.id
         Card {
             Text(p.statusLine, style = HeadlineType, color = ds.ink)
@@ -461,11 +462,11 @@ private fun androidx.compose.foundation.lazy.LazyListScope.roadItems(
                         .border(2.dp, if (on) ds.choice else ds.line, shape)
                         .clickable(role = Role.RadioButton) { picked = o.id }
                         .padding(AlphonsoTokens.Space.s3)
-                        .semantics { selected = on },
+                        .semantics(mergeDescendants = true) { selected = on },
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
                 ) {
                     Box(Modifier.size(AlphonsoTokens.Space.s5).clip(CircleShape).border(2.dp, if (on) ds.choice else ds.line, CircleShape).background(if (on) ds.choice else ds.card), contentAlignment = Alignment.Center) {
-                        if (on) Icon(Icons.Filled.Check, null, tint = ds.onHero, modifier = Modifier.size(AlphonsoTokens.Space.s4))
+                        if (on) Icon(Icons.Filled.Check, null, tint = ds.onChoice, modifier = Modifier.size(AlphonsoTokens.Space.s4))
                     }
                     Column {
                         Text(o.title + if (o.suggested) " (suggested)" else "", style = HeadlineType, color = ds.ink)

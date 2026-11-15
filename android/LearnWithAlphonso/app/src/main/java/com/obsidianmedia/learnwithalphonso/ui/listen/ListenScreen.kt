@@ -56,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -266,7 +267,7 @@ private fun EpisodeRow(container: AppContainer, episode: PodcastEpisode, subtitl
     val ds = LocalAlphonsoTokens.current
     Column {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(Modifier.weight(1f).clickable(onClick = onPlay).semantics { contentDescription = "Play ${episode.title}" }) {
+            Box(Modifier.weight(1f).clickable(onClick = onPlay).clearAndSetSemantics { contentDescription = "Play ${episode.title}"; role = androidx.compose.ui.semantics.Role.Button }) {
                 AlphonsoRowCard(episode.title, subtitle, accent = if (episode.positionSeconds > 0) ds.action else ds.choice, leadingEmoji = "🎧")
             }
             DownloadButton(container, episode)
@@ -345,9 +346,8 @@ fun PodcastMiniBar(container: AppContainer) {
     }
     // Round 6.1 "mini player": a navy pill with the episode's room as art, the title, minutes left and a gold play button,
     // a thin gold progress line along its foot. The quiz offer sits above it, on the surface.
-    val room by produceState("radio", episode.folderId) {
-        value = runCatching { container.podcastClient.fetchFolders().firstOrNull { it.id == episode.folderId }?.let { ListenShelf.room(it) } }.getOrNull() ?: "radio"
-    }
+    val folders by container.podcastFolders.collectAsState()
+    val room = folders.firstOrNull { it.id == episode.folderId }?.let { ListenShelf.room(it) } ?: "radio"
     Column(Modifier.fillMaxWidth().padding(horizontal = AlphonsoTokens.Space.s3).padding(bottom = AlphonsoTokens.Space.s2), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
         // The quiz is offered once the episode has played to its end (and only if it has one the learner can see).
         PodcastQuizOfferRow(container, episode, finished = state.phase == PodcastPlayerPhase.Finished)
@@ -355,12 +355,12 @@ fun PodcastMiniBar(container: AppContainer) {
         Box(Modifier.fillMaxWidth().shadow(AlphonsoTokens.Space.s2, pill, clip = false, ambientColor = AlphonsoTokens.Elevation.shadowTint, spotColor = AlphonsoTokens.Elevation.shadowTint).clip(pill).background(ds.hero)) {
             Row(Modifier.fillMaxWidth().padding(start = AlphonsoTokens.Space.s2, end = AlphonsoTokens.Space.s3, top = AlphonsoTokens.Space.s2, bottom = AlphonsoTokens.Space.s3), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
                 Row(
-                    Modifier.weight(1f).heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = androidx.compose.ui.semantics.Role.Button) { expanded = true }.semantics(mergeDescendants = true) { contentDescription = "Open player: ${episode.title}" },
+                    Modifier.weight(1f).heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = androidx.compose.ui.semantics.Role.Button) { expanded = true }.clearAndSetSemantics { contentDescription = "Open player: ${episode.title}, ${ListenShelf.clock(episode.durationSeconds - state.elapsedSeconds.toInt())} left"; role = androidx.compose.ui.semantics.Role.Button },
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
                 ) {
                     RoomImage(room, Modifier.size(AlphonsoTokens.Space.s12).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)))
                     Column(Modifier.weight(1f)) {
-                        Text(episode.title, style = FootnoteType, fontWeight = FontWeight.ExtraBold, color = ds.onHero, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(episode.title, style = FootnoteType, fontWeight = FontWeight.ExtraBold, color = ds.onHero, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         val failure = state.failure
                         when {
                             failure != null -> Text(PodcastPlaybackCopy.message(failure), style = CaptionType, color = ds.onHeroKick)
@@ -376,28 +376,16 @@ fun PodcastMiniBar(container: AppContainer) {
                             CircularProgressIndicator(color = ds.onAction, strokeWidth = 2.dp, modifier = Modifier.size(AlphonsoTokens.Space.s5).semantics { contentDescription = "Loading" })
                         }
                         else -> IconButton(onClick = { container.podcastPlayer.toggle() }, modifier = Modifier.size(AlphonsoTokens.Space.minTouch)) {
-                            val (icon, label) = when (state.control) {
-                                PodcastPlayerControl.PAUSE -> Icons.Filled.Pause to "Pause"
-                                PodcastPlayerControl.RETRY -> Icons.Filled.Refresh to PodcastPlaybackCopy.RETRY_TITLE
-                                else -> Icons.Filled.PlayArrow to "Play"
+                            val label = com.obsidianmedia.learnwithalphonso.core.podcast.MiniBarPresentation.toggleLabel(state.control, PodcastPlaybackCopy.RETRY_TITLE)
+                            val icon = when (state.control) {
+                                PodcastPlayerControl.PAUSE -> Icons.Filled.Pause
+                                PodcastPlayerControl.RETRY -> Icons.Filled.Refresh
+                                else -> Icons.Filled.PlayArrow
                             }
                             Icon(icon, contentDescription = label, tint = ds.onAction)
                         }
                     }
                 }
-                state.nextEpisode?.let { next ->
-                    IconButton(onClick = { scope.launch { play(container, next, state.queue) } }) { Icon(Icons.Filled.SkipNext, contentDescription = "Next episode", tint = ds.onHero) }
-                }
-                IconButton(onClick = {
-                    showTranscript = true
-                    if (transcript == null && !loadingTranscript) scope.launch {
-                        loadingTranscript = true
-                        transcriptCourse = runCatching { PodcastLibrary.courseOf(episode.folderId, container.podcastClient.fetchFolders()) }.getOrNull()
-                        transcript = runCatching { container.podcastClient.fetchTranscript(episode.id) }.getOrNull() ?: ""
-                        loadingTranscript = false
-                    }
-                }) { Icon(Icons.Filled.Notes, contentDescription = "Show transcript", tint = ds.onHero) }
-                IconButton(onClick = { container.podcastPlayer.close() }) { Icon(Icons.Filled.Close, contentDescription = "Close player", tint = ds.onHeroSoft) }
             }
             // The thin gold progress line along the foot of the pill.
             val fraction = if (episode.durationSeconds > 0) (state.elapsedSeconds / episode.durationSeconds).toFloat().coerceIn(0f, 1f) else 0f
@@ -428,6 +416,7 @@ fun PodcastMiniBar(container: AppContainer) {
                     }
                 },
                 onClose = { expanded = false; container.podcastPlayer.close() },
+                onNext = state.nextEpisode?.let { next -> { scope.launch { play(container, next, state.queue) } } },
             )
         }
     }

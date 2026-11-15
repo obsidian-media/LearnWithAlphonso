@@ -136,6 +136,8 @@ class AppContainer(context: Context) {
     /** What the signed-in app still asks a learner after sign-in, held for the process so a rotation does not redo it. */
     val onboarding = OnboardingFlow()
     val podcastClient = PodcastClient(supabaseHttp, { session.userId })
+    /** The folders the Library last read: the mini bar picks its room art from these, with no request of its own. */
+    val podcastFolders = kotlinx.coroutines.flow.MutableStateFlow<List<com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder>>(emptyList())
     /** A video a learning-path stop asked for; the Library's Watch shelf opens it once the videos are loaded, then clears it. */
     val pendingVideoId = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
 

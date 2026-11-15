@@ -91,6 +91,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
 import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
 import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.onChoice
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
@@ -359,7 +360,7 @@ fun VideoPlayerSheet(
                     onClick = { togglePlay() },
                     modifier = Modifier.size(48.dp).background(ds.choice, CircleShape),
                 ) {
-                    Icon(if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow, contentDescription = if (playing) "Pause" else "Play", tint = ds.onHero)
+                    Icon(if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow, contentDescription = if (playing) "Pause" else "Play", tint = ds.onChoice)
                 }
                 Text("${VideoShelf.clock(time)} / ${VideoShelf.clock(duration)}", color = ds.inkSoft, style = FootnoteType, modifier = Modifier.weight(1f))
                 DsChip(VideoShelf.speedLabel(speed), selected = false, onClick = { speed = VideoShelf.nextSpeed(speed) }, accessibilityText = "Playback speed ${VideoShelf.speedLabel(speed)}. Change speed")

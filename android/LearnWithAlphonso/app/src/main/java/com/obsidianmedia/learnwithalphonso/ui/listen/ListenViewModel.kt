@@ -60,6 +60,8 @@ class ListenViewModel(
     private val searchDebounceMillis: Long = 250,
     /** DEBUG screenshots (ScreenHarness): a fixed state; nothing is loaded. */
     seed: ListenUiState? = null,
+    /** Told the folders each time the library is read (the mini bar uses them for room art). */
+    private val onFolders: (List<PodcastFolder>) -> Unit = {},
 ) : ViewModel() {
     private val _state = MutableStateFlow(seed ?: ListenUiState())
     val state: StateFlow<ListenUiState> = _state.asStateFlow()
@@ -87,6 +89,7 @@ class ListenViewModel(
         _state.update { it.copy(isLoading = true, error = null) }
         try {
             val folders = client.fetchFolders()
+            onFolders(folders)
             val index = client.fetchPublishedIndex()
             val publishedFolderIds = index.map { it.folderId }.toSet()
             _state.update {

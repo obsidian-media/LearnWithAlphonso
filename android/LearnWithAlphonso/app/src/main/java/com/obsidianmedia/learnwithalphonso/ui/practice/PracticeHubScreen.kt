@@ -244,7 +244,7 @@ internal fun PracticeHubContent(
     var input by remember { mutableStateOf("") }
     val state by vm.state.collectAsState()
     Column(verticalArrangement = Arrangement.spacedBy(Space.s2)) {
-        DsField(input, { input = it }, placeholder = "Your reply", label = "Your reply")
+        DsField(input, { input = it }, placeholder = "Your reply", label = "Your reply", maxLines = 4)
         HubButton("Send") { if (input.isNotBlank() && state.phase == ConversationPhase.IDLE) { vm.sendText(input); input = "" } }
     }
 }
