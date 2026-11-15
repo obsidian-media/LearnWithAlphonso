@@ -930,11 +930,12 @@ server's 3-hour limit is replaced once at finish on a 403.
 ## Themes
 
 Two user-selectable themes on every platform: **Royal** (navy and gold, the default; light and
-night appearances) and **Meadow** (green). Studio Ink, Manuscript and Canopy were removed on
+night appearances) and **Meadow** (green; light only: it stays light, even in dark mode, on every
+platform, so the app has exactly three looks: Royal light, Royal night and Meadow). Studio Ink, Manuscript and Canopy were removed on
 2026-11-16 (visual round 6 had already moved the screens onto the design-system tokens, so the
 three older themes were only a second, unused layer). A theme swaps the `--c-*` token values:
 `src/styles/ds-tokens.generated.css` reads `data-palette` on `<html>` (Royal is `:root`, Meadow is
-`:root[data-palette="meadow"]`, night is `data-ds-mode="night"`). `src/lib/theme.ts` is a small
+`:root[data-palette="meadow"]`, night is `data-ds-mode="night"` and its selectors skip Meadow). `src/lib/theme.ts` is a small
 Zustand store: the account value (`profiles.theme`) wins over the value kept on the device
 (`localStorage` "theme"), over the Royal default, and an inline `<script>` in `src/routes/__root.tsx`
 (`THEME_BOOT_SCRIPT`) applies it before first paint. `normalizeTheme` is the one rule: `meadow`
