@@ -35,7 +35,9 @@ describe("ScreenScene: the reusable scene background", () => {
     expect(body).toContain("LinearGradient");
     expect(body).toContain("AlphonsoColor.surface.opacity(");
     expect(body).toContain("@Environment(\\.colorScheme)");
-    expect(body).toMatch(/colorScheme == \.dark \?/);
+    // Night is the device's dark setting for Royal only: Meadow stays light, so it never takes the night scrim.
+    expect(body).toMatch(/usesNight\(deviceDark: colorScheme == \.dark\)/);
+    expect(body).toMatch(/opacity\(night \?/);
     // The gradient starts at the top edge.
     expect(body).toMatch(/startPoint: \.top/);
   });
