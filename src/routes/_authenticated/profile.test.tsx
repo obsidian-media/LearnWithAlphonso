@@ -438,7 +438,7 @@ describe("Profile, round 6", () => {
       document.querySelector(`[data-big-stat="${name}"] [data-value]`)?.textContent;
     expect(value("streak")).toBe(String(o.progress.streak));
     expect(value("xp")).toBe(n.totalXp.toLocaleString("en-US"));
-    expect(value("words")).toBe(n.masteredWords.toLocaleString("en-US"));
+    expect(value("words")).toBe(n.wordsLearned.toLocaleString("en-US"));
     expect(value("lessons")).toBe(String(o.completions.length));
     expect(document.querySelector('[data-big-stat="streak"]')).toHaveTextContent(
       `Longest: ${o.progress.longestStreak}`,
@@ -554,9 +554,7 @@ describe("Profile, round 6", () => {
     await openFold(/^Weak spots/);
     expect(screen.getByText("Your first lesson lights up a square.")).toBeInTheDocument();
     expect(screen.getByText(/No weak spots yet/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Your listening, speaking, vocabulary, grammar and reading/),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Skills start counting from your next lesson")).toBeInTheDocument();
     expect(screen.queryByText(/writing/i)).not.toBeInTheDocument();
     await openTab("Social");
     expect(screen.getByText(/Learning sticks better with a friend/)).toBeInTheDocument();
@@ -613,6 +611,16 @@ describe("Profile: skills radar, goal rings, mastered words, league standing", (
     expect(card).toHaveTextContent(/Speaking: \d+ more answers to score/);
   });
 
+  it("with no answers at all the card says Skills start counting from your next lesson", async () => {
+    getProfileOverview.mockResolvedValue(richLearner({ skills: [] }));
+    renderPage();
+    await openTab("Progress");
+    const card = await find('[data-skills-chart="empty"]');
+    expect(card.querySelector("[data-skills-intro]")).toHaveTextContent(
+      "Skills start counting from your next lesson",
+    );
+  });
+
   it("draws one vertex per scored skill, from the rows, and calls out the lowest", async () => {
     getProfileOverview.mockResolvedValue(
       richLearner({
@@ -666,12 +674,17 @@ describe("Profile: skills radar, goal rings, mastered words, league standing", (
     expect(week).toHaveTextContent(/Pick a daily time in Edit your answers/);
   });
 
-  it("Words mastered comes from the mastered markers", async () => {
-    getProfileOverview.mockResolvedValue(richLearner({ masteredWords: 17 }));
+  it("Words learned counts the words of the completed lessons, not the retired saved words", async () => {
+    const o = richLearner({ masteredWords: 17 });
+    getProfileOverview.mockResolvedValue(o);
     renderPage();
     const tile = await find('[data-big-stat="words"]');
-    expect(tile.querySelector("[data-value]")).toHaveTextContent("17");
-    expect(tile).toHaveTextContent("words mastered");
+    const learned = bigNumbers(o).wordsLearned;
+    expect(learned).toBeGreaterThan(0);
+    expect(learned).not.toBe(17);
+    expect(tile.querySelector("[data-value]")).toHaveTextContent(String(learned));
+    expect(tile).toHaveTextContent("words learned");
+    expect(tile).not.toHaveTextContent("mastered");
   });
 
   it("the league card shows rank and when the week ends, in the learner's zone", async () => {

@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { skillScores, type SkillDayRow } from "./profile-data";
-import { MIN_SKILL_ANSWERS, radarModel, radarPoint, radarPolygon } from "./skills-radar";
+import {
+  MIN_SKILL_ANSWERS,
+  SKILLS_NO_DATA_COPY,
+  skillsEmptyIntro,
+  radarModel,
+  radarPoint,
+  radarPolygon,
+} from "./skills-radar";
 
 const today = "2026-11-06";
 const row = (skill: string, right: number, total: number): SkillDayRow => ({
@@ -48,5 +55,17 @@ describe("radar bounds", () => {
   it("never plots outside the chart, even for rows with more right answers than total", () => {
     const m = model([row("listening", 30, 10), row("grammar", 5, 10), row("reading", 10, 10)]);
     expect(m.skills.find((s) => s.skill === "listening")?.pct).toBe(100);
+  });
+});
+
+describe("skillsEmptyIntro", () => {
+  it("says the chart starts from the next lesson when nothing was answered", () => {
+    expect(SKILLS_NO_DATA_COPY).toBe("Skills start counting from your next lesson");
+    expect(skillsEmptyIntro(model([]).skills)).toBe(SKILLS_NO_DATA_COPY);
+  });
+  it("keeps the usual line once some answers exist but too few to draw", () => {
+    const text = skillsEmptyIntro(model([row("listening", 3, 4)]).skills);
+    expect(text).not.toBe(SKILLS_NO_DATA_COPY);
+    expect(text).toMatch(/will appear here/);
   });
 });
