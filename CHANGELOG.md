@@ -66,7 +66,7 @@ Owner device check of builds 62 and 63.
 
 ### Owner decisions (2026-11-14)
 
-- **Themes:** "Royal (light and night) plus Meadow only", and "Meadow stays light, even in dark mode". The shipped Meadow night look is therefore a bug; a fix PR is in progress.
+- **Themes:** "Royal (light and night) plus Meadow only", and "Meadow stays light, even in dark mode". The shipped Meadow night look was a bug and is fixed (#547, e1e8687a).
 - **Support persona:** Miya. Miya is the AI helper and appears in the Help chat only; staff are shown as "first name · Support team".
 - **Widget:** it follows Meadow, and the wide widget shows Alphonso and "Best".
 - **Practice result:** with 0 stars the button is "Try again" in gold. In a campaign, the next scene comes from the Practice hub v3 result screen ("Try for 3" and "Next scene"), not from the in-call Continue button.
