@@ -26,6 +26,12 @@ import kotlinx.serialization.Serializable
 
     val retryLabel get() = if (stars == 3) "Play again" else if (stars == 0) "Try again" else "Try for ${stars + 1}"
 
+    /** Which buttons the result screen shows (the Practice hub v3 result screen plus the 0-star refinement); see [PracticeResultButtons]. */
+    fun buttons(context: PracticeResultContext): PracticeResultButtons = PracticeResultButtons.make(stars, context)
+
+    /** The 0-star hint card's meter: replies given of replies needed to finish. Null without a finish count. */
+    val repliesMeter: PracticeRepliesMeter? get() = if (finishMinReplies > 0) PracticeRepliesMeter(replies.coerceIn(0, finishMinReplies), finishMinReplies) else null
+
     fun headline(course: String): String {
 
         val praise = mapOf("en" to "Well done.", "fr" to "Très bien.", "es" to "Muy bien.")[course] ?: "Well done."
@@ -64,6 +70,44 @@ import kotlinx.serialization.Serializable
 
 }
 
+/** Replies given of replies needed, drawn as segments. */
+data class PracticeRepliesMeter(val given: Int, val needed: Int)
+
+/** A talk is either a scenario or one scene of a campaign (and a scene may be the campaign's last). */
+sealed interface PracticeResultContext {
+    data object Scenario : PracticeResultContext
+    data class CampaignScene(val isLast: Boolean) : PracticeResultContext
+}
+
+enum class PracticeResultButtonKind { RETRY, NEXT, FINISH, DONE }
+
+/** [gold] is the primary (gold) button; otherwise it is the quiet one. */
+data class PracticeResultButton(val kind: PracticeResultButtonKind, val label: String, val gold: Boolean)
+
+/**
+ * The buttons on the Practice result screen, one pure table so the three platforms stay the same.
+ * - [retry] sits on the left, [forward] on the right.
+ * - No stars: "Try again" is gold and "Done" quiet (retrying is the point).
+ * - A campaign scene with at least one star moves on with a gold "Next scene" ("Finish campaign" on the last scene).
+ *   With no star it never moves on (a talk counts done only from one star up, #511).
+ * - Three stars on a campaign scene: nothing to try for, so only the gold forward button.
+ * - A scenario talk keeps its own buttons: retry (Try for N, or Play again) and a gold Done.
+ */
+data class PracticeResultButtons(val retry: PracticeResultButton?, val forward: PracticeResultButton) {
+    companion object {
+        fun make(stars: Int, context: PracticeResultContext): PracticeResultButtons {
+            val empty = stars == 0
+            val label = if (stars >= 3) "Play again" else if (empty) "Try again" else "Try for ${stars + 1}"
+            val retry = PracticeResultButton(PracticeResultButtonKind.RETRY, label, gold = empty)
+            val done = PracticeResultButton(PracticeResultButtonKind.DONE, "Done", gold = !empty)
+            if (context !is PracticeResultContext.CampaignScene || empty) return PracticeResultButtons(retry, done)
+            val forward = if (context.isLast) PracticeResultButton(PracticeResultButtonKind.FINISH, "Finish campaign", gold = true)
+            else PracticeResultButton(PracticeResultButtonKind.NEXT, "Next scene", gold = true)
+            return PracticeResultButtons(if (stars >= 3) null else retry, forward)
+        }
+    }
+}
+
 data class PracticePick(val scenarioId: String, val weakSpot: String?)
 
 data class PracticeContinue(val campaignId: String, val sceneIndex: Int)
@@ -80,6 +124,16 @@ object PracticeHub {
     fun stars(rows: List<PracticeStarRow>, kind: String, key: String): Int = rows.lastOrNull { it.kind == kind && it.itemKey == key }?.bestStars ?: 0
 
     fun starLabel(n: Int) = "$n of 3 stars"
+    /** Shown when a finished call has no score (offline or unreachable). The same line on web, iOS and Android. */
+    const val UNSCORED_NOTICE = "You're offline, so this talk wasn't scored. Try again when you're back online."
+    /** The chat-mode end-of-scene button (owner decision 2026-11-15). The same label on web, iOS and Android. */
+    const val SEE_MY_RESULT = "See my result"
+    /** It appears at the end of the transcript in chat mode, once the scene has its minimum turns. */
+    fun seeResultShown(chatMode: Boolean, userReplies: Int, minTurns: Int, finished: Boolean): Boolean = chatMode && !finished && userReplies >= minTurns
+    /** A call with replies but no score keeps the learner on the scene (earlier scenes keep their progress); with no reply there is nothing to keep. */
+    fun staysOnUnscored(userReplies: Int): Boolean = userReplies > 0
+    /** Whether the chat-mode reply bar can send: something typed (not only spaces) and no reply still pending. */
+    fun canSendReply(text: String, pending: Boolean): Boolean = !pending && text.isNotBlank()
 
     fun level(cefr: String?): String = (cefr ?: "A1").uppercase().let { if (it.startsWith("A")) "Beginner" else if (it.startsWith("B")) "Intermediate" else "Advanced" }
 

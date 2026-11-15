@@ -27,6 +27,7 @@ import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 import { waitForCallCue } from "@/lib/sfx";
 import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/lib/practice-api";
 import { PracticeResult } from "@/components/practice/PracticeResult";
+import { PracticeUnscored } from "@/components/practice/PracticeUnscored";
 import { roomUrl } from "@/lib/practice-catalog";
 import { firstSlip, practiceModeSearch, type PracticeModeSearch } from "@/lib/practice-session";
 
@@ -121,6 +122,7 @@ function ConverseChatPage({
   // Practice stars: every reply of this call carries its id to /api/chat, which records the judged reply; hanging
   // up asks the server to score the call. The client never sends stars.
   const [callId] = useState(newCallId);
+  const [unscored, setUnscored] = useState(false);
   const [startedAt] = useState(() => Date.now());
   useEffect(() => {
     void track("practice_call_started", { scenario_id: scenario.id });
@@ -351,7 +353,9 @@ function ConverseChatPage({
     setEnding(true);
     const scored = await finishPracticeCall(callId);
     if (!scored) {
-      void navigate({ to: "/converse" });
+      // Offline: stay, say so, and offer the same scenario again.
+      setEnding(false);
+      setUnscored(true);
       return;
     }
     void track("practice_call_completed", { scenario_id: scenario.id, stars: scored.stars });
@@ -602,6 +606,14 @@ function ConverseChatPage({
     </header>
   );
 
+  if (unscored) {
+    return (
+      <LessonFrame>
+        <PracticeUnscored onRetry={onRetry} />
+      </LessonFrame>
+    );
+  }
+
   if (result) {
     return (
       <LessonFrame>
@@ -611,8 +623,9 @@ function ConverseChatPage({
           room={roomUrl(scenario.id)}
           seconds={result.seconds}
           slip={firstSlip(messages)}
+          campaign={null}
           onRetry={onRetry}
-          next={{ label: "Done", onClick: () => void navigate({ to: "/converse" }) }}
+          onForward={() => void navigate({ to: "/converse" })}
         />
       </LessonFrame>
     );

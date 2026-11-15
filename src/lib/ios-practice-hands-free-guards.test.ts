@@ -69,10 +69,11 @@ describe("the Hands-free switch is in both Practice entry points", () => {
 
   it("keeps the choice across the scenes of one campaign run, and only that", () => {
     const campaign = code(`${APP}/CampaignView.swift`);
-    // Continue: next scene remembers that hands-free was on, before finishCall's disappeared() turns it off.
+    // Ending a scene remembers that hands-free was on, before finishCall's disappeared() turns it off; the
+    // result's Next scene (continueToNextScene) then re-arms it for the next scene.
     const finish = fn("CampaignView.swift", "finishCall");
-    expect(finish).toContain("rearmHandsFree = advance && voice.isHandsFreeOn");
-    expect(finish.indexOf("rearmHandsFree = advance")).toBeLessThan(
+    expect(finish).toContain("rearmHandsFree = voice.isHandsFreeOn");
+    expect(finish.indexOf("rearmHandsFree = voice.isHandsFreeOn")).toBeLessThan(
       finish.indexOf("voice.disappeared()"),
     );
     // It is re-armed for the next scene's call, after the opener has been spoken.
