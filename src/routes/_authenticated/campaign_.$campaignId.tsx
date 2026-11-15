@@ -19,6 +19,8 @@ import { useProgress } from "../../lib/progress";
 import { sceneIndexOfMessage } from "../../lib/campaign-scene";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
+import { useHandsFreeCapture } from "../../lib/use-hands-free";
+import { PRACTICE_TUNING } from "../../lib/hands-free-loop";
 import { fetchProgress } from "../../lib/sync.functions";
 import { type AvatarReplyVerdict } from "../../components/AlphonsoAvatar";
 import { PracticeCall } from "../../components/PracticeCall";
@@ -149,8 +151,6 @@ function CampaignChatPage({
 
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [recordingState, setRecording] = useState(false);
-  const [transcribing, setTranscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ttsOn, setTtsOn] = useState(true);
   const [cefrLevel, setCefrLevel] = useState<string | null>(null);
@@ -198,10 +198,6 @@ function CampaignChatPage({
   const hydrateAvatarPreference = useAvatarPreference((st) => st.hydrate);
   useEffect(() => hydrateAvatarPreference(), [hydrateAvatarPreference]);
   const reducedMotion = useReducedMotion() ?? false;
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
-  const stopRequestedRef = useRef(false);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -263,11 +259,14 @@ function CampaignChatPage({
   );
 
   const openerSpokenRef = useRef(false);
+  // The opener starts a moment after the call opens; hands-free must not open the mic in that gap (half-duplex).
+  const [openerStarted, setOpenerStarted] = useState(false);
   useEffect(() => {
     if (openerSpokenRef.current) return;
     const t = setTimeout(() => {
       // Marked when it actually starts: a cleared timer (an effect re-run) must not leave the opener unsaid.
       openerSpokenRef.current = true;
+      setOpenerStarted(true);
       void speak(firstScene.opener, { opener: true });
     }, 400);
     return () => clearTimeout(t);
@@ -394,75 +393,44 @@ function CampaignChatPage({
     void speak(scene.opener, { opener: true });
   }, [sceneAnchor, scene.opener, speak, freshCall]);
 
-  const startRecording = useCallback(async () => {
+  // The shared capture flow (the same one Hector and the single scenarios use), with hands-free. The switch is the
+  // page's own state, off at the start of a campaign and carried from scene to scene: the mic closes while a scene's
+  // result is up and opens again for the next scene.
+  const [handsFreeWanted, setHandsFreeWanted] = useState(false);
+  const callView = mode ? mode === "call" : showAlphonso;
+  const {
+    state: captureState,
+    error: captureError,
+    start: beginCapture,
+    stop: stopRecording,
+    getStream,
+    clearError: clearCaptureError,
+    handsFreeCall,
+  } = useHandsFreeCapture({
+    course,
+    onTranscript: (text, confidence) => send(text, confidence),
+    wanted: handsFreeWanted,
+    live: callView && !ending && !result && !finished,
+    tuning: PRACTICE_TUNING,
+    replyPhase:
+      sending || voice === "loading" || !openerStarted
+        ? "thinking"
+        : voice === "playing"
+          ? "speaking"
+          : "idle",
+    failure: error,
+    onBeginTurn: () => setError(null),
+    partner: "Alphonso",
+    onWantedChange: setHandsFreeWanted,
+  });
+  // A capture error from the last scene (a refused mic, no words) does not follow the learner into the next one.
+  useEffect(() => clearCaptureError(), [sceneIndex, clearCaptureError]);
+  const recordingState = captureState === "recording";
+  const transcribing = captureState === "transcribing";
+  const startRecording = useCallback(() => {
     setError(null);
-    stopRequestedRef.current = false;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (stopRequestedRef.current) {
-        stream.getTracks().forEach((t) => t.stop());
-        return;
-      }
-      streamRef.current = stream;
-      const mime = MediaRecorder.isTypeSupported("audio/webm")
-        ? "audio/webm"
-        : MediaRecorder.isTypeSupported("audio/mp4")
-          ? "audio/mp4"
-          : "";
-      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-      chunksRef.current = [];
-      rec.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-      rec.onstop = async () => {
-        streamRef.current?.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
-        const type = rec.mimeType || mime || "audio/webm";
-        const ext = type.includes("mp4") ? "mp4" : type.includes("mpeg") ? "mp3" : "webm";
-        const blob = new Blob(chunksRef.current, { type });
-        if (blob.size < 1024) {
-          setError("That was too short — try again.");
-          return;
-        }
-        setTranscribing(true);
-        try {
-          const fd = new FormData();
-          fd.append("file", blob, `recording.${ext}`);
-          fd.append("course", course);
-          const resp = await fetch("/api/stt", {
-            method: "POST",
-            headers: await authHeaders(),
-            body: fd,
-          });
-          if (!resp.ok) throw new Error((await readApiError(resp)) || "Transcription failed");
-          const data = (await resp.json()) as { text?: string; confidence?: number | null };
-          const text = (data.text ?? "").trim();
-          if (!text) {
-            setError("Didn't catch that — try again.");
-          } else {
-            await send(text, data.confidence);
-          }
-        } catch (e) {
-          setError(e instanceof Error ? e.message : "Transcription failed.");
-        } finally {
-          setTranscribing(false);
-        }
-      };
-      recorderRef.current = rec;
-      rec.start();
-      setRecording(true);
-    } catch {
-      setError("Microphone access is needed to speak.");
-      setRecording(false);
-    }
-  }, [send, course]);
-
-  const stopRecording = useCallback(() => {
-    stopRequestedRef.current = true;
-    const rec = recorderRef.current;
-    if (rec && rec.state !== "inactive") rec.stop();
-    setRecording(false);
-  }, []);
+    return beginCapture();
+  }, [beginCapture]);
 
   const avatarPhase: VoicePhase = recordingState
     ? { kind: "recording" }
@@ -478,7 +446,6 @@ function CampaignChatPage({
     leftRef.current = false;
     return () => {
       leftRef.current = true;
-      streamRef.current?.getTracks().forEach((t) => t.stop());
       audioRef.current?.pause();
     };
   }, []);
@@ -546,12 +513,12 @@ function CampaignChatPage({
             <span className="sr-only">{transcribing ? "Transcribing…" : "Thinking…"}</span>
           </div>
         )}
-        {error && (
+        {(error ?? captureError) && (
           <div
             role="alert"
             className="self-center rounded-full border-2 border-ds-wrong bg-ds-wrong-tint px-3 py-1 ds-type-caption text-ds-wrong-ink"
           >
-            {error}
+            {error ?? captureError}
           </div>
         )}
         {seeResultShown({
@@ -610,9 +577,7 @@ function CampaignChatPage({
                   void startRecording();
                 }
               }}
-              aria-label={
-                recordingState ? "Stop recordingState and send" : "Record a voice message"
-              }
+              aria-label={recordingState ? "Stop recording and send" : "Record a voice message"}
               aria-pressed={recordingState}
               disabled={sending || transcribing}
               className={`grid size-11 shrink-0 place-items-center rounded-full transition-transform ${
@@ -806,7 +771,7 @@ function CampaignChatPage({
     );
   }
 
-  if (mode ? mode === "call" : showAlphonso) {
+  if (callView) {
     const last = messages[messages.length - 1];
     const caption =
       recordingState || !last
@@ -855,14 +820,15 @@ function CampaignChatPage({
               void startRecording();
             }
           }}
-          getStream={() => streamRef.current}
+          getStream={getStream}
           ttsOn={ttsOn}
           onToggleTts={() => setTtsOn((v) => !v)}
-          error={error}
+          error={error ?? captureError}
           endTo="/converse"
           onEnd={finished ? undefined : () => void finishScene()}
           messages={messages}
           reducedMotion={reducedMotion}
+          handsFree={handsFreeCall}
           extra={
             finished ? (
               <p className="rounded-full bg-ds-ink/60 text-ds-on-hero px-4 py-1.5 text-center ds-type-footnote font-semibold">

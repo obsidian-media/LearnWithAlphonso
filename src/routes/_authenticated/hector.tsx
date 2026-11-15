@@ -20,7 +20,8 @@ import { readApiError } from "../../lib/read-api-error";
 import { hectorMoment, hectorStatus, hectorStatusLabel } from "../../lib/hector-status";
 import { fetchProgress } from "../../lib/sync.functions";
 import { useProStatus, type ProStatus } from "../../lib/use-pro-status";
-import { useSpeechCapture } from "../../lib/use-speech-capture";
+import { useHandsFreeCapture } from "../../lib/use-hands-free";
+import { HECTOR_TUNING } from "../../lib/hands-free-loop";
 import { PracticeCall } from "../../components/PracticeCall";
 import { HECTOR_KIT } from "../../lib/avatar/layers";
 import type { AvatarMode, VoicePhase } from "../../lib/avatar/machine";
@@ -387,13 +388,34 @@ function HectorConversation({
     [messages, sending, course, cefrLevel, consent, onNotEntitled, play],
   );
 
+  // Hands-free is off on every call and carried only by this screen's state, never stored. It runs on the call screen
+  // only (the classic screen has no Pause button), and Hector is Pro already: this screen mounts only for Pro.
+  const [handsFreeWanted, setHandsFreeWanted] = useState(false);
   const {
     state: captureState,
     error: captureError,
     start: beginCapture,
     stop: stopRecording,
     getStream,
-  } = useSpeechCapture({ course, onTranscript: (t) => send(t) });
+    handsFreeCall,
+  } = useHandsFreeCapture({
+    course,
+    onTranscript: (t) => send(t),
+    wanted: handsFreeWanted,
+    live: showCall,
+    tuning: HECTOR_TUNING,
+    // Until his greeting has begun (or the day is used up) he is "about to speak", so the mic stays shut.
+    replyPhase:
+      sending || greetingLoading || (!greeted && !error)
+        ? "thinking"
+        : speaking
+          ? "speaking"
+          : "idle",
+    failure: error,
+    onBeginTurn: () => setError(null),
+    partner: "Hector",
+    onWantedChange: setHandsFreeWanted,
+  });
   const recording = captureState === "recording";
   const transcribing = captureState === "transcribing";
   // While the greeting's voice loads Hector is "thinking", as before a reply.
@@ -636,6 +658,7 @@ function HectorConversation({
           endTo="/learn"
           messages={messages}
           reducedMotion={reducedMotion}
+          handsFree={handsFreeCall}
           sheet={
             <>
               <div className="mb-2">

@@ -14,7 +14,8 @@ import { getScenario, localizeScenario, type LocalizedScenario } from "../../dat
 import { useProgress } from "../../lib/progress";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
-import { useSpeechCapture } from "../../lib/use-speech-capture";
+import { useHandsFreeCapture } from "../../lib/use-hands-free";
+import { PRACTICE_TUNING } from "../../lib/hands-free-loop";
 import { HectorInvite } from "../../components/HectorInvite";
 import { type AvatarReplyVerdict } from "../../components/AlphonsoAvatar";
 import { PracticeCall } from "../../components/PracticeCall";
@@ -231,12 +232,15 @@ function ConverseChatPage({
 
   // Auto-speak the opener once on mount
   const openerSpokenRef = useRef(false);
+  // The opener starts a moment after the call opens; hands-free must not open the mic in that gap (half-duplex).
+  const [openerStarted, setOpenerStarted] = useState(false);
   useEffect(() => {
     if (openerSpokenRef.current) return;
     // Delay so user gesture-less autoplay policies are less strict after nav
     const t = setTimeout(() => {
       // Marked when it actually starts: a cleared timer (an effect re-run) must not leave the opener unsaid.
       openerSpokenRef.current = true;
+      setOpenerStarted(true);
       void speak(scenario.opener, { opener: true });
     }, 400);
     return () => clearTimeout(t);
@@ -303,15 +307,33 @@ function ConverseChatPage({
   // uses the same implementation rather than a second copy of it. The hook
   // only calls back on a real transcript; every failure path surfaces through
   // `captureError` instead.
+  // Hands-free is off on every call (this component mounts per call) and is never stored. It is free here: a hands-free
+  // turn costs the same as a held press, so the server's daily caps already bound it.
+  const [handsFreeWanted, setHandsFreeWanted] = useState(false);
+  const callView = mode ? mode === "call" : showAlphonso;
   const {
     state: captureState,
     error: captureError,
     start: beginCapture,
     stop: stopRecording,
     getStream,
-  } = useSpeechCapture({
+    handsFreeCall,
+  } = useHandsFreeCapture({
     course,
     onTranscript: (text, confidence) => send(text, confidence ?? undefined),
+    wanted: handsFreeWanted,
+    live: callView && !ending && !result,
+    tuning: PRACTICE_TUNING,
+    replyPhase:
+      sending || voice === "loading" || !openerStarted
+        ? "thinking"
+        : voice === "playing"
+          ? "speaking"
+          : "idle",
+    failure: error,
+    onBeginTurn: () => setError(null),
+    partner: "Alphonso",
+    onWantedChange: setHandsFreeWanted,
   });
   // Before the hook existed, startRecording began with setError(null). The hook
   // clears only its OWN error, so without this a stale send failure
@@ -631,7 +653,7 @@ function ConverseChatPage({
     );
   }
 
-  if (mode ? mode === "call" : showAlphonso) {
+  if (callView) {
     const last = messages[messages.length - 1];
     const caption =
       recording || !last
@@ -684,6 +706,7 @@ function ConverseChatPage({
           onEnd={() => void endCall()}
           messages={messages}
           reducedMotion={reducedMotion}
+          handsFree={handsFreeCall}
           sheet={
             <>
               {hint}

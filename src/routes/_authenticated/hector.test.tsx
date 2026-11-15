@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {
+  installFakeAudioContext,
+  room,
+  QUIET,
+  SPEECH,
+} from "../../lib/__testutils__/fake-audio-context";
 import { fakeConsentApi, withAiConsent } from "../../lib/__testutils__/ai-consent";
 
 const navigate = vi.hoisted(() => vi.fn());
@@ -518,5 +524,96 @@ describe("web Hector as a full-screen call (the setting on, the default)", () =>
       observer.disconnect();
     }
     expect(stageMounted).toBe(false);
+  });
+});
+
+describe("web Hector hands-free", () => {
+  const NOTE_KEY = "handsFree.safetyNoteSeen.v2";
+  const getUserMedia = vi.fn();
+  const recorders: { state: string }[] = [];
+
+  beforeEach(() => {
+    localStorage.removeItem("showAlphonsoWhilePractising");
+    localStorage.removeItem(NOTE_KEY);
+    installFakeAudioContext();
+    recorders.length = 0;
+    getUserMedia.mockReset();
+    getUserMedia.mockResolvedValue({ getTracks: () => [{ stop: vi.fn() }] });
+    Object.defineProperty(navigator, "mediaDevices", {
+      value: { getUserMedia },
+      configurable: true,
+    });
+    vi.stubGlobal(
+      "MediaRecorder",
+      class {
+        static isTypeSupported = () => true;
+        state = "inactive";
+        mimeType = "audio/webm";
+        ondataavailable: ((e: { data: Blob }) => void) | null = null;
+        onstop: (() => void) | null = null;
+        constructor() {
+          recorders.push(this);
+        }
+        start() {
+          this.state = "recording";
+        }
+        stop() {
+          this.state = "inactive";
+          this.onstop?.();
+        }
+      },
+    );
+  });
+
+  const wait = (ms: number) => act(() => new Promise<void>((r) => setTimeout(r, ms)));
+
+  async function openCall() {
+    await renderPage();
+    await screen.findByTestId("call-caption");
+    // His greeting has no voice in this test (no /api/tts route), so it is said and the call is idle.
+    await waitFor(() => expect(screen.getByTestId("call-caption")).toHaveTextContent(/Hector/));
+  }
+
+  async function turnOn(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole("button", { name: "Show the conversation" }));
+    await user.click(await screen.findByRole("switch", { name: "Hands-free" }));
+    const note = await screen.findByRole("dialog", { name: "Talk without holding the button" });
+    expect(note).toHaveTextContent(/^Talk without holding the button\s*Hector listens/);
+    await user.click(within(note).getByRole("button", { name: "Turn on hands-free" }));
+    await user.click(screen.getByRole("button", { name: "Back to call" }));
+  }
+
+  it("a Pro learner has the switch, off to start, and the first turn opens the mic by itself once on", async () => {
+    const user = userEvent.setup();
+    await openCall();
+    expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
+    await wait(300);
+    expect(getUserMedia).not.toHaveBeenCalled();
+    await turnOn(user);
+    expect(screen.getByRole("button", { name: "Pause" })).toBeInTheDocument();
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(recorders[0]?.state).toBe("recording"));
+  });
+
+  it("Hector ends the turn after 1.2 s of quiet (shorter than Practice's 2.5 s)", async () => {
+    const user = userEvent.setup();
+    await openCall();
+    await turnOn(user);
+    await waitFor(() => expect(recorders[0]?.state).toBe("recording"));
+    await wait(500);
+    room.rms = SPEECH;
+    await wait(700);
+    room.rms = QUIET;
+    await wait(500);
+    expect(recorders[0].state).toBe("recording");
+    await waitFor(() => expect(recorders[0].state).toBe("inactive"), { timeout: 1500 });
+  }, 15_000);
+
+  it("the Pro gate is kept: a free learner gets the paywall, no call and no switch", async () => {
+    routes["/api/pro-status"] = status(FREE);
+    await renderPage();
+    await screen.findByText("$9.99 a month after the trial");
+    expect(screen.queryByRole("switch", { name: "Hands-free" })).toBeNull();
+    expect(getUserMedia).not.toHaveBeenCalled();
   });
 });
