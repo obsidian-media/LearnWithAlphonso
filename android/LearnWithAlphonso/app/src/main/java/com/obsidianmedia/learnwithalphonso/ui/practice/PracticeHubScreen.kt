@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.*
+import com.obsidianmedia.learnwithalphonso.ui.components.DsField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -243,7 +244,7 @@ internal fun PracticeHubContent(
     var input by remember { mutableStateOf("") }
     val state by vm.state.collectAsState()
     Column(verticalArrangement = Arrangement.spacedBy(Space.s2)) {
-        OutlinedTextField(input, { input = it }, label = { Text("Your reply") }, modifier = Modifier.fillMaxWidth(), textStyle = Type.body.toTextStyle())
+        DsField(input, { input = it }, placeholder = "Your reply", label = "Your reply")
         HubButton("Send") { if (input.isNotBlank() && state.phase == ConversationPhase.IDLE) { vm.sendText(input); input = "" } }
     }
 }

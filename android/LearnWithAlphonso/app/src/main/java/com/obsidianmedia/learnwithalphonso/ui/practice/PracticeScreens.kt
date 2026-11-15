@@ -19,7 +19,15 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsBackBar
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPill
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPillTone
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import androidx.compose.ui.semantics.heading
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -135,7 +143,9 @@ private fun ConversationBody(container: AppContainer, vm: BaseConversationViewMo
 
     Column(Modifier.fillMaxSize().background(palette.surface)) {
         AiReportStatusHost(reporting.sender)
-        ScreenHeader(title, onBack, actions)
+        // Chat mode (Practice hub v3): the back chip with the screen's actions, then the scenario's title and the scene line.
+        DsBackBar("Practice", onBack, actions = actions)
+        Text(title, style = HeadlineType, color = palette.ink, modifier = Modifier.padding(horizontal = AlphonsoTokens.Space.gutter).semantics { heading() })
         header()
         TranscriptList(container, vm, tint, userText, reporting, course, Modifier.weight(1f), footer)
         state.error?.let { Text(it, style = AlphonsoTokens.Type.footnote.toTextStyle(), color = palette.wrongInk, modifier = Modifier.padding(horizontal = AlphonsoTokens.Space.s4)) }
@@ -257,7 +267,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
                 },
                 transcript = {
                     Column {
-                        if (!progress.finished) TextButton(onClick = { vm.restartScene() }) { Text("Restart scene", color = palette.choice) }
+                        if (!progress.finished) DsCompactButton("Restart scene", { vm.restartScene() }, Modifier.padding(horizontal = AlphonsoTokens.Space.s2))
                         TranscriptList(container, vm, palette.choice, LocalAlphonsoTokens.current.onHero, reporting, course.code, Modifier, sceneFooter)
                     }
                 },
@@ -269,7 +279,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
             reporting = reporting,
             course = course.code,
             header = {
-                if (!progress.finished) Text("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", style = AlphonsoTokens.Type.footnote.toTextStyle(), color = palette.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1))
+                if (!progress.finished) Box(Modifier.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1), contentAlignment = Alignment.Center) { DsPill("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", DsPillTone.INFO) }
             },
             footer = {
                 val canContinue = state.turns.drop(progress.sceneAnchor).count { it.role == "user" } >= vm.scene.minTurns
@@ -282,7 +292,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
                     AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = advanceCall)
                 }
             },
-            actions = { if (!progress.finished) TextButton(onClick = { vm.restartScene() }) { Text("Restart scene", color = palette.choice) } },
+            actions = { if (!progress.finished) DsGlassChip("Restart scene") { vm.restartScene() } },
         )
       }
     }

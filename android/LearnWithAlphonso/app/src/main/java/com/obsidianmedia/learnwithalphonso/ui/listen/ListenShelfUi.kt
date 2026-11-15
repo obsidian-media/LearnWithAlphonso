@@ -32,7 +32,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
@@ -80,7 +79,22 @@ import com.obsidianmedia.learnwithalphonso.core.video.VideoPracticeTarget
 import com.obsidianmedia.learnwithalphonso.core.video.VideoShelf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.loadAsset
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChipRow
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsEmptyState
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPill
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPillTone
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSegmented
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -89,13 +103,13 @@ private val COURSES = listOf("en" to "English", "fr" to "Français", "es" to "Es
 private fun plural(n: Int) = "$n ${if (n == 1) "episode" else "episodes"}"
 
 @Composable
-private fun RoomImage(room: String, modifier: Modifier = Modifier) {
+internal fun RoomImage(room: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val image by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, room) {
         value = withContext(Dispatchers.IO) { loadAsset(context, "scenes/$room.webp") }
     }
-    val palette = AlphonsoColor.palette
-    Box(modifier.background(palette.mossDeep)) {
+    val ds = LocalAlphonsoTokens.current
+    Box(modifier.background(ds.hero)) {
         image?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
     }
 }
@@ -140,7 +154,7 @@ fun WatchShelfHost(container: AppContainer, course: String, onOpenPractice: (Vid
 /** The Listen home (round 6.1, option A): continue card, course switch, level chips, a painted room per folder. All logic is [ListenShelf]. */
 @Composable
 fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     val positionsRevision by container.podcastPlayer.positionsRevision.collectAsState()
     val playerEpisode by container.podcastPlayer.state.collectAsState()
@@ -160,47 +174,33 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
     val shown = level?.takeIf { it in levels }?.let { l -> shelves.filter { it.level == l } } ?: shelves
     val target = remember(shelves, state.progress) { ListenShelf.continueListening(shelves, state.progress) }
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
         item {
-            Row(Modifier.fillMaxWidth().background(palette.parchment, RoundedCornerShape(16.dp)).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                COURSES.forEach { (code, label) ->
-                    val on = code == course
-                    Box(
-                        Modifier.weight(1f).heightIn(min = 48.dp).clip(RoundedCornerShape(12.dp)).background(if (on) palette.moss else Color.Transparent)
-                            .clickable(role = Role.Tab) { course = code }.semantics { selected = on },
-                        contentAlignment = Alignment.Center,
-                    ) { Text(label, color = if (on) palette.onPrimary else palette.inkSoft, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge) }
-                }
-            }
+            DsSegmented(COURSES.map { (code, label) -> code to label }, course, { course = it }, "Course")
         }
         ListenShelf.monthChip(state.monthSeconds)?.let { chip ->
-            item {
-                Text(
-                    "⏱ $chip", color = palette.inkSoft, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.heightIn(min = 48.dp).clip(CircleShape).background(palette.parchment).padding(horizontal = 16.dp, vertical = 14.dp),
-                )
-            }
+            item { DsPill("⏱ $chip", DsPillTone.NEUTRAL) }
         }
         target?.let { t ->
             item {
                 val left = ListenShelf.secondsLeft(t.episode, t.progress)
                 val number = t.shelf.episodes.indexOfFirst { it.id == t.episode.id } + 1
                 Box(
-                    Modifier.fillMaxWidth().heightIn(min = 176.dp).clip(RoundedCornerShape(24.dp)).border(2.dp, palette.ember, RoundedCornerShape(24.dp))
+                    Modifier.fillMaxWidth().heightIn(min = 176.dp).clip(RoundedCornerShape(24.dp)).border(2.dp, ds.action, RoundedCornerShape(24.dp))
                         .clickable(role = Role.Button) { scope.launch { playEpisode(container, t.episode, t.shelf.episodes) } }
                         .clearAndSetSemantics { contentDescription = "Continue listening: ${t.episode.title}, ${ListenShelf.clock(left)} left"; role = Role.Button },
                 ) {
                     RoomImage(t.shelf.room, Modifier.matchParentSize())
-                    Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(palette.mossDeep.copy(alpha = 0.4f), palette.mossDeep.copy(alpha = 0.9f)))))
+                    Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(ds.hero.copy(alpha = 0.4f), ds.hero.copy(alpha = 0.9f)))))
                     Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.Bottom) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text("CONTINUE LISTENING", color = palette.emberSoft, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium)
-                            Text(t.episode.title, color = palette.onPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                            Text("CONTINUE LISTENING", color = ds.onHeroKick, fontWeight = FontWeight.Bold, style = CaptionType)
+                            Text(t.episode.title, color = ds.onHero, fontWeight = FontWeight.Bold, style = TitleType)
                             Text(
                                 listOfNotNull(t.shelf.level, "Episode $number", if (t.progress == null) ListenShelf.clock(left) else "${ListenShelf.clock(left)} left").joinToString(" · "),
-                                color = palette.onPrimary, style = MaterialTheme.typography.bodySmall,
+                                color = ds.onHero, style = FootnoteType,
                             )
-                            LinearProgressIndicator(progress = { ListenShelf.fraction(t.episode, t.progress).toFloat() }, color = palette.ember, trackColor = palette.onPrimary.copy(alpha = 0.25f), modifier = Modifier.fillMaxWidth())
+                            LinearProgressIndicator(progress = { ListenShelf.fraction(t.episode, t.progress).toFloat() }, color = ds.action, trackColor = ds.onHero.copy(alpha = 0.25f), modifier = Modifier.fillMaxWidth())
                         }
                         Image(painterResource(R.drawable.mascot_alphonso), contentDescription = null, modifier = Modifier.width(96.dp))
                     }
@@ -213,36 +213,27 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
         }
         if (levels.isNotEmpty()) {
             item {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DsChipRow {
                     (listOf<String?>(null) + levels).forEach { chip ->
-                        val on = level == chip
-                        Box(
-                            Modifier.heightIn(min = 48.dp).clip(CircleShape).background(if (on) palette.moss else palette.parchment)
-                                .clickable(role = Role.Tab) { level = chip }
-                                .semantics { selected = on; contentDescription = chip?.let { "Level $it" } ?: "All levels" }.padding(horizontal = 16.dp),
-                            contentAlignment = Alignment.Center,
-                        ) { Text(chip ?: "All", color = if (on) palette.onPrimary else palette.inkSoft, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge) }
+                        DsChip(chip ?: "All", selected = level == chip, onClick = { level = chip }, accessibilityText = chip?.let { "Level $it" } ?: "All levels")
                     }
                 }
             }
         }
         when {
-            state.libraryLoading -> item { Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) } }
+            state.libraryLoading -> item { Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) } }
             state.libraryFailed -> item {
-                Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Couldn't load these episodes.", color = palette.inkSoft, style = MaterialTheme.typography.bodyMedium)
-                    TextButtonLike("Try again") { scope.launch { vm.loadLibrary() } }
+                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                    DsEmptyState("Couldn't load these episodes", null, artAsset = "lesson/hmm.webp")
+                    AlphonsoSecondaryButton("Try again", onClick = { scope.launch { vm.loadLibrary() } }, fullWidth = false)
                 }
             }
             shown.isEmpty() -> item {
-                Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Image(painterResource(R.drawable.mascot_alphonso), contentDescription = null, modifier = Modifier.size(112.dp))
-                    Text(
-                        if (state.libraryEpisodes.isEmpty()) PodcastLibrary.EMPTY_MESSAGE
-                        else "No ${COURSES.first { it.first == course }.second} episodes${level?.let { " at $it" } ?: ""} yet.",
-                        color = palette.ink, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
+                DsEmptyState(
+                    if (state.libraryEpisodes.isEmpty()) PodcastLibrary.EMPTY_MESSAGE
+                    else "No ${COURSES.first { it.first == course }.second} episodes${level?.let { " at $it" } ?: ""} yet.",
+                    null, artAsset = "lesson/happy.webp",
+                )
             }
             else -> items(shown.chunked(2), key = { row -> row.first().folder.id }) { pair ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -255,27 +246,19 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
 }
 
 @Composable
-private fun TextButtonLike(label: String, onClick: () -> Unit) {
-    val palette = AlphonsoColor.palette
-    Box(Modifier.heightIn(min = 48.dp).clip(CircleShape).background(palette.moss).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 20.dp), contentAlignment = Alignment.Center) {
-        Text(label, color = palette.onPrimary, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
 private fun RoomTile(shelf: ListenShelfFolder, modifier: Modifier, onClick: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val summary = "${shelf.folder.title}, ${shelf.level ?: "all levels"}, ${plural(shelf.episodes.size)}, ${if (shelf.percent == 100) "finished" else "${shelf.percent} percent done"}"
     Box(
-        modifier.heightIn(min = 128.dp).clip(RoundedCornerShape(20.dp)).border(2.dp, palette.hairline, RoundedCornerShape(20.dp))
+        modifier.heightIn(min = 128.dp).clip(RoundedCornerShape(20.dp)).border(2.dp, ds.line, RoundedCornerShape(20.dp))
             .clickable(role = Role.Button, onClick = onClick).clearAndSetSemantics { contentDescription = summary; role = Role.Button },
     ) {
         RoomImage(shelf.room, Modifier.matchParentSize())
-        Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, palette.mossDeep.copy(alpha = 0.85f)))))
-        shelf.level?.let { Text(it, color = palette.ink, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(8.dp).background(palette.parchment, CircleShape).padding(horizontal = 8.dp)) }
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, ds.hero.copy(alpha = 0.85f)))))
+        shelf.level?.let { Text(it, color = ds.ink, fontWeight = FontWeight.Bold, style = CaptionType, modifier = Modifier.padding(8.dp).background(ds.card, CircleShape).padding(horizontal = 8.dp)) }
         Column(Modifier.align(Alignment.BottomStart).padding(10.dp)) {
-            Text(shelf.folder.title, color = palette.onPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-            Text("${plural(shelf.episodes.size)} · ${if (shelf.percent == 100) "finished ✓" else "${shelf.percent}%"}", color = palette.onPrimary, style = MaterialTheme.typography.labelMedium)
+            Text(shelf.folder.title, color = ds.onHero, fontWeight = FontWeight.Bold, style = HeadlineType)
+            Text("${plural(shelf.episodes.size)} · ${if (shelf.percent == 100) "finished ✓" else "${shelf.percent}%"}", color = ds.onHero, style = CaptionType)
         }
     }
 }
@@ -283,7 +266,7 @@ private fun RoomTile(shelf: ListenShelfFolder, modifier: Modifier, onClick: () -
 /** One folder: the room as header, one continue/start button, and every episode with its state. */
 @Composable
 fun ListenShelfFolderScreen(container: AppContainer, vm: ListenViewModel, shelf: ListenShelfFolder, onBack: () -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     val scope = rememberCoroutineScope()
     val prog = state.progress.associateBy { it.episodeId }
@@ -292,17 +275,17 @@ fun ListenShelfFolderScreen(container: AppContainer, vm: ListenViewModel, shelf:
     val minutes = maxOf(1, Math.round(shelf.totalSeconds / 60.0).toInt())
     LaunchedEffect(shelf.folder.id) { vm.loadEpisodes(shelf.folder.id) }
 
-    LazyColumn(Modifier.fillMaxSize().background(palette.surface), verticalArrangement = Arrangement.spacedBy(6.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
+    LazyColumn(Modifier.fillMaxSize().background(ds.surface), verticalArrangement = Arrangement.spacedBy(6.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
         item {
             Box(Modifier.fillMaxWidth().heightIn(min = 240.dp)) {
                 RoomImage(shelf.room, Modifier.matchParentSize())
-                Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, palette.surface))))
-                IconButton(onClick = onBack, modifier = Modifier.padding(8.dp).background(palette.parchment, CircleShape)) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Listen", tint = palette.ink) }
+                Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, ds.surface))))
+                IconButton(onClick = onBack, modifier = Modifier.padding(8.dp).background(ds.card, CircleShape)) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Listen", tint = ds.ink) }
                 Row(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.Bottom) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        shelf.level?.let { Text(it, color = palette.ink, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium, modifier = Modifier.background(palette.parchment, CircleShape).padding(horizontal = 8.dp)) }
-                        Text(shelf.folder.title, color = palette.ink, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium)
-                        Text("Hosted by Alphonso · ${plural(shelf.episodes.size)} · $minutes min", color = palette.inkSoft, style = MaterialTheme.typography.bodySmall)
+                        shelf.level?.let { Text(it, color = ds.ink, fontWeight = FontWeight.Bold, style = CaptionType, modifier = Modifier.background(ds.card, CircleShape).padding(horizontal = 8.dp)) }
+                        Text(shelf.folder.title, color = ds.ink, fontWeight = FontWeight.Bold, style = DisplayType)
+                        Text("Hosted by Alphonso · ${plural(shelf.episodes.size)} · $minutes min", color = ds.inkSoft, style = FootnoteType)
                     }
                     Image(painterResource(R.drawable.mascot_alphonso), contentDescription = null, modifier = Modifier.width(110.dp))
                 }
@@ -312,12 +295,12 @@ fun ListenShelfFolderScreen(container: AppContainer, vm: ListenViewModel, shelf:
             item {
                 val number = shelf.episodes.indexOfFirst { it.id == t.id } + 1
                 Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 16.dp).heightIn(min = 48.dp).clip(RoundedCornerShape(16.dp)).background(palette.moss)
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp).heightIn(min = 48.dp).clip(RoundedCornerShape(16.dp)).background(ds.choice)
                         .clickable(role = Role.Button) { scope.launch { playEpisode(container, t, shelf.episodes) } },
                     horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = palette.onPrimary)
-                    Text("${if (current != null) "Continue" else "Start"} Episode $number", color = palette.onPrimary, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = ds.onHero)
+                    Text("${if (current != null) "Continue" else "Start"} Episode $number", color = ds.onHero, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -334,7 +317,7 @@ fun ListenShelfFolderScreen(container: AppContainer, vm: ListenViewModel, shelf:
             Column(Modifier.padding(horizontal = 16.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(
-                        Modifier.weight(1f).heightIn(min = 56.dp).clip(RoundedCornerShape(16.dp)).background(palette.parchment)
+                        Modifier.weight(1f).heightIn(min = 56.dp).clip(RoundedCornerShape(16.dp)).background(ds.card)
                             .clickable(role = Role.Button) { scope.launch { playEpisode(container, episode, shelf.episodes) } }
                             .clearAndSetSemantics {
                                 contentDescription = "${episode.title}, ${ListenShelf.clock(episode.durationSeconds)}, " + when (st) {
@@ -347,13 +330,13 @@ fun ListenShelfFolderScreen(container: AppContainer, vm: ListenViewModel, shelf:
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         val index = shelf.episodes.indexOf(episode) + 1
-                        Box(Modifier.size(36.dp).background(if (st == ListenEpisodeState.Done) palette.moss else if (st == ListenEpisodeState.InProgress) palette.emberSoft else palette.surface, CircleShape), contentAlignment = Alignment.Center) {
-                            Text(if (st == ListenEpisodeState.Done) "✓" else "$index", color = if (st == ListenEpisodeState.Done) palette.onPrimary else palette.ink, fontWeight = FontWeight.Bold)
+                        Box(Modifier.size(36.dp).background(if (st == ListenEpisodeState.Done) ds.choice else if (st == ListenEpisodeState.InProgress) ds.xpTint else ds.surface, CircleShape), contentAlignment = Alignment.Center) {
+                            Text(if (st == ListenEpisodeState.Done) "✓" else "$index", color = if (st == ListenEpisodeState.Done) ds.onHero else ds.ink, fontWeight = FontWeight.Bold)
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(episode.title, color = palette.ink, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
-                            if (st == ListenEpisodeState.InProgress) LinearProgressIndicator(progress = { ListenShelf.fraction(episode, p).toFloat() }, color = palette.ember, trackColor = palette.surface, modifier = Modifier.fillMaxWidth())
-                            Text(subtitle, color = palette.inkSoft, style = MaterialTheme.typography.bodySmall)
+                            Text(episode.title, color = ds.ink, fontWeight = FontWeight.Bold, style = HeadlineType)
+                            if (st == ListenEpisodeState.InProgress) LinearProgressIndicator(progress = { ListenShelf.fraction(episode, p).toFloat() }, color = ds.action, trackColor = ds.surface, modifier = Modifier.fillMaxWidth())
+                            Text(subtitle, color = ds.inkSoft, style = FootnoteType)
                         }
                     }
                     DownloadButton(container, episode)
@@ -390,48 +373,48 @@ internal fun FullPlayerContent(
     onTranscript: () -> Unit,
     onClose: () -> Unit,
 ) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val left = ListenShelf.clock(duration - elapsed.toInt())
     Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
         if (lines != null) {
             // With timings the art shrinks to a header so the transcript has the room, as in the mock.
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Bottom) {
-                Box(Modifier.size(96.dp).clip(RoundedCornerShape(20.dp)).border(2.dp, palette.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))) {
+                Box(Modifier.size(96.dp).clip(RoundedCornerShape(20.dp)).border(2.dp, ds.onHero.copy(alpha = 0.3f), RoundedCornerShape(20.dp))) {
                     RoomImage("radio", Modifier.matchParentSize())
                 }
                 Column(Modifier.weight(1f)) {
-                    Text(title, color = palette.onPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                    Text("Alphonso" + if (aiNarrated) " · ${PodcastLabel.AI_NARRATED}" else "", color = palette.onPrimary, style = MaterialTheme.typography.bodySmall)
+                    Text(title, color = ds.onHero, fontWeight = FontWeight.Bold, style = HeadlineType)
+                    Text("Alphonso" + if (aiNarrated) " · ${PodcastLabel.AI_NARRATED}" else "", color = ds.onHero, style = FootnoteType)
                 }
             }
             TimedTranscript(lines, elapsed, onSeek)
         } else {
-            Box(Modifier.size(240.dp).clip(RoundedCornerShape(24.dp)).border(2.dp, palette.onPrimary.copy(alpha = 0.3f), RoundedCornerShape(24.dp))) {
+            Box(Modifier.size(240.dp).clip(RoundedCornerShape(24.dp)).border(2.dp, ds.onHero.copy(alpha = 0.3f), RoundedCornerShape(24.dp))) {
                 RoomImage("radio", Modifier.matchParentSize())
                 Image(painterResource(R.drawable.mascot_alphonso), contentDescription = null, modifier = Modifier.align(Alignment.BottomEnd).width(120.dp))
             }
-            Text(title, color = palette.onPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
-            Text("Alphonso" + if (aiNarrated) " · ${PodcastLabel.AI_NARRATED}" else "", color = palette.onPrimary, style = MaterialTheme.typography.bodyMedium)
+            Text(title, color = ds.onHero, fontWeight = FontWeight.Bold, style = TitleType, textAlign = TextAlign.Center)
+            Text("Alphonso" + if (aiNarrated) " · ${PodcastLabel.AI_NARRATED}" else "", color = ds.onHero, style = BodyType)
         }
         Scrubber(elapsed, duration, onSeek)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(ListenShelf.clock(elapsed.toInt()), color = palette.onPrimary, style = MaterialTheme.typography.bodySmall)
-            Text("-$left", color = palette.onPrimary, style = MaterialTheme.typography.bodySmall)
+            Text(ListenShelf.clock(elapsed.toInt()), color = ds.onHero, style = FootnoteType)
+            Text("-$left", color = ds.onHero, style = FootnoteType)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextButtonLike("−15") { onSkip(-15.0) }
-            Box(Modifier.size(64.dp).background(palette.ember, CircleShape), contentAlignment = Alignment.Center) {
+            DsCompactButton("−15", { onSkip(-15.0) })
+            Box(Modifier.size(64.dp).background(ds.action, CircleShape), contentAlignment = Alignment.Center) {
                 IconButton(onClick = onToggle, modifier = Modifier.size(64.dp)) {
                     val (icon, label) = if (control == com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerControl.PAUSE) Icons.Filled.Pause to "Pause" else Icons.Filled.PlayArrow to "Play"
-                    Icon(icon, contentDescription = label, tint = palette.onAccent)
+                    Icon(icon, contentDescription = label, tint = ds.onAction)
                 }
             }
-            TextButtonLike("+30") { onSkip(30.0) }
+            DsCompactButton("+30", { onSkip(30.0) })
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             SleepMenu(sleep, onSleep)
-            TextButtonLike("Transcript", onTranscript)
-            TextButtonLike("Stop and close", onClose)
+            DsCompactButton("Transcript", onTranscript)
+            DsCompactButton("Stop and close", onClose)
         }
     }
 }
@@ -439,7 +422,7 @@ internal fun FullPlayerContent(
 /** The seek bar: drag or tap to seek; TalkBack reads "Playback position, 1:05 of 4:10" and can adjust it. */
 @Composable
 internal fun Scrubber(elapsed: Double, duration: Int, onSeek: (Double) -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     if (duration <= 0) return
     // While the thumb is dragged the bar follows the finger; the seek happens once, on release.
     var dragging by remember { mutableStateOf<Float?>(null) }
@@ -449,7 +432,7 @@ internal fun Scrubber(elapsed: Double, duration: Int, onSeek: (Double) -> Unit) 
         onValueChange = { dragging = it },
         onValueChangeFinished = { dragging?.let { onSeek(it.toDouble()) }; dragging = null },
         valueRange = 0f..duration.toFloat(),
-        colors = SliderDefaults.colors(thumbColor = palette.ember, activeTrackColor = palette.ember, inactiveTrackColor = palette.onPrimary.copy(alpha = 0.25f)),
+        colors = SliderDefaults.colors(thumbColor = ds.action, activeTrackColor = ds.action, inactiveTrackColor = ds.onHero.copy(alpha = 0.25f)),
         modifier = Modifier.fillMaxWidth().semantics {
             contentDescription = "Playback position"
             stateDescription = "${ListenShelf.clock(shown.toInt())} of ${ListenShelf.clock(duration)}"
@@ -463,7 +446,7 @@ private fun SleepMenu(sleep: SleepTimerState, onSleep: (SleepChoice) -> Unit) {
     var open by remember { mutableStateOf(false) }
     val label = if (sleep.choice == SleepChoice.Off) "Sleep" else "Sleep: ${sleep.choice.label}"
     Box {
-        TextButtonLike("☾ $label") { open = true }
+        DsCompactButton("☾ $label", { open = true })
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             SleepChoice.entries.forEach { choice ->
                 DropdownMenuItem(
@@ -482,7 +465,7 @@ private fun SleepMenu(sleep: SleepTimerState, onSleep: (SleepChoice) -> Unit) {
  */
 @Composable
 private fun TimedTranscript(lines: List<TimedLine>, elapsed: Double, onSeek: (Double) -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
     val reduceMotion = remember {
         android.provider.Settings.Global.getFloat(context.contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
@@ -498,9 +481,9 @@ private fun TimedTranscript(lines: List<TimedLine>, elapsed: Double, onSeek: (Do
         itemsIndexed(lines) { index, line ->
             Text(
                 line.t,
-                color = palette.onPrimary.copy(alpha = if (index == active) 1f else 0.55f),
+                color = ds.onHero.copy(alpha = if (index == active) 1f else 0.55f),
                 fontWeight = if (index == active) FontWeight.Bold else FontWeight.Normal,
-                style = MaterialTheme.typography.bodyLarge,
+                style = BodyType,
                 modifier = Modifier.fillMaxWidth().padding(top = if (line.p && index > 0) 8.dp else 0.dp)
                     .clickable(onClickLabel = "Play from here", role = Role.Button) { onSeek(line.s) }
                     .semantics { selected = index == active },

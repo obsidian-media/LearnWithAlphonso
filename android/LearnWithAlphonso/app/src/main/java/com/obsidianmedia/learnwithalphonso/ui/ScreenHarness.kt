@@ -2,6 +2,9 @@ package com.obsidianmedia.learnwithalphonso.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -78,6 +81,11 @@ import com.obsidianmedia.learnwithalphonso.ui.achievements.BadgeUnlockSheet
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
 import com.obsidianmedia.learnwithalphonso.ui.listen.PodcastQuizSheet
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenUiState
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenViewModel
+import com.obsidianmedia.learnwithalphonso.ui.path.PathScreen
+import com.obsidianmedia.learnwithalphonso.ui.path.PathMode
 import com.obsidianmedia.learnwithalphonso.ui.onboarding.NameOnboardingScreen
 import com.obsidianmedia.learnwithalphonso.ui.placement.PlacementScreen
 import com.obsidianmedia.learnwithalphonso.ui.social.BlockConfirmDialog
@@ -251,6 +259,54 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
             val goalVm = GoalCardViewModel(Course.ENGLISH, goalApi, container.goalCache) { me }.also { it.reload(quiet = false) }
             val pathVm = PathViewModel("en", pathApi).also { it.reload() }
             PathBuildScreen(container, {}, pathVm, goalVm, "travel", openGoalSheet = screen == "path-build-sheet")
+        }
+        "path-road", "path-week", "path-why" -> {
+            val path = LearningPathDecoding.path(context.assets.open("harness/path.json").bufferedReader().readText())
+            val pathApi = object : PathApi {
+                override suspend fun fetch(course: String): LearningPath? = path
+                override suspend fun change(course: String, change: LearningPathChange): LearningPath? = path
+            }
+            val pathVm = PathViewModel("en", pathApi).also { it.reload() }
+            val mode = when (screen) { "path-road" -> PathMode.ROAD; "path-week" -> PathMode.WEEK; else -> PathMode.WHY }
+            PathScreen(container, mode, {}, {}, {}, {}, {}, seededVm = pathVm)
+        }
+        "listen", "listen-empty", "listen-failed", "listen-offline" -> {
+            val root = com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder("f-en", null, "english", "English", null, 0, "en")
+            val rooms = listOf("At the Bookshop" to "A1", "Ordering Coffee" to "A1", "The Train Station" to "A2", "Radio Hour" to "B1").mapIndexed { i, (t, l) ->
+                com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder("f$i", "f-en", "room-$i", "$l $t", null, i, "en")
+            }
+            val episodes = rooms.flatMapIndexed { i, f ->
+                (1..4).map { n ->
+                    com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode("e$i-$n", f.id, "ep-$i-$n", "Episode $n", null, "", 370 + n * 20, 0, null)
+                }
+            }
+            val progress = listOf(
+                com.obsidianmedia.learnwithalphonso.core.podcast.ListenProgress("e0-1", 370, "2026-11-13T10:00:00Z", "2026-11-13T10:00:00Z"),
+                com.obsidianmedia.learnwithalphonso.core.podcast.ListenProgress("e0-2", 150, null, "2026-11-14T10:00:00Z"),
+            )
+            val base = ListenUiState(
+                folders = rooms, allFolders = listOf(root) + rooms, publishedFolderIds = rooms.map { it.id }.toSet() + root.id, courseCode = "en", isLoading = false,
+                libraryEpisodes = episodes, progress = progress, libraryLoading = false, monthSeconds = 5400,
+            )
+            val seed = when (screen) {
+                "listen-empty" -> base.copy(folders = emptyList(), allFolders = listOf(root), libraryEpisodes = emptyList(), progress = emptyList(), monthSeconds = 0)
+                "listen-failed" -> base.copy(folders = rooms, error = "The request timed out.")
+                "listen-offline" -> base.copy(offline = emptyList())
+                else -> base
+            }
+            ListenScreen(container, ListenViewModel(com.obsidianmedia.learnwithalphonso.core.net.PodcastClient(SupabaseHttp("http://localhost", "harness", { null }, OkHttp.create { }), { null }), { emptyList() }, { screen != "listen-offline" }, seed = seed), {})
+        }
+        "speak-stage", "question-fallback", "question-fallback-translate" -> {
+            val ds = com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens.current
+            val speak = com.obsidianmedia.learnwithalphonso.core.content.Question.Speak("q-speak", "Say this phrase out loud.", "Where is the train station?", "Station is the word for a stop.")
+            val translate = com.obsidianmedia.learnwithalphonso.core.content.Question.Translate("q-tr", "Translate: I would like a coffee, please.", listOf("Quisiera un café, por favor."), "Quisiera is a polite way to ask.")
+            androidx.compose.foundation.layout.Column(androidx.compose.ui.Modifier.fillMaxSize().background(ds.surface).padding(16.dp)) {
+                when (screen) {
+                    "speak-stage" -> com.obsidianmedia.learnwithalphonso.ui.lesson.LessonStageQuestion(container, speak, Course.ENGLISH, emptyMap(), false, false, false, false, null, {}, {}, null)
+                    "question-fallback" -> com.obsidianmedia.learnwithalphonso.ui.lesson.QuestionCard(container, speak, Course.ENGLISH, emptyMap(), false, false, null, {})
+                    else -> com.obsidianmedia.learnwithalphonso.ui.lesson.QuestionCard(container, translate, Course.SPANISH, emptyMap(), false, false, "Quisiera un cafe", {})
+                }
+            }
         }
         "settings" -> SettingsScreen(container, {})
         "save-word" -> SaveWordSheet(container, SaveWordRequest("café", "Un café, por favor.", "es"), {})

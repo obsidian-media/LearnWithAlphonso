@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -37,11 +37,18 @@ import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.components.AskingAlphonso
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.dsTextFieldColors
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -90,7 +97,7 @@ class SpeakQuestionViewModel(
 
 @Composable
 fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course: Course, checked: Boolean, isCorrect: Boolean, picked: String?, onPick: (String?) -> Unit, inStage: Boolean = false) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
     val isConnected by container.connectivity.isConnected.collectAsState()
     val vm: SpeakQuestionViewModel = viewModel(key = "speak-${question.id}") {
@@ -108,16 +115,16 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
     val scope = rememberCoroutineScope()
     val canCapture = isConnected && !state.micUnavailable && hasAiConsent
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
         if (inStage) {
             // In the lesson's room (round 6): Alphonso's bubble asks, the verdict sheet explains.
             LessonSpeakPhraseCard(question.answer) { Speech.get(context).speak(question.answer, course) }
         } else {
             AlphonsoSectionHeader("Speaking")
             AskingAlphonso(question.prompt, hasMedia = true)
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.parchment).padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("YOUR PHRASE", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
-                Text(question.answer, style = MaterialTheme.typography.titleLarge, color = palette.ink)
+            DsCard(spacing = AlphonsoTokens.Space.s1) {
+                Text("YOUR PHRASE", style = CaptionType, color = ds.inkSoft)
+                Text(question.answer, style = TitleType, color = ds.ink)
                 AlphonsoSecondaryButton("🔊  Hear it first", onClick = { Speech.get(context).speak(question.answer, course) }, fullWidth = false)
             }
         }
@@ -129,13 +136,13 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
             }
             HoldToTalkButton(
                 phase = phase, busyLabel = if (phase == TurnPhase.TRANSCRIBING) "Checking what you said..." else null,
-                tint = palette.moss, hint = hint, accessibilityLabel = "Hold to say the phrase", enabled = !checked,
+                tint = ds.choice, hint = hint, accessibilityLabel = "Hold to say the phrase", enabled = !checked,
                 onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded,
             )
             state.heard?.let {
-                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.surface).padding(10.dp)) {
-                    Text("WE HEARD", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
-                    Text(it, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                DsCard(fill = ds.sunk, spacing = AlphonsoTokens.Space.s1) {
+                    Text("WE HEARD", style = CaptionType, color = ds.inkSoft)
+                    Text(it, style = BodyType, color = ds.ink)
                 }
             }
         } else {
@@ -147,7 +154,7 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
                     consentStatus == AiConsentStatus.UNAVAILABLE -> AiConsentCopy.checkFailedTitle
                     else -> AiConsentCopy.speakFallback(micUnavailable = false, isConnected = true, hasAiConsent = false)
                 },
-                style = MaterialTheme.typography.bodySmall, color = palette.inkSoft,
+                style = FootnoteType, color = ds.inkSoft,
             )
             if (isConnected && !state.micUnavailable) {
                 when (consentStatus) {
@@ -161,7 +168,7 @@ fun SpeakQuestionCard(container: AppContainer, question: Question.Speak, course:
         }
         // A consent refusal has no line of its own: the typing fallback already says why voice is off, and a line left
         // over from before would outlive the learner opting back in.
-        state.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = palette.destructive) }
+        state.error?.let { Text(it, style = FootnoteType, color = ds.wrong) }
         if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
         if (checked && !inStage) Explanation(container, isCorrect, question.explanation, course, question)
     }

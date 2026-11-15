@@ -35,12 +35,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -76,8 +81,22 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTree
 import com.obsidianmedia.learnwithalphonso.core.video.VideoPracticeTarget
 import com.obsidianmedia.learnwithalphonso.podcast.PodcastDownloadRefusal
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsEmptyState
+import com.obsidianmedia.learnwithalphonso.ui.components.DsField
+import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassTitle
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPill
+import com.obsidianmedia.learnwithalphonso.ui.components.DsPillTone
+import com.obsidianmedia.learnwithalphonso.ui.components.DsScene
+import com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
 import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
 import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
@@ -89,41 +108,37 @@ private fun length(seconds: Int) = "%d:%02d".format(seconds / 60, seconds % 60)
 /** Port of ListenView.swift: the root of the folder tree with search and the offline listing. */
 @Composable
 fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     val isConnected by container.connectivity.isConnected.collectAsState()
     val course by container.activeCourse.course.collectAsState()
     val scope = rememberCoroutineScope()
     LaunchedEffect(course) { vm.courseChanged(course.code) }
 
-    Column(Modifier.fillMaxSize().background(palette.surface)) {
-        Text("Library", style = MaterialTheme.typography.headlineMedium, color = palette.ink, modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 8.dp))
-        OutlinedTextField(
-            value = state.query, onValueChange = vm::setQuery, singleLine = true,
-            placeholder = { Text("Search episodes") },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).semantics { contentDescription = "Search episodes" },
+    DsSceneScreen(DsScene.LISTEN) {
+      Column(Modifier.fillMaxSize()) {
+        DsGlassTitle("Library", modifier = Modifier.padding(horizontal = AlphonsoTokens.Space.gutter).padding(top = AlphonsoTokens.Space.s4))
+        DsField(
+            value = state.query, onChange = vm::setQuery, placeholder = "Search episodes",
+            modifier = Modifier.padding(horizontal = AlphonsoTokens.Space.gutter).padding(top = AlphonsoTokens.Space.s2),
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(AlphonsoTokens.Space.s2))
         when {
             state.query.isNotEmpty() -> {
                 // Only this course's episodes: a search must not reach into another course's folders.
                 val results = PodcastLibrary.episodes(state.searchResults, state.folders)
                 SearchResults(container, state, results, onPlay = { episode -> scope.launch { play(container, episode, results) } })
             }
-            state.isLoading -> Centered { CircularProgressIndicator(color = palette.moss) }
+            state.isLoading -> Centered { CircularProgressIndicator(color = ds.choice) }
             state.offline != null || (!isConnected && state.folders.isEmpty()) -> {
                 val offline = state.offline ?: emptyList()
                 if (offline.isEmpty()) {
                     WithWatchShelf(container, state.courseCode, onOpenPractice) {
-                        Centered {
-                            Text("You're offline", style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                            Text("Download episodes while you have a connection and they'll play here.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
-                            AlphonsoSecondaryButton("Try again", onClick = { scope.launch { vm.load() } }, fullWidth = false)
-                        }
+                        StateCard("You're offline", "Download episodes while you have a connection and they'll play here.", "Try again") { scope.launch { vm.load() } }
                     }
                 } else {
                     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        item { Text("Offline — showing your downloads", style = MaterialTheme.typography.labelMedium, color = palette.ember, fontWeight = FontWeight.SemiBold) }
+                        item { DsPill("Offline. Showing your downloads", DsPillTone.GOLD) }
                         items(offline, key = { it.id }) { episode ->
                             EpisodeRow(container, episode, subtitle = PodcastLabel.downloadedSubtitle(episode.aiNarrated), onPlay = { scope.launch { play(container, episode, offline) } })
                         }
@@ -131,31 +146,33 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
                 }
             }
             state.error != null -> WithWatchShelf(container, state.courseCode, onOpenPractice) {
-                Centered {
-                    Text("Couldn't load episodes", style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                    Text(state.error!!, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
-                    AlphonsoSecondaryButton("Try again", onClick = { scope.launch { vm.load() } }, fullWidth = false)
-                }
+                StateCard("Couldn't load episodes", state.error!!, "Try again") { scope.launch { vm.load() } }
             }
             // No podcasts is a stated state, not a blank list; the Watch shelf still shows above it when the course has
             // published videos. With neither podcasts nor videos the shelf draws nothing and this is all there is.
             state.folders.isEmpty() -> WithWatchShelf(container, state.courseCode, onOpenPractice) {
-                Centered {
-                    Text(PodcastLibrary.emptyTitle(state.courseCode), style = MaterialTheme.typography.titleMedium, color = palette.ink)
-                    Text(PodcastLibrary.EMPTY_MESSAGE, style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft, textAlign = TextAlign.Center)
-                    AlphonsoSecondaryButton("Refresh", onClick = { scope.launch { vm.load() } }, fullWidth = false)
-                }
+                StateCard(PodcastLibrary.emptyTitle(state.courseCode), PodcastLibrary.EMPTY_MESSAGE, "Refresh") { scope.launch { vm.load() } }
             }
             // The Listen home is the rooms shelf (ListenShelfUi.kt); a folder opens its own episode list.
             else -> ListenShelfRoot(container, vm, onOpenFolder, onOpenPractice)
         }
+      }
+    }
+}
+
+/** An empty, offline or failed state: Alphonso on a glass card over the scene, one action under it. */
+@Composable
+private fun StateCard(title: String, message: String, action: String, onAction: () -> Unit) {
+    Column(Modifier.fillMaxSize().padding(AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally) {
+        DsEmptyState(title, message, artAsset = "lesson/hmm.webp")
+        AlphonsoSecondaryButton(action, onClick = onAction, fullWidth = false)
     }
 }
 
 /** One level of the tree: child folders, then this folder's episodes. */
 @Composable
 fun ListenFolderScreen(container: AppContainer, vm: ListenViewModel, folderId: String, onBack: () -> Unit, onOpenFolder: (String) -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     val folder = state.folders.firstOrNull { it.id == folderId }
     LaunchedEffect(folderId) { vm.loadEpisodes(folderId) }
@@ -167,10 +184,10 @@ fun ListenFolderScreen(container: AppContainer, vm: ListenViewModel, folderId: S
         ListenShelfFolderScreen(container, vm, shelf, onBack)
         return
     }
-    Column(Modifier.fillMaxSize().background(palette.surface)) {
+    Column(Modifier.fillMaxSize().background(ds.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = palette.moss) }
-            Text(folder?.title ?: "Library", style = MaterialTheme.typography.titleMedium, color = palette.ink)
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = ds.choice) }
+            Text(folder?.title ?: "Library", style = HeadlineType, color = ds.ink)
         }
         FolderListing(container, vm, folderId, onOpenFolder)
     }
@@ -178,7 +195,7 @@ fun ListenFolderScreen(container: AppContainer, vm: ListenViewModel, folderId: S
 
 @Composable
 private fun FolderListing(container: AppContainer, vm: ListenViewModel, folderId: String?, onOpenFolder: (String) -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     // Rows show what this device last stored: refresh them when that changes (for example after closing the player).
     val positionsRevision by container.podcastPlayer.positionsRevision.collectAsState()
@@ -198,15 +215,15 @@ private fun FolderListing(container: AppContainer, vm: ListenViewModel, folderId
             EpisodeRow(container, shown, subtitle = PodcastLabel.rowSubtitle(shown.durationSeconds, resume = shown.positionSeconds > 0, aiNarrated = shown.aiNarrated), hasQuiz = episode.id in state.quizEpisodeIds, onPlay = { scope.launch { play(container, episode, episodes) } })
         }
         if (children.isEmpty() && episodes.isEmpty() && !loading) {
-            item { Text("Nothing here yet. New episodes appear as they're published.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft) }
+            item { Text("Nothing here yet. New episodes appear as they're published.", style = BodyType, color = ds.inkSoft) }
         }
-        if (loading) item { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = palette.moss) } }
+        if (loading) item { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) } }
     }
 }
 
 @Composable
 private fun SearchResults(container: AppContainer, state: ListenUiState, results: List<PodcastEpisode>, onPlay: (PodcastEpisode) -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     when {
         PodcastSearch.normalizeQuery(state.query) == null -> Message("Keep typing to search episodes.")
         state.isSearching -> Message("Searching…")
@@ -217,12 +234,12 @@ private fun SearchResults(container: AppContainer, state: ListenUiState, results
             }
         }
     }
-    Spacer(Modifier.height(0.dp).background(palette.surface))
+    Spacer(Modifier.height(0.dp).background(ds.surface))
 }
 
 @Composable
 private fun Message(text: String) {
-    Text(text, style = MaterialTheme.typography.bodyMedium, color = AlphonsoColor.palette.inkSoft, modifier = Modifier.fillMaxWidth().padding(24.dp), textAlign = TextAlign.Center)
+    Text(text, style = BodyType, color = LocalAlphonsoTokens.current.inkSoft, modifier = Modifier.fillMaxWidth().padding(24.dp), textAlign = TextAlign.Center)
 }
 
 /** The podcast-side placeholder (empty, offline, failed) under the Watch shelf, which draws nothing when there are no videos. */
@@ -246,11 +263,11 @@ private suspend fun play(container: AppContainer, episode: PodcastEpisode, queue
 
 @Composable
 private fun EpisodeRow(container: AppContainer, episode: PodcastEpisode, subtitle: String, onPlay: () -> Unit, hasQuiz: Boolean = false) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     Column {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.weight(1f).clickable(onClick = onPlay).semantics { contentDescription = "Play ${episode.title}" }) {
-                AlphonsoRowCard(episode.title, subtitle, accent = if (episode.positionSeconds > 0) palette.ember else palette.moss, leadingEmoji = "🎧")
+                AlphonsoRowCard(episode.title, subtitle, accent = if (episode.positionSeconds > 0) ds.action else ds.choice, leadingEmoji = "🎧")
             }
             DownloadButton(container, episode)
         }
@@ -261,7 +278,7 @@ private fun EpisodeRow(container: AppContainer, episode: PodcastEpisode, subtitl
 /** Download or remove one episode; a refusal is a prompt naming what could be removed, never a silent deletion. */
 @Composable
 internal fun DownloadButton(container: AppContainer, episode: PodcastEpisode) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val states by container.downloads.states.collectAsState()
     val scope = rememberCoroutineScope()
     var refusal by remember { mutableStateOf<PodcastDownloadRefusal?>(null) }
@@ -272,14 +289,14 @@ internal fun DownloadButton(container: AppContainer, episode: PodcastEpisode) {
     }
 
     when (state) {
-        is PodcastDownloadState.Downloading -> CircularProgressIndicator(progress = { state.progress.toFloat() }, color = palette.moss, modifier = Modifier.size(28.dp))
+        is PodcastDownloadState.Downloading -> CircularProgressIndicator(progress = { state.progress.toFloat() }, color = ds.choice, modifier = Modifier.size(28.dp))
         is PodcastDownloadState.Downloaded -> IconButton(onClick = {
             // Review Focus 1: stop playback before the file goes away.
             container.podcastPlayer.stopIfPlaying(episode.id)
             scope.launch { container.downloads.delete(episode.id) }
-        }) { Icon(Icons.Filled.CheckCircle, contentDescription = "Downloaded. Tap to remove.", tint = palette.moss) }
-        is PodcastDownloadState.Failed -> IconButton(onClick = { start() }) { Icon(Icons.Filled.Refresh, contentDescription = "Download failed. Tap to retry.", tint = palette.destructive) }
-        PodcastDownloadState.NotDownloaded -> IconButton(onClick = { start() }) { Icon(Icons.Filled.Download, contentDescription = "Download for offline", tint = palette.inkSoft) }
+        }) { Icon(Icons.Filled.CheckCircle, contentDescription = "Downloaded. Tap to remove.", tint = ds.choice) }
+        is PodcastDownloadState.Failed -> IconButton(onClick = { start() }) { Icon(Icons.Filled.Refresh, contentDescription = "Download failed. Tap to retry.", tint = ds.wrong) }
+        PodcastDownloadState.NotDownloaded -> IconButton(onClick = { start() }) { Icon(Icons.Filled.Download, contentDescription = "Download for offline", tint = ds.inkSoft) }
     }
 
     refusal?.let { r ->
@@ -300,7 +317,7 @@ internal fun DownloadButton(container: AppContainer, episode: PodcastEpisode) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PodcastMiniBar(container: AppContainer) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val state by container.podcastPlayer.state.collectAsState()
     val episode = state.episode ?: return
     val scope = rememberCoroutineScope()
@@ -326,53 +343,72 @@ fun PodcastMiniBar(container: AppContainer) {
             loadingTranscript = false
         }
     }
-    Column(Modifier.fillMaxWidth().background(palette.mossDeep)) {
+    // Round 6.1 "mini player": a navy pill with the episode's room as art, the title, minutes left and a gold play button,
+    // a thin gold progress line along its foot. The quiz offer sits above it, on the surface.
+    val room by produceState("radio", episode.folderId) {
+        value = runCatching { container.podcastClient.fetchFolders().firstOrNull { it.id == episode.folderId }?.let { ListenShelf.room(it) } }.getOrNull() ?: "radio"
+    }
+    Column(Modifier.fillMaxWidth().padding(horizontal = AlphonsoTokens.Space.s3).padding(bottom = AlphonsoTokens.Space.s2), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
         // The quiz is offered once the episode has played to its end (and only if it has one the learner can see).
         PodcastQuizOfferRow(container, episode, finished = state.phase == PodcastPlayerPhase.Finished)
-        Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Column(Modifier.weight(1f).clickable(role = androidx.compose.ui.semantics.Role.Button) { expanded = true }.semantics { contentDescription = "Open player: ${episode.title}" }) {
-                Text(episode.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = palette.onPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                val failure = state.failure
-                when {
-                    failure != null -> Text(PodcastPlaybackCopy.message(failure), style = MaterialTheme.typography.bodySmall, color = palette.emberSoft)
-                    state.phase == PodcastPlayerPhase.Buffering -> Text(PodcastPlaybackCopy.BUFFERING_LABEL, style = MaterialTheme.typography.bodySmall, color = palette.onPrimary)
-                    else -> Text("Alphonso · ${ListenShelf.clock(episode.durationSeconds - state.elapsedSeconds.toInt())} left", style = MaterialTheme.typography.bodySmall, color = palette.onPrimary)
-                }
-            }
-            // Only a confirmed player shows Pause; a loading one shows a spinner; a failed one offers Retry.
-            Box(Modifier.size(48.dp).background(palette.ember, CircleShape), contentAlignment = Alignment.Center) {
-                when (state.control) {
-                    PodcastPlayerControl.SPINNER -> {
-                        CircularProgressIndicator(color = palette.onAccent, strokeWidth = 2.dp, modifier = Modifier.size(22.dp).semantics { contentDescription = "Loading" })
-                    }
-                    else -> IconButton(onClick = { container.podcastPlayer.toggle() }, modifier = Modifier.size(48.dp)) {
-                        val (icon, label) = when (state.control) {
-                            PodcastPlayerControl.PAUSE -> Icons.Filled.Pause to "Pause"
-                            PodcastPlayerControl.RETRY -> Icons.Filled.Refresh to PodcastPlaybackCopy.RETRY_TITLE
-                            else -> Icons.Filled.PlayArrow to "Play"
+        val pill = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+        Box(Modifier.fillMaxWidth().shadow(AlphonsoTokens.Space.s2, pill, clip = false, ambientColor = AlphonsoTokens.Elevation.shadowTint, spotColor = AlphonsoTokens.Elevation.shadowTint).clip(pill).background(ds.hero)) {
+            Row(Modifier.fillMaxWidth().padding(start = AlphonsoTokens.Space.s2, end = AlphonsoTokens.Space.s3, top = AlphonsoTokens.Space.s2, bottom = AlphonsoTokens.Space.s3), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                Row(
+                    Modifier.weight(1f).heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = androidx.compose.ui.semantics.Role.Button) { expanded = true }.semantics(mergeDescendants = true) { contentDescription = "Open player: ${episode.title}" },
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
+                ) {
+                    RoomImage(room, Modifier.size(AlphonsoTokens.Space.s12).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)))
+                    Column(Modifier.weight(1f)) {
+                        Text(episode.title, style = FootnoteType, fontWeight = FontWeight.ExtraBold, color = ds.onHero, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        val failure = state.failure
+                        when {
+                            failure != null -> Text(PodcastPlaybackCopy.message(failure), style = CaptionType, color = ds.onHeroKick)
+                            state.phase == PodcastPlayerPhase.Buffering -> Text(PodcastPlaybackCopy.BUFFERING_LABEL, style = CaptionType, color = ds.onHeroSoft)
+                            else -> Text("Alphonso · ${ListenShelf.clock(episode.durationSeconds - state.elapsedSeconds.toInt())} left", style = CaptionType, color = ds.onHeroSoft)
                         }
-                        Icon(icon, contentDescription = label, tint = palette.onAccent)
                     }
                 }
-            }
-            state.nextEpisode?.let { next ->
-                IconButton(onClick = { scope.launch { play(container, next, state.queue) } }) { Icon(Icons.Filled.SkipNext, contentDescription = "Next episode", tint = palette.onPrimary) }
-            }
-            IconButton(onClick = {
-                showTranscript = true
-                if (transcript == null && !loadingTranscript) scope.launch {
-                    loadingTranscript = true
-                    transcriptCourse = runCatching { PodcastLibrary.courseOf(episode.folderId, container.podcastClient.fetchFolders()) }.getOrNull()
-                    transcript = runCatching { container.podcastClient.fetchTranscript(episode.id) }.getOrNull() ?: ""
-                    loadingTranscript = false
+                // Only a confirmed player shows Pause; a loading one shows a spinner; a failed one offers Retry.
+                Box(Modifier.size(AlphonsoTokens.Space.minTouch).background(ds.action, CircleShape), contentAlignment = Alignment.Center) {
+                    when (state.control) {
+                        PodcastPlayerControl.SPINNER -> {
+                            CircularProgressIndicator(color = ds.onAction, strokeWidth = 2.dp, modifier = Modifier.size(AlphonsoTokens.Space.s5).semantics { contentDescription = "Loading" })
+                        }
+                        else -> IconButton(onClick = { container.podcastPlayer.toggle() }, modifier = Modifier.size(AlphonsoTokens.Space.minTouch)) {
+                            val (icon, label) = when (state.control) {
+                                PodcastPlayerControl.PAUSE -> Icons.Filled.Pause to "Pause"
+                                PodcastPlayerControl.RETRY -> Icons.Filled.Refresh to PodcastPlaybackCopy.RETRY_TITLE
+                                else -> Icons.Filled.PlayArrow to "Play"
+                            }
+                            Icon(icon, contentDescription = label, tint = ds.onAction)
+                        }
+                    }
                 }
-            }) { Icon(Icons.Filled.Notes, contentDescription = "Show transcript", tint = palette.onPrimary) }
-            IconButton(onClick = { container.podcastPlayer.close() }) { Icon(Icons.Filled.Close, contentDescription = "Close player", tint = palette.onPrimary) }
+                state.nextEpisode?.let { next ->
+                    IconButton(onClick = { scope.launch { play(container, next, state.queue) } }) { Icon(Icons.Filled.SkipNext, contentDescription = "Next episode", tint = ds.onHero) }
+                }
+                IconButton(onClick = {
+                    showTranscript = true
+                    if (transcript == null && !loadingTranscript) scope.launch {
+                        loadingTranscript = true
+                        transcriptCourse = runCatching { PodcastLibrary.courseOf(episode.folderId, container.podcastClient.fetchFolders()) }.getOrNull()
+                        transcript = runCatching { container.podcastClient.fetchTranscript(episode.id) }.getOrNull() ?: ""
+                        loadingTranscript = false
+                    }
+                }) { Icon(Icons.Filled.Notes, contentDescription = "Show transcript", tint = ds.onHero) }
+                IconButton(onClick = { container.podcastPlayer.close() }) { Icon(Icons.Filled.Close, contentDescription = "Close player", tint = ds.onHeroSoft) }
+            }
+            // The thin gold progress line along the foot of the pill.
+            val fraction = if (episode.durationSeconds > 0) (state.elapsedSeconds / episode.durationSeconds).toFloat().coerceIn(0f, 1f) else 0f
+            Box(Modifier.align(Alignment.BottomStart).padding(horizontal = AlphonsoTokens.Space.s4).fillMaxWidth().height(3.dp).clip(CircleShape).background(ds.onHero.copy(alpha = 0.2f)).clearAndSetSemantics { }) {
+                Box(Modifier.fillMaxWidth(fraction).height(3.dp).background(ds.xp))
+            }
         }
     }
 
     if (expanded) {
-        ModalBottomSheet(onDismissRequest = { expanded = false }, sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = palette.mossDeep) {
+        ModalBottomSheet(onDismissRequest = { expanded = false }, sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = ds.hero) {
             FullPlayerContent(
                 title = episode.title, aiNarrated = episode.aiNarrated, elapsed = state.elapsedSeconds, duration = episode.durationSeconds,
                 control = state.control, onToggle = { container.podcastPlayer.toggle() },
@@ -397,22 +433,22 @@ fun PodcastMiniBar(container: AppContainer) {
     }
 
     if (showTranscript) {
-        ModalBottomSheet(onDismissRequest = { showTranscript = false }, containerColor = palette.surface) {
+        ModalBottomSheet(onDismissRequest = { showTranscript = false }, containerColor = ds.surface) {
           SaveWordHost(container) {
             Column(Modifier.fillMaxWidth().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(episode.title, style = MaterialTheme.typography.titleMedium, color = palette.ink)
+                Text(episode.title, style = HeadlineType, color = ds.ink)
                 val paragraphs = PodcastTranscript.paragraphs(transcript ?: "")
                 when {
-                    loadingTranscript -> CircularProgressIndicator(color = palette.moss)
-                    paragraphs.isEmpty() -> Text("This episode doesn't have a transcript yet.", style = MaterialTheme.typography.bodyMedium, color = palette.inkSoft)
+                    loadingTranscript -> CircularProgressIndicator(color = ds.choice)
+                    paragraphs.isEmpty() -> Text("This episode doesn't have a transcript yet.", style = BodyType, color = ds.inkSoft)
                     else -> {
                         val saveWord = LocalSaveWordHandler.current
                         val course = transcriptCourse
                         if (course != null && saveWord != null) SaveWordHintLine(container, SavedWordCopy.TRANSCRIPT_HINT, limited = false)
                         paragraphs.forEach { paragraph ->
                             // A transcript is in the language of its episode's root folder (PodcastLibrary.courseOf).
-                            if (course != null && saveWord != null) TappableText(paragraph, course, SaveWordMode.AllWords, saveWord, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
-                            else Text(paragraph, style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                            if (course != null && saveWord != null) TappableText(paragraph, course, SaveWordMode.AllWords, saveWord, style = BodyType, color = ds.ink)
+                            else Text(paragraph, style = BodyType, color = ds.ink)
                         }
                     }
                 }

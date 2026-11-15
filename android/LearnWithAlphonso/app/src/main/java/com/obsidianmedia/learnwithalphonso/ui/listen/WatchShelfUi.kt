@@ -30,7 +30,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -88,7 +87,17 @@ import com.obsidianmedia.learnwithalphonso.core.video.VideoState
 import com.obsidianmedia.learnwithalphonso.core.video.WebVtt
 import com.obsidianmedia.learnwithalphonso.core.video.WebVttCue
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -143,42 +152,44 @@ private fun rememberRemoteImage(url: String?): Bitmap? = produceState<Bitmap?>(n
  */
 @Composable
 fun WatchShelfSection(videos: List<LibraryVideo>, failed: Boolean, onRetry: () -> Unit, onOpen: (LibraryVideo) -> Unit) {
-    val palette = AlphonsoColor.palette
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val ds = LocalAlphonsoTokens.current
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
         if (failed) {
-            Row(Modifier.fillMaxWidth().background(palette.parchment, RoundedCornerShape(16.dp)).padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("We couldn't load the videos.", color = palette.inkSoft, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                AlphonsoSecondaryButton("Try again", onClick = onRetry, fullWidth = false)
+            DsCard {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                    Text("We couldn't load the videos.", color = ds.inkSoft, style = BodyType, modifier = Modifier.weight(1f))
+                    AlphonsoSecondaryButton("Try again", onClick = onRetry, fullWidth = false)
+                }
             }
             return@Column
         }
-        Text("Watch", color = palette.ink, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        DsOverline("Watch")
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
             items(videos, key = { it.id }) { video ->
                 val state = VideoShelf.state(video)
                 val word = when (state) { VideoState.DONE -> "watched"; VideoState.IN_PROGRESS -> "in progress"; VideoState.NEW -> "new" }
                 val poster = rememberRemoteImage(video.posterUrl)
                 Column(
-                    Modifier.width(120.dp).clickable(role = Role.Button) { onOpen(video) }
+                    Modifier.width(AlphonsoTokens.Space.s12 * 2.5f).clickable(role = Role.Button) { onOpen(video) }
                         .clearAndSetSemantics { contentDescription = "${video.title}, ${VideoShelf.clock(video.durationSeconds.toDouble())}, $word"; role = Role.Button },
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Box(Modifier.fillMaxWidth().aspectRatio(9f / 16f).clip(RoundedCornerShape(16.dp)).background(palette.parchment)) {
+                    Box(Modifier.fillMaxWidth().aspectRatio(9f / 16f).clip(RoundedCornerShape(16.dp)).background(ds.card)) {
                         poster?.let { Image(it.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
-                        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, palette.mossDeep.copy(alpha = 0.7f)))))
+                        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, ds.hero.copy(alpha = 0.7f)))))
                         video.level?.let {
-                            Text(it, color = palette.ink, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall, modifier = Modifier.align(Alignment.TopStart).padding(8.dp).background(palette.surface, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp))
+                            Text(it, color = ds.ink, fontWeight = FontWeight.Bold, style = CaptionType, modifier = Modifier.align(Alignment.TopStart).padding(8.dp).background(ds.surface, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp))
                         }
                         if (state == VideoState.DONE) {
-                            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = palette.moss, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp))
+                            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = ds.choice, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp))
                         }
-                        Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = palette.ink, modifier = Modifier.align(Alignment.BottomStart).padding(8.dp).size(32.dp).background(palette.surface.copy(alpha = 0.9f), CircleShape).padding(4.dp))
+                        Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = ds.ink, modifier = Modifier.align(Alignment.BottomStart).padding(8.dp).size(32.dp).background(ds.surface.copy(alpha = 0.9f), CircleShape).padding(4.dp))
                         if (state == VideoState.IN_PROGRESS) {
-                            LinearProgressIndicator(progress = { VideoShelf.fraction(video).toFloat() }, color = palette.ember, trackColor = palette.surface.copy(alpha = 0.6f), modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth())
+                            LinearProgressIndicator(progress = { VideoShelf.fraction(video).toFloat() }, color = ds.action, trackColor = ds.surface.copy(alpha = 0.6f), modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth())
                         }
                     }
-                    Text(video.title, color = palette.ink, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
-                    Text(VideoShelf.clock(video.durationSeconds.toDouble()) + if (state == VideoState.NEW) " · New" else "", color = palette.inkSoft, style = MaterialTheme.typography.labelSmall)
+                    Text(video.title, color = ds.ink, fontWeight = FontWeight.Bold, style = FootnoteType)
+                    Text(VideoShelf.clock(video.durationSeconds.toDouble()) + if (state == VideoState.NEW) " · New" else "", color = ds.inkSoft, style = CaptionType)
                 }
             }
         }
@@ -200,7 +211,7 @@ fun VideoPlayerSheet(
     onPractice: (VideoPracticeTarget) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val reduceMotion = remember {
@@ -299,14 +310,14 @@ fun VideoPlayerSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = palette.surface,
+        containerColor = ds.surface,
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(video.title, color = palette.ink, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, contentDescription = "Close video", tint = palette.inkSoft) }
+                Text(video.title, color = ds.ink, fontWeight = FontWeight.Bold, style = HeadlineType, modifier = Modifier.weight(1f))
+                IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, contentDescription = "Close video", tint = ds.inkSoft) }
             }
-            Box(Modifier.align(Alignment.CenterHorizontally).heightIn(max = 420.dp).aspectRatio(9f / 16f).clip(RoundedCornerShape(16.dp)).background(palette.ink)) {
+            Box(Modifier.align(Alignment.CenterHorizontally).heightIn(max = 420.dp).aspectRatio(9f / 16f).clip(RoundedCornerShape(16.dp)).background(ds.ink)) {
                 AndroidView(
                     factory = { ctx -> SurfaceView(ctx).also { exo.setVideoSurfaceView(it) } },
                     modifier = Modifier.fillMaxSize(),
@@ -314,19 +325,19 @@ fun VideoPlayerSheet(
                 val caption = if (captionsOn) WebVtt.cueAt(time, cues)?.text else null
                 if (caption != null) {
                     Text(
-                        caption, color = palette.onPrimary, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp).background(palette.mossDeep.copy(alpha = 0.8f), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 8.dp)
+                        caption, color = ds.onHero, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center, style = BodyType,
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(12.dp).background(ds.hero.copy(alpha = 0.8f), RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 8.dp)
                             .semantics { liveRegion = LiveRegionMode.Polite; contentDescription = "Caption: $caption" },
                     )
                 }
                 if (failed) {
-                    Column(Modifier.fillMaxSize().background(palette.mossDeep.copy(alpha = 0.85f)).padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("We couldn't play this video.", color = palette.onPrimary, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                    Column(Modifier.fillMaxSize().background(ds.hero.copy(alpha = 0.85f)).padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("We couldn't play this video.", color = ds.onHero, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
                         AlphonsoSecondaryButton("Try again", onClick = { attempt++ }, fullWidth = false)
                     }
                 } else if (ended) {
-                    Column(Modifier.fillMaxSize().background(palette.mossDeep.copy(alpha = 0.85f)).padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Nice work", color = palette.onPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                    Column(Modifier.fillMaxSize().background(ds.hero.copy(alpha = 0.85f)).padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Nice work", color = ds.onHero, fontWeight = FontWeight.Bold, style = TitleType)
                         val practice = video.practice
                         val target = VideoShelf.practiceTarget(practice)
                         if (practice != null && target != null) {
@@ -340,27 +351,19 @@ fun VideoPlayerSheet(
                 value = time.toFloat().coerceIn(0f, duration.toFloat().coerceAtLeast(1f)),
                 onValueChange = { v -> time = v.toDouble(); ended = false; exo.seekTo((v * 1000).toLong()) },
                 valueRange = 0f..duration.toFloat().coerceAtLeast(1f),
-                colors = SliderDefaults.colors(thumbColor = palette.moss, activeTrackColor = palette.moss),
+                colors = SliderDefaults.colors(thumbColor = ds.choice, activeTrackColor = ds.choice, inactiveTrackColor = ds.sunk),
                 modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Seek"; stateDescription = "${VideoShelf.clock(time)} of ${VideoShelf.clock(duration)}" },
             )
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 IconButton(
                     onClick = { togglePlay() },
-                    modifier = Modifier.size(48.dp).background(palette.moss, CircleShape),
+                    modifier = Modifier.size(48.dp).background(ds.choice, CircleShape),
                 ) {
-                    Icon(if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow, contentDescription = if (playing) "Pause" else "Play", tint = palette.onPrimary)
+                    Icon(if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow, contentDescription = if (playing) "Pause" else "Play", tint = ds.onHero)
                 }
-                Text("${VideoShelf.clock(time)} / ${VideoShelf.clock(duration)}", color = palette.inkSoft, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-                Box(
-                    Modifier.heightIn(min = 48.dp).clip(CircleShape).background(palette.parchment).clickable(role = Role.Button) { speed = VideoShelf.nextSpeed(speed) }
-                        .semantics { contentDescription = "Playback speed ${VideoShelf.speedLabel(speed)}. Change speed" }.padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.Center,
-                ) { Text(VideoShelf.speedLabel(speed), color = palette.ink, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge) }
-                Box(
-                    Modifier.heightIn(min = 48.dp).clip(CircleShape).background(if (captionsOn) palette.moss else palette.parchment).clickable(role = Role.Button) { captionsOn = !captionsOn }
-                        .semantics { contentDescription = "Captions"; selected = captionsOn }.padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.Center,
-                ) { Text("CC", color = if (captionsOn) palette.onPrimary else palette.inkSoft, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge) }
+                Text("${VideoShelf.clock(time)} / ${VideoShelf.clock(duration)}", color = ds.inkSoft, style = FootnoteType, modifier = Modifier.weight(1f))
+                DsChip(VideoShelf.speedLabel(speed), selected = false, onClick = { speed = VideoShelf.nextSpeed(speed) }, accessibilityText = "Playback speed ${VideoShelf.speedLabel(speed)}. Change speed")
+                DsChip("CC", selected = captionsOn, onClick = { captionsOn = !captionsOn }, accessibilityText = "Captions")
             }
         }
     }

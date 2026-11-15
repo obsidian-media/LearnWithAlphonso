@@ -1,6 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.ui.settings
 
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.border
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
@@ -139,13 +143,14 @@ private fun VoicePickerDialog(
     val title = "${character.settingsLabel} · ${course.displayName}"
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Column(Modifier.fillMaxSize().background(ds.surface)) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onDismiss) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = ds.choice) }
-                Text(title, style = HeadlineType, color = ds.ink, modifier = Modifier.semantics { heading() })
-            }
-            error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, modifier = Modifier.padding(horizontal = 16.dp)) }
-            LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // A full-screen picker on the profile scene, inside the system bars (the old layout ran under them), with the
+        // list scrolling under a fixed back chip and title at any font size.
+        com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen(com.obsidianmedia.learnwithalphonso.ui.components.DsScene.PROFILE, Modifier.safeDrawingPadding()) {
+          Column(Modifier.fillMaxSize()) {
+            com.obsidianmedia.learnwithalphonso.ui.components.DsBackBar("Settings", onDismiss)
+            com.obsidianmedia.learnwithalphonso.ui.components.DsGlassTitle(title, modifier = Modifier.padding(horizontal = AlphonsoTokens.Space.gutter))
+            error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, modifier = Modifier.padding(horizontal = AlphonsoTokens.Space.gutter, vertical = AlphonsoTokens.Space.s2)) }
+            LazyColumn(Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(horizontal = AlphonsoTokens.Space.gutter, vertical = AlphonsoTokens.Space.s2), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                 VoiceGender.entries.forEach { gender ->
                     val group = VoiceCatalog.voicesFor(course.code).filter { it.gender == gender }
                     if (group.isEmpty()) return@forEach
@@ -154,7 +159,7 @@ private fun VoicePickerDialog(
                             gender.groupLabel.uppercase(),
                             style = CaptionType.copy(fontWeight = FontWeight.SemiBold),
                             color = ds.actionText,
-                            modifier = Modifier.padding(top = 12.dp).semantics { heading() },
+                            modifier = Modifier.padding(top = AlphonsoTokens.Space.s3).semantics { heading() },
                         )
                     }
                     items(group, key = { it.id }) { voice ->
@@ -182,6 +187,7 @@ private fun VoicePickerDialog(
                     }
                 }
             }
+          }
         }
     }
 }
@@ -198,8 +204,9 @@ private fun VoiceRow(
     onChoose: () -> Unit,
 ) {
     val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(ds.card).padding(horizontal = 4.dp),
+        Modifier.fillMaxWidth().clip(shape).background(if (isSelected) ds.choiceTint else ds.card).border(2.dp, if (isSelected) ds.choice else ds.line, shape).padding(horizontal = AlphonsoTokens.Space.s1),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onPreview, modifier = Modifier.semantics { contentDescription = if (isPlaying) "Stop ${voice.name} preview" else "Play ${voice.name} preview" }) {
