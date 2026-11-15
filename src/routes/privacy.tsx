@@ -55,7 +55,7 @@ function Privacy() {
             "Audio library use: which episodes you play, how far through you are, and which you download for offline listening. Episodes marked AI-narrated are read by a synthetic voice (Deepgram text-to-speech) from scripts we write; making them uses no personal data.",
             "Purchases: whether you hold an active Alphonso Pro subscription, where you bought it, and its status and renewal dates. We never receive or store your card details. Apple, Google Play on Android, or Stripe for a subscription bought on our website, handles payment.",
             "Notifications: if you enable push notifications, a device token so we can send them. It is used for nothing else.",
-            "Help chat: what you write in Help and the replies, with the time of each and the status of the conversation (open, waiting for you or solved). We also keep the topic of your question, which kind of device you used (web, iPhone or Android), and which of our staff replied. If the AI helper answered, we keep a short summary of the conversation and the account facts it was given for that answer (listed in the Help chat section below). Our staff can also add private notes to your conversation; you do not see them.",
+            "Help chat: what you write in Help and the replies, with the time of each and the status of the conversation. We also keep the topic of your question, which kind of device you used (web, iPhone or Android), and which of our staff replied. If the AI helper answered, we keep a short summary of the conversation and the account facts it was given for that answer (listed in the Help chat section below). Our staff can also add private notes to your conversation; you do not see them.",
             "Usage limits: counts of how many AI requests your account makes each day, so we can apply fair-use limits.",
             "Speaking time: a daily total of how many seconds you spoke in practice, so we can show your progress. We keep only the number, never the audio or what you said, until you delete your account.",
             "Learning time, skills and listening: a daily total of how many seconds you spent on lessons and practice, which of five skills (listening, speaking, vocabulary, grammar, reading) each answer counted towards, a marker for each saved word you have mastered, your time zone (used to show dates and to decide which calendar day your streak and daily totals count towards; if we do not have it, we use UTC), and how far through each audio episode or video you are (and when you finished a video), so we can show your progress and let you continue listening or watching. We keep these only as totals and positions, never audio or what you said, until you delete your account, and they are in your data export.",
@@ -258,18 +258,20 @@ function Privacy() {
           and &ldquo;Support team&rdquo;. Miya, the helper that may answer first, is an AI. She can
           only write text: she cannot change anything on your account. She runs only while we have
           AI answers switched on and you have allowed AI features, and a person takes over for
-          billing, refunds, safety and questions about your data, or whenever you ask for one. She
-          can be wrong.
+          billing and refunds, deleting an account, safety, legal and data requests, any change to
+          your account, anything she cannot answer, or whenever you ask for one. She can be wrong.
         </p>
         <p>
           When Miya answers, your recent messages in that conversation go to our AI provider
           (Anthropic, through OpenRouter, as described above) together with a short list of facts
-          about your own account: whether you have Pro and where it came from, your course and
-          level, your streak, how many days you were active in the last 30 and how many lessons you
-          finished in the last 7, which platforms you use, whether social features are blocked on
-          your account (yes or no, never why), and the status, topic and day of up to three earlier
-          Help conversations. She never sees your email address, name, payment details, lesson
-          answers, your chats with Alphonso or Hector, or our staff notes.
+          about your own account: whether you have Pro, where it came from and, for free Pro we gave
+          you, the day it ends (or that we could not check your Pro status), your course and level,
+          your streak, how many days you were active in the last 30 and the last day you were
+          active, how many lessons you finished in the last 7 and the day of your last lesson, which
+          platforms you use, whether social features are blocked on your account (yes or no, never
+          why), and the status, topic and day of up to three earlier Help conversations. She never
+          sees your email address, name, payment details, lesson answers, your chats with Alphonso
+          or Hector, or our staff notes.
         </p>
         <p>
           When a person replies, we send you an email and, if you have push notifications on, a push
