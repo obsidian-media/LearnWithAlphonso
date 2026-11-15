@@ -8,6 +8,16 @@ export const MIN_SKILL_ANSWERS = 5;
 /** How many skills must have enough answers before a shape is drawn; below that the page shows the empty state. */
 export const MIN_SKILLS_FOR_RADAR = 3;
 
+/** Shown while the chart has no answers at all (skill_days only started 2026-11-07, so older lessons never fed it). */
+export const SKILLS_NO_DATA_COPY = "Skills start counting from your next lesson";
+
+/** The line above the "answers still needed" list: the no-data sentence when nothing was answered, else the usual one. */
+export function skillsEmptyIntro(skills: RadarSkill[]): string {
+  return skills.every((s) => s.answered === 0)
+    ? SKILLS_NO_DATA_COPY
+    : "Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it.";
+}
+
 export const SKILL_LABEL: Record<Skill, string> = {
   listening: "Listening",
   speaking: "Speaking",
