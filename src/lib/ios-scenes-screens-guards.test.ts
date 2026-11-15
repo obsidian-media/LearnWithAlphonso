@@ -95,58 +95,47 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
   });
 });
 
-describe("Listen: studio scene, large header, glass folder and episode cards", () => {
+describe("Listen: studio scene, and the empty, offline and failed states as design-system cards", () => {
   const listen = read("ListenView.swift");
-  const listing = between(
-    listen,
-    "private struct PodcastFolderListing",
-    "private func subtitle(for episode",
-  );
+  const shelf = read("ListenShelfViews.swift");
 
-  it("the studio scene is behind Listen, at the root and in every pushed folder", () => {
+  it("the studio scene is behind Listen at the root, and the shelf and folder paint none of their own", () => {
     const root = between(listen, "struct ListenView: View", "private func runSearch");
     expect(root).toContain(".screenScene(.listen)");
     expect(root).not.toContain(".background(AlphonsoColor.surface)");
-    expect(listing).toContain(".screenScene(.listen, if: showsScene)");
-    expect(listing).not.toContain(".background(AlphonsoColor.surface)");
-    expect(listing).toContain(".sceneScrollProbe()");
+    expect(shelf).not.toContain(".screenScene(");
   });
 
-  it("loading, offline, error and empty states sit on glass over the studio, not straight on the picture", () => {
+  it("loading sits on glass over the studio; offline, error and empty are the design-system empty-state card", () => {
     const content = between(
       listen,
       "private var content: some View",
       "private func rememberEpisodes",
     );
-    expect(content.split(".alphonsoGlass()").length - 1).toBe(4);
-    // The searchable results and the offline list keep their opaque surface.
-    expect(listen.split(".background(AlphonsoColor.surface)").length - 1).toBe(3);
+    // Only the loading spinner is glass now; the three states below are cards of their own (DSEmptyState).
+    expect(content.split(".alphonsoGlass()").length - 1).toBe(1);
+    expect(content.split("DSEmptyState(").length - 1).toBe(3);
+    expect(content).not.toContain("ContentUnavailableView");
+    // Each of the three keeps its one action: try again, try again, refresh.
+    expect(content.split("{ Task { await load() } }").length - 1).toBe(3);
+    // The searchable results and the offline list keep their opaque surface, now the design-system one.
+    expect(listen.split(".background(ds.surface)").length - 1).toBe(3);
   });
 
-  it("a large header opens the list, with its title on glass", () => {
-    expect(listen).toContain("private struct ListenSceneHeader: View");
-    const header = from(listen, "private struct ListenSceneHeader: View");
-    expect(header).toContain("minHeight: 190");
-    expect(header).toContain(".alphonsoGlass(");
-    expect(listing).toContain('ListenSceneHeader(title: folder?.title ?? "Library"');
+  it("the older folder listing, its large header and its glass rows are gone: nothing called them", () => {
+    for (const dead of ["PodcastFolderListing", "ListenSceneHeader", "ListenGlassRow"]) {
+      expect(listen, dead).not.toContain(dead);
+      expect(shelf, dead).not.toContain(dead);
+    }
   });
 
-  it("folders and episodes are larger glass cards with the existing 3D icons, same data and same actions", () => {
-    const row = from(listen, "private struct ListenGlassRow: View");
-    expect(row).toContain("Icon3DView(emoji:");
-    expect(row).toContain(".alphonsoGlass(");
-    expect(row).toMatch(/minHeight: 7\d/);
-    expect(listing).toContain("ListenGlassRow(");
-    // Folders still navigate into PodcastFolderListing, episodes still play and mark played.
-    expect(listing).toContain("PodcastFolderListing(");
-    expect(listing).toContain("player.play(");
-    expect(listing).toContain("downloads.markPlayed(episodeID: episode.id)");
-    expect(listing).toContain("PodcastDownloadButton(");
-    // Titles and subtitles come from the same fields as before.
-    expect(listing).toContain("title: child.title");
-    expect(listing).toContain('subtitle: child.description ?? "Browse episodes"');
-    expect(listing).toContain("title: episode.title");
-    expect(listing).toContain("subtitle: subtitle(for: player.resumed(episode))");
+  it("the folder is the room header, one gold Continue button and the episode rows, same data and same actions", () => {
+    const detail = from(shelf, "struct ListenShelfDetail: View");
+    expect(detail).toContain(".buttonStyle(.dsButton(.primary))");
+    expect(detail).toContain("player.play(");
+    expect(detail).toContain("downloads.markPlayed(episodeID: episode.id)");
+    expect(detail).toContain("PodcastDownloadButton(");
+    expect(detail).toContain("PodcastQuizRowButton(");
   });
 });
 

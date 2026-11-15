@@ -275,7 +275,10 @@ describe("Podcast resume", () => {
   it("forgets stored positions when the account changes", () => {
     expect(functionBody(src, "func stopForAccountChange() {")).toContain("savedPositions.reset()");
   });
-  it("the folder list shows Resume from the same source", () => {
-    expect(read(`${APP}/ListenView.swift`)).toContain("subtitle(for: player.resumed(episode))");
+  it("the folder list shows minutes left and the progress bar from the same progress rows as the shelf", () => {
+    // ListenShelfDetail is the folder a learner opens (the older listing that read player.resumed had no caller).
+    const detail = read(`${APP}/ListenShelfViews.swift`);
+    expect(detail).toContain("ListenShelf.secondsLeft(episode, p)");
+    expect(detail).toContain("DSProgressBar(fraction: ListenShelf.fraction(episode, p))");
   });
 });

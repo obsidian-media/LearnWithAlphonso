@@ -98,7 +98,7 @@ struct RootView: View {
                 // flipping straight to the signed-in app a moment later on
                 // every single launch, which is the exact scenario this
                 // whole persistence effort exists to fix.
-                AlphonsoColor.surface.ignoresSafeArea()
+                AlphonsoDS.current.surface.ignoresSafeArea()
             } else {
                 switch session.state {
                 case .signedOut, .awaitingCode:
@@ -155,11 +155,10 @@ struct RootView: View {
                         // A podcast stop has nothing more to do once the Listen tab is showing.
                         if destination == .podcastLibrary { pathDeepLink.pending = nil }
                     }
-                    // Meadow theme (see DesignSystem/AlphonsoTheme.swift): moss tint
-                    // for selected tab items, parchment tab-bar background instead
-                    // of the system default, matching the web app's brand.
-                    .tint(AlphonsoColor.moss)
-                    .toolbarBackground(AlphonsoColor.parchment, for: .tabBar)
+                    // The system tab bar in the round-6 colours the phone frames draw: the choice colour for the
+                    // selected item (the unselected ones stay the system grey), the card colour behind the bar.
+                    .tint(AlphonsoDS.current.choice)
+                    .toolbarBackground(AlphonsoDS.current.card, for: .tabBar)
                     .toolbarBackground(.visible, for: .tabBar)
                     .fullScreenCover(item: $firstRunCover, onDismiss: firstRunDismissed) { cover in
                         firstRunCoverView(cover)
@@ -338,7 +337,7 @@ struct RootView: View {
             if Self.uiTestLayoutProbe {
                 GeometryReader { proxy in
                     Text(proxy.size.width > proxy.size.height ? "landscape" : "portrait")
-                        .font(.system(size: 1))
+                        .font(.caption2)
                         .opacity(0.01)
                         .frame(width: 1, height: 1)
                         .accessibilityIdentifier("uiTest.layout")

@@ -161,7 +161,9 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
     }
     // Section headers were bare ember text on the list background; over a scene they sit on glass.
     expect(from(browser, "unit.eyebrow").slice(0, 1600)).toContain(".alphonsoGlass(");
-    // The chips are material, not flat surface.
-    expect(header).toContain(".regularMaterial");
+    // The chips are the design system's card colour (nearly opaque, with the floating elevation), never the bare
+    // list background, so the numbers stay legible over the garden.
+    expect(header).toContain("Capsule().fill(ds.card");
+    expect(header).toContain("AlphonsoDS.Elevation.floating");
   });
 });

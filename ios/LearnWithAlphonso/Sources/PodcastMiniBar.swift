@@ -41,6 +41,7 @@ struct PodcastMiniBar: View {
     /// is not downloaded fails at once (the machine's fast path) instead of spinning.
     let networkMonitor: NetworkMonitor
 
+    @Environment(\.alphonsoDS) private var ds
     @State private var showTranscript = false
     @State private var showFull = false
     @State private var transcript: String?
@@ -57,13 +58,13 @@ struct PodcastMiniBar: View {
                 if let message = player.failureMessage {
                     // A failure is stated, with the one action that can fix it. Never a
                     // Pause icon over an episode that is not playing.
-                    HStack(spacing: AlphonsoSpacing.sm) {
+                    HStack(spacing: AlphonsoDS.Space.s2) {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(AlphonsoColor.destructive)
+                            .foregroundStyle(ds.wrongInk)
                             .accessibilityHidden(true)
                         Text(message)
-                            .font(AlphonsoFont.sans(13))
-                            .foregroundStyle(AlphonsoColor.ink)
+                            .dsText(.footnote)
+                            .foregroundStyle(ds.ink)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)
                         Button(PodcastPlaybackCopy.retryTitle) {
@@ -72,36 +73,43 @@ struct PodcastMiniBar: View {
                                 isOnline: networkMonitor.isConnected
                             )
                         }
-                        .font(AlphonsoFont.sans(13, weight: .semiBold))
-                        .tint(AlphonsoColor.moss)
-                        .frame(minHeight: 44)
+                        .dsText(.footnote)
+                        .tint(ds.choice)
+                        .frame(minHeight: AlphonsoDS.Space.minTouch)
                     }
-                    .padding(.horizontal, AlphonsoSpacing.md)
-                    .padding(.top, AlphonsoSpacing.sm)
+                    .padding(.horizontal, AlphonsoDS.Space.s4)
+                    .padding(.vertical, AlphonsoDS.Space.s2)
+                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+                    .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
+                    .padding(.horizontal, AlphonsoDS.Space.s3)
+                    .padding(.bottom, AlphonsoDS.Space.s1)
                     .accessibilityElement(children: .combine)
                 }
                 if player.machine.phase == .finished, let offer = quizOffer {
                     quizOfferRow(offer: offer)
                 }
-                HStack(spacing: AlphonsoSpacing.sm + 2) {
+                // Round 6.1 "mini player": a navy pill with the room as artwork, the title, the minutes left, a gold
+                // play button and a thin gold progress line along the bottom. A failure or a quiz offer above it
+                // is a card of its own.
+                HStack(spacing: AlphonsoDS.Space.s3) {
                     Button {
                         showFull = true
                     } label: {
-                        HStack(spacing: AlphonsoSpacing.sm + 2) {
+                        HStack(spacing: AlphonsoDS.Space.s3) {
                             Image(uiImage: LessonArt.room("radio") ?? UIImage())
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 44, height: 44)
-                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .frame(width: AlphonsoDS.Space.s12, height: AlphonsoDS.Space.s12)
+                                .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
                                 .accessibilityHidden(true)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(episode.title)
-                                    .font(AlphonsoFont.sans(14, weight: .semiBold))
-                                    .foregroundStyle(AlphonsoColor.onPrimary)
+                                    .dsText(.footnote)
+                                    .foregroundStyle(ds.onHero)
                                     .lineLimit(1)
                                 Text(progressLabel(for: episode))
-                                    .font(AlphonsoFont.sans(12))
-                                    .foregroundStyle(AlphonsoColor.onPrimary)
+                                    .dsText(.caption)
+                                    .foregroundStyle(ds.onHeroSoft)
                                     .monospacedDigit()
                             }
                             Spacer(minLength: 0)
@@ -116,9 +124,9 @@ struct PodcastMiniBar: View {
                             player.toggle()
                         } label: {
                             Image(systemName: player.control == .pause ? "pause.fill" : "play.fill")
-                                .foregroundStyle(AlphonsoColor.onAccent)
-                                .padding(AlphonsoSpacing.sm)
-                                .background(Circle().fill(AlphonsoColor.ember))
+                                .foregroundStyle(ds.onAction)
+                                .frame(width: AlphonsoDS.Space.minTouch, height: AlphonsoDS.Space.minTouch)
+                                .background(Circle().fill(ds.action))
                         }
                         .accessibilityLabel(player.control == .pause ? "Pause" : "Play")
                     case .spinner:
@@ -127,9 +135,9 @@ struct PodcastMiniBar: View {
                             player.toggle()
                         } label: {
                             ProgressView()
-                                .tint(AlphonsoColor.onAccent)
-                                .padding(AlphonsoSpacing.sm)
-                                .background(Circle().fill(AlphonsoColor.ember))
+                                .tint(ds.onAction)
+                                .frame(width: AlphonsoDS.Space.minTouch, height: AlphonsoDS.Space.minTouch)
+                                .background(Circle().fill(ds.action))
                         }
                         .accessibilityLabel("Loading. Double-tap to pause.")
                     case .retry, .none:
@@ -152,7 +160,7 @@ struct PodcastMiniBar: View {
                             downloads.markPlayed(episodeID: next.id)
                         } label: {
                             Image(systemName: "forward.end.fill")
-                                .foregroundStyle(AlphonsoColor.onPrimary)
+                                .foregroundStyle(ds.onHero)
                         }
                         .accessibilityLabel("Next episode")
                     }
@@ -164,7 +172,7 @@ struct PodcastMiniBar: View {
                         showTranscript = true
                     } label: {
                         Image(systemName: "text.alignleft")
-                            .foregroundStyle(AlphonsoColor.onPrimary)
+                            .foregroundStyle(ds.onHero)
                     }
                     .accessibilityLabel("Show transcript")
 
@@ -172,22 +180,18 @@ struct PodcastMiniBar: View {
                         player.close()
                     } label: {
                         Image(systemName: "xmark")
-                            .foregroundStyle(AlphonsoColor.onPrimary)
+                            .foregroundStyle(ds.onHero)
                     }
                     .accessibilityLabel("Close player")
                 }
-                .padding(.horizontal, AlphonsoSpacing.md)
-                .padding(.vertical, AlphonsoSpacing.sm)
-                // The control row is a navy pill; a failure or a quiz offer above it stays on the parchment.
-                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(AlphonsoColor.mossDeep))
-                .padding(.horizontal, AlphonsoSpacing.sm)
-                .padding(.vertical, AlphonsoSpacing.xs)
-            }
-            .background(AlphonsoColor.parchment)
-            .overlay(alignment: .top) {
-                Rectangle()
-                    .fill(AlphonsoColor.hairline)
-                    .frame(height: 1)
+                .padding(.leading, AlphonsoDS.Space.s2)
+                .padding(.trailing, AlphonsoDS.Space.s3 + 2)
+                .padding(.vertical, AlphonsoDS.Space.s2)
+                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.hero))
+                .overlay(alignment: .bottom) { progressLine(for: episode) }
+                .dsElevation(AlphonsoDS.Elevation.floating, line: ds.line)
+                .padding(.horizontal, AlphonsoDS.Space.s3)
+                .padding(.vertical, AlphonsoDS.Space.s1)
             }
             // A sheet, not a full-screen cover: swiping down dismisses it to the mini bar, the standard gesture.
             .sheet(isPresented: $showFull) {
@@ -262,24 +266,25 @@ struct PodcastMiniBar: View {
     }
 
     private func quizOfferRow(offer: PodcastQuizOffer) -> some View {
-        HStack(spacing: AlphonsoSpacing.sm) {
+        HStack(spacing: AlphonsoDS.Space.s2) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(PodcastQuizCopy.offerTitle)
-                    .font(AlphonsoFont.sans(14, weight: .semiBold))
-                    .foregroundStyle(AlphonsoColor.ink)
+                    .dsText(.footnote)
+                    .foregroundStyle(ds.ink)
                 Text(PodcastQuizCopy.offerDetail(questionCount: offer.questions.count, best: offer.best))
-                    .font(AlphonsoFont.sans(12))
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .dsText(.caption)
+                    .foregroundStyle(ds.inkSoft)
             }
             Spacer(minLength: 0)
             Button("Take the quiz") { showQuiz = true }
-                .font(AlphonsoFont.sans(13, weight: .semiBold))
-                .buttonStyle(.borderedProminent)
-                .tint(AlphonsoColor.moss)
-                .frame(minHeight: 44)
+                .buttonStyle(.dsButton(.primary, compact: true, fullWidth: false))
         }
-        .padding(.horizontal, AlphonsoSpacing.md)
-        .padding(.top, AlphonsoSpacing.sm)
+        .padding(.horizontal, AlphonsoDS.Space.s4)
+        .padding(.vertical, AlphonsoDS.Space.s2)
+        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+        .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
+        .padding(.horizontal, AlphonsoDS.Space.s3)
+        .padding(.bottom, AlphonsoDS.Space.s1)
         .accessibilityElement(children: .contain)
     }
 
@@ -302,6 +307,20 @@ struct PodcastMiniBar: View {
         )
         transcript = text
         isLoadingTranscript = false
+    }
+
+    /// The thin gold line along the pill's foot: how far through the episode. Decorative; the time left is in the label.
+    private func progressLine(for episode: PodcastEpisode) -> some View {
+        let fraction = ListenShelf.playedFraction(elapsed: player.elapsedSeconds, durationSeconds: episode.durationSeconds)
+        return GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule().fill(ds.onHero.opacity(0.2))
+                Capsule().fill(ds.action).frame(width: proxy.size.width * fraction)
+            }
+        }
+        .frame(height: AlphonsoDS.Space.s1 - 1)
+        .padding(.horizontal, AlphonsoDS.Space.s4 + 2)
+        .accessibilityHidden(true)
     }
 
     private func progressLabel(for episode: PodcastEpisode) -> String {
@@ -331,6 +350,7 @@ private struct PodcastTranscriptSheet: View {
     let session: Session
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.alphonsoDS) private var ds
     /// The word the learner tapped in the transcript, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
 
@@ -339,7 +359,7 @@ private struct PodcastTranscriptSheet: View {
             Group {
                 if isLoading {
                     ProgressView("Loading transcript…")
-                        .tint(AlphonsoColor.moss)
+                        .tint(ds.choice)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     let paragraphs = PodcastTranscript.paragraphs(transcript ?? "")
@@ -353,35 +373,35 @@ private struct PodcastTranscriptSheet: View {
                             .padding()
                     } else {
                         ScrollView {
-                            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm + 4) {
+                            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
                                 Text("Tap any word to save it.")
-                                    .font(AlphonsoFont.sans(12))
-                                    .foregroundStyle(AlphonsoColor.inkSoft)
+                                    .dsText(.caption)
+                                    .foregroundStyle(ds.inkSoft)
                                 ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
                                     // A transcript is wholly in its episode's course language.
                                     TappableText(
-                                        text: paragraph, color: AlphonsoColor.ink, course: course, mode: .allWords
+                                        text: paragraph, color: ds.ink, course: course, mode: .allWords
                                     ) { savingWord = $0 }
-                                    .font(AlphonsoFont.sans(15))
+                                    .dsText(.body)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 }
                             }
-                            .padding(AlphonsoSpacing.md)
+                            .padding(AlphonsoDS.Space.s4)
                         }
                     }
                 }
             }
-            .background(AlphonsoColor.surface)
+            .background(ds.surface)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
-                        .tint(AlphonsoColor.moss)
+                        .tint(ds.choice)
                 }
             }
         }
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
         }
@@ -411,7 +431,7 @@ extension View {
     /// Room under a Listen scroll view for the docked mini player: the inset alone did not reach these scroll views,
     /// so the last row sat under the bar. Only while an episode is loaded (the bar shows only then).
     func miniPlayerClearance(_ player: PodcastAudioPlayer) -> some View {
-        contentMargins(.bottom, player.episode == nil ? 0 : AlphonsoSpacing.xxl * 1.5, for: .scrollContent)
+        contentMargins(.bottom, player.episode == nil ? 0 : AlphonsoDS.Space.s12 * 1.5, for: .scrollContent)
     }
 
     func podcastMiniBar(

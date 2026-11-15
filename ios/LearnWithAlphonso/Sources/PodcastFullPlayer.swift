@@ -11,6 +11,7 @@ struct PodcastFullPlayer: View {
     let transcript: String?
     let onTranscript: () -> Void
 
+    @Environment(\.alphonsoDS) private var ds
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -35,17 +36,17 @@ struct PodcastFullPlayer: View {
 
     var body: some View {
         ZStack {
-            AlphonsoColor.mossDeep.ignoresSafeArea()
+            ds.hero.ignoresSafeArea()
             if let room = LessonArt.room("radio") {
                 Image(uiImage: room).resizable().scaledToFill().blur(radius: 18).opacity(0.25).ignoresSafeArea()
                     .accessibilityHidden(true)
             }
             ScrollView {
-                VStack(spacing: AlphonsoSpacing.md) {
+                VStack(spacing: AlphonsoDS.Space.s4) {
                     HStack {
                         Button { dismiss() } label: {
-                            Image(systemName: "chevron.down").foregroundStyle(AlphonsoColor.onPrimary)
-                                .frame(width: AlphonsoSpacing.minTouchTarget, height: AlphonsoSpacing.minTouchTarget)
+                            Image(systemName: "chevron.down").foregroundStyle(ds.onHero)
+                                .frame(width: AlphonsoDS.Space.minTouch, height: AlphonsoDS.Space.minTouch)
                         }
                         .accessibilityLabel("Minimise player")
                         Spacer()
@@ -53,30 +54,30 @@ struct PodcastFullPlayer: View {
                             player.close()
                             dismiss()
                         }
-                        .foregroundStyle(AlphonsoColor.onPrimary)
-                        .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                        .foregroundStyle(ds.onHero)
+                        .frame(minHeight: AlphonsoDS.Space.minTouch)
                         .accessibilityLabel("Stop and close player")
                     }
 
                     if let lines {
                         // With timings the art shrinks to a header so the transcript has the room, as in the mock.
-                        HStack(alignment: .bottom, spacing: AlphonsoSpacing.sm) {
+                        HStack(alignment: .bottom, spacing: AlphonsoDS.Space.s2) {
                             ZStack {
                                 if let room = LessonArt.room("radio") {
                                     Image(uiImage: room).resizable().scaledToFill()
                                 }
                             }
                             .frame(width: 96, height: 96)
-                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous))
                             .accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+                            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
                                 Text(episode.title)
                                     .dsText(.title)
-                                    .foregroundStyle(AlphonsoColor.onPrimary)
+                                    .foregroundStyle(ds.onHero)
                                     .fixedSize(horizontal: false, vertical: true)
                                 Text("Alphonso" + (episode.aiNarrated ? " \u{00B7} \(PodcastLabel.aiNarrated)" : ""))
                                     .dsText(.footnote)
-                                    .foregroundStyle(AlphonsoColor.onPrimary)
+                                    .foregroundStyle(ds.onHeroSoft)
                             }
                             Spacer(minLength: 0)
                         }
@@ -96,21 +97,21 @@ struct PodcastFullPlayer: View {
                                 .resizable().scaledToFit().frame(width: 130)
                         }
                         .frame(width: 260, height: 260)
-                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous))
                         .accessibilityHidden(true)
 
                         Text(episode.title)
                             .dsText(.title)
-                            .foregroundStyle(AlphonsoColor.onPrimary)
+                            .foregroundStyle(ds.onHero)
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                         Text("Alphonso" + (episode.aiNarrated ? " \u{00B7} \(PodcastLabel.aiNarrated)" : ""))
                             .dsText(.footnote)
-                            .foregroundStyle(AlphonsoColor.onPrimary)
+                            .foregroundStyle(ds.onHeroSoft)
                     }
 
                     if let message = player.failureMessage {
-                        Text(message).dsText(.footnote).foregroundStyle(AlphonsoColor.emberSoft)
+                        Text(message).dsText(.footnote).foregroundStyle(ds.wrongTint)
                             .multilineTextAlignment(.center)
                     } else if duration > 0 {
                         Slider(
@@ -120,7 +121,7 @@ struct PodcastFullPlayer: View {
                             ),
                             in: 0...duration
                         )
-                        .tint(AlphonsoColor.ember)
+                        .tint(ds.action)
                         .accessibilityLabel("Playback position")
                         .accessibilityValue("\(ListenShelf.clock(Int(player.elapsedSeconds))) of \(ListenShelf.clock(episode.durationSeconds))")
                         HStack {
@@ -129,32 +130,32 @@ struct PodcastFullPlayer: View {
                             Text("-" + ListenShelf.clock(episode.durationSeconds - Int(player.elapsedSeconds)))
                         }
                         .dsText(.caption)
-                        .foregroundStyle(AlphonsoColor.onPrimary)
+                        .foregroundStyle(ds.onHeroSoft)
                         .monospacedDigit()
                         .accessibilityHidden(true)
                     }
 
-                    HStack(spacing: AlphonsoSpacing.lg) {
+                    HStack(spacing: AlphonsoDS.Space.s6) {
                         Button { player.seek(to: max(0, player.elapsedSeconds - 15)) } label: {
-                            Image(systemName: "gobackward.15").font(.title2).foregroundStyle(AlphonsoColor.onPrimary)
+                            Image(systemName: "gobackward.15").font(.title2).foregroundStyle(ds.onHero)
                                 .frame(width: 56, height: 56)
                         }
                         .accessibilityLabel("Back 15 seconds")
                         Button { player.toggle() } label: {
                             Image(systemName: player.control == .pause ? "pause.fill" : "play.fill")
-                                .font(.title).foregroundStyle(AlphonsoColor.onAccent)
+                                .font(.title).foregroundStyle(ds.onAction)
                                 .frame(width: 72, height: 72)
-                                .background(Circle().fill(AlphonsoColor.ember))
+                                .background(Circle().fill(ds.action))
                         }
                         .accessibilityLabel(player.control == .pause ? "Pause" : "Play")
                         Button { player.seek(to: min(duration, player.elapsedSeconds + 30)) } label: {
-                            Image(systemName: "goforward.30").font(.title2).foregroundStyle(AlphonsoColor.onPrimary)
+                            Image(systemName: "goforward.30").font(.title2).foregroundStyle(ds.onHero)
                                 .frame(width: 56, height: 56)
                         }
                         .accessibilityLabel("Forward 30 seconds")
                     }
 
-                    HStack(spacing: AlphonsoSpacing.sm) {
+                    HStack(spacing: AlphonsoDS.Space.s2) {
                         Menu {
                             ForEach(SleepChoice.allCases, id: \.self) { choice in
                                 Button {
@@ -170,25 +171,25 @@ struct PodcastFullPlayer: View {
                         } label: {
                             Label(sleepLabel, systemImage: "moon.zzz")
                                 .dsText(.footnote)
-                                .foregroundStyle(AlphonsoColor.onPrimary)
-                                .padding(.horizontal, AlphonsoSpacing.md)
-                                .frame(minHeight: AlphonsoSpacing.minTouchTarget)
-                                .background(Capsule().fill(AlphonsoColor.onPrimary.opacity(0.15)))
+                                .foregroundStyle(ds.onHero)
+                                .padding(.horizontal, AlphonsoDS.Space.s4)
+                                .frame(minHeight: AlphonsoDS.Space.minTouch)
+                                .background(Capsule().fill(ds.onHero.opacity(0.15)))
                         }
                         .accessibilityLabel(sleepAccessibilityLabel)
 
                         Button(action: onTranscript) {
                             Label("Transcript", systemImage: "text.alignleft")
                                 .dsText(.footnote)
-                                .foregroundStyle(AlphonsoColor.onPrimary)
-                                .padding(.horizontal, AlphonsoSpacing.md)
-                                .frame(minHeight: AlphonsoSpacing.minTouchTarget)
-                                .background(Capsule().fill(AlphonsoColor.onPrimary.opacity(0.15)))
+                                .foregroundStyle(ds.onHero)
+                                .padding(.horizontal, AlphonsoDS.Space.s4)
+                                .frame(minHeight: AlphonsoDS.Space.minTouch)
+                                .background(Capsule().fill(ds.onHero.opacity(0.15)))
                         }
                         .accessibilityLabel("Show transcript")
                     }
                 }
-                .padding(AlphonsoSpacing.md)
+                .padding(AlphonsoDS.Space.s4)
             }
         }
     }
@@ -212,20 +213,21 @@ struct PodcastTimedTranscript: View {
     let elapsed: Double
     let reduceMotion: Bool
     let onSeek: (Double) -> Void
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         let active = PodcastTimings.activeIndex(lines, at: elapsed)
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+                LazyVStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                     ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
                         Button { onSeek(line.s) } label: {
                             Text(line.t)
                                 .dsText(.body)
-                                .foregroundStyle(AlphonsoColor.onPrimary.opacity(index == active ? 1 : 0.55))
+                                .foregroundStyle(ds.onHero.opacity(index == active ? 1 : 0.55))
                                 .multilineTextAlignment(.leading)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, line.p && index > 0 ? AlphonsoSpacing.sm : 0)
+                                .padding(.top, line.p && index > 0 ? AlphonsoDS.Space.s2 : 0)
                         }
                         .buttonStyle(.plain)
                         .id(index)
@@ -233,7 +235,7 @@ struct PodcastTimedTranscript: View {
                         .accessibilityHint("Plays from here")
                     }
                 }
-                .padding(.vertical, AlphonsoSpacing.md)
+                .padding(.vertical, AlphonsoDS.Space.s4)
             }
             .onChange(of: active) { _, newValue in
                 guard newValue >= 0 else { return }
