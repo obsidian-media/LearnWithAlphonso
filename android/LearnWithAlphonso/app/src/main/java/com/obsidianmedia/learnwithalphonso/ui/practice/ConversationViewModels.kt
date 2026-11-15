@@ -10,6 +10,8 @@ import com.obsidianmedia.learnwithalphonso.core.content.Campaign
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Scenario
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
+import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.HandsFreeBinding
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnEvent
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
@@ -76,6 +78,8 @@ abstract class BaseConversationViewModel(
     protected val _state = MutableStateFlow(ConversationUiState(turns = listOf(ChatMessage("assistant", opener))))
     override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
     override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
+    /** Hands-free (Practice tuning: 2.5 s of quiet ends a turn). Off whenever a call starts; the call sheet's switch turns it on. */
+    override val handsFree = HandsFreeBinding.newController(HandsFreeLoop.Tuning.PRACTICE, press = { pressBegan() }, release = { pressEnded() }, cancel = { HandsFreeBinding.releaseMic(engine) })
     private var analysed = false
     // The opener being fetched or spoken; a press cancels it, which stops its playback.
     private val opener by lazy {
@@ -110,6 +114,7 @@ abstract class BaseConversationViewModel(
     suspend fun finishPractice(): PracticeResult? {
         finishJob?.let { return it.await() }
         finishing = true
+        handsFree.disable()
         stopOpener()
         engine.cancel()
         val id = callId
@@ -144,9 +149,11 @@ abstract class BaseConversationViewModel(
         viewModelScope.launch { _state.update { it.copy(cefrLevel = runCatching { progress.fetchCefrLevel(course.code) }.getOrNull()) } }
         viewModelScope.launch {
             engine.events.collect { event ->
+                // Hands-free hears the failure or the empty transcript first, before the phase returns to idle.
+                HandsFreeBinding.onTurnEvent(handsFree, event)
                 when (event) {
                     is TurnEvent.Transcribed -> sendTurn(event.text, event.confidence)
-                    TurnEvent.Empty -> _state.update { it.copy(error = "Didn't catch that. Try again.", phase = ConversationPhase.IDLE) }
+                    TurnEvent.Empty, TurnEvent.TooShort -> _state.update { it.copy(error = HandsFreeBinding.errorFor(handsFree.isOn, event, "Didn't catch that. Try again."), phase = ConversationPhase.IDLE) }
                     TurnEvent.MicDenied -> _state.update { it.copy(error = "Couldn't access the microphone. Check Settings > Apps > Learn with Alphonso > Permissions.", phase = ConversationPhase.IDLE) }
                     is TurnEvent.Failed -> _state.update { it.copy(error = "Something went wrong. Try again.", phase = ConversationPhase.IDLE) }
                 }
@@ -154,11 +161,18 @@ abstract class BaseConversationViewModel(
         }
     }
 
+    init { HandsFreeBinding.feedPhases(viewModelScope, handsFree, engine, _state) }
+
     /** The microphone level while recording (the call's "You" tile), null otherwise. */
-    override fun micLevelDBFS(): Double? = recorder.levelDBFS()
+    override fun micLevelDBFS(): Double? = try { recorder.levelDBFS() } catch (e: Exception) { handsFree.failed(); null }
 
     override fun pressBegan() { if (finishing) return; stopOpener(); _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
-    override fun pressEnded() { engine.pressEnded(); if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }
+    override fun pressEnded() {
+        // Marked before the engine is told: the conversation must already be busy when the engine returns to idle, or
+        // hands-free would see a gap between "heard" and "thinking" and open the mic during the reply.
+        if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.RECORDING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) }
+        engine.pressEnded()
+    }
 
     /** Campaign only: a finished campaign has no line left to say. */
     protected open val conversationFinished: Boolean get() = false
@@ -216,18 +230,23 @@ abstract class BaseConversationViewModel(
             audioJob.await()
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
-            if (callId == attemptId) _state.update { it.copy(error = if (finishing) null else AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
+            if (callId == attemptId) {
+                // A failed reply pauses hands-free instead of listening again; one tap resumes.
+                if (!finishing) handsFree.failed()
+                _state.update { it.copy(error = if (finishing) null else AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
+            }
         } finally { sending = false; judging = false }
     }
 
     protected open fun onReply(reply: String) {}
 
     /** The composable left (rotation, tab switch): cancel any recording; the view model and its transcript survive. */
-    fun onLeave() { stopOpener(); engine.cancel() }
+    fun onLeave() { handsFree.disable(); stopOpener(); engine.cancel() }
 
     /** The screen is really gone: tear down and, with a real conversation behind us, analyse it once, best effort. */
     /** Public (wider than ViewModel's protected) so the test can drive the real clear path. */
     public override fun onCleared() {
+        handsFree.disable()
         engine.tearDown()
         if (analysed || _state.value.turns.size < 4) return
         analysed = true
@@ -294,8 +313,27 @@ class CampaignConversationViewModel(
 
     override val conversationFinished: Boolean get() = _campaign.value.finished
 
+    private var rearmHandsFree = false
+
+    /**
+     * The learner moves on to the next scene of this run (the Continue button): hands-free was on, so it is turned on
+     * again for that scene's call, carried across the scenes of one run as on iOS. A restart, a retry or ending the
+     * call forgets it.
+     */
+    fun carryHandsFreeToNextScene() { rearmHandsFree = handsFree.isOn }
+
+    fun forgetHandsFreeCarry() { rearmHandsFree = false }
+
+    /** The next scene's call screen is up: turn hands-free back on if the learner had it on, unless the campaign is over. */
+    fun rearmHandsFreeIfCarried() {
+        val carried = rearmHandsFree
+        rearmHandsFree = false
+        if (carried && !_campaign.value.finished) handsFree.enable()
+    }
+
     fun restartScene(speak: Boolean = true) {
         if (awaitingResult) return
+        rearmHandsFree = false
         resetPractice()
         val anchor = _campaign.value.sceneAnchor
         _state.update { it.copy(turns = it.turns.take(anchor + 1), openerIndices = it.openerIndices.filter { i -> i <= anchor }.toSet(), error = null) }

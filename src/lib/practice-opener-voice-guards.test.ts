@@ -66,7 +66,7 @@ describe("Android: Practice and Campaigns say the opener", () => {
     const gates = src.split("AiConsentGate(container, onDecline = onBack) {").slice(1);
     expect(gates).toHaveLength(2);
     for (const gate of gates) {
-      expect(gate.slice(0, 400)).toContain("LaunchedEffect(Unit) { vm.speakOpener() }");
+      expect(gate.slice(0, 400)).toMatch(/LaunchedEffect\(Unit\) \{ vm\.speakOpener\(\)[;\s]/);
     }
   });
 
