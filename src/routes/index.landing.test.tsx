@@ -72,6 +72,22 @@ describe("signed-out landing, adapted from the marketing mock", () => {
     expect(art.textContent).toBe("");
   });
 
+  it("the lesson count it states is no more than the lessons the app ships", async () => {
+    const { getCourse } = await import("@/data/courses");
+    const shipped = (["en", "fr", "es"] as const).reduce(
+      (n, c) => n + getCourse(c).curriculum.reduce((a, u) => a + u.lessons.length, 0),
+      0,
+    );
+    const { container } = renderLanding();
+    const claimed = Number(
+      /([\d,]+)\+ lessons/.exec(container.textContent ?? "")![1].replace(",", ""),
+    );
+    expect(claimed).toBeGreaterThan(0);
+    expect(claimed).toBeLessThanOrEqual(shipped);
+    // And it is not stale by more than a round hundred, so "1,800+" does not outlive a bigger course.
+    expect(shipped - claimed).toBeLessThan(200);
+  });
+
   it("every call to action leads into the app, and the two entry links stay unique by name", () => {
     renderLanding();
     expect(screen.getAllByRole("link", { name: /get started/i })).toHaveLength(1);

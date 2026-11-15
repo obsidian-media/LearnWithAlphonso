@@ -360,6 +360,7 @@ export function DsEmptyState({
   message,
   tone = "empty",
   heading,
+  variant = "card",
   children,
 }: {
   /** A pose of Alphonso (an image path). */
@@ -370,6 +371,8 @@ export function DsEmptyState({
   message?: string;
   tone?: "empty" | "error";
   heading?: "h1" | "h2";
+  /** `hero` is the screen's own state: display-size title and the floating shadow, over a scene. */
+  variant?: "card" | "hero";
   children?: ReactNode;
 }) {
   const Title = heading ?? "p";
@@ -377,7 +380,8 @@ export function DsEmptyState({
     <DsCard
       role={tone === "error" ? "alert" : "status"}
       data-empty-state={tone}
-      className="justify-items-center text-center"
+      data-variant={variant}
+      className={`justify-items-center text-center ${variant === "hero" ? "gap-2 p-4 shadow-[var(--ds-shadow-floating)]" : ""}`}
     >
       {art ? (
         <img
@@ -392,8 +396,18 @@ export function DsEmptyState({
       ) : icon ? (
         <Icon name={icon} size={48} />
       ) : null}
-      <Title className="ds-type-headline text-ds-ink">{title}</Title>
-      {message ? <p className="ds-type-footnote text-ds-ink-soft">{message}</p> : null}
+      <Title
+        className={`${variant === "hero" ? "ds-type-display" : "ds-type-headline"} text-ds-ink`}
+      >
+        {title}
+      </Title>
+      {message ? (
+        <p
+          className={`${variant === "hero" ? "ds-type-body max-w-[300px]" : "ds-type-footnote"} text-ds-ink-soft`}
+        >
+          {message}
+        </p>
+      ) : null}
       {children}
     </DsCard>
   );

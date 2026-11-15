@@ -539,7 +539,7 @@ export function Empty({ title, body, bonus }: { title: string; body: string; bon
     <div className="flex flex-1 flex-col pb-6">
       <ReviewScene pose={isComplete ? "proud" : "reading"} tall />
       <div className="relative z-[4] -mt-6 grid gap-3 px-4">
-        <DsEmptyState heading="h1" title={title} message={body}>
+        <DsEmptyState variant="hero" heading="h1" title={title} message={body}>
           {bonus && (
             <p className="inline-flex items-center gap-1.5 rounded-full bg-ds-heart-tint px-3 py-1.5 ds-type-footnote font-extrabold text-ds-heart-text">
               <Icon name="red_heart" size={20} />

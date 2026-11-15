@@ -48,6 +48,18 @@ describe("DsEmptyState", () => {
     expect(screen.queryByRole("heading")).toBeNull();
   });
 
+  it("the hero variant keeps the screen's own look: display-size title and the floating shadow", () => {
+    render(
+      <DsEmptyState variant="hero" heading="h1" title="Review complete" message="5 correct" />,
+    );
+    const card = screen.getByRole("status");
+    expect(card).toHaveAttribute("data-variant", "hero");
+    expect(card.className).toContain("shadow-[var(--ds-shadow-floating)]");
+    expect(screen.getByRole("heading", { level: 1 }).className).toContain("ds-type-display");
+    render(<DsEmptyState title="Plain" />);
+    expect(screen.getByText("Plain").className).toContain("ds-type-headline");
+  });
+
   it("reads the design tokens only: the card, ink and quiet-ink classes, no legacy colour", () => {
     const { container } = render(<DsEmptyState title="T" message="M" />);
     const html = container.innerHTML;

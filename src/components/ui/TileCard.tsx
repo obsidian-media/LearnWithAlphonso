@@ -29,7 +29,7 @@ export function TileCard({
       <div className="flex items-start justify-between gap-2">
         <Icon3D emoji={icon} size={44} />
         {badge ? (
-          <span className="rounded-full bg-ds-card/60 px-2 py-0.5 ds-type-caption">{badge}</span>
+          <span className="rounded-full bg-current/15 px-2 py-0.5 ds-type-caption">{badge}</span>
         ) : null}
       </div>
       <h2 className="ds-type-headline font-extrabold leading-tight">{title}</h2>

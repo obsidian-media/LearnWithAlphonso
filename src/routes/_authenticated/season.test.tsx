@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -70,5 +70,21 @@ describe("Season page", () => {
     expect(await screen.findByText("Couldn't load your season status.")).toBeInTheDocument();
     // The shared failure card: announced as an alert, with the retry inside it.
     expect(screen.getByRole("alert")).toHaveAttribute("data-empty-state", "error");
+  });
+
+  it("Try again asks the server again and shows the season when it answers", async () => {
+    getSeasonStatus.mockResolvedValueOnce(null);
+    renderPage();
+    await screen.findByText("Couldn't load your season status.");
+    expect(getSeasonStatus).toHaveBeenCalledTimes(1);
+    getSeasonStatus.mockResolvedValue({
+      division: 4,
+      rankInCohort: 2,
+      cohortSize: 20,
+      lastWeekResult: null,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(getSeasonStatus).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText("Division 4")).toBeInTheDocument();
   });
 });
