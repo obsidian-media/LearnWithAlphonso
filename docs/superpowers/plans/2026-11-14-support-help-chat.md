@@ -6,7 +6,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md` (Phase 2 and "Calls made after the builder review", calls 4, 6, 7, 8). Phase 1 is built (#496), see `docs/superpowers/plans/2026-11-13-admin-console-phase1.md`.
 
-**Status:** plan written 2026-11-14 against main at #507. Milestone 1 (data, server, AI agent) built in the PR "Support chat: data and server", awaiting the owner merging its two migrations; milestone 2 (web Help chat) built in the PR "Help chat on the web", no migration; milestone 3 (staff inbox in the admin console) built in the PR "Support inbox in the admin console", awaiting the owner merging its migration `20261117100200`; milestone 4 (iOS Help chat) merged as #541 (cec3a40e), no migration, not run on a simulator (Limrun out of credits), with push-tap routing deferred to milestone 6; milestone 5 (Android Help chat, #544) is in review fixes; milestone 6 not started.
+**Status:** plan written 2026-11-14 against main at #507. Milestone 1 (data, server, AI agent) built in the PR "Support chat: data and server", awaiting the owner merging its two migrations; milestone 2 (web Help chat) built in the PR "Help chat on the web", no migration; milestone 3 (staff inbox in the admin console) built in the PR "Support inbox in the admin console", awaiting the owner merging its migration `20261117100200`; milestone 4 (iOS Help chat) merged as #541 (cec3a40e), no migration, not run on a simulator (Limrun out of credits), with push-tap routing deferred to milestone 6; milestone 5 (Android Help chat) merged as #544 (e9f80ef0), push-tap routing deferred to milestone 6; milestone 6 not started; the Miya persona build has started.
 
 ## Owner decisions (2026-11-14)
 
@@ -275,3 +275,11 @@ Verify: a real signed-in end to end check with the agent mailbox (receive the em
 - Risk: the AI giving a wrong billing answer. Mitigation: AI off at launch (question 1), keyword hand-off, no promises rule, and the transcript store.
 - Risk: spam into the inbox. Mitigation: 50 messages a day, 100 per conversation, one open ticket per learner.
 - Not in this plan: email reply into the ticket (spec call 6), the AI changing accounts, Phase 3 numbers.
+
+## Built in milestone 5: deviations from this plan (2026-11-14)
+
+- **Entry** is a "Help" row in Settings (above "Support"), route `help`; the back chip reads "Settings". Android has no Profile-level Help row.
+- **Link marker**: `SupportLinks` (core) lifts a trailing `[[link:<id>]]` from `ai` bodies only and checks any server `link` against the allow-list; every other kind is left as typed with no link. Tests mutation-checked (allowing links on non-ai rows, and the unread divider order, both go red).
+- **Link destinations**: subscription goes to the Hector tab, league to League, ai-features and settings back to Settings (Help opens from there).
+- **Not done**: "Get help" links on save and purchase failure messages, and the push tap handler (milestone 6 delivers push). Night screenshots and a signed-in run against the live routes were not done.
+- Works with `support_ai` off: `aiAvailable: false` shows the person-mode banner and welcome.
