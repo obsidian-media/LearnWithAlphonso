@@ -91,7 +91,6 @@ import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
 import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
 import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
-import com.obsidianmedia.learnwithalphonso.ui.theme.onChoice
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType

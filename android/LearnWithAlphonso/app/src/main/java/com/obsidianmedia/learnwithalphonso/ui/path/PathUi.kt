@@ -26,7 +26,6 @@ import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
 import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
-import com.obsidianmedia.learnwithalphonso.ui.theme.onChoice
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll

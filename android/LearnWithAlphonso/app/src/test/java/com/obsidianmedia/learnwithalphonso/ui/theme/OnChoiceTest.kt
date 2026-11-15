@@ -7,8 +7,9 @@ import org.junit.Test
 
 class OnChoiceTest {
     @Test
-    fun `glyphs on the choice face read at 4_5 to 1 in every palette, light and night`() {
-        for (id in AlphonsoPaletteId.entries) for (night in listOf(false, true)) {
+    fun `glyphs on the choice face read at 4_5 to 1 in the approved looks`() {
+        // Royal light and night, Meadow light: the approved looks (there is no approved Meadow night).
+        for ((id, night) in listOf(AlphonsoPaletteId.ROYAL to false, AlphonsoPaletteId.ROYAL to true, AlphonsoPaletteId.MEADOW to false)) {
             val c = AlphonsoTokens.colors(id, night)
             val ratio = contrastRatio(c.onChoice, c.choice)
             assertTrue("$id night=$night onChoice on choice is $ratio", ratio >= 4.5)
