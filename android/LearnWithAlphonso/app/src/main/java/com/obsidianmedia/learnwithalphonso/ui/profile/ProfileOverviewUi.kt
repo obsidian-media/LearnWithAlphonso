@@ -171,11 +171,11 @@ fun ProfileHero(m: ProfileOverviewModel, onCourse: (Course) -> Unit, onPicture: 
                 Stat(b.courseXp.toString(), "XP in ${m.course.label}", "${b.xpThisWeek} this week", "${b.courseXp} XP in ${m.course.label}, ${b.xpThisWeek} this week", Modifier.weight(1f))
             }
             Row(Modifier.fillMaxWidth()) {
-                val mastered = m.data.masteredWords
+                val learned = b.wordsLearned
                 Stat(
-                    mastered.toString(), plural(mastered, "word mastered", "words mastered"),
+                    learned.toString(), plural(learned, "word learned", "words learned"),
                     if (b.savedWords > 0) "${b.savedWords} saved to review" else "Tap a word to save it",
-                    "$mastered ${plural(mastered, "word", "words")} mastered, ${b.savedWords} saved to review", Modifier.weight(1f),
+                    "$learned ${plural(learned, "word", "words")} learned, ${b.savedWords} saved to review", Modifier.weight(1f),
                 )
                 Stat(
                     b.lessonsDone.toString(), plural(b.lessonsDone, "lesson done", "lessons done"),
@@ -360,7 +360,7 @@ fun ProfileSkills(m: ProfileOverviewModel) {
             }
         } else {
             Text(
-                "Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it.",
+                SkillsRadar.emptyIntro(radar.skills),
                 style = FootnoteType, color = ds.inkSoft,
             )
             radar.skills.forEach { s ->
