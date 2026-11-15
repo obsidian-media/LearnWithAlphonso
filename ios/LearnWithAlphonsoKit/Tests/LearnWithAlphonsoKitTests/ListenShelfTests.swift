@@ -19,6 +19,21 @@ final class ListenShelfTests: XCTestCase {
     }
     private var eps: [PodcastEpisode] { [ep("e1", "shop"), ep("e2", "shop"), ep("e3", "shop"), ep("f1", "frq")] }
 
+    func testPlayedFractionIsTheShareOfTheEpisodeAlreadyPlayed() {
+        XCTAssertEqual(ListenShelf.playedFraction(elapsed: 150, durationSeconds: 600), 0.25, accuracy: 0.0001)
+        XCTAssertEqual(ListenShelf.playedFraction(elapsed: 0, durationSeconds: 600), 0)
+        XCTAssertEqual(ListenShelf.playedFraction(elapsed: 600, durationSeconds: 600), 1)
+    }
+
+    func testPlayedFractionNeverLeavesZeroToOne() {
+        // A seek that overshoots, a scrub before the start, a length not known yet and a position that is not a number.
+        XCTAssertEqual(ListenShelf.playedFraction(elapsed: 900, durationSeconds: 600), 1)
+        XCTAssertEqual(ListenShelf.playedFraction(elapsed: -5, durationSeconds: 600), 0)
+        XCTAssertEqual(ListenShelf.playedFraction(elapsed: 30, durationSeconds: 0), 0)
+        XCTAssertEqual(ListenShelf.playedFraction(elapsed: .nan, durationSeconds: 600), 0)
+        XCTAssertEqual(ListenShelf.playedFraction(elapsed: .infinity, durationSeconds: 600), 0)
+    }
+
     func testStateAndFraction() {
         XCTAssertEqual(ListenShelf.state(nil), .new)
         XCTAssertEqual(ListenShelf.state(prog("e1", 0, "t")), .new)

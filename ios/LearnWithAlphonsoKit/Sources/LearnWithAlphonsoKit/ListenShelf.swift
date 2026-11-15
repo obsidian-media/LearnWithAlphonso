@@ -51,6 +51,14 @@ public enum ListenShelf {
         return min(1, max(0, Double(p.positionS) / Double(e.durationSeconds)))
     }
 
+    /// 0...1 of the episode that has played, for the mini player's gold line. A live position, not the saved one: it
+    /// moves while the episode plays. An unknown or zero length, or a position past the end or before the start (a
+    /// seek that overshoots, a scrub), never leaves the 0...1 range, and a position that is not a number is 0.
+    public static func playedFraction(elapsed: Double, durationSeconds: Int) -> Double {
+        guard durationSeconds > 0, elapsed.isFinite else { return 0 }
+        return min(1, max(0, elapsed / Double(durationSeconds)))
+    }
+
     public static func secondsLeft(_ e: PodcastEpisode, _ p: ListenProgress?) -> Int {
         guard let p, p.completedAt == nil else { return e.durationSeconds }
         return max(0, e.durationSeconds - p.positionS)

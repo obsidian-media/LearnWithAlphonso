@@ -504,6 +504,8 @@ describe("app icon", () => {
         "AppIcon.appiconset",
         "GoogleG.imageset",
         "Hector.imageset",
+        // The small Alphonso face on the Help chat's AI bubbles (round 12 mock; public/mascots/alphonso-help-head.webp).
+        "Alphonso-help-head.imageset",
         ...poses,
         ...figurePoses,
         ...badgeSets,

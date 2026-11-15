@@ -6,8 +6,8 @@ final class HandsFreeLoopTests: XCTestCase {
     private let speech = -20.0
 
     /// A loop that is on and recording turn 1.
-    private func recordingLoop() -> HandsFreeLoop {
-        var loop = HandsFreeLoop()
+    private func recordingLoop(_ tuning: HandsFreeLoop.Tuning = .hector) -> HandsFreeLoop {
+        var loop = HandsFreeLoop(tuning: tuning)
         XCTAssertEqual(loop.handle(.enable), [.beginTurn])
         _ = loop.handle(.voicePhase(.requestingPermission(generation: 1)))
         XCTAssertEqual(loop.handle(.voicePhase(.recording(generation: 1))), [])
@@ -195,6 +195,56 @@ final class HandsFreeLoopTests: XCTestCase {
         for status: HandsFreeLoop.Status in [.waiting, .listening, .hearing] + paused.map({ .paused($0) }) {
             XCTAssertNotNil(HandsFreeCopy.statusLine(status))
         }
-        XCTAssertTrue(HandsFreeCopy.firstUseBody.contains("driving"))
+        XCTAssertTrue(HandsFreeCopy.firstUseBody(partner: "Alphonso").contains("driving"))
+    }
+
+    func testTheFirstUseNoteNamesWhoIsListeningAndSaysWhatWorksBest() {
+        let practice = HandsFreeCopy.firstUseBody(partner: "Alphonso")
+        XCTAssertTrue(practice.hasPrefix("Alphonso listens"))
+        XCTAssertFalse(practice.contains("Hector"))
+        XCTAssertTrue(HandsFreeCopy.firstUseBody(partner: "Hector").hasPrefix("Hector listens"))
+        XCTAssertTrue(practice.contains("Best with earbuds or a quiet room."))
+        XCTAssertEqual(HandsFreeCopy.statusLine(.waiting, partner: "Alphonso"), "Alphonso is replying...")
+        XCTAssertEqual(HandsFreeCopy.statusLine(.waiting), "Hector is replying...")
+    }
+
+    // MARK: Per-use tuning
+
+    func testHectorEndsTheTurnAfterOnePointTwoSecondsOfQuiet() {
+        XCTAssertEqual(HandsFreeLoop.Tuning.hector.endOfTurnSilence, 1.2)
+        XCTAssertEqual(HandsFreeLoop().tuning, .hector, "the default is Hector's")
+        var loop = recordingLoop(.hector)
+        feed(&loop, level: quiet, from: 0, to: 0.5)
+        feed(&loop, level: speech, from: 0.5, to: 2.0)
+        XCTAssertEqual(feed(&loop, level: quiet, from: 2.0, to: 3.0), [], "1.0 s of quiet: not yet")
+        XCTAssertEqual(feed(&loop, level: quiet, from: 3.0, to: 3.5), [.endTurn])
+    }
+
+    func testPracticeWaitsTwoAndAHalfSecondsSoAThinkingPauseDoesNotCutTheTurn() {
+        XCTAssertEqual(HandsFreeLoop.Tuning.practice.endOfTurnSilence, 2.5)
+        var loop = recordingLoop(.practice)
+        feed(&loop, level: quiet, from: 0, to: 0.5)
+        feed(&loop, level: speech, from: 0.5, to: 2.0)
+        // 2.4 s of quiet (last loud sample at 1.9): still listening, and a late word keeps the same turn.
+        XCTAssertEqual(feed(&loop, level: quiet, from: 2.0, to: 4.3), [])
+        XCTAssertEqual(feed(&loop, level: speech, from: 4.3, to: 4.6), [])
+        XCTAssertEqual(loop.status, .hearing)
+        XCTAssertEqual(feed(&loop, level: quiet, from: 4.6, to: 7.3), [.endTurn], "ends 2.5 s after the last loud sample")
+    }
+
+    func testPracticeKeepsEveryOtherLimitOfHector() {
+        var practice = HandsFreeLoop.Tuning.practice
+        practice.endOfTurnSilence = HandsFreeLoop.Tuning.hector.endOfTurnSilence
+        XCTAssertEqual(practice, .hector, "only the end-of-turn silence differs")
+        XCTAssertEqual(HandsFreeLoop.Tuning.practice.noSpeechTimeout, 8)
+        XCTAssertEqual(HandsFreeLoop.Tuning.practice.maxTurn, 30)
+        XCTAssertEqual(HandsFreeLoop.Tuning.practice.maxTurnsWithoutTouch, 20)
+    }
+
+    func testPracticeStillCancelsANobodySpokeTurnAtEightSeconds() {
+        var loop = recordingLoop(.practice)
+        let effects = feed(&loop, level: quiet, from: 0, to: 8.2)
+        XCTAssertEqual(effects, [.cancelTurn])
+        XCTAssertEqual(loop.status, .paused(.noSpeech))
     }
 }

@@ -51,9 +51,9 @@ final class VoiceSessionController {
     @ObservationIgnored private var playbackDelegate: PlaybackDelegate?
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
     @ObservationIgnored private var pressBeganAt: Date?
-    /// Hands-free turn-taking (Hector only). Off unless the screen turns it on. Not observed: a level sample
+    /// Hands-free turn-taking (Hector and Practice, each with its own tuning: `init(handsFreeTuning:)`). Off unless the screen turns it on. Not observed: a level sample
     /// changes it ten times a second; the screen observes `handsFreeStatus`, which changes only on a transition.
-    @ObservationIgnored private var handsFree = HandsFreeLoop()
+    @ObservationIgnored private var handsFree: HandsFreeLoop
     private(set) var handsFreeStatus: HandsFreeLoop.Status = .off
     var isHandsFreeOn: Bool { handsFreeStatus != .off }
     @ObservationIgnored private var levelTask: Task<Void, Never>?
@@ -71,6 +71,11 @@ final class VoiceSessionController {
     var failure: TutorError? {
         if case let .failed(error) = state.phase { return error }
         return nil
+    }
+
+    /// `handsFreeTuning` is per use: Hector's `.hector` (1.2 s of quiet ends a turn) or Practice's `.practice` (2.5 s).
+    init(handsFreeTuning: HandsFreeLoop.Tuning = .hector) {
+        handsFree = HandsFreeLoop(tuning: handsFreeTuning)
     }
 
     func appeared() {
@@ -517,6 +522,8 @@ struct HoldToTalkButton: View {
     let idleColor: Color
     let recordingColor: Color
     var iconColor: Color = .white
+    /// The icon while recording, when the recording fill needs a different one (a light fill wants a dark icon).
+    var recordingIconColor: Color?
     let accessibilityLabel: String
     let onPress: () -> Void
     let onRelease: () -> Void
@@ -528,7 +535,7 @@ struct HoldToTalkButton: View {
             .overlay(
                 Circle()
                     .fill(isRecording ? recordingColor : idleColor)
-                    .overlay(Image(systemName: "mic.fill").foregroundStyle(iconColor).font(.title2))
+                    .overlay(Image(systemName: "mic.fill").foregroundStyle(isRecording ? (recordingIconColor ?? iconColor) : iconColor).font(.title2))
                     .allowsHitTesting(false)
             )
             .accessibilityLabel(accessibilityLabel)
