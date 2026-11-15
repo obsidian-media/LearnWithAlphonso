@@ -83,5 +83,5 @@ A missed podcast question is stored as a `review_items` row (prompt, choices, an
 | **Export** | `support_conversations` and `support_messages` are in the export with explicit columns that leave out `assigned_to`, `ai_summary`, `handoff_reason`, `ai_facts`, `author_id` and `client_id`. `support_notes` is never exported (internal). |
 | **Deletion** | `ON DELETE CASCADE` from the account removes conversations, messages and notes. |
 | **Logs** | The server logs an event name, outcome, hand-off reason, status code, quota result and message length only: no user id, no conversation id, no text. A failing provider is logged by status only. |
-| **Policy text** | `src/routes/privacy.tsx` does not yet describe the Help chat. **Owner to approve a wording change before the chat ships to learners.** |
+| **Policy text** | `src/routes/privacy.tsx` has a Help chat section (what is stored, who reads it, what Miya sees, reply notices, retention, export and deletion), a collected-data bullet, a legal-basis bullet and the Resend and Anthropic processor entries; last updated 15 November 2026. `src/routes/privacy-current-uses.test.ts` pins the key sentences. |
 
