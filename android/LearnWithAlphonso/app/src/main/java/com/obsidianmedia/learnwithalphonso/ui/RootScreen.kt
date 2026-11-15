@@ -86,6 +86,8 @@ import com.obsidianmedia.learnwithalphonso.ui.listen.ListenFolderScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenViewModel
 import com.obsidianmedia.learnwithalphonso.ui.listen.PodcastMiniBar
+import com.obsidianmedia.learnwithalphonso.ui.support.HelpChatScreen
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportLinkId
 import androidx.compose.foundation.layout.Column
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.ui.nav.Routes
@@ -376,7 +378,20 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             composable(Routes.PLACEMENT) { entry ->
                 PlacementScreen(container, Course.fromCode(entry.arguments?.getString("course") ?: "en"), onFinished = { nav.popBackStack() })
             }
-            composable(Routes.SETTINGS) { SettingsScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.SETTINGS) { SettingsScreen(container, onBack = { nav.popBackStack() }, onOpenHelp = { nav.navigate(Routes.HELP) }) }
+            composable(Routes.HELP) {
+                HelpChatScreen(
+                    container, parent = "Settings", onBack = { nav.popBackStack() },
+                    // Each id goes to a fixed screen; the destination never comes from the answer's text.
+                    onOpenLink = { link ->
+                        when (link) {
+                            SupportLinkId.SUBSCRIPTION -> nav.navigate(Routes.HECTOR) { launchSingleTop = true }
+                            SupportLinkId.AI_FEATURES, SupportLinkId.SETTINGS -> nav.popBackStack()
+                            SupportLinkId.LEAGUE -> nav.navigate(Routes.LEAGUE)
+                        }
+                    },
+                )
+            }
         }
     }
 

@@ -20,6 +20,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen
 import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportCopy
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
@@ -33,6 +34,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -81,7 +83,7 @@ import kotlinx.coroutines.withContext
 
 /** Port of SettingsView.swift's theme, account and sign-out sections. Display name and avatar arrive with Plan 2. */
 @Composable
-fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
+fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -> Unit = {}) {
     val ds = LocalAlphonsoTokens.current
     val theme by container.themeManager.theme.collectAsState()
     val identityVm: IdentityViewModel = viewModel { IdentityViewModel(container.progressClient, container.session.userId) }
@@ -168,6 +170,8 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     DsDivider()
                     RowButton("Terms of Use") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") }
                     DsDivider()
+                    RowButton(SupportCopy.ENTRY_TITLE, subtitle = SupportCopy.ENTRY_SUBTITLE, onClick = onOpenHelp)
+                    DsDivider()
                     RowButton("Support") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/support") }
                     DsDivider()
                     RowButton("Manage subscription") { uriHandler.openUri("https://play.google.com/store/account/subscriptions") }
@@ -225,12 +229,13 @@ internal fun Section(title: String, footer: String? = null, content: @Composable
 }
 
 @Composable
-private fun RowButton(label: String, enabled: Boolean = true, destructive: Boolean = false, onClick: () -> Unit) {
+private fun RowButton(label: String, enabled: Boolean = true, destructive: Boolean = false, subtitle: String? = null, onClick: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    Text(
-        label,
-        style = HeadlineType,
-        color = if (destructive) ds.wrongInk else ds.ink,
-        modifier = Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clickable(enabled = enabled, onClick = onClick).padding(AlphonsoTokens.Space.s3).wrapContentHeight(Alignment.CenterVertically),
-    )
+    Column(
+        Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clickable(enabled = enabled, onClick = onClick).padding(AlphonsoTokens.Space.s3).wrapContentHeight(Alignment.CenterVertically)
+            .semantics(mergeDescendants = true) { },
+    ) {
+        Text(label, style = HeadlineType, color = if (destructive) ds.wrongInk else ds.ink)
+        if (subtitle != null) Text(subtitle, style = FootnoteType, color = ds.inkSoft)
+    }
 }
