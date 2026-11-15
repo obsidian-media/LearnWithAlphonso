@@ -139,7 +139,7 @@ struct PracticeCallView<Sheet: View>: View {
 
     private var room: some View {
         let room = CallScenes.room(for: scenarioID, withArt: CallScenes.scenariosWithArt.union(PracticeHub.sceneRoomNames), fallback: kit.defaultRoom)
-        let dark = colorScheme == .dark
+        let dark = AlphonsoThemeManager.shared.paletteID.usesNight(deviceDark: colorScheme == .dark)
         let name = dark ? room.dark : room.light
         return ZStack {
             if let image = RoomArt.image(name) {

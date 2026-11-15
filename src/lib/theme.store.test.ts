@@ -27,6 +27,24 @@ describe("useTheme.setTheme", () => {
   });
 });
 
+describe("Meadow stays light, even in night mode", () => {
+  it("picking Meadow drops a night mode the page was given; Royal keeps it", () => {
+    document.documentElement.dataset.dsMode = "night";
+    useTheme.getState().setTheme("meadow");
+    expect(document.documentElement.dataset.dsMode).toBeUndefined();
+    document.documentElement.dataset.dsMode = "night";
+    useTheme.getState().setTheme("royal");
+    expect(document.documentElement.dataset.dsMode).toBe("night");
+    delete document.documentElement.dataset.dsMode;
+  });
+
+  it("an account value of Meadow also drops night mode", () => {
+    document.documentElement.dataset.dsMode = "night";
+    useTheme.getState().hydrateFromServer("meadow");
+    expect(document.documentElement.dataset.dsMode).toBeUndefined();
+  });
+});
+
 describe("useTheme.hydrateFromServer", () => {
   it("adopts the account theme when it differs from the current one", () => {
     useTheme.getState().hydrateFromServer("meadow");

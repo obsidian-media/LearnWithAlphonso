@@ -136,6 +136,9 @@ struct ScreenScene: View {
     /// The last scroll distance seen (kept when the probe row scrolls out of the lazy list).
     @State private var held: CGFloat = 0
 
+    /// Meadow stays light, even in dark mode, so it never takes the night scrim.
+    private var night: Bool { AlphonsoThemeManager.shared.paletteID.usesNight(deviceDark: colorScheme == .dark) }
+
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -146,9 +149,9 @@ struct ScreenScene: View {
                     .clipped()
                 LinearGradient(
                     stops: [
-                        .init(color: AlphonsoColor.surface.opacity(colorScheme == .dark ? 0.88 : 0.6), location: 0),
-                        .init(color: AlphonsoColor.surface.opacity(colorScheme == .dark ? 0.6 : 0.18), location: 0.45),
-                        .init(color: AlphonsoColor.surface.opacity(colorScheme == .dark ? 0.7 : 0.3), location: 1),
+                        .init(color: AlphonsoColor.surface.opacity(night ? 0.88 : 0.6), location: 0),
+                        .init(color: AlphonsoColor.surface.opacity(night ? 0.6 : 0.18), location: 0.45),
+                        .init(color: AlphonsoColor.surface.opacity(night ? 0.7 : 0.3), location: 1),
                     ],
                     startPoint: .top,
                     endPoint: .bottom

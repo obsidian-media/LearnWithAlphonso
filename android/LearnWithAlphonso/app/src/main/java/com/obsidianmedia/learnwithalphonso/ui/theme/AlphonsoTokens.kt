@@ -7,8 +7,8 @@ import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.R
 
 /**
- * The round-6 design system: two palettes (Royal, the default, and Meadow), each with light and night values, and
- * one set of scales. Screens built on it read these names only, never a number or a Color(0x...); a palette swaps
+ * The round-6 design system: two palettes (Royal, the default, with light and night values, and Meadow, light only:
+ * Meadow stays light, even in dark mode) and one set of scales. Screens built on it read these names only, never a number or a Color(0x...); a palette swaps
  * the values and nothing else. Read the active colours from LocalAlphonsoTokens.
  */
 object AlphonsoTokens {
@@ -309,59 +309,9 @@ object AlphonsoTokens {
         callEnd = Color(0xFFE64740),
     )
 
-    val meadowNight = Colors(
-        ink = Color(0xFFECF1EA),
-        brand = Color(0xFFCFE3D3),
-        choice = Color(0xFFD9C9A3),
-        choiceTint = Color(0xFF2B2A1E),
-        choiceEdge = Color(0xFFA8976E),
-        action = Color(0xFF6FBF8E),
-        actionHi = Color(0xFF7FCB9C),
-        actionEdge = Color(0xFF3E7E59),
-        actionText = Color(0xFF8FD3A8),
-        actionTint = Color(0xFF183225),
-        onAction = Color(0xFF0C1A12),
-        surface = Color(0xFF0F1A14),
-        sunk = Color(0xFF0A120E),
-        card = Color(0xFF16241C),
-        line = Color(0xFF26382D),
-        inkSoft = Color(0xFFA7B5AB),
-        inkFaint = Color(0xFF64716A),
-        hero = Color(0xFF153C25),
-        onHeroSoft = Color(0xFFD5DBF5),
-        onHeroKick = Color(0xFFF6D88A),
-        right = Color(0xFF4CC985),
-        rightInk = Color(0xFF9BE6B9),
-        rightTint = Color(0xFF0F2E1B),
-        rightEdge = Color(0xFF2F8F5C),
-        onRight = Color(0xFF0C1A12),
-        wrong = Color(0xFFFF8A73),
-        wrongInk = Color(0xFFFFB4A6),
-        wrongTint = Color(0xFF3A1A16),
-        wrongEdge = Color(0xFFC9604E),
-        onWrong = Color(0xFF0F1A14),
-        xp = Color(0xFFF2C14E),
-        xpEdge = Color(0xFFB07A12),
-        xpText = Color(0xFFF2C14E),
-        xpTint = Color(0xFF3A2F12),
-        heart = Color(0xFFFF6F93),
-        heartTint = Color(0xFF3A1622),
-        heartText = Color(0xFFFFB3C6),
-        flame = Color(0xFFFFA24A),
-        flameTint = Color(0xFF3A2412),
-        heroA = Color(0xFF3A7050),
-        heroB = Color(0xFF0B1F13),
-        onHero = Color(0xFFFFFFFF),
-        callGlass = Color(0xFF121A15),
-        callMint = Color(0xFFC9F5DC),
-        callRecord = Color(0xFF70E0A5),
-        callDock = Color(0xFF17241C),
-        callEnd = Color(0xFFE64740),
-    )
-
     fun colors(palette: AlphonsoPaletteId, night: Boolean): Colors = when (palette) {
         AlphonsoPaletteId.ROYAL -> if (night) royalNight else royalLight
-        AlphonsoPaletteId.MEADOW -> if (night) meadowNight else meadowLight
+        AlphonsoPaletteId.MEADOW -> meadowLight
     }
 
     /** League tier colours, the same in both palettes. */

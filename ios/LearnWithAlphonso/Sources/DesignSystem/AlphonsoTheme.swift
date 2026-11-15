@@ -5,7 +5,7 @@ import LearnWithAlphonsoKit
 /// The two themes: Royal (navy and gold, the default) and Meadow (green). Raw values match the web's
 /// `THEME_NAMES` (`src/lib/theme.ts`), Android's `AlphonsoThemeId`, the Kit's `DSPaletteID` and the
 /// `profiles.theme` CHECK constraint exactly, so a value round-trips to/from the server with no mapping. Each has
-/// a light and a night appearance (the night one follows the system's Dark Mode).
+/// a light and a night appearance (the night one follows the system's Dark Mode); Meadow has only a light one.
 ///
 /// Studio Ink, Manuscript and Canopy are gone. A stored value that is one of them, or unknown, means Royal:
 /// see `resolve(_:)` and `DSPaletteID.resolve(stored:)`.
@@ -130,7 +130,8 @@ enum AlphonsoPaletteCatalog {
         ),
     ]
 
-    /// Night variant of each theme, used whenever the system is in Dark Mode.
+    /// Night variant, used whenever the system is in Dark Mode. Royal only: Meadow has no night look and stays light,
+    /// even in Dark Mode (owner decision 2026-11-14), so there is no `.meadow` entry here.
     ///
     /// Every accent (moss/mossDeep/ember) below is UNCHANGED from its light
     /// variant except where noted: each was already dark/saturated enough
@@ -147,29 +148,6 @@ enum AlphonsoPaletteCatalog {
     /// cited below is that script's actual output, re-verifiable the same
     /// way `onMossGradient`'s light-mode contrast numbers already are.
     static let dark: [AlphonsoThemeID: AlphonsoPalette] = [
-        .meadow: AlphonsoPalette(
-            surface: Color(hex: 0x0C_18_10),
-            parchment: Color(hex: 0x15_26_1B),
-            ink: Color(hex: 0xF4_F1_EC),
-            inkSoft: Color(hex: 0xB9_B0_A2),
-            moss: Color(hex: 0x2F_62_43),
-            mossDeep: Color(hex: 0x15_3C_25),
-            ember: Color(hex: 0xD7_59_28),
-            emberSoft: Color(hex: 0x4F_30_17),
-            // 0xE7000B (the light-mode destructive red) under-contrasts a dark surface. 0xFF0A15 (brightened
-            // against THIS theme's own near-black/near-white pair, same
-            // computed method): 4.60:1 against surface.
-            destructive: Color(hex: 0xFF_0A_15),
-            hairline: Color(hex: 0xFF_FF_FF, opacity: 0.1),
-            // ink/moss: 6.32:1. surface/ember: 4.64:1. ink/mossDeep: 10.93:1.
-            onPrimary: Color(hex: 0xF4_F1_EC),
-            onAccent: Color(hex: 0x0C_18_10),
-            onMossGradient: Color(hex: 0xF4_F1_EC),
-            colorScheme: .dark,
-            displayFontBaseName: "Fraunces-Regular",
-            displayFontOpszRange: 9...144,
-            sansFontBaseName: "Geist-Regular"
-        ),
         .royal: AlphonsoPalette(
             surface: Color(hex: 0x0E_13_30),
             parchment: Color(hex: 0x16_1C_40),
@@ -218,10 +196,23 @@ public final class AlphonsoThemeManager {
     /// best-effort default in this manager.
     public private(set) var systemColorScheme: ColorScheme = .light
 
-    /// The active theme's palette: its light values, or its night values whenever `systemColorScheme` is `.dark`
-    /// (Dark Interface support: the app follows the device's appearance, for both themes).
+    /// Whether the active theme draws its night look now: Royal when the device is in Dark Mode; never Meadow, which
+    /// stays light, even in Dark Mode. The one rule (`DSPaletteID.usesNight`) behind the palette, the design system
+    /// colours, the tile tones and the scenes.
+    public var isNight: Bool {
+        paletteID.usesNight(deviceDark: systemColorScheme == .dark)
+    }
+
+    /// The scheme the whole interface is held to, applied at the root as `.preferredColorScheme` so system sheets,
+    /// alerts, keyboards and the status bar agree with the palette: Meadow is always light, Royal follows the device.
+    public var preferredColorScheme: ColorScheme {
+        paletteID.appearance(deviceDark: systemColorScheme == .dark) == .dark ? .dark : .light
+    }
+
+    /// The active theme's palette: its light values, or Royal's night values when `isNight` (Dark Interface support:
+    /// Royal follows the device's appearance; Meadow does not).
     public var palette: AlphonsoPalette {
-        if systemColorScheme == .dark {
+        if isNight {
             return AlphonsoPaletteCatalog.dark[themeID] ?? AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.royal]!
         }
         return AlphonsoPaletteCatalog.all[themeID] ?? AlphonsoPaletteCatalog.all[.royal]!

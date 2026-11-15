@@ -5,7 +5,7 @@ import { contrastRatio } from "./design-tokens";
 /**
  * design/tokens.json is the one source for the design system's values
  * (visual round 6). These checks reproduce the spec page's: the same 18
- * pairs in Royal and Meadow, light and night, 72 checks in all.
+ * pairs in Royal light, Royal night and Meadow light, 54 checks in all (Meadow has no night: it stays light).
  */
 
 type Mode = Record<string, string>;
@@ -15,14 +15,13 @@ const COMBOS = [
   ["royal", "light"],
   ["royal", "night"],
   ["meadow", "light"],
-  ["meadow", "night"],
 ] as const;
 
 describe("design tokens: palettes", () => {
-  it("has exactly the two palettes, each with light and night", () => {
+  it("has exactly the two palettes: Royal with light and night, Meadow with light only", () => {
     expect(Object.keys(palettes)).toEqual(["royal", "meadow"]);
-    for (const p of Object.keys(palettes))
-      expect(Object.keys(palettes[p])).toEqual(["light", "night"]);
+    expect(Object.keys(palettes.royal)).toEqual(["light", "night"]);
+    expect(Object.keys(palettes.meadow)).toEqual(["light"]);
   });
 
   it("every palette and mode defines the same names, as six-digit hex", () => {
@@ -42,11 +41,10 @@ describe("design tokens: palettes", () => {
     expect(palettes.meadow.light.heart).toBe("#D93A63");
     expect(palettes.royal.light.flame).toBe("#D9700F");
     expect(palettes.meadow.light.brand).toBe("#153C25");
-    expect(palettes.meadow.night.choice).toBe("#D9C9A3");
   });
 });
 
-describe("design tokens: contrast (the spec page's 72 checks)", () => {
+describe("design tokens: contrast (the spec page's checks, 18 pairs in each of the 3 looks)", () => {
   const pairs = tokens.contrastPairs as [string, string, number][];
 
   it("lists the spec's 18 pairs", () => {
@@ -64,7 +62,7 @@ describe("design tokens: contrast (the spec page's 72 checks)", () => {
     })),
   );
 
-  it("runs 72 checks", () => expect(checks).toHaveLength(72));
+  it("runs 54 checks", () => expect(checks).toHaveLength(54));
 
   it.each(checks)("$label reaches $min:1", ({ fg, bg, min }) => {
     expect(fg).toBeDefined();

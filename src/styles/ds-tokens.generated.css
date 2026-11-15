@@ -163,7 +163,8 @@
   --c-call-end: #E64740;
 }
 
-:root[data-ds-mode="night"] {
+/* Night is Royal's alone: Meadow stays light, even in night mode, so the night selectors skip it. */
+:root:not([data-palette="meadow"])[data-ds-mode="night"] {
   --c-ink: #ECE7F5;
   --c-brand: #C9D2F7;
   --c-choice: #8EA2F5;
@@ -213,62 +214,12 @@
   --c-call-end: #E64740;
 }
 
-:root[data-palette="meadow"][data-ds-mode="night"] {
-  --c-ink: #ECF1EA;
-  --c-brand: #CFE3D3;
-  --c-choice: #D9C9A3;
-  --c-choice-tint: #2B2A1E;
-  --c-choice-edge: #A8976E;
-  --c-action: #6FBF8E;
-  --c-action-hi: #7FCB9C;
-  --c-action-edge: #3E7E59;
-  --c-action-text: #8FD3A8;
-  --c-action-tint: #183225;
-  --c-on-action: #0C1A12;
-  --c-surface: #0F1A14;
-  --c-sunk: #0A120E;
-  --c-card: #16241C;
-  --c-line: #26382D;
-  --c-ink-soft: #A7B5AB;
-  --c-ink-faint: #64716A;
-  --c-hero: #153C25;
-  --c-on-hero-soft: #D5DBF5;
-  --c-on-hero-kick: #F6D88A;
-  --c-right: #4CC985;
-  --c-right-ink: #9BE6B9;
-  --c-right-tint: #0F2E1B;
-  --c-right-edge: #2F8F5C;
-  --c-on-right: #0C1A12;
-  --c-wrong: #FF8A73;
-  --c-wrong-ink: #FFB4A6;
-  --c-wrong-tint: #3A1A16;
-  --c-wrong-edge: #C9604E;
-  --c-on-wrong: #0F1A14;
-  --c-xp: #F2C14E;
-  --c-xp-edge: #B07A12;
-  --c-xp-text: #F2C14E;
-  --c-xp-tint: #3A2F12;
-  --c-heart: #FF6F93;
-  --c-heart-tint: #3A1622;
-  --c-heart-text: #FFB3C6;
-  --c-flame: #FFA24A;
-  --c-flame-tint: #3A2412;
-  --c-hero-a: #3A7050;
-  --c-hero-b: #0B1F13;
-  --c-on-hero: #FFFFFF;
-  --c-call-glass: #121A15;
-  --c-call-mint: #C9F5DC;
-  --c-call-record: #70E0A5;
-  --c-call-dock: #17241C;
-  --c-call-end: #E64740;
-}
-
 /* Lessons stay light in night mode (the rooms are lit paintings): a .ds-light screen keeps its palette's light values. */
 .ds-light {
   color-scheme: light;
 }
 
-:root[data-ds-mode="night"] .ds-light {
+:root:not([data-palette="meadow"])[data-ds-mode="night"] .ds-light {
   --c-ink: #141B3D;
   --c-brand: #1D2B64;
   --c-choice: #2D47B0;
@@ -310,56 +261,6 @@
   --c-flame-tint: #FDEBD7;
   --c-hero-a: #2C3F8F;
   --c-hero-b: #0E1430;
-  --c-on-hero: #FFFFFF;
-  --c-call-glass: #121A15;
-  --c-call-mint: #C9F5DC;
-  --c-call-record: #70E0A5;
-  --c-call-dock: #17241C;
-  --c-call-end: #E64740;
-}
-
-:root[data-palette="meadow"][data-ds-mode="night"] .ds-light {
-  --c-ink: #112418;
-  --c-brand: #153C25;
-  --c-choice: #23412F;
-  --c-choice-tint: #EFE6D2;
-  --c-choice-edge: #112418;
-  --c-action: #2F6243;
-  --c-action-hi: #3A7050;
-  --c-action-edge: #1C4129;
-  --c-action-text: #2F6243;
-  --c-action-tint: #E3EEE5;
-  --c-on-action: #FFFFFF;
-  --c-surface: #F5F0E8;
-  --c-sunk: #EDE4D8;
-  --c-card: #FFFFFF;
-  --c-line: #E2D8C8;
-  --c-ink-soft: #4A564D;
-  --c-ink-faint: #9A9384;
-  --c-hero: #153C25;
-  --c-on-hero-soft: #D5DBF5;
-  --c-on-hero-kick: #F6D88A;
-  --c-right: #17834A;
-  --c-right-ink: #0E5A2E;
-  --c-right-tint: #DDF2E3;
-  --c-right-edge: #0E5A2E;
-  --c-on-right: #FFFFFF;
-  --c-wrong: #C8442F;
-  --c-wrong-ink: #9A2E22;
-  --c-wrong-tint: #FCE5E0;
-  --c-wrong-edge: #8C2B20;
-  --c-on-wrong: #FFFFFF;
-  --c-xp: #E6A72A;
-  --c-xp-edge: #B07A12;
-  --c-xp-text: #8C6410;
-  --c-xp-tint: #FCEFCB;
-  --c-heart: #D93A63;
-  --c-heart-tint: #FCE4EB;
-  --c-heart-text: #9C2346;
-  --c-flame: #D9700F;
-  --c-flame-tint: #FDEBD7;
-  --c-hero-a: #3A7050;
-  --c-hero-b: #0B1F13;
   --c-on-hero: #FFFFFF;
   --c-call-glass: #121A15;
   --c-call-mint: #C9F5DC;

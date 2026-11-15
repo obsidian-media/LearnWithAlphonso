@@ -54,23 +54,12 @@ struct AlphonsoTileTonePalette {
             edgeMoss: Color(hex: 0x153C25),
             edgeEmber: Color(hex: 0x9E3D16)
         ),
-        "meadow-dark": AlphonsoTileTonePalette(
-            tones: [
-                .coral: (Color(hex: 0x4A1F16), Color(hex: 0xFFD2C4)),
-                .sky: (Color(hex: 0x16304F), Color(hex: 0xCDE2FF)),
-                .sun: (Color(hex: 0x46370F), Color(hex: 0xFFE08A)),
-                .lilac: (Color(hex: 0x2F2350), Color(hex: 0xE0D2FF)),
-                .mint: (Color(hex: 0x143A29), Color(hex: 0xC2ECD5)),
-            ],
-            edgeMoss: Color(hex: 0x153C25),
-            edgeEmber: Color(hex: 0x9E3D16)
-        ),
     ]
 
-    /// Each theme ("royal", "meadow") adds "-dark" in Dark Mode.
+    /// Royal adds "-dark" in Dark Mode. Meadow has no dark set: it stays light, even in Dark Mode.
     static var current: AlphonsoTileTonePalette {
         let manager = AlphonsoThemeManager.shared
-        let key = manager.themeID.rawValue + (manager.systemColorScheme == .dark ? "-dark" : "")
+        let key = manager.themeID.rawValue + (manager.isNight ? "-dark" : "")
         return all[key] ?? all["royal"]!
     }
 }
