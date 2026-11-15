@@ -19,6 +19,14 @@ final class SkillsRadarTests: XCTestCase {
         XCTAssertNil(m.lowest)
     }
 
+    func testEmptyIntroSaysSkillsStartFromTheNextLessonOnlyWhenNothingWasAnswered() {
+        XCTAssertEqual(SkillsRadar.noDataCopy, "Skills start counting from your next lesson")
+        XCTAssertEqual(SkillsRadar.emptyIntro(model([]).skills), SkillsRadar.noDataCopy)
+        let some = SkillsRadar.emptyIntro(model([row("listening", 3, 4)]).skills)
+        XCTAssertNotEqual(some, SkillsRadar.noDataCopy)
+        XCTAssertTrue(some.contains("will appear here"))
+    }
+
     func testSkillUnderTheMinimumIsUnscoredAndSaysHowManyMore() {
         let m = model([row("listening", 4, SkillsRadar.minSkillAnswers - 1)])
         let s = m.skills.first { $0.skill == "listening" }!
