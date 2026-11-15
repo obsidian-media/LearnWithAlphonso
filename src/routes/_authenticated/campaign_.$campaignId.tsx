@@ -404,6 +404,7 @@ function CampaignChatPage({
     start: beginCapture,
     stop: stopRecording,
     getStream,
+    clearError: clearCaptureError,
     handsFreeCall,
   } = useHandsFreeCapture({
     course,
@@ -422,6 +423,8 @@ function CampaignChatPage({
     partner: "Alphonso",
     onWantedChange: setHandsFreeWanted,
   });
+  // A capture error from the last scene (a refused mic, no words) does not follow the learner into the next one.
+  useEffect(() => clearCaptureError(), [sceneIndex, clearCaptureError]);
   const recordingState = captureState === "recording";
   const transcribing = captureState === "transcribing";
   const startRecording = useCallback(() => {

@@ -376,14 +376,19 @@ export function PracticeCall(props: Props) {
       >
         {stateLabel}
       </div>
+      {handsFree && (
+        // Always mounted, so a pause is announced when its text appears (a region that appears with its text is
+        // often skipped). The other states are not announced as they change.
+        <p role="status" aria-live="polite" className="sr-only" data-testid="hands-free-announce">
+          {handsFreeOn && handsFreePaused ? handsFreeLine : ""}
+        </p>
+      )}
       {handsFreeOn && handsFreeLine && (
         // A paused hands-free call is a safety stop: it gets the stronger glass and a pause mark, so it cannot be
         // missed over the picture, and it is announced. The other states are not announced as they change.
         <div
           data-testid="hands-free-status"
           data-paused={handsFreePaused}
-          role="status"
-          aria-live={handsFreePaused ? "polite" : "off"}
           className="absolute inset-x-[18px] z-[5] mx-auto flex w-fit max-w-full items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-center text-xs font-bold"
           style={{ bottom: 106, background: handsFreePaused ? GLASS_STRONG : GLASS }}
         >

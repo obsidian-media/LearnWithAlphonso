@@ -13,6 +13,8 @@ import type { Course } from "@/data/courses";
 
 /** How often the microphone level is read while a hands-free turn is recording (iOS: every 100 ms). */
 export const LEVEL_SAMPLE_MS = 100;
+/** A turn with no usable level for this long is timed on the wall clock instead. */
+export const SILENT_GRACE_MS = 1000;
 
 /** Hands-free needs an AudioContext to read the level. Where a browser has none, the switch is not offered. */
 export function handsFreeSupported(): boolean {
@@ -100,10 +102,37 @@ export function useHandsFree({
     dispatch({ type: "voicePhase", phase });
   }, [phase, dispatch]);
 
+  // The AudioContext is made inside the learner's tap (switch or Resume), where a browser lets it run, and is
+  // reused for every turn; it is closed when hands-free stops and when the call is left.
+  const ctxRef = useRef<AudioContext | null>(null);
+  const prime = useCallback(() => {
+    const Ctx = audioContextClass();
+    if (!Ctx) return;
+    try {
+      if (!ctxRef.current || ctxRef.current.state === "closed") ctxRef.current = new Ctx();
+      void ctxRef.current.resume?.();
+    } catch {
+      ctxRef.current = null;
+    }
+  }, []);
+  const closeContext = useCallback(() => {
+    const ctx = ctxRef.current;
+    ctxRef.current = null;
+    void ctx?.close?.().catch(() => {});
+  }, []);
+
   const enabled = wanted && live;
+  const wasEnabled = useRef(false);
   useEffect(() => {
     dispatch({ type: enabled ? "enable" : "disable" });
-  }, [enabled, dispatch]);
+    if (!enabled && wasEnabled.current) {
+      // Whatever phase the capture is in (also a permission prompt still open), drop it: a stream granted later
+      // must never be left recording, and a later hold-to-talk must not find an orphan.
+      controlsRef.current.cancel();
+      closeContext();
+    }
+    wasEnabled.current = enabled;
+  }, [enabled, dispatch, closeContext]);
 
   // Leaving the call (or the page) closes an open mic and sends nothing.
   useEffect(
@@ -111,8 +140,9 @@ export function useHandsFree({
       const loop = loopRef.current!;
       if (loop.isOn) loop.handle({ type: "disable" });
       controlsRef.current.cancel();
+      closeContext();
     },
-    [],
+    [closeContext],
   );
 
   // The microphone level, while a hands-free turn records.
@@ -121,49 +151,64 @@ export function useHandsFree({
   useEffect(() => {
     if (!sampling) return;
     const Ctx = audioContextClass();
-    if (!Ctx) return;
-    let ctx: AudioContext | null = null;
     let source: MediaStreamAudioSourceNode | null = null;
     let analyser: AnalyserNode | null = null;
     let samples: Float32Array<ArrayBuffer> | null = null;
     let watched: MediaStream | null = null;
-    const onTrackEnded = () => dispatch({ type: "audioInterrupted" });
+    const startedAt = performance.now();
+    // The mic or the analyser broke: stop the recording and every track, then pause. Resume starts one new stream.
+    const breakDown = (event: HandsFreeEvent) => {
+      dispatch(event);
+      controlsRef.current.cancel();
+    };
+    const onTrackEnded = () => breakDown({ type: "audioInterrupted" });
     const id = setInterval(() => {
-      if (!analyser) {
+      let dBFS: number | null = null;
+      if (Ctx && !analyser) {
         const stream = getStreamRef.current();
-        if (!stream) return;
-        try {
-          ctx = new Ctx();
-          void ctx.resume?.();
-          source = ctx.createMediaStreamSource(stream);
-          analyser = ctx.createAnalyser();
-          analyser.fftSize = 2048;
-          source.connect(analyser);
-          samples = new Float32Array(analyser.fftSize);
-          watched = stream;
-          // The microphone went away (unplugged, permission revoked): nothing may keep listening.
-          watched.getAudioTracks?.().forEach((t) => t.addEventListener?.("ended", onTrackEnded));
-        } catch {
-          dispatch({ type: "voicePhase", phase: "failed" });
-          return;
+        if (stream) {
+          try {
+            if (!ctxRef.current || ctxRef.current.state === "closed") ctxRef.current = new Ctx();
+            const ctx = ctxRef.current;
+            void ctx.resume?.();
+            source = ctx.createMediaStreamSource(stream);
+            analyser = ctx.createAnalyser();
+            analyser.fftSize = 2048;
+            source.connect(analyser);
+            samples = new Float32Array(analyser.fftSize);
+            watched = stream;
+            // The microphone went away (unplugged, permission revoked): nothing may keep listening.
+            watched.getAudioTracks?.().forEach((t) => t.addEventListener?.("ended", onTrackEnded));
+          } catch {
+            analyser = null;
+            breakDown({ type: "voicePhase", phase: "failed" });
+            return;
+          }
         }
       }
-      analyser.getFloatTimeDomainData(samples!);
-      let sum = 0;
-      for (const v of samples!) sum += v * v;
-      dispatch({
-        type: "level",
-        dBFS: rmsToDBFS(Math.sqrt(sum / samples!.length)),
-        at: performance.now() / 1000,
-      });
+      if (analyser && samples) {
+        if (ctxRef.current?.state === "suspended") void ctxRef.current.resume?.();
+        analyser.getFloatTimeDomainData(samples);
+        let sum = 0;
+        for (const v of samples) sum += v * v;
+        dBFS = rmsToDBFS(Math.sqrt(sum / samples.length));
+      }
+      const now = performance.now();
+      // A silent analyser (a suspended AudioContext, a muted mic reading below the loop's warm-up cut-off, no stream
+      // yet) must not hold the turn open: after a short grace the turn is timed on the wall clock as plain quiet, so
+      // the 8 s no-speech and 30 s limits always fire.
+      if ((dBFS === null || dBFS < tuning.ignoreBelow) && now - startedAt >= SILENT_GRACE_MS) {
+        dBFS = tuning.ignoreBelow + 1;
+      }
+      if (dBFS === null) return;
+      dispatch({ type: "level", dBFS, at: now / 1000 });
     }, LEVEL_SAMPLE_MS);
     return () => {
       clearInterval(id);
       watched?.getAudioTracks?.().forEach((t) => t.removeEventListener?.("ended", onTrackEnded));
       source?.disconnect();
-      void ctx?.close().catch(() => {});
     };
-  }, [sampling, dispatch]);
+  }, [sampling, dispatch, tuning.ignoreBelow]);
 
   // A hidden tab is not a place to keep listening: pause, and drop an open recording.
   useEffect(() => {
@@ -177,11 +222,14 @@ export function useHandsFree({
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [dispatch]);
 
-  const togglePause = useCallback(() => dispatch({ type: "togglePause" }), [dispatch]);
+  const togglePause = useCallback(() => {
+    prime();
+    dispatch({ type: "togglePause" });
+  }, [dispatch, prime]);
   const noWords = useCallback(() => dispatch({ type: "turnHadNoWords" }), [dispatch]);
   const failed = useCallback(() => dispatch({ type: "voicePhase", phase: "failed" }), [dispatch]);
 
-  return { status, togglePause, noWords, failed };
+  return { status, togglePause, noWords, failed, prime };
 }
 
 /**
@@ -257,7 +305,10 @@ export function useHandsFreeCapture({
   const handsFreeCall: HandsFreeCall | undefined = supported
     ? {
         on: wanted,
-        onChange: onWantedChange,
+        onChange: (next: boolean) => {
+          if (next) handsFree.prime();
+          onWantedChange(next);
+        },
         status: handsFree.status,
         onTogglePause: handsFree.togglePause,
         partner,

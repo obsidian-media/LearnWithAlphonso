@@ -16,10 +16,21 @@ class FakeAnalyser {
     out.fill(amplitude);
   }
 }
+/** Every context the hook made, and how the next one behaves. */
+const contexts: FakeAudioContext[] = [];
+let sourceThrows = false;
+let suspended = false;
 class FakeAudioContext {
+  state = suspended ? "suspended" : "running";
   resume = vi.fn(async () => {});
-  close = vi.fn(async () => {});
+  close = vi.fn(async () => {
+    this.state = "closed";
+  });
+  constructor() {
+    contexts.push(this);
+  }
   createMediaStreamSource() {
+    if (sourceThrows) throw new Error("no source");
     return { connect: vi.fn(), disconnect: vi.fn() };
   }
   createAnalyser() {
@@ -37,7 +48,12 @@ type Props = {
 
 function setup(initial: Partial<Props> = {}) {
   const controls = { begin: vi.fn(), end: vi.fn(), cancel: vi.fn() };
-  const stream = { getAudioTracks: () => [] } as unknown as MediaStream;
+  const trackEnded: (() => void)[] = [];
+  const track = {
+    addEventListener: (_: string, fn: () => void) => trackEnded.push(fn),
+    removeEventListener: () => {},
+  };
+  const stream = { getAudioTracks: () => [track] } as unknown as MediaStream;
   const view = renderHook(
     (p: Props) =>
       useHandsFree({
@@ -68,13 +84,16 @@ function setup(initial: Partial<Props> = {}) {
     lastProps = { ...lastProps, ...next };
     view.rerender(lastProps);
   };
-  return { ...view, controls, update };
+  return { ...view, controls, update, trackEnded };
 }
 
 const advance = (ms: number) => act(async () => void (await vi.advanceTimersByTimeAsync(ms)));
 
 beforeEach(() => {
   amplitude = QUIET;
+  contexts.length = 0;
+  sourceThrows = false;
+  suspended = false;
   vi.useFakeTimers({
     toFake: ["setInterval", "clearInterval", "setTimeout", "clearTimeout", "performance", "Date"],
   });
@@ -233,7 +252,7 @@ describe("useHandsFree", () => {
     const h = setup();
     await startRecording(h);
     h.update({ wanted: false });
-    expect(h.controls.cancel).toHaveBeenCalledTimes(1);
+    expect(h.controls.cancel).toHaveBeenCalled();
     expect(h.controls.end).not.toHaveBeenCalled();
     expect(h.result.current.status.kind).toBe("off");
   });
@@ -258,5 +277,96 @@ describe("helpers", () => {
     expect(handsFreeSupported()).toBe(true);
     vi.stubGlobal("AudioContext", undefined);
     expect(handsFreeSupported()).toBe(false);
+  });
+});
+
+describe("the mic is never left on", () => {
+  it("turning hands-free off cancels the capture in every phase, also while a permission prompt is open", () => {
+    const h = setup({ phase: "idle" });
+    h.update({ phase: "requestingPermission" });
+    h.controls.cancel.mockClear();
+    h.update({ wanted: false });
+    // not recording yet: a stream granted after this must still be dropped
+    expect(h.controls.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it("the call stopping being live (a scene result) cancels too", () => {
+    const h = setup({ phase: "idle" });
+    h.update({ phase: "requestingPermission" });
+    h.controls.cancel.mockClear();
+    h.update({ live: false });
+    expect(h.controls.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it("an analyser that throws stops the recording and pauses, instead of leaving it recording", async () => {
+    sourceThrows = true;
+    const h = setup();
+    await startRecording(h);
+    await advance(300);
+    expect(h.controls.cancel).toHaveBeenCalled();
+    expect(h.result.current.status).toEqual({ kind: "paused", reason: "failure" });
+  });
+
+  it("a microphone that ends (unplugged) stops the recording and pauses", async () => {
+    const h = setup();
+    await startRecording(h);
+    await advance(300);
+    expect(h.trackEnded.length).toBeGreaterThan(0);
+    h.controls.cancel.mockClear();
+    act(() => h.trackEnded.forEach((fn) => fn()));
+    expect(h.controls.cancel).toHaveBeenCalledTimes(1);
+    expect(h.result.current.status).toEqual({ kind: "paused", reason: "interrupted" });
+  });
+
+  it("a silent analyser (reads below the cut-off forever) still ends a no-speech turn at 8 s", async () => {
+    amplitude = 0; // -160 dBFS, which the loop ignores as warm-up
+    const h = setup();
+    await startRecording(h);
+    await advance(7000);
+    expect(h.controls.cancel).not.toHaveBeenCalled();
+    await advance(2500);
+    expect(h.controls.cancel).toHaveBeenCalledTimes(1);
+    expect(h.result.current.status).toEqual({ kind: "paused", reason: "noSpeech" });
+  });
+
+  it("with no stream at all the turn still ends on the wall clock", async () => {
+    const controls = { begin: vi.fn(), end: vi.fn(), cancel: vi.fn() };
+    const view = renderHook(
+      (p: { phase: PhaseKind }) =>
+        useHandsFree({
+          wanted: true,
+          live: true,
+          tuning: HECTOR_TUNING,
+          phase: p.phase,
+          failure: null,
+          getStream: () => null,
+          controls,
+        }),
+      { initialProps: { phase: "idle" as PhaseKind } },
+    );
+    view.rerender({ phase: "recording" });
+    await advance(9500);
+    expect(controls.cancel).toHaveBeenCalledTimes(1);
+    expect(view.result.current.status).toEqual({ kind: "paused", reason: "noSpeech" });
+  });
+
+  it("the AudioContext is made in the tap, resumed, reused, and closed when hands-free stops", async () => {
+    const h = setup({ wanted: false });
+    act(() => h.result.current.prime());
+    expect(contexts).toHaveLength(1);
+    expect(contexts[0].resume).toHaveBeenCalled();
+    h.update({ wanted: true });
+    await startRecording(h);
+    await advance(300);
+    expect(contexts).toHaveLength(1);
+    h.update({ wanted: false });
+    expect(contexts[0].close).toHaveBeenCalledTimes(1);
+  });
+
+  it("the AudioContext is closed when the call is left", async () => {
+    const h = setup({ wanted: false });
+    act(() => h.result.current.prime());
+    h.unmount();
+    expect(contexts[0].close).toHaveBeenCalledTimes(1);
   });
 });

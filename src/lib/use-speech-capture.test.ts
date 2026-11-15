@@ -385,4 +385,74 @@ describe("useSpeechCapture, hands-free turns", () => {
     expect(result.current.state).toBe("idle");
     expect(track.stop).toHaveBeenCalled();
   });
+
+  it("a stream granted after cancel is dropped, and a later start is a clean one (no orphan recorder)", async () => {
+    const tracks = [{ stop: vi.fn() }];
+    const stream = { getTracks: () => tracks };
+    let grant: ((s: unknown) => void) | null = null;
+    const recorders: unknown[] = [];
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        getUserMedia: vi
+          .fn()
+          .mockImplementationOnce(() => new Promise((res) => (grant = res)))
+          .mockImplementation(async () => stream),
+      },
+    });
+    vi.stubGlobal(
+      "MediaRecorder",
+      class {
+        static isTypeSupported() {
+          return true;
+        }
+        state = "inactive";
+        mimeType = "audio/webm";
+        ondataavailable: unknown = null;
+        onstop: (() => void) | null = null;
+        constructor() {
+          recorders.push(this);
+        }
+        start() {
+          this.state = "recording";
+        }
+        stop() {
+          this.state = "inactive";
+          this.onstop?.();
+        }
+      },
+    );
+    const { result } = renderHook(() =>
+      useSpeechCapture({ onTranscript: vi.fn(), handsFree: true }),
+    );
+    let first: Promise<void>;
+    act(() => {
+      first = result.current.start();
+    });
+    act(() => result.current.cancel());
+    await act(async () => {
+      grant?.(stream);
+      await first!;
+    });
+    expect(recorders).toHaveLength(0);
+    expect(tracks[0].stop).toHaveBeenCalled();
+    expect(result.current.state).toBe("idle");
+    await act(async () => {
+      await result.current.start();
+    });
+    expect(recorders).toHaveLength(1);
+    expect(result.current.state).toBe("recording");
+  });
+
+  it("a second start while a recording exists does not open a second stream", async () => {
+    installMediaMocks();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript: vi.fn() }));
+    await act(async () => {
+      await result.current.start();
+    });
+    await act(async () => {
+      await result.current.start();
+    });
+    expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  });
 });

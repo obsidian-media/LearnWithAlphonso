@@ -64,7 +64,7 @@ export function useSpeechCapture({
   // exists -- stop() would then be a no-op and the microphone would stay hot
   // with no way to turn it off. This records "the user already asked to stop"
   // so start can honour it the moment the stream arrives.
-  const stopRequestedRef = useRef(false);
+  const stopRequestedRef = useRef({ requested: false });
   const onTranscriptRef = useRef(onTranscript);
   onTranscriptRef.current = onTranscript;
   const courseRef = useRef(course);
@@ -78,6 +78,7 @@ export function useSpeechCapture({
   // cancel() asks the recorder to stop and throw the clip away: nothing is transcribed or reported.
   const cancelRequestedRef = useRef(false);
   const startedAtRef = useRef(0);
+  const startingRef = useRef(false);
 
   const canRecord =
     typeof navigator !== "undefined" &&
@@ -86,16 +87,23 @@ export function useSpeechCapture({
 
   const start = useCallback(async () => {
     setError(null);
-    stopRequestedRef.current = false;
+    // One recorder at a time: a second start (a Resume, a hold-to-talk) never orphans a stream that exists or is
+    // still being granted.
+    if (startingRef.current || (recorderRef.current && recorderRef.current.state !== "inactive"))
+      return;
+    const stopToken = { requested: false };
+    stopRequestedRef.current = stopToken;
     cancelRequestedRef.current = false;
+    startingRef.current = true;
     setStarting(true);
     try {
       // Echo cancellation on, so a reply played from the speaker is less likely to be heard as the learner.
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true },
       });
-      if (stopRequestedRef.current) {
+      if (stopToken.requested) {
         stream.getTracks().forEach((t) => t.stop());
+        startingRef.current = false;
         setStarting(false);
         return;
       }
@@ -173,11 +181,13 @@ export function useSpeechCapture({
       recorderRef.current = rec;
       rec.start();
       startedAtRef.current = Date.now();
+      startingRef.current = false;
       setStarting(false);
       setState("recording");
     } catch {
       setError("Microphone access is needed to speak.");
       setFailed(true);
+      startingRef.current = false;
       setStarting(false);
       setState("idle");
       onFailureRef.current?.();
@@ -185,7 +195,7 @@ export function useSpeechCapture({
   }, []);
 
   const stop = useCallback(() => {
-    stopRequestedRef.current = true;
+    stopRequestedRef.current.requested = true;
     const rec = recorderRef.current;
     if (rec && rec.state !== "inactive") rec.stop();
   }, []);
@@ -193,7 +203,7 @@ export function useSpeechCapture({
   /** Stops the recording and throws the clip away (hands-free pause, no-speech and long-turn cancels). */
   const cancel = useCallback(() => {
     cancelRequestedRef.current = true;
-    stopRequestedRef.current = true;
+    stopRequestedRef.current.requested = true;
     const rec = recorderRef.current;
     if (rec && rec.state !== "inactive") rec.stop();
   }, []);
