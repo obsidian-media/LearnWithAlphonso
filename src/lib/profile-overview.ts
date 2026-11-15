@@ -203,6 +203,7 @@ export type BigNumbers = {
   /** XP across every course: the same scope as xpThisWeek (activity_days is account-wide), so the two always agree. */
   totalXp: number;
   xpThisWeek: number;
+  /** The distinct words (lower-cased) taught in this course's completed lessons: the same lessons lessonsDone counts. */
   wordsLearned: number;
   /** Saved words that review retired and the learner mastered (mastered_words). */
   masteredWords: number;

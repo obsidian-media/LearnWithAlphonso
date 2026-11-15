@@ -139,9 +139,9 @@ struct ProfileHeroSection: View {
                  "\(b.streak) day streak, longest \(b.longestStreak)")
             statTile(String(b.courseXP), "XP in \(course.label)", "\(b.xpThisWeek) this week",
                  "\(b.courseXP) XP in \(course.label), \(b.xpThisWeek) this week")
-            statTile(String(model.data.masteredWords), plural(model.data.masteredWords, "word mastered", "words mastered"),
+            statTile(String(b.wordsLearned), plural(b.wordsLearned, "word learned", "words learned"),
                  b.savedWords > 0 ? "\(b.savedWords) saved to review" : "Tap a word to save it",
-                 "\(model.data.masteredWords) \(plural(model.data.masteredWords, "word", "words")) mastered, "
+                 "\(b.wordsLearned) \(plural(b.wordsLearned, "word", "words")) learned, "
                     + (b.savedWords > 0 ? "\(b.savedWords) saved to review" : "tap a word to save it"))
             statTile(String(b.lessonsDone), plural(b.lessonsDone, "lesson done", "lessons done"),
                  b.accuracyPct.map { "\($0)% accuracy" } ?? "No lessons yet",
@@ -306,7 +306,7 @@ struct ProfileSkillsSection: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.sunk))
             } else {
-                Text("Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it.")
+                Text(SkillsRadar.emptyIntro(radar.skills))
                     .dsText(.footnote).foregroundStyle(ds.inkSoft)
                     .fixedSize(horizontal: false, vertical: true)
                 ForEach(radar.skills, id: \.skill) { s in

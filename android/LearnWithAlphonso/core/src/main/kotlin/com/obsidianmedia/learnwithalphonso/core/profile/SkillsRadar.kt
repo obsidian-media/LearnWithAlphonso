@@ -23,6 +23,14 @@ object SkillsRadar {
         "reading" to "Reading",
     )
 
+    /** Shown while the chart has no answers at all (skill_days only started 2026-11-07, so older lessons never fed it). */
+    const val NO_DATA_COPY = "Skills start counting from your next lesson"
+
+    /** The line above the "answers still needed" list: the no-data sentence when nothing was answered, else the usual one. */
+    fun emptyIntro(skills: List<RadarSkill>): String =
+        if (skills.all { it.answered == 0 }) NO_DATA_COPY
+        else "Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it."
+
     data class RadarSkill(
         val skill: String,
         val label: String,
