@@ -310,4 +310,51 @@ class HandsFreeLoopTest {
         assertFalse(HandsFreeInterruption.pauses(-3), "a notification duck")
         assertFalse(HandsFreeInterruption.pauses(1), "a gain")
     }
+
+    // Wall clock: a muted mic or a failing level read must not keep the mic open
+
+    private fun tick(loop: HandsFreeLoop, from: Double, to: Double): List<Effect> {
+        val effects = ArrayList<Effect>()
+        var t = from
+        while (t < to - 1e-9) { effects += loop.handle(Event.Tick(t)); t += 0.1 }
+        return effects
+    }
+
+    @Test
+    fun `with no level readable at all the eight second no-speech limit still fires from the clock`() {
+        val loop = recordingLoop()
+        assertEquals(emptyList<Effect>(), tick(loop, 0.0, 7.9))
+        assertEquals(listOf(Effect.CANCEL_TURN), tick(loop, 7.9, 8.3))
+        assertEquals(Status.Paused(PauseReason.NO_SPEECH), loop.status)
+    }
+
+    @Test
+    fun `a level stuck below the ignore threshold (a muted mic) cannot keep the turn open either`() {
+        val loop = recordingLoop()
+        // -160 forever is ignored by the level path, so only the clock can end this turn.
+        var t = 0.0
+        val effects = ArrayList<Effect>()
+        while (t < 8.3) { effects += loop.handle(Event.Level(-160.0, t)); effects += loop.handle(Event.Tick(t)); t += 0.1 }
+        assertEquals(listOf(Effect.CANCEL_TURN), effects)
+        assertEquals(Status.Paused(PauseReason.NO_SPEECH), loop.status)
+    }
+
+    @Test
+    fun `levels that stop after speech still hit the thirty second limit from the clock`() {
+        val loop = recordingLoop()
+        feed(loop, speech, 0.0, 2.0)
+        assertEquals(Status.Hearing, loop.status)
+        assertEquals(emptyList<Effect>(), tick(loop, 2.0, 29.9))
+        assertEquals(listOf(Effect.CANCEL_TURN), tick(loop, 29.9, 30.3))
+        assertEquals(Status.Paused(PauseReason.LONG_TURN), loop.status)
+    }
+
+    @Test
+    fun `a tick outside a recording does nothing and the next turn's clock starts when it records`() {
+        val loop = HandsFreeLoop()
+        loop.handle(Event.Enable)
+        assertEquals(emptyList<Effect>(), tick(loop, 0.0, 20.0))
+        loop.handle(phase(VoicePhase.REQUESTING_PERMISSION)); loop.handle(phase(VoicePhase.RECORDING))
+        assertEquals(emptyList<Effect>(), tick(loop, 20.0, 27.0))
+    }
 }

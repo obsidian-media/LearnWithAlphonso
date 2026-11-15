@@ -24,8 +24,30 @@ class HandsFreeController(
     val tuning: HandsFreeLoop.Tuning get() = loop.tuning
 
     fun enable() = run(HandsFreeLoop.Event.Enable)
-    fun disable() = run(HandsFreeLoop.Event.Disable)
-    fun togglePause() = run(HandsFreeLoop.Event.TogglePause)
+    /**
+     * Turning it off always cancels the turn, even when the loop only knows a recording is being set up (the permission
+     * prompt, the recorder starting): the engine drops a start that is still in flight, so a late recorder never opens
+     * the mic with hands-free off.
+     */
+    fun disable() {
+        val wasOn = loop.isOn
+        run(HandsFreeLoop.Event.Disable)
+        if (wasOn) perform(HandsFreeLoop.Effect.CANCEL_TURN)
+    }
+
+    /** Pausing likewise cancels unconditionally; resuming starts a turn. */
+    fun togglePause() {
+        val resuming = loop.status is HandsFreeLoop.Status.Paused
+        val wasOn = loop.isOn
+        run(HandsFreeLoop.Event.TogglePause)
+        if (wasOn && !resuming) perform(HandsFreeLoop.Effect.CANCEL_TURN)
+    }
+
+    /** The wall clock, once per beat while recording, with or without a readable level. */
+    fun tick(atSeconds: Double) {
+        if (!loop.isOn) return
+        run(HandsFreeLoop.Event.Tick(atSeconds))
+    }
 
     /** The voice engine's phase changed; delivered also while off, so turning it on mid-reply waits for the reply. */
     fun phase(phase: VoicePhase) = run(HandsFreeLoop.Event.Phase(phase))

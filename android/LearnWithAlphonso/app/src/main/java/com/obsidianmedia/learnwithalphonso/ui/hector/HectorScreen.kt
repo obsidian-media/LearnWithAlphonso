@@ -186,9 +186,9 @@ class HectorViewModel(
         }
     }
 
-    init { HandsFreeBinding.feedPhases(viewModelScope, handsFree, engine.phase, _state) }
+    init { HandsFreeBinding.feedPhases(viewModelScope, handsFree, engine, _state) }
 
-    override fun micLevelDBFS(): Double? = recorder.levelDBFS()
+    override fun micLevelDBFS(): Double? = try { recorder.levelDBFS() } catch (e: Exception) { handsFree.failed(); null }
 
     override fun pressBegan() { opener.stop(); _state.update { it.copy(error = null) }; engine.pressBegan() }
 

@@ -145,7 +145,7 @@ describe("the switch and the call chrome", () => {
 
   it("feeds the loop from the one level reader the call already has", () => {
     const screen = code(SCREEN);
-    expect(screen).toContain("vm.handsFree.level(it, SystemClock.elapsedRealtime() / 1000.0)");
+    expect(screen).toContain("level?.let { vm.handsFree.level(it, now) }");
     // One reader: the recorder's peak resets on every read, so a second reader would steal the samples.
     expect(
       (read(`${APP}/ui/practice/call/PracticeCallScreen.kt`).match(/micLevelDBFS\(\)/g) ?? [])
@@ -222,7 +222,7 @@ describe("the safety stops", () => {
     const binding = code(`${CALL}/HandsFreeBinding.kt`);
     expect(binding).toContain("conversation == ConversationPhase.THINKING -> VoicePhase.THINKING");
     expect(binding).toContain("conversation == ConversationPhase.SPEAKING -> VoicePhase.SPEAKING");
-    expect(binding).toContain("combine(engine, state.map { it.phase })");
+    expect(binding).toContain("combine(engine.phase, state.map { it.phase })");
   });
 
   it("pauses on audio focus loss, an incoming call and removed earbuds", () => {
@@ -231,6 +231,27 @@ describe("the safety stops", () => {
     expect(ui).toContain("AudioManager.ACTION_AUDIO_BECOMING_NOISY");
     expect(code(`${CORE}/HandsFreeController.kt`)).toContain("AUDIOFOCUS_LOSS = -1");
     expect(code(`${CORE}/HandsFreeController.kt`)).toContain("AUDIOFOCUS_LOSS_TRANSIENT = -2");
+  });
+});
+
+describe("the microphone is never left open", () => {
+  it("turning it off or pausing cancels unconditionally, also while a recording is still starting", () => {
+    const c = code(`${CORE}/HandsFreeController.kt`);
+    expect(c).toMatch(/if \(wasOn\) perform\(HandsFreeLoop\.Effect\.CANCEL_TURN\)/);
+    expect(c).toMatch(/if \(wasOn && !resuming\) perform\(HandsFreeLoop\.Effect\.CANCEL_TURN\)/);
+  });
+
+  it("any pause releases the recorder, and a failing level read pauses", () => {
+    expect(code(`${CALL}/HandsFreeBinding.kt`)).toMatch(
+      /status is HandsFreeLoop\.Status\.Paused && \(phase == TurnPhase\.RECORDING \|\| phase == TurnPhase\.REQUESTING_MIC\)\) engine\.cancel\(\)/,
+    );
+    for (const f of [VMS, HECTOR])
+      expect(code(f)).toContain("catch (e: Exception) { handsFree.failed(); null }");
+  });
+
+  it("the no-speech and max-turn limits also run on the wall clock", () => {
+    expect(code(SCREEN)).toContain("vm.handsFree.tick(now)");
+    expect(code(LOOP)).toContain("is Event.Tick -> onTick(event.at)");
   });
 });
 

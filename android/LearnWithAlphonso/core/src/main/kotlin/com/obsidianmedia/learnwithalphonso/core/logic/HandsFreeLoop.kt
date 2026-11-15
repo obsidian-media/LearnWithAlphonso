@@ -76,6 +76,13 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
         /** One recorder level sample while recording, with its time in seconds. */
         data class Level(val dBFS: Double, val at: Double) : Event
 
+        /**
+         * A wall-clock beat while recording (seconds on the same clock as the levels), sent whether or not a level was
+         * readable. A muted mic or a failing level read gives no usable level, so the no-speech and max-turn limits
+         * must still fire from the clock alone (Android only; iOS reads a level every beat).
+         */
+        data class Tick(val at: Double) : Event
+
         /** The finished turn's transcript was empty: it was noise, not speech. */
         data object TurnHadNoWords : Event
 
@@ -110,6 +117,7 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
     private var lastLoudAt: Double? = null
     private var heardSpeech = false
     private var turnEnding = false
+    private var wallStartedAt: Double? = null
     private var turnsWithoutTouch = 0
 
     val isOn: Boolean get() = status != Status.Off
@@ -164,6 +172,23 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
 
         is Event.Phase -> onPhase(event.phase)
         is Event.Level -> onLevel(event.dBFS, event.at)
+        is Event.Tick -> onTick(event.at)
+    }
+
+    private fun onTick(at: Double): List<Effect> {
+        if (!isRecording || !(status == Status.Listening || status == Status.Hearing) || turnEnding) return emptyList()
+        val started = turnStartedAt ?: wallStartedAt ?: at.also { wallStartedAt = it }
+        if (at - started >= tuning.maxTurn) {
+            turnEnding = true
+            status = Status.Paused(if (heardSpeech) PauseReason.LONG_TURN else PauseReason.NO_SPEECH)
+            return listOf(Effect.CANCEL_TURN)
+        }
+        if (!heardSpeech && at - started >= tuning.noSpeechTimeout) {
+            turnEnding = true
+            status = Status.Paused(PauseReason.NO_SPEECH)
+            return listOf(Effect.CANCEL_TURN)
+        }
+        return emptyList()
     }
 
     private fun onPhase(next: VoicePhase): List<Effect> {
@@ -267,6 +292,7 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
         lastLoudAt = null
         heardSpeech = false
         turnEnding = false
+        wallStartedAt = null
     }
 }
 

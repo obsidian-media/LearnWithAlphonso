@@ -161,10 +161,10 @@ abstract class BaseConversationViewModel(
         }
     }
 
-    init { HandsFreeBinding.feedPhases(viewModelScope, handsFree, engine.phase, _state) }
+    init { HandsFreeBinding.feedPhases(viewModelScope, handsFree, engine, _state) }
 
     /** The microphone level while recording (the call's "You" tile), null otherwise. */
-    override fun micLevelDBFS(): Double? = recorder.levelDBFS()
+    override fun micLevelDBFS(): Double? = try { recorder.levelDBFS() } catch (e: Exception) { handsFree.failed(); null }
 
     override fun pressBegan() { if (finishing) return; stopOpener(); _state.update { it.copy(error = null, phase = ConversationPhase.IDLE) }; engine.pressBegan() }
     override fun pressEnded() { engine.pressEnded(); if (engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.TRANSCRIBING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) } }

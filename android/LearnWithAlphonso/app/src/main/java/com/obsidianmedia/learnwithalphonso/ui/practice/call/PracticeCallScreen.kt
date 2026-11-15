@@ -182,7 +182,10 @@ internal fun PracticeCallScreen(
         while (recording) {
             level = vm.micLevelDBFS()
             // Hands-free reads the same level (one reader: the recorder's peak resets on every read).
-            level?.let { vm.handsFree.level(it, SystemClock.elapsedRealtime() / 1000.0) }
+            val now = SystemClock.elapsedRealtime() / 1000.0
+            level?.let { vm.handsFree.level(it, now) }
+            // The limits run on the wall clock too: a muted mic reads no level at all.
+            vm.handsFree.tick(now)
             delay(50)
         }
         level = null

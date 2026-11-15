@@ -65,8 +65,8 @@ class HandsFreeWiringTest {
     private fun tutor(s: FakeServer) = TutorConversationClient(ApiHttp("https://api.example", { "tok" }, s.engine), "dev-1")
     private fun count(s: FakeServer, suffix: String) = s.seen.count { it.path.endsWith(suffix) }
 
-    private fun scenarioVm(s: FakeServer, recorder: RecorderPort, player: ReplyPlayer = ReplyPlayer { true }) =
-        ScenarioConversationViewModel(testContent.scenarios.first(), recorder, { true }, ai(s), s.progressClient, player)
+    private fun scenarioVm(s: FakeServer, recorder: RecorderPort, player: ReplyPlayer = ReplyPlayer { true }, requestMic: suspend () -> Boolean = { true }) =
+        ScenarioConversationViewModel(testContent.scenarios.first(), recorder, requestMic, ai(s), s.progressClient, player)
 
     private fun hectorVm(s: FakeServer, recorder: RecorderPort, player: ReplyPlayer = ReplyPlayer { true }) =
         HectorViewModel(recorder, { true }, tutor(s), ai(s), s.progressClient, player, course = Course.ENGLISH, hectorVoice = { null }, openerCache = OpenerSpeechCache(), hectorLimit = { 150 })
@@ -155,7 +155,7 @@ class HandsFreeWiringTest {
         feed(vm, -60.0, 8.3)
         awaitTrue("paused") { vm.handsFree.status.value == Status.Paused(PauseReason.NO_SPEECH) }
         awaitTrue("mic closed") { vm.engine.phase.value == TurnPhase.IDLE }
-        assertEquals(1, recorder.cancelled)
+        assertTrue(recorder.cancelled >= 1)
         assertEquals(0, count(s, "/api/stt"))
         Thread.sleep(200)
         assertEquals("a pause never reopens the mic by itself", 1, recorder.started)
@@ -281,7 +281,7 @@ class HandsFreeWiringTest {
         HandsFreeBinding.interrupted(vm.handsFree, vm.engine)
         awaitTrue("paused") { vm.handsFree.status.value == Status.Paused(PauseReason.INTERRUPTED) }
         awaitTrue("mic closed") { vm.engine.phase.value == TurnPhase.IDLE }
-        assertEquals(1, recorder.cancelled)
+        assertTrue(recorder.cancelled >= 1)
         assertEquals(0, count(s, "/api/stt"))
     }
 
@@ -340,5 +340,72 @@ class HandsFreeWiringTest {
         assertNull(HandsFreeBinding.errorFor(true, TurnEvent.Empty, "Didn't catch that"))
         assertEquals("Didn't catch that", HandsFreeBinding.errorFor(false, TurnEvent.Empty, "Didn't catch that"))
         assertEquals("kept for failures", "x", HandsFreeBinding.errorFor(true, TurnEvent.MicDenied, "x"))
+    }
+
+    @Test
+    fun `turning it off while the microphone permission is still being asked never lets a late recorder open`() = runBlocking {
+        val s = server()
+        val gate = CompletableDeferred<Boolean>()
+        val recorder = CountingRecorder()
+        val vm = scenarioVm(s, recorder, requestMic = { gate.await() })
+        vm.handsFree.enable()
+        awaitTrue("asking for the mic") { vm.engine.phase.value == TurnPhase.REQUESTING_MIC }
+        vm.handsFree.disable()
+        gate.complete(true)
+        Thread.sleep(300)
+        assertEquals("the late grant must not start a recorder", 0, recorder.started)
+        assertEquals(TurnPhase.IDLE, vm.engine.phase.value)
+        assertEquals(Status.Off, vm.handsFree.status.value)
+    }
+
+    @Test
+    fun `pausing while the microphone is being set up also drops the start`() = runBlocking {
+        val gate = CompletableDeferred<Boolean>()
+        val recorder = CountingRecorder()
+        val vm = scenarioVm(server(), recorder, requestMic = { gate.await() })
+        vm.handsFree.enable()
+        awaitTrue("asking for the mic") { vm.engine.phase.value == TurnPhase.REQUESTING_MIC }
+        vm.handsFree.togglePause()
+        gate.complete(true)
+        Thread.sleep(300)
+        assertEquals(0, recorder.started)
+        assertEquals(TurnPhase.IDLE, vm.engine.phase.value)
+    }
+
+    @Test
+    fun `any pause releases an open recorder, not only the paused label`() = runBlocking {
+        val recorder = CountingRecorder()
+        val vm = scenarioVm(server(), recorder)
+        vm.handsFree.enable(); listening(vm)
+        vm.handsFree.failed()
+        awaitTrue("mic released") { vm.engine.phase.value == TurnPhase.IDLE }
+        assertTrue(recorder.cancelled >= 1)
+        assertEquals(Status.Paused(PauseReason.FAILURE), vm.handsFree.status.value)
+    }
+
+    @Test
+    fun `a level read that throws pauses and releases the mic`() = runBlocking {
+        val inner = CountingRecorder()
+        val recorder = object : RecorderPort by inner {
+            override fun levelDBFS(): Double? = throw IllegalStateException("recorder died")
+        }
+        val vm = scenarioVm(server(), recorder)
+        vm.handsFree.enable(); listening(vm)
+        assertNull(vm.micLevelDBFS())
+        awaitTrue("mic released") { vm.engine.phase.value == TurnPhase.IDLE }
+        assertEquals(Status.Paused(PauseReason.FAILURE), vm.handsFree.status.value)
+        assertTrue(inner.cancelled >= 1)
+    }
+
+    @Test
+    fun `a muted mic that reads no level still ends the turn at eight seconds from the clock`() = runBlocking {
+        val s = server()
+        val vm = scenarioVm(s, CountingRecorder())
+        vm.handsFree.enable(); listening(vm)
+        var t = 0.0
+        while (t < 8.3) { vm.handsFree.tick(t); t += 0.1 }
+        awaitTrue("paused") { vm.handsFree.status.value == Status.Paused(PauseReason.NO_SPEECH) }
+        awaitTrue("mic released") { vm.engine.phase.value == TurnPhase.IDLE }
+        assertEquals(0, count(s, "/api/stt"))
     }
 }

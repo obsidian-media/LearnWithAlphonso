@@ -37,9 +37,17 @@ object HandsFreeBinding {
     }
 
     /** Feeds the loop every change of the combined phase, also while hands-free is off (so turning it on mid-reply waits). */
-    fun feedPhases(scope: CoroutineScope, controller: HandsFreeController, engine: StateFlow<TurnPhase>, state: StateFlow<ConversationUiState>) {
+    fun feedPhases(scope: CoroutineScope, controller: HandsFreeController, engine: ConversationTurnEngine, state: StateFlow<ConversationUiState>) {
+        // However hands-free got paused (a failure, an interruption, noise, the learner), the mic is released at once:
+        // a pause must never leave a recorder, or one still starting, open.
         scope.launch {
-            combine(engine, state.map { it.phase }) { e, c -> voicePhase(e, c) }.distinctUntilChanged().collect { controller.phase(it) }
+            controller.status.collect { status ->
+                val phase = engine.phase.value
+                if (status is HandsFreeLoop.Status.Paused && (phase == TurnPhase.RECORDING || phase == TurnPhase.REQUESTING_MIC)) engine.cancel()
+            }
+        }
+        scope.launch {
+            combine(engine.phase, state.map { it.phase }) { e, c -> voicePhase(e, c) }.distinctUntilChanged().collect { controller.phase(it) }
         }
     }
 
