@@ -47,37 +47,19 @@ describe("design system mirrors are up to date", () => {
     }
   });
 
-  it("a .ds-light screen (lessons) keeps the light values of its palette under night mode", () => {
+  it("a .ds-light screen (lessons) keeps Royal's light values under night mode (Meadow has no night to undo)", () => {
     const css = outputs["src/styles/ds-tokens.generated.css"];
     const block = (selector: string) => {
       const start = css.indexOf(`${selector} {`);
       expect(start, selector).toBeGreaterThan(-1);
       return css.slice(start, css.indexOf("}", start));
     };
-    const royal = block(':root[data-ds-mode="night"] .ds-light');
-    const meadow = block(':root[data-palette="meadow"][data-ds-mode="night"] .ds-light');
+    const royal = block(':root:not([data-palette="meadow"])[data-ds-mode="night"] .ds-light');
     for (const [name, hex] of Object.entries(source.tokens.palettes.royal.light)) {
       const kebab = name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
       expect(royal, name).toContain(`--c-${kebab}: ${hex};`);
     }
-    for (const [name, hex] of Object.entries(source.tokens.palettes.meadow.light)) {
-      const kebab = name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
-      expect(meadow, name).toContain(`--c-${kebab}: ${hex};`);
-    }
     expect(css).toMatch(/\.ds-light \{\s*color-scheme: light;/);
-  });
-
-  it("the meadow night value of every colour reaches each mirror", () => {
-    const css = outputs["src/styles/ds-tokens.generated.css"];
-    const swift = outputs["ios/LearnWithAlphonso/Sources/DesignSystem/AlphonsoDS.generated.swift"];
-    const kotlin =
-      outputs[
-        "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/theme/AlphonsoTokens.kt"
-      ];
-    const hex = source.tokens.palettes.meadow.night.choice.slice(1);
-    expect(css).toContain(`--c-choice: #${hex};`);
-    expect(swift).toContain(`choice: Color(hex: 0x${hex})`);
-    expect(kotlin).toContain(`choice = Color(0xFF${hex})`);
   });
 });
 

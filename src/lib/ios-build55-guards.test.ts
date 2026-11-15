@@ -82,13 +82,18 @@ describe("3. the wrong-answer panel is softer, and never the colour of a right a
     expect(from(theme, "static var wrongAnswer: Color").slice(0, 80)).toContain("{ ember }");
   });
 
-  it.each(["meadow", "royal"])("%s: ember differs from moss, light and night", (id) => {
+  // Meadow has only a light palette (it stays light, even in Dark Mode); Royal has a light and a night one.
+  it.each([
+    ["meadow", 1],
+    ["royal", 2],
+  ])("%s: ember differs from moss in each of its %i palette(s)", (id, count) => {
     const marker = `.${id}: AlphonsoPalette(`;
     const first = theme.indexOf(marker);
     const second = theme.indexOf(marker, first + 1);
     expect(first).toBeGreaterThan(-1);
-    expect(second, `${id} has a night palette`).toBeGreaterThan(first);
-    for (const at of [first, second]) {
+    if (count === 2) expect(second, `${id} has a night palette`).toBeGreaterThan(first);
+    else expect(second, `${id} has no night palette`).toBe(-1);
+    for (const at of count === 2 ? [first, second] : [first]) {
       const block = theme.slice(at, at + 1800);
       expect(hexOf(block, "moss"), `${id} at ${at}`).not.toBe(hexOf(block, "ember"));
     }

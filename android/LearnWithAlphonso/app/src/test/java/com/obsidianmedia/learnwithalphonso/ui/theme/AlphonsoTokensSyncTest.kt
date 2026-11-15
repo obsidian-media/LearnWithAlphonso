@@ -26,11 +26,14 @@ class AlphonsoTokensSyncTest {
         json.getValue(key).jsonObject.mapValues { it.value.jsonPrimitive.int }
 
     @Test
-    fun `every colour in both palettes, light and night, matches the JSON`() {
+    fun `every colour in both palettes matches the JSON (Royal light and night, Meadow light only)`() {
         val palettes = json.getValue("palettes").jsonObject
         var checked = 0
         for ((palette, id) in listOf("royal" to AlphonsoPaletteId.ROYAL, "meadow" to AlphonsoPaletteId.MEADOW)) {
-            for ((mode, night) in listOf("light" to false, "night" to true)) {
+            // Meadow stays light, even in dark mode: the JSON has no Meadow night, and Meadow is Meadow light for either flag.
+            val modes = if (id == AlphonsoPaletteId.MEADOW) listOf("light" to false) else listOf("light" to false, "night" to true)
+            assertEquals("$palette modes in the JSON", modes.map { it.first }.toSet(), palettes.getValue(palette).jsonObject.keys)
+            for ((mode, night) in modes) {
                 val expected = palettes.getValue(palette).jsonObject.getValue(mode).jsonObject
                 val actual = AlphonsoTokens.colors(id, night).toMap()
                 assertEquals("$palette $mode names", expected.keys, actual.keys)
@@ -40,7 +43,7 @@ class AlphonsoTokensSyncTest {
                 }
             }
         }
-        assertTrue(checked >= 160)
+        assertTrue(checked >= 120)
     }
 
     @Test

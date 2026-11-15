@@ -33,7 +33,8 @@ type FontSpec = {
 };
 
 export type DesignTokens = {
-  palettes: { royal: { light: Mode; night: Mode }; meadow: { light: Mode; night: Mode } };
+  /** Royal has a light and a night look; Meadow has one, light, and never a night (owner decision 2026-11-14). */
+  palettes: { royal: { light: Mode; night: Mode }; meadow: { light: Mode } };
   colorUses: Record<string, string>;
   league: Record<string, string>;
   contrastPairs: [string, string, number][];
@@ -82,7 +83,6 @@ const COMBOS = [
   ["royal", "light", "royalLight"],
   ["royal", "night", "royalNight"],
   ["meadow", "light", "meadowLight"],
-  ["meadow", "night", "meadowNight"],
 ] as const;
 
 // ---------------------------------------------------------------- source
@@ -124,6 +124,17 @@ export function loadDesignSource(root: string): DesignSource {
 
 // ---------------------------------------------------------------- helpers
 
+/**
+ * Meadow stays light, even in dark mode (owner decision 2026-11-14): design/tokens.json has no Meadow night, and no
+ * renderer may emit one. Throws if the source carries it, so it can never reach a generated file.
+ */
+export function assertNoMeadowNight(t: DesignTokens): void {
+  if ("night" in (t.palettes.meadow as object))
+    throw new Error(
+      "Meadow has no night look: remove palettes.meadow.night from design/tokens.json",
+    );
+}
+
 const kebab = (s: string) => s.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 const upperSnake = (s: string) => s.replace(/[A-Z]/g, (c) => `_${c}`).toUpperCase();
 const n = (v: number) => String(+v.toFixed(4));
@@ -160,6 +171,7 @@ function cssShadow(layers: ShadowLayer[], tint: Hex): string {
 }
 
 export function renderCss({ tokens: t }: DesignSource): string {
+  assertNoMeadowNight(t);
   const fontFace = (spec: FontSpec) => {
     const w = spec.axes.wght;
     const lines = [
@@ -225,18 +237,15 @@ ${cssBlock(":root", t.palettes.royal.light)}
 
 ${cssBlock(':root[data-palette="meadow"]', t.palettes.meadow.light)}
 
-${cssBlock(':root[data-ds-mode="night"]', t.palettes.royal.night)}
-
-${cssBlock(':root[data-palette="meadow"][data-ds-mode="night"]', t.palettes.meadow.night)}
+/* Night is Royal's alone: Meadow stays light, even in night mode, so the night selectors skip it. */
+${cssBlock(':root:not([data-palette="meadow"])[data-ds-mode="night"]', t.palettes.royal.night)}
 
 /* Lessons stay light in night mode (the rooms are lit paintings): a .ds-light screen keeps its palette's light values. */
 .ds-light {
   color-scheme: light;
 }
 
-${cssBlock(':root[data-ds-mode="night"] .ds-light', t.palettes.royal.light)}
-
-${cssBlock(':root[data-palette="meadow"][data-ds-mode="night"] .ds-light', t.palettes.meadow.light)}
+${cssBlock(':root:not([data-palette="meadow"])[data-ds-mode="night"] .ds-light', t.palettes.royal.light)}
 
 @theme inline {
 ${themeInline.join("\n")}
@@ -329,10 +338,11 @@ const IMAGESET = (asset: string) =>
   )}\n`;
 
 export function renderSwift(src: DesignSource): string {
+  assertNoMeadowNight(src.tokens);
   const t = src.tokens;
   const names = Object.keys(t.palettes.royal.light);
   const colors = COMBOS.map(([p, m, id]) => {
-    const mode = t.palettes[p][m];
+    const mode = (t.palettes[p] as Record<string, Mode>)[m];
     return `    public static let ${id} = Colors(\n${names
       .map(
         (k, i) =>
@@ -363,8 +373,8 @@ export function renderSwift(src: DesignSource): string {
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// The round-6 design system: two palettes (Royal, the default, and Meadow), each with light and night values, and
-/// one set of scales. Screens built on it read these names only, never a number or a hex value; a palette swaps the
+/// The round-6 design system: two palettes (Royal, the default, with light and night values, and Meadow, light
+/// only: Meadow stays light, even in dark mode) and one set of scales. Screens built on it read these names only, never a number or a hex value; a palette swaps the
 /// values and nothing else. Read the active colours from \`@Environment(\\.alphonsoDS)\`.
 public enum AlphonsoDS {
     public struct Colors: Sendable {
@@ -373,13 +383,12 @@ ${fields}
 
 ${colors}
 
-    /// The colours for a palette, light or night.
+    /// The colours for a palette, light or night. Meadow has no night: it is Meadow light whatever the night flag says.
     public static func colors(_ palette: DSPaletteID, night: Bool) -> Colors {
         switch (palette, night) {
         case (.royal, false): return royalLight
         case (.royal, true): return royalNight
-        case (.meadow, false): return meadowLight
-        case (.meadow, true): return meadowNight
+        case (.meadow, _): return meadowLight
         }
     }
 
@@ -544,10 +553,11 @@ ${paths.join("\n")}
 }
 
 export function renderKotlin(src: DesignSource): string {
+  assertNoMeadowNight(src.tokens);
   const t = src.tokens;
   const names = Object.keys(t.palettes.royal.light);
   const colors = COMBOS.map(([p, m, id]) => {
-    const mode = t.palettes[p][m];
+    const mode = (t.palettes[p] as Record<string, Mode>)[m];
     return `    val ${id} = Colors(\n${names.map((k) => `        ${k} = Color(0xFF${mode[k].slice(1)}),`).join("\n")}\n    )`;
   }).join("\n\n");
   // Android's minimum touch target is 48 dp, 4 more than the shared token: a platform rule, so it lives here, not in tokens.json.
@@ -577,8 +587,8 @@ import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.R
 
 /**
- * The round-6 design system: two palettes (Royal, the default, and Meadow), each with light and night values, and
- * one set of scales. Screens built on it read these names only, never a number or a Color(0x...); a palette swaps
+ * The round-6 design system: two palettes (Royal, the default, with light and night values, and Meadow, light only:
+ * Meadow stays light, even in dark mode) and one set of scales. Screens built on it read these names only, never a number or a Color(0x...); a palette swaps
  * the values and nothing else. Read the active colours from LocalAlphonsoTokens.
  */
 object AlphonsoTokens {
@@ -594,7 +604,7 @@ ${colors}
 
     fun colors(palette: AlphonsoPaletteId, night: Boolean): Colors = when (palette) {
         AlphonsoPaletteId.ROYAL -> if (night) royalNight else royalLight
-        AlphonsoPaletteId.MEADOW -> if (night) meadowNight else meadowLight
+        AlphonsoPaletteId.MEADOW -> meadowLight
     }
 
     /** League tier colours, the same in both palettes. */

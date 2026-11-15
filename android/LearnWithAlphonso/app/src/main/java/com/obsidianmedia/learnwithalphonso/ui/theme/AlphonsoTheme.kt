@@ -16,7 +16,7 @@ object AlphonsoColor {
         @Composable get() = LocalAlphonsoPalette.current
 }
 
-private fun colorSchemeFor(p: AlphonsoPalette): ColorScheme {
+internal fun colorSchemeFor(p: AlphonsoPalette): ColorScheme {
     val base = if (p.isDark) darkColorScheme() else lightColorScheme()
     return base.copy(
         primary = p.moss,
