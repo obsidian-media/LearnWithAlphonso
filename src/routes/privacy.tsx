@@ -24,7 +24,7 @@ export const Route = createFileRoute("/privacy")({
 
 const SUPPORT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
-const UPDATED = "6 November 2026"; // same date on all four legal pages
+const UPDATED = "15 November 2026"; // same date on all four legal pages
 
 function Privacy() {
   return (
@@ -55,6 +55,7 @@ function Privacy() {
             "Audio library use: which episodes you play, how far through you are, and which you download for offline listening. Episodes marked AI-narrated are read by a synthetic voice (Deepgram text-to-speech) from scripts we write; making them uses no personal data.",
             "Purchases: whether you hold an active Alphonso Pro subscription, where you bought it, and its status and renewal dates. We never receive or store your card details. Apple, Google Play on Android, or Stripe for a subscription bought on our website, handles payment.",
             "Notifications: if you enable push notifications, a device token so we can send them. It is used for nothing else.",
+            "Help chat: what you write in Help and the replies, with the time of each and the status of the conversation. We also keep the topic of your question, which kind of device you used (web, iPhone or Android), and which of our staff replied. If the AI helper answered, we keep a short summary of the conversation and the account facts it was given for that answer (listed in the Help chat section below). Our staff can also add private notes to your conversation; you do not see them.",
             "Usage limits: counts of how many AI requests your account makes each day, so we can apply fair-use limits.",
             "Speaking time: a daily total of how many seconds you spoke in practice, so we can show your progress. We keep only the number, never the audio or what you said, until you delete your account.",
             "Learning time, skills and listening: a daily total of how many seconds you spent on lessons and practice, which of five skills (listening, speaking, vocabulary, grammar, reading) each answer counted towards, a marker for each saved word you have mastered, your time zone (used to show dates and to decide which calendar day your streak and daily totals count towards; if we do not have it, we use UTC), and how far through each audio episode or video you are (and when you finished a video), so we can show your progress and let you continue listening or watching. We keep these only as totals and positions, never audio or what you said, until you delete your account, and they are in your data export.",
@@ -130,6 +131,7 @@ function Privacy() {
             "To manage your subscription and unlock Alphonso Pro (performance of our contract).",
             "To send sign-in codes, password-reset links and other account emails (performance of our contract).",
             "To send push notifications you have enabled (your consent, which you can withdraw in your device settings at any time).",
+            "To answer your Help chat messages and tell you when we reply (performance of our contract; AI answers only with your consent, which you can withdraw at any time).",
             "To review reports, enforce our Terms of Use and keep learners safe (our legitimate interests and our legal obligations).",
             "To prevent abuse and control cost, including per-account daily limits on AI features (our legitimate interests).",
             "To count which links and communities bring new learners, using the campaign tags above (your consent, given by choosing Accept all; if you choose Essential only nothing is saved). The tags are deleted with your account.",
@@ -190,10 +192,10 @@ function Privacy() {
           items={[
             "Supabase: database, authentication and server functions. Holds your account and all learning data.",
             "Vercel: hosts the website and the server API that the apps call. It handles every request the apps and the website make, and keeps request logs (including IP address and device or browser type) for a limited period so we can keep the service secure and working.",
-            "Resend: delivers the emails we send, such as your sign-in codes and password-reset links, and internal alerts to us when a learner files a report.",
+            "Resend: delivers the emails we send, such as your sign-in codes and password-reset links, the email that tells you a person has replied in Help, and internal alerts to us when a learner files a report.",
             "Deepgram: converts your recorded speech to text, AI replies to spoken audio, and our audio library scripts to the AI-narrated episodes. It receives the recording or the reply text, not your account details. Deepgram does not keep your recordings or use them to train its models: we opt every request out of its model improvement program, so it keeps the data only as long as it needs to process the request.",
             "OpenRouter: passes the text below to the AI model that answers it and returns the reply. It sends the text only to the AI providers named in this list, and only to providers that do not train on it. It does not keep the text, apart from anonymous usage statistics.",
-            "Anthropic (Claude), reached through OpenRouter: generates AI replies for Hector and the practice scenarios, grades written translation answers, writes the meaning and answer choices when you save a word, explains a mistake, a word or a message in your own language when you ask, and finds practice items in your conversation mistakes. It receives only the text needed for each task. Anthropic does not use it to train its models and deletes it within 30 days, or keeps it longer only when it is flagged for breaking Anthropic's usage policy.",
+            "Anthropic (Claude), reached through OpenRouter: generates AI replies for Hector and the practice scenarios, grades written translation answers, writes the meaning and answer choices when you save a word, explains a mistake, a word or a message in your own language when you ask, finds practice items in your conversation mistakes, and answers Help chat questions when the AI helper is switched on. It receives only the text needed for each task. Anthropic does not use it to train its models and deletes it within 30 days, or keeps it longer only when it is flagged for breaking Anthropic's usage policy.",
             "RevenueCat: manages subscription status, so Alphonso Pro works on every device you sign in on. It receives an account identifier and purchase and renewal information from Apple, Google or Stripe, not your payment details. For a subscription bought on our website it also runs the checkout page.",
             "Stripe: processes card payments for subscriptions bought on our website. It receives your card details and billing email directly; we never see or store your card number.",
             "Sentry: receives the crash and error reports described above, so we can find and fix faults. It stores the technical details of the fault for 90 days, not your account details, and does not use them for advertising.",
@@ -244,6 +246,47 @@ function Privacy() {
         </p>
       </Section>
 
+      <Section heading="Help chat">
+        <p>
+          You can write to us from Help in the app and on the website. Your messages and the replies
+          are stored on your account, with the time of each, so you can read them again on any
+          device. We also store which of our staff members replied, and our staff can keep private
+          notes about your conversation. You do not see those notes.
+        </p>
+        <p>
+          Our support staff read your conversation. When a person replies, you see their first name
+          and &ldquo;Support team&rdquo;. Miya, the helper that may answer first, is an AI. She can
+          only write text: she cannot change anything on your account. She runs only while we have
+          AI answers switched on and you have allowed AI features, and a person takes over for
+          billing and refunds, deleting an account, safety, legal and data requests, any change to
+          your account, anything she cannot answer, or whenever you ask for one. She can be wrong.
+        </p>
+        <p>
+          When Miya answers, your recent messages in that conversation go to our AI provider
+          (Anthropic, through OpenRouter, as described above) together with a short list of facts
+          about your own account: whether you have Pro, where it came from and, for free Pro we gave
+          you, the day it ends (or that we could not check your Pro status), your course and level,
+          your streak, how many days you were active in the last 30 and the last day you were
+          active, how many lessons you finished in the last 7 and the day of your last lesson, which
+          platforms you use, whether social features are blocked on your account (yes or no, never
+          why), and the status, topic and day of up to three earlier Help conversations. She never
+          sees your email address, name, payment details, lesson answers, your chats with Alphonso
+          or Hector, or our staff notes.
+        </p>
+        <p>
+          When a person replies, we send you an email and, if you have push notifications on, a push
+          notification. Both say only that you have a reply and who it is from. They never contain
+          the text of the reply.
+        </p>
+        <p>
+          A solved conversation is deleted 12 months after it was solved, with its messages and
+          notes. A conversation that is still open is kept while it is open. Deleting your account
+          deletes all your Help conversations. Your data export includes your Help conversations and
+          their messages. It leaves out our staff notes, which are our own records. The record of
+          what our staff did (described above) stays as already explained.
+        </p>
+      </Section>
+
       <Section heading="Automated processing">
         <p>
           The app grades answers automatically, uses AI to find practice items in your conversation
@@ -272,10 +315,11 @@ function Privacy() {
 
       <Section heading="How long we keep it">
         <p>
-          We keep your account data for as long as your account exists. When you delete your
-          account, your data is removed immediately from our live systems and is purged from routine
-          backups within 30 days. Reports about content are kept for up to 90 days after an account
-          is deleted, for safety, without any personal profile data. Request logs held by Vercel are
+          We keep your account data for as long as your account exists. Solved Help chat
+          conversations are deleted 12 months after they were solved. When you delete your account,
+          your data is removed immediately from our live systems and is purged from routine backups
+          within 30 days. Reports about content are kept for up to 90 days after an account is
+          deleted, for safety, without any personal profile data. Request logs held by Vercel are
           kept only for the limited period its service retains them.
         </p>
       </Section>

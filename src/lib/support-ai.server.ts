@@ -216,6 +216,9 @@ const FORCED: { reason: HandoffReason; topic: SupportTopic; patterns: string[] }
   },
 ];
 
+/** The reason and topic of every always-to-a-person row, for the privacy-page test. */
+export const FORCED_HANDOFF_ROWS = FORCED.map((f) => `${f.reason}:${f.topic}`);
+
 const COMPILED = FORCED.map((f) => ({
   reason: f.reason,
   topic: f.topic,
