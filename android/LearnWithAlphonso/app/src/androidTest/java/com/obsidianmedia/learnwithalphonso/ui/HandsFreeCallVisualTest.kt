@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui
 
 import android.graphics.Bitmap
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -58,7 +59,12 @@ class HandsFreeCallVisualTest {
     }
 
     private fun look(name: String, theme: AlphonsoThemeId, dark: Boolean) {
+        // The note is shown once per device: forget that it was, so every look draws it.
+        (context.applicationContext as com.obsidianmedia.learnwithalphonso.AlphonsoApplication).container.prefs.edit()
+            .remove(com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeCopy.NOTE_SEEN_KEY).commit()
         val call = FakeCall(listOf(ChatMessage("assistant", "Hello! What would you like to order today?")))
+        // The call has infinite animations and a running clock: the test clock is advanced by hand, from before the content is set.
+        rule.mainClock.autoAdvance = false
         rule.setContent {
             AlphonsoTheme(theme, dark) {
                 PracticeCallScreen(
@@ -68,34 +74,35 @@ class HandsFreeCallVisualTest {
                 )
             }
         }
-        rule.waitForIdle()
+        settle()
         shot("$name-0-off")
         // The switch is in the conversation sheet.
         rule.onNodeWithContentDescription("Show the conversation").performClick()
-        rule.waitForIdle()
+        settle()
         shot("$name-1-sheet")
         rule.onNodeWithText("Hands-free").performClick()
-        rule.waitForIdle()
+        settle()
         shot("$name-2-note")
-        rule.onNodeWithText("Turn on hands-free").performClick()
-        rule.runOnIdle { call.handsFree.phase(VoicePhase.RECORDING) }
-        rule.waitForIdle()
+        // The dialog is its own window; a semantic click avoids touch injection into it.
+        rule.onNodeWithText("Turn on hands-free").performSemanticsAction(SemanticsActions.OnClick)
+        rule.runOnUiThread { call.handsFree.phase(VoicePhase.RECORDING) }
+        settle()
         shot("$name-3-sheet-on")
         rule.onNodeWithText("Back to call").performClick()
-        rule.waitForIdle()
+        settle()
         shot("$name-4-listening")
-        rule.runOnIdle {
+        rule.runOnUiThread {
             var t = 0.0
             while (t < 0.5) { call.handsFree.level(-60.0, t); t += 0.1 }
             while (t < 1.5) { call.handsFree.level(-20.0, t); t += 0.1 }
         }
-        rule.waitForIdle()
+        settle()
         shot("$name-5-hearing")
-        rule.runOnIdle { call.handsFree.phase(VoicePhase.THINKING) }
-        rule.waitForIdle()
+        rule.runOnUiThread { call.handsFree.phase(VoicePhase.THINKING) }
+        settle()
         shot("$name-6-waiting")
-        rule.runOnIdle { call.handsFree.turnHadNoWords() }
-        rule.waitForIdle()
+        rule.runOnUiThread { call.handsFree.turnHadNoWords() }
+        settle()
         shot("$name-7-paused")
     }
 
@@ -103,9 +110,11 @@ class HandsFreeCallVisualTest {
     @Test fun royalNight() = look("royal-night", AlphonsoThemeId.DEFAULT, true)
     @Test fun meadow() = look("meadow", AlphonsoThemeId.MEADOW, false)
 
+    private fun settle() { rule.mainClock.advanceTimeBy(900) }
+
     private fun shot(name: String) {
-        rule.waitForIdle()
-        Thread.sleep(300)
+        settle()
+        Thread.sleep(400)
         val dir = File(context.getExternalFilesDir(null), "handsfree-shots").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { Screenshot.capture().bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }

@@ -31,6 +31,8 @@ struct ConversationSessionView: View {
     @State private var result: PracticeResult?
     @State private var slip: (said: String, reply: String)?
     @State private var ending = false
+    /// The call came back without a score (offline): the screen stays, with a notice and Try again.
+    @State private var unscored = false
     @State private var pendingTurns = 0
     @State private var input = ""
     @State private var elapsed = 0
@@ -55,9 +57,11 @@ struct ConversationSessionView: View {
 
     var body: some View {
         Group {
-            if let result {
-                PracticeResultView(result: result, room: scenario.id, course: course.wireCode, seconds: elapsed, slip: slip,
-                    retry: { self.result = nil; startNewConversation() }, nextLabel: "Done", done: { dismiss() })
+            if unscored {
+                PracticeUnscoredView(retry: { unscored = false; startNewConversation() })
+            } else if let result {
+                PracticeResultView(result: result, room: scenario.id, course: course.wireCode, seconds: elapsed, slip: slip, context: .scenario,
+                    retry: { self.result = nil; startNewConversation() }, forward: { dismiss() })
             } else if !chatMode { callScreen } else { classicScreen }
         }
         // Alphonso says the scene's opening line out loud (build 59 only showed it). Inside the AI gate, so nothing is
@@ -391,16 +395,13 @@ struct ConversationSessionView: View {
         } catch { voice.fail(generation, TutorError.from(error)); notice = TutorError.from(error).userMessage() }
     }
     private var typedControls: some View {
-        VStack(spacing: AlphonsoDS.Space.s2) {
-            TextField("Your reply", text: $input, axis: .vertical).dsField()
-            PracticeButton("Send") {
-                let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !text.isEmpty, pendingTurns == 0, !ending else { return }
-                input = ""
-                pendingTurns += 1
-                Task { await sendReply(text, generation: 0); pendingTurns -= 1 }
-            }.disabled(pendingTurns > 0 || ending)
-        }.padding(AlphonsoDS.Space.gutter)
+        PracticeReplyBar(text: $input, pending: pendingTurns > 0 || ending) {
+            let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty, pendingTurns == 0, !ending else { return }
+            input = ""
+            pendingTurns += 1
+            Task { await sendReply(text, generation: 0); pendingTurns -= 1 }
+        }
     }
     private func resetCall() {
         callId = UUID().uuidString; startedAt = Date(); slip = nil; ending = false
@@ -417,7 +418,10 @@ struct ConversationSessionView: View {
             Analytics.track(.practiceCallCompleted, ["scenario_id": scenario.id, "stars": finished.stars])
             result = finished
         }
-        catch { dismiss() } // Same as web when no reply was judged or finish is unavailable.
+        catch {
+            // Offline or unreachable: stay with a notice when replies were sent; with none there is nothing to keep.
+            if PracticeHub.staysOnUnscored(userReplies: conversation.turns.filter { $0.role == "user" }.count) { ending = false; unscored = true } else { dismiss() }
+        }
     }
 
 }

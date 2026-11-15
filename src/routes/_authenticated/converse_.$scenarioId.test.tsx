@@ -846,13 +846,18 @@ describe("Practice stars on a scenario call", () => {
     expect(screen.queryByRole("button", { name: "Finish" })).toBeNull();
   });
 
-  it("an unscored call (the server judged no reply) goes back to Practice without a result", async () => {
+  it("an unscored call (offline or no judged reply) stays on the screen with the notice and Try again", async () => {
     serve({ error: "no-call" });
     const user = userEvent.setup();
+    navigate.mockClear();
     await renderPage();
     await say(user, "Hello", 1);
     await user.click(screen.getByRole("button", { name: "Finish" }));
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/converse" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "You're offline, so this talk wasn't scored. Try again when you're back online.",
+    );
+    expect(navigate).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
     expect(document.querySelector("[data-practice-result]")).toBeNull();
   });
 

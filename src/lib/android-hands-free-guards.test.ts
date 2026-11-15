@@ -169,10 +169,9 @@ describe("it is off at every call start and tuned per partner", () => {
 
   it("carries the choice across the scenes of one campaign run, and only that", () => {
     const screens = code(PRACTICE_SCREENS);
-    // Noted before the call finishes (which turns it off), re-armed after the next scene's opener has started.
-    expect(screens).toMatch(/advancing = true; vm\.carryHandsFreeToNextScene\(\); scope\.launch/);
+    // Noted before the call finishes (which turns it off); the result's Next scene moves on, and the next call re-arms it.
+    expect(screens).toMatch(/val endCall: \(\) -> Unit = \{ vm\.carryHandsFreeToNextScene\(\); scope\.launch/);
     expect(screens).toContain("vm.speakOpener(); vm.rearmHandsFreeIfCarried()");
-    expect(screens).toMatch(/advancing = false; vm\.forgetHandsFreeCarry\(\)/);
     const vms = code(VMS);
     expect(vms).toMatch(/fun restartScene\(speak: Boolean = true\) \{\s*if \(awaitingResult\) return\s*rearmHandsFree = false/);
     expect(vms).toContain("if (carried && !_campaign.value.finished) handsFree.enable()");

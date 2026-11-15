@@ -253,7 +253,7 @@ internal fun PracticeCallScreen(
             Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(callGlass()).clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = mode.callLabel }.padding(horizontal = 10.dp, vertical = 2.dp)) {
                 Text(mode.callLabel.uppercase(), color = callInk(), style = OverlineType)
             }
-            if (handsFreeOn) HandsFreeStatusPill(handsFreeStatus, kit.displayName)
+            if (handsFreeOn) Box(Modifier.align(Alignment.CenterHorizontally)) { HandsFreeStatusPill(handsFreeStatus, kit.displayName) }
             Controls(recording, busy, talkLabel, handsFreeStatus, onTogglePause = vm.handsFree::togglePause, onChat = { showSheet = true }, onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded, onEnd = endCall)
         }
     }
