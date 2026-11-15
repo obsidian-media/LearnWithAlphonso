@@ -958,7 +958,7 @@ describe("Hands-free across a campaign's scenes", () => {
       );
     }
     await user.click(within(sheet).getByRole("button", { name: "Back to call" }));
-    await user.click(await screen.findByRole("button", { name: /Continue:/ }));
+    await user.click(screen.getByRole("button", { name: "End the call" }));
     expect(
       await screen.findByRole("heading", { name: "One star. You finished." }),
     ).toBeInTheDocument();
