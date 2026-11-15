@@ -81,33 +81,6 @@
         "ember": "#9e3d16"
       },
       "surface": "#f5f0e8"
-    },
-    "meadow-dark": {
-      "coral": {
-        "bg": "#4a1f16",
-        "ink": "#ffd2c4"
-      },
-      "sky": {
-        "bg": "#16304f",
-        "ink": "#cde2ff"
-      },
-      "sun": {
-        "bg": "#46370f",
-        "ink": "#ffe08a"
-      },
-      "lilac": {
-        "bg": "#2f2350",
-        "ink": "#e0d2ff"
-      },
-      "mint": {
-        "bg": "#143a29",
-        "ink": "#c2ecd5"
-      },
-      "edge": {
-        "moss": "#153c25",
-        "ember": "#9e3d16"
-      },
-      "surface": "#0c1810"
     }
   }
 }

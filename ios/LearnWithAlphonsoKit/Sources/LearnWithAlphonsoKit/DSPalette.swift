@@ -15,4 +15,16 @@ public enum DSPaletteID: String, CaseIterable, Sendable {
     public static func resolve(stored: String?) -> DSPaletteID {
         stored.flatMap(DSPaletteID.init(rawValue:)) ?? defaultPalette
     }
+
+    /// Whether the palette draws its night colours when the device is in dark mode. Only Royal has a night look:
+    /// Meadow stays light, even in dark mode (owner decision 2026-11-14), so a dark device never changes it.
+    public func usesNight(deviceDark: Bool) -> Bool {
+        self == .royal && deviceDark
+    }
+
+    /// The appearance the whole interface is held to (system sheets, alerts, keyboards and the status bar
+    /// included): Meadow is always light; Royal follows the device.
+    public func appearance(deviceDark: Bool) -> AppearanceChangeGate.Appearance {
+        usesNight(deviceDark: deviceDark) ? .dark : .light
+    }
 }

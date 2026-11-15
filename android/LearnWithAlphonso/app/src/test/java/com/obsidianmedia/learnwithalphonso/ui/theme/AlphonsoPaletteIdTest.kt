@@ -86,7 +86,9 @@ class AlphonsoPaletteIdTest {
 
     @Test
     fun `the token colours follow the palette and night`() {
-        assertEquals(AlphonsoTokens.meadowNight, AlphonsoTokens.colors(AlphonsoPaletteId.MEADOW, night = true))
+        assertEquals(AlphonsoTokens.meadowLight, AlphonsoTokens.colors(AlphonsoPaletteId.MEADOW, night = true))
+        assertEquals(AlphonsoTokens.meadowLight, AlphonsoTokens.colors(AlphonsoPaletteId.MEADOW, night = false))
+        assertEquals(AlphonsoTokens.royalNight, AlphonsoTokens.colors(AlphonsoPaletteId.ROYAL, night = true))
         assertEquals(AlphonsoTokens.royalLight, AlphonsoTokens.colors(AlphonsoPaletteId.ROYAL, night = false))
     }
 }
