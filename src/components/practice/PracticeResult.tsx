@@ -5,6 +5,7 @@ import type { Course } from "@/data/courses";
 import { headline, nextStarHint } from "@/lib/practice-result-copy";
 import type { PracticeResult as Result } from "@/lib/practice-api";
 import { MAX_STARS } from "@/lib/practice-stars";
+import { practiceResultButtons, repliesMeter } from "@/lib/practice-result-buttons";
 
 /**
  * After the call (mock-up screen 5): the verdict in the same room. The stars are the server's, for this call; the
@@ -16,14 +17,32 @@ const formatClock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padSt
 const SCRIM =
   "linear-gradient(180deg, color-mix(in srgb, var(--c-hero-b) 25%, transparent) 0%, transparent 30%, var(--c-surface) 56%)";
 
+/** A star still to earn, on a call that earned none: a dashed gold outline, not a dead grey one. */
+function EmptyStar({ className }: { className: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={`${className} text-ds-action-edge`}>
+      <path
+        d="M12 2.8l2.8 5.9 6.4.9-4.7 4.5 1.2 6.4L12 17.4l-5.7 3.1 1.2-6.4L2.8 9.6l6.4-.9z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+        strokeDasharray="2.6 2.6"
+        opacity=".75"
+      />
+    </svg>
+  );
+}
+
 export function PracticeResult({
   result,
   course,
   room,
   seconds,
   slip,
+  campaign,
   onRetry,
-  next,
+  onForward,
 }: {
   result: Result;
   course: Course;
@@ -31,21 +50,26 @@ export function PracticeResult({
   /** How long the call lasted on this device. */
   seconds: number;
   slip: { said: string; reply: string } | null;
+  /** null for a scenario talk; for a campaign scene, whether it is the last one. */
+  campaign: { isLastScene: boolean } | null;
   onRetry: () => void;
-  next: { label: string; onClick: () => void };
+  /** The gold forward button: Next scene, Finish campaign or Done. */
+  onForward: () => void;
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => titleRef.current?.focus(), []);
   const newBest = result.bestAfter > result.bestBefore && result.bestBefore > 0;
+  const buttons = practiceResultButtons({ stars: result.stars, campaign });
+  const meter = result.stars === 0 ? repliesMeter(result) : null;
   return (
     <section
       data-practice-result={result.stars}
       aria-labelledby="practice-result-title"
-      className="ds-light relative flex min-h-dvh flex-col overflow-hidden bg-ds-surface font-[family-name:var(--ds-font-body)] text-ds-ink"
+      className="relative flex min-h-dvh flex-col overflow-hidden bg-ds-surface font-[family-name:var(--ds-font-body)] text-ds-ink"
     >
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-[420px] bg-cover"
+        className="absolute inset-x-0 top-0 h-[420px] bg-cover [:root[data-ds-mode=night]_&]:brightness-[.62]"
         style={{ backgroundImage: `url(${room})`, backgroundPosition: "center 30%" }}
       />
       <div
@@ -65,14 +89,18 @@ export function PracticeResult({
           aria-label={`${result.stars} of ${MAX_STARS} stars`}
           className="flex items-end justify-center gap-1.5"
         >
-          {Array.from({ length: MAX_STARS }, (_, k) => (
-            <DsIcon
-              key={k}
-              name="star"
-              solid
-              className={`${k === 1 ? "size-[60px]" : "size-12"} ${k < result.stars ? "text-ds-action drop-shadow-[0_4px_0_color-mix(in_srgb,var(--c-action-edge)_35%,transparent)]" : "text-ds-line"}`}
-            />
-          ))}
+          {Array.from({ length: MAX_STARS }, (_, k) =>
+            result.stars > 0 ? (
+              <DsIcon
+                key={k}
+                name="star"
+                solid
+                className={`${k === 1 ? "size-[60px]" : "size-12"} ${k < result.stars ? "text-ds-action drop-shadow-[0_4px_0_color-mix(in_srgb,var(--c-action-edge)_35%,transparent)]" : "text-ds-line"}`}
+              />
+            ) : (
+              <EmptyStar key={k} className={k === 1 ? "size-[62px]" : "size-[50px]"} />
+            ),
+          )}
         </div>
         <h2
           id="practice-result-title"
@@ -82,10 +110,31 @@ export function PracticeResult({
         >
           {headline(result.stars, course)}
         </h2>
-        <p className="ds-type-footnote text-ds-ink-soft">
-          {nextStarHint(result)}
-          {newBest && " A new best for this room."}
-        </p>
+        {meter ? (
+          <div
+            data-replies-meter={`${meter.given}/${meter.needed}`}
+            className="grid gap-2 rounded-[18px] border-2 border-ds-line bg-ds-action-tint px-3.5 py-3 text-left"
+          >
+            <p className="ds-type-footnote font-bold text-ds-ink">{nextStarHint(result)}</p>
+            <div
+              role="img"
+              aria-label={`${meter.given} of ${meter.needed} replies`}
+              className="flex gap-1.5"
+            >
+              {Array.from({ length: meter.needed }, (_, k) => (
+                <i
+                  key={k}
+                  className={`h-2 flex-1 rounded-[5px] ${k < meter.given ? "bg-ds-action" : "bg-ds-sunk shadow-[inset_0_0_0_1.5px_var(--c-line)]"}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="ds-type-footnote text-ds-ink-soft">
+            {nextStarHint(result)}
+            {newBest && " A new best for this room."}
+          </p>
+        )}
         <dl className="grid grid-cols-3 gap-1.5">
           {(
             [
@@ -117,16 +166,22 @@ export function PracticeResult({
             </p>
           </div>
         )}
-        <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
-          <button type="button" onClick={onRetry} className={edgeButtonClass("secondary")}>
-            {result.stars === MAX_STARS
-              ? "Play again"
-              : result.stars === 0
-                ? "Try again"
-                : `Try for ${result.stars + 1}`}
-          </button>
-          <button type="button" onClick={next.onClick} className={edgeButtonClass("primary")}>
-            {next.label}
+        <div className={`mt-auto grid gap-2 pt-2 ${buttons.retry ? "grid-cols-2" : "grid-cols-1"}`}>
+          {buttons.retry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className={edgeButtonClass(buttons.retry.tone === "gold" ? "primary" : "secondary")}
+            >
+              {buttons.retry.label}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onForward}
+            className={edgeButtonClass(buttons.forward.tone === "gold" ? "primary" : "secondary")}
+          >
+            {buttons.forward.label}
           </button>
         </div>
       </div>

@@ -611,8 +611,9 @@ function ConverseChatPage({
           room={roomUrl(scenario.id)}
           seconds={result.seconds}
           slip={firstSlip(messages)}
+          campaign={null}
           onRetry={onRetry}
-          next={{ label: "Done", onClick: () => void navigate({ to: "/converse" }) }}
+          onForward={() => void navigate({ to: "/converse" })}
         />
       </LessonFrame>
     );

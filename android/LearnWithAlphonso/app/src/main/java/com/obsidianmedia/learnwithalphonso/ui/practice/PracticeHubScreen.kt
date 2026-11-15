@@ -1,9 +1,22 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -240,22 +253,104 @@ internal fun PracticeHubContent(
         }
     }
 }
+/**
+ * The chat-mode reply bar (Round 13, mock 2b): one docked glass row with a pill field ("Your reply", multiline up to 4 lines) and a
+ * round gold send button (arrow up). Send is dimmed and inert while the field is empty or a reply is pending
+ * ([PracticeHub.canSendReply]); the focused field takes the choice border. Chat mode is typed only, so there is no mic.
+ */
 @Composable internal fun PracticeTextComposer(vm: BaseConversationViewModel) {
     var input by remember { mutableStateOf("") }
     val state by vm.state.collectAsState()
-    Column(verticalArrangement = Arrangement.spacedBy(Space.s2)) {
-        DsField(input, { input = it }, placeholder = "Your reply", label = "Your reply", maxLines = 4)
-        HubButton("Send") { if (input.isNotBlank() && state.phase == ConversationPhase.IDLE) { vm.sendText(input); input = "" } }
+    val canSend = PracticeHub.canSendReply(input, pending = state.phase != ConversationPhase.IDLE)
+    PracticeReplyBar(input, { input = it }, canSend) { vm.sendText(input); input = "" }
+}
+
+/** The bar itself, stateless: [canSend] is [PracticeHub.canSendReply] of the typed text and the conversation phase. */
+@Composable internal fun PracticeReplyBar(input: String, onInput: (String) -> Unit, canSend: Boolean, onSend: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    var focused by remember { mutableStateOf(false) }
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+    val body = Type.body.toTextStyle()
+    Row(
+        Modifier.fillMaxWidth().background(ds.card.copy(alpha = 0.82f)).padding(horizontal = Space.s4, vertical = Space.s2),
+        verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Space.s2),
+    ) {
+        BasicTextField(
+            value = input, onValueChange = onInput, maxLines = 4, textStyle = body.copy(color = ds.ink), cursorBrush = SolidColor(ds.choice),
+            modifier = Modifier.weight(1f).heightIn(min = Space.minTouch).onFocusChanged { focused = it.isFocused }
+                .clip(shape).background(ds.card).border(2.dp, if (focused) ds.choice else ds.line, shape)
+                .padding(horizontal = Space.s4, vertical = Space.s3)
+                .semantics { contentDescription = if (input.isEmpty()) "Your reply" else "Your reply, $input" },
+            decorationBox = { inner ->
+                Box(contentAlignment = Alignment.CenterStart) {
+                    if (input.isEmpty()) Text("Your reply", style = body, color = ds.inkFaint)
+                    inner()
+                }
+            },
+        )
+        Box(
+            Modifier.size(Space.minTouch).alpha(if (canSend) 1f else 0.4f).clip(CircleShape)
+                .background(Brush.verticalGradient(listOf(ds.actionHi, ds.action)))
+                .clickable(enabled = canSend, role = androidx.compose.ui.semantics.Role.Button, onClickLabel = "Send", onClick = onSend)
+                .semantics { contentDescription = "Send" },
+            contentAlignment = Alignment.Center,
+        ) { Icon(Icons.Filled.ArrowUpward, null, tint = ds.onAction) }
     }
 }
-@Composable internal fun PracticeResultScreen(result: PracticeResult, room: String, course: String, seconds: Int, slip: Pair<String, String>?, retry: () -> Unit, nextLabel: String, done: () -> Unit) {
+
+/** A star still to earn on a call that earned none: a dashed gold outline, not a dead grey one. */
+@Composable private fun EmptyStarOutline(size: androidx.compose.ui.unit.Dp) {
+    val edge = LocalAlphonsoTokens.current.actionEdge
+    Canvas(Modifier.size(size)) {
+        val s = this.size.minDimension / 24f
+        val points = listOf(12f to 2.8f, 14.8f to 8.7f, 21.2f to 9.6f, 16.5f to 14.1f, 17.7f to 20.5f, 12f to 17.4f, 6.3f to 20.5f, 7.5f to 14.1f, 2.8f to 9.6f, 9.2f to 8.7f)
+        val path = Path().apply {
+            points.forEachIndexed { i, (x, y) -> if (i == 0) moveTo(x * s, y * s) else lineTo(x * s, y * s) }
+            close()
+        }
+        val dash = 2.6f * s
+        drawPath(path, edge.copy(alpha = 0.75f), alpha = 1f, style = Stroke(width = 1.4f * s, join = androidx.compose.ui.graphics.StrokeJoin.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash, dash))))
+    }
+}
+
+/** The 0-star hint card: the hint in a gold-tint card with a meter of replies given of replies needed. */
+@Composable private fun ZeroStarHint(result: PracticeResult) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+    Column(Modifier.fillMaxWidth().clip(shape).background(ds.actionTint).border(2.dp, ds.line, shape).padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
+        Text(result.hint, style = Type.footnote.toTextStyle(), color = ds.ink, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+        result.repliesMeter?.let { meter ->
+            Row(Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = "${meter.given} of ${meter.needed} replies" }, horizontalArrangement = Arrangement.spacedBy(Space.s1 + Space.s1 / 2)) {
+                repeat(meter.needed) { i ->
+                    val seg = RoundedCornerShape(AlphonsoTokens.Radius.pill)
+                    Box(Modifier.weight(1f).height(Space.s2).clip(seg).background(if (i < meter.given) ds.action else ds.sunk).then(if (i < meter.given) Modifier else Modifier.border(1.5.dp, ds.line, seg)))
+                }
+            }
+        }
+    }
+}
+
+/**
+ * The result screen (Practice hub v3 plus the 0-star refinement). [context] picks the buttons ([PracticeResultButtons]);
+ * [forward] is the right-hand button: Next scene, Finish campaign or Done.
+ */
+@Composable internal fun PracticeResultScreen(result: PracticeResult, room: String, course: String, seconds: Int, slip: Pair<String, String>?, context: PracticeResultContext, retry: () -> Unit, forward: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     val largeText = androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.3f
-    LazyColumn(Modifier.testTag("practice-result").fillMaxSize().background(ds.surface), contentPadding = PaddingValues(Space.gutter), verticalArrangement = Arrangement.spacedBy(Space.s4)) {
-        item { LessonRoom(room, if (result.stars >= 2) LessonExpression.HAPPY else LessonExpression.NEUTRAL, Space.s12 * 5, Space.s12 * 4) }
-        item { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { PracticeStars(result.displayedStars, prominent = true) } }
+    val buttons = result.buttons(context)
+    LazyColumn(Modifier.testTag("practice-result").fillMaxSize().background(ds.surface), contentPadding = PaddingValues(Space.gutter), verticalArrangement = Arrangement.spacedBy(Space.s3)) {
+        item { LessonRoom(room, if (result.stars >= 2) LessonExpression.HAPPY else LessonExpression.NEUTRAL, Space.s12 * 6, Space.s12 * 5) }
+        item {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                if (result.displayedStars == 0) Row(Modifier.clearAndSetSemantics { contentDescription = PracticeHub.starLabel(0) }, horizontalArrangement = Arrangement.spacedBy(Space.s1)) { repeat(3) { EmptyStarOutline(Space.s12) } }
+                else PracticeStars(result.displayedStars, prominent = true)
+            }
+        }
         item { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { HubHeading(result.headline(course)) } }
-        item { Text(result.hint + if (result.bestBefore > 0 && result.bestAfter > result.bestBefore) " A new best for this room." else "", style = Type.footnote.toTextStyle(), color = ds.inkSoft, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+        item {
+            if (result.displayedStars == 0) ZeroStarHint(result)
+            else Text(result.hint + if (result.bestBefore > 0 && result.bestAfter > result.bestBefore) " A new best for this room." else "", style = Type.footnote.toTextStyle(), color = ds.inkSoft, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        }
         item {
             val stats = listOf("${result.rightReplies}/${result.replies}" to "replies right", CallClock.format(seconds) to "on the call", "${result.replies - result.shortReplies}/${result.replies}" to "full sentences")
             if (largeText) Column(verticalArrangement = Arrangement.spacedBy(Space.s2)) {
@@ -266,17 +361,22 @@ internal fun PracticeHubContent(
         }
         val shownSlip = result.slipToShow(slip)
         if (shownSlip != null) item {
-            Column(Modifier.fillMaxWidth().background(ds.card).padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
+            val slipShape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+            Column(Modifier.fillMaxWidth().clip(slipShape).background(ds.card).border(2.dp, ds.line, slipShape).padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
                 Text("Your slip", style = Type.caption.toTextStyle(), color = ds.inkSoft)
                 Text(shownSlip.first, textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough, style = Type.footnote.toTextStyle(), color = ds.wrongInk)
                 Text("Alphonso: ${shownSlip.second}", style = Type.footnote.toTextStyle(), color = ds.rightInk)
             }
         }
         item {
-            if (largeText) Column(verticalArrangement = Arrangement.spacedBy(Space.s2)) { HubSecondaryButton(result.retryLabel, retry); HubButton(nextLabel, done) }
-            else Row(horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
-                Box(Modifier.weight(1f)) { HubSecondaryButton(result.retryLabel, retry) }
-                Box(Modifier.weight(1f)) { HubButton(nextLabel, done) }
+            val retryButton = buttons.retry
+            val face: @Composable (PracticeResultButton, () -> Unit) -> Unit = { b, click -> if (b.gold) HubButton(b.label, click) else HubSecondaryButton(b.label, click) }
+            if (largeText || retryButton == null) Column(verticalArrangement = Arrangement.spacedBy(Space.s2)) {
+                if (retryButton != null) face(retryButton, retry)
+                face(buttons.forward, forward)
+            } else Row(horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
+                Box(Modifier.weight(1f)) { face(retryButton, retry) }
+                Box(Modifier.weight(1f)) { face(buttons.forward, forward) }
             }
         }
     }
@@ -292,7 +392,8 @@ internal fun PracticeHubContent(
 
 @Composable private fun ResultStat(value: String, label: String) {
     val ds = LocalAlphonsoTokens.current
-    Column(Modifier.fillMaxWidth().background(ds.card, RoundedCornerShape(AlphonsoTokens.Radius.control)).padding(Space.s2), horizontalAlignment = Alignment.CenterHorizontally) {
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+    Column(Modifier.fillMaxWidth().clip(shape).background(ds.card).border(2.dp, ds.line, shape).padding(Space.s2), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(value, style = Type.numeral.toTextStyle(), color = ds.ink)
         Text(label, style = Type.caption.toTextStyle(), color = ds.inkSoft)
     }

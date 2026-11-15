@@ -82,5 +82,41 @@ final class PracticeHubTests: XCTestCase {
         let slipped = try JSONDecoder().decode(PracticeResult.self, from: Data(Self.resultJSON.replacingOccurrences(of: "\"rightReplies\":5", with: "\"rightReplies\":4").utf8))
         XCTAssertNotNil(slipped.slipToShow((said: "a", reply: "b")))
     }
+    private func buttons(_ stars: Int, _ context: PracticeResultContext) -> [String] {
+        let b = PracticeResultButtons.make(stars: stars, context: context)
+        return [b.retry.map { "\($0.label):\($0.gold ? "gold" : "quiet")" } ?? "-", "\(b.forward.label):\(b.forward.gold ? "gold" : "quiet")"]
+    }
+    func testResultButtonsForAScenarioTalk() {
+        XCTAssertEqual(buttons(0, .scenario), ["Try again:gold", "Done:quiet"])
+        XCTAssertEqual(buttons(1, .scenario), ["Try for 2:quiet", "Done:gold"])
+        XCTAssertEqual(buttons(2, .scenario), ["Try for 3:quiet", "Done:gold"])
+        XCTAssertEqual(buttons(3, .scenario), ["Play again:quiet", "Done:gold"])
+    }
+    func testResultButtonsForACampaignScene() {
+        XCTAssertEqual(buttons(0, .campaignScene(isLast: false)), ["Try again:gold", "Done:quiet"])
+        XCTAssertEqual(buttons(0, .campaignScene(isLast: true)), ["Try again:gold", "Done:quiet"])
+        XCTAssertEqual(buttons(1, .campaignScene(isLast: false)), ["Try for 2:quiet", "Next scene:gold"])
+        XCTAssertEqual(buttons(2, .campaignScene(isLast: false)), ["Try for 3:quiet", "Next scene:gold"])
+        XCTAssertEqual(buttons(3, .campaignScene(isLast: false)), ["-", "Next scene:gold"])
+        XCTAssertEqual(buttons(2, .campaignScene(isLast: true)), ["Try for 3:quiet", "Finish campaign:gold"])
+        XCTAssertEqual(buttons(3, .campaignScene(isLast: true)), ["-", "Finish campaign:gold"])
+        XCTAssertEqual(PracticeResultButtons.make(stars: 1, context: .campaignScene(isLast: true)).forward.kind, .finish)
+        XCTAssertEqual(PracticeResultButtons.make(stars: 1, context: .campaignScene(isLast: false)).forward.kind, .next)
+    }
+    func testRepliesMeterIsGivenOfNeededAndNeverPastTheFinishLine() throws {
+        func result(replies: Int, needed: Int) throws -> PracticeResult {
+            try JSONDecoder().decode(PracticeResult.self, from: Data("{\"kind\":\"scenario\",\"itemKey\":\"coffee\",\"stars\":0,\"bestBefore\":0,\"bestAfter\":0,\"replies\":\(replies),\"rightReplies\":0,\"shortReplies\":0,\"englishReplies\":0,\"finishMinReplies\":\(needed)}".utf8))
+        }
+        XCTAssertEqual(try result(replies: 1, needed: 3).repliesMeter, PracticeRepliesMeter(given: 1, needed: 3))
+        XCTAssertEqual(try result(replies: 9, needed: 4).repliesMeter, PracticeRepliesMeter(given: 4, needed: 4))
+        XCTAssertNil(try result(replies: 2, needed: 0).repliesMeter)
+    }
+    func testTheReplyBarSendsOnlyWithTextAndNoPendingReply() {
+        XCTAssertFalse(PracticeHub.canSendReply("", pending: false))
+        XCTAssertFalse(PracticeHub.canSendReply("  \n ", pending: false))
+        XCTAssertFalse(PracticeHub.canSendReply("Hello", pending: true))
+        XCTAssertTrue(PracticeHub.canSendReply("Hello", pending: false))
+        XCTAssertTrue(PracticeHub.canSendReply("  Hello  ", pending: false))
+    }
     static let resultJSON = "{\"kind\":\"scenario\",\"itemKey\":\"coffee\",\"stars\":1,\"bestBefore\":3,\"bestAfter\":3,\"replies\":5,\"rightReplies\":5,\"shortReplies\":0,\"englishReplies\":0,\"finishMinReplies\":3}"
 }

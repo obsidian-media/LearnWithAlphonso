@@ -107,11 +107,15 @@ describe("campaign conversations", () => {
     expect(classic).toContain('Button("Restart scene"');
     expect(classic).not.toContain("PracticeCallView");
   });
-  it("keeps Continue, Restart scene and the transcript reachable in the call", () => {
+  it("keeps ending the scene, Restart scene and the transcript reachable in the call; Next scene is on the result", () => {
     const call = campaign.slice(campaign.indexOf("private var callScreen"));
-    expect(call).toContain("continueToNextScene()");
+    expect(call).toContain("onEnd: { Task { await finishCall() } }");
     expect(call).toContain('Button("Restart scene")');
     expect(call).toContain("transcript");
+    // The scene moves on from the result screen's forward button (see practice-result-guards.test.ts).
+    expect(campaign).toMatch(
+      /forward: \{ if result\.stars >= 1 \{ self\.result = nil; continueToNextScene\(\)/,
+    );
   });
   it("sends the reply's verdict to the avatar", () => {
     expect(campaign).toContain("client.chatReply(");

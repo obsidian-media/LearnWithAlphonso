@@ -56,8 +56,8 @@ struct ConversationSessionView: View {
     var body: some View {
         Group {
             if let result {
-                PracticeResultView(result: result, room: scenario.id, course: course.wireCode, seconds: elapsed, slip: slip,
-                    retry: { self.result = nil; startNewConversation() }, nextLabel: "Done", done: { dismiss() })
+                PracticeResultView(result: result, room: scenario.id, course: course.wireCode, seconds: elapsed, slip: slip, context: .scenario,
+                    retry: { self.result = nil; startNewConversation() }, forward: { dismiss() })
             } else if !chatMode { callScreen } else { classicScreen }
         }
         // Alphonso says the scene's opening line out loud (build 59 only showed it). Inside the AI gate, so nothing is
@@ -391,16 +391,13 @@ struct ConversationSessionView: View {
         } catch { voice.fail(generation, TutorError.from(error)); notice = TutorError.from(error).userMessage() }
     }
     private var typedControls: some View {
-        VStack(spacing: AlphonsoDS.Space.s2) {
-            TextField("Your reply", text: $input, axis: .vertical).dsField()
-            PracticeButton("Send") {
-                let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !text.isEmpty, pendingTurns == 0, !ending else { return }
-                input = ""
-                pendingTurns += 1
-                Task { await sendReply(text, generation: 0); pendingTurns -= 1 }
-            }.disabled(pendingTurns > 0 || ending)
-        }.padding(AlphonsoDS.Space.gutter)
+        PracticeReplyBar(text: $input, pending: pendingTurns > 0 || ending) {
+            let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty, pendingTurns == 0, !ending else { return }
+            input = ""
+            pendingTurns += 1
+            Task { await sendReply(text, generation: 0); pendingTurns -= 1 }
+        }
     }
     private func resetCall() {
         callId = UUID().uuidString; startedAt = Date(); slip = nil; ending = false

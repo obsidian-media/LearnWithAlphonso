@@ -18,8 +18,7 @@ struct CampaignSessionView: View {
     @State private var input = ""
     @State private var elapsed = 0
     @State private var initialized = false
-    @State private var advancing = false
-    /// The learner had hands-free on when they moved to the next scene of this run: it is re-armed for that scene's call.
+    /// The learner had hands-free on when they ended a scene of this run: "Next scene" re-arms it for that scene's call.
     /// Per run (this view): a new campaign or scenario starts with it off, and a finished campaign clears it.
     @State private var rearmHandsFree = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -41,12 +40,6 @@ struct CampaignSessionView: View {
     private var sceneIndex: Int { conversation.sceneIndex }
     private var scene: CampaignScene { campaign.scenes[sceneIndex] }
     private var isLastScene: Bool { sceneIndex == campaign.scenes.count - 1 }
-    private var userTurnsInScene: Int {
-        guard conversation.sceneAnchor < turns.count else { return 0 }
-        return turns[conversation.sceneAnchor...].filter { $0.role == "user" }.count
-    }
-    private var canContinue: Bool { userTurnsInScene >= scene.minTurns }
-
     /// Full campaign transcript plus the current scene's persona, composed
     /// exactly as the /api/chat whitelist expects (premise + "\n\n" + scene).
     private func systemPrompt(for scene: CampaignScene) -> String {
@@ -57,7 +50,10 @@ struct CampaignSessionView: View {
         Group {
             if let result {
                 PracticeResultView(result: result, room: PracticeHub.room(campaignID: campaign.id, sceneID: scene.id), course: course.wireCode, seconds: elapsed, slip: slip,
-                    retry: { self.result = nil; restartScene() }, nextLabel: isLastScene || (result.stars == 0 && !advancing) ? "Done" : "Continue", done: { if isLastScene || (result.stars == 0 && !advancing) { dismiss() } else { self.result = nil; continueToNextScene() } })
+                    context: .campaignScene(isLast: isLastScene),
+                    retry: { self.result = nil; restartScene() },
+                    // Next scene (Finish campaign on the last one) needs a star: a scene with none shows Done, which leaves (#511).
+                    forward: { if result.stars >= 1 { self.result = nil; continueToNextScene() } else { dismiss() } })
             } else if !chatMode { callScreen } else { classicScreen }
         }
         // Alphonso says the scene's opening line out loud (build 59 only showed it). Inside the AI gate, so nothing is
@@ -92,7 +88,7 @@ struct CampaignSessionView: View {
         }
     }
 
-    /// The transcript with the scene's Continue button or completion card at its end.
+    /// The transcript, with the completion card at its end.
     private var transcript: some View {
         VStack(spacing: CGFloat.zero) {
             if !conversation.finished {
@@ -107,9 +103,6 @@ struct CampaignSessionView: View {
                     LazyVStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
                         ForEach(Array(turns.enumerated()), id: \.offset) { index, turn in
                             bubble(for: turn, index: index).id(index)
-                        }
-                        if canContinue && !conversation.finished {
-                            continueButton
                         }
                         if conversation.finished {
                             completionCard
@@ -174,8 +167,8 @@ struct CampaignSessionView: View {
         }
     }
 
-    /// The setting on (the default): the full-screen call, in the default study room. Continue sits on the call;
-    /// the transcript, its hint and "Restart scene" are in the sheet.
+    /// The setting on (the default): the full-screen call, in the default study room. The red button ends the scene
+    /// and opens its result (Next scene is there); the transcript, its hint and "Restart scene" are in the sheet.
     private var callScreen: some View {
         PracticeCallView(
             title: conversation.finished
@@ -224,31 +217,7 @@ struct CampaignSessionView: View {
                     .padding(.horizontal, AlphonsoDS.Space.s4).padding(.vertical, AlphonsoDS.Space.s2)
                     .background(AlphonsoDS.current.hero, in: Capsule()))
         }
-        if canContinue {
-            return AnyView(
-                Button {
-                    Task { await finishCall(advance: true) }
-                } label: {
-                    Text(isLastScene ? "Finish campaign" : "Continue: \(campaign.scenes[sceneIndex + 1].title) \u{2192}")
-                        .dsText(.footnote)
-                        .foregroundStyle(AlphonsoDS.current.ink)
-                        .padding(.horizontal, AlphonsoDS.Space.s5).padding(.vertical, AlphonsoDS.Space.s2)
-                        .background(AlphonsoDS.current.card, in: Capsule())
-                }
-                .disabled(ending || pendingTurns > 0 || voice.isBusy))
-        }
         return nil
-    }
-
-    private var continueButton: some View {
-        Button {
-            Task { await finishCall(advance: true) }
-        } label: {
-            Text(isLastScene ? "Finish campaign" : "Continue: \(campaign.scenes[sceneIndex + 1].title) →")
-        }
-        .buttonStyle(.alphonsoPrimary)
-        .disabled(ending || pendingTurns > 0 || voice.isBusy)
-        .padding(.top, AlphonsoDS.Space.s1)
     }
 
     private var completionCard: some View {
@@ -449,32 +418,28 @@ struct CampaignSessionView: View {
         } catch { voice.fail(generation, TutorError.from(error)); notice = TutorError.from(error).userMessage() }
     }
     private var typedControls: some View {
-        VStack(spacing: AlphonsoDS.Space.s2) {
-            TextField("Your reply", text: $input, axis: .vertical).dsText(.body).textFieldStyle(.roundedBorder)
-            PracticeButton("Send") {
-                let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !text.isEmpty, pendingTurns == 0, !ending else { return }
-                input = ""
-                pendingTurns += 1
-                Task { await sendReply(text, generation: 0); pendingTurns -= 1 }
-            }.disabled(pendingTurns > 0 || ending)
-        }.padding(AlphonsoDS.Space.gutter)
+        PracticeReplyBar(text: $input, pending: pendingTurns > 0 || ending) {
+            let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty, pendingTurns == 0, !ending else { return }
+            input = ""
+            pendingTurns += 1
+            Task { await sendReply(text, generation: 0); pendingTurns -= 1 }
+        }
     }
     private func resetCall() {
         callId = UUID().uuidString; startedAt = Date(); slip = nil; ending = false
         voice.appeared()
     }
-    private func finishCall(advance: Bool = false) async {
+    private func finishCall() async {
         guard !ending else { return }
-        advancing = advance
         ending = true
-        // Moving to the next scene keeps the learner's choice; ending the call does not.
-        rearmHandsFree = advance && voice.isHandsFreeOn
+        // Remember that hands-free was on, before disappeared() turns it off: "Next scene" on the result re-arms it.
+        rearmHandsFree = voice.isHandsFreeOn
         voice.disappeared()
         while pendingTurns > 0 { try? await Task.sleep(for: .milliseconds(50)) }
         elapsed = Int(Date().timeIntervalSince(startedAt))
         do { result = try await practiceClient(session).finishPractice(callId: callId) }
-        catch { if advance { ending = false; continueToNextScene() } else { dismiss() } }
+        catch { dismiss() }
     }
 
 }

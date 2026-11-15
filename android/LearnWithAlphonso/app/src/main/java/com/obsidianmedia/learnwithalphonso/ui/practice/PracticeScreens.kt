@@ -55,6 +55,7 @@ import com.obsidianmedia.learnwithalphonso.ui.explain.ExplainInMyLanguage
 import com.obsidianmedia.learnwithalphonso.audio.HoldToTalkButton
 import com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReporting
+import com.obsidianmedia.learnwithalphonso.core.logic.PracticeResultContext
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReport
@@ -176,7 +177,7 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     val endCall: () -> Unit = { scope.launch { if (vm.finishPractice() == null) onBack() } }
     androidx.activity.compose.BackHandler(enabled = result == null, onBack = endCall)
     result?.let { r ->
-        PracticeResultScreen(r, scenario.id, course.code, vm.elapsedSeconds, vm.slip, retry = { vm.retryScenario(speak = false) }, nextLabel = "Done", done = onBack)
+        PracticeResultScreen(r, scenario.id, course.code, vm.elapsedSeconds, vm.slip, context = PracticeResultContext.Scenario, retry = { vm.retryScenario(speak = false) }, forward = onBack)
         return
     }
     val palette = LocalAlphonsoTokens.current
@@ -217,17 +218,22 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     vm.chatMode = chatMode
     val scope = rememberCoroutineScope()
     val result by vm.result.collectAsState()
-    var advancing by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    val endCall: () -> Unit = { advancing = false; scope.launch { if (vm.finishPractice() == null) onBack() } }
-    val advanceCall: () -> Unit = { advancing = true; scope.launch { if (vm.finishPractice() == null) { vm.resetPractice(); vm.continueToNextScene() } } }
+    // Ending the scene scores it and opens its result; the result's Next scene (Finish campaign on the last scene) moves on.
+    // Without a scored result (offline, or no judged reply) there is nothing to show and no star to earn: the learner leaves.
+    val endCall: () -> Unit = { scope.launch { if (vm.finishPractice() == null) onBack() } }
     androidx.activity.compose.BackHandler(enabled = result == null, onBack = endCall)
     result?.let { r ->
-        PracticeResultScreen(r, com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.room(campaign.id, vm.scene.id), course.code, vm.elapsedSeconds, vm.slip, retry = { vm.restartScene(speak = false) }, nextLabel = if (vm.isLastScene || (r.stars == 0 && !advancing)) "Done" else "Continue", done = { if (vm.isLastScene || (r.stars == 0 && !advancing)) onBack() else vm.continueToNextScene(speak = false) })
+        PracticeResultScreen(
+            r, com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.room(campaign.id, vm.scene.id), course.code, vm.elapsedSeconds, vm.slip,
+            context = PracticeResultContext.CampaignScene(isLast = vm.isLastScene),
+            retry = { vm.restartScene(speak = false) },
+            // Next scene needs a star: a scene with none shows Done, which leaves (a talk counts done from one star, #511).
+            forward = { if (r.stars >= 1) vm.continueToNextScene(speak = false) else onBack() },
+        )
         return
     }
     val palette = LocalAlphonsoTokens.current
     val progress by vm.campaignState.collectAsState()
-    val state by vm.state.collectAsState()
     val context = LocalContext.current
     // "Show Alphonso while practicing" (Settings, on by default): a full-screen call in the default study room.
     val showCall = !chatMode
@@ -235,14 +241,11 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
         AiReplyReports.campaign(message, course.code, campaign.id, sceneIndex, reason)
     }
     val sceneFooter: @Composable () -> Unit = {
-        val canContinue = state.turns.drop(progress.sceneAnchor).count { it.role == "user" } >= vm.scene.minTurns
         if (progress.finished) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                 AlphonsoMascotBanner("Nice work. Campaign complete!")
                 Text("You made it through all ${campaign.scenes.size} scenes of ${campaign.title}.", style = AlphonsoTokens.Type.footnote.toTextStyle(), color = palette.inkSoft, textAlign = TextAlign.Center)
             }
-        } else if (canContinue) {
-            AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = advanceCall)
         }
     }
     AiConsentGate(container, onDecline = onBack) {
@@ -258,11 +261,8 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
                 reducedMotion = systemMotionReduced(context), onEnd = endCall,
                 statusHost = { AiReportStatusHost(reporting.sender) },
                 extra = {
-                    val canContinue = state.turns.drop(progress.sceneAnchor).count { it.role == "user" } >= vm.scene.minTurns
                     if (progress.finished) {
                         Text("Nice work, campaign complete!", color = LocalAlphonsoTokens.current.onHero, fontWeight = FontWeight.Bold, modifier = Modifier.clip(RoundedCornerShape(AlphonsoTokens.Radius.pill)).background(LocalAlphonsoTokens.current.hero).padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s2))
-                    } else if (canContinue) {
-                        AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = advanceCall)
                     }
                 },
                 transcript = {
@@ -282,14 +282,11 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
                 if (!progress.finished) Box(Modifier.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1), contentAlignment = Alignment.Center) { DsPill("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", DsPillTone.INFO) }
             },
             footer = {
-                val canContinue = state.turns.drop(progress.sceneAnchor).count { it.role == "user" } >= vm.scene.minTurns
                 if (progress.finished) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                         AlphonsoMascotBanner("Nice work. Campaign complete!")
                         Text("You made it through all ${campaign.scenes.size} scenes of ${campaign.title}.", style = AlphonsoTokens.Type.footnote.toTextStyle(), color = palette.inkSoft, textAlign = TextAlign.Center)
                     }
-                } else if (canContinue) {
-                    AlphonsoPrimaryButton(if (vm.isLastScene) "Finish campaign" else "Continue: ${campaign.scenes[progress.sceneIndex + 1].title} →", onClick = advanceCall)
                 }
             },
             actions = { if (!progress.finished) DsGlassChip("Restart scene") { vm.restartScene() } },

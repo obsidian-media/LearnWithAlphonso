@@ -151,15 +151,16 @@ describe("campaign conversations", () => {
     // ...and the classic screen is still there for the setting off.
     expect(campaign).toContain("ConversationBody(");
   });
-  it("keeps Continue, Restart scene and the transcript reachable in the call", () => {
+  it("keeps ending the scene, Restart scene and the transcript reachable in the call; Next scene is on the result", () => {
     const call = campaign.slice(
       campaign.indexOf("PracticeCallScreen("),
       campaign.indexOf("ConversationBody("),
     );
-    expect(campaign).toContain("vm.continueToNextScene()");
-    expect(call).toContain("advanceCall");
+    expect(call).toContain("onEnd = endCall");
     expect(call).toContain("vm.restartScene()");
     expect(call).toContain("TranscriptList(");
+    // The scene moves on from the result screen's forward button (see practice-result-guards.test.ts).
+    expect(campaign).toContain("if (r.stars >= 1) vm.continueToNextScene(speak = false)");
   });
 });
 

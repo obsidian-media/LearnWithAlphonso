@@ -42,6 +42,14 @@ public struct PracticeResult: Codable, Sendable, Equatable {
     /// The slip block only shows when the server counted a wrong reply; a clean call has none.
     public func slipToShow<T>(_ slip: T?) -> T? { rightReplies < replies ? slip : nil }
     public var retryLabel: String { stars == 3 ? "Play again" : stars == 0 ? "Try again" : "Try for \(stars + 1)" }
+    /// Which buttons the result screen shows (the Practice hub v3 result screen plus the 0-star refinement); see `PracticeResultButtons`.
+    public func buttons(for context: PracticeResultContext) -> PracticeResultButtons {
+        PracticeResultButtons.make(stars: stars, context: context)
+    }
+    /// The 0-star hint card's meter: replies given of replies needed to finish. Nil without a finish count.
+    public var repliesMeter: PracticeRepliesMeter? {
+        finishMinReplies > 0 ? PracticeRepliesMeter(given: max(0, min(replies, finishMinReplies)), needed: finishMinReplies) : nil
+    }
     public func headline(course: String) -> String {
         let praise = ["en": "Well done.", "fr": "Très bien.", "es": "Muy bien."][course] ?? "Well done."
         if stars == 0 { return "No stars this time" }
@@ -60,6 +68,45 @@ public struct PracticeResult: Codable, Sendable, Equatable {
         let what = reasons.count > 1 ? reasons.dropLast().joined(separator: ", ") + " and " + reasons.last! : reasons.first ?? "A slip"
         let subject = what.prefix(1).uppercased() + what.dropFirst()
         return subject + " kept you from three. Fix " + (wrong + shortReplies + englishReplies == 1 ? "it" : "them") + " and try again."
+    }
+}
+/// Replies given of replies needed, drawn as segments.
+public struct PracticeRepliesMeter: Equatable, Sendable {
+    public let given: Int
+    public let needed: Int
+}
+/// A talk is either a scenario or one scene of a campaign (and a scene may be the campaign's last).
+public enum PracticeResultContext: Equatable, Sendable {
+    case scenario
+    case campaignScene(isLast: Bool)
+}
+public struct PracticeResultButton: Equatable, Sendable {
+    public enum Kind: Equatable, Sendable { case retry, next, finish, done }
+    public let kind: Kind
+    public let label: String
+    /// Gold (the primary button) or quiet (the secondary one).
+    public let gold: Bool
+}
+/// The buttons on the Practice result screen, one pure table so the three platforms stay the same.
+/// - `retry` sits on the left, `forward` on the right.
+/// - No stars: "Try again" is gold and "Done" quiet (retrying is the point).
+/// - A campaign scene with at least one star moves on with a gold "Next scene" ("Finish campaign" on the last
+///   scene). With no star it never moves on (a talk counts done only from one star up, #511).
+/// - Three stars on a campaign scene: nothing to try for, so only the gold forward button.
+/// - A scenario talk keeps its own buttons: retry (Try for N, or Play again) and a gold Done.
+public struct PracticeResultButtons: Equatable, Sendable {
+    public let retry: PracticeResultButton?
+    public let forward: PracticeResultButton
+    public static func make(stars: Int, context: PracticeResultContext) -> PracticeResultButtons {
+        let empty = stars == 0
+        let label = stars >= 3 ? "Play again" : empty ? "Try again" : "Try for \(stars + 1)"
+        let retry = PracticeResultButton(kind: .retry, label: label, gold: empty)
+        let done = PracticeResultButton(kind: .done, label: "Done", gold: !empty)
+        guard case let .campaignScene(isLast) = context, !empty else { return PracticeResultButtons(retry: retry, forward: done) }
+        let forward = isLast
+            ? PracticeResultButton(kind: .finish, label: "Finish campaign", gold: true)
+            : PracticeResultButton(kind: .next, label: "Next scene", gold: true)
+        return PracticeResultButtons(retry: stars >= 3 ? nil : retry, forward: forward)
     }
 }
 public struct PracticePick: Equatable, Sendable {
@@ -86,6 +133,11 @@ public enum PracticeHub {
         rows.last(where: { $0.kind == kind && $0.itemKey == key })?.bestStars ?? 0
     }
     public static func starLabel(_ n: Int) -> String { "\(n) of 3 stars" }
+    /// Whether the chat-mode reply bar can send: something typed (not only spaces) and no reply still pending. The bar's
+    /// send button is dimmed and inert when this is false.
+    public static func canSendReply(_ text: String, pending: Bool) -> Bool {
+        !pending && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
     public static func level(_ cefr: String?) -> String {
         let c = (cefr ?? "A1").uppercased()
         return c.hasPrefix("A") ? "Beginner" : c.hasPrefix("B") ? "Intermediate" : "Advanced"

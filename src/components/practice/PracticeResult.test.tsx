@@ -62,8 +62,9 @@ describe("the result screen", () => {
         room="/avatar/scenes/coffee.webp"
         seconds={232}
         slip={null}
+        campaign={null}
         onRetry={vi.fn()}
-        next={{ label: "Done", onClick: vi.fn() }}
+        onForward={vi.fn()}
       />,
     );
     expect(screen.getByRole("img", { name: "1 of 3 stars" })).toBeInTheDocument();
@@ -71,6 +72,72 @@ describe("the result screen", () => {
     expect(screen.getByText("3:52")).toBeInTheDocument();
     expect(screen.getByText("3/4")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Try for 2" })).toBeInTheDocument();
+  });
+});
+
+describe("the result screen's buttons", () => {
+  const show = (
+    stars: number,
+    campaign: { isLastScene: boolean } | null,
+    over: Partial<Result> = {},
+  ) => {
+    const onRetry = vi.fn();
+    const onForward = vi.fn();
+    render(
+      <PracticeResult
+        result={r({ stars, ...over })}
+        course="en"
+        room="/avatar/scenes/coffee.webp"
+        seconds={40}
+        slip={null}
+        campaign={campaign}
+        onRetry={onRetry}
+        onForward={onForward}
+      />,
+    );
+    return { onRetry, onForward };
+  };
+  const names = () => screen.getAllByRole("button").map((b) => b.textContent);
+
+  it("a campaign scene with two stars: Try for 3 then Next scene, which moves on", async () => {
+    const { onForward, onRetry } = show(2, { isLastScene: false });
+    expect(names()).toEqual(["Try for 3", "Next scene"]);
+    screen.getByRole("button", { name: "Next scene" }).click();
+    screen.getByRole("button", { name: "Try for 3" }).click();
+    expect(onForward).toHaveBeenCalledTimes(1);
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+  it("the last scene's forward button finishes the campaign", () => {
+    show(2, { isLastScene: true });
+    expect(names()).toEqual(["Try for 3", "Finish campaign"]);
+  });
+  it("three stars: no Try for 3 at all, only the forward button", () => {
+    show(3, { isLastScene: false }, { rightReplies: 8 });
+    expect(names()).toEqual(["Next scene"]);
+  });
+  it("no stars in a campaign: no Next scene, Try again is gold and Done is quiet", () => {
+    show(0, { isLastScene: false }, { replies: 1, rightReplies: 1 });
+    expect(names()).toEqual(["Try again", "Done"]);
+    expect(screen.queryByRole("button", { name: "Next scene" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Try again" }).className).toMatch(/c-action-hi/);
+    expect(screen.getByRole("button", { name: "Done" }).className).not.toMatch(/c-action-hi/);
+  });
+  it("a scenario talk keeps Try for N and Done, with Done gold", () => {
+    show(1, null);
+    expect(names()).toEqual(["Try for 2", "Done"]);
+    expect(screen.getByRole("button", { name: "Done" }).className).toMatch(/c-action-hi/);
+  });
+  it("no stars: the hint sits in a card with replies given of replies needed", () => {
+    show(0, null, { replies: 1, rightReplies: 1, finishMinReplies: 3 });
+    expect(screen.getByRole("img", { name: "1 of 3 replies" })).toBeInTheDocument();
+    expect(document.querySelector("[data-replies-meter]")).toHaveAttribute(
+      "data-replies-meter",
+      "1/3",
+    );
+  });
+  it("with stars there is no meter", () => {
+    show(2, null);
+    expect(document.querySelector("[data-replies-meter]")).toBeNull();
   });
 });
 
