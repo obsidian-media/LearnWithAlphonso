@@ -4,7 +4,7 @@ import type { Scope } from "./staff-scopes";
  * The console's navigation. Items whose scope the signed-in person lacks are hidden. That is only courtesy: every
  * server function checks the scope itself (requireStaff), so a hidden link is never the control.
  */
-export type NavItem = { key: string; label: string; to: string; scope: Scope; soon?: string };
+export type NavItem = { key: string; label: string; to: string; scope: Scope; alsoScope?: Scope };
 
 export const NAV_ITEMS: readonly NavItem[] = [
   {
@@ -12,7 +12,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: "Numbers",
     to: "/numbers",
     scope: "numbers.read",
-    soon: "coming in phase 3",
+    alsoScope: "numbers.revenue",
   },
   { key: "users", label: "Users", to: "/users", scope: "users.read" },
   { key: "support", label: "Support", to: "/support", scope: "support.read" },
@@ -23,7 +23,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
 ];
 
 export function navItemsFor(scopes: readonly string[]): NavItem[] {
-  return NAV_ITEMS.filter((item) => scopes.includes(item.scope));
+  return NAV_ITEMS.filter(
+    (item) =>
+      scopes.includes(item.scope) ||
+      (item.alsoScope !== undefined && scopes.includes(item.alsoScope)),
+  );
 }
 
 /** Where the console opens: Users when allowed, otherwise the first thing the person can use. */

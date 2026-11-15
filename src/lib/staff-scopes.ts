@@ -20,6 +20,7 @@ export const SCOPES = [
   "support.reply",
   "support.assign",
   "numbers.read",
+  "numbers.revenue",
   "audit.read",
   "staff.manage",
   "podcasts.manage",
