@@ -191,7 +191,10 @@ class AppContainer(context: Context) {
     private val database = Room.databaseBuilder(app, AlphonsoDatabase::class.java, "alphonso.db")
         .addMigrations(AlphonsoDatabase.MIGRATION_1_2, AlphonsoDatabase.MIGRATION_2_3, AlphonsoDatabase.MIGRATION_3_4)
         .build()
-    val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it) }, inTransaction = { block -> database.withTransaction { block() } }, onCleared = { WidgetPublisher.clear(app) })
+    val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it, themeManager.theme.value.raw) }, inTransaction = { block -> database.withTransaction { block() } }, onCleared = { WidgetPublisher.clear(app) })
+
+    /** The home-screen streak widget draws in the app's theme: a theme change (the first value, at launch, covers a snapshot an older build wrote without one) rewrites its snapshot and redraws it. */
+    private val widgetThemeSync = appScope.launch { themeManager.theme.collect { WidgetPublisher.republishTheme(app, it.raw) } }
 
     /** Completed once the session is restored and the ownerless queue rows are resolved; no sync pass runs before. */
     private val startup = CompletableDeferred<Unit>()

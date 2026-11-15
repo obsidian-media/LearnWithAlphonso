@@ -245,6 +245,8 @@ public final class AlphonsoThemeManager {
         guard id != themeID else { return }
         themeID = id
         UserDefaults.standard.set(id.rawValue, forKey: Self.storageKey)
+        // The home-screen streak widget draws in the app's theme: hand it the new one.
+        WidgetProgressPublisher.themeChanged(to: id.rawValue)
     }
 
     /// The account's value wins when there is one (mirrors `theme.ts`'s `resolveInitialTheme`: account > device >
