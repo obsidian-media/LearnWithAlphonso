@@ -999,11 +999,11 @@ struct QuestionCard: View {
             case .translate(let q):
                 TranslateQuestionCard(
                     question: q, checked: checked, picked: $picked,
-                    verdict: $translationVerdict, course: course, surface: surface, inStage: true)
+                    verdict: $translationVerdict, course: course, surface: surface)
             case .speak(let q):
                 SpeakQuestionCard(
                     question: q, course: course, session: session,
-                    isConnected: isConnected, checked: checked, picked: $picked, inStage: true)
+                    isConnected: isConnected, checked: checked, picked: $picked)
             }
         }
     }

@@ -176,6 +176,17 @@ describe("Team detail page", () => {
     expect(screen.queryByText("You're not on a team yet.")).not.toBeInTheDocument();
   });
 
+  it("Try again after a failed load asks for the team again", async () => {
+    getMyTeam.mockRejectedValueOnce(new Error("boom"));
+    renderPage();
+    await screen.findByText("Couldn't load your team.");
+    expect(getMyTeam).toHaveBeenCalledTimes(1);
+    getMyTeam.mockResolvedValue(null);
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("You're not on a team yet.")).toBeInTheDocument();
+    expect(getMyTeam).toHaveBeenCalledTimes(2);
+  });
+
   it("says why leaving was refused", async () => {
     getMyTeam.mockResolvedValue({
       teamId: "t1",

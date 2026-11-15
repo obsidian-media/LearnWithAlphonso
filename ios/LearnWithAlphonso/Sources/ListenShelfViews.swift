@@ -23,6 +23,7 @@ struct ListenShelfRoot: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var isLoading = true
     @State private var loadFailed = false
+    @Environment(\.alphonsoDS) private var ds
 
     private let courses: [(code: String, label: String)] = [("en", "English"), ("fr", "Français"), ("es", "Español")]
     private var activeCourse: String { course ?? initialCourse }
@@ -38,19 +39,19 @@ struct ListenShelfRoot: View {
         let target = ListenShelf.continueListening(all, progress: progress)
 
         ScrollView {
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.md) {
-                Picker("Course", selection: Binding(get: { activeCourse }, set: { course = $0; level = nil })) {
-                    ForEach(courses, id: \.code) { Text($0.label).tag($0.code) }
-                }
-                .pickerStyle(.segmented)
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
+                DSSegmented(
+                    options: courses.map { DSSegmented<String>.Option(value: $0.code, label: $0.label) },
+                    selection: Binding(get: { activeCourse }, set: { course = $0; level = nil }),
+                    accessibilityLabel: "Course")
 
                 if let chip = ListenShelf.monthChip(seconds: monthSeconds) {
                     Label(chip, systemImage: "timer")
                         .dsText(.footnote)
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                        .padding(.horizontal, AlphonsoSpacing.md)
-                        .frame(minHeight: AlphonsoSpacing.minTouchTarget)
-                        .background(Capsule().fill(AlphonsoColor.surface))
+                        .foregroundStyle(ds.inkSoft)
+                        .padding(.horizontal, AlphonsoDS.Space.s4)
+                        .frame(minHeight: AlphonsoDS.Space.minTouch)
+                        .background(Capsule().fill(ds.card))
                         .accessibilityElement(children: .combine)
                 }
 
@@ -62,51 +63,31 @@ struct ListenShelfRoot: View {
 
                 if !levels.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: AlphonsoSpacing.sm) {
+                        HStack(spacing: AlphonsoDS.Space.s2) {
                             ForEach([nil] + levels.map { Optional($0) }, id: \.self) { chip in
-                                Button { level = chip } label: {
-                                    Text(chip ?? "All")
-                                        .dsText(.footnote)
-                                        .padding(.horizontal, AlphonsoSpacing.md)
-                                        .frame(minHeight: AlphonsoSpacing.minTouchTarget)
-                                        .foregroundStyle(level == chip ? AlphonsoColor.onPrimary : AlphonsoColor.inkSoft)
-                                        .background(Capsule().fill(level == chip ? AlphonsoColor.moss : AlphonsoColor.surface))
-                                }
-                                .accessibilityLabel(chip.map { "Level \($0)" } ?? "All levels")
-                                .accessibilityAddTraits(level == chip ? .isSelected : [])
+                                DSChip(chip ?? "All", selected: level == chip,
+                                       accessibilityText: chip.map { "Level \($0)" } ?? "All levels") { level = chip }
                             }
                         }
                     }
                 }
 
                 if isLoading {
-                    ProgressView("Loading episodes…").tint(AlphonsoColor.moss).frame(maxWidth: .infinity)
+                    ProgressView("Loading episodes…").tint(ds.choice).frame(maxWidth: .infinity)
                 } else if loadFailed {
-                    VStack(spacing: AlphonsoSpacing.sm) {
-                        Text(networkMonitor.isConnected ? "Couldn't load these episodes." : "You're offline.")
-                            .dsText(.body).foregroundStyle(AlphonsoColor.inkSoft)
-                        Button("Try again") { Task { await load() } }.tint(AlphonsoColor.moss)
-                    }
-                    .frame(maxWidth: .infinity)
+                    DSEmptyState(
+                        art: "Alphonso-thinking",
+                        title: networkMonitor.isConnected ? "Couldn't load these episodes." : "You're offline.",
+                        actionTitle: "Try again") { Task { await load() } }
                 } else if shown.isEmpty {
-                    VStack(spacing: AlphonsoSpacing.sm) {
-                        MascotTile(moment: .emptyState, size: 120, tone: .mint).accessibilityHidden(true)
-                        if episodes.isEmpty {
-                            Text(PodcastLibraryCopy.emptyTitle(courseCode: activeCourse)).dsText(.title).foregroundStyle(AlphonsoColor.ink)
-                        }
-                        Text(episodes.isEmpty
-                            ? PodcastLibraryCopy.emptyMessage
-                            : "No \(courses.first { $0.code == activeCourse }?.label ?? "") episodes\(level.map { " at \($0)" } ?? "") yet.")
-                            .dsText(.body)
-                            .foregroundStyle(AlphonsoColor.ink)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(AlphonsoSpacing.md)
-                    .alphonsoGlass()
+                    DSEmptyState(
+                        art: "Alphonso-reading-book",
+                        title: episodes.isEmpty
+                            ? PodcastLibraryCopy.emptyTitle(courseCode: activeCourse)
+                            : "No \(courses.first { $0.code == activeCourse }?.label ?? "") episodes\(level.map { " at \($0)" } ?? "") yet.",
+                        message: episodes.isEmpty ? PodcastLibraryCopy.emptyMessage : nil)
                 } else {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AlphonsoSpacing.sm), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: AlphonsoSpacing.sm) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AlphonsoDS.Space.s2), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: AlphonsoDS.Space.s2) {
                         ForEach(shown, id: \.folder.id) { shelf in
                             NavigationLink {
                                 ListenShelfDetail(
@@ -121,7 +102,7 @@ struct ListenShelfRoot: View {
                     }
                 }
             }
-            .padding(AlphonsoSpacing.md)
+            .padding(AlphonsoDS.Space.s4)
         }
         .miniPlayerClearance(player)
         .navigationTitle("Library")
@@ -169,6 +150,7 @@ struct WatchShelfHost: View {
     /// Where the player's "practice this" goes once the sheet has finished closing.
     @State private var practiceAfterClose: PathDestination?
     @Environment(PathDeepLink.self) private var deepLink
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         // The loaders hang off `loadAnchor`, a real (zero-size) child that is always in the tree. They must never sit on
@@ -177,11 +159,11 @@ struct WatchShelfHost: View {
         VStack(spacing: 0) {
             if videosFailed {
                 HStack {
-                    Text("We couldn't load the videos.").dsText(.footnote).foregroundStyle(AlphonsoColor.inkSoft)
-                    Spacer(minLength: AlphonsoSpacing.sm)
-                    Button("Try again") { Task { await loadVideos() } }.tint(AlphonsoColor.moss)
+                    Text("We couldn't load the videos.").dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    Spacer(minLength: AlphonsoDS.Space.s2)
+                    Button("Try again") { Task { await loadVideos() } }.tint(ds.choice)
                 }
-                .padding(AlphonsoSpacing.md)
+                .padding(AlphonsoDS.Space.s4)
                 .alphonsoGlass()
             } else {
                 WatchShelfSection(videos: VideoShelf.shelf(videos, course: course)) { watching = $0 }
@@ -316,10 +298,11 @@ private struct WatchShelfSection: View {
 
 private struct RoomBackdrop: View {
     let room: String
+    @Environment(\.alphonsoDS) private var ds
     var body: some View {
         // The image is an overlay, not a ZStack child: a scaledToFill image sizes its parent to the picture's own
         // aspect ratio, which blew the room tiles and the Continue card up to full-screen height (QA, build 61).
-        AlphonsoColor.mossDeep
+        ds.hero
             .overlay {
                 if let image = LessonArt.room(room) {
                     Image(uiImage: image).resizable().scaledToFill()
@@ -332,29 +315,30 @@ private struct RoomBackdrop: View {
 
 private struct RoomTile: View {
     let shelf: ListenShelfFolder
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             RoomBackdrop(room: shelf.room)
-            LinearGradient(colors: [.clear, AlphonsoColor.mossDeep.opacity(0.85)], startPoint: .center, endPoint: .bottom)
+            LinearGradient(colors: [.clear, ds.hero.opacity(0.85)], startPoint: .center, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 2) {
                 if let level = shelf.level {
-                    Text(level).dsText(.caption).foregroundStyle(AlphonsoColor.ink)
-                        .padding(.horizontal, AlphonsoSpacing.sm).background(Capsule().fill(AlphonsoColor.parchment))
+                    Text(level).dsText(.caption).foregroundStyle(ds.ink)
+                        .padding(.horizontal, AlphonsoDS.Space.s2).background(Capsule().fill(ds.card))
                 }
                 Spacer(minLength: 0)
                 Text(shelf.folder.title)
-                    .dsText(.headline).foregroundStyle(AlphonsoColor.onPrimary)
+                    .dsText(.headline).foregroundStyle(ds.onHero)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("\(shelf.episodes.count) \(shelf.episodes.count == 1 ? "episode" : "episodes") \u{00B7} \(shelf.percent == 100 ? "finished \u{2713}" : "\(shelf.percent)%")")
-                    .dsText(.caption).foregroundStyle(AlphonsoColor.onPrimary.opacity(0.85))
+                    .dsText(.caption).foregroundStyle(ds.onHeroSoft)
             }
-            .padding(AlphonsoSpacing.sm + 2)
+            .padding(AlphonsoDS.Space.s3)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(minHeight: 150)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(AlphonsoColor.hairline, lineWidth: 2))
+        .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).stroke(ds.line, lineWidth: 2))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(shelf.folder.title), \(shelf.level ?? "all levels"), \(shelf.episodes.count) episodes, \(shelf.percent == 100 ? "finished" : "\(shelf.percent) percent done")")
     }
@@ -366,6 +350,7 @@ private struct ContinueCard: View {
     let downloads: PodcastDownloadManager
     let networkMonitor: NetworkMonitor
     let queue: [PodcastEpisode]
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         let left = ListenShelf.secondsLeft(target.episode, target.progress)
@@ -377,26 +362,26 @@ private struct ContinueCard: View {
         } label: {
             ZStack(alignment: .bottomLeading) {
                 RoomBackdrop(room: target.shelf.room)
-                LinearGradient(colors: [AlphonsoColor.mossDeep.opacity(0.4), AlphonsoColor.mossDeep.opacity(0.9)], startPoint: .top, endPoint: .bottom)
+                LinearGradient(colors: [ds.hero.opacity(0.4), ds.hero.opacity(0.9)], startPoint: .top, endPoint: .bottom)
                 HStack(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-                        Text("CONTINUE LISTENING").dsText(.caption).foregroundStyle(AlphonsoColor.emberSoft)
+                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                        Text("CONTINUE LISTENING").dsText(.caption).foregroundStyle(ds.onHeroKick)
                         Spacer(minLength: 0)
                         Text(target.episode.title).dsText(.title)
-                            .foregroundStyle(AlphonsoColor.onPrimary).fixedSize(horizontal: false, vertical: true)
+                            .foregroundStyle(ds.onHero).fixedSize(horizontal: false, vertical: true)
                         Text(([target.shelf.level, "Episode \(number)", target.progress == nil ? ListenShelf.clock(left) : "\(ListenShelf.clock(left)) left"]
                             .compactMap { $0 }).joined(separator: " \u{00B7} "))
-                            .dsText(.footnote).foregroundStyle(AlphonsoColor.onPrimary.opacity(0.85))
-                        ProgressView(value: ListenShelf.fraction(target.episode, target.progress)).tint(AlphonsoColor.ember)
+                            .dsText(.footnote).foregroundStyle(ds.onHeroSoft)
+                        DSProgressBar(fraction: ListenShelf.fraction(target.episode, target.progress), onHero: true)
                     }
                     Image(MascotArt.assetName(for: .learnGreeting)).resizable().scaledToFit().frame(width: 96)
                         .accessibilityHidden(true)
                 }
-                .padding(AlphonsoSpacing.md)
+                .padding(AlphonsoDS.Space.s4)
             }
             .frame(minHeight: 176)
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(AlphonsoColor.ember, lineWidth: 2))
+            .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous).stroke(ds.action, lineWidth: 2))
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
@@ -415,6 +400,7 @@ struct ListenShelfDetail: View {
     let networkMonitor: NetworkMonitor
 
     @State private var quizEpisodeIDs: Set<String> = []
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         let byID = Dictionary(progress.map { ($0.episodeID, $0) }, uniquingKeysWith: { a, _ in a })
@@ -423,82 +409,82 @@ struct ListenShelfDetail: View {
         let minutes = max(1, Int((Double(shelf.totalSeconds) / 60).rounded()))
 
         ScrollView {
-            VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                 ZStack(alignment: .bottomLeading) {
                     RoomBackdrop(room: shelf.room)
-                    LinearGradient(colors: [.clear, AlphonsoColor.parchment], startPoint: .center, endPoint: .bottom)
+                    LinearGradient(colors: [.clear, ds.surface], startPoint: .center, endPoint: .bottom)
                     HStack(alignment: .bottom) {
-                        VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
+                        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
                             if let level = shelf.level {
-                                Text(level).dsText(.caption).foregroundStyle(AlphonsoColor.ink)
-                                    .padding(.horizontal, AlphonsoSpacing.sm).background(Capsule().fill(AlphonsoColor.surface))
+                                Text(level).dsText(.caption).foregroundStyle(ds.ink)
+                                    .padding(.horizontal, AlphonsoDS.Space.s2).background(Capsule().fill(ds.card))
                             }
-                            Text(shelf.folder.title).dsText(.display).foregroundStyle(AlphonsoColor.ink)
+                            Text(shelf.folder.title).dsText(.display).foregroundStyle(ds.brand)
                                 .fixedSize(horizontal: false, vertical: true)
                             Text("Hosted by Alphonso \u{00B7} \(shelf.episodes.count) \(shelf.episodes.count == 1 ? "episode" : "episodes") \u{00B7} \(minutes) min")
-                                .dsText(.footnote).foregroundStyle(AlphonsoColor.inkSoft)
+                                .dsText(.footnote).foregroundStyle(ds.inkSoft)
                         }
                         Spacer(minLength: 0)
                         Image(MascotArt.assetName(for: .lessonComplete)).resizable().scaledToFit().frame(width: 110)
                             .accessibilityHidden(true)
                     }
-                    .padding(AlphonsoSpacing.md)
+                    .padding(AlphonsoDS.Space.s4)
                 }
                 .frame(minHeight: 240)
 
                 if let target {
                     let isContinue = ListenShelf.state(byID[target.id]) == .inProgress
                     let number = (shelf.episodes.firstIndex { $0.id == target.id } ?? 0) + 1
+                    // The one gold button of the folder (round 6.1).
                     Button {
                         play(target)
                     } label: {
                         Label("\(isContinue ? "Continue" : "Start") Episode \(number)", systemImage: "play.fill")
-                            .dsText(.headline)
-                            .frame(maxWidth: .infinity, minHeight: 48)
-                            .foregroundStyle(AlphonsoColor.onPrimary)
-                            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(AlphonsoColor.moss))
                     }
-                    .padding(.horizontal, AlphonsoSpacing.md)
+                    .buttonStyle(.dsButton(.primary))
+                    .padding(.horizontal, AlphonsoDS.Space.s4)
                 }
 
                 ForEach(Array(shelf.episodes.enumerated()), id: \.element.id) { index, episode in
                     let p = byID[episode.id]
                     let state = ListenShelf.state(p)
-                    VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-                        HStack(spacing: AlphonsoSpacing.sm) {
+                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                        HStack(spacing: AlphonsoDS.Space.s2) {
                             Button { play(episode) } label: {
-                                HStack(spacing: AlphonsoSpacing.sm + 2) {
+                                HStack(spacing: AlphonsoDS.Space.s3) {
                                     Text(state == .done ? "\u{2713}" : "\(index + 1)")
                                         .dsText(.body)
-                                        .foregroundStyle(state == .done ? AlphonsoColor.onPrimary : AlphonsoColor.ink)
-                                        .frame(width: 36, height: 36)
-                                        .background(Circle().fill(state == .done ? AlphonsoColor.moss : state == .inProgress ? AlphonsoColor.emberSoft : AlphonsoColor.surface))
+                                        .foregroundStyle(state == .done ? ds.onRight : ds.ink)
+                                        .frame(width: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s1, height: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s1)
+                                        .background(Circle().fill(state == .done ? ds.right : state == .inProgress ? ds.actionTint : ds.sunk))
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(episode.title).dsText(.headline).foregroundStyle(AlphonsoColor.ink)
+                                        Text(episode.title).dsText(.headline).foregroundStyle(ds.ink)
                                             .fixedSize(horizontal: false, vertical: true)
                                         if state == .inProgress {
-                                            ProgressView(value: ListenShelf.fraction(episode, p)).tint(AlphonsoColor.ember)
+                                            DSProgressBar(fraction: ListenShelf.fraction(episode, p))
                                         }
                                         Text(subtitle(episode, state: state, left: ListenShelf.secondsLeft(episode, p)))
-                                            .dsText(.caption).foregroundStyle(AlphonsoColor.inkSoft)
+                                            .dsText(.caption).foregroundStyle(ds.inkSoft)
                                     }
                                     Spacer(minLength: 0)
                                 }
-                                .padding(AlphonsoSpacing.sm + 2)
-                                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(AlphonsoColor.surface))
+                                .padding(AlphonsoDS.Space.s3)
+                                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
+                                .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel("\(episode.title), \(ListenShelf.clock(episode.durationSeconds)), \(state == .done ? "finished" : state == .inProgress ? "\(ListenShelf.clock(ListenShelf.secondsLeft(episode, p))) left" : "new")")
                             PodcastDownloadButton(episode: episode, downloads: downloads, player: player)
                         }
                         if quizEpisodeIDs.contains(episode.id) {
-                            PodcastQuizRowButton(episode: episode, session: session).padding(.leading, AlphonsoSpacing.sm)
+                            PodcastQuizRowButton(episode: episode, session: session).padding(.leading, AlphonsoDS.Space.s2)
                         }
                     }
-                    .padding(.horizontal, AlphonsoSpacing.md)
+                    .padding(.horizontal, AlphonsoDS.Space.s4)
                 }
             }
         }
+        .background(ds.surface)
         .miniPlayerClearance(player)
         .ignoresSafeArea(edges: .top)
         .navigationBarTitleDisplayMode(.inline)

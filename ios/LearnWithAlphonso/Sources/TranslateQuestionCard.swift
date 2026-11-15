@@ -28,95 +28,40 @@ struct TranslateQuestionCard: View {
     let course: Course
     /// Which player this card sits in; the account's AI consent decides what it offers there (AIConsentPolicy).
     let surface: AIConsentSurface
-    /// In the lesson's room (round 6): Alphonso's bubble already shows the prompt and the verdict sheet leads with
-    /// the accepted phrasing, so this card is only the answer field and the grader's reason.
-    var inStage = false
     @EnvironmentObject private var aiConsent: AIConsentStore
+    @Environment(\.alphonsoDS) private var ds
     @State private var showDisclosure = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AlphonsoSpacing.sm) {
-            if inStage {
-                LessonTextField(
-                    placeholder: "Write your answer",
-                    text: Binding(get: { picked ?? "" }, set: { picked = $0 }), axis: .vertical)
-                    .disabled(checked)
-            } else {
-                Text("WRITE IT YOURSELF")
-                    .font(AlphonsoFont.sans(12, weight: .semiBold))
-                    .tracking(0.4)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
-                AskingAlphonso(prompt: question.prompt)
-
-                TextField(
-                    "Write your answer",
-                    text: Binding(get: { picked ?? "" }, set: { picked = $0 }),
-                    axis: .vertical
-                )
-                .lineLimit(3...6)
-                .textFieldStyle(.plain)
-                .padding(AlphonsoSpacing.sm)
-                .alphonsoInputBackground()
+        // In the lesson's room: Alphonso's bubble already shows the prompt and the verdict sheet leads with the
+        // accepted phrasing, so this card is only the answer field and the grader's reason.
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
+            LessonTextField(
+                placeholder: "Write your answer",
+                text: Binding(get: { picked ?? "" }, set: { picked = $0 }), axis: .vertical)
                 .disabled(checked)
-            }
 
             // Without the account's AI consent the written answer is checked against our list only, and the learner is
             // told so with a way to turn AI grading on (AIConsentPolicy). Never a wall: the lesson goes on.
             // Only when the account itself said no: a setting still loading or unreadable offers nothing here.
             if !checked && AIConsentPolicy.offersAIGradingOptIn(on: surface, status: aiConsent.status) {
-                HStack(spacing: AlphonsoSpacing.xs) {
+                HStack(spacing: AlphonsoDS.Space.s1) {
                     Text(AIConsentCopy.localGradingNote)
-                        .font(AlphonsoFont.sans(12))
-                        .foregroundStyle(AlphonsoColor.inkSoft)
+                        .dsText(.caption)
+                        .foregroundStyle(ds.inkSoft)
                     Button(AIConsentCopy.turnOnAiGrading) { showDisclosure = true }
-                        .font(AlphonsoFont.sans(12, weight: .semiBold))
-                        .tint(AlphonsoColor.moss)
+                        .dsText(.caption)
+                        .foregroundStyle(ds.choice)
                 }
             }
 
-            if inStage, checked, let reason = verdict?.reason, verdict?.correct == false {
+            if checked, let reason = verdict?.reason, verdict?.correct == false {
                 // The grader's reason only; the sheet below leads with the accepted phrasing.
                 LessonNoteCard(text: reason)
-            } else if !inStage, checked, let verdict, !verdict.correct {
-                VStack(alignment: .leading, spacing: AlphonsoSpacing.xs) {
-                    if let reason = verdict.reason {
-                        Text(reason)
-                            .font(AlphonsoFont.sans(14))
-                            .foregroundStyle(AlphonsoColor.ink)
-                    }
-                    Text("ONE WAY TO SAY IT")
-                        .font(AlphonsoFont.sans(11, weight: .semiBold))
-                        .tracking(0.4)
-                        .foregroundStyle(AlphonsoColor.inkSoft)
-                    Text(question.acceptableAnswers.first ?? "")
-                        .font(AlphonsoFont.sans(15))
-                        .foregroundStyle(AlphonsoColor.ink)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(AlphonsoSpacing.sm)
-                .background(
-                    AlphonsoColor.surface,
-                    in: RoundedRectangle(cornerRadius: AlphonsoRadius.lg, style: .continuous))
-                // Reason + "ONE WAY TO SAY IT" header + the phrase itself
-                // were three separate VoiceOver stops with no indication
-                // they belong together -- combine reads them in order as
-                // one coherent block instead.
-                .accessibilityElement(children: .combine)
-            }
-
-            if checked && !inStage {
-                ExplanationView(
-                    question: .translate(question),
-                    picked: picked,
-                    explanation: question.explanation,
-                    course: course,
-                    // The settled verdict, not a re-derivation of it.
-                    correctOverride: verdict?.correct)
             }
         }
         .aiDisclosureSheet(isPresented: $showDisclosure) {}
     }
-
 }
 
 /// Settles the verdict for one written translation, for whichever player is

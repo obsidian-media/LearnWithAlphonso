@@ -95,6 +95,9 @@ struct PaywallView: View {
 
                     if let notice = state.notice {
                         noticeText(notice)
+                        // A purchase or restore that failed: the message stays and "Get help" sits under it (the
+                        // approved Help mock), shown only when the app can open the chat.
+                        if case .error = notice { GetHelpButton() }
                     }
 
                     ViewThatFits(in: .horizontal) {

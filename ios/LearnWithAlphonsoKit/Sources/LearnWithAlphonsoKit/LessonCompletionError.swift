@@ -102,6 +102,13 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
         return "If this keeps happening, email support@alphonsoecosystem.app."
     }
 
+    /// The same line when the app can open the Help chat from the screen (the approved Help mock): "get help or email".
+    /// Still nil for every failure the learner can fix by waiting, so the button and the line show for the same cases.
+    public func supportLine(withHelp: Bool) -> String? {
+        guard let plain = supportLine else { return nil }
+        return withHelp ? "If this keeps happening, get help or email support@alphonsoecosystem.app." : plain
+    }
+
     /// Stable reason for dead-letter rows and logs. Never shown to the learner.
     public var reasonCode: String {
         switch self {

@@ -148,6 +148,7 @@ export function PodcastPlayer() {
         <PodcastTranscriptPanel
           title={episode.title}
           transcript={transcript}
+          room={room}
           course={episodeCourse ?? activeCourse}
           isLoading={isLoadingTranscript}
           onClose={() => setShowTranscript(false)}

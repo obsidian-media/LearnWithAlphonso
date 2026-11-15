@@ -26,4 +26,12 @@ describe("Empty", () => {
     render(<Empty title="Nothing due today" body="Come back tomorrow." />);
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
+
+  it("keeps the approved look over the scene: display-size title, floating card", () => {
+    render(<Empty title="Review complete" body="5 correct" />);
+    expect(screen.getByRole("heading", { level: 1, name: "Review complete" }).className).toContain(
+      "ds-type-display",
+    );
+    expect(screen.getByRole("status")).toHaveAttribute("data-variant", "hero");
+  });
 });

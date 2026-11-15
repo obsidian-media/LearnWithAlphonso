@@ -64,6 +64,15 @@ describe("TileCard", () => {
     expect(screen.getByText("Order a coffee")).toBeInTheDocument();
   });
 
+  it("its level badge is a tint of the tile's own ink, so it stays light on the fixed pastel in night", () => {
+    const { container } = render(<TileCard tone="sun" icon="☕" title="Au café" badge="A1" />);
+    const badge = screen.getByText("A1");
+    expect(badge.className).toContain("bg-current/15");
+    // The card colour darkens in night; a pastel tile with dark ink must not sit under it.
+    expect(badge.className).not.toMatch(/bg-ds-card/);
+    expect(container.firstElementChild?.className).toContain("bg-tile-sun-bg");
+  });
+
   it("is presentational: no subtitle line when none is given, so callers can wrap it in a Link", () => {
     const { container } = render(<TileCard tone="mint" icon="🩺" title="Doctor" />);
     expect(container.querySelectorAll("p")).toHaveLength(0);

@@ -3,13 +3,12 @@ import { verdictTitle } from "../lib/answer-verdict";
 import { usePrefersReducedMotion } from "../lib/use-prefers-reduced-motion";
 import type { SpanQuestion } from "../lib/course-language-spans";
 import { AnswerExplanation } from "./AnswerFeedback";
+import { edgeButtonClass } from "./lesson/LessonParts";
 
 /**
  * Everything after Check, in one panel at the bottom of the question: green or red, the verdict, the right answer
  * when it was missed, the explanation, Alphonso reacting (happy or a thumbs-up), and the button on. Shared by the
  * lesson player and review. The verdict is the caller's: a translation's comes from its settled grade.
- *
- * Studio Ink keeps its own quieter look: the left-bar feedback and the plain ember button.
  */
 export function AnswerVerdictPanel({
   correct,
@@ -46,8 +45,8 @@ export function AnswerVerdictPanel({
         transition={
           reduceMotion ? { duration: 0.2 } : { type: "spring", stiffness: 380, damping: 30 }
         }
-        className={`rounded-[28px] border-t-4 px-4 pb-4 pt-3 text-sm ${
-          correct ? "border-moss bg-moss/15" : "border-rose-400 bg-rose-500/10"
+        className={`rounded-[var(--ds-radius-sheet)] px-4 pb-4 pt-4 ds-type-body shadow-[var(--ds-shadow-sheet)] ${
+          correct ? "bg-ds-right-tint" : "bg-ds-wrong-tint"
         }`}
       >
         <div className="flex items-start gap-3">
@@ -61,12 +60,12 @@ export function AnswerVerdictPanel({
           />
           <div className="min-w-0 flex-1 pt-1 text-left">
             <p
-              className={`font-display text-xl font-bold ${correct ? "text-moss" : "text-rose-500"}`}
+              className={`ds-type-title font-extrabold ${correct ? "text-ds-right-ink" : "text-ds-wrong-ink"}`}
             >
               {title}
             </p>
             {!correct && correctAnswer && (
-              <p className="mt-0.5 text-[15px] font-semibold text-ink">Answer: {correctAnswer}</p>
+              <p className="mt-0.5 ds-type-headline text-ds-ink">Answer: {correctAnswer}</p>
             )}
             <AnswerExplanation
               explanation={explanation}
@@ -76,12 +75,9 @@ export function AnswerVerdictPanel({
           </div>
         </div>
         <button
+          type="button"
           onClick={onContinue}
-          className={`mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-2xl px-6 py-3 font-display text-base font-bold tracking-wide transition-[transform,box-shadow] duration-100 active:translate-y-1 active:shadow-none motion-reduce:transition-none ${
-            correct
-              ? "bg-moss text-surface shadow-[0_4px_0_0_var(--color-edge-moss)]"
-              : "bg-rose-500 text-white shadow-[0_4px_0_0_rgba(136,19,55,0.9)]"
-          }`}
+          className={`mt-4 ${edgeButtonClass(correct ? "right" : "wrong")}`}
         >
           {continueLabel}
         </button>

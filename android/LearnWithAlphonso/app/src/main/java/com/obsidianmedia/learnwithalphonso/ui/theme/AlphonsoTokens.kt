@@ -95,6 +95,8 @@ object AlphonsoTokens {
         val heroA: Color,
         /** Bottom stop of the hero gradient. */
         val heroB: Color,
+        /** undefined */
+        val onChoice: Color,
         /** Primary text on hero. */
         val onHero: Color,
         /** The call bar, You tile and state pills over the room photo (used with alpha). The same dark in every theme. */
@@ -150,6 +152,7 @@ object AlphonsoTokens {
             "flameTint" to flameTint,
             "heroA" to heroA,
             "heroB" to heroB,
+            "onChoice" to onChoice,
             "onHero" to onHero,
             "callGlass" to callGlass,
             "callMint" to callMint,
@@ -201,6 +204,7 @@ object AlphonsoTokens {
         flameTint = Color(0xFFFDEBD7),
         heroA = Color(0xFF2C3F8F),
         heroB = Color(0xFF0E1430),
+        onChoice = Color(0xFFFFFFFF),
         onHero = Color(0xFFFFFFFF),
         callGlass = Color(0xFF121A15),
         callMint = Color(0xFFC9F5DC),
@@ -251,6 +255,7 @@ object AlphonsoTokens {
         flameTint = Color(0xFF3A2412),
         heroA = Color(0xFF2C3F8F),
         heroB = Color(0xFF0E1430),
+        onChoice = Color(0xFF141B3D),
         onHero = Color(0xFFFFFFFF),
         callGlass = Color(0xFF121A15),
         callMint = Color(0xFFC9F5DC),
@@ -301,6 +306,7 @@ object AlphonsoTokens {
         flameTint = Color(0xFFFDEBD7),
         heroA = Color(0xFF3A7050),
         heroB = Color(0xFF0B1F13),
+        onChoice = Color(0xFFFFFFFF),
         onHero = Color(0xFFFFFFFF),
         callGlass = Color(0xFF121A15),
         callMint = Color(0xFFC9F5DC),
@@ -351,6 +357,7 @@ object AlphonsoTokens {
         flameTint = Color(0xFF3A2412),
         heroA = Color(0xFF3A7050),
         heroB = Color(0xFF0B1F13),
+        onChoice = Color(0xFF141B3D),
         onHero = Color(0xFFFFFFFF),
         callGlass = Color(0xFF121A15),
         callMint = Color(0xFFC9F5DC),

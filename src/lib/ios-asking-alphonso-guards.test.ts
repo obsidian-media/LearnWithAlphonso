@@ -101,20 +101,18 @@ const LISTENING_CALL = "AskingAlphonso(prompt: q.prompt, hasMedia: true)";
 
 describe("every question type asks through Alphonso", () => {
   it("the lesson asks every question type through Alphonso's bubble in the unit's room (round 6)", () => {
-    // One bubble for all six types, over Alphonso in the room; the speak and translate cards skip their own prompt
-    // there (inStage), so the question is never asked twice.
+    // One bubble for all six types, over Alphonso in the room; the speak and translate cards draw no prompt of their
+    // own (they are only the answer controls), so the question is never asked twice.
     expect(lesson).not.toContain("AskingAlphonso(");
     expect(count(lesson, "AlphonsoBubbleView(label: bubbleLabel, text: question.prompt")).toBe(1);
     // The card takes the screen's consent surface (the lesson by default, review passes its own).
-    expect(lesson).toContain("surface: surface, inStage: true)");
+    expect(lesson).toContain("verdict: $translationVerdict, course: course, surface: surface)");
     expect(lesson).toContain("var surface: AIConsentSurface = .lesson");
-    expect(lesson).toMatch(/SpeakQuestionCard\([\s\S]{0,200}inStage: true\)/);
-    expect(translate).toMatch(
-      /if inStage \{[\s\S]{0,300}\} else \{[\s\S]{0,300}AskingAlphonso\(prompt: question\.prompt\)/,
-    );
-    expect(speak).toMatch(
-      /if inStage \{[\s\S]{0,200}\} else \{[\s\S]{0,300}AskingAlphonso\(prompt: question\.prompt, hasMedia: true\)/,
-    );
+    expect(lesson).toMatch(/SpeakQuestionCard\([\s\S]{0,200}checked: checked, picked: \$picked\)/);
+    // The two cards had a second, older look behind `inStage`; nothing ever passed false, so it is gone.
+    expect(lesson).not.toContain("inStage");
+    expect(translate).not.toContain("inStage");
+    expect(speak).not.toContain("inStage");
   });
 
   it("review asks through the lesson's QuestionCard, with its own consent surface", () => {
@@ -126,9 +124,13 @@ describe("every question type asks through Alphonso", () => {
     expect(review).not.toMatch(/Text\(q\.prompt\)\.font\(AlphonsoFont\.display\(21/);
   });
 
-  it("translate and speak, which draw their own prompt", () => {
-    expect(translate).toContain("AskingAlphonso(prompt: question.prompt)");
-    expect(speak).toContain("AskingAlphonso(prompt: question.prompt, hasMedia: true)");
+  it("translate and speak draw no prompt of their own: the bubble above them already asked it", () => {
+    expect(translate).not.toContain("AskingAlphonso(");
+    expect(speak).not.toContain("AskingAlphonso(");
+    // What they do draw is the lesson stage's own pieces, so they look like the other cards.
+    expect(translate).toContain("LessonTextField(");
+    expect(speak).toContain("LessonSpeakPhraseCard(");
+    expect(speak).toContain("LessonTextField(");
   });
 
   it("the moment exists in the Kit's enum, backed by the shared JSON", () => {
@@ -144,26 +146,21 @@ describe("the streak-freeze row is a card, not text on the garden photo", () => 
   const row = read("StreakFreezeRow.swift");
   const body = row.slice(row.indexOf("var body: some View"), row.indexOf("private var summary"));
 
-  it("sits on parchment with a hairline edge, like LessonPathRow", () => {
-    expect(body).toContain(
-      ".background(AlphonsoColor.parchment, in: RoundedRectangle(cornerRadius: 22",
-    );
-    expect(body).toContain(".strokeBorder(AlphonsoColor.hairline");
-    // The card is drawn after the content's own padding and before the outer gutter, so the fill hugs the text.
-    expect(body.indexOf(".padding(.vertical, AlphonsoSpacing.sm + 2)")).toBeLessThan(
-      body.indexOf(".background(AlphonsoColor.parchment"),
-    );
-    expect(body.indexOf(".background(AlphonsoColor.parchment")).toBeLessThan(
-      body.indexOf(".padding(.horizontal, AlphonsoSpacing.md)\n        .padding(.top"),
-    );
+  it("is a design-system card with a design-system button, like the other Learn rows", () => {
+    expect(body).toContain("DSCard(");
+    expect(row).toContain(".buttonStyle(.dsButton(.secondary");
+    // The old hand-drawn parchment card, its hairline edge and its foot are gone.
+    expect(row).not.toContain("AlphonsoColor.parchment");
+    expect(row).not.toContain("AlphonsoColor.hairline");
+    expect(row).not.toContain(".alphonsoSecondary");
   });
 
-  it("every text colour on the card is ink or inkSoft, the pair each theme keeps readable on parchment", () => {
+  it("every text colour on the card is ink or inkSoft, the pair each theme keeps readable on a card", () => {
     const colours = [...row.matchAll(/foregroundStyle\(([^)]*\)?)\)/g)].map((m) => m[1]);
     expect(colours.length).toBeGreaterThan(2);
-    for (const c of colours) expect(c, c).toMatch(/^AlphonsoColor\.(ink|inkSoft|moss)$/);
-    // moss is only the decorative snowflake, never the words.
-    expect(row.match(/AlphonsoColor\.moss/g)?.length).toBe(1);
+    for (const c of colours) expect(c, c).toMatch(/^ds\.(ink|inkSoft|choice)$/);
+    // choice is only the decorative snowflake, never the words.
+    expect(row.match(/ds\.choice/g)?.length).toBe(1);
   });
 });
 
