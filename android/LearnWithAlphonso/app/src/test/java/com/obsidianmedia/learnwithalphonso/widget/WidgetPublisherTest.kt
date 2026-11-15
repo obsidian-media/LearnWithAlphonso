@@ -41,6 +41,16 @@ class WidgetPublisherTest {
         assertEquals(before.copy(theme = "meadow"), WidgetPublisher.read(prefs))
     }
 
+    /** A Meadow learner updates: the older snapshot has no theme, and the launch write fills it in. */
+    @Test
+    fun `a launch write gives an old snapshot its theme`() {
+        val prefs = MemoryPrefs()
+        prefs.edit().putString("streakWidgetSnapshot", """{"streak":3,"longestStreak":9,"studiedToday":true,"updatedAtMillis":1700000000000}""").apply()
+        assertTrue(WidgetPublisher.writeTheme(prefs, "meadow"))
+        assertEquals("meadow", WidgetPublisher.read(prefs)!!.theme)
+        assertEquals(3, WidgetPublisher.read(prefs)!!.streak)
+    }
+
     @Test
     fun `a theme change with nothing published writes nothing`() {
         val prefs = MemoryPrefs()

@@ -70,6 +70,12 @@ describe("the look follows the theme, and Meadow ignores dark mode", () => {
 });
 
 describe("the theme reaches the widget", () => {
+  it("iOS hands the widget the theme at every launch, so an upgrade keeps Meadow", () => {
+    expect(read(`${IOS}/Sources/LearnWithAlphonsoApp.swift`)).toContain(
+      "WidgetProgressPublisher.themeChanged(to: AlphonsoThemeManager.shared.themeID.rawValue)",
+    );
+  });
+
   it("iOS writes the theme with every snapshot and rewrites it when the learner changes theme", () => {
     expect(publisher).toContain("theme: AlphonsoThemeManager.shared.themeID.rawValue");
     expect(publisher).toContain("static func themeChanged(to theme: String)");
@@ -87,7 +93,7 @@ describe("the theme reaches the widget", () => {
   it("Android writes the theme with every snapshot and redraws the widget when the theme changes", () => {
     expect(container).toContain("WidgetPublisher.publish(app, it, themeManager.theme.value.raw)");
     expect(container).toContain(
-      "themeManager.theme.drop(1).collect { WidgetPublisher.republishTheme(app, it.raw) }",
+      "themeManager.theme.collect { WidgetPublisher.republishTheme(app, it.raw) }",
     );
     expect(androidWidget).toContain("StreakWidget().updateAll(context)");
   });

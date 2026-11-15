@@ -70,7 +70,6 @@ import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
@@ -194,8 +193,8 @@ class AppContainer(context: Context) {
         .build()
     val syncStore: SyncQueueStore = RoomSyncQueueStore(database.syncDao(), onProgressUpdated = { WidgetPublisher.publish(app, it, themeManager.theme.value.raw) }, inTransaction = { block -> database.withTransaction { block() } }, onCleared = { WidgetPublisher.clear(app) })
 
-    /** The home-screen streak widget draws in the app's theme: a theme change (the first value is the one already in effect) rewrites its snapshot and redraws it. */
-    private val widgetThemeSync = appScope.launch { themeManager.theme.drop(1).collect { WidgetPublisher.republishTheme(app, it.raw) } }
+    /** The home-screen streak widget draws in the app's theme: a theme change (the first value, at launch, covers a snapshot an older build wrote without one) rewrites its snapshot and redraws it. */
+    private val widgetThemeSync = appScope.launch { themeManager.theme.collect { WidgetPublisher.republishTheme(app, it.raw) } }
 
     /** Completed once the session is restored and the ownerless queue rows are resolved; no sync pass runs before. */
     private val startup = CompletableDeferred<Unit>()

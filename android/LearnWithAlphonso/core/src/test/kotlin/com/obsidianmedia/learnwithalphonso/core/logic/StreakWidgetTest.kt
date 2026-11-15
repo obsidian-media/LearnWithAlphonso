@@ -60,6 +60,15 @@ class StreakWidgetTest {
     }
 
     @Test
+    fun `a long streak gets a smaller number so it fits`() {
+        assertEquals(1f, streakNumberScale(0))
+        assertEquals(1f, streakNumberScale(99))
+        assertEquals(0.7f, streakNumberScale(100))
+        assertEquals(0.7f, streakNumberScale(999))
+        assertEquals(0.5f, streakNumberScale(1000))
+    }
+
+    @Test
     fun `Royal follows the system`() {
         assertEquals(StreakWidgetLook.ROYAL_LIGHT, resolveStreakWidgetLook("royal", systemDark = false))
         assertEquals(StreakWidgetLook.ROYAL_NIGHT, resolveStreakWidgetLook("royal", systemDark = true))

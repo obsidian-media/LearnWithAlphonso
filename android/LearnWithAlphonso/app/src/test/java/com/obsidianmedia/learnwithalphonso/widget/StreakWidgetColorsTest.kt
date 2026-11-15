@@ -26,6 +26,18 @@ class StreakWidgetColorsTest {
         assertNotEquals(day.ink, night.ink)
     }
 
+    /** The pair the widget hands the system: Royal's night half is the night token, Meadow's two halves are Meadow light. */
+    @Test
+    fun `the day and night halves are the right tokens`() {
+        val royal = streakWidgetColorPair("royal") { it.surface }
+        assertEquals(AlphonsoTokens.royalLight.surface, royal.first)
+        assertEquals(AlphonsoTokens.royalNight.surface, royal.second)
+        assertEquals(AlphonsoTokens.royalNight.ink, streakWidgetColorPair("royal") { it.ink }.second)
+        val meadow = streakWidgetColorPair("meadow") { it.surface }
+        assertEquals(AlphonsoTokens.meadowLight.surface, meadow.first)
+        assertEquals(AlphonsoTokens.meadowLight.surface, meadow.second)
+    }
+
     @Test
     fun `Meadow's night colours are its day colours, so a dark system never changes it`() {
         val day = streakWidgetColors(resolveStreakWidgetLook("meadow", systemDark = false))

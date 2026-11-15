@@ -58,6 +58,16 @@ const val STREAK_WIDGET_WIDE_MIN_DP = 220f
 fun streakWidgetFamilyForWidth(widthDp: Float): StreakWidgetFamily =
     if (widthDp >= STREAK_WIDGET_WIDE_MIN_DP) StreakWidgetFamily.MEDIUM else StreakWidgetFamily.SMALL
 
+/**
+ * How much of the design system number size the streak number gets, so a long streak still fits the 2x2 face beside
+ * the flame (34 sp digits need about 102 dp for three of them in the 86 dp left). The iOS view scales to fit instead.
+ */
+fun streakNumberScale(streak: Int): Float = when {
+    streak >= 1000 -> 0.5f
+    streak >= 100 -> 0.7f
+    else -> 1f
+}
+
 /** What each size draws; the iOS Kit's StreakWidgetLayout. */
 data class StreakWidgetLayout(val showsAlphonso: Boolean, val showsBest: Boolean, val isEmpty: Boolean) {
     companion object {

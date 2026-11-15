@@ -45,6 +45,8 @@ enum WidgetProgressPublisher {
               let stored = try? JSONDecoder().decode(StreakWidgetSnapshot.self, from: data),
               let updated = try? JSONEncoder().encode(stored.withTheme(theme))
         else { return }
+        // Already current (the usual launch): no write, no reload.
+        guard stored.theme != theme else { return }
         defaults.set(updated, forKey: WidgetSharing.streakSnapshotDefaultsKey)
         WidgetCenter.shared.reloadTimelines(ofKind: WidgetSharing.streakWidgetKind)
     }

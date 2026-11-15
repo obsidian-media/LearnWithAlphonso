@@ -48,6 +48,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.StreakWidgetLook
 import com.obsidianmedia.learnwithalphonso.core.logic.StreakWidgetSnapshot
 import com.obsidianmedia.learnwithalphonso.core.logic.makeStreakWidgetSnapshot
 import com.obsidianmedia.learnwithalphonso.core.logic.resolveStreakWidgetLook
+import com.obsidianmedia.learnwithalphonso.core.logic.streakNumberScale
 import com.obsidianmedia.learnwithalphonso.core.logic.streakWidgetFamilyForWidth
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
@@ -108,16 +109,20 @@ internal fun streakWidgetColors(look: StreakWidgetLook): AlphonsoTokens.Colors =
  * Royal swaps to its night colour when the system is dark and Meadow's two halves are the same light colour: Meadow
  * stays light, even in dark mode. On Android 12 and later the system picks the half itself, with no redraw.
  */
-private fun pair(theme: String?, role: (AlphonsoTokens.Colors) -> Color): ColorProvider =
-    ColorProvider(
-        day = role(streakWidgetColors(resolveStreakWidgetLook(theme, systemDark = false))),
-        night = role(streakWidgetColors(resolveStreakWidgetLook(theme, systemDark = true))),
-    )
+private fun pair(theme: String?, role: (AlphonsoTokens.Colors) -> Color): ColorProvider {
+    val (day, night) = streakWidgetColorPair(theme, role)
+    return ColorProvider(day = day, night = night)
+}
+
+/** A colour role's (day, night) halves for a theme; tested directly, since the ColorProvider cannot be read back. */
+internal fun streakWidgetColorPair(theme: String?, role: (AlphonsoTokens.Colors) -> Color): Pair<Color, Color> =
+    role(streakWidgetColors(resolveStreakWidgetLook(theme, systemDark = false))) to
+        role(streakWidgetColors(resolveStreakWidgetLook(theme, systemDark = true)))
 
 private fun glanceWeight(weight: Int): FontWeight = if (weight >= 700) FontWeight.Bold else if (weight >= 500) FontWeight.Medium else FontWeight.Normal
 
-private fun textStyle(spec: AlphonsoTokens.TextSpec, color: ColorProvider, align: TextAlign? = null): TextStyle =
-    TextStyle(color = color, fontSize = spec.size.sp, fontWeight = glanceWeight(spec.weight), textAlign = align)
+private fun textStyle(spec: AlphonsoTokens.TextSpec, color: ColorProvider, align: TextAlign? = null, scale: Float = 1f): TextStyle =
+    TextStyle(color = color, fontSize = (spec.size * scale).sp, fontWeight = glanceWeight(spec.weight), textAlign = align)
 
 /** The pose is 0.47 as wide as it is tall (210 x 450 px). */
 private const val ALPHONSO_ASPECT = 210f / 450f
@@ -176,7 +181,7 @@ class StreakWidget : GlanceAppWidget() {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(ImageProvider(R.drawable.widget_fire), contentDescription = null, modifier = GlanceModifier.size(FLAME))
                     Spacer(GlanceModifier.width(AlphonsoTokens.Space.s2))
-                    Text("${snapshot.streak}", style = textStyle(AlphonsoTokens.Type.displayXL, ink))
+                    Text("${snapshot.streak}", maxLines = 1, style = textStyle(AlphonsoTokens.Type.displayXL, ink, scale = streakNumberScale(snapshot.streak)))
                 }
                 Text(StreakWidgetCopy.caption(snapshot.streak), style = textStyle(AlphonsoTokens.Type.footnote, soft))
                 if (layout.showsBest) {
@@ -191,6 +196,7 @@ class StreakWidget : GlanceAppWidget() {
                 Box(modifier = GlanceModifier.fillMaxHeight().padding(end = AlphonsoTokens.Space.s2), contentAlignment = Alignment.BottomEnd) {
                     Image(
                         ImageProvider(R.drawable.widget_alphonso_streak_flame),
+                        // Decorative: the streak, caption and chip beside it say everything the pose does.
                         contentDescription = null,
                         modifier = GlanceModifier.height(imageHeight).width((imageHeight.value * ALPHONSO_ASPECT).dp),
                         contentScale = ContentScale.Fit,
