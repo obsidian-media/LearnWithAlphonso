@@ -73,6 +73,7 @@ describe("Teams page", () => {
     renderPage();
 
     expect(await screen.findByText("Couldn't load your team.")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveAttribute("data-empty-state", "error");
     expect(screen.queryByRole("button", { name: "Create team" })).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText("Join code")).not.toBeInTheDocument();
 
