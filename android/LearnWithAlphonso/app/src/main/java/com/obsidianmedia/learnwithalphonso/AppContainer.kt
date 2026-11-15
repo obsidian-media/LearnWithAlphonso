@@ -157,6 +157,8 @@ class AppContainer(context: Context) {
     val learnerProfileClient = LearnerProfileClient(apiHttp)
     /** "Explain in my language" (BACKLOG 0.0-bc): the explain call, and the account's native language and mode. */
     val explainClient = com.obsidianmedia.learnwithalphonso.core.net.ExplainClient(apiHttp)
+    /** The Help chat routes (the api/support routes); works whether or not the server has the support AI switched on. */
+    val supportClient = com.obsidianmedia.learnwithalphonso.core.net.SupportClient(apiHttp)
     val explainSettings = com.obsidianmedia.learnwithalphonso.ui.explain.ExplainSettingsStore(
         fetch = { learnerProfileClient.fetch() },
         save = { learnerProfileClient.save(it) },

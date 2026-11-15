@@ -81,7 +81,7 @@ import kotlinx.coroutines.withContext
 
 /** Port of SettingsView.swift's theme, account and sign-out sections. Display name and avatar arrive with Plan 2. */
 @Composable
-fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
+fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -> Unit = {}) {
     val ds = LocalAlphonsoTokens.current
     val theme by container.themeManager.theme.collectAsState()
     val identityVm: IdentityViewModel = viewModel { IdentityViewModel(container.progressClient, container.session.userId) }
@@ -167,6 +167,8 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit) {
                     RowButton("Privacy Policy") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") }
                     DsDivider()
                     RowButton("Terms of Use") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") }
+                    DsDivider()
+                    RowButton("Help", onClick = onOpenHelp)
                     DsDivider()
                     RowButton("Support") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/support") }
                     DsDivider()

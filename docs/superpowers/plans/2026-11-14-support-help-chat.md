@@ -265,3 +265,11 @@ Verify: a real signed-in end to end check with the agent mailbox (receive the em
 - Risk: the AI giving a wrong billing answer. Mitigation: AI off at launch (question 1), keyword hand-off, no promises rule, and the transcript store.
 - Risk: spam into the inbox. Mitigation: 50 messages a day, 100 per conversation, one open ticket per learner.
 - Not in this plan: email reply into the ticket (spec call 6), the AI changing accounts, Phase 3 numbers.
+
+## Built in milestone 5: deviations from this plan (2026-11-14)
+
+- **Entry** is a "Help" row in Settings (above "Support"), route `help`; the back chip reads "Settings". Android has no Profile-level Help row.
+- **Link marker**: `SupportLinks` (core) lifts a trailing `[[link:<id>]]` from `ai` bodies only and checks any server `link` against the allow-list; every other kind is left as typed with no link. Tests mutation-checked (allowing links on non-ai rows, and the unread divider order, both go red).
+- **Link destinations**: subscription goes to the Hector tab, league to League, ai-features and settings back to Settings (Help opens from there).
+- **Not done**: "Get help" links on save and purchase failure messages, and the push tap handler (milestone 6 delivers push). Night screenshots and a signed-in run against the live routes were not done.
+- Works with `support_ai` off: `aiAvailable: false` shows the person-mode banner and welcome.

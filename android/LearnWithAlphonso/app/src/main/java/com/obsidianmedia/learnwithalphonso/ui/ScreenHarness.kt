@@ -41,6 +41,17 @@ import com.obsidianmedia.learnwithalphonso.core.net.TeamMember
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPath
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPathChange
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPathDecoding
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportLinkId
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportMessage
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportMessageKind
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportStatus
+import com.obsidianmedia.learnwithalphonso.core.net.SupportConversation
+import com.obsidianmedia.learnwithalphonso.core.net.SupportErrorKind
+import com.obsidianmedia.learnwithalphonso.core.net.SupportException
+import com.obsidianmedia.learnwithalphonso.core.net.SupportUpdate
+import com.obsidianmedia.learnwithalphonso.ui.support.HelpChatClient
+import com.obsidianmedia.learnwithalphonso.ui.support.HelpChatContent
+import com.obsidianmedia.learnwithalphonso.ui.support.HelpChatViewModel
 import com.obsidianmedia.learnwithalphonso.core.path.PathApi
 import com.obsidianmedia.learnwithalphonso.core.team.TeamMission
 import com.obsidianmedia.learnwithalphonso.core.team.TeamMissionStatus
@@ -252,7 +263,53 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
             val pathVm = PathViewModel("en", pathApi).also { it.reload() }
             PathBuildScreen(container, {}, pathVm, goalVm, "travel", openGoalSheet = screen == "path-build-sheet")
         }
-        "settings" -> SettingsScreen(container, {})
+        "help-ai-first", "help-person-first", "help-ai", "help-team", "help-waiting", "help-solved", "help-daily-limit", "help-offline" -> {
+            fun m(id: Long, kind: SupportMessageKind, body: String, at: String, link: SupportLinkId? = null) = SupportMessage(id, kind, body, at, link)
+            val today = java.time.Instant.now().toString()
+            val ai = screen == "help-ai-first" || screen == "help-ai"
+            val msgs = when (screen) {
+                "help-ai" -> listOf(
+                    m(1, SupportMessageKind.YOU, "I bought Pro but it still says free", today),
+                    m(2, SupportMessageKind.AI, "Open the subscription screen and tap Restore Purchases. It usually fixes this within a minute.", today, SupportLinkId.SUBSCRIPTION),
+                )
+                "help-team" -> listOf(
+                    m(1, SupportMessageKind.YOU, "My streak vanished after the update", today),
+                    m(2, SupportMessageKind.SYSTEM, "A person will reply here.", today),
+                )
+                "help-waiting" -> listOf(
+                    m(1, SupportMessageKind.YOU, "My streak vanished after the update", today),
+                    m(2, SupportMessageKind.SUPPORT, "Thanks for writing. Which course was the streak in?", today),
+                )
+                "help-solved" -> listOf(
+                    m(1, SupportMessageKind.YOU, "My streak vanished after the update", today),
+                    m(2, SupportMessageKind.SUPPORT, "We restored it. Sorry about that.", today),
+                    m(3, SupportMessageKind.SYSTEM, "This chat was marked solved.", today),
+                )
+                else -> emptyList()
+            }
+            val status = when (screen) {
+                "help-team" -> SupportStatus.OPEN
+                "help-waiting" -> SupportStatus.WAITING_LEARNER
+                "help-solved" -> SupportStatus.SOLVED
+                "help-ai" -> SupportStatus.AI
+                else -> SupportStatus.NONE
+            }
+            val fake = object : HelpChatClient {
+                override suspend fun fetchConversation() = SupportConversation(status, if (screen == "help-waiting") 1 else 0, msgs, ai)
+                override suspend fun send(text: String, clientId: String) = SupportUpdate(status, emptyList())
+                override suspend fun handoff() = SupportUpdate(SupportStatus.NEW, emptyList())
+            }
+            val limited = screen == "help-daily-limit"
+            val limitedFake = object : HelpChatClient {
+                override suspend fun fetchConversation() = SupportConversation(SupportStatus.OPEN, 0, listOf(m(1, SupportMessageKind.YOU, "Earlier message", today)), false)
+                override suspend fun send(text: String, clientId: String): SupportUpdate = throw SupportException(SupportErrorKind.DAILY_LIMIT)
+                override suspend fun handoff() = SupportUpdate(SupportStatus.OPEN, emptyList())
+            }
+            val shown = remember { HelpChatViewModel(if (limited) limitedFake else fake) }
+            if (limited) androidx.compose.runtime.LaunchedEffect(Unit) { kotlinx.coroutines.delay(600); shown.setDraft("hello"); shown.send(true) }
+            HelpChatContent(shown, online = screen != "help-offline", aiDeclined = false, parent = "Settings", onBack = {}, onOpenLink = {})
+        }
+        "settings" -> SettingsScreen(container, {}, {})
         "save-word" -> SaveWordSheet(container, SaveWordRequest("café", "Un café, por favor.", "es"), {})
         "podcast-quiz" -> PodcastQuizSheet(
             container, "Kitchen Talk 2", "ep1",
