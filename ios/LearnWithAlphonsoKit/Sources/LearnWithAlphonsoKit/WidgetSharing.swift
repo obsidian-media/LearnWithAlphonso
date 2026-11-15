@@ -51,12 +51,31 @@ public struct StreakWidgetSnapshot: Codable, Sendable, Equatable {
     public let longestStreak: Int
     public let studiedToday: Bool
     public let updatedAt: Date
+    /// The app's theme when this was written, as the stored raw value ("royal" or "meadow"; `DSPaletteID`). Nil
+    /// in a snapshot written before the widget knew themes: it reads as Royal (`StreakWidgetLook.resolve`).
+    public let theme: String?
 
-    public init(streak: Int, longestStreak: Int, studiedToday: Bool, updatedAt: Date) {
+    public init(streak: Int, longestStreak: Int, studiedToday: Bool, updatedAt: Date, theme: String? = nil) {
         self.streak = streak
         self.longestStreak = longestStreak
         self.studiedToday = studiedToday
         self.updatedAt = updatedAt
+        self.theme = theme
+    }
+
+    /// Reads a snapshot written by any build: the theme key may be missing (old snapshots), and is then nil.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        streak = try c.decode(Int.self, forKey: .streak)
+        longestStreak = try c.decode(Int.self, forKey: .longestStreak)
+        studiedToday = try c.decode(Bool.self, forKey: .studiedToday)
+        updatedAt = try c.decode(Date.self, forKey: .updatedAt)
+        theme = try c.decodeIfPresent(String.self, forKey: .theme)
+    }
+
+    /// The same numbers under another theme: what the app writes when the learner changes theme.
+    public func withTheme(_ theme: String?) -> StreakWidgetSnapshot {
+        StreakWidgetSnapshot(streak: streak, longestStreak: longestStreak, studiedToday: studiedToday, updatedAt: updatedAt, theme: theme)
     }
 
     /// This snapshot as it should read at `date`. "Studied today" was true for the learner's local day it was written
@@ -66,7 +85,7 @@ public struct StreakWidgetSnapshot: Codable, Sendable, Equatable {
         guard studiedToday,
               localDateString(date, timeZone: timeZone) != localDateString(updatedAt, timeZone: timeZone)
         else { return self }
-        return StreakWidgetSnapshot(streak: streak, longestStreak: longestStreak, studiedToday: false, updatedAt: updatedAt)
+        return StreakWidgetSnapshot(streak: streak, longestStreak: longestStreak, studiedToday: false, updatedAt: updatedAt, theme: theme)
     }
 }
 
@@ -91,12 +110,14 @@ public func makeStreakWidgetSnapshot(
     longestStreak: Int,
     lastActiveDate: String?,
     now: Date = Date(),
-    timeZone: TimeZone = .current
+    timeZone: TimeZone = .current,
+    theme: String? = nil
 ) -> StreakWidgetSnapshot {
     StreakWidgetSnapshot(
         streak: streak,
         longestStreak: longestStreak,
         studiedToday: lastActiveDate == localDateString(now, timeZone: timeZone),
-        updatedAt: now
+        updatedAt: now,
+        theme: theme
     )
 }

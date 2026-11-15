@@ -94,4 +94,48 @@ final class WidgetSharingTests: XCTestCase {
         let decoded = try JSONDecoder().decode(StreakWidgetSnapshot.self, from: data)
         XCTAssertEqual(decoded, snapshot)
     }
+
+    func testTheThemeRoundTripsThroughTheWireFormat() throws {
+        let snapshot = StreakWidgetSnapshot(streak: 4, longestStreak: 12, studiedToday: false, updatedAt: fixedNow, theme: "meadow")
+        let decoded = try JSONDecoder().decode(StreakWidgetSnapshot.self, from: JSONEncoder().encode(snapshot))
+        XCTAssertEqual(decoded.theme, "meadow")
+        XCTAssertEqual(decoded, snapshot)
+    }
+
+    /// A snapshot written by a build before the widget knew themes has no theme key. The widget must still read it
+    /// (a decode failure would blank every installed widget until the app is opened) and draw it as Royal.
+    func testAnOldSnapshotWithoutATheme() throws {
+        let old = #"{"streak":3,"longestStreak":9,"studiedToday":true,"updatedAt":721692800}"#
+        let decoded = try JSONDecoder().decode(StreakWidgetSnapshot.self, from: Data(old.utf8))
+        XCTAssertEqual(decoded.streak, 3)
+        XCTAssertEqual(decoded.longestStreak, 9)
+        XCTAssertTrue(decoded.studiedToday)
+        XCTAssertNil(decoded.theme)
+        XCTAssertEqual(StreakWidgetLook.resolve(theme: decoded.theme, deviceDark: false), .royalLight)
+    }
+
+    func testMakeSnapshotCarriesTheTheme() {
+        let withTheme = makeStreakWidgetSnapshot(streak: 5, longestStreak: 9, lastActiveDate: nil, now: fixedNow, timeZone: utc, theme: "meadow")
+        XCTAssertEqual(withTheme.theme, "meadow")
+        XCTAssertNil(makeStreakWidgetSnapshot(streak: 5, longestStreak: 9, lastActiveDate: nil, now: fixedNow, timeZone: utc).theme)
+    }
+
+    /// The learner changes theme: only the theme moves; the numbers stay what the app last published.
+    func testWithThemeChangesOnlyTheTheme() {
+        let before = StreakWidgetSnapshot(streak: 5, longestStreak: 9, studiedToday: true, updatedAt: fixedNow, theme: "royal")
+        let after = before.withTheme("meadow")
+        XCTAssertEqual(after.theme, "meadow")
+        XCTAssertEqual(after.streak, 5)
+        XCTAssertEqual(after.longestStreak, 9)
+        XCTAssertTrue(after.studiedToday)
+        XCTAssertEqual(after.updatedAt, fixedNow)
+    }
+
+    /// Midnight turns "Studied today" off but must not drop the theme.
+    func testAsOfKeepsTheTheme() {
+        let written = makeStreakWidgetSnapshot(streak: 5, longestStreak: 9, lastActiveDate: localDateString(fixedNow, timeZone: utc), now: fixedNow, timeZone: utc, theme: "meadow")
+        let nextDay = written.asOf(nextLocalMidnight(after: fixedNow, timeZone: utc), timeZone: utc)
+        XCTAssertFalse(nextDay.studiedToday)
+        XCTAssertEqual(nextDay.theme, "meadow")
+    }
 }
