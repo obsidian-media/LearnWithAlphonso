@@ -86,8 +86,8 @@ describe("BottomTabs", () => {
   it("marks the tab matching the current route as active", () => {
     mockPathname = "/league";
     render(<BottomTabs />);
-    expect(screen.getByLabelText("League").firstElementChild).toHaveClass("text-moss");
-    expect(screen.getByLabelText("Learn").firstElementChild).not.toHaveClass("text-moss");
+    expect(screen.getByLabelText("League").firstElementChild).toHaveClass("text-ds-choice");
+    expect(screen.getByLabelText("Learn").firstElementChild).not.toHaveClass("text-ds-choice");
   });
 
   it("has a Hector tab after Chat that links to /hector", () => {
@@ -95,7 +95,7 @@ describe("BottomTabs", () => {
     render(<BottomTabs />);
     const hector = screen.getByLabelText("Hector");
     expect(hector).toHaveAttribute("href", "/hector");
-    expect(hector.firstElementChild).toHaveClass("text-moss");
+    expect(hector.firstElementChild).toHaveClass("text-ds-choice");
     const labels = screen.getAllByRole("link").map((l) => l.getAttribute("aria-label"));
     expect(labels.indexOf("Hector")).toBe(labels.indexOf("Chat") + 1);
   });
@@ -103,7 +103,7 @@ describe("BottomTabs", () => {
   it("treats nested paths as active via startsWith", () => {
     mockPathname = "/converse/coffee";
     render(<BottomTabs />);
-    expect(screen.getByLabelText("Chat").firstElementChild).toHaveClass("text-moss");
+    expect(screen.getByLabelText("Chat").firstElementChild).toHaveClass("text-ds-choice");
   });
 });
 

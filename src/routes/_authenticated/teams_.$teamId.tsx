@@ -6,6 +6,7 @@ import {
   BackPill,
   DsButton,
   DsCard,
+  DsEmptyState,
   DsHero,
   DsPill,
   DsRow,
@@ -107,14 +108,16 @@ function TeamDetailPage() {
     return (
       <DsScreen scene="profile">
         <GlassTitle title="Teams" />
-        <DsCard>
-          <p className="ds-type-body text-ds-ink">Couldn't load your team.</p>
-          <div>
-            <DsButton small variant="secondary" onClick={() => refetch()}>
-              Try again
-            </DsButton>
-          </div>
-        </DsCard>
+        <DsEmptyState
+          tone="error"
+          art="/mascots/alphonso-encouraging.png"
+          title="Couldn't load your team."
+          message="Check your connection and try again."
+        >
+          <DsButton small variant="secondary" onClick={() => refetch()}>
+            Try again
+          </DsButton>
+        </DsEmptyState>
       </DsScreen>
     );
   if (!myTeam)

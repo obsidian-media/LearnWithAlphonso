@@ -9,7 +9,7 @@ import {
   HeroKicker,
   Icon,
   Overline,
-  PoseCard,
+  DsEmptyState,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
 import { getSeasonStatus } from "../../lib/season.functions";
@@ -72,15 +72,16 @@ function SeasonPage() {
           )}
         </>
       ) : (
-        <PoseCard
-          src="/mascots/alphonso-encouraging.png"
+        <DsEmptyState
+          tone="error"
+          art="/mascots/alphonso-encouraging.png"
           title="Couldn't load your season status."
-          body="Check your connection and try again."
+          message="Check your connection and try again."
         >
           <DsButton small variant="secondary" onClick={() => void refetch()}>
             Try again
           </DsButton>
-        </PoseCard>
+        </DsEmptyState>
       )}
     </DsScreen>
   );
