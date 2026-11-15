@@ -6,7 +6,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md` (Phase 2 and "Calls made after the builder review", calls 4, 6, 7, 8). Phase 1 is built (#496), see `docs/superpowers/plans/2026-11-13-admin-console-phase1.md`.
 
-**Status:** plan written 2026-11-14 against main at #507. Milestone 1 (data, server, AI agent) built in the PR "Support chat: data and server", awaiting the owner merging its two migrations; milestone 2 (web Help chat) built in the PR "Help chat on the web", no migration; milestone 3 (staff inbox in the admin console) built in the PR "Support inbox in the admin console", awaiting the owner merging its migration `20261117100200`; milestones 4 to 6 not started.
+**Status:** plan written 2026-11-14 against main at #507. Milestone 1 (data, server, AI agent) built in the PR "Support chat: data and server", awaiting the owner merging its two migrations; milestone 2 (web Help chat) built in the PR "Help chat on the web", no migration; milestone 3 (staff inbox in the admin console) built in the PR "Support inbox in the admin console", awaiting the owner merging its migration `20261117100200`; milestone 4 (iOS Help chat) merged as #541 (cec3a40e), no migration, not run on a simulator (Limrun out of credits), with push-tap routing deferred to milestone 6; milestones 5 and 6 not started.
 
 ## Owner decisions (2026-11-14)
 
