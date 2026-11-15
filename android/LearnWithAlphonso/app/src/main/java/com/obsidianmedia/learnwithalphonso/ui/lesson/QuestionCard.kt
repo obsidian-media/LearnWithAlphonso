@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -40,13 +40,20 @@ import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordPolicy
 import com.obsidianmedia.learnwithalphonso.core.net.TranslationVerdict
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRadius
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.components.AskingAlphonso
 import com.obsidianmedia.learnwithalphonso.ui.components.ChoiceButton
 import com.obsidianmedia.learnwithalphonso.ui.components.ExplanationBlock
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.dsTextFieldColors
 import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
 import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHintLine
 import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
@@ -70,9 +77,9 @@ fun QuestionCard(
     /** Which player this card sits in; the account's AI consent decides what it offers there (AiConsentPolicy). */
     surface: AiConsentSurface = AiConsentSurface.LESSON,
 ) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
         when (question) {
             is Question.MultipleChoice -> {
                 question.imageKey?.let { vocabImages[it] }?.let { VocabImage(it, height = 160.dp) }
@@ -87,7 +94,7 @@ fun QuestionCard(
                 AskingAlphonso(question.prompt)
                 AnswerField(picked ?: "", onPick, "Type your answer", enabled = !checked)
                 if (question.bank.isNotEmpty()) {
-                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                         question.bank.forEach { word -> AlphonsoSecondaryButton(word, onClick = { onPick(word) }, enabled = !checked, fullWidth = false) }
                     }
                 }
@@ -118,16 +125,16 @@ fun QuestionCard(
                 var showConsent by rememberSaveable { mutableStateOf(false) }
                 if (!checked && AiConsentPolicy.offersAiGradingOptIn(surface, container.aiConsent.statusOf(consent))) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(AiConsentCopy.localGradingNote, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, modifier = Modifier.weight(1f, fill = false))
-                        TextButton(onClick = { showConsent = true }) { Text(AiConsentCopy.turnOnAiGrading, color = palette.moss) }
+                        Text(AiConsentCopy.localGradingNote, style = FootnoteType, color = ds.inkSoft, modifier = Modifier.weight(1f, fill = false))
+                        TextButton(onClick = { showConsent = true }) { Text(AiConsentCopy.turnOnAiGrading, color = ds.choice) }
                     }
                 }
                 if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
                 if (checked && translationVerdict?.correct == false) {
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.surface).padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        translationVerdict.reason?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = palette.ink) }
-                        Text("ONE WAY TO SAY IT", style = MaterialTheme.typography.labelSmall, color = palette.inkSoft)
-                        Text(question.acceptableAnswers.firstOrNull() ?: "", style = MaterialTheme.typography.bodyLarge, color = palette.ink)
+                    DsCard(fill = ds.sunk, spacing = AlphonsoTokens.Space.s1) {
+                        translationVerdict.reason?.let { Text(it, style = BodyType, color = ds.ink) }
+                        Text("ONE WAY TO SAY IT", style = CaptionType, color = ds.inkSoft)
+                        Text(question.acceptableAnswers.firstOrNull() ?: "", style = BodyType, color = ds.ink)
                     }
                 }
                 if (checked) Explanation(container, isCorrect, question.explanation, course, question)
@@ -153,15 +160,15 @@ internal fun Explanation(container: AppContainer, isCorrect: Boolean, explanatio
         SaveWordMode.Plain
     }
     val saveCourse = course.code.takeIf { mode != SaveWordMode.Plain }
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
         if (inSheet) {
             // In the lesson's verdict sheet (round 6) the sheet already says right or wrong with Alphonso's face, so
             // this is only the one-line why, with no tip card and no "Correct." prefix for TalkBack.
             val onSave = LocalSaveWordHandler.current
             if (saveCourse != null && onSave != null) {
-                TappableText(explanation, saveCourse, mode, onSave, style = MaterialTheme.typography.bodyLarge, color = AlphonsoColor.palette.ink)
+                TappableText(explanation, saveCourse, mode, onSave, style = BodyType, color = LocalAlphonsoTokens.current.ink)
             } else {
-                Text(explanation, style = MaterialTheme.typography.bodyLarge, color = AlphonsoColor.palette.ink)
+                Text(explanation, style = BodyType, color = LocalAlphonsoTokens.current.ink)
             }
         } else {
             ExplanationBlock(isCorrect, explanation, saveCourse = saveCourse, saveMode = mode)
@@ -177,43 +184,39 @@ private fun PlayAudioButton(onClick: () -> Unit) {
 
 @Composable
 fun AnswerField(value: String, onChange: (String?) -> Unit, placeholder: String, enabled: Boolean, multiline: Boolean = false) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     OutlinedTextField(
         value = value,
         onValueChange = { onChange(it) },
-        placeholder = { Text(placeholder, color = palette.inkSoft) },
+        placeholder = { Text(placeholder, color = ds.inkSoft) },
         enabled = enabled,
         singleLine = !multiline,
         minLines = if (multiline) 3 else 1,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(AlphonsoRadius.md),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = palette.parchment, unfocusedContainerColor = palette.parchment, disabledContainerColor = palette.parchment,
-            focusedBorderColor = palette.moss, unfocusedBorderColor = palette.hairline, disabledBorderColor = palette.hairline,
-            focusedTextColor = palette.ink, unfocusedTextColor = palette.ink, disabledTextColor = palette.ink, cursorColor = palette.moss,
-        ),
+        shape = RoundedCornerShape(AlphonsoTokens.Radius.control),
+        colors = dsTextFieldColors(),
     )
 }
 
 /** Token pool and assembled row; picks are indices so duplicate tokens stay distinct. */
 @Composable
 private fun ReorderArea(tokens: List<String>, checked: Boolean, onPick: (String?) -> Unit) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     var order by remember(tokens) { mutableStateOf<List<Int>>(emptyList()) }
     fun publish(next: List<Int>) {
         order = next
         onPick(if (next.size == tokens.size) next.joinToString(" ") { tokens[it] } else null)
     }
     Row(
-        Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp).clip(RoundedCornerShape(AlphonsoRadius.lg)).background(palette.parchment).padding(8.dp).horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = AlphonsoTokens.Space.minTouch).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).padding(AlphonsoTokens.Space.s2).horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
     ) {
-        if (order.isEmpty()) Text("Tap the words below in order", style = MaterialTheme.typography.bodySmall, color = palette.inkSoft, modifier = Modifier.padding(6.dp))
+        if (order.isEmpty()) Text("Tap the words below in order", style = FootnoteType, color = ds.inkSoft, modifier = Modifier.padding(6.dp))
         order.forEachIndexed { position, tokenIdx ->
             AlphonsoPrimaryButton(tokens[tokenIdx], onClick = { publish(order.toMutableList().also { it.removeAt(position) }) }, enabled = !checked, fullWidth = false)
         }
     }
-    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
         tokens.forEachIndexed { i, token ->
             if (i !in order) AlphonsoSecondaryButton(token, onClick = { publish(order + i) }, enabled = !checked, fullWidth = false)
         }
@@ -223,8 +226,8 @@ private fun ReorderArea(tokens: List<String>, checked: Boolean, onPick: (String?
 @Composable
 fun VocabImage(image: VocabImageRef, height: androidx.compose.ui.unit.Dp = 120.dp, modifier: Modifier = Modifier) {
     // Images load from Pexels' CDN at runtime; a plain placeholder keeps the lesson usable offline.
-    val palette = AlphonsoColor.palette
-    Column(modifier.fillMaxWidth().height(height).clip(RoundedCornerShape(AlphonsoRadius.md)).background(palette.parchment)) {
+    val ds = LocalAlphonsoTokens.current
+    Column(modifier.fillMaxWidth().height(height).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card)) {
         AsyncRemoteImage(url = image.url, contentDescription = image.alt, modifier = Modifier.fillMaxWidth().height(height))
     }
 }

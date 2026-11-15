@@ -16,6 +16,9 @@ import com.obsidianmedia.learnwithalphonso.ui.components.DsScene
 import com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen
 import com.obsidianmedia.learnwithalphonso.ui.components.DsSwitch
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
+import com.obsidianmedia.learnwithalphonso.ui.components.DsEmptyState
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
@@ -34,6 +37,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,12 +59,12 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
+
+
+
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -263,7 +267,7 @@ fun PathItemRow(item: PathItem, onClick: (() -> Unit)? = null) {
     val spoken = "${item.kind.noun}: ${item.title}, ${item.minutes} minutes" +
         (if (done) ", done" else if (item.state == "next") ", next" else "")
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(tone)
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(tone).border(2.dp, if (tone == ds.card) ds.line else tone, RoundedCornerShape(AlphonsoTokens.Radius.control))
             .let { if (onClick != null && !done) it.clickable(role = Role.Button, onClick = onClick) else it }
             .defaultMinSize(minHeight = 56.dp).padding(horizontal = 12.dp, vertical = 8.dp)
             .clearAndSetSemantics { contentDescription = spoken },
@@ -272,10 +276,10 @@ fun PathItemRow(item: PathItem, onClick: (() -> Unit)? = null) {
     ) {
         PathTypeBadge(item.kind)
         Column(Modifier.weight(1f)) {
-            Text(item.title, style = MaterialTheme.typography.titleSmall, color = ds.ink, maxLines = 1)
-            Text(item.subtitle, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft, maxLines = 1)
+            Text(item.title, style = HeadlineType, color = ds.ink, maxLines = 1)
+            Text(item.subtitle, style = FootnoteType, color = ds.inkSoft, maxLines = 1)
         }
-        Text((if (done) "✓ " else "") + "${item.minutes} min", style = MaterialTheme.typography.labelMedium, color = if (done) ds.rightInk else ds.inkSoft)
+        Text((if (done) "✓ " else "") + "${item.minutes} min", style = CaptionType, color = if (done) ds.rightInk else ds.inkSoft)
     }
 }
 
@@ -295,8 +299,7 @@ fun PathMixBar(mix: List<PathMixEntry>, onHero: Boolean = false) {
 
 @Composable
 private fun Card(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    val ds = LocalAlphonsoTokens.current
-    Column(modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(ds.card).padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) { content() }
+    DsCard(modifier, padding = AlphonsoTokens.Space.s3, spacing = AlphonsoTokens.Space.s2) { content() }
 }
 
 // ---------------------------------------------------------------- Learn: the path card with today's list (A1)
@@ -319,11 +322,11 @@ private fun GoalCard(path: LearningPath?, onOpenPlanner: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(card.kicker.uppercase(), style = MaterialTheme.typography.labelSmall, color = ds.actionText)
-            Text(card.headline, style = MaterialTheme.typography.titleLarge, color = ds.ink)
-            Text(card.detail, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+            Text(card.kicker.uppercase(), style = CaptionType, color = ds.actionText)
+            Text(card.headline, style = TitleType, color = ds.ink)
+            Text(card.detail, style = FootnoteType, color = ds.inkSoft)
         }
-        Text("›", style = MaterialTheme.typography.titleLarge, color = ds.inkSoft, modifier = Modifier.clearAndSetSemantics { })
+        Text("›", style = TitleType, color = ds.inkSoft, modifier = Modifier.clearAndSetSemantics { })
     }
 }
 
@@ -333,15 +336,15 @@ fun PathCard(vm: PathViewModel, onOpenRoad: () -> Unit, onBuild: () -> Unit, onO
     val ui by vm.ui.collectAsState()
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         when (val s = ui) {
-            PathUi.Loading -> Card { AlphonsoSectionHeader("My path"); Text("Loading your path…", style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft) }
+            PathUi.Loading -> Card { AlphonsoSectionHeader("My path"); Text("Loading your path…", style = BodyType, color = ds.inkSoft) }
             is PathUi.Failed -> Card {
                 AlphonsoSectionHeader("My path")
-                Text(s.error.userMessage, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyMedium, color = ds.wrongInk)
+                Text(s.error.userMessage, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = BodyType, color = ds.wrongInk)
                 AlphonsoSecondaryButton("Try again", onClick = { vm.reload() }, fullWidth = false)
             }
             PathUi.None -> {
                 GoalCard(null, onBuild)
-                Text("With a goal we build a daily plan of lessons, podcasts, talks and story campaigns.", style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft)
+                Text("With a goal we build a daily plan of lessons, podcasts, talks and story campaigns.", style = BodyType, color = ds.inkSoft)
             }
             is PathUi.Ready -> {
                 val p = s.path
@@ -351,18 +354,18 @@ fun PathCard(vm: PathViewModel, onOpenRoad: () -> Unit, onBuild: () -> Unit, onO
                         .clickable(role = Role.Button, onClickLabel = "Open my path", onClick = onOpenRoad).padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Text("MY PATH · FINISH ${p.goalLabel.uppercase()}", style = MaterialTheme.typography.labelSmall, color = ds.onHeroKick)
-                    Text(p.statusLine, style = MaterialTheme.typography.titleLarge, color = ds.onHero)
+                    Text("MY PATH · FINISH ${p.goalLabel.uppercase()}", style = CaptionType, color = ds.onHeroKick)
+                    Text(p.statusLine, style = TitleType, color = ds.onHero)
                     PathBar(p.lessonFraction)
-                    Text("${p.progress.lessonsDone} of ${p.progress.lessonsInScope} lessons", style = MaterialTheme.typography.bodySmall, color = ds.onHeroSoft)
+                    Text("${p.progress.lessonsDone} of ${p.progress.lessonsInScope} lessons", style = FootnoteType, color = ds.onHeroSoft)
                 }
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("Today · ${p.today.targetMinutes} min", style = MaterialTheme.typography.titleMedium, color = ds.ink, modifier = Modifier.weight(1f))
-                    Text(if (p.today.minutesLeft > 0) "${p.today.minutesLeft} min left" else "Done for today", style = MaterialTheme.typography.labelMedium, color = ds.inkSoft)
+                    Text("Today · ${p.today.targetMinutes} min", style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+                    Text(if (p.today.minutesLeft > 0) "${p.today.minutesLeft} min left" else "Done for today", style = CaptionType, color = ds.inkSoft)
                 }
                 p.today.items.forEach { item -> PathItemRow(item, onClick = item.ref?.let { r -> { onOpenRef(r) } }) }
-                if (p.today.items.isEmpty()) Text("Nothing planned today. Enjoy the rest.", style = MaterialTheme.typography.bodyMedium, color = ds.inkSoft)
-                Text("Minutes are estimates from lesson length, episode length and typical call length.", style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
+                if (p.today.items.isEmpty()) Text("Nothing planned today. Enjoy the rest.", style = BodyType, color = ds.inkSoft)
+                Text("Minutes are estimates from lesson length, episode length and typical call length.", style = CaptionType, color = ds.inkSoft)
             }
         }
     }
@@ -373,17 +376,14 @@ fun PathCard(vm: PathViewModel, onOpenRoad: () -> Unit, onBuild: () -> Unit, onO
 enum class PathMode { ROAD, WEEK, WHY }
 
 @Composable
-private fun ScreenFrame(title: String, subtitle: String?, onBack: () -> Unit, content: @Composable () -> Unit) {
-    val ds = LocalAlphonsoTokens.current
-    Column(Modifier.fillMaxWidth().background(ds.surface)) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
-            Column {
-                Text(title, style = MaterialTheme.typography.titleLarge, color = ds.ink)
-                if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
-            }
+private fun ScreenFrame(title: String, subtitle: String?, parent: String, onBack: () -> Unit, content: @Composable () -> Unit) {
+    DsSceneScreen(DsScene.LEARN) {
+        Column(Modifier.fillMaxSize()) {
+            DsBackBar(parent, onBack)
+            DsGlassTitle(title, subtitle, Modifier.padding(horizontal = AlphonsoTokens.Space.gutter))
+            Spacer(Modifier.height(AlphonsoTokens.Space.s2))
+            content()
         }
-        content()
     }
 }
 
@@ -391,10 +391,12 @@ private fun ScreenFrame(title: String, subtitle: String?, onBack: () -> Unit, co
 fun PathScreen(
     container: AppContainer, mode: PathMode, onBack: () -> Unit,
     onOpenWeek: () -> Unit, onOpenWhy: () -> Unit, onBuild: () -> Unit, onOpenRef: (PathItemRef) -> Unit,
+    /** DEBUG screenshots (ScreenHarness): a view-model over fixed data. */
+    seededVm: PathViewModel? = null,
 ) {
     val ds = LocalAlphonsoTokens.current
     val course by container.activeCourse.course.collectAsState()
-    val vm = rememberPathViewModel(container, course)
+    val vm = seededVm ?: rememberPathViewModel(container, course)
     val ui by vm.ui.collectAsState()
     val busy by vm.busy.collectAsState()
     val actionError by vm.actionError.collectAsState()
@@ -405,20 +407,22 @@ fun PathScreen(
         PathMode.WEEK -> "My week"
         PathMode.WHY -> "Why this mix?"
     }
-    ScreenFrame(title, if (mode == PathMode.ROAD && path != null) "${path.dailyMinutes} min a day · by ${GoalCopy.formatDate(path.progress.targetDate)}" else null, onBack) {
+    ScreenFrame(title, if (mode == PathMode.ROAD && path != null) "${path.dailyMinutes} min a day · by ${GoalCopy.formatDate(path.progress.targetDate)}" else null, if (mode == PathMode.ROAD) "Learn" else "My path", onBack) {
         when (val s = ui) {
-            PathUi.Loading -> Text("Loading your path…", Modifier.padding(16.dp), color = ds.inkSoft)
-            is PathUi.Failed -> Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(s.error.userMessage, color = ds.wrongInk)
+            PathUi.Loading -> Box(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.gutter), contentAlignment = Alignment.Center) {
+                androidx.compose.material3.CircularProgressIndicator(color = ds.choice, modifier = Modifier.semantics { contentDescription = "Loading your path" })
+            }
+            is PathUi.Failed -> Column(Modifier.padding(AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3), horizontalAlignment = Alignment.CenterHorizontally) {
+                DsEmptyState("Couldn't load your path", s.error.userMessage, artAsset = "lesson/hmm.webp")
                 AlphonsoSecondaryButton("Try again", onClick = { vm.reload() }, fullWidth = false)
             }
-            PathUi.None -> Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("You have no path yet.", color = ds.inkSoft)
+            PathUi.None -> Column(Modifier.padding(AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3), horizontalAlignment = Alignment.CenterHorizontally) {
+                DsEmptyState("You have no path yet.", "Set a goal and we build a daily plan.", artAsset = "lesson/happy.webp")
                 AlphonsoPrimaryButton("Build my path", onClick = onBuild, fullWidth = false)
             }
             is PathUi.Ready -> LazyColumn(
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = AlphonsoTokens.Space.gutter, vertical = AlphonsoTokens.Space.s2),
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
             ) {
                 when (mode) {
                     PathMode.ROAD -> roadItems(s.path, vm, busy, actionError, scope, container, course, onOpenWeek, onOpenWhy, onBuild, onOpenRef)
@@ -444,23 +448,28 @@ private fun androidx.compose.foundation.lazy.LazyListScope.roadItems(
     }
     if (p.status == "behind" && p.recovery.isNotEmpty()) item(key = "recovery") {
         val ds = LocalAlphonsoTokens.current
-        var picked by remember { mutableStateOf<String?>(null) }
+        var picked by androidx.compose.runtime.saveable.rememberSaveable(p.recovery.joinToString { it.id }) { mutableStateOf<String?>(null) }
         val chosenId = picked ?: p.recovery.firstOrNull { it.suggested }?.id
         Card {
-            Text(p.statusLine, style = MaterialTheme.typography.titleMedium, color = ds.ink)
-            Text(p.statusDetail, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+            Text(p.statusLine, style = HeadlineType, color = ds.ink)
+            Text(p.statusDetail, style = FootnoteType, color = ds.inkSoft)
             p.recovery.forEach { o ->
+                val on = o.id == chosenId
+                val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
                 Row(
-                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp)
+                    Modifier.fillMaxWidth().defaultMinSize(minHeight = AlphonsoTokens.Space.minTouch).clip(shape).background(if (on) ds.choiceTint else ds.card)
+                        .border(2.dp, if (on) ds.choice else ds.line, shape)
                         .clickable(role = Role.RadioButton) { picked = o.id }
-                        .semantics { selected = o.id == chosenId },
-                    verticalAlignment = Alignment.CenterVertically,
+                        .padding(AlphonsoTokens.Space.s3)
+                        .semantics(mergeDescendants = true) { selected = on },
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
                 ) {
-                    RadioButton(selected = o.id == chosenId, onClick = null)
-                    Spacer(Modifier.width(8.dp))
+                    Box(Modifier.size(AlphonsoTokens.Space.s5).clip(CircleShape).border(2.dp, if (on) ds.choice else ds.line, CircleShape).background(if (on) ds.choice else ds.card), contentAlignment = Alignment.Center) {
+                        if (on) Icon(Icons.Filled.Check, null, tint = ds.onChoice, modifier = Modifier.size(AlphonsoTokens.Space.s4))
+                    }
                     Column {
-                        Text(o.title + if (o.suggested) " (suggested)" else "", style = MaterialTheme.typography.titleSmall, color = ds.ink)
-                        Text(o.detail, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+                        Text(o.title + if (o.suggested) " (suggested)" else "", style = HeadlineType, color = ds.ink)
+                        Text(o.detail, style = FootnoteType, color = ds.inkSoft)
                     }
                 }
             }
@@ -486,13 +495,26 @@ private fun androidx.compose.foundation.lazy.LazyListScope.roadItems(
     items(p.road.size, key = { "stop-$it" }) { i -> StopRow(p.road[i], onOpenRef) }
     item(key = "links") {
         val ds = LocalAlphonsoTokens.current
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
             listOf("This week" to onOpenWeek, "Why this mix?" to onOpenWhy, "Change my path" to onBuild).forEach { (label, go) ->
-                TextButton(onClick = go, modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp)) {
-                    Text("$label ›", color = ds.ink, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
-                }
+                DsLinkRow(label, go)
             }
         }
+    }
+}
+
+/** A row that opens another screen: the label and a chevron, on a DS card. */
+@Composable
+private fun DsLinkRow(label: String, onClick: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+    Row(
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = AlphonsoTokens.Space.minTouch).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+            .clickable(role = Role.Button, onClick = onClick).padding(AlphonsoTokens.Space.s3).semantics(mergeDescendants = true) { },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
+        Text("›", style = TitleType, color = ds.inkSoft, modifier = Modifier.clearAndSetSemantics { })
     }
 }
 
@@ -510,7 +532,7 @@ private fun StopRow(stop: PathStop, onOpenRef: (PathItemRef) -> Unit) {
     }
     val spoken = (if (done) "Done. " else if (cur) "Next up. " else "") + "${stop.title}. ${stop.subtitle}"
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(tone)
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(tone).border(2.dp, if (tone == ds.card) ds.line else tone, RoundedCornerShape(AlphonsoTokens.Radius.control))
             .let { m -> stop.ref?.let { r -> if (!done && stop.kind == "item") m.clickable(role = Role.Button) { onOpenRef(r) } else m } ?: m }
             .padding(10.dp).clearAndSetSemantics { contentDescription = spoken },
         verticalAlignment = Alignment.CenterVertically,
@@ -523,9 +545,9 @@ private fun StopRow(stop: PathStop, onOpenRef: (PathItemRef) -> Unit) {
         }
         Column(Modifier.weight(1f)) {
             val kind = stop.pathKind
-            if (kind != null && !isGoal) Text(if (stop.note.isEmpty()) kind.noun else "${kind.noun} · ${stop.note}", style = MaterialTheme.typography.labelSmall, color = ds.actionText)
-            Text(stop.title, style = MaterialTheme.typography.titleSmall, color = if (isGoal) ds.onHero else ds.ink)
-            Text(stop.subtitle + (stop.estDate?.let { " · est. ${GoalCopy.formatDate(it)}" } ?: ""), style = MaterialTheme.typography.bodySmall, color = if (isGoal) ds.onHeroSoft else ds.inkSoft)
+            if (kind != null && !isGoal) Text(if (stop.note.isEmpty()) kind.noun else "${kind.noun} · ${stop.note}", style = CaptionType, color = ds.actionText)
+            Text(stop.title, style = HeadlineType, color = if (isGoal) ds.onHero else ds.ink)
+            Text(stop.subtitle + (stop.estDate?.let { " · est. ${GoalCopy.formatDate(it)}" } ?: ""), style = FootnoteType, color = if (isGoal) ds.onHeroSoft else ds.inkSoft)
         }
     }
 }
@@ -534,9 +556,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.weekItems(p: Learning
     item(key = "week-mix") {
         val ds = LocalAlphonsoTokens.current
         Card {
-            Text("${p.dailyMinutes} min a day · ${p.week.count { it.state != "rest" }} days · ${p.weekMinutes} min", style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+            Text("${p.dailyMinutes} min a day · ${p.week.count { it.state != "rest" }} days · ${p.weekMinutes} min", style = FootnoteType, color = ds.inkSoft)
             PathMixBar(p.mix)
-            Text("${p.weekDoneMinutes} of ${p.weekMinutes} minutes done so far.", style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
+            Text("${p.weekDoneMinutes} of ${p.weekMinutes} minutes done so far.", style = CaptionType, color = ds.inkSoft)
         }
     }
     items(p.week.size, key = { "day-$it" }) { i ->
@@ -546,18 +568,18 @@ private fun androidx.compose.foundation.lazy.LazyListScope.weekItems(p: Learning
         val spoken = "${d.label}${if (d.state == "today") ", today" else ""}: " +
             (if (d.state == "rest") "rest day" else if (d.items.isEmpty()) "nothing" else d.items.joinToString(", ") { it.kind.noun })
         Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(tone).defaultMinSize(minHeight = 48.dp).padding(horizontal = 12.dp, vertical = 6.dp)
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(tone).border(2.dp, if (tone == ds.card) ds.line else tone, RoundedCornerShape(AlphonsoTokens.Radius.control)).defaultMinSize(minHeight = 48.dp).padding(horizontal = 12.dp, vertical = 6.dp)
                 .clearAndSetSemantics { contentDescription = spoken },
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Text(d.label, style = MaterialTheme.typography.titleSmall, color = ds.ink, modifier = Modifier.width(44.dp))
+            Text(d.label, style = HeadlineType, color = ds.ink, modifier = Modifier.width(44.dp))
             d.items.forEach { PathTypeBadge(it.kind, small = true) }
             Spacer(Modifier.weight(1f))
-            Text(if (d.state == "rest") "Rest day" else if (d.state == "missed") "Missed" else "${d.minutes} min", style = MaterialTheme.typography.labelMedium, color = ds.inkSoft)
+            Text(if (d.state == "rest") "Rest day" else if (d.state == "missed") "Missed" else "${d.minutes} min", style = CaptionType, color = ds.inkSoft)
         }
     }
     item(key = "week-why") {
-        TextButton(onClick = onOpenWhy, modifier = Modifier.defaultMinSize(minHeight = 48.dp)) { Text("Why this mix? ›") }
+        DsLinkRow("Why this mix?", onOpenWhy)
     }
 }
 
@@ -570,20 +592,20 @@ private fun androidx.compose.foundation.lazy.LazyListScope.whyItems(p: LearningP
         val ds = LocalAlphonsoTokens.current
         val w = p.why[i]
         Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(ds.card).defaultMinSize(minHeight = 48.dp).padding(horizontal = 12.dp, vertical = 8.dp)
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).border(2.dp, ds.line, RoundedCornerShape(AlphonsoTokens.Radius.control)).defaultMinSize(minHeight = 48.dp).padding(horizontal = 12.dp, vertical = 8.dp)
                 .clearAndSetSemantics { contentDescription = "${w.headline}. ${w.detail}" },
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             PathTypeBadge(w.kind, small = true)
             Column {
-                Text(w.headline, style = MaterialTheme.typography.titleSmall, color = ds.ink)
-                Text(w.detail, style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+                Text(w.headline, style = HeadlineType, color = ds.ink)
+                Text(w.detail, style = FootnoteType, color = ds.inkSoft)
             }
         }
     }
     item(key = "why-foot") {
         val ds = LocalAlphonsoTokens.current
-        Text("Change the minutes or turn a type off in Build my path. Your skill scores update the plan as you practise.", style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
+        Text("Change the minutes or turn a type off in Build my path. Your skill scores update the plan as you practise.", style = CaptionType, color = ds.inkSoft)
     }
 }
 
@@ -703,18 +725,18 @@ fun PathProfileCard(container: AppContainer) {
     when (val s = ui) {
         PathUi.Loading, is PathUi.Failed -> Unit
         PathUi.None -> Card {
-            Text("My path", style = MaterialTheme.typography.titleMedium, color = ds.ink)
-            Text("Build a daily plan from your goal: lessons, podcasts, talks and story campaigns. Open the Learn tab to start.", style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
+            Text("My path", style = HeadlineType, color = ds.ink)
+            Text("Build a daily plan from your goal: lessons, podcasts, talks and story campaigns. Open the Learn tab to start.", style = FootnoteType, color = ds.inkSoft)
         }
         is PathUi.Ready -> {
             val p = s.path
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(ds.hero).padding(14.dp).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("MY PATH", style = MaterialTheme.typography.labelSmall, color = ds.onHeroKick)
-                    Text("Finish ${p.goalLabel}", style = MaterialTheme.typography.titleMedium, color = ds.onHero)
-                    Text(p.statusLine, style = MaterialTheme.typography.bodyMedium, color = ds.xp)
+                    Text("MY PATH", style = CaptionType, color = ds.onHeroKick)
+                    Text("Finish ${p.goalLabel}", style = HeadlineType, color = ds.onHero)
+                    Text(p.statusLine, style = BodyType, color = ds.xp)
                     PathBar(p.weekFraction)
-                    Text("This week: ${p.weekDoneMinutes} of ${p.weekMinutes} min", style = MaterialTheme.typography.bodySmall, color = ds.onHeroSoft)
+                    Text("This week: ${p.weekDoneMinutes} of ${p.weekMinutes} min", style = FootnoteType, color = ds.onHeroSoft)
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     visibleStreaks(p.streaks).forEach { st ->
@@ -725,13 +747,13 @@ fun PathProfileCard(container: AppContainer) {
                             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp),
                         ) {
                             PathTypeBadge(st.kind, small = true)
-                            Text("${st.days}d", style = MaterialTheme.typography.titleSmall, color = ds.ink)
-                            Text("${st.weekMinutes} min", style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
-                            Text(st.kind.label, style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
+                            Text("${st.days}d", style = HeadlineType, color = ds.ink)
+                            Text("${st.weekMinutes} min", style = CaptionType, color = ds.inkSoft)
+                            Text(st.kind.label, style = CaptionType, color = ds.inkSoft)
                         }
                     }
                 }
-                Text("Days in a row and minutes this week, per activity.", style = MaterialTheme.typography.labelSmall, color = ds.inkSoft)
+                Text("Days in a row and minutes this week, per activity.", style = CaptionType, color = ds.inkSoft)
             }
         }
     }

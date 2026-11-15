@@ -325,7 +325,7 @@ struct RootView: View {
             // Dark Mode.
             appearanceObserver.start()
         }
-        .preferredColorScheme(AlphonsoThemeManager.shared.palette.colorScheme)
+        .preferredColorScheme(AlphonsoThemeManager.shared.preferredColorScheme)
         // The round-6 design system colours for the chosen palette (DesignSystem/AlphonsoDSEnvironment.swift).
         .alphonsoDesignSystem()
         .environment(\.paywallLearner, PaywallLearner(course: activeCourse.course, name: paywallName))

@@ -3,8 +3,8 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// The round-6 design system: two palettes (Royal, the default, and Meadow), each with light and night values, and
-/// one set of scales. Screens built on it read these names only, never a number or a hex value; a palette swaps the
+/// The round-6 design system: two palettes (Royal, the default, with light and night values, and Meadow, light
+/// only: Meadow stays light, even in dark mode) and one set of scales. Screens built on it read these names only, never a number or a hex value; a palette swaps the
 /// values and nothing else. Read the active colours from `@Environment(\.alphonsoDS)`.
 public enum AlphonsoDS {
     public struct Colors: Sendable {
@@ -259,64 +259,12 @@ public enum AlphonsoDS {
         callEnd: Color(hex: 0xE64740)
     )
 
-    public static let meadowNight = Colors(
-        ink: Color(hex: 0xECF1EA),
-        brand: Color(hex: 0xCFE3D3),
-        choice: Color(hex: 0xD9C9A3),
-        choiceTint: Color(hex: 0x2B2A1E),
-        choiceEdge: Color(hex: 0xA8976E),
-        action: Color(hex: 0x6FBF8E),
-        actionHi: Color(hex: 0x7FCB9C),
-        actionEdge: Color(hex: 0x3E7E59),
-        actionText: Color(hex: 0x8FD3A8),
-        actionTint: Color(hex: 0x183225),
-        onAction: Color(hex: 0x0C1A12),
-        surface: Color(hex: 0x0F1A14),
-        sunk: Color(hex: 0x0A120E),
-        card: Color(hex: 0x16241C),
-        line: Color(hex: 0x26382D),
-        inkSoft: Color(hex: 0xA7B5AB),
-        inkFaint: Color(hex: 0x64716A),
-        hero: Color(hex: 0x153C25),
-        onHeroSoft: Color(hex: 0xD5DBF5),
-        onHeroKick: Color(hex: 0xF6D88A),
-        right: Color(hex: 0x4CC985),
-        rightInk: Color(hex: 0x9BE6B9),
-        rightTint: Color(hex: 0x0F2E1B),
-        rightEdge: Color(hex: 0x2F8F5C),
-        onRight: Color(hex: 0x0C1A12),
-        wrong: Color(hex: 0xFF8A73),
-        wrongInk: Color(hex: 0xFFB4A6),
-        wrongTint: Color(hex: 0x3A1A16),
-        wrongEdge: Color(hex: 0xC9604E),
-        onWrong: Color(hex: 0x0F1A14),
-        xp: Color(hex: 0xF2C14E),
-        xpEdge: Color(hex: 0xB07A12),
-        xpText: Color(hex: 0xF2C14E),
-        xpTint: Color(hex: 0x3A2F12),
-        heart: Color(hex: 0xFF6F93),
-        heartTint: Color(hex: 0x3A1622),
-        heartText: Color(hex: 0xFFB3C6),
-        flame: Color(hex: 0xFFA24A),
-        flameTint: Color(hex: 0x3A2412),
-        heroA: Color(hex: 0x3A7050),
-        heroB: Color(hex: 0x0B1F13),
-        onChoice: Color(hex: 0x141B3D),
-        onHero: Color(hex: 0xFFFFFF),
-        callGlass: Color(hex: 0x121A15),
-        callMint: Color(hex: 0xC9F5DC),
-        callRecord: Color(hex: 0x70E0A5),
-        callDock: Color(hex: 0x17241C),
-        callEnd: Color(hex: 0xE64740)
-    )
-
-    /// The colours for a palette, light or night.
+    /// The colours for a palette, light or night. Meadow has no night: it is Meadow light whatever the night flag says.
     public static func colors(_ palette: DSPaletteID, night: Bool) -> Colors {
         switch (palette, night) {
         case (.royal, false): return royalLight
         case (.royal, true): return royalNight
-        case (.meadow, false): return meadowLight
-        case (.meadow, true): return meadowNight
+        case (.meadow, _): return meadowLight
         }
     }
 

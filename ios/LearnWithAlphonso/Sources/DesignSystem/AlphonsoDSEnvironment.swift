@@ -21,7 +21,7 @@ public extension AlphonsoDS {
     /// inside a view body tracks both, because the manager is `@Observable`.
     static var current: Colors {
         let manager = AlphonsoThemeManager.shared
-        return colors(manager.paletteID, night: manager.systemColorScheme == .dark)
+        return colors(manager.paletteID, night: manager.isNight)
     }
 
     /// The bundled face for a type role, with its weight, width and optical size axes, scaled for Dynamic Type

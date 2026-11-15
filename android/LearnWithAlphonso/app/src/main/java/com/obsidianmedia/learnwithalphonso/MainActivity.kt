@@ -2,11 +2,14 @@ package com.obsidianmedia.learnwithalphonso
 
 import com.obsidianmedia.learnwithalphonso.firstrun.FirstRunDevice
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,7 +17,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.obsidianmedia.learnwithalphonso.core.logic.InviteLink
 import com.obsidianmedia.learnwithalphonso.ui.RootScreen
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoPalettes
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTheme
+import com.obsidianmedia.learnwithalphonso.ui.theme.SystemBars
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -31,7 +36,20 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeId by container.themeManager.theme.collectAsState()
             val paletteId by container.themeManager.palette.collectAsState()
-            AlphonsoTheme(themeId, isSystemInDarkTheme(), paletteId) {
+            val systemDark = isSystemInDarkTheme()
+            // Meadow stays light in dark mode: light system bars (dark icons) so the status bar never turns dark on it.
+            DisposableEffect(themeId, systemDark) {
+                if (AlphonsoPalettes.systemBars(themeId) == SystemBars.LIGHT) {
+                    enableEdgeToEdge(
+                        statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+                        navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+                    )
+                } else {
+                    enableEdgeToEdge()
+                }
+                onDispose {}
+            }
+            AlphonsoTheme(themeId, systemDark, paletteId) {
                 RootScreen(
                     container, pendingInviteCode, onInviteConsumed = { pendingInviteCode = null },
                     // DEBUG screenshots only: `adb shell am start -n ... --es firstRunHarness hector` (FirstRunHarness).
