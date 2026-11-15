@@ -27,6 +27,12 @@ export type LooseAdmin = {
   // The query builder is chained dynamically (eq, gt, order, limit), so it stays untyped here.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   from(table: string): any;
+  /** Only the author's email lookup (compared with the display name on the server, never sent to a client). */
+  auth: {
+    admin: {
+      getUserById(id: string): PromiseLike<{ data: { user: { email?: string | null } | null } }>;
+    };
+  };
 };
 
 function must<T>(
