@@ -22,6 +22,14 @@ class SkillsRadarTest {
     }
 
     @Test
+    fun `empty intro says skills start from the next lesson only when nothing was answered`() {
+        assertEquals("Skills start counting from your next lesson", SkillsRadar.NO_DATA_COPY)
+        assertEquals(SkillsRadar.NO_DATA_COPY, SkillsRadar.emptyIntro(model(emptyList()).skills))
+        val some = SkillsRadar.emptyIntro(model(listOf(row("listening", 3, 4))).skills)
+        assertTrue(some != SkillsRadar.NO_DATA_COPY && some.contains("will appear here"))
+    }
+
+    @Test
     fun `a skill under the minimum answers is unscored and says how many more it needs`() {
         val s = model(listOf(row("listening", 4, MIN_SKILL_ANSWERS - 1))).skills.first { it.skill == "listening" }
         assertNull(s.pct)

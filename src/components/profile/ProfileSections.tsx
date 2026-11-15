@@ -42,6 +42,7 @@ import { isValidTimeZone, skillScores } from "@/lib/profile-data";
 import {
   SKILL_LABEL,
   MIN_SKILL_ANSWERS,
+  skillsEmptyIntro,
   radarModel,
   radarPoint,
   radarPolygon,
@@ -290,8 +291,8 @@ export function BigNumbers({ o }: { o: ProfileOverview }) {
         name="words"
         icon="words"
         iconClass="text-ds-choice"
-        value={n.masteredWords}
-        label={plural(n.masteredWords, "word mastered", "words mastered")}
+        value={n.wordsLearned}
+        label={plural(n.wordsLearned, "word learned", "words learned")}
         note={n.savedWords > 0 ? `${fmt(n.savedWords)} saved to review` : "Tap a word to save it"}
         noteTone={n.savedWords > 0 ? "right" : "soft"}
         className="border-ds-line bg-ds-card"
@@ -1234,9 +1235,8 @@ export function SkillsChart({ o }: { o: ProfileOverview }) {
         </>
       ) : (
         <>
-          <p className="ds-type-footnote text-ds-ink-soft">
-            Your listening, speaking, vocabulary, grammar and reading shape will appear here once
-            there is enough practice to show it.
+          <p className="ds-type-footnote text-ds-ink-soft" data-skills-intro="">
+            {skillsEmptyIntro(model.skills)}
           </p>
           <ul className="grid gap-1 ds-type-caption text-ds-ink-soft" data-skills-needed="">
             {model.skills.map((s) => (

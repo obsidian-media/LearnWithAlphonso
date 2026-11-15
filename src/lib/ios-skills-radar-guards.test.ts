@@ -46,8 +46,39 @@ describe("iOS Skills radar", () => {
     expect(app("ProfileHubView.swift")).toContain("dailyGoalMinutes: dailyMinutes");
   });
 
-  it("shows Words mastered and the league rank with the week end", () => {
-    expect(view).toContain("words mastered");
+  it("shows Words learned and the league rank with the week end", () => {
+    expect(view).toContain("words learned");
+    expect(view).toContain("b.wordsLearned");
+    expect(view).not.toContain("masteredWords");
     expect(view).toContain("ProfileMath.leagueWeekEnds");
+  });
+});
+
+describe("Skills empty copy and Words learned, one wording on web, iOS and Android", () => {
+  const AND = "android/LearnWithAlphonso";
+  const andRadar = norm(
+    readFileSync(
+      `${AND}/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/profile/SkillsRadar.kt`,
+      "utf8",
+    ),
+  );
+  const andView = norm(
+    readFileSync(
+      `${AND}/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/profile/ProfileOverviewUi.kt`,
+      "utf8",
+    ),
+  );
+  const copy = "Skills start counting from your next lesson";
+  it("every platform carries the same no-data sentence and its view uses it", () => {
+    expect(web).toContain(copy);
+    expect(radar).toContain(copy);
+    expect(andRadar).toContain(copy);
+    expect(view).toContain("SkillsRadar.emptyIntro(radar.skills)");
+    expect(andView).toContain("SkillsRadar.emptyIntro(radar.skills)");
+  });
+  it("Android's Words tile counts learned words from the lessons, not mastered markers", () => {
+    expect(andView).toContain("b.wordsLearned");
+    expect(andView).toContain('"word learned", "words learned"');
+    expect(andView).not.toContain("masteredWords");
   });
 });

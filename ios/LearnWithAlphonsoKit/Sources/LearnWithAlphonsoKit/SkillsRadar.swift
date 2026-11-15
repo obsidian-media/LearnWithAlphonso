@@ -8,6 +8,16 @@ public enum SkillsRadar {
     /// How many skills must have enough answers before a shape is drawn; below that the page shows the empty state.
     public static let minSkillsForRadar = 3
 
+    /// Shown while the chart has no answers at all (skill_days only started 2026-11-07, so older lessons never fed it).
+    public static let noDataCopy = "Skills start counting from your next lesson"
+
+    /// The line above the "answers still needed" list: the no-data sentence when nothing was answered, else the usual one.
+    public static func emptyIntro(_ skills: [Skill]) -> String {
+        skills.allSatisfy { $0.answered == 0 }
+            ? noDataCopy
+            : "Your listening, speaking, vocabulary, grammar and reading shape will appear here once there is enough practice to show it."
+    }
+
     public static func label(_ skill: String) -> String {
         switch skill {
         case "listening": return "Listening"
