@@ -67,6 +67,28 @@ describe("the Hands-free switch is in both Practice entry points", () => {
     );
   });
 
+  it("keeps the choice across the scenes of one campaign run, and only that", () => {
+    const campaign = code(`${APP}/CampaignView.swift`);
+    // Continue: next scene remembers that hands-free was on, before finishCall's disappeared() turns it off.
+    const finish = fn("CampaignView.swift", "finishCall");
+    expect(finish).toContain("rearmHandsFree = advance && voice.isHandsFreeOn");
+    expect(finish.indexOf("rearmHandsFree = advance")).toBeLessThan(
+      finish.indexOf("voice.disappeared()"),
+    );
+    // It is re-armed for the next scene's call, after the opener has been spoken.
+    expect(campaign).toMatch(
+      /await voice\.speakOpener\([^)]*\)\s*if rearmHandsFree \{\s*rearmHandsFree = false\s*if !conversation\.finished \{ voice\.setHandsFree\(true\) \}/,
+    );
+    // Not across a finished campaign or a restarted scene; the flag is per view, so a new run starts off.
+    expect(fn("CampaignView.swift", "continueToNextScene")).toMatch(
+      /if isLastScene \{\s*rearmHandsFree = false/,
+    );
+    expect(fn("CampaignView.swift", "restartScene")).toContain("rearmHandsFree = false");
+    expect(campaign).toContain("@State private var rearmHandsFree = false");
+    // The scenario talk has no scenes: it never re-arms.
+    expect(code(`${APP}/ConversationView.swift`)).not.toContain("rearmHandsFree");
+  });
+
   it("turns hands-free off when a call is ended or a campaign finishes, so the microphone cannot stay open", () => {
     // finishCall -> voice.disappeared() -> setHandsFree(false), before the result screen takes over.
     for (const file of PRACTICE_VIEWS) {

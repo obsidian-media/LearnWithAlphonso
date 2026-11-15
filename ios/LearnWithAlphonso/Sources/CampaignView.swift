@@ -19,6 +19,9 @@ struct CampaignSessionView: View {
     @State private var elapsed = 0
     @State private var initialized = false
     @State private var advancing = false
+    /// The learner had hands-free on when they moved to the next scene of this run: it is re-armed for that scene's call.
+    /// Per run (this view): a new campaign or scenario starts with it off, and a finished campaign clears it.
+    @State private var rearmHandsFree = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
     /// What the latest reply said about the learner's turn; the avatar reacts to it after the reply is spoken.
@@ -63,6 +66,11 @@ struct CampaignSessionView: View {
         .task(id: openerCue) {
             guard openerCue > 0, !chatMode, result == nil else { return }
             await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
+            // After the opener, so the microphone does not open under his first words (the loop also waits for a reply).
+            if rearmHandsFree {
+                rearmHandsFree = false
+                if !conversation.finished { voice.setHandsFree(true) }
+            }
         }
         .navigationBarBackButtonHidden(true)
         .aiDisclosureGate()
@@ -367,6 +375,7 @@ struct CampaignSessionView: View {
         resetCall()
         notice = nil
         if isLastScene {
+            rearmHandsFree = false
             conversation = conversationStore.update(key) { $0.finished = true }
             return
         }
@@ -380,6 +389,7 @@ struct CampaignSessionView: View {
     }
 
     private func restartScene() {
+        rearmHandsFree = false
         resetCall()
         notice = nil
         conversation = conversationStore.update(key) { $0.restartScene() }
@@ -458,6 +468,8 @@ struct CampaignSessionView: View {
         guard !ending else { return }
         advancing = advance
         ending = true
+        // Moving to the next scene keeps the learner's choice; ending the call does not.
+        rearmHandsFree = advance && voice.isHandsFreeOn
         voice.disappeared()
         while pendingTurns > 0 { try? await Task.sleep(for: .milliseconds(50)) }
         elapsed = Int(Date().timeIntervalSince(startedAt))
