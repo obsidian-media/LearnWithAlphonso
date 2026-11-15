@@ -40,7 +40,7 @@ describe("batch 3 web screens speak the round-6 system", () => {
   it.each(CLEANED)("%s has no legacy colour class", (rel) => {
     const text = read(rel);
     expect(text.match(LEGACY)?.[0]).toBeUndefined();
-    expect(text).toMatch(/b(?:bg|text|border)-ds-|ds-type-|--ds-/);
+    expect(text).toMatch(/(?:bg|text|border)-ds-|ds-type-|--ds-/);
   });
 
   it("holds no raw colour or font size (the baseline for these files is zero)", () => {
