@@ -15,7 +15,18 @@ describe("the staff first name a learner may see", () => {
   });
 
   it("never lets an email, a handle, digits or punctuation through", () => {
-    for (const bad of ["jane.doe", "jane@example.com", "jane99", "j_doe", "@jane", "1234", "", "   ", null, undefined]) {
+    for (const bad of [
+      "jane.doe",
+      "jane@example.com",
+      "jane99",
+      "j_doe",
+      "@jane",
+      "1234",
+      "",
+      "   ",
+      null,
+      undefined,
+    ]) {
       expect(staffFirstName(bad), String(bad)).toBeNull();
     }
   });

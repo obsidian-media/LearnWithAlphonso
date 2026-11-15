@@ -106,7 +106,9 @@ describe("the chat is usable without colour or sight", () => {
       expect(chat, label).toContain(label);
     }
     // Both the AI bubble and the person bubble take their label from the one function.
-    expect(chat.split("SupportChatRules.speakerLabel(message)").length - 1).toBeGreaterThanOrEqual(2);
+    expect(chat.split("SupportChatRules.speakerLabel(message)").length - 1).toBeGreaterThanOrEqual(
+      2,
+    );
     expect(chat).toContain("AccessibilityNotification.Announcement(last.body).post()");
     expect(chat).toContain(".accessibilityLabel(SupportCopy.sendLabel)");
   });

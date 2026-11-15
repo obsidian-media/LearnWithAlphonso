@@ -57,7 +57,9 @@ export const BANNER_COPY: Record<Exclude<BannerKind, null>, { title: string; bod
 export function staffLabel(firstName: string | null | undefined): string {
   const name = (firstName ?? "").trim();
   // A person never carries Miya's name, even if their own first name is Miya.
-  return name && name.toLowerCase() !== "miya" ? `${name} · ${SUPPORT_COPY.person}` : SUPPORT_COPY.person;
+  return name && name.toLowerCase() !== "miya"
+    ? `${name} · ${SUPPORT_COPY.person}`
+    : SUPPORT_COPY.person;
 }
 
 /**

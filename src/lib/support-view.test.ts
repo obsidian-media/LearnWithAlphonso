@@ -136,7 +136,10 @@ describe("dates", () => {
 });
 
 describe("who is speaking (Miya's labels)", () => {
-  const row = (kind: SupportMessage["kind"], staffName: string | null = null) => ({ kind, staffName });
+  const row = (kind: SupportMessage["kind"], staffName: string | null = null) => ({
+    kind,
+    staffName,
+  });
 
   it("the AI is always Miya (AI helper); a person is never Miya, with or without a name", () => {
     expect(speakerLabel(row("ai"))).toBe("Miya (AI helper)");
@@ -177,7 +180,12 @@ describe("Miya's hand-off pose", () => {
   });
 
   it("only the hand-off line gets it, not other system lines or other kinds", () => {
-    const list = [msg("you"), msg("ai"), msg("system", "This chat was marked solved."), msg("support", NOTICE)];
+    const list = [
+      msg("you"),
+      msg("ai"),
+      msg("system", "This chat was marked solved."),
+      msg("support", NOTICE),
+    ];
     expect(showsHandoffPose(list, 2)).toBe(false);
     expect(showsHandoffPose(list, 3)).toBe(false);
     expect(showsHandoffPose(list, 9)).toBe(false);

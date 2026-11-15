@@ -353,10 +353,7 @@ test.describe("ticket states", () => {
     await expect(page.getByText("Waiting for your reply")).toBeVisible();
     await expect(page.locator('[data-divider="new"]')).toHaveText("New reply");
     await expect(page.locator('[data-kind="support"]')).toContainText("Support team");
-    await expect(page.getByRole("textbox")).toHaveAttribute(
-      "placeholder",
-      "Reply to the team",
-    );
+    await expect(page.getByRole("textbox")).toHaveAttribute("placeholder", "Reply to the team");
     await shot(page, "5b-staff-replied");
   });
 
@@ -701,14 +698,18 @@ test.describe("Miya, the AI helper", () => {
     );
     await page.getByRole("textbox").fill("I tried that and it still says no Pro.");
     await page.getByRole("button", { name: "Send" }).click();
-    await expect(page.locator("[data-looking-up]")).toContainText("Looking up: checking your account");
+    await expect(page.locator("[data-looking-up]")).toContainText(
+      "Looking up: checking your account",
+    );
     await expect(page.locator("[data-typing]")).toContainText("Miya (AI helper)");
     await noSideScroll(page);
     await shotMiya(page, "m2-looking-up");
     release();
   });
 
-  test("hand-off: her hand-off pose above the hand-off line, still labelled AI", async ({ page }) => {
+  test("hand-off: her hand-off pose above the hand-off line, still labelled AI", async ({
+    page,
+  }) => {
     await serve(page, { status: "new", messages: [first, ai, handoff] });
     await openHelp(page);
     await expect(page.locator("[data-handoff-pose]")).toBeVisible();
@@ -718,7 +719,9 @@ test.describe("Miya, the AI helper", () => {
     await shotMiya(page, "m3-handoff");
   });
 
-  test("a person replies: first name, Support team, the person icon, never Miya", async ({ page }) => {
+  test("a person replies: first name, Support team, the person icon, never Miya", async ({
+    page,
+  }) => {
     await serve(page, {
       status: "waiting_learner",
       unread: 1,

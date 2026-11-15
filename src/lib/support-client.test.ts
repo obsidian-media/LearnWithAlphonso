@@ -80,7 +80,15 @@ describe("the conversation read", () => {
       }),
     );
     const c = await fetchConversation(f as unknown as typeof fetch);
-    expect(c.messages.map((m) => m.staffName)).toEqual([null, null, null, "Dana", null, null, null]);
+    expect(c.messages.map((m) => m.staffName)).toEqual([
+      null,
+      null,
+      null,
+      "Dana",
+      null,
+      null,
+      null,
+    ]);
   });
 
   it("a bad shape or a server error is `failed`; a network error is `offline`", async () => {

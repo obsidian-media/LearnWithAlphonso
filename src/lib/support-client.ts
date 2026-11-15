@@ -69,7 +69,7 @@ const toMessage = (m: z.infer<typeof messageSchema>): SupportMessage => ({
   // Only an AI answer carries a link, and only an allow-listed id counts.
   link: m.kind === "ai" ? parseSupportLinkId(m.link) : null,
   // Only a person's reply carries a name; the label never shows it on any other row.
-  staffName: m.kind === "support" ? (m.staffName?.trim() || null) : null,
+  staffName: m.kind === "support" ? m.staffName?.trim() || null : null,
 });
 
 const updateSchema = z.object({

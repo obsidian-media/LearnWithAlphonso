@@ -254,8 +254,10 @@ function Welcome({
 }) {
   return (
     <>
-      <div className={`grid justify-items-center gap-2 px-1.5 text-center ${aiAnswering ? "pt-3" : "pt-0.5"}`}
-        data-welcome="">
+      <div
+        className={`grid justify-items-center gap-2 px-1.5 text-center ${aiAnswering ? "pt-3" : "pt-0.5"}`}
+        data-welcome=""
+      >
         {aiAnswering ? (
           <>
             <img

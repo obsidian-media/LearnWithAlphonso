@@ -135,13 +135,20 @@ describe("Miya", () => {
     await open(
       conv({
         status: "new",
-        messages: [m(1, "you", "hi"), m(2, "ai", "Handing over."), m(3, "system", "A person will reply here.")],
+        messages: [
+          m(1, "you", "hi"),
+          m(2, "ai", "Handing over."),
+          m(3, "system", "A person will reply here."),
+        ],
       }),
     );
     expect(document.querySelector("[data-handoff-pose]")).not.toBeNull();
     cleanup();
     await open(
-      conv({ status: "new", messages: [m(1, "you", "hi"), m(2, "system", "A person will reply here.")] }),
+      conv({
+        status: "new",
+        messages: [m(1, "you", "hi"), m(2, "system", "A person will reply here.")],
+      }),
     );
     expect(document.querySelector("[data-handoff-pose]")).toBeNull();
   });

@@ -598,13 +598,25 @@ describe("what the learner can read back", () => {
 
   describe("the staff first name on a person's reply (Miya's round: no migration)", () => {
     const staffReply = async (displayName: string) => {
-      await db.query("UPDATE public.profiles SET display_name = $2 WHERE id = $1", [STAFF, displayName]);
+      await db.query("UPDATE public.profiles SET display_name = $2 WHERE id = $1", [
+        STAFF,
+        displayName,
+      ]);
       await post(A, "something odd", {
         model: () =>
-          JSON.stringify({ reply: "A person can help.", handoff: true, reason: "ai_unsure", topic: "billing", summary: "" }),
+          JSON.stringify({
+            reply: "A person can help.",
+            handoff: true,
+            reason: "ai_unsure",
+            topic: "billing",
+            summary: "",
+          }),
       });
       const conv = (
-        await db.query<{ id: string }>("SELECT id FROM public.support_conversations WHERE user_id=$1", [A])
+        await db.query<{ id: string }>(
+          "SELECT id FROM public.support_conversations WHERE user_id=$1",
+          [A],
+        )
       ).rows[0]!.id;
       await db.query(
         "INSERT INTO public.support_messages (conversation_id, user_id, author_kind, author_id, body) VALUES ($1,$2,'staff',$3,'We are on it')",
