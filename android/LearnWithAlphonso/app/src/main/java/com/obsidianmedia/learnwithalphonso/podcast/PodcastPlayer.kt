@@ -124,6 +124,9 @@ class PodcastPlayer(
     private val _state = MutableStateFlow(PodcastPlayerState())
     val state: StateFlow<PodcastPlayerState> = _state.asStateFlow()
 
+    /** DEBUG screenshots only (ScreenHarness): shows a fixed state without playing anything. */
+    fun seedForHarness(seed: PodcastPlayerState) { _state.value = seed }
+
     private val tracker = PodcastSessionTracker()
 
     /** The sleep timer. A timed choice pauses at its deadline, saving the position; "end of episode" is spent when it ends. */

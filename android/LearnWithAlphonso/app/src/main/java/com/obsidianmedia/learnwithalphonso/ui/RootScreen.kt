@@ -319,7 +319,7 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             composable(Routes.PATH_BUILD) { PathBuildScreen(container, onBack = { nav.popBackStack() }) }
             composable(Routes.LISTEN) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
-                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }, onFolders = { container.podcastFolders.value = it }) }
                 ListenScreen(
                     container, listenVm,
                     onOpenFolder = { nav.navigate(Routes.listenFolder(it)) },
@@ -335,7 +335,7 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             }
             composable(Routes.LISTEN_FOLDER) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
-                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }, onFolders = { container.podcastFolders.value = it }) }
                 ListenFolderScreen(container, listenVm, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
             }
             composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { id, mode -> nav.navigate(Routes.scenario(id, mode)) }, onOpenCampaign = { id, scene, mode -> nav.navigate(Routes.campaign(id, scene, mode)) }, onHector = { nav.navigate(Routes.HECTOR) }) }
