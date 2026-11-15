@@ -13,7 +13,8 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupportErrorKind
 import com.obsidianmedia.learnwithalphonso.core.net.SupportException
 import com.obsidianmedia.learnwithalphonso.core.net.SupportUpdate
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -66,9 +67,15 @@ data class HelpChatState(
 class HelpChatViewModel(private val client: HelpChatClient, private val newClientId: () -> String = { UUID.randomUUID().toString() }) : ViewModel() {
     private val _state = MutableStateFlow(HelpChatState())
     val state: StateFlow<HelpChatState> = _state.asStateFlow()
-    private var pollJob: Job? = null
+    private var cleared = false
 
-    init { reload() }
+    init {
+        // A message whose send failed after the screen was left comes back as the draft, never lost.
+        keptDraft?.let { kept -> keptDraft = null; _state.update { it.copy(draft = kept) } }
+        reload()
+    }
+
+    override fun onCleared() { cleared = true }
 
     fun reload() {
         _state.update { it.copy(load = HelpLoad.LOADING) }
@@ -86,20 +93,19 @@ class HelpChatViewModel(private val client: HelpChatClient, private val newClien
 
     fun setDraft(text: String) { _state.update { it.copy(draft = text.take(SupportMaxLength)) } }
 
-    /** Polling runs only while the screen is shown and online; the screen calls this as that changes. */
-    fun setPolling(active: Boolean) {
-        pollJob?.cancel()
-        pollJob = null
-        if (!active) return
-        pollJob = viewModelScope.launch {
-            while (true) {
-                delay(SupportView.POLL_INTERVAL_MS)
-                poll()
-            }
+    /**
+     * The poll, for the screen to run under `repeatOnLifecycle(STARTED)`: a refetch at once (coming back to the app reads
+     * what arrived while it was away), then one every 20 s. It stops when the screen stops, so a backgrounded app never polls.
+     */
+    suspend fun pollWhileStarted() {
+        poll()
+        while (true) {
+            delay(SupportView.POLL_INTERVAL_MS)
+            poll()
         }
     }
 
-    private suspend fun poll() {
+    internal suspend fun poll() {
         val s = _state.value
         if (s.load != HelpLoad.READY || s.pending?.sending == true || !SupportView.shouldPoll(s.status)) return
         try {
@@ -140,7 +146,9 @@ class HelpChatViewModel(private val client: HelpChatClient, private val newClien
         _state.update { it.copy(pending = p.copy(sending = true, failure = null), limit = null) }
         viewModelScope.launch {
             try {
-                val u = client.send(p.text, p.clientId)
+                // Leaving the screen must not cancel a send the learner already made (the draft box was cleared): the
+                // request runs to its end, and a failure after the screen is gone is kept as the next draft.
+                val u = withContext(NonCancellable) { client.send(p.text, p.clientId) }
                 _state.update { cur ->
                     cur.copy(
                         pending = null, status = u.status, messages = SupportView.mergeMessages(cur.messages, u.messages),
@@ -151,6 +159,7 @@ class HelpChatViewModel(private val client: HelpChatClient, private val newClien
                 throw e
             } catch (e: Exception) {
                 val kind = (e as? SupportException)?.kind ?: SupportErrorKind.FAILED
+                if (cleared && kind != SupportErrorKind.DAILY_LIMIT && kind != SupportErrorKind.CONVERSATION_LIMIT) keptDraft = p.text
                 if (kind == SupportErrorKind.DAILY_LIMIT || kind == SupportErrorKind.CONVERSATION_LIMIT) {
                     // Nothing was stored: the draft is not kept (the box is closed for today).
                     _state.update { it.copy(pending = null, limit = if (kind == SupportErrorKind.DAILY_LIMIT) SendLimit.DAILY else SendLimit.CONVERSATION) }
@@ -177,5 +186,14 @@ class HelpChatViewModel(private val client: HelpChatClient, private val newClien
         }
     }
 
-    private companion object { const val SupportMaxLength = 2000 }
+    companion object {
+        const val SupportMaxLength = 2000
+
+        /** The text of a send that failed after the chat was left; the next chat opens with it as the draft. */
+        @Volatile internal var keptDraft: String? = null
+    }
 }
+
+/** A failed message the server already holds (a poll found it) is not drawn a second time. */
+internal fun isStored(p: PendingMessage, messages: List<SupportMessage>): Boolean =
+    !p.sending && messages.any { it.kind == SupportMessageKind.YOU && it.id > p.baseId && it.body == p.text }

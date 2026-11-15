@@ -40,7 +40,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -113,9 +114,9 @@ fun HelpChatContent(vm: HelpChatViewModel, online: Boolean, aiDeclined: Boolean,
     val state by vm.state.collectAsState()
     // Poll while the chat is open, online and a person (not the AI) has it.
     val polling = state.load == HelpLoad.READY && online && SupportView.shouldPoll(state.status)
-    DisposableEffect(polling) {
-        vm.setPolling(polling)
-        onDispose { vm.setPolling(false) }
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(polling, lifecycle) {
+        if (polling) lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { vm.pollWhileStarted() }
     }
 
     val banner = SupportView.bannerFor(if (state.load == HelpLoad.READY) state.status else null, state.aiAvailable, aiDeclined, online)
@@ -194,10 +195,6 @@ fun HelpChatContent(vm: HelpChatViewModel, online: Boolean, aiDeclined: Boolean,
         )
     }
 }
-
-/** A failed message the server already holds (a poll found it) is not drawn a second time. */
-private fun isStored(p: PendingMessage, messages: List<SupportMessage>): Boolean =
-    !p.sending && messages.any { it.kind == SupportMessageKind.YOU && it.id > p.baseId && it.body == p.text }
 
 private fun bannerIcon(b: SupportBanner): ImageVector = when (b) {
     SupportBanner.AI -> Icons.Filled.Info

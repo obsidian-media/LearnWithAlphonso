@@ -20,6 +20,7 @@ import com.obsidianmedia.learnwithalphonso.ui.components.DsSceneScreen
 import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportCopy
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
@@ -168,7 +169,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -
                     DsDivider()
                     RowButton("Terms of Use") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/terms") }
                     DsDivider()
-                    RowButton("Help", onClick = onOpenHelp)
+                    RowButton(SupportCopy.ENTRY_TITLE, subtitle = SupportCopy.ENTRY_SUBTITLE, onClick = onOpenHelp)
                     DsDivider()
                     RowButton("Support") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/support") }
                     DsDivider()
@@ -227,12 +228,13 @@ internal fun Section(title: String, footer: String? = null, content: @Composable
 }
 
 @Composable
-private fun RowButton(label: String, enabled: Boolean = true, destructive: Boolean = false, onClick: () -> Unit) {
+private fun RowButton(label: String, enabled: Boolean = true, destructive: Boolean = false, subtitle: String? = null, onClick: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    Text(
-        label,
-        style = HeadlineType,
-        color = if (destructive) ds.wrongInk else ds.ink,
-        modifier = Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clickable(enabled = enabled, onClick = onClick).padding(AlphonsoTokens.Space.s3).wrapContentHeight(Alignment.CenterVertically),
-    )
+    Column(
+        Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clickable(enabled = enabled, onClick = onClick).padding(AlphonsoTokens.Space.s3).wrapContentHeight(Alignment.CenterVertically)
+            .semantics(mergeDescendants = true) { },
+    ) {
+        Text(label, style = HeadlineType, color = if (destructive) ds.wrongInk else ds.ink)
+        if (subtitle != null) Text(subtitle, style = FootnoteType, color = ds.inkSoft)
+    }
 }
