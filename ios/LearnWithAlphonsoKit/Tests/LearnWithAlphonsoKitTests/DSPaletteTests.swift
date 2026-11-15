@@ -27,4 +27,27 @@ final class DSPaletteTests: XCTestCase {
         XCTAssertEqual(DSPaletteID.resolve(stored: "Meadow"), .royal)
         XCTAssertEqual(DSPaletteID.resolve(stored: "something-else"), .royal)
     }
+
+    // Meadow stays light, even in dark mode (owner decision 2026-11-14). Royal keeps its night look.
+    func testMeadowNeverUsesNightWhateverTheDeviceSays() {
+        XCTAssertFalse(DSPaletteID.meadow.usesNight(deviceDark: true))
+        XCTAssertFalse(DSPaletteID.meadow.usesNight(deviceDark: false))
+    }
+
+    func testRoyalFollowsTheDevice() {
+        XCTAssertTrue(DSPaletteID.royal.usesNight(deviceDark: true))
+        XCTAssertFalse(DSPaletteID.royal.usesNight(deviceDark: false))
+    }
+
+    /// The forced scheme: the root applies this as `.preferredColorScheme`, so a dark device cannot darken Meadow's
+    /// sheets, alerts, keyboards or status bar.
+    func testMeadowForcesTheLightAppearanceOnADarkDevice() {
+        XCTAssertEqual(DSPaletteID.meadow.appearance(deviceDark: true), .light)
+        XCTAssertEqual(DSPaletteID.meadow.appearance(deviceDark: false), .light)
+    }
+
+    func testRoyalAppearanceIsTheDevices() {
+        XCTAssertEqual(DSPaletteID.royal.appearance(deviceDark: true), .dark)
+        XCTAssertEqual(DSPaletteID.royal.appearance(deviceDark: false), .light)
+    }
 }

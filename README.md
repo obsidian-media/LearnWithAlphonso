@@ -307,7 +307,8 @@ Xcode/macOS in this development environment, so that CI job is the only
 compile verification that exists):
 
 - **Theme system** (`Sources/DesignSystem/`): two themes, Royal (the default) and
-  Meadow, each with a light and a night look following the system — bundled variable fonts
+  Meadow (Royal has a light and a night look following the system; Meadow is light only, even in
+  Dark Mode) — bundled variable fonts
   per theme resolved
   to a specific weight/optical-size via CoreText rather than static
   files (none of the font families ship those), oklch-accurate
