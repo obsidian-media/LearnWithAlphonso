@@ -114,7 +114,7 @@ export function supabaseSupportStore(admin: LooseAdmin): SupportStore {
       return (must(r, "view") ?? null) as LearnerView | null;
     },
     async staffDisplayNames(userId, messageIds) {
-      const out = new Map<number, string>();
+      const out = new Map<number, { displayName: string; email: string | null }>();
       if (messageIds.length === 0) return out;
       // Only staff rows of THIS learner's chat, by id; the author id never leaves the server.
       const rows = must(
@@ -133,9 +133,17 @@ export function supabaseSupportStore(admin: LooseAdmin): SupportStore {
         "staff names",
       ) as { id: string; display_name: string | null }[];
       const byAuthor = new Map(profiles.map((p) => [p.id, p.display_name ?? ""]));
+      // The author's email is read only to compare it with the display name (presentView drops a name that is the
+      // email's local part); it never reaches a response.
+      const emails = new Map<string, string | null>();
+      for (const id of authorIds) {
+        const u = await admin.auth.admin.getUserById(id);
+        emails.set(id, u.data.user?.email ?? null);
+      }
       for (const r of rows) {
         const name = r.author_id ? byAuthor.get(r.author_id) : undefined;
-        if (name) out.set(Number(r.id), name);
+        if (name && r.author_id)
+          out.set(Number(r.id), { displayName: name, email: emails.get(r.author_id) ?? null });
       }
       return out;
     },

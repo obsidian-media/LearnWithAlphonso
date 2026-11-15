@@ -95,17 +95,19 @@ export function pgliteStore(db: PGlite): SupportStore {
     view: (u) => one<LearnerView | null>("SELECT public.support_learner_view($1) v", [u]),
     // The same two reads as the production store (support-chat-runtime.server.ts), against the real tables.
     staffDisplayNames: (u, ids) =>
-      asServer(async () => {
+      // The email comes from auth.users, which production reads through the service-role admin API: no role switch here.
+      (async () => {
         const rows = (
-          await db.query<{ id: string; name: string }>(
-            `SELECT m.id, p.display_name AS name
+          await db.query<{ id: string; name: string; email: string | null }>(
+            `SELECT m.id, p.display_name AS name, u.email
                FROM public.support_messages m JOIN public.profiles p ON p.id = m.author_id
+               LEFT JOIN auth.users u ON u.id = m.author_id
               WHERE m.user_id = $1 AND m.author_kind = 'staff' AND m.id = ANY($2::bigint[])`,
             [u, ids],
           )
         ).rows;
-        return new Map(rows.map((r) => [Number(r.id), r.name]));
-      }),
+        return new Map(rows.map((r) => [Number(r.id), { displayName: r.name, email: r.email }]));
+      })(),
   };
 }
 

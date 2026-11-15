@@ -84,7 +84,10 @@ export interface SupportStore {
    * The display name of the staff member who wrote each given message of this learner's chat, by message id (a message
    * with no author or no profile is absent). Raw: `presentView` reduces it to a first name before it leaves the server.
    */
-  staffDisplayNames(userId: string, messageIds: number[]): Promise<Map<number, string>>;
+  staffDisplayNames(
+    userId: string,
+    messageIds: number[],
+  ): Promise<Map<number, { displayName: string; email: string | null }>>;
 }
 
 export type SupportRuntime = {
@@ -136,8 +139,8 @@ export async function presentView(
   const names = new Map<number, string | null>();
   if (staffIds.length > 0) {
     try {
-      for (const [id, display] of await rt.store.staffDisplayNames(userId, staffIds)) {
-        names.set(id, staffFirstName(display));
+      for (const [id, who] of await rt.store.staffDisplayNames(userId, staffIds)) {
+        names.set(id, staffFirstName(who.displayName, who.email));
       }
     } catch {
       rt.log({ event: "support_staff_name", outcome: "lookup_failed" });

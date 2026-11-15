@@ -647,6 +647,13 @@ describe("what the learner can read back", () => {
       }
     });
 
+    it("a display name equal to the author's email local part (the default) gives no name", async () => {
+      // STAFF's email is s@example.com, so the default display name "s" is the email's local part.
+      const body = await staffReply("s");
+      expect(body.messages.at(-1)).toMatchObject({ kind: "support", staffName: null });
+      expect(JSON.stringify(body)).not.toContain("s@example.com");
+    });
+
     it("a failed name lookup still shows the reply, without a name", async () => {
       await staffReply("Dana Whitfield");
       const h = makeRuntime(db);
