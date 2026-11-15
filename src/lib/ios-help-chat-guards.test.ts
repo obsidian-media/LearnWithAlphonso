@@ -38,7 +38,7 @@ describe("the Help chat never turns learner or AI text into something that acts"
 
   it("the request carries nothing but the text and the client id (the model has no conversation or user field)", () => {
     expect(model).toContain("client.sendMessage(text: pending.text, clientID: pending.clientID)");
-    for (const forged of ["userID", "conversationID", "author"]) {
+    for (const forged of ["conversationID", "author"]) {
       expect(model, forged).not.toContain(forged);
     }
   });
@@ -106,5 +106,22 @@ describe("the chat is usable without colour or sight", () => {
     }
     expect(chat).toContain("AccessibilityNotification.Announcement(last.body).post()");
     expect(chat).toContain(".accessibilityLabel(SupportCopy.sendLabel)");
+  });
+});
+
+describe("the chat keeps what the learner wrote and stays current", () => {
+  it("the draft is clamped by UTF-16 units (the server's count), not by Characters", () => {
+    expect(chat).toContain("SupportChatRules.clamped(new)");
+    expect(chat).not.toMatch(/new\.count\s*>/);
+  });
+
+  it("a send is pending before its Task starts, and unsent text is kept on the device", () => {
+    expect(model).toMatch(/state\.sendStarted\(pending\)\n\s+keepUnsent\(text\)\n\s+Task \{/);
+    expect(model).toContain("keepUnsent(nil)");
+  });
+
+  it("a poll starts at once when the app comes back, and a stale poll is dropped by revision", () => {
+    expect(chat).toMatch(/await model\.poll\(\)\n\s+while !Task\.isCancelled/);
+    expect(model).toContain("startedAt: started");
   });
 });

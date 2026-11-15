@@ -104,6 +104,18 @@ public enum SupportChatRules {
         return byID.values.sorted { $0.id < $1.id }
     }
 
+    /// The server's limit on one message: zod `max(2000)` counts UTF-16 code units, not Characters.
+    public static let maxMessageUnits = 2000
+
+    /// `text` cut to the most characters that keep it within `maxMessageUnits` UTF-16 units, never splitting a
+    /// character (an emoji is two units or more, so 1,500 of them would pass a Character count and be refused).
+    public static func clamped(_ text: String, units: Int = maxMessageUnits) -> String {
+        guard text.utf16.count > units else { return text }
+        var out = text
+        while out.utf16.count > units { out.removeLast() }
+        return out
+    }
+
     /// The learner's text, trimmed, or nil when there is nothing to send (the server trims too and refuses empty).
     public static func sendableText(_ draft: String) -> String? {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -210,6 +222,9 @@ public struct SupportChatState: Sendable, Equatable {
     public var sentIDs: [Int] = []
     public var handoffBusy = false
     public var handoffFailed = false
+    /// Bumped by every change a send or hand-off makes, so a poll that started before it can be told apart from one
+    /// that started after (`polled(_:startedAt:)`).
+    public private(set) var revision = 0
 
     public init() {}
 
@@ -241,7 +256,10 @@ public struct SupportChatState: Sendable, Equatable {
     public mutating func loadFailed() { load = .error }
 
     /// A poll adds what is new and moves the divider to the first new person reply; a failed poll changes nothing.
-    public mutating func polled(_ conversation: SupportConversation) {
+    public mutating func polled(_ conversation: SupportConversation, startedAt startRevision: Int? = nil) {
+        // A poll read before a send or hand-off finished is older than what is on screen: it must not roll the
+        // status or messages back.
+        if let startRevision, startRevision != revision { return }
         let known = Set(messages.map(\.id))
         let fresh = conversation.messages.first { $0.kind == .support && !known.contains($0.id) }
         status = conversation.status
@@ -256,16 +274,19 @@ public struct SupportChatState: Sendable, Equatable {
         sending.failure = nil
         self.pending = sending
         limit = nil
+        revision += 1
     }
 
     public mutating func sendSucceeded(_ update: SupportUpdate) {
         pending = nil
+        revision += 1
         status = update.status
         messages = SupportChatRules.merge(messages, update.messages)
         sentIDs += update.messages.filter { $0.kind == .you }.map(\.id)
     }
 
     public mutating func sendFailed(_ failed: SupportPending, kind: SupportErrorKind) {
+        revision += 1
         switch kind {
         case .dailyLimit, .conversationLimit:
             // Nothing was stored: the draft is not kept (the box is closed for today).
@@ -280,12 +301,14 @@ public struct SupportChatState: Sendable, Equatable {
     }
 
     public mutating func handoffStarted() {
+        revision += 1
         handoffBusy = true
         handoffFailed = false
     }
 
     public mutating func handoffSucceeded(_ update: SupportUpdate) {
         handoffBusy = false
+        revision += 1
         status = update.status
         messages = SupportChatRules.merge(messages, update.messages)
         // A conversation opened by this tap: the server's first read is the screen's first read.

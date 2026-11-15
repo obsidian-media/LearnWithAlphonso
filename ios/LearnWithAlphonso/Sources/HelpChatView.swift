@@ -112,6 +112,8 @@ struct HelpChatView: View {
         .task { await model.load() }
         .task(id: pollKey) {
             guard SupportChatRules.shouldPoll(status: state.load == .ready ? state.status : nil), online, scenePhase == .active else { return }
+            // Back in the app (or back online): look now, then every interval.
+            await model.poll()
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(SupportChatRules.pollInterval))
                 if Task.isCancelled { return }
@@ -261,8 +263,9 @@ struct HelpChatView: View {
                     .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble + 1, style: .continuous).strokeBorder(composing ? ds.choice : ds.line, lineWidth: 2))
                     .accessibilityLabel(SupportCopy.placeholder)
                     .onChange(of: model.draft) { _, new in
-                        // The server takes up to 2000 characters; the box never holds more.
-                        if new.count > 2000 { model.draft = String(new.prefix(2000)) }
+                        // The server counts UTF-16 units (2000 at most), not Characters; the box never holds more.
+                        let kept = SupportChatRules.clamped(new)
+                        if kept != new { model.draft = kept }
                     }
                 Button {
                     model.send(online: online, composerDisabled: composerDisabled)

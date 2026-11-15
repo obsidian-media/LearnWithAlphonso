@@ -296,4 +296,70 @@ final class SupportChatTests: XCTestCase {
         state.sendStarted(pending())
         XCTAssertFalse(state.canSend(online: true, composerDisabled: false), "one message at a time")
     }
+
+    // MARK: - Limits, ordering and retry
+
+    func testTheDraftIsClampedToTheServersUtf16LimitNotACharacterCount() {
+        let emoji = String(repeating: "\u{1F600}", count: 1500) // 1,500 Characters, 3,000 UTF-16 units
+        XCTAssertEqual(emoji.count, 1500)
+        let clamped = SupportChatRules.clamped(emoji)
+        XCTAssertLessThanOrEqual(clamped.utf16.count, 2000)
+        XCTAssertEqual(clamped.count, 1000, "cut on a character boundary, as many whole emoji as fit")
+        let plain = String(repeating: "a", count: 2000)
+        XCTAssertEqual(SupportChatRules.clamped(plain), plain)
+        XCTAssertEqual(SupportChatRules.clamped(plain + "a").count, 2000)
+        // A family emoji is one Character of many units: it is dropped whole, never split.
+        let family = "\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}"
+        let text = String(repeating: "a", count: 1995) + family
+        XCTAssertEqual(SupportChatRules.clamped(text), String(repeating: "a", count: 1995))
+    }
+
+    func testASecondSendIsBlockedWhileOneIsSendingOrFailed() {
+        var state = SupportChatState()
+        state.loaded(conversation(.open, []))
+        let sent = pending()
+        state.sendStarted(sent)
+        XCTAssertFalse(state.canSend(online: true, composerDisabled: false))
+        state.sendFailed(sent, kind: .unreachable)
+        XCTAssertFalse(state.canSend(online: true, composerDisabled: false), "a failed one must be retried first")
+    }
+
+    func testRetryResendsTheSameClientIdAndText() {
+        var state = SupportChatState()
+        state.loaded(conversation(.open, []))
+        let sent = pending()
+        state.sendStarted(sent)
+        state.sendFailed(sent, kind: .failed)
+        let retry = state.retryable!
+        XCTAssertEqual(retry.clientID, sent.clientID)
+        XCTAssertEqual(retry.text, sent.text)
+        state.sendStarted(retry)
+        XCTAssertEqual(state.pending?.clientID, sent.clientID)
+    }
+
+    func testAPollThatStartedBeforeASendFinishedCannotRollTheStatusBack() {
+        var state = SupportChatState()
+        state.loaded(conversation(.waitingLearner, [message(1, .support)]))
+        let started = state.revision
+        let sent = pending(base: 1)
+        state.sendStarted(sent)
+        state.sendSucceeded(SupportUpdate(status: .open, messages: [message(2, .you, "my Pro is gone")]))
+        // The poll read the old state and lands late.
+        state.polled(conversation(.waitingLearner, [message(1, .support)]), startedAt: started)
+        XCTAssertEqual(state.status, .open)
+        XCTAssertEqual(state.messages.map(\.id), [1, 2])
+        // A poll that started after the send applies as usual.
+        state.polled(conversation(.open, [message(1, .support), message(2, .you), message(3, .support)]), startedAt: state.revision)
+        XCTAssertEqual(state.messages.map(\.id), [1, 2, 3])
+    }
+
+    func testAPollThatStartedBeforeAHandoffIsDropped() {
+        var state = SupportChatState()
+        state.loaded(conversation(SupportStatus.none, [], ai: false))
+        let started = state.revision
+        state.handoffStarted()
+        state.handoffSucceeded(SupportUpdate(status: .new, messages: [message(1, .system)]))
+        state.polled(conversation(SupportStatus.none, []), startedAt: started)
+        XCTAssertEqual(state.status, .new)
+    }
 }

@@ -12,8 +12,23 @@ final class HelpChatModel {
 
     private let session: Session
 
+    /// Text the server has not confirmed, kept on this device so leaving the screen (or a limit, or a failed send)
+    /// never loses what the learner wrote. It comes back into the box when the chat opens again.
+    private var unsentKey: String { "help.unsent.\(session.userID ?? "")" }
+
     init(session: Session) {
         self.session = session
+        if let kept = UserDefaults.standard.string(forKey: "help.unsent.\(session.userID ?? "")"), !kept.isEmpty {
+            draft = SupportChatRules.clamped(kept)
+        }
+    }
+
+    private func keepUnsent(_ text: String?) {
+        if let text, !text.isEmpty {
+            UserDefaults.standard.set(text, forKey: unsentKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: unsentKey)
+        }
     }
 
     /// A client with a fresh token, or nil when signed out (the screen shows the load error).
@@ -46,8 +61,10 @@ final class HelpChatModel {
         guard state.load == .ready, state.pending?.state != .sending,
               SupportChatRules.shouldPoll(status: state.status),
               let client = await client() else { return }
+        // A poll that started before a send finished is older than the screen; the state drops it.
+        let started = state.revision
         if let conversation = try? await client.fetchConversation() {
-            state.polled(conversation)
+            state.polled(conversation, startedAt: started)
         }
     }
 
@@ -63,25 +80,34 @@ final class HelpChatModel {
             baseID: state.newestID,
             at: ISO8601DateFormatter().string(from: Date())
         )
+        // The pending message is set now, before the Task starts, so a second tap cannot pass the check.
+        state.sendStarted(pending)
+        keepUnsent(text)
         Task { await attempt(pending) }
     }
 
     /// Same text, same client id: the server returns the stored message instead of posting twice.
     func retry() {
         guard let pending = state.retryable else { return }
+        state.sendStarted(pending)
         Task { await attempt(pending) }
     }
 
     private func attempt(_ pending: SupportPending) async {
-        state.sendStarted(pending)
         guard let client = await client() else {
             state.sendFailed(pending, kind: .failed)
             return
         }
         do {
             state.sendSucceeded(try await client.sendMessage(text: pending.text, clientID: pending.clientID))
+            keepUnsent(nil)
         } catch {
-            state.sendFailed(pending, kind: (error as? SupportErrorKind) ?? .failed)
+            let kind = (error as? SupportErrorKind) ?? .failed
+            state.sendFailed(pending, kind: kind)
+            if kind == .dailyLimit || kind == .conversationLimit, draft.isEmpty {
+                // Nothing was stored and no bubble is kept: the text goes back in the box, and stays on the device.
+                draft = pending.text
+            }
         }
     }
 
