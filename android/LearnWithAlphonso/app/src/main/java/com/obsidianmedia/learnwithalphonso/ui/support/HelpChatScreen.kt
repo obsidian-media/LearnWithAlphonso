@@ -160,7 +160,7 @@ fun HelpChatContent(vm: HelpChatViewModel, online: Boolean, aiDeclined: Boolean,
                 lastDay = k
                 return SupportView.dayLabel(iso, now, zone)
             }
-            state.messages.forEach { m ->
+            state.messages.forEachIndexed { index, m ->
                 dayRow(m.at)?.let { label -> item(key = "day-${m.id}") { Divider(label, fresh = false) } }
                 if (m.id == state.dividerId) item(key = "new-${m.id}") { Divider(SupportCopy.NEW_REPLY, fresh = true) }
                 item(key = "m-${m.id}") {
@@ -168,8 +168,8 @@ fun HelpChatContent(vm: HelpChatViewModel, online: Boolean, aiDeclined: Boolean,
                     when (m.kind) {
                         SupportMessageKind.YOU -> YouBubble(m.body, when_, if (m.id in state.sentIds) SupportCopy.STATE_SENT else null)
                         SupportMessageKind.AI -> AiBubble(m, when_, onOpenLink)
-                        SupportMessageKind.SUPPORT -> PersonBubble(m.body, when_)
-                        SupportMessageKind.SYSTEM -> SystemLine(m.body)
+                        SupportMessageKind.SUPPORT -> PersonBubble(m, when_)
+                        SupportMessageKind.SYSTEM -> if (SupportView.showsHandoffPose(state.messages, index)) HandoffPose(m.body) else SystemLine(m.body)
                     }
                 }
             }
@@ -180,6 +180,7 @@ fun HelpChatContent(vm: HelpChatViewModel, online: Boolean, aiDeclined: Boolean,
                     YouBubble(pendingShown.text, SupportView.timeLabel(pendingShown.at, now, zone), stateWord)
                 }
             }
+            if (aiAnswering && pending?.sending == true) item(key = "looking-up") { LookingUp() }
             if (aiAnswering && pending?.sending == true) item(key = "typing") { Typing() }
             if (pending != null && !pending.sending) item(key = "send-error") {
                 ErrorCard(if (pending.failure == SupportErrorKind.UNREACHABLE) SupportCopy.UNREACHABLE else SupportCopy.SEND_FAILED, onRetry = vm::retry)
@@ -237,9 +238,11 @@ private fun StatusBanner(banner: SupportBanner) {
 @Composable
 private fun Welcome(aiAnswering: Boolean, onStarter: (String) -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    val pose = rememberFirstRunAsset("support/alphonso-explaining-pointer.webp")
+    // Miya says hello when the AI answers; with AI off she is not in the chat, so Alphonso keeps the first-open screen.
+    val pose = rememberFirstRunAsset(if (aiAnswering) "support/miya-hello.webp" else "support/alphonso-explaining-pointer.webp")
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-        pose?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 3)) }
+        pose?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * if (aiAnswering) 4 else 3)) }
+        if (aiAnswering) Text(SupportCopy.AI, style = FootnoteType, color = ds.ink, textAlign = TextAlign.Center)
         Text(if (aiAnswering) SupportCopy.WELCOME_AI_TITLE else SupportCopy.WELCOME_TITLE, style = TitleType, color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
         Text(if (aiAnswering) SupportCopy.WELCOME_AI_BODY else SupportCopy.WELCOME_BODY, style = FootnoteType, color = ds.inkSoft, textAlign = TextAlign.Center)
         if (aiAnswering) StarterChips(onStarter) else {
@@ -317,18 +320,18 @@ private fun SpeakerTag(text: String, quiet: Boolean = false) {
 @Composable
 private fun AiBubble(message: SupportMessage, whenLabel: String, onOpenLink: (SupportLinkId) -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    val face = rememberFirstRunAsset("support/alphonso-help-head.webp")
+    val face = rememberFirstRunAsset("support/miya-help-head.webp")
     // Defence in depth: the client already checked the id against the allow-list, and the screen comes from a fixed table.
     val link = message.link
     Column(Modifier.widthIn(max = MESSAGE_MAX_WIDTH), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
         Row(
             verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
-            modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "${SupportCopy.AI}, ${SupportCopy.AI_TAG}, $whenLabel" },
+            modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "${SupportView.speakerLabel(message)}, ${SupportCopy.AI_TAG}, $whenLabel" },
         ) {
             Box(Modifier.size(34.dp).clip(CircleShape).background(ds.choiceTint).border(2.dp, ds.line, CircleShape)) {
                 face?.let { Image(it, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
             }
-            Text(SupportCopy.AI.uppercase(), style = OverlineType, color = ds.inkSoft)
+            Text(SupportView.speakerLabel(message).orEmpty(), style = FootnoteType, color = ds.ink)
             SpeakerTag(SupportCopy.AI_TAG)
         }
         Column(
@@ -354,18 +357,20 @@ private fun AiBubble(message: SupportMessage, whenLabel: String, onOpenLink: (Su
 }
 
 @Composable
-private fun PersonBubble(body: String, whenLabel: String) {
+private fun PersonBubble(message: SupportMessage, whenLabel: String) {
     val ds = LocalAlphonsoTokens.current
+    val body = message.body
+    val speaker = SupportView.speakerLabel(message).orEmpty()
     val shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 6.dp)
     Column(Modifier.widthIn(max = MESSAGE_MAX_WIDTH), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
         Row(
             verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
-            modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "${SupportCopy.PERSON}, ${SupportCopy.PERSON_TAG}, $whenLabel" },
+            modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$speaker, ${SupportCopy.PERSON_TAG}, $whenLabel" },
         ) {
             Box(Modifier.size(34.dp).clip(CircleShape).background(ds.brand), contentAlignment = Alignment.Center) {
                 Icon(Icons.Filled.Person, null, tint = ds.surface, modifier = Modifier.size(18.dp))
             }
-            Text(SupportCopy.PERSON.uppercase(), style = OverlineType, color = ds.inkSoft)
+            Text(speaker, style = FootnoteType, color = ds.ink)
             SpeakerTag(SupportCopy.PERSON_TAG, quiet = true)
         }
         Text(
@@ -373,6 +378,30 @@ private fun PersonBubble(body: String, whenLabel: String) {
             modifier = Modifier.clip(shape).background(ds.choiceTint).border(2.dp, ds.choiceEdge, shape).padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3),
         )
         Text(whenLabel, style = CaptionType, color = ds.inkFaint, modifier = Modifier.clearAndSetSemantics { })
+    }
+}
+
+/** Miya passes the chat to the team: her hand-off pose above the server's hand-off line (she is still labelled AI). */
+@Composable
+private fun HandoffPose(text: String) {
+    val pose = rememberFirstRunAsset("support/miya-handoff.webp")
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+        pose?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 3.5f)) }
+        SystemLine(text)
+    }
+}
+
+/** While she answers: her tablet pose and what she is doing, above the typing line. */
+@Composable
+private fun LookingUp() {
+    val ds = LocalAlphonsoTokens.current
+    val pose = rememberFirstRunAsset("support/miya-looking-up.webp")
+    Column(
+        Modifier.fillMaxWidth().semantics(mergeDescendants = true) { },
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
+    ) {
+        pose?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 2.5f)) }
+        Text(SupportCopy.LOOKING_UP, style = CaptionType, color = ds.inkSoft, textAlign = TextAlign.Center)
     }
 }
 
@@ -390,7 +419,7 @@ private fun SystemLine(text: String) {
 @Composable
 private fun Typing() {
     val ds = LocalAlphonsoTokens.current
-    val face = rememberFirstRunAsset("support/alphonso-help-head.webp")
+    val face = rememberFirstRunAsset("support/miya-help-head.webp")
     Column(Modifier.widthIn(max = MESSAGE_MAX_WIDTH), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
         Row(
             verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
@@ -399,7 +428,7 @@ private fun Typing() {
             Box(Modifier.size(34.dp).clip(CircleShape).background(ds.choiceTint).border(2.dp, ds.line, CircleShape)) {
                 face?.let { Image(it, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
             }
-            Text("${SupportCopy.AI} ${SupportCopy.AI_TAG} ${SupportCopy.IS_WRITING}".uppercase(), style = OverlineType, color = ds.inkSoft)
+            Text("${SupportCopy.AI} ${SupportCopy.AI_TAG} ${SupportCopy.IS_WRITING}", style = FootnoteType, color = ds.ink)
         }
         val shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 6.dp)
         Row(

@@ -178,10 +178,12 @@ struct HelpChatView: View {
                 case .ai:
                     AiBubble(message: message, when: when, openLink: message.link.flatMap { linkAction?($0, onClose ?? { dismiss() }) })
                 case .support:
-                    PersonBubble(text: message.body, when: when)
+                    PersonBubble(message: message, when: when)
                 case .system:
                     SystemLine(text: message.body)
                 }
+            case let .handoff(message):
+                HandoffPose(text: message.body)
             case let .pending(pending):
                 YouBubble(
                     text: pending.text,
@@ -190,13 +192,18 @@ struct HelpChatView: View {
                         ? (pending.failure == .unreachable ? SupportCopy.stateSaved : SupportCopy.stateNotSent) : nil)
             }
         }
-        if aiAnswering && state.pending?.state == .sending { TypingBubble() }
+        if aiAnswering && state.pending?.state == .sending {
+            LookingUpView()
+            TypingBubble()
+        }
     }
 
     struct Row: Identifiable {
         enum Content {
             case day(label: String, fresh: Bool)
             case message(SupportMessage)
+            /// The server's hand-off line after Miya answered: her hand-off pose sits above it.
+            case handoff(SupportMessage)
             case pending(SupportPending)
         }
         let id: String
@@ -215,12 +222,13 @@ struct HelpChatView: View {
                 rows.append(Row(id: "day-\(key)", content: .day(label: clock.dayLabel(iso, now: now), fresh: false)))
             }
         }
-        for message in messages {
+        for (index, message) in messages.enumerated() {
             pushDay(message.at)
             if message.id == dividerID {
                 rows.append(Row(id: "new-\(message.id)", content: .day(label: SupportCopy.newReply, fresh: true)))
             }
-            rows.append(Row(id: "m-\(message.id)", content: .message(message)))
+            let pose = SupportChatRules.showsHandoffPose(messages: messages, index: index)
+            rows.append(Row(id: "m-\(message.id)", content: pose ? .handoff(message) : .message(message)))
         }
         if let pending {
             pushDay(pending.at)
@@ -353,9 +361,13 @@ private struct WelcomeView: View {
     var body: some View {
         VStack(spacing: AlphonsoDS.Space.s3) {
             VStack(spacing: AlphonsoDS.Space.s2) {
-                Image("Alphonso-explaining-pointer").resizable().scaledToFit()
-                    .frame(height: AlphonsoDS.Space.s12 * 2.8)
+                // Miya says hello when the AI answers; with AI off she is not in the chat, so Alphonso keeps the first-open screen.
+                Image(aiAnswering ? "Miya-hello" : "Alphonso-explaining-pointer").resizable().scaledToFit()
+                    .frame(height: AlphonsoDS.Space.s12 * (aiAnswering ? 4 : 2.8))
                     .accessibilityHidden(true)
+                if aiAnswering {
+                    Text(SupportCopy.ai).dsText(.footnote).foregroundStyle(ds.ink)
+                }
                 Text(aiAnswering ? SupportCopy.welcomeAiTitle : SupportCopy.welcomeTitle)
                     .dsText(.title).foregroundStyle(ds.ink)
                     .accessibilityAddTraits(.isHeader)
@@ -475,7 +487,7 @@ private struct AiFace: View {
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        Image("Alphonso-help-head").resizable().scaledToFill()
+        Image("Miya-help-head").resizable().scaledToFill()
             .frame(width: AlphonsoDS.Space.s8 + 2, height: AlphonsoDS.Space.s8 + 2)
             .background(ds.choiceTint)
             .clipShape(Circle())
@@ -495,7 +507,7 @@ private struct AiBubble: View {
             HStack(alignment: .bottom, spacing: AlphonsoDS.Space.s2) {
                 AiFace()
                 HStack(spacing: AlphonsoDS.Space.s1 + 2) {
-                    Text(SupportCopy.ai).dsText(.overline).foregroundStyle(ds.inkSoft)
+                    Text(SupportChatRules.speakerLabel(message) ?? SupportCopy.ai).dsText(.footnote).foregroundStyle(ds.ink)
                     SpeakerTag(text: SupportCopy.aiTag)
                 }
             }
@@ -529,9 +541,12 @@ private struct AiBubble: View {
 }
 
 private struct PersonBubble: View {
-    let text: String
+    let message: SupportMessage
     let when: String
     @Environment(\.alphonsoDS) private var ds
+
+    private var text: String { message.body }
+    private var speaker: String { SupportChatRules.speakerLabel(message) ?? SupportCopy.person }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
@@ -541,7 +556,7 @@ private struct PersonBubble: View {
                     .background(Circle().fill(ds.brand))
                     .accessibilityHidden(true)
                 HStack(spacing: AlphonsoDS.Space.s1 + 2) {
-                    Text(SupportCopy.person).dsText(.overline).foregroundStyle(ds.inkSoft)
+                    Text(speaker).dsText(.footnote).foregroundStyle(ds.ink)
                     SpeakerTag(text: SupportCopy.personTag, quiet: true)
                 }
             }
@@ -555,7 +570,7 @@ private struct PersonBubble: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.trailing, AlphonsoDS.Space.s8)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(SupportCopy.person), \(SupportCopy.personTag): \(text). \(when)")
+        .accessibilityLabel("\(speaker), \(SupportCopy.personTag): \(text). \(when)")
     }
 }
 
@@ -572,7 +587,39 @@ private struct SystemLine: View {
     }
 }
 
-/// "Alphonso AI is writing…" while the AI answers: said in words as well as dots, and Send is closed meanwhile.
+/// Miya passes the chat to the team: her hand-off pose above the server's hand-off line (she is still labelled AI).
+private struct HandoffPose: View {
+    let text: String
+
+    var body: some View {
+        VStack(spacing: AlphonsoDS.Space.s1) {
+            Image("Miya-handoff").resizable().scaledToFit()
+                .frame(height: AlphonsoDS.Space.s12 * 3.5)
+                .accessibilityHidden(true)
+            SystemLine(text: text)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+/// While she answers: her tablet pose and what she is doing, above the typing line.
+private struct LookingUpView: View {
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        VStack(spacing: AlphonsoDS.Space.s1) {
+            Image("Miya-looking-up").resizable().scaledToFit()
+                .frame(height: AlphonsoDS.Space.s12 * 2.5)
+                .accessibilityHidden(true)
+            Text(SupportCopy.lookingUp).dsText(.caption).foregroundStyle(ds.inkSoft)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// "Miya (AI helper) is writing…" while the AI answers: said in words as well as dots, and Send is closed meanwhile.
 private struct TypingBubble: View {
     @Environment(\.alphonsoDS) private var ds
 
@@ -581,9 +628,9 @@ private struct TypingBubble: View {
             HStack(alignment: .bottom, spacing: AlphonsoDS.Space.s2) {
                 AiFace()
                 HStack(spacing: AlphonsoDS.Space.s1 + 2) {
-                    Text(SupportCopy.ai).dsText(.overline).foregroundStyle(ds.inkSoft)
+                    Text(SupportCopy.ai).dsText(.footnote).foregroundStyle(ds.ink)
                     SpeakerTag(text: SupportCopy.aiTag)
-                    Text(SupportCopy.isWriting).dsText(.overline).foregroundStyle(ds.inkSoft)
+                    Text(SupportCopy.isWriting).dsText(.footnote).foregroundStyle(ds.inkSoft)
                 }
             }
             HStack(spacing: AlphonsoDS.Space.s1 + 2) {

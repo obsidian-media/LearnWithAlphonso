@@ -7,6 +7,9 @@ import {
   dayKey,
   dayLabel,
   shouldPoll,
+  showsHandoffPose,
+  speakerLabel,
+  staffLabel,
   timeLabel,
   unreadDividerId,
 } from "./support-view";
@@ -53,7 +56,7 @@ describe("the composer", () => {
     expect(composerFor({ ...base, status: "open" }).placeholder).toBe("Add something");
     expect(composerFor({ ...base, status: "new" }).placeholder).toBe("Add something");
     expect(composerFor({ ...base, status: "waiting_learner" }).placeholder).toBe(
-      "Reply to Alphonso support",
+      "Reply to the team",
     );
     const solved = composerFor({ ...base, status: "solved" });
     expect(solved.placeholder).toBe("Still need help? Write here");
@@ -90,6 +93,7 @@ const msg = (id: number, kind: SupportMessage["kind"]): SupportMessage => ({
   body: "x",
   at: "2026-11-14T10:00:00Z",
   link: null,
+  staffName: null,
 });
 
 describe("the New reply divider", () => {
@@ -128,5 +132,54 @@ describe("dates", () => {
   it("dayKey splits on the calendar day", () => {
     expect(dayKey(at(14, 1))).toBe(dayKey(at(14, 23)));
     expect(dayKey(at(14, 1))).not.toBe(dayKey(at(13, 23)));
+  });
+});
+
+describe("who is speaking (Miya's labels)", () => {
+  const row = (kind: SupportMessage["kind"], staffName: string | null = null) => ({ kind, staffName });
+
+  it("the AI is always Miya (AI helper); a person is never Miya, with or without a name", () => {
+    expect(speakerLabel(row("ai"))).toBe("Miya (AI helper)");
+    expect(speakerLabel(row("support", "Dana"))).toBe("Dana \u00B7 Support team");
+    expect(speakerLabel(row("support"))).toBe("Support team");
+    expect(speakerLabel(row("support", "  "))).toBe("Support team");
+    // Even a staff member whose first name is Miya is not drawn as her.
+    expect(speakerLabel(row("support", "Miya"))).toBe("Support team");
+    expect(speakerLabel(row("support", "Dana"))).not.toContain("Miya");
+  });
+
+  it("the learner and system lines have no speaker label", () => {
+    expect(speakerLabel(row("you"))).toBeNull();
+    expect(speakerLabel(row("system"))).toBeNull();
+  });
+
+  it("a staff name on a row that is not a person's is ignored by the label", () => {
+    expect(speakerLabel(row("ai", "Dana"))).toBe("Miya (AI helper)");
+  });
+
+  it("staffLabel is the first name, a middle dot and Support team", () => {
+    expect(staffLabel("Amira")).toBe("Amira \u00B7 Support team");
+    expect(staffLabel(null)).toBe("Support team");
+  });
+});
+
+describe("Miya's hand-off pose", () => {
+  const msg = (kind: SupportMessage["kind"], body = "x") => ({ kind, body });
+  const NOTICE = "A person will reply here.";
+
+  it("shows above the hand-off line when she answered earlier", () => {
+    const list = [msg("you"), msg("ai"), msg("system", NOTICE)];
+    expect(showsHandoffPose(list, 2)).toBe(true);
+  });
+
+  it("does not show when no AI message came first (a chat she never joined)", () => {
+    expect(showsHandoffPose([msg("you"), msg("system", NOTICE)], 1)).toBe(false);
+  });
+
+  it("only the hand-off line gets it, not other system lines or other kinds", () => {
+    const list = [msg("you"), msg("ai"), msg("system", "This chat was marked solved."), msg("support", NOTICE)];
+    expect(showsHandoffPose(list, 2)).toBe(false);
+    expect(showsHandoffPose(list, 3)).toBe(false);
+    expect(showsHandoffPose(list, 9)).toBe(false);
   });
 });

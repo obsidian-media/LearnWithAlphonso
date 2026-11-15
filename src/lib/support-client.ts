@@ -20,6 +20,8 @@ export type SupportMessage = {
   body: string;
   at: string;
   link: SupportLinkId | null;
+  /** A person's reply only: the staff member's first name (never a surname, email or id), or null when none is set. */
+  staffName: string | null;
 };
 
 export type SupportConversation = {
@@ -57,6 +59,7 @@ const messageSchema = z.object({
   body: z.string(),
   at: z.string(),
   link: z.unknown().optional(),
+  staffName: z.string().nullable().optional(),
 });
 const toMessage = (m: z.infer<typeof messageSchema>): SupportMessage => ({
   id: m.id,
@@ -65,6 +68,8 @@ const toMessage = (m: z.infer<typeof messageSchema>): SupportMessage => ({
   at: m.at,
   // Only an AI answer carries a link, and only an allow-listed id counts.
   link: m.kind === "ai" ? parseSupportLinkId(m.link) : null,
+  // Only a person's reply carries a name; the label never shows it on any other row.
+  staffName: m.kind === "support" ? (m.staffName?.trim() || null) : null,
 });
 
 const updateSchema = z.object({

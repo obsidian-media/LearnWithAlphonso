@@ -272,7 +272,7 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
             PathBuildScreen(container, {}, pathVm, goalVm, "travel", openGoalSheet = screen == "path-build-sheet")
         }
         "help-ai-first", "help-person-first", "help-ai", "help-team", "help-waiting", "help-solved", "help-daily-limit", "help-offline" -> {
-            fun m(id: Long, kind: SupportMessageKind, body: String, at: String, link: SupportLinkId? = null) = SupportMessage(id, kind, body, at, link)
+            fun m(id: Long, kind: SupportMessageKind, body: String, at: String, link: SupportLinkId? = null, staffName: String? = null) = SupportMessage(id, kind, body, at, link, staffName)
             val today = java.time.Instant.now().toString()
             val ai = screen == "help-ai-first" || screen == "help-ai"
             val msgs = when (screen) {
@@ -284,9 +284,12 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
                     m(1, SupportMessageKind.YOU, "My streak vanished after the update", today),
                     m(2, SupportMessageKind.SYSTEM, "A person will reply here.", today),
                 )
+                // Miya answered, handed over (her hand-off pose sits above the notice), then a person replied by first name.
                 "help-waiting" -> listOf(
                     m(1, SupportMessageKind.YOU, "My streak vanished after the update", today),
-                    m(2, SupportMessageKind.SUPPORT, "Thanks for writing. Which course was the streak in?", today),
+                    m(2, SupportMessageKind.AI, "I'm sorry about that. Streak questions go to a person, so I'm handing this over.", today),
+                    m(3, SupportMessageKind.SYSTEM, "A person will reply here.", today),
+                    m(4, SupportMessageKind.SUPPORT, "Thanks for writing. Which course was the streak in?", today, null, "Dana"),
                 )
                 "help-solved" -> listOf(
                     m(1, SupportMessageKind.YOU, "My streak vanished after the update", today),

@@ -99,13 +99,32 @@ describe("the chat is usable without colour or sight", () => {
       "SupportCopy.you",
       "SupportCopy.ai",
       "SupportCopy.aiTag",
-      "SupportCopy.person",
       "SupportCopy.personTag",
+      // The AI's name and a person's "<first name> \u00B7 Support team" come from one function (the Kit, tested), so a staff
+      // row cannot take Miya's label.
     ]) {
       expect(chat, label).toContain(label);
     }
+    // Both the AI bubble and the person bubble take their label from the one function.
+    expect(chat.split("SupportChatRules.speakerLabel(message)").length - 1).toBeGreaterThanOrEqual(2);
     expect(chat).toContain("AccessibilityNotification.Announcement(last.body).post()");
     expect(chat).toContain(".accessibilityLabel(SupportCopy.sendLabel)");
+  });
+
+  it("a person's bubble never takes Miya's name or face, and her bubble never a person's label", () => {
+    const section = (name: string) => {
+      const start = chat.indexOf(`private struct ${name}: View`);
+      expect(start, name).toBeGreaterThan(-1);
+      const next = chat.indexOf("\nprivate struct ", start + 1);
+      return chat.slice(start, next === -1 ? undefined : next);
+    };
+    const person = section("PersonBubble");
+    expect(person).not.toContain("SupportCopy.ai");
+    expect(person).not.toContain("AiFace");
+    expect(person).not.toContain("Miya");
+    const ai = section("AiBubble");
+    expect(ai).not.toContain("SupportCopy.person");
+    expect(ai).not.toContain("person.fill");
   });
 });
 

@@ -113,6 +113,32 @@ export function supabaseSupportStore(admin: LooseAdmin): SupportStore {
       const r = await admin.rpc("support_learner_view", { p_user: userId });
       return (must(r, "view") ?? null) as LearnerView | null;
     },
+    async staffDisplayNames(userId, messageIds) {
+      const out = new Map<number, string>();
+      if (messageIds.length === 0) return out;
+      // Only staff rows of THIS learner's chat, by id; the author id never leaves the server.
+      const rows = must(
+        await admin
+          .from("support_messages")
+          .select("id, author_id")
+          .eq("user_id", userId)
+          .eq("author_kind", "staff")
+          .in("id", messageIds),
+        "staff authors",
+      ) as { id: number; author_id: string | null }[];
+      const authorIds = [...new Set(rows.map((r) => r.author_id).filter((a): a is string => !!a))];
+      if (authorIds.length === 0) return out;
+      const profiles = must(
+        await admin.from("profiles").select("id, display_name").in("id", authorIds),
+        "staff names",
+      ) as { id: string; display_name: string | null }[];
+      const byAuthor = new Map(profiles.map((p) => [p.id, p.display_name ?? ""]));
+      for (const r of rows) {
+        const name = r.author_id ? byAuthor.get(r.author_id) : undefined;
+        if (name) out.set(Number(r.id), name);
+      }
+      return out;
+    },
   };
 }
 

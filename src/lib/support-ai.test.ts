@@ -98,6 +98,16 @@ describe("prompt shape", () => {
     expect(s).toContain("never promise a refund");
   });
 
+  it("the assistant introduces itself as Miya, an AI helper, and never as a person (Miya's round)", () => {
+    const s = buildSupportSystemPrompt(FACTS);
+    expect(s).toContain("You are Miya, the AI helper");
+    expect(s).toContain("You are an AI, not a person");
+    expect(s).toContain("never claim to be a person");
+    expect(s).not.toContain("Help assistant");
+    // The hand-off rules it already had are untouched.
+    expect(s).toContain("I can't change anything on your account, a person can.");
+  });
+
   it("the request body has no tools, functions or tool_choice, only text out", () => {
     const body = buildSupportRequestBody("some/model", baseline);
     expect(Object.keys(body).sort()).toEqual(["max_tokens", "messages", "model"]);

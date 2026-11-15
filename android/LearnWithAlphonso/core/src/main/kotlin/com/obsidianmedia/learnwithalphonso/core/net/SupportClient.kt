@@ -112,7 +112,9 @@ class SupportClient(private val http: ApiHttp) {
             val body = str(o, "body") ?: return null
             val at = str(o, "at") ?: return null
             val (text, link) = SupportLinks.present(kind, body, str(o, "link"))
-            return SupportMessage(id, kind, text, at, link)
+            // Only a person's reply carries a name; the label never shows it on any other row.
+            val staffName = if (kind == SupportMessageKind.SUPPORT) str(o, "staffName")?.trim()?.takeIf { it.isNotEmpty() } else null
+            return SupportMessage(id, kind, text, at, link, staffName)
         }
 
         private fun messages(o: JsonObject): List<SupportMessage>? {

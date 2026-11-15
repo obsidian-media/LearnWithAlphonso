@@ -26,8 +26,13 @@ afterEach(() => {
 });
 
 const NOW = new Date().toISOString();
-const m = (id: number, kind: SupportMessage["kind"], body: string, link: unknown = null) =>
-  ({ id, kind, body, at: NOW, link }) as SupportMessage;
+const m = (
+  id: number,
+  kind: SupportMessage["kind"],
+  body: string,
+  link: unknown = null,
+  staffName: string | null = null,
+) => ({ id, kind, body, at: NOW, link, staffName }) as SupportMessage;
 
 function conv(over: Partial<SupportConversation> = {}): SupportConversation {
   return { status: "none", unread: 0, aiAvailable: true, messages: [], ...over };
@@ -93,6 +98,55 @@ describe("first open", () => {
   });
 });
 
+describe("Miya", () => {
+  it("the AI welcome shows Miya's hello pose and her name; the person welcome does not", async () => {
+    await open(conv({ aiAvailable: true }));
+    expect(document.querySelector('[data-miya="hello"]')).not.toBeNull();
+    expect(document.querySelector("[data-miya-name]")).toHaveTextContent("Miya (AI helper)");
+    cleanup();
+    await open(conv({ aiAvailable: false }));
+    expect(document.querySelector('[data-miya="hello"]')).toBeNull();
+    expect(document.body.textContent).not.toContain("Miya");
+  });
+
+  it("her bubbles carry her face, her label and the AI tag", async () => {
+    await open(conv({ status: "ai", messages: [m(1, "you", "hi"), m(2, "ai", "Tap Restore.")] }));
+    const ai = document.querySelector('[data-kind="ai"]') as HTMLElement;
+    expect(ai.querySelector("img")?.getAttribute("src")).toBe("/mascots/miya-help-head.webp");
+    expect(within(ai).getByText("Miya (AI helper)")).toBeInTheDocument();
+    expect(within(ai).getByText("AI")).toBeInTheDocument();
+  });
+
+  it("a staff reply shows '<first name> \u00B7 Support team', the person icon and the Person tag, never Miya", async () => {
+    await open(
+      conv({
+        status: "waiting_learner",
+        messages: [m(1, "you", "hi"), m(2, "support", "Which sign-in?", null, "Dana")],
+      }),
+    );
+    const person = document.querySelector('[data-kind="support"]') as HTMLElement;
+    expect(within(person).getByText("Dana \u00B7 Support team")).toBeInTheDocument();
+    expect(within(person).getByText("Person")).toBeInTheDocument();
+    expect(person.querySelector("img")).toBeNull();
+    expect(person.textContent).not.toContain("Miya");
+  });
+
+  it("her hand-off pose sits above the hand-off line only when she answered first", async () => {
+    await open(
+      conv({
+        status: "new",
+        messages: [m(1, "you", "hi"), m(2, "ai", "Handing over."), m(3, "system", "A person will reply here.")],
+      }),
+    );
+    expect(document.querySelector("[data-handoff-pose]")).not.toBeNull();
+    cleanup();
+    await open(
+      conv({ status: "new", messages: [m(1, "you", "hi"), m(2, "system", "A person will reply here.")] }),
+    );
+    expect(document.querySelector("[data-handoff-pose]")).toBeNull();
+  });
+});
+
 describe("speakers", () => {
   it("AI, person and learner bubbles carry text labels, not only colour", async () => {
     await open(
@@ -109,10 +163,13 @@ describe("speakers", () => {
     );
     expect(screen.getByText("You")).toBeInTheDocument();
     const ai = document.querySelector('[data-kind="ai"]') as HTMLElement;
-    expect(within(ai).getByText("Alphonso AI")).toBeInTheDocument();
+    expect(within(ai).getByText("Miya (AI helper)")).toBeInTheDocument();
     expect(within(ai).getByText("AI")).toBeInTheDocument();
     const person = document.querySelector('[data-kind="support"]') as HTMLElement;
-    expect(within(person).getByText("Alphonso support")).toBeInTheDocument();
+    expect(within(person).getByText("Support team")).toBeInTheDocument();
+    // A person is never drawn as Miya: no Miya face, no Miya name, the person icon and the Person tag.
+    expect(within(person).queryByText(/Miya/)).toBeNull();
+    expect(person.querySelector("img")).toBeNull();
     expect(within(person).getByText("Person")).toBeInTheDocument();
     expect(document.querySelector('[data-kind="system"]')).toHaveTextContent(
       "A person will reply here.",
@@ -161,7 +218,7 @@ describe("ticket states", () => {
   it.each([
     ["new", "With our team", "Add something"],
     ["open", "With our team", "Add something"],
-    ["waiting_learner", "Waiting for your reply", "Reply to Alphonso support"],
+    ["waiting_learner", "Waiting for your reply", "Reply to the team"],
     ["solved", "Solved", "Still need help? Write here"],
   ] as const)("%s shows %s and the %s box", async (status, title, placeholder) => {
     await open(conv({ status, messages: [m(1, "you", "hello")] }));

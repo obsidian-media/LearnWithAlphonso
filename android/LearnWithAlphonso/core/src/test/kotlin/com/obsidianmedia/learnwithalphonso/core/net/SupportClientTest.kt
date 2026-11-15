@@ -96,6 +96,20 @@ class SupportClientTest {
     }
 
     @Test
+    fun `only a person's reply carries a staff first name, trimmed, and an empty one is none`() = runTest {
+        val body = """{"status":"open","unread":0,"aiAvailable":true,"messages":[
+            {"id":1,"kind":"you","body":"a","at":"2026-11-14T09:41:00Z","staffName":"Forged"},
+            {"id":2,"kind":"ai","body":"b","at":"2026-11-14T09:41:00Z","staffName":"Forged"},
+            {"id":3,"kind":"system","body":"c","at":"2026-11-14T09:41:00Z","staffName":"Forged"},
+            {"id":4,"kind":"support","body":"d","at":"2026-11-14T09:41:00Z","staffName":" Dana "},
+            {"id":5,"kind":"support","body":"e","at":"2026-11-14T09:41:00Z","staffName":"  "},
+            {"id":6,"kind":"support","body":"f","at":"2026-11-14T09:41:00Z","staffName":null},
+            {"id":7,"kind":"support","body":"g","at":"2026-11-14T09:41:00Z"}]}"""
+        val m = client(body = body).fetchConversation().messages
+        assertEquals(listOf(null, null, null, "Dana", null, null, null), m.map { it.staffName })
+    }
+
+    @Test
     fun `a forged link on a non-ai message is dropped`() = runTest {
         val body = """{"status":"open","unread":0,"aiAvailable":false,"messages":[{"id":1,"kind":"support","body":"x","at":"2026-11-14T09:41:00Z","link":"settings"}]}"""
         assertNull(client(body = body).fetchConversation().messages.single().link)

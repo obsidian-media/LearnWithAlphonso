@@ -19,14 +19,16 @@ object SupportCopy {
     const val BACK = "Back"
     const val TALK_TO_PERSON = "Talk to a person"
     const val YOU = "You"
-    const val AI = "Alphonso AI"
+    const val AI = "Miya (AI helper)"
     const val AI_TAG = "AI"
-    const val PERSON = "Alphonso support"
+    const val PERSON = "Support team"
     const val PERSON_TAG = "Person"
     const val IS_WRITING = "is writing…"
     const val NEW_REPLY = "New reply"
     const val SEND_LABEL = "Send"
     const val MESSAGE_LOG = "Conversation"
+
+    const val LOOKING_UP = "Looking up: checking your account"
 
     const val WELCOME_AI_TITLE = "How can I help?"
     const val WELCOME_AI_BODY = "I'm an AI helper for Learn With Alphonso. I can look at your own account and explain how things work. I can't change anything on your account. A person can."
@@ -46,13 +48,13 @@ object SupportCopy {
     const val TEAM_TITLE = "With our team"
     const val TEAM_BODY = "A person will read this and reply here."
     const val WAIT_TITLE = "Waiting for your reply"
-    const val WAIT_BODY = "Alphonso support wrote to you."
+    const val WAIT_BODY = "The team wrote to you."
     const val SOLVED_TITLE = "Solved"
     const val SOLVED_BODY = "Write below if you still need help."
 
     const val PLACEHOLDER = "Write your message"
     const val PLACEHOLDER_MORE = "Add something"
-    const val PLACEHOLDER_REPLY = "Reply to Alphonso support"
+    const val PLACEHOLDER_REPLY = "Reply to the team"
     const val PLACEHOLDER_SOLVED = "Still need help? Write here"
     const val PLACEHOLDER_LIMIT = "Come back tomorrow to write again"
     const val PLACEHOLDER_FULL = "This chat is full"
@@ -120,6 +122,32 @@ data class SupportComposer(val placeholder: String, val fine: String, val disabl
  */
 object SupportView {
     const val POLL_INTERVAL_MS = 20_000L
+
+    /** The server's hand-off line (the web's HANDOFF_NOTICE; the parity test keeps the words equal). */
+    const val HANDOFF_NOTICE = "A person will reply here."
+
+    /**
+     * The name line of a person's reply: "<first name> · Support team", or just "Support team" with no name. A person is
+     * never labelled with Miya's name (she is the AI helper), even a staff member called Miya.
+     */
+    fun staffLabel(firstName: String?): String {
+        val name = firstName?.trim().orEmpty()
+        return if (name.isNotEmpty() && !name.equals("miya", ignoreCase = true)) "$name \u00B7 ${SupportCopy.PERSON}" else SupportCopy.PERSON
+    }
+
+    /** The words above a message: Miya for the AI (the AI tag is drawn beside it), the staff label for a person, none otherwise. */
+    fun speakerLabel(message: SupportMessage): String? = when (message.kind) {
+        SupportMessageKind.AI -> SupportCopy.AI
+        SupportMessageKind.SUPPORT -> staffLabel(message.staffName)
+        else -> null
+    }
+
+    /** Whether Miya's hand-off pose goes above this system line: it is the hand-off notice and an AI message came earlier. */
+    fun showsHandoffPose(messages: List<SupportMessage>, index: Int): Boolean {
+        val m = messages.getOrNull(index) ?: return false
+        if (m.kind != SupportMessageKind.SYSTEM || m.body != HANDOFF_NOTICE) return false
+        return messages.subList(0, index).any { it.kind == SupportMessageKind.AI }
+    }
 
     /** Null while the first load has not finished or failed: no banner then (offline still shows). */
     fun bannerFor(status: SupportStatus?, aiAvailable: Boolean, aiDeclined: Boolean, online: Boolean): SupportBanner? {

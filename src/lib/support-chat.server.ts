@@ -16,6 +16,7 @@ import {
   withSupportLink,
   type PresentedSupportMessage,
 } from "./support-links";
+import { staffFirstName } from "./support-staff-name";
 import type { QuotaResult } from "./ai-quota.server";
 import type { Course } from "@/data/courses";
 
@@ -79,6 +80,11 @@ export interface SupportStore {
     summary: string | null,
   ): Promise<boolean>;
   view(userId: string): Promise<LearnerView | null>;
+  /**
+   * The display name of the staff member who wrote each given message of this learner's chat, by message id (a message
+   * with no author or no profile is absent). Raw: `presentView` reduces it to a first name before it leaves the server.
+   */
+  staffDisplayNames(userId: string, messageIds: number[]): Promise<Map<number, string>>;
 }
 
 export type SupportRuntime = {
@@ -116,6 +122,30 @@ const courseOf = (facts: SupportFacts | null): Course => {
   return c === "fr" || c === "es" ? c : "en";
 };
 
+/**
+ * The learner's messages as the clients get them, with a staff member's FIRST name on their replies (never an email,
+ * a surname or an id: support-staff-name.ts). A failed name lookup shows the replies without a name, it never fails
+ * the chat.
+ */
+export async function presentView(
+  rt: SupportRuntime,
+  userId: string,
+  messages: readonly LearnerMessageView[],
+): Promise<PresentedSupportMessage[]> {
+  const staffIds = messages.filter((m) => m.kind === "support").map((m) => m.id);
+  const names = new Map<number, string | null>();
+  if (staffIds.length > 0) {
+    try {
+      for (const [id, display] of await rt.store.staffDisplayNames(userId, staffIds)) {
+        names.set(id, staffFirstName(display));
+      }
+    } catch {
+      rt.log({ event: "support_staff_name", outcome: "lookup_failed" });
+    }
+  }
+  return presentSupportMessages(messages, names);
+}
+
 // ---- GET conversation ----
 
 export async function handleGetConversation(
@@ -135,7 +165,7 @@ export async function handleGetConversation(
     body: {
       status: view?.status ?? "none",
       unread: view?.unread ?? 0,
-      messages: presentSupportMessages(view?.messages ?? []),
+      messages: await presentView(rt, userId, view?.messages ?? []),
       aiAvailable,
     },
   };
@@ -182,7 +212,11 @@ async function newMessages(
     status: 200,
     body: {
       status: view?.status ?? "none",
-      messages: presentSupportMessages((view?.messages ?? []).filter((m) => m.id >= fromId)),
+      messages: await presentView(
+        rt,
+        userId,
+        (view?.messages ?? []).filter((m) => m.id >= fromId),
+      ),
     },
   };
 }
@@ -364,7 +398,7 @@ export async function handlePostHandoff(
       status: 200,
       body: {
         status: view?.status ?? "none",
-        messages: presentSupportMessages(view?.messages ?? []),
+        messages: await presentView(rt, userId, view?.messages ?? []),
       },
     };
   } catch {

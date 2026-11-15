@@ -40,7 +40,7 @@ class SupportViewTest {
         assertEquals(SupportCopy.AI_FINE, c(SupportStatus.NONE, first = true).fine)
         assertEquals("Add something", c(SupportStatus.OPEN).placeholder)
         assertEquals("Add something", c(SupportStatus.NEW).placeholder)
-        assertEquals("Reply to Alphonso support", c(SupportStatus.WAITING_LEARNER).placeholder)
+        assertEquals("Reply to the team", c(SupportStatus.WAITING_LEARNER).placeholder)
         assertEquals("Still need help? Write here", c(SupportStatus.SOLVED).placeholder)
         assertEquals(SupportCopy.FINE_SOLVED, c(SupportStatus.SOLVED).fine)
         assertEquals(SupportCopy.FINE_OFFLINE, c(SupportStatus.OPEN, online = false).fine)
@@ -89,6 +89,34 @@ class SupportViewTest {
         // The learner's own zone decides which day it is.
         assertEquals("Yesterday", SupportView.dayLabel("2026-11-14T01:00:00Z", now, ZoneId.of("America/Los_Angeles")))
         assertEquals("2026-11-14", SupportView.dayKey("2026-11-14T09:41:00Z", utc))
+    }
+
+    @Test
+    fun `the AI is Miya and a person is never Miya, with or without a name`() {
+        fun row(kind: SupportMessageKind, staffName: String? = null) = SupportMessage(1, kind, "x", "2026-11-14T09:41:00Z", null, staffName)
+        assertEquals("Miya (AI helper)", SupportView.speakerLabel(row(SupportMessageKind.AI)))
+        assertEquals("Dana \u00B7 Support team", SupportView.speakerLabel(row(SupportMessageKind.SUPPORT, "Dana")))
+        assertEquals("Support team", SupportView.speakerLabel(row(SupportMessageKind.SUPPORT)))
+        assertEquals("Support team", SupportView.speakerLabel(row(SupportMessageKind.SUPPORT, "  ")))
+        // Even a staff member called Miya is not drawn as her.
+        assertEquals("Support team", SupportView.speakerLabel(row(SupportMessageKind.SUPPORT, "Miya")))
+        assertNull(SupportView.speakerLabel(row(SupportMessageKind.YOU)))
+        assertNull(SupportView.speakerLabel(row(SupportMessageKind.SYSTEM)))
+        // A name on an AI row is ignored: she keeps her own label.
+        assertEquals("Miya (AI helper)", SupportView.speakerLabel(row(SupportMessageKind.AI, "Dana")))
+    }
+
+    @Test
+    fun `Miya's hand-off pose shows only above the hand-off line, and only when she answered first`() {
+        fun m(kind: SupportMessageKind, body: String = "x") = SupportMessage(1, kind, body, "2026-11-14T09:41:00Z", null)
+        val notice = SupportView.HANDOFF_NOTICE
+        assertEquals("A person will reply here.", notice)
+        assertTrue(SupportView.showsHandoffPose(listOf(m(SupportMessageKind.YOU), m(SupportMessageKind.AI), m(SupportMessageKind.SYSTEM, notice)), 2))
+        assertFalse(SupportView.showsHandoffPose(listOf(m(SupportMessageKind.YOU), m(SupportMessageKind.SYSTEM, notice)), 1))
+        val other = listOf(m(SupportMessageKind.YOU), m(SupportMessageKind.AI), m(SupportMessageKind.SYSTEM, "This chat was marked solved."), m(SupportMessageKind.SUPPORT, notice))
+        assertFalse(SupportView.showsHandoffPose(other, 2))
+        assertFalse(SupportView.showsHandoffPose(other, 3))
+        assertFalse(SupportView.showsHandoffPose(other, 9))
     }
 
     @Test

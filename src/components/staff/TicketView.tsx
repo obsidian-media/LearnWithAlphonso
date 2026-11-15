@@ -60,7 +60,7 @@ function Line({ m }: { m: TicketMessage }) {
     m.kind === "learner"
       ? "Learner"
       : m.kind === "ai"
-        ? "Alphonso AI"
+        ? "Miya (AI helper)"
         : `${m.authorName ?? "Staff"} · support`;
   return (
     <div className={`grid max-w-[88%] gap-0.5 ${staff ? "justify-self-end" : ""}`}>

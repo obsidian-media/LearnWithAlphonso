@@ -93,6 +93,19 @@ export function pgliteStore(db: PGlite): SupportStore {
         summary,
       ]),
     view: (u) => one<LearnerView | null>("SELECT public.support_learner_view($1) v", [u]),
+    // The same two reads as the production store (support-chat-runtime.server.ts), against the real tables.
+    staffDisplayNames: (u, ids) =>
+      asServer(async () => {
+        const rows = (
+          await db.query<{ id: string; name: string }>(
+            `SELECT m.id, p.display_name AS name
+               FROM public.support_messages m JOIN public.profiles p ON p.id = m.author_id
+              WHERE m.user_id = $1 AND m.author_kind = 'staff' AND m.id = ANY($2::bigint[])`,
+            [u, ids],
+          )
+        ).rows;
+        return new Map(rows.map((r) => [Number(r.id), r.name]));
+      }),
   };
 }
 
