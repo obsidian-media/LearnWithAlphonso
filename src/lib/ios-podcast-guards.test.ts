@@ -318,7 +318,9 @@ describe("iOS podcast quiz guards", () => {
   it("a quiz row button appears only on episodes the server says have a quiz", () => {
     // The folder a learner opens is ListenShelfDetail (the older listing in ListenView.swift had no caller and is gone).
     const list = source("Sources/ListenShelfViews.swift");
-    expect(list).toMatch(/client\.fetchQuizEpisodeIDs\(episodeIDs: shelf\.episodes\.map\(\\.id\)\)/);
+    expect(list).toMatch(
+      /client\.fetchQuizEpisodeIDs\(episodeIDs: shelf\.episodes\.map\(\\.id\)\)/,
+    );
     expect(list).toMatch(
       /if quizEpisodeIDs\.contains\(episode\.id\) \{\s*PodcastQuizRowButton\(episode: episode, session: session\)/,
     );
