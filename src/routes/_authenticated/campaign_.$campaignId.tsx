@@ -30,6 +30,9 @@ import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 import { waitForCallCue } from "@/lib/sfx";
 import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/lib/practice-api";
 import { PracticeResult } from "@/components/practice/PracticeResult";
+import { edgeButtonClass } from "@/components/lesson/LessonParts";
+import { PracticeUnscored } from "@/components/practice/PracticeUnscored";
+import { SEE_MY_RESULT, seeResultShown } from "@/lib/practice-result-buttons";
 import { sceneRoom } from "@/lib/practice-catalog";
 import { campaignSearch, firstSlip, type CampaignSearch } from "@/lib/practice-session";
 
@@ -124,6 +127,7 @@ function CampaignChatPage({
   const [callId, setCallId] = useState(newCallId);
   const [sceneStartedAt, setSceneStartedAt] = useState(() => Date.now());
   const [ending, setEnding] = useState(false);
+  const [unscored, setUnscored] = useState(false);
   const [result, setResult] = useState<{
     result: Result;
     seconds: number;
@@ -361,8 +365,7 @@ function CampaignChatPage({
 
   /**
    * Ends this scene's call: the server scores it and the result screen shows its stars; its "Next scene" moves on.
-   * Without a scored result (no judged reply, or offline) there is nothing to show and no star to earn, so the
-   * learner leaves for Practice.
+   * Without a scored result (offline) the learner stays and can try the scene again; with no reply they leave.
    */
   const finishScene = useCallback(async () => {
     if (ending) return;
@@ -377,7 +380,10 @@ function CampaignChatPage({
       return;
     }
     setEnding(false);
-    void navigate({ to: "/converse" });
+    // Replies were sent but the call has no score (offline): stay on the scene, never navigate away (the campaign
+    // state lives in this page, so leaving would lose the earlier scenes). With no reply there is nothing to lose.
+    if (userTurnsInScene > 0) setUnscored(true);
+    else void navigate({ to: "/converse" });
   }, [ending, userTurnsInScene, callId, sceneStartedAt, navigate]);
 
   const restartScene = useCallback(() => {
@@ -548,6 +554,23 @@ function CampaignChatPage({
             {error}
           </div>
         )}
+        {seeResultShown({
+          chatMode: !(mode ? mode === "call" : showAlphonso),
+          userTurns: userTurnsInScene,
+          minTurns: scene.minTurns,
+          finished,
+        }) && (
+          <div className="flex justify-center pt-2">
+            <button
+              type="button"
+              onClick={() => void finishScene()}
+              disabled={ending || sending}
+              className={edgeButtonClass("primary")}
+            >
+              {SEE_MY_RESULT}
+            </button>
+          </div>
+        )}
         {finished && (
           <div className="flex flex-col items-center gap-3 pt-2 text-center">
             <p className="ds-type-footnote font-semibold text-ds-ink">
@@ -680,16 +703,6 @@ function CampaignChatPage({
             : `Scene ${sceneIndex + 1} of ${campaign.scenes.length} — ${scene.title}`}
         </p>
       </div>
-      {!finished && userTurnsInScene > 0 && (
-        <button
-          type="button"
-          onClick={() => void finishScene()}
-          disabled={ending || sending}
-          className="rounded-full border border-ds-line bg-ds-surface px-3 py-1.5 ds-type-caption font-semibold text-ds-ink disabled:opacity-50"
-        >
-          Finish
-        </button>
-      )}
       {!finished && (
         <button
           onClick={restartScene}
@@ -753,6 +766,19 @@ function CampaignChatPage({
       </button>
     </header>
   );
+
+  if (unscored) {
+    return (
+      <LessonFrame>
+        <PracticeUnscored
+          onRetry={() => {
+            setUnscored(false);
+            restartScene();
+          }}
+        />
+      </LessonFrame>
+    );
+  }
 
   if (result) {
     const r = result.result;

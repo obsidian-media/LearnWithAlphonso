@@ -434,6 +434,25 @@ struct PracticeResultView: View {
     }
 }
 
+/// A call that came back without a score (offline): the learner stays on the scene, is told why, and can try it again.
+struct PracticeUnscoredView: View {
+    let retry: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+    var body: some View {
+        VStack(spacing: AlphonsoDS.Space.s4) {
+            Spacer()
+            Text(PracticeHub.unscoredNotice).dsText(.headline).multilineTextAlignment(.center).foregroundStyle(ds.ink)
+            Button("Try again", action: retry).buttonStyle(.dsButton(.primary))
+            Spacer()
+        }
+        .padding(AlphonsoDS.Space.gutter)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(ds.surface)
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+    }
+}
+
 struct PracticeRoomThumbnail: View {
     let room: String
     var body: some View {

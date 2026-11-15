@@ -104,5 +104,17 @@ class PracticeHubTest {
         assertTrue(PracticeHub.canSendReply("Hello", pending = false))
         assertTrue(PracticeHub.canSendReply("  Hello  ", pending = false))
     }
+    @Test fun `an unscored call stays on the scene only when replies were sent`() {
+        assertTrue(PracticeHub.staysOnUnscored(1))
+        assertFalse(PracticeHub.staysOnUnscored(0))
+        assertEquals("You're offline, so this talk wasn't scored. Try again when you're back online.", PracticeHub.UNSCORED_NOTICE)
+    }
+    @Test fun `see my result appears only in chat mode at the minimum turns`() {
+        assertEquals("See my result", PracticeHub.SEE_MY_RESULT)
+        assertFalse(PracticeHub.seeResultShown(true, 2, 3, false))
+        assertTrue(PracticeHub.seeResultShown(true, 3, 3, false))
+        assertFalse(PracticeHub.seeResultShown(false, 3, 3, false))
+        assertFalse(PracticeHub.seeResultShown(true, 3, 3, true))
+    }
     private val resultJson = """{"kind":"scenario","itemKey":"coffee","stars":1,"bestBefore":3,"bestAfter":3,"replies":5,"rightReplies":5,"shortReplies":0,"englishReplies":0,"finishMinReplies":3}"""
 }

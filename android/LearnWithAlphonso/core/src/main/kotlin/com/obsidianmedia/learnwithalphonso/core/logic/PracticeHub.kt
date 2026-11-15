@@ -124,6 +124,14 @@ object PracticeHub {
     fun stars(rows: List<PracticeStarRow>, kind: String, key: String): Int = rows.lastOrNull { it.kind == kind && it.itemKey == key }?.bestStars ?: 0
 
     fun starLabel(n: Int) = "$n of 3 stars"
+    /** Shown when a finished call has no score (offline or unreachable). The same line on web, iOS and Android. */
+    const val UNSCORED_NOTICE = "You're offline, so this talk wasn't scored. Try again when you're back online."
+    /** The chat-mode end-of-scene button (owner decision 2026-11-15). The same label on web, iOS and Android. */
+    const val SEE_MY_RESULT = "See my result"
+    /** It appears at the end of the transcript in chat mode, once the scene has its minimum turns. */
+    fun seeResultShown(chatMode: Boolean, userReplies: Int, minTurns: Int, finished: Boolean): Boolean = chatMode && !finished && userReplies >= minTurns
+    /** A call with replies but no score keeps the learner on the scene (earlier scenes keep their progress); with no reply there is nothing to keep. */
+    fun staysOnUnscored(userReplies: Int): Boolean = userReplies > 0
     /** Whether the chat-mode reply bar can send: something typed (not only spaces) and no reply still pending. */
     fun canSendReply(text: String, pending: Boolean): Boolean = !pending && text.isNotBlank()
 

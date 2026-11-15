@@ -174,8 +174,18 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
     vm.chatMode = chatMode
     val scope = rememberCoroutineScope()
     val result by vm.result.collectAsState()
-    val endCall: () -> Unit = { scope.launch { if (vm.finishPractice() == null) onBack() } }
-    androidx.activity.compose.BackHandler(enabled = result == null, onBack = endCall)
+    var unscored by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val endCall: () -> Unit = { scope.launch {
+        if (vm.finishPractice() == null) {
+            // Offline: stay with a notice when replies were sent; with none there is nothing to keep.
+            if (com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.staysOnUnscored(vm.state.value.turns.count { it.role == "user" })) unscored = true else onBack()
+        }
+    } }
+    androidx.activity.compose.BackHandler(enabled = result == null && !unscored, onBack = endCall)
+    if (unscored) {
+        PracticeUnscoredScreen(retry = { unscored = false; vm.retryScenario(speak = false) })
+        return
+    }
     result?.let { r ->
         PracticeResultScreen(r, scenario.id, course.code, vm.elapsedSeconds, vm.slip, context = PracticeResultContext.Scenario, retry = { vm.retryScenario(speak = false) }, forward = onBack)
         return
@@ -220,8 +230,19 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     val result by vm.result.collectAsState()
     // Ending the scene scores it and opens its result; the result's Next scene (Finish campaign on the last scene) moves on.
     // Without a scored result (offline, or no judged reply) there is nothing to show and no star to earn: the learner leaves.
-    val endCall: () -> Unit = { scope.launch { if (vm.finishPractice() == null) onBack() } }
-    androidx.activity.compose.BackHandler(enabled = result == null, onBack = endCall)
+    var unscored by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val endCall: () -> Unit = { scope.launch {
+        if (vm.finishPractice() == null) {
+            // Offline: stay on the scene (earlier scenes keep their progress) when replies were sent.
+            val replies = vm.state.value.turns.drop(vm.campaignState.value.sceneAnchor).count { it.role == "user" }
+            if (com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.staysOnUnscored(replies)) unscored = true else onBack()
+        }
+    } }
+    androidx.activity.compose.BackHandler(enabled = result == null && !unscored, onBack = endCall)
+    if (unscored) {
+        PracticeUnscoredScreen(retry = { unscored = false; vm.resetPractice(); vm.restartScene(speak = false) })
+        return
+    }
     result?.let { r ->
         PracticeResultScreen(
             r, com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.room(campaign.id, vm.scene.id), course.code, vm.elapsedSeconds, vm.slip,
@@ -282,6 +303,11 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
                 if (!progress.finished) Box(Modifier.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1), contentAlignment = Alignment.Center) { DsPill("Scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}: ${vm.scene.title}", DsPillTone.INFO) }
             },
             footer = {
+                val state by vm.state.collectAsState()
+                val replies = state.turns.drop(progress.sceneAnchor).count { it.role == "user" }
+                if (com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.seeResultShown(chatMode, replies, vm.scene.minTurns, progress.finished)) {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { HubButton(com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.SEE_MY_RESULT, endCall) }
+                }
                 if (progress.finished) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                         AlphonsoMascotBanner("Nice work. Campaign complete!")

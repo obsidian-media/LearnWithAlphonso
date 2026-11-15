@@ -118,5 +118,17 @@ final class PracticeHubTests: XCTestCase {
         XCTAssertTrue(PracticeHub.canSendReply("Hello", pending: false))
         XCTAssertTrue(PracticeHub.canSendReply("  Hello  ", pending: false))
     }
+    func testAnUnscoredCallStaysOnTheSceneOnlyWhenRepliesWereSent() {
+        XCTAssertTrue(PracticeHub.staysOnUnscored(userReplies: 1))
+        XCTAssertFalse(PracticeHub.staysOnUnscored(userReplies: 0))
+        XCTAssertEqual(PracticeHub.unscoredNotice, "You're offline, so this talk wasn't scored. Try again when you're back online.")
+    }
+    func testSeeMyResultAppearsOnlyInChatModeAtTheMinimumTurns() {
+        XCTAssertEqual(PracticeHub.seeMyResult, "See my result")
+        XCTAssertFalse(PracticeHub.seeResultShown(chatMode: true, userReplies: 2, minTurns: 3, finished: false))
+        XCTAssertTrue(PracticeHub.seeResultShown(chatMode: true, userReplies: 3, minTurns: 3, finished: false))
+        XCTAssertFalse(PracticeHub.seeResultShown(chatMode: false, userReplies: 3, minTurns: 3, finished: false))
+        XCTAssertFalse(PracticeHub.seeResultShown(chatMode: true, userReplies: 3, minTurns: 3, finished: true))
+    }
     static let resultJSON = "{\"kind\":\"scenario\",\"itemKey\":\"coffee\",\"stars\":1,\"bestBefore\":3,\"bestAfter\":3,\"replies\":5,\"rightReplies\":5,\"shortReplies\":0,\"englishReplies\":0,\"finishMinReplies\":3}"
 }

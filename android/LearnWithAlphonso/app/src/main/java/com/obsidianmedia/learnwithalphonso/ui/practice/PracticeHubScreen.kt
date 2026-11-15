@@ -313,6 +313,15 @@ internal fun PracticeHubContent(
     }
 }
 
+/** A call that came back without a score (offline): the learner stays on the scene, is told why, and can try it again. */
+@Composable internal fun PracticeUnscoredScreen(retry: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    Column(Modifier.testTag("practice-unscored").fillMaxSize().background(ds.surface).padding(Space.gutter), verticalArrangement = Arrangement.spacedBy(Space.s4, Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(PracticeHub.UNSCORED_NOTICE, style = Type.headline.toTextStyle(), color = ds.ink, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+        HubButton("Try again", retry)
+    }
+}
+
 /** The 0-star hint card: the hint in a gold-tint card with a meter of replies given of replies needed. */
 @Composable private fun ZeroStarHint(result: PracticeResult) {
     val ds = LocalAlphonsoTokens.current

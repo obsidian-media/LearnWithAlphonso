@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { practiceResultButtons, repliesMeter, retryLabel } from "./practice-result-buttons";
+import {
+  seeResultShown,
+  SEE_MY_RESULT,
+  practiceResultButtons,
+  repliesMeter,
+  retryLabel,
+} from "./practice-result-buttons";
 
 const row = (stars: number, campaign: { isLastScene: boolean } | null) => {
   const b = practiceResultButtons({ stars, campaign });
@@ -69,5 +75,19 @@ describe("the replies meter", () => {
   });
   it("draws nothing without a finish count", () => {
     expect(repliesMeter({ replies: 2, finishMinReplies: 0 })).toBeNull();
+  });
+});
+
+describe("See my result (chat mode end of scene)", () => {
+  const base = { chatMode: true, userTurns: 3, minTurns: 3, finished: false };
+  it("is the owner's label", () => expect(SEE_MY_RESULT).toBe("See my result"));
+  it("appears only at the minimum turns or more", () => {
+    expect(seeResultShown({ ...base, userTurns: 2 })).toBe(false);
+    expect(seeResultShown(base)).toBe(true);
+    expect(seeResultShown({ ...base, userTurns: 5 })).toBe(true);
+  });
+  it("is chat mode only and never after the campaign finished", () => {
+    expect(seeResultShown({ ...base, chatMode: false })).toBe(false);
+    expect(seeResultShown({ ...base, finished: true })).toBe(false);
   });
 });

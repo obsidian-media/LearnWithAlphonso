@@ -14,6 +14,8 @@ struct CampaignSessionView: View {
     @State private var result: PracticeResult?
     @State private var slip: (said: String, reply: String)?
     @State private var ending = false
+    /// The call came back without a score (offline): the screen stays, with a notice and Try again for this scene.
+    @State private var unscored = false
     @State private var pendingTurns = 0
     @State private var input = ""
     @State private var elapsed = 0
@@ -48,7 +50,9 @@ struct CampaignSessionView: View {
 
     var body: some View {
         Group {
-            if let result {
+            if unscored {
+                PracticeUnscoredView(retry: { unscored = false; restartScene() })
+            } else if let result {
                 PracticeResultView(result: result, room: PracticeHub.room(campaignID: campaign.id, sceneID: scene.id), course: course.wireCode, seconds: elapsed, slip: slip,
                     context: .campaignScene(isLast: isLastScene),
                     retry: { self.result = nil; restartScene() },
@@ -103,6 +107,11 @@ struct CampaignSessionView: View {
                     LazyVStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
                         ForEach(Array(turns.enumerated()), id: \.offset) { index, turn in
                             bubble(for: turn, index: index).id(index)
+                        }
+                        if PracticeHub.seeResultShown(chatMode: chatMode, userReplies: turns.dropFirst(conversation.sceneAnchor).filter { $0.role == "user" }.count, minTurns: scene.minTurns, finished: conversation.finished) {
+                            Button(PracticeHub.seeMyResult) { Task { await finishCall() } }
+                                .buttonStyle(.dsButton(.primary))
+                                .disabled(ending || pendingTurns > 0 || voice.isBusy)
                         }
                         if conversation.finished {
                             completionCard
@@ -439,7 +448,11 @@ struct CampaignSessionView: View {
         while pendingTurns > 0 { try? await Task.sleep(for: .milliseconds(50)) }
         elapsed = Int(Date().timeIntervalSince(startedAt))
         do { result = try await practiceClient(session).finishPractice(callId: callId) }
-        catch { dismiss() }
+        catch {
+            // Offline or unreachable: stay on the scene (earlier scenes keep their progress) when replies were sent.
+            let replies = turns.dropFirst(conversation.sceneAnchor).filter { $0.role == "user" }.count
+            if PracticeHub.staysOnUnscored(userReplies: replies) { ending = false; unscored = true } else { dismiss() }
+        }
     }
 
 }

@@ -94,7 +94,7 @@ const scored = (stars: number, over: Record<string, unknown> = {}) => ({
 });
 /** Ends the scene from the chat header, then takes the result's forward button. */
 async function finishAndGoOn(user: ReturnType<typeof userEvent.setup>, label = "Next scene") {
-  await user.click(await screen.findByRole("button", { name: "Finish" }));
+  await user.click(await screen.findByRole("button", { name: "See my result" }));
   await user.click(await screen.findByRole("button", { name: label }));
 }
 
@@ -181,23 +181,33 @@ describe("Campaign chat page", () => {
     ]);
   });
 
-  it("has no Continue button; Finish ends the scene once a reply is sent, then it advances and carries the transcript forward", async () => {
+  it("has no Continue button; See my result ends the scene once the minimum turns are sent, then it advances and carries the transcript forward", async () => {
     const user = userEvent.setup();
     servePractice(scored(1));
     await renderPage();
     const scene = campaign.scenes[0];
 
     expect(screen.queryByRole("button", { name: /Continue/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "See my result" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Finish" })).not.toBeInTheDocument();
 
     for (let i = 0; i < scene.minTurns; i++) {
+      // One short of the minimum there is no button yet; the last needed reply brings it.
+      expect(screen.queryByRole("button", { name: "See my result" })).not.toBeInTheDocument();
       await sendAndAwaitReply(user, `turn ${i}`, `Reply ${i + 1}`);
     }
+    expect(screen.queryByRole("button", { name: "Finish" })).not.toBeInTheDocument();
 
-    // The old in-transcript "Continue: <next scene>" is gone; the header's Finish ends the scene and the result
+    // The old in-transcript "Continue: <next scene>" is gone; See my result ends the scene and the result
     // screen's Next scene moves on.
     expect(screen.queryByRole("button", { name: /Continue/ })).not.toBeInTheDocument();
     await finishAndGoOn(user);
+    // It ended the scene once: one /api/practice finish call, no second one.
+    expect(
+      (global.fetch as ReturnType<typeof vi.fn>).mock.calls.filter(([u]) =>
+        String(u).includes("/api/practice"),
+      ),
+    ).toHaveLength(1);
 
     // Now on scene 2: progress label updated, its opener shown.
     expect(
@@ -665,6 +675,7 @@ describe("Campaign call screen (setting on, the default)", () => {
     ) as typeof fetch;
     await renderCall();
     expect(screen.queryByRole("button", { name: /Continue/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "See my result" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Show the conversation" }));
     const sheet = await screen.findByRole("dialog", { name: "Conversation" });
@@ -754,7 +765,7 @@ describe("Practice stars on a campaign", () => {
     for (let i = 0; i < campaign.scenes[0].minTurns; i++) {
       await sendAndAwaitReply(user, `turn ${i}`, `Reply ${i + 1}`);
     }
-    await user.click(await screen.findByRole("button", { name: "Finish" }));
+    await user.click(await screen.findByRole("button", { name: "See my result" }));
     expect(
       await screen.findByRole("heading", { name: "One star. You finished." }),
     ).toBeInTheDocument();
@@ -773,8 +784,9 @@ describe("Practice stars on a campaign", () => {
     const user = userEvent.setup();
     navigate.mockClear();
     await renderPage();
-    await sendAndAwaitReply(user, "hello", "Reply 1");
-    await user.click(await screen.findByRole("button", { name: "Finish" }));
+    for (let i = 0; i < campaign.scenes[0].minTurns; i++)
+      await sendAndAwaitReply(user, `hello ${i}`, `Reply ${i + 1}`);
+    await user.click(await screen.findByRole("button", { name: "See my result" }));
     expect(await screen.findByRole("heading", { name: "No stars this time" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Next scene" })).toBeNull();
     expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
@@ -786,21 +798,45 @@ describe("Practice stars on a campaign", () => {
     servePractice(scored(3));
     const user = userEvent.setup();
     await renderPage();
-    await sendAndAwaitReply(user, "hello", "Reply 1");
-    await user.click(await screen.findByRole("button", { name: "Finish" }));
+    for (let i = 0; i < campaign.scenes[0].minTurns; i++)
+      await sendAndAwaitReply(user, `hello ${i}`, `Reply ${i + 1}`);
+    await user.click(await screen.findByRole("button", { name: "See my result" }));
     await screen.findByRole("heading", { name: /Three stars/ });
     expect(screen.getByRole("button", { name: "Next scene" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Try for|Play again|Try again/ })).toBeNull();
   });
 
-  it("with no scored result there is nothing to show: Finish leaves for Practice", async () => {
+  it("with no scored result (offline) it stays on the scene: notice, Try again, no navigation, earlier scenes kept", async () => {
     const user = userEvent.setup();
-    navigate.mockClear();
+    servePractice(scored(1));
     await renderPage();
-    await sendAndAwaitReply(user, "hello", "Reply 1");
-    await user.click(await screen.findByRole("button", { name: "Finish" }));
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/converse" }));
+    for (let i = 0; i < campaign.scenes[0].minTurns; i++) {
+      await sendAndAwaitReply(user, `turn ${i}`, `Reply ${i + 1}`);
+    }
+    await finishAndGoOn(user);
+    // Now on scene 2; the next call comes back unscored.
+    global.fetch = vi.fn(async (input: RequestInfo | URL) =>
+      String(input).includes("/api/practice")
+        ? new Response("{}", { status: 503 })
+        : String(input).includes("/api/chat")
+          ? jsonResponse({ content: "Reply x" })
+          : new Response(new Blob(["audio"]), { status: 200 }),
+    ) as typeof fetch;
+    navigate.mockClear();
+    for (let i = 0; i < campaign.scenes[1].minTurns; i++)
+      await sendAndAwaitReply(user, `excuse me ${i}`, "Reply x");
+    await user.click(await screen.findByRole("button", { name: "See my result" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "You're offline, so this talk wasn't scored. Try again when you're back online.",
+    );
+    expect(navigate).not.toHaveBeenCalled();
     expect(screen.queryByRole("button", { name: "Next scene" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    // Back on scene 2, with scene 1's transcript still there.
+    expect(
+      await screen.findByText(`Scene 2 of ${campaign.scenes.length} — ${campaign.scenes[1].title}`),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("log")).toHaveTextContent(campaign.scenes[0].opener);
   });
 
   it("restarting a scene starts a new call", async () => {

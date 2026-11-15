@@ -133,6 +133,17 @@ public enum PracticeHub {
         rows.last(where: { $0.kind == kind && $0.itemKey == key })?.bestStars ?? 0
     }
     public static func starLabel(_ n: Int) -> String { "\(n) of 3 stars" }
+    /// Shown when a finished call has no score (offline or unreachable). The same line on web, iOS and Android.
+    public static let unscoredNotice = "You're offline, so this talk wasn't scored. Try again when you're back online."
+    /// A call with replies but no score keeps the learner on the scene (earlier scenes keep their progress); a call with
+    /// no reply has nothing to keep, so they leave.
+    /// The chat-mode end-of-scene button (owner decision 2026-11-15). The same label on web, iOS and Android.
+    public static let seeMyResult = "See my result"
+    /// It appears at the end of the transcript in chat mode, once the scene has its minimum turns.
+    public static func seeResultShown(chatMode: Bool, userReplies: Int, minTurns: Int, finished: Bool) -> Bool {
+        chatMode && !finished && userReplies >= minTurns
+    }
+    public static func staysOnUnscored(userReplies: Int) -> Bool { userReplies > 0 }
     /// Whether the chat-mode reply bar can send: something typed (not only spaces) and no reply still pending. The bar's
     /// send button is dimmed and inert when this is false.
     public static func canSendReply(_ text: String, pending: Bool) -> Bool {

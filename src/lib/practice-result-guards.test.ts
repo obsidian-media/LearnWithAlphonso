@@ -158,3 +158,78 @@ describe("the chat-mode reply bar is one docked row with a round send button", (
     expect(bar).not.toContain('HubButton("Send")');
   });
 });
+
+describe("a call with no score (offline) keeps the learner on the scene", () => {
+  const NOTICE = "You're offline, so this talk wasn't scored. Try again when you're back online.";
+  it("the notice is the same line on every platform", () => {
+    expect(read("src/lib/practice-result-buttons.ts")).toContain(NOTICE);
+    expect(
+      read("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/PracticeHub.swift"),
+    ).toContain(NOTICE);
+    expect(
+      read(
+        "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/logic/PracticeHub.kt",
+      ),
+    ).toContain(NOTICE);
+  });
+
+  it("web: an unscored campaign scene never navigates away once replies were sent", () => {
+    const src = code(WEB_CAMPAIGN);
+    expect(src).toMatch(/if \(userTurnsInScene > 0\) setUnscored\(true\);\s*else void navigate/);
+    expect(src).toContain("<PracticeUnscored");
+    const scenario = code("src/routes/_authenticated/converse_.$scenarioId.tsx");
+    expect(scenario).toMatch(/if \(!scored\) \{[^}]*setUnscored\(true\);[^}]*return;/);
+  });
+
+  it("iOS: the finish failure shows the notice screen instead of dismissing, in both entry points", () => {
+    for (const file of ["CampaignView.swift", "ConversationView.swift"]) {
+      const src = code(`${IOS}/${file}`);
+      expect(src, file).toContain("PracticeUnscoredView(retry:");
+      expect(src, file).toMatch(
+        /PracticeHub\.staysOnUnscored\(userReplies: .*\{ ending = false; unscored = true \} else \{ dismiss\(\) \}/,
+      );
+    }
+  });
+
+  it("Android: the finish failure shows the notice screen, and Try again resets the call first", () => {
+    const src = code(`${ANDROID}/PracticeScreens.kt`);
+    expect((src.match(/PracticeUnscoredScreen\(/g) ?? []).length).toBe(2);
+    expect((src.match(/staysOnUnscored\(/g) ?? []).length).toBe(2);
+    expect(src).toContain("unscored = false; vm.resetPractice(); vm.restartScene(speak = false)");
+    expect((src.match(/unscored = true else onBack\(\)/g) ?? []).length).toBe(2);
+  });
+});
+
+describe("See my result ends a chat-mode scene on every platform", () => {
+  it("web: the button is in the transcript, gated by seeResultShown, and the header Finish is gone", () => {
+    const src = code(WEB_CAMPAIGN);
+    expect(src).toContain("{SEE_MY_RESULT}");
+    expect(src).toMatch(/seeResultShown\(\{[^}]*minTurns: scene\.minTurns/);
+    expect(src).not.toMatch(/>\s*Finish\s*</);
+  });
+  it("iOS: the button sits at the end of the transcript, gated by the Kit's rule at minTurns", () => {
+    const src = code(`${IOS}/CampaignView.swift`);
+    expect(src).toMatch(
+      /PracticeHub\.seeResultShown\(chatMode: chatMode,.*minTurns: scene\.minTurns/,
+    );
+    expect(src).toContain("Button(PracticeHub.seeMyResult) { Task { await finishCall() } }");
+  });
+  it("Android: the chat footer shows the button through the core rule at minTurns and ends via endCall", () => {
+    const src = code(`${ANDROID}/PracticeScreens.kt`);
+    expect(src).toMatch(
+      /seeResultShown\(chatMode, replies, vm\.scene\.minTurns, progress\.finished\)/,
+    );
+    expect(src).toContain("PracticeHub.SEE_MY_RESULT, endCall");
+  });
+  it("the label is the same everywhere", () => {
+    expect(read("src/lib/practice-result-buttons.ts")).toContain('"See my result"');
+    expect(
+      read("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/PracticeHub.swift"),
+    ).toContain('"See my result"');
+    expect(
+      read(
+        "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/logic/PracticeHub.kt",
+      ),
+    ).toContain('"See my result"');
+  });
+});

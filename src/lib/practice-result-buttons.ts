@@ -20,6 +20,10 @@ export type ResultButton = {
 };
 export type ResultButtons = { retry: ResultButton | null; forward: ResultButton };
 
+/** Shown when a finished call has no score (offline or unreachable). The same line on web, iOS and Android. */
+export const UNSCORED_NOTICE =
+  "You're offline, so this talk wasn't scored. Try again when you're back online.";
+
 export function retryLabel(stars: number): string {
   if (stars >= MAX_STARS) return "Play again";
   return stars === 0 ? "Try again" : `Try for ${stars + 1}`;
@@ -61,4 +65,17 @@ export function repliesMeter(r: Pick<Result, "replies" | "finishMinReplies">): {
     given: Math.max(0, Math.min(r.replies, r.finishMinReplies)),
     needed: r.finishMinReplies,
   };
+}
+
+/** The chat-mode end-of-scene button (owner decision 2026-11-15). The same label on web, iOS and Android. */
+export const SEE_MY_RESULT = "See my result";
+
+/** It appears at the end of the transcript in chat mode, once the scene has its minimum turns (what Continue needed). */
+export function seeResultShown(a: {
+  chatMode: boolean;
+  userTurns: number;
+  minTurns: number;
+  finished: boolean;
+}): boolean {
+  return a.chatMode && !a.finished && a.userTurns >= a.minTurns;
 }
