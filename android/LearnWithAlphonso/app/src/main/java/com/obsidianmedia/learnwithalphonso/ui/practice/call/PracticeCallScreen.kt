@@ -93,6 +93,7 @@ import com.obsidianmedia.learnwithalphonso.core.avatar.CallPhase
 import com.obsidianmedia.learnwithalphonso.core.avatar.CallScenes
 import com.obsidianmedia.learnwithalphonso.core.avatar.CharacterKit
 import com.obsidianmedia.learnwithalphonso.core.content.Course
+import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.ui.practice.ConversationPhase
 import kotlinx.coroutines.delay
@@ -101,25 +102,25 @@ import kotlinx.coroutines.delay
 // dark in every theme) at the iOS opacities, the learner's caption and the recording ring are callMint and callRecord, the mic
 // icon is callDock, the end button is callEnd, and the ink is the on-hero white.
 @Composable
-private fun callGlass(): Color = LocalAlphonsoTokens.current.callGlass.copy(alpha = 0.46f)
+internal fun callGlass(): Color = LocalAlphonsoTokens.current.callGlass.copy(alpha = 0.46f)
 
 @Composable
-private fun callGlassStrong(): Color = LocalAlphonsoTokens.current.callGlass.copy(alpha = 0.62f)
+internal fun callGlassStrong(): Color = LocalAlphonsoTokens.current.callGlass.copy(alpha = 0.62f)
 
 @Composable
-private fun callScrim(): Color = LocalAlphonsoTokens.current.callGlass
+internal fun callScrim(): Color = LocalAlphonsoTokens.current.callGlass
 
 @Composable
-private fun callMint(): Color = LocalAlphonsoTokens.current.callMint
+internal fun callMint(): Color = LocalAlphonsoTokens.current.callMint
 
 @Composable
-private fun callRecord(): Color = LocalAlphonsoTokens.current.callRecord
+internal fun callRecord(): Color = LocalAlphonsoTokens.current.callRecord
 
 @Composable
-private fun callInk(): Color = LocalAlphonsoTokens.current.onHero
+internal fun callInk(): Color = LocalAlphonsoTokens.current.onHero
 
 @Composable
-private fun callEnd(): Color = LocalAlphonsoTokens.current.callEnd
+internal fun callEnd(): Color = LocalAlphonsoTokens.current.callEnd
 
 /**
  * The Practice speaking session as a full-screen call: the character's room behind him, a call bar with a timer, a
@@ -163,6 +164,9 @@ internal fun PracticeCallScreen(
         sfx?.play(SoundEffect.CALL_END)
         onEnd()
     }
+    val handsFreeStatus by vm.handsFree.status.collectAsState()
+    val handsFreeOn = handsFreeStatus != HandsFreeLoop.Status.Off
+    HandsFreeCallEffects(vm)
     val recording = turnPhase == TurnPhase.RECORDING || turnPhase == TurnPhase.REQUESTING_MIC
     val busy = state.phase != ConversationPhase.IDLE || turnPhase == TurnPhase.TRANSCRIBING
     var mode by remember { mutableStateOf(AvatarMode.IDLE) }
@@ -175,7 +179,12 @@ internal fun PracticeCallScreen(
     }
     var level by remember { mutableStateOf<Double?>(null) }
     LaunchedEffect(recording) {
-        while (recording) { level = vm.micLevelDBFS(); delay(50) }
+        while (recording) {
+            level = vm.micLevelDBFS()
+            // Hands-free reads the same level (one reader: the recorder's peak resets on every read).
+            level?.let { vm.handsFree.level(it, SystemClock.elapsedRealtime() / 1000.0) }
+            delay(50)
+        }
         level = null
     }
 
@@ -244,7 +253,8 @@ internal fun PracticeCallScreen(
             Box(Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp).clip(CircleShape).background(callGlass()).clearAndSetSemantics { liveRegion = LiveRegionMode.Polite; contentDescription = mode.callLabel }.padding(horizontal = 10.dp, vertical = 2.dp)) {
                 Text(mode.callLabel.uppercase(), color = callInk(), style = OverlineType)
             }
-            Controls(recording, busy, talkLabel, onChat = { showSheet = true }, onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded, onEnd = endCall)
+            if (handsFreeOn) HandsFreeStatusPill(handsFreeStatus, kit.displayName)
+            Controls(recording, busy, talkLabel, handsFreeStatus, onTogglePause = vm.handsFree::togglePause, onChat = { showSheet = true }, onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded, onEnd = endCall)
         }
     }
 
@@ -257,6 +267,7 @@ internal fun PracticeCallScreen(
                 Text("Conversation", style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
                 TextButton(onClick = { showSheet = false }) { Text("Back to call", color = ds.choice) }
             }
+            HandsFreeSwitch(vm, kit.displayName)
             Box(Modifier.weight(1f, fill = false)) { transcript() }
         }
     }
@@ -336,10 +347,10 @@ private fun Caption(vm: CallConversation, playback: AudioPlayback, mode: AvatarM
 }
 
 @Composable
-private fun Controls(recording: Boolean, busy: Boolean, talkLabel: String, onChat: () -> Unit, onPressBegan: () -> Unit, onPressEnded: () -> Unit, onEnd: () -> Unit) {
+private fun Controls(recording: Boolean, busy: Boolean, talkLabel: String, handsFreeStatus: HandsFreeLoop.Status, onTogglePause: () -> Unit, onChat: () -> Unit, onPressBegan: () -> Unit, onPressEnded: () -> Unit, onEnd: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(26.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
         RoundButton(callGlassStrong(), "Show the conversation", onChat) { Icon(Icons.Filled.Chat, null, tint = callInk()) }
-        Box(
+        if (handsFreeStatus != HandsFreeLoop.Status.Off) HandsFreePauseButton(handsFreeStatus, onTogglePause) else Box(
             Modifier.size(78.dp).clip(CircleShape).background(if (recording) callRecord() else callInk())
                 .semantics {
                     contentDescription = "Hold to talk"

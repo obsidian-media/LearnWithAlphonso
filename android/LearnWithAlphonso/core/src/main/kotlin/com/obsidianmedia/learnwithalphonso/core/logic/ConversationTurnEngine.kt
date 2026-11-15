@@ -27,7 +27,11 @@ enum class TurnPhase { IDLE, REQUESTING_MIC, RECORDING, TRANSCRIBING }
 
 sealed interface TurnEvent {
     data class Transcribed(val text: String, val confidence: Double?, val debugTiming: String) : TurnEvent
+    /** The transcript came back blank: noise, not speech. */
     data object Empty : TurnEvent
+
+    /** Nothing usable was captured (under the minimum audio): hands-free just listens again, as iOS's `.tooShort`. */
+    data object TooShort : TurnEvent
     data object MicDenied : TurnEvent
     data class Failed(val message: String, val consentRequired: Boolean = false) : TurnEvent
 }
@@ -132,7 +136,7 @@ class ConversationTurnEngine(
             val audio = recorder.stop()
             if (audio == null || audio.size < MINIMUM_AUDIO_BYTES) {
                 _phase.value = TurnPhase.IDLE
-                _events.tryEmit(TurnEvent.Empty)
+                _events.tryEmit(TurnEvent.TooShort)
                 return@launch
             }
             val timing = "press=${fmt(pressElapsed)} capture=${fmt(captureElapsed)}"

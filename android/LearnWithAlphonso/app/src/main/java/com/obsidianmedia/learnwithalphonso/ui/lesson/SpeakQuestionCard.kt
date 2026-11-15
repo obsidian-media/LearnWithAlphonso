@@ -82,7 +82,7 @@ class SpeakQuestionViewModel(
                         if (SpokenAnswer.normalise(text).isEmpty()) _state.update { it.copy(error = "Didn't catch that. Try again.") }
                         else { _state.update { it.copy(heard = text, error = null) }; onPick(text) }
                     }
-                    TurnEvent.Empty -> _state.update { it.copy(error = "Didn't catch that. Try again, or type the phrase.") }
+                    TurnEvent.Empty, TurnEvent.TooShort -> _state.update { it.copy(error = "Didn't catch that. Try again, or type the phrase.") }
                     TurnEvent.MicDenied -> _state.update { it.copy(micUnavailable = true, error = "Microphone access is off. Turn it on in Settings > Apps > Learn with Alphonso > Permissions, or type the phrase.") }
                     is TurnEvent.Failed -> _state.update { it.copy(error = if (event.consentRequired) null else "Couldn't check that just now. Try again.") }
                 }

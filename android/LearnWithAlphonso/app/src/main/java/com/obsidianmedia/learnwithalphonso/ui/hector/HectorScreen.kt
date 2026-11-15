@@ -72,6 +72,8 @@ import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.ExplainRules
 import com.obsidianmedia.learnwithalphonso.ui.explain.ExplainInMyLanguage
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
+import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.HandsFreeBinding
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
@@ -142,6 +144,8 @@ class HectorViewModel(
     private val _state = MutableStateFlow(ConversationUiState(openerIndices = emptySet()))
     override val state: StateFlow<ConversationUiState> = _state.asStateFlow()
     override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
+    /** Hands-free (Hector tuning: 1.2 s of quiet ends a turn). Off whenever a call starts; the call sheet's switch turns it on. Pro by location: Hector is. */
+    override val handsFree = HandsFreeBinding.newController(HandsFreeLoop.Tuning.HECTOR, press = { pressBegan() }, release = { pressEnded() }, cancel = { engine.cancel() })
     private var memoryContext: ChatMessage? = null
     private var cefrLevel: String? = null
     private var analysed = false
@@ -170,15 +174,19 @@ class HectorViewModel(
         }
         viewModelScope.launch {
             engine.events.collect { event ->
+                // Hands-free hears the failure or the empty transcript first, before the phase returns to idle.
+                HandsFreeBinding.onTurnEvent(handsFree, event)
                 when (event) {
                     is TurnEvent.Transcribed -> sendTurn(event.text)
-                    TurnEvent.Empty -> _state.update { it.copy(error = "Didn't catch that. Try again.", phase = ConversationPhase.IDLE) }
+                    TurnEvent.Empty, TurnEvent.TooShort -> _state.update { it.copy(error = HandsFreeBinding.errorFor(handsFree.isOn, event, "Didn't catch that. Try again."), phase = ConversationPhase.IDLE) }
                     TurnEvent.MicDenied -> _state.update { it.copy(error = "Couldn't access the microphone. Check Settings > Apps > Learn with Alphonso > Permissions.", phase = ConversationPhase.IDLE) }
                     is TurnEvent.Failed -> _state.update { it.copy(error = "Something went wrong. Try again.", phase = ConversationPhase.IDLE) }
                 }
             }
         }
     }
+
+    init { HandsFreeBinding.feedPhases(viewModelScope, handsFree, engine.phase, _state) }
 
     override fun micLevelDBFS(): Double? = recorder.levelDBFS()
 
@@ -226,12 +234,14 @@ class HectorViewModel(
             if (live) reply.audioBytes()?.let { if (!player.play(it)) _state.update { s -> s.copy(error = "Got a reply, but couldn't play it back.") } }
             _state.update { it.copy(phase = ConversationPhase.IDLE) }
         } catch (e: Exception) {
+            // A failed reply pauses hands-free instead of listening again; one tap resumes.
+            handsFree.failed()
             _state.update { it.copy(error = AiErrorCopy.userMessage(e), phase = ConversationPhase.IDLE) }
         }
     }
 
     /** The composable left (rotation, tab switch): cancel any recording; the view model survives. */
-    fun onLeave() { opener.stop(); engine.cancel() }
+    fun onLeave() { handsFree.disable(); opener.stop(); engine.cancel() }
 
     /** Bumped on hang-up: a turn that started before it may still get its reply, but never plays the audio. */
     @Volatile private var callGeneration = 0
@@ -239,11 +249,13 @@ class HectorViewModel(
     /** The red button: cancel any recording, and silence a reply that is still on its way. */
     fun hangUp() {
         callGeneration++
+        handsFree.disable()
         opener.stop()
         engine.cancel()
     }
 
     public override fun onCleared() {
+        handsFree.disable()
         engine.tearDown()
         if (analysed || _state.value.turns.size < 4) return
         analysed = true

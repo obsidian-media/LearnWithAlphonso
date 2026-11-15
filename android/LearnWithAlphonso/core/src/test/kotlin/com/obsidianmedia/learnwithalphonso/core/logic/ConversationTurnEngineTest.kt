@@ -105,9 +105,9 @@ class ConversationTurnEngineTest {
     }
 
     @Test
-    fun `too little audio is Empty, never a transcript`() = runEngine(bytes = 100) { engine, _, events ->
+    fun `too little audio is TooShort, never a transcript and never a blank transcript`() = runEngine(bytes = 100) { engine, _, events ->
         engine.pressBegan(); engine.pressEnded(); advanceUntilIdle()
-        assertEquals(listOf<TurnEvent>(TurnEvent.Empty), events)
+        assertEquals(listOf<TurnEvent>(TurnEvent.TooShort), events)
     }
 
     @Test

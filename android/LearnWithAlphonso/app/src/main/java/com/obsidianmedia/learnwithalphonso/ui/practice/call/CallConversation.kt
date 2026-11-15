@@ -1,6 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice.call
 
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
+import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeController
 import com.obsidianmedia.learnwithalphonso.ui.practice.ConversationUiState
 import kotlinx.coroutines.flow.StateFlow
 
@@ -15,4 +16,7 @@ interface CallConversation {
     fun micLevelDBFS(): Double?
     fun pressBegan()
     fun pressEnded()
+
+    /** Hands-free turn-taking for this call: off when the call starts, driven by the call screen's switch. */
+    val handsFree: HandsFreeController
 }

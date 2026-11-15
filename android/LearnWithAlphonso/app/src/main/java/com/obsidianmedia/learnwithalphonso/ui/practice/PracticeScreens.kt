@@ -218,8 +218,9 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     val scope = rememberCoroutineScope()
     val result by vm.result.collectAsState()
     var advancing by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-    val endCall: () -> Unit = { advancing = false; scope.launch { if (vm.finishPractice() == null) onBack() } }
-    val advanceCall: () -> Unit = { advancing = true; scope.launch { if (vm.finishPractice() == null) { vm.resetPractice(); vm.continueToNextScene() } } }
+    val endCall: () -> Unit = { advancing = false; vm.forgetHandsFreeCarry(); scope.launch { if (vm.finishPractice() == null) onBack() } }
+    // Hands-free carries across the scenes of one run: noted before the call finishes (which turns it off), re-armed with the next scene's call.
+    val advanceCall: () -> Unit = { advancing = true; vm.carryHandsFreeToNextScene(); scope.launch { if (vm.finishPractice() == null) { vm.resetPractice(); vm.continueToNextScene(); vm.rearmHandsFreeIfCarried() } } }
     androidx.activity.compose.BackHandler(enabled = result == null, onBack = endCall)
     result?.let { r ->
         PracticeResultScreen(r, com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.room(campaign.id, vm.scene.id), course.code, vm.elapsedSeconds, vm.slip, retry = { vm.restartScene(speak = false) }, nextLabel = if (vm.isLastScene || (r.stars == 0 && !advancing)) "Done" else "Continue", done = { if (vm.isLastScene || (r.stars == 0 && !advancing)) onBack() else vm.continueToNextScene(speak = false) })
@@ -247,7 +248,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
     }
     AiConsentGate(container, onDecline = onBack) {
       // Alphonso says the scene's opening line out loud (build 59 only showed it); inside the gate, as above.
-      LaunchedEffect(Unit) { vm.speakOpener() }
+      LaunchedEffect(Unit) { vm.speakOpener(); vm.rearmHandsFreeIfCarried() }
       SaveWordHost(container) {
         if (showCall) {
             DisposableEffect(Unit) { onDispose { vm.onLeave() } }
