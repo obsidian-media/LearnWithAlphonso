@@ -38,7 +38,11 @@ class AlphonsoPalettesTest {
     fun `Meadow gets the light Material colour scheme and light system bars on a dark device`() {
         val meadowOnDark = colorSchemeFor(AlphonsoPalettes.resolve(AlphonsoThemeId.MEADOW, systemDark = true))
         val meadowLight = colorSchemeFor(AlphonsoPalettes.resolve(AlphonsoThemeId.MEADOW, systemDark = false))
-        assertEquals(meadowLight, meadowOnDark)
+        // ColorScheme has no value equality, so compare the slots: the ones the palette sets and the ones it leaves to the base.
+        fun slots(c: androidx.compose.material3.ColorScheme) = listOf(
+            c.background, c.surface, c.onSurface, c.primary, c.secondary, c.error, c.inverseSurface, c.surfaceContainerHighest, c.scrim,
+        )
+        assertEquals(slots(meadowLight), slots(meadowOnDark))
         // The base light scheme's untouched slots (not set from the palette) are the light ones, not the dark base's.
         assertEquals(androidx.compose.material3.lightColorScheme().inverseSurface, meadowOnDark.inverseSurface)
         val royalNight = colorSchemeFor(AlphonsoPalettes.resolve(AlphonsoThemeId.ROYAL, systemDark = true))
