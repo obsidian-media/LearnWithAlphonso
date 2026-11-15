@@ -291,6 +291,8 @@ fun DsField(
     keyboardOptions: androidx.compose.foundation.text.KeyboardOptions = androidx.compose.foundation.text.KeyboardOptions.Default,
     keyboardActions: androidx.compose.foundation.text.KeyboardActions = androidx.compose.foundation.text.KeyboardActions.Default,
     trailing: (@Composable () -> Unit)? = null,
+    /** A reply box that grows to [maxLines] lines instead of staying on one. */
+    maxLines: Int = 1,
 ) {
     val ds = LocalAlphonsoTokens.current
     var focused by remember { mutableStateOf(false) }
@@ -299,7 +301,7 @@ fun DsField(
     Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
         if (label != null) Text(label, style = CaptionType, color = if (isError) ds.wrongInk else ds.inkSoft, modifier = Modifier.clearAndSetSemantics { })
         BasicTextField(
-            value = value, onValueChange = onChange, enabled = enabled, singleLine = true,
+            value = value, onValueChange = onChange, enabled = enabled, singleLine = maxLines == 1, maxLines = maxLines,
             textStyle = BodyType.copy(color = ds.ink), cursorBrush = SolidColor(ds.choice),
             keyboardOptions = keyboardOptions, keyboardActions = keyboardActions,
             modifier = modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).onFocusChanged { focused = it.isFocused }

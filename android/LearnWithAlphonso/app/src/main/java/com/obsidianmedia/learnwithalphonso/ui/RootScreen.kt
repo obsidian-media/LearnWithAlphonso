@@ -86,6 +86,8 @@ import com.obsidianmedia.learnwithalphonso.ui.listen.ListenFolderScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenViewModel
 import com.obsidianmedia.learnwithalphonso.ui.listen.PodcastMiniBar
+import com.obsidianmedia.learnwithalphonso.ui.support.HelpChatScreen
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportLinkId
 import androidx.compose.foundation.layout.Column
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.ui.nav.Routes
@@ -319,7 +321,7 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             composable(Routes.PATH_BUILD) { PathBuildScreen(container, onBack = { nav.popBackStack() }) }
             composable(Routes.LISTEN) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
-                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }, onFolders = { container.podcastFolders.value = it }) }
                 ListenScreen(
                     container, listenVm,
                     onOpenFolder = { nav.navigate(Routes.listenFolder(it)) },
@@ -335,7 +337,7 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             }
             composable(Routes.LISTEN_FOLDER) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
-                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }) }
+                val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }, onFolders = { container.podcastFolders.value = it }) }
                 ListenFolderScreen(container, listenVm, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
             }
             composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { id, mode -> nav.navigate(Routes.scenario(id, mode)) }, onOpenCampaign = { id, scene, mode -> nav.navigate(Routes.campaign(id, scene, mode)) }, onHector = { nav.navigate(Routes.HECTOR) }) }
@@ -376,7 +378,20 @@ private fun SignedInApp(container: AppContainer, pendingInviteCode: String?, onI
             composable(Routes.PLACEMENT) { entry ->
                 PlacementScreen(container, Course.fromCode(entry.arguments?.getString("course") ?: "en"), onFinished = { nav.popBackStack() })
             }
-            composable(Routes.SETTINGS) { SettingsScreen(container, onBack = { nav.popBackStack() }) }
+            composable(Routes.SETTINGS) { SettingsScreen(container, onBack = { nav.popBackStack() }, onOpenHelp = { nav.navigate(Routes.HELP) }) }
+            composable(Routes.HELP) {
+                HelpChatScreen(
+                    container, parent = "Settings", onBack = { nav.popBackStack() },
+                    // Each id goes to a fixed screen; the destination never comes from the answer's text.
+                    onOpenLink = { link ->
+                        when (link) {
+                            SupportLinkId.SUBSCRIPTION -> nav.navigate(Routes.HECTOR) { launchSingleTop = true }
+                            SupportLinkId.AI_FEATURES, SupportLinkId.SETTINGS -> nav.popBackStack()
+                            SupportLinkId.LEAGUE -> nav.navigate(Routes.LEAGUE)
+                        }
+                    },
+                )
+            }
         }
     }
 

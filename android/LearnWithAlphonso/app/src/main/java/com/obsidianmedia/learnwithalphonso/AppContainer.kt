@@ -137,6 +137,8 @@ class AppContainer(context: Context) {
     /** What the signed-in app still asks a learner after sign-in, held for the process so a rotation does not redo it. */
     val onboarding = OnboardingFlow()
     val podcastClient = PodcastClient(supabaseHttp, { session.userId })
+    /** The folders the Library last read: the mini bar picks its room art from these, with no request of its own. */
+    val podcastFolders = kotlinx.coroutines.flow.MutableStateFlow<List<com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder>>(emptyList())
     /** A video a learning-path stop asked for; the Library's Watch shelf opens it once the videos are loaded, then clears it. */
     val pendingVideoId = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
 
@@ -158,6 +160,8 @@ class AppContainer(context: Context) {
     val learnerProfileClient = LearnerProfileClient(apiHttp)
     /** "Explain in my language" (BACKLOG 0.0-bc): the explain call, and the account's native language and mode. */
     val explainClient = com.obsidianmedia.learnwithalphonso.core.net.ExplainClient(apiHttp)
+    /** The Help chat routes (the api/support routes); works whether or not the server has the support AI switched on. */
+    val supportClient = com.obsidianmedia.learnwithalphonso.core.net.SupportClient(apiHttp)
     val explainSettings = com.obsidianmedia.learnwithalphonso.ui.explain.ExplainSettingsStore(
         fetch = { learnerProfileClient.fetch() },
         save = { learnerProfileClient.save(it) },

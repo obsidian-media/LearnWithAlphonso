@@ -2,6 +2,9 @@ package com.obsidianmedia.learnwithalphonso.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -41,6 +44,17 @@ import com.obsidianmedia.learnwithalphonso.core.net.TeamMember
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPath
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPathChange
 import com.obsidianmedia.learnwithalphonso.core.path.LearningPathDecoding
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportLinkId
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportMessage
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportMessageKind
+import com.obsidianmedia.learnwithalphonso.core.logic.SupportStatus
+import com.obsidianmedia.learnwithalphonso.core.net.SupportConversation
+import com.obsidianmedia.learnwithalphonso.core.net.SupportErrorKind
+import com.obsidianmedia.learnwithalphonso.core.net.SupportException
+import com.obsidianmedia.learnwithalphonso.core.net.SupportUpdate
+import com.obsidianmedia.learnwithalphonso.ui.support.HelpChatClient
+import com.obsidianmedia.learnwithalphonso.ui.support.HelpChatContent
+import com.obsidianmedia.learnwithalphonso.ui.support.HelpChatViewModel
 import com.obsidianmedia.learnwithalphonso.core.path.PathApi
 import com.obsidianmedia.learnwithalphonso.core.team.TeamMission
 import com.obsidianmedia.learnwithalphonso.core.team.TeamMissionStatus
@@ -78,6 +92,11 @@ import com.obsidianmedia.learnwithalphonso.ui.achievements.BadgeUnlockSheet
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentDialog
 import com.obsidianmedia.learnwithalphonso.ui.ai.AiConsentGate
 import com.obsidianmedia.learnwithalphonso.ui.listen.PodcastQuizSheet
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenUiState
+import com.obsidianmedia.learnwithalphonso.ui.listen.ListenViewModel
+import com.obsidianmedia.learnwithalphonso.ui.path.PathScreen
+import com.obsidianmedia.learnwithalphonso.ui.path.PathMode
 import com.obsidianmedia.learnwithalphonso.ui.onboarding.NameOnboardingScreen
 import com.obsidianmedia.learnwithalphonso.ui.placement.PlacementScreen
 import com.obsidianmedia.learnwithalphonso.ui.social.BlockConfirmDialog
@@ -252,7 +271,121 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
             val pathVm = PathViewModel("en", pathApi).also { it.reload() }
             PathBuildScreen(container, {}, pathVm, goalVm, "travel", openGoalSheet = screen == "path-build-sheet")
         }
-        "settings" -> SettingsScreen(container, {})
+        "help-ai-first", "help-person-first", "help-ai", "help-team", "help-waiting", "help-solved", "help-daily-limit", "help-offline" -> {
+            fun m(id: Long, kind: SupportMessageKind, body: String, at: String, link: SupportLinkId? = null) = SupportMessage(id, kind, body, at, link)
+            val today = java.time.Instant.now().toString()
+            val ai = screen == "help-ai-first" || screen == "help-ai"
+            val msgs = when (screen) {
+                "help-ai" -> listOf(
+                    m(1, SupportMessageKind.YOU, "I bought Pro but it still says free", today),
+                    m(2, SupportMessageKind.AI, "Open the subscription screen and tap Restore Purchases. It usually fixes this within a minute.", today, SupportLinkId.SUBSCRIPTION),
+                )
+                "help-team" -> listOf(
+                    m(1, SupportMessageKind.YOU, "My streak vanished after the update", today),
+                    m(2, SupportMessageKind.SYSTEM, "A person will reply here.", today),
+                )
+                "help-waiting" -> listOf(
+                    m(1, SupportMessageKind.YOU, "My streak vanished after the update", today),
+                    m(2, SupportMessageKind.SUPPORT, "Thanks for writing. Which course was the streak in?", today),
+                )
+                "help-solved" -> listOf(
+                    m(1, SupportMessageKind.YOU, "My streak vanished after the update", today),
+                    m(2, SupportMessageKind.SUPPORT, "We restored it. Sorry about that.", today),
+                    m(3, SupportMessageKind.SYSTEM, "This chat was marked solved.", today),
+                )
+                else -> emptyList()
+            }
+            val status = when (screen) {
+                "help-team" -> SupportStatus.OPEN
+                "help-waiting" -> SupportStatus.WAITING_LEARNER
+                "help-solved" -> SupportStatus.SOLVED
+                "help-ai" -> SupportStatus.AI
+                else -> SupportStatus.NONE
+            }
+            val fake = object : HelpChatClient {
+                override suspend fun fetchConversation() = SupportConversation(status, if (screen == "help-waiting") 1 else 0, msgs, ai)
+                override suspend fun send(text: String, clientId: String) = SupportUpdate(status, emptyList())
+                override suspend fun handoff() = SupportUpdate(SupportStatus.NEW, emptyList())
+            }
+            val limited = screen == "help-daily-limit"
+            val limitedFake = object : HelpChatClient {
+                override suspend fun fetchConversation() = SupportConversation(SupportStatus.OPEN, 0, listOf(m(1, SupportMessageKind.YOU, "Earlier message", today)), false)
+                override suspend fun send(text: String, clientId: String): SupportUpdate = throw SupportException(SupportErrorKind.DAILY_LIMIT)
+                override suspend fun handoff() = SupportUpdate(SupportStatus.OPEN, emptyList())
+            }
+            val shown = remember { HelpChatViewModel(if (limited) limitedFake else fake) }
+            if (limited) androidx.compose.runtime.LaunchedEffect(Unit) { kotlinx.coroutines.delay(600); shown.setDraft("hello"); shown.send(true) }
+            HelpChatContent(shown, online = screen != "help-offline", aiDeclined = false, parent = "Settings", onBack = {}, onOpenLink = {})
+        }
+        "settings" -> SettingsScreen(container, {}, {})
+        "path-road", "path-week", "path-why" -> {
+            val path = LearningPathDecoding.path(context.assets.open("harness/path.json").bufferedReader().readText())
+            val pathApi = object : PathApi {
+                override suspend fun fetch(course: String): LearningPath? = path
+                override suspend fun change(course: String, change: LearningPathChange): LearningPath? = path
+            }
+            val pathVm = PathViewModel("en", pathApi).also { it.reload() }
+            val mode = when (screen) { "path-road" -> PathMode.ROAD; "path-week" -> PathMode.WEEK; else -> PathMode.WHY }
+            PathScreen(container, mode, {}, {}, {}, {}, {}, seededVm = pathVm)
+        }
+        "listen", "listen-empty", "listen-failed", "listen-offline" -> {
+            val root = com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder("f-en", null, "english", "English", null, 0, "en")
+            val rooms = listOf("At the Bookshop" to "A1", "Ordering Coffee" to "A1", "The Train Station" to "A2", "Radio Hour" to "B1").mapIndexed { i, (t, l) ->
+                com.obsidianmedia.learnwithalphonso.core.podcast.PodcastFolder("f$i", "f-en", "room-$i", "$l $t", null, i, "en")
+            }
+            val episodes = rooms.flatMapIndexed { i, f ->
+                (1..4).map { n ->
+                    com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode("e$i-$n", f.id, "ep-$i-$n", "Episode $n", null, "", 370 + n * 20, 0, null)
+                }
+            }
+            val progress = listOf(
+                com.obsidianmedia.learnwithalphonso.core.podcast.ListenProgress("e0-1", 370, "2026-11-13T10:00:00Z", "2026-11-13T10:00:00Z"),
+                com.obsidianmedia.learnwithalphonso.core.podcast.ListenProgress("e0-2", 150, null, "2026-11-14T10:00:00Z"),
+            )
+            val base = ListenUiState(
+                folders = rooms, allFolders = listOf(root) + rooms, publishedFolderIds = rooms.map { it.id }.toSet() + root.id, courseCode = "en", isLoading = false,
+                libraryEpisodes = episodes, progress = progress, libraryLoading = false, monthSeconds = 5400,
+            )
+            val seed = when (screen) {
+                "listen-empty" -> base.copy(folders = emptyList(), allFolders = listOf(root), libraryEpisodes = emptyList(), progress = emptyList(), monthSeconds = 0)
+                "listen-failed" -> base.copy(folders = rooms, error = "The request timed out.")
+                "listen-offline" -> base.copy(offline = emptyList())
+                else -> base
+            }
+            ListenScreen(container, ListenViewModel(com.obsidianmedia.learnwithalphonso.core.net.PodcastClient(SupabaseHttp("http://localhost", "harness", { null }, OkHttp.create { }), { null }), { emptyList() }, { screen != "listen-offline" }, seed = seed), {})
+        }
+        "speak-stage", "question-fallback", "question-fallback-translate" -> {
+            val ds = com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens.current
+            val speak = com.obsidianmedia.learnwithalphonso.core.content.Question.Speak("q-speak", "Say this phrase out loud.", "Where is the train station?", "Station is the word for a stop.")
+            val translate = com.obsidianmedia.learnwithalphonso.core.content.Question.Translate("q-tr", "Translate: I would like a coffee, please.", listOf("Quisiera un café, por favor."), "Quisiera is a polite way to ask.")
+            androidx.compose.foundation.layout.Column(androidx.compose.ui.Modifier.fillMaxSize().background(ds.surface).padding(16.dp)) {
+                when (screen) {
+                    "speak-stage" -> com.obsidianmedia.learnwithalphonso.ui.lesson.LessonStageQuestion(container, speak, Course.ENGLISH, emptyMap(), false, false, false, false, null, {}, {}, null)
+                    "question-fallback" -> com.obsidianmedia.learnwithalphonso.ui.lesson.QuestionCard(container, speak, Course.ENGLISH, emptyMap(), false, false, null, {})
+                    else -> com.obsidianmedia.learnwithalphonso.ui.lesson.QuestionCard(container, translate, Course.SPANISH, emptyMap(), false, false, "Quisiera un cafe", {})
+                }
+            }
+        }
+        "mini-bar", "mini-bar-long" -> {
+            val episode = com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode(
+                "e1", "f1", "ep-1",
+                if (screen == "mini-bar") "At the Bookshop" else "Ordering a very long coffee order at the corner cafe, part two",
+                null, "", 610, 0, null,
+            )
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                container.podcastPlayer.seedForHarness(
+                    com.obsidianmedia.learnwithalphonso.podcast.PodcastPlayerState(
+                        episode = episode, phase = com.obsidianmedia.learnwithalphonso.core.podcast.PodcastPlayerPhase.Playing,
+                        elapsedSeconds = 240.0, queue = listOf(episode, episode.copy(id = "e2", title = "Next one")),
+                    ),
+                )
+            }
+            androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize().background(com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens.current.surface)) {
+                androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.align(androidx.compose.ui.Alignment.BottomCenter)) {
+                    com.obsidianmedia.learnwithalphonso.ui.listen.PodcastMiniBar(container)
+                }
+            }
+        }
         "save-word" -> SaveWordSheet(container, SaveWordRequest("café", "Un café, por favor.", "es"), {})
         "podcast-quiz" -> PodcastQuizSheet(
             container, "Kitchen Talk 2", "ep1",

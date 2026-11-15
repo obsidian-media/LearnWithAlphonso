@@ -137,4 +137,27 @@ class ListenViewModelTest {
             assertEquals("an unreadable index says nothing about what is published ($status)", emptyList<String>(), removed)
         }
     }
+
+    @Test
+    fun `Try again after a failed read loads the library, and each read hands the folders to the mini bar`() = runBlocking {
+        var failing = true
+        val s = FakeServer { req ->
+            when {
+                failing -> json("{}", HttpStatusCode.ServiceUnavailable)
+                req.path.endsWith("podcast_episodes") && req.query["select"] == "id,folder_id" && req.query["offset"] != "0" -> json("[]")
+                req.path.endsWith("podcast_folders") -> json(FOLDERS)
+                req.path.endsWith("podcast_episodes") && req.query["select"] == "id,folder_id" -> json("""[{"id":"e1","folder_id":"f1"}]""")
+                else -> json("[]")
+            }
+        }
+        val told = ArrayList<List<String>>()
+        val vm = ListenViewModel(client(s), { emptyList() }, { true }, { "en" }, searchDebounceMillis = 0, onFolders = { told.add(it.map { f -> f.id }) })
+        awaitTrue("failed") { !vm.state.value.isLoading && vm.state.value.error != null }
+        assertTrue("a failed read tells the mini bar nothing", told.isEmpty())
+        failing = false
+        vm.load()
+        assertNull(vm.state.value.error)
+        assertEquals(listOf("f1"), vm.state.value.folders.map { it.id })
+        assertTrue(told.isNotEmpty() && "f1" in told.last())
+    }
 }

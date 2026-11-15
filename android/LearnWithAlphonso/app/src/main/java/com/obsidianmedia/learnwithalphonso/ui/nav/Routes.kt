@@ -26,6 +26,8 @@ object Routes {
     const val PATH_BUILD = "path/build"
 
     const val SETTINGS = "settings"
+    /** The Help chat, opened from Settings. */
+    const val HELP = "help"
     const val LEAGUE = "league"
     const val TEAMS = "teams"
     const val SEASON = "season"
