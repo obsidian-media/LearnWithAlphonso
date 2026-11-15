@@ -19,6 +19,9 @@ struct CampaignSessionView: View {
     @State private var elapsed = 0
     @State private var initialized = false
     @State private var advancing = false
+    /// The learner had hands-free on when they moved to the next scene of this run: it is re-armed for that scene's call.
+    /// Per run (this view): a new campaign or scenario starts with it off, and a finished campaign clears it.
+    @State private var rearmHandsFree = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
     /// What the latest reply said about the learner's turn; the avatar reacts to it after the reply is spoken.
@@ -27,7 +30,7 @@ struct CampaignSessionView: View {
     @State private var conversation = ConversationSnapshot()
     /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
-    @State private var voice = VoiceSessionController()
+    @State private var voice = VoiceSessionController(handsFreeTuning: .practice)
     /// Bumped when the opening line should be spoken: the call appeared, or a new conversation or scene began.
     @State private var openerCue = 0
     @State private var notice: String?
@@ -63,6 +66,11 @@ struct CampaignSessionView: View {
         .task(id: openerCue) {
             guard openerCue > 0, !chatMode, result == nil else { return }
             await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
+            // After the opener, so the microphone does not open under his first words (the loop also waits for a reply).
+            if rearmHandsFree {
+                rearmHandsFree = false
+                if !conversation.finished { voice.setHandsFree(true) }
+            }
         }
         .navigationBarBackButtonHidden(true)
         .aiDisclosureGate()
@@ -181,6 +189,7 @@ struct CampaignSessionView: View {
             sheet: {
             VStack(spacing: CGFloat.zero) {
                 if !conversation.finished {
+                    HandsFreeSwitch(voice: voice, partner: "Alphonso")
                     Button("Restart scene") { restartScene() }
                         .dsText(.footnote)
                         .disabled(ending || pendingTurns > 0 || voice.isBusy)
@@ -197,6 +206,13 @@ struct CampaignSessionView: View {
         )
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .onChange(of: voice.handsFreeStatus) { _, new in
+            if new == .listening { notice = nil }
+        }
+        .onChange(of: conversation.finished) { _, finished in
+            // The campaign is over: nothing more to say, so the microphone must not stay open.
+            if finished { voice.setHandsFree(false) }
+        }
     }
 
     private var callExtra: AnyView? {
@@ -313,7 +329,8 @@ struct CampaignSessionView: View {
     private func handle(_ capture: VoiceCapture) async {
         switch capture {
         case .tooShort:
-            notice = "Didn't catch that. Hold the button while you speak."
+            // Hands-free has no button to hold; its own status line says what happens next.
+            notice = voice.isHandsFreeOn ? nil : "Didn't catch that. Hold the button while you speak."
         case let .audio(audio, generation, debugTiming):
             await runTurn(audio: audio, generation: generation, debugTiming: debugTiming)
         }
@@ -339,7 +356,12 @@ struct CampaignSessionView: View {
             let result = try await client.transcribe(
                 audio: audio, mimeType: "audio/m4a", course: courseCode, debugTiming: debugTiming)
             guard !result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                notice = "Didn't catch that — try again."
+                if voice.isHandsFreeOn {
+                    // Background noise, not speech: pause rather than keep sending what the room sounds like.
+                    voice.handsFreeHeardNoWords()
+                } else {
+                    notice = "Didn't catch that — try again."
+                }
                 return
             }
             await sendReply(result.text, confidence: result.confidence, generation: generation)
@@ -353,6 +375,7 @@ struct CampaignSessionView: View {
         resetCall()
         notice = nil
         if isLastScene {
+            rearmHandsFree = false
             conversation = conversationStore.update(key) { $0.finished = true }
             return
         }
@@ -366,6 +389,7 @@ struct CampaignSessionView: View {
     }
 
     private func restartScene() {
+        rearmHandsFree = false
         resetCall()
         notice = nil
         conversation = conversationStore.update(key) { $0.restartScene() }
@@ -444,6 +468,8 @@ struct CampaignSessionView: View {
         guard !ending else { return }
         advancing = advance
         ending = true
+        // Moving to the next scene keeps the learner's choice; ending the call does not.
+        rearmHandsFree = advance && voice.isHandsFreeOn
         voice.disappeared()
         while pendingTurns > 0 { try? await Task.sleep(for: .milliseconds(50)) }
         elapsed = Int(Date().timeIntervalSince(startedAt))

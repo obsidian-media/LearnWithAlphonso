@@ -86,7 +86,7 @@ struct PracticeCallView<Sheet: View>: View {
                     caption
                     statePill
                         .padding(.top, 10)
-                    if voice.isHandsFreeOn, let line = HandsFreeCopy.statusLine(voice.handsFreeStatus) {
+                    if voice.isHandsFreeOn, let line = HandsFreeCopy.statusLine(voice.handsFreeStatus, partner: kit.displayName) {
                         // A paused hands-free call is a safety stop: it gets its own glass pill and a pause mark, so it
                         // cannot be missed over the picture.
                         let paused: Bool = { if case .paused = voice.handsFreeStatus { return true } else { return false } }()
@@ -360,7 +360,7 @@ struct PracticeCallView<Sheet: View>: View {
         .accessibilityIdentifier("hectorHandsFreePause")
         // A pause is a safety stop the learner must hear about; updatesFrequently does not announce it.
         .onChange(of: voice.handsFreeStatus) { _, new in
-            if case .paused = new, let line = HandsFreeCopy.statusLine(new) {
+            if case .paused = new, let line = HandsFreeCopy.statusLine(new, partner: kit.displayName) {
                 AccessibilityNotification.Announcement(line).post()
             }
         }
