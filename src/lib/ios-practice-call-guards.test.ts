@@ -178,7 +178,9 @@ describe("Hector's call", () => {
       /if voice\.isHandsFreeOn \{\s*handsFreeButton\s*\} else \{\s*HoldToTalkButton\(/,
     );
     expect(call).toContain("voice.toggleHandsFreePause()");
-    expect(call).toContain("HandsFreeCopy.statusLine(voice.handsFreeStatus)");
+    expect(call).toContain(
+      "HandsFreeCopy.statusLine(voice.handsFreeStatus, partner: kit.displayName)",
+    );
     expect(call).toContain("HandsFreeCopy.pause");
   });
   it("shows no reactions: his endpoint returns no verdict, so the verdict never changes", () => {

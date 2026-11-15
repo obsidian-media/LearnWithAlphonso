@@ -41,7 +41,7 @@ struct ConversationSessionView: View {
     @State private var conversation = ConversationSnapshot()
     /// The word the learner tapped in one of the partner's replies, if a save sheet is open.
     @State private var savingWord: SaveWordRequest?
-    @State private var voice = VoiceSessionController()
+    @State private var voice = VoiceSessionController(handsFreeTuning: .practice)
     /// Bumped when the opening line should be spoken: the call appeared, or a new conversation or scene began.
     @State private var openerCue = 0
     /// What the latest reply said about the learner's turn; the avatar reacts to it after the reply is spoken.
@@ -163,6 +163,7 @@ struct ConversationSessionView: View {
             onEnd: { Task { await finishCall() } },
             sheet: {
             VStack(spacing: CGFloat.zero) {
+                HandsFreeSwitch(voice: voice, partner: "Alphonso")
                 transcript
                 saveWordHint
                 Button("New conversation") { startNewConversation() }
@@ -178,6 +179,10 @@ struct ConversationSessionView: View {
         )
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .onChange(of: voice.handsFreeStatus) { _, new in
+            // A fresh hands-free turn clears the last notice, as it does on the Hector call.
+            if new == .listening { notice = nil }
+        }
     }
 
     // MARK: - Bubbles
@@ -273,7 +278,8 @@ struct ConversationSessionView: View {
     private func handle(_ capture: VoiceCapture) async {
         switch capture {
         case .tooShort:
-            notice = "Didn't catch that. Hold the button while you speak."
+            // Hands-free has no button to hold; its own status line says what happens next.
+            notice = voice.isHandsFreeOn ? nil : "Didn't catch that. Hold the button while you speak."
         case let .audio(audio, generation, debugTiming):
             await runTurn(audio: audio, generation: generation, debugTiming: debugTiming)
         }
@@ -300,7 +306,12 @@ struct ConversationSessionView: View {
             let result = try await client.transcribe(
                 audio: audio, mimeType: "audio/m4a", course: courseCode, debugTiming: debugTiming)
             guard !result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                notice = "Didn't catch that — try again."
+                if voice.isHandsFreeOn {
+                    // Background noise, not speech: pause rather than keep sending what the room sounds like.
+                    voice.handsFreeHeardNoWords()
+                } else {
+                    notice = "Didn't catch that — try again."
+                }
                 return
             }
             await sendReply(result.text, confidence: result.confidence, generation: generation)

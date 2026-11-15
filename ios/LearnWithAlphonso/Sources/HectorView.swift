@@ -62,7 +62,7 @@ private struct HectorConversationView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The safety note is shown once per device, before the first time hands-free is turned on.
-    @AppStorage("handsFree.safetyNoteSeen.v1") private var handsFreeNoteSeen = false
+    @AppStorage(HandsFreeCopy.noteSeenKey) private var handsFreeNoteSeen = false
     @State private var showHandsFreeNote = false
 
     @State private var conversation = ConversationSnapshot()
@@ -216,7 +216,7 @@ private struct HectorConversationView: View {
                             }
                             Button("Cancel", role: .cancel) {}
                         } message: {
-                            Text(HandsFreeCopy.firstUseBody)
+                            Text(HandsFreeCopy.firstUseBody(partner: "Hector"))
                         }
                     }
                 )
@@ -501,7 +501,7 @@ private struct HectorConversationView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text(HandsFreeCopy.firstUseBody)
+            Text(HandsFreeCopy.firstUseBody(partner: "Hector"))
         }
     }
 
