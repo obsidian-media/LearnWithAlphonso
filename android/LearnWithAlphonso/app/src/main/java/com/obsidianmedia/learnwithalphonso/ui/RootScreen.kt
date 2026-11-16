@@ -96,7 +96,10 @@ import com.obsidianmedia.learnwithalphonso.ui.placement.PlacementScreen
 import com.obsidianmedia.learnwithalphonso.ui.review.ReviewScreen
 import com.obsidianmedia.learnwithalphonso.ui.settings.SettingsScreen
 import com.obsidianmedia.learnwithalphonso.ui.tabs.PlaceholderTab
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDivider
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
 
@@ -207,7 +210,7 @@ private fun SignedInApp(
             onHelpConsumed()
         }
     }
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val showBar = currentRoute in Routes.tabs
@@ -270,13 +273,15 @@ private fun SignedInApp(
     }
 
     Scaffold(
-        containerColor = palette.surface,
+        containerColor = ds.surface,
         bottomBar = {
             Column {
             // Docked above the tab bar on every screen, as View.podcastMiniBar does per tab on iOS.
             PodcastMiniBar(container)
             if (showBar) {
-                NavigationBar(containerColor = palette.parchment) {
+                // The tab bar as iOS and web draw it: the card colour, a hairline above, the choice colour on the selected tab, no pill.
+                DsDivider()
+                NavigationBar(containerColor = ds.card) {
                     tabs.forEach { tab ->
                         NavigationBarItem(
                             selected = currentRoute == tab.route,
@@ -288,13 +293,13 @@ private fun SignedInApp(
                                 }
                             },
                             icon = { Icon(tab.icon, contentDescription = null) },
-                            label = { Text(tab.label) },
+                            label = { Text(tab.label, style = CaptionType) },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = palette.onPrimary,
-                                selectedTextColor = palette.moss,
-                                indicatorColor = palette.moss,
-                                unselectedIconColor = palette.inkSoft,
-                                unselectedTextColor = palette.inkSoft,
+                                selectedIconColor = ds.choice,
+                                selectedTextColor = ds.brand,
+                                indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                                unselectedIconColor = ds.inkSoft,
+                                unselectedTextColor = ds.inkSoft,
                             ),
                         )
                     }
@@ -317,6 +322,9 @@ private fun SignedInApp(
                 else -> nav.navigate(Routes.LISTEN) { launchSingleTop = true }
             }
         }
+        androidx.compose.runtime.CompositionLocalProvider(
+            com.obsidianmedia.learnwithalphonso.ui.support.LocalOpenHelp provides { nav.navigate(Routes.HELP_REPLY) { launchSingleTop = true } },
+        ) {
         NavHost(nav, startDestination = Routes.LEARN, modifier = Modifier.padding(padding)) {
             composable(Routes.LEARN) {
                 LearnScreen(
@@ -421,6 +429,7 @@ private fun SignedInApp(
                     },
                 )
             }
+        }
         }
     }
 

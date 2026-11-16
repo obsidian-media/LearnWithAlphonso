@@ -201,6 +201,7 @@ function setup(
   db.recordCompletions = !opts.fresh;
   const pushes: string[] = [];
   const tokenClaims: Row[] = [];
+  const ageLimits: (number | undefined)[] = [];
   const consentReads: string[] = [];
   const slots: number[] = [];
   const deps: CompleteLessonDeps = {
@@ -211,8 +212,9 @@ function setup(
       consentReads.push(userId);
       return Promise.resolve(opts.consent ?? true);
     },
-    verifySessionToken: (_token, claim) => {
+    verifySessionToken: (_token, claim, maxAgeMs) => {
       tokenClaims.push(claim as unknown as Row);
+      ageLimits.push(maxAgeMs);
       return opts.tokenOk ?? true;
     },
     sessionIssuedAt: () => (opts.now ?? NOW).getTime() - (opts.sessionAgeMs ?? 60 * 60 * 1000),
@@ -244,6 +246,7 @@ function setup(
     db,
     pushes,
     tokenClaims,
+    ageLimits,
     consentReads,
     handler: createCompleteLessonHandler(deps),
   };
@@ -515,21 +518,70 @@ Deno.test(
 Deno.test(
   "offline replays arriving together are counted at the time they were played, not refused",
   async () => {
-    // Ceiling of 2 per hour. Three lessons played 2 h apart sync in one burst after reconnecting: all fine.
+    // Ceiling of 2 per hour. Three lessons played an hour apart sync in one burst (session still within 3 hours).
     const now = new Date("2026-10-18T12:00:00Z");
-    const day = 24 * 3_600_000;
-    const { handler, slots } = setup({ now, slotLimit: 2, sessionAgeMs: 2 * day, fresh: true });
-    for (const hoursAgo of [30, 28, 26]) {
-      const completedAt = new Date(now.getTime() - hoursAgo * 3_600_000).toISOString();
+    const min = 60_000;
+    const { handler, slots } = setup({ now, slotLimit: 2, sessionAgeMs: 175 * min, fresh: true });
+    for (const minsAgo of [170, 110, 50]) {
+      const completedAt = new Date(now.getTime() - minsAgo * min).toISOString();
       assertEquals((await handler(post({ ...body(["a", "d"]), completedAt }))).status, 200);
     }
     assertEquals(slots, [
-      now.getTime() - 30 * 3_600_000,
-      now.getTime() - 28 * 3_600_000,
-      now.getTime() - 26 * 3_600_000,
+      now.getTime() - 170 * min,
+      now.getTime() - 110 * min,
+      now.getTime() - 50 * min,
     ]);
   },
 );
+
+Deno.test("a hoarded session is counted at receipt, so it cannot dodge the hourly ceiling", async () => {
+  const now = new Date("2026-10-18T12:00:00Z");
+  const { handler, slots } = setup({
+    now,
+    slotLimit: 2,
+    sessionAgeMs: 30 * 3_600_000,
+    fresh: true,
+  });
+  // Three completions each claiming a different old hour: receipt time puts all three in the same hour.
+  for (const hoursAgo of [20, 18, 16]) {
+    const completedAt = new Date(now.getTime() - hoursAgo * 3_600_000).toISOString();
+    await handler(post({ ...body(["a", "d"]), completedAt }));
+  }
+  assertEquals(slots, [now.getTime(), now.getTime()]);
+});
+
+Deno.test("the abuse: a replay of a finished lesson cannot fill a skipped day with an old session", async () => {
+  // Session minted 23:59 on the 15th, lesson already finished, replayed on the 17th claiming the 15th.
+  const now = new Date("2026-10-17T12:00:00Z");
+  const issued = Date.parse("2026-10-15T23:59:00Z");
+  const { db, handler } = setup({ now, sessionAgeMs: now.getTime() - issued });
+  db.tables.lesson_completions = [
+    { user_id: USER, lesson_id: "u1l1", language: "fr", correct: 2, total: 2, xp_earned: 100 },
+  ];
+  db.tables.user_progress = [progressRow({ streak: 5, last_active_date: "2026-10-14" })];
+  const res = await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-15T23:59:40.000Z" }));
+  assertEquals(res.status, 200);
+  // Credited to the receipt day: the 15th and 16th stay empty, so the streak is not carried through them.
+  assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
+  assertEquals((db.rpcCalls[0].args._next as Row).last_active_date, "2026-10-17");
+});
+
+Deno.test("a long-window claim made before the lesson could have been played is refused", async () => {
+  const now = new Date("2026-10-17T12:00:00Z");
+  const issued = Date.parse("2026-10-16T12:00:00Z");
+  const { db, handler } = setup({ now, sessionAgeMs: now.getTime() - issued });
+  // Claimed 5 seconds after the session opened: no lesson is that quick.
+  const res = await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-16T12:00:05.000Z" }));
+  assertEquals(res.status, 403);
+  assertEquals(db.rpcCalls.length, 0);
+});
+
+Deno.test("the long window applies only to a completion claimed more than 5 minutes ago", async () => {
+  const { handler, ageLimits } = setup({});
+  // Claimed 2 minutes before receipt: a live completion, 3 hour window.
+  await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-17T11:58:00.000Z" }));
+  assertEquals(ageLimits, [3 * 3_600_000]);
+});
 
 Deno.test(
   "claiming a past completedAt cannot dodge the ceiling: the claim is clamped into the session window",
@@ -995,4 +1047,26 @@ Deno.test("a rejected completion records no profile data", async () => {
   const res = await handler(post(body(["a", "d"])));
   assertEquals(res.status, 403);
   assertEquals(db.profileCalls.length, 0);
+});
+
+Deno.test("a live completion is checked against the 3 hour session window, a queued one against the offline window", async () => {
+  const live = setup({});
+  assertEquals((await live.handler(post(body(["a", "d"])))).status, 200);
+  assertEquals(live.ageLimits, [3 * 60 * 60 * 1000]);
+
+  const queued = setup({});
+  const res = await queued.handler(
+    post({ ...body(["a", "d"]), completedAt: "2026-10-17T10:00:00.000Z" }),
+  );
+  assertEquals(res.status, 200);
+  assertEquals(queued.ageLimits, [48 * 60 * 60 * 1000]);
+});
+
+Deno.test("a lesson finished offline the evening before and synced the next morning keeps its own day", async () => {
+  // Session opened 19:50 on the 17th, finished 20:05, synced 09:00 on the 18th: 13 hours later, past the live window.
+  const now = new Date("2026-10-18T09:00:00Z");
+  const { db, handler } = setup({ now, sessionAgeMs: 13 * 60 * 60 * 1000 + 10 * 60_000 });
+  const res = await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-17T20:05:00.000Z" }));
+  assertEquals(res.status, 200);
+  assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
 });

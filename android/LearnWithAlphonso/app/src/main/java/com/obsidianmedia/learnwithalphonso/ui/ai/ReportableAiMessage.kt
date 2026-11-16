@@ -3,13 +3,23 @@ package com.obsidianmedia.learnwithalphonso.ui.ai
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.painterResource
+import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialog
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogBody
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogTitle
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -22,12 +32,13 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReport
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReportReason
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
 /**
  * Long-press an AI message to report it into the moderation queue (`content_reports`, kind 'ai_response'), with a
@@ -49,7 +60,7 @@ fun ReportableAiMessage(
         content(Modifier, emptyList())
         return
     }
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val sending by sender.state.collectAsState()
     var showMenu by rememberSaveable { mutableStateOf(false) }
     var showReasons by rememberSaveable { mutableStateOf(false) }
@@ -66,59 +77,54 @@ fun ReportableAiMessage(
             .semantics { onLongClick(label = AiConsentCopy.reportAction) { showReasons = true; true } },
         listOf(CustomAccessibilityAction(AiConsentCopy.reportAction) { showReasons = true; true }),
     )
-    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }, containerColor = ds.card) {
         DropdownMenuItem(
-            text = { Text(AiConsentCopy.reportAction) }, enabled = !sending.sending,
+            text = { Text(AiConsentCopy.reportAction, style = FootnoteType, color = if (sending.sending) ds.inkFaint else ds.ink) },
+            enabled = !sending.sending,
             onClick = { showMenu = false; showReasons = true },
         )
     }
     if (showReasons) {
-        AlertDialog(
-            onDismissRequest = { showReasons = false },
-            title = { Text(AiConsentCopy.reportAction) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(AiConsentCopy.reportReviewNote, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
-                    AiResponseReportReason.entries.forEach { reason ->
-                        TextButton(
-                            enabled = !sending.sending,
-                            onClick = {
-                                // Ignored by the sender when a report is already in flight.
-                                if (sender.submit(makeReport(reason)) != null) showReasons = false
-                            },
-                        ) { Text(reason.label, color = if (sending.sending) palette.inkSoft else palette.ink) }
-                    }
+        DsDialog({ showReasons = false }) {
+            DsDialogTitle(AiConsentCopy.reportAction)
+            DsDialogBody(AiConsentCopy.reportReviewNote)
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                AiResponseReportReason.entries.forEach { reason ->
+                    // A reason is a button, not a selection: tapping it sends the report (ignored by the sender while one is in flight).
+                    // Disabled while a report is in flight (the sender would ignore a second tap anyway).
+                    DsChip(
+                        reason.label, selected = false,
+                        onClick = { if (!sending.sending && sender.submit(makeReport(reason)) != null) showReasons = false },
+                        modifier = Modifier.fillMaxWidth().alpha(if (sending.sending) 0.5f else 1f).semantics { if (sending.sending) disabled() },
+                    )
                 }
-            },
-            confirmButton = {},
-            dismissButton = { TextButton(onClick = { showReasons = false }) { Text("Cancel", color = palette.inkSoft) } },
-        )
+            }
+            DsCompactButton("Cancel", { showReasons = false })
+        }
     }
 }
 
 /** Shows "Sending your report..." while a report is in flight and its outcome after, once per screen. */
 @Composable
 fun AiReportStatusHost(sender: AiReportSender) {
-    val palette = AlphonsoColor.palette
+    val ds = LocalAlphonsoTokens.current
     val status by sender.state.collectAsState()
     if (status.sending) {
-        AlertDialog(
-            onDismissRequest = { },
-            text = {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(color = palette.moss, modifier = Modifier.then(Modifier))
-                    Text("Sending your report...", style = MaterialTheme.typography.bodyMedium, color = palette.ink)
-                }
-            },
-            confirmButton = {},
-        )
+        DsDialog(onDismiss = { }, dismissible = false) {
+            Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3), verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(color = ds.choice)
+                Text("Sending your report...", style = FootnoteType, color = ds.ink)
+            }
+        }
     }
     status.message?.let { message ->
-        AlertDialog(
-            onDismissRequest = sender::dismissMessage,
-            text = { Text(message) },
-            confirmButton = { TextButton(onClick = sender::dismissMessage) { Text("OK", color = palette.moss) } },
-        )
+        DsDialog(sender::dismissMessage) {
+            // The tick is for a sent report only; a failure gets the cross in the wrong colour.
+            if (status.succeeded) Icon(painterResource(R.drawable.ds_check), null, tint = ds.right, modifier = Modifier.size(AlphonsoTokens.Space.s12))
+            else Icon(painterResource(R.drawable.ds_cross), null, tint = ds.wrongInk, modifier = Modifier.size(AlphonsoTokens.Space.s12))
+            DsDialogBody(message)
+            DsCompactButton("OK", sender::dismissMessage, primary = true)
+        }
     }
 }
 
