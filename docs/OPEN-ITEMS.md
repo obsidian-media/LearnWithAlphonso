@@ -11,6 +11,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 ### A. STILL OPEN - owner only (in priority order)
 
 1. **Decide and perform the next App Review submission.** Builds up to 67 are on TestFlight; nothing newer than the notes shows a submission. App Store Connect state is unverified from here. (0.0-am #7, 0.0-y)
+1a. **Reseed after #574** (Spanish minimal pairs, `frb2p5q16`, path tags). The owner runs it; keep this line until the owner confirms.
 2. **Paid Applications Agreement must be Active** (terms, bank, tax). Older notes disagree on whether it already is; unverified. A "New" agreement blocks every in-app price. (0.0-am, 1.1)
 3. **Store privacy answers in one visit** (App Store Connect App Privacy and Google Play Data safety), before any submission: Product Interaction and Device ID for Analytics (PostHog, linked, not tracking), Product Personalization, Crash Data and Other Diagnostic Data, first-run answers (name, age range, country, avatar, goal, level, how you heard of us), Explain and Hector AI requests, learning minutes, mastered words, time zone, listening progress, and **Customer Support** for the Help chat (kept 12 months after a chat is solved, in the export). Age rating 13+. (0.0-as #1 #7 #8, 0.0-bn, 2026-11-15 note, 0.0-ai)
 4. **Security follow-ups, details kept private.** Several owner-only account, settings and switch-on steps (including one timed switch-on) are tracked privately and are not described here. (0.0-bb, 0.0-as #3)
@@ -35,10 +36,6 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 
 **Order of work (owner 2026-11-16).** A small fixes, then B redesign gaps and social parity, then C reliability. D content waits for "content run approved". E art waits for mock approval.
 
-22. **Spanish Minimal Pairs lessons: DECIDED 2026-11-16.** Owner: "yes". They become spelling-choice questions. In progress.
-23. **Web/iOS/Android social parity: DECIDED 2026-11-16.** Owner: "close the gap". Audit in progress (workstream B).
-25. **French question frb2p5q16: DECIDED 2026-11-16.** Owner: "yes". The agent writes the answer and the owner approves it in the PR.
-26. **Path tags and minutes: DECIDED 2026-11-16.** Owner: "yes". The agent proposes `src/data/path-tags.ts` tags and the `path-config.ts` minutes from data; the owner approves.
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
 28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
 29. **Someday features: PARKED until workstreams A to C finish.** Owner 2026-11-16: "lets discuss these after these are all done".
@@ -67,7 +64,6 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 44. **FR/ES review-panel disagreements** (77 from the first run) were folded into the content closure project; the state of the closure run and its caps is unverified from here. (0.0-ay, #428, content closure)
 45. **Call scenes v2:** more vivid, less pastel, distinct interview and negotiation offices, matching evening study room. No evidence it started. (2026-11-05 note)
 46. **Night rooms for dark mode** (owner said yes 2026-11-12); no evidence it was built; lessons stay light. (0.0-be)
-49. **Redesign gaps, batch 1: web social parity (in progress).** The 2026-11-16 audit (r14-b-audit) found 28 of the 34 rows formerly listed in items 49 to 51 already done. Seven web features remain: friend nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, team-name report.
 50. **Redesign gaps, batch 2: Android residue** (the rows of the audit still open on Android).
 52a. **Redesign gaps, batch 4: web call-chrome raw values.**
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
@@ -104,6 +100,10 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Spanish minimal pairs (was 22): owner 2026-11-16, "yes"; they are spelling-choice questions (#574, 6ef39fe9; 5 lessons, 125 items, gate test).
+- Social parity (was 23 and batch 1, 49): owner 2026-11-16, "close the gap"; web now has nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, and team-name report (#578, 4b43a187). Not run on a device.
+- French question frb2p5q16 (was 25): the answer is "était" (#574, owner ok).
+- Path tags and minutes (was 26): minutes kept because the data is too thin; tags changed (#574, owner ok).
 - Royal night on the web (was 24): owner 2026-11-16, "24 yes"; merged in #577 (0b0042a1). The web Royal theme follows the device dark mode on first paint and live; Meadow stays light. Not captured on full signed-in screens.
 - Redesign gaps, batch 3 (iOS residue, was 51): iOS accept-friend sheet and the legacy helpers moved onto the design system (#575, 791a81dd); the sheet copies the web and Android look as the owner chose ("3. copy"). Nothing was seen on a simulator.
 - Owner step from #576: delete `NVIDIA_API_KEY` and `NVIDIA_CHAT_MODEL` on Vercel if they are still set (no code reads them).
