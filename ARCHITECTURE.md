@@ -935,7 +935,7 @@ platform, so the app has exactly three looks: Royal light, Royal night and Meado
 2026-11-16 (visual round 6 had already moved the screens onto the design-system tokens, so the
 three older themes were only a second, unused layer). A theme swaps the `--c-*` token values:
 `src/styles/ds-tokens.generated.css` reads `data-palette` on `<html>` (Royal is `:root`, Meadow is
-`:root[data-palette="meadow"]`, night is `data-ds-mode="night"` and its selectors skip Meadow). `src/lib/theme.ts` is a small
+`:root[data-palette="meadow"]`, night is `data-ds-mode="night"` and its selectors skip Meadow). Since #577 the web follows the device's dark mode in Royal: the boot script sets `data-ds-mode="night"` before first paint and a listener keeps it live, selectors use `:not([data-palette="meadow"])` so Meadow is always light, and `color-scheme: dark` is set for the browser's own controls. Learn, Profile and the Practice hub show night; the lesson stage, pre-call sheet and Learn hero art stay light. `src/lib/theme.ts` is a small
 Zustand store: the account value (`profiles.theme`) wins over the value kept on the device
 (`localStorage` "theme"), over the Royal default, and an inline `<script>` in `src/routes/__root.tsx`
 (`THEME_BOOT_SCRIPT`) applies it before first paint. `normalizeTheme` is the one rule: `meadow`
