@@ -171,6 +171,8 @@ fun ProPaywallScreen(container: AppContainer, source: String = "hector_tab", onP
                 }
             }
             state.error?.takeIf { presentation != null }?.let { Text(it, style = FootnoteType, color = ds.wrong, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+            // A problem with the store or the plans: the chat can help (iOS shows it on the error notice).
+            if (state.error != null || presentation == null && !state.isLoading) Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { com.obsidianmedia.learnwithalphonso.ui.support.GetHelpButton() }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 TextButton(onClick = { onPurchaseStarted(); scope.launch { store.restorePurchases() } }) { Text("Restore Purchases", style = FootnoteType, color = ds.choice) }
                 TextButton(onClick = { uriHandler.openUri("https://play.google.com/store/account/subscriptions") }) { Text("Manage Subscription", style = FootnoteType, color = ds.choice) }

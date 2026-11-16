@@ -2,6 +2,11 @@ package com.obsidianmedia.learnwithalphonso.ui.learn
 
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
+import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialog
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogTitle
+import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
+import com.obsidianmedia.learnwithalphonso.ui.components.DsProgressBar
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import androidx.compose.foundation.background
@@ -23,11 +28,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -50,6 +52,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,14 +60,10 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoProgressBar
 import com.obsidianmedia.learnwithalphonso.ui.social.ToastBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSectionHeader
 import com.obsidianmedia.learnwithalphonso.ui.league.TeamMissionCard
 import com.obsidianmedia.learnwithalphonso.ui.league.TeamMissionViewModel
-import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -101,7 +100,6 @@ val Course.displayName: String get() = when (this) { Course.ENGLISH -> "English"
  */
 @Composable
 private fun SyncNotices(container: AppContainer, vm: LearnViewModel) {
-    val palette = AlphonsoColor.palette
     val ds = LocalAlphonsoTokens.current
     val lessons by vm.pendingLessons.collectAsState()
     val reviewAnswers by vm.pendingReviewAnswers.collectAsState()
@@ -202,7 +200,7 @@ fun LearnScreen(
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             CoursePicker(state.course, onSelect = { picked -> container.activeCourse.set(picked); vm.selectCourse(picked) })
             Spacer(Modifier.weight(1f))
-            Text("Learn with Alphonso", style = MaterialTheme.typography.titleMedium, color = ds.ink)
+            Text("Learn with Alphonso", style = HeadlineType, color = ds.ink)
             Spacer(Modifier.weight(1f))
             IconButton(onClick = onOpenSettings) { Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = ds.actionText) }
         }
@@ -226,17 +224,17 @@ fun LearnScreen(
             teamMission?.let { mission -> item(key = "team-mission") { TeamMissionCard(mission) } }
             if (state.challenges.isNotEmpty()) {
                 item(key = "challenges") {
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(ds.card).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        AlphonsoSectionHeader("This week's challenges")
+                    DsCard(spacing = AlphonsoTokens.Space.s2) {
+                        DsOverline("This week's challenges")
                         state.challenges.forEach { c ->
                             val done = c.progress >= c.threshold
-                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Text(c.title, style = MaterialTheme.typography.bodyLarge, color = if (c.completed) ds.inkSoft else ds.ink)
-                                AlphonsoProgressBar(minOf(c.progress, c.threshold).toFloat() / maxOf(c.threshold, 1))
+                            Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+                                Text(c.title, style = BodyType, color = if (c.completed) ds.inkSoft else ds.ink)
+                                DsProgressBar(minOf(c.progress, c.threshold).toFloat() / maxOf(c.threshold, 1))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("${minOf(c.progress, c.threshold)}/${c.threshold}", style = MaterialTheme.typography.labelSmall, color = ds.inkSoft, modifier = Modifier.weight(1f))
-                                    if (done && !c.completed && c.templateId !in state.claimedChallengeIds) TextButton(onClick = { vm.claimChallenge(c) }) { Text("Claim", color = ds.actionText, fontWeight = FontWeight.SemiBold) }
-                                    else if (c.completed || c.templateId in state.claimedChallengeIds) Text("Claimed", style = MaterialTheme.typography.labelMedium, color = ds.actionText)
+                                    Text("${minOf(c.progress, c.threshold)}/${c.threshold}", style = CaptionType, color = ds.inkSoft, modifier = Modifier.weight(1f))
+                                    if (done && !c.completed && c.templateId !in state.claimedChallengeIds) DsCompactButton("Claim", { vm.claimChallenge(c) }, primary = true)
+                                    else if (c.completed || c.templateId in state.claimedChallengeIds) Text("Claimed", style = FootnoteType, color = ds.actionText)
                                 }
                             }
                         }
@@ -249,10 +247,10 @@ fun LearnScreen(
             }
             if (state.placementTaken == false) {
                 item(key = "placement") {
-                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(ds.card).padding(12.dp)) {
-                        Text("Find your level", style = MaterialTheme.typography.titleSmall, color = ds.ink)
-                        Text("A five-minute placement test picks the right band for you. No hearts lost.", style = MaterialTheme.typography.bodySmall, color = ds.inkSoft)
-                        TextButton(onClick = { onOpenPlacement(state.course) }) { Text("Take the placement test", color = ds.actionText, fontWeight = FontWeight.SemiBold) }
+                    DsCard(spacing = AlphonsoTokens.Space.s2) {
+                        Text("Find your level", style = HeadlineType, color = ds.ink)
+                        Text("A five-minute placement test picks the right band for you. No hearts lost.", style = FootnoteType, color = ds.inkSoft)
+                        DsCompactButton("Take the placement test", { onOpenPlacement(state.course) }, primary = true)
                     }
                 }
             }
@@ -302,7 +300,7 @@ private fun foldUnitOf(u: com.obsidianmedia.learnwithalphonso.core.content.Unit)
 private fun androidx.compose.foundation.lazy.LazyListScope.unitItems(
     unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, completed: Set<String>, course: Course, onOpenLesson: (Course, String) -> kotlin.Unit,
 ) {
-    item(key = "unit-${unit.id}") { AlphonsoSectionHeader("${unit.eyebrow} \u00B7 ${unit.title}", Modifier.padding(top = 8.dp)) }
+    item(key = "unit-${unit.id}") { DsOverline("${unit.eyebrow} \u00B7 ${unit.title}", Modifier.padding(top = 8.dp)) }
     unit.lessons.forEachIndexed { index, lesson -> lessonItem(lesson, index, completed, course, onOpenLesson) }
 }
 
@@ -372,11 +370,17 @@ fun CoursePicker(course: Course, onSelect: (Course) -> Unit) {
     var open by remember { mutableStateOf(false) }
     val ds = LocalAlphonsoTokens.current
     TextButton(onClick = { open = true }, modifier = Modifier.semantics { contentDescription = "Course: ${course.displayName}" }) {
-        Text("${course.flag} ${course.code.uppercase()}", color = ds.actionText, fontWeight = FontWeight.SemiBold)
+        Text("${course.flag} ${course.code.uppercase()}", style = FootnoteType, color = ds.actionText, fontWeight = FontWeight.SemiBold)
     }
-    DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-        Course.entries.forEach { c ->
-            DropdownMenuItem(text = { Text("${c.flag} ${c.displayName}") }, onClick = { open = false; onSelect(c) })
+    if (open) {
+        DsDialog({ open = false }) {
+            DsDialogTitle("Course")
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                Course.entries.forEach { c ->
+                    DsChip("${c.flag} ${c.displayName}", c == course, onClick = { open = false; onSelect(c) }, modifier = Modifier.fillMaxWidth())
+                }
+            }
+            DsCompactButton("Cancel", { open = false })
         }
     }
 }
@@ -431,8 +435,8 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(ds.card).border(1.dp, ds.line, RoundedCornerShape(14.dp)).padding(start = 12.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
             ) {
-                Text("\u2744\uFE0F ${progress.streakFreezes} streak freeze${if (progress.streakFreezes == 1) "" else "s"}", style = MaterialTheme.typography.labelLarge, color = ds.ink, modifier = Modifier.weight(1f))
-                AlphonsoSecondaryButton("Buy freeze ($STREAK_FREEZE_XP_COST XP)", onClick = onBuyStreakFreeze, fullWidth = false)
+                Text("\u2744\uFE0F ${progress.streakFreezes} streak freeze${if (progress.streakFreezes == 1) "" else "s"}", style = FootnoteType, color = ds.ink, modifier = Modifier.weight(1f))
+                DsCompactButton("Buy freeze ($STREAK_FREEZE_XP_COST XP)", onBuyStreakFreeze)
             }
         }
     }

@@ -6,6 +6,9 @@ import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
 import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
 import com.obsidianmedia.learnwithalphonso.ui.components.DsChipRow
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsConfirmDialog
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialog
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogTitle
 import com.obsidianmedia.learnwithalphonso.ui.components.DsPill
 import com.obsidianmedia.learnwithalphonso.ui.components.DsPillTone
 import com.obsidianmedia.learnwithalphonso.ui.components.DsSwitch
@@ -22,12 +25,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -232,12 +231,16 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, knownAgeRang
                     }
                 }
                 if (buddy.canSendPresets) {
-                    Box {
-                        DsCompactButton("Send ${buddy.buddyName} a message", { choosingPreset = true }, enabled = !state.busy)
-                        DropdownMenu(expanded = choosingPreset, onDismissRequest = { choosingPreset = false }) {
-                            BuddyCopy.PRESETS.forEach { preset ->
-                                DropdownMenuItem(text = { Text(preset.text) }, onClick = { choosingPreset = false; vm.send(preset.id) })
+                    DsCompactButton("Send ${buddy.buddyName} a message", { choosingPreset = true }, enabled = !state.busy)
+                    if (choosingPreset) {
+                        DsDialog({ choosingPreset = false }) {
+                            DsDialogTitle("Send ${buddy.buddyName} a message")
+                            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                                BuddyCopy.PRESETS.forEach { preset ->
+                                    DsChip(preset.text, false, onClick = { choosingPreset = false; vm.send(preset.id) }, modifier = Modifier.fillMaxWidth())
+                                }
                             }
+                            DsCompactButton("Cancel", { choosingPreset = false })
                         }
                     }
                 } else {
@@ -311,13 +314,10 @@ fun BuddySection(vm: BuddyViewModel, friends: List<FriendProgress>, knownAgeRang
     }
 
     if (confirmingEnd) {
-        AlertDialog(
-            onDismissRequest = { confirmingEnd = false },
-            title = { Text(BuddyCopy.endConfirm(state.buddy?.buddyName ?: "your buddy")) },
-            confirmButton = {
-                TextButton(onClick = { confirmingEnd = false; vm.end() }) { Text("Yes, end", color = ds.wrongInk) }
-            },
-            dismissButton = { TextButton(onClick = { confirmingEnd = false }) { Text("Keep") } },
+        DsConfirmDialog(
+            title = BuddyCopy.endConfirm(state.buddy?.buddyName ?: "your buddy"), message = null,
+            confirmLabel = "Yes, end", onConfirm = { confirmingEnd = false; vm.end() },
+            onDismiss = { confirmingEnd = false }, cancelLabel = "Keep", destructive = true,
         )
     }
 }

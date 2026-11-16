@@ -107,6 +107,7 @@ fun ProfileHubScreen(
                 failed -> {
                     Text("Profile could not load.", color = ds.ink)
                     LessonEdgeButton("Try again", EdgeVariant.SECONDARY, { failed = false; reload++ })
+                    com.obsidianmedia.learnwithalphonso.ui.support.GetHelpButton()
                 }
             }
             // The old hub rows keep their place, each on the tab it belongs to; Settings and Edit answers stay on Overview.
