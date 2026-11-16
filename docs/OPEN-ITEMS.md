@@ -6,7 +6,7 @@ Sweep of 2026-11-15 against main, merged pull requests and read-only checks of t
 
 **How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
 
-Counts: owner only 18, decision needed 9, device check 13, agent can do 15, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
+Counts: owner only 19, decision needed 9, device check 14, agent can do 13, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
 
 ### A. STILL OPEN - owner only (in priority order)
 
@@ -31,6 +31,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 15, done
 18. **Custom domain for the Supabase project** (paid plan, repoint apps, retest sign-in). iOS still points at the raw project URL. (0.0-t)
 19. Moved to E: stale worktree and branch cleanup was done by the owner on 2026-11-15.
 20. **Store listing leftovers (likely moot):** subscription review screenshot, walkthrough recording, upgrade test 50 to 51. (0.0-am)
+20a. **Limrun top-up for cloud iOS QA (owner).** Limrun refused the 2026-11-16 run: the organisation has no credits or subscription. Without a top-up the agent cannot check iOS on a simulator.
 
 ### B. DECISION NEEDED (owner choice)
 
@@ -63,6 +64,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 15, done
 40. **Real-device web look** at phone width: teams, save-a-word dialog, word-bank layout. (0.0-ac #4, 0.0-ae)
 41. **Learn tab badge after clearing the review queue**; lesson-complete button clipping at largest text. (0.0-z #5 #6)
 42. **Real-microphone checks of the web voice flows** in Safari, Firefox and a phone. (#560)
+42a. **Call scenes v2 and Royal-night rooms on iOS and Android, next build.** Look at the 12 call scenes plus the study room day and evening, the five Royal-night screens (learn, hector, listen, profile, practice), and the bottom fade on Alphonso's call avatar (no hard robe edge). Seen on web only; iOS (Limrun refused, no credits) and Android never seen. (#589)
 
 - Moved here from 28 (owner 2026-11-16, "i will check on device and let you know"): hands-free with the screen locked, iOS and Android.
 
@@ -70,8 +72,6 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 15, done
 
 43. **Content: failed fixes.** About 438 English review fixes and about 580 content fixes overall still fail the checks; 16 gated refused FR/ES fixes (duplicate English prompts); about 190 English-term FR/ES cards need an authored FR/ES term; after any content merge the owner reseeds. (2026-11-07, round 7 notes)
 44. **FR/ES review-panel disagreements** (77 from the first run) were folded into the content closure project; the state of the closure run and its caps is unverified from here. (0.0-ay, #428, content closure)
-45. **Call scenes v2: art approved, app integration started (PR #589 open, web, iOS and Android; includes a soft fade at the bottom of the Alphonso call avatar so no hard robe edge shows on the vivid scenes).** Owner 2026-11-16 ("yes do that please"): ship as NEW call-only files (lessons keep their current rooms), all 12 scenarios plus the study room by day and evening. Full-resolution redraw in progress. (2026-11-05 note)
-46. **Night rooms for dark mode: art approved, app integration started (PR #589 open, web, iOS and Android).** Owner 2026-11-16: Royal-night rooms approved for learn, hector, listen, profile and practice; Lesson complete stays light; no night clips for now; Meadow never gets night art. Full-resolution redraw in progress. (0.0-be)
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
 57. **Remove the unused push-to-talk capability** from the App ID. (1.1 #9)
@@ -106,6 +106,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 15, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Call scenes v2 and Royal-night rooms (was 45 and 46): merged in #589 (71c2646c). 14 call-*.webp (12 scenarios plus study room day and evening) and 5 Royal-night screen scenes (learn, hector, listen, profile, practice) on web, iOS and Android (about 2.9 MB per platform). Lessons and story campaigns keep today's rooms (tests); Hector's calls use the new study room; Royal light and Meadow (even in device dark) keep day art; Lesson complete stays light; living clips unchanged; the web call now follows Royal night; Alphonso's call avatar has a bottom fade (solid to 80%) on all three platforms. Seen on web only; iOS and Android are device check 42a.
 - Redesign gaps, batch 4 (was 52a): web call screen on design tokens (#586, 5296800c). Web raw-value baseline 44 to 2 (only api/review-demo-code.ts left); PracticeCall, LearnMap and AlphonsoAvatar on tokens; theme faces kept; night-stable fallbacks for the room colour and the LearnMap locked node; behaviour unchanged.
 - Build 68 cut and uploaded to TestFlight 2026-11-16 (#585, fc8c9f49, release run success), not submitted; contains #575, #576, #580, #582 and content #574.
 - Docs reseed and Vercel owner steps (#584, 876c12ee): reseed after #574 verified; owner item 1b added.
