@@ -27,7 +27,7 @@ export function DangerButton({
   return (
     <button
       type={type}
-      className={`inline-flex min-h-9 items-center justify-center rounded-xl border-2 border-ds-wrong bg-ds-card px-3 py-1 text-sm font-bold text-ds-wrong-ink disabled:opacity-50 ${className}`}
+      className={`inline-flex min-h-9 items-center justify-center rounded-xl border border-ds-line bg-ds-card px-3 py-1 text-sm font-bold text-ds-wrong-ink shadow-[0_3px_0_0_var(--color-ds-line)] disabled:opacity-50 ${className}`}
       {...props}
     />
   );
@@ -58,5 +58,41 @@ export function EmptyCard({ title, hint }: { title: string; hint?: string }) {
       <p className="font-display text-lg font-extrabold text-ds-ink">{title}</p>
       {hint ? <p className="ds-type-footnote text-ds-ink-soft">{hint}</p> : null}
     </div>
+  );
+}
+
+/**
+ * A file picker drawn as the console's secondary "Choose file" button. The native input is visually hidden but stays
+ * in the tab order (the label shows a focus ring while it has focus), so the keyboard and screen readers still work.
+ */
+export function FileButton({
+  accept,
+  disabled,
+  label = "Choose file",
+  onFile,
+}: {
+  accept?: string;
+  disabled?: boolean;
+  label?: string;
+  onFile: (file: File | null, reset: () => void) => void;
+}) {
+  return (
+    <label
+      className={`inline-flex min-h-8 cursor-pointer items-center rounded-xl border-2 border-ds-line bg-ds-card px-3 py-0.5 text-sm font-bold text-ds-ink shadow-[0_3px_0_0_var(--color-ds-line)] focus-within:outline focus-within:outline-2 focus-within:outline-ds-choice ${disabled ? "opacity-50" : ""}`}
+    >
+      {label}
+      <input
+        type="file"
+        accept={accept}
+        disabled={disabled}
+        className="sr-only"
+        onChange={(event) => {
+          const input = event.target;
+          onFile(input.files?.[0] ?? null, () => {
+            input.value = "";
+          });
+        }}
+      />
+    </label>
   );
 }

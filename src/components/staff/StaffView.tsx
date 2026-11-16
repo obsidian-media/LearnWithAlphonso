@@ -1,3 +1,4 @@
+import { formatDateTime, formatDay } from "../../lib/staff-dates";
 import { useState, type FormEvent } from "react";
 import { Button } from "../ui/Button";
 import { SCOPES, type Scope } from "../../lib/staff-scopes";
@@ -96,9 +97,7 @@ export function StaffView({
                     {r.disabled ? " · disabled" : ""}
                   </span>
                 </p>
-                <p className="text-xs text-ds-ink-soft">
-                  added {new Date(r.addedAt).toLocaleDateString()}
-                </p>
+                <p className="text-xs text-ds-ink-soft">added {formatDay(r.addedAt)}</p>
               </div>
               {r.userId !== myId ? (
                 <Button

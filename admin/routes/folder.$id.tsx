@@ -22,7 +22,13 @@ import { LEVELS } from "@/data/levels";
 import { forbiddenOrSignIn } from "@/lib/staff-forbidden";
 import { ConsoleCard } from "@/components/staff/ConsoleCard";
 import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
-import { EmptyCard, ErrorLine, FIELD, SmallButton } from "@/components/staff/console-ui";
+import {
+  EmptyCard,
+  ErrorLine,
+  FIELD,
+  FileButton,
+  SmallButton,
+} from "@/components/staff/console-ui";
 
 /**
  * One folder's episodes.
@@ -181,23 +187,20 @@ function ReplaceAudio({ episode, onDone }: { episode: AdminEpisode; onDone: () =
 
   return (
     <div>
-      <label className="text-sm text-ds-ink-soft">
-        Replace audio:{" "}
-        <input
-          type="file"
+      <div className="flex flex-wrap items-center gap-2 text-sm text-ds-ink-soft">
+        Replace audio:
+        <FileButton
           accept="audio/mpeg,audio/mp4"
           disabled={busy}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
+          onFile={(file, reset) => {
             // The input is reset so choosing the same file twice after a
             // failure still fires onChange -- otherwise a retry of the
             // identical file silently does nothing.
-            event.target.value = "";
+            reset();
             if (file) void upload(file);
           }}
-          className="text-sm"
         />
-      </label>
+      </div>
       {status ? <p className="mt-1 text-sm text-ds-ink-soft">{status}</p> : null}
     </div>
   );
@@ -333,17 +336,15 @@ function NewEpisodeForm({ folderId, onDone }: { folderId: string; onDone: () => 
             ))}
           </select>
         </div>
-        <label className="block text-sm text-ds-ink-soft">
-          Audio file:{" "}
-          <input
-            type="file"
+        <div className="flex flex-wrap items-center gap-2 text-sm text-ds-ink-soft">
+          Audio file:
+          <FileButton
             accept="audio/mpeg,audio/mp4"
-            required
             disabled={busy}
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="text-sm"
+            onFile={(chosen) => setFile(chosen)}
           />
-        </label>
+          {file ? <span className="font-semibold text-ds-ink">{file.name}</span> : <>MP3 or M4A</>}
+        </div>
         <SmallButton type="submit" variant="primary" disabled={busy} className="!min-h-10 !px-5">
           {busy ? "Creating…" : "Create episode"}
         </SmallButton>

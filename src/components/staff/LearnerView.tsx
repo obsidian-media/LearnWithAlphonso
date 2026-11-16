@@ -1,3 +1,4 @@
+import { formatDateTime, formatDay } from "../../lib/staff-dates";
 import { useState, type FormEvent } from "react";
 import { Button } from "../ui/Button";
 import { ActionDialog, type ActionInput } from "./ActionDialog";
@@ -6,7 +7,7 @@ import { UserActionButtons } from "./UserActionButtons";
 import type { UserAction } from "../../lib/staff-actions";
 import type { LearnerFacts } from "../../lib/staff-user-facts.server";
 
-const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : "never");
+const day = (iso: string | null) => (iso ? formatDay(iso) : "never");
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -62,15 +63,17 @@ export function LearnerView({
       <a href="/users" className="text-sm text-moss underline">
         ← Users
       </a>
-      <h1 className="font-display mt-2 text-2xl font-semibold text-ds-ink">
-        {facts.displayName ?? "(no name)"}
-      </h1>
+      <div className="mt-2 flex flex-wrap items-center gap-2.5">
+        <h1 className="font-display text-2xl font-semibold text-ds-ink">
+          {facts.displayName ?? "(no name)"}
+        </h1>
+        {active.length > 0 ? (
+          <span className="inline-block rounded-full bg-ds-sunk px-3 py-1 text-sm font-extrabold text-ds-wrong-ink">
+            {active.map((r) => (r.kind === "ban" ? "Banned" : "Blocked")).join(" and ")}
+          </span>
+        ) : null}
+      </div>
       <p className="text-sm text-ds-ink-soft">{facts.email}</p>
-      {active.length > 0 ? (
-        <p className="mt-2 inline-block rounded-full bg-ds-sunk px-3 py-1 text-sm font-medium text-ember">
-          {active.map((r) => (r.kind === "ban" ? "Banned" : "Blocked")).join(" and ")}
-        </p>
-      ) : null}
       {notice ? <p className="mt-3 text-sm text-ds-ink">{notice}</p> : null}
       {error && !dialog ? (
         <p role="alert" className="mt-3 text-sm text-ember">
@@ -145,7 +148,7 @@ export function LearnerView({
                 >
                   <p className="whitespace-pre-wrap text-ds-ink">{n.body}</p>
                   <p className="mt-1 text-xs text-ds-ink-soft">
-                    {n.author} · {new Date(n.createdAt).toLocaleString()}
+                    {n.author} · {formatDateTime(n.createdAt)}
                   </p>
                 </li>
               ))}

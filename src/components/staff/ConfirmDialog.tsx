@@ -36,7 +36,7 @@ export function ConfirmDialog({
             Cancel
           </Button>
           <Button
-            variant="ember"
+            variant="danger"
             className="!px-4 !py-2 text-sm"
             onClick={onConfirm}
             disabled={busy}

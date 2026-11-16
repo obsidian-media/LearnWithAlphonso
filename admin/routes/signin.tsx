@@ -151,7 +151,7 @@ function SignIn() {
 
   if (factor.phase !== "none") {
     return (
-      <main className="mx-auto max-w-md p-4 sm:py-16">
+      <main className="mx-auto grid min-h-screen max-w-md content-center p-4">
         <div className="grid gap-3 rounded-3xl border border-ds-line bg-ds-card p-5">
           <h1 className="font-display text-2xl font-extrabold text-ds-ink">Alphonso Admin</h1>
           {factor.phase === "enroll" ? (
@@ -190,7 +190,7 @@ function SignIn() {
   }
 
   return (
-    <main className="mx-auto max-w-md p-4 sm:py-16">
+    <main className="mx-auto grid min-h-screen max-w-md content-center p-4">
       <div className="grid gap-3 rounded-3xl border border-ds-line bg-ds-card p-5">
         <h1 className="font-display text-2xl font-extrabold text-ds-ink">Alphonso Admin</h1>
 

@@ -1,3 +1,4 @@
+import { formatDateTime, formatDay } from "../../lib/staff-dates";
 import { useState, type FormEvent } from "react";
 import { Button } from "../ui/Button";
 
@@ -62,7 +63,7 @@ export function UsersSearchView({
                 {hit.email}
               </span>
               <span className="order-2 justify-self-end text-xs font-bold text-ds-ink-soft sm:order-3">
-                joined {new Date(hit.createdAt).toLocaleDateString()}
+                joined {formatDay(hit.createdAt)}
               </span>
             </a>
           </li>

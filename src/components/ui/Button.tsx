@@ -1,10 +1,11 @@
 import type { ButtonHTMLAttributes } from "react";
 
-type Variant = "primary" | "ember" | "secondary";
+type Variant = "primary" | "ember" | "secondary" | "danger";
 
 const VARIANTS: Record<Variant, string> = {
   primary: "bg-ds-brand text-primary-foreground shadow-[0_4px_0_0_var(--color-edge-moss)]",
   ember: "bg-ember text-ink-on-ember shadow-[0_4px_0_0_var(--color-edge-ember)]",
+  danger: "bg-ds-wrong text-ds-on-wrong shadow-[0_4px_0_0_var(--color-ds-wrong-edge)]",
   secondary:
     "border-2 border-ds-line bg-ds-card text-ds-ink shadow-[0_4px_0_0_var(--color-hairline)]",
 };

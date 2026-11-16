@@ -1,3 +1,4 @@
+import { formatDateTime, formatDay } from "@/lib/staff-dates";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import {
@@ -153,7 +154,7 @@ function ReportRow({
         <div className="flex items-center gap-2">
           <KindPill>{KIND_LABEL[report.kind]}</KindPill>
           <span className="ml-auto text-xs font-semibold text-ds-ink-soft">
-            {new Date(report.createdAt).toLocaleString()}
+            {formatDateTime(report.createdAt)}
           </span>
         </div>
         <p className="text-ds-ink">
@@ -175,9 +176,8 @@ function ReportRow({
         ) : null}
         {report.accountDeletedAt ? (
           <p className="ds-type-footnote text-ds-ink-soft">
-            An account on this report was deleted{" "}
-            {new Date(report.accountDeletedAt).toLocaleDateString()}; the report is removed 90 days
-            later.
+            An account on this report was deleted {formatDay(report.accountDeletedAt)}; the report
+            is removed 90 days later.
           </p>
         ) : null}
 
@@ -255,7 +255,8 @@ function ReportRow({
                   >
                     Cancel
                   </SmallButton>
-                  <DangerButton
+                  <SmallButton
+                    variant="danger"
                     onClick={() =>
                       act(
                         () => adminDisbandTeam({ data: { reportId: report.id } }),
@@ -265,7 +266,7 @@ function ReportRow({
                     disabled={disbandText !== "DISBAND" || busy}
                   >
                     {busy ? "Disbanding…" : "Disband forever"}
-                  </DangerButton>
+                  </SmallButton>
                 </div>
               </div>
             )}
@@ -315,12 +316,13 @@ function ReportRow({
               >
                 Cancel
               </SmallButton>
-              <DangerButton
+              <SmallButton
+                variant="danger"
                 onClick={remove}
                 disabled={reason.trim().length < 3 || confirmEmail.trim() === "" || busy}
               >
                 {busy ? "Deleting…" : "Delete forever"}
-              </DangerButton>
+              </SmallButton>
             </div>
           </div>
         )}

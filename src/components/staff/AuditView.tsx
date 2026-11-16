@@ -1,3 +1,4 @@
+import { formatDateTime, formatDay } from "../../lib/staff-dates";
 import { useState, type FormEvent } from "react";
 import { Button } from "../ui/Button";
 import type { AuditRow } from "../../lib/staff-audit.functions";
@@ -112,9 +113,7 @@ export function AuditView({
           >
             <div className="flex items-baseline justify-between gap-2">
               <span className="font-bold text-ds-ink">{r.action}</span>
-              <span className="text-xs font-semibold text-ds-ink-soft">
-                {new Date(r.at).toLocaleString()}
-              </span>
+              <span className="text-xs font-semibold text-ds-ink-soft">{formatDateTime(r.at)}</span>
             </div>
             <div className="text-xs font-semibold text-ds-ink-soft">
               {r.actorRole} {short(r.actorUserId)} &rarr; {short(r.targetUserId)}
@@ -144,7 +143,7 @@ export function AuditView({
             ) : null}
             {rows.map((r) => (
               <tr key={r.id} className="align-top">
-                <td className="whitespace-nowrap px-3 py-2">{new Date(r.at).toLocaleString()}</td>
+                <td className="whitespace-nowrap px-3 py-2">{formatDateTime(r.at)}</td>
                 <td className="px-3 py-2">
                   {r.actorRole} <span className="text-ds-ink-soft">{short(r.actorUserId)}</span>
                 </td>
