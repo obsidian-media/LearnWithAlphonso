@@ -33,15 +33,16 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 
 ### B. DECISION NEEDED (owner choice)
 
-21. **The three Alphonso tutor videos are PUBLISHED with the HeyGen free-plan watermark** (verified: 3 of 3 published, also visible on the website). Unpublish, keep, or move to a paid plan or another pipeline. Nothing may be posted to social before this. (build 63 plan step 7, 2026-11-13)
-22. **Spanish Minimal Pairs lessons:** keep as plain listening, replace with spelling-choice questions, or write for a Spain voice. (0.0-as #13, 0.0-av)
-23. **Web/iOS social parity:** deliberately platform-exclusive or close the gap. (2.3)
-24. **Should Royal night follow the system on the web?** The web has no night toggle; the token set exists. (r12 themes)
-25. **French question frb2p5q16** (the key repeats "enfin"): pick the answer. (0.0-av, round 7 D)
-26. **Review src/data/path-tags.ts** (learning-path tags) and calibrate the path's talk, campaign and quiz minutes in src/data/path-config.ts. (0.0-bc roadmap, #490)
-27. **Two Qlty warnings** behind the Qlty login: look and decide. (2026-11-07 notes)
-28. **Hands-free with the screen locked:** Android needs a microphone foreground service (not built); decide whether to build it. iOS locked-screen behaviour needs a device. (r13 hands-free notes, 0.0-ac #3)
-29. **Which someday features to schedule** (none started): test-prep mode, phoneme feedback, camera vocabulary, referral, reverse-direction courses, full offline course download, third language, human-reviewed badge, lifetime or win-back offers. (0.0-ac, 1.5, 3)
+**Order of work (owner 2026-11-16).** A small fixes, then B redesign gaps and social parity, then C reliability. D content waits for "content run approved". E art waits for mock approval.
+
+22. **Spanish Minimal Pairs lessons: DECIDED 2026-11-16.** Owner: "yes". They become spelling-choice questions. In progress.
+23. **Web/iOS/Android social parity: DECIDED 2026-11-16.** Owner: "close the gap". Audit in progress (workstream B).
+24. **Royal night on the web: DECIDED 2026-11-16.** Owner: "yes". The web Royal theme follows the device dark mode; Meadow stays light. In progress (workstream A).
+25. **French question frb2p5q16: DECIDED 2026-11-16.** Owner: "yes". The agent writes the answer and the owner approves it in the PR.
+26. **Path tags and minutes: DECIDED 2026-11-16.** Owner: "yes". The agent proposes `src/data/path-tags.ts` tags and the `path-config.ts` minutes from data; the owner approves.
+27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
+28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
+29. **Someday features: PARKED until workstreams A to C finish.** Owner 2026-11-16: "lets discuss these after these are all done".
 
 ### C. DEVICE CHECK (needs a real phone; nothing can show these from code)
 
@@ -59,6 +60,8 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 41. **Learn tab badge after clearing the review queue**; lesson-complete button clipping at largest text. (0.0-z #5 #6)
 42. **Real-microphone checks of the web voice flows** in Safari, Firefox and a phone. (#560)
 
+- Moved here from 28 (owner 2026-11-16, "i will check on device and let you know"): hands-free with the screen locked, iOS and Android.
+
 ### D. STILL OPEN - agent can do
 
 43. **Content: failed fixes.** About 438 English review fixes and about 580 content fixes overall still fail the checks; 16 gated refused FR/ES fixes (duplicate English prompts); about 190 English-term FR/ES cards need an authored FR/ES term; after any content merge the owner reseeds. (2026-11-07, round 7 notes)
@@ -67,9 +70,10 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 46. **Night rooms for dark mode** (owner said yes 2026-11-12); no evidence it was built; lessons stay light. (0.0-be)
 47. **Reserved analytics events** explain_requested and path_built exist in the event list but have no call sites (verified by search). (2026-11-13 NEXT)
 48. **Support notices wording:** the reply email still comes from an "Alphonso Support" sender name with an "[Alphonso]" subject (verified in src/lib/support-notify.ts and support-notify.server.ts); the Miya note asked for "team". (r13 Miya note)
-49. **Android redesign gaps (from the 2026-11-14 note, unverified after #534):** hands-free and call chrome, Save a word, Podcast quiz, Placement, Display name, AI consent, report sheet, Voice picker, offline/pending-sync, lesson finish fallbacks. Also Help get-help links and push tap.
-50. **Web redesign gaps:** friend nudge and activity feed, Build my path goal chips, weekly recap, pending-sync, update gate, offline finish; report-sheet and Placement screenshots. (r12 web note)
-51. **iOS redesign skipped items (2026-11-14, unverified after batch 3):** unlock sheet, Hector and Practice-call chrome, Save a word, Podcast quiz, Placement, AI consent, Season, report reasons, voice picker, weekly recap, offline, update-required, finish fallbacks.
+49. **Redesign gaps, batch 1: web social parity (in progress).** The 2026-11-16 audit (r14-b-audit) found 28 of the 34 rows formerly listed in items 49 to 51 already done. Seven web features remain: friend nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, team-name report.
+50. **Redesign gaps, batch 2: Android residue** (the rows of the audit still open on Android).
+51. **Redesign gaps, batch 3: iOS residue (in progress),** including the accept-friend sheet. Owner 2026-11-16: "3. copy". The iOS accept-friend sheet copies the web and Android look; no new mock.
+52a. **Redesign gaps, batch 4: web call-chrome raw values.**
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
 54. **Concurrent-device review grading and offline streak continuity.** (3 Review, ARCHITECTURE rough edges)
@@ -110,6 +114,9 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Web pending-sync, update gate and offline finish: owner 2026-11-16, "1. keep". They stay app-only (closed, by design).
+- Web push notifications: owner 2026-11-16, "2. keep to app". No web push (closed, by design).
 
+- Alphonso tutor videos (was 21): owner 2026-11-16, "keep the videos for now". Decided: the three videos stay published (with the free-plan watermark).
 - Admin console redesign from the approved mock: merged in #568 (becd9650); admin phases 1 to 3 are all built.
 - Build 67 cut and uploaded to TestFlight (#571, release run 43785255490), not submitted; carries the iOS support push tap.
