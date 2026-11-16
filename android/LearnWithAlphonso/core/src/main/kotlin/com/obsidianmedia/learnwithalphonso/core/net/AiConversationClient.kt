@@ -166,6 +166,18 @@ class AiConversationClient(private val http: ApiHttp) {
     private suspend fun deleteMemory(body: JsonObject): Boolean =
         runCatching { http.deleteWithBody("api/tutor-memory", body).status.value in 200..299 }.getOrDefault(false)
 
+    /** DELETE /api/tutor-memory { events: true }: removes only the topic labels recorded after calls. Any learner. */
+    suspend fun forgetTopicNotes(): Boolean = deleteMemory(buildJsonObject { put("events", true) })
+
+    /** "Travel, 10 minutes a day": the learner's own first-run answers, for the locked What Alphonso remembers page. */
+    suspend fun goalsNote(): String? = runCatching {
+        val response = http.get("api/learner-profile")
+        if (response.status.value !in 200..299) return@runCatching null
+        val profile = json.parseToJsonElement(response.bodyAsText()).jsonObject["profile"]?.jsonObject ?: return@runCatching null
+        val goals = TutorMemory.Goals(profile.str("goal"), profile["dailyMinutes"]?.jsonPrimitive?.intOrNull, emptyList())
+        TutorMemory(emptyList(), emptyList(), goals).goalLines.map { it.title }.joinToString(", ").ifEmpty { null }
+    }.getOrNull()
+
     /** PUT /api/learner-profile { patch }: adds or removes one goal answer (presets only, checked on the server). */
     suspend fun saveGoalPatch(patch: JsonObject): Boolean =
         runCatching { http.put("api/learner-profile", buildJsonObject { put("patch", patch) }).status.value in 200..299 }.getOrDefault(false)

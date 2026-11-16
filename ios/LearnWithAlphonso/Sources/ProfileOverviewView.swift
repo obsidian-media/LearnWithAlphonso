@@ -478,7 +478,10 @@ struct ProfileWeakAndHectorSection: View {
 struct ProfileMemoryCard: View {
     let isPro: Bool
     let topics: [String]
+    let session: Session
     let action: () -> Void
+    /// Pro: the counts, read from the server (nil until they arrive).
+    @State private var summary: String?
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
@@ -491,7 +494,7 @@ struct ProfileMemoryCard: View {
                             .padding(.horizontal, AlphonsoDS.Space.s1).background(RoundedRectangle(cornerRadius: AlphonsoDS.Space.s1).fill(ds.action))
                     }
                     Text(isPro
-                        ? "See and edit the notes he keeps from your calls."
+                        ? (summary.map { $0 + " See and edit." } ?? "See and edit the notes he keeps from your calls.")
                         : (topics.isEmpty ? "With Pro, Alphonso keeps notes between calls." : "He could remember \(ProfileMath.joinTopics(topics)). See what Pro keeps."))
                         .dsText(.caption).foregroundStyle(ds.onHeroSoft)
                 }
@@ -505,6 +508,10 @@ struct ProfileMemoryCard: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
+        .task(id: isPro) {
+            guard isPro, case .ready(let memory) = await practiceClient(session).tutorMemory() else { return }
+            summary = memory.summary
+        }
     }
 }
 

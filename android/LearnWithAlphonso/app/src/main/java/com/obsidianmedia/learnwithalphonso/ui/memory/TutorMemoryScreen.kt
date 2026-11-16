@@ -114,6 +114,18 @@ fun TutorMemoryScreen(container: AppContainer, onBack: () -> Unit, onPaywall: ()
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     var speaking by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) { vm.load() }
+    // The locked page is built only from the learner's own data: their weak spots and first-run answers.
+    var lockedWeak by remember { mutableStateOf<List<String>>(emptyList()) }
+    var lockedGoals by remember { mutableStateOf<String?>(null) }
+    val locked = state.load == TutorMemoryLoad.Locked
+    LaunchedEffect(locked, course) {
+        if (!locked) return@LaunchedEffect
+        lockedGoals = container.aiClient.goalsNote()
+        val id = container.session.userId ?: return@LaunchedEffect
+        lockedWeak = runCatching {
+            com.obsidianmedia.learnwithalphonso.core.profile.ProfileMath.weakSpots(container.progressClient.fetchProfileOverview(id, course.code).weakItems).first.take(2).map { it.display }
+        }.getOrDefault(emptyList())
+    }
     val speak: (String) -> Unit = { text ->
         scope.launch {
             speaking = text
@@ -124,7 +136,7 @@ fun TutorMemoryScreen(container: AppContainer, onBack: () -> Unit, onPaywall: ()
             speaking = null
         }
     }
-    TutorMemoryContent(state, speaking, vm, speak, onBack, onPaywall)
+    TutorMemoryContent(state, speaking, vm, speak, onBack, onPaywall, lockedWeak, lockedGoals)
 }
 
 @Composable

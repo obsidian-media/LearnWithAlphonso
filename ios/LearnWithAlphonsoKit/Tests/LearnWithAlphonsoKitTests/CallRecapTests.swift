@@ -143,3 +143,13 @@ final class CallRecapTests: XCTestCase {
         XCTAssertFalse(bad)
     }
 }
+
+final class CallRecapNoteTests: XCTestCase {
+    func testMistakeNoteUsesTheMockWording() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        func note(_ days: Double) -> String { TutorMemory.Mistake(id: "i", topic: "t", label: "l", seenCount: 4, lastSeenAt: now.addingTimeInterval(-days * 86_400)).note(now: now) }
+        XCTAssertEqual(note(2), "Seen in 4 calls, last 2 days ago")
+        XCTAssertEqual(note(9), "Seen in 4 calls, last week")
+        XCTAssertEqual(note(0), "Seen in 4 calls, last today")
+    }
+}

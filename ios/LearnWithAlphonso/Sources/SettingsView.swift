@@ -86,6 +86,9 @@ struct SettingsView: View {
                 DSOverline(AIConsentCopy.settingsTitle).dsListRow(bottom: AlphonsoDS.Space.s2)
                 aiConsentCard.dsListRow()
 
+                MemorySettingsRow(session: session, course: ActiveCoursePreference.load(for: session.userID), onUpgrade: { showHelpPaywall = true }).dsListRow()
+                TopicNotesSettingsCard(session: session).dsListRow()
+
                 // Its own section between AI features and Account (the approved Help mock).
                 DSOverline(SupportCopy.entryTitle).dsListRow(bottom: AlphonsoDS.Space.s2)
                 HelpSettingsRow(session: session, linkAction: helpLink).dsListRow()

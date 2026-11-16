@@ -483,7 +483,7 @@ fun ProfileHector(m: ProfileOverviewModel, onPaywall: () -> Unit) {
  * locked, with a teaser made only from their own weak spots (the same rule as "Hector can help").
  */
 @Composable
-fun ProfileMemory(isPro: Boolean, topics: List<String>, onOpen: () -> Unit) {
+fun ProfileMemory(isPro: Boolean, topics: List<String>, summary: String?, onOpen: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
     Column(
@@ -493,7 +493,7 @@ fun ProfileMemory(isPro: Boolean, topics: List<String>, onOpen: () -> Unit) {
         Text(if (isPro) "What Alphonso remembers  Pro" else "What Alphonso can remember  Pro", style = HeadlineType, color = ds.onHero)
         Text(
             when {
-                isPro -> "See and edit the notes he keeps from your calls."
+                isPro -> summary?.let { "$it See and edit." } ?: "See and edit the notes he keeps from your calls."
                 topics.isEmpty() -> "With Pro, Alphonso keeps notes between calls."
                 else -> "He could remember ${ProfileMath.joinTopics(topics)}. See what Pro keeps."
             },

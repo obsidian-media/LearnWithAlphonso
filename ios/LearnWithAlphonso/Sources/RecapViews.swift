@@ -270,7 +270,7 @@ struct TutorMemoryView: View {
     let course: Course
     /// The locked page is built only from the learner's own data: their weak spots and first-run answers.
     var weakSpots: [String] = []
-    var goalsNote: String?
+    @State private var goalsNoteLoaded: String?
     /// Opens the subscription screen from the locked page's "Try Alphonso Pro".
     let onUpgrade: () -> Void
     @State private var model = TutorMemoryModel()
@@ -302,6 +302,7 @@ struct TutorMemoryView: View {
         .navigationTitle("What Alphonso remembers")
         .navigationBarTitleDisplayMode(.inline)
         .task { await model.load(session: session) }
+        .task { goalsNoteLoaded = await practiceClient(session).goalsNote() }
         .sheet(isPresented: $adding) {
             if case .ready(let memory) = model.phase { addGoalSheet(memory) }
         }
@@ -432,7 +433,7 @@ struct TutorMemoryView: View {
         }
         row(icon: "text.book.closed", tint: ds.actionTint, ink: ds.actionText, title: "Phrases from your calls", note: "Tap one to hear it again",
             trailing: Image(systemName: "lock").dsText(.headline).foregroundStyle(ds.inkFaint).padding(.trailing, AlphonsoDS.Space.s2))
-        if let note = goalsNote {
+        if let note = goalsNoteLoaded {
             row(icon: "scope", tint: ds.choiceTint, ink: ds.choice, title: "Goals you told him", note: note,
                 trailing: Image(systemName: "lock").dsText(.headline).foregroundStyle(ds.inkFaint).padding(.trailing, AlphonsoDS.Space.s2))
         }
@@ -478,5 +479,55 @@ struct TutorMemoryView: View {
     private func add(_ patch: [String: Any]) {
         adding = false
         Task { await model.addGoal(patch, session: session) }
+    }
+}
+
+// MARK: Settings
+
+/// The "What Alphonso remembers" row in Settings: Pro learners open their notes, everyone else the locked page.
+struct MemorySettingsRow: View {
+    let session: Session
+    let course: Course
+    let onUpgrade: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        DSCard(spacing: AlphonsoDS.Space.s1) {
+            SettingsNavLabel(title: "What Alphonso remembers", subtitle: "Pro. Read, fix and delete his notes.")
+                .background(NavigationLink("What Alphonso remembers") {
+                    TutorMemoryView(session: session, course: course, onUpgrade: onUpgrade)
+                }.opacity(0).accessibilityHidden(true))
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.isButton)
+        }
+    }
+}
+
+/// For every learner, free or Pro: delete the topic labels recorded after calls (no sentences). Plain copy, two steps.
+struct TopicNotesSettingsCard: View {
+    let session: Session
+    private enum Phase { case idle, asking, busy, done, failed }
+    @State private var phase: Phase = .idle
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        DSCard(spacing: AlphonsoDS.Space.s2) {
+            Text("Mistake topics").dsText(.headline).foregroundStyle(ds.ink)
+            Text("After a call, Alphonso notes the kind of mistake you made, for example \"past tense\". No sentences are kept in these notes. You can delete them any time. Your lessons, stars, streak and XP stay.")
+                .dsText(.footnote).foregroundStyle(ds.inkSoft)
+            if phase == .asking || phase == .busy {
+                Text("Delete all your mistake topics? This cannot be undone.").dsText(.footnote).fontWeight(.bold).foregroundStyle(ds.ink)
+                Button("Delete mistake topics") {
+                    phase = .busy
+                    Task { phase = await practiceClient(session).forgetTopicNotes() ? .done : .failed }
+                }
+                .buttonStyle(.dsButton(.danger)).disabled(phase == .busy)
+                Button("Keep them") { phase = .idle }.buttonStyle(.dsButton(.secondary))
+            } else {
+                Button("Delete mistake topics") { phase = .asking }.buttonStyle(.dsButton(.secondary))
+            }
+            if phase == .done { Text("Deleted.").dsText(.footnote).foregroundStyle(ds.rightInk) }
+            if phase == .failed { Text("Could not delete them. Try again.").dsText(.footnote).foregroundStyle(ds.wrongInk) }
+        }
     }
 }

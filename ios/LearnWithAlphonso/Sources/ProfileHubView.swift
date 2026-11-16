@@ -79,7 +79,7 @@ struct ProfileHubView: View {
                 NavigationStack {
                     TutorMemoryView(
                         session: session, course: activeCourse.course,
-                        weakSpots: Array((overview?.weak.top ?? []).prefix(2).map(\.display)), goalsNote: nil,
+                        weakSpots: Array((overview?.weak.top ?? []).prefix(2).map(\.display)),
                         onUpgrade: { destination = .paywall })
                 }
             case .picture:
@@ -128,7 +128,7 @@ extension ProfileHubView {
                     if m.hector != nil {
                         ProfileWeakAndHectorSection(model: m, showWeak: false, showHector: true, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
                     }
-                    ProfileMemoryCard(isPro: entitlementStore.isPro, topics: Array(m.weak.top.prefix(2).map(\.display)), action: { destination = .memory })
+                    ProfileMemoryCard(isPro: entitlementStore.isPro, topics: Array(m.weak.top.prefix(2).map(\.display)), session: session, action: { destination = .memory })
                 case .progress:
                     ProfileSkillsSection(model: m)
                     PathProfileCard(session: session, course: activeCourse.course)

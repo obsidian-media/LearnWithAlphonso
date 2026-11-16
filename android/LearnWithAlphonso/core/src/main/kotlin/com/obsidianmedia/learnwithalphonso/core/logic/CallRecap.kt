@@ -74,11 +74,7 @@ data class TutorMemory(val mistakes: List<Mistake>, val phrases: List<Phrase>, v
         fun note(now: Instant = Instant.now()): String {
             val calls = if (seenCount == 1) "1 call" else "$seenCount calls"
             val ago = agoLabel(lastSeenAt, now)
-            val whenText = when {
-                ago == "today" || ago == "yesterday" -> "most recently $ago"
-                ago.startsWith("last") -> ago
-                else -> "last $ago"
-            }
+            val whenText = if (ago.startsWith("last")) ago else "last $ago"
             return "Seen in $calls, $whenText"
         }
     }

@@ -104,7 +104,7 @@ public struct TutorMemory: Equatable, Sendable {
         public func note(now: Date = Date()) -> String {
             let calls = seenCount == 1 ? "1 call" : "\(seenCount) calls"
             let ago = TutorMemory.agoLabel(lastSeenAt, now: now)
-            let when = (ago == "today" || ago == "yesterday") ? "most recently \(ago)" : (ago.hasPrefix("last") ? ago : "last \(ago)")
+            let when = ago.hasPrefix("last") ? ago : "last \(ago)"
             return "Seen in \(calls), \(when)"
         }
     }

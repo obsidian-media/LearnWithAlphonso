@@ -165,6 +165,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -
                     }
                     error?.let { Text(it, style = FootnoteType, color = ds.wrongInk) }
                 }
+                TopicNotesCard(container)
                 DsCard(padding = AlphonsoTokens.Space.s2, spacing = 0.dp) {
                     RowButton("Privacy Policy") { uriHandler.openUri("${BuildConfig.API_BASE_URL}/privacy") }
                     DsDivider()
@@ -239,5 +240,26 @@ private fun RowButton(label: String, enabled: Boolean = true, destructive: Boole
     ) {
         Text(label, style = HeadlineType, color = if (destructive) ds.wrongInk else ds.ink)
         if (subtitle != null) Text(subtitle, style = FootnoteType, color = ds.inkSoft)
+    }
+}
+
+/** For every learner, free or Pro: delete the topic labels recorded after calls (no sentences). Plain copy, two steps. */
+@Composable
+private fun TopicNotesCard(container: AppContainer) {
+    val ds = LocalAlphonsoTokens.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var phase by remember { mutableStateOf("idle") }
+    DsCard(padding = AlphonsoTokens.Space.s3, spacing = AlphonsoTokens.Space.s2) {
+        Text("Mistake topics", style = HeadlineType, color = ds.ink)
+        Text("After a call, Alphonso notes the kind of mistake you made, for example \"past tense\". No sentences are kept in these notes. You can delete them any time. Your lessons, stars, streak and XP stay.", style = FootnoteType, color = ds.inkSoft)
+        if (phase == "asking" || phase == "busy") {
+            Text("Delete all your mistake topics? This cannot be undone.", style = FootnoteType, color = ds.ink)
+            DsCompactButton("Delete mistake topics", { phase = "busy"; scope.launch { phase = if (container.aiClient.forgetTopicNotes()) "done" else "failed" } }, enabled = phase == "asking", danger = true)
+            DsCompactButton("Keep them", { phase = "idle" })
+        } else {
+            DsCompactButton("Delete mistake topics", { phase = "asking" })
+        }
+        if (phase == "done") Text("Deleted.", style = FootnoteType, color = ds.rightInk)
+        if (phase == "failed") Text("Could not delete them. Try again.", style = FootnoteType, color = ds.wrongInk)
     }
 }

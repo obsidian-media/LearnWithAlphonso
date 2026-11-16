@@ -348,6 +348,23 @@ public final class AIConversationClient: Sendable {
         return (200...299).contains(http.statusCode)
     }
 
+    /// DELETE /api/tutor-memory { events: true } -- removes only the topic labels recorded after calls. Any learner.
+    public func forgetTopicNotes() async -> Bool {
+        await deleteMemory(["events": true])
+    }
+
+    /// "Travel, 10 minutes a day": the learner's own first-run answers, for the locked What Alphonso remembers page.
+    public func goalsNote() async -> String? {
+        guard let request = try? recapRequest("api/learner-profile", method: "GET", body: nil),
+              let (data, response) = try? await perform(request),
+              let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
+              let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let profile = root["profile"] as? [String: Any] else { return nil }
+        let goals = TutorMemory.Goals(goal: profile["goal"] as? String, dailyMinutes: profile["dailyMinutes"] as? Int, interests: [])
+        let lines = TutorMemory(mistakes: [], phrases: [], goals: goals).goalLines
+        return lines.isEmpty ? nil : lines.map(\.title).joined(separator: ", ")
+    }
+
     /// PUT /api/learner-profile { patch } -- adds or removes one goal answer (presets only, checked on the server).
     public func saveGoalPatch(_ patch: [String: Any]) async -> Bool {
         guard let request = try? recapRequest("api/learner-profile", method: "PUT", body: ["patch": patch]),
