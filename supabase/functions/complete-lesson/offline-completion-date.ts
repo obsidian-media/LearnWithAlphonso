@@ -23,9 +23,49 @@ export function verifiedOfflineCompletionDay(
 ): string | null {
   const completedAtMs = Date.parse(completedAt);
   const nowMs = now.getTime();
-  if (!Number.isFinite(sessionIssuedAtMs) || !Number.isFinite(completedAtMs)) return null;
+  if (!Number.isFinite(sessionIssuedAtMs) || !Number.isFinite(completedAtMs)) {
+    return null;
+  }
   if (sessionIssuedAtMs > nowMs) return null;
   const clampedMs = Math.min(Math.max(completedAtMs, sessionIssuedAtMs), nowMs);
   // The learner's own calendar day (UTC when no zone is known), like every other day the server books.
   return localDay(clampedMs, timeZone);
+}
+
+/** How long a lesson session stays valid for a completion that arrives live: covers the lesson plus real-world pauses. */
+export const LIVE_SESSION_MAX_AGE_MS = 3 * 60 * 60 * 1000;
+
+/**
+ * How long a lesson session stays valid for a QUEUED completion (one that carries the device's `completedAt`).
+ * A lesson finished on a train, overnight or on a weekend away reaches the server long after the 3 hours a live
+ * completion allows. Rejecting it made both native clients mint a fresh session and drop the date, so the lesson was
+ * credited to the day it SYNCED and a learner who played every day lost the streak they had earned. The session is
+ * still a server-signed proof that the learner opened this very lesson, and the day is still clamped into
+ * [session issued, now], so the longest a day can be moved back is this window. The window is kept short on purpose: a
+ * session hoarded on a day the learner did not study can bridge at most this much of a gap.
+ */
+export const OFFLINE_SESSION_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+
+/** A completion claimed this long before it arrived counts as queued; a nearer one is a live completion. */
+export const LATE_COMPLETION_MS = 5 * 60 * 1000;
+
+/** The least time a real lesson can take after its session opened; a claim sooner than this is not a played lesson. */
+export const MIN_LESSON_MS = 30 * 1000;
+
+/** The long window applies only to a completion claimed meaningfully in the past. */
+export function sessionMaxAgeMs(completedAt: string | undefined, nowMs: number): number {
+  if (!completedAt) return LIVE_SESSION_MAX_AGE_MS;
+  const claimed = Date.parse(completedAt);
+  if (!Number.isFinite(claimed) || nowMs - claimed <= LATE_COMPLETION_MS) {
+    return LIVE_SESSION_MAX_AGE_MS;
+  }
+  return OFFLINE_SESSION_MAX_AGE_MS;
+}
+
+/**
+ * True when a session older than the live window is being used. Such a completion may only credit a day it genuinely
+ * played: it must have been claimed at least MIN_LESSON_MS after the session opened.
+ */
+export function isLateSession(sessionIssuedAtMs: number, nowMs: number): boolean {
+  return nowMs - sessionIssuedAtMs > LIVE_SESSION_MAX_AGE_MS;
 }

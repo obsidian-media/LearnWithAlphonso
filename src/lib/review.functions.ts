@@ -3,7 +3,7 @@ import { publicError } from "./public-error";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { computeReviewOutcome, deriveAnswerCorrectness } from "./srs";
+import { computeReviewOutcome, deriveAnswerCorrectness, reviewSnapshotMatches } from "./srs";
 import { getCourse } from "../data/courses";
 import { resolveLlmApiKey } from "@/lib/llm-chat-model.server";
 
@@ -18,6 +18,8 @@ export type ReviewItem = {
   intervalDays: number;
   repetitions: number;
   dueOn: string;
+  /** When the item was last graded (null for one never graded): with `dueOn`, the snapshot a grade is checked against. */
+  lastReviewedAt: string | null;
   source: string;
   weaknessDisplay: string | null;
   prompt: string | null;
@@ -134,7 +136,7 @@ export const fetchDueReviews = createServerFn({ method: "GET" })
       supabase
         .from("review_items")
         .select(
-          "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,source,weakness_display,prompt,choices,answer_index,explanation",
+          "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,last_reviewed_at,source,weakness_display,prompt,choices,answer_index,explanation",
         )
         .eq("user_id", userId)
         .eq("language", course)
@@ -155,6 +157,7 @@ export const fetchDueReviews = createServerFn({ method: "GET" })
       intervalDays: r.interval_days,
       repetitions: r.repetitions,
       dueOn: r.due_on,
+      lastReviewedAt: r.last_reviewed_at ?? null,
       source: r.source,
       weaknessDisplay: r.weakness_display,
       prompt: r.prompt,
@@ -184,18 +187,33 @@ export const fetchDueReviews = createServerFn({ method: "GET" })
  */
 export const gradeReview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { itemKey: string; answer: string; course?: string }) =>
-    z
-      .object({
-        itemKey: z
-          .string()
-          .min(1)
-          .max(120)
-          .regex(/^[a-z0-9]+:[a-z0-9]+$/, "invalid item key"),
-        answer: z.string().max(200),
-        course: courseSchema,
-      })
-      .parse(d),
+  .inputValidator(
+    (d: {
+      itemKey: string;
+      answer: string;
+      course?: string;
+      expectedDueOn?: string;
+      expectedLastReviewedAt?: string | null;
+    }) =>
+      z
+        .object({
+          itemKey: z
+            .string()
+            .min(1)
+            .max(120)
+            .regex(/^[a-z0-9]+:[a-z0-9]+$/, "invalid item key"),
+          answer: z.string().max(200),
+          course: courseSchema,
+          // The due date and last-graded time the learner was shown. A second tab or device that already graded the
+          // item has moved them, so this answer is superseded and must not grade the item a second time (a wrong
+          // answer leaves the item due today, so "not due yet" alone cannot catch it). Optional for old clients.
+          expectedDueOn: z
+            .string()
+            .regex(/^\d{4}-\d{2}-\d{2}$/)
+            .optional(),
+          expectedLastReviewedAt: z.string().max(64).nullable().optional(),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -209,6 +227,18 @@ export const gradeReview = createServerFn({ method: "POST" })
       .maybeSingle();
     if (rowError) throw new Error("Could not load review item");
     if (!row) return { retired: false, dueOn: today(), correct: false };
+    if (
+      data.expectedDueOn !== undefined &&
+      (data.expectedLastReviewedAt !== undefined
+        ? !reviewSnapshotMatches(
+            { dueOn: row.due_on, lastReviewedAt: row.last_reviewed_at },
+            { dueOn: data.expectedDueOn, lastReviewedAt: data.expectedLastReviewedAt },
+          )
+        : row.due_on !== data.expectedDueOn)
+    ) {
+      // Another tab or device already graded this item. No `correct`: the player keeps its own verdict.
+      return { retired: false, dueOn: row.due_on, correct: undefined, superseded: true as const };
+    }
     if (row.due_on > today()) {
       throw new Error("This item isn't due yet");
     }

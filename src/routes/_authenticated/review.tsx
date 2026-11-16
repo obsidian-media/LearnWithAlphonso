@@ -67,7 +67,13 @@ function ReviewPageWithSave() {
   );
 }
 
-type Card = { itemKey: string; question: Question };
+type Card = {
+  itemKey: string;
+  question: Question;
+  /** The schedule the learner was shown; another tab or device grading the item first makes this answer superseded. */
+  dueOn: string;
+  lastReviewedAt: string | null;
+};
 
 function ReviewPage() {
   const load = useServerFn(fetchDueReviews);
@@ -116,6 +122,8 @@ function ReviewPage() {
             if (item.prompt && item.choices && item.answerIndex !== null) {
               built.push({
                 itemKey: item.itemKey,
+                dueOn: item.dueOn,
+                lastReviewedAt: item.lastReviewedAt,
                 question: {
                   id: item.itemKey,
                   type: "mc",
@@ -129,7 +137,14 @@ function ReviewPage() {
             continue;
           }
           const ref = questionIndex[item.itemKey];
-          if (ref) built.push({ itemKey: item.itemKey, question: ref.question });
+          if (ref) {
+            built.push({
+              itemKey: item.itemKey,
+              question: ref.question,
+              dueOn: item.dueOn,
+              lastReviewedAt: item.lastReviewedAt,
+            });
+          }
         }
         setCards(built);
         setTotal(res.total);
@@ -189,7 +204,15 @@ function ReviewPage() {
       setChecked(true);
       const ok = isCorrect;
       setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
-      void grade({ data: { itemKey: card.itemKey, answer: submittedAnswer, course } })
+      void grade({
+        data: {
+          itemKey: card.itemKey,
+          answer: submittedAnswer,
+          course,
+          expectedDueOn: card.dueOn,
+          expectedLastReviewedAt: card.lastReviewedAt,
+        },
+      })
         .then((r) => {
           if (r.retired) setStats((s) => ({ ...s, retired: s.retired + 1 }));
         })
@@ -200,7 +223,15 @@ function ReviewPage() {
     // A translation waits, because the curated phrasings are only a floor and
     // the AI second opinion that can lift them runs server-side.
     setChecking(true);
-    void grade({ data: { itemKey: card.itemKey, answer: submittedAnswer, course } })
+    void grade({
+      data: {
+        itemKey: card.itemKey,
+        answer: submittedAnswer,
+        course,
+        expectedDueOn: card.dueOn,
+        expectedLastReviewedAt: card.lastReviewedAt,
+      },
+    })
       .then((r) => {
         const ok = typeof r.correct === "boolean" ? r.correct : isCorrect;
         setTranslationVerdict({ correct: ok, reason: null, source: "local" });

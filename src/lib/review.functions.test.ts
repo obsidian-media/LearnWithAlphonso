@@ -185,6 +185,7 @@ describe("fetchDueReviews", () => {
               interval_days: 1,
               repetitions: 1,
               due_on: "2026-09-19",
+              last_reviewed_at: "2026-09-10T08:00:00.123456+00:00",
             },
           ],
         }),
@@ -203,6 +204,7 @@ describe("fetchDueReviews", () => {
         intervalDays: 1,
         repetitions: 1,
         dueOn: "2026-09-19",
+        lastReviewedAt: "2026-09-10T08:00:00.123456+00:00",
       },
     ]);
   });
@@ -285,6 +287,53 @@ describe("gradeReview", () => {
         _expected_due_on: rowBase.due_on,
       }),
     );
+  });
+
+  describe("a second tab or device grading the same item", () => {
+    const LAST = "2026-01-02T03:04:05.678901+00:00";
+    function gradeShown(shown: { expectedDueOn?: string; expectedLastReviewedAt?: string | null }) {
+      const supabase = createSupabaseMock();
+      supabase.from.mockReturnValueOnce(
+        chainable({ data: { ...rowBase, last_reviewed_at: LAST } }),
+      );
+      return gradeReview({
+        context: ctx(supabase),
+        data: { itemKey: "u1l1:q1", answer: "Good morning.", course: "en", ...shown },
+      });
+    }
+
+    it("grades once when the learner's snapshot is the live row", async () => {
+      const r = await gradeShown({ expectedDueOn: rowBase.due_on, expectedLastReviewedAt: LAST });
+      expect(r.retired).toBe(false);
+      expect(supabaseAdminRpc).toHaveBeenCalledTimes(1);
+    });
+
+    it("treats an answer shown before another device graded the item as superseded, without grading it again", async () => {
+      // The other device lapsed the item: it is still due today, but its last-graded time moved.
+      const r = await gradeShown({
+        expectedDueOn: rowBase.due_on,
+        expectedLastReviewedAt: "2026-01-01T00:00:00.000000+00:00",
+      });
+      expect(r).toMatchObject({ superseded: true, retired: false });
+      expect(supabaseAdminRpc).not.toHaveBeenCalled();
+    });
+
+    it("treats a snapshot of a never-graded item as superseded once it has been graded", async () => {
+      const r = await gradeShown({ expectedDueOn: rowBase.due_on, expectedLastReviewedAt: null });
+      expect(r).toMatchObject({ superseded: true });
+      expect(supabaseAdminRpc).not.toHaveBeenCalled();
+    });
+
+    it("treats a changed due date as superseded even from a client that sends no last-graded time", async () => {
+      const r = await gradeShown({ expectedDueOn: "2020-01-01" });
+      expect(r).toMatchObject({ superseded: true });
+      expect(supabaseAdminRpc).not.toHaveBeenCalled();
+    });
+
+    it("still grades a client that sends no snapshot at all (an older page)", async () => {
+      await gradeShown({});
+      expect(supabaseAdminRpc).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("does not report a grade as saved when the database refused it as stale", async () => {
