@@ -142,7 +142,7 @@ function ProfilePage() {
   const o = overview.data;
   return (
     <MobileFrame>
-      <div className="ds-light min-h-dvh bg-ds-surface pb-12 font-[family-name:var(--ds-font-body)] text-ds-brand">
+      <div className="min-h-dvh bg-ds-surface pb-12 font-[family-name:var(--ds-font-body)] text-ds-brand">
         {o ? (
           <>
             {tab === "overview" ? (

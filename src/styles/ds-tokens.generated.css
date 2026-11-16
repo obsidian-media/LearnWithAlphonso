@@ -217,6 +217,11 @@
   --c-call-end: #E64740;
 }
 
+/* The browser's own parts (scrollbars, form controls, the focus ring) follow the night look too. */
+:root:not([data-palette="meadow"])[data-ds-mode="night"] {
+  color-scheme: dark;
+}
+
 /* Lessons stay light in night mode (the rooms are lit paintings): a .ds-light screen keeps its palette's light values. */
 .ds-light {
   color-scheme: light;

@@ -240,6 +240,11 @@ ${cssBlock(':root[data-palette="meadow"]', t.palettes.meadow.light)}
 /* Night is Royal's alone: Meadow stays light, even in night mode, so the night selectors skip it. */
 ${cssBlock(':root:not([data-palette="meadow"])[data-ds-mode="night"]', t.palettes.royal.night)}
 
+/* The browser's own parts (scrollbars, form controls, the focus ring) follow the night look too. */
+:root:not([data-palette="meadow"])[data-ds-mode="night"] {
+  color-scheme: dark;
+}
+
 /* Lessons stay light in night mode (the rooms are lit paintings): a .ds-light screen keeps its palette's light values. */
 .ds-light {
   color-scheme: light;
