@@ -66,7 +66,7 @@ export const MINIMAL_PAIR_ROWS: Record<string, MinimalPairRow[]> = {
     "El pastor usó una ___ para guiar al buey.|puya|pulla,pila,pluma|a pointed goad",
     "Me gusta ___ el periódico mientras desayuno.|hojear|ojear,mojar,dejar|to leaf through",
     "El cazador empezó a ___ las perdices hacia las redes.|ojear|hojear,mojar,dejar|to drive game toward the hunters",
-    "Voy a ___ el libro antes de comprarlo.|hojear|ojear,mojar,dejar|to flip through the pages",
+    "Voy a ___ la revista antes de comprarla.|hojear|ojear,mojar,dejar|to flip through the pages",
     "Solo pude ___ la sala porque tenía prisa.|ojear|hojear,mojar,dejar|to glance at",
     "No quiero ___ la pared con el lápiz.|rayar|rallar,rodar,rezar|to scratch, to draw lines on",
     "Hay que ___ el queso para la pasta.|rallar|rayar,rodar,rezar|to grate",
