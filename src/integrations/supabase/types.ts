@@ -105,6 +105,114 @@ export type Database = {
         };
         Relationships: [];
       };
+      ai_cost_alert_days: {
+        Row: {
+          day: string;
+          evaluated_at: string;
+        };
+        Insert: {
+          day: string;
+          evaluated_at?: string;
+        };
+        Update: {
+          day?: string;
+          evaluated_at?: string;
+        };
+        Relationships: [];
+      };
+      ai_cost_daily: {
+        Row: {
+          cache_hits: number;
+          calls: number;
+          cost_micro_usd: number;
+          day: string;
+          input_tokens: number;
+          kind: string;
+          output_tokens: number;
+          stt_seconds: number;
+          tts_chars: number;
+          unpriced_calls: number;
+          user_id: string;
+          vendor: string;
+        };
+        Insert: {
+          cache_hits?: number;
+          calls: number;
+          cost_micro_usd?: number;
+          day: string;
+          input_tokens?: number;
+          kind: string;
+          output_tokens?: number;
+          stt_seconds?: number;
+          tts_chars?: number;
+          unpriced_calls?: number;
+          user_id: string;
+          vendor: string;
+        };
+        Update: {
+          cache_hits?: number;
+          calls?: number;
+          cost_micro_usd?: number;
+          day?: string;
+          input_tokens?: number;
+          kind?: string;
+          output_tokens?: number;
+          stt_seconds?: number;
+          tts_chars?: number;
+          unpriced_calls?: number;
+          user_id?: string;
+          vendor?: string;
+        };
+        Relationships: [];
+      };
+      ai_cost_log: {
+        Row: {
+          cache_hit: boolean;
+          cost_micro_usd: number | null;
+          cost_source: string;
+          created_at: string;
+          id: number;
+          input_tokens: number | null;
+          kind: string;
+          model: string;
+          output_tokens: number | null;
+          stt_seconds: number | null;
+          tts_chars: number | null;
+          user_id: string;
+          vendor: string;
+        };
+        Insert: {
+          cache_hit?: boolean;
+          cost_micro_usd?: number | null;
+          cost_source: string;
+          created_at?: string;
+          id?: never;
+          input_tokens?: number | null;
+          kind: string;
+          model: string;
+          output_tokens?: number | null;
+          stt_seconds?: number | null;
+          tts_chars?: number | null;
+          user_id: string;
+          vendor: string;
+        };
+        Update: {
+          cache_hit?: boolean;
+          cost_micro_usd?: number | null;
+          cost_source?: string;
+          created_at?: string;
+          id?: never;
+          input_tokens?: number | null;
+          kind?: string;
+          model?: string;
+          output_tokens?: number | null;
+          stt_seconds?: number | null;
+          tts_chars?: number | null;
+          user_id?: string;
+          vendor?: string;
+        };
+        Relationships: [];
+      };
       ai_rate_limits: {
         Row: {
           count: number;
@@ -2946,12 +3054,33 @@ export type Database = {
         Args: { _seconds: number; _user_id: string };
         Returns: string;
       };
+      admin_ai_cost: {
+        Args: { p_days: number; p_heavy_micro: number };
+        Returns: Json;
+      };
       admin_numbers_own: { Args: { p_days: number }; Returns: Json };
       admin_rename_team: {
         Args: { _name: string; _team_id: string };
         Returns: string;
       };
       admin_reset_display_name: { Args: { _user_id: string }; Returns: string };
+      ai_cost_day_report: {
+        Args: { p_day: string; p_user_micro: number };
+        Returns: Json;
+      };
+      ai_cost_union: {
+        Args: { p_since: string };
+        Returns: {
+          u_calls: number;
+          u_day: string;
+          u_hits: number;
+          u_kind: string;
+          u_micro: number;
+          u_unpriced: number;
+          u_user: string;
+          u_vendor: string;
+        }[];
+      };
       ai_output_blocked: { Args: { _texts: string[] }; Returns: boolean[] };
       apply_lesson_completion: {
         Args: {
@@ -3025,6 +3154,7 @@ export type Database = {
           status: string;
         }[];
       };
+      claim_ai_cost_alert_day: { Args: { p_day: string }; Returns: boolean };
       claim_device_token: {
         Args: { _platform: string; _token: string };
         Returns: undefined;
@@ -3406,6 +3536,7 @@ export type Database = {
         };
         Returns: string;
       };
+      release_ai_cost_alert_day: { Args: { p_day: string }; Returns: undefined };
       release_lesson_completion_slot: {
         Args: { _at: string; _user_id: string };
         Returns: undefined;
@@ -3447,6 +3578,7 @@ export type Database = {
           hearts_refill_at: string;
         }[];
       };
+      rollup_ai_cost_log: { Args: { p_keep_days?: number }; Returns: number };
       run_maintenance_sweep: { Args: never; Returns: undefined };
       save_listen_progress: {
         Args: { p_episode_id: string; p_position_s: number };
