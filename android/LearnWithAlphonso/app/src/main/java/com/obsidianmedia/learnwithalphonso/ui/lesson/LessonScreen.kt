@@ -10,6 +10,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -377,7 +378,7 @@ private fun LeagueUpTakeover(tier: String, onContinue: () -> Unit) {
     ) {
         Box(Modifier.fillMaxSize().background(ds.surface).background(tierColor.copy(alpha = 0.15f))) {
             Column(
-                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
+                Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s5, Alignment.CenterVertically),
             ) {
                 Icon(painterResource(R.drawable.ds_league), null, tint = tierColor, modifier = Modifier.size(AlphonsoTokens.Space.s12 * 2))

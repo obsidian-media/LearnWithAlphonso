@@ -33,6 +33,18 @@ class AiReportSenderTest {
     }
 
     @Test
+    fun `only a sent report counts as succeeded, a failed one does not`() = runTest {
+        val ok = AiReportSender({ }, TestScope(UnconfinedTestDispatcher(testScheduler)))
+        ok.submit(report())!!.join()
+        assertTrue(ok.state.value.succeeded)
+        val bad = AiReportSender({ throw IOException("offline") }, TestScope(UnconfinedTestDispatcher(testScheduler)))
+        bad.submit(report())!!.join()
+        assertEquals(AiConsentCopy.reportFailed, bad.state.value.message)
+        assertFalse(bad.state.value.succeeded)
+        assertFalse(AiReportSender.State(sending = true).succeeded)
+    }
+
+    @Test
     fun `a failure says so, and the next report can be sent after it is dismissed`() = runTest {
         var fail = true
         val sent = ArrayList<String>()

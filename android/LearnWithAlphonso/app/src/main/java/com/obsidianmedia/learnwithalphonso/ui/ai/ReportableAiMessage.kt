@@ -32,6 +32,8 @@ import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
@@ -89,10 +91,11 @@ fun ReportableAiMessage(
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                 AiResponseReportReason.entries.forEach { reason ->
                     // A reason is a button, not a selection: tapping it sends the report (ignored by the sender while one is in flight).
+                    // Disabled while a report is in flight (the sender would ignore a second tap anyway).
                     DsChip(
                         reason.label, selected = false,
                         onClick = { if (!sending.sending && sender.submit(makeReport(reason)) != null) showReasons = false },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().alpha(if (sending.sending) 0.5f else 1f).semantics { if (sending.sending) disabled() },
                     )
                 }
             }
@@ -116,7 +119,9 @@ fun AiReportStatusHost(sender: AiReportSender) {
     }
     status.message?.let { message ->
         DsDialog(sender::dismissMessage) {
-            Icon(painterResource(R.drawable.ds_check), null, tint = ds.right, modifier = Modifier.size(AlphonsoTokens.Space.s12))
+            // The tick is for a sent report only; a failure gets the cross in the wrong colour.
+            if (status.succeeded) Icon(painterResource(R.drawable.ds_check), null, tint = ds.right, modifier = Modifier.size(AlphonsoTokens.Space.s12))
+            else Icon(painterResource(R.drawable.ds_cross), null, tint = ds.wrongInk, modifier = Modifier.size(AlphonsoTokens.Space.s12))
             DsDialogBody(message)
             DsCompactButton("OK", sender::dismissMessage, primary = true)
         }

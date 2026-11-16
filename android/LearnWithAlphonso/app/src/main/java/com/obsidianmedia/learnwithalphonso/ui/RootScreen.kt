@@ -298,7 +298,7 @@ private fun SignedInApp(
                                 selectedIconColor = ds.choice,
                                 selectedTextColor = ds.brand,
                                 indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                                unselectedIconColor = ds.inkFaint,
+                                unselectedIconColor = ds.inkSoft,
                                 unselectedTextColor = ds.inkSoft,
                             ),
                         )

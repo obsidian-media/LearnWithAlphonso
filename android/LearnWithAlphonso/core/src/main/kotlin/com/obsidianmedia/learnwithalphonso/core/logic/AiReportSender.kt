@@ -21,7 +21,10 @@ class AiReportSender(
         val sending: Boolean = false,
         /** What to tell the learner once the request ended, until they dismiss it. */
         val message: String? = null,
-    )
+    ) {
+        /** True only when the report was sent: the outcome card draws its tick for this and nothing else. */
+        val succeeded: Boolean get() = message == AiConsentCopy.reportThanks
+    }
 
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
