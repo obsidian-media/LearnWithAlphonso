@@ -161,6 +161,15 @@ public enum ExplainRequest: Sendable, Equatable {
         return .message(course: course, text: t)
     }
 
+    /// The `source` of the `explain_requested` analytics event: the kind of item, never its text.
+    public var analyticsSource: String {
+        switch self {
+        case .wrongAnswer: return "wrong-answer"
+        case .word: return "word"
+        case .message: return "message"
+        }
+    }
+
     public var course: String {
         switch self {
         case .wrongAnswer(let course, _, _, _): return course

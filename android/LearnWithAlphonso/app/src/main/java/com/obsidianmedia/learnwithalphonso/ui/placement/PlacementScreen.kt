@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -122,7 +123,8 @@ fun PlacementScreen(container: AppContainer, course: Course, onFinished: () -> U
     }
 }
 
-private data class MarkerLook(val words: String, val fill: Color, val border: Color, val text: Color)
+/** [struckThrough]: a missed band is struck through and a band not reached is plain and fainter, so the two differ by more than a word (the web does the same). */
+private data class MarkerLook(val words: String, val fill: Color, val border: Color, val text: Color, val struckThrough: Boolean = false)
 
 /** One chip per band. A skipped band is dashed-looking (outlined, no fill) and a passed one is filled, so credit and a real pass never look alike. */
 @Composable
@@ -134,8 +136,8 @@ private fun LevelMarkers(markers: List<BandMarker>) {
                 BandMarkerState.PASSED -> MarkerLook("passed", ds.choice, ds.choice, ds.surface)
                 BandMarkerState.SKIPPED -> MarkerLook("skipped after strong answers", ds.surface, ds.choice, ds.choice)
                 BandMarkerState.CURRENT -> MarkerLook("now", ds.surface, ds.ink, ds.ink)
-                BandMarkerState.MISSED -> MarkerLook("not passed", ds.surface, ds.line, ds.inkSoft)
-                BandMarkerState.UPCOMING -> MarkerLook("not reached", ds.surface, ds.line, ds.inkSoft)
+                BandMarkerState.MISSED -> MarkerLook("not passed", ds.surface, ds.line, ds.inkSoft, struckThrough = true)
+                BandMarkerState.UPCOMING -> MarkerLook("not reached", ds.surface, ds.line, ds.inkFaint)
             }
             Box(
                 Modifier
@@ -146,7 +148,11 @@ private fun LevelMarkers(markers: List<BandMarker>) {
                     // clearAndSet, not semantics: otherwise TalkBack also reads the inner "A1" on its own.
                     .clearAndSetSemantics { contentDescription = "${m.level}, ${look.words}" },
             ) {
-                Text(m.level, style = CaptionType, color = look.text)
+                Text(
+                    m.level,
+                    style = if (look.struckThrough) CaptionType.copy(textDecoration = TextDecoration.LineThrough) else CaptionType,
+                    color = look.text,
+                )
             }
         }
     }

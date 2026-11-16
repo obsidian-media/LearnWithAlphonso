@@ -118,6 +118,7 @@ struct PlacementView: View {
             ForEach(attempt.markers(done: false), id: \.level) { marker in
                 let look = markerLook(marker.state)
                 Text(marker.level)
+                    .strikethrough(look.struckThrough)
                     .dsText(.caption)
                     .foregroundStyle(look.text)
                     .padding(.horizontal, 10)
@@ -135,6 +136,9 @@ struct PlacementView: View {
         let fill: Color
         let border: Color
         let text: Color
+        /// A missed band is struck through and a band not reached is plain and fainter, so "asked and not passed"
+        /// and "never asked" differ by more than a word (the web does the same).
+        var struckThrough = false
     }
 
     private func markerLook(_ state: BandMarkerState) -> MarkerLook {
@@ -142,8 +146,8 @@ struct PlacementView: View {
         case .passed: return MarkerLook(words: "passed", fill: ds.right, border: ds.right, text: ds.onRight)
         case .skipped: return MarkerLook(words: "skipped after strong answers", fill: ds.surface, border: ds.rightInk, text: ds.rightInk)
         case .current: return MarkerLook(words: "now", fill: ds.choiceTint, border: ds.choice, text: ds.choice)
-        case .missed: return MarkerLook(words: "not passed", fill: ds.surface, border: ds.line, text: ds.inkSoft)
-        case .upcoming: return MarkerLook(words: "not reached", fill: ds.surface, border: ds.line, text: ds.inkSoft)
+        case .missed: return MarkerLook(words: "not passed", fill: ds.surface, border: ds.line, text: ds.inkSoft, struckThrough: true)
+        case .upcoming: return MarkerLook(words: "not reached", fill: ds.surface, border: ds.line, text: ds.inkFaint)
         }
     }
 

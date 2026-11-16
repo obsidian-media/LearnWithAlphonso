@@ -288,6 +288,8 @@ struct ExplainInMyLanguage: View {
             baseURL: AppConfig.apiBaseURL,
             accessToken: { token },
             refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
+        // Counted only here, where the item really goes out: the kind of item, never its text.
+        Analytics.track(.explainRequested, ["source": request.analyticsSource])
         do {
             let result = try await client.explain(request, surface: surface)
             // A different item may have replaced this one while the call was in flight.

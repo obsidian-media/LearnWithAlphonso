@@ -82,7 +82,8 @@ export type SupportNotifyDeps = {
   supportFrom: string;
 };
 
-export const DEFAULT_SUPPORT_FROM = "Alphonso Support <support@hello.alphonsoecosystem.app>";
+export const DEFAULT_SUPPORT_FROM =
+  "Learn with Alphonso Support team <support@hello.alphonsoecosystem.app>";
 const BATCH = 20;
 
 export type Outcome = "sent" | "skipped" | "failed" | "done";

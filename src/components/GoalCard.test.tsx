@@ -19,6 +19,13 @@ vi.mock("../lib/learning-goal-client", async () => {
   return { ...actual, ...client };
 });
 
+const tracked = vi.hoisted(() => ({ calls: [] as { name: string; props: unknown }[] }));
+vi.mock("../lib/analytics", () => ({
+  track: async (name: string, props: unknown) => {
+    tracked.calls.push({ name, props });
+  },
+}));
+
 import { GoalError } from "../lib/learning-goal-client";
 import { GoalCard } from "./GoalCard";
 
@@ -33,6 +40,7 @@ const stored = (plan: GoalPlan | null) => ({ goal, plan });
 
 beforeEach(() => {
   vi.clearAllMocks();
+  tracked.calls.length = 0;
   client.readCachedGoal.mockResolvedValue(null);
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-06T12:00:00Z"));
@@ -139,6 +147,35 @@ describe("setup", () => {
     expect(client.saveGoal).toHaveBeenCalledTimes(1);
     expect(client.saveGoal).toHaveBeenCalledWith("en", "B1", "2027-04-06");
     expect((await screen.findAllByText(/finish B1/i))[0]).toBeInTheDocument();
+  });
+
+  it("counts path_built (course only) when a first goal is saved, and not when the save fails", async () => {
+    client.previewGoal.mockResolvedValue(plans.just_started);
+    client.saveGoal.mockRejectedValueOnce(new GoalError("unavailable"));
+    const user = await openSetup();
+    await user.click(screen.getByRole("button", { name: "6 months" }));
+    await screen.findByText(/lessons a week/i);
+    await user.click(screen.getByRole("button", { name: /save goal/i }));
+    await screen.findByRole("alert");
+    expect(tracked.calls).toEqual([]);
+    client.saveGoal.mockResolvedValue(stored(plans.just_started));
+    await user.click(screen.getByRole("button", { name: /save goal/i }));
+    await screen.findAllByText(/finish B1/i);
+    expect(tracked.calls).toEqual([{ name: "path_built", props: { course: "en" } }]);
+  });
+
+  it("does not count path_built again when an existing goal is changed", async () => {
+    client.fetchGoal.mockResolvedValue(stored(plans.on_track));
+    client.previewGoal.mockResolvedValue(plans.on_track);
+    client.saveGoal.mockResolvedValue(stored(plans.on_track));
+    const user = userEvent.setup({ advanceTimers: () => {} });
+    renderCard();
+    await user.click(await screen.findByRole("button", { name: /change goal/i }));
+    await screen.findByText(/lessons a week/i);
+    await user.click(screen.getByRole("button", { name: /save goal/i }));
+    await waitFor(() => expect(client.saveGoal).toHaveBeenCalledTimes(1));
+    await screen.findAllByText(/finish B1/i);
+    expect(tracked.calls).toEqual([]);
   });
 
   it("shows a save failure without leaving setup", async () => {
