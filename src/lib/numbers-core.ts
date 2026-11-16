@@ -21,6 +21,8 @@ export function parseWindow(value: unknown): WindowDays | null {
 
 export const PROVIDER_TIMEOUT_MS = 8_000;
 export const CACHE_TTL_MS = 5 * 60_000;
+export const APP_STORE_TIMEOUT_MS = 25_000;
+export const APP_STORE_CACHE_MS = 6 * 60 * 60_000;
 
 export type GroupKey =
   "own" | "revenuecat" | "aicost" | "sentry" | "posthog" | "appstore" | "googleplay";
@@ -62,6 +64,10 @@ export type GroupDef = {
   source: string;
   /** The scope that unlocks this group. Revenue and cost groups need numbers.revenue, the rest numbers.read. */
   scope: Extract<Scope, "numbers.read" | "numbers.revenue">;
+  /** A longer provider budget than the default 8 s (many small calls). */
+  timeoutMs?: number;
+  /** A longer cache than the default 5 minutes (the provider's data is a day or more behind anyway). */
+  cacheTtlMs?: number;
   /** The tiles shown when the group has no data, so the page keeps its shape. */
   placeholders: (
     windowDays: WindowDays,
@@ -149,6 +155,10 @@ export const GROUP_DEFS: readonly GroupDef[] = [
     title: "App Store",
     source: "App Store Connect",
     scope: "numbers.revenue",
+    // Up to 30 daily sales reports, ten at a time: more than the default 8 s. Apple's reports are a day behind, so
+    // six hours of cache loses nothing.
+    timeoutMs: APP_STORE_TIMEOUT_MS,
+    cacheTtlMs: APP_STORE_CACHE_MS,
     placeholders: (w) => [
       {
         id: "downloads",
@@ -274,6 +284,11 @@ function placeholdersAs(def: GroupDef, windowDays: WindowDays, reason: string): 
   return def.placeholders(windowDays).map((p) => ({ ...p, value: null, reason }));
 }
 
+/** The time one group may take: a test override wins, then the group's own budget, then the 8 s default. */
+export function groupBudgetMs(def: Pick<GroupDef, "timeoutMs">, override?: number): number {
+  return override ?? def.timeoutMs ?? PROVIDER_TIMEOUT_MS;
+}
+
 async function runGroup(
   def: GroupDef,
   sources: Sources,
@@ -284,7 +299,7 @@ async function runGroup(
   const head = { key: def.key, title: def.title, source: def.source };
   const cacheKey = `${def.key}:${base.windowDays}`;
   const hit = cache.get(cacheKey);
-  if (useCache && hit && base.now.getTime() - hit.at < CACHE_TTL_MS) {
+  if (useCache && hit && base.now.getTime() - hit.at < (def.cacheTtlMs ?? CACHE_TTL_MS)) {
     return { ...head, state: "ok", tiles: hit.tiles };
   }
   const controller = new AbortController();
@@ -363,7 +378,7 @@ export async function collectNumbers(input: {
         def,
         input.sources,
         { windowDays, now, own },
-        input.timeoutMs ?? PROVIDER_TIMEOUT_MS,
+        groupBudgetMs(def, input.timeoutMs),
         !input.refresh,
       ),
     ),

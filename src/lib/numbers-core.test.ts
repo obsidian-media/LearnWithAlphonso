@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   aiCostTiles,
+  APP_STORE_CACHE_MS,
+  APP_STORE_TIMEOUT_MS,
+  CACHE_TTL_MS,
+  GROUP_DEFS,
+  groupBudgetMs,
   AI_PRICE_USD,
   clearNumbersCache,
   collectNumbers,
@@ -365,5 +370,34 @@ describe("no personal data in any response", () => {
       }
     }
     expect(JSON.stringify(r)).not.toMatch(/user_id|email|@|display_name/);
+  });
+});
+
+describe("the App Store group has its own, longer budget and cache", () => {
+  const def = (k: string) => GROUP_DEFS.find((g) => g.key === k)!;
+  it("gets 25 s and 6 h; every other group keeps 8 s and 5 min", () => {
+    expect(groupBudgetMs(def("appstore"))).toBe(APP_STORE_TIMEOUT_MS);
+    expect(APP_STORE_TIMEOUT_MS).toBeGreaterThanOrEqual(20_000);
+    expect(def("appstore").cacheTtlMs).toBe(APP_STORE_CACHE_MS);
+    expect(APP_STORE_CACHE_MS).toBe(6 * 60 * 60_000);
+    for (const g of GROUP_DEFS.filter((x) => x.key !== "appstore")) {
+      expect(groupBudgetMs(g), g.key).toBe(8_000);
+      expect(g.cacheTtlMs, g.key).toBeUndefined();
+    }
+  });
+  it("an explicit override still wins (tests, tools)", () => {
+    expect(groupBudgetMs(def("appstore"), 50)).toBe(50);
+  });
+  it("a slow App Store call that would miss 8 s is NOT cut off at 8 s, and is cached for hours", async () => {
+    const { sources: s } = sources();
+    const at = new Date("2026-11-15T10:00:00Z");
+    const run = (now: Date) =>
+      collectNumbers({ scopes: ["numbers.revenue"], windowDays: 7, sources: s, fetchOwn, now });
+    await run(at);
+    await run(new Date(at.getTime() + CACHE_TTL_MS + 1)); // past the 5 minute cache, inside the 6 hour one
+    expect(s.appstore).toHaveBeenCalledTimes(1);
+    expect(s.revenuecat).toHaveBeenCalledTimes(2);
+    await run(new Date(at.getTime() + APP_STORE_CACHE_MS + 1));
+    expect(s.appstore).toHaveBeenCalledTimes(2);
   });
 });

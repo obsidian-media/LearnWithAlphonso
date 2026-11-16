@@ -1,17 +1,19 @@
 import { generateKeyPairSync, createVerify } from "node:crypto";
 import { gzipSync } from "node:zlib";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NotConnectedError, type SourceContext, type OwnAggregates } from "./numbers-core";
 import {
   appStoreSource,
   appStoreToken,
   chartTotal,
+  clearSentryIdCache,
   cleanHost,
   countDownloads,
   fetchOwnAggregates,
   googlePlaySource,
   parseOwn,
   postHogSource,
+  resolveSentryProjects,
   revenueCatSource,
   sanitizeTitle,
   sentrySource,
@@ -79,6 +81,7 @@ describe("hosts", () => {
 });
 
 describe("Sentry", () => {
+  beforeEach(() => clearSentryIdCache());
   const env = {
     SENTRY_API_TOKEN: "tok",
     SENTRY_ORG: "my-org",
@@ -88,12 +91,17 @@ describe("Sentry", () => {
     const seen: { url: string; auth: string | null }[] = [];
     const f = vi.fn(async (url: string, init?: RequestInit) => {
       seen.push({ url, auth: new Headers(init?.headers).get("Authorization") });
+      if (url.includes("/projects/"))
+        return json([
+          { id: "11", slug: "lwa-ios" },
+          { id: "22", slug: "lwa-web" },
+        ]);
       if (url.includes("/sessions/")) {
         return json({
           groups: [
             {
               by: {},
-              totals: { "crash_free_rate(session)": url.includes("lwa-ios") ? 0.9951 : 0.99 },
+              totals: { "crash_free_rate(session)": url.includes("project=11") ? 0.9951 : 0.99 },
             },
           ],
         });
@@ -109,6 +117,12 @@ describe("Sentry", () => {
     ).toBe(true);
     expect(seen.every((s) => s.auth === "Bearer tok")).toBe(true);
     expect(seen.some((s) => s.url.includes("statsPeriod=30d"))).toBe(true);
+    // the sessions and issues calls carry NUMERIC project ids, never slugs
+    const data = seen.filter((s) => /\/(sessions|issues)\//.test(s.url));
+    expect(data.length).toBe(3);
+    expect(data.every((s) => !s.url.includes("lwa-"))).toBe(true);
+    expect(data.filter((s) => s.url.includes("project=11")).length).toBe(2);
+    expect(data.filter((s) => s.url.includes("project=22")).length).toBe(2);
     expect(tiles[0]!.rows).toEqual([
       { label: "ios", value: 99.5, unit: "%" },
       { label: "web", value: 99, unit: "%" },
@@ -123,9 +137,14 @@ describe("Sentry", () => {
     );
   });
   it("no sessions is a reason, not 0%", async () => {
-    const f = vi.fn(async (url: string) =>
-      url.includes("/sessions/") ? json({ groups: [] }) : json([]),
-    );
+    const f = vi.fn(async (url: string) => {
+      if (url.includes("/projects/"))
+        return json([
+          { id: "11", slug: "lwa-ios" },
+          { id: "22", slug: "lwa-web" },
+        ]);
+      return url.includes("/sessions/") ? json({ groups: [] }) : json([]);
+    });
     const tiles = await sentrySource(env, f as unknown as typeof fetch)(ctx());
     expect(tiles[0]!.rows).toEqual([]);
     expect(tiles[0]!.reason).toBe("No sessions in this window");
@@ -361,27 +380,75 @@ describe("Google Play", () => {
   });
 });
 
+const GOOD_OWN = {
+  newToday: 1,
+  newWindow: 2,
+  activeToday: 3,
+  activeWindow: 4,
+  lessons: 5,
+  practiceCalls: 6,
+  podcastsFinished: 7,
+  avgStreak: null,
+  retention: { d1: 10, d7: null, d30: 0 },
+  openReports: 0,
+  openTickets: 1,
+  aiByKind: { chat: 3 },
+};
+
 describe("Our database", () => {
-  it("parseOwn keeps only counts and turns junk into 0 but a missing average or cohort into null", () => {
-    const o = parseOwn({
-      newToday: 1,
-      lessons: "x",
-      avgStreak: null,
-      retention: { d1: 10, d7: null },
-      aiByKind: { chat: 3, tts: "bad" },
-      email: "leak@example.com",
-    });
-    expect(o.newToday).toBe(1);
-    expect(o.lessons).toBe(0);
+  it("parseOwn keeps only the counts, and a real 0 or a null cohort stays what it is", () => {
+    const o = parseOwn({ ...GOOD_OWN, email: "leak@example.com" });
+    expect(o.openReports).toBe(0);
     expect(o.avgStreak).toBeNull();
-    expect(o.retention).toEqual({ d1: 10, d7: null, d30: null });
-    expect(o.aiByKind).toEqual({ chat: 3, tts: 0 });
+    expect(o.retention).toEqual({ d1: 10, d7: null, d30: 0 });
+    expect(o.aiByKind).toEqual({ chat: 3 });
     expect(JSON.stringify(o)).not.toContain("leak@example.com");
+  });
+  it("parseOwn THROWS on a payload that is not the expected object, never a wall of zeros", () => {
+    for (const bad of [null, undefined, "x", 5, [], {}, { newToday: 1 }]) {
+      expect(() => parseOwn(bad), JSON.stringify(bad)).toThrow();
+    }
+  });
+  it("parseOwn throws when any count is missing or not a number", () => {
+    for (const key of [
+      "newToday",
+      "newWindow",
+      "activeToday",
+      "activeWindow",
+      "lessons",
+      "practiceCalls",
+      "podcastsFinished",
+      "openReports",
+      "openTickets",
+    ]) {
+      const missing: Record<string, unknown> = { ...GOOD_OWN };
+      delete missing[key];
+      expect(() => parseOwn(missing), `missing ${key}`).toThrow();
+      expect(() => parseOwn({ ...GOOD_OWN, [key]: "7" }), `string ${key}`).toThrow();
+      expect(() => parseOwn({ ...GOOD_OWN, [key]: null }), `null ${key}`).toThrow();
+    }
+  });
+  it("parseOwn throws when the nullable fields or the groups are absent or wrong", () => {
+    const noStreak: Record<string, unknown> = { ...GOOD_OWN };
+    delete noStreak.avgStreak;
+    expect(() => parseOwn(noStreak)).toThrow();
+    expect(() => parseOwn({ ...GOOD_OWN, avgStreak: "3" })).toThrow();
+    expect(() => parseOwn({ ...GOOD_OWN, retention: null })).toThrow();
+    expect(() => parseOwn({ ...GOOD_OWN, retention: { d1: 1, d7: 2 } })).toThrow();
+    expect(() => parseOwn({ ...GOOD_OWN, retention: { d1: 1, d7: 2, d30: "x" } })).toThrow();
+    expect(() => parseOwn({ ...GOOD_OWN, aiByKind: null })).toThrow();
+    expect(() => parseOwn({ ...GOOD_OWN, aiByKind: { chat: "bad" } })).toThrow();
+  });
+  it("fetchOwnAggregates turns an empty database answer into an error, not zeros", async () => {
+    const rpc = () => ({ abortSignal: async () => ({ data: null, error: null }) });
+    await expect(
+      fetchOwnAggregates({ rpc } as never, 7, new AbortController().signal),
+    ).rejects.toThrow();
   });
   it("calls admin_numbers_own with the window and throws on a database error", async () => {
     const rpc = vi.fn((name: string, args: Record<string, unknown>) => ({
       abortSignal: async () =>
-        ({ data: { newToday: 4 }, error: null }) as {
+        ({ data: { ...GOOD_OWN, newToday: 4 }, error: null }) as {
           data: unknown;
           error: { message: string } | null;
         },
@@ -397,5 +464,69 @@ describe("Our database", () => {
     await expect(fetchOwnAggregates(bad as never, 7, new AbortController().signal)).rejects.toThrow(
       "boom",
     );
+  });
+});
+
+describe("Sentry project ids", () => {
+  const headers = { Authorization: "Bearer t" };
+  const sig = () => new AbortController().signal;
+  beforeEach(() => clearSentryIdCache());
+  it("numeric refs are used as they are, with no projects call", async () => {
+    const f = vi.fn();
+    const out = await resolveSentryProjects(
+      f as never,
+      "https://sentry.io/api/0/organizations/o",
+      "sentry.io",
+      "o",
+      headers,
+      sig(),
+      [{ label: "ios", ref: "123" }],
+    );
+    expect(out).toEqual([{ label: "ios", id: "123" }]);
+    expect(f).not.toHaveBeenCalled();
+  });
+  it("slugs are resolved through the organisation projects endpoint, once, and cached", async () => {
+    const f = vi.fn(async () =>
+      json([
+        { id: "5", slug: "a" },
+        { id: "6", slug: "b" },
+      ]),
+    );
+    const call = () =>
+      resolveSentryProjects(
+        f as never,
+        "https://sentry.io/api/0/organizations/o",
+        "sentry.io",
+        "o",
+        headers,
+        sig(),
+        [
+          { label: "a", ref: "a" },
+          { label: "web", ref: "b" },
+        ],
+      );
+    expect(await call()).toEqual([
+      { label: "a", id: "5" },
+      { label: "web", id: "6" },
+    ]);
+    await call();
+    expect(f).toHaveBeenCalledTimes(1);
+    expect(String((f.mock.calls as unknown as string[][])[0]![0])).toBe(
+      "https://sentry.io/api/0/organizations/o/projects/?per_page=100",
+    );
+  });
+  it("an unknown slug throws (the group says Could not load)", async () => {
+    const f = vi.fn(async () => json([{ id: "5", slug: "a" }]));
+    await expect(
+      resolveSentryProjects(
+        f as never,
+        "https://sentry.io/api/0/organizations/o",
+        "sentry.io",
+        "o",
+        headers,
+        sig(),
+        [{ label: "x", ref: "nope" }],
+      ),
+    ).rejects.toThrow("unknown Sentry project");
   });
 });

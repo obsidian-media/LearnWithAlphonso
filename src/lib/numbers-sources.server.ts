@@ -83,6 +83,51 @@ export function sanitizeTitle(raw: string): string {
 const pct1 = (x: number) => Math.round(x * 1000) / 10;
 
 // ----------------------------------------------------------------------------------------------- Sentry
+const SENTRY_ID_TTL_MS = 6 * 60 * 60_000;
+const sentryIds = new Map<string, { at: number; byslug: Map<string, string> }>();
+export function clearSentryIdCache(): void {
+  sentryIds.clear();
+}
+
+/** Turns each wanted project (numeric id or slug) into a numeric id. An unknown slug throws (group: Could not load). */
+export async function resolveSentryProjects(
+  f: FetchLike,
+  base: string,
+  host: string,
+  orgKey: string,
+  headers: Record<string, string>,
+  signal: AbortSignal,
+  wanted: { label: string; ref: string }[],
+): Promise<{ label: string; id: string }[]> {
+  const isId = (v: string) => /^\d+$/.test(v);
+  const slugs = wanted.filter((w) => !isId(w.ref));
+  let byslug = new Map<string, string>();
+  if (slugs.length > 0) {
+    const key = `${host}/${orgKey}`;
+    const hit = sentryIds.get(key);
+    if (
+      hit &&
+      Date.now() - hit.at < SENTRY_ID_TTL_MS &&
+      slugs.every((w) => hit.byslug.has(w.ref))
+    ) {
+      byslug = hit.byslug;
+    } else {
+      const list = await getJson(f, `${base}/projects/?per_page=100`, { headers }, signal);
+      for (const p of Array.isArray(list) ? list : []) {
+        const r = obj(p);
+        if (typeof r.slug === "string" && typeof r.id === "string") byslug.set(r.slug, r.id);
+      }
+      sentryIds.set(key, { at: Date.now(), byslug });
+    }
+  }
+  return wanted.map((w) => {
+    if (isId(w.ref)) return { label: w.label, id: w.ref };
+    const id = byslug.get(w.ref);
+    if (!id) throw new Error("unknown Sentry project");
+    return { label: w.label, id };
+  });
+}
+
 export function sentrySource(env: Env, f: FetchLike): SourceFn {
   return async ({ windowDays, signal }) => {
     const k = need(
@@ -93,20 +138,32 @@ export function sentrySource(env: Env, f: FetchLike): SourceFn {
     const host = cleanHost(env.SENTRY_HOST, "sentry.io");
     const org = encodeURIComponent(k.SENTRY_ORG!);
     const headers = { Authorization: `Bearer ${k.SENTRY_API_TOKEN}` };
-    // SENTRY_PROJECTS: "ios:slug,android:slug,web:slug" (label:slug) or plain slugs.
-    const projects = k
+    // SENTRY_PROJECTS: "ios:lwa-ios,web:lwa-web" (label:slug), plain slugs, or numeric ids. The sessions and issues
+    // endpoints take numeric project IDs in `project` (docs above), so slugs are resolved once through
+    // GET /api/0/organizations/{org}/projects/ (needs org:read),
+    // https://docs.sentry.io/api/organizations/list-an-organizations-projects/ and remembered for six hours.
+    const wanted = k
       .SENTRY_PROJECTS!.split(",")
       .map((p) => p.trim())
       .filter(Boolean)
       .map((p) => {
         const [a, b] = p.split(":");
-        return { label: b ? a! : p, slug: b ?? p };
+        return { label: b ? a! : p, ref: b ?? p };
       });
     const base = `https://${host}/api/0/organizations/${org}`;
+    const projects = await resolveSentryProjects(
+      f,
+      base,
+      host,
+      k.SENTRY_ORG!,
+      headers,
+      signal,
+      wanted,
+    );
     const rates = await Promise.all(
       projects.map(async (p) => {
         const qs = new URLSearchParams({
-          project: p.slug,
+          project: p.id,
           field: "crash_free_rate(session)",
           statsPeriod: `${windowDays}d`,
           interval: "1d",
@@ -122,7 +179,7 @@ export function sentrySource(env: Env, f: FetchLike): SourceFn {
       sort: "freq",
       limit: "5",
     });
-    for (const p of projects) iq.append("project", p.slug);
+    for (const p of projects) iq.append("project", p.id);
     const issues = await getJson(f, `${base}/issues/?${iq}`, { headers }, signal);
     const rows = (Array.isArray(issues) ? issues : []).map((i) => {
       const r = obj(i);
@@ -512,25 +569,54 @@ type RpcClient = {
   };
 };
 
+/**
+ * Strict: a payload that is not the expected object, or lacks a field, or has a non-numeric field, THROWS (the group
+ * shows "Could not load"). It must never turn a missing answer into zeros that would render as real 0s.
+ * Only avgStreak and the three retention rates may be null (no streaks / no cohort), and only when the key is present.
+ */
 export function parseOwn(raw: unknown): OwnAggregates {
-  const r = obj(raw);
-  const n = (v: unknown) => num(v) ?? 0;
-  const ret = obj(r.retention);
-  const ai: Record<string, number> = {};
-  for (const [kind, v] of Object.entries(obj(r.aiByKind))) ai[kind] = n(v);
+  if (!raw || typeof raw !== "object" || Array.isArray(raw))
+    throw new Error("unexpected numbers payload");
+  const r = raw as Record<string, unknown>;
+  const must = (k: string): number => {
+    const v = num(r[k]);
+    if (v === null) throw new Error(`numbers payload: ${k} missing or not a number`);
+    return v;
+  };
+  const nullable = (src: Record<string, unknown>, k: string): number | null => {
+    if (!(k in src)) throw new Error(`numbers payload: ${k} missing`);
+    const v = src[k];
+    if (v === null) return null;
+    const n = num(v);
+    if (n === null) throw new Error(`numbers payload: ${k} not a number`);
+    return n;
+  };
+  const ret = r.retention;
+  if (!ret || typeof ret !== "object" || Array.isArray(ret))
+    throw new Error("numbers payload: retention missing");
+  const ai = r.aiByKind;
+  if (!ai || typeof ai !== "object" || Array.isArray(ai))
+    throw new Error("numbers payload: aiByKind missing");
+  const aiByKind: Record<string, number> = {};
+  for (const [kind, v] of Object.entries(ai as Record<string, unknown>)) {
+    const n = num(v);
+    if (n === null) throw new Error("numbers payload: aiByKind value not a number");
+    aiByKind[kind] = n;
+  }
+  const rr = ret as Record<string, unknown>;
   return {
-    newToday: n(r.newToday),
-    newWindow: n(r.newWindow),
-    activeToday: n(r.activeToday),
-    activeWindow: n(r.activeWindow),
-    lessons: n(r.lessons),
-    practiceCalls: n(r.practiceCalls),
-    podcastsFinished: n(r.podcastsFinished),
-    avgStreak: num(r.avgStreak),
-    retention: { d1: num(ret.d1), d7: num(ret.d7), d30: num(ret.d30) },
-    openReports: n(r.openReports),
-    openTickets: n(r.openTickets),
-    aiByKind: ai,
+    newToday: must("newToday"),
+    newWindow: must("newWindow"),
+    activeToday: must("activeToday"),
+    activeWindow: must("activeWindow"),
+    lessons: must("lessons"),
+    practiceCalls: must("practiceCalls"),
+    podcastsFinished: must("podcastsFinished"),
+    avgStreak: nullable(r, "avgStreak"),
+    retention: { d1: nullable(rr, "d1"), d7: nullable(rr, "d7"), d30: nullable(rr, "d30") },
+    openReports: must("openReports"),
+    openTickets: must("openTickets"),
+    aiByKind,
   };
 }
 
