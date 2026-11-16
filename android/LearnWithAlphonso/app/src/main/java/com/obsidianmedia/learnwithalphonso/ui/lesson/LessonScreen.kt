@@ -243,6 +243,9 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                         // The celebration sheet, once per finished lesson; the list below it keeps the toasts for after it is closed.
                         var celebrating by androidx.compose.runtime.saveable.rememberSaveable(result) { mutableStateOf(unlocked.isNotEmpty()) }
                         if (celebrating) BadgeUnlockSheet(unlocked, onContinue = { celebrating = false }, onSeeAll = { celebrating = false; onOpenAchievements() })
+                        // The takeover, once per finished lesson, over the complete screen (a promotion is the rarer news).
+                        var leagueUp by androidx.compose.runtime.saveable.rememberSaveable(result) { mutableStateOf(phase.isLeaguePromotion) }
+                        if (leagueUp) LeagueUpTakeover(result.progress.leagueTier, onContinue = { leagueUp = false })
                         LessonComplete(
                             roomId = roomId, headline = headline, onHearHeadline = { Speech.get(context).speak(headline, Course.ENGLISH) },
                             tiles = tiles,
@@ -253,7 +256,6 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                             continueLabel = if (vm.nextLessonId != null) "Continue to next lesson" else "Back to Learn",
                             onContinue = { if (vm.nextLessonId != null) vm.continueToNextLesson() else onExit() },
                         ) {
-                            if (phase.isLeaguePromotion) LeagueUpCard(result.progress.leagueTier)
                             if (showReminderCard) {
                                 LessonReminderCard(
                                     onRemindMe = {
@@ -284,6 +286,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                             Text(phase.message, style = HeadlineType, color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                             phase.supportLine?.let { Text(it, style = FootnoteType, color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
                         }
+                        if (phase.supportLine != null) com.obsidianmedia.learnwithalphonso.ui.support.GetHelpButton(prominent = true)
                         AlphonsoPrimaryButton("Back", onClick = onExit)
                     }
                     is LessonPhase.Error -> Box(Modifier.fillMaxSize().padding(AlphonsoTokens.Space.gutter), contentAlignment = Alignment.Center) { DsEmptyState(phase.message, null, artAsset = "lesson/hmm.webp") }
@@ -359,12 +362,30 @@ private fun QuizStage(vm: LessonViewModel, state: LessonUiState, course: Course,
     }
 }
 
+/**
+ * A league promotion: a full-screen takeover, rarer and bigger than an achievement (CD 01, the iOS `LeaguePromotionOverlay`).
+ * The tier's colour tints the screen, the shield enters, then "League up!", Alphonso's line and Continue.
+ */
 @Composable
-private fun LeagueUpCard(tier: String) {
-    val palette = AlphonsoColor.palette
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoRadius.xl)).background(LeagueTierPalette.color(tier).copy(alpha = 0.15f)).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("League up!", style = MaterialTheme.typography.headlineMedium, color = palette.ink)
-        Text("You've been promoted to ${tier.replaceFirstChar { it.uppercase() }}!", color = palette.ink)
+private fun LeagueUpTakeover(tier: String, onContinue: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val tierColor = LeagueTierPalette.color(tier)
+    val label = tier.replaceFirstChar { it.uppercase() }
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onContinue,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+    ) {
+        Box(Modifier.fillMaxSize().background(ds.surface).background(tierColor.copy(alpha = 0.15f))) {
+            Column(
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s5, Alignment.CenterVertically),
+            ) {
+                Icon(painterResource(R.drawable.ds_league), null, tint = tierColor, modifier = Modifier.size(AlphonsoTokens.Space.s12 * 2))
+                Text("League up!", style = DisplayType, color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
+                Text("You've been promoted to $label!", style = BodyType, color = ds.ink, textAlign = TextAlign.Center)
+                LessonEdgeButton("Continue", EdgeVariant.PRIMARY, onContinue)
+            }
+        }
     }
 }
 

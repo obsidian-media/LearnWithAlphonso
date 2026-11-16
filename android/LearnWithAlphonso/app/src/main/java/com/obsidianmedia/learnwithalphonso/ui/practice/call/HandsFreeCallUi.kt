@@ -23,10 +23,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -53,7 +51,12 @@ import com.obsidianmedia.learnwithalphonso.AlphonsoApplication
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeInterruption
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop
+import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialog
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogBody
+import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogTitle
 import com.obsidianmedia.learnwithalphonso.ui.components.DsSwitch
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 
@@ -86,20 +89,18 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
         DsSwitch(checked = on, onChange = null)
     }
     if (showNote) {
-        AlertDialog(
-            onDismissRequest = { showNote = false },
-            containerColor = ds.surface,
-            title = { Text(HandsFreeCopy.FIRST_USE_TITLE, color = ds.ink) },
-            text = { Text(HandsFreeCopy.firstUseBody(partner), color = ds.inkSoft) },
-            confirmButton = {
-                TextButton(onClick = {
+        DsDialog({ showNote = false }) {
+            DsDialogTitle(HandsFreeCopy.FIRST_USE_TITLE)
+            DsDialogBody(HandsFreeCopy.firstUseBody(partner))
+            Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                DsCompactButton(HandsFreeCopy.CANCEL, { showNote = false })
+                DsCompactButton(HandsFreeCopy.FIRST_USE_CONFIRM, {
                     prefs?.edit()?.putBoolean(HandsFreeCopy.NOTE_SEEN_KEY, true)?.apply()
                     showNote = false
                     vm.handsFree.enable()
-                }) { Text(HandsFreeCopy.FIRST_USE_CONFIRM, color = ds.choice) }
-            },
-            dismissButton = { TextButton(onClick = { showNote = false }) { Text(HandsFreeCopy.CANCEL, color = ds.choice) } },
-        )
+                }, primary = true)
+            }
+        }
     }
 }
 

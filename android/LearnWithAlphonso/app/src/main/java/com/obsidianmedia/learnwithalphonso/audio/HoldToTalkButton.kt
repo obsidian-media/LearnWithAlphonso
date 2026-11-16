@@ -20,7 +20,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.toTextStyle
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 
@@ -61,7 +62,7 @@ fun HoldToTalkButton(
                         })
                     },
                 contentAlignment = Alignment.Center,
-            ) { Text("🎤", fontSize = 26.sp) }
+            ) { Text("🎤", style = AlphonsoTokens.Type.title.toTextStyle()) }
             Text(hint, style = MaterialTheme.typography.bodySmall, color = palette.inkSoft)
         }
     }
