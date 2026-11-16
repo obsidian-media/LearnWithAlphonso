@@ -682,7 +682,7 @@ describe("Profile: skills radar, goal rings, mastered words, league standing", (
     const learned = bigNumbers(o).wordsLearned;
     expect(learned).toBeGreaterThan(0);
     expect(learned).not.toBe(17);
-    expect(tile.querySelector("[data-value]")).toHaveTextContent(String(learned));
+    expect(tile.querySelector("[data-value]")).toHaveTextContent(learned.toLocaleString("en-US"));
     expect(tile).toHaveTextContent("words learned");
     expect(tile).not.toHaveTextContent("mastered");
   });

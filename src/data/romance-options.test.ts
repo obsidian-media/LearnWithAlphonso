@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { BANK_ES } from "./lesson-bank-es";
 import { BANK_FR } from "./lesson-bank-fr";
 import { packQuestions, type Pack } from "./bank-engine";
+import { MINIMAL_PAIR_ROWS } from "./es-minimal-pairs";
 import { ROMANCE_CLOZE } from "./romance-cloze-options";
 import { PLACEMENT_QUESTIONS_ES } from "./placement-es";
 import { PLACEMENT_QUESTIONS_FR } from "./placement-fr";
@@ -25,6 +26,12 @@ import {
 const packs: Pack[] = [BANK_FR, BANK_ES]
   .flatMap((b) => [...b.A1, ...b.A2])
   .filter((p) => ROMANCE_A1A2.test(p.id));
+// The Spanish minimal-pairs lessons are spelling-choice cloze packs at every level (es-minimal-pairs.ts).
+packs.push(
+  ...Object.values(BANK_ES)
+    .flat()
+    .filter((p) => p.id in MINIMAL_PAIR_ROWS),
+);
 const lines = (p: Pack) =>
   p.data
     .split("\n")
@@ -267,7 +274,8 @@ describe("listening packs: the choices can be told apart by ear", () => {
           if (c !== q.answer && homophoneOnly(q.answer, c)) bad.push(`${q.id}: ${c}`);
       }
     }
-    expect(n).toBe(250);
+    // 125 since the five Spanish minimal-pairs lessons became spelling-choice questions (2026-11-16).
+    expect(n).toBe(125);
     expect(bad).toEqual([]);
   });
 });

@@ -2720,7 +2720,7 @@ Il a demandé quand nous ___ (arriver).|arriverions
 Elle a dit qu'elle ___ (être) très contente du résultat.|était très
 Il a expliqué pourquoi il ___ (être) toujours en retard.|était toujours
 Elle a promis qu'elle ___ (appeler) plus tard.|appellerait
-Il a affirmé que le projet ___ (être) enfin terminé.|était enfin
+Il a affirmé que le projet ___ (être) enfin terminé.|était
 Elle a demandé si nous ___ (avoir) fini.|avions
 Il a dit qu'il ___ (faire) beau la veille.|avait fait
 Elle a précisé qu'elle ___ (revenir) bientôt.|reviendrait
