@@ -70,7 +70,6 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 46. **Night rooms for dark mode** (owner said yes 2026-11-12); no evidence it was built; lessons stay light. (0.0-be)
 49. **Redesign gaps, batch 1: web social parity (in progress).** The 2026-11-16 audit (r14-b-audit) found 28 of the 34 rows formerly listed in items 49 to 51 already done. Seven web features remain: friend nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, team-name report.
 50. **Redesign gaps, batch 2: Android residue** (the rows of the audit still open on Android).
-51. **Redesign gaps, batch 3: iOS residue (in progress),** including the accept-friend sheet. Owner 2026-11-16: "3. copy". The iOS accept-friend sheet copies the web and Android look; no new mock.
 52a. **Redesign gaps, batch 4: web call-chrome raw values.**
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
@@ -106,6 +105,8 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Redesign gaps, batch 3 (iOS residue, was 51): iOS accept-friend sheet and the legacy helpers moved onto the design system (#575, 791a81dd); the sheet copies the web and Android look as the owner chose ("3. copy"). Nothing was seen on a simulator.
+- Owner step from #576: delete `NVIDIA_API_KEY` and `NVIDIA_CHAT_MODEL` on Vercel if they are still set (no code reads them).
 - Web pending-sync, update gate and offline finish: owner 2026-11-16, "1. keep". They stay app-only (closed, by design).
 - Web push notifications: owner 2026-11-16, "2. keep to app". No web push (closed, by design).
 
