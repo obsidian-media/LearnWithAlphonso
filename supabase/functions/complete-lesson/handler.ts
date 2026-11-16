@@ -26,7 +26,12 @@ import {
   type LeagueTier,
 } from "./progress-math.ts";
 import { lessonSessionIssuedAt, verifyLessonSessionToken } from "./lesson-session.ts";
-import { sessionMaxAgeMs, verifiedOfflineCompletionDay } from "./offline-completion-date.ts";
+import {
+  isLateSession,
+  MIN_LESSON_MS,
+  sessionMaxAgeMs,
+  verifiedOfflineCompletionDay,
+} from "./offline-completion-date.ts";
 import { completionInstantMs, HOURLY_COMPLETION_LIMIT } from "./anti-farming.ts";
 import { lessonPayloadMatches } from "./lesson-version.ts";
 import {
@@ -136,7 +141,10 @@ async function releaseCompletionSlot(
   userId: string,
   atIso: string,
 ): Promise<void> {
-  await admin.rpc("release_lesson_completion_slot", { _user_id: userId, _at: atIso });
+  await admin.rpc("release_lesson_completion_slot", {
+    _user_id: userId,
+    _at: atIso,
+  });
 }
 
 export function liveDeps(): CompleteLessonDeps {
@@ -191,7 +199,12 @@ async function settleLessonHearts(
       hearts_refill_at?: unknown;
     } | null;
     if (error || !row || typeof row.hearts !== "number") {
-      console.error(JSON.stringify({ event: "hearts_settlement_failed", fn: "complete-lesson" }));
+      console.error(
+        JSON.stringify({
+          event: "hearts_settlement_failed",
+          fn: "complete-lesson",
+        }),
+      );
       return null;
     }
     return {
@@ -200,7 +213,12 @@ async function settleLessonHearts(
         typeof row.hearts_refill_at === "string" ? Date.parse(row.hearts_refill_at) : null,
     };
   } catch {
-    console.error(JSON.stringify({ event: "hearts_settlement_failed", fn: "complete-lesson" }));
+    console.error(
+      JSON.stringify({
+        event: "hearts_settlement_failed",
+        fn: "complete-lesson",
+      }),
+    );
     return null;
   }
 }
@@ -276,7 +294,11 @@ async function findLesson(
     .eq("units.course", course)
     .maybeSingle();
   if (error || !data) return null;
-  const units = data.units as unknown as { level_id: string } | { level_id: string }[];
+  const units = data.units as unknown as
+    | { level_id: string }
+    | {
+        level_id: string;
+      }[];
   const level = Array.isArray(units) ? units[0]?.level_id : units.level_id;
   return {
     questions: (data.questions ?? []) as (QuestionRow & { id: string })[],
@@ -320,11 +342,29 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const lesson = found!;
 
   // A queued completion (it carries the device's completedAt) may arrive long after the live window.
-  const sessionAgeLimit = sessionMaxAgeMs(completedAt);
+  const receivedAt = deps.now();
+  const sessionAgeLimit = sessionMaxAgeMs(completedAt, receivedAt.getTime());
   if (!deps.verifySessionToken(sessionToken, { userId, lessonId, course }, sessionAgeLimit)) {
     return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
   }
-  const sessionIssuedAt = deps.sessionIssuedAt(sessionToken, { userId, lessonId, course }, sessionAgeLimit);
+  const sessionIssuedAt = deps.sessionIssuedAt(
+    sessionToken,
+    {
+      userId,
+      lessonId,
+      course,
+    },
+    sessionAgeLimit,
+  );
+  // A session past the live window is only good for a lesson really played after it opened.
+  const lateSession =
+    sessionIssuedAt !== null && isLateSession(sessionIssuedAt, receivedAt.getTime());
+  if (
+    lateSession &&
+    (!completedAt || !(Date.parse(completedAt) - sessionIssuedAt >= MIN_LESSON_MS))
+  ) {
+    return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
+  }
   // The completion's own day is worked out below, once the learner's time zone has been read.
   // No trusted day (unreadable session issue time) falls back to the server's day below, never a 400:
   // a 400 here would dead-letter a real lesson on both native clients.
@@ -363,7 +403,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   }
   const correct = answers.length - missedQuestionIds.length;
 
-  const now = deps.now();
+  const now = receivedAt;
 
   // Batch every read that doesn't depend on another read's result.
   const [pResult, lpResult, compResult, tzResult] = await Promise.all([
@@ -384,20 +424,36 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     admin.from("learner_time_zones").select("time_zone").eq("user_id", userId).maybeSingle(),
   ]);
   const readError = [pResult, lpResult, compResult].find((r) => r.error);
-  if (readError) return jsonResponse({ error: "Could not load lesson progress" }, 503);
+  if (readError) {
+    return jsonResponse({ error: "Could not load lesson progress" }, 503);
+  }
   const pRow = pResult.data;
   const lpRow = lpResult.data;
   const existingComp = compResult.data;
   // Days are the learner's own calendar days (owner decision 2026-11-12): their stored zone, UTC when none is known.
   // An unreadable zone is UTC too: it must never fail a lesson.
-  const timeZone = tzResult.error ? null : ((tzResult.data?.time_zone as string | undefined) ?? null);
+  const timeZone = tzResult.error
+    ? null
+    : ((tzResult.data?.time_zone as string | undefined) ?? null);
   const serverToday = localDay(now.getTime(), timeZone);
   const trustedCompletionDay =
     completedAt && sessionIssuedAt !== null
       ? verifiedOfflineCompletionDay(completedAt, sessionIssuedAt, now, timeZone)
       : null;
+  // Replay-farming fix, mirrors src/lib/sync.functions.ts's
+  // completeLessonRemote: a repeat completion only pays the XP delta over
+  // its previous best score.
+  const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
+    existingComp ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned } : null,
+    correct,
+    total,
+  );
+
+  // A late (long-window) completion that pays nothing (a replay of a finished lesson) credits the receipt day, never a
+  // past day: replaying a lesson must not be a way to fill a day the learner did not learn.
+  const claimedTrusted = lateSession && xpGain === 0 ? null : trustedCompletionDay;
   // A dated replay may never move the account's activity marker backwards.
-  const claimedDay = trustedCompletionDay ?? serverToday;
+  const claimedDay = claimedTrusted ?? serverToday;
   const today =
     pRow?.last_active_date && pRow.last_active_date > claimedDay
       ? pRow.last_active_date
@@ -408,17 +464,10 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     .eq("user_id", userId)
     .eq("day", today)
     .maybeSingle();
-  if (dayResult.error) return jsonResponse({ error: "Could not load lesson progress" }, 503);
+  if (dayResult.error) {
+    return jsonResponse({ error: "Could not load lesson progress" }, 503);
+  }
   const existingDay = dayResult.data;
-
-  // Replay-farming fix, mirrors src/lib/sync.functions.ts's
-  // completeLessonRemote: a repeat completion only pays the XP delta over
-  // its previous best score.
-  const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
-    existingComp ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned } : null,
-    correct,
-    total,
-  );
 
   const cur = pRow ?? {
     user_id: userId,
@@ -505,7 +554,8 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   // refusal changes neither XP nor streak. Counted at the clamped completion instant, so an offline queue replayed
   // after reconnecting is spread over the hours it was played.
   const slotAtIso = new Date(
-    completionInstantMs(completedAt, sessionIssuedAt, now.getTime()),
+    // A hoarded (late) session is counted at receipt, so it cannot dodge the limit by claiming an old hour.
+    lateSession ? now.getTime() : completionInstantMs(completedAt, sessionIssuedAt, now.getTime()),
   ).toISOString();
   const slotTaken = xpGain > 0;
   if (slotTaken && !(await deps.consumeCompletionSlot(admin, userId, slotAtIso))) {
@@ -666,7 +716,11 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
       freeze: freezes,
     };
 
-    const rows: { user_id: string; achievement_id: string; progress: number }[] = [];
+    const rows: {
+      user_id: string;
+      achievement_id: string;
+      progress: number;
+    }[] = [];
     for (const a of catalogRead.data ?? []) {
       const val = stats[a.category] ?? 0;
       const wasUnlocked = prevMap.has(a.id);
@@ -684,7 +738,10 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
       // Derived from saved state, so the next completion writes them again.
       if (unlockError) {
         console.error(
-          JSON.stringify({ event: "achievements_write_failed", fn: "complete-lesson" }),
+          JSON.stringify({
+            event: "achievements_write_failed",
+            fn: "complete-lesson",
+          }),
         );
       }
     }
