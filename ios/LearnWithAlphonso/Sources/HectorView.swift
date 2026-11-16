@@ -61,6 +61,7 @@ private struct HectorConversationView: View {
     let onClose: (() -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.alphonsoDS) private var ds
     /// The safety note is shown once per device, before the first time hands-free is turned on.
     @AppStorage(HandsFreeCopy.noteSeenKey) private var handsFreeNoteSeen = false
     @State private var showHandsFreeNote = false
@@ -264,7 +265,7 @@ private struct HectorConversationView: View {
             }
         ))
         .dsText(.footnote)
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .padding(.horizontal, AlphonsoSpacing.md)
         .padding(.bottom, 6)
         .accessibilityIdentifier("hectorHandsFreeToggle")
@@ -418,19 +419,19 @@ private struct HectorConversationView: View {
             if let line = HandsFreeCopy.statusLine(status) {
                 Text(line)
                     .dsText(.footnote)
-                    .foregroundStyle(AlphonsoColor.inkSoft)
+                    .foregroundStyle(ds.inkSoft)
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.updatesFrequently)
             }
             Button(paused ? HandsFreeCopy.resume : HandsFreeCopy.pause) {
                 voice.toggleHandsFreePause()
             }
-            .buttonStyle(.alphonsoSecondary)
+            .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
             .accessibilityIdentifier("hectorHandsFreePause")
             if voice.microphoneUnavailable || voice.recorderStartFailed {
                 Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
                     .dsText(.caption)
-                    .foregroundStyle(AlphonsoColor.destructive)
+                    .foregroundStyle(ds.wrongInk)
                     .multilineTextAlignment(.center)
             }
         }
@@ -457,7 +458,7 @@ private struct HectorConversationView: View {
                 }
             ))
             .dsText(.footnote)
-            .tint(AlphonsoColor.moss)
+            .tint(ds.choice)
             .padding(.horizontal, AlphonsoSpacing.md)
             .accessibilityIdentifier("hectorHandsFreeToggle")
 

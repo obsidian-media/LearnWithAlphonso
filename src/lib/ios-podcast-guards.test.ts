@@ -382,7 +382,7 @@ describe("iOS podcast quiz: every choice card takes a tap, and the row button re
     const style = sheet().slice(
       sheet().indexOf("private struct PodcastQuizChipLabelStyle: LabelStyle {"),
     );
-    expect(style).toMatch(/configuration\.title[\s\S]*?\.foregroundStyle\(AlphonsoColor\.ink\)/);
+    expect(style).toMatch(/configuration\.title[\s\S]*?\.foregroundStyle\(ds\.ink\)/);
     const components = source("Sources/DesignSystem/AlphonsoComponents.swift");
     const secondary = functionBody(
       components.slice(components.indexOf("struct AlphonsoSecondaryButtonStyle: ButtonStyle {")),
