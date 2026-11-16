@@ -17,6 +17,7 @@ import {
   Overline,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
+import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import { getMyDuels, createDuel, respondToDuel, getFriends } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { joinOpenDuelQueue, leaveOpenDuelQueue } from "../../lib/challenges.functions";
@@ -60,6 +61,24 @@ function DuelsPage() {
   const pending = (duels ?? []).filter((d) => d.status === "pending" && d.opponentId === myId);
   const active = (duels ?? []).filter((d) => d.status === "active");
   const finished = (duels ?? []).filter((d) => d.status === "completed" || d.status === "declined");
+
+  /**
+   * The block and report menu for the other person in a duel. A duel row carries no name, only ids, so the menu says
+   * "this opponent" (as DuelsView.swift and DuelsScreen.kt do) and acts on whichever id is not the learner's.
+   * Past duels with a blocked opponent stay as they are; a block only stops new contact.
+   */
+  function opponentMenu(d: { challengerId: string; opponentId: string }) {
+    if (!myId) return null;
+    return (
+      <SocialSafetyMenu
+        userId={d.challengerId === myId ? d.opponentId : d.challengerId}
+        displayName="this opponent"
+        blockTitle="Block this opponent?"
+        menuLabel="Block or report your opponent"
+        onBlocked={() => void refetchDuels()}
+      />
+    );
+  }
 
   async function refetchDuels() {
     await queryClient.invalidateQueries({ queryKey: ["myDuels"] });
@@ -148,6 +167,7 @@ function DuelsPage() {
                   </p>
                   <p className="ds-type-caption text-ds-ink-soft">Accept to start now</p>
                 </div>
+                {opponentMenu(d)}
               </div>
               <div className="flex gap-2">
                 <DsButton
@@ -198,6 +218,7 @@ function DuelsPage() {
                 <span className="ds-type-caption text-ds-ink-soft">
                   ends {d.endsAt ? new Date(d.endsAt).toLocaleDateString() : "soon"}
                 </span>
+                <span className="ml-auto">{opponentMenu(d)}</span>
               </div>
               <div className="flex items-end justify-between">
                 <div>

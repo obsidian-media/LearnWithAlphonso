@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { FriendActivityEvent } from "./friend-activity";
 
 export type FriendEntry = {
   userId: string;
@@ -183,5 +184,89 @@ export const getMyDuels = createServerFn({ method: "GET" })
       opponentXpNow: r.opponent_xp_now ?? 0,
       winnerId: r.winner_id,
       endsAt: r.ends_at,
+    }));
+  });
+
+/**
+ * Nudges a friend: one insert into `nudges`, nothing else. The recipient is the only thing the caller chooses --
+ * `sender_id` defaults to the caller in the database, so it can never be forged, and the policy
+ * `nudges_insert_to_friend` is the whole trust boundary: accepted friends only, refused in either direction of a
+ * block, refused for a restricted learner (20261113100100_restriction_enforcement.sql). The 24 hour limit is the
+ * database's too, on the push (20260930070000_nudge_push_rate_limit.sql); the page keeps the matching soft
+ * cooldown (nudge.ts). A refusal says only `ok: false`: it must not reveal whether the person blocked the caller.
+ */
+export const sendNudge = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ recipientId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: boolean }> => {
+    // The table refuses it too (CHECK sender_id <> recipient_id); asking would only waste the round trip.
+    if (data.recipientId === context.userId) return { ok: false };
+    const { error } = await context.supabase
+      .from("nudges")
+      .insert({ recipient_id: data.recipientId });
+    return { ok: !error };
+  });
+
+/** The caller's unread nudges (the recipient reads their own; RLS `nudges_select_recipient`). */
+export const getUnreadNudges = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ id: string; senderId: string; createdAt: string }[]> => {
+    const { data, error } = await context.supabase
+      .from("nudges")
+      .select("id,sender_id,created_at")
+      .is("read_at", null)
+      .order("created_at", { ascending: false });
+    if (error) return [];
+    return (data ?? []).map((r) => ({ id: r.id, senderId: r.sender_id, createdAt: r.created_at }));
+  });
+
+/** Marks nudges read once they have been shown (the recipient may update only their own; RLS). */
+export const markNudgesRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ ids: z.array(z.string().uuid()).max(200) }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: boolean }> => {
+    if (data.ids.length === 0) return { ok: true };
+    const { error } = await context.supabase
+      .from("nudges")
+      .update({ read_at: new Date().toISOString() })
+      .in("id", data.ids)
+      .is("read_at", null);
+    return { ok: !error };
+  });
+
+function payloadNumber(payload: unknown, key: string): number | null {
+  if (typeof payload !== "object" || payload === null) return null;
+  const value = (payload as Record<string, unknown>)[key];
+  return typeof value === "number" ? value : null;
+}
+
+function payloadString(payload: unknown, key: string): string | null {
+  if (typeof payload !== "object" || payload === null) return null;
+  const value = (payload as Record<string, unknown>)[key];
+  return typeof value === "string" ? value : null;
+}
+
+/**
+ * The activity feed: the caller's own events and their accepted friends', newest first, 50 at most. The policy
+ * `friend_activity_readable_by_friends` is what scopes it (friends only, and nothing from a blocked relationship in
+ * either direction), so this handler adds no filter of its own and no one else's events can come back.
+ */
+export const getFriendActivity = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<FriendActivityEvent[]> => {
+    const { data, error } = await context.supabase
+      .from("friend_activity_events")
+      .select("id,user_id,event_type,payload,created_at")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) return [];
+    return (data ?? []).map((r) => ({
+      id: r.id,
+      userId: r.user_id,
+      eventType: r.event_type,
+      createdAt: r.created_at,
+      xpGain: payloadNumber(r.payload, "xpGain"),
+      streak: payloadNumber(r.payload, "streak"),
+      newTier: payloadString(r.payload, "newTier"),
     }));
   });

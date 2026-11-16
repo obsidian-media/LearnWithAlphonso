@@ -1292,3 +1292,70 @@ describe("completeLessonRemote: the learner's own calendar day", () => {
     expect(args._next.streak).toBe(1);
   });
 });
+
+describe("completeLessonRemote reports the league the learner started the lesson in", () => {
+  const ANSWERS = Object.entries({
+    q1: "Good morning.",
+    q2: "meet",
+    q3: "I am fine, thanks.",
+    q4: "Good",
+    q5: "Good night.",
+    q6: "Hey!",
+    q7: "later",
+    q8: "You're welcome.",
+  }).map(([questionId, answer]) => ({ questionId, answer }));
+
+  function run(startXp: number, startTier: string) {
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            streak: 0,
+            longest_streak: 0,
+            last_active_date: null,
+            hearts: 4,
+            hearts_refill_at: null,
+            streak_freezes: 0,
+          },
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: { xp: startXp, league_tier: startTier } }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
+      .mockReturnValueOnce(chainable({ data: [] }));
+    return completeLessonRemote({
+      context: ctx(supabase),
+      data: {
+        lessonId: LESSON_ID,
+        total: 8,
+        answers: ANSWERS,
+        course: "en",
+        sessionToken: issueLessonSessionToken({
+          userId: USER_ID,
+          lessonId: LESSON_ID,
+          course: "en",
+        }),
+      },
+    });
+  }
+
+  it("a completion that crosses a league line says where it started and where it ended", async () => {
+    const result = await run(295, "bronze");
+    expect(result.previousLeagueTier).toBe("bronze");
+    expect(result.progress.leagueTier).toBe("silver");
+  });
+
+  it("a completion inside the same league reports the same league for both", async () => {
+    const result = await run(0, "bronze");
+    expect(result.previousLeagueTier).toBe("bronze");
+    expect(result.progress.leagueTier).toBe("bronze");
+  });
+
+  it("a learner already in a higher league starts and ends there", async () => {
+    const result = await run(1500, "sapphire");
+    expect(result.previousLeagueTier).toBe("sapphire");
+    expect(result.progress.leagueTier).toBe("sapphire");
+  });
+});

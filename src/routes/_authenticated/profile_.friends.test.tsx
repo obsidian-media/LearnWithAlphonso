@@ -55,6 +55,12 @@ function renderPage() {
   );
 }
 
+/** Remove lives in the row's menu (so the row stays one line on a phone): open it, then pick Remove friend. */
+async function clickRemoveFriend(name: string) {
+  fireEvent.click(await screen.findByRole("button", { name: `More options for ${name}` }));
+  fireEvent.click(await screen.findByRole("menuitem", { name: "Remove friend" }));
+}
+
 beforeEach(() => {
   getFriends.mockReset();
   removeFriend.mockReset();
@@ -166,13 +172,12 @@ describe("Friends page", () => {
     getMyFriendCode.mockResolvedValue("me-code");
     renderPage();
 
-    const removeButton = await screen.findByRole("button", { name: "Remove Ada" });
-    fireEvent.click(removeButton);
+    await clickRemoveFriend("Ada");
 
     expect(await screen.findByRole("button", { name: "Confirm" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
-    expect(await screen.findByRole("button", { name: "Remove Ada" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "More options for Ada" })).toBeInTheDocument();
     expect(removeFriend).not.toHaveBeenCalled();
   });
 
@@ -185,7 +190,7 @@ describe("Friends page", () => {
     removeFriend.mockResolvedValue({ ok: true, message: "removed" });
     renderPage();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Remove Ada" }));
+    await clickRemoveFriend("Ada");
     fireEvent.click(await screen.findByRole("button", { name: "Confirm" }));
 
     await waitFor(() => expect(removeFriend).toHaveBeenCalledWith({ data: { friendId: "f1" } }));

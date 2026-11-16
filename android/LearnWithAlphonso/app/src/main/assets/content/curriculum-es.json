@@ -8928,390 +8928,399 @@
       "level": "A1",
       "eyebrow": "Unit 29",
       "title": "Minimal Pairs",
-      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and silent h (onda/honda).",
+      "description": "Spell it right — Spelling choice: two words that sound the same for most Spanish speakers, told apart by meaning.",
       "lessons": [
         {
           "id": "esa1p28l1",
           "title": "Minimal Pairs 1",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa1p28q0",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Hablamos de la casa toda la tarde.",
+              "type": "mc",
+              "prompt": "Mi familia vive en una ___ grande. (house)",
               "choices": [
-                "Decidieron botar ayer por la tarde.",
-                "Decidieron votar ayer por la tarde.",
-                "Nunca había visto una casa tan grande.",
-                "Hablamos de la casa toda la tarde."
+                "cosa",
+                "caza",
+                "casa",
+                "masa"
               ],
-              "answer": "Hablamos de la casa toda la tarde.",
-              "explanation": "You heard \"Hablamos de la casa toda la tarde.\" It is the only option that starts with \"Hablamos\" and ends with \"toda la tarde\"; the others are about a decision made yesterday or a big house."
+              "answer": 2,
+              "explanation": "\"casa\" is the spelling that means house here. It is easy to mix up with \"caza\", a different word, so the meaning decides the spelling.",
+              "meaning": "house",
+              "example": "Mi familia vive en una casa grande."
             },
             {
               "id": "esa1p28q1",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Hablamos de la caza toda la tarde.",
-              "choices": [
-                "Decidieron botar ayer por la tarde.",
-                "Decidieron votar ayer por la tarde.",
-                "Nunca había visto una caza tan grande.",
-                "Hablamos de la caza toda la tarde."
+              "type": "fill",
+              "prompt": "Mis tíos van de ___ de patos al lago los domingos. (hunting)",
+              "bank": [
+                "casa",
+                "caza",
+                "cosa",
+                "taza"
               ],
-              "answer": "Hablamos de la caza toda la tarde.",
-              "explanation": "You heard \"Hablamos de la caza toda la tarde.\" It is the only option with \"Hablamos de\" and \"toda la tarde\"; here \"caza\" means hunting, and it sounds just like \"casa\"."
+              "answer": "caza",
+              "explanation": "\"caza\" is the spelling that means hunting here. It is easy to mix up with \"casa\", a different word, so the meaning decides the spelling.",
+              "meaning": "hunting",
+              "example": "Mis tíos van de caza los domingos."
             },
             {
               "id": "esa1p28q2",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nunca había visto una casa tan grande.",
+              "type": "mc",
+              "prompt": "Después de la escuela voy a mi ___. (home)",
               "choices": [
-                "Nadie esperaba una onda tan fuerte.",
-                "Nadie esperaba una honda tan fuerte.",
-                "Nunca había visto una casa tan grande.",
-                "Hablamos de la casa toda la tarde."
+                "casa",
+                "caza",
+                "cosa",
+                "mesa"
               ],
-              "answer": "Nunca había visto una casa tan grande.",
-              "explanation": "You heard \"Nunca había visto una casa tan grande.\" The other options start with \"Nadie esperaba\" or \"Hablamos\", so only this one matches \"Nunca había visto... tan grande\"."
+              "answer": 0,
+              "explanation": "\"casa\" is the spelling that means home here. It is easy to mix up with \"caza\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa1p28q3",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nunca había visto una caza tan grande.",
-              "choices": [
-                "Nadie esperaba una onda tan fuerte.",
-                "Nunca había visto una caza tan grande.",
-                "Nadie esperaba una honda tan fuerte.",
-                "Hablamos de la caza toda la tarde."
+              "type": "fill",
+              "prompt": "En esa reserva la ___ de ciervos está prohibida. (hunting)",
+              "bank": [
+                "casa",
+                "caza",
+                "taza",
+                "masa"
               ],
-              "answer": "Nunca había visto una caza tan grande.",
-              "explanation": "You heard \"Nunca había visto una caza tan grande.\" It is the only option that starts with \"Nunca había visto\"; \"caza\" (a hunt) sounds the same as \"casa\"."
+              "answer": "caza",
+              "explanation": "\"caza\" is the spelling that means hunting here. It is easy to mix up with \"casa\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa1p28q4",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Vimos la onda desde la playa.",
+              "type": "mc",
+              "prompt": "El sonido viaja por el aire como una ___. (wave (sound wave))",
               "choices": [
-                "Vimos la onda desde la playa.",
-                "Vimos el poyo en el patio.",
-                "Se podía ver el cerro desde la ventana.",
-                "Vimos el pollo en el patio."
+                "ronda",
+                "honda",
+                "onda",
+                "oda"
               ],
-              "answer": "Vimos la onda desde la playa.",
-              "explanation": "You heard \"Vimos la onda desde la playa.\" It is the only option that ends with \"desde la playa\"; the others mention a patio or a window."
+              "answer": 2,
+              "explanation": "\"onda\" is the spelling that means wave (sound wave) here. It is easy to mix up with \"honda\", a different word, so the meaning decides the spelling.",
+              "meaning": "wave, sound wave",
+              "example": "El sonido viaja por el aire como una onda."
             }
           ]
         },
         {
           "id": "esa1p28l2",
           "title": "Minimal Pairs 2",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa1p28q5",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Vimos la honda desde la playa.",
-              "choices": [
-                "Nadie esperaba una honda tan fuerte.",
-                "Vimos la honda desde la playa.",
-                "Vimos el poyo en el patio.",
-                "Vimos el pollo en el patio."
+              "type": "fill",
+              "prompt": "La piscina es muy ___ aquí. (deep)",
+              "bank": [
+                "honda",
+                "onda",
+                "blanda",
+                "ronda"
               ],
-              "answer": "Vimos la honda desde la playa.",
-              "explanation": "You heard \"Vimos la honda desde la playa.\" It is the only option that starts with \"Vimos la\" and ends with \"desde la playa\"; the h in \"honda\" is silent, so it sounds like \"onda\"."
+              "answer": "honda",
+              "explanation": "\"honda\" is the spelling that means deep here. It is easy to mix up with \"onda\", a different word, so the meaning decides the spelling.",
+              "meaning": "deep",
+              "example": "La piscina es muy honda aquí."
             },
             {
               "id": "esa1p28q6",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie esperaba una onda tan fuerte.",
+              "type": "mc",
+              "prompt": "La radio emite en una ___ corta. (wave)",
               "choices": [
-                "Nadie esperaba una onda tan fuerte.",
-                "Nunca había visto una caza tan grande.",
-                "Vimos la onda desde la playa.",
-                "Nunca había visto una casa tan grande."
+                "onda",
+                "honda",
+                "ronda",
+                "oda"
               ],
-              "answer": "Nadie esperaba una onda tan fuerte.",
-              "explanation": "You heard \"Nadie esperaba una onda tan fuerte.\" It is the only option that starts with \"Nadie esperaba\"; the others start with \"Nunca\" or \"Vimos\"."
+              "answer": 0,
+              "explanation": "\"onda\" is the spelling that means wave here. It is easy to mix up with \"honda\", a different word, so the meaning decides the spelling.",
+              "meaning": "wave",
+              "example": "La radio emite en una onda corta."
             },
             {
               "id": "esa1p28q7",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie esperaba una honda tan fuerte.",
-              "choices": [
-                "Nunca había visto una caza tan grande.",
-                "Nadie esperaba una honda tan fuerte.",
-                "Vimos la honda desde la playa.",
-                "Nunca había visto una casa tan grande."
+              "type": "fill",
+              "prompt": "La cueva es muy ___ y oscura. (deep)",
+              "bank": [
+                "honda",
+                "onda",
+                "blanda",
+                "ronda"
               ],
-              "answer": "Nadie esperaba una honda tan fuerte.",
-              "explanation": "You heard \"Nadie esperaba una honda tan fuerte.\" It is the only option that starts with \"Nadie esperaba\"; the silent h makes \"honda\" sound like \"onda\"."
+              "answer": "honda",
+              "explanation": "\"honda\" is the spelling that means deep here. It is easy to mix up with \"onda\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa1p28q8",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Vimos el pollo en el patio.",
+              "type": "mc",
+              "prompt": "Para la cena comimos ___ con arroz. (chicken (as food))",
               "choices": [
-                "Mi abuela puso el pollo cerca de la puerta.",
-                "Vimos la honda desde la playa.",
-                "Vimos la onda desde la playa.",
-                "Vimos el pollo en el patio."
+                "pozo",
+                "poyo",
+                "pollo",
+                "polvo"
               ],
-              "answer": "Vimos el pollo en el patio.",
-              "explanation": "You heard \"Vimos el pollo en el patio.\" It is the only option that ends with \"en el patio\"; the other pollo sentence is about a grandmother and a door."
+              "answer": 2,
+              "explanation": "\"pollo\" is the spelling that means chicken (as food) here. It is easy to mix up with \"poyo\", a different word, so the meaning decides the spelling.",
+              "meaning": "chicken, as food",
+              "example": "Para la cena comimos pollo con arroz."
             },
             {
               "id": "esa1p28q9",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Vimos el poyo en el patio.",
-              "choices": [
-                "Mi abuela puso el poyo cerca de la puerta.",
-                "Vimos la honda desde la playa.",
-                "Vimos la onda desde la playa.",
-                "Vimos el poyo en el patio."
+              "type": "fill",
+              "prompt": "Nos sentamos en el ___ de piedra del patio. (stone bench)",
+              "bank": [
+                "poyo",
+                "polvo",
+                "pozo",
+                "pollo"
               ],
-              "answer": "Vimos el poyo en el patio.",
-              "explanation": "You heard \"Vimos el poyo en el patio.\" It is the only option that ends with \"en el patio\"; \"poyo\" (a stone bench) sounds the same as \"pollo\" for most speakers."
+              "answer": "poyo",
+              "explanation": "\"poyo\" is the spelling that means stone bench here. It is easy to mix up with \"pollo\", a different word, so the meaning decides the spelling.",
+              "meaning": "stone bench",
+              "example": "Nos sentamos en el poyo de piedra del patio."
             }
           ]
         },
         {
           "id": "esa1p28l3",
           "title": "Minimal Pairs 3",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa1p28q10",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Mi abuela puso el pollo cerca de la puerta.",
-              "choices": [
-                "Decidieron votar ayer por la tarde.",
-                "Mi abuela puso el pollo cerca de la puerta.",
-                "Todos dijeron que el terreno era muy basto.",
-                "Vimos el pollo en el patio."
+              "type": "fill",
+              "prompt": "El ___ picotea el maíz en la granja. (chicken)",
+              "bank": [
+                "poyo",
+                "pollo",
+                "polvo",
+                "pozo"
               ],
-              "answer": "Mi abuela puso el pollo cerca de la puerta.",
-              "explanation": "You heard \"Mi abuela puso el pollo cerca de la puerta.\" It is the only option that starts with \"Mi abuela\"; the other pollo sentence is \"Vimos el pollo en el patio.\""
+              "answer": "pollo",
+              "explanation": "\"pollo\" is the spelling that means chicken here. It is easy to mix up with \"poyo\", a different word, so the meaning decides the spelling.",
+              "meaning": "chicken",
+              "example": "El pollo picotea el maíz en la granja."
             },
             {
               "id": "esa1p28q11",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Mi abuela puso el poyo cerca de la puerta.",
+              "type": "mc",
+              "prompt": "El abuelo descansa en el ___ junto a la puerta. (stone bench)",
               "choices": [
-                "Decidieron votar ayer por la tarde.",
-                "Vimos la onda desde la playa.",
-                "Vimos el poyo en el patio.",
-                "Mi abuela puso el poyo cerca de la puerta."
+                "poyo",
+                "pollo",
+                "pozo",
+                "polvo"
               ],
-              "answer": "Mi abuela puso el poyo cerca de la puerta.",
-              "explanation": "You heard \"Mi abuela puso el poyo cerca de la puerta.\" It is the only option that starts with \"Mi abuela\"; \"poyo\" (a stone bench) sounds just like \"pollo\"."
+              "answer": 0,
+              "explanation": "\"poyo\" is the spelling that means stone bench here. It is easy to mix up with \"pollo\", a different word, so the meaning decides the spelling.",
+              "meaning": "stone bench",
+              "example": "El abuelo descansa en el poyo junto a la puerta."
             },
             {
               "id": "esa1p28q12",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El paisaje era completamente vasto.",
-              "choices": [
-                "El paisaje era completamente vasto.",
-                "Subimos el cerro despacio.",
-                "Todos dijeron que el terreno era muy basto.",
-                "Todos dijeron que el terreno era muy vasto."
+              "type": "fill",
+              "prompt": "El desierto es muy ___ y no se ve el final. (vast)",
+              "bank": [
+                "nuevo",
+                "justo",
+                "basto",
+                "vasto"
               ],
-              "answer": "El paisaje era completamente vasto.",
-              "explanation": "The audio says \"El paisaje era completamente vasto.\" The words \"paisaje\" and \"completamente\" set it apart from the \"terreno era muy\" sentences, because \"vasto\" and \"basto\" sound the same."
+              "answer": "vasto",
+              "explanation": "\"vasto\" is the spelling that means vast here. It is easy to mix up with \"basto\", a different word, so the meaning decides the spelling.",
+              "meaning": "vast",
+              "example": "El desierto es muy vasto."
             },
             {
               "id": "esa1p28q13",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El paisaje era completamente basto.",
+              "type": "mc",
+              "prompt": "La tela de este saco es muy ___ y áspera. (coarse)",
               "choices": [
-                "El paisaje era completamente basto.",
-                "Todos dijeron que el terreno era muy basto.",
-                "Nadie esperaba una onda tan fuerte.",
-                "Todos dijeron que el terreno era muy vasto."
+                "justo",
+                "vasto",
+                "basto",
+                "vacío"
               ],
-              "answer": "El paisaje era completamente basto.",
-              "explanation": "The audio says \"El paisaje era completamente basto.\" \"Basto\" (coarse) sounds the same as \"vasto\", so listen for \"paisaje\" and \"completamente\" rather than \"terreno\" and \"muy\"."
+              "answer": 2,
+              "explanation": "\"basto\" is the spelling that means coarse here. It is easy to mix up with \"vasto\", a different word, so the meaning decides the spelling.",
+              "meaning": "coarse",
+              "example": "La tela de este saco es muy basto y áspera."
             },
             {
               "id": "esa1p28q14",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Todos dijeron que el terreno era muy vasto.",
-              "choices": [
-                "El paisaje era completamente vasto.",
-                "El paisaje era completamente basto.",
-                "Todos miraban el cero en el marcador.",
-                "Todos dijeron que el terreno era muy vasto."
+              "type": "fill",
+              "prompt": "El océano es muy ___ y no tiene fin. (vast, huge)",
+              "bank": [
+                "nuevo",
+                "justo",
+                "basto",
+                "vasto"
               ],
-              "answer": "Todos dijeron que el terreno era muy vasto.",
-              "explanation": "The audio says \"Todos dijeron que el terreno era muy vasto.\" The frame \"Todos dijeron que el terreno era muy\" rules out the \"paisaje\" sentences, even though \"vasto\" and \"basto\" sound the same."
+              "answer": "vasto",
+              "explanation": "\"vasto\" is the spelling that means vast, huge here. It is easy to mix up with \"basto\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esa1p28l4",
           "title": "Minimal Pairs 4",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa1p28q15",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Todos dijeron que el terreno era muy basto.",
+              "type": "mc",
+              "prompt": "Este paño es demasiado ___ para una camisa. (coarse)",
               "choices": [
-                "Todos miraban el cerro con atención.",
-                "El paisaje era completamente basto.",
-                "Todos dijeron que el terreno era muy basto.",
-                "Todos miraban el cero en el marcador."
+                "basto",
+                "vasto",
+                "justo",
+                "nuevo"
               ],
-              "answer": "Todos dijeron que el terreno era muy basto.",
-              "explanation": "The audio says \"Todos dijeron que el terreno era muy basto.\" Only this option has \"terreno\" and \"muy\". The other \"basto\" sentence uses \"paisaje\" and \"completamente\"."
+              "answer": 0,
+              "explanation": "\"basto\" is the spelling that means coarse here. It is easy to mix up with \"vasto\", a different word, so the meaning decides the spelling.",
+              "meaning": "coarse",
+              "example": "Este paño es demasiado basto para una camisa."
             },
             {
               "id": "esa1p28q16",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Todos miraban el cerro con atención.",
-              "choices": [
-                "Se podía ver el cerro desde la ventana.",
-                "Todos miraban el cerro con atención.",
-                "Subimos el cerro despacio.",
-                "Todos miraban el cero en el marcador."
+              "type": "fill",
+              "prompt": "Subimos al ___ para ver el pueblo. (hill)",
+              "bank": [
+                "perro",
+                "cerro",
+                "cero",
+                "barro"
               ],
-              "answer": "Todos miraban el cerro con atención.",
-              "explanation": "The audio says \"Todos miraban el cerro con atención.\" Listen for the strong trilled rr in \"cerro\" (hill) and the ending \"con atención\". \"Cero\" has a single tap."
+              "answer": "cerro",
+              "explanation": "\"cerro\" is the spelling that means hill here. It is easy to mix up with \"cero\", a different word, so the meaning decides the spelling.",
+              "meaning": "hill",
+              "example": "Subimos al cerro para ver el pueblo."
             },
             {
               "id": "esa1p28q17",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Todos miraban el cero en el marcador.",
+              "type": "mc",
+              "prompt": "La temperatura bajó a ___ grados. (zero)",
               "choices": [
-                "Se podía ver el cero en la pantalla.",
-                "Todos miraban el cerro con atención.",
-                "Todos dijeron que el terreno era muy basto.",
-                "Todos miraban el cero en el marcador."
+                "cera",
+                "cerro",
+                "cero",
+                "cerdo"
               ],
-              "answer": "Todos miraban el cero en el marcador.",
-              "explanation": "The audio says \"Todos miraban el cero en el marcador.\" \"Cero\" (zero) has a single tap r, unlike the trilled rr of \"cerro\", and \"marcador\" (scoreboard) confirms it."
+              "answer": 2,
+              "explanation": "\"cero\" is the spelling that means zero here. It is easy to mix up with \"cerro\", a different word, so the meaning decides the spelling.",
+              "meaning": "zero",
+              "example": "La temperatura bajó a cero grados."
             },
             {
               "id": "esa1p28q18",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Se podía ver el cerro desde la ventana.",
-              "choices": [
-                "Se podía ver el cerro desde la ventana.",
-                "Se podía ver el cero en la pantalla.",
-                "Vimos la onda desde la playa.",
-                "Vimos la honda desde la playa."
+              "type": "fill",
+              "prompt": "Desde la ventana se ve un ___ verde. (hill)",
+              "bank": [
+                "perro",
+                "cerro",
+                "cero",
+                "barro"
               ],
-              "answer": "Se podía ver el cerro desde la ventana.",
-              "explanation": "The audio says \"Se podía ver el cerro desde la ventana.\" Listen for the trilled rr in \"cerro\" (hill) and the words \"desde la ventana\". The \"cero\" sentence ends \"en la pantalla\"."
+              "answer": "cerro",
+              "explanation": "\"cerro\" is the spelling that means hill here. It is easy to mix up with \"cero\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa1p28q19",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Se podía ver el cero en la pantalla.",
+              "type": "mc",
+              "prompt": "El marcador del partido está en ___. (zero)",
               "choices": [
-                "Se podía ver el cerro desde la ventana.",
-                "Se podía ver el cero en la pantalla.",
-                "Todos miraban el cerro con atención.",
-                "Todos miraban el cero en el marcador."
+                "cero",
+                "cerro",
+                "cera",
+                "cerdo"
               ],
-              "answer": "Se podía ver el cero en la pantalla.",
-              "explanation": "The audio says \"Se podía ver el cero en la pantalla.\" \"Cero\" (zero) has a single tap r and fits \"en la pantalla\". \"Cerro\" has a trilled rr and means hill."
+              "answer": 0,
+              "explanation": "\"cero\" is the spelling that means zero here. It is easy to mix up with \"cerro\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esa1p28l5",
           "title": "Minimal Pairs 5",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa1p28q20",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Vamos a votar mañana temprano.",
+              "type": "mc",
+              "prompt": "Mañana todos vamos a ___ por el presidente. (to vote)",
               "choices": [
-                "Vimos el pollo en el patio.",
-                "Vamos a votar mañana temprano.",
-                "Decidieron votar ayer por la tarde.",
-                "Hablamos de la caza toda la tarde."
+                "votar",
+                "botar",
+                "notar",
+                "montar"
               ],
-              "answer": "Vamos a votar mañana temprano.",
-              "explanation": "The audio says \"Vamos a votar mañana temprano.\" The start \"Vamos a\" and the words \"mañana temprano\" set it apart from \"Decidieron votar ayer por la tarde\"."
+              "answer": 0,
+              "explanation": "\"votar\" is the spelling that means to vote here. It is easy to mix up with \"botar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to vote",
+              "example": "Mañana todos vamos a votar por el presidente."
             },
             {
               "id": "esa1p28q21",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Vamos a botar mañana temprano.",
-              "choices": [
-                "Vimos el pollo en el patio.",
-                "Decidieron botar ayer por la tarde.",
-                "Vamos a botar mañana temprano.",
-                "Todos dijeron que el terreno era muy basto."
+              "type": "fill",
+              "prompt": "No debes ___ la basura en la calle. (to throw away)",
+              "bank": [
+                "notar",
+                "votar",
+                "botar",
+                "montar"
               ],
-              "answer": "Vamos a botar mañana temprano.",
-              "explanation": "The audio says \"Vamos a botar mañana temprano.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+              "answer": "botar",
+              "explanation": "\"botar\" is the spelling that means to throw away here. It is easy to mix up with \"votar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to throw away",
+              "example": "No debes botar la basura en la calle."
             },
             {
               "id": "esa1p28q22",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Decidieron votar ayer por la tarde.",
+              "type": "mc",
+              "prompt": "Mi abuela quiere ___ en las elecciones. (to vote)",
               "choices": [
-                "Vamos a votar mañana temprano.",
-                "Decidieron votar ayer por la tarde.",
-                "Hablamos de la caza toda la tarde.",
-                "Hablamos de la casa toda la tarde."
+                "notar",
+                "botar",
+                "votar",
+                "montar"
               ],
-              "answer": "Decidieron votar ayer por la tarde.",
-              "explanation": "The audio says \"Decidieron votar ayer por la tarde.\" \"Decidieron\" and \"ayer\" set it apart from \"Vamos a votar mañana temprano\"."
+              "answer": 2,
+              "explanation": "\"votar\" is the spelling that means to vote here. It is easy to mix up with \"botar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa1p28q23",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Decidieron botar ayer por la tarde.",
-              "choices": [
-                "Decidieron botar ayer por la tarde.",
-                "Vamos a botar mañana temprano.",
-                "Hablamos de la caza toda la tarde.",
-                "Hablamos de la casa toda la tarde."
+              "type": "fill",
+              "prompt": "Hay que ___ las botellas vacías al contenedor. (to throw away)",
+              "bank": [
+                "notar",
+                "votar",
+                "montar",
+                "botar"
               ],
-              "answer": "Decidieron botar ayer por la tarde.",
-              "explanation": "The audio says \"Decidieron botar ayer por la tarde.\" Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and h-silent (onda/honda)."
+              "answer": "botar",
+              "explanation": "\"botar\" is the spelling that means to throw away here. It is easy to mix up with \"votar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa1p28q24",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Subimos el cerro despacio.",
+              "type": "mc",
+              "prompt": "Mi casa está al pie del ___. (hill)",
               "choices": [
-                "Subimos el cerro despacio.",
-                "Vamos a votar mañana temprano.",
-                "Todos miraban el cerro con atención.",
-                "Se podía ver el cerro desde la ventana."
+                "cerro",
+                "cero",
+                "perro",
+                "barro"
               ],
-              "answer": "Subimos el cerro despacio.",
-              "explanation": "The audio says \"Subimos el cerro despacio.\" (We climbed the hill slowly.) The b in \"subimos\" sounds like a v, and with seseo the c in \"cerro\" sounds like an s, but only option A has \"subimos\" and \"despacio\"."
+              "answer": 0,
+              "explanation": "\"cerro\" is the spelling that means hill here. It is easy to mix up with \"cero\", a different word, so the meaning decides the spelling.",
+              "meaning": "hill",
+              "example": "Mi casa está al pie del cerro."
             }
           ]
         }
@@ -18232,390 +18241,397 @@
       "level": "A2",
       "eyebrow": "Unit 29",
       "title": "Minimal Pairs",
-      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa, cocer/coser), b/v (rebelarse/revelarse), yeísmo (pulla/puya, rallar/rayar), and silent h (ojear/hojear).",
+      "description": "Spell it right — Spelling choice: two words that sound the same for most Spanish speakers, told apart by meaning.",
       "lessons": [
         {
           "id": "esa2p28l1",
           "title": "Minimal Pairs 1",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa2p28q0",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Mi madre me enseñó a cocer bien.",
-              "choices": [
-                "Todos notaron la puya en su comentario.",
-                "Le pedí que no rayara la mesa.",
-                "Nunca aprendí a cocer rápido.",
-                "Mi madre me enseñó a cocer bien."
+              "type": "fill",
+              "prompt": "Hay que ___ el arroz veinte minutos. (to boil, to cook)",
+              "bank": [
+                "comer",
+                "coser",
+                "correr",
+                "cocer"
               ],
-              "answer": "Mi madre me enseñó a cocer bien.",
-              "explanation": "The audio says \"Mi madre me enseñó a cocer bien.\" With seseo, \"cocer\" (to cook) sounds the same as \"coser\" (to sew), so listen to the rest of the sentence: \"Mi madre me enseñó\" and \"bien\"."
+              "answer": "cocer",
+              "explanation": "\"cocer\" is the spelling that means to boil, to cook here. It is easy to mix up with \"coser\", a different word, so the meaning decides the spelling.",
+              "meaning": "to boil, to cook",
+              "example": "Hay que cocer el arroz veinte minutos."
             },
             {
               "id": "esa2p28q1",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Mi madre me enseñó a coser bien.",
+              "type": "mc",
+              "prompt": "Mi abuela me enseñó a ___ un botón. (to sew)",
               "choices": [
-                "Todos notaron la puya en su comentario.",
-                "Mi madre me enseñó a coser bien.",
-                "Nunca aprendí a coser rápido.",
-                "Decidió rebelarse ante todos."
+                "comer",
+                "cocer",
+                "coser",
+                "correr"
               ],
-              "answer": "Mi madre me enseñó a coser bien.",
-              "explanation": "The audio says \"Mi madre me enseñó a coser bien.\" \"Coser\" (to sew) and \"cocer\" (to cook) sound the same with seseo, so context tells you which one is meant; option C changes \"bien\" to \"rápido\"."
+              "answer": 2,
+              "explanation": "\"coser\" is the spelling that means to sew here. It is easy to mix up with \"cocer\", a different word, so the meaning decides the spelling.",
+              "meaning": "to sew",
+              "example": "Mi abuela me enseñó a coser un botón."
             },
             {
               "id": "esa2p28q2",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nunca aprendí a cocer rápido.",
-              "choices": [
-                "Nunca aprendí a cocer rápido.",
-                "Mi madre me enseñó a cocer bien.",
-                "No encontraba la taza en la mesa.",
-                "Decidió rebelarse ante todos."
+              "type": "fill",
+              "prompt": "El pan necesita ___ en el horno una hora. (to bake)",
+              "bank": [
+                "comer",
+                "coser",
+                "correr",
+                "cocer"
               ],
-              "answer": "Nunca aprendí a cocer rápido.",
-              "explanation": "The audio says \"Nunca aprendí a cocer rápido.\" With seseo, \"cocer\" (to cook) sounds like \"coser\" (to sew), so the words \"Nunca aprendí\" and \"rápido\" tell this sentence apart."
+              "answer": "cocer",
+              "explanation": "\"cocer\" is the spelling that means to bake here. It is easy to mix up with \"coser\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa2p28q3",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nunca aprendí a coser rápido.",
+              "type": "mc",
+              "prompt": "Necesito aguja e hilo para ___ la falda. (to sew)",
               "choices": [
-                "Se puso a ojear el periódico.",
-                "Mi madre me enseñó a coser bien.",
-                "Nunca aprendí a coser rápido.",
-                "No encontraba la taza en la mesa."
+                "coser",
+                "cocer",
+                "comer",
+                "correr"
               ],
-              "answer": "Nunca aprendí a coser rápido.",
-              "explanation": "The audio says \"Nunca aprendí a coser rápido.\" With seseo, \"coser\" (to sew) sounds like \"cocer\" (to cook), so the words \"Nunca aprendí\" and \"rápido\" identify this sentence."
+              "answer": 0,
+              "explanation": "\"coser\" is the spelling that means to sew here. It is easy to mix up with \"cocer\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa2p28q4",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Decidió rebelarse ante todos.",
-              "choices": [
-                "Nadie esperaba que fuera a rebelarse.",
-                "Todos notaron la puya en su comentario.",
-                "Todos notaron la pulla en su comentario.",
-                "Decidió rebelarse ante todos."
+              "type": "fill",
+              "prompt": "El agua sale por el ___ de la cocina. (pipe)",
+              "bank": [
+                "tuno",
+                "tuyo",
+                "tubo",
+                "tuvo"
               ],
-              "answer": "Decidió rebelarse ante todos.",
-              "explanation": "The audio says \"Decidió rebelarse ante todos.\" \"Rebelarse\" (to rebel) sounds like \"revelarse\" because b and v are pronounced alike, so listen for \"Decidió\" and \"ante todos\"."
+              "answer": "tubo",
+              "explanation": "\"tubo\" is the spelling that means pipe here. It is easy to mix up with \"tuvo\", a different word, so the meaning decides the spelling.",
+              "meaning": "pipe",
+              "example": "El agua sale por el tubo de la cocina."
             }
           ]
         },
         {
           "id": "esa2p28l2",
           "title": "Minimal Pairs 2",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa2p28q5",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Decidió revelarse ante todos.",
+              "type": "mc",
+              "prompt": "Ayer mi hermano ___ mucha fiebre. (had)",
               "choices": [
-                "Todos notaron la puya en su comentario.",
-                "Decidió revelarse ante todos.",
-                "Todos notaron la pulla en su comentario.",
-                "Nadie esperaba que fuera a revelarse."
+                "tuno",
+                "tubo",
+                "tuvo",
+                "tuyo"
               ],
-              "answer": "Decidió revelarse ante todos.",
-              "explanation": "The audio says \"Decidió revelarse ante todos.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+              "answer": 2,
+              "explanation": "\"tuvo\" is the spelling that means had here. It is easy to mix up with \"tubo\", a different word, so the meaning decides the spelling.",
+              "meaning": "had",
+              "example": "Ayer mi hermano tuvo mucha fiebre."
             },
             {
               "id": "esa2p28q6",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie esperaba que fuera a rebelarse.",
-              "choices": [
-                "Nadie esperaba que fuera a rebelarse.",
-                "Alguien había dejado la taza en la cocina.",
-                "Prefería ojear la revista antes de comprarla.",
-                "Decidió rebelarse ante todos."
+              "type": "fill",
+              "prompt": "Se rompió el ___ del lavabo. (pipe)",
+              "bank": [
+                "tuno",
+                "tuyo",
+                "tubo",
+                "tuvo"
               ],
-              "answer": "Nadie esperaba que fuera a rebelarse.",
-              "explanation": "The audio says \"Nadie esperaba que fuera a rebelarse.\" Because b and v sound the same in Spanish, \"rebelarse\" (to rebel) sounds exactly like \"revelarse\" (to be revealed), so context tells you which word it is."
+              "answer": "tubo",
+              "explanation": "\"tubo\" is the spelling that means pipe here. It is easy to mix up with \"tuvo\", a different word, so the meaning decides the spelling.",
+              "meaning": "pipe",
+              "example": "Se rompió el tubo del lavabo."
             },
             {
               "id": "esa2p28q7",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie esperaba que fuera a revelarse.",
+              "type": "mc",
+              "prompt": "Mi madre ___ que trabajar el sábado. (had)",
               "choices": [
-                "Le lanzó una pulla sin piedad.",
-                "Prefería ojear la revista antes de comprarla.",
-                "Decidió revelarse ante todos.",
-                "Nadie esperaba que fuera a revelarse."
+                "tuvo",
+                "tubo",
+                "tuno",
+                "tuyo"
               ],
-              "answer": "Nadie esperaba que fuera a revelarse.",
-              "explanation": "The audio says \"Nadie esperaba que fuera a revelarse.\" In Spanish b and v sound the same, so \"revelarse\" (to reveal oneself) sounds like \"rebelarse\" (to rebel); only one option is this whole sentence."
+              "answer": 0,
+              "explanation": "\"tuvo\" is the spelling that means had here. It is easy to mix up with \"tubo\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa2p28q8",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Le lanzó una pulla sin piedad.",
-              "choices": [
-                "Le lanzó una pulla sin piedad.",
-                "Le lanzó una broma sin piedad.",
-                "Nunca aprendí a coser rápido.",
-                "Todos notaron la pulla en su comentario."
+              "type": "fill",
+              "prompt": "Cuando entró, dijo ___ a todos. (hello)",
+              "bank": [
+                "sola",
+                "hola",
+                "ola",
+                "cola"
               ],
-              "answer": "Le lanzó una pulla sin piedad.",
-              "explanation": "The audio says \"Le lanzó una pulla sin piedad.\" With yeísmo, ll and y sound the same, so \"pulla\" (a jab, a dig) sounds like \"puya\"; listen for the rest of the sentence to choose."
+              "answer": "hola",
+              "explanation": "\"hola\" is the spelling that means hello here. It is easy to mix up with \"ola\", a different word, so the meaning decides the spelling.",
+              "meaning": "hello",
+              "example": "Cuando entró, dijo hola a todos."
             },
             {
               "id": "esa2p28q9",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Le lanzó una puya sin piedad.",
+              "type": "mc",
+              "prompt": "Una ___ muy grande llegó a la playa. (wave)",
               "choices": [
-                "Le lanzó una puya sin piedad.",
-                "Le lanzó una broma sin piedad.",
-                "Todos notaron la puya en su comentario.",
-                "Prefería ojear la revista antes de comprarla."
+                "sola",
+                "hola",
+                "ola",
+                "cola"
               ],
-              "answer": "Le lanzó una puya sin piedad.",
-              "explanation": "The audio says \"Le lanzó una puya sin piedad.\" With yeísmo, y and ll sound the same, so \"puya\" sounds like \"pulla\"; the start of the sentence tells you which option it is."
+              "answer": 2,
+              "explanation": "\"ola\" is the spelling that means wave here. It is easy to mix up with \"hola\", a different word, so the meaning decides the spelling.",
+              "meaning": "wave",
+              "example": "Una ola muy grande llegó a la playa."
             }
           ]
         },
         {
           "id": "esa2p28l3",
           "title": "Minimal Pairs 3",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa2p28q10",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Todos notaron la pulla en su comentario.",
+              "type": "mc",
+              "prompt": "Siempre le digo ___ a mi vecina. (hello)",
               "choices": [
-                "Decidió rebelarse ante todos.",
-                "Todos notaron la burla en su comentario.",
-                "Le lanzó una pulla sin piedad.",
-                "Todos notaron la pulla en su comentario."
+                "sola",
+                "ola",
+                "hola",
+                "cola"
               ],
-              "answer": "Todos notaron la pulla en su comentario.",
-              "explanation": "The audio says \"Todos notaron la pulla en su comentario.\" With yeísmo, \"pulla\" sounds like \"puya\"; here the sentence starts with \"Todos notaron\" and the word is not \"burla\"."
+              "answer": 2,
+              "explanation": "\"hola\" is the spelling that means hello here. It is easy to mix up with \"ola\", a different word, so the meaning decides the spelling.",
+              "meaning": "hello",
+              "example": "Siempre le digo hola a mi vecina."
             },
             {
               "id": "esa2p28q11",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Todos notaron la puya en su comentario.",
-              "choices": [
-                "Decidió revelarse ante todos.",
-                "Le lanzó una puya sin piedad.",
-                "Todos notaron la puya en su comentario.",
-                "Todos notaron la burla en su comentario."
+              "type": "fill",
+              "prompt": "Esa ___ nos mojó los pies. (wave)",
+              "bank": [
+                "hola",
+                "cola",
+                "ola",
+                "sola"
               ],
-              "answer": "Todos notaron la puya en su comentario.",
-              "explanation": "The audio says \"Todos notaron la puya en su comentario.\" With yeísmo, \"puya\" sounds like \"pulla\"; the sentence starts with \"Todos notaron\" and the word is not \"burla\"."
+              "answer": "ola",
+              "explanation": "\"ola\" is the spelling that means wave here. It is easy to mix up with \"hola\", a different word, so the meaning decides the spelling.",
+              "meaning": "wave",
+              "example": "Esa ola nos mojó los pies."
             },
             {
               "id": "esa2p28q12",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Se puso a hojear el periódico.",
+              "type": "mc",
+              "prompt": "Voy al cine una ___ al mes. (time, occasion)",
               "choices": [
-                "Se puso a hojear el periódico.",
-                "Se puso a leer el periódico.",
-                "El niño no debía rallar eso.",
-                "Prefería hojear la revista antes de comprarla."
+                "vez",
+                "ves",
+                "vea",
+                "vaya"
               ],
-              "answer": "Se puso a hojear el periódico.",
-              "explanation": "The audio says \"Se puso a hojear el periódico.\" The h in \"hojear\" (to leaf through) is silent, so it sounds like \"ojear\"; the verb here is not \"leer\", and the object is \"el periódico\"."
+              "answer": 0,
+              "explanation": "\"vez\" is the spelling that means time, occasion here. It is easy to mix up with \"ves\", a different word, so the meaning decides the spelling.",
+              "meaning": "time, occasion",
+              "example": "Voy al cine una vez al mes."
             },
             {
               "id": "esa2p28q13",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Se puso a ojear el periódico.",
-              "choices": [
-                "Se puso a leer el periódico.",
-                "Se puso a ojear el periódico.",
-                "Prefería ojear la revista antes de comprarla.",
-                "Nunca aprendí a coser rápido."
+              "type": "fill",
+              "prompt": "¿Tú ___ el edificio allá? (you see)",
+              "bank": [
+                "vez",
+                "ver",
+                "vas",
+                "ves"
               ],
-              "answer": "Se puso a ojear el periódico.",
-              "explanation": "The audio says \"Se puso a ojear el periódico.\" \"Ojear\" (to glance at) sounds like \"hojear\" because the h is silent; the verb here is not \"leer\", and the object is \"el periódico\"."
+              "answer": "ves",
+              "explanation": "\"ves\" is the spelling that means you see here. It is easy to mix up with \"vez\", a different word, so the meaning decides the spelling.",
+              "meaning": "you see",
+              "example": "¿Tú ves el edificio allá?"
             },
             {
               "id": "esa2p28q14",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Prefería hojear la revista antes de comprarla.",
+              "type": "mc",
+              "prompt": "Leo la revista una ___ por semana. (time, occasion)",
               "choices": [
-                "Se puso a hojear el periódico.",
-                "Prefería leer la revista antes de comprarla.",
-                "Todos notaron la pulla en su comentario.",
-                "Prefería hojear la revista antes de comprarla."
+                "vea",
+                "ves",
+                "vez",
+                "vaya"
               ],
-              "answer": "Prefería hojear la revista antes de comprarla.",
-              "explanation": "The audio says \"Prefería hojear la revista antes de comprarla.\" The h is silent, so \"hojear\" sounds like \"ojear\"; the sentence is about \"la revista\", and the verb is not \"leer\"."
+              "answer": 2,
+              "explanation": "\"vez\" is the spelling that means time, occasion here. It is easy to mix up with \"ves\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esa2p28l4",
           "title": "Minimal Pairs 4",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa2p28q15",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Prefería ojear la revista antes de comprarla.",
-              "choices": [
-                "Se puso a ojear el periódico.",
-                "Prefería ojear la revista antes de comprarla.",
-                "Alguien había dejado la taza en la cocina.",
-                "Prefería leer la revista antes de comprarla."
+              "type": "fill",
+              "prompt": "¿Qué ___ por la ventana? (you see)",
+              "bank": [
+                "vez",
+                "ver",
+                "vas",
+                "ves"
               ],
-              "answer": "Prefería ojear la revista antes de comprarla.",
-              "explanation": "The audio says \"Prefería ojear la revista antes de comprarla.\" The h is silent, so \"ojear\" sounds like \"hojear\"; the sentence is about \"la revista\", and the verb is not \"leer\"."
+              "answer": "ves",
+              "explanation": "\"ves\" is the spelling that means you see here. It is easy to mix up with \"vez\", a different word, so the meaning decides the spelling.",
+              "meaning": "you see",
+              "example": "¿Qué ves por la ventana?"
             },
             {
               "id": "esa2p28q16",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El niño no debía rayar eso.",
+              "type": "mc",
+              "prompt": "No quiero ___ la pared con el lápiz. (to scratch, to draw lines on)",
               "choices": [
-                "Le lanzó una puya sin piedad.",
-                "No encontraba la taza en la mesa.",
-                "Nunca aprendí a cocer rápido.",
-                "El niño no debía rayar eso."
+                "rayar",
+                "rallar",
+                "rodar",
+                "rezar"
               ],
-              "answer": "El niño no debía rayar eso.",
-              "explanation": "The audio says \"El niño no debía rayar eso.\" With yeísmo, \"rayar\" (to scratch) sounds like \"rallar\" (to grate); only one option is this whole sentence."
+              "answer": 0,
+              "explanation": "\"rayar\" is the spelling that means to scratch, to draw lines on here. It is easy to mix up with \"rallar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to scratch, to draw lines on",
+              "example": "No quiero rayar la pared con el lápiz."
             },
             {
               "id": "esa2p28q17",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El niño no debía rallar eso.",
-              "choices": [
-                "No encontraba la taza en la mesa.",
-                "Nunca aprendí a cocer rápido.",
-                "Todos notaron la puya en su comentario.",
-                "El niño no debía rallar eso."
+              "type": "fill",
+              "prompt": "Hay que ___ el queso para la pasta. (to grate)",
+              "bank": [
+                "rayar",
+                "rallar",
+                "rodar",
+                "rezar"
               ],
-              "answer": "El niño no debía rallar eso.",
-              "explanation": "The audio says \"El niño no debía rallar eso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+              "answer": "rallar",
+              "explanation": "\"rallar\" is the spelling that means to grate here. It is easy to mix up with \"rayar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to grate",
+              "example": "Hay que rallar el queso para la pasta."
             },
             {
               "id": "esa2p28q18",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Le pedí que no rayara la mesa.",
+              "type": "mc",
+              "prompt": "El gato puede ___ el sofá con las uñas. (to scratch)",
               "choices": [
-                "No encontraba la taza en la mesa.",
-                "Le pedí que no rayara la mesa.",
-                "No encontraba la tasa en la mesa.",
-                "Guardé la taza favorita en el estante."
+                "rodar",
+                "rallar",
+                "rayar",
+                "rezar"
               ],
-              "answer": "Le pedí que no rayara la mesa.",
-              "explanation": "The audio says \"Le pedí que no rayara la mesa.\" \"Rayara\" (from rayar, to scratch) sounds like \"rallara\" under yeísmo, and scratching a table makes sense here."
+              "answer": 2,
+              "explanation": "\"rayar\" is the spelling that means to scratch here. It is easy to mix up with \"rallar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa2p28q19",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Le pedí que no rallara la mesa.",
-              "choices": [
-                "Prefería ojear la revista antes de comprarla.",
-                "Le pedí que no rallara la mesa.",
-                "No encontraba la taza en la mesa.",
-                "No encontraba la tasa en la mesa."
+              "type": "fill",
+              "prompt": "Ayúdame a ___ la zanahoria para la ensalada. (to grate)",
+              "bank": [
+                "rayar",
+                "rodar",
+                "rallar",
+                "rezar"
               ],
-              "answer": "Le pedí que no rallara la mesa.",
-              "explanation": "The audio says \"Le pedí que no rallara la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+              "answer": "rallar",
+              "explanation": "\"rallar\" is the spelling that means to grate here. It is easy to mix up with \"rayar\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esa2p28l5",
           "title": "Minimal Pairs 5",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esa2p28q20",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "No encontraba la taza en la mesa.",
-              "choices": [
-                "Le pedí que no rallara la mesa.",
-                "Guardé la taza favorita en el estante.",
-                "Alguien había dejado la taza en la cocina.",
-                "No encontraba la taza en la mesa."
+              "type": "fill",
+              "prompt": "Quiero una ___ de café caliente. (cup)",
+              "bank": [
+                "masa",
+                "casa",
+                "taza",
+                "tasa"
               ],
-              "answer": "No encontraba la taza en la mesa.",
-              "explanation": "The audio says \"No encontraba la taza en la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+              "answer": "taza",
+              "explanation": "\"taza\" is the spelling that means cup here. It is easy to mix up with \"tasa\", a different word, so the meaning decides the spelling.",
+              "meaning": "cup",
+              "example": "Quiero una taza de café caliente."
             },
             {
               "id": "esa2p28q21",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "No encontraba la tasa en la mesa.",
+              "type": "mc",
+              "prompt": "La ___ de desempleo bajó este año. (rate)",
               "choices": [
-                "Le pedí que no rallara la mesa.",
-                "Le pedí que no rayara la mesa.",
-                "Alguien había dejado la tasa en la cocina.",
-                "No encontraba la tasa en la mesa."
+                "casa",
+                "taza",
+                "tasa",
+                "masa"
               ],
-              "answer": "No encontraba la tasa en la mesa.",
-              "explanation": "The audio says \"No encontraba la tasa en la mesa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+              "answer": 2,
+              "explanation": "\"tasa\" is the spelling that means rate here. It is easy to mix up with \"taza\", a different word, so the meaning decides the spelling.",
+              "meaning": "rate",
+              "example": "La tasa de desempleo bajó este año."
             },
             {
               "id": "esa2p28q22",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Alguien había dejado la taza en la cocina.",
-              "choices": [
-                "Guardé la taza favorita en el estante.",
-                "Alguien había dejado la taza en la cocina.",
-                "No encontraba la taza en la mesa.",
-                "Le lanzó una puya sin piedad."
+              "type": "fill",
+              "prompt": "Se me cayó la ___ y se rompió. (cup)",
+              "bank": [
+                "masa",
+                "casa",
+                "taza",
+                "tasa"
               ],
-              "answer": "Alguien había dejado la taza en la cocina.",
-              "explanation": "The audio says \"Alguien había dejado la taza en la cocina.\" With seseo, \"taza\" (cup) sounds like \"tasa\" (rate), but a cup left in the kitchen is the only meaning that fits."
+              "answer": "taza",
+              "explanation": "\"taza\" is the spelling that means cup here. It is easy to mix up with \"tasa\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa2p28q23",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Alguien había dejado la tasa en la cocina.",
+              "type": "mc",
+              "prompt": "El banco subió la ___ de interés. (rate)",
               "choices": [
-                "Alguien había dejado la tasa en la cocina.",
-                "Nunca aprendí a cocer rápido.",
-                "No encontraba la tasa en la mesa.",
-                "Le lanzó una puya sin piedad."
+                "tasa",
+                "taza",
+                "casa",
+                "masa"
               ],
-              "answer": "Alguien había dejado la tasa en la cocina.",
-              "explanation": "The audio says \"Alguien había dejado la tasa en la cocina.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+              "answer": 0,
+              "explanation": "\"tasa\" is the spelling that means rate here. It is easy to mix up with \"taza\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa2p28q24",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Guardé la taza favorita en el estante.",
-              "choices": [
-                "Guardé la taza favorita en el estante.",
-                "Alguien había dejado la taza en la cocina.",
-                "Alguien había dejado la tasa en la cocina.",
-                "No encontraba la taza en la mesa."
+              "type": "fill",
+              "prompt": "Mi abuela me regaló una ___ de porcelana. (cup)",
+              "bank": [
+                "masa",
+                "casa",
+                "taza",
+                "tasa"
               ],
-              "answer": "Guardé la taza favorita en el estante.",
-              "explanation": "The audio says \"Guardé la taza favorita en el estante.\" Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa), b/v (cocer/coser, rebelarse/revelarse), and yeísmo (pulla/puya, ojear/hojear, rallar/rayar)."
+              "answer": "taza",
+              "explanation": "\"taza\" is the spelling that means cup here. It is easy to mix up with \"tasa\", a different word, so the meaning decides the spelling."
             }
           ]
         }
@@ -29794,390 +29810,399 @@
       "level": "B1",
       "eyebrow": "Unit 29",
       "title": "Minimal Pairs",
-      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso, cocido/cosido), b/v (grabar/gravar).",
+      "description": "Spell it right — Spelling choice: two words that sound the same for most Spanish speakers, told apart by meaning.",
       "lessons": [
         {
           "id": "esb1p28l1",
           "title": "Minimal Pairs 1",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb1p28q0",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "No sabía qué hacer con el cazo.",
-              "choices": [
-                "Nadie sabía que había un poso ahí.",
-                "No sabía qué hacer con el vaso.",
-                "El cazo llevaba años guardado en la alacena.",
-                "No sabía qué hacer con el cazo."
+              "type": "fill",
+              "prompt": "Revuelve la sopa con el ___. (ladle, saucepan)",
+              "bank": [
+                "pozo",
+                "cazo",
+                "caso",
+                "paso"
               ],
-              "answer": "No sabía qué hacer con el cazo.",
-              "explanation": "The audio says \"No sabía qué hacer con el cazo.\" \"Vaso\" sounds different from \"cazo\", and the other options are different sentences."
+              "answer": "cazo",
+              "explanation": "\"cazo\" is the spelling that means ladle, saucepan here. It is easy to mix up with \"caso\", a different word, so the meaning decides the spelling.",
+              "meaning": "ladle, saucepan",
+              "example": "Revuelve la sopa con el cazo."
             },
             {
               "id": "esb1p28q1",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "No sabía qué hacer con el caso.",
+              "type": "mc",
+              "prompt": "El detective resolvió el ___ en una semana. (case)",
               "choices": [
-                "No sabía qué hacer con el caso.",
-                "Nadie sabía que había un pozo ahí.",
-                "No sabía qué hacer con el vaso.",
-                "Le devolvieron el caso al día siguiente."
+                "caso",
+                "cazo",
+                "pozo",
+                "paso"
               ],
-              "answer": "No sabía qué hacer con el caso.",
-              "explanation": "The audio says \"No sabía qué hacer con el caso.\" \"Vaso\" sounds different from \"caso\", and the other options are different sentences."
+              "answer": 0,
+              "explanation": "\"caso\" is the spelling that means case here. It is easy to mix up with \"cazo\", a different word, so the meaning decides the spelling.",
+              "meaning": "case",
+              "example": "El detective resolvió el caso en una semana."
             },
             {
               "id": "esb1p28q2",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Le devolvieron el cazo al día siguiente.",
-              "choices": [
-                "Encontraron un pozo al fondo del jardín.",
-                "El cazo llevaba años guardado en la alacena.",
-                "Le devolvieron el cazo al día siguiente.",
-                "Le devolvieron el vaso al día siguiente."
+              "type": "fill",
+              "prompt": "Calenté la leche en un ___ pequeño. (small saucepan)",
+              "bank": [
+                "pozo",
+                "cazo",
+                "caso",
+                "paso"
               ],
-              "answer": "Le devolvieron el cazo al día siguiente.",
-              "explanation": "The audio says \"Le devolvieron el cazo al día siguiente.\" \"Vaso\" sounds different from \"cazo\", and the other options are different sentences."
+              "answer": "cazo",
+              "explanation": "\"cazo\" is the spelling that means small saucepan here. It is easy to mix up with \"caso\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb1p28q3",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Le devolvieron el caso al día siguiente.",
+              "type": "mc",
+              "prompt": "En ese ___ no hace falta pagar. (case, instance)",
               "choices": [
-                "Encontraron un pozo al fondo del jardín.",
-                "Encontraron un poso al fondo del jardín.",
-                "Le devolvieron el vaso al día siguiente.",
-                "Le devolvieron el caso al día siguiente."
+                "pozo",
+                "cazo",
+                "caso",
+                "paso"
               ],
-              "answer": "Le devolvieron el caso al día siguiente.",
-              "explanation": "The audio says \"Le devolvieron el caso al día siguiente.\" \"Vaso\" sounds different from \"caso\", and the other options are different sentences."
+              "answer": 2,
+              "explanation": "\"caso\" is the spelling that means case, instance here. It is easy to mix up with \"cazo\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb1p28q4",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Encontraron un pozo al fondo del jardín.",
-              "choices": [
-                "Encontraron un pozo al fondo del jardín.",
-                "Encontraron un hoyo al fondo del jardín.",
-                "Nadie sabía que había un pozo ahí.",
-                "Le devolvieron el cazo al día siguiente."
+              "type": "fill",
+              "prompt": "Sacaron agua fresca del ___ del patio. (well)",
+              "bank": [
+                "poso",
+                "pozo",
+                "cazo",
+                "paso"
               ],
-              "answer": "Encontraron un pozo al fondo del jardín.",
-              "explanation": "The audio says \"Encontraron un pozo al fondo del jardín.\" \"Hoyo\" sounds clearly different from \"pozo\", and the other options are different sentences."
+              "answer": "pozo",
+              "explanation": "\"pozo\" is the spelling that means well here. It is easy to mix up with \"poso\", a different word, so the meaning decides the spelling.",
+              "meaning": "well",
+              "example": "Sacaron agua fresca del pozo del patio."
             }
           ]
         },
         {
           "id": "esb1p28l2",
           "title": "Minimal Pairs 2",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb1p28q5",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Encontraron un poso al fondo del jardín.",
+              "type": "mc",
+              "prompt": "En el fondo de la taza quedó un ___ de café. (sediment, dregs)",
               "choices": [
-                "Nadie sabía que había un poso ahí.",
-                "Encontraron un hoyo al fondo del jardín.",
-                "Encontraron un poso al fondo del jardín.",
-                "Le devolvieron el caso al día siguiente."
+                "poso",
+                "pozo",
+                "cazo",
+                "paso"
               ],
-              "answer": "Encontraron un poso al fondo del jardín.",
-              "explanation": "The audio says \"Encontraron un poso al fondo del jardín.\" \"Hoyo\" sounds clearly different from \"poso\", and the other options are different sentences."
+              "answer": 0,
+              "explanation": "\"poso\" is the spelling that means sediment, dregs here. It is easy to mix up with \"pozo\", a different word, so the meaning decides the spelling.",
+              "meaning": "sediment, dregs",
+              "example": "En el fondo de la taza quedó un poso de café."
             },
             {
               "id": "esb1p28q6",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie sabía que había un pozo ahí.",
-              "choices": [
-                "Cerca de la granja había un pozo.",
-                "Nadie sabía que había un hoyo ahí.",
-                "Nadie sabía que había un pozo ahí.",
-                "El agua brotaba del pozo constantemente."
+              "type": "fill",
+              "prompt": "El niño tiró una moneda al ___. (well)",
+              "bank": [
+                "poso",
+                "pozo",
+                "cazo",
+                "paso"
               ],
-              "answer": "Nadie sabía que había un pozo ahí.",
-              "explanation": "The audio says \"Nadie sabía que había un pozo ahí.\" \"Hoyo\" sounds clearly different from \"pozo\", and the other options are different sentences."
+              "answer": "pozo",
+              "explanation": "\"pozo\" is the spelling that means well here. It is easy to mix up with \"poso\", a different word, so the meaning decides the spelling.",
+              "meaning": "well",
+              "example": "El niño tiró una moneda al pozo."
             },
             {
               "id": "esb1p28q7",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie sabía que había un poso ahí.",
+              "type": "mc",
+              "prompt": "El vino viejo deja un ___ en la botella. (sediment)",
               "choices": [
-                "Nadie sabía que había un poso ahí.",
-                "No sabía qué hacer con el caso.",
-                "Cerca de la granja había un poso.",
-                "Nadie sabía que había un hoyo ahí."
+                "cazo",
+                "pozo",
+                "poso",
+                "paso"
               ],
-              "answer": "Nadie sabía que había un poso ahí.",
-              "explanation": "The audio says \"Nadie sabía que había un poso ahí.\" \"Hoyo\" sounds clearly different from \"poso\", and the other options are different sentences."
+              "answer": 2,
+              "explanation": "\"poso\" is the spelling that means sediment here. It is easy to mix up with \"pozo\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb1p28q8",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Cerca de la granja había un pozo.",
-              "choices": [
-                "Cerca de la granja había un pozo.",
-                "Nadie sabía que había un poso ahí.",
-                "Cerca de la granja había un hoyo.",
-                "Nadie sabía que había un pozo ahí."
+              "type": "fill",
+              "prompt": "Cavaron un ___ profundo para buscar agua. (well)",
+              "bank": [
+                "poso",
+                "pozo",
+                "cazo",
+                "paso"
               ],
-              "answer": "Cerca de la granja había un pozo.",
-              "explanation": "The audio says \"Cerca de la granja había un pozo.\" \"Hoyo\" sounds clearly different from \"pozo\", and the other options are different sentences."
+              "answer": "pozo",
+              "explanation": "\"pozo\" is the spelling that means well here. It is easy to mix up with \"poso\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb1p28q9",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Cerca de la granja había un pozo.",
+              "type": "mc",
+              "prompt": "El huevo está bien ___; ya puedes pelarlo. (boiled)",
               "choices": [
-                "Cerca de la casa había un pozo.",
-                "El agua brotaba del pozo constantemente.",
-                "Nadie sabía que había un pozo ahí.",
-                "Cerca de la granja había un pozo."
+                "cocido",
+                "cosido",
+                "corrido",
+                "comido"
               ],
-              "answer": "Cerca de la granja había un pozo.",
-              "explanation": "The audio says \"Cerca de la granja había un pozo.\" A \"pozo\" is a well; in Latin American Spanish it sounds the same as \"poso\" (sediment), so listen to the rest of the sentence: \"granja\", not \"casa\"."
+              "answer": 0,
+              "explanation": "\"cocido\" is the spelling that means boiled here. It is easy to mix up with \"cosido\", a different word, so the meaning decides the spelling.",
+              "meaning": "boiled",
+              "example": "El huevo está bien cocido; ya puedes pelarlo."
             }
           ]
         },
         {
           "id": "esb1p28l3",
           "title": "Minimal Pairs 3",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb1p28q10",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El material estaba bien cocido.",
+              "type": "mc",
+              "prompt": "El botón está bien ___ a la camisa. (sewn)",
               "choices": [
-                "Dijeron que todo estaba perfectamente cocido.",
-                "Revisaron si estaba bien cocido.",
-                "La tela estaba bien cosida.",
-                "El material estaba bien cocido."
+                "cosido",
+                "cocido",
+                "corrido",
+                "comido"
               ],
-              "answer": "El material estaba bien cocido.",
-              "explanation": "The audio says \"El material estaba bien cocido.\" In Latin American Spanish \"cocido\" (cooked, fired) sounds the same as \"cosido\" (sewn), so the start of the sentence, \"El material\", is what tells you the answer."
+              "answer": 0,
+              "explanation": "\"cosido\" is the spelling that means sewn here. It is easy to mix up with \"cocido\", a different word, so the meaning decides the spelling.",
+              "meaning": "sewn",
+              "example": "El botón está bien cosido a la camisa."
             },
             {
               "id": "esb1p28q11",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El material estaba bien cosido.",
-              "choices": [
-                "Revisaron si estaba bien cosido.",
-                "Dijeron que todo estaba perfectamente cosido.",
-                "El material estaba bien cosido.",
-                "La carne estaba bien cocida."
+              "type": "fill",
+              "prompt": "Las papas ya están ___ y blandas. (boiled)",
+              "bank": [
+                "comidas",
+                "corridas",
+                "cosidas",
+                "cocidas"
               ],
-              "answer": "El material estaba bien cosido.",
-              "explanation": "The audio says \"El material estaba bien cosido.\" \"Cosido\" (sewn) sounds like \"cocido\" in Latin American Spanish, so the opening words \"El material\" tell you which sentence you heard."
+              "answer": "cocidas",
+              "explanation": "\"cocidas\" is the spelling that means boiled here. It is easy to mix up with \"cosidas\", a different word, so the meaning decides the spelling.",
+              "meaning": "boiled",
+              "example": "Las papas ya están cocidas y blandas."
             },
             {
               "id": "esb1p28q12",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Dijeron que todo estaba perfectamente cocido.",
+              "type": "mc",
+              "prompt": "El doctor dejó la herida bien ___. (stitched up)",
               "choices": [
-                "Dijeron que todo estaba perfectamente cocido.",
-                "Dijeron que la carne estaba bien cocida.",
-                "Revisaron si estaba bien cocido.",
-                "El material estaba bien cocido."
+                "corrida",
+                "cocida",
+                "cosida",
+                "comida"
               ],
-              "answer": "Dijeron que todo estaba perfectamente cocido.",
-              "explanation": "The audio says \"Dijeron que todo estaba perfectamente cocido.\" The words \"todo\" and \"perfectamente\" tell you which sentence it is, because \"cocido\" sounds the same as \"cosido\" in Latin American Spanish."
+              "answer": 2,
+              "explanation": "\"cosida\" is the spelling that means stitched up here. It is easy to mix up with \"cocida\", a different word, so the meaning decides the spelling.",
+              "meaning": "stitched up",
+              "example": "El doctor dejó la herida bien cosida."
             },
             {
               "id": "esb1p28q13",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Dijeron que todo estaba perfectamente cosido.",
-              "choices": [
-                "Revisaron si estaba bien cosido.",
-                "Dijeron que la tela estaba bien cosida.",
-                "Dijeron que todo estaba perfectamente cosido.",
-                "El material estaba bien cosido."
+              "type": "fill",
+              "prompt": "Prefiero el pescado bien ___. (well cooked)",
+              "bank": [
+                "cocido",
+                "cosido",
+                "corrido",
+                "comido"
               ],
-              "answer": "Dijeron que todo estaba perfectamente cosido.",
-              "explanation": "The audio says \"Dijeron que todo estaba perfectamente cosido.\" Listen for \"todo\" and \"perfectamente\", because \"cosido\" (sewn) sounds the same as \"cocido\" in Latin American Spanish."
+              "answer": "cocido",
+              "explanation": "\"cocido\" is the spelling that means well cooked here. It is easy to mix up with \"cosido\", a different word, so the meaning decides the spelling.",
+              "meaning": "well cooked",
+              "example": "Prefiero el pescado bien cocido."
             },
             {
               "id": "esb1p28q14",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Revisaron si estaba bien cocido.",
+              "type": "mc",
+              "prompt": "Llevaba un abrigo ___ a mano por su abuela. (sewn)",
               "choices": [
-                "Revisaron si estaba bien cocinado.",
-                "Revisaron si estaba bien cocido.",
-                "El material estaba bien cosido.",
-                "El material estaba bien cocido."
+                "cosido",
+                "cocido",
+                "corrido",
+                "comido"
               ],
-              "answer": "Revisaron si estaba bien cocido.",
-              "explanation": "The audio says \"Revisaron si estaba bien cocido.\" The sentence starts with \"Revisaron si\", and \"cocido\" is shorter than \"cocinado\"."
+              "answer": 0,
+              "explanation": "\"cosido\" is the spelling that means sewn here. It is easy to mix up with \"cocido\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esb1p28l4",
           "title": "Minimal Pairs 4",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb1p28q15",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Revisaron si estaba bien cosido.",
-              "choices": [
-                "Revisaron si estaba bien cosido.",
-                "Dijeron que todo estaba perfectamente cosido.",
-                "Revisaron si estaba bien cerrado.",
-                "El material estaba bien cosido."
+              "type": "fill",
+              "prompt": "Voy a ___ la canción en mi teléfono. (to record)",
+              "bank": [
+                "gravar",
+                "grabar",
+                "gritar",
+                "gastar"
               ],
-              "answer": "Revisaron si estaba bien cosido.",
-              "explanation": "The audio says \"Revisaron si estaba bien cosido.\" The sentence starts with \"Revisaron si\" and ends with \"cosido\" (sewn), not \"cerrado\" (closed)."
+              "answer": "grabar",
+              "explanation": "\"grabar\" is the spelling that means to record here. It is easy to mix up with \"gravar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to record",
+              "example": "Voy a grabar la canción en mi teléfono."
             },
             {
               "id": "esb1p28q16",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Decidieron grabar el evento completo.",
+              "type": "mc",
+              "prompt": "El gobierno quiere ___ los productos de lujo con un impuesto. (to tax)",
               "choices": [
-                "El equipo tuvo que grabar el evento completo.",
-                "Decidieron grabar la reunión completa.",
-                "Decidieron grabar el evento completo.",
-                "Decidieron filmar el evento completo."
+                "gritar",
+                "grabar",
+                "gravar",
+                "gastar"
               ],
-              "answer": "Decidieron grabar el evento completo.",
-              "explanation": "The audio says \"Decidieron grabar el evento completo.\" Listen for \"Decidieron\" at the start and \"el evento\" after the verb \"grabar\" (to record)."
+              "answer": 2,
+              "explanation": "\"gravar\" is the spelling that means to tax here. It is easy to mix up with \"grabar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to tax",
+              "example": "El gobierno quiere gravar los productos de lujo con un impuesto."
             },
             {
               "id": "esb1p28q17",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Decidieron gravar los productos importados.",
-              "choices": [
-                "El gobierno tuvo que gravar los productos importados.",
-                "Decidieron gravar los productos importados.",
-                "Decidieron gravar los productos nacionales.",
-                "Decidieron revisar los productos importados."
+              "type": "fill",
+              "prompt": "Quiero ___ mi nombre en el anillo. (to engrave)",
+              "bank": [
+                "gravar",
+                "gritar",
+                "grabar",
+                "gastar"
               ],
-              "answer": "Decidieron gravar los productos importados.",
-              "explanation": "The audio says \"Decidieron gravar los productos importados.\" Here \"gravar\" means to tax; it sounds the same as \"grabar\" (to record), so the meaning tells you the spelling."
+              "answer": "grabar",
+              "explanation": "\"grabar\" is the spelling that means to engrave here. It is easy to mix up with \"gravar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb1p28q18",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El equipo tuvo que grabar el evento completo.",
+              "type": "mc",
+              "prompt": "La ley va a ___ las ventas por internet. (to impose a tax on)",
               "choices": [
-                "El equipo tuvo que grabar el evento completo.",
-                "El equipo quiso grabar el evento completo.",
-                "Decidieron grabar el evento completo.",
-                "El equipo tuvo que grabar la ceremonia completa."
+                "gravar",
+                "grabar",
+                "gritar",
+                "gastar"
               ],
-              "answer": "El equipo tuvo que grabar el evento completo.",
-              "explanation": "The audio says \"El equipo tuvo que grabar el evento completo.\" Listen for \"tuvo que\", not \"quiso\", and \"el evento\", not \"la ceremonia\"."
+              "answer": 0,
+              "explanation": "\"gravar\" is the spelling that means to impose a tax on here. It is easy to mix up with \"grabar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb1p28q19",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El gobierno tuvo que gravar las bebidas azucaradas.",
-              "choices": [
-                "El gobierno quiso gravar las bebidas azucaradas.",
-                "El gobierno tuvo que prohibir las bebidas azucaradas.",
-                "El equipo tuvo que grabar el evento completo.",
-                "El gobierno tuvo que gravar las bebidas azucaradas."
+              "type": "fill",
+              "prompt": "Van a ___ la película en la playa. (to film)",
+              "bank": [
+                "gritar",
+                "grabar",
+                "gravar",
+                "gastar"
               ],
-              "answer": "El gobierno tuvo que gravar las bebidas azucaradas.",
-              "explanation": "The audio says \"El gobierno tuvo que gravar las bebidas azucaradas.\" \"Gravar\" means to tax, which fits a government and drinks; it sounds the same as \"grabar\" (to record)."
+              "answer": "grabar",
+              "explanation": "\"grabar\" is the spelling that means to film here. It is easy to mix up with \"gravar\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esb1p28l5",
           "title": "Minimal Pairs 5",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb1p28q20",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Prometieron grabar toda la ceremonia.",
-              "choices": [
-                "Decidieron grabar el evento completo.",
-                "Prometieron grabar toda la reunión.",
-                "El equipo tuvo que grabar el evento completo.",
-                "Prometieron grabar toda la ceremonia."
+              "type": "fill",
+              "prompt": "El agua del ___ sabe muy limpia. (well)",
+              "bank": [
+                "cazo",
+                "pozo",
+                "poso",
+                "paso"
               ],
-              "answer": "Prometieron grabar toda la ceremonia.",
-              "explanation": "The audio says \"Prometieron grabar toda la ceremonia.\" Listen for \"Prometieron\" and for \"ceremonia\", not \"reunión\", at the end."
+              "answer": "pozo",
+              "explanation": "\"pozo\" is the spelling that means well here. It is easy to mix up with \"poso\", a different word, so the meaning decides the spelling.",
+              "meaning": "well",
+              "example": "El agua del pozo sabe muy limpia."
             },
             {
               "id": "esb1p28q21",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Prometieron grabar toda la ceremonia.",
+              "type": "mc",
+              "prompt": "Dejé el ___ sucio dentro del fregadero. (saucepan, ladle)",
               "choices": [
-                "El equipo tuvo que grabar el evento completo.",
-                "Prometieron grabar toda la ceremonia.",
-                "Decidieron grabar el evento completo.",
-                "Prometieron filmar toda la ceremonia."
+                "cazo",
+                "caso",
+                "pozo",
+                "paso"
               ],
-              "answer": "Prometieron grabar toda la ceremonia.",
-              "explanation": "The audio says \"Prometieron grabar toda la ceremonia.\" In Spanish b and v sound the same, so \"grabar\" (to record) and \"gravar\" (to tax) are told apart only by meaning, and recording a ceremony is what makes sense here."
+              "answer": 0,
+              "explanation": "\"cazo\" is the spelling that means saucepan, ladle here. It is easy to mix up with \"caso\", a different word, so the meaning decides the spelling.",
+              "meaning": "saucepan, ladle",
+              "example": "Dejé el cazo sucio dentro del fregadero."
             },
             {
               "id": "esb1p28q22",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El agua brotaba del pozo constantemente.",
-              "choices": [
-                "Cerca de la granja había un pozo.",
-                "Encontraron un pozo al fondo del jardín.",
-                "El agua brotaba del manantial constantemente.",
-                "El agua brotaba del pozo constantemente."
+              "type": "fill",
+              "prompt": "La policía cerró el ___ ayer. (case)",
+              "bank": [
+                "cazo",
+                "caso",
+                "pozo",
+                "paso"
               ],
-              "answer": "El agua brotaba del pozo constantemente.",
-              "explanation": "The audio says \"El agua brotaba del pozo constantemente.\" In Latin American Spanish \"pozo\" (well) and \"poso\" (sediment) sound the same, so meaning tells you it is \"pozo\": water flows from a well."
+              "answer": "caso",
+              "explanation": "\"caso\" is the spelling that means case here. It is easy to mix up with \"cazo\", a different word, so the meaning decides the spelling.",
+              "meaning": "case",
+              "example": "La policía cerró el caso ayer."
             },
             {
               "id": "esb1p28q23",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El agua brotaba del pozo constantemente.",
+              "type": "mc",
+              "prompt": "Al final de la copa se notaba el ___. (sediment)",
               "choices": [
-                "Encontraron un pozo al fondo del jardín.",
-                "Nadie sabía que había un pozo ahí.",
-                "El agua brotaba del pozo constantemente.",
-                "El agua brotaba del manantial constantemente."
+                "cazo",
+                "pozo",
+                "poso",
+                "paso"
               ],
-              "answer": "El agua brotaba del pozo constantemente.",
-              "explanation": "The audio says \"El agua brotaba del pozo constantemente.\" With seseo \"pozo\" and \"poso\" sound the same, but only a well (\"pozo\") makes sense as a place water flows from."
+              "answer": 2,
+              "explanation": "\"poso\" is the spelling that means sediment here. It is easy to mix up with \"pozo\", a different word, so the meaning decides the spelling.",
+              "meaning": "sediment",
+              "example": "Al final de la copa se notaba el poso."
             },
             {
               "id": "esb1p28q24",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El cazo llevaba años guardado en la alacena.",
-              "choices": [
-                "El cazo llevaba años guardado en la alacena.",
-                "No sabía qué hacer con el cazo.",
-                "Le devolvieron el cazo al día siguiente.",
-                "Le devolvieron el caso al día siguiente."
+              "type": "fill",
+              "prompt": "Puedes ___ la clase si pides permiso. (to record)",
+              "bank": [
+                "grabar",
+                "gravar",
+                "gritar",
+                "gastar"
               ],
-              "answer": "El cazo llevaba años guardado en la alacena.",
-              "explanation": "The audio says \"El cazo llevaba años guardado en la alacena.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso), b/v (cocido/cosido, grabar/gravar)."
+              "answer": "grabar",
+              "explanation": "\"grabar\" is the spelling that means to record here. It is easy to mix up with \"gravar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to record",
+              "example": "Puedes grabar la clase si pides permiso."
             }
           ]
         }
@@ -38967,390 +38992,393 @@
       "level": "B2",
       "eyebrow": "Unit 29",
       "title": "Minimal Pairs",
-      "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar, abrasar/abrazar).",
+      "description": "Spell it right — Spelling choice: two words that sound the same for most Spanish speakers, told apart by meaning.",
       "lessons": [
         {
           "id": "esb2p28l1",
           "title": "Minimal Pairs 1",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb2p28q0",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Llegaron hasta la cima de la montaña.",
+              "type": "mc",
+              "prompt": "Llegamos a la ___ de la montaña y vimos todo el valle desde arriba. (summit)",
               "choices": [
-                "Nadie se atrevía a acercarse a la cima.",
-                "Llegaron hasta la cima de la montaña.",
-                "Nadie esperaba que el consejo cambiara de opinión.",
-                "Desde arriba se veía toda la cima."
+                "cima",
+                "sima",
+                "cinta",
+                "rima"
               ],
-              "answer": "Llegaron hasta la cima de la montaña.",
-              "explanation": "The audio says \"Llegaron hasta la cima de la montaña.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+              "answer": 0,
+              "explanation": "\"cima\" is the spelling that means summit here. It is easy to mix up with \"sima\", a different word, so the meaning decides the spelling.",
+              "meaning": "summit",
+              "example": "Llegamos a la cima de la montaña."
             },
             {
               "id": "esb2p28q1",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Llegaron hasta la sima de la montaña.",
-              "choices": [
-                "La sima resultó ser más profunda de lo esperado.",
-                "Nadie se atrevía a acercarse a la sima.",
-                "Desde arriba se veía toda la sima.",
-                "Llegaron hasta la sima de la montaña."
+              "type": "fill",
+              "prompt": "Una ___ muy profunda se abría en la cueva. (chasm, deep pit)",
+              "bank": [
+                "cima",
+                "sima",
+                "cinta",
+                "rima"
               ],
-              "answer": "Llegaron hasta la sima de la montaña.",
-              "explanation": "The audio says \"Llegaron hasta la sima de la montaña.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+              "answer": "sima",
+              "explanation": "\"sima\" is the spelling that means chasm, deep pit here. It is easy to mix up with \"cima\", a different word, so the meaning decides the spelling.",
+              "meaning": "chasm, deep pit",
+              "example": "Una sima muy profunda se abría en la cueva."
             },
             {
               "id": "esb2p28q2",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie se atrevía a acercarse a la cima.",
+              "type": "mc",
+              "prompt": "Desde la ___ se ve todo el valle. (summit)",
               "choices": [
-                "Nadie se atrevía a acercarse a la cima.",
-                "Nadie esperaba que el consejo cambiara de opinión.",
-                "Nadie sabía que alguien los estaba acechando.",
-                "Desde arriba se veía toda la cima."
+                "cinta",
+                "sima",
+                "cima",
+                "rima"
               ],
-              "answer": "Nadie se atrevía a acercarse a la cima.",
-              "explanation": "The audio says \"Nadie se atrevía a acercarse a la cima.\" \"Cima\" (summit) sounds like \"sima\" (chasm) under seseo, but no other option shares this sentence's wording."
+              "answer": 2,
+              "explanation": "\"cima\" is the spelling that means summit here. It is easy to mix up with \"sima\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q3",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie se atrevía a acercarse a la sima.",
-              "choices": [
-                "Nadie se atrevía a acercarse a la sima.",
-                "Nadie esperaba que el consejo cambiara de opinión.",
-                "Desde arriba se veía toda la sima.",
-                "Desde arriba se veía toda la cima."
+              "type": "fill",
+              "prompt": "El explorador cayó por una ___ en la roca. (chasm)",
+              "bank": [
+                "cima",
+                "sima",
+                "cinta",
+                "rima"
               ],
-              "answer": "Nadie se atrevía a acercarse a la sima.",
-              "explanation": "The audio says \"Nadie se atrevía a acercarse a la sima.\" \"Sima\" (chasm) sounds like \"cima\" (summit), but only this option has the words \"Nadie se atrevía a acercarse\"."
+              "answer": "sima",
+              "explanation": "\"sima\" is the spelling that means chasm here. It is easy to mix up with \"cima\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q4",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Desde arriba se veía toda la cima.",
+              "type": "mc",
+              "prompt": "La ___ del parlamento duró seis horas. (session, meeting)",
               "choices": [
-                "Nadie se atrevía a acercarse a la sima.",
-                "Nadie se atrevía a acercarse a la cima.",
-                "El concejo municipal se reunió por la tarde.",
-                "Desde arriba se veía toda la cima."
+                "sesión",
+                "cesión",
+                "pasión",
+                "sensación"
               ],
-              "answer": "Desde arriba se veía toda la cima.",
-              "explanation": "The audio says \"Desde arriba se veía toda la cima.\" Only this option starts with \"Desde arriba\", even though \"cima\" and \"sima\" sound the same."
+              "answer": 0,
+              "explanation": "\"sesión\" is the spelling that means session, meeting here. It is easy to mix up with \"cesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "session, meeting",
+              "example": "La sesión del parlamento duró seis horas."
             }
           ]
         },
         {
           "id": "esb2p28l2",
           "title": "Minimal Pairs 2",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb2p28q5",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Desde arriba se veía toda la sima.",
-              "choices": [
-                "Nadie se atrevía a acercarse a la sima.",
-                "Desde arriba se veía toda la sima.",
-                "El concejo escolar se reunió por la tarde.",
-                "Llegaron hasta la cima de la montaña."
+              "type": "fill",
+              "prompt": "Firmaron la ___ de los derechos del libro ante notario. (transfer, handing over)",
+              "bank": [
+                "sesión",
+                "sensación",
+                "cesión",
+                "pasión"
               ],
-              "answer": "Desde arriba se veía toda la sima.",
-              "explanation": "The audio says \"Desde arriba se veía toda la sima.\" Here \"sima\" means a deep chasm seen from above, and only this option starts with \"Desde arriba se veía\"."
+              "answer": "cesión",
+              "explanation": "\"cesión\" is the spelling that means transfer, handing over here. It is easy to mix up with \"sesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "transfer, handing over",
+              "example": "Firmaron la cesión de los derechos del libro ante notario."
             },
             {
               "id": "esb2p28q6",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El alcalde presentó el concejo a todos.",
+              "type": "mc",
+              "prompt": "La ___ de terapia empieza a las cinco. (session)",
               "choices": [
-                "El alcalde presentó el proyecto a todos.",
-                "El alcalde presentó el concejo a todos.",
-                "Todos hablaban sobre el consejo del pueblo.",
-                "Todos hablaban sobre el concejo del pueblo."
+                "pasión",
+                "cesión",
+                "sesión",
+                "sensación"
               ],
-              "answer": "El alcalde presentó el concejo a todos.",
-              "explanation": "The audio says \"El alcalde presentó el concejo a todos.\" \"Concejo\" means town council, and it sounds like \"consejo\" (advice) in Latin American Spanish."
+              "answer": 2,
+              "explanation": "\"sesión\" is the spelling that means session here. It is easy to mix up with \"cesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "session",
+              "example": "La sesión de terapia empieza a las cinco."
             },
             {
               "id": "esb2p28q7",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El alcalde presentó el consejo a todos.",
-              "choices": [
-                "El alcalde presentó el consejo a todos.",
-                "El alcalde presentó el proyecto a todos.",
-                "Todos hablaban sobre el consejo del pueblo.",
-                "Todos hablaban sobre el concejo del pueblo."
+              "type": "fill",
+              "prompt": "La ___ del terreno al municipio se firmó ayer. (transfer, handing over)",
+              "bank": [
+                "sesión",
+                "sensación",
+                "cesión",
+                "pasión"
               ],
-              "answer": "El alcalde presentó el consejo a todos.",
-              "explanation": "The audio says \"El alcalde presentó el consejo a todos.\" The mayor presented a piece of advice (\"consejo\"), and the sentence starts with \"El alcalde presentó\", not \"Todos hablaban\"."
+              "answer": "cesión",
+              "explanation": "\"cesión\" is the spelling that means transfer, handing over here. It is easy to mix up with \"sesión\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q8",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Todos hablaban sobre el concejo del pueblo.",
+              "type": "mc",
+              "prompt": "Los diputados abrieron la ___ a las diez. (session, meeting)",
               "choices": [
-                "El alcalde presentó el concejo a todos.",
-                "Todos hablaban sobre el mercado del pueblo.",
-                "Todos hablaban sobre el concejo del pueblo.",
-                "Nadie esperaba que el concejo cambiara de opinión."
+                "sesión",
+                "cesión",
+                "pasión",
+                "sensación"
               ],
-              "answer": "Todos hablaban sobre el concejo del pueblo.",
-              "explanation": "The audio says \"Todos hablaban sobre el concejo del pueblo.\" Everyone was talking about the town council (\"concejo\"), not the market."
+              "answer": 0,
+              "explanation": "\"sesión\" is the spelling that means session, meeting here. It is easy to mix up with \"cesión\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q9",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Todos hablaban sobre el consejo del pueblo.",
-              "choices": [
-                "El alcalde presentó el consejo a todos.",
-                "El alcalde presentó el concejo a todos.",
-                "Todos hablaban sobre el consejo del pueblo.",
-                "Todos hablaban sobre la fiesta del pueblo."
+              "type": "fill",
+              "prompt": "La ___ de poderes al nuevo director fue legal. (transfer, handing over)",
+              "bank": [
+                "sesión",
+                "sensación",
+                "cesión",
+                "pasión"
               ],
-              "answer": "Todos hablaban sobre el consejo del pueblo.",
-              "explanation": "The audio says \"Todos hablaban sobre el consejo del pueblo.\" Everyone was talking about the town's advice (\"consejo\"), not its festival."
+              "answer": "cesión",
+              "explanation": "\"cesión\" is the spelling that means transfer, handing over here. It is easy to mix up with \"sesión\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esb2p28l3",
           "title": "Minimal Pairs 3",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb2p28q10",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie esperaba que el concejo cambiara de opinión.",
-              "choices": [
-                "Nadie se atrevía a acercarse a la sima.",
-                "Nadie sabía que alguien los estaba acechando.",
-                "Nadie esperaba que el jefe cambiara de opinión.",
-                "Nadie esperaba que el concejo cambiara de opinión."
+              "type": "fill",
+              "prompt": "El gato se agacha para ___ al ratón. (to stalk, to lie in wait for)",
+              "bank": [
+                "acechar",
+                "achicar",
+                "asechar",
+                "acercar"
               ],
-              "answer": "Nadie esperaba que el concejo cambiara de opinión.",
-              "explanation": "The audio says \"Nadie esperaba que el concejo cambiara de opinión.\" It is the council (\"concejo\") that changed its mind, not the boss."
+              "answer": "acechar",
+              "explanation": "\"acechar\" is the spelling that means to stalk, to lie in wait for here. It is easy to mix up with \"asechar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to stalk, to lie in wait for",
+              "example": "El gato se agacha para acechar al ratón."
             },
             {
               "id": "esb2p28q11",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie esperaba que el consejo cambiara de opinión.",
+              "type": "mc",
+              "prompt": "Quiso ___ al rival con engaños. (to set a trap for)",
               "choices": [
-                "Todos hablaban sobre el consejo del pueblo.",
-                "Nadie se atrevía a acercarse a la cima.",
-                "Nadie esperaba que el consejo cambiara de opinión.",
-                "Nadie esperaba que el jefe cambiara de opinión."
+                "achicar",
+                "acechar",
+                "asechar",
+                "acercar"
               ],
-              "answer": "Nadie esperaba que el consejo cambiara de opinión.",
-              "explanation": "The audio says \"Nadie esperaba que el consejo cambiara de opinión.\" It is the board (\"consejo\") that changed its mind, not the boss."
+              "answer": 2,
+              "explanation": "\"asechar\" is the spelling that means to set a trap for here. It is easy to mix up with \"acechar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to set a trap for",
+              "example": "Quiso asechar al rival con engaños."
             },
             {
               "id": "esb2p28q12",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El calor parecía abrasar todo a su paso.",
-              "choices": [
-                "El animal empezó a acechar a su presa.",
-                "Sintió que el fuego lo iba a abrasar.",
-                "El calor parecía arrasar todo a su paso.",
-                "El calor parecía abrasar todo a su paso."
+              "type": "fill",
+              "prompt": "El león espera para ___ a la cebra. (to stalk)",
+              "bank": [
+                "acechar",
+                "achicar",
+                "asechar",
+                "acercar"
               ],
-              "answer": "El calor parecía abrasar todo a su paso.",
-              "explanation": "The audio says \"El calor parecía abrasar todo a su paso.\" \"Abrasar\" means to scorch, which fits heat, and its single \"r\" sounds different from the rolled \"rr\" in \"arrasar\"."
+              "answer": "acechar",
+              "explanation": "\"acechar\" is the spelling that means to stalk here. It is easy to mix up with \"asechar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q13",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El calor parecía abrazar todo a su paso.",
+              "type": "mc",
+              "prompt": "Los ladrones querían ___ al guardia con un engaño. (to lay a trap for)",
               "choices": [
-                "El calor parecía abrazar todo a su paso.",
-                "El calor parecía abrasar todo a su paso.",
-                "Sintió que su madre lo iba a abrazar.",
-                "Desde arriba se veía toda la cima."
+                "asechar",
+                "acechar",
+                "achicar",
+                "acercar"
               ],
-              "answer": "El calor parecía abrazar todo a su paso.",
-              "explanation": "The audio says \"El calor parecía abrazar todo a su paso.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+              "answer": 0,
+              "explanation": "\"asechar\" is the spelling that means to lay a trap for here. It is easy to mix up with \"acechar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q14",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Sintió que el fuego lo iba a abrasar.",
-              "choices": [
-                "La sima resultó ser más profunda de lo esperado.",
-                "Sintió que el fuego lo iba a abrasar.",
-                "El calor parecía abrasar todo a su paso.",
-                "Sintió que su madre lo iba a abrazar."
+              "type": "fill",
+              "prompt": "Un peligro nos puede ___ en la oscuridad. (to lurk)",
+              "bank": [
+                "achicar",
+                "acechar",
+                "asechar",
+                "acercar"
               ],
-              "answer": "Sintió que el fuego lo iba a abrasar.",
-              "explanation": "The audio says \"Sintió que el fuego lo iba a abrasar.\" Under seseo \"abrasar\" (to scorch) and \"abrazar\" (to hug) sound the same, so the words around it (el fuego, not su madre) tell you which sentence you heard."
+              "answer": "acechar",
+              "explanation": "\"acechar\" is the spelling that means to lurk here. It is easy to mix up with \"asechar\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esb2p28l4",
           "title": "Minimal Pairs 4",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb2p28q15",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Sintió que su madre lo iba a abrazar.",
+              "type": "mc",
+              "prompt": "El sol de agosto parece ___ la tierra. (to scorch)",
               "choices": [
-                "La sima resultó ser más profunda de lo esperado.",
-                "Sintió que el fuego lo iba a abrasar.",
-                "El calor parecía abrazar todo a su paso.",
-                "Sintió que su madre lo iba a abrazar."
+                "abrir",
+                "abrazar",
+                "abrasar",
+                "abusar"
               ],
-              "answer": "Sintió que su madre lo iba a abrazar.",
-              "explanation": "The audio says \"Sintió que su madre lo iba a abrazar.\" Under seseo \"abrazar\" (to hug) sounds like \"abrasar\" (to scorch), so the words around it (su madre, not el fuego) identify the sentence."
+              "answer": 2,
+              "explanation": "\"abrasar\" is the spelling that means to scorch here. It is easy to mix up with \"abrazar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to scorch",
+              "example": "El sol de agosto parece abrasar la tierra."
             },
             {
               "id": "esb2p28q16",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El animal empezó a acechar a su presa.",
-              "choices": [
-                "El cazador decidió acechar en silencio.",
-                "El animal empezó a acechar a su presa.",
-                "El consejo escolar se reunió por la tarde.",
-                "Desde arriba se veía toda la cima."
+              "type": "fill",
+              "prompt": "Quiero ___ a mi hermana cuando llegue. (to hug)",
+              "bank": [
+                "abrir",
+                "abusar",
+                "abrasar",
+                "abrazar"
               ],
-              "answer": "El animal empezó a acechar a su presa.",
-              "explanation": "The audio says \"El animal empezó a acechar a su presa.\" \"Acechar\" (to stalk) sounds like \"asechar\" under seseo, so match the whole sentence: el animal and su presa appear only in this option."
+              "answer": "abrazar",
+              "explanation": "\"abrazar\" is the spelling that means to hug here. It is easy to mix up with \"abrasar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to hug",
+              "example": "Quiero abrazar a mi hermana cuando llegue."
             },
             {
               "id": "esb2p28q17",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El animal empezó a asechar a su presa.",
+              "type": "mc",
+              "prompt": "El fuego puede ___ todo el bosque. (to burn up)",
               "choices": [
-                "El cazador decidió asechar en silencio.",
-                "El animal empezó a asechar a su presa.",
-                "Nadie esperaba que el consejo cambiara de opinión.",
-                "Desde arriba se veía toda la cima."
+                "abrasar",
+                "abrazar",
+                "abrir",
+                "abusar"
               ],
-              "answer": "El animal empezó a asechar a su presa.",
-              "explanation": "The audio says \"El animal empezó a asechar a su presa.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+              "answer": 0,
+              "explanation": "\"abrasar\" is the spelling that means to burn up here. It is easy to mix up with \"abrazar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q18",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie sabía que alguien los estaba acechando.",
-              "choices": [
-                "Nadie sabía que alguien los estaba escuchando.",
-                "Nadie se atrevía a acercarse a la sima.",
-                "Nadie se atrevía a acercarse a la cima.",
-                "Nadie sabía que alguien los estaba acechando."
+              "type": "fill",
+              "prompt": "Corrió a ___ a su padre en el aeropuerto. (to hug)",
+              "bank": [
+                "abusar",
+                "abrir",
+                "abrasar",
+                "abrazar"
               ],
-              "answer": "Nadie sabía que alguien los estaba acechando.",
-              "explanation": "The audio says \"Nadie sabía que alguien los estaba acechando.\" \"Acechando\" (stalking) is the word you heard, and the other sentences use different words (escuchando, acercarse)."
+              "answer": "abrazar",
+              "explanation": "\"abrazar\" is the spelling that means to hug here. It is easy to mix up with \"abrasar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q19",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie sabía que alguien los estaba asechando.",
+              "type": "mc",
+              "prompt": "El café hirviendo puede ___ la lengua. (to scald)",
               "choices": [
-                "Nadie sabía que alguien los estaba asechando.",
-                "Nadie se atrevía a acercarse a la sima.",
-                "Nadie se atrevía a acercarse a la cima.",
-                "Nadie sabía que alguien los estaba escuchando."
+                "abrir",
+                "abrazar",
+                "abrasar",
+                "abusar"
               ],
-              "answer": "Nadie sabía que alguien los estaba asechando.",
-              "explanation": "The audio says \"Nadie sabía que alguien los estaba asechando.\" \"Asechando\" (plotting against) sounds nothing like \"escuchando\", and the other options use different sentences."
+              "answer": 2,
+              "explanation": "\"abrasar\" is the spelling that means to scald here. It is easy to mix up with \"abrazar\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esb2p28l5",
           "title": "Minimal Pairs 5",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esb2p28q20",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El cazador decidió acechar en silencio.",
+              "type": "mc",
+              "prompt": "Plantaron una bandera en la ___. (summit)",
               "choices": [
-                "El cazador decidió acechar en silencio.",
-                "Nadie se atrevía a acercarse a la sima.",
-                "El animal empezó a acechar a su presa.",
-                "Nadie sabía que alguien los estaba asechando."
+                "cinta",
+                "sima",
+                "cima",
+                "rima"
               ],
-              "answer": "El cazador decidió acechar en silencio.",
-              "explanation": "The audio says \"El cazador decidió acechar en silencio.\" Only this option has el cazador and en silencio, and \"acechar\" means to lie in wait."
+              "answer": 2,
+              "explanation": "\"cima\" is the spelling that means summit here. It is easy to mix up with \"sima\", a different word, so the meaning decides the spelling.",
+              "meaning": "summit",
+              "example": "Plantaron una bandera en la cima."
             },
             {
               "id": "esb2p28q21",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El cazador decidió asechar en silencio.",
-              "choices": [
-                "Nadie esperaba que el concejo cambiara de opinión.",
-                "El animal empezó a asechar a su presa.",
-                "El cazador decidió asechar en silencio.",
-                "Nadie se atrevía a acercarse a la sima."
+              "type": "fill",
+              "prompt": "Tiraron una piedra y nunca oyeron el fondo de la ___. (chasm)",
+              "bank": [
+                "cinta",
+                "sima",
+                "cima",
+                "rima"
               ],
-              "answer": "El cazador decidió asechar en silencio.",
-              "explanation": "The audio says \"El cazador decidió asechar en silencio.\" Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar), b/v (abrasar/abrazar)."
+              "answer": "sima",
+              "explanation": "\"sima\" is the spelling that means chasm here. It is easy to mix up with \"cima\", a different word, so the meaning decides the spelling.",
+              "meaning": "chasm",
+              "example": "Tiraron una piedra y nunca oyeron el fondo de la sima."
             },
             {
               "id": "esb2p28q22",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El consejo escolar se reunió por la tarde.",
+              "type": "mc",
+              "prompt": "Cerraron la ___ con un aplauso. (session, meeting)",
               "choices": [
-                "El alcalde presentó el consejo a todos.",
-                "El consejo escolar se reunió por la tarde.",
-                "Nadie se atrevía a acercarse a la sima.",
-                "El consejo escolar se reunió por la mañana."
+                "sesión",
+                "cesión",
+                "pasión",
+                "sensación"
               ],
-              "answer": "El consejo escolar se reunió por la tarde.",
-              "explanation": "The audio says \"El consejo escolar se reunió por la tarde.\" Listen for the end of the sentence: it says por la tarde, not por la mañana."
+              "answer": 0,
+              "explanation": "\"sesión\" is the spelling that means session, meeting here. It is easy to mix up with \"cesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "session, meeting",
+              "example": "Cerraron la sesión con un aplauso."
             },
             {
               "id": "esb2p28q23",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El concejo municipal se reunió por la tarde.",
-              "choices": [
-                "El consejo escolar se reunió por la tarde.",
-                "Desde arriba se veía toda la sima.",
-                "Nadie se atrevía a acercarse a la cima.",
-                "El concejo municipal se reunió por la tarde."
+              "type": "fill",
+              "prompt": "La ___ de la casa a su hijo se firmó ante notario. (transfer, handing over)",
+              "bank": [
+                "pasión",
+                "sesión",
+                "sensación",
+                "cesión"
               ],
-              "answer": "El concejo municipal se reunió por la tarde.",
-              "explanation": "The audio says \"El concejo municipal se reunió por la tarde.\" \"Concejo\" (town council) sounds like \"consejo\" under seseo, so the word municipal, not escolar, tells you which sentence you heard."
+              "answer": "cesión",
+              "explanation": "\"cesión\" is the spelling that means transfer, handing over here. It is easy to mix up with \"sesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "transfer, handing over",
+              "example": "La cesión de la casa a su hijo se firmó ante notario."
             },
             {
               "id": "esb2p28q24",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "La sima resultó ser más profunda de lo esperado.",
+              "type": "mc",
+              "prompt": "Los lobos suelen ___ a su presa durante horas. (to stalk)",
               "choices": [
-                "La sima resultó ser más profunda de lo esperado.",
-                "Sintió que el fuego lo iba a abrasar.",
-                "Desde arriba se veía toda la sima.",
-                "Nadie se atrevía a acercarse a la sima."
+                "achicar",
+                "asechar",
+                "acechar",
+                "acercar"
               ],
-              "answer": "La sima resultó ser más profunda de lo esperado.",
-              "explanation": "The audio says \"La sima resultó ser más profunda de lo esperado.\" Only this option contains más profunda, which also fits \"sima\" (a deep pit) rather than its sound-alike \"cima\" (a summit)."
+              "answer": 2,
+              "explanation": "\"acechar\" is the spelling that means to stalk here. It is easy to mix up with \"asechar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to stalk",
+              "example": "Los lobos suelen acechar a su presa durante horas."
             }
           ]
         }
@@ -48192,390 +48220,399 @@
       "level": "C1",
       "eyebrow": "Unit 29",
       "title": "Minimal Pairs",
-      "description": "Listen closely — Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón).",
+      "description": "Spell it right — Spelling choice: two words that sound the same for most Spanish speakers, told apart by meaning.",
       "lessons": [
         {
           "id": "esc1p28l1",
           "title": "Minimal Pairs 1",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esc1p28q0",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El juez decidió encausar al acusado de inmediato.",
+              "type": "mc",
+              "prompt": "El fiscal pidió ___ al exministro por corrupción. (to prosecute)",
               "choices": [
-                "Intentaron encausar la situación desde el principio.",
-                "El comité decidió encausar el problema de raíz.",
-                "El juez decidió encausar al acusado de inmediato.",
-                "El comité decidió encauzar el problema de raíz."
+                "encausar",
+                "encauzar",
+                "encender",
+                "encoger"
               ],
-              "answer": "El juez decidió encausar al acusado de inmediato.",
-              "explanation": "The audio says \"El juez decidió encausar al acusado de inmediato.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 0,
+              "explanation": "\"encausar\" is the spelling that means to prosecute here. It is easy to mix up with \"encauzar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to prosecute",
+              "example": "El fiscal pidió encausar al exministro por corrupción."
             },
             {
               "id": "esc1p28q1",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El juez decidió encauzar al acusado de inmediato.",
-              "choices": [
-                "El comité decidió encauzar el problema de raíz.",
-                "El juez decidió encauzar al acusado de inmediato.",
-                "Intentaron encauzar la situación desde el principio.",
-                "La comisión decidió encauzar formalmente la investigación."
+              "type": "fill",
+              "prompt": "El gobierno quiere ___ el debate hacia soluciones. (to channel, to direct)",
+              "bank": [
+                "encausar",
+                "encender",
+                "encauzar",
+                "encoger"
               ],
-              "answer": "El juez decidió encauzar al acusado de inmediato.",
-              "explanation": "The audio says \"El juez decidió encauzar al acusado de inmediato.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "encauzar",
+              "explanation": "\"encauzar\" is the spelling that means to channel, to direct here. It is easy to mix up with \"encausar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to channel, to direct",
+              "example": "El gobierno quiere encauzar el debate hacia soluciones."
             },
             {
               "id": "esc1p28q2",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El comité decidió encausar el problema de raíz.",
+              "type": "mc",
+              "prompt": "El tribunal decidió ___ a los responsables del fraude. (to put on trial)",
               "choices": [
-                "Intentaron encausar la situación desde el principio.",
-                "El comité reconoció haber alcanzado la cima del proceso.",
-                "El comité decidió encausar el problema de raíz.",
-                "El juez decidió encausar al acusado de inmediato."
+                "encender",
+                "encauzar",
+                "encausar",
+                "encoger"
               ],
-              "answer": "El comité decidió encausar el problema de raíz.",
-              "explanation": "The audio says \"El comité decidió encausar el problema de raíz.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 2,
+              "explanation": "\"encausar\" is the spelling that means to put on trial here. It is easy to mix up with \"encauzar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esc1p28q3",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El comité decidió encauzar el problema de raíz.",
-              "choices": [
-                "El juez decidió encausar al acusado de inmediato.",
-                "El comité decidió encauzar el problema de raíz.",
-                "El juez decidió encauzar al acusado de inmediato.",
-                "La comisión decidió encauzar formalmente la investigación."
+              "type": "fill",
+              "prompt": "Hay que ___ el río para evitar inundaciones. (to channel)",
+              "bank": [
+                "encausar",
+                "encender",
+                "encauzar",
+                "encoger"
               ],
-              "answer": "El comité decidió encauzar el problema de raíz.",
-              "explanation": "The audio says \"El comité decidió encauzar el problema de raíz.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "encauzar",
+              "explanation": "\"encauzar\" is the spelling that means to channel here. It is easy to mix up with \"encausar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esc1p28q4",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Intentaron encauzar la situación desde el principio.",
+              "type": "mc",
+              "prompt": "La jueza ordenó ___ al director por falsificación. (to prosecute)",
               "choices": [
-                "El comité decidió encauzar el problema de raíz.",
-                "El juez decidió encauzar al acusado de inmediato.",
-                "Intentaron encauzar la situación desde el principio.",
-                "La comisión decidió encauzar formalmente la investigación."
+                "encausar",
+                "encauzar",
+                "encender",
+                "encoger"
               ],
-              "answer": "Intentaron encauzar la situación desde el principio.",
-              "explanation": "The audio says \"Intentaron encauzar la situación desde el principio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 0,
+              "explanation": "\"encausar\" is the spelling that means to prosecute here. It is easy to mix up with \"encauzar\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esc1p28l2",
           "title": "Minimal Pairs 2",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esc1p28q5",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Intentaron encausar la situación desde el principio.",
-              "choices": [
-                "Intentaron encausar la situación desde el principio.",
-                "El comité decidió encausar el problema de raíz.",
-                "El juez decidió encausar al acusado de inmediato.",
-                "Nadie sabía que el bebé era barón."
+              "type": "fill",
+              "prompt": "Intentó ___ la energía de los jóvenes hacia el deporte. (to channel)",
+              "bank": [
+                "encausar",
+                "encender",
+                "encauzar",
+                "encoger"
               ],
-              "answer": "Intentaron encausar la situación desde el principio.",
-              "explanation": "The audio says \"Intentaron encausar la situación desde el principio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "encauzar",
+              "explanation": "\"encauzar\" is the spelling that means to channel here. It is easy to mix up with \"encausar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to channel",
+              "example": "Intentó encauzar la energía de los jóvenes hacia el deporte."
             },
             {
               "id": "esc1p28q6",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "En el documento decía que era un varón.",
+              "type": "mc",
+              "prompt": "Nació un ___ sano en el hospital. (baby boy, male child)",
               "choices": [
-                "El título nobiliario pertenecía a un varón.",
-                "Nadie sabía que el bebé era barón.",
-                "En el documento decía que era un varón.",
-                "Nadie sabía que el bebé era varón."
+                "balón",
+                "barón",
+                "varón",
+                "botón"
               ],
-              "answer": "En el documento decía que era un varón.",
-              "explanation": "The audio says \"En el documento decía que era un varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 2,
+              "explanation": "\"varón\" is the spelling that means baby boy, male child here. It is easy to mix up with \"barón\", a different word, so the meaning decides the spelling.",
+              "meaning": "baby boy, male child",
+              "example": "Nació un varón sano en el hospital."
             },
             {
               "id": "esc1p28q7",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "En el documento decía que era un barón.",
-              "choices": [
-                "En el documento decía que era un barón.",
-                "Nadie sabía que el bebé era barón.",
-                "El título nobiliario pertenecía a un barón.",
-                "Nadie sabía que el bebé era varón."
+              "type": "fill",
+              "prompt": "El ___ y la baronesa recibieron a los invitados en el castillo. (baron (noble title))",
+              "bank": [
+                "botón",
+                "barón",
+                "balón",
+                "varón"
               ],
-              "answer": "En el documento decía que era un barón.",
-              "explanation": "The audio says \"En el documento decía que era un barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "barón",
+              "explanation": "\"barón\" is the spelling that means baron (noble title) here. It is easy to mix up with \"varón\", a different word, so the meaning decides the spelling.",
+              "meaning": "baron, noble title",
+              "example": "El barón y la baronesa recibieron a los invitados en el castillo."
             },
             {
               "id": "esc1p28q8",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie sabía que el bebé era varón.",
+              "type": "mc",
+              "prompt": "El formulario pide indicar si eres ___ o mujer. (male)",
               "choices": [
-                "El título nobiliario pertenecía a un varón.",
-                "Nadie sospechaba que el escándalo los estuviera acechando.",
-                "En el documento decía que era un varón.",
-                "Nadie sabía que el bebé era varón."
+                "varón",
+                "barón",
+                "balón",
+                "botón"
               ],
-              "answer": "Nadie sabía que el bebé era varón.",
-              "explanation": "The audio says \"Nadie sabía que el bebé era varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 0,
+              "explanation": "\"varón\" is the spelling that means male here. It is easy to mix up with \"barón\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esc1p28q9",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie sabía que el bebé era barón.",
-              "choices": [
-                "En el documento decía que era un barón.",
-                "Nadie sabía que el bebé era barón.",
-                "En el documento decía que era un varón.",
-                "El título nobiliario pertenecía a un barón."
+              "type": "fill",
+              "prompt": "El rey otorgó el título de ___ al comerciante. (baron (noble title))",
+              "bank": [
+                "balón",
+                "botón",
+                "barón",
+                "varón"
               ],
-              "answer": "Nadie sabía que el bebé era barón.",
-              "explanation": "The audio says \"Nadie sabía que el bebé era barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "barón",
+              "explanation": "\"barón\" is the spelling that means baron (noble title) here. It is easy to mix up with \"varón\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esc1p28l3",
           "title": "Minimal Pairs 3",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esc1p28q10",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El título nobiliario pertenecía a un barón.",
-              "choices": [
-                "En el documento decía que era un barón.",
-                "El depredador aprendió a asechar pacientemente a su presa.",
-                "El título nobiliario pertenecía a un barón.",
-                "Nadie sabía que el bebé era barón."
+              "type": "fill",
+              "prompt": "Solo el hijo ___ de la familia llevaba el apellido. (male)",
+              "bank": [
+                "balón",
+                "barón",
+                "botón",
+                "varón"
               ],
-              "answer": "El título nobiliario pertenecía a un barón.",
-              "explanation": "The audio says \"El título nobiliario pertenecía a un barón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "varón",
+              "explanation": "\"varón\" is the spelling that means male here. It is easy to mix up with \"barón\", a different word, so the meaning decides the spelling.",
+              "meaning": "male",
+              "example": "Solo el hijo varón de la familia llevaba el apellido."
             },
             {
               "id": "esc1p28q11",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El título nobiliario pertenecía a un varón.",
+              "type": "mc",
+              "prompt": "Un ___ del petróleo financió la campaña. (tycoon (a powerful magnate))",
               "choices": [
-                "En el documento decía que era un varón.",
-                "Nadie sabía que el bebé era varón.",
-                "El título nobiliario pertenecía a un varón.",
-                "La expedición alcanzó finalmente la cima más alta."
+                "balón",
+                "varón",
+                "barón",
+                "botón"
               ],
-              "answer": "El título nobiliario pertenecía a un varón.",
-              "explanation": "The audio says \"El título nobiliario pertenecía a un varón.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 2,
+              "explanation": "\"barón\" is the spelling that means tycoon (a powerful magnate) here. It is easy to mix up with \"varón\", a different word, so the meaning decides the spelling.",
+              "meaning": "tycoon, a powerful magnate",
+              "example": "Un barón del petróleo financió la campaña."
             },
             {
               "id": "esc1p28q12",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Los diplomáticos llegaron hasta la cima de las negociaciones.",
-              "choices": [
-                "En el documento decía que era un barón.",
-                "Los diplomáticos llegaron hasta la cima de las negociaciones.",
-                "La expedición alcanzó finalmente la cima más alta.",
-                "El comité reconoció haber alcanzado la cima del proceso."
+              "type": "fill",
+              "prompt": "Alcanzar la ___ de la carrera exige sacrificio. (peak, top)",
+              "bank": [
+                "cima",
+                "sima",
+                "cinta",
+                "rima"
               ],
-              "answer": "Los diplomáticos llegaron hasta la cima de las negociaciones.",
-              "explanation": "The audio says \"Los diplomáticos llegaron hasta la cima de las negociaciones.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "cima",
+              "explanation": "\"cima\" is the spelling that means peak, top here. It is easy to mix up with \"sima\", a different word, so the meaning decides the spelling.",
+              "meaning": "peak, top",
+              "example": "Alcanzar la cima de la carrera exige sacrificio."
             },
             {
               "id": "esc1p28q13",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Los diplomáticos llegaron hasta la sima de las negociaciones.",
+              "type": "mc",
+              "prompt": "El proyecto cayó en una ___ de deudas. (abyss, chasm)",
               "choices": [
-                "La expedición descendió finalmente a la sima más profunda.",
-                "El juez decidió encausar al acusado de inmediato.",
-                "El comité reconoció haber alcanzado la sima del proceso.",
-                "Los diplomáticos llegaron hasta la sima de las negociaciones."
+                "sima",
+                "cima",
+                "cinta",
+                "rima"
               ],
-              "answer": "Los diplomáticos llegaron hasta la sima de las negociaciones.",
-              "explanation": "The audio says \"Los diplomáticos llegaron hasta la sima de las negociaciones.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 0,
+              "explanation": "\"sima\" is the spelling that means abyss, chasm here. It is easy to mix up with \"cima\", a different word, so the meaning decides the spelling.",
+              "meaning": "abyss, chasm",
+              "example": "El proyecto cayó en una sima de deudas."
             },
             {
               "id": "esc1p28q14",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El comité reconoció haber alcanzado la cima del proceso.",
-              "choices": [
-                "El comité decidió encausar el problema de raíz.",
-                "La expedición alcanzó finalmente la cima más alta.",
-                "El comité reconoció haber alcanzado la cima del proceso.",
-                "El comité decidió encauzar el problema de raíz."
+              "type": "fill",
+              "prompt": "El escalador llegó por fin a la ___ del Aconcagua. (summit)",
+              "bank": [
+                "cima",
+                "sima",
+                "cinta",
+                "rima"
               ],
-              "answer": "El comité reconoció haber alcanzado la cima del proceso.",
-              "explanation": "The audio says \"El comité reconoció haber alcanzado la cima del proceso.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "cima",
+              "explanation": "\"cima\" is the spelling that means summit here. It is easy to mix up with \"sima\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esc1p28l4",
           "title": "Minimal Pairs 4",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esc1p28q15",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El comité reconoció haber alcanzado la sima del proceso.",
+              "type": "mc",
+              "prompt": "Los espeleólogos descendieron por la ___ con cuerdas. (deep chasm in the rock)",
               "choices": [
-                "La expedición alcanzó finalmente la sima más alta.",
-                "El comité reconoció haber alcanzado la sima del proceso.",
-                "Los diplomáticos llegaron hasta la sima de las negociaciones.",
-                "El comité decidió encauzar el problema de raíz."
+                "cinta",
+                "cima",
+                "sima",
+                "rima"
               ],
-              "answer": "El comité reconoció haber alcanzado la sima del proceso.",
-              "explanation": "The audio says \"El comité reconoció haber alcanzado la sima del proceso.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 2,
+              "explanation": "\"sima\" is the spelling that means deep chasm in the rock here. It is easy to mix up with \"cima\", a different word, so the meaning decides the spelling.",
+              "meaning": "deep chasm in the rock",
+              "example": "Los espeleólogos descendieron por la sima con cuerdas."
             },
             {
               "id": "esc1p28q16",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "La expedición alcanzó finalmente la cima más alta.",
-              "choices": [
-                "La expedición alcanzó finalmente la cima más lejana.",
-                "La expedición alcanzó por fin la cima más alta.",
-                "La expedición alcanzó finalmente la cima más alta.",
-                "La excursión alcanzó finalmente la cima más alta."
+              "type": "fill",
+              "prompt": "Los depredadores suelen ___ en silencio. (to lurk, to lie in wait)",
+              "bank": [
+                "acechar",
+                "agachar",
+                "asechar",
+                "achicar"
               ],
-              "answer": "La expedición alcanzó finalmente la cima más alta.",
-              "explanation": "The audio says \"La expedición alcanzó finalmente la cima más alta.\" Each of the other options changes one word: \"lejana\" instead of \"alta\", \"por fin\" instead of \"finalmente\", or \"excursión\" instead of \"expedición\"."
+              "answer": "acechar",
+              "explanation": "\"acechar\" is the spelling that means to lurk, to lie in wait here. It is easy to mix up with \"asechar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to lurk, to lie in wait",
+              "example": "Los depredadores suelen acechar en silencio."
             },
             {
               "id": "esc1p28q17",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "La expedición alcanzó finalmente la sima más alta.",
+              "type": "mc",
+              "prompt": "El enemigo intentó ___ al comandante con falsas promesas. (to lay a trap for)",
               "choices": [
-                "La expedición alcanzó finalmente la sima más alta.",
-                "Intentaron encausar la situación desde el principio.",
-                "El comité reconoció haber alcanzado la sima del proceso.",
-                "Los diplomáticos llegaron hasta la sima de las negociaciones."
+                "asechar",
+                "acechar",
+                "achicar",
+                "agachar"
               ],
-              "answer": "La expedición alcanzó finalmente la sima más alta.",
-              "explanation": "The audio says \"La expedición alcanzó finalmente la sima más alta.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 0,
+              "explanation": "\"asechar\" is the spelling that means to lay a trap for here. It is easy to mix up with \"acechar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to lay a trap for",
+              "example": "El enemigo intentó asechar al comandante con falsas promesas."
             },
             {
               "id": "esc1p28q18",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Los inversionistas decidieron acechar el mercado en silencio.",
-              "choices": [
-                "El depredador aprendió a acechar pacientemente a su presa.",
-                "Los inversionistas decidieron acechar el mercado en silencio.",
-                "Nadie sospechaba que el escándalo los estuviera acechando.",
-                "El título nobiliario pertenecía a un varón."
+              "type": "fill",
+              "prompt": "La crisis amenaza con ___ a la economía durante años. (to threaten, to loom over)",
+              "bank": [
+                "acechar",
+                "agachar",
+                "asechar",
+                "achicar"
               ],
-              "answer": "Los inversionistas decidieron acechar el mercado en silencio.",
-              "explanation": "The audio says \"Los inversionistas decidieron acechar el mercado en silencio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "acechar",
+              "explanation": "\"acechar\" is the spelling that means to threaten, to loom over here. It is easy to mix up with \"asechar\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esc1p28q19",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Los inversionistas decidieron asechar el mercado en silencio.",
+              "type": "mc",
+              "prompt": "Sus rivales buscaban ___ al candidato con engaños. (to entrap)",
               "choices": [
-                "Los inversionistas decidieron asechar el mercado en silencio.",
-                "El depredador aprendió a asechar pacientemente a su presa.",
-                "Intentaron encauzar la situación desde el principio.",
-                "El título nobiliario pertenecía a un varón."
+                "achicar",
+                "acechar",
+                "asechar",
+                "agachar"
               ],
-              "answer": "Los inversionistas decidieron asechar el mercado en silencio.",
-              "explanation": "The audio says \"Los inversionistas decidieron asechar el mercado en silencio.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 2,
+              "explanation": "\"asechar\" is the spelling that means to entrap here. It is easy to mix up with \"acechar\", a different word, so the meaning decides the spelling."
             }
           ]
         },
         {
           "id": "esc1p28l5",
           "title": "Minimal Pairs 5",
-          "subtitle": "Listen closely",
+          "subtitle": "Spell it right",
           "questions": [
             {
               "id": "esc1p28q20",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie sospechaba que el escándalo los estuviera acechando.",
+              "type": "mc",
+              "prompt": "La inflación va a ___ a los mercados todo el año. (to threaten)",
               "choices": [
-                "Nadie sospechaba que el escándalo nos estuviera acechando.",
-                "Nadie sospechaba que el escándalo los estuviera acechando.",
-                "Nadie sospechaba que el escándalo los estuviera esperando.",
-                "Nadie sospechaba que el escándalo los estuviera aceptando."
+                "achicar",
+                "asechar",
+                "acechar",
+                "agachar"
               ],
-              "answer": "Nadie sospechaba que el escándalo los estuviera acechando.",
-              "explanation": "The audio says \"Nadie sospechaba que el escándalo los estuviera acechando.\" \"Acechando\" (lying in wait) fits a scandal threatening them; it sounds like \"asechando\" under seseo, so that spelling is not offered."
+              "answer": 2,
+              "explanation": "\"acechar\" is the spelling that means to threaten here. It is easy to mix up with \"asechar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to threaten",
+              "example": "La inflación va a acechar a los mercados todo el año."
             },
             {
               "id": "esc1p28q21",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "Nadie sospechaba que sus rivales lo estuvieran asechando.",
-              "choices": [
-                "Nadie sabía que el bebé era varón.",
-                "Nadie sospechaba que el juez fuera a encausarlos.",
-                "Nadie sospechaba que sus rivales lo estuvieran asechando.",
-                "Nadie sabía que el bebé era barón."
+              "type": "fill",
+              "prompt": "La ministra logró ___ la protesta por vías legales. (to channel)",
+              "bank": [
+                "encausar",
+                "encender",
+                "encoger",
+                "encauzar"
               ],
-              "answer": "Nadie sospechaba que sus rivales lo estuvieran asechando.",
-              "explanation": "The audio says \"Nadie sospechaba que sus rivales lo estuvieran asechando.\" The rivals were plotting traps, which is the meaning of \"asechar\" with an s, a word that sounds the same as \"acechar\" under seseo."
+              "answer": "encauzar",
+              "explanation": "\"encauzar\" is the spelling that means to channel here. It is easy to mix up with \"encausar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to channel",
+              "example": "La ministra logró encauzar la protesta por vías legales."
             },
             {
               "id": "esc1p28q22",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El depredador aprendió a acechar pacientemente a su presa.",
+              "type": "mc",
+              "prompt": "No pudieron ___ al sospechoso sin pruebas. (to prosecute)",
               "choices": [
-                "La expedición alcanzó finalmente la cima más alta.",
-                "El juez decidió encausar al acusado de inmediato.",
-                "Los inversionistas decidieron acechar el mercado en silencio.",
-                "El depredador aprendió a acechar pacientemente a su presa."
+                "encausar",
+                "encauzar",
+                "encender",
+                "encoger"
               ],
-              "answer": "El depredador aprendió a acechar pacientemente a su presa.",
-              "explanation": "The audio says \"El depredador aprendió a acechar pacientemente a su presa.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 0,
+              "explanation": "\"encausar\" is the spelling that means to prosecute here. It is easy to mix up with \"encauzar\", a different word, so the meaning decides the spelling.",
+              "meaning": "to prosecute",
+              "example": "No pudieron encausar al sospechoso sin pruebas."
             },
             {
               "id": "esc1p28q23",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "El depredador aprendió a asechar pacientemente a su presa.",
-              "choices": [
-                "Los inversionistas decidieron asechar el mercado en silencio.",
-                "El juez decidió encausar al acusado de inmediato.",
-                "El depredador aprendió a asechar pacientemente a su presa.",
-                "En el documento decía que era un barón."
+              "type": "fill",
+              "prompt": "En su acta de nacimiento dice sexo: ___. (male)",
+              "bank": [
+                "varón",
+                "barón",
+                "botón",
+                "balón"
               ],
-              "answer": "El depredador aprendió a asechar pacientemente a su presa.",
-              "explanation": "The audio says \"El depredador aprendió a asechar pacientemente a su presa.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": "varón",
+              "explanation": "\"varón\" is the spelling that means male here. It is easy to mix up with \"barón\", a different word, so the meaning decides the spelling.",
+              "meaning": "male",
+              "example": "En su acta de nacimiento dice sexo: varón."
             },
             {
               "id": "esc1p28q24",
-              "type": "listening",
-              "prompt": "¿Qué escuchaste?",
-              "audioText": "La comisión decidió encauzar formalmente la investigación.",
+              "type": "mc",
+              "prompt": "El ___ vendió sus tierras y su título nobiliario para pagar deudas. (baron (noble title))",
               "choices": [
-                "El juez decidió encauzar al acusado de inmediato.",
-                "El comité decidió encausar el problema de raíz.",
-                "La comisión decidió encauzar formalmente la investigación.",
-                "El comité decidió encauzar el problema de raíz."
+                "balón",
+                "varón",
+                "barón",
+                "botón"
               ],
-              "answer": "La comisión decidió encauzar formalmente la investigación.",
-              "explanation": "The audio says \"La comisión decidió encauzar formalmente la investigación.\" Formal-register sentences built around sounds that merge for most Spanish speakers: seseo (encausar/encauzar, cima/sima, acechar/asechar), b/v (barón/varón)."
+              "answer": 2,
+              "explanation": "\"barón\" is the spelling that means baron (noble title) here. It is easy to mix up with \"varón\", a different word, so the meaning decides the spelling.",
+              "meaning": "baron, noble title",
+              "example": "El barón vendió sus tierras y su título nobiliario para pagar deudas."
             }
           ]
         }

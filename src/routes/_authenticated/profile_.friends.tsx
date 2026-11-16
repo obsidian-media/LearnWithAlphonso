@@ -12,15 +12,31 @@ import {
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AskBuddyButton, BuddyCard } from "../../components/BuddyCard";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
+import { ToastBanner } from "../../components/ToastBanner";
+import { useToast } from "../../lib/use-toast";
 import {
+  getFriendActivity,
   getFriends,
   getMyFriendCode,
+  getUnreadNudges,
+  markNudgesRead,
   removeFriend,
+  sendNudge,
   type FriendEntry,
 } from "../../lib/friends.functions";
+import { activityCopy, activityIcon, activityName } from "../../lib/friend-activity";
+import { getMyProfile } from "../../lib/leaderboard.functions";
+import {
+  canNudge,
+  loadNudgeCooldowns,
+  nudgeSenderName,
+  nudgeToastMessage,
+  recordNudge,
+  type NudgeCooldowns,
+} from "../../lib/nudge";
 import { buddyBlockConfirm } from "../../lib/buddy";
 import { getMyBuddy } from "../../lib/buddy.functions";
 
@@ -37,6 +53,15 @@ export const Route = createFileRoute("/_authenticated/profile_/friends")({
   }),
 });
 
+/** localStorage, or null where it is blocked (a private window): the cooldown then lasts for the visit only. */
+function safeStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 function FriendsPage() {
   const queryClient = useQueryClient();
   // Same cache entry as BuddyCard: blocking the current buddy from their friend row gets the buddy wording.
@@ -49,6 +74,24 @@ function FriendsPage() {
     queryKey: ["friends"],
     queryFn: () => getFriends(),
   });
+  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
+  const myId = me?.id ?? null;
+  const { data: activity } = useQuery({
+    queryKey: ["friendActivity"],
+    queryFn: () => getFriendActivity(),
+    retry: false,
+  });
+  // Unread nudges are checked whenever the page opens or the tab comes back into focus, as the apps do on foreground.
+  const { data: unread } = useQuery({
+    queryKey: ["unreadNudges"],
+    queryFn: () => getUnreadNudges(),
+    retry: false,
+  });
+  const [toast, showToast] = useToast();
+  const [cooldowns, setCooldowns] = useState<NudgeCooldowns>({});
+  const [nudgingId, setNudgingId] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const shownNudgeIds = useRef(new Set<string>());
   const [copied, setCopied] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -60,10 +103,52 @@ function FriendsPage() {
       queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
         (prev ?? []).filter((f) => f.userId !== friendId),
       );
+      dropActivityFrom(friendId);
     } finally {
       setRemovingId(null);
       setConfirmingId(null);
     }
+  }
+
+  useEffect(() => {
+    if (!myId) return;
+    setCooldowns(loadNudgeCooldowns(myId, safeStorage()));
+  }, [myId]);
+
+  // Show the toast for nudges not yet shown, then mark them read so the next visit starts clean.
+  useEffect(() => {
+    if (!unread || !friends) return;
+    const fresh = unread.filter((n) => !shownNudgeIds.current.has(n.id));
+    if (fresh.length === 0) return;
+    for (const n of fresh) shownNudgeIds.current.add(n.id);
+    showToast(nudgeToastMessage(fresh.map((n) => nudgeSenderName(n.senderId, friends))));
+    void markNudgesRead({ data: { ids: fresh.map((n) => n.id) } });
+  }, [unread, friends, showToast]);
+
+  async function nudge(friend: FriendEntry) {
+    if (!myId || nudgingId) return;
+    const at = Date.now();
+    setNow(at);
+    setNudgingId(friend.userId);
+    try {
+      const result = await sendNudge({ data: { recipientId: friend.userId } });
+      if (result.ok) {
+        setCooldowns(recordNudge(myId, friend.userId, at, safeStorage()));
+        showToast(`Nudge sent to ${friend.displayName}.`);
+      } else {
+        showToast(`Couldn't nudge ${friend.displayName}. Try again.`);
+      }
+    } catch {
+      showToast(`Couldn't nudge ${friend.displayName}. Try again.`);
+    } finally {
+      setNudgingId(null);
+    }
+  }
+
+  function dropActivityFrom(userId: string) {
+    queryClient.setQueryData<NonNullable<typeof activity>>(["friendActivity"], (prev) =>
+      (prev ?? []).filter((e) => e.userId !== userId),
+    );
   }
 
   const inviteLink = friendCode ? `${window.location.origin}/invite/${friendCode}` : null;
@@ -124,12 +209,11 @@ function FriendsPage() {
       ) : (
         <DsCard flush>
           {friends.map((f, i) => (
-            <DsRow key={f.userId} first={i === 0} className="min-h-16">
+            <DsRow key={f.userId} first={i === 0} className="min-h-16 flex-wrap">
               <ProfileAvatar seed={f.avatarSeed} name={f.displayName} className="size-11" />
               <div className="min-w-0 flex-1">
                 <p className="ds-type-headline truncate text-ds-ink">{f.displayName}</p>
                 <p className="ds-type-caption text-ds-ink-soft">🔥 {f.streak}-day streak</p>
-                <AskBuddyButton friendId={f.userId} />
               </div>
               {confirmingId === f.userId ? (
                 <div className="flex shrink-0 items-center gap-1.5">
@@ -156,17 +240,20 @@ function FriendsPage() {
                     <p className="tnum ds-type-headline text-ds-ink">{f.weekXp}</p>
                     <p className="ds-type-caption text-ds-ink-soft">XP this week</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmingId(f.userId)}
-                    aria-label={`Remove ${f.displayName}`}
-                    className="grid size-11 shrink-0 place-items-center rounded-full text-ds-ink-faint hover:bg-ds-wrong-tint hover:text-ds-wrong-ink focus-visible:outline-2 focus-visible:outline-ds-choice"
+                  <DsButton
+                    small
+                    variant="secondary"
+                    onClick={() => void nudge(f)}
+                    disabled={!myId || nudgingId !== null || !canNudge(cooldowns[f.userId], now)}
+                    aria-label={`Nudge ${f.displayName}`}
+                    className="!min-w-11 shrink-0 !px-2.5"
                   >
-                    ✕
-                  </button>
+                    <Icon name="waving_hand" size={22} />
+                  </DsButton>
                   <SocialSafetyMenu
                     userId={f.userId}
                     displayName={f.displayName}
+                    onRemove={() => setConfirmingId(f.userId)}
                     blockTitle={
                       myBuddy.data?.buddyId === f.userId
                         ? buddyBlockConfirm(f.displayName)
@@ -176,15 +263,39 @@ function FriendsPage() {
                       queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
                         (prev ?? []).filter((x) => x.userId !== f.userId),
                       );
+                      dropActivityFrom(f.userId);
                       void queryClient.invalidateQueries({ queryKey: ["myBuddy"] });
                     }}
                   />
                 </>
               )}
+              {/* The study-buddy ask sits on its own quiet line under the name, so the row above stays one line. */}
+              <div className="basis-full pl-[54px] empty:hidden">
+                <AskBuddyButton friendId={f.userId} />
+              </div>
             </DsRow>
           ))}
         </DsCard>
       )}
+
+      {activity && activity.length > 0 && (
+        <>
+          <Overline>Activity</Overline>
+          <DsCard>
+            <ul className="grid gap-1">
+              {activity.map((event) => (
+                <li key={event.id} className="flex items-center gap-3 py-1">
+                  <Icon name={activityIcon(event.eventType)} size={40} />
+                  <p className="ds-type-body min-w-0 flex-1 text-ds-ink">
+                    {activityCopy(event, activityName(event.userId, myId, friends ?? []))}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </DsCard>
+        </>
+      )}
+      <ToastBanner message={toast} />
     </DsScreen>
   );
 }

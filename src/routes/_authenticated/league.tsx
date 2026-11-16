@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
 import {
   BackPill,
+  DsButton,
   DsCard,
   DsHero,
   DsLinkButton,
@@ -13,13 +14,25 @@ import {
   RankBadge,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LeagueTierBadge } from "../../components/LeagueTierBadge";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
+import { ToastBanner } from "../../components/ToastBanner";
+import { useToast } from "../../lib/use-toast";
+import { WeeklyRecapSheet, type RecapView } from "../../components/WeeklyRecapSheet";
 import { LEAGUE_TIER_META, LEAGUE_TIERS, type LeagueTier } from "../../data/achievements";
+import {
+  isLeaguePromotion,
+  loadRecapTier,
+  loadSnapshot,
+  OVERTAKE_MESSAGE,
+  saveRecapTier,
+  saveSnapshot,
+  wasOvertaken,
+} from "../../lib/league-engagement";
 import { useProgress } from "../../lib/progress";
-import { getLeaderboard } from "../../lib/leaderboard.functions";
+import { getLeaderboard, getMyProfile, getWeeklyRecap } from "../../lib/leaderboard.functions";
 import { getProfileOverview } from "../../lib/profile.functions";
 import { bigNumbers } from "../../lib/profile-overview";
 import { tierTitle } from "../../lib/social-presentation";
@@ -41,6 +54,15 @@ export const Route = createFileRoute("/_authenticated/league")({
   }),
 });
 
+/** localStorage, or null where it is blocked (a private window): the notices then simply do not repeat across visits. */
+function safeStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 function LeaguePage() {
   const [scope, setScope] = useState<"global" | "friends" | "country">("global");
   const [period, setPeriod] = useState<"weekly" | "all-time">("weekly");
@@ -60,6 +82,54 @@ function LeaguePage() {
   });
   const weekXp = overview.data ? bigNumbers(overview.data).xpThisWeek : null;
 
+  // Overtake notice: the live global weekly board against the one saved on the last visit, whatever board is showing.
+  // The tab coming back into focus checks again, as the apps do on foreground. Only possible while this page is open.
+  const me = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
+  const myId = me.data?.id ?? null;
+  const overtakeBoard = useQuery({
+    queryKey: ["leaderboard-overtake"],
+    queryFn: () => getLeaderboard({ data: { scope: "global", period: "weekly" } }),
+    retry: false,
+    staleTime: 0,
+  });
+  const [toast, showToast] = useToast();
+  useEffect(() => {
+    if (!myId || !overtakeBoard.data) return;
+    const current = overtakeBoard.data.map((r) => ({ userId: r.user_id, xp: r.xp }));
+    const storage = safeStorage();
+    const previous = loadSnapshot(myId, storage);
+    if (previous && wasOvertaken(previous, current, myId)) showToast(OVERTAKE_MESSAGE);
+    saveSnapshot(myId, current, storage);
+  }, [myId, overtakeBoard.data, showToast]);
+
+  // Weekly recap sheet: last week's XP and today's rank from the server, the promotion from the league last recapped.
+  const [recapOpen, setRecapOpen] = useState(false);
+  const [recap, setRecap] = useState<RecapView>({ status: "loading" });
+  async function openRecap() {
+    setRecap({ status: "loading" });
+    setRecapOpen(true);
+    try {
+      // Opened before the profile arrived: ask for the id now, so the promotion is never missed for being early.
+      const [result, profile] = await Promise.all([
+        getWeeklyRecap(),
+        myId ? Promise.resolve({ id: myId }) : getMyProfile().catch(() => null),
+      ]);
+      const uid = profile?.id ?? null;
+      const storage = safeStorage();
+      const previousTier = uid ? loadRecapTier(uid, storage) : null;
+      const promoted = isLeaguePromotion(previousTier, tier);
+      if (uid) saveRecapTier(uid, tier, storage);
+      setRecap({
+        status: "ready",
+        lastWeekXp: result.lastWeekXp,
+        currentRank: result.currentRank,
+        promotedTo: promoted ? tier : null,
+      });
+    } catch {
+      setRecap({ status: "error" });
+    }
+  }
+
   const meta = LEAGUE_TIER_META[tier];
   const idx = LEAGUE_TIERS.indexOf(tier);
   const nextTier: LeagueTier | null = LEAGUE_TIERS[idx + 1] ?? null;
@@ -73,6 +143,9 @@ function LeaguePage() {
           <span className="flex items-center gap-2">
             <DsLinkButton to="/teams">Teams</DsLinkButton>
             <DsLinkButton to="/season">Season</DsLinkButton>
+            <DsButton small variant="secondary" onClick={() => void openRecap()}>
+              Recap
+            </DsButton>
           </span>
         }
       >
@@ -186,6 +259,8 @@ function LeaguePage() {
           </ol>
         </DsCard>
       )}
+      <ToastBanner message={toast} icon="trophy" />
+      {recapOpen && <WeeklyRecapSheet view={recap} onDone={() => setRecapOpen(false)} />}
     </DsScreen>
   );
 }
