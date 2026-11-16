@@ -15,6 +15,7 @@ struct HandsFreeSwitch: View {
 
     @AppStorage(HandsFreeCopy.noteSeenKey) private var noteSeen = false
     @State private var showNote = false
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         Toggle(HandsFreeCopy.toggle, isOn: Binding(
@@ -28,7 +29,7 @@ struct HandsFreeSwitch: View {
             }
         ))
         .dsText(.footnote)
-        .tint(AlphonsoColor.moss)
+        .tint(ds.choice)
         .padding(.horizontal, AlphonsoSpacing.md)
         .padding(.bottom, 6)
         .accessibilityIdentifier("practiceHandsFreeToggle")

@@ -1070,6 +1070,7 @@ struct VocabImageView: View {
     @State private var failedURL: String?
     /// The URL that has actually rendered; exposed to UI tests through the accessibility identifier.
     @State private var loadedURL: String?
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         switch VocabImagePolicy.slot(url: image.url, failedURL: failedURL) {
@@ -1083,8 +1084,8 @@ struct VocabImageView: View {
                         .onAppear { loadedURL = image.url }
                 case .empty:
                     ZStack {
-                        AlphonsoColor.parchment
-                        ProgressView().tint(AlphonsoColor.moss)
+                        ds.surface
+                        ProgressView().tint(ds.choice)
                     }
                 case .failure:
                     Color.clear.onAppear { failedURL = image.url }

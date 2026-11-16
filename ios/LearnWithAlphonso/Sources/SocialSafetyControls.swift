@@ -175,6 +175,7 @@ struct SocialSafetyMenu: View {
     /// The person the menu acts on. When set, VoiceOver reads "Block or report <name>"; the other call sites keep
     /// the generic label.
     var accessibilityName: String? = nil
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         Menu {
@@ -186,7 +187,7 @@ struct SocialSafetyMenu: View {
             }
         } label: {
             Image(systemName: "ellipsis.circle")
-                .foregroundStyle(AlphonsoColor.inkSoft)
+                .foregroundStyle(ds.inkSoft)
                 .frame(minWidth: AlphonsoSpacing.minTouchTarget, minHeight: AlphonsoSpacing.minTouchTarget)
         }
         .accessibilityLabel(accessibilityName.map(BuddyCopy.safetyMenuLabel) ?? "More options")
