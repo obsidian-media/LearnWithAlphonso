@@ -150,7 +150,7 @@ struct PracticeCallView<Sheet: View>: View {
 
     private var room: some View {
         let room = campaignRoom
-            ? CallScenes.campaignRoom(for: scenarioID, known: PracticeHub.sceneRoomNames, fallback: kit.defaultRoom)
+            ? CallScenes.campaignRoom(for: scenarioID, known: PracticeHub.sceneRoomNames, fallback: CallScenes.studyRoom)
             : CallScenes.room(for: scenarioID, fallback: kit.defaultRoom)
         let dark = AlphonsoThemeManager.shared.paletteID.usesNight(deviceDark: colorScheme == .dark)
         let name = dark ? room.dark : room.light

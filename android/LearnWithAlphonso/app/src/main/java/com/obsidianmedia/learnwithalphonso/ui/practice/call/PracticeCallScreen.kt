@@ -195,7 +195,7 @@ internal fun PracticeCallScreen(
     }
 
     val room = if (campaignRoom) {
-        CallScenes.campaignRoom(scenarioId, known = com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.sceneRoomNames, fallback = kit.defaultRoom)
+        CallScenes.campaignRoom(scenarioId, known = com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.sceneRoomNames, fallback = CallScenes.studyRoom)
     } else {
         CallScenes.room(scenarioId, fallback = kit.defaultRoom)
     }

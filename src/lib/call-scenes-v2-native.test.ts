@@ -81,6 +81,7 @@ describe("iOS reads them", () => {
       "CallScenes.campaignRoom(for: scenarioID, known: PracticeHub.sceneRoomNames",
     );
     expect(view).toContain("CallScenes.room(for: scenarioID, fallback: kit.defaultRoom)");
+    expect(view).toContain("known: PracticeHub.sceneRoomNames, fallback: CallScenes.studyRoom)");
     expect(read("ios/LearnWithAlphonso/Sources/CampaignView.swift")).toMatch(
       /PracticeHub\.room\(campaignID: campaign\.id, sceneID: scene\.id\), campaignRoom: true/,
     );
@@ -134,6 +135,9 @@ describe("Android reads them", () => {
 
   it("gives a campaign scene its older room file through campaignRoom", () => {
     expect(screen).toContain("CallScenes.campaignRoom(scenarioId, known =");
+    // A campaign that falls back keeps room-light/room-dark, not the call's own room.
+    expect(screen).toContain("fallback = CallScenes.studyRoom)");
+    expect(core).toContain('val studyRoom = CallRoom("room-light", "room-dark", dimInDark = false)');
     expect(screen).toContain("CallScenes.room(scenarioId, fallback = kit.defaultRoom)");
     expect(
       read(

@@ -645,10 +645,10 @@ describe("Campaign call screen (setting on, the default)", () => {
       screen.getByText(`${campaign.title}: scene 1 of ${campaign.scenes.length}`),
     ).toBeInTheDocument();
     expect(screen.getByTestId("call-caption")).toHaveTextContent(campaign.scenes[0].opener);
-    // A campaign has no picture of its own: the default room.
-    expect(screen.getByTestId("call-caption").parentElement!.style.backgroundImage).toContain(
-      "/avatar/scenes/call-room-light.webp",
-    );
+    // A campaign keeps today's lesson room (room-light), never the call's own room.
+    const bg = screen.getByTestId("call-caption").parentElement!.style.backgroundImage;
+    expect(bg).toContain("/avatar/scenes/room-light.webp");
+    expect(bg).not.toContain("call-room");
   });
 
   it("keeps scene progress reachable: no Continue on the call; End the call opens the result, Next scene moves on", async () => {

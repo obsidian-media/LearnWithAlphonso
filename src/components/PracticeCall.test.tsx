@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
+import { LESSON_STUDY_ROOM } from "@/lib/avatar/scenes";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
@@ -112,6 +113,13 @@ describe("the room", () => {
   it("gives a conversation with no scenario (a campaign) the default room", () => {
     const { container } = render(<PracticeCall {...base} scenarioId={null} dark={false} />);
     expect(room(container)).toBe("/avatar/scenes/call-room-light.webp");
+  });
+
+  it("lets a campaign keep the lessons' room instead of the call's own", () => {
+    const { container } = render(
+      <PracticeCall {...base} scenarioId={null} dark={true} room={LESSON_STUDY_ROOM} />,
+    );
+    expect(room(container)).toBe("/avatar/scenes/room-dark.webp");
   });
 
   it("holds the caption to four lines, so a long reply cannot climb over his mouth", () => {

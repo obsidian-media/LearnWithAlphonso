@@ -31,8 +31,8 @@ class AvatarCallTest {
         // "coffee" is both a scenario and a campaign scene room: the campaign keeps the old coffee.webp.
         assertEquals(CallRoom("coffee", "coffee", true), CallScenes.campaignRoom("coffee", known))
         assertEquals("market", CallScenes.campaignRoom("market", known).light)
-        assertEquals(CallScenes.defaultRoom, CallScenes.campaignRoom("room-light", known))
-        assertEquals(CallScenes.defaultRoom, CallScenes.campaignRoom(null, known))
+        assertEquals(CallRoom("room-light", "room-dark", false), CallScenes.campaignRoom("room-light", known))
+        assertEquals(CallRoom("room-light", "room-dark", false), CallScenes.campaignRoom(null, known))
         for (name in known) assertFalse(CallScenes.campaignRoom(name, known).light.startsWith("call-"), name)
     }
 

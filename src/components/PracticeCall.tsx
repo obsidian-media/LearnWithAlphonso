@@ -51,6 +51,8 @@ type Props = {
   kit?: CharacterKit;
   /** The scenario whose room is shown; null (a campaign, free talk) gets the character's default room. */
   scenarioId: string | null;
+  /** The study room when scenarioId has no picture; left out, the character's own default room. A campaign passes the lessons' room. */
+  room?: { light: string; dark: string };
   /** Evening room: left out, it follows the look (Royal night only; Meadow stays light in a dark device). */
   dark?: boolean;
   avatar: Omit<ComponentProps<typeof AlphonsoAvatar>, "className">;
@@ -109,6 +111,7 @@ export function PracticeCall(props: Props) {
     kit = ALPHONSO_KIT,
     scenarioId,
     dark: darkProp,
+    room: studyRoom,
     avatar,
     caption,
     mode,
@@ -138,7 +141,7 @@ export function PracticeCall(props: Props) {
   const lift = handsFreeOn ? 52 : 0;
   const speaking = mode === "speaking";
   const stateLabel = MODE_LABEL[mode];
-  const art = sceneArt(scenarioId, undefined, kit.defaultRoom);
+  const art = sceneArt(scenarioId, undefined, studyRoom ?? kit.defaultRoom);
   const room = dark ? art.dark : art.light;
 
   // The call-start sound, once per call (keyed, so a re-render or a development double effect cannot repeat it).

@@ -29,6 +29,9 @@ object CallScenes {
     /** The study room the call uses, by day and in the evening (assets/scenes/call-room-*.webp). */
     val defaultRoom = CallRoom("call-room-light", "call-room-dark", dimInDark = false)
 
+    /** The lessons' study room: what a campaign call keeps (room-light, room-dark), not the call's own room. */
+    val studyRoom = CallRoom("room-light", "room-dark", dimInDark = false)
+
     /** The call's picture for a scenario id, without extension. */
     fun callFile(id: String): String = "call-$id"
 
@@ -40,7 +43,7 @@ object CallScenes {
      * A campaign scene's room: [roomName] is one of the campaign scene rooms (PracticeHub.sceneRoomNames). It keeps the
      * older <room>.webp file the lessons use, never a call file; anything else gets [fallback].
      */
-    fun campaignRoom(roomName: String?, known: Set<String>, fallback: CallRoom = defaultRoom): CallRoom =
+    fun campaignRoom(roomName: String?, known: Set<String>, fallback: CallRoom = studyRoom): CallRoom =
         if (roomName != null && roomName in known) CallRoom(roomName, roomName, dimInDark = true) else fallback
 
     /**

@@ -24,6 +24,8 @@ public enum CallScenes {
     public static let scenariosWithArt: Set<String> = Set(scenarioIDs)
     /// The study room the call uses, by day and in the evening (AlphonsoScenes/call-room-*.webp).
     public static let defaultRoom = CallRoom(light: "call-room-light", dark: "call-room-dark", dimInDark: false)
+    /// The lessons' study room: what a campaign call keeps (room-light, room-dark), not the call's own room.
+    public static let studyRoom = CallRoom(light: "room-light", dark: "room-dark", dimInDark: false)
     /// The call's picture for a scenario id, without extension.
     public static func callFile(_ id: String) -> String { "call-" + id }
 
@@ -38,7 +40,7 @@ public enum CallScenes {
     /// A campaign scene's room: `roomName` is one of the campaign scene rooms (PracticeHub.sceneRoomNames). It keeps
     /// the older <room>.webp file the lessons use, never a call file; anything else gets `fallback`.
     public static func campaignRoom(
-        for roomName: String?, known: Set<String>, fallback: CallRoom = defaultRoom
+        for roomName: String?, known: Set<String>, fallback: CallRoom = studyRoom
     ) -> CallRoom {
         guard let roomName, known.contains(roomName) else { return fallback }
         return CallRoom(light: roomName, dark: roomName, dimInDark: true)

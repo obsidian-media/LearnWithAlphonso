@@ -38,6 +38,12 @@ export const CALL_STUDY_ROOM = {
   dark: callSceneFile("room-dark"),
 } as const;
 
+/** The room lessons and story campaigns keep: the plain room-*.webp files, not the call's own. */
+export const LESSON_STUDY_ROOM = {
+  light: `${BASE}/room-light.webp`,
+  dark: `${BASE}/room-dark.webp`,
+} as const;
+
 export type SceneArt = {
   id: string;
   /** The light-mode image. */

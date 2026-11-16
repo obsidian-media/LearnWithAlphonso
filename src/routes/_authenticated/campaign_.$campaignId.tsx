@@ -26,6 +26,7 @@ import { type AvatarReplyVerdict } from "../../components/AlphonsoAvatar";
 import { PracticeCall } from "../../components/PracticeCall";
 import { parseVerdict, type AvatarMode, type VoicePhase } from "../../lib/avatar/machine";
 import { useAvatarPreference } from "../../lib/avatar/preference";
+import { LESSON_STUDY_ROOM } from "../../lib/avatar/scenes";
 import { useReducedMotion } from "framer-motion";
 import { voiceFor } from "@/lib/voice-prefs";
 import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
@@ -790,6 +791,7 @@ function CampaignChatPage({
           title={sceneLine}
           // A campaign is not a scenario: it always gets the default room, even where an id looks like one.
           scenarioId={null}
+          room={LESSON_STUDY_ROOM}
           avatar={{
             phase: avatarPhase,
             replyText: spoken,

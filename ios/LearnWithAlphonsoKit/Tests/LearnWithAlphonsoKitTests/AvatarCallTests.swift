@@ -31,8 +31,8 @@ final class AvatarCallTests: XCTestCase {
         // "coffee" is both a scenario and a campaign scene room: the campaign keeps the old coffee.webp.
         XCTAssertEqual(CallScenes.campaignRoom(for: "coffee", known: known), CallRoom(light: "coffee", dark: "coffee", dimInDark: true))
         XCTAssertEqual(CallScenes.campaignRoom(for: "market", known: known).light, "market")
-        XCTAssertEqual(CallScenes.campaignRoom(for: "room-light", known: known), CallScenes.defaultRoom)
-        XCTAssertEqual(CallScenes.campaignRoom(for: nil, known: known), CallScenes.defaultRoom)
+        XCTAssertEqual(CallScenes.campaignRoom(for: "room-light", known: known), CallScenes.studyRoom)
+        XCTAssertEqual(CallScenes.campaignRoom(for: nil, known: known), CallScenes.studyRoom)
         for name in known { XCTAssertFalse(CallScenes.campaignRoom(for: name, known: known).light.hasPrefix("call-"), name) }
     }
 
