@@ -1,6 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
 import androidx.lifecycle.ViewModel
+import com.obsidianmedia.learnwithalphonso.Analytics
+import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
 import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.goal.GoalApi
@@ -24,7 +26,11 @@ class GoalCardViewModel(
     cache: GoalCache,
     userId: () -> String?,
 ) : ViewModel() {
-    private val model = GoalCardModel(api, cache, userId)
+    private val model = GoalCardModel(
+        api, cache,
+        onPathBuilt = { code -> Analytics.track(AnalyticsEvent.PATH_BUILT, mapOf("course" to code)) },
+        userId = userId,
+    )
     val state: StateFlow<GoalCardState> = model.state
 
     /**

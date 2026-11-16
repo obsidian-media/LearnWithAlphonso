@@ -10,6 +10,12 @@ vi.mock("@/lib/explain-settings", async (orig) => ({
   ...(await orig<typeof import("@/lib/explain-settings")>()),
   useExplainSettings: () => settings,
 }));
+const tracked: { name: string; props: unknown }[] = [];
+vi.mock("@/lib/analytics", () => ({
+  track: async (name: string, props: unknown) => {
+    tracked.push({ name, props });
+  },
+}));
 vi.mock("@/lib/social-safety.functions", () => ({ reportAiResponse: vi.fn() }));
 
 import { ExplainInMyLanguage } from "./ExplainInMyLanguage";
@@ -29,6 +35,7 @@ const answer = {
 } as const;
 
 beforeEach(() => {
+  tracked.length = 0;
   settings = { nativeLanguage: "fa", mode: "tap" };
 });
 afterEach(cleanup);
@@ -81,6 +88,16 @@ describe("ExplainInMyLanguage", () => {
     ]);
     expect(document.querySelector("[data-ai-label]")!.textContent).toContain("AI · Persian");
     expect(fetchExplanation).toHaveBeenCalledWith(wrong);
+  });
+
+  it("counts explain_requested by kind only when the item is sent, never with its text", async () => {
+    const fetchExplanation = vi.fn(async () => answer);
+    render(<ExplainInMyLanguage request={wrong} fetchExplanation={fetchExplanation} />);
+    expect(tracked).toEqual([]);
+    await userEvent.setup().click(screen.getByRole("button", { name: "Explain in Persian" }));
+    await screen.findByText(/برای جایی/);
+    expect(tracked).toEqual([{ name: "explain_requested", props: { source: "wrong-answer" } }]);
+    expect(JSON.stringify(tracked)).not.toContain("flat");
   });
 
   it("a left-to-right language is not forced right to left", async () => {

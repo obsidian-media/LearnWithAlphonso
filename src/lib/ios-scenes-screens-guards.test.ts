@@ -182,6 +182,7 @@ describe("Profile: hall scene, hero, glass menu cards", () => {
     expect(tile.slice(0, 1800)).toContain("var glass: Bool = false");
     expect(tile.slice(0, 2600)).toContain("AnyShapeStyle(.regularMaterial)");
     // Glass tiles keep the ink colour; the tone ink is only for the old coloured tiles.
-    expect(tile.slice(0, 2600)).toContain("glass ? AlphonsoColor.ink : tone.ink");
+    // A word boundary after each ink: `AlphonsoColor.inkSoft` or `tone.inkSoft` must not pass for `.ink`.
+    expect(tile.slice(0, 2600)).toMatch(/glass \? AlphonsoColor\.ink\b : tone\.ink\b/);
   });
 });

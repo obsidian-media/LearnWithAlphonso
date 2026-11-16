@@ -141,13 +141,14 @@ describe("5. the scene follows the scroll, so Learn's greeting bubble fades", ()
     expect(scene).not.toContain("backgroundPreferenceValue(");
   });
 
-  it("each scene keeps the offset and the probe's visibility in its own state", () => {
+  it("each scene keeps the scroll rules in its own tracker state (the Kit's SceneScrollTracker, tested there)", () => {
     const host = between(scene, "struct SceneScrollHost: ViewModifier", "extension View");
-    expect(host).toContain("@State private var offset: CGFloat?");
-    expect(host).toContain("@State private var probeVisible = true");
+    expect(host).toContain("@State private var tracker = SceneScrollTracker()");
     expect(host).toContain(".environment(\\.sceneScrollReporter");
-    expect(host).toContain("ScreenScene(scene: scene, rawOffset: offset");
-    expect(host).toContain("probeVisible: probeVisible");
+    expect(host).toContain(
+      "ScreenScene(scene: scene, rawOffset: tracker.offset.map { CGFloat($0) }",
+    );
+    expect(host).toContain("probeVisible: tracker.probeVisible || tracker.scrollDriven");
   });
 
   it("reads the scroll view's own offset (iOS 18+): a List row's probe never reached the scene on Limrun", () => {
@@ -168,9 +169,9 @@ describe("5. the scene follows the scroll, so Learn's greeting bubble fades", ()
     );
     expect(host).toContain(".modifier(SceneScrollOffsetReader { report(.scrolled($0)) })");
     // Once the scroll view reports, the probe is ignored and the pin no longer depends on the probe row.
-    expect(host).toMatch(/case \.scrolled\(let y\):\s*scrollDriven = true\s*offset = y/);
-    expect(host).toMatch(/guard probeVisible, !scrollDriven else \{ return \}\s*offset = /);
-    expect(host).toContain("probeVisible: probeVisible || scrollDriven");
+    expect(host).toContain("case .scrolled(let y): tracker.apply(.scrolled(Double(y)))");
+    expect(host).toContain("case .moved(let minY): tracker.apply(.moved(Double(minY)))");
+    expect(host).toContain("probeVisible: tracker.probeVisible || tracker.scrollDriven");
   });
 
   it("the bubble stays hidden while the top row is off screen, whatever position was last reported", () => {
@@ -178,8 +179,14 @@ describe("5. the scene follows the scroll, so Learn's greeting bubble fades", ()
     expect(pin).toContain("guard probeVisible else { return 0 }");
   });
 
-  it("a position reported while the row is off screen is ignored", () => {
-    const host = between(scene, "struct SceneScrollHost: ViewModifier", "extension View");
-    expect(host).toMatch(/guard probeVisible(, !scrollDriven)? else \{ return \}\s*offset = /);
+  it("a position reported while the row is off screen is ignored, but kept and applied when the row is back", () => {
+    const tracker = readFileSync(
+      "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/SceneScrollTracker.swift",
+      "utf8",
+    ).replace(/\r\n/g, "\n");
+    expect(tracker).toMatch(/guard probeVisible, !scrollDriven else \{ return \}\s*offset = y/);
+    expect(tracker).toMatch(
+      /case \.appeared:\s*probeVisible = true\s*if !scrollDriven, let y = lastProbeY \{ offset = y \}/,
+    );
   });
 });
