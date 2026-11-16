@@ -6,7 +6,7 @@ Sweep of 2026-11-15 against main, merged pull requests and read-only checks of t
 
 **How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
 
-Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
+Counts: owner only 18, decision needed 8, device check 13, agent can do 22, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
 
 ### A. STILL OPEN - owner only (in priority order)
 
@@ -36,7 +36,6 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 21. **The three Alphonso tutor videos are PUBLISHED with the HeyGen free-plan watermark** (verified: 3 of 3 published, also visible on the website). Unpublish, keep, or move to a paid plan or another pipeline. Nothing may be posted to social before this. (build 63 plan step 7, 2026-11-13)
 22. **Spanish Minimal Pairs lessons:** keep as plain listening, replace with spelling-choice questions, or write for a Spain voice. (0.0-as #13, 0.0-av)
 23. **Web/iOS social parity:** deliberately platform-exclusive or close the gap. (2.3)
-24. **Should Royal night follow the system on the web?** The web has no night toggle; the token set exists. (r12 themes)
 25. **French question frb2p5q16** (the key repeats "enfin"): pick the answer. (0.0-av, round 7 D)
 26. **Review src/data/path-tags.ts** (learning-path tags) and calibrate the path's talk, campaign and quiz minutes in src/data/path-config.ts. (0.0-bc roadmap, #490)
 27. **Two Qlty warnings** behind the Qlty login: look and decide. (2026-11-07 notes)
@@ -110,6 +109,8 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+
+- Web follows the device dark mode in Royal (round 14, owner "24 yes"): Meadow stays light; lessons and `.ds-light` screens stay light.
 
 - Admin console redesign from the approved mock: merged in #568 (becd9650); admin phases 1 to 3 are all built.
 - Build 67 cut and uploaded to TestFlight (#571, release run 43785255490), not submitted; carries the iOS support push tap.

@@ -35,7 +35,7 @@
   --color-ember: oklch(0.64 0.18 32);
   --color-ember-soft: oklch(0.9 0.05 32);
   --color-hairline: var(--c-line);
-  --color-ink-on-ember: var(--color-ink);
+  --color-ink-on-ember: var(--c-on-action);
 }
 
 @utility grain {
@@ -188,6 +188,29 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
+/* The older (shadcn-style) names are fixed light values. In Royal night they follow the night tokens, so a card,
+   a popover or a default border is not a white box on a dark page. A .ds-light screen keeps the light values. */
+:root:not([data-palette="meadow"])[data-ds-mode="night"] {
+  --card: var(--c-card);
+  --card-foreground: var(--c-ink);
+  --popover: var(--c-card);
+  --popover-foreground: var(--c-ink);
+  --secondary: var(--c-sunk);
+  --secondary-foreground: var(--c-ink);
+  --muted: var(--c-sunk);
+  --border: color-mix(in oklab, var(--c-ink) 14%, transparent);
+}
+:root:not([data-palette="meadow"])[data-ds-mode="night"] .ds-light {
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.035 155);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.035 155);
+  --secondary: oklch(0.923 0.019 75);
+  --secondary-foreground: oklch(0.24 0.035 155);
+  --muted: oklch(0.923 0.019 75);
+  --border: oklch(0.24 0.035 155 / 0.1);
 }
 
 /* Meadow keeps its own display face; Royal's is Baloo 2 (the @theme default above). */

@@ -61,6 +61,38 @@ describe("design system mirrors are up to date", () => {
     }
     expect(css).toMatch(/\.ds-light \{\s*color-scheme: light;/);
   });
+
+  it("night tells the browser to draw its own controls dark, for Royal only", () => {
+    const css = outputs["src/styles/ds-tokens.generated.css"];
+    expect(css).toMatch(
+      /:root:not\(\[data-palette="meadow"\]\)\[data-ds-mode="night"\] \{\s*color-scheme: dark;\s*\}/,
+    );
+    // Nothing else sets a dark colour scheme: Meadow has no night.
+    expect(css.match(/color-scheme: dark/g)).toHaveLength(1);
+  });
+});
+
+describe("the older style names follow Royal night", () => {
+  const styles = fs
+    .readFileSync(path.join(root, "src/styles.css"), "utf8")
+    .replaceAll("\r\n", "\n");
+  const night = ':root:not([data-palette="meadow"])[data-ds-mode="night"]';
+  const block = (selector: string) => {
+    const start = styles.indexOf(`${selector} {`);
+    expect(start, selector).toBeGreaterThan(-1);
+    return styles.slice(start, styles.indexOf("}", start));
+  };
+  it("card, popover, muted and the default border take the night tokens, and a .ds-light screen gets its light values back", () => {
+    const n = block(night);
+    for (const v of ["--card", "--popover", "--muted", "--secondary", "--border"]) {
+      expect(n, v).toContain(`${v}:`);
+      expect(n, v).not.toContain(`${v}: oklch(1 0 0)`);
+      expect(block(`${night} .ds-light`), v).toContain(`${v}:`);
+    }
+  });
+  it("text on the ember button is the dark on-action ink in both modes, not the page ink", () => {
+    expect(styles).toContain("--color-ink-on-ember: var(--c-on-action);");
+  });
 });
 
 describe("icons: one SVG source, all three platforms", () => {
