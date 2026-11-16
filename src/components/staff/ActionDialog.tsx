@@ -110,7 +110,7 @@ export function ActionDialog({
           </Button>
           <Button
             type="submit"
-            variant={action === "delete" || action === "ban" ? "ember" : "primary"}
+            variant={action === "delete" || action === "ban" ? "danger" : "primary"}
             className="!px-4 !py-2 text-sm"
             disabled={!ready || busy}
           >

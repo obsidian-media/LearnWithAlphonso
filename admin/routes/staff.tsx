@@ -3,6 +3,7 @@ import { useState } from "react";
 import { adminWhoAmI } from "@/lib/admin.functions";
 import { staffAddStaff, staffListStaff, staffUpdateStaff } from "@/lib/staff-admin.functions";
 import { classifyStaffError } from "@/lib/staff-route-errors";
+import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
 import { StaffView } from "@/components/staff/StaffView";
 
 export const Route = createFileRoute("/staff")({
@@ -26,11 +27,7 @@ function Staff() {
   const [error, setError] = useState<string | null>(null);
 
   if (data.forbidden) {
-    return (
-      <main className="mx-auto max-w-5xl p-6">
-        <p className="text-ink-soft">You do not have access to this page.</p>
-      </main>
-    );
+    return <ForbiddenCard title="Staff" scope="staff.manage" />;
   }
 
   async function run(action: () => Promise<unknown>) {

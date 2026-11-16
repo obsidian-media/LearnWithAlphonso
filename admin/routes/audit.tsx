@@ -3,6 +3,7 @@ import { useState } from "react";
 import { adminWhoAmI } from "@/lib/admin.functions";
 import { staffListAudit, type AuditRow } from "@/lib/staff-audit.functions";
 import { classifyStaffError } from "@/lib/staff-route-errors";
+import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
 import { AuditView, type AuditFilters } from "@/components/staff/AuditView";
 
 export const Route = createFileRoute("/audit")({
@@ -28,11 +29,7 @@ function Audit() {
   const [error, setError] = useState<string | null>(null);
 
   if (data.forbidden) {
-    return (
-      <main className="mx-auto max-w-5xl p-6">
-        <p className="text-ink-soft">You do not have access to this page.</p>
-      </main>
-    );
+    return <ForbiddenCard title="Action record" scope="audit.read" />;
   }
   const shownRows = rows ?? data.first.rows;
   const shownCursor = cursor === undefined ? data.first.nextCursor : cursor;
