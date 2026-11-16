@@ -3,7 +3,12 @@
 // log it here. There is NO price table on this side (the one table is src/lib/ai-prices.ts): the cost is the provider's
 // own reported charge, and a reply that reports none is logged with a NULL cost, flagged "unknown", never guessed.
 // A failed write never reaches the caller: everything here is caught.
-import type { SupabaseClient } from "@supabase/supabase-js";
+// A structural type, not the supabase-js one: the Deno test job cannot resolve that package.
+type CostLogAdmin = {
+  from: (table: string) => {
+    insert: (row: unknown) => PromiseLike<{ error: { message: string } | null }>;
+  };
+};
 
 const num = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : null;
@@ -42,7 +47,7 @@ export function costRowFromReply(
 
 /** A recorder for one learner's translate grading; pass it as the grader's onUsage. Never throws. */
 export function makeTranslateCostLogger(
-  admin: SupabaseClient,
+  admin: CostLogAdmin,
   userId: string,
 ): (body: unknown, requestedModel: string) => Promise<void> {
   return async (body, requestedModel) => {
