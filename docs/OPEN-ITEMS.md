@@ -37,7 +37,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 
 22. **Spanish Minimal Pairs lessons: DECIDED 2026-11-16.** Owner: "yes". They become spelling-choice questions. In progress.
 23. **Web/iOS/Android social parity: DECIDED 2026-11-16.** Owner: "close the gap". Audit in progress (workstream B).
-24. **Royal night on the web: DECIDED 2026-11-16.** Owner: "yes". The web Royal theme follows the device dark mode; Meadow stays light. In progress (workstream A).
+24. **Royal night on the web: DECIDED 2026-11-16.** Owner: "yes". The web Royal theme follows the device dark mode; Meadow stays light. Built in the round 14 night PR (#577).
 25. **French question frb2p5q16: DECIDED 2026-11-16.** Owner: "yes". The agent writes the answer and the owner approves it in the PR.
 26. **Path tags and minutes: DECIDED 2026-11-16.** Owner: "yes". The agent proposes `src/data/path-tags.ts` tags and the `path-config.ts` minutes from data; the owner approves.
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
@@ -70,7 +70,6 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 46. **Night rooms for dark mode** (owner said yes 2026-11-12); no evidence it was built; lessons stay light. (0.0-be)
 49. **Redesign gaps, batch 1: web social parity (in progress).** The 2026-11-16 audit (r14-b-audit) found 28 of the 34 rows formerly listed in items 49 to 51 already done. Seven web features remain: friend nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, team-name report.
 50. **Redesign gaps, batch 2: Android residue** (the rows of the audit still open on Android).
-51. **Redesign gaps, batch 3: iOS residue (in progress),** including the accept-friend sheet. Owner 2026-11-16: "3. copy". The iOS accept-friend sheet copies the web and Android look; no new mock.
 52a. **Redesign gaps, batch 4: web call-chrome raw values.**
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
@@ -106,10 +105,13 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Redesign gaps, batch 3 (iOS residue, was 51): iOS accept-friend sheet and the legacy helpers moved onto the design system (#575, 791a81dd); the sheet copies the web and Android look as the owner chose ("3. copy"). Nothing was seen on a simulator.
+- Owner step from #576: delete `NVIDIA_API_KEY` and `NVIDIA_CHAT_MODEL` on Vercel if they are still set (no code reads them).
 - Web pending-sync, update gate and offline finish: owner 2026-11-16, "1. keep". They stay app-only (closed, by design).
 - Web push notifications: owner 2026-11-16, "2. keep to app". No web push (closed, by design).
 
 - Small fixes (#576, round 14): reserved analytics events `explain_requested` and `path_built` now sent on web, iOS and Android (47); Help reply email sender is "Learn with Alphonso Support team" (48); word-deck arrow keys scoped to the deck, tile guard tightened, Learn bubble probe-row fix; the "Word n of N" live region and the Android unit-numbering read were already in place (55); NVIDIA provider path was already retired, no source reads its env names (56); `types-fresh` waits for the deploy so a table-adding PR with its types passes (58); Placement "not passed" and "not reached" chips differ on iOS and Android (60); Save a word carries the course language and Space opens it from a transcript word (61); Staff page scope labels (64).
+- Web follows the device dark mode in Royal (round 14, owner "24 yes"): Meadow stays light; lessons and `.ds-light` screens stay light.
 - Alphonso tutor videos (was 21): owner 2026-11-16, "keep the videos for now". Decided: the three videos stay published (with the free-plan watermark).
 - Admin console redesign from the approved mock: merged in #568 (becd9650); admin phases 1 to 3 are all built.
 - Build 67 cut and uploaded to TestFlight (#571, release run 43785255490), not submitted; carries the iOS support push tap.

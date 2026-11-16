@@ -190,6 +190,52 @@ describe("first-paint theme script", () => {
     expect(script).toContain("localStorage");
   });
 
+  // Night: Royal follows the device's dark mode, Meadow never does (owner: "Meadow stays light, even in dark mode").
+  function runDark(stored: string | null, dark: boolean | "throws" | "absent") {
+    document.documentElement.removeAttribute("data-palette");
+    document.documentElement.removeAttribute("data-ds-mode");
+    if (stored === null) localStorage.removeItem("theme");
+    else localStorage.setItem("theme", stored);
+    const original = window.matchMedia;
+    if (dark === "absent") {
+      Object.defineProperty(window, "matchMedia", { value: undefined, configurable: true });
+    } else {
+      Object.defineProperty(window, "matchMedia", {
+        configurable: true,
+        value: (q: string) => {
+          if (dark === "throws") throw new Error("blocked");
+          return { matches: q.includes("prefers-color-scheme: dark") ? dark : false };
+        },
+      });
+    }
+    try {
+      new Function(script)();
+    } finally {
+      Object.defineProperty(window, "matchMedia", { value: original, configurable: true });
+    }
+    return [document.documentElement.dataset.palette, document.documentElement.dataset.dsMode];
+  }
+
+  it("paints Royal night when the device is dark", () => {
+    expect(runDark("royal", true)).toEqual(["royal", "night"]);
+    expect(runDark(null, true)).toEqual(["royal", "night"]);
+    expect(runDark("studio-ink", true)).toEqual(["royal", "night"]);
+  });
+
+  it("keeps Royal light when the device is light", () => {
+    expect(runDark("royal", false)).toEqual(["royal", undefined]);
+  });
+
+  it("keeps Meadow light even when the device is dark", () => {
+    expect(runDark("meadow", true)).toEqual(["meadow", undefined]);
+  });
+
+  it("still paints the palette when the browser cannot say whether it is dark", () => {
+    expect(runDark("meadow", "throws")).toEqual(["meadow", undefined]);
+    expect(runDark("royal", "throws")).toEqual(["royal", undefined]);
+    expect(runDark("royal", "absent")).toEqual(["royal", undefined]);
+  });
+
   it("defaults a brand-new visitor to royal", () => {
     expect(runWith(null)).toBe("royal");
   });

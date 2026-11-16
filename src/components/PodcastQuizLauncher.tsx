@@ -54,7 +54,7 @@ export function PodcastQuizLauncher({
         {loading ? "Loading quiz…" : "Take the quiz"}
       </button>
       {failed ? (
-        <span role="alert" className="ml-2 text-xs text-rose-600">
+        <span role="alert" className="ml-2 text-xs text-ds-wrong-ink">
           The quiz isn&apos;t available right now.
         </span>
       ) : null}
