@@ -122,6 +122,21 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
+describe("the reply email's sender and subject", () => {
+  it("comes from the Support team, never from Alphonso or Miya, with no bracket prefix", async () => {
+    expect(DEFAULT_SUPPORT_FROM).toBe(
+      "Learn with Alphonso Support team <support@hello.alphonsoecosystem.app>",
+    );
+    const { world, deps, emails } = setup();
+    await deliverNotice(deps, world.rows[0]);
+    const sentFrom = emails[0].from as string;
+    expect(sentFrom.split("<")[0].trim()).toMatch(/Support team$/);
+    expect(sentFrom).not.toMatch(/miya/i);
+    expect(emails[0].subject).not.toContain("[Alphonso]");
+    expect(emails[0].subject).toMatch(/Support team$/);
+  });
+});
+
 describe("one reply notice", () => {
   it("sends the email and the push, names the person like the chat, and marks the row delivered", async () => {
     const { world, deps, emails, pushes } = setup();

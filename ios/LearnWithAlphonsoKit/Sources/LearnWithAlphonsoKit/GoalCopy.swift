@@ -117,3 +117,9 @@ public enum GoalCopy {
         return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
     }
 }
+
+/// When saving a goal counts as the `path_built` analytics event. Same rule on web (GoalCard.tsx) and Android
+/// (GoalCardModel.onPathBuilt): a path is built the first time a goal is saved for a course; changing one is not.
+public enum GoalAnalytics {
+    public static func buildsPath(hadGoal: Bool) -> Bool { !hadGoal }
+}

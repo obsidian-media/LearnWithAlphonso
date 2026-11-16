@@ -32,5 +32,5 @@ Lessons: `lesson-timing.json` through `estimateLessonMinutes`. Podcasts: the epi
 | Days are the learner's local day | **Done** (#497) | the engine's today and week use `localDay` |
 | Calibration of `TALK_MINUTES`, `CAMPAIGN_SCENE_MINUTES`, `QUIZ_MINUTES` | **Open** | estimates in `src/data/path-config.ts` until production data exists |
 | Review of `src/data/path-tags.ts` (goal to campaign map; four campaigns added in #495) | **Open, owner** | |
-| PostHog `path_built` event | **Open** | the name is reserved in the three event lists; no call site |
+| PostHog `path_built` event | **Done** (round 14) | fires the first time a goal is saved for a course; course only; web, iOS, Android |
 | `video` path type (Alphonso tutor videos as path stops) | **In progress** | the Library branch `feat/library-watch` adds it; not merged |

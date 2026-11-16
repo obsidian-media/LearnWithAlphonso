@@ -378,4 +378,20 @@ final class ExplainProfileTests: XCTestCase {
         let context = report.jsonObject()["context"] as? [String: Any]
         XCTAssertEqual(context?["surface"] as? String, "explain")
     }
+
+    /// Red if an item kind stops mapping to its own source, or if a source could carry the item's text: the
+    /// explain_requested event may only say which kind of item went out, and the value must survive the sanitiser.
+    func testExplainRequestedSourceIsTheKindAndNeverTheText() throws {
+        let wrong = try XCTUnwrap(ExplainRequest.makeWrongAnswer(
+            question: "I am live in a flat.", wrongAnswer: "am live", correctAnswer: "live", course: "en"))
+        let word = try XCTUnwrap(ExplainRequest.makeWord(word: "flat", sentence: "a flat", course: "en"))
+        let message = try XCTUnwrap(ExplainRequest.makeMessage(text: "secret text", course: "en"))
+        XCTAssertEqual(wrong.analyticsSource, "wrong-answer")
+        XCTAssertEqual(word.analyticsSource, "word")
+        XCTAssertEqual(message.analyticsSource, "message")
+        for request in [wrong, word, message] {
+            let clean = AnalyticsProperties.sanitize(.explainRequested, ["source": request.analyticsSource])
+            XCTAssertEqual(clean["source"] as? String, request.analyticsSource)
+        }
+    }
 }

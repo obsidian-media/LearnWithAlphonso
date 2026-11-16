@@ -6,7 +6,7 @@ Sweep of 2026-11-15 against main, merged pull requests and read-only checks of t
 
 **How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
 
-Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
+Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
 
 ### A. STILL OPEN - owner only (in priority order)
 
@@ -68,8 +68,6 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 44. **FR/ES review-panel disagreements** (77 from the first run) were folded into the content closure project; the state of the closure run and its caps is unverified from here. (0.0-ay, #428, content closure)
 45. **Call scenes v2:** more vivid, less pastel, distinct interview and negotiation offices, matching evening study room. No evidence it started. (2026-11-05 note)
 46. **Night rooms for dark mode** (owner said yes 2026-11-12); no evidence it was built; lessons stay light. (0.0-be)
-47. **Reserved analytics events** explain_requested and path_built exist in the event list but have no call sites (verified by search). (2026-11-13 NEXT)
-48. **Support notices wording:** the reply email still comes from an "Alphonso Support" sender name with an "[Alphonso]" subject (verified in src/lib/support-notify.ts and support-notify.server.ts); the Miya note asked for "team". (r13 Miya note)
 49. **Redesign gaps, batch 1: web social parity (in progress).** The 2026-11-16 audit (r14-b-audit) found 28 of the 34 rows formerly listed in items 49 to 51 already done. Seven web features remain: friend nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, team-name report.
 50. **Redesign gaps, batch 2: Android residue** (the rows of the audit still open on Android).
 51. **Redesign gaps, batch 3: iOS residue (in progress),** including the accept-friend sheet. Owner 2026-11-16: "3. copy". The iOS accept-friend sheet copies the web and Android look; no new mock.
@@ -77,16 +75,10 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
 54. **Concurrent-device review grading and offline streak continuity.** (3 Review, ARCHITECTURE rough edges)
-55. **Round-4 review minors:** deck arrow keys listen on the whole window, "Word n of N" not announced, substring guards, unit-numbering test skips the Android file. Also the learn-bubble probe row that can stay hidden at the top. (0.0-ar)
-56. **Retire the NVIDIA provider path** after OpenRouter proves out; it is still in src/lib/llm-chat*.ts. (OpenRouter switch note)
 57. **Remove the unused push-to-talk capability** from the App ID. (1.1 #9)
-58. **Types freshness false positive** on table-adding PRs still exists, now in a non-gating job. (0.0h)
 59. **Vocab image quality** beyond metadata triage; Android needs no change for empty lines (verified done). (3 Content)
-60. **Placement: "missed" and "not reached" markers look the same** on iOS and Android. (#395 review)
-61. **FR/ES save-a-word accessibility follow-ups** and keyboard access to transcript words. (0.0-ac #4)
 62. **Podcast carried risks and deferred minors** (storage before any Pro gating, ended-event ordering). Unverified on a device. (0.8)
 63. **Dev server does not boot in the Windows sandbox.** (4)
-64. **Staff page label** for the new revenue scope, if the redesign leaves it unlabelled. (r13 numbers note)
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
 
@@ -117,6 +109,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 - Web pending-sync, update gate and offline finish: owner 2026-11-16, "1. keep". They stay app-only (closed, by design).
 - Web push notifications: owner 2026-11-16, "2. keep to app". No web push (closed, by design).
 
+- Small fixes (#576, round 14): reserved analytics events `explain_requested` and `path_built` now sent on web, iOS and Android (47); Help reply email sender is "Learn with Alphonso Support team" (48); word-deck arrow keys scoped to the deck, tile guard tightened, Learn bubble probe-row fix; the "Word n of N" live region and the Android unit-numbering read were already in place (55); NVIDIA provider path was already retired, no source reads its env names (56); `types-fresh` waits for the deploy so a table-adding PR with its types passes (58); Placement "not passed" and "not reached" chips differ on iOS and Android (60); Save a word carries the course language and Space opens it from a transcript word (61); Staff page scope labels (64).
 - Alphonso tutor videos (was 21): owner 2026-11-16, "keep the videos for now". Decided: the three videos stay published (with the free-plan watermark).
 - Admin console redesign from the approved mock: merged in #568 (becd9650); admin phases 1 to 3 are all built.
 - Build 67 cut and uploaded to TestFlight (#571, release run 43785255490), not submitted; carries the iOS support push tap.
