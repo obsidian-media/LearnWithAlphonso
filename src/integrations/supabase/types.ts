@@ -2946,6 +2946,7 @@ export type Database = {
         Args: { _seconds: number; _user_id: string };
         Returns: string;
       };
+      admin_numbers_own: { Args: { p_days: number }; Returns: Json };
       admin_rename_team: {
         Args: { _name: string; _team_id: string };
         Returns: string;
