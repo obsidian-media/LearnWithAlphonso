@@ -70,9 +70,10 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 46. **Night rooms for dark mode** (owner said yes 2026-11-12); no evidence it was built; lessons stay light. (0.0-be)
 47. **Reserved analytics events** explain_requested and path_built exist in the event list but have no call sites (verified by search). (2026-11-13 NEXT)
 48. **Support notices wording:** the reply email still comes from an "Alphonso Support" sender name with an "[Alphonso]" subject (verified in src/lib/support-notify.ts and support-notify.server.ts); the Miya note asked for "team". (r13 Miya note)
-49. **Android redesign gaps (from the 2026-11-14 note, unverified after #534):** hands-free and call chrome, Save a word, Podcast quiz, Placement, Display name, AI consent, report sheet, Voice picker, offline/pending-sync, lesson finish fallbacks. Also Help get-help links and push tap.
-50. **Web redesign gaps:** friend nudge and activity feed, Build my path goal chips, weekly recap, pending-sync, update gate, offline finish; report-sheet and Placement screenshots. (r12 web note)
-51. **iOS redesign skipped items (2026-11-14, unverified after batch 3):** unlock sheet, Hector and Practice-call chrome, Save a word, Podcast quiz, Placement, AI consent, Season, report reasons, voice picker, weekly recap, offline, update-required, finish fallbacks.
+49. **Redesign gaps, batch 1: web social parity (in progress).** The 2026-11-16 audit (r14-b-audit) found 28 of the 34 rows formerly listed in items 49 to 51 already done. Seven web features remain: friend nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, team-name report.
+50. **Redesign gaps, batch 2: Android residue** (the rows of the audit still open on Android).
+51. **Redesign gaps, batch 3: iOS residue (in progress),** including the accept-friend sheet. Owner 2026-11-16: "3. copy". The iOS accept-friend sheet copies the web and Android look; no new mock.
+52a. **Redesign gaps, batch 4: web call-chrome raw values.**
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
 54. **Concurrent-device review grading and offline streak continuity.** (3 Review, ARCHITECTURE rough edges)
@@ -113,6 +114,8 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Web pending-sync, update gate and offline finish: owner 2026-11-16, "1. keep". They stay app-only (closed, by design).
+- Web push notifications: owner 2026-11-16, "2. keep to app". No web push (closed, by design).
 
 - Alphonso tutor videos (was 21): owner 2026-11-16, "keep the videos for now". Decided: the three videos stay published (with the free-plan watermark).
 - Admin console redesign from the approved mock: merged in #568 (becd9650); admin phases 1 to 3 are all built.
