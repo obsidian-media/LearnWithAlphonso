@@ -63,6 +63,36 @@ function parseVerdict(content: string): AiTranslationVerdict | null {
   }
 }
 
+type WaitUntilRuntime = { waitUntil: (p: Promise<unknown>) => void };
+
+/**
+ * Runs the cost-log write so it survives the response: handed to EdgeRuntime.waitUntil when the platform has it,
+ * otherwise awaited for at most `timeoutMs` (the write is one small insert). Never throws, so measuring a call
+ * can never change its verdict.
+ */
+export async function settleUsage(
+  work: () => Promise<void> | void,
+  runtime: WaitUntilRuntime | undefined = (globalThis as { EdgeRuntime?: WaitUntilRuntime })
+    .EdgeRuntime,
+  timeoutMs = 4_000,
+): Promise<void> {
+  try {
+    const p = Promise.resolve(work()).catch(() => undefined);
+    if (runtime && typeof runtime.waitUntil === "function") {
+      runtime.waitUntil(p);
+      return;
+    }
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, timeoutMs);
+    });
+    await Promise.race([p, timeout]);
+    clearTimeout(timer);
+  } catch {
+    // Swallowed on purpose.
+  }
+}
+
 export async function gradeTranslationWithAi(args: {
   prompt: string;
   acceptableAnswers: string[];
@@ -98,11 +128,7 @@ export async function gradeTranslationWithAi(args: {
     });
     if (!resp.ok) return null;
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
-    try {
-      void Promise.resolve(args.onUsage?.(data, args.model)).catch(() => undefined);
-    } catch {
-      // Measuring a call never changes its verdict.
-    }
+    await settleUsage(() => args.onUsage?.(data, args.model));
     return parseVerdict(data.choices?.[0]?.message?.content ?? "");
   } catch {
     return null;

@@ -143,7 +143,13 @@ export async function sweepAiCost(deps: AiCostSweepDeps): Promise<AiCostSweepRes
   if (now.getUTCHours() < ALERT_AFTER_UTC_HOUR) return result;
   const day = yesterdayUtc(now);
 
-  const claim = await deps.rpc("claim_ai_cost_alert_day", { p_day: day });
+  let claim: Awaited<ReturnType<AiCostSweepDeps["rpc"]>>;
+  try {
+    claim = await deps.rpc("claim_ai_cost_alert_day", { p_day: day });
+  } catch (e) {
+    console.error("[ai-cost] alert claim failed:", e instanceof Error ? e.message : "error");
+    return result;
+  }
   if (claim.error) {
     if (!notDeployed(claim.error))
       console.error("[ai-cost] alert claim failed:", claim.error.message);

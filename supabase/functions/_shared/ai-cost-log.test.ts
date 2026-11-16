@@ -33,3 +33,43 @@ Deno.test("the logger never throws, whatever the database does", async () => {
   const erroring = { from: () => ({ insert: () => Promise.resolve({ error: { message: "x" } }) }) };
   await makeTranslateCostLogger(erroring as never, "u")({ usage: {} }, "m");
 });
+
+import { settleUsage } from "./translation-grader.ts";
+
+Deno.test(
+  "the cost write is handed to waitUntil when the platform has it, and not awaited",
+  async () => {
+    let handed: Promise<unknown> | undefined;
+    let finished = false;
+    await settleUsage(
+      async () => {
+        await new Promise((r) => setTimeout(r, 20));
+        finished = true;
+      },
+      { waitUntil: (p) => (handed = p) },
+    );
+    assertEquals(handed !== undefined, true);
+    assertEquals(finished, false);
+    await handed;
+    assertEquals(finished, true);
+  },
+);
+
+Deno.test(
+  "without waitUntil the write is awaited, bounded by the timeout, and never throws",
+  async () => {
+    let done = false;
+    await settleUsage(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+      done = true;
+    }, undefined);
+    assertEquals(done, true);
+    const t0 = Date.now();
+    await settleUsage(() => new Promise<void>(() => {}), undefined, 30);
+    assertEquals(Date.now() - t0 < 1000, true);
+    await settleUsage(() => {
+      throw new Error("boom");
+    }, undefined);
+    await settleUsage(() => Promise.reject(new Error("boom")), { waitUntil: () => {} });
+  },
+);
