@@ -174,6 +174,12 @@ describe("Pro gating is decided on the server", () => {
     await call({ callId: CALL, messages: msgs });
     expect(memoryCall().args._save).toBe(false);
   });
+  it("memory keeps only the corrected form, never the learner's own words", async () => {
+    h.pro.mockResolvedValue("active");
+    await call({ callId: CALL, messages: msgs });
+    expect(memoryCall().args._mistakes).toEqual([{ topic: "ser-estar", text: "Estoy cansado" }]);
+    expect(JSON.stringify(memoryCall().args)).not.toContain("Soy cansado");
+  });
   it("a Pro learner: memory saved", async () => {
     h.pro.mockResolvedValue("active");
     const body = (await (await call({ callId: CALL, messages: msgs })).json()) as {

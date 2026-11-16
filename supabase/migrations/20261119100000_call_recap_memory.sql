@@ -11,7 +11,7 @@
 --    calls; phrase lines are the recap phrases the learner added to review. No call transcript is stored here.
 -- 4. Three server-only functions: remember_call_recap, remember_recap_phrase, and the two delete paths
 --    delete_tutor_memory_line / forget_tutor_memory. The delete paths also remove the matching weakness_events (which had
---    no delete path until now) and the matching review items, in one transaction. They never touch lessons, stars,
+--    no delete path until now) and the review items a recap made (keys 'recap:%'), in one transaction. They never touch lessons, stars,
 --    streak, XP or the learner's own saved words.
 --
 -- Depends on practice_calls (20261107032021), review_items (20261112140000), weakness_events (20260921000000), ai_usage
@@ -163,8 +163,8 @@ REVOKE ALL ON FUNCTION public.remember_recap_phrase(uuid, text, uuid, text, text
   FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.remember_recap_phrase(uuid, text, uuid, text, text, text) TO service_role;
 
--- Removes one memory line and what hangs off it. A mistake: its weakness_events and its open weakness review items. A
--- phrase: its review item. Returns {memory, events, review} counts; all zeros when the line is not this user's.
+-- Removes one memory line and what hangs off it. A mistake: its weakness_events (events carry no course, so those of the
+-- same topic in any course go) and the review items a recap made for it. A phrase: its review item. Returns {memory, events, review} counts; all zeros when the line is not this user's.
 CREATE FUNCTION public.delete_tutor_memory_line(_user_id uuid, _id uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -184,7 +184,8 @@ BEGIN
     DELETE FROM public.weakness_events WHERE user_id = _user_id AND category = r.memory_key;
     GET DIAGNOSTICS ev = ROW_COUNT;
     DELETE FROM public.review_items
-      WHERE user_id = _user_id AND source = 'weakness' AND weakness_label = r.memory_key AND language = r.course;
+      WHERE user_id = _user_id AND source = 'weakness' AND weakness_label = r.memory_key AND language = r.course
+        AND item_key LIKE 'recap:%';
     GET DIAGNOSTICS rv = ROW_COUNT;
   ELSIF r.review_key IS NOT NULL THEN
     DELETE FROM public.review_items
@@ -198,8 +199,9 @@ $$;
 REVOKE ALL ON FUNCTION public.delete_tutor_memory_line(uuid, uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.delete_tutor_memory_line(uuid, uuid) TO service_role;
 
--- Forget everything, in one transaction: every memory line, every weakness event, every weakness review item and every
--- review item a recap added. Lessons, stars, streak, XP and the learner's own saved words stay.
+-- Forget everything, in one transaction: every memory line, every weakness event and every review item a recap added
+-- (item keys 'recap:%'). Lessons, stars, streak, XP, weak spots found in lessons, the learner's own saved words and all
+-- other review progress stay.
 CREATE FUNCTION public.forget_tutor_memory(_user_id uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -218,8 +220,9 @@ BEGIN
   GET DIAGNOSTICS mem = ROW_COUNT;
   DELETE FROM public.weakness_events WHERE user_id = _user_id;
   GET DIAGNOSTICS ev = ROW_COUNT;
+  -- Only the review items a recap made. Weak spots found in lessons and every other review item, with their progress, stay.
   DELETE FROM public.review_items
-    WHERE user_id = _user_id AND (source = 'weakness' OR (source = 'saved_word' AND item_key LIKE 'recap:%'));
+    WHERE user_id = _user_id AND item_key LIKE 'recap:%';
   GET DIAGNOSTICS rv = ROW_COUNT;
   RETURN jsonb_build_object('memory', mem, 'events', ev, 'review', rv);
 END;

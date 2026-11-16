@@ -103,6 +103,19 @@ export function appearsIn(needle: string, turns: Turn[], role: Turn["role"]): bo
 }
 
 /**
+ * Personal details. A correction or phrase that looks like one is dropped whole, so neither the recap card nor the
+ * memory ever holds it: an email, a web address, a phone number or any long run of digits (an ID, a card, an address
+ * number), and the common ways of introducing a name or a home ("my name is", "me llamo", "je m'appelle", "I live in").
+ */
+const PERSONAL = [
+  /[^\s@]+@[^\s@]+\.[^\s@]+/,
+  /\bhttps?:\/\/|\bwww\.|\b[a-z0-9-]+\.(com|net|org|io|app|es|fr|co|me)b/i,
+  /(?:\d[\s().-]*){6,}/,
+  /\b(my name is|my name's|i am called|i'm called|my surname|my address|i live (in|at|on)|my (phone|number|email)|me llamo|mi nombre es|mi apellido|mi direcci[oó]n|vivo en|mi (tel[eé]fono|correo)|je m['’]appelle|mon nom est|mon nom de famille|j['’]habite|mon adresse|mon (t[eé]l[eé]phone|e-?mail))\b/i,
+];
+export const looksPersonal = (text: string): boolean => PERSONAL.some((re) => re.test(text));
+
+/**
  * The model's reply, strictly checked. Anything malformed is dropped, never repaired: a correction whose "said" is not
  * literally in one of the learner's turns, one that fixes nothing, one with an unknown topic or with duplicate wrong
  * answers; a phrase that is not in one of Alphonso's turns. At most three corrections and one phrase. Returns null
@@ -129,6 +142,7 @@ export function parseRecap(content: string, turns: Turn[], course: Course): Reca
     if (fold(v.said) === fold(v.fixed)) continue;
     if (!topicLabel(course, v.topic)) continue;
     if (!appearsIn(v.said, turns, "user")) continue;
+    if (looksPersonal(v.said) || looksPersonal(v.fixed)) continue;
     const options = [v.fixed, v.said, ...v.wrong].map(fold);
     if (new Set(options).size !== 4) continue;
     if (seenTopics.has(v.topic)) continue;
@@ -138,7 +152,7 @@ export function parseRecap(content: string, turns: Turn[], course: Course): Reca
   }
   let phrase: NewPhrase | null = null;
   const p = phraseSchema.safeParse(raw.phrase);
-  if (p.success && appearsIn(p.data.text, turns, "assistant")) {
+  if (p.success && appearsIn(p.data.text, turns, "assistant") && !looksPersonal(p.data.text)) {
     const options = [p.data.meaning, ...p.data.wrong].map(fold);
     if (new Set(options).size === 4) phrase = p.data;
   }
