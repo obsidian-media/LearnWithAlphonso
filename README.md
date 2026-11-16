@@ -470,6 +470,7 @@ ios/
 - `ARCHITECTURE.md` — stack, request flow, database schema, content model, known rough edges
 - `AGENTS.md` — conventions and key-file map for agents/contributors working in this repo
 - `CHANGELOG.md` — versioned history (V1 web app through the current V5 batches)
+- `docs/OPEN-ITEMS.md` — what is not finished yet (owner steps, decisions, device checks, open work), swept 2026-11-15
 - `docs/database-privileges.md` — the table-privilege model (new tables start with no client access) and how to check it
 - `docs/VIDEO-PLAYBOOK.md` — how an Alphonso tutor video is made (scene still, script, voice, lip-sync, whiteboard writing, finish), with its quality checks and approval gates; the tools are in `scripts/video/`
 - `docs/privacy-and-data.md` — what the optional and staff-side data is, why, how long it is kept, and how it is exported and deleted (analytics, Explain, the staff action record, time zone)
