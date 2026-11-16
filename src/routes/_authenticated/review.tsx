@@ -27,6 +27,8 @@ import { getCourse, localeForCourse } from "../../data/courses";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
 import { canSpeak, speak } from "../../lib/speech";
+import { sceneSrc } from "../../lib/scenes";
+import { useNight } from "../../lib/use-night";
 import {
   fetchDueReviews,
   gradeReview,
@@ -536,11 +538,15 @@ function ReviewPage() {
 
 /** The Hector library scene at the top of every Review screen, with Alphonso reading in front of it. */
 function ReviewScene({ pose, tall = false }: { pose: "reading" | "proud"; tall?: boolean }) {
+  const night = useNight();
   return (
     <div
       data-review-scene=""
       className={`relative mx-4 mt-3 overflow-hidden rounded-3xl bg-ds-sunk bg-cover ${tall ? "h-[230px]" : "h-[150px]"}`}
-      style={{ backgroundImage: "url(/scenes/hector.jpg)", backgroundPosition: "center 30%" }}
+      style={{
+        backgroundImage: `url(${sceneSrc("hector", night)})`,
+        backgroundPosition: "center 30%",
+      }}
     >
       <div
         aria-hidden="true"

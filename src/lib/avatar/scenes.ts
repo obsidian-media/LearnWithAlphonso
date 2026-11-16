@@ -2,6 +2,9 @@
  * The room behind Alphonso in the Practice call. One image per scenario, keyed by scenario id; everything else
  * (campaigns, free talk) gets the default study room. This lookup is the only place that knows which scenario has
  * art: add an id to SCENES_WITH_ART when its file lands in public/avatar/scenes/.
+ *
+ * The call has its own pictures (call-<id>.webp, the v2 art of 2026-11-16); the lesson rooms and the campaign scenes
+ * keep the older <id>.webp files (src/lib/lesson-stage.ts, src/lib/practice-catalog.ts), so the two never share a file.
  */
 export const SCENARIO_SCENE_IDS = [
   "coffee",
@@ -18,11 +21,28 @@ export const SCENARIO_SCENE_IDS = [
   "debate",
 ] as const;
 
-/** Scenario ids that have their own image in public/avatar/scenes/. A scenario missing here gets the default room. */
+/** Scenario ids that have their own call image (public/avatar/scenes/call-<id>.webp). A scenario missing here gets the default room. */
 const SCENES_WITH_ART: ReadonlySet<string> = new Set<string>(SCENARIO_SCENE_IDS);
 
 export const DEFAULT_SCENE = "room";
 const BASE = "/avatar/scenes";
+
+/** The call's picture for a scenario, or for the study room ("room-light", "room-dark"). */
+export function callSceneFile(id: string): string {
+  return `${BASE}/call-${id}.webp`;
+}
+
+/** The study room the call uses when a scenario has no picture of its own: day and evening. */
+export const CALL_STUDY_ROOM = {
+  light: callSceneFile("room-light"),
+  dark: callSceneFile("room-dark"),
+} as const;
+
+/** The room lessons and story campaigns keep: the plain room-*.webp files, not the call's own. */
+export const LESSON_STUDY_ROOM = {
+  light: `${BASE}/room-light.webp`,
+  dark: `${BASE}/room-dark.webp`,
+} as const;
 
 export type SceneArt = {
   id: string;
@@ -37,13 +57,10 @@ export type SceneArt = {
 export function sceneArt(
   scenarioId: string | null | undefined,
   withArt: ReadonlySet<string> = SCENES_WITH_ART,
-  defaultRoom: { light: string; dark: string } = {
-    light: `${BASE}/room-light.webp`,
-    dark: `${BASE}/room-dark.webp`,
-  },
+  defaultRoom: { light: string; dark: string } = CALL_STUDY_ROOM,
 ): SceneArt {
   if (scenarioId && withArt.has(scenarioId)) {
-    const file = `${BASE}/${scenarioId}.webp`;
+    const file = callSceneFile(scenarioId);
     return { id: scenarioId, light: file, dark: file, dimInDark: true };
   }
   return { id: DEFAULT_SCENE, light: defaultRoom.light, dark: defaultRoom.dark, dimInDark: false };

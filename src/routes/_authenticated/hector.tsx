@@ -619,7 +619,6 @@ function HectorConversation({
           kit={HECTOR_KIT}
           title={PAYWALL_COPY.mascotMessage}
           scenarioId="hector"
-          dark={false}
           avatar={{
             phase: avatarPhase,
             replyText: lastReply?.content ?? null,

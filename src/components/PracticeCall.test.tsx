@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
+import { LESSON_STUDY_ROOM } from "@/lib/avatar/scenes";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
@@ -43,12 +46,48 @@ const base = {
 const room = (c: HTMLElement) =>
   (c.firstElementChild as HTMLElement).style.backgroundImage.replace(/url\(["']?|["']?\)/g, "");
 
+describe("Alphonso's robe", () => {
+  it("fades out over the last 20% of his square, so it has no hard straight edge above the caption", () => {
+    const { getByTestId } = render(<PracticeCall {...base} scenarioId="coffee" dark={false} />);
+    const wrap = getByTestId("call-avatar");
+    expect(wrap.contains(getByTestId("alphonso-stage"))).toBe(true);
+    expect(wrap.className).toContain("call-avatar-fade");
+    // Size and position are unchanged by the fade.
+    expect(wrap.style.width).toBe("min(128cqw, 72cqh)");
+    expect(wrap.style.top).toBe("15%");
+    const css = fs.readFileSync(path.resolve(import.meta.dirname, "../styles.css"), "utf8");
+    const rule = /\.call-avatar-fade \{([^}]*)\}/.exec(css)?.[1] ?? "";
+    expect(rule).toContain("mask-image: linear-gradient(to bottom, #000 80%, transparent 100%)");
+    expect(rule).toContain(
+      "-webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 100%)",
+    );
+  });
+});
+
+describe("the evening room follows the look", () => {
+  it("shows the evening study room in Royal night, and the day room in Royal light or Meadow", () => {
+    const set = (mode?: string) => {
+      if (mode) document.documentElement.dataset.dsMode = mode;
+      else delete document.documentElement.dataset.dsMode;
+    };
+    set("night");
+    const night = render(<PracticeCall {...base} scenarioId={null} />);
+    expect(room(night.container)).toBe("/avatar/scenes/call-room-dark.webp");
+    night.unmount();
+    // Royal light and Meadow (even on a dark device) carry no data-ds-mode (src/lib/theme.ts applyLook).
+    set();
+    const light = render(<PracticeCall {...base} scenarioId={null} />);
+    expect(room(light.container)).toBe("/avatar/scenes/call-room-light.webp");
+    light.unmount();
+  });
+});
+
 describe("the room", () => {
   it("shows the scenario's own picture in light mode with no dimming", () => {
     const { container, queryByTestId } = render(
       <PracticeCall {...base} scenarioId="coffee" dark={false} />,
     );
-    expect(room(container)).toBe("/avatar/scenes/coffee.webp");
+    expect(room(container)).toBe("/avatar/scenes/call-coffee.webp");
     expect(queryByTestId("evening-overlay")).toBeNull();
   });
 
@@ -56,7 +95,7 @@ describe("the room", () => {
     const { container, getByTestId } = render(
       <PracticeCall {...base} scenarioId="coffee" dark={true} />,
     );
-    expect(room(container)).toBe("/avatar/scenes/coffee.webp");
+    expect(room(container)).toBe("/avatar/scenes/call-coffee.webp");
     const overlay = getByTestId("evening-overlay");
     expect(overlay.style.mixBlendMode).toBe("multiply");
     expect(overlay.style.background).toContain("22, 32, 60");
@@ -64,16 +103,23 @@ describe("the room", () => {
 
   it("swaps the default room for its evening picture instead of dimming it", () => {
     const light = render(<PracticeCall {...base} scenarioId="city-day" dark={false} />);
-    expect(room(light.container)).toBe("/avatar/scenes/room-light.webp");
+    expect(room(light.container)).toBe("/avatar/scenes/call-room-light.webp");
     light.unmount();
     const dark = render(<PracticeCall {...base} scenarioId="city-day" dark={true} />);
-    expect(room(dark.container)).toBe("/avatar/scenes/room-dark.webp");
+    expect(room(dark.container)).toBe("/avatar/scenes/call-room-dark.webp");
     expect(dark.queryByTestId("evening-overlay")).toBeNull();
   });
 
   it("gives a conversation with no scenario (a campaign) the default room", () => {
     const { container } = render(<PracticeCall {...base} scenarioId={null} dark={false} />);
-    expect(room(container)).toBe("/avatar/scenes/room-light.webp");
+    expect(room(container)).toBe("/avatar/scenes/call-room-light.webp");
+  });
+
+  it("lets a campaign keep the lessons' room instead of the call's own", () => {
+    const { container } = render(
+      <PracticeCall {...base} scenarioId={null} dark={true} room={LESSON_STUDY_ROOM} />,
+    );
+    expect(room(container)).toBe("/avatar/scenes/room-dark.webp");
   });
 
   it("holds the caption to four lines, so a long reply cannot climb over his mouth", () => {

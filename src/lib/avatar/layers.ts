@@ -70,7 +70,11 @@ export const ALPHONSO_KIT: CharacterKit = kitFromManifest(manifest, {
   id: "alphonso",
   displayName: "Alphonso",
   basePath: "/avatar",
-  defaultRoom: { light: "/avatar/scenes/room-light.webp", dark: "/avatar/scenes/room-dark.webp" },
+  // The call's study room (call-room-*.webp); the plain room-*.webp files stay for lessons and first-run.
+  defaultRoom: {
+    light: "/avatar/scenes/call-room-light.webp",
+    dark: "/avatar/scenes/call-room-dark.webp",
+  },
 });
 
 /** Hector's kit: no ears and no glint, and an `eyes-*` expression group behind his goggles. */
