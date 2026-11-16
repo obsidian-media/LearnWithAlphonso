@@ -28,14 +28,32 @@ describe("useTheme.setTheme", () => {
 });
 
 describe("Meadow stays light, even in night mode", () => {
-  it("picking Meadow drops a night mode the page was given; Royal keeps it", () => {
-    document.documentElement.dataset.dsMode = "night";
-    useTheme.getState().setTheme("meadow");
-    expect(document.documentElement.dataset.dsMode).toBeUndefined();
-    document.documentElement.dataset.dsMode = "night";
-    useTheme.getState().setTheme("royal");
-    expect(document.documentElement.dataset.dsMode).toBe("night");
-    delete document.documentElement.dataset.dsMode;
+  function withDevice(dark: boolean, run: () => void) {
+    const original = window.matchMedia;
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: () => ({ matches: dark }),
+    });
+    try {
+      run();
+    } finally {
+      Object.defineProperty(window, "matchMedia", { configurable: true, value: original });
+    }
+  }
+
+  it("picking Meadow drops a night mode the page was given, even on a dark device; Royal takes night from the device", () => {
+    withDevice(true, () => {
+      document.documentElement.dataset.dsMode = "night";
+      useTheme.getState().setTheme("meadow");
+      expect(document.documentElement.dataset.dsMode).toBeUndefined();
+      useTheme.getState().setTheme("royal");
+      expect(document.documentElement.dataset.dsMode).toBe("night");
+    });
+    withDevice(false, () => {
+      document.documentElement.dataset.dsMode = "night";
+      useTheme.getState().setTheme("royal");
+      expect(document.documentElement.dataset.dsMode).toBeUndefined();
+    });
   });
 
   it("an account value of Meadow also drops night mode", () => {

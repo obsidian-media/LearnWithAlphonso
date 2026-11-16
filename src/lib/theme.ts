@@ -37,6 +37,53 @@ export function resolveDsLook(theme: ThemeName, nightRequested: boolean): DsLook
   return { palette: theme, mode: theme === "royal" && nightRequested ? "night" : "light" };
 }
 
+/** The browser's dark-mode query: the web has no night switch, Royal follows the device. */
+export const DARK_QUERY = "(prefers-color-scheme: dark)";
+
+type MediaSource = { matchMedia?: (query: string) => { matches: boolean } };
+
+/** Whether the device is in dark mode. False where the browser cannot say (server, old browser): the safe light side. */
+export function deviceIsDark(
+  win: MediaSource | undefined = typeof window === "undefined" ? undefined : window,
+): boolean {
+  try {
+    return win?.matchMedia?.(DARK_QUERY).matches === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sets the look on <html>: the palette, and night (data-ds-mode) only when the theme is Royal and the device is dark.
+ * Meadow always loses it, so Meadow stays light even in dark mode. Returns the look it applied.
+ */
+export function applyLook(root: HTMLElement, theme: ThemeName, deviceDark: boolean): DsLook {
+  const look = resolveDsLook(theme, deviceDark);
+  root.dataset.palette = look.palette;
+  if (look.mode === "night") root.dataset.dsMode = "night";
+  else delete root.dataset.dsMode;
+  return look;
+}
+
+/**
+ * Re-applies the look when the device switches between light and dark while the page is open. `theme` is read at the
+ * time of each change. Returns the function that stops listening.
+ */
+export function watchDeviceMode(
+  root: HTMLElement,
+  theme: () => ThemeName,
+  win: { matchMedia?: (query: string) => MediaQueryList } | undefined = typeof window ===
+  "undefined"
+    ? undefined
+    : window,
+): () => void {
+  const list = win?.matchMedia?.(DARK_QUERY);
+  if (!list) return () => {};
+  const onChange = () => applyLook(root, theme(), list.matches);
+  list.addEventListener("change", onChange);
+  return () => list.removeEventListener("change", onChange);
+}
+
 /** Sets the palette on <html>; Meadow also drops any night mode the page was given, so it stays light. */
 export function applyPalette(root: HTMLElement, theme: ThemeName): void {
   root.dataset.palette = theme;
@@ -54,7 +101,7 @@ export function resolveInitialTheme(localStorageValue: unknown, serverValue: unk
 }
 
 /** Runs inline before first paint (src/routes/__root.tsx); the same rule as normalizeTheme. */
-export const THEME_BOOT_SCRIPT = `(function(){try{var t=localStorage.getItem("theme");document.documentElement.dataset.palette=t==="meadow"?"meadow":"royal";}catch(e){document.documentElement.dataset.palette="royal";}})();`;
+export const THEME_BOOT_SCRIPT = `(function(){var d=document.documentElement;try{var t=localStorage.getItem("theme");d.dataset.palette=t==="meadow"?"meadow":"royal";}catch(e){d.dataset.palette="royal";}try{if(d.dataset.palette==="royal"&&window.matchMedia("${"(prefers-color-scheme: dark)"}").matches)d.dataset.dsMode="night";}catch(e){}})();`;
 
 type ThemeState = {
   theme: ThemeName;
@@ -83,7 +130,7 @@ export const useTheme = create<ThemeState>()((set) => ({
   theme: resolveInitialTheme(typeof window === "undefined" ? null : readLocalTheme(), null),
   hydrated: false,
   setTheme: (theme) => {
-    if (typeof document !== "undefined") applyPalette(document.documentElement, theme);
+    if (typeof document !== "undefined") applyLook(document.documentElement, theme, deviceIsDark());
     writeLocalTheme(theme);
     set({ theme });
     void updateProfile({ data: { theme } });
@@ -92,8 +139,13 @@ export const useTheme = create<ThemeState>()((set) => ({
     const resolved = resolveInitialTheme(readLocalTheme(), serverValue);
     // Always apply, even when it matches the store's own first guess: the guess and the page can disagree
     // (the store computes it the same way, but a retired value in localStorage must be rewritten to Royal).
-    applyPalette(document.documentElement, resolved);
+    applyLook(document.documentElement, resolved, deviceIsDark());
     writeLocalTheme(resolved);
     set({ theme: resolved, hydrated: true });
   },
 }));
+
+// The web has no night switch: Royal follows the device, live. Started once, in the browser only; Meadow ignores it.
+if (typeof window !== "undefined") {
+  watchDeviceMode(document.documentElement, () => useTheme.getState().theme);
+}

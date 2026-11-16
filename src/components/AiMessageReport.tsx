@@ -115,7 +115,7 @@ export function AiMessageReport({
                   ))}
                 </fieldset>
                 {status === "failed" && (
-                  <p role="alert" className="mt-2 text-xs text-rose-700">
+                  <p role="alert" className="mt-2 text-xs text-ds-wrong-ink">
                     {AI_CONSENT_COPY.reportFailed}
                   </p>
                 )}

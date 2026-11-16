@@ -37,7 +37,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 
 22. **Spanish Minimal Pairs lessons: DECIDED 2026-11-16.** Owner: "yes". They become spelling-choice questions. In progress.
 23. **Web/iOS/Android social parity: DECIDED 2026-11-16.** Owner: "close the gap". Audit in progress (workstream B).
-24. **Royal night on the web: DECIDED 2026-11-16.** Owner: "yes". The web Royal theme follows the device dark mode; Meadow stays light. In progress (workstream A).
+24. **Royal night on the web: DECIDED 2026-11-16.** Owner: "yes". The web Royal theme follows the device dark mode; Meadow stays light. Built in the round 14 night PR (#577).
 25. **French question frb2p5q16: DECIDED 2026-11-16.** Owner: "yes". The agent writes the answer and the owner approves it in the PR.
 26. **Path tags and minutes: DECIDED 2026-11-16.** Owner: "yes". The agent proposes `src/data/path-tags.ts` tags and the `path-config.ts` minutes from data; the owner approves.
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
@@ -111,6 +111,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 - Web push notifications: owner 2026-11-16, "2. keep to app". No web push (closed, by design).
 
 - Small fixes (#576, round 14): reserved analytics events `explain_requested` and `path_built` now sent on web, iOS and Android (47); Help reply email sender is "Learn with Alphonso Support team" (48); word-deck arrow keys scoped to the deck, tile guard tightened, Learn bubble probe-row fix; the "Word n of N" live region and the Android unit-numbering read were already in place (55); NVIDIA provider path was already retired, no source reads its env names (56); `types-fresh` waits for the deploy so a table-adding PR with its types passes (58); Placement "not passed" and "not reached" chips differ on iOS and Android (60); Save a word carries the course language and Space opens it from a transcript word (61); Staff page scope labels (64).
+- Web follows the device dark mode in Royal (round 14, owner "24 yes"): Meadow stays light; lessons and `.ds-light` screens stay light.
 - Alphonso tutor videos (was 21): owner 2026-11-16, "keep the videos for now". Decided: the three videos stay published (with the free-plan watermark).
 - Admin console redesign from the approved mock: merged in #568 (becd9650); admin phases 1 to 3 are all built.
 - Build 67 cut and uploaded to TestFlight (#571, release run 43785255490), not submitted; carries the iOS support push tap.
