@@ -24,6 +24,8 @@ import {
   WordTile,
 } from "../../components/lesson/LessonParts";
 import { AchievementUnlockSheet } from "../../components/AchievementUnlockSheet";
+import { LeaguePromotionTakeover } from "../../components/lesson/LeaguePromotionTakeover";
+import { isLeaguePromotion } from "../../lib/league-engagement";
 import { AchievementToast, Confetti, RewardTiles } from "../../components/lesson/LessonCelebration";
 import { lessonExpression, roomLayout, roomSrcForUnit } from "../../lib/lesson-stage";
 import { answerXpChip, lessonXpBreakdown, maxLessonXp } from "../../lib/lesson-xp";
@@ -54,7 +56,7 @@ import { deriveAnswerCorrectness } from "../../lib/srs";
 import { useOptionalAiConsent } from "../../lib/ai-consent-context";
 import { requestTranslationVerdict } from "../../lib/grade-translation-request";
 import type { TranslationVerdict } from "../api/grade-translation";
-import { ACHIEVEMENTS_BY_ID } from "../../data/achievements";
+import { ACHIEVEMENTS_BY_ID, type LeagueTier } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
@@ -171,6 +173,8 @@ function LessonPage() {
     notice?: string;
     /** Time on screen from Start lesson to the last answer. */
     elapsedMs?: number;
+    /** Set when this very completion moved the learner up a league (the server's own old and new league). */
+    promotion?: { from: LeagueTier; to: LeagueTier };
   } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id, course), [id, course]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
@@ -463,6 +467,9 @@ function LessonPage() {
         heartsBonus: res.heartsBonus,
         saved: true,
         elapsedMs,
+        promotion: isLeaguePromotion(res.previousLeagueTier, res.progress.leagueTier)
+          ? { from: res.previousLeagueTier, to: res.progress.leagueTier }
+          : undefined,
       });
     } catch (err) {
       setDone({
@@ -509,6 +516,7 @@ function LessonPage() {
           elapsedMs={done.elapsedMs}
           unlocked={done.unlocked}
           heartsBonus={done.heartsBonus}
+          promotion={done.promotion}
           saved={done.saved}
           notice={done.notice}
           lessonTitle={lesson.title}
@@ -1106,8 +1114,11 @@ export function FinishScreen({
   elapsedMs,
   saved = true,
   notice,
+  promotion,
 }: {
   xp: number;
+  /** The league this completion moved the learner up from and to: the takeover opens after the celebration. */
+  promotion?: { from: LeagueTier; to: LeagueTier };
   /** The server's count of right answers behind `xp`; the XP lines use it, so a re-grade is never called a replay. */
   awardedCorrect?: number;
   unlocked: string[];
@@ -1147,12 +1158,28 @@ export function FinishScreen({
     return () => window.clearTimeout(t);
   }, [reduceMotion]);
   // A new badge gets its own sheet once the tiles and toasts have landed (straight away under Reduce Motion).
-  const [unlockOpen, setUnlockOpen] = useState(false);
+  // A league promotion comes first (2.4 s in, CD 01); a new badge waits until Continue has closed it.
+  const [promotionOpen, setPromotionOpen] = useState(false);
+  const [promotionShown, setPromotionShown] = useState(false);
+  const hasPromotion = promotion !== undefined;
   useEffect(() => {
-    if (cueUnlocked === 0) return;
+    if (!hasPromotion) return;
+    const t = window.setTimeout(
+      () => {
+        setPromotionOpen(true);
+        setPromotionShown(true);
+      },
+      reduceMotion ? 300 : 2400,
+    );
+    return () => window.clearTimeout(t);
+  }, [hasPromotion, reduceMotion]);
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const waitingForPromotion = hasPromotion && (!promotionShown || promotionOpen);
+  useEffect(() => {
+    if (cueUnlocked === 0 || waitingForPromotion) return;
     const t = window.setTimeout(() => setUnlockOpen(true), reduceMotion ? 300 : 2800);
     return () => window.clearTimeout(t);
-  }, [cueUnlocked, reduceMotion]);
+  }, [cueUnlocked, reduceMotion, waitingForPromotion]);
   // Only a saved completion has a real award to explain; the lines always add up to it (lesson-xp.ts).
   const xpLines = saved
     ? lessonXpBreakdown({ correct: awardedCorrect ?? correct, total, awarded: xp }).lines
@@ -1243,6 +1270,14 @@ export function FinishScreen({
             </div>
           )}
         </AnimatePresence>
+
+        {promotionOpen && promotion && (
+          <LeaguePromotionTakeover
+            from={promotion.from}
+            to={promotion.to}
+            onContinue={() => setPromotionOpen(false)}
+          />
+        )}
 
         {unlockOpen && (
           <AchievementUnlockSheet ids={unlocked} onDone={() => setUnlockOpen(false)} />

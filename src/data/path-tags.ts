@@ -43,7 +43,7 @@ export const PODCAST_TAGS: Readonly<Record<string, PathTag>> = {
     ["listening"],
   ),
   "en/c1/why-cant-we-focus-v2": t("C1", ["school", "work", "exam"], ["tech"], ["listening"]),
-  "en/c1/why-time-feels-faster-v2": t("C1", ["exam", "fun"], ["nature"], ["listening"]),
+  "en/c1/why-time-feels-faster-v2": t("C1", ["exam", "fun"], [], ["listening"]),
   "en/c1/why-changing-minds-is-hard-v2": t("C1", ["work", "exam"], ["business"], ["listening"]),
   "en/c1/why-we-procrastinate-v2": t("C1", ["school", "work", "exam"], [], ["listening"]),
   "en/c1/why-everyone-looks-better-online-v2": t(
@@ -87,17 +87,21 @@ export const PODCAST_TAGS: Readonly<Record<string, PathTag>> = {
   ),
 };
 
-/** Talk to Alphonso scenarios (src/data/scenarios.ts ids). */
+/**
+ * Talk to Alphonso scenarios (src/data/scenarios.ts ids). The level follows the scenario's own catalog level
+ * (Beginner = A1-A2, Intermediate = B1-B2, Advanced = C1; practice-catalog.ts scenarioLevelForCefr); negotiation and
+ * debate are Advanced there but tagged B2 here, kept on purpose so B2 learners with a work or school goal get them.
+ */
 export const SCENARIO_TAGS: Readonly<Record<string, PathTag>> = {
   coffee: t("A1", ["travel", "fun", "family"], ["food"], ["speaking"]),
   airport: t("A1", ["travel"], ["travel"], ["speaking", "listening"]),
   smalltalk: t("A1", ["fun", "family", "school"], ["music", "movies", "sport"], ["speaking"]),
   hotel: t("A2", ["travel"], ["travel"], ["speaking"]),
   directions: t("A1", ["travel"], ["travel"], ["speaking", "listening"]),
-  restaurant: t("A2", ["travel", "fun", "family"], ["food"], ["speaking", "vocabulary"]),
+  restaurant: t("B1", ["travel", "fun", "family"], ["food"], ["speaking", "vocabulary"]),
   apartment: t("B1", ["work", "family"], [], ["speaking", "vocabulary"]),
   doctor: t("B1", ["family", "travel"], [], ["speaking", "vocabulary"]),
-  returns: t("B1", ["work", "fun"], [], ["speaking", "grammar"]),
+  returns: t("A2", ["work", "fun"], [], ["speaking", "grammar"]),
   interview: t("B1", ["work", "exam"], ["business"], ["speaking"]),
   negotiation: t("B2", ["work"], ["business"], ["speaking"]),
   debate: t("B2", ["school", "exam"], [], ["speaking", "grammar"]),

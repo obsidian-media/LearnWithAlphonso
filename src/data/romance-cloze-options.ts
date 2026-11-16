@@ -13,7 +13,13 @@
 // Answers, ids and order are untouched. Lines a native speaker should still read are listed in the
 // PR body.
 
-export type ClozeOptions = { wrong: string[]; hint?: string };
+import { MINIMAL_PAIR_ROWS, minimalPairCloze } from "./es-minimal-pairs";
+
+export type ClozeOptions = {
+  wrong: string[];
+  hint?: string;
+  /** A written explanation; the engine otherwise builds a generic one. */ explanation?: string;
+};
 
 function parse(rows: string[]): Record<number, ClozeOptions> {
   const out: Record<number, ClozeOptions> = {};
@@ -26,6 +32,8 @@ function parse(rows: string[]): Record<number, ClozeOptions> {
 }
 
 export const ROMANCE_CLOZE: Record<string, Record<number, ClozeOptions>> = {
+  // The Spanish minimal-pairs lessons (all levels): spelling choice, options and explanations in es-minimal-pairs.ts.
+  ...Object.fromEntries(Object.keys(MINIMAL_PAIR_ROWS).map((id) => [id, minimalPairCloze(id)])),
   // ---- French -------------------------------------------------------------------------------
   fra2p3: parse([
     "gauche,côté,face ~right",

@@ -9,10 +9,12 @@ import timing from "./lesson-timing.json";
  *               figure the lesson start shows ("About N min").
  *   - podcast:  MEASURED: the episode's real duration_seconds from the database, plus QUIZ_MINUTES for the quiz.
  *   - talk, campaign scene, quiz: ESTIMATES below.
- * TODO(calibration): TALK_MINUTES, CAMPAIGN_SCENE_MINUTES and QUIZ_MINUTES must be calibrated from production data.
- * On 2026-11-12 production held only 8 finished practice calls (3 scenes, median 1.5 min; 5 scenarios, median 0.2 min:
- * test traffic), too few to set a number from. When real traffic exists, take the median of finished_at - started_at in
- * practice_calls (and the median podcast quiz time) and replace these three constants.
+ * CALIBRATION (checked 2026-11-16, production, aggregates only, finished calls; sample sizes are far under the 30 needed):
+ *   practice scene calls: n=3 (3 users), median 1.53 min, p75 1.84; practice scenario calls: n=5 (3 users), median 0.23 min,
+ *   p75 0.31 (test traffic); learning_days with practice time: n=3 days, median 1.4 min; podcast quizzes: no start or end
+ *   time is recorded (one award row in total), so a quiz time cannot be measured yet. Too thin to set a number, so the
+ *   three constants below stay as estimates. Re-run the same SELECTs (median and p75 of finished_at - started_at in
+ *   practice_calls by kind) once each kind has 30 finished calls, and record quiz start and end times first.
  */
 export const TALK_MINUTES = 4;
 export const CAMPAIGN_SCENE_MINUTES = 6;

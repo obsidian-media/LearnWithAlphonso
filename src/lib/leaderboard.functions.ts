@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { profileErrorCode } from "./profile-error";
 import { isAllowedAvatarSeed } from "./profile-avatars";
+import { mondayDateString } from "./league-engagement";
 
 export type LeaderboardEntry = {
   user_id: string;
@@ -37,6 +38,41 @@ export const getLeaderboard = createServerFn({ method: "POST" })
       isYou: r.user_id === userId,
     }));
     return entries;
+  });
+
+export type WeeklyRecap = {
+  /** XP earned between last Monday and this Monday (UTC, the server's week), from the learner's own activity days. */
+  lastWeekXp: number;
+  /** Today's rank on the global weekly board, or null when the learner is not on it. Approximate for last week. */
+  currentRank: number | null;
+};
+
+/**
+ * The weekly recap, derived the way the apps do (LeaderboardViewModel.loadRecap): last week's XP is the sum of the
+ * caller's own `activity_days` between the two Mondays, and the rank is where they stand on today's global weekly
+ * board (there is no snapshot of last week's exact standings, and the sheet says so). Both reads are the caller's
+ * own and the board is the same `get_leaderboard` that already hides blocked learners, so nothing new about anyone
+ * else is exposed. A part that cannot be read comes back as 0 / null: the recap is a nicety, never an error screen.
+ */
+export const getWeeklyRecap = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<WeeklyRecap> => {
+    const { supabase, userId } = context;
+    const now = Date.now();
+    const [days, board] = await Promise.all([
+      supabase
+        .from("activity_days")
+        .select("xp_earned")
+        .eq("user_id", userId)
+        .gte("day", mondayDateString(1, now))
+        .lt("day", mondayDateString(0, now)),
+      supabase.rpc("get_leaderboard", { _scope: "global", _period: "weekly" }),
+    ]);
+    const lastWeekXp = days.error
+      ? 0
+      : (days.data ?? []).reduce((sum, r) => sum + (r.xp_earned ?? 0), 0);
+    const index = board.error ? -1 : (board.data ?? []).findIndex((r) => r.user_id === userId);
+    return { lastWeekXp, currentRank: index >= 0 ? index + 1 : null };
   });
 
 export type UpdateProfileResult =

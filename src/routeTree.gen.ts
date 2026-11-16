@@ -386,11 +386,12 @@ const ApiInternalReportNotifyRoute = ApiInternalReportNotifyRouteImport.update({
   path: '/api/internal/report-notify',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiInternalSupportNotifyRoute = ApiInternalSupportNotifyRouteImport.update({
-  id: '/api/internal/support-notify',
-  path: '/api/internal/support-notify',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApiInternalSupportNotifyRoute =
+  ApiInternalSupportNotifyRouteImport.update({
+    id: '/api/internal/support-notify',
+    path: '/api/internal/support-notify',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSupportConversationRoute = ApiSupportConversationRouteImport.update({
   id: '/api/support/conversation',
   path: '/api/support/conversation',
