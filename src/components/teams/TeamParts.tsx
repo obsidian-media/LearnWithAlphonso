@@ -1,15 +1,22 @@
 import { DsCard, Overline, RankBadge } from "@/components/ds/Blocks";
 import type { TeamLeaderboardEntry } from "@/lib/teams.functions";
+import { TeamNameReportMenu } from "../SocialSafetyMenu";
 
-/** "This week's top teams": ranked rows; the learner's own team is tinted. Draws nothing while empty and settled. */
+/**
+ * "This week's top teams": ranked rows; the learner's own team is tinted. Draws nothing while empty and settled. Every
+ * team but one the learner owns has a "Report team name" menu, as on iOS and Android.
+ */
 export function TopTeams({
   loading,
   rows,
   myTeamId,
+  ownedTeamId = null,
 }: {
   loading: boolean;
   rows: TeamLeaderboardEntry[];
   myTeamId: string | null;
+  /** The team the learner owns, if any: its name cannot be reported by its own creator, so it gets no menu. */
+  ownedTeamId?: string | null;
 }) {
   if (!loading && rows.length === 0) return null;
   return (
@@ -33,6 +40,9 @@ export function TopTeams({
                 <p className="ds-type-headline truncate text-ds-ink">{t.name}</p>
                 <p className="tnum ds-type-caption text-ds-ink-soft">{t.weeklyXp} XP this week</p>
               </div>
+              {t.teamId !== ownedTeamId && (
+                <TeamNameReportMenu teamId={t.teamId} teamName={t.name} />
+              )}
             </div>
           ))}
         </DsCard>

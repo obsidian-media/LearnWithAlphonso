@@ -772,6 +772,12 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       correct,
       newlyUnlocked,
       heartsBonus,
+      /**
+       * The league this course was in before this completion, so the lesson-complete screen can tell a promotion
+       * from a first load. The apps compare against a cached tier; here the server already knows it for certain.
+       * Equal to `progress.leagueTier` unless this very completion moved the learner up.
+       */
+      previousLeagueTier: LEAGUES[oldIdx] ?? leagueTier,
       progress: {
         xp,
         streak,

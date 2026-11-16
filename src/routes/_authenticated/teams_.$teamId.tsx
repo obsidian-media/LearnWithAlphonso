@@ -256,7 +256,12 @@ function TeamDetailPage() {
         </>
       )}
 
-      <TopTeams loading={loadingBoard} rows={leaderboard ?? []} myTeamId={myTeam.teamId} />
+      <TopTeams
+        loading={loadingBoard}
+        rows={leaderboard ?? []}
+        myTeamId={myTeam.teamId}
+        ownedTeamId={myTeam.isOwner ? myTeam.teamId : null}
+      />
 
       <div className="grid justify-items-center gap-2">
         <DsButton small variant="danger" onClick={handleLeave} disabled={locked}>

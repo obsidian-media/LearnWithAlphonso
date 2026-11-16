@@ -435,7 +435,7 @@ export function AskBuddyButton({ friendId }: { friendId: string }) {
           type="button"
           disabled={busy}
           onClick={() => run(() => requestBuddy({ data: { friendId } }))}
-          className={`mt-0.5 ${smallPrimary}`}
+          className={`mt-0.5 ${smallBtn}`}
         >
           Ask to be study buddy
         </button>
