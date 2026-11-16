@@ -125,6 +125,7 @@ async function handleExplain(request: Request, timer: StageTimer): Promise<Respo
           messages: buildExplainMessages(input, native),
           max_tokens: 600,
         },
+        track: { userId, kind: fromHector ? "hector" : "explain" },
       });
       if (!resp.ok) {
         console.error(`[explain] the AI provider returned ${resp.status}`);

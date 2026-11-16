@@ -84,6 +84,7 @@ export const Route = createFileRoute("/api/generate-practice")({
           sampleQuestions,
           llmApiKey: key,
           llmModel: resolveLlmChatModel(),
+          userId: access.userId,
         });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

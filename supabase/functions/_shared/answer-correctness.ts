@@ -28,6 +28,8 @@ export type AiGrading = {
   /** True only when the learner allowed AI processing. Asked lazily, after the curated list rejects. */
   allowed: () => Promise<boolean>;
   checkQuota?: () => Promise<boolean>;
+  /** Logs the cost of the AI grading call (ai-cost-log.ts makeTranslateCostLogger). Optional; never throws. */
+  recordUsage?: (body: unknown, requestedModel: string) => Promise<void> | void;
 };
 
 /**
@@ -98,7 +100,8 @@ export async function deriveAnswerCorrectness(
       apiKey,
       // The model list (and its fallbacks) lives in llm-chat.ts, the edge chokepoint, not here.
       model: resolveLlmChatModel(),
-      });
+      onUsage: ai.recordUsage,
+    });
     // `null` is "no usable AI opinion", not "wrong" -- keep the local verdict.
     return verdict?.correct ?? false;
   }

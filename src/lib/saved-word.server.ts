@@ -80,6 +80,8 @@ export async function defineWord(args: {
   fetchImpl?: typeof fetch;
   /** The caller's own signal (the request's): a client that has gone away stops the lookup and any retry. */
   signal?: AbortSignal;
+  /** The learner, for the AI cost log (ai-cost-log.server.ts). */
+  userId?: string;
 }): Promise<WordDefinition | null> {
   const { input, apiKey, model, fetchImpl = fetch, signal } = args;
   for (let attempt = 1; attempt <= DEFINE_MAX_ATTEMPTS; attempt++) {
@@ -91,6 +93,7 @@ export async function defineWord(args: {
         fetchImpl,
         signal: attemptSignal(signal),
         body: { model, messages: buildDefineMessages(input), max_tokens: 600 },
+        ...(args.userId ? { track: { userId: args.userId, kind: "define" as const } } : {}),
       });
       if (!resp.ok) {
         console.error(

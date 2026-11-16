@@ -23,6 +23,7 @@ import { gradeSelfContained, isSelfContainedSource } from "./self-contained.ts";
 import { hasAiConsent } from "../_shared/ai-consent.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
+import { makeTranslateCostLogger } from "../_shared/ai-cost-log.ts";
 
 const courseSchema = z.enum(["en", "fr", "es"]);
 const itemKeySchema = z
@@ -211,6 +212,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     const ai = {
       allowed: () => (consent ??= hasAiConsent(admin, userId)),
       checkQuota,
+      recordUsage: makeTranslateCostLogger(admin, userId),
     };
     correct = await deriveAnswerCorrectness(question as QuestionRow, answer, course, ai);
     if (consent && !(await consent)) {

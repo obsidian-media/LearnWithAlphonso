@@ -52,6 +52,7 @@ import { sendPushToUser } from "../_shared/apns.ts";
 // function grade-review already used to re-derive review-item correctness.
 import { hasAiConsent } from "../_shared/ai-consent.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
+import { makeTranslateCostLogger } from "../_shared/ai-cost-log.ts";
 import { recordLessonProfileData } from "../_shared/profile-data.ts";
 import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
 
@@ -379,6 +380,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const ai = {
     allowed: () => (consent ??= deps.hasAiConsent(admin, userId)),
     checkQuota,
+    recordUsage: makeTranslateCostLogger(admin, userId),
   };
 
   const questionById = new Map(lesson.questions.map((q) => [q.id, q]));

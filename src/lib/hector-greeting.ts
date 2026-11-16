@@ -163,3 +163,21 @@ export function recentWeakSpot(entries: readonly WeakSpotEntry[], now: number): 
   }
   return best?.category ?? null;
 }
+
+/**
+ * Every greeting Hector can say that has no learner name in it: each course, each of the two level wordings, and the
+ * plain line plus one for every weakness label we own. A finite list of our own fixed sentences, so the text-to-speech
+ * route may keep their audio for every learner (src/lib/tts-cache.ts); a greeting with a name is never in it.
+ */
+export function namelessHectorGreetings(): string[] {
+  const out = new Set<string>();
+  for (const course of Object.keys(LINES) as Course[]) {
+    for (const cefr of ["A1", "B1"]) {
+      out.add(buildHectorGreeting({ course, cefr, name: null, weakSpot: null }));
+      for (const category of Object.keys(TOPICS[course])) {
+        out.add(buildHectorGreeting({ course, cefr, name: null, weakSpot: category }));
+      }
+    }
+  }
+  return [...out];
+}

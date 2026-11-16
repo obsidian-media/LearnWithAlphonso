@@ -112,6 +112,8 @@ export async function llmChatCompletion(args: {
     body: JSON.stringify({
       ...rest,
       models,
+      // Ask for the token counts and the charge in the reply (the cost log reads them, ai-cost-log.ts).
+      usage: { include: true },
       reasoning: LLM_NO_REASONING,
       provider: { ...LLM_PROVIDER_PREFS, only: args.providers ?? resolveLlmProviders() },
       messages: applySafety(body.messages),

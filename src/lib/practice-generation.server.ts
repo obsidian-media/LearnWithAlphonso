@@ -70,6 +70,8 @@ export async function generatePracticeQuestions(params: {
   sampleQuestions: { prompt: string; answer: string }[];
   llmApiKey: string;
   llmModel: string;
+  /** The learner, for the AI cost log (ai-cost-log.server.ts). */
+  userId?: string;
 }): Promise<GeneratedPracticeQuestion[]> {
   if (params.sampleQuestions.length === 0) return [];
   for (let attempt = 1; attempt <= PRACTICE_MAX_ATTEMPTS; attempt++) {
@@ -78,6 +80,7 @@ export async function generatePracticeQuestions(params: {
       const resp = await llmChatCompletion({
         apiKey: params.llmApiKey,
         signal: AbortSignal.timeout(PRACTICE_ATTEMPT_TIMEOUT_MS),
+        ...(params.userId ? { track: { userId: params.userId, kind: "practice" as const } } : {}),
         body: {
           model: params.llmModel,
           messages: [

@@ -10,6 +10,7 @@ import {
 } from "./report-notify.server";
 import { MIN_SHARED_SECRET_LENGTH, secretMatches } from "./shared-secret.server";
 import { defaultSupportDeps, sweepSupport, type SupportNotifyDeps } from "./support-notify.server";
+import { defaultAiCostDeps, sweepAiCost, type AiCostSweepDeps } from "./ai-cost-sweep.server";
 
 /**
  * The scheduled maintenance pass. Called every 15 minutes by the database (run_maintenance_sweep in
@@ -22,6 +23,8 @@ import { defaultSupportDeps, sweepSupport, type SupportNotifyDeps } from "./supp
  *   3. Emails the owner once about reports still unresolved near the 24-hour response window.
  *   4. Retries RevenueCat subscriber erasures that failed when an account was deleted.
  *   5. Retries "a person replied" notices that did not go out and tells the owner about new support tickets.
+ *   6. The AI cost log: rolls raw rows older than 90 days into the daily summary, and once a day emails the owner when
+ *      yesterday's estimated spend crossed a threshold (src/lib/ai-cost-sweep.server.ts).
  * (The support chat retention, 12 months after a chat was solved, runs inside run_maintenance_sweep in the database.)
  */
 type Admin = SupabaseClient<Database>;
@@ -55,6 +58,8 @@ export type MaintenanceDeps = {
   alertTo: string;
   /** The support notices (src/lib/support-notify.server.ts); absent, that step is skipped. */
   support?: SupportNotifyDeps;
+  /** The AI cost rollup and daily spend alert; absent, that step is skipped. */
+  aiCost?: AiCostSweepDeps;
 };
 
 export type RevocationResult = { revoked: number; stillPending: number; expired: number };
@@ -382,6 +387,7 @@ async function defaultDeps(): Promise<MaintenanceDeps> {
     cancelWebSubscription: (config, id) => cancelAccountWebSubscriptions(config, id),
     alertTo: process.env.REPORT_NOTIFY_TO ?? "",
     support: await defaultSupportDeps(),
+    aiCost: await defaultAiCostDeps(),
   };
 }
 
@@ -415,6 +421,8 @@ export async function handleMaintenance(
   const support = supportDeps
     ? await run("support-notices", () => sweepSupport(supportDeps))
     : null;
+  const aiCostDeps = deps.aiCost;
+  const aiCost = aiCostDeps ? await run("ai-cost", () => sweepAiCost(aiCostDeps)) : null;
   // Counts only: this response is stored in the database's request log.
   return json(
     {
@@ -424,6 +432,7 @@ export async function handleMaintenance(
       reports,
       erasures,
       ...(supportDeps ? { support } : {}),
+      ...(aiCostDeps ? { aiCost } : {}),
     },
     failures.length ? 500 : 200,
   );

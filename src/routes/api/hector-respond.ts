@@ -128,6 +128,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
           messages: buildHectorMessages(body.history ?? [], text, systemPrompt, memory),
           max_tokens: 512,
         },
+        track: { userId, kind: "hector" },
       });
       if (!llmResp.ok) {
         return {
@@ -200,6 +201,10 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
           ),
         };
       }
+      // Billed on the characters sent, and the reply is written for this learner: logged, never cached.
+      const { recordAiCost, scheduleBackground } = await import("@/lib/ai-cost-log.server");
+      const { ttsEntry } = await import("@/lib/ai-cost");
+      scheduleBackground(recordAiCost(ttsEntry({ userId }, ttsModel, safeReply.length, false)));
       const audio = await boundedAudio(ttsResp, 1_500_000);
       if (!audio) {
         return {

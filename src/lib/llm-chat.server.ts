@@ -1,5 +1,6 @@
 import { applySafety, type LlmMessage } from "./ai-safety";
 import { resolveLlmChatModels, resolveLlmProviders } from "./llm-chat-model.server";
+import { recordLlmCost, scheduleBackground, type LlmTrack } from "./ai-cost-log.server";
 
 /**
  * The only place the web server talks to the AI text provider, OpenRouter (ai-call-sites.test.ts enforces it).
@@ -71,6 +72,12 @@ export async function llmChatCompletion(args: {
   providers?: string[];
   signal?: AbortSignal;
   fetchImpl?: typeof fetch;
+  /**
+   * Whose call this is and what it is for. When given, a successful reply's usage and cost are written to the AI cost
+   * log (ai-cost-log.server.ts) from a copy of the response, off the answer's path: it can never fail or delay the
+   * call. Owner-run authoring calls leave it out (no learner is billed for them).
+   */
+  track?: LlmTrack;
 }): Promise<Response> {
   const { apiKey, body, signal, fetchImpl = fetch } = args;
   const { model, ...rest } = body;
@@ -82,11 +89,21 @@ export async function llmChatCompletion(args: {
       ...rest,
       models,
       reasoning: LLM_NO_REASONING,
+      // Ask for the token counts and the charge in the reply; the cost log reads them (ai-cost.ts).
+      usage: { include: true },
       provider: { ...LLM_PROVIDER_PREFS, only: args.providers ?? resolveLlmProviders() },
       messages: applySafety(body.messages),
     }),
     // No call may wait on the provider without a limit: a caller that sets no deadline gets this one.
     signal: signal ?? AbortSignal.timeout(LLM_DEFAULT_TIMEOUT_MS),
   });
-  return normalizeLlmResponse(res);
+  const normalized = await normalizeLlmResponse(res);
+  if (args.track && normalized.status === 200) {
+    try {
+      scheduleBackground(recordLlmCost(normalized.clone(), args.track, model));
+    } catch {
+      // A body that cannot be copied is simply not measured.
+    }
+  }
+  return normalized;
 }

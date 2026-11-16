@@ -39,6 +39,9 @@ async function realRpc(fn: string, args: RpcArgs): Promise<RpcReply> {
 }
 const adminRpc = vi.fn(realRpc);
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { rpc: adminRpc } }));
+// The cost log has its own tests (ai-cost-log.server.test.ts); here it is a spy, so what /api/stt hands it is checked.
+const recordAiCost = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock("@/lib/ai-cost-log.server", () => ({ recordAiCost }));
 
 const { Route } = await import("./stt");
 const handler = (
@@ -612,6 +615,29 @@ describe("POST /api/stt", () => {
       expect(await res.json()).toMatchObject({ text: "hi" });
       expect(err.mock.calls.some(([m]) => String(m).includes("speech seconds"))).toBe(true);
       err.mockRestore();
+    });
+
+    it("logs the provider's billed seconds to the AI cost log, and logs unknown when it reported none", async () => {
+      recordAiCost.mockClear();
+      answer(said("bonjour", 12.2));
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      expect(recordAiCost).toHaveBeenCalledTimes(1);
+      expect(recordAiCost.mock.calls[0]).toMatchObject([
+        { kind: "stt", vendor: "deepgram", sttSeconds: 12.2, costSource: "table" },
+      ]);
+      recordAiCost.mockClear();
+      answer(said("bonjour"));
+      expect((await handler({ request: CONSENT_REQUEST() })).status).toBe(200);
+      expect(recordAiCost.mock.calls[0]).toMatchObject([
+        { sttSeconds: null, costMicroUsd: null, costSource: "unknown" },
+      ]);
+    });
+
+    it("a failing cost log does not fail the answer", async () => {
+      recordAiCost.mockRejectedValueOnce(new Error("db down"));
+      answer(said("bonjour", 3));
+      const res = await handler({ request: CONSENT_REQUEST() });
+      expect(res.status).toBe(200);
     });
 
     it("stays quiet while the function is not deployed yet", async () => {

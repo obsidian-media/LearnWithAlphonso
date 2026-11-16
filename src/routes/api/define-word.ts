@@ -117,6 +117,7 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
       apiKey: llmKey,
       model: resolveLlmChatModel(),
       signal: request.signal,
+      userId,
     }),
   );
   if (!definition) {

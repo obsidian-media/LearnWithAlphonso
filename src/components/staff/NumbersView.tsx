@@ -1,5 +1,6 @@
 import {
   WINDOW_CHOICES,
+  formatUsd,
   type NumbersGroup,
   type NumbersResponse,
   type Tile,
@@ -14,6 +15,8 @@ export function formatTile(tile: Tile): string {
   switch (tile.kind) {
     case "percent":
       return `${v}%`;
+    case "usd":
+      return formatUsd(v);
     case "money":
       return `$${v.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
     case "days":
@@ -63,7 +66,11 @@ function TileBox({ tile, state }: { tile: Tile; state: NumbersGroup["state"] }) 
             <li key={r.label} className="flex justify-between gap-2">
               <span className="min-w-0 break-words">{r.label}</span>
               <b className="tabular-nums">
-                {r.unit === "%" ? `${r.value}%` : r.value.toLocaleString("en-US")}
+                {r.unit === "%"
+                  ? `${r.value}%`
+                  : r.unit === "usd"
+                    ? formatUsd(r.value)
+                    : r.value.toLocaleString("en-US")}
               </b>
             </li>
           ))}

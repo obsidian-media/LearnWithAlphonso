@@ -344,6 +344,9 @@ jobs:
       - name: Test the shared AI chokepoint adds the safety preamble
         run: deno test supabase/functions/_shared/llm-chat.test.ts
 
+      - name: Test the shared AI cost-log row builder
+        run: deno test supabase/functions/_shared/ai-cost-log.test.ts
+
       - name: Test the shared hearts module
         run: deno test supabase/functions/_shared/hearts.test.ts
 
