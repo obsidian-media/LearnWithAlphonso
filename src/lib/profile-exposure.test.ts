@@ -18,6 +18,11 @@ const SENSITIVE = [
 
 /** function -> sensitive columns it may read, and why. Own-row readers must also filter on the caller. */
 const ALLOWED: Record<string, { cols: string[]; ownRowOnly: boolean; why: string }> = {
+  admin_numbers_own: {
+    cols: ["created_at"],
+    ownRowOnly: false,
+    why: "admin numbers dashboard: counts of sign-ups and retention cohorts by join date; service_role only, no row or id is returned",
+  },
   get_leaderboard: {
     cols: ["country"],
     ownRowOnly: false,
