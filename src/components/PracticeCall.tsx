@@ -12,6 +12,9 @@ import { HandsFreeSwitch, type HandsFreeCall } from "./HandsFreeSwitch";
 /** A design token (a --c-* colour) at a share of its strength, over whatever is behind it. */
 const tone = (token: string, percent: number) =>
   `color-mix(in srgb, var(--c-${token}) ${percent}%, transparent)`;
+/** The theme's own faces (Baloo 2 / Fraunces and Geist), kept on the call; sizes come from the type tokens. */
+const DISPLAY_FACE = "var(--font-display)";
+const SANS_FACE = "var(--font-sans)";
 const GLASS = tone("call-glass", 46);
 const GLASS_STRONG = tone("call-glass", 62);
 /** The red hang-up button. */
@@ -214,7 +217,9 @@ export function PracticeCall(props: Props) {
     <div
       className="relative h-dvh w-full overflow-hidden"
       style={{
-        backgroundColor: dark ? "var(--c-call-glass)" : "var(--c-sunk)",
+        backgroundColor: dark
+          ? "var(--c-call-glass)"
+          : "color-mix(in srgb, var(--c-on-hero) 85%, var(--c-call-glass))",
         backgroundImage: `url(${room})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -254,8 +259,16 @@ export function PracticeCall(props: Props) {
 
       <div className="absolute left-[18px] right-[18px] top-[18px] z-[5] flex items-center gap-2.5">
         <div className="grid leading-tight" style={{ textShadow: textShadow(1, 6, 35) }}>
-          <b className="ds-type-question-small">{kit.displayName}</b>
-          <span className="flex items-center gap-1.5 ds-type-footnote opacity-95">
+          <b
+            className="ds-type-question-small"
+            style={{ fontFamily: DISPLAY_FACE, fontWeight: 800 }}
+          >
+            {kit.displayName}
+          </b>
+          <span
+            className="flex items-center gap-1.5 ds-type-footnote opacity-95"
+            style={{ fontFamily: SANS_FACE }}
+          >
             <i
               aria-hidden="true"
               data-testid="live-dot"
@@ -308,7 +321,7 @@ export function PracticeCall(props: Props) {
         <span
           data-testid="call-timer"
           className="ml-auto rounded-full px-2.5 py-[3px] ds-type-caption"
-          style={{ background: GLASS, fontVariantNumeric: "tabular-nums" }}
+          style={{ background: GLASS, fontFamily: SANS_FACE, fontVariantNumeric: "tabular-nums" }}
         >
           {formatClock(seconds)}
         </span>
@@ -345,7 +358,7 @@ export function PracticeCall(props: Props) {
         <div
           role="alert"
           className="absolute left-[18px] right-[18px] z-[5] rounded-full bg-ds-wrong-tint px-3 py-1 text-center ds-type-caption text-ds-wrong-ink"
-          style={{ bottom: 168 + lift }}
+          style={{ bottom: 168 + lift, fontFamily: SANS_FACE, fontWeight: 500 }}
         >
           {error}
         </div>
@@ -368,6 +381,8 @@ export function PracticeCall(props: Props) {
         style={{
           bottom: 140 + lift,
           textWrap: "balance",
+          fontFamily: SANS_FACE,
+          fontWeight: 800,
           textShadow: textShadow(1, 8, 55),
           color: caption?.mine ? "var(--c-call-mint)" : "var(--c-on-hero)",
         }}
@@ -553,6 +568,7 @@ export function PracticeCall(props: Props) {
       {!handsFreeOn && (
         <div
           className="absolute inset-x-0 bottom-2 z-[6] text-center ds-type-caption opacity-85"
+          style={{ fontFamily: SANS_FACE, fontWeight: 700 }}
           aria-hidden="true"
         >
           Hold the white button and answer out loud
@@ -585,7 +601,9 @@ export function PracticeCall(props: Props) {
       >
         <div aria-hidden="true" className="mx-auto mb-2 h-[5px] w-10 rounded-[3px] bg-hairline" />
         <header className="mb-2 flex items-center justify-between">
-          <h3 className="font-display ds-type-headline font-semibold">Conversation</h3>
+          <h3 className="ds-type-headline" style={{ fontFamily: DISPLAY_FACE, fontWeight: 600 }}>
+            Conversation
+          </h3>
           <button
             ref={backRef}
             type="button"

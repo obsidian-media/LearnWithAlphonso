@@ -18,7 +18,7 @@ const NODE_CLASSES: Record<UnitPathNode["state"], string> = {
   done: "size-[72px] bg-[radial-gradient(circle_at_35%_30%,color-mix(in_srgb,var(--c-right)_60%,var(--c-on-hero)),var(--c-right))] shadow-[0_7px_0_0_var(--c-right-edge),0_14px_22px_color-mix(in_srgb,var(--c-call-glass)_30%,transparent)]",
   next: "size-[92px] bg-[radial-gradient(circle_at_35%_30%,var(--c-action-hi),var(--c-action))] shadow-[0_8px_0_0_var(--c-action-edge),0_0_0_10px_color-mix(in_srgb,var(--c-on-hero)_45%,transparent),0_0_40px_10px_color-mix(in_srgb,var(--c-action)_60%,transparent)] map-node-bounce",
   locked:
-    "size-[72px] bg-[radial-gradient(circle_at_35%_30%,var(--c-sunk),var(--c-line))] shadow-[0_6px_0_0_var(--c-ink-faint),0_12px_20px_color-mix(in_srgb,var(--c-call-glass)_25%,transparent)]",
+    "size-[72px] bg-[radial-gradient(circle_at_35%_30%,color-mix(in_srgb,var(--c-on-hero)_92%,var(--c-call-glass)),color-mix(in_srgb,var(--c-on-hero)_72%,var(--c-call-glass)))] shadow-[0_6px_0_0_color-mix(in_srgb,var(--c-on-hero)_58%,var(--c-call-glass)),0_12px_20px_color-mix(in_srgb,var(--c-call-glass)_25%,transparent)]",
 };
 
 const NODE_ICON: Record<UnitPathNode["state"], string> = {
@@ -72,7 +72,10 @@ export function LearnMap({ nodes, greeting }: { nodes: UnitPathNode[]; greeting:
 /** Alphonso's speech bubble, drawn on the Learn clip above his head (its tail points down at him). */
 export function SpeechBubble({ text }: { text: string }) {
   return (
-    <p className="relative mb-3 w-[min(180px,46vw)] rounded-2xl bg-surface px-3.5 py-2.5 text-center font-display ds-type-footnote leading-snug text-ink shadow-[var(--ds-shadow-floating)]">
+    <p
+      className="relative mb-3 w-[min(180px,46vw)] rounded-2xl bg-surface px-3.5 py-2.5 text-center ds-type-footnote leading-snug text-ink shadow-[var(--ds-shadow-floating)]"
+      style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}
+    >
       {text}
       <span className="absolute -bottom-2 left-1/2 size-4 -translate-x-1/2 rotate-45 bg-surface" />
     </p>
