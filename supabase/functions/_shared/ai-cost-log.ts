@@ -6,7 +6,8 @@
 // A structural type, not the supabase-js one: the Deno test job cannot resolve that package.
 type CostLogAdmin = {
   from: (table: string) => {
-    insert: (row: unknown) => PromiseLike<{ error: { message: string } | null }>;
+    // deno-lint-ignore no-explicit-any
+    insert: (row: any) => PromiseLike<{ error: { message: string } | null }>;
   };
 };
 
