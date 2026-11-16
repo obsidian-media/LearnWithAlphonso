@@ -19,13 +19,8 @@ export function agoLabel(iso: string, now: number = Date.now()): string {
 export function mistakeNote(m: { seenCount: number; lastSeenAt: string }, now?: number): string {
   const calls = m.seenCount === 1 ? "1 call" : `${m.seenCount} calls`;
   const ago = agoLabel(m.lastSeenAt, now);
-  // "last 2 days ago", "last week", "most recently today".
-  const when =
-    ago === "today" || ago === "yesterday"
-      ? `most recently ${ago}`
-      : ago.startsWith("last")
-        ? ago
-        : `last ${ago}`;
+  // "last today", "last 2 days ago", "last week" (the approved mock's wording).
+  const when = ago.startsWith("last") ? ago : `last ${ago}`;
   return `Seen in ${calls}, ${when}`;
 }
 

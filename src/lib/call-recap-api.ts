@@ -116,6 +116,8 @@ async function del(body: unknown): Promise<boolean> {
 }
 export const removeMemoryLine = (id: string) => del({ id });
 export const forgetEverything = () => del({ all: true });
+/** Free or Pro: removes only the topic labels recorded after calls. */
+export const forgetTopicNotes = () => del({ events: true });
 
 /** Adds or removes one goal answer through the account's own learner-profile route (presets only, checked there). */
 export async function saveGoalPatch(patch: Record<string, unknown>): Promise<boolean> {

@@ -7,6 +7,7 @@ import { DsButton, DsCard, DsField, DsLinkButton, DsRow, Icon, Overline } from "
 import { SegmentedControl } from "../SegmentedControl";
 import { AiFeaturesSetting } from "../AiFeaturesSetting";
 import { HelpEntry } from "../help/HelpEntry";
+import { TopicNotesSetting } from "../memory/TopicNotesSetting";
 import { AnalyticsSetting } from "../AnalyticsSetting";
 import { AvatarSetting } from "../AvatarSetting";
 import { SoundEffectsSetting } from "../SoundEffectsSetting";
@@ -143,6 +144,7 @@ export function ProfileSettings({ headingRef }: { headingRef: Ref<HTMLHeadingEle
           </span>
         </Link>
       </DsCard>
+      <TopicNotesSetting />
       <HelpEntry />
       <AnalyticsSetting />
 
