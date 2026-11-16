@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/Button";
 
 export const Route = createFileRoute("/signin")({
   // `?mfa=required`: the server refused this admin's session for lacking a second factor (requireStaff).
@@ -150,104 +151,95 @@ function SignIn() {
 
   if (factor.phase !== "none") {
     return (
-      <main className="mx-auto max-w-sm p-6">
-        <h1 className="font-display text-xl font-semibold">Alphonso Admin</h1>
-        {factor.phase === "enroll" ? (
-          <div className="mt-4 space-y-2 text-sm">
-            <p>
-              The admin tool needs an authenticator app. Add this key to it, then enter the 6-digit
-              code it shows.
-            </p>
-            <p className="break-all rounded border border-hairline p-2 font-mono">
-              {factor.secret}
-            </p>
-            <p className="break-all text-xs text-ink-soft">{factor.uri}</p>
-          </div>
-        ) : (
-          <p className="mt-4 text-sm">Enter the 6-digit code from your authenticator app.</p>
-        )}
-        <form onSubmit={verifyCode} className="mt-4 space-y-3">
-          <input
-            inputMode="numeric"
-            pattern="[0-9]{6}"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="123456"
-            required
-            autoComplete="one-time-code"
-            className="w-full rounded border border-hairline px-3 py-2"
-          />
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded bg-moss px-3 py-2 text-surface disabled:opacity-60"
-          >
-            {busy ? "Checking…" : "Continue"}
-          </button>
-        </form>
-        {error ? <p className="mt-3 text-sm text-ember">{error}</p> : null}
+      <main className="mx-auto grid min-h-screen max-w-md content-center p-4">
+        <div className="grid gap-3 rounded-3xl border border-ds-line bg-ds-card p-5">
+          <h1 className="font-display text-2xl font-extrabold text-ds-ink">Alphonso Admin</h1>
+          {factor.phase === "enroll" ? (
+            <div className="mt-4 space-y-2 text-sm">
+              <p>
+                The admin tool needs an authenticator app. Add this key to it, then enter the
+                6-digit code it shows.
+              </p>
+              <p className="break-all rounded border border-ds-line p-2 font-mono">
+                {factor.secret}
+              </p>
+              <p className="break-all text-xs text-ds-ink-soft">{factor.uri}</p>
+            </div>
+          ) : (
+            <p className="mt-4 text-sm">Enter the 6-digit code from your authenticator app.</p>
+          )}
+          <form onSubmit={verifyCode} className="mt-4 space-y-3">
+            <input
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="123456"
+              required
+              autoComplete="one-time-code"
+              className="w-full min-h-11 rounded-xl border border-ds-line bg-ds-sunk px-3 py-2"
+            />
+            <Button type="submit" disabled={busy} fullWidth>
+              {busy ? "Checking…" : "Continue"}
+            </Button>
+          </form>
+          {error ? <p className="mt-3 text-sm text-ds-wrong-ink">{error}</p> : null}
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-sm p-6">
-      <h1 className="font-display text-xl font-semibold">Alphonso Admin</h1>
+    <main className="mx-auto grid min-h-screen max-w-md content-center p-4">
+      <div className="grid gap-3 rounded-3xl border border-ds-line bg-ds-card p-5">
+        <h1 className="font-display text-2xl font-extrabold text-ds-ink">Alphonso Admin</h1>
 
-      <button
-        type="button"
-        onClick={signInWithGoogle}
-        disabled={busy}
-        className="mt-6 w-full rounded border border-hairline px-3 py-2 disabled:opacity-60"
-      >
-        Continue with Google
-      </button>
+        <Button variant="secondary" onClick={signInWithGoogle} disabled={busy} fullWidth>
+          Continue with Google
+        </Button>
 
-      <div className="mt-4 flex items-center gap-3 text-xs text-ink-soft">
-        <span className="h-px flex-1 bg-hairline" />
-        or
-        <span className="h-px flex-1 bg-hairline" />
-      </div>
+        <div className="mt-4 flex items-center gap-3 text-xs text-ds-ink-soft">
+          <span className="h-px flex-1 bg-ds-line" />
+          or
+          <span className="h-px flex-1 bg-ds-line" />
+        </div>
 
-      <form onSubmit={submit} className="mt-4 space-y-3">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          required
-          autoComplete="username"
-          className="w-full rounded border border-hairline px-3 py-2"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
-          autoComplete="current-password"
-          className="w-full rounded border border-hairline px-3 py-2"
-        />
+        <form onSubmit={submit} className="mt-4 space-y-3">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+            autoComplete="username"
+            className="w-full min-h-11 rounded-xl border border-ds-line bg-ds-sunk px-3 py-2"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            required
+            autoComplete="current-password"
+            className="w-full min-h-11 rounded-xl border border-ds-line bg-ds-sunk px-3 py-2"
+          />
+          <Button type="submit" disabled={busy} fullWidth>
+            {busy ? "Signing in…" : "Sign in"}
+          </Button>
+        </form>
+
         <button
-          type="submit"
+          type="button"
+          onClick={resetPassword}
           disabled={busy}
-          className="w-full rounded bg-moss px-3 py-2 text-surface disabled:opacity-60"
+          className="mt-3 text-sm text-ds-choice underline disabled:opacity-60"
         >
-          {busy ? "Signing in…" : "Sign in"}
+          Forgot your password?
         </button>
-      </form>
 
-      <button
-        type="button"
-        onClick={resetPassword}
-        disabled={busy}
-        className="mt-3 text-sm text-moss underline disabled:opacity-60"
-      >
-        Forgot your password?
-      </button>
-
-      {error ? <p className="mt-3 text-sm text-ember">{error}</p> : null}
-      {notice ? <p className="mt-3 text-sm text-ink-soft">{notice}</p> : null}
+        {error ? <p className="mt-3 text-sm text-ds-wrong-ink">{error}</p> : null}
+        {notice ? <p className="mt-3 text-sm text-ds-ink-soft">{notice}</p> : null}
+      </div>
     </main>
   );
 }

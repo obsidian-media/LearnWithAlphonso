@@ -2,6 +2,8 @@ import { createRootRoute, Outlet, HeadContent, Scripts, useLocation } from "@tan
 import { adminWhoAmI } from "@/lib/admin.functions";
 import { ConsoleNav } from "@/components/staff/ConsoleNav";
 import { NAV_ITEMS } from "@/lib/staff-nav";
+import { signOutAndLeave } from "@/lib/staff-signout";
+import { supabase } from "@/integrations/supabase/client";
 // The learner root imports the stylesheet the same way -- as a URL
 // registered in head.links, not as a side-effect import. There is no
 // src/index.css in this repo.
@@ -44,7 +46,17 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body className="bg-surface text-ink font-sans">
-        {me ? <ConsoleNav scopes={me.scopes} role={me.role} current={current} /> : null}
+        {me ? (
+          <ConsoleNav
+            scopes={me.scopes}
+            role={me.role}
+            name={me.displayName}
+            current={current}
+            onSignOut={() =>
+              void signOutAndLeave(supabase.auth, (path) => window.location.assign(path))
+            }
+          />
+        ) : null}
         <Outlet />
         <Scripts />
       </body>

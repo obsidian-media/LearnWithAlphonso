@@ -1,6 +1,8 @@
-import { createFileRoute, redirect, useRouter, Link } from "@tanstack/react-router";
+import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import {
+  adminListFolders,
+  adminWhoAmI,
   adminListEpisodes,
   adminUpdateEpisode,
   adminSetPublished,
@@ -17,6 +19,16 @@ import {
 // admin.functions.ts's COURSE_IDS comment) -- the 3 course options
 // below are inlined instead, for the same reason.
 import { LEVELS } from "@/data/levels";
+import { forbiddenOrSignIn } from "@/lib/staff-forbidden";
+import { ConsoleCard } from "@/components/staff/ConsoleCard";
+import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
+import {
+  EmptyCard,
+  ErrorLine,
+  FIELD,
+  FileButton,
+  SmallButton,
+} from "@/components/staff/console-ui";
 
 /**
  * One folder's episodes.
@@ -30,19 +42,31 @@ import { LEVELS } from "@/data/levels";
 export const Route = createFileRoute("/folder/$id")({
   loader: async ({ params }) => {
     try {
-      return { episodes: await adminListEpisodes({ data: { folderId: params.id } }) };
-    } catch {
-      throw redirect({ to: "/signin" });
+      const me = await adminWhoAmI();
+      if (!me.scopes.includes("podcasts.manage")) return { forbidden: true as const };
+      const [episodes, folders] = await Promise.all([
+        adminListEpisodes({ data: { folderId: params.id } }),
+        adminListFolders(),
+      ]);
+      // The page title names the folder; one extra read finds it.
+      const folderTitle = folders.find((f) => f.id === params.id)?.title ?? null;
+      return { forbidden: false as const, episodes, folderTitle };
+    } catch (e) {
+      // A signed-in person without the scope is told why; a signed-out person goes to sign in.
+      return forbiddenOrSignIn(e, "podcasts.manage");
     }
   },
   component: FolderEpisodes,
 });
 
 function FolderEpisodes() {
-  const { episodes } = Route.useLoaderData();
+  const data = Route.useLoaderData();
   const { id: folderId } = Route.useParams();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+
+  if (data.forbidden) return <ForbiddenCard title="Episodes" scope="podcasts.manage" />;
+  const { episodes, folderTitle } = data;
 
   async function togglePublished(id: string, published: boolean) {
     setError(null);
@@ -66,41 +90,47 @@ function FolderEpisodes() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      <Link to="/folders" className="text-sm text-moss underline">
+    <main className="mx-auto max-w-5xl p-4 sm:p-6">
+      <Link to="/folders" className="text-sm font-bold text-ds-choice underline">
         ← Folders
       </Link>
-      <h1 className="font-display mt-2 text-2xl font-semibold">Episodes</h1>
-      {error ? <p className="mt-3 text-sm text-ember">{error}</p> : null}
-      {episodes.length === 0 ? (
-        <p className="mt-6 text-ink-soft">No episodes in this folder yet.</p>
-      ) : null}
-      <ul className="mt-6 space-y-4">
+      <h1 className="font-display mt-2 text-2xl font-semibold text-ds-ink">
+        {folderTitle ? `Episodes in \u201c${folderTitle}\u201d` : "Episodes"}
+      </h1>
+      {error ? <ErrorLine>{error}</ErrorLine> : null}
+      {episodes.length === 0 ? <EmptyCard title="No episodes in this folder yet." /> : null}
+      <ul className="mt-4 grid max-w-3xl gap-3">
         {episodes.map((episode) => (
-          <li key={episode.id} className="border-b border-hairline pb-4">
-            <input
-              defaultValue={episode.title}
-              onBlur={(e) => rename(episode, e.target.value)}
-              className="w-full rounded border border-hairline px-3 py-2"
-            />
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-sm">
-              <code className="text-ink-soft">/{episode.slug}</code>
-              <button
-                onClick={() => togglePublished(episode.id, !episode.published)}
-                className="text-moss"
-              >
-                {episode.published ? "Unlist" : "Publish"}
-              </button>
-              {/* "Not listed", never "private": the bucket is public-read,
-                  so an unpublished episode's audio is still fetchable by
-                  anyone with the URL. Calling it private here would be a
-                  claim the storage layer cannot back up. */}
-              <span className="text-ink-soft">
-                {episode.published ? "Listed" : "Not listed — audio still public by URL"}
-              </span>
-            </div>
-            <ReplaceAudio episode={episode} onDone={() => router.invalidate()} />
-            <TranscriptEditor episodeId={episode.id} />
+          <li key={episode.id}>
+            <ConsoleCard>
+              <input
+                defaultValue={episode.title}
+                aria-label="Episode title"
+                onBlur={(e) => rename(episode, e.target.value)}
+                className={`${FIELD} font-bold`}
+              />
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <code className="text-xs font-medium text-ds-ink-soft">/{episode.slug}</code>
+                <SmallButton onClick={() => togglePublished(episode.id, !episode.published)}>
+                  {episode.published ? "Unlist" : "Publish"}
+                </SmallButton>
+                {/* "Not listed", never "private": the bucket is public-read,
+                    so an unpublished episode audio is still fetchable by
+                    anyone with the URL. Calling it private here would be a
+                    claim the storage layer cannot back up. */}
+                <span
+                  className={`rounded-lg px-2 py-0.5 text-xs font-extrabold ${
+                    episode.published
+                      ? "bg-ds-right-tint text-ds-right-ink"
+                      : "border border-ds-line bg-ds-sunk text-ds-ink-soft"
+                  }`}
+                >
+                  {episode.published ? "Listed" : "Not listed \u2014 audio still public by URL"}
+                </span>
+              </div>
+              <ReplaceAudio episode={episode} onDone={() => router.invalidate()} />
+              <TranscriptEditor episodeId={episode.id} />
+            </ConsoleCard>
           </li>
         ))}
       </ul>
@@ -156,25 +186,22 @@ function ReplaceAudio({ episode, onDone }: { episode: AdminEpisode; onDone: () =
   }
 
   return (
-    <div className="mt-2">
-      <label className="text-sm text-ink-soft">
-        Replace audio:{" "}
-        <input
-          type="file"
+    <div>
+      <div className="flex flex-wrap items-center gap-2 text-sm text-ds-ink-soft">
+        Replace audio:
+        <FileButton
           accept="audio/mpeg,audio/mp4"
           disabled={busy}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
+          onFile={(file, reset) => {
             // The input is reset so choosing the same file twice after a
             // failure still fires onChange -- otherwise a retry of the
             // identical file silently does nothing.
-            event.target.value = "";
+            reset();
             if (file) void upload(file);
           }}
-          className="text-sm"
         />
-      </label>
-      {status ? <p className="mt-1 text-sm text-ink-soft">{status}</p> : null}
+      </div>
+      {status ? <p className="mt-1 text-sm text-ds-ink-soft">{status}</p> : null}
     </div>
   );
 }
@@ -256,79 +283,74 @@ function NewEpisodeForm({ folderId, onDone }: { folderId: string; onDone: () => 
   }
 
   return (
-    <form onSubmit={submit} className="mt-8 space-y-3 border-t border-hairline pt-6">
-      <h2 className="font-semibold">New episode</h2>
-      {error ? <p className="text-sm text-ember">{error}</p> : null}
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-        required
-        disabled={busy}
-        className="w-full rounded border border-hairline px-3 py-2"
-      />
-      <input
-        value={slug}
-        onChange={(e) => setSlug(e.target.value)}
-        placeholder="slug-in-kebab-case"
-        required
-        disabled={busy}
-        className="w-full rounded border border-hairline px-3 py-2"
-      />
-      <textarea
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Description (optional)"
-        disabled={busy}
-        rows={2}
-        className="w-full rounded border border-hairline px-3 py-2"
-      />
-      <div className="flex gap-3">
-        <select
-          value={course}
-          onChange={(e) => setCourse(e.target.value)}
-          disabled={busy}
-          className="rounded border border-hairline px-2 py-2"
-        >
-          <option value="">Course (optional)</option>
-          <option value="en">English</option>
-          <option value="fr">French</option>
-          <option value="es">Spanish</option>
-        </select>
-        <select
-          value={levelId}
-          onChange={(e) => setLevelId(e.target.value)}
-          disabled={busy}
-          className="rounded border border-hairline px-2 py-2"
-        >
-          <option value="">Level (optional)</option>
-          {LEVELS.map((level) => (
-            <option key={level.id} value={level.id}>
-              {level.id} — {level.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <label className="block text-sm text-ink-soft">
-        Audio file:{" "}
+    <ConsoleCard title="New episode" className="mt-4 max-w-3xl">
+      <form onSubmit={submit} className="space-y-3">
+        {error ? <ErrorLine>{error}</ErrorLine> : null}
         <input
-          type="file"
-          accept="audio/mpeg,audio/mp4"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Title"
           required
           disabled={busy}
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          className="text-sm"
+          className={FIELD}
         />
-      </label>
-      <button
-        type="submit"
-        disabled={busy}
-        className="rounded bg-moss px-3 py-2 text-surface disabled:opacity-60"
-      >
-        {busy ? "Creating…" : "Create episode"}
-      </button>
-      {status ? <p className="text-sm text-ink-soft">{status}</p> : null}
-    </form>
+        <input
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+          placeholder="slug-in-kebab-case"
+          required
+          disabled={busy}
+          className={FIELD}
+        />
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Description (optional)"
+          disabled={busy}
+          rows={2}
+          className={FIELD}
+        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <select
+            value={course}
+            onChange={(e) => setCourse(e.target.value)}
+            disabled={busy}
+            className={FIELD}
+          >
+            <option value="">Course (optional)</option>
+            <option value="en">English</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
+          </select>
+          <select
+            value={levelId}
+            onChange={(e) => setLevelId(e.target.value)}
+            disabled={busy}
+            className={FIELD}
+          >
+            <option value="">Level (optional)</option>
+            {LEVELS.map((level) => (
+              <option key={level.id} value={level.id}>
+                {level.id} — {level.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-ds-ink-soft">
+          Audio file:
+          <FileButton
+            accept="audio/mpeg,audio/mp4"
+            disabled={busy}
+            onFile={(chosen) => setFile(chosen)}
+          />
+          {file ? <span className="font-semibold text-ds-ink">{file.name}</span> : <>MP3 or M4A</>}
+        </div>
+        <SmallButton type="submit" variant="primary" disabled={busy} className="!min-h-10 !px-5">
+          {busy ? "Creating…" : "Create episode"}
+        </SmallButton>
+        {status ? <p className="text-sm text-ds-ink-soft">{status}</p> : null}
+      </form>
+    </ConsoleCard>
   );
 }
 
@@ -370,34 +392,37 @@ function TranscriptEditor({ episodeId }: { episodeId: string }) {
 
   if (!loaded) {
     return (
-      <div className="mt-2">
-        <button onClick={load} className="text-sm text-moss">
+      <div>
+        <button onClick={load} className="text-sm font-bold text-ds-choice underline">
           Edit transcript
         </button>
-        {status ? <p className="mt-1 text-sm text-ember">{status}</p> : null}
+        {status ? <p className="mt-1 text-sm text-ds-wrong-ink">{status}</p> : null}
       </div>
     );
   }
 
   return (
-    <div className="mt-3">
+    <div className="grid gap-2">
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={10}
-        className="w-full rounded border border-hairline px-3 py-2 font-mono text-sm"
+        aria-label="Transcript"
+        className="w-full rounded-xl border border-ds-line bg-ds-sunk px-3 py-2 font-mono text-sm"
       />
       {/* Said in the UI as well as enforced on the server, because the
           server's refusal arrives after the paste and the warning should
           arrive before it. */}
-      <p className="mt-1 text-xs text-ink-soft">
+      <p className="text-xs text-ds-ink-soft">
         The spoken words only — not the TTS script. Markup is rejected, not stripped. Clearing this
         box removes the transcript.
       </p>
-      <button onClick={save} className="mt-2 rounded bg-moss px-3 py-2 text-sm text-surface">
-        Save transcript
-      </button>
-      {status ? <p className="mt-1 text-sm text-ink-soft">{status}</p> : null}
+      <div>
+        <SmallButton variant="primary" onClick={save}>
+          Save transcript
+        </SmallButton>
+      </div>
+      {status ? <p className="text-sm text-ds-ink-soft">{status}</p> : null}
     </div>
   );
 }

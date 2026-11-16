@@ -1,3 +1,4 @@
+import { formatDateTime, formatDay } from "../../lib/staff-dates";
 import { useState, type FormEvent } from "react";
 import { Button } from "../ui/Button";
 import type { AuditRow } from "../../lib/staff-audit.functions";
@@ -97,7 +98,31 @@ export function AuditView({
           {error}
         </p>
       ) : null}
-      <div className="mt-5 overflow-x-auto rounded-2xl border border-ds-line bg-ds-card">
+      {/* On a phone each entry is a stacked row (a five-column table would scroll sideways). */}
+      <ul
+        aria-label="Action record"
+        className="mt-5 overflow-hidden rounded-2xl border border-ds-line bg-ds-card sm:hidden"
+      >
+        {rows.length === 0 ? (
+          <li className="px-4 py-4 text-sm font-semibold text-ds-ink-soft">Nothing matches.</li>
+        ) : null}
+        {rows.map((r) => (
+          <li
+            key={r.id}
+            className="grid gap-0.5 border-t border-ds-line px-4 py-3 first:border-t-0"
+          >
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-bold text-ds-ink">{r.action}</span>
+              <span className="text-xs font-semibold text-ds-ink-soft">{formatDateTime(r.at)}</span>
+            </div>
+            <div className="text-xs font-semibold text-ds-ink-soft">
+              {r.actorRole} {short(r.actorUserId)} &rarr; {short(r.targetUserId)}
+            </div>
+            <div className="text-sm text-ds-ink">{r.reason ?? "—"}</div>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-5 hidden overflow-x-auto rounded-2xl border border-ds-line bg-ds-card sm:block">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="border-b border-ds-line text-xs uppercase tracking-wider text-ds-ink-soft">
             <tr>
@@ -118,7 +143,7 @@ export function AuditView({
             ) : null}
             {rows.map((r) => (
               <tr key={r.id} className="align-top">
-                <td className="whitespace-nowrap px-3 py-2">{new Date(r.at).toLocaleString()}</td>
+                <td className="whitespace-nowrap px-3 py-2">{formatDateTime(r.at)}</td>
                 <td className="px-3 py-2">
                   {r.actorRole} <span className="text-ds-ink-soft">{short(r.actorUserId)}</span>
                 </td>

@@ -24,7 +24,7 @@ export function UserActionButtons({
       {actions.map((action) => (
         <Button
           key={action}
-          variant={action === "delete" || action === "ban" ? "ember" : "secondary"}
+          variant={action === "delete" || action === "ban" ? "danger" : "secondary"}
           className="!px-4 !py-2 text-sm"
           onClick={() => onAction(action)}
         >
