@@ -33,15 +33,16 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 
 ### B. DECISION NEEDED (owner choice)
 
-21. **The three Alphonso tutor videos are PUBLISHED with the HeyGen free-plan watermark** (verified: 3 of 3 published, also visible on the website). Unpublish, keep, or move to a paid plan or another pipeline. Nothing may be posted to social before this. (build 63 plan step 7, 2026-11-13)
-22. **Spanish Minimal Pairs lessons:** keep as plain listening, replace with spelling-choice questions, or write for a Spain voice. (0.0-as #13, 0.0-av)
-23. **Web/iOS social parity:** deliberately platform-exclusive or close the gap. (2.3)
-24. **Should Royal night follow the system on the web?** The web has no night toggle; the token set exists. (r12 themes)
-25. **French question frb2p5q16** (the key repeats "enfin"): pick the answer. (0.0-av, round 7 D)
-26. **Review src/data/path-tags.ts** (learning-path tags) and calibrate the path's talk, campaign and quiz minutes in src/data/path-config.ts. (0.0-bc roadmap, #490)
-27. **Two Qlty warnings** behind the Qlty login: look and decide. (2026-11-07 notes)
-28. **Hands-free with the screen locked:** Android needs a microphone foreground service (not built); decide whether to build it. iOS locked-screen behaviour needs a device. (r13 hands-free notes, 0.0-ac #3)
-29. **Which someday features to schedule** (none started): test-prep mode, phoneme feedback, camera vocabulary, referral, reverse-direction courses, full offline course download, third language, human-reviewed badge, lifetime or win-back offers. (0.0-ac, 1.5, 3)
+**Order of work (owner 2026-11-16).** A small fixes, then B redesign gaps and social parity, then C reliability. D content waits for "content run approved". E art waits for mock approval.
+
+22. **Spanish Minimal Pairs lessons: DECIDED 2026-11-16.** Owner: "yes". They become spelling-choice questions. In progress.
+23. **Web/iOS/Android social parity: DECIDED 2026-11-16.** Owner: "close the gap". Audit in progress (workstream B).
+24. **Royal night on the web: DECIDED 2026-11-16.** Owner: "yes". The web Royal theme follows the device dark mode; Meadow stays light. In progress (workstream A).
+25. **French question frb2p5q16: DECIDED 2026-11-16.** Owner: "yes". The agent writes the answer and the owner approves it in the PR.
+26. **Path tags and minutes: DECIDED 2026-11-16.** Owner: "yes". The agent proposes `src/data/path-tags.ts` tags and the `path-config.ts` minutes from data; the owner approves.
+27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
+28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
+29. **Someday features: PARKED until workstreams A to C finish.** Owner 2026-11-16: "lets discuss these after these are all done".
 
 ### C. DEVICE CHECK (needs a real phone; nothing can show these from code)
 
@@ -58,6 +59,8 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 40. **Real-device web look** at phone width: teams, save-a-word dialog, word-bank layout. (0.0-ac #4, 0.0-ae)
 41. **Learn tab badge after clearing the review queue**; lesson-complete button clipping at largest text. (0.0-z #5 #6)
 42. **Real-microphone checks of the web voice flows** in Safari, Firefox and a phone. (#560)
+
+- Moved here from 28 (owner 2026-11-16, "i will check on device and let you know"): hands-free with the screen locked, iOS and Android.
 
 ### D. STILL OPEN - agent can do
 
@@ -111,5 +114,6 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 
 ### Recently closed
 
+- Alphonso tutor videos (was 21): owner 2026-11-16, "keep the videos for now". Decided: the three videos stay published (with the free-plan watermark).
 - Admin console redesign from the approved mock: merged in #568 (becd9650); admin phases 1 to 3 are all built.
 - Build 67 cut and uploaded to TestFlight (#571, release run 43785255490), not submitted; carries the iOS support push tap.
