@@ -249,7 +249,10 @@ describe("Android: the streak-freeze row is a card", () => {
 
   it("its words are ink, and the buy button is the secondary button, not moss text (it missed contrast on the old dark theme)", () => {
     expect(block).toContain("color = ds.ink,");
-    expect(block).toContain("AlphonsoSecondaryButton(");
+    // The design system's compact button in its secondary look: no `primary = true`, no moss-on-parchment text button.
+    const buy = block.match(/DsCompactButton\("Buy freeze[^\n]*\)/)?.[0] ?? "";
+    expect(buy).not.toBe("");
+    expect(buy).not.toContain("primary = true");
     expect(block).not.toMatch(/Color\.White|onPrimary|onAction|palette\.moss|ds\.actionText/);
   });
 });
