@@ -137,7 +137,9 @@ describe("Android reads them", () => {
     expect(screen).toContain("CallScenes.campaignRoom(scenarioId, known =");
     // A campaign that falls back keeps room-light/room-dark, not the call's own room.
     expect(screen).toContain("fallback = CallScenes.studyRoom)");
-    expect(core).toContain('val studyRoom = CallRoom("room-light", "room-dark", dimInDark = false)');
+    expect(core).toContain(
+      'val studyRoom = CallRoom("room-light", "room-dark", dimInDark = false)',
+    );
     expect(screen).toContain("CallScenes.room(scenarioId, fallback = kit.defaultRoom)");
     expect(
       read(
