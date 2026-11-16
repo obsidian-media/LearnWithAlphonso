@@ -336,7 +336,9 @@ function AuthPage() {
               </div>
             )}
             {error && (
-              <p className={"rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700"}>{error}</p>
+              <p className={"rounded-xl bg-ds-wrong-tint px-3 py-2 text-xs text-ds-wrong-ink"}>
+                {error}
+              </p>
             )}
             {notice && (
               <p

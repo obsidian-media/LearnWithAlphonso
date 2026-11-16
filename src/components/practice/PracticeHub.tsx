@@ -127,7 +127,7 @@ export function PracticeHub({
   return (
     <div
       data-practice-hub=""
-      className="ds-light bg-ds-surface pb-8 font-[family-name:var(--ds-font-body)] text-ds-ink"
+      className="bg-ds-surface pb-8 font-[family-name:var(--ds-font-body)] text-ds-ink"
     >
       {/* Alphonso in his café. */}
       <div className="relative h-[300px] overflow-hidden">

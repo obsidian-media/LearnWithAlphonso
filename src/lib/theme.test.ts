@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  applyLook,
+  DARK_QUERY,
+  deviceIsDark,
+  watchDeviceMode,
   DEFAULT_THEME,
   isThemeName,
   normalizeTheme,
@@ -11,6 +15,77 @@ import {
 } from "./theme";
 
 const RETIRED = ["studio-ink", "manuscript", "canopy"];
+
+describe("the web follows the device's dark mode in Royal", () => {
+  const root = () => document.createElement("html");
+
+  it("applyLook gives Royal night on a dark device, light otherwise, and Meadow never night", () => {
+    const a = root();
+    expect(applyLook(a, "royal", true)).toEqual({ palette: "royal", mode: "night" });
+    expect(a.dataset.palette).toBe("royal");
+    expect(a.dataset.dsMode).toBe("night");
+    applyLook(a, "royal", false);
+    expect(a.dataset.dsMode).toBeUndefined();
+    const m = root();
+    m.dataset.dsMode = "night";
+    expect(applyLook(m, "meadow", true)).toEqual({ palette: "meadow", mode: "light" });
+    expect(m.dataset.palette).toBe("meadow");
+    expect(m.dataset.dsMode).toBeUndefined();
+  });
+
+  it("deviceIsDark reads the dark query, and is false when the browser cannot say", () => {
+    const asked: string[] = [];
+    const win = {
+      matchMedia: (q: string) => {
+        asked.push(q);
+        return { matches: true };
+      },
+    };
+    expect(deviceIsDark(win)).toBe(true);
+    expect(asked).toEqual([DARK_QUERY]);
+    expect(deviceIsDark({ matchMedia: () => ({ matches: false }) })).toBe(false);
+    expect(deviceIsDark({})).toBe(false);
+    expect(deviceIsDark(undefined)).toBe(false);
+    expect(
+      deviceIsDark({
+        matchMedia: () => {
+          throw new Error("no");
+        },
+      }),
+    ).toBe(false);
+  });
+
+  it("watchDeviceMode re-applies the look when the device changes, reading the theme at that moment, and stops on cleanup", () => {
+    const r = root();
+    let handler: (() => void) | undefined;
+    const list = {
+      matches: false,
+      addEventListener: (_: string, h: () => void) => {
+        handler = h;
+      },
+      removeEventListener: (_: string, h: () => void) => {
+        if (handler === h) handler = undefined;
+      },
+    };
+    let theme: "royal" | "meadow" = "royal";
+    const stop = watchDeviceMode(r, () => theme, {
+      matchMedia: () => list as unknown as MediaQueryList,
+    });
+    list.matches = true;
+    handler!();
+    expect(r.dataset.dsMode).toBe("night");
+    theme = "meadow";
+    handler!();
+    expect(r.dataset.palette).toBe("meadow");
+    expect(r.dataset.dsMode).toBeUndefined();
+    stop();
+    expect(handler).toBeUndefined();
+  });
+
+  it("does nothing, and does not throw, where matchMedia does not exist", () => {
+    expect(() => watchDeviceMode(root(), () => "royal", {})()).not.toThrow();
+  });
+});
 
 describe("the two themes", () => {
   it("are Royal and Meadow, and Royal is the default", () => {
