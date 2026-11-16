@@ -11,7 +11,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 ### A. STILL OPEN - owner only (in priority order)
 
 1. **Decide and perform the next App Review submission.** Builds up to 67 are on TestFlight; nothing newer than the notes shows a submission. App Store Connect state is unverified from here. (0.0-am #7, 0.0-y)
-1a. **Reseed after #574** (Spanish minimal pairs, `frb2p5q16`, path tags). The owner runs it; keep this line until the owner confirms.
+1b. **Two Vercel settings the agent could not change (403, needs production env permission), project `learnwithalphonso`:** (a) set `SUPPORT_NOTIFY_FROM` to `Learn with Alphonso Support team <support@hello.alphonsoecosystem.app>` (a verified Resend sender), then redeploy; (b) delete `NVIDIA_API_KEY` and `NVIDIA_CHAT_MODEL` if they are present (no code reads them). Both stay owner steps. (#557, #576)
 2. **Paid Applications Agreement must be Active** (terms, bank, tax). Older notes disagree on whether it already is; unverified. A "New" agreement blocks every in-app price. (0.0-am, 1.1)
 3. **Store privacy answers in one visit** (App Store Connect App Privacy and Google Play Data safety), before any submission: Product Interaction and Device ID for Analytics (PostHog, linked, not tracking), Product Personalization, Crash Data and Other Diagnostic Data, first-run answers (name, age range, country, avatar, goal, level, how you heard of us), Explain and Hector AI requests, learning minutes, mastered words, time zone, listening progress, and **Customer Support** for the Help chat (kept 12 months after a chat is solved, in the export). Age rating 13+. (0.0-as #1 #7 #8, 0.0-bn, 2026-11-15 note, 0.0-ai)
 4. **Security follow-ups, details kept private.** Several owner-only account, settings and switch-on steps (including one timed switch-on) are tracked privately and are not described here. (0.0-bb, 0.0-as #3)
@@ -39,6 +39,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
 28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
 29. **Someday features: PARKED until workstreams A to C finish.** Owner 2026-11-16: "lets discuss these after these are all done".
+29a. **Podcast audio bucket is public by URL, including unpublished episodes** (documented trade-off, #582). Decide whether to make unpublished audio private.
 
 ### C. DEVICE CHECK (needs a real phone; nothing can show these from code)
 
@@ -64,14 +65,11 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 44. **FR/ES review-panel disagreements** (77 from the first run) were folded into the content closure project; the state of the closure run and its caps is unverified from here. (0.0-ay, #428, content closure)
 45. **Call scenes v2:** more vivid, less pastel, distinct interview and negotiation offices, matching evening study room. No evidence it started. (2026-11-05 note)
 46. **Night rooms for dark mode** (owner said yes 2026-11-12); no evidence it was built; lessons stay light. (0.0-be)
-50. **Redesign gaps, batch 2: Android residue** (the rows of the audit still open on Android).
 52a. **Redesign gaps, batch 4: web call-chrome raw values.**
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
-54. **Concurrent-device review grading and offline streak continuity.** (3 Review, ARCHITECTURE rough edges)
 57. **Remove the unused push-to-talk capability** from the App ID. (1.1 #9)
 59. **Vocab image quality** beyond metadata triage; Android needs no change for empty lines (verified done). (3 Content)
-62. **Podcast carried risks and deferred minors** (storage before any Pro gating, ended-event ordering). Unverified on a device. (0.8)
 63. **Dev server does not boot in the Windows sandbox.** (4)
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
@@ -100,13 +98,16 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Android residue (was batch 2, 50): the last Android screens are on the design system (#580, 1c996772); Android raw-value baseline 0. Nothing seen on an emulator, owner device check.
+- Concurrent-device review grading and offline streak continuity (was 54): fixed in #582 (b953a0a7); known gap, a lesson started and finished offline credits the sync day.
+- Podcast carried risks (was 62): checked in #582, items safe, no XP double count; the public audio bucket is a documented trade-off (see decision 29a).
+- Reseed after #574 (was 1a): done 2026-11-16 by the coordinator at the owner's request. The 5 units, 25 lessons and 126 questions that #574 changed (the `es*p28` Minimal Pairs and `frb2p5q16`) were upserted in prod; verified: the 126 rows hash-match `buildFullSeed()` on main exactly, 25 lessons and 5 units updated.
 - Spanish minimal pairs (was 22): owner 2026-11-16, "yes"; they are spelling-choice questions (#574, 6ef39fe9; 5 lessons, 125 items, gate test).
 - Social parity (was 23 and batch 1, 49): owner 2026-11-16, "close the gap"; web now has nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, and team-name report (#578, 4b43a187). Not run on a device.
 - French question frb2p5q16 (was 25): the answer is "était" (#574, owner ok).
 - Path tags and minutes (was 26): minutes kept because the data is too thin; tags changed (#574, owner ok).
 - Royal night on the web (was 24): owner 2026-11-16, "24 yes"; merged in #577 (0b0042a1). The web Royal theme follows the device dark mode on first paint and live; Meadow stays light. Not captured on full signed-in screens.
 - Redesign gaps, batch 3 (iOS residue, was 51): iOS accept-friend sheet and the legacy helpers moved onto the design system (#575, 791a81dd); the sheet copies the web and Android look as the owner chose ("3. copy"). Nothing was seen on a simulator.
-- Owner step from #576: delete `NVIDIA_API_KEY` and `NVIDIA_CHAT_MODEL` on Vercel if they are still set (no code reads them).
 - Web pending-sync, update gate and offline finish: owner 2026-11-16, "1. keep". They stay app-only (closed, by design).
 - Web push notifications: owner 2026-11-16, "2. keep to app". No web push (closed, by design).
 
