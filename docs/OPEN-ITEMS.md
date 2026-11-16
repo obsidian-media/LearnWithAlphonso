@@ -1,6 +1,6 @@
 # Open items
 
-A public, sanitised list of what is not finished yet in Learn with Alphonso. The detailed internal backlog is kept private. Last swept 2026-11-15.
+A public, sanitised list of what is not finished yet in Learn with Alphonso. The detailed internal backlog is kept private. Last swept 2026-11-16.
 
 Sweep of 2026-11-15 against main, merged pull requests and read-only checks of the production database. "Unverified" means it could not be confirmed from code, merged PRs or the database; nothing is marked done without evidence. Old section ids (for example 0.0-an) point at the private internal backlog.
 
@@ -38,7 +38,14 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
 28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
-29. **Someday features: PARKED until workstreams A to C finish.** Owner 2026-11-16: "lets discuss these after these are all done".
+29. **Someday features: discussed 2026-11-16, owner to pick.** Competitor research is published (owner page). The owner chose the art workstream (items 45 and 46) and asked for cost tracking (items 65 and 66) and similar tools. Not started, owner picks which, if any:
+    - Call recap card plus a "what Alphonso remembers" page.
+    - Referral.
+    - Pronunciation feedback, word level first.
+    - Honest billing kit plus an AI minutes meter.
+    - Graded stories.
+    - Quick wins: say-the-picture, and gift-a-streak-freeze.
+    - Pricing risk to keep in view: heavy users are estimated at CAD 17.12 a month against the CAD 12.99 price (market-decision-2026-10-24 note), so lifetime pricing needs a usage cap.
 29a. **Podcast audio bucket is public by URL, including unpublished episodes** (documented trade-off, #582). Decide whether to make unpublished audio private.
 
 ### C. DEVICE CHECK (needs a real phone; nothing can show these from code)
@@ -63,14 +70,16 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 
 43. **Content: failed fixes.** About 438 English review fixes and about 580 content fixes overall still fail the checks; 16 gated refused FR/ES fixes (duplicate English prompts); about 190 English-term FR/ES cards need an authored FR/ES term; after any content merge the owner reseeds. (2026-11-07, round 7 notes)
 44. **FR/ES review-panel disagreements** (77 from the first run) were folded into the content closure project; the state of the closure run and its caps is unverified from here. (0.0-ay, #428, content closure)
-45. **Call scenes v2:** more vivid, less pastel, distinct interview and negotiation offices, matching evening study room. No evidence it started. (2026-11-05 note)
-46. **Night rooms for dark mode** (owner said yes 2026-11-12); no evidence it was built; lessons stay light. (0.0-be)
+45. **Call scenes v2: art approved, app integration not started.** Owner 2026-11-16 ("yes do that please"): ship as NEW call-only files (lessons keep their current rooms), all 12 scenarios plus the study room by day and evening. Full-resolution redraw in progress. (2026-11-05 note)
+46. **Night rooms for dark mode: art approved, app integration not started.** Owner 2026-11-16: Royal-night rooms approved for learn, hector, listen, profile and practice; Lesson complete stays light; no night clips for now; Meadow never gets night art. Full-resolution redraw in progress. (0.0-be)
 52a. **Redesign gaps, batch 4: web call-chrome raw values.**
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
 57. **Remove the unused push-to-talk capability** from the App ID. (1.1 #9)
 59. **Vocab image quality** beyond metadata triage; Android needs no change for empty lines (verified done). (3 Content)
 63. **Dev server does not boot in the Windows sandbox.** (4)
+65. **AI cost tracking (in progress, PR pending; owner merges, includes a migration).** A usage log per AI call with the vendor-reported cost, an admin AI-cost panel, a daily spend email, and a text-to-speech cache audit and fix. Owner 2026-11-16 asked for it.
+66. **Later: monthly per-user cost budget**, to be set after a month of real cost data from item 65. Ties to the lifetime-pricing usage cap in item 29.
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
 
@@ -98,6 +107,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Docs reseed and Vercel owner steps (#584, 876c12ee): reseed after #574 verified; owner item 1b added.
 - Android residue (was batch 2, 50): the last Android screens are on the design system (#580, 1c996772); Android raw-value baseline 0. Nothing seen on an emulator, owner device check.
 - Concurrent-device review grading and offline streak continuity (was 54): fixed in #582 (b953a0a7); known gap, a lesson started and finished offline credits the sync day.
 - Podcast carried risks (was 62): checked in #582, items safe, no XP double count; the public audio bucket is a documented trade-off (see decision 29a).
