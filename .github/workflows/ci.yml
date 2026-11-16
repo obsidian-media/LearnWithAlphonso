@@ -95,6 +95,12 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production-supabase
+    # Compare only AFTER deploy-supabase has applied this push's migrations. Without this the job ran in parallel with
+    # the deploy, regenerated from a production that did not have the new table yet, and failed on every merge of a PR
+    # that added a table and committed the matching types (the normal way). This is a one-way dependency: types-fresh
+    # waits for the deploy, nothing waits for types-fresh, so which jobs gate a deploy is unchanged. If the deploy
+    # fails or is skipped this job is skipped too (there is nothing true to compare against).
+    needs: [deploy-supabase]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
@@ -114,21 +120,10 @@ jobs:
       # fix when this fails is `gh workflow run regenerate-supabase-types.yml`,
       # never a hand edit.
       #
-      # KNOWN FALSE-POSITIVE MODE (not fixed by this comment, only named):
-      # this regenerates against PRODUCTION, not against what this PR's own
-      # pending migrations would produce -- migrations only apply post-merge,
-      # in deploy-supabase below. A PR that adds a migration AND updates
-      # types.ts in the same PR to use the new table (the normal way to avoid
-      # an `as any` cast, per PR #153/#158) will ALWAYS fail here, correctly
-      # regenerating the pre-migration shape and diffing it against the
-      # forward-looking committed one -- and re-running the suggested fix
-      # would not help, since it hits the same unmigrated production schema.
-      # The real fix needs generating against a database with THIS PR's
-      # migrations applied (a local/ephemeral Postgres in CI, which does not
-      # exist here yet -- see podcast-schema.test.ts's comment on the same
-      # gap), not a one-line change. Until then: land the migration alone,
-      # merge, let deploy-supabase apply it, then regenerate types.ts in a
-      # follow-up PR/commit.
+      # The earlier false positive (a PR that adds a table AND commits the types that use it) came from comparing
+      # against production BEFORE this push's migrations were applied. That is fixed by `needs: [deploy-supabase]`
+      # above: by the time this step runs, production has the PR's migrations, so the regenerated file matches the
+      # committed one. src/lib/ci-types-fresh-guard.test.ts pins that dependency (and that nothing gates on this job).
       - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
         with:
           version: 2.118.0
@@ -690,7 +685,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Install XcodeGen
-        run: bash scripts/install-xcodegen.sh  # pinned version and checksum
+        run: bash scripts/install-xcodegen.sh # pinned version and checksum
 
       - name: Generate Xcode project
         working-directory: ios/LearnWithAlphonso

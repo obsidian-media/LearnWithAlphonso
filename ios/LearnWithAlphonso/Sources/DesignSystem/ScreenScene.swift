@@ -1,3 +1,4 @@
+import LearnWithAlphonsoKit
 import SwiftUI
 
 /// The five approved scenes (Visual refresh part 2). Each is the image set `Scene-<name>`, a 1080x1920 portrait.
@@ -56,33 +57,25 @@ struct SceneScrollHost: ViewModifier {
     var clipAnchor: CGFloat = 1
     var pin: ClipPin? = nil
 
-    @State private var offset: CGFloat?
-    @State private var probeVisible = true
-    /// True once the scroll view itself reports (iOS 18+); the probe row is then ignored.
-    @State private var scrollDriven = false
+    /// The scroll rules live in the Kit (`SceneScrollTracker`) so they are tested.
+    @State private var tracker = SceneScrollTracker()
 
     func body(content: Content) -> some View {
         content
             .modifier(SceneScrollOffsetReader { report(.scrolled($0)) })
             .environment(\.sceneScrollReporter, report)
             .background {
-                ScreenScene(scene: scene, rawOffset: offset, clip: clip, clipAnchor: clipAnchor, pin: pin,
-                            probeVisible: probeVisible || scrollDriven)
+                ScreenScene(scene: scene, rawOffset: tracker.offset.map { CGFloat($0) }, clip: clip, clipAnchor: clipAnchor, pin: pin,
+                            probeVisible: tracker.probeVisible || tracker.scrollDriven)
             }
     }
 
     private func report(_ event: SceneScrollEvent) {
         switch event {
-        case .appeared:
-            probeVisible = true
-        case .disappeared:
-            probeVisible = false
-        case .scrolled(let y):
-            scrollDriven = true
-            offset = y
-        case .moved(let minY):
-            guard probeVisible, !scrollDriven else { return }
-            offset = minY
+        case .appeared: tracker.apply(.appeared)
+        case .disappeared: tracker.apply(.disappeared)
+        case .scrolled(let y): tracker.apply(.scrolled(Double(y)))
+        case .moved(let minY): tracker.apply(.moved(Double(minY)))
         }
     }
 }

@@ -33,6 +33,8 @@ class ExplainFlow(
     private val consent: AiConsentStore,
     private val hasSession: () -> Boolean,
     private val scope: CoroutineScope,
+    /** Called once per request that really goes out, after consent and the session check (the analytics event). */
+    private val onRequested: (ExplainRequest) -> Unit = {},
 ) {
     private val _phase = MutableStateFlow<ExplainPhase>(ExplainPhase.Idle)
     val phase: StateFlow<ExplainPhase> = _phase.asStateFlow()
@@ -63,6 +65,7 @@ class ExplainFlow(
         }
         if (!hasSession()) { _phase.value = ExplainPhase.Failed(ExplainErrorKind.NOT_SIGNED_IN); return }
         try {
+            onRequested(request)
             _phase.value = ExplainPhase.Shown(explain(request))
         } catch (e: CancellationException) {
             throw e

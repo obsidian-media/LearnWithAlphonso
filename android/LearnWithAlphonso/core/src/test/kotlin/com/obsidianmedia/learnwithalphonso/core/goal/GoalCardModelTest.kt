@@ -48,7 +48,8 @@ class GoalCardModelTest {
     private val store = MemoryStore()
     private val cache = GoalCache(store)
     private var user: String? = "u1"
-    private val model = GoalCardModel(api, cache) { user }
+    private val built = ArrayList<String>()
+    private val model = GoalCardModel(api, cache, onPathBuilt = { built.add(it) }) { user }
 
     @Test
     fun `a load shows the goal and caches it`() = runTest {
@@ -300,5 +301,21 @@ class GoalCardModelTest {
         assertNotNull(thrown)
         assertEquals(GoalPhase.LOADING, model.state.value.phase)
         assertNull(model.state.value.loadError)
+    }
+
+    @Test
+    fun `path_built is reported for the first goal of a course only, not for a change or a failed save`() = runTest {
+        api.fetchHandler = { none }
+        model.load("en")
+        api.saveHandler = { _, _, _ -> throw LearningGoalError.Unavailable }
+        model.save("en", "B1", "2027-01-01")
+        assertEquals(0, built.size)
+
+        api.saveHandler = { _, _, _ -> withGoal }
+        assertEquals(SaveResult.Saved, model.save("en", "B1", "2027-01-01"))
+        assertEquals(listOf("en"), built)
+
+        model.save("en", "B2", "2027-06-01")
+        assertEquals(listOf("en"), built)
     }
 }

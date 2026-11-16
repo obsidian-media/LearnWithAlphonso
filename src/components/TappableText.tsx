@@ -42,6 +42,10 @@ export const TappableText = memo(function TappableText({
             key={segment.start}
             type="button"
             data-save-word
+            // The word is read in its own language (a French word in a French lesson is not English), and the
+            // button says it opens a dialog.
+            lang={course}
+            aria-haspopup="dialog"
             tabIndex={focusable ? undefined : -1}
             onClick={(event) =>
               open(saveRequestFor(text, segment, course as SavedWordCourse), event.currentTarget)

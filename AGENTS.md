@@ -298,8 +298,7 @@ wired into CI (`.github/workflows/ci.yml`) on every PR and push to
 inside the `lint-and-typecheck` job, not its own named check — easy to
 miss when reading `gh pr checks` output; the Supabase generated-types
 freshness check is its own advisory `types-fresh` job (pushes to `main` only, in the
-`production-supabase` environment) that `deploy-supabase` does not wait on, so it can be red after
-a table-adding merge until the types are regenerated (since #484 the `regenerate-supabase-types.yml` workflow does that by itself after `deploy-supabase` succeeds on `main`, as a deploy-key push of `types.ts`, so expect a `chore: regenerate supabase types` commit after a migration merge; `ci-hardening-guards.test.ts` pins its gate); the jobs in `ci.yml` are `lint-and-typecheck`,
+`production-supabase` environment) that WAITS for `deploy-supabase` (`needs`; nothing waits for it, so it gates no deploy), so it compares against a production that already has the push's migrations and a table-adding PR that committed its types passes; it is red only when the types really are stale, until they are regenerated (since #484 the `regenerate-supabase-types.yml` workflow does that by itself after `deploy-supabase` succeeds on `main`, as a deploy-key push of `types.ts`, so expect a `chore: regenerate supabase types` commit after a migration merge; `ci-hardening-guards.test.ts` pins its gate); the jobs in `ci.yml` are `lint-and-typecheck`,
 `types-fresh`, `admin-build`, `web-build`, `e2e`, `e2e-signed-in` (advisory), `deno-tests`,
 `deploy-supabase`, `ios-swift-tests` and `ios-app-build`, and `deploy-supabase`
 `needs` `lint-and-typecheck`, `web-build`, `admin-build`, `e2e` and
@@ -692,7 +691,7 @@ with "Try again"; see `docs/BACKLOG.md` for current status.
 ## Merge rules
 
 - `main` needs the seven required checks green (`lint-and-typecheck`, `web-build`, `admin-build`, `e2e`, `deno-tests`, `ios-swift-tests`, `ios-app-build`); merge with **squash**, never force-push. Run `git fetch` and a two-dot diff against `origin/main` right before declaring a branch ready, not only at the start.
-- **A PR that contains a migration is merged by the owner**, not by an agent: the merge applies it to production through `deploy-supabase`. Version it after whatever it depends on (see Deployment). A PR that adds a table may leave `types-fresh` red until the types regenerate itself after the deploy (#484).
+- **A PR that contains a migration is merged by the owner**, not by an agent: the merge applies it to production through `deploy-supabase`. Version it after whatever it depends on (see Deployment). A PR that adds a table and commits the matching types passes `types-fresh` (it waits for the deploy); one that does not leaves it red until the types regenerate themselves after the deploy (#484).
 - An iOS or Android build is cut only when the owner asks: it is its own `chore(ios): build N` PR (the build number is hardcoded twice in `ios/LearnWithAlphonso/project.yml`) plus a release dispatch with `upload_to_testflight=true`.
 - The repo is public: check that a security fix has a neutral PR title and squash message before merging.
 - After each merge the docs are updated (README, AGENTS, ARCHITECTURE, CHANGELOG and the specs' status tables); `docs/VIDEO-PLAYBOOK.md` and `scripts/video/README.md` cover the video pipeline.

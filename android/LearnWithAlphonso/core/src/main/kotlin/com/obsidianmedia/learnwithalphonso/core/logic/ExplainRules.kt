@@ -34,7 +34,12 @@ enum class ExplainOffer { CHIP, AUTO, HIDDEN }
 /** A piece of an explanation: [ltr] runs are quoted course-language phrases kept left to right inside right-to-left text. */
 data class DirectionRun(val text: String, val ltr: Boolean)
 
-enum class ExplainKind { WRONG_ANSWER, WORD, MESSAGE }
+/** [analyticsSource] is the `source` of the `explain_requested` event: the kind of item, never its text. */
+enum class ExplainKind(val analyticsSource: String) {
+    WRONG_ANSWER("wrong-answer"),
+    WORD("word"),
+    MESSAGE("message"),
+}
 
 /** One item to explain. The language is NOT in it: the server reads it from the account. */
 sealed class ExplainRequest {

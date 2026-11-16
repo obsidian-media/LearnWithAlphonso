@@ -135,6 +135,14 @@ describe("PodcastTranscriptPanel keyboard access to words", () => {
     expect(screen.getByRole("dialog", { name: /save this word/i })).toBeInTheDocument();
   });
 
+  it("opens the save dialog from the focused word with Space too", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    await user.click(screen.getByRole("button", { name: /browse words with the keyboard/i }));
+    await user.keyboard(" ");
+    expect(screen.getByRole("dialog", { name: /save this word/i })).toBeInTheDocument();
+  });
+
   it("does not offer the control when there is no transcript", () => {
     render(
       <PodcastTranscriptPanel
