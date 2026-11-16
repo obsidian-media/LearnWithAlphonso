@@ -41,7 +41,7 @@ import kotlinx.coroutines.CancellationException
 fun ProfileHubScreen(
     container: AppContainer, onEditAnswers: () -> Unit,
     onOpenLeague: () -> Unit, onOpenFriends: () -> Unit, onOpenAchievements: () -> Unit, onOpenSettings: () -> Unit,
-    onOpenReview: (Course) -> Unit, onOpenPaywall: () -> Unit,
+    onOpenReview: (Course) -> Unit, onOpenPaywall: () -> Unit, onOpenMemory: () -> Unit = {},
 ) {
     val course by container.activeCourse.course.collectAsState()
     val isPro = container.entitlements.state.collectAsState().value.isPro
@@ -83,6 +83,7 @@ fun ProfileHubScreen(
                             if (!m.hasAnyActivity) Text("Your first lesson starts your streak and fills in this page.", color = ds.ink)
                             ProfileWeekSection(m)
                             ProfileHector(m, onPaywall = onOpenPaywall)
+                            ProfileMemory(isPro, m.weak.first.take(2).map { it.display }, onOpenMemory)
                         }
                         ProfileTab.PROGRESS -> {
                             ProfileCompactHeader(m)

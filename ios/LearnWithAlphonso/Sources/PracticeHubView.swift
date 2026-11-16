@@ -323,6 +323,12 @@ struct PracticeResultView: View {
     let retry: () -> Void
     /// The forward button: Next scene, Finish campaign or Done.
     let forward: () -> Void
+    /// The call recap. It takes the slip's slot while it is pending or ready; with none (a short call, offline, an AI
+    /// error) the slip shows exactly as before.
+    var recap: CallRecapModel?
+    var session: Session?
+    var callId: String = ""
+    var onOpenMemory: () -> Void = {}
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// Follows Royal light and night; Meadow is always light (`AlphonsoThemeManager.isNight`).
     private var ds: AlphonsoDS.Colors { AlphonsoDS.current }
@@ -339,7 +345,9 @@ struct PracticeResultView: View {
                     HStack(spacing: AlphonsoDS.Space.s2) { stats }
                     VStack(spacing: AlphonsoDS.Space.s2) { stats }
                 }
-                if let slip = result.slipToShow(slip) {
+                if let recap, let session, recap.status != .off {
+                    RecapCardView(model: recap, session: session, callId: callId, courseCode: course, onOpenMemory: onOpenMemory)
+                } else if let slip = result.slipToShow(slip) {
                     VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                         Text("Your slip").dsText(.caption)
                         Text(slip.said).strikethrough().foregroundStyle(ds.wrongInk)

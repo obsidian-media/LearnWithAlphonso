@@ -472,6 +472,42 @@ struct ProfileWeakAndHectorSection: View {
     }
 }
 
+
+/// "What Alphonso remembers" on Profile: opens the page. Pro learners see their notes there; a free learner sees it
+/// locked, with a teaser made only from their own weak spots (the same rule as "Hector can help").
+struct ProfileMemoryCard: View {
+    let isPro: Bool
+    let topics: [String]
+    let action: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                    HStack(spacing: AlphonsoDS.Space.s2) {
+                        Text(isPro ? "What Alphonso remembers" : "What Alphonso can remember").dsText(.headline)
+                        Text("Pro").dsText(.overline).foregroundStyle(ds.onAction)
+                            .padding(.horizontal, AlphonsoDS.Space.s1).background(RoundedRectangle(cornerRadius: AlphonsoDS.Space.s1).fill(ds.action))
+                    }
+                    Text(isPro
+                        ? "See and edit the notes he keeps from your calls."
+                        : (topics.isEmpty ? "With Pro, Alphonso keeps notes between calls." : "He could remember \(ProfileMath.joinTopics(topics)). See what Pro keeps."))
+                        .dsText(.caption).foregroundStyle(ds.onHeroSoft)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").foregroundStyle(ds.onHeroSoft).accessibilityHidden(true)
+            }
+            .foregroundStyle(ds.onHero)
+            .padding(AlphonsoDS.Space.s3)
+            .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.hero))
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+    }
+}
+
 // MARK: Achievements, league, friends
 
 struct ProfileProgressSection: View {

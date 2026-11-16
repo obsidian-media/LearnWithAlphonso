@@ -81,6 +81,8 @@ abstract class BaseConversationViewModel(
     /** Hands-free (Practice tuning: 2.5 s of quiet ends a turn). Off whenever a call starts; the call sheet's switch turns it on. */
     override val handsFree = HandsFreeBinding.newController(HandsFreeLoop.Tuning.PRACTICE, press = { pressBegan() }, release = { pressEnded() }, cancel = { HandsFreeBinding.releaseMic(engine) })
     private var analysed = false
+    /** The after-call recap (CallRecapUi.kt): started when the result arrives, one attempt per call. */
+    val recap = CallRecapController(ai, viewModelScope)
     // The opener being fetched or spoken; a press cancels it, which stops its playback.
     private val opener by lazy {
         OpenerSpeaker(
@@ -126,6 +128,7 @@ abstract class BaseConversationViewModel(
             val r = runCatching { ai.finishPractice(id) }.getOrNull()
             if (r != null) analyticsScenarioId?.let { Analytics.track(AnalyticsEvent.PRACTICE_CALL_COMPLETED, mapOf("scenario_id" to it, "stars" to r.stars)) }
             _result.value = r
+            if (r != null) recap.start(id, callTurns(), analyticsScenarioId)
             r
         }
         finishJob = job
@@ -133,6 +136,7 @@ abstract class BaseConversationViewModel(
     }
     fun resetPractice() {
         _result.value = null; callId = UUID.randomUUID().toString(); startedAt = System.currentTimeMillis(); slip = null; finishing = false; finishJob = null
+        recap.reset()
     }
     fun retryScenario(speak: Boolean = true) {
         resetPractice()
@@ -240,6 +244,18 @@ abstract class BaseConversationViewModel(
 
     protected open fun onReply(reply: String) {}
 
+    /** The turns of the call that just finished, for its recap: the whole scenario, or the current scene of a campaign. */
+    protected open fun callTurns(): List<ChatMessage> = _state.value.turns
+
+    /** Plays just that phrase from the recap, in Alphonso's chosen voice (the same path and cost as any spoken line). */
+    fun speakPhrase(text: String) {
+        viewModelScope.launch {
+            recap.speaking(text)
+            runCatching { player.play(ai.synthesizeSpeech(text, voice = alphonsoVoice(course.code), course = course.code)) }
+            recap.speaking(null)
+        }
+    }
+
     /** The composable left (rotation, tab switch): cancel any recording; the view model and its transcript survive. */
     fun onLeave() { handsFree.disable(); stopOpener(); engine.cancel() }
 
@@ -248,7 +264,8 @@ abstract class BaseConversationViewModel(
     public override fun onCleared() {
         handsFree.disable()
         engine.tearDown()
-        if (analysed || _state.value.turns.size < 4) return
+        // The recap already sent this call once and recorded its topic labels; a second send would bill twice.
+        if (analysed || recap.attempted || _state.value.turns.size < 4) return
         analysed = true
         val transcript = _state.value.turns
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { runCatching { ai.analyzeWeaknesses(transcript, course.code) } }

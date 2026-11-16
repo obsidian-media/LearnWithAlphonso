@@ -13,6 +13,9 @@ struct CampaignSessionView: View {
     @State private var startedAt = Date()
     @State private var result: PracticeResult?
     @State private var slip: (said: String, reply: String)?
+    /// The after-call recap of this scene's call (RecapViews.swift); replaced for each call.
+    @State private var recapModel = CallRecapModel()
+    @State private var showMemory = false
     @State private var ending = false
     /// The call came back without a score (offline): the screen stays, with a notice and Try again for this scene.
     @State private var unscored = false
@@ -57,7 +60,8 @@ struct CampaignSessionView: View {
                     context: .campaignScene(isLast: isLastScene),
                     retry: { self.result = nil; restartScene() },
                     // Next scene (Finish campaign on the last one) needs a star: a scene with none shows Done, which leaves (#511).
-                    forward: { if result.stars >= 1 { self.result = nil; continueToNextScene() } else { dismiss() } })
+                    forward: { if result.stars >= 1 { self.result = nil; continueToNextScene() } else { dismiss() } },
+                    recap: recapModel, session: session, callId: callId, onOpenMemory: { showMemory = true })
             } else if !chatMode { callScreen } else { classicScreen }
         }
         // Alphonso says the scene's opening line out loud (build 59 only showed it). Inside the AI gate, so nothing is
@@ -73,6 +77,9 @@ struct CampaignSessionView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .sheet(isPresented: $showMemory) {
+            NavigationStack { TutorMemoryView(session: session, course: course, onUpgrade: { showMemory = false }) }
+        }
         .aiDisclosureGate()
         .tint(AlphonsoDS.current.choice)
         .onAppear {
@@ -382,6 +389,8 @@ struct CampaignSessionView: View {
     }
 
     private func analyzeWeaknessesIfNew() {
+        // The recap already sent this scene once and recorded its topic labels; a second send would bill twice.
+        guard !recapModel.attempted else { return }
         let snapshot = conversationStore.snapshot(for: key) ?? conversation
         guard snapshot.turns.count >= 4, snapshot.turns.count > snapshot.analyzedTurnCount,
               let accessToken = session.accessToken else { return }
@@ -436,7 +445,7 @@ struct CampaignSessionView: View {
         }
     }
     private func resetCall() {
-        callId = UUID().uuidString; startedAt = Date(); slip = nil; ending = false
+        callId = UUID().uuidString; startedAt = Date(); slip = nil; ending = false; recapModel = CallRecapModel()
         voice.appeared()
     }
     private func finishCall() async {
@@ -447,7 +456,13 @@ struct CampaignSessionView: View {
         voice.disappeared()
         while pendingTurns > 0 { try? await Task.sleep(for: .milliseconds(50)) }
         elapsed = Int(Date().timeIntervalSince(startedAt))
-        do { result = try await practiceClient(session).finishPractice(callId: callId) }
+        do {
+            result = try await practiceClient(session).finishPractice(callId: callId)
+            recapModel = CallRecapModel()
+            recapModel.start(
+                session: session, callId: callId,
+                transcript: Array(turns.dropFirst(conversation.sceneAnchor)), cefrLevel: cefrLevel, scene: scene.id)
+        }
         catch {
             // Offline or unreachable: stay on the scene (earlier scenes keep their progress) when replies were sent.
             let replies = turns.dropFirst(conversation.sceneAnchor).filter { $0.role == "user" }.count

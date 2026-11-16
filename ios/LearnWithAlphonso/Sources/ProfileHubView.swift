@@ -30,7 +30,7 @@ struct ProfileHubView: View {
     var onEditAnswers: () -> Void = {}
 
     private enum Destination: String, Identifiable {
-        case league, friends, achievements, settings, review, paywall, picture
+        case league, friends, achievements, settings, review, paywall, picture, memory
         var id: String { rawValue }
     }
 
@@ -75,6 +75,13 @@ struct ProfileHubView: View {
                                 networkMonitor: networkMonitor, syncQueueStore: syncQueueStore)
             case .paywall:
                 PaywallView(entitlementStore: entitlementStore, source: .hectorTab, onClose: { destination = nil })
+            case .memory:
+                NavigationStack {
+                    TutorMemoryView(
+                        session: session, course: activeCourse.course,
+                        weakSpots: Array((overview?.weak.top ?? []).prefix(2).map(\.display)), goalsNote: nil,
+                        onUpgrade: { destination = .paywall })
+                }
             case .picture:
                 AvatarPickerSheet(session: session, name: overview?.name ?? "", current: overview?.data.avatarSeed ?? "") { _ in
                     Task { await load() }
@@ -121,6 +128,7 @@ extension ProfileHubView {
                     if m.hector != nil {
                         ProfileWeakAndHectorSection(model: m, showWeak: false, showHector: true, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
                     }
+                    ProfileMemoryCard(isPro: entitlementStore.isPro, topics: Array(m.weak.top.prefix(2).map(\.display)), action: { destination = .memory })
                 case .progress:
                     ProfileSkillsSection(model: m)
                     PathProfileCard(session: session, course: activeCourse.course)

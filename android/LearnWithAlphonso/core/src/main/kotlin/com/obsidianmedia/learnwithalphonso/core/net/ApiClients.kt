@@ -71,6 +71,10 @@ class ApiHttp(
     suspend fun delete(path: String, query: Map<String, String> = emptyMap()): HttpResponse =
         withRetry { token -> send(path, token, HttpMethod.Delete, query) {} }
 
+    /** DELETE with a JSON body (What Alphonso remembers names the line, or "all", in the body). */
+    suspend fun deleteWithBody(path: String, body: JsonObject): HttpResponse =
+        withRetry { token -> send(path, token, HttpMethod.Delete) { setBody(TextContent(body.toString(), ContentType.Application.Json)) } }
+
     /** Multipart upload, for /api/stt. Each part is a form field or a file. */
     suspend fun postMultipart(path: String, parts: List<MultipartPart>): HttpResponse =
         withRetry { token ->
