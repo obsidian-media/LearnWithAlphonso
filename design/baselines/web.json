@@ -1,10 +1,7 @@
 {
   "$comment": "Raw colours and font sizes per file in view code, today. A count may only go down: lower it with bun scripts/design-raw-value-baseline.ts. Never raise one; use the design tokens instead.",
-  "total": 44,
+  "total": 2,
   "files": {
-    "src/components/AlphonsoAvatar.tsx": 3,
-    "src/components/LearnMap.tsx": 7,
-    "src/components/PracticeCall.tsx": 32,
     "src/routes/api/review-demo-code.ts": 2
   }
 }

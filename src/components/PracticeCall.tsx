@@ -9,17 +9,25 @@ import { playSfx, registerVoiceProbe } from "@/lib/sfx";
 import { handsFreeStatusLine, HANDS_FREE_PAUSE, HANDS_FREE_RESUME } from "@/lib/hands-free-copy";
 import { HandsFreeSwitch, type HandsFreeCall } from "./HandsFreeSwitch";
 
-const GLASS = "rgba(18, 26, 21, 0.46)";
+/** A design token (a --c-* colour) at a share of its strength, over whatever is behind it. */
+const tone = (token: string, percent: number) =>
+  `color-mix(in srgb, var(--c-${token}) ${percent}%, transparent)`;
+const GLASS = tone("call-glass", 46);
+const GLASS_STRONG = tone("call-glass", 62);
 /** The red hang-up button. */
-const HANG_UP = { background: "#e5483d", color: "#fff" } as const;
-const GLASS_STRONG = "rgba(18, 26, 21, 0.62)";
+const HANG_UP = { background: "var(--c-call-end)", color: "var(--c-on-hero)" } as const;
+/** The soft dark behind white words on the picture. */
+const textShadow = (y: number, blur: number, percent: number) =>
+  `0 ${y}px ${blur}px ${tone("call-glass", percent)}`;
 
 /** The big white call button: the talk button (green while recording) and, in hands-free, the Pause button. */
 function talkButtonStyle(recording: boolean) {
   return {
-    background: recording ? "#6fe0a5" : "#fff",
-    color: "#17241c",
-    boxShadow: recording ? "0 0 0 9px rgba(111,224,165,.35)" : "0 0 0 5px rgba(255,255,255,.3)",
+    background: recording ? "var(--c-call-record)" : "var(--c-on-hero)",
+    color: "var(--c-call-dock)",
+    boxShadow: recording
+      ? `0 0 0 9px ${tone("call-record", 35)}`
+      : `0 0 0 5px ${tone("on-hero", 30)}`,
     transform: recording ? "scale(.96)" : "none",
   };
 }
@@ -206,12 +214,12 @@ export function PracticeCall(props: Props) {
     <div
       className="relative h-dvh w-full overflow-hidden"
       style={{
-        backgroundColor: dark ? "#1c2433" : "#efe3d2",
+        backgroundColor: dark ? "var(--c-call-glass)" : "var(--c-sunk)",
         backgroundImage: `url(${room})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         containerType: "size",
-        color: "#fff",
+        color: "var(--c-on-hero)",
       }}
     >
       {art.dimInDark && dark && (
@@ -224,7 +232,10 @@ export function PracticeCall(props: Props) {
       )}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(to_bottom,rgba(0,0,0,.28),transparent_18%,transparent_55%,rgba(0,0,0,.5)_100%)]"
+        className="pointer-events-none absolute inset-0 z-[1] "
+        style={{
+          backgroundImage: `linear-gradient(to bottom, ${tone("call-glass", 28)}, transparent 18%, transparent 55%, ${tone("call-glass", 50)} 100%)`,
+        }}
       />
 
       {/* Alphonso: the square kit scaled past the screen width so head and shoulders fill the frame. On a short
@@ -242,17 +253,19 @@ export function PracticeCall(props: Props) {
       </div>
 
       <div className="absolute left-[18px] right-[18px] top-[18px] z-[5] flex items-center gap-2.5">
-        <div className="grid leading-tight" style={{ textShadow: "0 1px 6px rgba(0,0,0,.35)" }}>
-          <b className="font-display text-[19px] font-extrabold">{kit.displayName}</b>
-          <span className="flex items-center gap-1.5 text-[13px] font-semibold opacity-95">
+        <div className="grid leading-tight" style={{ textShadow: textShadow(1, 6, 35) }}>
+          <b className="ds-type-question-small">{kit.displayName}</b>
+          <span className="flex items-center gap-1.5 ds-type-footnote opacity-95">
             <i
               aria-hidden="true"
               data-testid="live-dot"
               data-live={speaking}
               className="size-2 rounded-full"
               style={{
-                background: speaking ? "#ff5a4f" : "#9aa39d",
-                boxShadow: speaking ? "0 0 0 3px rgba(255,90,79,.25)" : "none",
+                background: speaking
+                  ? "var(--c-call-end)"
+                  : "color-mix(in srgb, var(--c-on-hero) 60%, var(--c-call-glass))",
+                boxShadow: speaking ? `0 0 0 3px ${tone("call-end", 25)}` : "none",
               }}
             />
             <span>{title}</span>
@@ -294,7 +307,7 @@ export function PracticeCall(props: Props) {
         )}
         <span
           data-testid="call-timer"
-          className="ml-auto rounded-full px-2.5 py-[3px] text-[13px] font-bold"
+          className="ml-auto rounded-full px-2.5 py-[3px] ds-type-caption"
           style={{ background: GLASS, fontVariantNumeric: "tabular-nums" }}
         >
           {formatClock(seconds)}
@@ -309,8 +322,8 @@ export function PracticeCall(props: Props) {
         style={{
           background: GLASS_STRONG,
           backdropFilter: "blur(10px)",
-          border: `1px solid ${recording ? "#6fe0a5" : "rgba(255,255,255,.18)"}`,
-          boxShadow: recording ? "0 0 0 2px rgba(111,224,165,.45)" : "none",
+          border: `1px solid ${recording ? "var(--c-call-record)" : tone("on-hero", 18)}`,
+          boxShadow: recording ? `0 0 0 2px ${tone("call-record", 45)}` : "none",
         }}
       >
         <div className="flex h-[34px] items-center gap-[3px]">
@@ -331,7 +344,7 @@ export function PracticeCall(props: Props) {
       {error && (
         <div
           role="alert"
-          className="absolute left-[18px] right-[18px] z-[5] rounded-full bg-rose-50 px-3 py-1 text-center text-[11px] font-medium text-rose-700"
+          className="absolute left-[18px] right-[18px] z-[5] rounded-full bg-ds-wrong-tint px-3 py-1 text-center ds-type-caption text-ds-wrong-ink"
           style={{ bottom: 168 + lift }}
         >
           {error}
@@ -351,12 +364,12 @@ export function PracticeCall(props: Props) {
         aria-live="polite"
         data-testid="call-caption"
         data-mine={caption?.mine ?? false}
-        className="absolute left-[18px] right-[18px] z-[5] grid min-h-[2.6em] items-end text-center text-[19px] font-extrabold leading-[1.3]"
+        className="absolute left-[18px] right-[18px] z-[5] grid min-h-[2.6em] items-end text-center ds-type-answer leading-[1.3]"
         style={{
           bottom: 140 + lift,
           textWrap: "balance",
-          textShadow: "0 1px 8px rgba(0,0,0,.55)",
-          color: caption?.mine ? "#c9f5dc" : "#fff",
+          textShadow: textShadow(1, 8, 55),
+          color: caption?.mine ? "var(--c-call-mint)" : "var(--c-on-hero)",
         }}
       >
         {/* At most four lines on screen, so a long reply never climbs over his mouth. The whole text is still in
@@ -539,7 +552,7 @@ export function PracticeCall(props: Props) {
       </div>
       {!handsFreeOn && (
         <div
-          className="absolute inset-x-0 bottom-2 z-[6] text-center text-[11px] font-bold opacity-85"
+          className="absolute inset-x-0 bottom-2 z-[6] text-center ds-type-caption opacity-85"
           aria-hidden="true"
         >
           Hold the white button and answer out loud
@@ -567,12 +580,12 @@ export function PracticeCall(props: Props) {
           transform: sheetOpen ? "translateY(0)" : "translateY(105%)",
           visibility: sheetOpen ? "visible" : "hidden",
           transition: reducedMotion ? "none" : "transform .28s ease, visibility .28s",
-          boxShadow: "0 -10px 30px rgba(0,0,0,.25)",
+          boxShadow: "var(--ds-shadow-sheet)",
         }}
       >
         <div aria-hidden="true" className="mx-auto mb-2 h-[5px] w-10 rounded-[3px] bg-hairline" />
         <header className="mb-2 flex items-center justify-between">
-          <h3 className="font-display text-[18px] font-semibold">Conversation</h3>
+          <h3 className="font-display ds-type-headline font-semibold">Conversation</h3>
           <button
             ref={backRef}
             type="button"

@@ -294,7 +294,7 @@ export function AlphonsoAvatar({
             {/* The gradient is a class, not an inline style: jsdom's inline-gradient parser throws. */}
             <div
               ref={band}
-              className="absolute bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.65),rgba(255,255,255,0))]"
+              className="absolute bg-[linear-gradient(90deg,transparent,color-mix(in_srgb,var(--c-on-hero)_65%,transparent),transparent)]"
               style={{
                 top: "-70%",
                 left: "30%",
