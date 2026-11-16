@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { track } from "../lib/analytics";
 import {
   GoalError,
   fetchGoal,
@@ -156,8 +157,11 @@ export function GoalCard({
     // that belongs to a course the learner has left and must not overwrite the new card.
     const startedAt = loadId.current;
     try {
+      const hadGoal = state.goal !== null;
       const next = await saveGoal(course, level, date);
       if (startedAt !== loadId.current) return;
+      // A path is built the first time a goal is saved for a course; changing one later is not a new path.
+      if (!hadGoal) void track("path_built", { course });
       setState(next);
       setLoadError(null);
       setView("goal");

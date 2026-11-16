@@ -64,3 +64,32 @@ export function effectiveScopes(role: StaffRole, stored: readonly string[]): Sco
 export function hasScope(role: StaffRole, stored: readonly string[], needed: Scope): boolean {
   return effectiveScopes(role, stored).includes(needed);
 }
+
+/**
+ * What each scope is called on the Staff page. A Record over every Scope, so adding a scope without a label does not
+ * compile (the Staff page once printed the raw `numbers.revenue`).
+ */
+export const SCOPE_LABELS: Record<Scope, string> = {
+  "users.read": "See learners",
+  "users.notes": "Write learner notes",
+  "pro.grant": "Gift Pro",
+  "pro.revoke": "Withdraw a gifted Pro",
+  "user.block": "Block a learner",
+  "user.ban": "Ban a learner",
+  "user.unban": "Lift a ban",
+  "user.delete": "Delete an account",
+  "support.read": "Read Help chats",
+  "support.reply": "Reply in Help chats",
+  "support.assign": "Assign Help chats",
+  "numbers.read": "See usage numbers",
+  "numbers.revenue": "See revenue numbers",
+  "audit.read": "Read the audit log",
+  "staff.manage": "Manage staff",
+  "podcasts.manage": "Manage podcasts",
+  "reports.manage": "Handle reports",
+};
+
+/** The human label for a scope; an unknown string (a stored value from a newer or older build) is shown as it is. */
+export function scopeLabel(scope: string): string {
+  return isScope(scope) ? SCOPE_LABELS[scope] : scope;
+}

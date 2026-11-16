@@ -29,7 +29,8 @@ extension View {
     }
 }
 
-/// "Add {name} as a friend?" Mirrors the web's invite route: a preview first, then one explicit accept.
+/// "Add {name} as a friend?" Mirrors the web's invite route and the Android InviteAcceptScreen on the design system:
+/// a preview first, then one explicit accept.
 struct FriendInviteAcceptView: View {
     let session: Session
     let code: String
@@ -46,20 +47,31 @@ struct FriendInviteAcceptView: View {
 
     @State private var phase = Phase.loading
     @State private var isAccepting = false
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: AlphonsoSpacing.md) {
-                Spacer()
-                content
-                Spacer()
+            // Scrolls: nothing clips at the largest text sizes. The same structure as the web invite page and the
+            // Android InviteAcceptScreen: a glass title, then one card holding the state.
+            ScrollView {
+                VStack(spacing: AlphonsoDS.Space.s3) {
+                    DSGlassTitle(title: "Friend invite")
+                    DSCard {
+                        VStack(spacing: AlphonsoDS.Space.s3) { content }
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.horizontal, AlphonsoDS.Space.s4)
+                .padding(.vertical, AlphonsoDS.Space.s2)
             }
-            .padding(AlphonsoSpacing.lg)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(AlphonsoColor.surface.ignoresSafeArea())
+            .screenScene(.practice)
+            .background(ds.surface.ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Close", action: onClose)
+                        .dsText(.footnote)
+                        .tint(ds.choice)
                 }
             }
             // On the container, which always draws, never on a branch that can draw nothing.
@@ -70,48 +82,63 @@ struct FriendInviteAcceptView: View {
     @ViewBuilder private var content: some View {
         switch phase {
         case .loading:
-            ProgressView("Loading invite")
+            ProgressView().tint(ds.choice)
+            note("Loading invite")
         case .ready(let name):
+            art("Alphonso-waving")
             title("Add \(name) as a friend?")
             note("You'll be able to see each other's streak and weekly progress.")
             Button {
                 Task { await accept(name: name) }
             } label: {
-                if isAccepting { ProgressView().tint(AlphonsoColor.surface) } else { Text("Add friend") }
+                if isAccepting { ProgressView().tint(ds.onAction) } else { Text("Add friend") }
             }
-            .buttonStyle(.alphonsoPrimary)
+            .buttonStyle(.dsButton(.primary))
             .disabled(isAccepting)
         case .accepted(let name):
+            art("Alphonso-waving")
             title("You're friends with \(name)!")
-            Button("Done", action: onClose).buttonStyle(.alphonsoPrimary)
+            Button("Done", action: onClose).buttonStyle(.dsButton(.primary))
         case .isSelf:
             title("That's your own invite link")
             note("Share it with a friend instead.")
-            Button("Close", action: onClose).buttonStyle(.alphonsoSecondary)
+            Button("Close", action: onClose).buttonStyle(.dsButton(.secondary))
         case .invalid:
             title("Invite not found")
             note("This invite link doesn't look right. Ask your friend for a fresh one.")
-            Button("Close", action: onClose).buttonStyle(.alphonsoSecondary)
+            Button("Close", action: onClose).buttonStyle(.dsButton(.secondary))
         case .failed(let message):
             title("Something went wrong")
-            note(message)
-            Button("Try again") { Task { await loadPreview() } }.buttonStyle(.alphonsoSecondary)
+            Text(message)
+                .dsText(.footnote)
+                .foregroundStyle(ds.wrongInk)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            Button("Try again") { Task { await loadPreview() } }.buttonStyle(.dsButton(.secondary))
         }
+    }
+
+    private func art(_ name: String) -> some View {
+        Image(name).resizable().scaledToFit()
+            .frame(height: AlphonsoDS.Space.s12 * 2)
+            .accessibilityHidden(true)
     }
 
     private func title(_ text: String) -> some View {
         Text(text)
-            .font(.title2.weight(.semibold))
-            .foregroundStyle(AlphonsoColor.ink)
+            .dsText(.title)
+            .foregroundStyle(ds.ink)
             .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
             .accessibilityAddTraits(.isHeader)
     }
 
     private func note(_ text: String) -> some View {
         Text(text)
-            .font(.subheadline)
-            .foregroundStyle(AlphonsoColor.inkSoft)
+            .dsText(.footnote)
+            .foregroundStyle(ds.inkSoft)
             .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private func client() -> ProgressSyncClient? {

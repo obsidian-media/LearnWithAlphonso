@@ -409,7 +409,7 @@ struct RootView: View {
                             Image(systemName: "chevron.left").fontWeight(.semibold)
                                 .frame(width: 44, height: 44)
                         }
-                        .tint(AlphonsoColor.moss)
+                        .tint(AlphonsoDS.current.choice)
                         .accessibilityLabel("Back to the questions")
                         .padding(.leading, AlphonsoSpacing.sm)
                     }

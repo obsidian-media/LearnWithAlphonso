@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useOptionalAiConsent } from "../lib/ai-consent-context";
+import { track } from "../lib/analytics";
 import {
   explainLanguageName,
   explainOffer,
@@ -112,6 +113,8 @@ export function ExplainInMyLanguage({
       if (!ok) return;
     }
     setPhase({ kind: "loading" });
+    // Counted only here, where the item really goes out: the kind of item, never its text.
+    void track("explain_requested", { source: request.kind });
     try {
       const result = await fetchExplanation({ ...request, ...(surface ? { surface } : {}) });
       if (mounted.current) setPhase({ kind: "shown", result });

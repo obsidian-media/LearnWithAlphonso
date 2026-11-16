@@ -656,10 +656,34 @@ describe("Lesson page", () => {
     await user.keyboard("{ArrowRight}");
     dialog.remove();
 
-    (document.activeElement as HTMLElement | null)?.blur();
+    screen.getByRole("group", { name: "Words to learn" }).focus();
     await user.keyboard("{Alt>}{ArrowRight}{/Alt}");
 
     expect(screen.getByText("Word 1 of 8")).toBeInTheDocument();
+    await user.keyboard("{ArrowRight}");
+    expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
+  });
+
+  it("the deck takes focus when it opens, and the arrows do nothing once focus is outside it", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
+    await screen.findByText("Word 1 of 8");
+    const deck = screen.getByRole("group", { name: "Words to learn" });
+    expect(deck).toHaveFocus();
+
+    // Focus elsewhere on the page (a plain element outside the deck, then nothing at all): the window must not react.
+    const outside = document.createElement("div");
+    outside.tabIndex = 0;
+    document.body.appendChild(outside);
+    outside.focus();
+    await user.keyboard("{ArrowRight}");
+    outside.remove();
+    (document.activeElement as HTMLElement | null)?.blur();
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByText("Word 1 of 8")).toBeInTheDocument();
+
+    deck.focus();
     await user.keyboard("{ArrowRight}");
     expect(await screen.findByText("Word 2 of 8")).toBeInTheDocument();
   });

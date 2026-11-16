@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -46,6 +46,36 @@ describe("TappableText", () => {
     setup();
     const names = screen.getAllByRole("button").map((b) => b.textContent);
     expect(names).toEqual(["I", "like", "milk", "I", "want", "tea"]);
+  });
+
+  it("tags each word with its course language and says it opens a dialog, so a French word is read in French", () => {
+    render(
+      <SaveWordProvider save={vi.fn(async () => saved)}>
+        <p>
+          <TappableText text="Je veux du thé." course="fr" wholeCourseLanguage />
+          <TappableText text="I want tea." course="en" />
+        </p>
+      </SaveWordProvider>,
+    );
+    const veux = screen.getByRole("button", { name: "veux" });
+    expect(veux).toHaveAttribute("lang", "fr");
+    expect(veux).toHaveAttribute("aria-haspopup", "dialog");
+    expect(screen.getByRole("button", { name: "tea" })).toHaveAttribute("lang", "en");
+  });
+
+  it("the dialog shows a French word and its sentence in French, not as English text", async () => {
+    const user = userEvent.setup();
+    render(
+      <SaveWordProvider save={vi.fn(async () => saved)}>
+        <p>
+          <TappableText text="Je veux du thé." course="fr" wholeCourseLanguage />
+        </p>
+      </SaveWordProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "veux" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("veux")).toHaveAttribute("lang", "fr");
+    expect(within(dialog).getByText("Je veux du thé.")).toHaveAttribute("lang", "fr");
   });
 
   it("does not link anything outside the English course", () => {

@@ -196,8 +196,12 @@ function SaveWordDialog({
               : "Save this word?"}
           </h2>
         </div>
-        <p className="ds-type-display text-ds-ink">{request.word}</p>
-        <p className="ds-type-footnote italic text-ds-ink-soft">{request.sentence}</p>
+        <p lang={request.course} className="ds-type-display text-ds-ink">
+          {request.word}
+        </p>
+        <p lang={request.course} className="ds-type-footnote italic text-ds-ink-soft">
+          {request.sentence}
+        </p>
 
         {phase.kind === "saved" ? (
           <>

@@ -124,3 +124,11 @@ final class GoalCopyTests: XCTestCase {
         XCTAssertEqual(GoalCopy.tomorrow(now: utc(2026, 12, 31)), "2027-01-01")
     }
 }
+
+/// Red if saving a changed goal counts as building a path again, or the first goal stops counting.
+final class GoalAnalyticsTests: XCTestCase {
+    func testOnlyTheFirstGoalForACourseBuildsAPath() {
+        XCTAssertTrue(GoalAnalytics.buildsPath(hadGoal: false))
+        XCTAssertFalse(GoalAnalytics.buildsPath(hadGoal: true))
+    }
+}

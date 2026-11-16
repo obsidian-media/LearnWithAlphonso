@@ -50,6 +50,11 @@ sealed interface SaveResult {
 class GoalCardModel(
     private val api: GoalApi,
     private val cache: GoalCache,
+    /**
+     * Called with the course code when a save builds a path: the first goal saved for a course (none was on the card
+     * when the save started). Changing a goal later is not a new path. Same rule as web (GoalCard.tsx) and iOS.
+     */
+    private val onPathBuilt: (String) -> Unit = {},
     private val userId: () -> String?,
 ) {
     private val _state = MutableStateFlow(GoalCardState())
@@ -118,10 +123,12 @@ class GoalCardModel(
         val mine = ++generation
         val uid = userId()
         if (uid.isNullOrBlank()) return SaveResult.Failed(GoalCopy.actionFailureMessage(LearningGoalError.NotSignedIn))
+        val hadGoal = _state.value.goal != null
         return try {
             val saved = api.save(course, targetLevel, targetDate)
             cache.write(saved, uid, course)
             if (mine != generation) return SaveResult.Dropped
+            if (!hadGoal && saved.goal != null) onPathBuilt(course)
             _state.value = GoalCardState(
                 phase = if (saved.goal == null) GoalPhase.EMPTY else GoalPhase.GOAL,
                 goal = saved.goal,

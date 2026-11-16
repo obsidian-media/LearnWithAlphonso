@@ -1,7 +1,7 @@
 import { formatDateTime, formatDay } from "../../lib/staff-dates";
 import { useState, type FormEvent } from "react";
 import { Button } from "../ui/Button";
-import { SCOPES, type Scope } from "../../lib/staff-scopes";
+import { SCOPES, scopeLabel, type Scope } from "../../lib/staff-scopes";
 import { ConsoleCard } from "./ConsoleCard";
 import { ReasonDialog } from "./ReasonDialog";
 
@@ -130,7 +130,7 @@ export function StaffView({
                           setPending({ kind: "scopes", row: r, scopes: next as Scope[] });
                         }}
                       />
-                      {scope}
+                      {scopeLabel(scope)}
                     </label>
                   ))}
                 </div>

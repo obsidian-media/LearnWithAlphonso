@@ -394,6 +394,10 @@ private struct GoalSetupSheet: View {
         do {
             let saved = try await client(token: token).save(course: courseCode, targetLevel: level, targetDate: day)
             GoalCache().write(saved, userID: userID, course: courseCode)
+            // A path is built the first time a goal is saved for a course; changing one later is not a new path.
+            if GoalAnalytics.buildsPath(hadGoal: existing != nil) {
+                Analytics.track(.pathBuilt, ["course": courseCode])
+            }
             onSaved(saved)
             dismiss()
         } catch {

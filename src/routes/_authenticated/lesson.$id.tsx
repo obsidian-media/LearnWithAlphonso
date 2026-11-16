@@ -841,11 +841,18 @@ function VocabDeckScreen({
     </button>
   );
 
+  // The arrows move the cards only while focus is inside the deck (not anywhere on the page). The deck takes focus
+  // when it opens, so a keyboard user can start straight away; Tab or a click elsewhere hands the arrows back.
+  const deckRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    const deck = deckRef.current;
+    if (!deck) return;
+    deck.focus({ preventScroll: true });
+    // A native listener on the deck, not a React prop: the deck is a focus target, not itself a control.
     const onKey = (e: KeyboardEvent) => {
-      // Arrows belong to whatever has focus: a field moves its caret, a dialog or arrow-driven widget its own selection (a focused button does not use them, and a click leaves one focused), and a
-      // modified arrow is a browser or screen reader shortcut. This listener is mounted only while the deck is
-      // showing, so no other screen can receive it.
+      // Arrows belong to whatever has focus: a field moves its caret, a dialog or arrow-driven widget its own
+      // selection (a focused button does not use them, and a click leaves one focused), and a modified arrow is a
+      // browser or screen reader shortcut.
       if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
       const target = e.target instanceof Element ? e.target : null;
       if (
@@ -857,12 +864,18 @@ function VocabDeckScreen({
       if (e.key === "ArrowRight") setIndex((i) => Math.min(i + 1, count - 1));
       if (e.key === "ArrowLeft") setIndex((i) => Math.max(i - 1, 0));
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    deck.addEventListener("keydown", onKey);
+    return () => deck.removeEventListener("keydown", onKey);
   }, [count]);
 
   return (
-    <div className="flex flex-1 flex-col px-4 pb-6 pt-4">
+    <div
+      ref={deckRef}
+      tabIndex={-1}
+      role="group"
+      aria-label="Words to learn"
+      className="flex flex-1 flex-col px-4 pb-6 pt-4 outline-none"
+    >
       {hud}
       <div className="mt-5 min-w-0">
         <p className="mb-1 ds-type-overline text-ds-action-text">Vocabulary · {subtitle}</p>
