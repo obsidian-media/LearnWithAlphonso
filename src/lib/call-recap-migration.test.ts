@@ -168,6 +168,7 @@ describe("delete paths", () => {
       INSERT INTO public.review_items (user_id, item_key, language, source, weakness_label) VALUES
         ('${A}', 'recap:aaa', 'es', 'weakness', 'ser-estar'),
         ('${A}', 'recap:bbb', 'es', 'weakness', 'por-para'),
+        ('${A}', 'weakness:lessonx', 'es', 'weakness', 'ser-estar'),
         ('${A}', 'savedword:hola', 'es', 'saved_word', NULL),
         ('${A}', 'l1:q1', 'es', 'lesson', NULL);
       INSERT INTO public.practice_stars VALUES ('${A}', 'item', 3);
@@ -201,6 +202,10 @@ describe("delete paths", () => {
       await n(
         `SELECT count(*)::text n FROM public.review_items WHERE user_id='${A}' AND weakness_label='por-para'`,
       ),
+    ).toBe(1);
+    // a weak spot found in a lesson, same topic, stays
+    expect(
+      await n(`SELECT count(*)::text n FROM public.review_items WHERE item_key='weakness:lessonx'`),
     ).toBe(1);
   });
 
@@ -262,9 +267,13 @@ describe("delete paths", () => {
     ).toBe(0);
     expect(
       await n(
-        `SELECT count(*)::text n FROM public.review_items WHERE user_id='${A}' AND source='weakness'`,
+        `SELECT count(*)::text n FROM public.review_items WHERE user_id='${A}' AND item_key LIKE 'recap:%'`,
       ),
     ).toBe(0);
+    // lesson-made weak spots and their progress stay
+    expect(
+      await n(`SELECT count(*)::text n FROM public.review_items WHERE item_key='weakness:lessonx'`),
+    ).toBe(1);
     expect(
       await n(`SELECT count(*)::text n FROM public.review_items WHERE item_key='recap:ddd'`),
     ).toBe(0);

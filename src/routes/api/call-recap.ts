@@ -105,7 +105,8 @@ export const Route = createFileRoute("/api/call-recap")({
           _topics: topics,
           _mistakes: kept.corrections.map((c) => ({
             topic: c.topic,
-            text: `${c.said} -> ${c.fixed}`,
+            // Only the corrected form is kept: never the learner's own words (they can hold names or details).
+            text: c.fixed,
           })),
           _save: pro,
         });

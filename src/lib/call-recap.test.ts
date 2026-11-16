@@ -129,6 +129,45 @@ describe("parseRecap", () => {
   });
 });
 
+describe("personal details never reach the recap or the memory", () => {
+  const withSaid = (said: string, fixed: string, extra: Turn[] = []) =>
+    parseRecap(
+      JSON.stringify({ corrections: [{ ...good.corrections[0], said, fixed }], phrase: null }),
+      [...turns, { role: "user", content: said }, ...extra],
+      "es",
+    )!.corrections;
+  it.each([
+    ["a name introduction", "My name is Ana, I has a dog", "My name is Ana, I have a dog"],
+    ["Spanish name", "Me llamo Ana y tengo un perro", "Me llamo Ana y tengo un perro."],
+    [
+      "an email",
+      "Escribeme a ana.perez@example.com ahora",
+      "Escríbeme a ana.perez@example.com ahora.",
+    ],
+    ["a phone number", "Mi numero es 612 345 678 ok", "Mi número es 612 345 678, ok"],
+    ["a long digit run", "Mi tarjeta es 4111111111111111", "Mi tarjeta es 4111111111111111."],
+    ["a web address", "Visito www.ejemplo.es cada dia", "Visito www.ejemplo.es cada día"],
+    [
+      "where they live",
+      "I live in Elm Street 4 and I are tired",
+      "I live in Elm Street 4 and I am tired",
+    ],
+  ])("a correction with %s is dropped whole", (_n, said, fixed) => {
+    expect(withSaid(said, fixed)).toEqual([]);
+  });
+  it("an ordinary correction with a small number is kept", () => {
+    expect(withSaid("Tengo 3 gatos hoy", "Tengo tres gatos hoy")).toHaveLength(1);
+  });
+  it("a phrase that looks personal is dropped", () => {
+    const r = parseRecap(
+      JSON.stringify({ corrections: [], phrase: { ...good.phrase, text: "Me llamo Ana" } }),
+      [{ role: "assistant", content: "Me llamo Ana" }, ...turns],
+      "es",
+    )!;
+    expect(r.phrase).toBeNull();
+  });
+});
+
 describe("topics", () => {
   it("English topics are exactly the weakness taxonomy, each with a label", () => {
     expect(Object.keys(RECAP_TOPICS.en).sort()).toEqual([...WEAKNESS_TAXONOMY].sort());
