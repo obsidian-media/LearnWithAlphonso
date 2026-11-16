@@ -139,7 +139,7 @@ export function ProfileSettings({ headingRef }: { headingRef: Ref<HTMLHeadingEle
             </span>
           </span>
           <span aria-hidden="true" className="text-ds-ink-soft">
-            ›
+            â€º
           </span>
         </Link>
       </DsCard>
