@@ -162,7 +162,7 @@ export function ProfileAboutYou({ leaderboardCountry }: { leaderboardCountry: st
   return (
     <section
       aria-labelledby="about-you-heading"
-      className="ds-light font-[family-name:var(--ds-font-body)]"
+      className="font-[family-name:var(--ds-font-body)]"
     >
       <h2 id="about-you-heading" className="ds-type-overline mx-1 text-ds-xp-text">
         About you

@@ -65,7 +65,7 @@ function YouAreHere({
 }) {
   const art = roomArtFor(index - 1);
   const body = (
-    <span className="relative block h-48 overflow-hidden rounded-3xl border-2 border-ds-brand bg-ds-brand text-left">
+    <span className="ds-light relative block h-48 overflow-hidden rounded-3xl border-2 border-ds-brand bg-ds-brand text-left">
       <img
         src={`/avatar/scenes/${art}.webp`}
         alt=""
