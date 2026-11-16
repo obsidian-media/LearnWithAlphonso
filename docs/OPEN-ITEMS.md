@@ -4,14 +4,17 @@ A public, sanitised list of what is not finished yet in Learn with Alphonso. The
 
 Sweep of 2026-11-15 against main, merged pull requests and read-only checks of the production database. "Unverified" means it could not be confirmed from code, merged PRs or the database; nothing is marked done without evidence. Old section ids (for example 0.0-an) point at the private internal backlog.
 
+**GitHub upkeep.** Since 2026-11-16 the owner has delegated GitHub upkeep (update, rebase and merge reviewed green pull requests, including migrations) to the coordinating agent.
+
 **How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
 
-Counts: owner only 19, decision needed 9, device check 14, agent can do 13, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
+Counts: owner only 20, decision needed 9, device check 14, agent can do 12, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
 
 ### A. STILL OPEN - owner only (in priority order)
 
 1. **Decide and perform the next App Review submission.** Builds up to 67 are on TestFlight; nothing newer than the notes shows a submission. App Store Connect state is unverified from here. (0.0-am #7, 0.0-y)
 1b. **Two Vercel settings the agent could not change (403, needs production env permission), project `learnwithalphonso`:** (a) set `SUPPORT_NOTIFY_FROM` to `Learn with Alphonso Support team <support@hello.alphonsoecosystem.app>` (a verified Resend sender), then redeploy; (b) delete `NVIDIA_API_KEY` and `NVIDIA_CHAT_MODEL` if they are present (no code reads them). Both stay owner steps. (#557, #576)
+1c. **AI cost tracking owner steps (live 2026-11-16, #588):** `SUPPORT_NOTIFY_FROM` (step 1b) is also needed for the daily cost email; grant `numbers.revenue` to whoever should see Numbers, then AI cost; optionally set the `AI_COST_*` alert thresholds (see docs/operations.md).
 2. **Paid Applications Agreement must be Active** (terms, bank, tax). Older notes disagree on whether it already is; unverified. A "New" agreement blocks every in-app price. (0.0-am, 1.1)
 3. **Store privacy answers in one visit** (App Store Connect App Privacy and Google Play Data safety), before any submission: Product Interaction and Device ID for Analytics (PostHog, linked, not tracking), Product Personalization, Crash Data and Other Diagnostic Data, first-run answers (name, age range, country, avatar, goal, level, how you heard of us), Explain and Hector AI requests, learning minutes, mastered words, time zone, listening progress, and **Customer Support** for the Help chat (kept 12 months after a chat is solved, in the export). Age rating 13+. (0.0-as #1 #7 #8, 0.0-bn, 2026-11-15 note, 0.0-ai)
 4. **Security follow-ups, details kept private.** Several owner-only account, settings and switch-on steps (including one timed switch-on) are tracked privately and are not described here. (0.0-bb, 0.0-as #3)
@@ -77,8 +80,7 @@ Counts: owner only 19, decision needed 9, device check 14, agent can do 13, done
 57. **Remove the unused push-to-talk capability** from the App ID. (1.1 #9)
 59. **Vocab image quality** beyond metadata triage; Android needs no change for empty lines (verified done). (3 Content)
 63. **Dev server does not boot in the Windows sandbox.** (4)
-65. **AI cost tracking (in progress, PR #588 open; owner merges, includes a migration).** A usage log per AI call with the vendor-reported cost, an admin AI-cost panel, a daily spend email, and a text-to-speech cache audit and fix. Owner 2026-11-16 asked for it.
-66. **Later: monthly per-user cost budget**, to be set after a month of real cost data from item 65. Ties to the lifetime-pricing usage cap in item 29.
+66. **Later: monthly per-user cost budget**, to be revisited after about a month of real cost data from the AI cost log (#588). Ties to the lifetime-pricing usage cap in item 29.
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
 
@@ -106,6 +108,7 @@ Counts: owner only 19, decision needed 9, device check 14, agent can do 13, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- AI cost tracking (was 65): merged and live 2026-11-16 (#588, ecc7e584). Migration 20261118200000_ai_cost_log applied and verified in production: `ai_cost_log` and `ai_cost_daily` exist, the `tts-cache` bucket is private, `authenticated` has no read; deploy job succeeded; types regenerated automatically (2956fe03; the types-fresh job was red on ecc7e584 only until then). Owner steps are item 1c. Item 66 stays open.
 - Call scenes v2 and Royal-night rooms (was 45 and 46): merged in #589 (71c2646c). 14 call-*.webp (12 scenarios plus study room day and evening) and 5 Royal-night screen scenes (learn, hector, listen, profile, practice) on web, iOS and Android (about 2.9 MB per platform). Lessons and story campaigns keep today's rooms (tests); Hector's calls use the new study room; Royal light and Meadow (even in device dark) keep day art; Lesson complete stays light; living clips unchanged; the web call now follows Royal night; Alphonso's call avatar has a bottom fade (solid to 80%) on all three platforms. Seen on web only; iOS and Android are device check 42a.
 - Redesign gaps, batch 4 (was 52a): web call screen on design tokens (#586, 5296800c). Web raw-value baseline 44 to 2 (only api/review-demo-code.ts left); PracticeCall, LearnMap and AlphonsoAvatar on tokens; theme faces kept; night-stable fallbacks for the room colour and the LearnMap locked node; behaviour unchanged.
 - Build 68 cut and uploaded to TestFlight 2026-11-16 (#585, fc8c9f49, release run success), not submitted; contains #575, #576, #580, #582 and content #574.
