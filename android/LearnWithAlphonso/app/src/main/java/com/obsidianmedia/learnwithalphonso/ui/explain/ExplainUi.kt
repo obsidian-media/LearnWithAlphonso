@@ -67,6 +67,8 @@ import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.AiResponseReportReason
 import com.obsidianmedia.learnwithalphonso.core.logic.ExplainCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.ExplainDirection
+import com.obsidianmedia.learnwithalphonso.Analytics
+import com.obsidianmedia.learnwithalphonso.core.analytics.AnalyticsEvent
 import com.obsidianmedia.learnwithalphonso.core.logic.ExplainFlow
 import com.obsidianmedia.learnwithalphonso.core.logic.ExplainKind
 import com.obsidianmedia.learnwithalphonso.core.logic.ExplainOffer
@@ -263,7 +265,9 @@ private fun ExplainItem(container: AppContainer, request: ExplainRequest, key: S
     val ds = LocalAlphonsoTokens.current
     val scope = rememberCoroutineScope()
     val flow = remember(key) {
-        ExplainFlow(request, { container.explainClient.explain(it) }, container.aiConsent, { container.session.currentAccessToken() != null }, scope)
+        ExplainFlow(request, { container.explainClient.explain(it) }, container.aiConsent, { container.session.currentAccessToken() != null }, scope) {
+            Analytics.track(AnalyticsEvent.EXPLAIN_REQUESTED, mapOf("source" to it.kind.analyticsSource))
+        }
     }
     val phase by flow.phase.collectAsState()
     // "Always show": ask as soon as the item is on screen, once. Hiding it afterwards does not ask again.

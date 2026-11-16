@@ -23,14 +23,14 @@ Lessons: `lesson-timing.json` through `estimateLessonMinutes`. Podcasts: the epi
 
 ## Implementation status (2026-11-13, main at #498)
 
-| Part | State | Notes |
-| --- | --- | --- |
-| Engine `planPath`, `/api/learning-path`, shared fixtures | **Done** (#490) | fixtures decoded byte for byte by Swift and Kotlin tests |
-| Web, iOS, Android: Learn path card, the road, behind and its three recovery choices, week view, Why this mix, Build my path, Profile My path card | **Done** (#490) | not yet checked on a device |
-| Rest day (Sun to Sat or none) | **Done** (#493) | `pathRestDay`, `set_rest_day` |
-| iOS: every stop opens (`PathStopRouting`) | **Done** (#493) | a podcast stop opens the Listen tab, not the episode |
-| Days are the learner's local day | **Done** (#497) | the engine's today and week use `localDay` |
-| Calibration of `TALK_MINUTES`, `CAMPAIGN_SCENE_MINUTES`, `QUIZ_MINUTES` | **Open** | estimates in `src/data/path-config.ts` until production data exists |
-| Review of `src/data/path-tags.ts` (goal to campaign map; four campaigns added in #495) | **Open, owner** | |
-| PostHog `path_built` event | **Open** | the name is reserved in the three event lists; no call site |
-| `video` path type (Alphonso tutor videos as path stops) | **In progress** | the Library branch `feat/library-watch` adds it; not merged |
+| Part                                                                                                                                              | State               | Notes                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------- |
+| Engine `planPath`, `/api/learning-path`, shared fixtures                                                                                          | **Done** (#490)     | fixtures decoded byte for byte by Swift and Kotlin tests                          |
+| Web, iOS, Android: Learn path card, the road, behind and its three recovery choices, week view, Why this mix, Build my path, Profile My path card | **Done** (#490)     | not yet checked on a device                                                       |
+| Rest day (Sun to Sat or none)                                                                                                                     | **Done** (#493)     | `pathRestDay`, `set_rest_day`                                                     |
+| iOS: every stop opens (`PathStopRouting`)                                                                                                         | **Done** (#493)     | a podcast stop opens the Listen tab, not the episode                              |
+| Days are the learner's local day                                                                                                                  | **Done** (#497)     | the engine's today and week use `localDay`                                        |
+| Calibration of `TALK_MINUTES`, `CAMPAIGN_SCENE_MINUTES`, `QUIZ_MINUTES`                                                                           | **Open**            | estimates in `src/data/path-config.ts` until production data exists               |
+| Review of `src/data/path-tags.ts` (goal to campaign map; four campaigns added in #495)                                                            | **Open, owner**     |                                                                                   |
+| PostHog `path_built` event                                                                                                                        | **Done** (round 14) | fires the first time a goal is saved for a course; course only; web, iOS, Android |
+| `video` path type (Alphonso tutor videos as path stops)                                                                                           | **In progress**     | the Library branch `feat/library-watch` adds it; not merged                       |

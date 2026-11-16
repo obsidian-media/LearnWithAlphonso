@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SCOPES, SCOPES, effectiveScopes, hasScope } from "./staff-scopes";
+import {
+  DEFAULT_SCOPES,
+  SCOPES,
+  SCOPE_LABELS,
+  effectiveScopes,
+  hasScope,
+  scopeLabel,
+} from "./staff-scopes";
 
 describe("staff scopes", () => {
   it("support lacks pro.grant", () => {
@@ -32,5 +39,21 @@ describe("staff scopes", () => {
       "reports.manage",
     ]);
     expect(DEFAULT_SCOPES.owner).toEqual([...SCOPES]);
+  });
+});
+
+describe("scope labels (the Staff page)", () => {
+  it("every scope has its own human label, not the raw id", () => {
+    const labels = SCOPES.map((s) => scopeLabel(s));
+    for (const s of SCOPES) {
+      expect(SCOPE_LABELS[s], s).toBeTruthy();
+      expect(scopeLabel(s), s).not.toBe(s);
+      expect(scopeLabel(s), s).not.toMatch(/[a-z]\.[a-z]/);
+    }
+    expect(new Set(labels).size).toBe(SCOPES.length);
+    expect(scopeLabel("numbers.revenue")).toBe("See revenue numbers");
+  });
+  it("an unknown stored scope is shown as it is rather than hidden", () => {
+    expect(scopeLabel("future.thing")).toBe("future.thing");
   });
 });

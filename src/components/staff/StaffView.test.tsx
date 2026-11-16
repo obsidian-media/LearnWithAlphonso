@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StaffView, type StaffRow } from "./StaffView";
-import { SCOPES } from "../../lib/staff-scopes";
+import { SCOPES, SCOPE_LABELS } from "../../lib/staff-scopes";
 
 const ME = "00000000-0000-4000-8000-0000000000a1";
 const ALEX = "00000000-0000-4000-8000-0000000000b1";
@@ -74,7 +74,7 @@ describe("StaffView reason dialog", () => {
 
   it("ticking a scope asks for a reason first and sends the new scope list with it", async () => {
     const { onUpdate } = setup();
-    await userEvent.click(screen.getByLabelText("users.notes"));
+    await userEvent.click(screen.getByLabelText("Write learner notes"));
     expect(onUpdate).not.toHaveBeenCalled();
     const dialog = screen.getByRole("dialog", { name: "Reason for this change" });
     await userEvent.type(within(dialog).getByLabelText(/Reason/), "needs notes");
@@ -109,8 +109,18 @@ describe("StaffView scopes", () => {
     const boxes = screen.getAllByRole("checkbox").map((b) => b.getAttribute("id") ?? "");
     expect(boxes.length).toBe(SCOPES.length - 1);
     for (const scope of SCOPES) {
-      if (scope === "staff.manage") expect(screen.queryByLabelText(scope)).toBeNull();
-      else expect(screen.getByLabelText(scope)).toBeTruthy();
+      if (scope === "staff.manage") expect(screen.queryByLabelText(SCOPE_LABELS[scope])).toBeNull();
+      else expect(screen.getByLabelText(SCOPE_LABELS[scope])).toBeTruthy();
+    }
+  });
+
+  it("names every scope in words, never by its raw id (numbers.revenue was printed as is)", () => {
+    setup();
+    expect(screen.getByLabelText("See revenue numbers")).toBeTruthy();
+    expect(screen.getByLabelText("See usage numbers")).toBeTruthy();
+    for (const scope of SCOPES) {
+      if (scope === "staff.manage") continue;
+      expect(screen.queryByText(scope)).toBeNull();
     }
   });
 });

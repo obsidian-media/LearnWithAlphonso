@@ -16,12 +16,12 @@ A short WHY in the learner's own language, only when asked. Lesson text stays 10
 
 ## Implementation status (2026-11-13, main at #498)
 
-| Part | State | Notes |
-| --- | --- | --- |
-| Migration `20261112100000` (table, `explain` quota kind) | **Merged** | the PR was held until the owner applied it |
-| `/api/explain`, cache, quota, consent | **Done** (#488) | `explain.test.ts`, `explain-migration.test.ts` (PGlite), `routes/api/explain.test.ts` |
-| Web, iOS, Android UI and Settings | **Done** (#488) | in build 62 (TestFlight, not submitted); not yet checked on a device |
-| Right-to-left layout | **Done** (#488), unverified on a device | |
-| PostHog `explain_requested` event | **Open** | the name is reserved in the three event lists; no call site |
-| App Privacy and Play Data safety labels for AI requests | **Open, owner** | Explain sends the item text to the model provider |
-| Prompt quality across languages | **Unreviewed by a native speaker** | the model writes the explanation; only the cache makes a second read free |
+| Part                                                     | State                                   | Notes                                                                                 |
+| -------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------- |
+| Migration `20261112100000` (table, `explain` quota kind) | **Merged**                              | the PR was held until the owner applied it                                            |
+| `/api/explain`, cache, quota, consent                    | **Done** (#488)                         | `explain.test.ts`, `explain-migration.test.ts` (PGlite), `routes/api/explain.test.ts` |
+| Web, iOS, Android UI and Settings                        | **Done** (#488)                         | in build 62 (TestFlight, not submitted); not yet checked on a device                  |
+| Right-to-left layout                                     | **Done** (#488), unverified on a device |                                                                                       |
+| PostHog `explain_requested` event                        | **Done** (round 14)                     | source = kind of item; fires where the item is sent, after consent; web, iOS, Android |
+| App Privacy and Play Data safety labels for AI requests  | **Open, owner**                         | Explain sends the item text to the model provider                                     |
+| Prompt quality across languages                          | **Unreviewed by a native speaker**      | the model writes the explanation; only the cache makes a second read free             |

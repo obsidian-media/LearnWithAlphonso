@@ -31,6 +31,7 @@ class ExplainFlowTest {
         grantedAt: String? = "2026-10-01T00:00:00+00:00",
         session: Boolean = true,
         calls: MutableList<ExplainRequest> = ArrayList(),
+        requested: MutableList<String> = ArrayList(),
         explain: suspend (ExplainRequest) -> Explanation = { answer },
     ): ExplainFlow = ExplainFlow(
         request,
@@ -38,6 +39,7 @@ class ExplainFlowTest {
         AiConsentStore(Backend(grantedAt), Cache()),
         { session },
         scope,
+        { requested.add(it.kind.analyticsSource) },
     )
 
     @Test
@@ -114,5 +116,25 @@ class ExplainFlowTest {
         f.run().join()
         f.hide()
         assertEquals(ExplainPhase.Idle, f.phase.value)
+    }
+
+    @Test
+    fun `explain_requested is reported once per request that goes out, by kind, and never when nothing is sent`() = runTest {
+        val sent = ArrayList<String>()
+        flow(this, requested = sent).run().join()
+        assertEquals(listOf("message"), sent)
+
+        val none = ArrayList<String>()
+        flow(this, grantedAt = null, requested = none).run().join()
+        flow(this, session = false, requested = none).run().join()
+        assertEquals(0, none.size)
+    }
+
+    @Test
+    fun `the source is the kind of item and the same three words as web and iOS`() {
+        assertEquals(
+            listOf("wrong-answer", "word", "message"),
+            ExplainKind.values().map { it.analyticsSource },
+        )
     }
 }
