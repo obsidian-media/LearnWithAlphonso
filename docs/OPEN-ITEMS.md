@@ -39,6 +39,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
 28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
 29. **Someday features: PARKED until workstreams A to C finish.** Owner 2026-11-16: "lets discuss these after these are all done".
+30. **Podcast audio bucket is public by URL, including unpublished episodes** (documented trade-off, #582). Decide whether to make unpublished audio private.
 
 ### C. DEVICE CHECK (needs a real phone; nothing can show these from code)
 
@@ -64,14 +65,11 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 44. **FR/ES review-panel disagreements** (77 from the first run) were folded into the content closure project; the state of the closure run and its caps is unverified from here. (0.0-ay, #428, content closure)
 45. **Call scenes v2:** more vivid, less pastel, distinct interview and negotiation offices, matching evening study room. No evidence it started. (2026-11-05 note)
 46. **Night rooms for dark mode** (owner said yes 2026-11-12); no evidence it was built; lessons stay light. (0.0-be)
-50. **Redesign gaps, batch 2: Android residue** (the rows of the audit still open on Android).
 52a. **Redesign gaps, batch 4: web call-chrome raw values.**
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
-54. **Concurrent-device review grading and offline streak continuity.** (3 Review, ARCHITECTURE rough edges)
 57. **Remove the unused push-to-talk capability** from the App ID. (1.1 #9)
 59. **Vocab image quality** beyond metadata triage; Android needs no change for empty lines (verified done). (3 Content)
-62. **Podcast carried risks and deferred minors** (storage before any Pro gating, ended-event ordering). Unverified on a device. (0.8)
 63. **Dev server does not boot in the Windows sandbox.** (4)
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
@@ -100,6 +98,9 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Android residue (was batch 2, 50): the last Android screens are on the design system (#580, 1c996772); Android raw-value baseline 0. Nothing seen on an emulator, owner device check.
+- Concurrent-device review grading and offline streak continuity (was 54): fixed in #582 (b953a0a7); known gap, a lesson started and finished offline credits the sync day.
+- Podcast carried risks (was 62): checked in #582, items safe, no XP double count; the public audio bucket is a documented trade-off (see decision 30).
 - Reseed after #574 (was 1a): done 2026-11-16 by the coordinator at the owner's request. The 5 units, 25 lessons and 126 questions that #574 changed (the `es*p28` Minimal Pairs and `frb2p5q16`) were upserted in prod; verified: the 126 rows hash-match `buildFullSeed()` on main exactly, 25 lessons and 5 units updated.
 - Spanish minimal pairs (was 22): owner 2026-11-16, "yes"; they are spelling-choice questions (#574, 6ef39fe9; 5 lessons, 125 items, gate test).
 - Social parity (was 23 and batch 1, 49): owner 2026-11-16, "close the gap"; web now has nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, and team-name report (#578, 4b43a187). Not run on a device.
