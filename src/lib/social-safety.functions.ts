@@ -78,7 +78,10 @@ export const reportTeamName = createServerFn({ method: "POST" })
     z.object({ teamId: z.string().uuid(), reason: reportReasonSchema }).parse(d),
   )
   .handler(
-    async ({ data, context }): Promise<{ ok: boolean; reason: "no-creator" | "failed" | null }> => {
+    async ({
+      data,
+      context,
+    }): Promise<{ ok: boolean; reason: "no-creator" | "own-team" | "failed" | null }> => {
       const { data: team, error: lookupError } = await context.supabase
         .from("teams")
         .select("created_by")
@@ -87,6 +90,9 @@ export const reportTeamName = createServerFn({ method: "POST" })
       if (lookupError) return { ok: false, reason: "failed" };
       const creator = team?.created_by;
       if (!creator) return { ok: false, reason: "no-creator" };
+      // The apps only hide the menu on a team you own; the table also refuses it (CHECK reporter <> reported). Said
+      // here so a caller that skips the menu gets a plain answer, not a failed insert.
+      if (creator === context.userId) return { ok: false, reason: "own-team" };
       const { error } = await context.supabase.from("content_reports").insert({
         reported: creator,
         reason: data.reason,

@@ -89,23 +89,25 @@ export function LeaguePromotionTakeover({
         aria-hidden="true"
         className="absolute left-1/2 top-[250px] size-[760px] -translate-x-1/2 -translate-y-1/2 bg-[repeating-conic-gradient(from_0deg,color-mix(in_srgb,var(--c-on-hero-kick)_13%,transparent)_0deg_7deg,transparent_7deg_18deg)] [mask-image:radial-gradient(circle,black_18%,transparent_62%)]"
       />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] [mask-image:linear-gradient(to_bottom,black_0,black_72px,transparent_72px,transparent_128px,black_128px)]">
         <Confetti reduce={reduceMotion} seed={99} />
       </div>
-      <p className="relative mt-[92px] ds-type-overline text-ds-on-hero-kick">League promotion</p>
+      <p className="relative z-10 mt-[92px] ds-type-overline text-ds-on-hero-kick">
+        League promotion
+      </p>
       <div className="relative mt-[22px]">
         <Shield tier={to} width={190} height={210} />
       </div>
       <h2
         id={titleId}
-        className="relative mt-[18px] px-4 text-center ds-type-display-x-l text-ds-on-hero"
+        className="relative z-10 mt-[18px] px-4 text-center ds-type-display-x-l text-ds-on-hero"
       >
         {copy.headline}
       </h2>
-      <p className="relative mt-1.5 px-2 text-center ds-type-body text-ds-on-hero-soft">
+      <p className="relative z-10 mt-1.5 px-2 text-center ds-type-body text-ds-on-hero-soft">
         {copy.line}
       </p>
-      <ol aria-label="Leagues" className="relative mt-[22px] flex items-end gap-3.5">
+      <ol aria-label="Leagues" className="relative z-10 mt-[22px] flex items-end gap-3.5">
         {LEAGUE_TIERS.map((tier, i) => (
           <li
             key={tier}

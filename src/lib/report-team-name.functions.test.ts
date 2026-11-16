@@ -93,6 +93,17 @@ describe("reportTeamName", () => {
     expect(supabase.from).toHaveBeenCalledTimes(1);
   });
 
+  it("refuses, and files nothing, when the caller created the team", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chainable({ data: { created_by: USER_ID }, error: null }));
+    const result = await reportTeamName({
+      context: ctx(supabase),
+      data: { teamId: TEAM_ID, reason: "spam" },
+    });
+    expect(result).toEqual({ ok: false, reason: "own-team" });
+    expect(supabase.from).toHaveBeenCalledTimes(1);
+  });
+
   it("says failed when the lookup or the insert errors", async () => {
     const lookupFails = createSupabaseMock();
     lookupFails.from.mockReturnValueOnce(chainable({ data: null, error: { code: "x" } }));

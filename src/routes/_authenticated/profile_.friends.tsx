@@ -211,10 +211,9 @@ function FriendsPage() {
           {friends.map((f, i) => (
             <DsRow key={f.userId} first={i === 0} className="min-h-16 flex-wrap">
               <ProfileAvatar seed={f.avatarSeed} name={f.displayName} className="size-11" />
-              <div className="min-w-[10rem] flex-1">
+              <div className="min-w-0 flex-1">
                 <p className="ds-type-headline truncate text-ds-ink">{f.displayName}</p>
                 <p className="ds-type-caption text-ds-ink-soft">🔥 {f.streak}-day streak</p>
-                <AskBuddyButton friendId={f.userId} />
               </div>
               {confirmingId === f.userId ? (
                 <div className="flex shrink-0 items-center gap-1.5">
@@ -241,44 +240,39 @@ function FriendsPage() {
                     <p className="tnum ds-type-headline text-ds-ink">{f.weekXp}</p>
                     <p className="ds-type-caption text-ds-ink-soft">XP this week</p>
                   </div>
-                  <div className="ml-auto flex shrink-0 items-center gap-1">
-                    <DsButton
-                      small
-                      variant="secondary"
-                      onClick={() => void nudge(f)}
-                      disabled={!myId || nudgingId !== null || !canNudge(cooldowns[f.userId], now)}
-                      aria-label={`Nudge ${f.displayName}`}
-                      className="!min-w-11 shrink-0 !px-2.5"
-                    >
-                      <Icon name="waving_hand" size={22} />
-                    </DsButton>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmingId(f.userId)}
-                      aria-label={`Remove ${f.displayName}`}
-                      className="grid size-11 shrink-0 place-items-center rounded-full text-ds-ink-faint hover:bg-ds-wrong-tint hover:text-ds-wrong-ink focus-visible:outline-2 focus-visible:outline-ds-choice"
-                    >
-                      ✕
-                    </button>
-                    <SocialSafetyMenu
-                      userId={f.userId}
-                      displayName={f.displayName}
-                      blockTitle={
-                        myBuddy.data?.buddyId === f.userId
-                          ? buddyBlockConfirm(f.displayName)
-                          : undefined
-                      }
-                      onBlocked={() => {
-                        queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
-                          (prev ?? []).filter((x) => x.userId !== f.userId),
-                        );
-                        dropActivityFrom(f.userId);
-                        void queryClient.invalidateQueries({ queryKey: ["myBuddy"] });
-                      }}
-                    />
-                  </div>
+                  <DsButton
+                    small
+                    variant="secondary"
+                    onClick={() => void nudge(f)}
+                    disabled={!myId || nudgingId !== null || !canNudge(cooldowns[f.userId], now)}
+                    aria-label={`Nudge ${f.displayName}`}
+                    className="!min-w-11 shrink-0 !px-2.5"
+                  >
+                    <Icon name="waving_hand" size={22} />
+                  </DsButton>
+                  <SocialSafetyMenu
+                    userId={f.userId}
+                    displayName={f.displayName}
+                    onRemove={() => setConfirmingId(f.userId)}
+                    blockTitle={
+                      myBuddy.data?.buddyId === f.userId
+                        ? buddyBlockConfirm(f.displayName)
+                        : undefined
+                    }
+                    onBlocked={() => {
+                      queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
+                        (prev ?? []).filter((x) => x.userId !== f.userId),
+                      );
+                      dropActivityFrom(f.userId);
+                      void queryClient.invalidateQueries({ queryKey: ["myBuddy"] });
+                    }}
+                  />
                 </>
               )}
+              {/* The study-buddy ask sits on its own quiet line under the name, so the row above stays one line. */}
+              <div className="basis-full pl-[54px] empty:hidden">
+                <AskBuddyButton friendId={f.userId} />
+              </div>
             </DsRow>
           ))}
         </DsCard>

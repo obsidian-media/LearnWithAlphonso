@@ -30,12 +30,15 @@ export function SocialSafetyMenu({
   userId,
   displayName,
   onBlocked,
+  onRemove,
   blockTitle,
   menuLabel,
 }: {
   userId: string;
   displayName: string;
   onBlocked?: () => void;
+  /** When set, the menu starts with "Remove friend" (the Friends rows: the row stays one line on a phone). */
+  onRemove?: () => void;
   /** The block dialog's title; defaults to "Block <name>?". */
   blockTitle?: string;
   /** The menu button's accessible name; defaults to "More options for <name>". */
@@ -78,6 +81,19 @@ export function SocialSafetyMenu({
             role="menu"
             className="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-[14px] border-2 border-ds-line bg-ds-card shadow-[var(--ds-shadow-floating)]"
           >
+            {onRemove && (
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onRemove();
+                }}
+                className="block min-h-11 w-full px-3 py-2 text-left ds-type-footnote font-extrabold text-ds-ink hover:bg-ds-sunk"
+              >
+                Remove friend
+              </button>
+            )}
             <button
               type="button"
               role="menuitem"
@@ -146,6 +162,9 @@ export function SocialSafetyMenu({
 /** Shown when a report did not reach the server; the report stays open so the learner can try again. */
 export const REPORT_FAILED = "Couldn't submit your report. Try again.";
 
+/** You created this team: there is no one else to report. */
+export const REPORT_OWN_TEAM = "This is your own team, so there is nothing to report.";
+
 /** A team with no creator has a system-made name, so there is no one to report. */
 export const REPORT_NO_CREATOR =
   "This team's name was generated automatically by Alphonso, so there's no one to report.";
@@ -209,7 +228,8 @@ export function TeamNameReportMenu({ teamId, teamName }: { teamId: string; teamN
             try {
               const result = await reportTeamName({ data: { teamId, reason } });
               if (result.ok) return null;
-              return result.reason === "no-creator" ? REPORT_NO_CREATOR : REPORT_FAILED;
+              if (result.reason === "no-creator") return REPORT_NO_CREATOR;
+              return result.reason === "own-team" ? REPORT_OWN_TEAM : REPORT_FAILED;
             } catch {
               return REPORT_FAILED;
             }

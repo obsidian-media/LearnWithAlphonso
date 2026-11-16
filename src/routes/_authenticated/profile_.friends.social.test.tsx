@@ -243,7 +243,8 @@ describe("Activity feed", () => {
     getFriendActivity.mockResolvedValue(events);
     renderPage();
     await screen.findByText("Mina completed a lesson (+20 XP)");
-    fireEvent.click(screen.getByRole("button", { name: "Remove Mina" }));
+    fireEvent.click(screen.getByRole("button", { name: "More options for Mina" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Remove friend" }));
     const confirm = screen.getByRole("button", { name: "Confirm" });
     fireEvent.click(confirm);
     await waitFor(() => expect(screen.queryByText("Mina completed a lesson (+20 XP)")).toBeNull());

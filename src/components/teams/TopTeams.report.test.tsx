@@ -80,6 +80,15 @@ describe("Report a team name", () => {
     expect(screen.getByRole("button", { name: "Submit report" })).toBeEnabled();
   });
 
+  it("a team you created answers that there is nothing to report, even if the menu was reached", async () => {
+    reportTeamName.mockResolvedValue({ ok: false, reason: "own-team" });
+    render(<TopTeams loading={false} rows={ROWS} myTeamId={null} />);
+    fireEvent.click(screen.getByRole("button", { name: "More options for Night Owls" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Report team name" }));
+    fireEvent.click(screen.getByRole("button", { name: "Submit report" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("This is your own team");
+  });
+
   it("a failed report says so and can be tried again; a thrown one reads the same", async () => {
     reportTeamName.mockResolvedValueOnce({ ok: false, reason: "failed" });
     render(<TopTeams loading={false} rows={ROWS} myTeamId={null} />);
