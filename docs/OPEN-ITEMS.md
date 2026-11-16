@@ -6,29 +6,29 @@ Sweep of 2026-11-15 against main, merged pull requests and read-only checks of t
 
 **How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
 
-Counts: owner only 20, decision needed 9, device check 13, agent can do 21, done 9 groups, obsolete 8.
+Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
 
 ### A. STILL OPEN - owner only (in priority order)
 
 1. **Decide and perform the next App Review submission.** Builds up to 66 are on TestFlight; nothing newer than the notes shows a submission. App Store Connect state is unverified from here. (0.0-am #7, 0.0-y)
 2. **Paid Applications Agreement must be Active** (terms, bank, tax). Older notes disagree on whether it already is; unverified. A "New" agreement blocks every in-app price. (0.0-am, 1.1)
 3. **Store privacy answers in one visit** (App Store Connect App Privacy and Google Play Data safety), before any submission: Product Interaction and Device ID for Analytics (PostHog, linked, not tracking), Product Personalization, Crash Data and Other Diagnostic Data, first-run answers (name, age range, country, avatar, goal, level, how you heard of us), Explain and Hector AI requests, learning minutes, mastered words, time zone, listening progress, and **Customer Support** for the Help chat (kept 12 months after a chat is solved, in the export). Age rating 13+. (0.0-as #1 #7 #8, 0.0-bn, 2026-11-15 note, 0.0-ai)
-4. **Security follow-ups, details kept private.** A few owner-only account and settings steps are tracked privately and are not described here. (0.0-bb, 0.0-as #3)
+4. **Security follow-ups, details kept private.** Several owner-only account, settings and switch-on steps (including one timed switch-on) are tracked privately and are not described here. (0.0-bb, 0.0-as #3)
 5. **Admin console numbers (#567 is merged and its migration is applied: verified).** Set the provider settings on the admin project (list in docs/operations.md), then check each group shows Connected: revenue, AI cost, App Store, Google Play (also needs the reports bucket name), own database, crash reports, analytics. Not tried with real provider settings. (r13 note 2026-11-15)
-6. **Merge PR #568 (admin console redesign, open and ready).** Then give the Staff page a label for the new revenue scope. (r13 note)
-7. **Staff names for Miya.** Staff profiles need real first names in their display name, otherwise person replies read just "Support team". The staff roles table is empty in production (verified: 0 rows), so confirm the owner has an owner role row or relies on the older admin list. (r13 Miya note, 0.0-bb)
+6. Moved: the redesign merge is handled by the coordinator; the one agent task left from it is item 64.
+7. **Staff names for Miya.** Staff profiles need real first names in their display name, otherwise person replies read just "Support team". (r13 Miya note)
 8. **Review the Help chat help file and 10 sample transcripts, then turn on the support_ai switch.** It is OFF in production (verified), so every message goes to a person. (r12 support M1)
 9. **Web Pro launch:** a real payment-processor account, RevenueCat production web billing (products, trial and no-trial links, return page), production Vercel settings, redeploy, then one real purchase-and-refund check by the agent. The live web paywall is intentionally unconfigured. (0.0-an #1-4)
 10. **Google Play and Android release setup:** Play developer account, move Firebase to the same Google account and rotate its settings, add the Play app-signing fingerprint to the asset-links file, RevenueCat Android setting, first hand upload. (0.0-z, OWNER-SETUP, 2026-11-14 note)
 11. **After App Review approval:** point support, privacy and report mail forwarding back to the owner's inbox and send a test mail; remove the review demo-code setting from production and consider deleting the review account; turn on the RevenueCat sandbox-rejection switch. (0.0-x, remediation P-6)
 12. **Demo account session cleanup** (owner step in the auth dashboard). Cannot be verified from code. (0.0-aa)
 13. **Delete leftover QA test accounts** made during QA (one named in 0.0-al); unverified which remain. (0.0-al, 0.0-as #3)
-14. **Timed switch-ons:** at about 90 percent adoption plus 30 days: store URL setting, then minimum builds (update gate), then the Supabase bot check (test Apple and Google sign-in with it on first). (wave 2, #421, #423)
+14. **Timed switch-ons:** at about 90 percent adoption plus 30 days: the store URL setting, then minimum builds (update gate). (wave 2, #421, #423)
 15. **Confirm the RevenueCat server setting is present on the backend** before Pro learners exist (needed by server-side hearts, #494). Unverified. (#494 note)
-16. **Optional:** connect Sentry for readable crash locations; tidy a personal analytics API credential; delete leftover Vercel Preview entries of the merged web-Hector branch; revoke a separate benchmark credential if it differs. (0.0-as #9, 2026-11-12 notes, 0.0-an #6, 0.0-al)
+16. **Optional:** connect Sentry for readable crash locations; delete leftover Vercel Preview entries of the merged web-Hector branch. Other optional credential tidying is tracked privately. (0.0-as #9, 0.0-an #6)
 17. **Podcast content partnership conversation**, respecting the licensed-only publishing rule (#262). (0.0-i)
 18. **Custom domain for the Supabase project** (paid plan, repoint apps, retest sign-in). iOS still points at the raw project URL. (0.0-t)
-19. **Housekeeping commands:** remove stale worktrees and branches (rmdir each node_modules junction first). Unverified which remain. (0.0-bq #7)
+19. Moved to E: stale worktree and branch cleanup was done by the owner on 2026-11-15.
 20. **Store listing leftovers (likely moot):** subscription review screenshot, walkthrough recording, upgrade test 50 to 51. (0.0-am)
 
 ### B. DECISION NEEDED (owner choice)
@@ -82,10 +82,12 @@ Counts: owner only 20, decision needed 9, device check 13, agent can do 21, done
 61. **FR/ES save-a-word accessibility follow-ups** and keyboard access to transcript words. (0.0-ac #4)
 62. **Podcast carried risks and deferred minors** (storage before any Pro gating, ended-event ordering). Unverified on a device. (0.8)
 63. **Dev server does not boot in the Windows sandbox.** (4)
+64. **Staff page label** for the new revenue scope, if the redesign leaves it unlabelled. (r13 numbers note)
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
 
 - Admin numbers dashboard: PR #567 merged, migration 20261118100000 applied in production (queried).
+- Stale worktree and branch cleanup (2026-11-15, owner).
 - Hands-free on web #560, Android #561, iOS #538; Practice result and reply bar #552; Meadow stays light #547; streak widget #553.
 - Miya #554; Help chat web #524, iOS #541, Android #544; staff inbox #532; reply email, push and retention #557 (all six support milestones).
 - Privacy page covers the Help chat (#564) and the time zone wording is current (src/routes/privacy.tsx line 61).
