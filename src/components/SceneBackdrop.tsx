@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { sceneSrc, type Clip, type Scene } from "@/lib/scenes";
+import { NIGHT_SCENES, sceneSrc, type Clip, type Scene } from "@/lib/scenes";
+import { useNight } from "@/lib/use-night";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import { LoopingClip } from "./LoopingClip";
 
@@ -42,6 +43,9 @@ export function SceneBackdrop({
   const layer = useRef<HTMLDivElement>(null);
   const pinLayer = useRef<HTMLDivElement>(null);
   const reduce = usePrefersReducedMotion();
+  const night = useNight();
+  // The night picture is a still: a living clip keeps its day art (and the heavier scrim over it).
+  const nightArt = night && !clip && NIGHT_SCENES.includes(scene);
 
   useEffect(() => {
     let pending = false;
@@ -89,7 +93,7 @@ export function SceneBackdrop({
           </div>
         ) : (
           <img
-            src={sceneSrc(scene)}
+            src={sceneSrc(scene, nightArt)}
             alt=""
             decoding="async"
             style={{ objectPosition: focus }}
@@ -97,7 +101,7 @@ export function SceneBackdrop({
           />
         )}
       </div>
-      <div className="scene-scrim absolute inset-0" />
+      <div className={`scene-scrim absolute inset-0${nightArt ? " scene-scrim-night" : ""}`} />
       {clip && pin && (
         <div ref={pinLayer} data-pin-layer className={LAYER}>
           <div className={FRAME} style={frameStyle}>

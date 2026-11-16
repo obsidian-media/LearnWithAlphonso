@@ -35,6 +35,27 @@ describe("SceneBackdrop", () => {
     expect(root.querySelector(".scene-scrim")).not.toBeNull();
   });
 
+  it("shows the Royal-night picture when the page is in Royal night, and the day one otherwise", () => {
+    mockReducedMotion(false);
+    document.documentElement.dataset.dsMode = "night";
+    try {
+      const night = render(<SceneBackdrop scene="learn" />);
+      expect(night.container.querySelector("img")!.getAttribute("src")).toBe(
+        "/scenes/night-learn.jpg",
+      );
+      night.unmount();
+      const complete = render(<SceneBackdrop scene="complete" />);
+      expect(complete.container.querySelector("img")!.getAttribute("src")).toBe(
+        "/scenes/complete.jpg",
+      );
+      complete.unmount();
+    } finally {
+      delete document.documentElement.dataset.dsMode;
+    }
+    const day = render(<SceneBackdrop scene="learn" />);
+    expect(day.container.querySelector("img")!.getAttribute("src")).toBe("/scenes/learn.jpg");
+  });
+
   it("drifts at a fraction of the scroll, and only a bounded distance", () => {
     mockReducedMotion(false);
     const { container } = render(<SceneBackdrop scene="learn" />);

@@ -19,7 +19,14 @@ describe("ScreenScene: the reusable scene background", () => {
     for (const n of ["learn", "hector", "listen", "profile", "complete"]) {
       expect(s, n).toMatch(new RegExp(`case [^\\n]*\\b${n}\\b`));
     }
-    expect(s).toContain('"Scene-\\(rawValue)"');
+    // The name is picked by the Kit's ScreenSceneArt: Scene-<name> by day, SceneNight-<name> in Royal night.
+    expect(s).toContain("ScreenSceneArt.assetName(scene: rawValue, night: night)");
+    expect(
+      readFileSync(
+        "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ScreenSceneArt.swift",
+        "utf8",
+      ),
+    ).toContain('"Scene-\\(scene)"');
   });
 
   it("is full-bleed, ignores safe areas and is hidden from VoiceOver and touches", () => {
@@ -37,7 +44,9 @@ describe("ScreenScene: the reusable scene background", () => {
     expect(body).toContain("@Environment(\\.colorScheme)");
     // Night is the device's dark setting for Royal only: Meadow stays light, so it never takes the night scrim.
     expect(body).toMatch(/usesNight\(deviceDark: colorScheme == \.dark\)/);
-    expect(body).toMatch(/opacity\(night \?/);
+    expect(body).toMatch(
+      /opacity\(showsNightPicture \? Self\.nightScrim\.top : night \? 0\.88 : 0\.6\)/,
+    );
     // The gradient starts at the top edge.
     expect(body).toMatch(/startPoint: \.top/);
   });

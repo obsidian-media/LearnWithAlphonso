@@ -262,6 +262,24 @@
     color-mix(in oklab, var(--color-surface) 30%, transparent) 100%
   );
 }
+/* Royal night has its own, already dark, picture: the scrim only keeps the title calm and blends into the page, so
+   the art is not darkened twice. */
+.scene-scrim.scene-scrim-night {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--color-surface) 42%, transparent) 0%,
+    color-mix(in oklab, var(--color-surface) 8%, transparent) 26%,
+    transparent 55%,
+    color-mix(in oklab, var(--color-surface) 30%, transparent) 100%
+  );
+}
+
+/* The call: the bottom of Alphonso's square fades out (solid to 80%, transparent at 100%, the approved call mock), so
+   his robe never ends in a hard straight edge above the caption. His size and position are unchanged. */
+.call-avatar-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 80%, transparent 100%);
+}
 
 /* The next lesson on the Learn map bobs gently to invite a tap. Only Y: the node is centred with Tailwind's
    `translate` property, and an x offset here would stack on top of it. */

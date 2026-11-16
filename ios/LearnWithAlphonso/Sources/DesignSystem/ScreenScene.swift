@@ -5,7 +5,8 @@ import SwiftUI
 enum SceneName: String, CaseIterable {
     case learn, hector, listen, profile, complete, practice
 
-    var assetName: String { "Scene-\(rawValue)" }
+    /// The day picture, or (`night`) the Royal-night one for the five scenes that have it (Kit `ScreenSceneArt`).
+    func assetName(night: Bool = false) -> String { ScreenSceneArt.assetName(scene: rawValue, night: night) }
 }
 
 /// What the probe row tells its scene: where it is, and when it comes on or goes off screen.
@@ -110,6 +111,9 @@ struct ScreenScene: View {
     static let parallaxFactor: CGFloat = 0.5
     /// The image is drawn a little larger so the parallax travel never uncovers an edge.
     private static let overscan: CGFloat = 1.14
+    /// Royal night shows its own, already dark picture, so the scrim only keeps the title calm and blends into the
+    /// page; the art is not darkened twice. (A scene without a night picture, Lesson complete, is not drawn in night.)
+    private static let nightScrim: (top: Double, middle: Double, bottom: Double) = (0.5, 0.12, 0.4)
 
     let scene: SceneName
     /// The probe's raw position, nil while no probe is on screen.
@@ -131,6 +135,9 @@ struct ScreenScene: View {
 
     /// Meadow stays light, even in dark mode, so it never takes the night scrim.
     private var night: Bool { AlphonsoThemeManager.shared.paletteID.usesNight(deviceDark: colorScheme == .dark) }
+    /// The Royal-night picture is on screen: a still of a scene that has one. A living clip (Learn, Hector) and Lesson
+    /// complete keep their day art, so they keep the heavier night scrim over it.
+    private var showsNightPicture: Bool { night && clip == nil && ScreenSceneArt.nightScenes.contains(scene.rawValue) }
 
     var body: some View {
         GeometryReader { proxy in
@@ -142,9 +149,9 @@ struct ScreenScene: View {
                     .clipped()
                 LinearGradient(
                     stops: [
-                        .init(color: AlphonsoColor.surface.opacity(night ? 0.88 : 0.6), location: 0),
-                        .init(color: AlphonsoColor.surface.opacity(night ? 0.6 : 0.18), location: 0.45),
-                        .init(color: AlphonsoColor.surface.opacity(night ? 0.7 : 0.3), location: 1),
+                        .init(color: AlphonsoColor.surface.opacity(showsNightPicture ? Self.nightScrim.top : night ? 0.88 : 0.6), location: 0),
+                        .init(color: AlphonsoColor.surface.opacity(showsNightPicture ? Self.nightScrim.middle : night ? 0.6 : 0.18), location: 0.45),
+                        .init(color: AlphonsoColor.surface.opacity(showsNightPicture ? Self.nightScrim.bottom : night ? 0.7 : 0.3), location: 1),
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -185,7 +192,7 @@ struct ScreenScene: View {
         if let clip {
             ClipBackdrop(clip: clip, verticalAnchor: clipAnchor)
         } else {
-            Image(scene.assetName)
+            Image(scene.assetName(night: showsNightPicture))
                 .resizable()
                 .scaledToFill()
         }

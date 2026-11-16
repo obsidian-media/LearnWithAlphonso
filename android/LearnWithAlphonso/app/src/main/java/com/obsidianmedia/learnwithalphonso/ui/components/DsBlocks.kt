@@ -59,6 +59,8 @@ import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
+import com.obsidianmedia.learnwithalphonso.core.avatar.ScreenSceneArt
+import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 
@@ -81,11 +83,14 @@ private fun glassFace(): Color = LocalAlphonsoTokens.current.card.copy(alpha = 0
 @Composable
 fun DsSceneScreen(scene: DsScene, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    val image = rememberFirstRunAsset("screen-scenes/${scene.file}.jpg")
+    // Royal night shows its own, already dark picture (palette.isDark is true only for Royal on a dark device).
+    val night = AlphonsoColor.palette.isDark
+    val image = rememberFirstRunAsset(ScreenSceneArt.assetPath(scene.file, night))
+    val nightArt = night && scene.file in ScreenSceneArt.nightScenes
     Box(modifier.fillMaxSize().background(ds.surface)) {
         Box(Modifier.fillMaxWidth().height(AlphonsoTokens.Space.s12 * 7)) {
             image?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
-            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to ds.heroB.copy(alpha = 0.34f), 0.55f to Color.Transparent, 1f to ds.surface)))
+            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to ds.heroB.copy(alpha = if (nightArt) 0.2f else 0.34f), 0.55f to Color.Transparent, 1f to ds.surface)))
         }
         content()
     }

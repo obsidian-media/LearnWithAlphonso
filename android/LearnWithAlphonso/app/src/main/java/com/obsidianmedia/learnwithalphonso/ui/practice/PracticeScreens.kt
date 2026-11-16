@@ -279,7 +279,7 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
             PracticeCallScreen(
                 kit = remember { alphonsoKit(context) },
                 title = if (progress.finished) campaign.title else "${campaign.title}: scene ${progress.sceneIndex + 1} of ${campaign.scenes.size}",
-                scenarioId = com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.room(campaign.id, vm.scene.id), course = course, vm = vm, playback = playback,
+                scenarioId = com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.room(campaign.id, vm.scene.id), campaignRoom = true, course = course, vm = vm, playback = playback,
                 reducedMotion = systemMotionReduced(context), onEnd = endCall,
                 statusHost = { AiReportStatusHost(reporting.sender) },
                 extra = {

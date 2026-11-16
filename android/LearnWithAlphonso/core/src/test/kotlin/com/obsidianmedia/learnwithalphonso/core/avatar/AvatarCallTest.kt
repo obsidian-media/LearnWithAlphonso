@@ -12,7 +12,7 @@ class AvatarCallTest {
     @Test
     fun `every scenario has its own room and everything else gets the default`() {
         assertEquals(12, CallScenes.scenarioIds.size)
-        for (id in CallScenes.scenarioIds) assertEquals(CallRoom(id, id, true), CallScenes.room(id), id)
+        for (id in CallScenes.scenarioIds) assertEquals(CallRoom("call-$id", "call-$id", true), CallScenes.room(id), id)
         for (id in listOf("city-day", "free-talk", "", "new-scenario", null)) assertEquals(CallScenes.defaultRoom, CallScenes.room(id), id.toString())
     }
 
@@ -22,6 +22,23 @@ class AvatarCallTest {
         assertNotEquals(CallScenes.defaultRoom.light, CallScenes.defaultRoom.dark)
         assertFalse(CallScenes.defaultRoom.dimInDark)
         assertEquals(0.5, CallScenes.EVENING_OVERLAY_OPACITY)
+    }
+
+    @Test
+    fun `the call has its own files and a campaign scene keeps the older room file`() {
+        assertEquals(CallRoom("call-room-light", "call-room-dark", false), CallScenes.defaultRoom)
+        val known = setOf("coffee", "market", "office")
+        // "coffee" is both a scenario and a campaign scene room: the campaign keeps the old coffee.webp.
+        assertEquals(CallRoom("coffee", "coffee", true), CallScenes.campaignRoom("coffee", known))
+        assertEquals("market", CallScenes.campaignRoom("market", known).light)
+        assertEquals(CallRoom("room-light", "room-dark", false), CallScenes.campaignRoom("room-light", known))
+        assertEquals(CallRoom("room-light", "room-dark", false), CallScenes.campaignRoom(null, known))
+        for (name in known) assertFalse(CallScenes.campaignRoom(name, known).light.startsWith("call-"), name)
+    }
+
+    @Test
+    fun `the characters bottom fades from eighty percent down`() {
+        assertEquals(0.8f, CallScenes.AVATAR_FADE_START)
     }
 
     @Test

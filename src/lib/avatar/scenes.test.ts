@@ -29,8 +29,8 @@ describe("the room behind Alphonso", () => {
     const art = sceneArt("coffee", new Set(["coffee"]));
     expect(art).toEqual({
       id: "coffee",
-      light: "/avatar/scenes/coffee.webp",
-      dark: "/avatar/scenes/coffee.webp",
+      light: "/avatar/scenes/call-coffee.webp",
+      dark: "/avatar/scenes/call-coffee.webp",
       dimInDark: true,
     });
     expect(sceneArt("doctor", new Set(["coffee"])).id).toBe(DEFAULT_SCENE);

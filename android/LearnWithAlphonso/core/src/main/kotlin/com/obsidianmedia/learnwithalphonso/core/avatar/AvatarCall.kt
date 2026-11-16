@@ -20,13 +20,37 @@ object CallScenes {
         "hotel", "directions", "apartment", "returns", "negotiation", "debate",
     )
 
-    /** Scenario ids that have their own image (assets/scenes/<id>.webp). A scenario missing here gets the default room. */
+    /**
+     * Scenario ids that have their own call image (assets/scenes/call-<id>.webp, the v2 art). A scenario missing here
+     * gets the default room. The call has files of its own: lessons and campaigns keep the older <room>.webp.
+     */
     val scenariosWithArt: Set<String> = scenarioIds.toSet()
-    val defaultRoom = CallRoom("room-light", "room-dark", dimInDark = false)
+
+    /** The study room the call uses, by day and in the evening (assets/scenes/call-room-*.webp). */
+    val defaultRoom = CallRoom("call-room-light", "call-room-dark", dimInDark = false)
+
+    /** The lessons' study room: what a campaign call keeps (room-light, room-dark), not the call's own room. */
+    val studyRoom = CallRoom("room-light", "room-dark", dimInDark = false)
+
+    /** The call's picture for a scenario id, without extension. */
+    fun callFile(id: String): String = "call-$id"
 
     /** [fallback] is the character's own default room ([CharacterKit.defaultRoom]). */
     fun room(scenarioId: String?, withArt: Set<String> = scenariosWithArt, fallback: CallRoom = defaultRoom): CallRoom =
-        if (scenarioId != null && scenarioId in withArt) CallRoom(scenarioId, scenarioId, dimInDark = true) else fallback
+        if (scenarioId != null && scenarioId in withArt) CallRoom(callFile(scenarioId), callFile(scenarioId), dimInDark = true) else fallback
+
+    /**
+     * A campaign scene's room: [roomName] is one of the campaign scene rooms (PracticeHub.sceneRoomNames). It keeps the
+     * older <room>.webp file the lessons use, never a call file; anything else gets [fallback].
+     */
+    fun campaignRoom(roomName: String?, known: Set<String>, fallback: CallRoom = studyRoom): CallRoom =
+        if (roomName != null && roomName in known) CallRoom(roomName, roomName, dimInDark = true) else fallback
+
+    /**
+     * The character's square is solid down to this fraction of its height and fades to transparent at the bottom, so
+     * his robe never ends in a hard straight edge above the caption (the approved call mock, 2026-11-16).
+     */
+    const val AVATAR_FADE_START = 0.8f
 
     /** The evening overlay on a scenario image in dark mode: navy #16203c, multiplied, at 50%. */
     const val EVENING_OVERLAY_OPACITY = 0.5

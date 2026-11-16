@@ -154,7 +154,7 @@ fun ReviewScreen(container: AppContainer, course: Course, onExit: () -> Unit, se
 @Composable
 private fun Banner() {
     val ds = LocalAlphonsoTokens.current
-    val scene = rememberFirstRunAsset("screen-scenes/hector.jpg")
+    val scene = rememberFirstRunAsset(com.obsidianmedia.learnwithalphonso.core.avatar.ScreenSceneArt.assetPath("hector", com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoColor.palette.isDark))
     val pose = rememberFirstRunAsset("poses/alphonso-reading-book.webp")
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.sheet)
     Box(Modifier.fillMaxWidth().height(AlphonsoTokens.Space.s12 * 3 + AlphonsoTokens.Space.s2).clip(shape).background(ds.sunk)) {

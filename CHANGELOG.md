@@ -10,6 +10,7 @@ works now_.
 
 ## Unreleased
 
+2026-11-16 R14-E2: call scenes v2 and Royal-night rooms (web, iOS, Android): the call reads its own call-<scenario>.webp (12 scenarios plus the study room day and evening), lessons and campaigns keep the old room files; learn, hector, listen, profile and practice scenes swap to night-<scene> in Royal night only (Meadow and Lesson complete stay light, living clips unchanged); the call avatar fades out over its last 20% (no hard robe edge); web call now follows Royal night (was hard-coded light). Not seen on a simulator or emulator.
 ### Redesign on web, iOS and Android, Help chat, support inbox (2026-11-14)
 
 - **AI cost tracking and spend alerts (round 14).** Every billable AI call (chat, Hector, explain, translate, define, support, practice, weakness, STT, TTS) is logged with its units and estimated cost in `ai_cost_log` (service role only; 90 days raw, then a daily per-learner summary); prices in one file with source and date; the Numbers "AI cost" group is now measured (spend by vendor and kind, cost per learner, heavy learners, top 20 by short id, voice cache hit rate); a daily email to the owner when yesterday crossed a threshold (`AI_COST_ALERT_DAILY_TOTAL_USD`, `AI_COST_ALERT_DAILY_USER_USD`); fixed spoken lines (scene openers, name-less Hector greetings) are cached in a private bucket. No learner-facing limit or behaviour changed. See docs/operations.md, "AI cost tracking".
