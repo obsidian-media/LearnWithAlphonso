@@ -28,6 +28,7 @@ import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 import { waitForCallCue } from "@/lib/sfx";
 import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/lib/practice-api";
 import { PracticeResult } from "@/components/practice/PracticeResult";
+import { useCallRecap } from "@/lib/use-call-recap";
 import { PracticeUnscored } from "@/components/practice/PracticeUnscored";
 import { roomUrl } from "@/lib/practice-catalog";
 import { firstSlip, practiceModeSearch, type PracticeModeSearch } from "@/lib/practice-session";
@@ -364,6 +365,14 @@ function ConverseChatPage({
   }, []);
 
   const learnerReplies = messages.filter((m) => m.role === "user").length;
+  // The recap starts when the result appears; it never holds the result screen up (use-call-recap.ts).
+  const recap = useCallRecap({
+    callId: result ? callId : null,
+    messages: messages.map(({ role, content }) => ({ role, content })),
+    course,
+    cefrLevel: cefrLevel ?? undefined,
+    scene: scenario.id,
+  });
   /** Hang up or finish: with no reply there is nothing to score, so straight back to Practice. */
   const endCall = useCallback(async () => {
     if (ending) return;
@@ -640,6 +649,7 @@ function ConverseChatPage({
     return (
       <LessonFrame>
         <PracticeResult
+          recap={recap}
           result={result.result}
           course={course}
           room={roomUrl(scenario.id)}

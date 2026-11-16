@@ -42,6 +42,8 @@ import { Route as ApiAccountExportRouteImport } from './routes/api/account-expor
 import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
 import { Route as ApiAppConfigRouteImport } from './routes/api/app-config'
 import { Route as ApiAppleLinkRouteImport } from './routes/api/apple-link'
+import { Route as ApiCallRecapRouteImport } from './routes/api/call-recap'
+import { Route as ApiCallRecapReviewRouteImport } from './routes/api/call-recap-review'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiDefineWordRouteImport } from './routes/api/define-word'
 import { Route as ApiExplainRouteImport } from './routes/api/explain'
@@ -58,6 +60,7 @@ import { Route as ApiReviewDemoCodeRouteImport } from './routes/api/review-demo-
 import { Route as ApiSttRouteImport } from './routes/api/stt'
 import { Route as ApiSubscriptionLoginRouteImport } from './routes/api/subscription-login'
 import { Route as ApiTtsRouteImport } from './routes/api/tts'
+import { Route as ApiTutorMemoryRouteImport } from './routes/api/tutor-memory'
 import { Route as AuthenticatedCampaignCampaignIdRouteImport } from './routes/_authenticated/campaign_.$campaignId'
 import { Route as AuthenticatedConverseScenarioIdRouteImport } from './routes/_authenticated/converse_.$scenarioId'
 import { Route as AuthenticatedInviteCodeRouteImport } from './routes/_authenticated/invite.$code'
@@ -67,6 +70,7 @@ import { Route as AuthenticatedPathBuildRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPathWeekRouteImport } from './routes/_authenticated/path_.week'
 import { Route as AuthenticatedPathWhyRouteImport } from './routes/_authenticated/path_.why'
 import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile_.friends'
+import { Route as AuthenticatedProfileMemoryRouteImport } from './routes/_authenticated/profile_.memory'
 import { Route as AuthenticatedTeamsTeamIdRouteImport } from './routes/_authenticated/teams_.$teamId'
 import { Route as ApiInternalMaintenanceRouteImport } from './routes/api/internal/maintenance'
 import { Route as ApiInternalReportNotifyRouteImport } from './routes/api/internal/report-notify'
@@ -241,6 +245,16 @@ const ApiAppleLinkRoute = ApiAppleLinkRouteImport.update({
   path: '/api/apple-link',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCallRecapRoute = ApiCallRecapRouteImport.update({
+  id: '/api/call-recap',
+  path: '/api/call-recap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCallRecapReviewRoute = ApiCallRecapReviewRouteImport.update({
+  id: '/api/call-recap-review',
+  path: '/api/call-recap-review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -321,6 +335,11 @@ const ApiTtsRoute = ApiTtsRouteImport.update({
   path: '/api/tts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTutorMemoryRoute = ApiTutorMemoryRouteImport.update({
+  id: '/api/tutor-memory',
+  path: '/api/tutor-memory',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedCampaignCampaignIdRoute =
   AuthenticatedCampaignCampaignIdRouteImport.update({
     id: '/campaign_/$campaignId',
@@ -368,6 +387,12 @@ const AuthenticatedProfileFriendsRoute =
   AuthenticatedProfileFriendsRouteImport.update({
     id: '/profile_/friends',
     path: '/profile/friends',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProfileMemoryRoute =
+  AuthenticatedProfileMemoryRouteImport.update({
+    id: '/profile_/memory',
+    path: '/profile/memory',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedTeamsTeamIdRoute =
@@ -441,6 +466,8 @@ export interface FileRoutesByFullPath {
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/app-config': typeof ApiAppConfigRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
+  '/api/call-recap': typeof ApiCallRecapRoute
+  '/api/call-recap-review': typeof ApiCallRecapReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/api/define-word': typeof ApiDefineWordRoute
   '/api/explain': typeof ApiExplainRoute
@@ -457,6 +484,7 @@ export interface FileRoutesByFullPath {
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/tutor-memory': typeof ApiTutorMemoryRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$code': typeof AuthenticatedInviteCodeRoute
@@ -466,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/path/week': typeof AuthenticatedPathWeekRoute
   '/path/why': typeof AuthenticatedPathWhyRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
+  '/profile/memory': typeof AuthenticatedProfileMemoryRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
@@ -507,6 +536,8 @@ export interface FileRoutesByTo {
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/app-config': typeof ApiAppConfigRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
+  '/api/call-recap': typeof ApiCallRecapRoute
+  '/api/call-recap-review': typeof ApiCallRecapReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/api/define-word': typeof ApiDefineWordRoute
   '/api/explain': typeof ApiExplainRoute
@@ -523,6 +554,7 @@ export interface FileRoutesByTo {
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/tutor-memory': typeof ApiTutorMemoryRoute
   '/campaign/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/converse/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/invite/$code': typeof AuthenticatedInviteCodeRoute
@@ -532,6 +564,7 @@ export interface FileRoutesByTo {
   '/path/week': typeof AuthenticatedPathWeekRoute
   '/path/why': typeof AuthenticatedPathWhyRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
+  '/profile/memory': typeof AuthenticatedProfileMemoryRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
@@ -575,6 +608,8 @@ export interface FileRoutesById {
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/app-config': typeof ApiAppConfigRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
+  '/api/call-recap': typeof ApiCallRecapRoute
+  '/api/call-recap-review': typeof ApiCallRecapReviewRoute
   '/api/chat': typeof ApiChatRoute
   '/api/define-word': typeof ApiDefineWordRoute
   '/api/explain': typeof ApiExplainRoute
@@ -591,6 +626,7 @@ export interface FileRoutesById {
   '/api/stt': typeof ApiSttRoute
   '/api/subscription-login': typeof ApiSubscriptionLoginRoute
   '/api/tts': typeof ApiTtsRoute
+  '/api/tutor-memory': typeof ApiTutorMemoryRoute
   '/_authenticated/campaign_/$campaignId': typeof AuthenticatedCampaignCampaignIdRoute
   '/_authenticated/converse_/$scenarioId': typeof AuthenticatedConverseScenarioIdRoute
   '/_authenticated/invite/$code': typeof AuthenticatedInviteCodeRoute
@@ -600,6 +636,7 @@ export interface FileRoutesById {
   '/_authenticated/path_/week': typeof AuthenticatedPathWeekRoute
   '/_authenticated/path_/why': typeof AuthenticatedPathWhyRoute
   '/_authenticated/profile_/friends': typeof AuthenticatedProfileFriendsRoute
+  '/_authenticated/profile_/memory': typeof AuthenticatedProfileMemoryRoute
   '/_authenticated/teams_/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
@@ -643,6 +680,8 @@ export interface FileRouteTypes {
     | '/api/analyze-weaknesses'
     | '/api/app-config'
     | '/api/apple-link'
+    | '/api/call-recap'
+    | '/api/call-recap-review'
     | '/api/chat'
     | '/api/define-word'
     | '/api/explain'
@@ -659,6 +698,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/subscription-login'
     | '/api/tts'
+    | '/api/tutor-memory'
     | '/campaign/$campaignId'
     | '/converse/$scenarioId'
     | '/invite/$code'
@@ -668,6 +708,7 @@ export interface FileRouteTypes {
     | '/path/week'
     | '/path/why'
     | '/profile/friends'
+    | '/profile/memory'
     | '/teams/$teamId'
     | '/api/internal/maintenance'
     | '/api/internal/report-notify'
@@ -709,6 +750,8 @@ export interface FileRouteTypes {
     | '/api/analyze-weaknesses'
     | '/api/app-config'
     | '/api/apple-link'
+    | '/api/call-recap'
+    | '/api/call-recap-review'
     | '/api/chat'
     | '/api/define-word'
     | '/api/explain'
@@ -725,6 +768,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/subscription-login'
     | '/api/tts'
+    | '/api/tutor-memory'
     | '/campaign/$campaignId'
     | '/converse/$scenarioId'
     | '/invite/$code'
@@ -734,6 +778,7 @@ export interface FileRouteTypes {
     | '/path/week'
     | '/path/why'
     | '/profile/friends'
+    | '/profile/memory'
     | '/teams/$teamId'
     | '/api/internal/maintenance'
     | '/api/internal/report-notify'
@@ -776,6 +821,8 @@ export interface FileRouteTypes {
     | '/api/analyze-weaknesses'
     | '/api/app-config'
     | '/api/apple-link'
+    | '/api/call-recap'
+    | '/api/call-recap-review'
     | '/api/chat'
     | '/api/define-word'
     | '/api/explain'
@@ -792,6 +839,7 @@ export interface FileRouteTypes {
     | '/api/stt'
     | '/api/subscription-login'
     | '/api/tts'
+    | '/api/tutor-memory'
     | '/_authenticated/campaign_/$campaignId'
     | '/_authenticated/converse_/$scenarioId'
     | '/_authenticated/invite/$code'
@@ -801,6 +849,7 @@ export interface FileRouteTypes {
     | '/_authenticated/path_/week'
     | '/_authenticated/path_/why'
     | '/_authenticated/profile_/friends'
+    | '/_authenticated/profile_/memory'
     | '/_authenticated/teams_/$teamId'
     | '/api/internal/maintenance'
     | '/api/internal/report-notify'
@@ -828,6 +877,8 @@ export interface RootRouteChildren {
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
   ApiAppConfigRoute: typeof ApiAppConfigRoute
   ApiAppleLinkRoute: typeof ApiAppleLinkRoute
+  ApiCallRecapRoute: typeof ApiCallRecapRoute
+  ApiCallRecapReviewRoute: typeof ApiCallRecapReviewRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiDefineWordRoute: typeof ApiDefineWordRoute
   ApiExplainRoute: typeof ApiExplainRoute
@@ -844,6 +895,7 @@ export interface RootRouteChildren {
   ApiSttRoute: typeof ApiSttRoute
   ApiSubscriptionLoginRoute: typeof ApiSubscriptionLoginRoute
   ApiTtsRoute: typeof ApiTtsRoute
+  ApiTutorMemoryRoute: typeof ApiTutorMemoryRoute
   ApiInternalMaintenanceRoute: typeof ApiInternalMaintenanceRoute
   ApiInternalReportNotifyRoute: typeof ApiInternalReportNotifyRoute
   ApiInternalSupportNotifyRoute: typeof ApiInternalSupportNotifyRoute
@@ -1085,6 +1137,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAppleLinkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/call-recap': {
+      id: '/api/call-recap'
+      path: '/api/call-recap'
+      fullPath: '/api/call-recap'
+      preLoaderRoute: typeof ApiCallRecapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/call-recap-review': {
+      id: '/api/call-recap-review'
+      path: '/api/call-recap-review'
+      fullPath: '/api/call-recap-review'
+      preLoaderRoute: typeof ApiCallRecapReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -1197,6 +1263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTtsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tutor-memory': {
+      id: '/api/tutor-memory'
+      path: '/api/tutor-memory'
+      fullPath: '/api/tutor-memory'
+      preLoaderRoute: typeof ApiTutorMemoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/campaign_/$campaignId': {
       id: '/_authenticated/campaign_/$campaignId'
       path: '/campaign/$campaignId'
@@ -1258,6 +1331,13 @@ declare module '@tanstack/react-router' {
       path: '/profile/friends'
       fullPath: '/profile/friends'
       preLoaderRoute: typeof AuthenticatedProfileFriendsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile_/memory': {
+      id: '/_authenticated/profile_/memory'
+      path: '/profile/memory'
+      fullPath: '/profile/memory'
+      preLoaderRoute: typeof AuthenticatedProfileMemoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/teams_/$teamId': {
@@ -1348,6 +1428,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPathWeekRoute: typeof AuthenticatedPathWeekRoute
   AuthenticatedPathWhyRoute: typeof AuthenticatedPathWhyRoute
   AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
+  AuthenticatedProfileMemoryRoute: typeof AuthenticatedProfileMemoryRoute
   AuthenticatedTeamsTeamIdRoute: typeof AuthenticatedTeamsTeamIdRoute
 }
 
@@ -1376,6 +1457,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPathWeekRoute: AuthenticatedPathWeekRoute,
   AuthenticatedPathWhyRoute: AuthenticatedPathWhyRoute,
   AuthenticatedProfileFriendsRoute: AuthenticatedProfileFriendsRoute,
+  AuthenticatedProfileMemoryRoute: AuthenticatedProfileMemoryRoute,
   AuthenticatedTeamsTeamIdRoute: AuthenticatedTeamsTeamIdRoute,
 }
 
@@ -1401,6 +1483,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
   ApiAppConfigRoute: ApiAppConfigRoute,
   ApiAppleLinkRoute: ApiAppleLinkRoute,
+  ApiCallRecapRoute: ApiCallRecapRoute,
+  ApiCallRecapReviewRoute: ApiCallRecapReviewRoute,
   ApiChatRoute: ApiChatRoute,
   ApiDefineWordRoute: ApiDefineWordRoute,
   ApiExplainRoute: ApiExplainRoute,
@@ -1417,6 +1501,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSttRoute: ApiSttRoute,
   ApiSubscriptionLoginRoute: ApiSubscriptionLoginRoute,
   ApiTtsRoute: ApiTtsRoute,
+  ApiTutorMemoryRoute: ApiTutorMemoryRoute,
   ApiInternalMaintenanceRoute: ApiInternalMaintenanceRoute,
   ApiInternalReportNotifyRoute: ApiInternalReportNotifyRoute,
   ApiInternalSupportNotifyRoute: ApiInternalSupportNotifyRoute,

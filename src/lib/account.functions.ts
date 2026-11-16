@@ -52,6 +52,8 @@ export const USER_ID_EXPORT_TABLES = [
   "speech_days",
   "team_members",
   "team_mission_rewards",
+  // What Alphonso remembers about a Pro learner (20261119100000): mistake topics and recap phrases; own-row SELECT.
+  "tutor_memory",
   "user_achievements",
   "user_progress",
   "user_weekly_quest_claims",
@@ -213,6 +215,7 @@ export const exportMyData = createServerFn({ method: "POST" })
                   | "speech_days"
                   | "practice_calls"
                   | "practice_stars"
+                  | "tutor_memory"
                   | "learner_time_zones"
                   | "learning_days"
                   | "mastered_words"

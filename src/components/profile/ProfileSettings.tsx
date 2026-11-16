@@ -127,6 +127,22 @@ export function ProfileSettings({ headingRef }: { headingRef: Ref<HTMLHeadingEle
 
       <Overline>Privacy and AI</Overline>
       <AiFeaturesSetting />
+      <DsCard flush>
+        <Link
+          to="/profile/memory"
+          className="flex min-h-12 items-center gap-2.5 ds-type-headline text-ds-ink"
+        >
+          <span className="min-w-0 flex-1">
+            What Alphonso remembers
+            <span className="ml-1.5 rounded-[5px] bg-ds-action px-1 align-[2px] ds-type-overline text-ds-on-action">
+              Pro
+            </span>
+          </span>
+          <span aria-hidden="true" className="text-ds-ink-soft">
+            ›
+          </span>
+        </Link>
+      </DsCard>
       <HelpEntry />
       <AnalyticsSetting />
 

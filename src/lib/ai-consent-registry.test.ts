@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 const ROOT = path.resolve(import.meta.dirname, "../..");
 const read = (f: string) => fs.readFileSync(path.join(ROOT, f), "utf8");
 const AI_MARKERS =
-  /llmChatCompletion\(|api\.deepgram\.com|gradeTranslationWithAi\(|detectAndRecordWeaknesses\(|defineWord\(|generatePracticeQuestions\(|gradeLessonAnswer\(/;
+  /llmChatCompletion\(|api\.deepgram\.com|gradeTranslationWithAi\(|detectAndRecordWeaknesses\(|generateCallRecap\(|defineWord\(|generatePracticeQuestions\(|gradeLessonAnswer\(/;
 
 const GATED_ROUTES: Record<string, RegExp> = {
   "src/routes/api/chat.ts": /authorizeAiRequest\(request,\s*"chat",\s*\{\s*route:\s*"chat"\s*\}\)/,
@@ -18,6 +18,8 @@ const GATED_ROUTES: Record<string, RegExp> = {
   "src/routes/api/tts.ts": /authorizeAiRequest\(request,\s*"tts",\s*\{\s*route:\s*"tts"\s*\}\)/,
   "src/routes/api/analyze-weaknesses.ts":
     /authorizeAiRequest\(request,\s*"chat",\s*\{\s*route:\s*"analyze-weaknesses"\s*\}\)/,
+  "src/routes/api/call-recap.ts":
+    /authorizeAiRequest\(request,\s*"recap",\s*\{\s*route:\s*"call-recap"\s*\}\)/,
   "src/routes/api/hector-respond.ts":
     /requireAiConsent\(userId,\s*\{\s*db:\s*supabaseAdmin,\s*route:\s*"hector-respond"\s*\}\)/,
   "src/routes/api/define-word.ts":

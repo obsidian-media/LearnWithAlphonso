@@ -33,6 +33,7 @@ import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 import { waitForCallCue } from "@/lib/sfx";
 import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/lib/practice-api";
 import { PracticeResult } from "@/components/practice/PracticeResult";
+import { useCallRecap } from "@/lib/use-call-recap";
 import { edgeButtonClass } from "@/components/lesson/LessonParts";
 import { PracticeUnscored } from "@/components/practice/PracticeUnscored";
 import { SEE_MY_RESULT, seeResultShown } from "@/lib/practice-result-buttons";
@@ -173,6 +174,18 @@ function CampaignChatPage({
     () => messages.slice(sceneAnchor).filter((m) => m.role === "user").length,
     [messages, sceneAnchor],
   );
+  // The recap of this scene's call starts when its result appears; it never holds the result up.
+  const sceneMessages = useMemo(
+    () => messages.slice(sceneAnchor).map(({ role, content }) => ({ role, content })),
+    [messages, sceneAnchor],
+  );
+  const recap = useCallRecap({
+    callId: result ? callId : null,
+    messages: sceneMessages,
+    course,
+    cefrLevel: cefrLevel ?? undefined,
+    scene: campaign.scenes[sceneIndex]?.id,
+  });
   // Full campaign transcript + the current scene's persona -- this is
   // what gives scene 2+ visibility into what happened earlier without
   // /api/chat needing any new concept of "session" or "campaign."
@@ -751,6 +764,7 @@ function CampaignChatPage({
     return (
       <LessonFrame>
         <PracticeResult
+          recap={recap}
           result={r}
           course={course}
           room={sceneRoom(campaign.id, scene.id)}

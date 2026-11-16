@@ -47,6 +47,7 @@ import {
   FriendsWeek,
   HeatMap,
   HectorNoticed,
+  MemoryCard,
   LeagueCard,
   LevelCard,
   ProfileHero,
@@ -177,6 +178,9 @@ function ProfilePage() {
                     <BigNumbers o={o} />
                     <ThisWeek o={o} />
                     <HectorNoticed o={o} pro={pro.state === "pro"} />
+                    {pro.state !== "loading" && pro.state !== "error" && (
+                      <MemoryCard o={o} pro={pro.state === "pro"} />
+                    )}
                   </>
                 )}
                 {tab === "progress" && <ProgressTab o={o} />}

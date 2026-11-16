@@ -67,6 +67,7 @@ export type AiOutputRoute =
   | "generate-practice"
   | "grade-translation"
   | "analyze-weaknesses"
+  | "call-recap"
   | "lesson-weakness";
 export type FilterOptions = { check: BlockedTermCheck; course: Course; route: AiOutputRoute };
 
