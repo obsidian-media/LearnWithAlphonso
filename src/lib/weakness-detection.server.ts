@@ -119,6 +119,7 @@ export async function detectAndRecordWeaknesses(params: {
   try {
     const resp = await llmChatCompletion({
       apiKey: params.llmApiKey,
+      track: { userId: params.userId, kind: "weakness" },
       body: {
         model: params.llmModel,
         // A handful of short JSON questions; the cap bounds cost if the model runs on.

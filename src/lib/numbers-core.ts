@@ -1,4 +1,5 @@
 import type { Scope } from "./staff-scopes";
+import { aiCostPlaceholders } from "./ai-cost-numbers";
 
 /**
  * The numbers dashboard, without the framework: which groups a person may receive, the window rule, the per-group
@@ -29,7 +30,13 @@ export type GroupKey =
 
 export type GroupState = "ok" | "not_connected" | "error";
 
-export type TileKind = "number" | "percent" | "money" | "days" | "rating" | "text" | "list";
+export type TileKind = "number" | "percent" | "money" | "usd" | "days" | "rating" | "text" | "list";
+
+/** Dollars as the page writes them: whole above 100, cents above 1, a tenth of a cent below (per-call costs are tiny). */
+export function formatUsd(v: number): string {
+  const digits = Math.abs(v) >= 100 ? 0 : Math.abs(v) >= 1 ? 2 : 3;
+  return `$${v.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+}
 
 export type Tile = {
   id: string;
@@ -37,7 +44,7 @@ export type Tile = {
   kind: TileKind;
   /** null = no value to show (see `reason`); never a stand-in 0. */
   value: number | string | null;
-  rows?: { label: string; value: number; unit?: "%" }[];
+  rows?: { label: string; value: number; unit?: "%" | "usd" }[];
   /** The time window or basis, e.g. "last 7 days". */
   note: string;
   /** Why there is no value, shown instead of one. */
@@ -119,11 +126,9 @@ export const GROUP_DEFS: readonly GroupDef[] = [
   {
     key: "aicost",
     title: "AI cost",
-    source: "estimate from ai_usage",
+    source: "measured per call (ai_cost_log)",
     scope: "numbers.revenue",
-    placeholders: (w) => [
-      { id: "ai_cost", label: "Estimated AI cost", kind: "money", note: `${last(w)}, estimate` },
-    ],
+    placeholders: (w) => aiCostPlaceholders(w),
   },
   {
     key: "sentry",
@@ -232,45 +237,8 @@ export type OwnAggregates = {
   aiByKind: Record<string, number>;
 };
 
-// ---------------------------------------------------------------------------------------------------------------
-// The AI cost ESTIMATE. ai_usage stores counts per user, day and kind, not money, so cost = count x an assumed price
-// per kind. These are assumptions about list prices (an LLM turn on the default OpenRouter model, a speech-to-text
-// second, a text-to-speech call), kept here so they are easy to correct. The tile is always labelled "estimate".
-// Kinds not listed here are counted but not priced (reported in `unpricedKinds`), never silently priced at zero.
-// stt_seconds is not a call count: it is seconds of audio, priced per second; the stt call count itself costs nothing
-// extra (it would double count the same audio).
-// ---------------------------------------------------------------------------------------------------------------
-export const AI_PRICE_USD: Readonly<Record<string, number>> = {
-  chat: 0.003,
-  hector: 0.004,
-  explain: 0.001,
-  translate: 0.001,
-  define: 0.0005,
-  support: 0.003,
-  tts: 0.002,
-  stt: 0,
-  stt_seconds: 0.00007,
-};
-
 /** Kinds that are not calls (so they stay out of the "AI calls by kind" list). */
 export const NON_CALL_KINDS: readonly string[] = ["stt_seconds"];
-
-export function estimateAiCost(byKind: Record<string, number>): {
-  usd: number;
-  unpricedKinds: string[];
-} {
-  let usd = 0;
-  const unpricedKinds: string[] = [];
-  for (const [kind, count] of Object.entries(byKind)) {
-    const price = AI_PRICE_USD[kind];
-    if (price === undefined) {
-      unpricedKinds.push(kind);
-      continue;
-    }
-    usd += count * price;
-  }
-  return { usd: Math.round(usd * 100) / 100, unpricedKinds: unpricedKinds.sort() };
-}
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -387,7 +355,7 @@ export async function collectNumbers(input: {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// The two groups built from the own aggregates (pure; the tests feed them numbers).
+// The group built from the own aggregates (pure; the tests feed them numbers).
 
 export function ownTiles(a: OwnAggregates, windowDays: WindowDays): Tile[] {
   const ph = GROUP_DEFS[0]!.placeholders(windowDays);
@@ -424,18 +392,4 @@ export function ownTiles(a: OwnAggregates, windowDays: WindowDays): Tile[] {
       ? { ...tile, reason: "No data" }
       : tile,
   );
-}
-
-export function aiCostTiles(a: OwnAggregates, windowDays: WindowDays): Tile[] {
-  const { usd, unpricedKinds } = estimateAiCost(a.aiByKind);
-  const base = GROUP_DEFS.find((g) => g.key === "aicost")!.placeholders(windowDays)[0]!;
-  return [
-    {
-      ...base,
-      value: usd,
-      ...(unpricedKinds.length > 0
-        ? { note: `${base.note}; not priced: ${unpricedKinds.join(", ")}` }
-        : {}),
-    },
-  ];
 }

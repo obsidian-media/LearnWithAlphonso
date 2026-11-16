@@ -214,7 +214,7 @@ export async function createSupportRuntime(request: Request): Promise<SupportRun
       const { loadSupportFacts } = await import("./support-facts.server");
       return loadSupportFacts(supabaseAdmin, userId, { currentConversationId: conversationId });
     },
-    async callModel(messages) {
+    async callModel(messages, userId) {
       const { resolveLlmApiKey, resolveLlmChatModel } = await import("./llm-chat-model.server");
       const apiKey = resolveLlmApiKey();
       if (!apiKey) return null;
@@ -225,6 +225,7 @@ export async function createSupportRuntime(request: Request): Promise<SupportRun
           apiKey,
           signal: AbortSignal.any([request.signal, AbortSignal.timeout(SUPPORT_TIMEOUT_MS)]),
           body: buildSupportRequestBody(resolveLlmChatModel(), messages),
+          ...(userId ? { track: { userId, kind: "support" as const } } : {}),
         });
         if (!resp.ok) {
           // The status only: the body can echo the learner's text.

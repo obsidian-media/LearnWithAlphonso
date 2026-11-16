@@ -118,7 +118,19 @@ export const Route = createFileRoute("/api/stt")({
         // Minutes spoken (20261106100000): the same settled length, recorded only for a transcription that heard
         // words and reported a length. Awaited so a serverless runtime cannot drop it after the response.
         const speech = await import("@/lib/speech-days.server");
+        // The AI cost log: the same length the budget settles to (the provider's own, null when it reported none, so
+        // the row says "unknown" rather than guessing). It is folded into this wait, never added to it, and it
+        // cannot fail the answer (ai-cost-log.server.ts).
+        const costLog = await import("@/lib/ai-cost-log.server");
+        const { sttEntry } = await import("@/lib/ai-cost");
+        const billedSeconds =
+          typeof data.metadata?.duration === "number" && Number.isFinite(data.metadata.duration)
+            ? data.metadata.duration
+            : null;
         await Promise.all([
+          costLog
+            .recordAiCost(sttEntry({ userId: access.userId }, "nova-3", billedSeconds))
+            .catch(() => undefined),
           settle(budget.chargeableSeconds(data.metadata?.duration)),
           speech.recordSpeechSeconds(
             supabaseAdmin,

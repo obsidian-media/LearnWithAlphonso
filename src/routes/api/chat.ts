@@ -145,6 +145,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
         apiKey: key,
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(CHAT_TIMEOUT_MS)]),
         body: { model, messages: finalMessages, max_tokens: CHAT_MAX_TOKENS },
+        track: { userId: access.userId, kind: "chat" },
       });
     } catch {
       // Timed out, or the learner went away: retryable, and never an unhandled 500.

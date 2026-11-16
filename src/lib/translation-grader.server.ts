@@ -86,10 +86,13 @@ export async function gradeTranslationWithAi(args: {
   submission: string;
   apiKey: string;
   model: string;
+  /** The learner, for the AI cost log (ai-cost-log.server.ts). */
+  userId?: string;
 }): Promise<AiTranslationVerdict | null> {
   try {
     const resp = await llmChatCompletion({
       apiKey: args.apiKey,
+      ...(args.userId ? { track: { userId: args.userId, kind: "translate" as const } } : {}),
       // A slow or half-open vendor connection would otherwise hold the
       // learner on a disabled "Checking..." button for the platform default.
       // 15s is well past a normal completion and well short of feeling stuck;

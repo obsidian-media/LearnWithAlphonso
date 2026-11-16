@@ -69,6 +69,8 @@ export async function gradeTranslationWithAi(args: {
   submission: string;
   apiKey: string;
   model: string;
+  /** Called with the model's reply body on success, for the AI cost log; its failure never reaches the grading. */
+  onUsage?: (body: unknown, requestedModel: string) => Promise<void> | void;
 }): Promise<AiTranslationVerdict | null> {
   try {
     const resp = await llmChatCompletion({
@@ -96,6 +98,11 @@ export async function gradeTranslationWithAi(args: {
     });
     if (!resp.ok) return null;
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
+    try {
+      void Promise.resolve(args.onUsage?.(data, args.model)).catch(() => undefined);
+    } catch {
+      // Measuring a call never changes its verdict.
+    }
     return parseVerdict(data.choices?.[0]?.message?.content ?? "");
   } catch {
     return null;

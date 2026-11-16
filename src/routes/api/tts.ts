@@ -26,6 +26,27 @@ export const Route = createFileRoute("/api/tts")({
         // allow-list for the conversation's course (src/lib/voice-catalog.ts). Anything else, including an arbitrary
         // Deepgram model id, falls back to the character's default, so a client cannot pick a pricier model.
         const model = resolveTtsVoice(body);
+        // One of our own fixed lines (a scene opener, a name-less Hector greeting) is kept per voice and served from
+        // our own store for every learner; anything else, above all a model reply, is never stored.
+        // src/lib/tts-cache.ts says exactly which lines; a hit still spends the learner's quota unit (above), it
+        // only stops the vendor being paid again.
+        const spoken = text.slice(0, 2000);
+        const { isCacheableSpokenLine, ttsCacheKey } = await import("@/lib/tts-cache");
+        const cacheKey = isCacheableSpokenLine(spoken) ? await ttsCacheKey(model, spoken) : null;
+        const { recordAiCost, scheduleBackground } = await import("@/lib/ai-cost-log.server");
+        const { ttsEntry } = await import("@/lib/ai-cost");
+        if (cacheKey) {
+          const { readCachedSpeech } = await import("@/lib/tts-cache.server");
+          const hit = await readCachedSpeech(cacheKey);
+          if (hit) {
+            scheduleBackground(
+              recordAiCost(ttsEntry({ userId: access.userId }, model, spoken.length, true)),
+            );
+            return new Response(hit as BodyInit, {
+              headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" },
+            });
+          }
+        }
         let resp: Response;
         try {
           resp = await fetch(
@@ -36,7 +57,7 @@ export const Route = createFileRoute("/api/tts")({
                 "Content-Type": "application/json",
                 Authorization: `Token ${key}`,
               },
-              body: JSON.stringify({ text: text.slice(0, 2000) }),
+              body: JSON.stringify({ text: spoken }),
               // Covers the audio stream too: the body is piped to the client below.
               signal: AbortSignal.any([request.signal, AbortSignal.timeout(TTS_TIMEOUT_MS)]),
             },
@@ -47,6 +68,22 @@ export const Route = createFileRoute("/api/tts")({
         if (!resp.ok) {
           const t = await resp.text().catch(() => "");
           return upstreamErrorResponse("Deepgram TTS", resp.status, t);
+        }
+        // Deepgram bills the characters it was sent, once the request is accepted.
+        scheduleBackground(
+          recordAiCost(ttsEntry({ userId: access.userId }, model, spoken.length, false)),
+        );
+        if (cacheKey) {
+          // A line we keep is read whole (it is a few seconds of audio), answered, and stored off the answer's path.
+          const audio = new Uint8Array(await resp.arrayBuffer());
+          const { writeCachedSpeech } = await import("@/lib/tts-cache.server");
+          scheduleBackground(writeCachedSpeech(cacheKey, audio));
+          return new Response(audio as BodyInit, {
+            headers: {
+              "Content-Type": resp.headers.get("Content-Type") || "audio/mpeg",
+              "Cache-Control": "no-store",
+            },
+          });
         }
         return new Response(resp.body, {
           headers: {

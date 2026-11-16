@@ -1,7 +1,6 @@
 import { createSign, createPrivateKey } from "node:crypto";
 import { gunzipSync } from "node:zlib";
 import {
-  aiCostTiles,
   GROUP_DEFS,
   NotConnectedError,
   ownTiles,
@@ -14,6 +13,9 @@ import {
   type Tile,
   type WindowDays,
 } from "./numbers-core";
+import { aiCostTilesFromPayload, parseCostPayload } from "./ai-cost-numbers";
+import { costConfig } from "./ai-cost-config";
+import { MICRO } from "./ai-cost";
 
 /**
  * The real data behind the numbers dashboard. SERVER ONLY: every key is read from process.env here and never leaves
@@ -639,10 +641,38 @@ export function createOwnFetcher(): OwnFn {
   };
 }
 
-export function createSources(env: Env, f: FetchLike = fetch): Sources {
+/**
+ * The AI cost group: measured spend from ai_cost_log through admin_ai_cost. The function missing (the migration is not
+ * applied yet) or nothing logged in 90 days is "Not connected", never a $0: a $0 would read as a real, free month.
+ */
+export function aiCostSource(env: Env, rpcClient?: RpcClient): SourceFn {
+  return async (ctx: SourceContext) => {
+    const cfg = costConfig(env);
+    const client =
+      rpcClient ??
+      ((await import("@/integrations/supabase/client.server"))
+        .supabaseAdmin as unknown as RpcClient);
+    const { data, error } = await client
+      .rpc("admin_ai_cost", {
+        p_days: ctx.windowDays,
+        p_heavy_micro: Math.round(cfg.heavyMonthlyUsd * MICRO),
+      })
+      .abortSignal(ctx.signal);
+    if (error) {
+      if (/admin_ai_cost|schema cache|does not exist/i.test(error.message))
+        throw new NotConnectedError("Cost log not deployed yet");
+      throw new Error(error.message);
+    }
+    const payload = parseCostPayload(data);
+    if (payload.loggedCalls === 0) throw new NotConnectedError("No AI calls logged yet");
+    return aiCostTilesFromPayload(payload, ctx.windowDays, cfg);
+  };
+}
+
+export function createSources(env: Env, f: FetchLike = fetch, rpcClient?: RpcClient): Sources {
   const own: Record<"own" | "aicost", SourceFn> = {
     own: async (ctx: SourceContext) => ownTiles(await ctx.own(), ctx.windowDays),
-    aicost: async (ctx: SourceContext) => aiCostTiles(await ctx.own(), ctx.windowDays),
+    aicost: aiCostSource(env, rpcClient),
   };
   const map: Record<GroupKey, SourceFn> = {
     ...own,

@@ -1,15 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  aiCostTiles,
   APP_STORE_CACHE_MS,
   APP_STORE_TIMEOUT_MS,
   CACHE_TTL_MS,
   GROUP_DEFS,
   groupBudgetMs,
-  AI_PRICE_USD,
   clearNumbersCache,
   collectNumbers,
-  estimateAiCost,
   groupsFor,
   NotConnectedError,
   ownTiles,
@@ -53,7 +50,6 @@ function sources(over: Partial<Sources> = {}) {
       vi.fn(async (ctx: { windowDays: number; own: () => Promise<OwnAggregates> }) => {
         calls.push(k);
         if (k === "own") return ownTiles(await ctx.own(), ctx.windowDays as 7);
-        if (k === "aicost") return aiCostTiles(await ctx.own(), ctx.windowDays as 7);
         return [tile(`${k}_t`)];
       }),
     ]),
@@ -228,7 +224,7 @@ describe("not connected and errors", () => {
     expect(aborted).toBe(true);
     expect(r.groups.find((g) => g.key === "own")!.state).toBe("ok");
   });
-  it("if the database read fails, own AND aicost fail but the providers still render", async () => {
+  it("if the own-database read fails, own fails but the others still render", async () => {
     const { sources: s } = sources();
     vi.spyOn(console, "error").mockImplementation(() => {});
     const r = await collectNumbers({
@@ -240,7 +236,7 @@ describe("not connected and errors", () => {
       },
     });
     expect(r.groups.find((g) => g.key === "own")!.state).toBe("error");
-    expect(r.groups.find((g) => g.key === "aicost")!.state).toBe("error");
+    expect(r.groups.find((g) => g.key === "aicost")!.state).toBe("ok");
     expect(r.groups.find((g) => g.key === "revenuecat")!.state).toBe("ok");
   });
 });
@@ -296,34 +292,6 @@ describe("cache", () => {
     });
     expect(a.groups.find((g) => g.key === "sentry")!.state).toBe("error");
     expect(b.groups.find((g) => g.key === "sentry")!.state).toBe("ok");
-  });
-});
-
-describe("estimated AI cost", () => {
-  it("is count x price per kind, rounded to cents", () => {
-    const cost = estimateAiCost({ chat: 1000, tts: 500, define: 10 });
-    expect(cost.usd).toBe(
-      Math.round(
-        (1000 * AI_PRICE_USD.chat! + 500 * AI_PRICE_USD.tts! + 10 * AI_PRICE_USD.define!) * 100,
-      ) / 100,
-    );
-    expect(cost.usd).toBe(4.01);
-  });
-  it("prices stt_seconds per second and the stt call count at nothing (no double count)", () => {
-    expect(estimateAiCost({ stt: 999, stt_seconds: 10_000 }).usd).toBe(0.7);
-  });
-  it("reports an unknown kind instead of pricing it at zero", () => {
-    const c = estimateAiCost({ chat: 1, mystery: 5 });
-    expect(c.unpricedKinds).toEqual(["mystery"]);
-    expect(c.usd).toBe(0);
-    const t = aiCostTiles({ ...OWN, aiByKind: { mystery: 5 } }, 7)[0]!;
-    expect(t.note).toContain("not priced: mystery");
-  });
-  it("the tile is labelled an estimate and carries the window", () => {
-    const t = aiCostTiles(OWN, 30)[0]!;
-    expect(t.label).toBe("Estimated AI cost");
-    expect(t.note).toContain("last 30 days, estimate");
-    expect(t.kind).toBe("money");
   });
 });
 

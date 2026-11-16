@@ -99,7 +99,11 @@ export type SupportRuntime = {
   consumeQuota(): Promise<QuotaResult>;
   loadFacts(userId: string, conversationId: string): Promise<SupportFacts>;
   /** The model's reply text, or null on any failure (the runtime logs the status only). */
-  callModel(body: ReturnType<typeof buildSupportRequestBody>["messages"]): Promise<string | null>;
+  callModel(
+    body: ReturnType<typeof buildSupportRequestBody>["messages"],
+    /** The learner the call is for, for the AI cost log. */
+    userId?: string,
+  ): Promise<string | null>;
   /** True when the text hits the blocked-terms list (fails closed). */
   blocked(text: string, course: Course): Promise<boolean>;
   log(event: Record<string, string | number | boolean | null>): void;
@@ -316,7 +320,7 @@ export async function handlePostMessage(
     }
 
     const history = await rt.store.recentTurns(conversationId, 40);
-    const content = await rt.callModel(buildSupportMessages(facts, history));
+    const content = await rt.callModel(buildSupportMessages(facts, history), userId);
     const reply = parseSupportReply(content);
     if (!reply) return await stop("ai_error", { why: "parse" });
 
@@ -425,10 +429,13 @@ async function trySummary(
     if (turns.length === 0) return null;
     const quota = await rt.consumeQuota();
     if (!quota.ok) return null;
-    const content = await rt.callModel([
-      { role: "system", content: SUMMARY_SYSTEM },
-      { role: "user", content: turns.map((t) => t.body).join("\n---\n") },
-    ]);
+    const content = await rt.callModel(
+      [
+        { role: "system", content: SUMMARY_SYSTEM },
+        { role: "user", content: turns.map((t) => t.body).join("\n---\n") },
+      ],
+      userId,
+    );
     const note = (content ?? "").trim().slice(0, 300);
     if (!note) return null;
     if (!guardSupportReply(note).ok) return null;
