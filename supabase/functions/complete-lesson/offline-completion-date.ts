@@ -29,3 +29,21 @@ export function verifiedOfflineCompletionDay(
   // The learner's own calendar day (UTC when no zone is known), like every other day the server books.
   return localDay(clampedMs, timeZone);
 }
+
+/** How long a lesson session stays valid for a completion that arrives live: covers the lesson plus real-world pauses. */
+export const LIVE_SESSION_MAX_AGE_MS = 3 * 60 * 60 * 1000;
+
+/**
+ * How long a lesson session stays valid for a QUEUED completion (one that carries the device's `completedAt`).
+ * A lesson finished on a train, overnight or on a weekend away reaches the server long after the 3 hours a live
+ * completion allows. Rejecting it made both native clients mint a fresh session and drop the date, so the lesson was
+ * credited to the day it SYNCED and a learner who played every day lost the streak they had earned. The session is
+ * still a server-signed proof that the learner opened this very lesson, and the day is still clamped into
+ * [session issued, now], so the longest a day can be moved back is this window. The window is kept short on purpose: a
+ * session hoarded on a day the learner did not study can bridge at most this much of a gap.
+ */
+export const OFFLINE_SESSION_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+
+export function sessionMaxAgeMs(completedAt: string | undefined): number {
+  return completedAt ? OFFLINE_SESSION_MAX_AGE_MS : LIVE_SESSION_MAX_AGE_MS;
+}

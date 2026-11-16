@@ -31,14 +31,16 @@ function sign(payloadB64: string): string {
 export function verifyLessonSessionToken(
   token: string,
   expected: LessonSessionClaim,
+  maxAgeMs: number = MAX_AGE_MS,
 ): boolean {
-  return lessonSessionIssuedAt(token, expected) !== null;
+  return lessonSessionIssuedAt(token, expected, maxAgeMs) !== null;
 }
 
 /** Return the signed server issue time after validating the same claims and expiry as the token. */
 export function lessonSessionIssuedAt(
   token: string,
   expected: LessonSessionClaim,
+  maxAgeMs: number = MAX_AGE_MS,
 ): number | null {
   const [payloadB64, sig] = token.split(".");
   if (!payloadB64 || !sig) return null;
@@ -65,7 +67,7 @@ export function lessonSessionIssuedAt(
   const now = Date.now();
   if (
     typeof payload.iat !== "number" || !Number.isFinite(payload.iat) ||
-    payload.iat > now || now - payload.iat > MAX_AGE_MS
+    payload.iat > now || now - payload.iat > maxAgeMs
   ) return null;
 
   return payload.iat;

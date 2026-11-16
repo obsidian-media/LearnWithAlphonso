@@ -201,6 +201,7 @@ function setup(
   db.recordCompletions = !opts.fresh;
   const pushes: string[] = [];
   const tokenClaims: Row[] = [];
+  const ageLimits: (number | undefined)[] = [];
   const consentReads: string[] = [];
   const slots: number[] = [];
   const deps: CompleteLessonDeps = {
@@ -211,8 +212,9 @@ function setup(
       consentReads.push(userId);
       return Promise.resolve(opts.consent ?? true);
     },
-    verifySessionToken: (_token, claim) => {
+    verifySessionToken: (_token, claim, maxAgeMs) => {
       tokenClaims.push(claim as unknown as Row);
+      ageLimits.push(maxAgeMs);
       return opts.tokenOk ?? true;
     },
     sessionIssuedAt: () => (opts.now ?? NOW).getTime() - (opts.sessionAgeMs ?? 60 * 60 * 1000),
@@ -244,6 +246,7 @@ function setup(
     db,
     pushes,
     tokenClaims,
+    ageLimits,
     consentReads,
     handler: createCompleteLessonHandler(deps),
   };
@@ -995,4 +998,26 @@ Deno.test("a rejected completion records no profile data", async () => {
   const res = await handler(post(body(["a", "d"])));
   assertEquals(res.status, 403);
   assertEquals(db.profileCalls.length, 0);
+});
+
+Deno.test("a live completion is checked against the 3 hour session window, a queued one against the offline window", async () => {
+  const live = setup({});
+  assertEquals((await live.handler(post(body(["a", "d"])))).status, 200);
+  assertEquals(live.ageLimits, [3 * 60 * 60 * 1000]);
+
+  const queued = setup({});
+  const res = await queued.handler(
+    post({ ...body(["a", "d"]), completedAt: "2026-10-17T11:59:00.000Z" }),
+  );
+  assertEquals(res.status, 200);
+  assertEquals(queued.ageLimits, [48 * 60 * 60 * 1000]);
+});
+
+Deno.test("a lesson finished offline the evening before and synced the next morning keeps its own day", async () => {
+  // Session opened 19:50 on the 17th, finished 20:05, synced 09:00 on the 18th: 13 hours later, past the live window.
+  const now = new Date("2026-10-18T09:00:00Z");
+  const { db, handler } = setup({ now, sessionAgeMs: 13 * 60 * 60 * 1000 + 10 * 60_000 });
+  const res = await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-17T20:05:00.000Z" }));
+  assertEquals(res.status, 200);
+  assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
 });

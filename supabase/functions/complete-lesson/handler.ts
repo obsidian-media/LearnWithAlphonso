@@ -26,7 +26,7 @@ import {
   type LeagueTier,
 } from "./progress-math.ts";
 import { lessonSessionIssuedAt, verifyLessonSessionToken } from "./lesson-session.ts";
-import { verifiedOfflineCompletionDay } from "./offline-completion-date.ts";
+import { sessionMaxAgeMs, verifiedOfflineCompletionDay } from "./offline-completion-date.ts";
 import { completionInstantMs, HOURLY_COMPLETION_LIMIT } from "./anti-farming.ts";
 import { lessonPayloadMatches } from "./lesson-version.ts";
 import {
@@ -319,10 +319,12 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   }
   const lesson = found!;
 
-  if (!deps.verifySessionToken(sessionToken, { userId, lessonId, course })) {
+  // A queued completion (it carries the device's completedAt) may arrive long after the live window.
+  const sessionAgeLimit = sessionMaxAgeMs(completedAt);
+  if (!deps.verifySessionToken(sessionToken, { userId, lessonId, course }, sessionAgeLimit)) {
     return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
   }
-  const sessionIssuedAt = deps.sessionIssuedAt(sessionToken, { userId, lessonId, course });
+  const sessionIssuedAt = deps.sessionIssuedAt(sessionToken, { userId, lessonId, course }, sessionAgeLimit);
   // The completion's own day is worked out below, once the learner's time zone has been read.
   // No trusted day (unreadable session issue time) falls back to the server's day below, never a 400:
   // a 400 here would dead-letter a real lesson on both native clients.

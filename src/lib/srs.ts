@@ -64,6 +64,17 @@ export function deriveAnswerCorrectness(
   return answer.trim().toLowerCase() === question.answer.trim().toLowerCase();
 }
 
+/**
+ * Compare the schedule snapshot a learner was shown with the live row. Keep in sync with the Deno copy in
+ * supabase/functions/grade-review/srs.ts. Timestamps compare as the strings the database returned.
+ */
+export function reviewSnapshotMatches(
+  current: { dueOn: string; lastReviewedAt: string | null },
+  expected: { dueOn: string; lastReviewedAt: string | null },
+): boolean {
+  return current.dueOn === expected.dueOn && current.lastReviewedAt === expected.lastReviewedAt;
+}
+
 export type ReviewGradeInput = {
   correct: boolean;
   ease: number;
