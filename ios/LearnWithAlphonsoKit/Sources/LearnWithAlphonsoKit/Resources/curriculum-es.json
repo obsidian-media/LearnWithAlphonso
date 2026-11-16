@@ -8953,7 +8953,7 @@
             {
               "id": "esa1p28q1",
               "type": "fill",
-              "prompt": "El cazador sale de ___ al amanecer. (hunting)",
+              "prompt": "Mis tíos van de ___ de patos al lago los domingos. (hunting)",
               "bank": [
                 "casa",
                 "caza",
@@ -8963,7 +8963,7 @@
               "answer": "caza",
               "explanation": "\"caza\" is the spelling that means hunting here. It is easy to mix up with \"casa\", a different word, so the meaning decides the spelling.",
               "meaning": "hunting",
-              "example": "El cazador sale de caza al amanecer."
+              "example": "Mis tíos van de caza los domingos."
             },
             {
               "id": "esa1p28q2",
@@ -8981,7 +8981,7 @@
             {
               "id": "esa1p28q3",
               "type": "fill",
-              "prompt": "La ___ de patos está prohibida en verano. (hunting)",
+              "prompt": "En esa reserva la ___ de ciervos está prohibida. (hunting)",
               "bank": [
                 "casa",
                 "caza",
@@ -8994,7 +8994,7 @@
             {
               "id": "esa1p28q4",
               "type": "mc",
-              "prompt": "Vimos una ___ grande en el mar. (wave)",
+              "prompt": "El sonido viaja por el aire como una ___. (wave (sound wave))",
               "choices": [
                 "ronda",
                 "honda",
@@ -9002,9 +9002,9 @@
                 "oda"
               ],
               "answer": 2,
-              "explanation": "\"onda\" is the spelling that means wave here. It is easy to mix up with \"honda\", a different word, so the meaning decides the spelling.",
-              "meaning": "wave",
-              "example": "Vimos una onda grande en el mar."
+              "explanation": "\"onda\" is the spelling that means wave (sound wave) here. It is easy to mix up with \"honda\", a different word, so the meaning decides the spelling.",
+              "meaning": "wave, sound wave",
+              "example": "El sonido viaja por el aire como una onda."
             }
           ]
         },
@@ -9156,7 +9156,7 @@
             {
               "id": "esa1p28q14",
               "type": "fill",
-              "prompt": "El océano es un territorio ___. (vast, huge)",
+              "prompt": "El océano es muy ___ y no tiene fin. (vast, huge)",
               "bank": [
                 "nuevo",
                 "justo",
@@ -9208,10 +9208,10 @@
               "type": "mc",
               "prompt": "La temperatura bajó a ___ grados. (zero)",
               "choices": [
-                "uno",
+                "cera",
                 "cerro",
                 "cero",
-                "tres"
+                "cerdo"
               ],
               "answer": 2,
               "explanation": "\"cero\" is the spelling that means zero here. It is easy to mix up with \"cerro\", a different word, so the meaning decides the spelling.",
@@ -9238,8 +9238,8 @@
               "choices": [
                 "cero",
                 "cerro",
-                "uno",
-                "tres"
+                "cera",
+                "cerdo"
               ],
               "answer": 0,
               "explanation": "\"cero\" is the spelling that means zero here. It is easy to mix up with \"cerro\", a different word, so the meaning decides the spelling."
@@ -18307,17 +18307,17 @@
             {
               "id": "esa2p28q4",
               "type": "fill",
-              "prompt": "Los esclavos decidieron ___ contra el dueño. (to rise up)",
+              "prompt": "El agua sale por el ___ de la cocina. (pipe)",
               "bank": [
-                "revelarse",
-                "rebelarse",
-                "rebotarse",
-                "rebajarse"
+                "tuno",
+                "tuyo",
+                "tubo",
+                "tuvo"
               ],
-              "answer": "rebelarse",
-              "explanation": "\"rebelarse\" is the spelling that means to rise up here. It is easy to mix up with \"revelarse\", a different word, so the meaning decides the spelling.",
-              "meaning": "to rise up",
-              "example": "Los esclavos decidieron rebelarse contra el dueño."
+              "answer": "tubo",
+              "explanation": "\"tubo\" is the spelling that means pipe here. It is easy to mix up with \"tuvo\", a different word, so the meaning decides the spelling.",
+              "meaning": "pipe",
+              "example": "El agua sale por el tubo de la cocina."
             }
           ]
         },
@@ -18329,75 +18329,75 @@
             {
               "id": "esa2p28q5",
               "type": "mc",
-              "prompt": "Su talento empezó a ___ en la escuela. (to show itself, to be revealed)",
+              "prompt": "Ayer mi hermano ___ mucha fiebre. (had)",
               "choices": [
-                "rebajarse",
-                "rebelarse",
-                "revelarse",
-                "rebotarse"
+                "tuno",
+                "tubo",
+                "tuvo",
+                "tuyo"
               ],
               "answer": 2,
-              "explanation": "\"revelarse\" is the spelling that means to show itself, to be revealed here. It is easy to mix up with \"rebelarse\", a different word, so the meaning decides the spelling.",
-              "meaning": "to show itself, to be revealed",
-              "example": "Su talento empezó a revelarse en la escuela."
+              "explanation": "\"tuvo\" is the spelling that means had here. It is easy to mix up with \"tubo\", a different word, so the meaning decides the spelling.",
+              "meaning": "had",
+              "example": "Ayer mi hermano tuvo mucha fiebre."
             },
             {
               "id": "esa2p28q6",
               "type": "fill",
-              "prompt": "El pueblo se preparaba para ___ contra el rey. (to rebel)",
+              "prompt": "Se rompió el ___ del lavabo. (pipe)",
               "bank": [
-                "revelarse",
-                "rebelarse",
-                "rebotarse",
-                "rebajarse"
+                "tuno",
+                "tuyo",
+                "tubo",
+                "tuvo"
               ],
-              "answer": "rebelarse",
-              "explanation": "\"rebelarse\" is the spelling that means to rebel here. It is easy to mix up with \"revelarse\", a different word, so the meaning decides the spelling.",
-              "meaning": "to rebel",
-              "example": "El pueblo se preparaba para rebelarse contra el rey."
+              "answer": "tubo",
+              "explanation": "\"tubo\" is the spelling that means pipe here. It is easy to mix up with \"tuvo\", a different word, so the meaning decides the spelling.",
+              "meaning": "pipe",
+              "example": "Se rompió el tubo del lavabo."
             },
             {
               "id": "esa2p28q7",
               "type": "mc",
-              "prompt": "Con el tiempo, la verdad va a ___. (to come to light)",
+              "prompt": "Mi madre ___ que trabajar el sábado. (had)",
               "choices": [
-                "revelarse",
-                "rebelarse",
-                "rebajarse",
-                "rebotarse"
+                "tuvo",
+                "tubo",
+                "tuno",
+                "tuyo"
               ],
               "answer": 0,
-              "explanation": "\"revelarse\" is the spelling that means to come to light here. It is easy to mix up with \"rebelarse\", a different word, so the meaning decides the spelling."
+              "explanation": "\"tuvo\" is the spelling that means had here. It is easy to mix up with \"tubo\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esa2p28q8",
               "type": "fill",
-              "prompt": "Su hermano le lanzó una ___ cruel en la fiesta. (a mocking remark)",
+              "prompt": "Cuando entró, dijo ___ a todos. (hello)",
               "bank": [
-                "pila",
-                "puya",
-                "pulla",
-                "bulla"
+                "sola",
+                "hola",
+                "ola",
+                "cola"
               ],
-              "answer": "pulla",
-              "explanation": "\"pulla\" is the spelling that means a mocking remark here. It is easy to mix up with \"puya\", a different word, so the meaning decides the spelling.",
-              "meaning": "a mocking remark",
-              "example": "Su hermano le lanzó una pulla cruel en la fiesta."
+              "answer": "hola",
+              "explanation": "\"hola\" is the spelling that means hello here. It is easy to mix up with \"ola\", a different word, so the meaning decides the spelling.",
+              "meaning": "hello",
+              "example": "Cuando entró, dijo hola a todos."
             },
             {
               "id": "esa2p28q9",
               "type": "mc",
-              "prompt": "El toro sintió la ___ en la espalda. (a pointed lance)",
+              "prompt": "Una ___ muy grande llegó a la playa. (wave)",
               "choices": [
-                "pila",
-                "pulla",
-                "puya",
-                "pluma"
+                "sola",
+                "hola",
+                "ola",
+                "cola"
               ],
               "answer": 2,
-              "explanation": "\"puya\" is the spelling that means a pointed lance here. It is easy to mix up with \"pulla\", a different word, so the meaning decides the spelling.",
-              "meaning": "a pointed lance",
-              "example": "El toro sintió la puya en la espalda."
+              "explanation": "\"ola\" is the spelling that means wave here. It is easy to mix up with \"hola\", a different word, so the meaning decides the spelling.",
+              "meaning": "wave",
+              "example": "Una ola muy grande llegó a la playa."
             }
           ]
         },
@@ -18409,75 +18409,75 @@
             {
               "id": "esa2p28q10",
               "type": "mc",
-              "prompt": "No me gustó la ___ que dijo sobre mi ropa. (a mocking remark)",
+              "prompt": "Siempre le digo ___ a mi vecina. (hello)",
               "choices": [
-                "pila",
-                "puya",
-                "pulla",
-                "bulla"
+                "sola",
+                "ola",
+                "hola",
+                "cola"
               ],
               "answer": 2,
-              "explanation": "\"pulla\" is the spelling that means a mocking remark here. It is easy to mix up with \"puya\", a different word, so the meaning decides the spelling.",
-              "meaning": "a mocking remark",
-              "example": "No me gustó la pulla que dijo sobre mi ropa."
+              "explanation": "\"hola\" is the spelling that means hello here. It is easy to mix up with \"ola\", a different word, so the meaning decides the spelling.",
+              "meaning": "hello",
+              "example": "Siempre le digo hola a mi vecina."
             },
             {
               "id": "esa2p28q11",
               "type": "fill",
-              "prompt": "El pastor usó una ___ para guiar al buey. (a pointed goad)",
+              "prompt": "Esa ___ nos mojó los pies. (wave)",
               "bank": [
-                "puya",
-                "pila",
-                "pluma",
-                "pulla"
+                "hola",
+                "cola",
+                "ola",
+                "sola"
               ],
-              "answer": "puya",
-              "explanation": "\"puya\" is the spelling that means a pointed goad here. It is easy to mix up with \"pulla\", a different word, so the meaning decides the spelling.",
-              "meaning": "a pointed goad",
-              "example": "El pastor usó una puya para guiar al buey."
+              "answer": "ola",
+              "explanation": "\"ola\" is the spelling that means wave here. It is easy to mix up with \"hola\", a different word, so the meaning decides the spelling.",
+              "meaning": "wave",
+              "example": "Esa ola nos mojó los pies."
             },
             {
               "id": "esa2p28q12",
               "type": "mc",
-              "prompt": "Me gusta ___ el periódico mientras desayuno. (to leaf through)",
+              "prompt": "Voy al cine una ___ al mes. (time, occasion)",
               "choices": [
-                "hojear",
-                "ojear",
-                "mojar",
-                "dejar"
+                "vez",
+                "ves",
+                "vea",
+                "vaya"
               ],
               "answer": 0,
-              "explanation": "\"hojear\" is the spelling that means to leaf through here. It is easy to mix up with \"ojear\", a different word, so the meaning decides the spelling.",
-              "meaning": "to leaf through",
-              "example": "Me gusta hojear el periódico mientras desayuno."
+              "explanation": "\"vez\" is the spelling that means time, occasion here. It is easy to mix up with \"ves\", a different word, so the meaning decides the spelling.",
+              "meaning": "time, occasion",
+              "example": "Voy al cine una vez al mes."
             },
             {
               "id": "esa2p28q13",
               "type": "fill",
-              "prompt": "El cazador empezó a ___ las perdices hacia las redes. (to drive game toward the hunters)",
+              "prompt": "¿Tú ___ el edificio allá? (you see)",
               "bank": [
-                "hojear",
-                "mojar",
-                "dejar",
-                "ojear"
+                "vez",
+                "ver",
+                "vas",
+                "ves"
               ],
-              "answer": "ojear",
-              "explanation": "\"ojear\" is the spelling that means to drive game toward the hunters here. It is easy to mix up with \"hojear\", a different word, so the meaning decides the spelling.",
-              "meaning": "to drive game toward the hunters",
-              "example": "El cazador empezó a ojear las perdices hacia las redes."
+              "answer": "ves",
+              "explanation": "\"ves\" is the spelling that means you see here. It is easy to mix up with \"vez\", a different word, so the meaning decides the spelling.",
+              "meaning": "you see",
+              "example": "¿Tú ves el edificio allá?"
             },
             {
               "id": "esa2p28q14",
               "type": "mc",
-              "prompt": "Voy a ___ la revista antes de comprarla. (to flip through the pages)",
+              "prompt": "Leo la revista una ___ por semana. (time, occasion)",
               "choices": [
-                "mojar",
-                "ojear",
-                "hojear",
-                "dejar"
+                "vea",
+                "ves",
+                "vez",
+                "vaya"
               ],
               "answer": 2,
-              "explanation": "\"hojear\" is the spelling that means to flip through the pages here. It is easy to mix up with \"ojear\", a different word, so the meaning decides the spelling."
+              "explanation": "\"vez\" is the spelling that means time, occasion here. It is easy to mix up with \"ves\", a different word, so the meaning decides the spelling."
             }
           ]
         },
@@ -18489,17 +18489,17 @@
             {
               "id": "esa2p28q15",
               "type": "fill",
-              "prompt": "Solo pude ___ la sala porque tenía prisa. (to glance at)",
+              "prompt": "¿Qué ___ por la ventana? (you see)",
               "bank": [
-                "hojear",
-                "mojar",
-                "dejar",
-                "ojear"
+                "vez",
+                "ver",
+                "vas",
+                "ves"
               ],
-              "answer": "ojear",
-              "explanation": "\"ojear\" is the spelling that means to glance at here. It is easy to mix up with \"hojear\", a different word, so the meaning decides the spelling.",
-              "meaning": "to glance at",
-              "example": "Solo pude ojear la sala porque tenía prisa."
+              "answer": "ves",
+              "explanation": "\"ves\" is the spelling that means you see here. It is easy to mix up with \"vez\", a different word, so the meaning decides the spelling.",
+              "meaning": "you see",
+              "example": "¿Qué ves por la ventana?"
             },
             {
               "id": "esa2p28q16",
@@ -39002,7 +39002,7 @@
             {
               "id": "esb2p28q0",
               "type": "mc",
-              "prompt": "Llegamos a la ___ de la montaña al mediodía. (summit)",
+              "prompt": "Llegamos a la ___ de la montaña y vimos todo el valle desde arriba. (summit)",
               "choices": [
                 "cima",
                 "sima",
@@ -39012,7 +39012,7 @@
               "answer": 0,
               "explanation": "\"cima\" is the spelling that means summit here. It is easy to mix up with \"sima\", a different word, so the meaning decides the spelling.",
               "meaning": "summit",
-              "example": "Llegamos a la cima de la montaña al mediodía."
+              "example": "Llegamos a la cima de la montaña."
             },
             {
               "id": "esb2p28q1",
@@ -39058,17 +39058,17 @@
             {
               "id": "esb2p28q4",
               "type": "mc",
-              "prompt": "El ___ del pueblo aprobó el nuevo mercado. (town council)",
+              "prompt": "La ___ del parlamento duró seis horas. (session, meeting)",
               "choices": [
-                "concejo",
-                "consejo",
-                "concierto",
-                "concurso"
+                "sesión",
+                "cesión",
+                "pasión",
+                "sensación"
               ],
               "answer": 0,
-              "explanation": "\"concejo\" is the spelling that means town council here. It is easy to mix up with \"consejo\", a different word, so the meaning decides the spelling.",
-              "meaning": "town council",
-              "example": "El concejo del pueblo aprobó el nuevo mercado."
+              "explanation": "\"sesión\" is the spelling that means session, meeting here. It is easy to mix up with \"cesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "session, meeting",
+              "example": "La sesión del parlamento duró seis horas."
             }
           ]
         },
@@ -39080,71 +39080,71 @@
             {
               "id": "esb2p28q5",
               "type": "fill",
-              "prompt": "Mi abuelo me dio un buen ___ antes del examen. (advice)",
+              "prompt": "Firmaron la ___ de los derechos del libro ante notario. (transfer, handing over)",
               "bank": [
-                "concurso",
-                "concejo",
-                "concierto",
-                "consejo"
+                "sesión",
+                "sensación",
+                "cesión",
+                "pasión"
               ],
-              "answer": "consejo",
-              "explanation": "\"consejo\" is the spelling that means advice here. It is easy to mix up with \"concejo\", a different word, so the meaning decides the spelling.",
-              "meaning": "advice",
-              "example": "Mi abuelo me dio un buen consejo antes del examen."
+              "answer": "cesión",
+              "explanation": "\"cesión\" is the spelling that means transfer, handing over here. It is easy to mix up with \"sesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "transfer, handing over",
+              "example": "Firmaron la cesión de los derechos del libro ante notario."
             },
             {
               "id": "esb2p28q6",
               "type": "mc",
-              "prompt": "Los vecinos pidieron una reunión con el ___ del pueblo. (town council)",
+              "prompt": "La ___ de terapia empieza a las cinco. (session)",
               "choices": [
-                "concierto",
-                "consejo",
-                "concejo",
-                "concurso"
+                "pasión",
+                "cesión",
+                "sesión",
+                "sensación"
               ],
               "answer": 2,
-              "explanation": "\"concejo\" is the spelling that means town council here. It is easy to mix up with \"consejo\", a different word, so the meaning decides the spelling.",
-              "meaning": "town council",
-              "example": "Los vecinos pidieron una reunión con el concejo del pueblo."
+              "explanation": "\"sesión\" is the spelling that means session here. It is easy to mix up with \"cesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "session",
+              "example": "La sesión de terapia empieza a las cinco."
             },
             {
               "id": "esb2p28q7",
               "type": "fill",
-              "prompt": "Le pedí un ___ a mi profesora. (advice)",
+              "prompt": "La ___ del terreno al municipio se firmó ayer. (transfer, handing over)",
               "bank": [
-                "concurso",
-                "concejo",
-                "concierto",
-                "consejo"
+                "sesión",
+                "sensación",
+                "cesión",
+                "pasión"
               ],
-              "answer": "consejo",
-              "explanation": "\"consejo\" is the spelling that means advice here. It is easy to mix up with \"concejo\", a different word, so the meaning decides the spelling."
+              "answer": "cesión",
+              "explanation": "\"cesión\" is the spelling that means transfer, handing over here. It is easy to mix up with \"sesión\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q8",
               "type": "mc",
-              "prompt": "La alcaldesa habló ante el ___ de la ciudad. (city council)",
+              "prompt": "Los diputados abrieron la ___ a las diez. (session, meeting)",
               "choices": [
-                "concejo",
-                "consejo",
-                "concierto",
-                "concurso"
+                "sesión",
+                "cesión",
+                "pasión",
+                "sensación"
               ],
               "answer": 0,
-              "explanation": "\"concejo\" is the spelling that means city council here. It is easy to mix up with \"consejo\", a different word, so the meaning decides the spelling."
+              "explanation": "\"sesión\" is the spelling that means session, meeting here. It is easy to mix up with \"cesión\", a different word, so the meaning decides the spelling."
             },
             {
               "id": "esb2p28q9",
               "type": "fill",
-              "prompt": "No seguí su ___ y me equivoqué. (advice)",
+              "prompt": "La ___ de poderes al nuevo director fue legal. (transfer, handing over)",
               "bank": [
-                "concurso",
-                "concejo",
-                "concierto",
-                "consejo"
+                "sesión",
+                "sensación",
+                "cesión",
+                "pasión"
               ],
-              "answer": "consejo",
-              "explanation": "\"consejo\" is the spelling that means advice here. It is easy to mix up with \"concejo\", a different word, so the meaning decides the spelling."
+              "answer": "cesión",
+              "explanation": "\"cesión\" is the spelling that means transfer, handing over here. It is easy to mix up with \"sesión\", a different word, so the meaning decides the spelling."
             }
           ]
         },
@@ -39288,7 +39288,7 @@
             {
               "id": "esb2p28q19",
               "type": "mc",
-              "prompt": "La sopa caliente casi me hizo ___ la lengua. (to scald)",
+              "prompt": "El café hirviendo puede ___ la lengua. (to scald)",
               "choices": [
                 "abrir",
                 "abrazar",
@@ -39338,32 +39338,32 @@
             {
               "id": "esb2p28q22",
               "type": "mc",
-              "prompt": "Siguió el ___ de su médico y descansó. (advice)",
+              "prompt": "Cerraron la ___ con un aplauso. (session, meeting)",
               "choices": [
-                "consejo",
-                "concejo",
-                "concierto",
-                "concurso"
+                "sesión",
+                "cesión",
+                "pasión",
+                "sensación"
               ],
               "answer": 0,
-              "explanation": "\"consejo\" is the spelling that means advice here. It is easy to mix up with \"concejo\", a different word, so the meaning decides the spelling.",
-              "meaning": "advice",
-              "example": "Siguió el consejo de su médico y descansó."
+              "explanation": "\"sesión\" is the spelling that means session, meeting here. It is easy to mix up with \"cesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "session, meeting",
+              "example": "Cerraron la sesión con un aplauso."
             },
             {
               "id": "esb2p28q23",
               "type": "fill",
-              "prompt": "El ___ de la ciudad discutió el presupuesto. (town council)",
+              "prompt": "La ___ de la casa a su hijo se firmó ante notario. (transfer, handing over)",
               "bank": [
-                "consejo",
-                "concejo",
-                "concierto",
-                "concurso"
+                "pasión",
+                "sesión",
+                "sensación",
+                "cesión"
               ],
-              "answer": "concejo",
-              "explanation": "\"concejo\" is the spelling that means town council here. It is easy to mix up with \"consejo\", a different word, so the meaning decides the spelling.",
-              "meaning": "town council",
-              "example": "El concejo de la ciudad discutió el presupuesto."
+              "answer": "cesión",
+              "explanation": "\"cesión\" is the spelling that means transfer, handing over here. It is easy to mix up with \"sesión\", a different word, so the meaning decides the spelling.",
+              "meaning": "transfer, handing over",
+              "example": "La cesión de la casa a su hijo se firmó ante notario."
             },
             {
               "id": "esb2p28q24",
@@ -48234,8 +48234,8 @@
               "choices": [
                 "encausar",
                 "encauzar",
-                "encubrir",
-                "encarar"
+                "encender",
+                "encoger"
               ],
               "answer": 0,
               "explanation": "\"encausar\" is the spelling that means to prosecute here. It is easy to mix up with \"encauzar\", a different word, so the meaning decides the spelling.",
@@ -48247,10 +48247,10 @@
               "type": "fill",
               "prompt": "El gobierno quiere ___ el debate hacia soluciones. (to channel, to direct)",
               "bank": [
-                "encarar",
-                "encubrir",
                 "encausar",
-                "encauzar"
+                "encender",
+                "encauzar",
+                "encoger"
               ],
               "answer": "encauzar",
               "explanation": "\"encauzar\" is the spelling that means to channel, to direct here. It is easy to mix up with \"encausar\", a different word, so the meaning decides the spelling.",
@@ -48262,10 +48262,10 @@
               "type": "mc",
               "prompt": "El tribunal decidió ___ a los responsables del fraude. (to put on trial)",
               "choices": [
-                "encubrir",
+                "encender",
                 "encauzar",
                 "encausar",
-                "encarar"
+                "encoger"
               ],
               "answer": 2,
               "explanation": "\"encausar\" is the spelling that means to put on trial here. It is easy to mix up with \"encauzar\", a different word, so the meaning decides the spelling."
@@ -48275,10 +48275,10 @@
               "type": "fill",
               "prompt": "Hay que ___ el río para evitar inundaciones. (to channel)",
               "bank": [
-                "encarar",
-                "encubrir",
                 "encausar",
-                "encauzar"
+                "encender",
+                "encauzar",
+                "encoger"
               ],
               "answer": "encauzar",
               "explanation": "\"encauzar\" is the spelling that means to channel here. It is easy to mix up with \"encausar\", a different word, so the meaning decides the spelling."
@@ -48290,8 +48290,8 @@
               "choices": [
                 "encausar",
                 "encauzar",
-                "encubrir",
-                "encarar"
+                "encender",
+                "encoger"
               ],
               "answer": 0,
               "explanation": "\"encausar\" is the spelling that means to prosecute here. It is easy to mix up with \"encauzar\", a different word, so the meaning decides the spelling."
@@ -48308,10 +48308,10 @@
               "type": "fill",
               "prompt": "Intentó ___ la energía de los jóvenes hacia el deporte. (to channel)",
               "bank": [
-                "encarar",
-                "encubrir",
                 "encausar",
-                "encauzar"
+                "encender",
+                "encauzar",
+                "encoger"
               ],
               "answer": "encauzar",
               "explanation": "\"encauzar\" is the spelling that means to channel here. It is easy to mix up with \"encausar\", a different word, so the meaning decides the spelling.",
@@ -48336,7 +48336,7 @@
             {
               "id": "esc1p28q7",
               "type": "fill",
-              "prompt": "El ___ heredó el castillo de su padre. (baron (noble title))",
+              "prompt": "El ___ y la baronesa recibieron a los invitados en el castillo. (baron (noble title))",
               "bank": [
                 "botón",
                 "barón",
@@ -48346,7 +48346,7 @@
               "answer": "barón",
               "explanation": "\"barón\" is the spelling that means baron (noble title) here. It is easy to mix up with \"varón\", a different word, so the meaning decides the spelling.",
               "meaning": "baron, noble title",
-              "example": "El barón heredó el castillo de su padre."
+              "example": "El barón y la baronesa recibieron a los invitados en el castillo."
             },
             {
               "id": "esc1p28q8",
@@ -48384,7 +48384,7 @@
             {
               "id": "esc1p28q10",
               "type": "fill",
-              "prompt": "Solo ese ___ de la familia llevaba el apellido. (male)",
+              "prompt": "Solo el hijo ___ de la familia llevaba el apellido. (male)",
               "bank": [
                 "balón",
                 "barón",
@@ -48394,7 +48394,7 @@
               "answer": "varón",
               "explanation": "\"varón\" is the spelling that means male here. It is easy to mix up with \"barón\", a different word, so the meaning decides the spelling.",
               "meaning": "male",
-              "example": "Solo ese varón de la familia llevaba el apellido."
+              "example": "Solo el hijo varón de la familia llevaba el apellido."
             },
             {
               "id": "esc1p28q11",
@@ -48481,8 +48481,8 @@
               "type": "fill",
               "prompt": "Los depredadores suelen ___ en silencio. (to lurk, to lie in wait)",
               "bank": [
-                "acercar",
                 "acechar",
+                "agachar",
                 "asechar",
                 "achicar"
               ],
@@ -48499,7 +48499,7 @@
                 "asechar",
                 "acechar",
                 "achicar",
-                "acercar"
+                "agachar"
               ],
               "answer": 0,
               "explanation": "\"asechar\" is the spelling that means to lay a trap for here. It is easy to mix up with \"acechar\", a different word, so the meaning decides the spelling.",
@@ -48509,10 +48509,10 @@
             {
               "id": "esc1p28q18",
               "type": "fill",
-              "prompt": "La crisis sigue por ___ a la economía. (to threaten, to loom over)",
+              "prompt": "La crisis amenaza con ___ a la economía durante años. (to threaten, to loom over)",
               "bank": [
                 "acechar",
-                "acercar",
+                "agachar",
                 "asechar",
                 "achicar"
               ],
@@ -48527,7 +48527,7 @@
                 "achicar",
                 "acechar",
                 "asechar",
-                "acercar"
+                "agachar"
               ],
               "answer": 2,
               "explanation": "\"asechar\" is the spelling that means to entrap here. It is easy to mix up with \"acechar\", a different word, so the meaning decides the spelling."
@@ -48542,17 +48542,17 @@
             {
               "id": "esc1p28q20",
               "type": "mc",
-              "prompt": "El peligro de la inflación sigue por ___ a los mercados. (to threaten)",
+              "prompt": "La inflación va a ___ a los mercados todo el año. (to threaten)",
               "choices": [
                 "achicar",
                 "asechar",
                 "acechar",
-                "acercar"
+                "agachar"
               ],
               "answer": 2,
               "explanation": "\"acechar\" is the spelling that means to threaten here. It is easy to mix up with \"asechar\", a different word, so the meaning decides the spelling.",
               "meaning": "to threaten",
-              "example": "El peligro de la inflación sigue por acechar a los mercados."
+              "example": "La inflación va a acechar a los mercados todo el año."
             },
             {
               "id": "esc1p28q21",
@@ -48560,8 +48560,8 @@
               "prompt": "La ministra logró ___ la protesta por vías legales. (to channel)",
               "bank": [
                 "encausar",
-                "encubrir",
-                "encarar",
+                "encender",
+                "encoger",
                 "encauzar"
               ],
               "answer": "encauzar",
@@ -48576,8 +48576,8 @@
               "choices": [
                 "encausar",
                 "encauzar",
-                "encubrir",
-                "encarar"
+                "encender",
+                "encoger"
               ],
               "answer": 0,
               "explanation": "\"encausar\" is the spelling that means to prosecute here. It is easy to mix up with \"encauzar\", a different word, so the meaning decides the spelling.",
@@ -48587,7 +48587,7 @@
             {
               "id": "esc1p28q23",
               "type": "fill",
-              "prompt": "En su acta de nacimiento constaba como ___. (male)",
+              "prompt": "En su acta de nacimiento dice sexo: ___. (male)",
               "bank": [
                 "varón",
                 "barón",
@@ -48597,12 +48597,12 @@
               "answer": "varón",
               "explanation": "\"varón\" is the spelling that means male here. It is easy to mix up with \"barón\", a different word, so the meaning decides the spelling.",
               "meaning": "male",
-              "example": "En su acta de nacimiento constaba como varón."
+              "example": "En su acta de nacimiento dice sexo: varón."
             },
             {
               "id": "esc1p28q24",
               "type": "mc",
-              "prompt": "El ___ vendió sus tierras para pagar sus deudas. (baron (noble title))",
+              "prompt": "El ___ vendió sus tierras y su título nobiliario para pagar deudas. (baron (noble title))",
               "choices": [
                 "balón",
                 "varón",
@@ -48612,7 +48612,7 @@
               "answer": 2,
               "explanation": "\"barón\" is the spelling that means baron (noble title) here. It is easy to mix up with \"varón\", a different word, so the meaning decides the spelling.",
               "meaning": "baron, noble title",
-              "example": "El barón vendió sus tierras para pagar sus deudas."
+              "example": "El barón vendió sus tierras y su título nobiliario para pagar deudas."
             }
           ]
         }

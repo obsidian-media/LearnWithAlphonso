@@ -38940,14 +38940,14 @@
  "es:card:esa1p28l1/caza": {
   "patch": {
    "meaning": "hunting",
-   "example": "El cazador sale de caza al amanecer."
+   "example": "Mis tíos van de caza los domingos."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
  "es:card:esa1p28l1/onda": {
   "patch": {
-   "meaning": "wave",
-   "example": "Vimos una onda grande en el mar."
+   "meaning": "wave, sound wave",
+   "example": "El sonido viaja por el aire como una onda."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
@@ -39063,73 +39063,73 @@
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l1/rebelarse": {
+ "es:card:esa2p28l1/tubo": {
   "patch": {
-   "meaning": "to rise up",
-   "example": "Los esclavos decidieron rebelarse contra el dueño."
+   "meaning": "pipe",
+   "example": "El agua sale por el tubo de la cocina."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l2/revelarse": {
+ "es:card:esa2p28l2/tuvo": {
   "patch": {
-   "meaning": "to show itself, to be revealed",
-   "example": "Su talento empezó a revelarse en la escuela."
+   "meaning": "had",
+   "example": "Ayer mi hermano tuvo mucha fiebre."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l2/rebelarse": {
+ "es:card:esa2p28l2/tubo": {
   "patch": {
-   "meaning": "to rebel",
-   "example": "El pueblo se preparaba para rebelarse contra el rey."
+   "meaning": "pipe",
+   "example": "Se rompió el tubo del lavabo."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l2/pulla": {
+ "es:card:esa2p28l2/hola": {
   "patch": {
-   "meaning": "a mocking remark",
-   "example": "Su hermano le lanzó una pulla cruel en la fiesta."
+   "meaning": "hello",
+   "example": "Cuando entró, dijo hola a todos."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l2/puya": {
+ "es:card:esa2p28l2/ola": {
   "patch": {
-   "meaning": "a pointed lance",
-   "example": "El toro sintió la puya en la espalda."
+   "meaning": "wave",
+   "example": "Una ola muy grande llegó a la playa."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l3/pulla": {
+ "es:card:esa2p28l3/hola": {
   "patch": {
-   "meaning": "a mocking remark",
-   "example": "No me gustó la pulla que dijo sobre mi ropa."
+   "meaning": "hello",
+   "example": "Siempre le digo hola a mi vecina."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l3/puya": {
+ "es:card:esa2p28l3/ola": {
   "patch": {
-   "meaning": "a pointed goad",
-   "example": "El pastor usó una puya para guiar al buey."
+   "meaning": "wave",
+   "example": "Esa ola nos mojó los pies."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l3/hojear": {
+ "es:card:esa2p28l3/vez": {
   "patch": {
-   "meaning": "to leaf through",
-   "example": "Me gusta hojear el periódico mientras desayuno."
+   "meaning": "time, occasion",
+   "example": "Voy al cine una vez al mes."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l3/ojear": {
+ "es:card:esa2p28l3/ves": {
   "patch": {
-   "meaning": "to drive game toward the hunters",
-   "example": "El cazador empezó a ojear las perdices hacia las redes."
+   "meaning": "you see",
+   "example": "¿Tú ves el edificio allá?"
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esa2p28l4/ojear": {
+ "es:card:esa2p28l4/ves": {
   "patch": {
-   "meaning": "to glance at",
-   "example": "Solo pude ojear la sala porque tenía prisa."
+   "meaning": "you see",
+   "example": "¿Qué ves por la ventana?"
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
@@ -39283,7 +39283,7 @@
  "es:card:esb2p28l1/cima": {
   "patch": {
    "meaning": "summit",
-   "example": "Llegamos a la cima de la montaña al mediodía."
+   "example": "Llegamos a la cima de la montaña."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
@@ -39294,24 +39294,24 @@
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esb2p28l1/concejo": {
+ "es:card:esb2p28l1/sesión": {
   "patch": {
-   "meaning": "town council",
-   "example": "El concejo del pueblo aprobó el nuevo mercado."
+   "meaning": "session, meeting",
+   "example": "La sesión del parlamento duró seis horas."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esb2p28l2/consejo": {
+ "es:card:esb2p28l2/cesión": {
   "patch": {
-   "meaning": "advice",
-   "example": "Mi abuelo me dio un buen consejo antes del examen."
+   "meaning": "transfer, handing over",
+   "example": "Firmaron la cesión de los derechos del libro ante notario."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esb2p28l2/concejo": {
+ "es:card:esb2p28l2/sesión": {
   "patch": {
-   "meaning": "town council",
-   "example": "Los vecinos pidieron una reunión con el concejo del pueblo."
+   "meaning": "session",
+   "example": "La sesión de terapia empieza a las cinco."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
@@ -39357,17 +39357,17 @@
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esb2p28l5/consejo": {
+ "es:card:esb2p28l5/sesión": {
   "patch": {
-   "meaning": "advice",
-   "example": "Siguió el consejo de su médico y descansó."
+   "meaning": "session, meeting",
+   "example": "Cerraron la sesión con un aplauso."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
- "es:card:esb2p28l5/concejo": {
+ "es:card:esb2p28l5/cesión": {
   "patch": {
-   "meaning": "town council",
-   "example": "El concejo de la ciudad discutió el presupuesto."
+   "meaning": "transfer, handing over",
+   "example": "La cesión de la casa a su hijo se firmó ante notario."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
@@ -39409,14 +39409,14 @@
  "es:card:esc1p28l2/barón": {
   "patch": {
    "meaning": "baron, noble title",
-   "example": "El barón heredó el castillo de su padre."
+   "example": "El barón y la baronesa recibieron a los invitados en el castillo."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
  "es:card:esc1p28l3/varón": {
   "patch": {
    "meaning": "male",
-   "example": "Solo ese varón de la familia llevaba el apellido."
+   "example": "Solo el hijo varón de la familia llevaba el apellido."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
@@ -39465,7 +39465,7 @@
  "es:card:esc1p28l5/acechar": {
   "patch": {
    "meaning": "to threaten",
-   "example": "El peligro de la inflación sigue por acechar a los mercados."
+   "example": "La inflación va a acechar a los mercados todo el año."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
@@ -39486,14 +39486,14 @@
  "es:card:esc1p28l5/varón": {
   "patch": {
    "meaning": "male",
-   "example": "En su acta de nacimiento constaba como varón."
+   "example": "En su acta de nacimiento dice sexo: varón."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  },
  "es:card:esc1p28l5/barón": {
   "patch": {
    "meaning": "baron, noble title",
-   "example": "El barón vendió sus tierras para pagar sus deudas."
+   "example": "El barón vendió sus tierras y su título nobiliario para pagar deudas."
   },
   "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  }
