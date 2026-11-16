@@ -765,6 +765,43 @@ describe("Lesson page", () => {
     expect(state.unlockedAchievements).toContain("xp_100");
   });
 
+  it("opens the league promotion takeover only when the server says this lesson moved the league up", async () => {
+    const progress = {
+      xp: 310,
+      streak: 1,
+      longestStreak: 1,
+      lastActiveDate: "2026-09-19",
+      hearts: 5,
+      heartsRefillAt: null,
+      streakFreezes: 0,
+    };
+    completeLessonRemote.mockResolvedValue({
+      xpGain: 60,
+      correct: 8,
+      newlyUnlocked: [],
+      heartsBonus: null,
+      previousLeagueTier: "bronze",
+      progress: { ...progress, leagueTier: "silver" },
+    });
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    for (let i = 0; i < ANSWERS.length; i++) {
+      await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      await user.click(
+        screen.getByRole("button", { name: i === ANSWERS.length - 1 ? "Finish" : "Continue" }),
+      );
+    }
+    // The takeover opens 2.4 s into the celebration, in real time here.
+    expect(
+      await screen.findByRole("dialog", { name: "Welcome to Sapling" }, { timeout: 5000 }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("You've been promoted to Sapling, up from Sprout."),
+    ).toBeInTheDocument();
+  }, 20_000);
+
   it("a replay below the best earlier score keeps the best locally, so the next replay's XP chips start from it", async () => {
     useProgress.setState({
       completedLessons: ["u1l1"],

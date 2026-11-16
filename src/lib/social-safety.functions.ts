@@ -61,6 +61,42 @@ export const reportUser = createServerFn({ method: "POST" })
     return { ok: !error };
   });
 
+/**
+ * Reports an offensive team NAME, the web twin of reportTeamName in ProgressSyncClient+SocialSafety.swift. A team
+ * name is the one piece of user-written content strangers see with no person attached, so the report is filed
+ * against the team's creator with `kind: "team_name"` and `context.team_id` (20261008130300_content_reports_
+ * moderation_ops.sql), which is what the moderation queue reads to find the exact team. `reportUser` cannot do this
+ * (it has no kind or context), so this is its own server function.
+ *
+ * `{ ok: false, reason: "no-creator" }` files nothing: an auto-created team has a system-generated name and no
+ * creator, so there is no person to report; the same answer covers a team the caller cannot see (a private team of
+ * someone else's), because the lookup is under the caller's own RLS (`teams_select_visible`) and finds no row.
+ */
+export const reportTeamName = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ teamId: z.string().uuid(), reason: reportReasonSchema }).parse(d),
+  )
+  .handler(
+    async ({ data, context }): Promise<{ ok: boolean; reason: "no-creator" | "failed" | null }> => {
+      const { data: team, error: lookupError } = await context.supabase
+        .from("teams")
+        .select("created_by")
+        .eq("id", data.teamId)
+        .maybeSingle();
+      if (lookupError) return { ok: false, reason: "failed" };
+      const creator = team?.created_by;
+      if (!creator) return { ok: false, reason: "no-creator" };
+      const { error } = await context.supabase.from("content_reports").insert({
+        reported: creator,
+        reason: data.reason,
+        kind: "team_name",
+        context: { team_id: data.teamId },
+      });
+      return error ? { ok: false, reason: "failed" } : { ok: true, reason: null };
+    },
+  );
+
 const aiReportReasonSchema = z.enum(["ai_inappropriate", "ai_harmful", "ai_incorrect", "ai_other"]);
 const aiReportContextSchema = z
   .object({

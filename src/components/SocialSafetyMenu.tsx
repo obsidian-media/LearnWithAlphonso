@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from "react";
-import { blockUser, reportUser } from "../lib/social-safety.functions";
+import { blockUser, reportTeamName, reportUser } from "../lib/social-safety.functions";
 import { socialFailureMessage } from "../lib/social-reason-copy";
 import { DsButton } from "./ds/Blocks";
 import { Modal } from "./Modal";
@@ -12,13 +12,15 @@ const REPORT_REASONS = [
   { value: "other", label: "Something else" },
 ] as const;
 
+type ReportReason = (typeof REPORT_REASONS)[number]["value"];
+
 /**
- * The "..." Block/Report menu -- shared by league.tsx and
- * profile_.friends.tsx, the two web surfaces that actually render another
- * user's display name. duels.tsx does not: its UI shows "Challenge from a
- * friend", "You"/"Them", and win/loss by course, with no name anywhere
- * (getMyDuels' own response has no display-name field at all) -- so
- * there is no identity surface there to attach this to today. Kept as one
+ * The "..." Block/Report menu -- shared by league.tsx, profile_.friends.tsx,
+ * the buddy and team-member rows and duels.tsx. A duel row carries no name
+ * (getMyDuels' response has no display-name field), so duels pass the
+ * generic "this opponent", exactly as DuelsView.swift and DuelsScreen.kt
+ * do: the menu acts on the opponent's id. A team's NAME, which has no
+ * person attached, uses TeamNameReportMenu below. Kept as one
  * component rather than duplicated per route, same reasoning as the iOS
  * version's own doc comment: the report flow is genuinely identical
  * everywhere it appears, so duplicating it would just be drift waiting to
@@ -123,7 +125,97 @@ export function SocialSafetyMenu({
       )}
 
       {dialog === "report" && (
-        <ReportDialog displayName={displayName} userId={userId} onClose={() => setDialog(null)} />
+        <ReportDialog
+          title={`Report ${displayName}`}
+          question="Why are you reporting this person?"
+          submit={async (reason) => {
+            try {
+              const result = await reportUser({ data: { userId, reason } });
+              return result.ok ? null : REPORT_FAILED;
+            } catch {
+              return REPORT_FAILED;
+            }
+          }}
+          onClose={() => setDialog(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Shown when a report did not reach the server; the report stays open so the learner can try again. */
+export const REPORT_FAILED = "Couldn't submit your report. Try again.";
+
+/** A team with no creator has a system-made name, so there is no one to report. */
+export const REPORT_NO_CREATOR =
+  "This team's name was generated automatically by Alphonso, so there's no one to report.";
+
+/**
+ * The "..." menu on a team in the top-teams list: one entry, "Report team name" (the iOS and Android menus have the
+ * same single entry; there is no block, since a team name has no person to block). Hidden by the caller on the
+ * team the learner owns, who cannot report themselves.
+ */
+export function TeamNameReportMenu({ teamId, teamName }: { teamId: string; teamName: string }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        aria-label={`More options for ${teamName}`}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((open) => !open)}
+        className="grid size-11 shrink-0 place-items-center rounded-full text-ds-ink-soft/70 hover:bg-ds-sunk"
+      >
+        <svg viewBox="0 0 20 20" fill="currentColor" className="size-4" aria-hidden="true">
+          <circle cx="4" cy="10" r="1.6" />
+          <circle cx="10" cy="10" r="1.6" />
+          <circle cx="16" cy="10" r="1.6" />
+        </svg>
+      </button>
+      {menuOpen && (
+        <>
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            onClick={() => setMenuOpen(false)}
+            className="fixed inset-0 z-40 cursor-default"
+          />
+          <div
+            role="menu"
+            className="absolute right-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-[14px] border-2 border-ds-line bg-ds-card shadow-[var(--ds-shadow-floating)]"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                setReporting(true);
+              }}
+              className="block min-h-11 w-full px-3 py-2 text-left ds-type-footnote font-extrabold text-ds-ink hover:bg-ds-sunk"
+            >
+              Report team name
+            </button>
+          </div>
+        </>
+      )}
+      {reporting && (
+        <ReportDialog
+          title={`Report ${teamName}`}
+          question="Why are you reporting this team name?"
+          submit={async (reason) => {
+            try {
+              const result = await reportTeamName({ data: { teamId, reason } });
+              if (result.ok) return null;
+              return result.reason === "no-creator" ? REPORT_NO_CREATOR : REPORT_FAILED;
+            } catch {
+              return REPORT_FAILED;
+            }
+          }}
+          onClose={() => setReporting(false)}
+        />
       )}
     </div>
   );
@@ -182,9 +274,9 @@ function BlockConfirmDialog({
   return (
     <DialogFrame title={title ?? `Block ${displayName}?`} onClose={onCancel}>
       <p className="mb-4 ds-type-footnote text-ds-ink-soft">
-        {displayName} won't be able to add you as a friend or challenge you to a duel, and you won't
-        see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you
-        need help with this.
+        {displayName.charAt(0).toUpperCase() + displayName.slice(1)} won't be able to add you as a
+        friend or challenge you to a duel, and you won't see them in friends, activity, or
+        leaderboards. Contact support@alphonsoecosystem.app if you need help with this.
       </p>
       {error && (
         <p role="alert" className="mb-3 ds-type-footnote font-bold text-ds-wrong-ink">
@@ -217,17 +309,22 @@ function BlockConfirmDialog({
 }
 
 function ReportDialog({
-  displayName,
-  userId,
+  title,
+  question,
+  submit,
   onClose,
 }: {
-  displayName: string;
-  userId: string;
+  title: string;
+  /** The question the reasons answer; read out as the group's name. */
+  question: string;
+  /** Files the report. Resolves to null when the server accepted it, or the words to show when it did not. */
+  submit: (reason: ReportReason) => Promise<string | null>;
   onClose: () => void;
 }) {
-  const [reason, setReason] = useState<(typeof REPORT_REASONS)[number]["value"]>("spam");
+  const [reason, setReason] = useState<ReportReason>("spam");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [didSubmit, setDidSubmit] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (didSubmit) {
     return (
@@ -246,9 +343,9 @@ function ReportDialog({
   }
 
   return (
-    <DialogFrame title={`Report ${displayName}`} onClose={onClose}>
+    <DialogFrame title={title} onClose={onClose}>
       <fieldset className="mb-4 grid gap-2">
-        <legend className="sr-only">Why are you reporting this person?</legend>
+        <legend className="sr-only">{question}</legend>
         {REPORT_REASONS.map((option) => (
           <label
             key={option.value}
@@ -270,6 +367,11 @@ function ReportDialog({
           </label>
         ))}
       </fieldset>
+      {error && (
+        <p role="alert" className="mb-3 ds-type-footnote font-bold text-ds-wrong-ink">
+          {error}
+        </p>
+      )}
       <div className="flex justify-end gap-2">
         <DsButton small variant="secondary" onClick={onClose}>
           Cancel
@@ -279,9 +381,11 @@ function ReportDialog({
           disabled={isSubmitting}
           onClick={async () => {
             setIsSubmitting(true);
-            await reportUser({ data: { userId, reason } });
+            setError(null);
+            const failure = await submit(reason);
             setIsSubmitting(false);
-            setDidSubmit(true);
+            if (failure) setError(failure);
+            else setDidSubmit(true);
           }}
         >
           {isSubmitting ? "Submitting…" : "Submit report"}
