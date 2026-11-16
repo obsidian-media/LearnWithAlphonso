@@ -37,7 +37,6 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 
 22. **Spanish Minimal Pairs lessons: DECIDED 2026-11-16.** Owner: "yes". They become spelling-choice questions. In progress.
 23. **Web/iOS/Android social parity: DECIDED 2026-11-16.** Owner: "close the gap". Audit in progress (workstream B).
-24. **Royal night on the web: DECIDED 2026-11-16.** Owner: "yes". The web Royal theme follows the device dark mode; Meadow stays light. Built in the round 14 night PR (#577).
 25. **French question frb2p5q16: DECIDED 2026-11-16.** Owner: "yes". The agent writes the answer and the owner approves it in the PR.
 26. **Path tags and minutes: DECIDED 2026-11-16.** Owner: "yes". The agent proposes `src/data/path-tags.ts` tags and the `path-config.ts` minutes from data; the owner approves.
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
@@ -105,6 +104,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Royal night on the web (was 24): owner 2026-11-16, "24 yes"; merged in #577 (0b0042a1). The web Royal theme follows the device dark mode on first paint and live; Meadow stays light. Not captured on full signed-in screens.
 - Redesign gaps, batch 3 (iOS residue, was 51): iOS accept-friend sheet and the legacy helpers moved onto the design system (#575, 791a81dd); the sheet copies the web and Android look as the owner chose ("3. copy"). Nothing was seen on a simulator.
 - Owner step from #576: delete `NVIDIA_API_KEY` and `NVIDIA_CHAT_MODEL` on Vercel if they are still set (no code reads them).
 - Web pending-sync, update gate and offline finish: owner 2026-11-16, "1. keep". They stay app-only (closed, by design).
