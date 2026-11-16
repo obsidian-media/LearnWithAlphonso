@@ -39,7 +39,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
 28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
 29. **Someday features: PARKED until workstreams A to C finish.** Owner 2026-11-16: "lets discuss these after these are all done".
-30. **Podcast audio bucket is public by URL, including unpublished episodes** (documented trade-off, #582). Decide whether to make unpublished audio private.
+29a. **Podcast audio bucket is public by URL, including unpublished episodes** (documented trade-off, #582). Decide whether to make unpublished audio private.
 
 ### C. DEVICE CHECK (needs a real phone; nothing can show these from code)
 
@@ -100,7 +100,7 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 14, done
 ### Recently closed
 - Android residue (was batch 2, 50): the last Android screens are on the design system (#580, 1c996772); Android raw-value baseline 0. Nothing seen on an emulator, owner device check.
 - Concurrent-device review grading and offline streak continuity (was 54): fixed in #582 (b953a0a7); known gap, a lesson started and finished offline credits the sync day.
-- Podcast carried risks (was 62): checked in #582, items safe, no XP double count; the public audio bucket is a documented trade-off (see decision 30).
+- Podcast carried risks (was 62): checked in #582, items safe, no XP double count; the public audio bucket is a documented trade-off (see decision 29a).
 - Reseed after #574 (was 1a): done 2026-11-16 by the coordinator at the owner's request. The 5 units, 25 lessons and 126 questions that #574 changed (the `es*p28` Minimal Pairs and `frb2p5q16`) were upserted in prod; verified: the 126 rows hash-match `buildFullSeed()` on main exactly, 25 lessons and 5 units updated.
 - Spanish minimal pairs (was 22): owner 2026-11-16, "yes"; they are spelling-choice questions (#574, 6ef39fe9; 5 lessons, 125 items, gate test).
 - Social parity (was 23 and batch 1, 49): owner 2026-11-16, "close the gap"; web now has nudge, activity feed, overtake notice, weekly recap, league promotion takeover, duel block and report, and team-name report (#578, 4b43a187). Not run on a device.
