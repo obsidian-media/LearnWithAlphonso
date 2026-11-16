@@ -9,11 +9,19 @@ export type Figure = "alphonso-proud" | "alphonso-waving" | "hector-waving";
 export type Clip = "hector" | "learn";
 
 export const SCENES = data.scenes as Scene[];
+/** The scenes that have a Royal-night picture (night-<name>.jpg). "complete" has none: Lesson complete stays light. */
+export const NIGHT_SCENES = data.night as Scene[];
 export const CLIPS = data.clips as Clip[];
 export const FIGURES = data.figures as Figure[];
 
-export function sceneSrc(scene: Scene): string {
-  return `/scenes/${scene}.jpg`;
+/**
+ * The picture behind a screen. `night` is true only in the Royal night look (src/lib/theme.ts resolveDsLook): Meadow
+ * never gets it, even when the device is dark, and a scene without a night picture keeps its day one.
+ */
+export function sceneSrc(scene: Scene, night = false): string {
+  return night && NIGHT_SCENES.includes(scene)
+    ? `/scenes/night-${scene}.jpg`
+    : `/scenes/${scene}.jpg`;
 }
 
 export function figureSrc(figure: Figure): string {

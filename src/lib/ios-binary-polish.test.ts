@@ -483,6 +483,7 @@ describe("app icon", () => {
       scenes: string[];
       figures: string[];
       clips?: string[];
+      night?: string[];
     };
     // Plus one image set per full-body Alphonso pose the redesigned screens use (src/data/alphonso-figure-poses.json,
     // made 2026-11-14, provenance in docs/mascot-provenance.md).
@@ -496,6 +497,8 @@ describe("app icon", () => {
     expect(badgeSets).toHaveLength(25);
     const sceneSets = [
       ...scenery.scenes.map((n) => `Scene-${n}.imageset`),
+      // Royal night rooms (src/data/scenes.json "night"): SceneNight-<name>.imageset.
+      ...(scenery.night ?? []).map((n) => `SceneNight-${n}.imageset`),
       ...(scenery.clips ?? []).map((n) => `Clip-${n}-poster.imageset`),
     ];
     expect(sets).toEqual(

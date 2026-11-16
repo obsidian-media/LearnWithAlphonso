@@ -668,7 +668,6 @@ function ConverseChatPage({
         <PracticeCall
           title={scenario.title}
           scenarioId={scenario.id}
-          dark={false}
           avatar={{
             phase: avatarPhase,
             replyText: spoken,

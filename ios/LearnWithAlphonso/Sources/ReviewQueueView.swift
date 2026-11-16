@@ -7,6 +7,7 @@ import LearnWithAlphonsoKit
 /// completeLesson call) -- this view never trusts its own local
 /// correct/incorrect check for anything but the immediate visual feedback.
 struct ReviewQueueView: View {
+    @Environment(\.colorScheme) private var colorScheme
     let contentStore: ContentStore
     let session: Session
     let notificationScheduler: NotificationScheduler
@@ -138,7 +139,8 @@ struct ReviewQueueView: View {
         Color.clear
             .frame(height: AlphonsoDS.Space.s12 * 3 + AlphonsoDS.Space.s2)
             .overlay {
-                Image(SceneName.hector.assetName).resizable().scaledToFill()
+                Image(SceneName.hector.assetName(night: AlphonsoThemeManager.shared.paletteID.usesNight(deviceDark: colorScheme == .dark)))
+                    .resizable().scaledToFill()
             }
             .overlay {
                 LinearGradient(colors: [.clear, ds.heroB.opacity(0.55)], startPoint: .center, endPoint: .bottom)

@@ -4,7 +4,7 @@ import XCTest
 final class AvatarCallTests: XCTestCase {
     func testEveryScenarioHasItsOwnRoomAndEverythingElseGetsTheDefault() {
         for id in CallScenes.scenarioIDs {
-            XCTAssertEqual(CallScenes.room(for: id), CallRoom(light: id, dark: id, dimInDark: true), id)
+            XCTAssertEqual(CallScenes.room(for: id), CallRoom(light: "call-" + id, dark: "call-" + id, dimInDark: true), id)
         }
         for id in ["city-day", "free-talk", "", "new-scenario"] {
             XCTAssertEqual(CallScenes.room(for: id), CallScenes.defaultRoom, id)
@@ -15,8 +15,29 @@ final class AvatarCallTests: XCTestCase {
 
     func testAScenarioWithArtUsesItAndIsDimmedNotSwappedInDarkMode() {
         let room = CallScenes.room(for: "coffee", withArt: ["coffee"])
-        XCTAssertEqual(room, CallRoom(light: "coffee", dark: "coffee", dimInDark: true))
+        XCTAssertEqual(room, CallRoom(light: "call-coffee", dark: "call-coffee", dimInDark: true))
         XCTAssertEqual(CallScenes.room(for: "doctor", withArt: ["coffee"]), CallScenes.defaultRoom)
+    }
+
+    func testTheCallUsesTheNewCallFilesAndTheStudyRoomHasItsOwnDayAndEvening() {
+        XCTAssertEqual(CallScenes.defaultRoom, CallRoom(light: "call-room-light", dark: "call-room-dark", dimInDark: false))
+        for id in CallScenes.scenarioIDs {
+            XCTAssertTrue(CallScenes.room(for: id).light.hasPrefix("call-"), id)
+        }
+    }
+
+    func testACampaignSceneKeepsTheOlderRoomFileNeverACallFile() {
+        let known: Set<String> = ["coffee", "market", "office"]
+        // "coffee" is both a scenario and a campaign scene room: the campaign keeps the old coffee.webp.
+        XCTAssertEqual(CallScenes.campaignRoom(for: "coffee", known: known), CallRoom(light: "coffee", dark: "coffee", dimInDark: true))
+        XCTAssertEqual(CallScenes.campaignRoom(for: "market", known: known).light, "market")
+        XCTAssertEqual(CallScenes.campaignRoom(for: "room-light", known: known), CallScenes.defaultRoom)
+        XCTAssertEqual(CallScenes.campaignRoom(for: nil, known: known), CallScenes.defaultRoom)
+        for name in known { XCTAssertFalse(CallScenes.campaignRoom(for: name, known: known).light.hasPrefix("call-"), name) }
+    }
+
+    func testTheCharactersBottomFadesFromEightyPercentDown() {
+        XCTAssertEqual(CallScenes.avatarFadeStart, 0.8)
     }
 
     func testTheEveningDimIsHalfNavy() {
@@ -93,7 +114,7 @@ final class AvatarCallTests: XCTestCase {
         // Another character's default room is what a scenario without a picture falls back to.
         let office = CallRoom(light: "office-light", dark: "office-dark", dimInDark: false)
         XCTAssertEqual(CallScenes.room(for: "free-talk", fallback: office), office)
-        XCTAssertEqual(CallScenes.room(for: "coffee", fallback: office), CallRoom(light: "coffee", dark: "coffee", dimInDark: true))
+        XCTAssertEqual(CallScenes.room(for: "coffee", fallback: office), CallRoom(light: "call-coffee", dark: "call-coffee", dimInDark: true))
     }
 
     func testAKitWithoutEarsOrGlintAndWithAnEyesExpressionGroup() {

@@ -57,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -136,6 +137,8 @@ internal fun PracticeCallScreen(
     kit: CharacterKit,
     title: String,
     scenarioId: String,
+    /** True for a campaign scene, whose [scenarioId] is the scene's room: it keeps its older <room>.webp file. */
+    campaignRoom: Boolean = false,
     course: Course,
     vm: CallConversation,
     playback: AudioPlayback,
@@ -191,7 +194,11 @@ internal fun PracticeCallScreen(
         level = null
     }
 
-    val room = CallScenes.room(scenarioId, withArt = CallScenes.scenariosWithArt + com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.sceneRoomNames, fallback = kit.defaultRoom)
+    val room = if (campaignRoom) {
+        CallScenes.campaignRoom(scenarioId, known = com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.sceneRoomNames, fallback = kit.defaultRoom)
+    } else {
+        CallScenes.room(scenarioId, fallback = kit.defaultRoom)
+    }
     val roomFile = if (dark) room.dark else room.light
     val context = LocalContext.current
     val roomImage by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, roomFile) {
@@ -239,7 +246,7 @@ internal fun PracticeCallScreen(
             course = course,
             reducedMotion = reducedMotion,
             onMode = { mode = it },
-            modifier = Modifier.offset(x = (w - side) / 2, y = h * 0.15f).size(side).clearAndSetSemantics {},
+            modifier = Modifier.offset(x = (w - side) / 2, y = h * 0.15f).size(side).avatarBottomFade().clearAndSetSemantics {},
         )
 
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(horizontal = 18.dp)) {
@@ -275,6 +282,20 @@ internal fun PracticeCallScreen(
         }
     }
 }
+
+/**
+ * The bottom of the character's square fades out (solid to 80%, transparent at 100%), so his robe has no hard straight
+ * edge above the caption. Size and position are unchanged.
+ */
+private fun Modifier.avatarBottomFade(): Modifier = this
+    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+    .drawWithContent {
+        drawContent()
+        drawRect(
+            Brush.verticalGradient(0f to Color.Black, CallScenes.AVATAR_FADE_START to Color.Black, 1f to Color.Transparent),
+            blendMode = BlendMode.DstIn,
+        )
+    }
 
 @Composable
 private fun CallBar(name: String, title: String, speaking: Boolean, seconds: Int) {

@@ -10,6 +10,7 @@ works now_.
 
 ## Unreleased
 
+2026-11-16 R14-E2: call scenes v2 and Royal-night rooms (web, iOS, Android): the call reads its own call-<scenario>.webp (12 scenarios plus the study room day and evening), lessons and campaigns keep the old room files; learn, hector, listen, profile and practice scenes swap to night-<scene> in Royal night only (Meadow and Lesson complete stay light, living clips unchanged); the call avatar fades out over its last 20% (no hard robe edge); web call now follows Royal night (was hard-coded light). Not seen on a simulator or emulator.
 ### Redesign on web, iOS and Android, Help chat, support inbox (2026-11-14)
 
 - **Android: last screens on the design system (#580, 1c996772; round 14; nothing seen on an emulator or device).** The AI-reply report menu, reasons sheet and outcome (a cross on failure), the hands-free note, the buddy menu and dialog, the course picker, the Learn extras, the tab bar on tokens (unselected `inkSoft`, about 7:1), the full-screen league-up takeover with system-bar padding, and Get help on error screens. The Android raw-value baseline goes from 1 to 0. Owner device check.

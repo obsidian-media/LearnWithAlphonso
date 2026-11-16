@@ -182,7 +182,7 @@ struct CampaignSessionView: View {
         PracticeCallView(
             title: conversation.finished
                 ? campaign.title : "\(campaign.title): scene \(sceneIndex + 1) of \(campaign.scenes.count)",
-            scenarioID: PracticeHub.room(campaignID: campaign.id, sceneID: scene.id), voice: voice, course: course,
+            scenarioID: PracticeHub.room(campaignID: campaign.id, sceneID: scene.id), campaignRoom: true, voice: voice, course: course,
             turns: turns, replyVerdict: replyVerdict,
             notice: notice,
             onPress: { if conversation.finished || ending { return }; if voice.pressBegan() { notice = nil } },

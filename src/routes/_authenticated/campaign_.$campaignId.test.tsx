@@ -647,7 +647,7 @@ describe("Campaign call screen (setting on, the default)", () => {
     expect(screen.getByTestId("call-caption")).toHaveTextContent(campaign.scenes[0].opener);
     // A campaign has no picture of its own: the default room.
     expect(screen.getByTestId("call-caption").parentElement!.style.backgroundImage).toContain(
-      "/avatar/scenes/room-light.webp",
+      "/avatar/scenes/call-room-light.webp",
     );
   });
 

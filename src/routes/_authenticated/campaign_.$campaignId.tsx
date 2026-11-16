@@ -790,7 +790,6 @@ function CampaignChatPage({
           title={sceneLine}
           // A campaign is not a scenario: it always gets the default room, even where an id looks like one.
           scenarioId={null}
-          dark={false}
           avatar={{
             phase: avatarPhase,
             replyText: spoken,

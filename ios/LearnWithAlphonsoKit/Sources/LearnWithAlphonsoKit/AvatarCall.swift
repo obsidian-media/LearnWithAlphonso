@@ -19,20 +19,37 @@ public enum CallScenes {
         "coffee", "interview", "airport", "doctor", "smalltalk", "restaurant",
         "hotel", "directions", "apartment", "returns", "negotiation", "debate",
     ]
-    /// Scenario ids that have their own image (AlphonsoScenes/<id>.webp). A scenario missing here gets the default room.
+    /// Scenario ids that have their own call image (AlphonsoScenes/call-<id>.webp, the v2 art). A scenario missing
+    /// here gets the default room. The call has files of its own: lessons and campaigns keep the older <room>.webp.
     public static let scenariosWithArt: Set<String> = Set(scenarioIDs)
-    public static let defaultRoom = CallRoom(light: "room-light", dark: "room-dark", dimInDark: false)
+    /// The study room the call uses, by day and in the evening (AlphonsoScenes/call-room-*.webp).
+    public static let defaultRoom = CallRoom(light: "call-room-light", dark: "call-room-dark", dimInDark: false)
+    /// The call's picture for a scenario id, without extension.
+    public static func callFile(_ id: String) -> String { "call-" + id }
 
     /// `fallback` is the character's own default room (`CharacterKit.defaultRoom`).
     public static func room(
         for scenarioID: String?, withArt: Set<String> = scenariosWithArt, fallback: CallRoom = defaultRoom
     ) -> CallRoom {
         guard let scenarioID, withArt.contains(scenarioID) else { return fallback }
-        return CallRoom(light: scenarioID, dark: scenarioID, dimInDark: true)
+        return CallRoom(light: callFile(scenarioID), dark: callFile(scenarioID), dimInDark: true)
+    }
+
+    /// A campaign scene's room: `roomName` is one of the campaign scene rooms (PracticeHub.sceneRoomNames). It keeps
+    /// the older <room>.webp file the lessons use, never a call file; anything else gets `fallback`.
+    public static func campaignRoom(
+        for roomName: String?, known: Set<String>, fallback: CallRoom = defaultRoom
+    ) -> CallRoom {
+        guard let roomName, known.contains(roomName) else { return fallback }
+        return CallRoom(light: roomName, dark: roomName, dimInDark: true)
     }
 
     /// The evening overlay on a scenario image in dark mode: navy #16203c, multiplied, at 50%.
     public static let eveningOverlayOpacity = 0.5
+
+    /// The character's square is solid down to this fraction of its height and fades to transparent at the bottom, so
+    /// his robe never ends in a hard straight edge above the caption (the approved call mock, 2026-11-16).
+    public static let avatarFadeStart = 0.8
 }
 
 /// What the live caption shows: only the current utterance.

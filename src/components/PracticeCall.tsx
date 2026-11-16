@@ -4,6 +4,7 @@ import { AlphonsoAvatar } from "./AlphonsoAvatar";
 import { ALPHONSO_KIT, type CharacterKit } from "@/lib/avatar/layers";
 import type { AvatarMode } from "@/lib/avatar/machine";
 import { EVENING_OVERLAY, sceneArt } from "@/lib/avatar/scenes";
+import { useNight } from "@/lib/use-night";
 import { LEVEL_BARS, useMicLevel } from "@/lib/avatar/use-mic-level";
 import { playSfx, registerVoiceProbe } from "@/lib/sfx";
 import { handsFreeStatusLine, HANDS_FREE_PAUSE, HANDS_FREE_RESUME } from "@/lib/hands-free-copy";
@@ -50,7 +51,8 @@ type Props = {
   kit?: CharacterKit;
   /** The scenario whose room is shown; null (a campaign, free talk) gets the character's default room. */
   scenarioId: string | null;
-  dark: boolean;
+  /** Evening room: left out, it follows the look (Royal night only; Meadow stays light in a dark device). */
+  dark?: boolean;
   avatar: Omit<ComponentProps<typeof AlphonsoAvatar>, "className">;
   caption: CallCaption | null;
   /** The avatar's mode: drives the state pill and the call bar's dot (red while he speaks). */
@@ -106,7 +108,7 @@ export function PracticeCall(props: Props) {
     title,
     kit = ALPHONSO_KIT,
     scenarioId,
-    dark,
+    dark: darkProp,
     avatar,
     caption,
     mode,
@@ -127,6 +129,8 @@ export function PracticeCall(props: Props) {
     reducedMotion,
     handsFree,
   } = props;
+  const night = useNight();
+  const dark = darkProp ?? night;
   const handsFreeOn = !!handsFree?.on;
   const handsFreePaused = handsFree?.status.kind === "paused";
   const handsFreeLine = handsFree ? handsFreeStatusLine(handsFree.status, kit.displayName) : null;
@@ -246,7 +250,8 @@ export function PracticeCall(props: Props) {
       {/* Alphonso: the square kit scaled past the screen width so head and shoulders fill the frame. On a short
           screen the square is held to 72% of the height, so the caption and controls stay clear of his mouth. */}
       <div
-        className="absolute z-[2]"
+        data-testid="call-avatar"
+        className="call-avatar-fade absolute z-[2]"
         style={{
           width: "min(128cqw, 72cqh)",
           left: "50%",

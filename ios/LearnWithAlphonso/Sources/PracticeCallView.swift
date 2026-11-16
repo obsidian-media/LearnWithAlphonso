@@ -32,6 +32,9 @@ struct PracticeCallView<Sheet: View>: View {
     /// The hold-to-talk button's spoken label.
     var talkLabel = "Hold to talk"
     let scenarioID: String
+    /// True for a campaign scene, whose `scenarioID` is the scene's room: that room keeps its older <room>.webp
+    /// file; only a Practice scenario (and the study room) takes the call's own call-*.webp pictures.
+    var campaignRoom = false
     let voice: VoiceSessionController
     let course: Course
     let turns: [ChatMessage]
@@ -66,6 +69,14 @@ struct PracticeCallView<Sheet: View>: View {
                     replyVerdict: replyVerdict, course: course, kit: kit, onModeChange: { mode = $0 }
                 )
                 .frame(width: side, height: side)
+                // The bottom of the square fades out (solid to 80%, transparent at 100%), so his robe has no hard
+                // straight edge above the caption. His size and position are unchanged.
+                .mask(
+                    LinearGradient(
+                        stops: [.init(color: .black, location: 0), .init(color: .black, location: CallScenes.avatarFadeStart),
+                                .init(color: .clear, location: 1)],
+                        startPoint: .top, endPoint: .bottom)
+                )
                 .position(x: width / 2, y: height * 0.15 + side / 2)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
@@ -138,7 +149,9 @@ struct PracticeCallView<Sheet: View>: View {
     // MARK: - Room
 
     private var room: some View {
-        let room = CallScenes.room(for: scenarioID, withArt: CallScenes.scenariosWithArt.union(PracticeHub.sceneRoomNames), fallback: kit.defaultRoom)
+        let room = campaignRoom
+            ? CallScenes.campaignRoom(for: scenarioID, known: PracticeHub.sceneRoomNames, fallback: kit.defaultRoom)
+            : CallScenes.room(for: scenarioID, fallback: kit.defaultRoom)
         let dark = AlphonsoThemeManager.shared.paletteID.usesNight(deviceDark: colorScheme == .dark)
         let name = dark ? room.dark : room.light
         return ZStack {
