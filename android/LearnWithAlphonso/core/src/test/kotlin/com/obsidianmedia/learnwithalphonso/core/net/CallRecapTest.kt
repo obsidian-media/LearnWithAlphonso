@@ -109,7 +109,7 @@ class CallRecapTest {
         fun note(seen: Int, d: Long) = TutorMemory.Mistake("i", "t", "l", seen, now.minusSeconds(d * 86_400)).note(now)
         assertEquals("Seen in 4 calls, last 2 days ago", note(4, 2))
         assertEquals("Seen in 2 calls, last week", note(2, 9))
-        assertEquals("Seen in 1 call, most recently today", note(1, 0))
+        assertEquals("Seen in 1 call, last today", note(1, 0))
     }
 
     @Test

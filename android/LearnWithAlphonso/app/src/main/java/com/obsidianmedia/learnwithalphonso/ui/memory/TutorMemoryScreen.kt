@@ -55,6 +55,7 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemory
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryLoad
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
+import com.obsidianmedia.learnwithalphonso.core.net.fetchProfileOverview
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.ui.practice.HubButton
 import com.obsidianmedia.learnwithalphonso.ui.practice.HubSecondaryButton
