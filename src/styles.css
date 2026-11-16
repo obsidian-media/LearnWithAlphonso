@@ -35,7 +35,7 @@
   --color-ember: oklch(0.64 0.18 32);
   --color-ember-soft: oklch(0.9 0.05 32);
   --color-hairline: var(--c-line);
-  --color-ink-on-ember: var(--c-on-action);
+  --color-ink-on-ember: var(--color-ink);
 }
 
 @utility grain {
@@ -201,6 +201,8 @@
   --secondary-foreground: var(--c-ink);
   --muted: var(--c-sunk);
   --border: color-mix(in oklab, var(--c-ink) 14%, transparent);
+  /* The page ink is light in night; on the ember button (4.57:1 with the dark navy, 3.02:1 with light ink) keep dark. */
+  --color-ink-on-ember: var(--c-on-action);
 }
 :root:not([data-palette="meadow"])[data-ds-mode="night"] .ds-light {
   --card: oklch(1 0 0);

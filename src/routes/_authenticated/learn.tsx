@@ -416,7 +416,7 @@ function LearnPage() {
 
   return (
     <MobileFrame>
-      <div className="ds-light relative z-10 min-h-dvh bg-ds-surface px-6 pb-24 pt-6">
+      <div className="relative z-10 min-h-dvh bg-ds-surface px-6 pb-24 pt-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h1 className="font-display text-3xl font-extrabold text-ds-ink">Learn</h1>
           {hydrated && (

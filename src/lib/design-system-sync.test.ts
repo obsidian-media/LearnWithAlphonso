@@ -90,8 +90,10 @@ describe("the older style names follow Royal night", () => {
       expect(block(`${night} .ds-light`), v).toContain(`${v}:`);
     }
   });
-  it("text on the ember button is the dark on-action ink in both modes, not the page ink", () => {
-    expect(styles).toContain("--color-ink-on-ember: var(--c-on-action);");
+  it("text on the ember button is the page ink everywhere (Meadow's dark green, as before) except night, where it is the dark on-action ink", () => {
+    expect(styles).toContain("--color-ink-on-ember: var(--color-ink);");
+    expect(block(night)).toContain("--color-ink-on-ember: var(--c-on-action);");
+    expect(block(`${night} .ds-light`)).not.toContain("--color-ink-on-ember");
   });
 });
 
