@@ -10,6 +10,7 @@ import { saveLearnerProfileFor } from "@/lib/learner-profile.server";
  *   GET                       the learner's memory lines and their goals. PRO ONLY, checked here from RevenueCat:
  *                             403 not-entitled for anyone else, 503 when the entitlement cannot be read.
  *   DELETE { id }             removes one line, and with it the matching weakness events and review items.
+ *   DELETE { events: true }   removes only the learner's weakness events (topic labels); any signed-in learner.
  *   DELETE { all: true }      forget everything: every line, every weakness event, every weakness review item and
  *                             recap review item (one transaction), then the goals on this page.
  *
@@ -92,13 +93,25 @@ export const Route = createFileRoute("/api/tutor-memory")({
         const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
         const auth = await authenticate(request, admin);
         if (typeof auth !== "string") return auth;
-        let body: { id?: unknown; all?: unknown };
+        let body: { id?: unknown; all?: unknown; events?: unknown };
         try {
           body = await request.json();
         } catch {
           return json({ error: "Invalid JSON" }, 400);
         }
         const rpc = admin as unknown as import("@supabase/supabase-js").SupabaseClient;
+        // Topic notes only: the weakness events every learner gets after a recap (a label, no text). Open to free
+        // learners, who have no memory page. Memory lines, review items, goals and everything else stay.
+        if (body.events === true) {
+          const { error } = await (
+            admin as unknown as import("@supabase/supabase-js").SupabaseClient
+          )
+            .from("weakness_events")
+            .delete()
+            .eq("user_id", auth);
+          if (error) return json({ error: "Could not delete these. Try again." }, 500);
+          return json({ removed: "events" });
+        }
         if (body.all === true) {
           const { data, error } = await rpc.rpc("forget_tutor_memory", { _user_id: auth });
           if (error) return json({ error: "Could not forget everything. Try again." }, 500);

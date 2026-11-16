@@ -4,6 +4,7 @@ const h = vi.hoisted(() => ({
   pro: vi.fn(),
   rpcs: [] as { fn: string; args: Record<string, unknown> }[],
   saved: [] as unknown[],
+  deletes: [] as unknown[][],
   rows: [] as unknown[],
   user: "u1" as string | null,
 }));
@@ -34,8 +35,14 @@ vi.mock("@/integrations/supabase/client.server", () => ({
         }),
       },
     },
-    from: () => {
+    from: (table: string) => {
       const q: Record<string, unknown> = {};
+      q.delete = () => ({
+        eq: async (c: string, v: string) => {
+          h.deletes.push([table, c, v]);
+          return { error: null };
+        },
+      });
       for (const n of ["select", "eq", "order"]) q[n] = () => q;
       q.limit = async () => ({ data: h.rows, error: null });
       return q;
@@ -65,6 +72,7 @@ beforeEach(() => {
   h.pro.mockReset();
   h.rpcs = [];
   h.saved = [];
+  h.deletes = [];
   h.user = "u1";
   h.rows = [
     {
@@ -129,6 +137,14 @@ describe("DELETE works for everyone signed in, scoped to the token's user", () =
     expect(res.status).toBe(200);
     expect(h.rpcs).toEqual([{ fn: "forget_tutor_memory", args: { _user_id: "u1" } }]);
     expect(h.saved).toEqual([{ patch: { clear: ["goal", "dailyMinutes", "interests"] } }]);
+  });
+  it("topic notes only: deletes this learner's weakness events and nothing else, even when not Pro", async () => {
+    h.pro.mockResolvedValue("inactive");
+    const res = await handlers.DELETE!(req("DELETE", { events: true }));
+    expect(res.status).toBe(200);
+    expect(h.deletes).toEqual([["weakness_events", "user_id", "u1"]]);
+    expect(h.rpcs).toEqual([]);
+    expect(h.saved).toEqual([]);
   });
   it("rejects a malformed id and an anonymous caller", async () => {
     expect((await handlers.DELETE!(req("DELETE", { id: "'; drop" }))).status).toBe(400);

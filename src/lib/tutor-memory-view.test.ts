@@ -30,7 +30,7 @@ describe("copy", () => {
       "Seen in 4 calls, last 2 days ago",
     );
     expect(mistakeNote({ seenCount: 1, lastSeenAt: ago(0) }, NOW)).toBe(
-      "Seen in 1 call, most recently today",
+      "Seen in 1 call, last today",
     );
     expect(mistakeNote({ seenCount: 2, lastSeenAt: ago(9) }, NOW)).toBe(
       "Seen in 2 calls, last week",
