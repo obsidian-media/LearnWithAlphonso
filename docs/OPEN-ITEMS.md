@@ -6,7 +6,7 @@ Sweep of 2026-11-15 against main, merged pull requests and read-only checks of t
 
 **How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
 
-Counts: owner only 18, decision needed 9, device check 13, agent can do 16, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
+Counts: owner only 18, decision needed 9, device check 13, agent can do 15, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
 
 ### A. STILL OPEN - owner only (in priority order)
 
@@ -70,15 +70,14 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 16, done
 
 43. **Content: failed fixes.** About 438 English review fixes and about 580 content fixes overall still fail the checks; 16 gated refused FR/ES fixes (duplicate English prompts); about 190 English-term FR/ES cards need an authored FR/ES term; after any content merge the owner reseeds. (2026-11-07, round 7 notes)
 44. **FR/ES review-panel disagreements** (77 from the first run) were folded into the content closure project; the state of the closure run and its caps is unverified from here. (0.0-ay, #428, content closure)
-45. **Call scenes v2: art approved, app integration not started.** Owner 2026-11-16 ("yes do that please"): ship as NEW call-only files (lessons keep their current rooms), all 12 scenarios plus the study room by day and evening. Full-resolution redraw in progress. (2026-11-05 note)
-46. **Night rooms for dark mode: art approved, app integration not started.** Owner 2026-11-16: Royal-night rooms approved for learn, hector, listen, profile and practice; Lesson complete stays light; no night clips for now; Meadow never gets night art. Full-resolution redraw in progress. (0.0-be)
-52a. **Redesign gaps, batch 4: web call-chrome raw values.**
+45. **Call scenes v2: art approved, app integration started (PR #589 open, web, iOS and Android; includes a soft fade at the bottom of the Alphonso call avatar so no hard robe edge shows on the vivid scenes).** Owner 2026-11-16 ("yes do that please"): ship as NEW call-only files (lessons keep their current rooms), all 12 scenarios plus the study room by day and evening. Full-resolution redraw in progress. (2026-11-05 note)
+46. **Night rooms for dark mode: art approved, app integration started (PR #589 open, web, iOS and Android).** Owner 2026-11-16: Royal-night rooms approved for learn, hector, listen, profile and practice; Lesson complete stays light; no night clips for now; Meadow never gets night art. Full-resolution redraw in progress. (0.0-be)
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
 57. **Remove the unused push-to-talk capability** from the App ID. (1.1 #9)
 59. **Vocab image quality** beyond metadata triage; Android needs no change for empty lines (verified done). (3 Content)
 63. **Dev server does not boot in the Windows sandbox.** (4)
-65. **AI cost tracking (in progress, PR pending; owner merges, includes a migration).** A usage log per AI call with the vendor-reported cost, an admin AI-cost panel, a daily spend email, and a text-to-speech cache audit and fix. Owner 2026-11-16 asked for it.
+65. **AI cost tracking (in progress, PR #588 open; owner merges, includes a migration).** A usage log per AI call with the vendor-reported cost, an admin AI-cost panel, a daily spend email, and a text-to-speech cache audit and fix. Owner 2026-11-16 asked for it.
 66. **Later: monthly per-user cost budget**, to be set after a month of real cost data from item 65. Ties to the lifetime-pricing usage cap in item 29.
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
@@ -107,6 +106,8 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 16, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Redesign gaps, batch 4 (was 52a): web call screen on design tokens (#586, 5296800c). Web raw-value baseline 44 to 2 (only api/review-demo-code.ts left); PracticeCall, LearnMap and AlphonsoAvatar on tokens; theme faces kept; night-stable fallbacks for the room colour and the LearnMap locked node; behaviour unchanged.
+- Build 68 cut and uploaded to TestFlight 2026-11-16 (#585, fc8c9f49, release run success), not submitted; contains #575, #576, #580, #582 and content #574.
 - Docs reseed and Vercel owner steps (#584, 876c12ee): reseed after #574 verified; owner item 1b added.
 - Android residue (was batch 2, 50): the last Android screens are on the design system (#580, 1c996772); Android raw-value baseline 0. Nothing seen on an emulator, owner device check.
 - Concurrent-device review grading and offline streak continuity (was 54): fixed in #582 (b953a0a7); known gap, a lesson started and finished offline credits the sync day.
