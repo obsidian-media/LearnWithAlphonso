@@ -10,12 +10,12 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 
 ### A. STILL OPEN - owner only (in priority order)
 
-1. **Decide and perform the next App Review submission.** Builds up to 66 are on TestFlight; nothing newer than the notes shows a submission. App Store Connect state is unverified from here. (0.0-am #7, 0.0-y)
+1. **Decide and perform the next App Review submission.** Builds up to 67 are on TestFlight; nothing newer than the notes shows a submission. App Store Connect state is unverified from here. (0.0-am #7, 0.0-y)
 2. **Paid Applications Agreement must be Active** (terms, bank, tax). Older notes disagree on whether it already is; unverified. A "New" agreement blocks every in-app price. (0.0-am, 1.1)
 3. **Store privacy answers in one visit** (App Store Connect App Privacy and Google Play Data safety), before any submission: Product Interaction and Device ID for Analytics (PostHog, linked, not tracking), Product Personalization, Crash Data and Other Diagnostic Data, first-run answers (name, age range, country, avatar, goal, level, how you heard of us), Explain and Hector AI requests, learning minutes, mastered words, time zone, listening progress, and **Customer Support** for the Help chat (kept 12 months after a chat is solved, in the export). Age rating 13+. (0.0-as #1 #7 #8, 0.0-bn, 2026-11-15 note, 0.0-ai)
 4. **Security follow-ups, details kept private.** Several owner-only account, settings and switch-on steps (including one timed switch-on) are tracked privately and are not described here. (0.0-bb, 0.0-as #3)
 5. **Admin console numbers (#567 is merged and its migration is applied: verified).** Set the provider settings on the admin project (list in docs/operations.md), then check each group shows Connected: revenue, AI cost, App Store, Google Play (also needs the reports bucket name), own database, crash reports, analytics. Not tried with real provider settings. (r13 note 2026-11-15)
-6. Moved: the redesign merge is handled by the coordinator; the one agent task left from it is item 64.
+6. Moved: the admin redesign merged (#568); the one agent task left from it is item 64.
 7. **Staff names for Miya.** Staff profiles need real first names in their display name, otherwise person replies read just "Support team". (r13 Miya note)
 8. **Review the Help chat help file and 10 sample transcripts, then turn on the support_ai switch.** It is OFF in production (verified), so every message goes to a person. (r12 support M1)
 9. **Web Pro launch:** a real payment-processor account, RevenueCat production web billing (products, trial and no-trial links, return page), production Vercel settings, redeploy, then one real purchase-and-refund check by the agent. The live web paywall is intentionally unconfigured. (0.0-an #1-4)
@@ -111,4 +111,5 @@ Counts: owner only 18, decision needed 9, device check 13, agent can do 22, done
 
 ### Recently closed
 
-(empty; add new lines here with the PR number)
+- Admin console redesign from the approved mock: merged in #568 (becd9650); admin phases 1 to 3 are all built.
+- Build 67 cut and uploaded to TestFlight (#571, release run 43785255490), not submitted; carries the iOS support push tap.
