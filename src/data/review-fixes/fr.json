@@ -12416,13 +12416,6 @@
   },
   "reason": "Gloss missing."
  },
- "fr:card:frb2p5l4/était enfin": {
-  "patch": {
-   "meaning": "was finally",
-   "example": "Il a affirmé que le projet était enfin terminé."
-  },
-  "reason": "Gloss missing; doubled 'enfin' fixed."
- },
  "fr:card:frb2p5l5/avait toujours": {
   "patch": {
    "meaning": "always had",
@@ -33054,9 +33047,15 @@
  },
  "fr:question:frb2p5l4/frb2p5q16": {
   "patch": {
-   "explanation": "In reported speech after a past reporting verb (\"a affirmé\"), the present becomes the imperfect, so \"était enfin\" is a form of \"être\" in the imperfect; the key repeats \"enfin\", which the sentence already has."
+   "choices": [
+    "étaient",
+    "sera",
+    "était",
+    "étions"
+   ],
+   "explanation": "In reported speech after a past reporting verb (\"a affirmé\"), the present becomes the imperfect, so the verb is \"était\", the imperfect of \"être\"; \"enfin\" is already in the sentence after the blank."
   },
-  "reason": "Generic explanation replaced with the rule for this sentence (round 7)."
+  "reason": "Generic explanation replaced with the rule for this sentence (round 7). / Owner decision 2026-11-16: the key is \"était\" (the old key \"était enfin\" repeated the \"enfin\" already in the sentence), and the wrong options are other forms of \"être\" that the subject or the tense rules out."
  },
  "fr:question:frb2p5l4/frb2p5q17": {
   "patch": {
@@ -40309,5 +40308,12 @@
    "description": "Passé composé in short sentences — With être verbs like rester, the participle agrees with the subject."
   },
   "reason": "Saying the participle agrees with the subject is true only for être verbs, and the blanket statement could teach learners to make avoir participles agree."
+ },
+ "fr:card:frb2p5l4/était": {
+  "patch": {
+   "meaning": "was, in the imperfect",
+   "example": "Il a affirmé que le projet était enfin terminé."
+  },
+  "reason": "Gloss missing; the key is now \"était\" (the old key repeated \"enfin\", which the sentence already has)."
  }
 }

@@ -19931,144 +19931,6 @@
   },
   "reason": "Accepting the common goodnight wishes is fine; the explanation is generic."
  },
- "es:question:esa1p28l1/esa1p28q0": {
-  "patch": {
-   "explanation": "You heard \"Hablamos de la casa toda la tarde.\" It is the only option that starts with \"Hablamos\" and ends with \"toda la tarde\"; the others are about a decision made yesterday or a big house."
-  },
-  "reason": "No option is a sound-alike of the audio (the caza twin is absent), so there is one answer, but the explanation is a generic lesson blurb. / Only D matches the audio, but the explanation says the other options are about voting, while option A uses \"botar\" (to throw away)."
- },
- "es:question:esa1p28l1/esa1p28q1": {
-  "patch": {
-   "explanation": "You heard \"Hablamos de la caza toda la tarde.\" It is the only option with \"Hablamos de\" and \"toda la tarde\"; here \"caza\" means hunting, and it sounds just like \"casa\"."
-  },
-  "reason": "The casa twin of the key is not offered, so the item has one answer, but the explanation is generic."
- },
- "es:question:esa1p28l1/esa1p28q2": {
-  "patch": {
-   "explanation": "You heard \"Nunca había visto una casa tan grande.\" The other options start with \"Nadie esperaba\" or \"Hablamos\", so only this one matches \"Nunca había visto... tan grande\"."
-  },
-  "reason": "There is one answer because no caza twin is offered, but the explanation is generic; the pluperfect only has to be recognised in the audio, not produced."
- },
- "es:question:esa1p28l1/esa1p28q3": {
-  "patch": {
-   "explanation": "You heard \"Nunca había visto una caza tan grande.\" It is the only option that starts with \"Nunca había visto\"; \"caza\" (a hunt) sounds the same as \"casa\"."
-  },
-  "reason": "No casa twin of the key is offered, so the key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l1/esa1p28q4": {
-  "patch": {
-   "explanation": "You heard \"Vimos la onda desde la playa.\" It is the only option that ends with \"desde la playa\"; the others mention a patio or a window."
-  },
-  "reason": "The honda twin is absent, so there is one answer, but the explanation is generic."
- },
- "es:question:esa1p28l2/esa1p28q5": {
-  "patch": {
-   "explanation": "You heard \"Vimos la honda desde la playa.\" It is the only option that starts with \"Vimos la\" and ends with \"desde la playa\"; the h in \"honda\" is silent, so it sounds like \"onda\"."
-  },
-  "reason": "The onda twin is not offered, so the key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l2/esa1p28q6": {
-  "patch": {
-   "explanation": "You heard \"Nadie esperaba una onda tan fuerte.\" It is the only option that starts with \"Nadie esperaba\"; the others start with \"Nunca\" or \"Vimos\"."
-  },
-  "reason": "The honda twin is absent, so the key is unique; the imperfect only has to be recognised, but the explanation is generic."
- },
- "es:question:esa1p28l2/esa1p28q7": {
-  "patch": {
-   "explanation": "You heard \"Nadie esperaba una honda tan fuerte.\" It is the only option that starts with \"Nadie esperaba\"; the silent h makes \"honda\" sound like \"onda\"."
-  },
-  "reason": "The onda twin is absent, so the key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l2/esa1p28q8": {
-  "patch": {
-   "explanation": "You heard \"Vimos el pollo en el patio.\" It is the only option that ends with \"en el patio\"; the other pollo sentence is about a grandmother and a door."
-  },
-  "reason": "The poyo twin is absent, so there is one answer, but the explanation is generic."
- },
- "es:question:esa1p28l2/esa1p28q9": {
-  "patch": {
-   "explanation": "You heard \"Vimos el poyo en el patio.\" It is the only option that ends with \"en el patio\"; \"poyo\" (a stone bench) sounds the same as \"pollo\" for most speakers."
-  },
-  "reason": "The pollo twin is absent, so the key is unique; poyo is rare, but this is a recognition item in a minimal-pair lesson, and the explanation is generic."
- },
- "es:question:esa1p28l3/esa1p28q10": {
-  "patch": {
-   "explanation": "You heard \"Mi abuela puso el pollo cerca de la puerta.\" It is the only option that starts with \"Mi abuela\"; the other pollo sentence is \"Vimos el pollo en el patio.\""
-  },
-  "reason": "The poyo twin is absent, so the key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l3/esa1p28q11": {
-  "patch": {
-   "explanation": "You heard \"Mi abuela puso el poyo cerca de la puerta.\" It is the only option that starts with \"Mi abuela\"; \"poyo\" (a stone bench) sounds just like \"pollo\"."
-  },
-  "reason": "The pollo twin is absent, so the key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l3/esa1p28q12": {
-  "patch": {
-   "explanation": "The audio says \"El paisaje era completamente vasto.\" The words \"paisaje\" and \"completamente\" set it apart from the \"terreno era muy\" sentences, because \"vasto\" and \"basto\" sound the same."
-  },
-  "reason": "No option sounds like the audio (no 'completamente basto' option), so the key is unique, but the explanation describes the lesson instead of saying how to pick the answer."
- },
- "es:question:esa1p28l3/esa1p28q13": {
-  "patch": {
-   "explanation": "The audio says \"El paisaje era completamente basto.\" \"Basto\" (coarse) sounds the same as \"vasto\", so listen for \"paisaje\" and \"completamente\" rather than \"terreno\" and \"muy\"."
-  },
-  "reason": "No option sounds like 'completamente vasto', so the key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l3/esa1p28q14": {
-  "patch": {
-   "explanation": "The audio says \"Todos dijeron que el terreno era muy vasto.\" The frame \"Todos dijeron que el terreno era muy\" rules out the \"paisaje\" sentences, even though \"vasto\" and \"basto\" sound the same."
-  },
-  "reason": "The only option with the frame 'Todos dijeron que el terreno era muy…' is the key, so it is unique, but the explanation is generic."
- },
- "es:question:esa1p28l4/esa1p28q15": {
-  "patch": {
-   "explanation": "The audio says \"Todos dijeron que el terreno era muy basto.\" Only this option has \"terreno\" and \"muy\". The other \"basto\" sentence uses \"paisaje\" and \"completamente\"."
-  },
-  "reason": "The key is unique (no 'muy vasto' option, and cero/cerro differ by tap versus trill), but the explanation is generic."
- },
- "es:question:esa1p28l4/esa1p28q16": {
-  "patch": {
-   "explanation": "The audio says \"Todos miraban el cerro con atención.\" Listen for the strong trilled rr in \"cerro\" (hill) and the ending \"con atención\". \"Cero\" has a single tap."
-  },
-  "reason": "Cerro and cero differ audibly (trill versus tap) and the frames differ, so the key is unique, but the explanation is generic and never mentions r/rr."
- },
- "es:question:esa1p28l4/esa1p28q17": {
-  "patch": {
-   "explanation": "The audio says \"Todos miraban el cero en el marcador.\" \"Cero\" (zero) has a single tap r, unlike the trilled rr of \"cerro\", and \"marcador\" (scoreboard) confirms it."
-  },
-  "reason": "The key is unique, but the explanation lists unrelated merges instead of the tap/trill contrast."
- },
- "es:question:esa1p28l4/esa1p28q18": {
-  "patch": {
-   "explanation": "The audio says \"Se podía ver el cerro desde la ventana.\" Listen for the trilled rr in \"cerro\" (hill) and the words \"desde la ventana\". The \"cero\" sentence ends \"en la pantalla\"."
-  },
-  "reason": "Onda/honda sound alike only with each other, not with the audio, so the key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l4/esa1p28q19": {
-  "patch": {
-   "explanation": "The audio says \"Se podía ver el cero en la pantalla.\" \"Cero\" (zero) has a single tap r and fits \"en la pantalla\". \"Cerro\" has a trilled rr and means hill."
-  },
-  "reason": "The key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l5/esa1p28q20": {
-  "patch": {
-   "explanation": "The audio says \"Vamos a votar mañana temprano.\" The start \"Vamos a\" and the words \"mañana temprano\" set it apart from \"Decidieron votar ayer por la tarde\"."
-  },
-  "reason": "No 'Vamos a botar' option is present, so the key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l5/esa1p28q22": {
-  "patch": {
-   "explanation": "The audio says \"Decidieron votar ayer por la tarde.\" \"Decidieron\" and \"ayer\" set it apart from \"Vamos a votar mañana temprano\"."
-  },
-  "reason": "No 'Decidieron botar' option is present and casa/caza match only each other, so the key is unique, but the explanation is generic."
- },
- "es:question:esa1p28l5/esa1p28q24": {
-  "patch": {
-   "explanation": "The audio says \"Subimos el cerro despacio.\" (We climbed the hill slowly.) The b in \"subimos\" sounds like a v, and with seseo the c in \"cerro\" sounds like an s, but only option A has \"subimos\" and \"despacio\"."
-  },
-  "reason": "The explanation is a generic lesson description that never says which merging sounds appear in this sentence."
- },
  "es:question:esa1p29l1/esa1p29q0": {
   "patch": {
    "explanation": "\"Hola, ¿cómo estás?\" is the friendly tú way to say \"Hi, how are you?\" to a friend; the question mark ¿ opens where the question starts, after the comma."
@@ -23377,162 +23239,6 @@
    "explanation": "\"¿Puedes hablar más despacio?\" is a polite tú request with \"poder\", and \"más despacio\" means 'more slowly'."
   },
   "reason": "The explanation is generic."
- },
- "es:question:esa2p28l1/esa2p28q0": {
-  "patch": {
-   "explanation": "The audio says \"Mi madre me enseñó a cocer bien.\" With seseo, \"cocer\" (to cook) sounds the same as \"coser\" (to sew), so listen to the rest of the sentence: \"Mi madre me enseñó\" and \"bien\"."
-  },
-  "reason": "The other words make the options distinguishable, but the explanation wrongly files cocer/coser under b/v instead of seseo."
- },
- "es:question:esa2p28l1/esa2p28q1": {
-  "patch": {
-   "explanation": "The audio says \"Mi madre me enseñó a coser bien.\" \"Coser\" (to sew) and \"cocer\" (to cook) sound the same with seseo, so context tells you which one is meant; option C changes \"bien\" to \"rápido\"."
-  },
-  "reason": "Only one option matches the audio, but the explanation is generic and teaches false labels: cocer/coser is seseo, not b/v, and ojear/hojear is about the silent h, not yeísmo."
- },
- "es:question:esa2p28l1/esa2p28q2": {
-  "patch": {
-   "explanation": "The audio says \"Nunca aprendí a cocer rápido.\" With seseo, \"cocer\" (to cook) sounds like \"coser\" (to sew), so the words \"Nunca aprendí\" and \"rápido\" tell this sentence apart."
-  },
-  "reason": "There is no homophone option here, but the explanation misclassifies cocer/coser as a b/v pair."
- },
- "es:question:esa2p28l1/esa2p28q3": {
-  "patch": {
-   "explanation": "The audio says \"Nunca aprendí a coser rápido.\" With seseo, \"coser\" (to sew) sounds like \"cocer\" (to cook), so the words \"Nunca aprendí\" and \"rápido\" identify this sentence."
-  },
-  "reason": "The options differ in other words, but the explanation misclassifies cocer/coser as b/v."
- },
- "es:question:esa2p28l1/esa2p28q4": {
-  "patch": {
-   "explanation": "The audio says \"Decidió rebelarse ante todos.\" \"Rebelarse\" (to rebel) sounds like \"revelarse\" because b and v are pronounced alike, so listen for \"Decidió\" and \"ante todos\"."
-  },
-  "reason": "The homophone options puya/pulla are both wrong and differ from the audio, so there is no second answer, but the explanation is generic and contains the cocer/coser error."
- },
- "es:question:esa2p28l2/esa2p28q6": {
-  "patch": {
-   "explanation": "The audio says \"Nadie esperaba que fuera a rebelarse.\" Because b and v sound the same in Spanish, \"rebelarse\" (to rebel) sounds exactly like \"revelarse\" (to be revealed), so context tells you which word it is."
-  },
-  "reason": "The key is correct and no option sounds like the audio, but the explanation ends with a generic lesson summary instead of naming the sound pair in this sentence."
- },
- "es:question:esa2p28l2/esa2p28q7": {
-  "patch": {
-   "explanation": "The audio says \"Nadie esperaba que fuera a revelarse.\" In Spanish b and v sound the same, so \"revelarse\" (to reveal oneself) sounds like \"rebelarse\" (to rebel); only one option is this whole sentence."
-  },
-  "reason": "No option sounds like the key, so it has one correct answer, but the shared explanation wrongly lists ojear/hojear as yeísmo (that pair differs only by a silent h) and never addresses this sentence."
- },
- "es:question:esa2p28l2/esa2p28q8": {
-  "patch": {
-   "choices": [
-    "Le lanzó una pulla sin piedad.",
-    "Le lanzó una broma sin piedad.",
-    "Nunca aprendí a coser rápido.",
-    "Todos notaron la pulla en su comentario."
-   ],
-   "explanation": "The audio says \"Le lanzó una pulla sin piedad.\" With yeísmo, ll and y sound the same, so \"pulla\" (a jab, a dig) sounds like \"puya\"; listen for the rest of the sentence to choose."
-  },
-  "reason": "Under yeísmo, option B \"puya\" sounds exactly like the key \"pulla\", so a learner who picks B is marked wrong for a right hearing."
- },
- "es:question:esa2p28l2/esa2p28q9": {
-  "patch": {
-   "choices": [
-    "Le lanzó una puya sin piedad.",
-    "Le lanzó una broma sin piedad.",
-    "Todos notaron la puya en su comentario.",
-    "Prefería ojear la revista antes de comprarla."
-   ],
-   "explanation": "The audio says \"Le lanzó una puya sin piedad.\" With yeísmo, y and ll sound the same, so \"puya\" sounds like \"pulla\"; the start of the sentence tells you which option it is."
-  },
-  "reason": "Option B \"pulla\" is a homophone of the key \"puya\" under yeísmo, so it is a second correct answer."
- },
- "es:question:esa2p28l3/esa2p28q10": {
-  "patch": {
-   "choices": [
-    "Decidió rebelarse ante todos.",
-    "Todos notaron la burla en su comentario.",
-    "Le lanzó una pulla sin piedad.",
-    "Todos notaron la pulla en su comentario."
-   ],
-   "explanation": "The audio says \"Todos notaron la pulla en su comentario.\" With yeísmo, \"pulla\" sounds like \"puya\"; here the sentence starts with \"Todos notaron\" and the word is not \"burla\"."
-  },
-  "reason": "Option B differs from the key only by puya/pulla, which sound identical under yeísmo."
- },
- "es:question:esa2p28l3/esa2p28q11": {
-  "patch": {
-   "choices": [
-    "Decidió revelarse ante todos.",
-    "Le lanzó una puya sin piedad.",
-    "Todos notaron la puya en su comentario.",
-    "Todos notaron la burla en su comentario."
-   ],
-   "explanation": "The audio says \"Todos notaron la puya en su comentario.\" With yeísmo, \"puya\" sounds like \"pulla\"; the sentence starts with \"Todos notaron\" and the word is not \"burla\"."
-  },
-  "reason": "Option D \"pulla\" is a homophone of the key \"puya\", so it is a second correct answer."
- },
- "es:question:esa2p28l3/esa2p28q12": {
-  "patch": {
-   "choices": [
-    "Se puso a hojear el periódico.",
-    "Se puso a leer el periódico.",
-    "El niño no debía rallar eso.",
-    "Prefería hojear la revista antes de comprarla."
-   ],
-   "explanation": "The audio says \"Se puso a hojear el periódico.\" The h in \"hojear\" (to leaf through) is silent, so it sounds like \"ojear\"; the verb here is not \"leer\", and the object is \"el periódico\"."
-  },
-  "reason": "The h is silent, so option B \"ojear\" sounds exactly like the key \"hojear\"; the explanation also wrongly calls this pair yeísmo."
- },
- "es:question:esa2p28l3/esa2p28q13": {
-  "patch": {
-   "choices": [
-    "Se puso a leer el periódico.",
-    "Se puso a ojear el periódico.",
-    "Prefería ojear la revista antes de comprarla.",
-    "Nunca aprendí a coser rápido."
-   ],
-   "explanation": "The audio says \"Se puso a ojear el periódico.\" \"Ojear\" (to glance at) sounds like \"hojear\" because the h is silent; the verb here is not \"leer\", and the object is \"el periódico\"."
-  },
-  "reason": "Option A \"hojear\" is a homophone of the key \"ojear\" because the h is silent."
- },
- "es:question:esa2p28l3/esa2p28q14": {
-  "patch": {
-   "choices": [
-    "Se puso a hojear el periódico.",
-    "Prefería leer la revista antes de comprarla.",
-    "Todos notaron la pulla en su comentario.",
-    "Prefería hojear la revista antes de comprarla."
-   ],
-   "explanation": "The audio says \"Prefería hojear la revista antes de comprarla.\" The h is silent, so \"hojear\" sounds like \"ojear\"; the sentence is about \"la revista\", and the verb is not \"leer\"."
-  },
-  "reason": "Option B \"ojear\" sounds identical to the key \"hojear\", so both match the audio."
- },
- "es:question:esa2p28l4/esa2p28q15": {
-  "patch": {
-   "choices": [
-    "Se puso a ojear el periódico.",
-    "Prefería ojear la revista antes de comprarla.",
-    "Alguien había dejado la taza en la cocina.",
-    "Prefería leer la revista antes de comprarla."
-   ],
-   "explanation": "The audio says \"Prefería ojear la revista antes de comprarla.\" The h is silent, so \"ojear\" sounds like \"hojear\"; the sentence is about \"la revista\", and the verb is not \"leer\"."
-  },
-  "reason": "Option D \"hojear\" sounds identical to the key \"ojear\", so both match the audio."
- },
- "es:question:esa2p28l4/esa2p28q16": {
-  "patch": {
-   "explanation": "The audio says \"El niño no debía rayar eso.\" With yeísmo, \"rayar\" (to scratch) sounds like \"rallar\" (to grate); only one option is this whole sentence."
-  },
-  "reason": "No option sounds like the key, so the item has one answer, but the shared explanation wrongly calls ojear/hojear yeísmo."
- },
- "es:question:esa2p28l4/esa2p28q18": {
-  "patch": {
-   "explanation": "The audio says \"Le pedí que no rayara la mesa.\" \"Rayara\" (from rayar, to scratch) sounds like \"rallara\" under yeísmo, and scratching a table makes sense here."
-  },
-  "reason": "Options A and C sound alike but neither is the key, so there is one answer; the explanation, though, misclassifies ojear/hojear as yeísmo."
- },
- "es:question:esa2p28l5/esa2p28q22": {
-  "patch": {
-   "explanation": "The audio says \"Alguien había dejado la taza en la cocina.\" With seseo, \"taza\" (cup) sounds like \"tasa\" (rate), but a cup left in the kitchen is the only meaning that fits."
-  },
-  "reason": "The key is correct and the other options are clearly different sentences, but the explanation is a generic lesson summary."
  },
  "es:question:esa2p29l1/esa2p29q1": {
   "patch": {
@@ -27454,309 +27160,6 @@
    "explanation": "\"La reunión fue muy productiva.\" uses the preterite \"fue\" for a finished event, and \"productiva\" is feminine to agree with \"la reunión\"."
   },
   "reason": "The answers are correct, but the explanation is a garbled generic template."
- },
- "es:question:esb1p28l1/esb1p28q0": {
-  "patch": {
-   "choices": [
-    "Nadie sabía que había un poso ahí.",
-    "No sabía qué hacer con el vaso.",
-    "El cazo llevaba años guardado en la alacena.",
-    "No sabía qué hacer con el cazo."
-   ],
-   "explanation": "The audio says \"No sabía qué hacer con el cazo.\" \"Vaso\" sounds different from \"cazo\", and the other options are different sentences."
-  },
-  "reason": "Under seseo 'caso' sounds exactly like the audio's 'cazo', so option B is a second correct answer."
- },
- "es:question:esb1p28l1/esb1p28q1": {
-  "patch": {
-   "choices": [
-    "No sabía qué hacer con el caso.",
-    "Nadie sabía que había un pozo ahí.",
-    "No sabía qué hacer con el vaso.",
-    "Le devolvieron el caso al día siguiente."
-   ],
-   "explanation": "The audio says \"No sabía qué hacer con el caso.\" \"Vaso\" sounds different from \"caso\", and the other options are different sentences."
-  },
-  "reason": "Under seseo 'cazo' sounds exactly like the audio's 'caso', so option C is a second correct answer."
- },
- "es:question:esb1p28l1/esb1p28q2": {
-  "patch": {
-   "choices": [
-    "Encontraron un pozo al fondo del jardín.",
-    "El cazo llevaba años guardado en la alacena.",
-    "Le devolvieron el cazo al día siguiente.",
-    "Le devolvieron el vaso al día siguiente."
-   ],
-   "explanation": "The audio says \"Le devolvieron el cazo al día siguiente.\" \"Vaso\" sounds different from \"cazo\", and the other options are different sentences."
-  },
-  "reason": "Under seseo 'caso' sounds exactly like the audio's 'cazo', so option D is a second correct answer."
- },
- "es:question:esb1p28l1/esb1p28q3": {
-  "patch": {
-   "choices": [
-    "Encontraron un pozo al fondo del jardín.",
-    "Encontraron un poso al fondo del jardín.",
-    "Le devolvieron el vaso al día siguiente.",
-    "Le devolvieron el caso al día siguiente."
-   ],
-   "explanation": "The audio says \"Le devolvieron el caso al día siguiente.\" \"Vaso\" sounds different from \"caso\", and the other options are different sentences."
-  },
-  "reason": "Under seseo 'cazo' sounds exactly like the audio's 'caso', so option C is a second correct answer."
- },
- "es:question:esb1p28l1/esb1p28q4": {
-  "patch": {
-   "choices": [
-    "Encontraron un pozo al fondo del jardín.",
-    "Encontraron un hoyo al fondo del jardín.",
-    "Nadie sabía que había un pozo ahí.",
-    "Le devolvieron el cazo al día siguiente."
-   ],
-   "explanation": "The audio says \"Encontraron un pozo al fondo del jardín.\" \"Hoyo\" sounds clearly different from \"pozo\", and the other options are different sentences."
-  },
-  "reason": "Under seseo 'poso' sounds exactly like the audio's 'pozo', so option B is a second correct answer."
- },
- "es:question:esb1p28l2/esb1p28q5": {
-  "patch": {
-   "choices": [
-    "Nadie sabía que había un poso ahí.",
-    "Encontraron un hoyo al fondo del jardín.",
-    "Encontraron un poso al fondo del jardín.",
-    "Le devolvieron el caso al día siguiente."
-   ],
-   "explanation": "The audio says \"Encontraron un poso al fondo del jardín.\" \"Hoyo\" sounds clearly different from \"poso\", and the other options are different sentences."
-  },
-  "reason": "Under seseo 'pozo' sounds exactly like the audio's 'poso', so option B is a second correct answer."
- },
- "es:question:esb1p28l2/esb1p28q6": {
-  "patch": {
-   "choices": [
-    "Cerca de la granja había un pozo.",
-    "Nadie sabía que había un hoyo ahí.",
-    "Nadie sabía que había un pozo ahí.",
-    "El agua brotaba del pozo constantemente."
-   ],
-   "explanation": "The audio says \"Nadie sabía que había un pozo ahí.\" \"Hoyo\" sounds clearly different from \"pozo\", and the other options are different sentences."
-  },
-  "reason": "Under seseo 'poso' sounds exactly like the audio's 'pozo', so option B is a second correct answer."
- },
- "es:question:esb1p28l2/esb1p28q7": {
-  "patch": {
-   "choices": [
-    "Nadie sabía que había un poso ahí.",
-    "No sabía qué hacer con el caso.",
-    "Cerca de la granja había un poso.",
-    "Nadie sabía que había un hoyo ahí."
-   ],
-   "explanation": "The audio says \"Nadie sabía que había un poso ahí.\" \"Hoyo\" sounds clearly different from \"poso\", and the other options are different sentences."
-  },
-  "reason": "Under seseo 'pozo' sounds exactly like the audio's 'poso', so option D is a second correct answer."
- },
- "es:question:esb1p28l2/esb1p28q8": {
-  "patch": {
-   "choices": [
-    "Cerca de la granja había un pozo.",
-    "Nadie sabía que había un poso ahí.",
-    "Cerca de la granja había un hoyo.",
-    "Nadie sabía que había un pozo ahí."
-   ],
-   "explanation": "The audio says \"Cerca de la granja había un pozo.\" \"Hoyo\" sounds clearly different from \"pozo\", and the other options are different sentences."
-  },
-  "reason": "Under seseo 'poso' sounds exactly like the audio's 'pozo', so option C is a second correct answer."
- },
- "es:question:esb1p28l2/esb1p28q9": {
-  "patch": {
-   "choices": [
-    "Cerca de la casa había un pozo.",
-    "El agua brotaba del pozo constantemente.",
-    "Nadie sabía que había un pozo ahí.",
-    "Cerca de la granja había un pozo."
-   ],
-   "answer": "Cerca de la granja había un pozo.",
-   "audioText": "Cerca de la granja había un pozo.",
-   "explanation": "The audio says \"Cerca de la granja había un pozo.\" A \"pozo\" is a well; in Latin American Spanish it sounds the same as \"poso\" (sediment), so listen to the rest of the sentence: \"granja\", not \"casa\"."
-  },
-  "reason": "Under seseo, option A (pozo) sounds identical to the key, and \"un poso\" (sediment) near a farm is unnatural, so the key becomes the natural \"pozo\" sentence and the homophone option is replaced.",
-  "keyChange": true
- },
- "es:question:esb1p28l3/esb1p28q10": {
-  "patch": {
-   "choices": [
-    "Dijeron que todo estaba perfectamente cocido.",
-    "Revisaron si estaba bien cocido.",
-    "La tela estaba bien cosida.",
-    "El material estaba bien cocido."
-   ],
-   "explanation": "The audio says \"El material estaba bien cocido.\" In Latin American Spanish \"cocido\" (cooked, fired) sounds the same as \"cosido\" (sewn), so the start of the sentence, \"El material\", is what tells you the answer."
-  },
-  "reason": "Under seseo, cocido and cosido are both pronounced /kosido/, so option C sounds exactly like the key."
- },
- "es:question:esb1p28l3/esb1p28q11": {
-  "patch": {
-   "choices": [
-    "Revisaron si estaba bien cosido.",
-    "Dijeron que todo estaba perfectamente cosido.",
-    "El material estaba bien cosido.",
-    "La carne estaba bien cocida."
-   ],
-   "explanation": "The audio says \"El material estaba bien cosido.\" \"Cosido\" (sewn) sounds like \"cocido\" in Latin American Spanish, so the opening words \"El material\" tell you which sentence you heard."
-  },
-  "reason": "Option D (cocido) is a seseo homophone of the key (cosido), so it is a second correct answer by ear."
- },
- "es:question:esb1p28l3/esb1p28q12": {
-  "patch": {
-   "choices": [
-    "Dijeron que todo estaba perfectamente cocido.",
-    "Dijeron que la carne estaba bien cocida.",
-    "Revisaron si estaba bien cocido.",
-    "El material estaba bien cocido."
-   ],
-   "explanation": "The audio says \"Dijeron que todo estaba perfectamente cocido.\" The words \"todo\" and \"perfectamente\" tell you which sentence it is, because \"cocido\" sounds the same as \"cosido\" in Latin American Spanish."
-  },
-  "reason": "Option B differs from the key only by cocido/cosido, which sound identical under seseo."
- },
- "es:question:esb1p28l3/esb1p28q13": {
-  "patch": {
-   "choices": [
-    "Revisaron si estaba bien cosido.",
-    "Dijeron que la tela estaba bien cosida.",
-    "Dijeron que todo estaba perfectamente cosido.",
-    "El material estaba bien cosido."
-   ],
-   "explanation": "The audio says \"Dijeron que todo estaba perfectamente cosido.\" Listen for \"todo\" and \"perfectamente\", because \"cosido\" (sewn) sounds the same as \"cocido\" in Latin American Spanish."
-  },
-  "reason": "Option B (cocido) is a seseo homophone of the key (cosido)."
- },
- "es:question:esb1p28l3/esb1p28q14": {
-  "patch": {
-   "choices": [
-    "Revisaron si estaba bien cocinado.",
-    "Revisaron si estaba bien cocido.",
-    "El material estaba bien cosido.",
-    "El material estaba bien cocido."
-   ],
-   "explanation": "The audio says \"Revisaron si estaba bien cocido.\" The sentence starts with \"Revisaron si\", and \"cocido\" is shorter than \"cocinado\"."
-  },
-  "reason": "Option A (cosido) sounds identical to the key (cocido) under seseo."
- },
- "es:question:esb1p28l4/esb1p28q15": {
-  "patch": {
-   "choices": [
-    "Revisaron si estaba bien cosido.",
-    "Dijeron que todo estaba perfectamente cosido.",
-    "Revisaron si estaba bien cerrado.",
-    "El material estaba bien cosido."
-   ],
-   "explanation": "The audio says \"Revisaron si estaba bien cosido.\" The sentence starts with \"Revisaron si\" and ends with \"cosido\" (sewn), not \"cerrado\" (closed)."
-  },
-  "reason": "Option C (cocido) is a seseo homophone of the key (cosido)."
- },
- "es:question:esb1p28l4/esb1p28q16": {
-  "patch": {
-   "choices": [
-    "El equipo tuvo que grabar el evento completo.",
-    "Decidieron grabar la reunión completa.",
-    "Decidieron grabar el evento completo.",
-    "Decidieron filmar el evento completo."
-   ],
-   "explanation": "The audio says \"Decidieron grabar el evento completo.\" Listen for \"Decidieron\" at the start and \"el evento\" after the verb \"grabar\" (to record)."
-  },
-  "reason": "Option B differs from the key only by b/v, which sound the same in all Spanish; option D \"gravar el evento\" (to tax the event) is nonsense."
- },
- "es:question:esb1p28l4/esb1p28q17": {
-  "patch": {
-   "choices": [
-    "El gobierno tuvo que gravar los productos importados.",
-    "Decidieron gravar los productos importados.",
-    "Decidieron gravar los productos nacionales.",
-    "Decidieron revisar los productos importados."
-   ],
-   "answer": "Decidieron gravar los productos importados.",
-   "audioText": "Decidieron gravar los productos importados.",
-   "explanation": "The audio says \"Decidieron gravar los productos importados.\" Here \"gravar\" means to tax; it sounds the same as \"grabar\" (to record), so the meaning tells you the spelling."
-  },
-  "reason": "\"Gravar el evento\" (to tax the event) is nonsense, and it sounds identical to the \"grabar\" option, so the item is rebuilt around a natural tax sentence with no homophone option.",
-  "keyChange": true
- },
- "es:question:esb1p28l4/esb1p28q18": {
-  "patch": {
-   "choices": [
-    "El equipo tuvo que grabar el evento completo.",
-    "El equipo quiso grabar el evento completo.",
-    "Decidieron grabar el evento completo.",
-    "El equipo tuvo que grabar la ceremonia completa."
-   ],
-   "explanation": "The audio says \"El equipo tuvo que grabar el evento completo.\" Listen for \"tuvo que\", not \"quiso\", and \"el evento\", not \"la ceremonia\"."
-  },
-  "reason": "Option D (gravar) sounds identical to the key (grabar), and option B \"gravar el evento\" is nonsense."
- },
- "es:question:esb1p28l4/esb1p28q19": {
-  "patch": {
-   "choices": [
-    "El gobierno quiso gravar las bebidas azucaradas.",
-    "El gobierno tuvo que prohibir las bebidas azucaradas.",
-    "El equipo tuvo que grabar el evento completo.",
-    "El gobierno tuvo que gravar las bebidas azucaradas."
-   ],
-   "answer": "El gobierno tuvo que gravar las bebidas azucaradas.",
-   "audioText": "El gobierno tuvo que gravar las bebidas azucaradas.",
-   "explanation": "The audio says \"El gobierno tuvo que gravar las bebidas azucaradas.\" \"Gravar\" means to tax, which fits a government and drinks; it sounds the same as \"grabar\" (to record)."
-  },
-  "reason": "The key \"tuvo que gravar el evento\" is nonsense and sounds identical to option A, so the item is rebuilt around a natural tax sentence.",
-  "keyChange": true
- },
- "es:question:esb1p28l5/esb1p28q20": {
-  "patch": {
-   "choices": [
-    "Decidieron grabar el evento completo.",
-    "Prometieron grabar toda la reunión.",
-    "El equipo tuvo que grabar el evento completo.",
-    "Prometieron grabar toda la ceremonia."
-   ],
-   "explanation": "The audio says \"Prometieron grabar toda la ceremonia.\" Listen for \"Prometieron\" and for \"ceremonia\", not \"reunión\", at the end."
-  },
-  "reason": "Option B (gravar) is a b/v homophone of the key and describes a nonsense action."
- },
- "es:question:esb1p28l5/esb1p28q21": {
-  "patch": {
-   "choices": [
-    "El equipo tuvo que grabar el evento completo.",
-    "Prometieron grabar toda la ceremonia.",
-    "Decidieron grabar el evento completo.",
-    "Prometieron filmar toda la ceremonia."
-   ],
-   "answer": "Prometieron grabar toda la ceremonia.",
-   "audioText": "Prometieron grabar toda la ceremonia.",
-   "explanation": "The audio says \"Prometieron grabar toda la ceremonia.\" In Spanish b and v sound the same, so \"grabar\" (to record) and \"gravar\" (to tax) are told apart only by meaning, and recording a ceremony is what makes sense here."
-  },
-  "reason": "\"grabar\" and \"gravar\" sound the same in all Spanish, so D cannot be told apart from the key by ear; also \"gravar\" (to tax) makes the key and options A and C nonsensical, so the key should be the sensible \"grabar\" sentence at the same position, with a distractor that sounds different.",
-  "keyChange": true
- },
- "es:question:esb1p28l5/esb1p28q22": {
-  "patch": {
-   "choices": [
-    "Cerca de la granja había un pozo.",
-    "Encontraron un pozo al fondo del jardín.",
-    "El agua brotaba del manantial constantemente.",
-    "El agua brotaba del pozo constantemente."
-   ],
-   "explanation": "The audio says \"El agua brotaba del pozo constantemente.\" In Latin American Spanish \"pozo\" (well) and \"poso\" (sediment) sound the same, so meaning tells you it is \"pozo\": water flows from a well."
-  },
-  "reason": "Under seseo \"poso\" sounds exactly like \"pozo\", so option C is a second answer by ear."
- },
- "es:question:esb1p28l5/esb1p28q23": {
-  "patch": {
-   "choices": [
-    "Encontraron un pozo al fondo del jardín.",
-    "Nadie sabía que había un pozo ahí.",
-    "El agua brotaba del pozo constantemente.",
-    "El agua brotaba del manantial constantemente."
-   ],
-   "answer": "El agua brotaba del pozo constantemente.",
-   "audioText": "El agua brotaba del pozo constantemente.",
-   "explanation": "The audio says \"El agua brotaba del pozo constantemente.\" With seseo \"pozo\" and \"poso\" sound the same, but only a well (\"pozo\") makes sense as a place water flows from."
-  },
-  "reason": "\"pozo\" in D sounds identical to the key under seseo, and \"poso\" (sediment) makes the key and options A and B nonsensical, so the key should be the \"pozo\" sentence at the same position, with a distractor that sounds different.",
-  "keyChange": true
  },
  "es:question:esb1p29l1/esb1p29q1": {
   "patch": {
@@ -32677,207 +32080,6 @@
   },
   "reason": "The answers are correct, but the explanation is generic."
  },
- "es:question:esb2p28l1/esb2p28q2": {
-  "patch": {
-   "explanation": "The audio says \"Nadie se atrevía a acercarse a la cima.\" \"Cima\" (summit) sounds like \"sima\" (chasm) under seseo, but no other option shares this sentence's wording."
-  },
-  "reason": "No option sounds like the audio, so the item works. The explanation is a generic lesson blurb and wrongly calls abrasar/abrazar a b/v pair, when it is an s/z seseo pair."
- },
- "es:question:esb2p28l1/esb2p28q3": {
-  "patch": {
-   "explanation": "The audio says \"Nadie se atrevía a acercarse a la sima.\" \"Sima\" (chasm) sounds like \"cima\" (summit), but only this option has the words \"Nadie se atrevía a acercarse\"."
-  },
-  "reason": "No option sounds like the audio. The explanation is generic and mislabels abrasar/abrazar as a b/v pair."
- },
- "es:question:esb2p28l1/esb2p28q4": {
-  "patch": {
-   "explanation": "The audio says \"Desde arriba se veía toda la cima.\" Only this option starts with \"Desde arriba\", even though \"cima\" and \"sima\" sound the same.",
-   "choices": [
-    "Nadie se atrevía a acercarse a la sima.",
-    "Nadie se atrevía a acercarse a la cima.",
-    "El concejo municipal se reunió por la tarde.",
-    "Desde arriba se veía toda la cima."
-   ]
-  },
-  "reason": "Options A and B are different sentences, so there is no second answer. The explanation is generic and mislabels abrasar/abrazar as a b/v pair. / The key is unique by ear, but the distractor \"El concejo escolar\" is a wrong collocation (a \"concejo\" is a town council), so learners see unnatural Spanish; \"concejo municipal\" keeps the homophone idea and is correct."
- },
- "es:question:esb2p28l2/esb2p28q5": {
-  "patch": {
-   "choices": [
-    "Nadie se atrevía a acercarse a la sima.",
-    "Desde arriba se veía toda la sima.",
-    "El concejo escolar se reunió por la tarde.",
-    "Llegaron hasta la cima de la montaña."
-   ],
-   "explanation": "The audio says \"Desde arriba se veía toda la sima.\" Here \"sima\" means a deep chasm seen from above, and only this option starts with \"Desde arriba se veía\"."
-  },
-  "reason": "There is no homophone of the key among the options. Option D misuses \"sima\" for a mountain top, which models a wrong spelling, and the explanation is generic with a false b/v label."
- },
- "es:question:esb2p28l2/esb2p28q6": {
-  "patch": {
-   "choices": [
-    "El alcalde presentó el proyecto a todos.",
-    "El alcalde presentó el concejo a todos.",
-    "Todos hablaban sobre el consejo del pueblo.",
-    "Todos hablaban sobre el concejo del pueblo."
-   ],
-   "explanation": "The audio says \"El alcalde presentó el concejo a todos.\" \"Concejo\" means town council, and it sounds like \"consejo\" (advice) in Latin American Spanish."
-  },
-  "reason": "Option A sounds identical to the key under seseo, so I replaced it with an audibly different word."
- },
- "es:question:esb2p28l2/esb2p28q7": {
-  "patch": {
-   "choices": [
-    "El alcalde presentó el consejo a todos.",
-    "El alcalde presentó el proyecto a todos.",
-    "Todos hablaban sobre el consejo del pueblo.",
-    "Todos hablaban sobre el concejo del pueblo."
-   ],
-   "explanation": "The audio says \"El alcalde presentó el consejo a todos.\" The mayor presented a piece of advice (\"consejo\"), and the sentence starts with \"El alcalde presentó\", not \"Todos hablaban\"."
-  },
-  "reason": "Option B sounds identical to the key under seseo, so I replaced it with an audibly different word."
- },
- "es:question:esb2p28l2/esb2p28q8": {
-  "patch": {
-   "choices": [
-    "El alcalde presentó el concejo a todos.",
-    "Todos hablaban sobre el mercado del pueblo.",
-    "Todos hablaban sobre el concejo del pueblo.",
-    "Nadie esperaba que el concejo cambiara de opinión."
-   ],
-   "explanation": "The audio says \"Todos hablaban sobre el concejo del pueblo.\" Everyone was talking about the town council (\"concejo\"), not the market."
-  },
-  "reason": "Option B sounds identical to the key under seseo, so I replaced it with an audibly different word."
- },
- "es:question:esb2p28l2/esb2p28q9": {
-  "patch": {
-   "choices": [
-    "El alcalde presentó el consejo a todos.",
-    "El alcalde presentó el concejo a todos.",
-    "Todos hablaban sobre el consejo del pueblo.",
-    "Todos hablaban sobre la fiesta del pueblo."
-   ],
-   "explanation": "The audio says \"Todos hablaban sobre el consejo del pueblo.\" Everyone was talking about the town's advice (\"consejo\"), not its festival."
-  },
-  "reason": "Option D sounds identical to the key under seseo, so I replaced it with an audibly different word."
- },
- "es:question:esb2p28l3/esb2p28q10": {
-  "patch": {
-   "choices": [
-    "Nadie se atrevía a acercarse a la sima.",
-    "Nadie sabía que alguien los estaba acechando.",
-    "Nadie esperaba que el jefe cambiara de opinión.",
-    "Nadie esperaba que el concejo cambiara de opinión."
-   ],
-   "explanation": "The audio says \"Nadie esperaba que el concejo cambiara de opinión.\" It is the council (\"concejo\") that changed its mind, not the boss."
-  },
-  "reason": "Option C sounds identical to the key under seseo, so I replaced it with an audibly different word."
- },
- "es:question:esb2p28l3/esb2p28q11": {
-  "patch": {
-   "choices": [
-    "Todos hablaban sobre el consejo del pueblo.",
-    "Nadie se atrevía a acercarse a la cima.",
-    "Nadie esperaba que el consejo cambiara de opinión.",
-    "Nadie esperaba que el jefe cambiara de opinión."
-   ],
-   "explanation": "The audio says \"Nadie esperaba que el consejo cambiara de opinión.\" It is the board (\"consejo\") that changed its mind, not the boss."
-  },
-  "reason": "Option D sounds identical to the key under seseo, so I replaced it with an audibly different word."
- },
- "es:question:esb2p28l3/esb2p28q12": {
-  "patch": {
-   "choices": [
-    "El animal empezó a acechar a su presa.",
-    "Sintió que el fuego lo iba a abrasar.",
-    "El calor parecía arrasar todo a su paso.",
-    "El calor parecía abrasar todo a su paso."
-   ],
-   "explanation": "The audio says \"El calor parecía abrasar todo a su paso.\" \"Abrasar\" means to scorch, which fits heat, and its single \"r\" sounds different from the rolled \"rr\" in \"arrasar\"."
-  },
-  "reason": "Option C sounds identical to the key because of seseo (s/z), not b/v. I replaced it with an audibly different verb."
- },
- "es:question:esb2p28l3/esb2p28q14": {
-  "patch": {
-   "explanation": "The audio says \"Sintió que el fuego lo iba a abrasar.\" Under seseo \"abrasar\" (to scorch) and \"abrazar\" (to hug) sound the same, so the words around it (el fuego, not su madre) tell you which sentence you heard."
-  },
-  "reason": "Option D differs in its other words (su madre and el fuego), so only B matches the audio, but the explanation wrongly calls abrasar/abrazar a b/v pair when it is an s/z seseo pair."
- },
- "es:question:esb2p28l4/esb2p28q15": {
-  "patch": {
-   "explanation": "The audio says \"Sintió que su madre lo iba a abrazar.\" Under seseo \"abrazar\" (to hug) sounds like \"abrasar\" (to scorch), so the words around it (su madre, not el fuego) identify the sentence."
-  },
-  "reason": "Option B differs in its subject (el fuego and su madre), so it is not a second answer, but the explanation wrongly labels abrasar/abrazar as b/v."
- },
- "es:question:esb2p28l4/esb2p28q16": {
-  "patch": {
-   "explanation": "The audio says \"El animal empezó a acechar a su presa.\" \"Acechar\" (to stalk) sounds like \"asechar\" under seseo, so match the whole sentence: el animal and su presa appear only in this option."
-  },
-  "reason": "No option sounds like the audio, so the key is unique, but the explanation is generic and mislabels abrasar/abrazar as b/v."
- },
- "es:question:esb2p28l4/esb2p28q18": {
-  "patch": {
-   "choices": [
-    "Nadie sabía que alguien los estaba escuchando.",
-    "Nadie se atrevía a acercarse a la sima.",
-    "Nadie se atrevía a acercarse a la cima.",
-    "Nadie sabía que alguien los estaba acechando."
-   ],
-   "explanation": "The audio says \"Nadie sabía que alguien los estaba acechando.\" \"Acechando\" (stalking) is the word you heard, and the other sentences use different words (escuchando, acercarse)."
-  },
-  "reason": "Under seseo, options A (asechando) and D (acechando) sound identical, so two options match the audio."
- },
- "es:question:esb2p28l4/esb2p28q19": {
-  "patch": {
-   "choices": [
-    "Nadie sabía que alguien los estaba asechando.",
-    "Nadie se atrevía a acercarse a la sima.",
-    "Nadie se atrevía a acercarse a la cima.",
-    "Nadie sabía que alguien los estaba escuchando."
-   ],
-   "explanation": "The audio says \"Nadie sabía que alguien los estaba asechando.\" \"Asechando\" (plotting against) sounds nothing like \"escuchando\", and the other options use different sentences."
-  },
-  "reason": "Under seseo, options A (asechando) and D (acechando) sound identical, so two options match the audio."
- },
- "es:question:esb2p28l5/esb2p28q20": {
-  "patch": {
-   "explanation": "The audio says \"El cazador decidió acechar en silencio.\" Only this option has el cazador and en silencio, and \"acechar\" means to lie in wait."
-  },
-  "reason": "No distractor sounds like the audio, so the key is unique, but the explanation is generic and mislabels abrasar/abrazar as b/v."
- },
- "es:question:esb2p28l5/esb2p28q22": {
-  "patch": {
-   "choices": [
-    "El alcalde presentó el consejo a todos.",
-    "El consejo escolar se reunió por la tarde.",
-    "Nadie se atrevía a acercarse a la sima.",
-    "El consejo escolar se reunió por la mañana."
-   ],
-   "explanation": "The audio says \"El consejo escolar se reunió por la tarde.\" Listen for the end of the sentence: it says por la tarde, not por la mañana."
-  },
-  "reason": "Under seseo, options B (consejo) and D (concejo) sound identical, so two options match the audio."
- },
- "es:question:esb2p28l5/esb2p28q23": {
-  "patch": {
-   "audioText": "El concejo municipal se reunió por la tarde.",
-   "choices": [
-    "El consejo escolar se reunió por la tarde.",
-    "Desde arriba se veía toda la sima.",
-    "Nadie se atrevía a acercarse a la cima.",
-    "El concejo municipal se reunió por la tarde."
-   ],
-   "answer": "El concejo municipal se reunió por la tarde.",
-   "explanation": "The audio says \"El concejo municipal se reunió por la tarde.\" \"Concejo\" (town council) sounds like \"consejo\" under seseo, so the word municipal, not escolar, tells you which sentence you heard."
-  },
-  "reason": "Options A and D sound identical under seseo, and \"concejo escolar\" is unnatural because a concejo is a town council, so the key and audio are changed to \"El concejo municipal se reunió por la tarde.\", which the learner can tell apart by ear.",
-  "keyChange": true
- },
- "es:question:esb2p28l5/esb2p28q24": {
-  "patch": {
-   "explanation": "The audio says \"La sima resultó ser más profunda de lo esperado.\" Only this option contains más profunda, which also fits \"sima\" (a deep pit) rather than its sound-alike \"cima\" (a summit)."
-  },
-  "reason": "The distractors are different sentences, so the key is unique, but the explanation is generic and mislabels abrasar/abrazar as b/v."
- },
  "es:question:esb2p29l1/esb2p29q0": {
   "patch": {
    "explanation": "Say \"El cambio climático afecta a todo el planeta.\" with the stress on \"cli-MÁ-ti-co\" and \"pla-NE-ta\"."
@@ -37096,57 +36298,6 @@
   },
   "reason": "The explanation is generic."
  },
- "es:question:esc1p28l3/esc1p28q13": {
-  "patch": {
-   "choices": [
-    "La expedición descendió finalmente a la sima más profunda.",
-    "El juez decidió encausar al acusado de inmediato.",
-    "El comité reconoció haber alcanzado la sima del proceso.",
-    "Los diplomáticos llegaron hasta la sima de las negociaciones."
-   ]
-  },
-  "reason": "Distractor A, \"la sima más alta\", is a contradiction (a sima is a deep chasm), so it shows learners a nonsense sentence; replace it with the corrected expedition sentence. The key is unique and its figurative low point is acceptable."
- },
- "es:question:esc1p28l4/esc1p28q16": {
-  "patch": {
-   "choices": [
-    "La expedición alcanzó finalmente la cima más lejana.",
-    "La expedición alcanzó por fin la cima más alta.",
-    "La expedición alcanzó finalmente la cima más alta.",
-    "La excursión alcanzó finalmente la cima más alta."
-   ],
-   "explanation": "The audio says \"La expedición alcanzó finalmente la cima más alta.\" Each of the other options changes one word: \"lejana\" instead of \"alta\", \"por fin\" instead of \"finalmente\", or \"excursión\" instead of \"expedición\"."
-  },
-  "reason": "The distractors are completely different sentences, so the item does not test listening closely, and the explanation is a generic lesson blurb. / 'Por fin' sounds clearly different from 'finalmente', so it is not a second answer, but the cima/sima note refers to a word that appears in no option and should be replaced by what actually distinguishes the choices."
- },
- "es:question:esc1p28l5/esc1p28q20": {
-  "patch": {
-   "choices": [
-    "Nadie sospechaba que el escándalo nos estuviera acechando.",
-    "Nadie sospechaba que el escándalo los estuviera acechando.",
-    "Nadie sospechaba que el escándalo los estuviera esperando.",
-    "Nadie sospechaba que el escándalo los estuviera aceptando."
-   ],
-   "explanation": "The audio says \"Nadie sospechaba que el escándalo los estuviera acechando.\" \"Acechando\" (lying in wait) fits a scandal threatening them; it sounds like \"asechando\" under seseo, so that spelling is not offered.",
-   "answer": "Nadie sospechaba que el escándalo los estuviera acechando."
-  },
-  "reason": "Options B and C differ only by acechando/asechando, which sound identical under seseo, so a learner who picks C is marked wrong for what they heard. C is replaced with a sound-distinct near miss. / The two baby sentences are unrelated to the audio and easy to rule out, so replace them with near-minimal variants of the audio sentence."
- },
- "es:question:esc1p28l5/esc1p28q21": {
-  "patch": {
-   "audioText": "Nadie sospechaba que sus rivales lo estuvieran asechando.",
-   "choices": [
-    "Nadie sabía que el bebé era varón.",
-    "Nadie sospechaba que el juez fuera a encausarlos.",
-    "Nadie sospechaba que sus rivales lo estuvieran asechando.",
-    "Nadie sabía que el bebé era barón."
-   ],
-   "answer": "Nadie sospechaba que sus rivales lo estuvieran asechando.",
-   "explanation": "The audio says \"Nadie sospechaba que sus rivales lo estuvieran asechando.\" The rivals were plotting traps, which is the meaning of \"asechar\" with an s, a word that sounds the same as \"acechar\" under seseo."
-  },
-  "reason": "Options B and C are homophones under seseo, and 'un escándalo asechando' is semantically odd. The key becomes a natural asechar sentence and B is replaced with a non-homophone. / Under seseo, options B and C sound identical, and a scandal can only \"acechar\", so the key was also misspelled; the key is replaced (key change) and option B is swapped for a sentence that does not sound like it.",
-  "keyChange": true
- },
  "es:question:esc1p29l1/esc1p29q0": {
   "patch": {
    "explanation": "\"Huelga decir que este proyecto es fundamental.\" means \"Needless to say, this project is essential\": \"huelga decir que\" is a formal way to introduce something obvious."
@@ -39737,12 +38888,6 @@
   },
   "reason": "The description tacks \"and more than one wording is right\" onto a topic list, so it reads awkwardly."
  },
- "es:unit-meta:esa1p28u1": {
-  "patch": {
-   "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (casa/caza), b/v (basto/vasto, botar/votar), yeísmo (pollo/poyo), and silent h (onda/honda)."
-  },
-  "reason": "All the pairs are correctly labelled, but 'h-silent' is awkward English and should read 'silent h'."
- },
  "es:unit-meta:esa1p9u1": {
   "patch": {
    "description": "Bigger numbers — Numbers from twenty-one to one hundred, including the tens."
@@ -39755,35 +38900,17 @@
   },
   "reason": "The description joins two unrelated clauses with \"and\", which reads awkwardly in the UI."
  },
- "es:unit-meta:esa2p28u1": {
-  "patch": {
-   "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (taza/tasa, cocer/coser), b/v (rebelarse/revelarse), yeísmo (pulla/puya, rallar/rayar), and silent h (ojear/hojear)."
-  },
-  "reason": "The description teaches false labels: cocer/coser is a seseo pair, not b/v, and ojear/hojear is a silent-h pair, not yeísmo."
- },
  "es:unit-meta:esb1p22u1": {
   "patch": {
    "title": "Reflexive Verbs of Emotion"
   },
   "reason": "\"Emotion Reflexive Verbs\" is a clunky noun stack; \"Reflexive Verbs of Emotion\" reads more naturally and matches the description."
  },
- "es:unit-meta:esb1p28u1": {
-  "patch": {
-   "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (cazo/caso, pozo/poso, cocido/cosido), b/v (grabar/gravar)."
-  },
-  "reason": "Cocido/cosido is a seseo pair (c/s), not a b/v pair, so it is listed under the wrong sound."
- },
  "es:unit-meta:esb2p20u1": {
   "patch": {
    "description": "deber de, puede (ser) que, a lo mejor — Expressions of probability and conjecture."
   },
   "reason": "The bare infinitive \"poder ser que\" is not what learners will meet; the conjugated \"puede (ser) que\" is the form actually used."
- },
- "es:unit-meta:esb2p28u1": {
-  "patch": {
-   "description": "Listen closely — Sentences built around sounds that merge for most Spanish speakers: seseo (cima/sima, concejo/consejo, acechar/asechar, abrasar/abrazar)."
-  },
-  "reason": "Abrasar/abrazar differs in s/z, so it is a seseo pair mislabelled as b/v."
  },
  "es:unit-meta:esb2p5u1": {
   "patch": {
@@ -39802,5 +38929,572 @@
    "description": "Say it your own way — Write idiomatic and formal phrasing in your own words; more than one wording can be right."
   },
   "reason": "The description's second clause reads awkwardly as plain English UI text."
+ },
+ "es:card:esa1p28l1/casa": {
+  "patch": {
+   "meaning": "house",
+   "example": "Mi familia vive en una casa grande."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l1/caza": {
+  "patch": {
+   "meaning": "hunting",
+   "example": "El cazador sale de caza al amanecer."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l1/onda": {
+  "patch": {
+   "meaning": "wave",
+   "example": "Vimos una onda grande en el mar."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l2/honda": {
+  "patch": {
+   "meaning": "deep",
+   "example": "La piscina es muy honda aquí."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l2/onda": {
+  "patch": {
+   "meaning": "wave",
+   "example": "La radio emite en una onda corta."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l2/pollo": {
+  "patch": {
+   "meaning": "chicken, as food",
+   "example": "Para la cena comimos pollo con arroz."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l2/poyo": {
+  "patch": {
+   "meaning": "stone bench",
+   "example": "Nos sentamos en el poyo de piedra del patio."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l3/pollo": {
+  "patch": {
+   "meaning": "chicken",
+   "example": "El pollo picotea el maíz en la granja."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l3/poyo": {
+  "patch": {
+   "meaning": "stone bench",
+   "example": "El abuelo descansa en el poyo junto a la puerta."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l3/vasto": {
+  "patch": {
+   "meaning": "vast",
+   "example": "El desierto es muy vasto."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l3/basto": {
+  "patch": {
+   "meaning": "coarse",
+   "example": "La tela de este saco es muy basto y áspera."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l4/basto": {
+  "patch": {
+   "meaning": "coarse",
+   "example": "Este paño es demasiado basto para una camisa."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l4/cerro": {
+  "patch": {
+   "meaning": "hill",
+   "example": "Subimos al cerro para ver el pueblo."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l4/cero": {
+  "patch": {
+   "meaning": "zero",
+   "example": "La temperatura bajó a cero grados."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l5/votar": {
+  "patch": {
+   "meaning": "to vote",
+   "example": "Mañana todos vamos a votar por el presidente."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l5/botar": {
+  "patch": {
+   "meaning": "to throw away",
+   "example": "No debes botar la basura en la calle."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa1p28l5/cerro": {
+  "patch": {
+   "meaning": "hill",
+   "example": "Mi casa está al pie del cerro."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l1/cocer": {
+  "patch": {
+   "meaning": "to boil, to cook",
+   "example": "Hay que cocer el arroz veinte minutos."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l1/coser": {
+  "patch": {
+   "meaning": "to sew",
+   "example": "Mi abuela me enseñó a coser un botón."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l1/rebelarse": {
+  "patch": {
+   "meaning": "to rise up",
+   "example": "Los esclavos decidieron rebelarse contra el dueño."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l2/revelarse": {
+  "patch": {
+   "meaning": "to show itself, to be revealed",
+   "example": "Su talento empezó a revelarse en la escuela."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l2/rebelarse": {
+  "patch": {
+   "meaning": "to rebel",
+   "example": "El pueblo se preparaba para rebelarse contra el rey."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l2/pulla": {
+  "patch": {
+   "meaning": "a mocking remark",
+   "example": "Su hermano le lanzó una pulla cruel en la fiesta."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l2/puya": {
+  "patch": {
+   "meaning": "a pointed lance",
+   "example": "El toro sintió la puya en la espalda."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l3/pulla": {
+  "patch": {
+   "meaning": "a mocking remark",
+   "example": "No me gustó la pulla que dijo sobre mi ropa."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l3/puya": {
+  "patch": {
+   "meaning": "a pointed goad",
+   "example": "El pastor usó una puya para guiar al buey."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l3/hojear": {
+  "patch": {
+   "meaning": "to leaf through",
+   "example": "Me gusta hojear el periódico mientras desayuno."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l3/ojear": {
+  "patch": {
+   "meaning": "to drive game toward the hunters",
+   "example": "El cazador empezó a ojear las perdices hacia las redes."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l4/ojear": {
+  "patch": {
+   "meaning": "to glance at",
+   "example": "Solo pude ojear la sala porque tenía prisa."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l4/rayar": {
+  "patch": {
+   "meaning": "to scratch, to draw lines on",
+   "example": "No quiero rayar la pared con el lápiz."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l4/rallar": {
+  "patch": {
+   "meaning": "to grate",
+   "example": "Hay que rallar el queso para la pasta."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l5/taza": {
+  "patch": {
+   "meaning": "cup",
+   "example": "Quiero una taza de café caliente."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esa2p28l5/tasa": {
+  "patch": {
+   "meaning": "rate",
+   "example": "La tasa de desempleo bajó este año."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l1/cazo": {
+  "patch": {
+   "meaning": "ladle, saucepan",
+   "example": "Revuelve la sopa con el cazo."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l1/caso": {
+  "patch": {
+   "meaning": "case",
+   "example": "El detective resolvió el caso en una semana."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l1/pozo": {
+  "patch": {
+   "meaning": "well",
+   "example": "Sacaron agua fresca del pozo del patio."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l2/poso": {
+  "patch": {
+   "meaning": "sediment, dregs",
+   "example": "En el fondo de la taza quedó un poso de café."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l2/pozo": {
+  "patch": {
+   "meaning": "well",
+   "example": "El niño tiró una moneda al pozo."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l2/cocido": {
+  "patch": {
+   "meaning": "boiled",
+   "example": "El huevo está bien cocido; ya puedes pelarlo."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l3/cosido": {
+  "patch": {
+   "meaning": "sewn",
+   "example": "El botón está bien cosido a la camisa."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l3/cocidas": {
+  "patch": {
+   "meaning": "boiled",
+   "example": "Las papas ya están cocidas y blandas."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l3/cosida": {
+  "patch": {
+   "meaning": "stitched up",
+   "example": "El doctor dejó la herida bien cosida."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l3/cocido": {
+  "patch": {
+   "meaning": "well cooked",
+   "example": "Prefiero el pescado bien cocido."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l4/grabar": {
+  "patch": {
+   "meaning": "to record",
+   "example": "Voy a grabar la canción en mi teléfono."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l4/gravar": {
+  "patch": {
+   "meaning": "to tax",
+   "example": "El gobierno quiere gravar los productos de lujo con un impuesto."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l5/pozo": {
+  "patch": {
+   "meaning": "well",
+   "example": "El agua del pozo sabe muy limpia."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l5/cazo": {
+  "patch": {
+   "meaning": "saucepan, ladle",
+   "example": "Dejé el cazo sucio dentro del fregadero."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l5/caso": {
+  "patch": {
+   "meaning": "case",
+   "example": "La policía cerró el caso ayer."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l5/poso": {
+  "patch": {
+   "meaning": "sediment",
+   "example": "Al final de la copa se notaba el poso."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb1p28l5/grabar": {
+  "patch": {
+   "meaning": "to record",
+   "example": "Puedes grabar la clase si pides permiso."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l1/cima": {
+  "patch": {
+   "meaning": "summit",
+   "example": "Llegamos a la cima de la montaña al mediodía."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l1/sima": {
+  "patch": {
+   "meaning": "chasm, deep pit",
+   "example": "Una sima muy profunda se abría en la cueva."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l1/concejo": {
+  "patch": {
+   "meaning": "town council",
+   "example": "El concejo del pueblo aprobó el nuevo mercado."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l2/consejo": {
+  "patch": {
+   "meaning": "advice",
+   "example": "Mi abuelo me dio un buen consejo antes del examen."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l2/concejo": {
+  "patch": {
+   "meaning": "town council",
+   "example": "Los vecinos pidieron una reunión con el concejo del pueblo."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l3/acechar": {
+  "patch": {
+   "meaning": "to stalk, to lie in wait for",
+   "example": "El gato se agacha para acechar al ratón."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l3/asechar": {
+  "patch": {
+   "meaning": "to set a trap for",
+   "example": "Quiso asechar al rival con engaños."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l4/abrasar": {
+  "patch": {
+   "meaning": "to scorch",
+   "example": "El sol de agosto parece abrasar la tierra."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l4/abrazar": {
+  "patch": {
+   "meaning": "to hug",
+   "example": "Quiero abrazar a mi hermana cuando llegue."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l5/cima": {
+  "patch": {
+   "meaning": "summit",
+   "example": "Plantaron una bandera en la cima."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l5/sima": {
+  "patch": {
+   "meaning": "chasm",
+   "example": "Tiraron una piedra y nunca oyeron el fondo de la sima."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l5/consejo": {
+  "patch": {
+   "meaning": "advice",
+   "example": "Siguió el consejo de su médico y descansó."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l5/concejo": {
+  "patch": {
+   "meaning": "town council",
+   "example": "El concejo de la ciudad discutió el presupuesto."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esb2p28l5/acechar": {
+  "patch": {
+   "meaning": "to stalk",
+   "example": "Los lobos suelen acechar a su presa durante horas."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l1/encausar": {
+  "patch": {
+   "meaning": "to prosecute",
+   "example": "El fiscal pidió encausar al exministro por corrupción."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l1/encauzar": {
+  "patch": {
+   "meaning": "to channel, to direct",
+   "example": "El gobierno quiere encauzar el debate hacia soluciones."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l2/encauzar": {
+  "patch": {
+   "meaning": "to channel",
+   "example": "Intentó encauzar la energía de los jóvenes hacia el deporte."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l2/varón": {
+  "patch": {
+   "meaning": "baby boy, male child",
+   "example": "Nació un varón sano en el hospital."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l2/barón": {
+  "patch": {
+   "meaning": "baron, noble title",
+   "example": "El barón heredó el castillo de su padre."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l3/varón": {
+  "patch": {
+   "meaning": "male",
+   "example": "Solo ese varón de la familia llevaba el apellido."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l3/barón": {
+  "patch": {
+   "meaning": "tycoon, a powerful magnate",
+   "example": "Un barón del petróleo financió la campaña."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l3/cima": {
+  "patch": {
+   "meaning": "peak, top",
+   "example": "Alcanzar la cima de la carrera exige sacrificio."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l3/sima": {
+  "patch": {
+   "meaning": "abyss, chasm",
+   "example": "El proyecto cayó en una sima de deudas."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l4/sima": {
+  "patch": {
+   "meaning": "deep chasm in the rock",
+   "example": "Los espeleólogos descendieron por la sima con cuerdas."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l4/acechar": {
+  "patch": {
+   "meaning": "to lurk, to lie in wait",
+   "example": "Los depredadores suelen acechar en silencio."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l4/asechar": {
+  "patch": {
+   "meaning": "to lay a trap for",
+   "example": "El enemigo intentó asechar al comandante con falsas promesas."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l5/acechar": {
+  "patch": {
+   "meaning": "to threaten",
+   "example": "El peligro de la inflación sigue por acechar a los mercados."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l5/encauzar": {
+  "patch": {
+   "meaning": "to channel",
+   "example": "La ministra logró encauzar la protesta por vías legales."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l5/encausar": {
+  "patch": {
+   "meaning": "to prosecute",
+   "example": "No pudieron encausar al sospechoso sin pruebas."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l5/varón": {
+  "patch": {
+   "meaning": "male",
+   "example": "En su acta de nacimiento constaba como varón."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
+ },
+ "es:card:esc1p28l5/barón": {
+  "patch": {
+   "meaning": "baron, noble title",
+   "example": "El barón vendió sus tierras para pagar sus deudas."
+  },
+  "reason": "Word card for the spelling-choice minimal-pairs lessons (owner decision 2026-11-16): meaning is the lesson clue, example is the sentence with the answer filled in."
  }
 }

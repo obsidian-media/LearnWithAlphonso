@@ -32208,14 +32208,14 @@
               "type": "mc",
               "prompt": "Il a affirmé que le projet ___ (être) enfin terminé.",
               "choices": [
-                "habitais",
-                "avait",
-                "était enfin",
-                "avions"
+                "étaient",
+                "sera",
+                "était",
+                "étions"
               ],
               "answer": 2,
-              "explanation": "In reported speech after a past reporting verb (\"a affirmé\"), the present becomes the imperfect, so \"était enfin\" is a form of \"être\" in the imperfect; the key repeats \"enfin\", which the sentence already has.",
-              "meaning": "was finally",
+              "explanation": "In reported speech after a past reporting verb (\"a affirmé\"), the present becomes the imperfect, so the verb is \"était\", the imperfect of \"être\"; \"enfin\" is already in the sentence after the blank.",
+              "meaning": "was, in the imperfect",
               "example": "Il a affirmé que le projet était enfin terminé."
             },
             {

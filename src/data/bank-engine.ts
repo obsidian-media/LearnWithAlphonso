@@ -296,7 +296,8 @@ export function packQuestions(pack: Pack): Question[] {
   const extra = (EXTRA_DECOYS[pack.id] ?? []).flatMap((g) =>
     g.words.map((text) => ({ text, cls: g.cls })),
   );
-  const authored = romance && pack.kind === "cloze" ? ROMANCE_CLOZE[pack.id] : undefined;
+  // Any cloze pack with authored options (the A1/A2 packs and the Spanish minimal-pairs lessons at every level).
+  const authored = pack.kind === "cloze" ? ROMANCE_CLOZE[pack.id] : undefined;
   return lines.map(([left, right], i) => {
     const answer = right!;
     const seed = `${pack.id}-${i}`;
@@ -363,13 +364,15 @@ export function packQuestions(pack: Pack): Question[] {
               /^(fr|es)/.test(pack.id) && pack.kind === "listening",
             );
     const explanation =
-      pack.kind === "pair"
-        ? `${left} → ${answer}. ${pack.note}`
-        : pack.kind === "listening"
-          ? // The audio sentence already ends in its own punctuation, so quoting
-            // it and adding a full stop produced `"... rise.". note`.
-            `The audio says "${left}" ${pack.note}`
-          : `"${answer}" is correct here. ${pack.note}`;
+      pack.kind === "cloze" && line?.explanation
+        ? line.explanation
+        : pack.kind === "pair"
+          ? `${left} → ${answer}. ${pack.note}`
+          : pack.kind === "listening"
+            ? // The audio sentence already ends in its own punctuation, so quoting
+              // it and adding a full stop produced `"... rise.". note`.
+              `The audio says "${left}" ${pack.note}`
+            : `"${answer}" is correct here. ${pack.note}`;
     if (pack.kind === "listening") {
       // Order is cosmetic here: `answer` is the choice text, so there is no
       // index to keep in sync with the shuffle.
