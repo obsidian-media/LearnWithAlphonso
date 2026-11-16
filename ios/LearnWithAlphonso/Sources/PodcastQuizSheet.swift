@@ -306,16 +306,18 @@ struct PodcastQuizRowButton: View {
     }
 }
 
-/// The chip's icon is the moss accent; the words stay ink on the opaque surface, so they read on every theme.
+/// The chip's icon is the choice accent; the words stay ink on the opaque surface, so they read on every theme.
 private struct PodcastQuizChipLabelStyle: LabelStyle {
+    @Environment(\.alphonsoDS) private var ds
+
     func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: AlphonsoSpacing.xs) {
             configuration.icon
-                .foregroundStyle(AlphonsoColor.moss)
+                .foregroundStyle(ds.choice)
                 .accessibilityHidden(true)
             configuration.title
                 .dsText(.footnote)
-                .foregroundStyle(AlphonsoColor.ink)
+                .foregroundStyle(ds.ink)
         }
     }
 }
