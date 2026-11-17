@@ -99,15 +99,21 @@ describe("POST /api/tts", () => {
     expect(String(url)).toContain("model=aura-2-saturn-en");
   });
 
-  it("truncates text to 2000 characters before sending upstream", async () => {
+  it("refuses text over the 600-character cap and calls no vendor", async () => {
+    const res = await handler({ request: req({ text: "a".repeat(601) }) });
+    expect(res.status).toBe(413);
+    expect(((await res.json()) as { error: string }).error).toBe("text-too-long");
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("speaks text of exactly the cap, whole", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
       new Response("audio-bytes", { status: 200, headers: { "Content-Type": "audio/mpeg" } }),
     );
-    const longText = "a".repeat(3000);
-    await handler({ request: req({ text: longText }) });
+    const res = await handler({ request: req({ text: "a".repeat(600) }) });
+    expect(res.status).toBe(200);
     const [, init] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
-    const sentBody = JSON.parse(init.body as string);
-    expect(sentBody.text).toHaveLength(2000);
+    expect(JSON.parse(init.body as string).text).toHaveLength(600);
   });
 
   it("streams back the audio body with the upstream content type", async () => {

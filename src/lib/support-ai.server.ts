@@ -2,6 +2,7 @@ import { z } from "zod";
 import { HELP_ALLOWED_HOSTS, helpCentreText } from "@/data/help-centre";
 import type { LlmMessage } from "./ai-safety";
 import { SUPPORT_EMAIL } from "./legal-required-phrases";
+import { normalizeForScan } from "./text-normalize";
 import type { SupportFacts } from "./support-facts.server";
 import {
   SUPPORT_LINK_IDS,
@@ -307,13 +308,22 @@ export function parseSupportReply(content: string | null | undefined): SupportRe
 
 const URL_RE = /\b(?:https?:\/\/|www\.)[^\s<>"')\]]+/gi;
 const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi;
-// A bare "name.tld" (no scheme) with a TLD people actually write, or any host followed by a path.
-const BARE_HOST_RE =
-  /\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|app|ly|xyz|info|biz|ru|cn|tk|top|site|online|link|click|shop|store|dev|ai|gl)(?:\/[^\s]*)?\b/gi;
+// Any bare "name.tld" (no scheme) whose last label is two or more letters, with or without a path: an allow-list
+// check, so a TLD nobody thought of (evil.co, t.me/x) is caught too. A dotted number (an IP address) is caught below.
+const BARE_HOST_RE = /\b(?:[a-z0-9-]+\.)+[a-z]{2,24}(?:\/[^\s]*)?(?![a-z0-9-])/gi;
+const IP_RE = /\b\d{1,3}(?:\.\d{1,3}){3}\b/;
+const DOT_TLDS =
+  "com|net|org|io|app|es|fr|co|me|ai|us|uk|de|it|ca|to|tv|cc|ly|xyz|info|biz|ru|cn|tk|top|site|online|link|click|shop|store|dev|gl|edu|gov";
+// "evil dot com", "evil (dot) com", "evil punto com": written out so a link is not a link. Turned back into one before the check.
+const SPOKEN_DOT_RE = new RegExp(
+  String.raw`\s*(?:[(\[{]\s*dot\s*[)\]}]|\s(?:dot|punto|point)\s)\s*(?=(?:${DOT_TLDS})(?![a-z]))`,
+  "gi",
+);
 
 function hostAllowed(host: string, allowed: readonly string[]): boolean {
   const h = host.toLowerCase().replace(/^www\./, "");
-  return allowed.some((a) => h === a || h.endsWith(`.${a}`));
+  // Exact hosts only: an unlisted subdomain of our own domain is not a page we ship.
+  return allowed.includes(h);
 }
 
 export type GuardResult = { ok: true; reply: string } | { ok: false; why: "link" | "email" };
@@ -323,8 +333,19 @@ export type GuardResult = { ok: true; reply: string } | { ok: false; why: "link"
  * what stops an injected "visit evil.example to verify your account". A failure is handed off, never shown.
  */
 export function guardSupportReply(
-  reply: string,
+  original: string,
   opts: { supportEmail?: string; allowedHosts?: readonly string[] } = {},
+): GuardResult {
+  // Checked on a flattened copy (full-width letters, zero-width characters, odd spaces, spoken dots); the reply that is
+  // returned is the model's own text.
+  const reply = normalizeForScan(original).replace(SPOKEN_DOT_RE, ".");
+  const result = checkSupportReply(reply, opts);
+  return result.ok ? { ok: true, reply: original } : result;
+}
+
+function checkSupportReply(
+  reply: string,
+  opts: { supportEmail?: string; allowedHosts?: readonly string[] },
 ): GuardResult {
   const supportEmail = (opts.supportEmail ?? SUPPORT_EMAIL).toLowerCase();
   const hosts = opts.allowedHosts ?? HELP_ALLOWED_HOSTS;
@@ -343,6 +364,7 @@ export function guardSupportReply(
     }
   }
   const withoutUrls = withoutEmails.replace(URL_RE, " ");
+  if (IP_RE.test(withoutUrls)) return { ok: false, why: "link" };
   for (const bare of withoutUrls.match(BARE_HOST_RE) ?? []) {
     const host = bare.split("/")[0]!;
     if (!hostAllowed(host, hosts)) return { ok: false, why: "link" };

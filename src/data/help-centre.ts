@@ -15,7 +15,10 @@ import { SUPPORT_EMAIL } from "@/lib/legal-required-phrases";
 export type HelpTopic = { id: string; title: string; body: string };
 
 /** Hosts a help sentence or an AI reply may link to. Email addresses are checked separately (SUPPORT_EMAIL only). */
-export const HELP_ALLOWED_HOSTS: readonly string[] = ["learn.alphonsoecosystem.app"];
+export const HELP_ALLOWED_HOSTS: readonly string[] = [
+  "alphonsoecosystem.app",
+  "learn.alphonsoecosystem.app",
+];
 
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
