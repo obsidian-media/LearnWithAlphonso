@@ -40,7 +40,7 @@ import kotlinx.coroutines.CancellationException
 @Composable
 fun ProfileHubScreen(
     container: AppContainer, onEditAnswers: () -> Unit,
-    onOpenLeague: () -> Unit, onOpenFriends: () -> Unit, onOpenAchievements: () -> Unit, onOpenSettings: () -> Unit,
+    onOpenLeague: () -> Unit, onOpenFriends: () -> Unit, onOpenInvite: () -> Unit = {}, onOpenAchievements: () -> Unit, onOpenSettings: () -> Unit,
     onOpenReview: (Course) -> Unit, onOpenPaywall: () -> Unit, onOpenMemory: () -> Unit = {},
 ) {
     val course by container.activeCourse.course.collectAsState()
@@ -127,6 +127,7 @@ fun ProfileHubScreen(
                 ProfileTab.SOCIAL -> {
                     AlphonsoRowCard("League", "Leaderboards, teams, and the season ladder", leadingEmoji = "🏆", modifier = Modifier.clickable(onClick = onOpenLeague))
                     AlphonsoRowCard("Friends", "Your friends, their activity, and duels", leadingEmoji = "👥", modifier = Modifier.clickable(onClick = onOpenFriends))
+                    AlphonsoRowCard("Invite friends", "You both get a reward when they finish a first lesson", leadingEmoji = "🤝", modifier = Modifier.clickable(onClick = onOpenInvite))
                 }
             }
         }

@@ -36,6 +36,8 @@ object Routes {
     const val TEAMS = "teams"
     const val SEASON = "season"
     const val FRIENDS = "friends"
+    /** Invite friends: the learner's referral link, share, counts, and the manual invite-code fallback. */
+    const val REFERRAL = "referral"
     const val DUELS = "duels"
     const val ACHIEVEMENTS = "achievements"
 

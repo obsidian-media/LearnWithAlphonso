@@ -72,6 +72,11 @@ only rows where they are the referrer or the referee; clients have `SELECT` only
 
 ## Out of scope (follow-ups)
 
-- iOS and Android Invite screens with the native share sheet, and capturing the code from a deep link.
+- Capturing the code from a deep link on iOS and Android. The Invite screens, native share and the manual "Got an invite
+  code?" claim field shipped (R41). The app links cover `/invite/*` only (apple-app-site-association and the Android
+  manifest), and the referral link is `/?ref=<code>`, so a tapped referral link opens the browser, not the app. The app
+  already captures and claims a `?ref` link that does reach it (`ReferralPending`); it needs the owner/infra step of an
+  association for the site root (iOS can match the `ref` query; Android App Links cannot filter by query, so the root
+  `/` path would claim every site link) or a dedicated `/r/<code>` path, before it ever fires.
 - Any change to pricing or the paywall.
 - Device or network based duplicate detection.
