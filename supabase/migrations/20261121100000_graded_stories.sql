@@ -221,7 +221,9 @@ GRANT EXECUTE ON FUNCTION public.submit_story_check(uuid, uuid, jsonb) TO servic
 -- ---- Seed: six proof stories, UNPUBLISHED and flagged needs_review ----
 -- Drafted by an agent (not a native speaker), two per course at A1 and A2. They do not reach learners until a human
 -- reviews them and sets needs_review = false, published = true, published_at = now().
-INSERT INTO public.stories (course, level_id, slug, title, segments, sort_order) VALUES
+-- Joined to public.levels so a database without the level rows (a fresh local or CI one) simply seeds nothing.
+INSERT INTO public.stories (course, level_id, slug, title, segments, sort_order)
+SELECT v.course, v.level_id, v.slug, v.title, v.segments, v.sort_order FROM (VALUES
 ('en', 'A1', 'mias-morning', 'Mia''s Morning', $j$[
   "Mia wakes up at seven o'clock.",
   "She is tired, but she gets out of bed.",
@@ -275,7 +277,9 @@ INSERT INTO public.stories (course, level_id, slug, title, segments, sort_order)
   "Comieron juntos y hablaron durante horas.",
   "Cuando se fueron, Lucía estaba cansada, pero feliz.",
   "El domingo decidió descansar y leer un libro en el jardín."
-]$j$::jsonb, 2);
+]$j$::jsonb, 2)
+) AS v(course, level_id, slug, title, segments, sort_order)
+JOIN public.levels l ON l.id = v.level_id;
 
 INSERT INTO public.story_quiz_questions (story_id, position, prompt, choices, answer_index)
 SELECT s.id, q.position, q.prompt, q.choices::jsonb, q.answer_index
