@@ -270,7 +270,7 @@ fun DsPill(text: String, tone: DsPillTone = DsPillTone.INFO, modifier: Modifier 
 
 /** The small pressable button that sits in a row beside text: the lesson's edge button, compact. */
 @Composable
-fun DsCompactButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, primary: Boolean = false, enabled: Boolean = true, danger: Boolean = false) {
+fun DsCompactButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, primary: Boolean = false, enabled: Boolean = true, danger: Boolean = false, description: String? = null) {
     val ds = LocalAlphonsoTokens.current
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.control - AlphonsoTokens.Space.s1)
     val face = if (primary) ds.action else ds.card
@@ -280,7 +280,8 @@ fun DsCompactButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
             .then(if (primary) Modifier else Modifier.border(2.dp, ds.line, shape))
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s2)
-            .then(if (enabled) Modifier else Modifier.background(Color.Transparent)),
+            .then(if (enabled) Modifier else Modifier.background(Color.Transparent))
+            .then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier),
         contentAlignment = Alignment.Center,
     ) { Text(text, style = FootnoteType, color = if (enabled) ink else ds.inkFaint, textAlign = TextAlign.Center) }
 }
