@@ -3567,6 +3567,7 @@ export type Database = {
       name_policy_staff_terms: { Args: never; Returns: string[] };
       name_policy_terms: { Args: never; Returns: string[] };
       normalize_for_moderation: { Args: { input: string }; Returns: string };
+      policy_social_restricted: { Args: { p_user: string }; Returns: boolean };
       record_podcast_play_event: {
         Args: { _episode_id: string; _seconds_listened: number };
         Returns: undefined;
