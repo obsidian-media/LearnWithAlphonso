@@ -19,15 +19,25 @@ import { ToastBanner } from "../../components/ToastBanner";
 import { useToast } from "../../lib/use-toast";
 import {
   getFriendActivity,
+  getFreezeGiftState,
   getFriends,
   getMyFriendCode,
+  getUnreadFreezeGifts,
   getUnreadNudges,
+  giftStreakFreeze,
+  markFreezeGiftsRead,
   markNudgesRead,
   removeFriend,
   sendNudge,
   type FriendEntry,
 } from "../../lib/friends.functions";
 import { activityCopy, activityIcon, activityName } from "../../lib/friend-activity";
+import {
+  freezeReceivedToast,
+  giftButtonState,
+  giftAriaLabel,
+  giftFreezeMessage,
+} from "../../lib/freeze-gift";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import {
   canNudge,
@@ -87,7 +97,20 @@ function FriendsPage() {
     queryFn: () => getUnreadNudges(),
     retry: false,
   });
+  // Freezes friends have gifted (read, like nudges, when the page opens) and what this learner can still give today.
+  const { data: unreadGifts } = useQuery({
+    queryKey: ["unreadFreezeGifts"],
+    queryFn: () => getUnreadFreezeGifts(),
+    retry: false,
+  });
+  const { data: giftState } = useQuery({
+    queryKey: ["freezeGiftState"],
+    queryFn: () => getFreezeGiftState(),
+    retry: false,
+  });
   const [toast, showToast] = useToast();
+  const [givingId, setGivingId] = useState<string | null>(null);
+  const shownGiftIds = useRef(new Set<string>());
   const [cooldowns, setCooldowns] = useState<NudgeCooldowns>({});
   const [nudgingId, setNudgingId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -125,6 +148,33 @@ function FriendsPage() {
     void markNudgesRead({ data: { ids: fresh.map((n) => n.id) } });
   }, [unread, friends, showToast]);
 
+  // The same for received freezes: a toast for each gift not yet shown, then marked read.
+  useEffect(() => {
+    if (!unreadGifts || !friends) return;
+    const fresh = unreadGifts.filter((g) => !shownGiftIds.current.has(g.id));
+    if (fresh.length === 0) return;
+    for (const g of fresh) shownGiftIds.current.add(g.id);
+    showToast(freezeReceivedToast(fresh.map((g) => nudgeSenderName(g.senderId, friends))));
+    void markFreezeGiftsRead({ data: { ids: fresh.map((g) => g.id) } });
+  }, [unreadGifts, friends, showToast]);
+
+  async function gift(friend: FriendEntry) {
+    if (givingId) return;
+    setGivingId(friend.userId);
+    try {
+      const result = await giftStreakFreeze({ data: { recipientId: friend.userId } });
+      showToast(giftFreezeMessage(result, friend.displayName));
+    } catch {
+      showToast(
+        giftFreezeMessage({ ok: false, reason: "error", freezes: null }, friend.displayName),
+      );
+    } finally {
+      setGivingId(null);
+      // The database's answer is the truth: re-read the balance and today's gifts rather than guessing.
+      void queryClient.invalidateQueries({ queryKey: ["freezeGiftState"] });
+    }
+  }
+
   async function nudge(friend: FriendEntry) {
     if (!myId || nudgingId) return;
     const at = Date.now();
@@ -160,6 +210,7 @@ function FriendsPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const giftedToday = new Set(giftState?.giftedTodayTo ?? []);
   const count = friends?.length ?? 0;
   const countLine = count > 0 ? `${count} friend${count === 1 ? "" : "s"}` : null;
 
@@ -249,6 +300,22 @@ function FriendsPage() {
                     className="!min-w-11 shrink-0 !px-2.5"
                   >
                     <Icon name="waving_hand" size={22} />
+                  </DsButton>
+                  <DsButton
+                    small
+                    variant="secondary"
+                    onClick={() => void gift(f)}
+                    disabled={
+                      givingId !== null ||
+                      giftButtonState(giftState?.freezes, giftedToday, f.userId) !== "send"
+                    }
+                    aria-label={giftAriaLabel(
+                      f.displayName,
+                      giftButtonState(giftState?.freezes, giftedToday, f.userId),
+                    )}
+                    className="!min-w-11 shrink-0 !px-2.5"
+                  >
+                    <Icon name="snowflake" size={22} />
                   </DsButton>
                   <SocialSafetyMenu
                     userId={f.userId}

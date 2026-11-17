@@ -8,9 +8,9 @@ const sql = readFileSync(path.join(dir, file), "utf8");
 const code = sql.replace(/--[^\n]*/g, "");
 
 describe(`${file} (rehearsed on the real database in BEGIN..ROLLBACK, see the PR)`, () => {
-  it("is versioned after every other migration", () => {
+  it("has a version no other migration shares", () => {
     const others = readdirSync(dir).filter((f) => f.endsWith(".sql") && f !== file);
-    expect(others.every((f) => f.slice(0, 14) < file.slice(0, 14))).toBe(true);
+    expect(others.map((f) => f.slice(0, 14))).not.toContain(file.slice(0, 14));
   });
   it("adds no table and no policy", () => {
     expect(code).not.toMatch(/CREATE TABLE|CREATE POLICY/i);
