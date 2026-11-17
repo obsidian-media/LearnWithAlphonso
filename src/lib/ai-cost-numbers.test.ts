@@ -161,9 +161,16 @@ describe("not connected versus zero", () => {
   it("the group is gated by numbers.revenue and passes the heavy line in micro-dollars", async () => {
     let args: Record<string, unknown> = {};
     const c = {
-      rpc: (_n: string, a: Record<string, unknown>) => {
-        args = a;
-        return { abortSignal: () => Promise.resolve({ data: payload(), error: null }) };
+      rpc: (n: string, a: Record<string, unknown>) => {
+        if (n === "admin_ai_cost") args = a;
+        return {
+          abortSignal: () =>
+            Promise.resolve(
+              n === "admin_ai_cost_capped"
+                ? { data: { overFree: 3, overPro: 1 }, error: null }
+                : { data: payload(), error: null },
+            ),
+        };
       },
     };
     const stub = async () => [];
@@ -192,5 +199,37 @@ describe("not connected versus zero", () => {
     });
     expect(rev.groups.find((g) => g.key === "aicost")!.state).toBe("ok");
     expect(args).toEqual({ p_days: 7, p_heavy_micro: Math.round(cfg.heavyMonthlyUsd * 1_000_000) });
+  });
+  it("the cap tile counts learners over the Pro ceiling and notes those between the two", async () => {
+    const c = {
+      rpc: (n: string) => ({
+        abortSignal: () =>
+          Promise.resolve(
+            n === "admin_ai_cost_capped"
+              ? { data: { overFree: 3, overPro: 1 }, error: null }
+              : { data: payload(), error: null },
+          ),
+      }),
+    };
+    const t = (await aiCostSource({}, c as never)(ctx)).find((x) => x.id === "capped")!;
+    expect(t.value).toBe(1);
+    expect(t.note).toContain("2 more between the free ($2.00) and Pro ceilings");
+  });
+  it("a missing cap function blanks only the cap tile, never as 0", async () => {
+    const c = {
+      rpc: (n: string) => ({
+        abortSignal: () =>
+          Promise.resolve(
+            n === "admin_ai_cost_capped"
+              ? { data: null, error: { message: "does not exist" } }
+              : { data: payload(), error: null },
+          ),
+      }),
+    };
+    const tiles = await aiCostSource({}, c as never)(ctx);
+    const t = tiles.find((x) => x.id === "capped")!;
+    expect(t.value).toBeNull();
+    expect(t.reason).toContain("not deployed");
+    expect(tiles.find((x) => x.id === "spend_d7")!.value).not.toBeNull();
   });
 });

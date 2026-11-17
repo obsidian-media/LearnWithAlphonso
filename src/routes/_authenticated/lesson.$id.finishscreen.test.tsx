@@ -141,7 +141,8 @@ describe("FinishScreen", () => {
         new Response(
           JSON.stringify({
             error: "quota-exceeded",
-            resetsAt: "2099-01-01T12:00:00.000Z",
+            // Hours away (a daily reset); a far-future date would now read as the monthly cap (ai-monthly-cap.ts).
+            resetsAt: new Date(Date.now() + 6 * 3_600_000).toISOString(),
             message: "Daily CHAT limit reached (50/day). Try again tomorrow.",
           }),
           { status: 429 },

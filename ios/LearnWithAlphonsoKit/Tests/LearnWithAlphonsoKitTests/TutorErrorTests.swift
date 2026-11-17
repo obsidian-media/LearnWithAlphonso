@@ -120,6 +120,15 @@ final class TutorErrorTests: XCTestCase {
         XCTAssertEqual(message, "You've reached today's AI practice limit. It resets at 12:00 AM.")
     }
 
+    func testQuotaCopyForTheMonthlyCostCapNamesTheResetDate() {
+        let now = ISO8601DateFormatter().date(from: "2026-11-17T18:00:00Z")!
+        let reset = ISO8601DateFormatter().date(from: "2026-12-01T00:00:00Z")!
+        XCTAssertEqual(
+            TutorError.quotaExceeded(resetsAt: reset).userMessage(now: now, timeZone: TimeZone(identifier: "UTC")!),
+            "You've hit this month's usage limit for AI practice. It resets on 1 December. Lessons and review still work."
+        )
+    }
+
     func testQuotaCopyForTheBurstLimitSaysWaitAMinute() {
         let message = TutorError.quotaExceeded(resetsAt: sixPM.addingTimeInterval(40)).userMessage(now: sixPM)
         XCTAssertEqual(message, "Too many requests. Wait a minute and try again.")

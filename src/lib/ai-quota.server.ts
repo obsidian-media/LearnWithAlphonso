@@ -46,7 +46,15 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
 
 export type QuotaResult =
   | { ok: true; used: number; limit: number }
-  | { ok: false; status: number; message: string; code?: "quota-exceeded"; resetsAt?: string };
+  | {
+      ok: false;
+      status: number;
+      message: string;
+      code?: "quota-exceeded";
+      resetsAt?: string;
+      /** "monthly-cap": the learner's monthly AI cost ceiling, not a daily or per-minute request cap. */
+      reason?: "monthly-cap";
+    };
 
 export type AuthResult =
   | { ok: true; supabase: ReturnType<typeof createClient<Database>>; userId: string }
@@ -114,6 +122,22 @@ export async function consumeQuotaFor(
   kind: QuotaKind,
   now: Date = new Date(),
 ): Promise<QuotaResult> {
+  // The monthly COST cap first, so a refused call also burns no burst token and no daily unit. Only the costly kinds
+  // are ever refused; any failure to read the cost allows the call (see ai-monthly-cap.server.ts).
+  const { monthlyCapRefusal } = await import("./ai-monthly-cap.server");
+  const capped = await monthlyCapRefusal(supabase, kind, now);
+  if (capped) {
+    const { monthlyCapMessage } = await import("./ai-monthly-cap");
+    return {
+      ok: false,
+      status: 429,
+      message: monthlyCapMessage(capped.resetsAt),
+      code: "quota-exceeded",
+      resetsAt: capped.resetsAt,
+      reason: "monthly-cap",
+    };
+  }
+
   // Per-minute burst limit, on top of the daily cap below — checked first
   // so a rejected burst doesn't also eat into the day's quota.
   const { data: rlData, error: rlError } = await supabase.rpc("consume_ai_rate_limit", {

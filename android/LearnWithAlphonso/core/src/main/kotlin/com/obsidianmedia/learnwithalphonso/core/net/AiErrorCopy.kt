@@ -51,6 +51,11 @@ object AiErrorCopy {
     fun quotaExceededMessage(resetsAt: String?, now: Instant = Instant.now(), zone: ZoneId = ZoneId.systemDefault()): String {
         val reset = resetsAt?.let { runCatching { Instant.parse(it) }.getOrNull() }
             ?: return "You've reached today's AI practice limit. Try again tomorrow."
+        // More than a day and a half away is the monthly AI cost cap, not the daily one (src/lib/ai-monthly-cap.ts).
+        if (reset.toEpochMilli() - now.toEpochMilli() > 36 * 3_600_000L) {
+            val date = DateTimeFormatter.ofPattern("d MMMM", Locale.US).withZone(java.time.ZoneOffset.UTC).format(reset)
+            return "You've hit this month's usage limit for AI practice. It resets on $date. Lessons and review still work."
+        }
         if (reset.toEpochMilli() - now.toEpochMilli() <= 120_000) return "Too many requests. Wait a minute and try again."
         val time = DateTimeFormatter.ofPattern("h:mm a", Locale.US).withZone(zone).format(reset)
         return "You've reached today's AI practice limit. It resets at $time."

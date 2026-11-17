@@ -1,0 +1,146 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  monthlyCapRefusal,
+  readMonthlyCap,
+  resetMonthlyCapWarnings,
+} from "./ai-monthly-cap.server";
+
+const USD = 1_000_000;
+const NOW = new Date("2026-11-17T18:00:00Z");
+const RESET = "2026-12-01T00:00:00.000Z";
+
+const client = (micro: number | string, uid = "u1") => ({
+  rpc: vi.fn().mockResolvedValue({ data: [{ uid, month_micro: micro }], error: null }),
+});
+const failing = (error: { message: string; code?: string }) => ({
+  rpc: vi.fn().mockResolvedValue({ data: null, error }),
+});
+const free = () => vi.fn().mockResolvedValue("inactive");
+
+beforeEach(() => {
+  resetMonthlyCapWarnings();
+  vi.spyOn(console, "error").mockImplementation(() => undefined);
+});
+
+describe("monthlyCapRefusal: what is blocked", () => {
+  it("blocks every costly kind at the ceiling", async () => {
+    for (const kind of [
+      "chat",
+      "hector",
+      "tts",
+      "stt",
+      "recap",
+      "explain",
+      "translate",
+      "define",
+    ]) {
+      // hector is Pro by construction (the route checked), so it needs the Pro ceiling
+      const spent = kind === "hector" ? 8 * USD : 2 * USD;
+      expect(await monthlyCapRefusal(client(spent), kind, NOW, { entitlement: free() })).toEqual({
+        resetsAt: RESET,
+      });
+    }
+  });
+  it("never reads or blocks the Help chat or any non-AI kind", async () => {
+    const c = client(999 * USD);
+    expect(await monthlyCapRefusal(c, "support", NOW)).toBeNull();
+    expect(await monthlyCapRefusal(c, "lesson", NOW)).toBeNull();
+    expect(c.rpc).not.toHaveBeenCalled();
+  });
+  it("allows one micro under the free ceiling and blocks at it", async () => {
+    expect(
+      await monthlyCapRefusal(client(2 * USD - 1), "chat", NOW, { entitlement: free() }),
+    ).toBeNull();
+    expect(
+      await monthlyCapRefusal(client(2 * USD), "chat", NOW, { entitlement: free() }),
+    ).not.toBeNull();
+  });
+  it("a numeric string from the driver is read as a number", async () => {
+    expect(
+      await monthlyCapRefusal(client("2000000"), "chat", NOW, { entitlement: free() }),
+    ).not.toBeNull();
+  });
+});
+
+describe("tiers", () => {
+  it("a Pro learner passes the free ceiling and is blocked at the Pro one", async () => {
+    const ent = vi.fn().mockResolvedValue("active");
+    expect(await monthlyCapRefusal(client(5 * USD), "chat", NOW, { entitlement: ent })).toBeNull();
+    expect(
+      await monthlyCapRefusal(client(8 * USD), "chat", NOW, { entitlement: ent }),
+    ).not.toBeNull();
+  });
+  it("no entitlement request below the free warning line", async () => {
+    const ent = vi.fn();
+    await readMonthlyCap(client(1 * USD), "chat", NOW, { entitlement: ent });
+    expect(ent).not.toHaveBeenCalled();
+  });
+  it("an entitlement that cannot answer never locks the learner into the free ceiling", async () => {
+    const unavailable = vi.fn().mockResolvedValue("unavailable");
+    expect(
+      await monthlyCapRefusal(client(5 * USD), "chat", NOW, { entitlement: unavailable }),
+    ).toBeNull();
+    const boom = vi.fn().mockRejectedValue(new Error("rc down"));
+    expect(await monthlyCapRefusal(client(5 * USD), "chat", NOW, { entitlement: boom })).toBeNull();
+  });
+  it("the ceilings come from the environment", async () => {
+    const env = { AI_MONTHLY_CAP_FREE_USD: "5" };
+    expect(
+      await monthlyCapRefusal(client(4 * USD), "chat", NOW, { entitlement: free(), env }),
+    ).toBeNull();
+    expect(
+      await monthlyCapRefusal(client(5 * USD), "chat", NOW, { entitlement: free(), env }),
+    ).not.toBeNull();
+  });
+});
+
+describe("the soft warning", () => {
+  it("is warn from 80 percent of the learner's ceiling, with the percent", async () => {
+    const r = await readMonthlyCap(client(1.7 * USD), null, NOW, { entitlement: free() });
+    expect(r.status).toEqual({ state: "warn", percentUsed: 85, tier: "free" });
+    expect(r.resetsAt).toBe(RESET);
+    const ok = await readMonthlyCap(client(1.0 * USD), null, NOW, { entitlement: free() });
+    expect(ok.status?.state).toBe("ok");
+  });
+});
+
+describe("month reset", () => {
+  it("the reset date follows the month of the clock", async () => {
+    const r = await readMonthlyCap(client(0), null, new Date("2026-12-31T23:00:00Z"));
+    expect(r.resetsAt).toBe("2027-01-01T00:00:00.000Z");
+  });
+});
+
+describe("fail-safe: a failed read ALLOWS the call and logs", () => {
+  it("rpc error", async () => {
+    expect(await monthlyCapRefusal(failing({ message: "boom" }), "chat", NOW)).toBeNull();
+    expect(console.error).toHaveBeenCalled();
+  });
+  it("rpc throws", async () => {
+    const c = { rpc: vi.fn().mockRejectedValue(new Error("network")) };
+    expect(await monthlyCapRefusal(c, "chat", NOW)).toBeNull();
+  });
+  it("migration not applied yet: allowed, warned once", async () => {
+    const c = failing({
+      message: "Could not find the function in the schema cache",
+      code: "PGRST202",
+    });
+    expect(await monthlyCapRefusal(c, "chat", NOW)).toBeNull();
+    await monthlyCapRefusal(c, "chat", NOW);
+    const warned = vi
+      .mocked(console.error)
+      .mock.calls.filter((a) => String(a[0]).includes("not deployed"));
+    expect(warned).toHaveLength(1);
+  });
+  it("a malformed or negative answer", async () => {
+    const empty = { rpc: vi.fn().mockResolvedValue({ data: [], error: null }) };
+    expect(await monthlyCapRefusal(empty, "chat", NOW)).toBeNull();
+    expect(await monthlyCapRefusal(client(-5), "chat", NOW)).toBeNull();
+  });
+  it("switched off: nothing is read, nothing blocked", async () => {
+    const c = client(100 * USD);
+    const env = { AI_MONTHLY_CAP_ENABLED: "false" };
+    expect(await monthlyCapRefusal(c, "chat", NOW, { env })).toBeNull();
+    expect(c.rpc).not.toHaveBeenCalled();
+  });
+});

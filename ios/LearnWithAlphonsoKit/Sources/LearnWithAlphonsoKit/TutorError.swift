@@ -71,6 +71,14 @@ public enum TutorError: Error, Equatable, Sendable {
             guard let resetsAt else {
                 return "You've reached today's AI practice limit. Try again tomorrow."
             }
+            // More than a day and a half away is the monthly AI cost cap, not the daily one (src/lib/ai-monthly-cap.ts).
+            if resetsAt.timeIntervalSince(now) > 36 * 3600 {
+                let monthFormatter = DateFormatter()
+                monthFormatter.locale = Locale(identifier: "en_US_POSIX")
+                monthFormatter.timeZone = TimeZone(identifier: "UTC")
+                monthFormatter.dateFormat = "d MMMM"
+                return "You've hit this month's usage limit for AI practice. It resets on \(monthFormatter.string(from: resetsAt)). Lessons and review still work."
+            }
             if resetsAt.timeIntervalSince(now) <= 120 {
                 return "Too many requests. Wait a minute and try again."
             }

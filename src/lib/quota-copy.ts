@@ -1,3 +1,5 @@
+import { MONTHLY_RESET_MIN_MS, monthlyCapMessage } from "./ai-monthly-cap";
+
 /**
  * Learner-facing copy for a quota-exceeded response. Mirrors the iOS Kit's
  * TutorError.userMessage so both clients say the same thing. Two minutes or
@@ -11,6 +13,10 @@ export function quotaExceededMessage(
   const reset = resetsAt ? new Date(resetsAt) : null;
   if (!reset || Number.isNaN(reset.getTime())) {
     return "You've reached today's AI practice limit. Try again tomorrow.";
+  }
+  // A reset more than a day and a half away is the MONTHLY AI cost cap (ai-monthly-cap.ts), not the daily one.
+  if (reset.getTime() - now.getTime() > MONTHLY_RESET_MIN_MS) {
+    return monthlyCapMessage(reset.toISOString());
   }
   if (reset.getTime() - now.getTime() <= 120_000) {
     return "Too many requests. Wait a minute and try again.";

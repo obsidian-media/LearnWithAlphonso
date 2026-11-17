@@ -14,6 +14,8 @@ vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from:
 
 const isSwitchOn = vi.fn(async (_key: string) => true);
 vi.mock("./app-switches.server", () => ({ isSwitchOn }));
+// The monthly cost cap has its own tests; here it must not eat the mocked rpc sequence.
+vi.mock("./ai-monthly-cap.server", () => ({ monthlyCapRefusal: async () => null }));
 
 const { authorizeAiRequest, hasAiConsent, requireAiConsent } = await import("./ai-consent.server");
 

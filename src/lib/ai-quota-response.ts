@@ -6,7 +6,12 @@
  * Pure (no Supabase import) so route tests that mock ai-quota.server keep
  * the real response shaping.
  */
-export type QuotaFailure = { status: number; message: string; resetsAt?: string };
+export type QuotaFailure = {
+  status: number;
+  message: string;
+  resetsAt?: string;
+  reason?: "monthly-cap";
+};
 
 /** consume_ai_quota keys on current_date, and the database runs in UTC. */
 export function nextUtcMidnight(now: Date): string {
@@ -24,7 +29,13 @@ export function nextMinute(now: Date): string {
 export function quotaFailureResponse(failure: QuotaFailure): Response {
   if (failure.status === 429) {
     return Response.json(
-      { error: "quota-exceeded", resetsAt: failure.resetsAt ?? null, message: failure.message },
+      {
+        error: "quota-exceeded",
+        resetsAt: failure.resetsAt ?? null,
+        message: failure.message,
+        // Only present for the monthly cost cap; the clients' copy keys off how far away the reset is.
+        ...(failure.reason ? { reason: failure.reason } : {}),
+      },
       { status: 429 },
     );
   }

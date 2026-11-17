@@ -7,6 +7,9 @@ const rpc = vi.fn();
 const createClient = vi.fn().mockReturnValue({ auth: { getUser }, rpc });
 vi.mock("@supabase/supabase-js", () => ({ createClient }));
 
+// The monthly cost cap has its own tests (ai-monthly-cap.*.test.ts); here it must not eat the mocked rpc sequence.
+vi.mock("./ai-monthly-cap.server", () => ({ monthlyCapRefusal: async () => null }));
+
 const { consumeQuota, DAILY_LIMITS } = await import("./ai-quota.server");
 
 function req(headers: Record<string, string> = {}) {

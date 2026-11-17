@@ -13,7 +13,14 @@ import {
   type Tile,
   type WindowDays,
 } from "./numbers-core";
-import { aiCostTilesFromPayload, parseCostPayload } from "./ai-cost-numbers";
+import {
+  aiCostTilesFromPayload,
+  cappedTile,
+  parseCapCounts,
+  parseCostPayload,
+  type CapCounts,
+} from "./ai-cost-numbers";
+import { monthlyCapConfig } from "./ai-monthly-cap";
 import { costConfig } from "./ai-cost-config";
 import { MICRO } from "./ai-cost";
 
@@ -665,7 +672,23 @@ export function aiCostSource(env: Env, rpcClient?: RpcClient): SourceFn {
     }
     const payload = parseCostPayload(data);
     if (payload.loggedCalls === 0) throw new NotConnectedError("No AI calls logged yet");
-    return aiCostTilesFromPayload(payload, ctx.windowDays, cfg);
+    // The monthly-cap tile: its own function, so a missing one (migration not applied) only blanks this one tile.
+    const cap = monthlyCapConfig(env);
+    let counts: CapCounts | null = null;
+    try {
+      const capped = await client
+        .rpc("admin_ai_cost_capped", { p_free_micro: cap.freeMicro, p_pro_micro: cap.proMicro })
+        .abortSignal(ctx.signal);
+      counts = capped.error ? null : parseCapCounts(capped.data);
+    } catch {
+      counts = null;
+    }
+    return aiCostTilesFromPayload(
+      payload,
+      ctx.windowDays,
+      cfg,
+      cappedTile(counts, cap.freeMicro / MICRO, cap.proMicro / MICRO, ctx.windowDays),
+    );
   };
 }
 
