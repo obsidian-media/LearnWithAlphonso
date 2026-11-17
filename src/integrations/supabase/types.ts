@@ -1813,6 +1813,45 @@ export type Database = {
           },
         ];
       };
+      referrals: {
+        Row: {
+          capped: boolean;
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          note: string | null;
+          referee_id: string;
+          referrer_id: string;
+          reward_granted: boolean;
+          reward_kind: string;
+          status: string;
+        };
+        Insert: {
+          capped?: boolean;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          referee_id: string;
+          referrer_id: string;
+          reward_granted?: boolean;
+          reward_kind?: string;
+          status?: string;
+        };
+        Update: {
+          capped?: boolean;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          referee_id?: string;
+          referrer_id?: string;
+          reward_granted?: boolean;
+          reward_kind?: string;
+          status?: string;
+        };
+        Relationships: [];
+      };
       revenuecat_erasure_pending: {
         Row: {
           app_user_id: string;
@@ -1858,45 +1897,6 @@ export type Database = {
           language?: string;
           result?: Json;
           user_id?: string;
-        };
-        Relationships: [];
-      };
-      referrals: {
-        Row: {
-          capped: boolean;
-          completed_at: string | null;
-          created_at: string;
-          id: string;
-          note: string | null;
-          referee_id: string;
-          referrer_id: string;
-          reward_granted: boolean;
-          reward_kind: string;
-          status: string;
-        };
-        Insert: {
-          capped?: boolean;
-          completed_at?: string | null;
-          created_at?: string;
-          id?: string;
-          note?: string | null;
-          referee_id: string;
-          referrer_id: string;
-          reward_granted?: boolean;
-          reward_kind?: string;
-          status?: string;
-        };
-        Update: {
-          capped?: boolean;
-          completed_at?: string | null;
-          created_at?: string;
-          id?: string;
-          note?: string | null;
-          referee_id?: string;
-          referrer_id?: string;
-          reward_granted?: boolean;
-          reward_kind?: string;
-          status?: string;
         };
         Relationships: [];
       };
@@ -3281,6 +3281,13 @@ export type Database = {
         Args: { _platform: string; _token: string };
         Returns: undefined;
       };
+      claim_referral: {
+        Args: { _code: string };
+        Returns: {
+          ok: boolean;
+          reason: string;
+        }[];
+      };
       claim_review_clear_bonus: {
         Args: { _course: string };
         Returns: {
@@ -3294,13 +3301,6 @@ export type Database = {
           ok: boolean;
           reason: string;
           xp: number;
-        }[];
-      };
-      claim_referral: {
-        Args: { _code: string };
-        Returns: {
-          ok: boolean;
-          reason: string;
         }[];
       };
       confirm_display_name: { Args: { _name: string }; Returns: string };
