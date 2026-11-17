@@ -49,6 +49,8 @@ export const USER_ID_EXPORT_TABLES = [
   "season_placements",
   "signup_attribution",
   "skill_days",
+  // Graded stories progress (20261121100000); own-row SELECT.
+  "story_progress",
   "speech_days",
   "team_members",
   "team_mission_rewards",
@@ -223,6 +225,7 @@ export const exportMyData = createServerFn({ method: "POST" })
                   | "mastered_words"
                   | "skill_days"
                   | "video_watches"
+                  | "story_progress"
                 >,
               )
               .select(table === "user_progress" ? USER_PROGRESS_EXPORT_COLUMNS : "*", {
