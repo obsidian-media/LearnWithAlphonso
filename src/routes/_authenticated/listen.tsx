@@ -355,13 +355,30 @@ export function ListenBrowser({
       {searching ? (
         <PodcastSearchResults query={query} results={searchResults ?? []} isLoading={isSearching} />
       ) : segments.length === 0 ? (
-        <ListenLibraryView
-          library={library}
-          videos={videos}
-          videosFailed={videosQuery.isError}
-          onRetryVideos={() => void videosQuery.refetch()}
-          onOpenVideo={(v) => setWatching(v.id)}
-        />
+        <>
+          <div className="relative z-10 px-5 pt-3">
+            <Link
+              to="/stories"
+              className="card-lift flex items-center gap-3 rounded-3xl bg-ds-card/95 px-4 py-3 backdrop-blur-md"
+            >
+              <Icon3D emoji="📚" size={30} />
+              <span className="min-w-0 flex-1">
+                <span className="block font-display text-base font-bold text-ds-ink">Stories</span>
+                <span className="block text-xs text-ds-ink-soft">Read along, level by level</span>
+              </span>
+              <span aria-hidden="true" className="text-ds-ink-soft/50">
+                →
+              </span>
+            </Link>
+          </div>
+          <ListenLibraryView
+            library={library}
+            videos={videos}
+            videosFailed={videosQuery.isError}
+            onRetryVideos={() => void videosQuery.refetch()}
+            onOpenVideo={(v) => setWatching(v.id)}
+          />
+        </>
       ) : shelf ? (
         <ListenShelfView library={library} shelf={shelf} quizEpisodeIds={quizEpisodeIds} />
       ) : (
