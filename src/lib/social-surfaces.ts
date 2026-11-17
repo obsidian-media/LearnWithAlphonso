@@ -48,6 +48,7 @@ export const SOCIAL_SURFACES: readonly SocialSurface[] = [
     table: "friendships",
     behavior: "hidden",
     defined: "20260918150000_optimize_rls_auth_uid.sql",
+    via: "policy_social_restricted",
   },
   {
     name: "nudges_insert_to_friend",
@@ -55,6 +56,7 @@ export const SOCIAL_SURFACES: readonly SocialSurface[] = [
     table: "nudges",
     behavior: "refused",
     defined: "20260930070000_nudge_push_rate_limit.sql",
+    via: "policy_social_restricted",
   },
   {
     name: "friend_activity_readable_by_friends",
@@ -62,6 +64,7 @@ export const SOCIAL_SURFACES: readonly SocialSurface[] = [
     table: "friend_activity_events",
     behavior: "hidden",
     defined: "20260928020000_block_and_report.sql",
+    via: "policy_social_restricted",
   },
   // ---- leaderboards and leagues ----
   {
@@ -210,6 +213,7 @@ export const SOCIAL_SURFACES: readonly SocialSurface[] = [
     table: "team_members",
     behavior: "hidden",
     defined: "20261013100300_private_teams_row_visibility.sql",
+    via: "policy_social_restricted",
   },
 ];
 
