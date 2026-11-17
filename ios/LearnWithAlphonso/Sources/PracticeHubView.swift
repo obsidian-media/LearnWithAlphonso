@@ -20,6 +20,10 @@ struct PracticeHubView: View {
     @State private var paywall = false
     /// A talk or campaign stop tapped on the learning path: opened here once Practice is showing.
     @Environment(PathDeepLink.self) private var deepLink
+    /// The subscription screen for the memory sheet over a call's result.
+    private var upgradeBuilder: UpgradeViewBuilder {
+        { close in AnyView(PaywallView(entitlementStore: entitlementStore, source: .practiceCard, onClose: close)) }
+    }
     private var scenarios: [Scenario] { contentStore.scenarios(for: course) }
     private var campaigns: [Campaign] { contentStore.campaigns(for: course) }
     private var rows: [PracticeStarRow] { data?.stars ?? [] }
@@ -126,8 +130,8 @@ struct PracticeHubView: View {
                 .sheet(isPresented: $paywall) { PaywallView(entitlementStore: entitlementStore, source: .practiceCard, onClose: { paywall = false }) }
                 .navigationDestination(item: $playing) { t in
                     switch t {
-                    case let .scenario(s): ConversationSessionView(scenario: s, course: course, session: session, conversationStore: conversationStore, chatMode: chat)
-                    case let .campaign(c, i): CampaignSessionView(campaign: c, course: course, session: session, conversationStore: conversationStore, startScene: i, chatMode: chat)
+                    case let .scenario(s): ConversationSessionView(scenario: s, course: course, session: session, conversationStore: conversationStore, chatMode: chat, upgradeView: upgradeBuilder)
+                    case let .campaign(c, i): CampaignSessionView(campaign: c, course: course, session: session, conversationStore: conversationStore, startScene: i, chatMode: chat, upgradeView: upgradeBuilder)
                     }
                 }
         }.onChange(of: playing == nil) { if playing == nil { Task { await load() } } }

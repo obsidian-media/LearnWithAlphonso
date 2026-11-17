@@ -4,6 +4,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.CallRecap
 import com.obsidianmedia.learnwithalphonso.core.net.AiConversationClient
 import com.obsidianmedia.learnwithalphonso.core.net.ChatMessage
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,19 +28,24 @@ class CallRecapController(private val ai: AiConversationClient, private val scop
     var attempted = false
         private set
     private var callId: String? = null
+    private var job: Job? = null
 
     fun start(callId: String, transcript: List<ChatMessage>, scene: String?) {
         if (attempted || !CallRecap.qualifies(transcript.map { it.role })) return
         attempted = true
         this.callId = callId
         _ui.value = Ui(Status.PENDING)
-        scope.launch {
+        job = scope.launch {
             val recap = ai.callRecap(callId, transcript, scene = scene)
+            // A retry or the next scene may have reset this call while it was pending: its recap is not shown.
+            if (this@CallRecapController.callId != callId) return@launch
             _ui.update { if (recap == null) Ui() else Ui(Status.READY, recap) }
         }
     }
 
     fun reset() {
+        job?.cancel()
+        job = null
         attempted = false
         callId = null
         _ui.value = Ui()
@@ -52,6 +58,7 @@ class CallRecapController(private val ai: AiConversationClient, private val scop
         _ui.update { it.copy(review = Review.ADDING) }
         scope.launch {
             val ok = ai.addRecapToReview(id, token)
+            if (callId != id) return@launch
             _ui.update { it.copy(review = if (ok) Review.ADDED else Review.FAILED) }
         }
     }

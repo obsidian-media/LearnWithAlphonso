@@ -297,7 +297,7 @@ public final class AIConversationClient: Sendable {
     /// POST /api/call-recap -- the after-call recap (free). One attempt: nil on anything but a clean recap (a short
     /// call, offline, the AI or its checks failing, consent off, over the limit), and the result screen then keeps its
     /// slip. Nothing is sent for a call under `CallRecap.minLearnerTurns` learner replies.
-    public func callRecap(callId: String, transcript: [ChatMessage], cefrLevel: String? = nil, scene: String? = nil) async -> CallRecap? {
+    public func callRecap(callId: String, transcript: [ChatMessage], cefrLevel: String? = nil, scene: String? = nil, timeout: TimeInterval = 10) async -> CallRecap? {
         guard CallRecap.qualifies(transcript) else { return nil }
         var payload: [String: Any] = [
             "callId": callId,
@@ -306,8 +306,21 @@ public final class AIConversationClient: Sendable {
         if let cefrLevel { payload["cefrLevel"] = cefrLevel }
         if let scene { payload["scene"] = scene }
         guard var request = try? recapRequest("api/call-recap", method: "POST", body: payload) else { return nil }
-        request.timeoutInterval = 10
-        guard let (data, response) = try? await perform(request),
+        request.timeoutInterval = timeout
+        // A total deadline: timeoutInterval only limits idle time, so a slow trickle could hold the recap up for minutes.
+        let sent = request
+        let outcome: (Data, URLResponse)? = await withTaskGroup(of: (Data, URLResponse)?.self) { group in
+            group.addTask { try? await self.perform(sent) }
+            group.addTask {
+                _ = try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                return nil
+            }
+            var first: (Data, URLResponse)?
+            if let next = await group.next() { first = next }
+            group.cancelAll()
+            return first
+        }
+        guard let (data, response) = outcome,
               let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else { return nil }
         return CallRecap.parse(data)
     }

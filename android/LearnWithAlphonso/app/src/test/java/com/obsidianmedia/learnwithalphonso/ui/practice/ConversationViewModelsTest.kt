@@ -372,4 +372,29 @@ class ConversationViewModelsTest {
         assertEquals(v.scenario.opener, v.state.value.turns.single().content)
     }
 
+
+    @Test
+    fun `a campaign scene's recap is sent that scene's turns only`() = runBlocking {
+        val campaign = testContent.campaigns.first { it.scenes.size > 1 }
+        val s = FakeServer { req ->
+            when {
+                req.path.endsWith("/api/chat") -> json("""{"content":"Certainly, what size?","verdict":"correct"}""")
+                req.path.endsWith("/api/practice") -> json("""{"kind":"scene","itemKey":"x/y","stars":2,"bestBefore":0,"bestAfter":2,"replies":3,"rightReplies":3,"shortReplies":0,"englishReplies":0,"finishMinReplies":3}""")
+                req.path.endsWith("/api/call-recap") -> json("""{"recap":null}""")
+                else -> json("[]")
+            }
+        }
+        val v = CampaignConversationViewModel(campaign, InstantRecorder(), { true }, ai(s), s.progressClient, player)
+        v.chatMode = true
+        repeat(campaign.scenes[0].minTurns) { i -> v.sendText("scene one reply $i"); awaitTrue("turn $i") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == 1 + 2 * (i + 1) } }
+        v.continueToNextScene(speak = false)
+        val anchor = v.state.value.turns.size
+        repeat(3) { i -> v.sendText("scene two reply $i"); awaitTrue("two $i") { v.state.value.phase == ConversationPhase.IDLE && v.state.value.turns.size == anchor + 2 * (i + 1) } }
+        v.finishPractice()
+        awaitTrue("recap request") { s.seen.any { it.path.endsWith("/api/call-recap") } }
+        val body = s.seen.first { it.path.endsWith("/api/call-recap") }.body
+        assertTrue(body.contains("scene two reply 0"))
+        assertFalse("the earlier scene must not be sent", body.contains("scene one reply"))
+        assertTrue(body.contains(campaign.scenes[1].opener.take(20)))
+    }
 }

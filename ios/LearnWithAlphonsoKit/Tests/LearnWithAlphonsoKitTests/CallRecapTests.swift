@@ -153,3 +153,27 @@ final class CallRecapNoteTests: XCTestCase {
         XCTAssertEqual(note(0), "Seen in 4 calls, last today")
     }
 }
+
+final class CallRecapRobustnessTests: XCTestCase {
+    func testTwoCorrectionsOnTheSameTopicHaveDifferentIds() throws {
+        let body: [String: Any] = ["recap": ["corrections": [
+            ["said": "Soy cansado", "fixed": "Estoy cansado", "why": "estar", "topic": "ser-estar", "label": "Ser or estar"],
+            ["said": "Soy en casa", "fixed": "Estoy en casa", "why": "estar", "topic": "ser-estar", "label": "Ser or estar"],
+        ], "phrase": NSNull()]]
+        let recap = try XCTUnwrap(CallRecap.parse(try JSONSerialization.data(withJSONObject: body)))
+        XCTAssertEqual(recap.corrections.count, 2)
+        XCTAssertEqual(Set(recap.corrections.map(\.id)).count, 2, "a ForEach needs unique ids")
+    }
+
+    func testASlowRecapIsGivenUpOnAtTheTotalDeadline() async {
+        let client = AIConversationClient(baseURL: URL(string: "https://x.example")!, accessToken: { "tok" }, requester: { _ in
+            try await Task.sleep(nanoseconds: 5_000_000_000)
+            throw URLError(.timedOut)
+        })
+        let started = Date()
+        let transcript = (0..<3).flatMap { [ChatMessage(role: "user", content: "u\($0)"), ChatMessage(role: "assistant", content: "ok")] }
+        let recap = await client.callRecap(callId: "00000000-0000-4000-8000-0000000000c1", transcript: transcript, timeout: 0.3)
+        XCTAssertNil(recap)
+        XCTAssertLessThan(Date().timeIntervalSince(started), 3, "it must not wait for the slow request")
+    }
+}

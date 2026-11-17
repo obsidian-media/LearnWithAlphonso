@@ -269,7 +269,7 @@ struct TutorMemoryView: View {
     let session: Session
     let course: Course
     /// The locked page is built only from the learner's own data: their weak spots and first-run answers.
-    var weakSpots: [String] = []
+    @State private var weakSpots: [String] = []
     @State private var goalsNoteLoaded: String?
     /// Opens the subscription screen from the locked page's "Try Alphonso Pro".
     let onUpgrade: () -> Void
@@ -302,7 +302,13 @@ struct TutorMemoryView: View {
         .navigationTitle("What Alphonso remembers")
         .navigationBarTitleDisplayMode(.inline)
         .task { await model.load(session: session) }
-        .task { goalsNoteLoaded = await practiceClient(session).goalsNote() }
+        .task {
+            goalsNoteLoaded = await practiceClient(session).goalsNote()
+            guard let token = await session.freshAccessToken(), let userID = session.userID,
+                  let data = try? await ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: token)
+                    .fetchProfileOverview(userID: userID, course: course.wireCode) else { return }
+            weakSpots = Array(ProfileMath.weakSpots(data.weakItems).top.prefix(2).map(\.display))
+        }
         .sheet(isPresented: $adding) {
             if case .ready(let memory) = model.phase { addGoalSheet(memory) }
         }
@@ -528,6 +534,27 @@ struct TopicNotesSettingsCard: View {
             }
             if phase == .done { Text("Deleted.").dsText(.footnote).foregroundStyle(ds.rightInk) }
             if phase == .failed { Text("Could not delete them. Try again.").dsText(.footnote).foregroundStyle(ds.wrongInk) }
+        }
+    }
+}
+
+/// Builds the subscription screen for a sheet; the Practice hub supplies it, so the call screens never touch Pro rules.
+typealias UpgradeViewBuilder = (_ close: @escaping () -> Void) -> AnyView
+
+/// What Alphonso remembers as a sheet over a result screen: its "Try Alphonso Pro" opens the subscription screen.
+struct MemorySheetHost: View {
+    let session: Session
+    let course: Course
+    let upgradeView: UpgradeViewBuilder?
+    let close: () -> Void
+    @State private var showUpgrade = false
+
+    var body: some View {
+        NavigationStack {
+            TutorMemoryView(session: session, course: course, onUpgrade: { if upgradeView != nil { showUpgrade = true } else { close() } })
+        }
+        .sheet(isPresented: $showUpgrade) {
+            if let upgradeView { upgradeView { showUpgrade = false } }
         }
     }
 }

@@ -11,7 +11,8 @@ public struct CallRecap: Equatable, Sendable {
         public let why: String
         public let topic: String
         public let label: String?
-        public var id: String { topic }
+        /// Not the topic alone: two corrections may share one, and a ForEach needs unique ids.
+        public var id: String { "\(topic)|\(said)|\(fixed)" }
 
         public init(said: String, fixed: String, why: String, topic: String, label: String?) {
             self.said = said

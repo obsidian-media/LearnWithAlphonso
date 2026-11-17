@@ -9,6 +9,8 @@ struct CampaignSessionView: View {
 
     var startScene: Int = 0
     var chatMode: Bool = false
+    /// Builds the subscription screen for the memory sheet (supplied by the Practice hub).
+    var upgradeView: UpgradeViewBuilder?
     @State private var callId = UUID().uuidString
     @State private var startedAt = Date()
     @State private var result: PracticeResult?
@@ -78,7 +80,7 @@ struct CampaignSessionView: View {
         }
         .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $showMemory) {
-            NavigationStack { TutorMemoryView(session: session, course: course, onUpgrade: { showMemory = false }) }
+            MemorySheetHost(session: session, course: course, upgradeView: upgradeView, close: { showMemory = false })
         }
         .aiDisclosureGate()
         .tint(AlphonsoDS.current.choice)

@@ -317,6 +317,9 @@ class CampaignConversationViewModel(
 
     override fun systemPrompt(): String = "${campaign.premise}\n\n${scene.systemPrompt}"
 
+    /** This scene's call only (its opener onward), never the earlier scenes. */
+    override fun callTurns(): List<ChatMessage> = _state.value.turns.drop(_campaign.value.sceneAnchor)
+
     fun continueToNextScene(speak: Boolean = true) {
         if (awaitingResult) return
         if (!canContinue) return
