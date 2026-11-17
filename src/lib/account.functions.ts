@@ -67,6 +67,7 @@ export const USER_ID_EXPORT_TABLES = [
 // account's own data for portability purposes.
 export const OTHER_OWNED_EXPORT_TABLES = [
   { table: "nudges", columns: ["sender_id", "recipient_id"] },
+  { table: "streak_freeze_gifts", columns: ["sender_id", "recipient_id"] },
   { table: "duels", columns: ["challenger_id", "opponent_id"] },
   { table: "buddy_pairs", columns: ["user_a", "user_b"] },
   { table: "buddy_requests", columns: ["from_user", "to_user"] },
