@@ -1861,6 +1861,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      referrals: {
+        Row: {
+          capped: boolean;
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          note: string | null;
+          referee_id: string;
+          referrer_id: string;
+          reward_granted: boolean;
+          reward_kind: string;
+          status: string;
+        };
+        Insert: {
+          capped?: boolean;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          referee_id: string;
+          referrer_id: string;
+          reward_granted?: boolean;
+          reward_kind?: string;
+          status?: string;
+        };
+        Update: {
+          capped?: boolean;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          referee_id?: string;
+          referrer_id?: string;
+          reward_granted?: boolean;
+          reward_kind?: string;
+          status?: string;
+        };
+        Relationships: [];
+      };
       review_items: {
         Row: {
           answer_index: number | null;
@@ -3257,6 +3296,13 @@ export type Database = {
           xp: number;
         }[];
       };
+      claim_referral: {
+        Args: { _code: string };
+        Returns: {
+          ok: boolean;
+          reason: string;
+        }[];
+      };
       confirm_display_name: { Args: { _name: string }; Returns: string };
       consume_ai_quota: {
         Args: { _kind: string };
@@ -3513,6 +3559,10 @@ export type Database = {
           ok: boolean;
           reason: string;
         }[];
+      };
+      grant_referral_reward: {
+        Args: { _referee: string; _referrer_pro: boolean };
+        Returns: Json;
       };
       hearts_refill_resolve: {
         Args: { _hearts: number; _now: string; _refill: string };

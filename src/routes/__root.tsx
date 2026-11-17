@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { CookieConsent } from "../components/CookieConsent";
 import { AttributionBridge } from "../components/AttributionBridge";
+import { ReferralCapture } from "../components/ReferralBridge";
 import { SHARE_IMAGE, SHARE_IMAGE_ALT, THEME_COLOR_LIGHT, THEME_COLOR_NIGHT } from "../lib/seo";
 import { StatusPage } from "../components/StatusPage";
 import { dsButtonClass } from "../components/ds/buttons";
@@ -162,6 +163,7 @@ function RootComponent() {
       <MotionConfig reducedMotion="user">
         <AuthSync />
         <AttributionBridge />
+        <ReferralCapture />
         <Outlet />
         <CookieConsent />
       </MotionConfig>

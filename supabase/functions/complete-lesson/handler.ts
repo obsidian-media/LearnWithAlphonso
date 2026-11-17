@@ -44,6 +44,7 @@ import {
   streakHeartMilestoneReached,
 } from "../_shared/hearts.ts";
 import { heartsUnlimitedFor } from "../_shared/hearts-pro.ts";
+import { settleReferralReward } from "../_shared/referral.ts";
 import { localDay, streakBridge } from "../_shared/local-day.ts";
 import { createHash } from "node:crypto";
 import { sendPushToUser } from "../_shared/apns.ts";
@@ -624,6 +625,11 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     sessionIssuedAt ?? now.getTime(),
   );
   if (settled) heartsResult = settled;
+
+  // Referral reward: the first saved lesson of a referred learner pays both sides. Best effort, never fails the lesson;
+  // a no-op (one cheap read) for everyone without a pending referral. Runs after hearts are settled so the grant is
+  // not overwritten by the settlement.
+  await settleReferralReward(admin, userId, deps.heartsUnlimited);
 
   // Real (remote) push for leaderboard "you've been overtaken" -- V4
   // candidate #2 (docs/BACKLOG.md sec 2.1). This function is the one
