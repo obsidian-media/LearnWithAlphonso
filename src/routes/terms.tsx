@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage, Section, Bullets } from "../components/LegalPage";
+import { canonicalLink, shareMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/terms")({
   component: Terms,
   head: () => ({
+    links: [canonicalLink("/terms")],
     meta: [
+      ...shareMeta("/terms"),
       { title: "Terms of Use — Alphonso" },
       {
         name: "description",

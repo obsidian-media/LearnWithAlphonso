@@ -17,6 +17,8 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as NativeCaptchaRouteImport } from './routes/native-captcha'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WelcomeRouteImport } from './routes/welcome'
@@ -116,6 +118,16 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupportRoute = SupportRouteImport.update({
@@ -441,6 +453,8 @@ export interface FileRoutesByFullPath {
   '/native-captcha': typeof NativeCaptchaRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
@@ -511,6 +525,8 @@ export interface FileRoutesByTo {
   '/native-captcha': typeof NativeCaptchaRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
@@ -583,6 +599,8 @@ export interface FileRoutesById {
   '/native-captcha': typeof NativeCaptchaRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
@@ -655,6 +673,8 @@ export interface FileRouteTypes {
     | '/native-captcha'
     | '/privacy'
     | '/reset-password'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/support'
     | '/terms'
     | '/welcome'
@@ -725,6 +745,8 @@ export interface FileRouteTypes {
     | '/native-captcha'
     | '/privacy'
     | '/reset-password'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/support'
     | '/terms'
     | '/welcome'
@@ -796,6 +818,8 @@ export interface FileRouteTypes {
     | '/native-captcha'
     | '/privacy'
     | '/reset-password'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/support'
     | '/terms'
     | '/welcome'
@@ -868,6 +892,8 @@ export interface RootRouteChildren {
   NativeCaptchaRoute: typeof NativeCaptchaRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   WelcomeRoute: typeof WelcomeRoute
@@ -960,6 +986,20 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/support': {
@@ -1473,6 +1513,8 @@ const rootRouteChildren: RootRouteChildren = {
   NativeCaptchaRoute: NativeCaptchaRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   WelcomeRoute: WelcomeRoute,

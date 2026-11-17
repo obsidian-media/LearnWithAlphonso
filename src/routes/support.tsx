@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage, Section, Bullets } from "../components/LegalPage";
+import { canonicalLink, shareMeta } from "@/lib/seo";
 
 /**
  * App Store Connect REQUIRES a Support URL and rejects a submission
@@ -23,7 +24,9 @@ const CONTACT = "support@alphonsoecosystem.app";
 export const Route = createFileRoute("/support")({
   component: Support,
   head: () => ({
+    links: [canonicalLink("/support")],
     meta: [
+      ...shareMeta("/support"),
       { title: "Support — Alphonso" },
       {
         name: "description",
