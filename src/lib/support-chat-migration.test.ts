@@ -655,6 +655,8 @@ describe("support chat migrations against the whole migration history", () => {
         ...MINE,
         "20261117100200_support_staff_actions.sql",
         "20261117100300_support_notifications.sql",
+        // Indexes support_notify_queue, which the skipped notifications migration creates.
+        "20261120100000_db_hardening_indexes_policy_initplan.sql",
       ],
     });
     try {
