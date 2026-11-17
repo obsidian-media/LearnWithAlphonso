@@ -8,7 +8,7 @@ Sweep of 2026-11-15 against main, merged pull requests and read-only checks of t
 
 **How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
 
-Counts: owner only 20, decision needed 9, device check 14, agent can do 12, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
+Counts: owner only 20, decision needed 9, device check 15, agent can do 12, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
 
 ### A. STILL OPEN - owner only (in priority order)
 
@@ -43,7 +43,7 @@ Counts: owner only 20, decision needed 9, device check 14, agent can do 12, done
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
 28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
 29. **Someday features: discussed 2026-11-16, owner to pick.** Competitor research is published (owner page). The owner chose the art workstream (items 45 and 46) and asked for cost tracking (items 65 and 66) and similar tools. Not started, owner picks which, if any:
-    - Call recap card plus a "what Alphonso remembers" page.
+    - IN PROGRESS: call recap card plus a "what Alphonso remembers" page. Owner decisions 2026-11-16: recap on the result screen, text only with tap-to-hear; memory is weak spots, phrases and goals (presets only), with delete and "forget everything"; recap free, memory page Pro, memory saved for Pro only; own `recap` quota (30 a day) and cost kind; Alphonso's Pro calls are primed with memory. Server and web merged (#594, f224d0dd; migration 20261119100000_call_recap_memory verified live: `tutor_memory` has RLS on, no anon read, the forget function is service-role only). iOS and Android are PR #595 (open, fixing review findings). Privacy: a code filter drops emails, phone numbers, links and name introductions, and memory stores only the corrected phrase; "forget" removes memory, weakness events and recap-made review items and keeps lessons, stars, streak, XP and saved words; free learners can forget their weak-spot notes from Settings. The privacy page wording changed (docs/privacy-and-data.md).
     - Referral.
     - Pronunciation feedback, word level first.
     - Honest billing kit plus an AI minutes meter.
@@ -67,7 +67,8 @@ Counts: owner only 20, decision needed 9, device check 14, agent can do 12, done
 40. **Real-device web look** at phone width: teams, save-a-word dialog, word-bank layout. (0.0-ac #4, 0.0-ae)
 41. **Learn tab badge after clearing the review queue**; lesson-complete button clipping at largest text. (0.0-z #5 #6)
 42. **Real-microphone checks of the web voice flows** in Safari, Firefox and a phone. (#560)
-42a. **Call scenes v2 and Royal-night rooms on iOS and Android, next build.** Look at the 12 call scenes plus the study room day and evening, the five Royal-night screens (learn, hector, listen, profile, practice), and the bottom fade on Alphonso's call avatar (no hard robe edge). Seen on web only; iOS (Limrun refused, no credits) and Android never seen. (#589)
+42a. **Call scenes v2 and Royal-night rooms on iOS and Android (build 69).** Look at the 12 call scenes plus the study room day and evening, the five Royal-night screens (learn, hector, listen, profile, practice), and the bottom fade on Alphonso's call avatar (no hard robe edge). Seen on web only; iOS (Limrun refused, no credits) and Android never seen. (#589)
+42b. **Call recap and "What Alphonso remembers" on the next build** (after #595): recap card on the call result screen and tap-to-hear; memory page as Pro (weak spots, phrases, goals, delete one, forget everything); free learner forgetting weak-spot notes from Settings; Alphonso's Pro call using the memory; the 30 a day recap quota message. Web is merged (#594); iOS and Android never seen.
 
 - Moved here from 28 (owner 2026-11-16, "i will check on device and let you know"): hands-free with the screen locked, iOS and Android.
 
@@ -108,6 +109,7 @@ Counts: owner only 20, decision needed 9, device check 14, agent can do 12, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- Build 69 cut and uploaded to TestFlight 2026-11-16 (#593, 840c7948), not submitted; carries call scenes v2, Royal-night rooms, the avatar fade and AI cost tracking. Device check 42a applies to it.
 - AI cost tracking (was 65): merged and live 2026-11-16 (#588, ecc7e584). Migration 20261118200000_ai_cost_log applied and verified in production: `ai_cost_log` and `ai_cost_daily` exist, the `tts-cache` bucket is private, `authenticated` has no read; deploy job succeeded; types regenerated automatically (2956fe03; the types-fresh job was red on ecc7e584 only until then). Owner steps are item 1c. Item 66 stays open.
 - Call scenes v2 and Royal-night rooms (was 45 and 46): merged in #589 (71c2646c). 14 call-*.webp (12 scenarios plus study room day and evening) and 5 Royal-night screen scenes (learn, hector, listen, profile, practice) on web, iOS and Android (about 2.9 MB per platform). Lessons and story campaigns keep today's rooms (tests); Hector's calls use the new study room; Royal light and Meadow (even in device dark) keep day art; Lesson complete stays light; living clips unchanged; the web call now follows Royal night; Alphonso's call avatar has a bottom fade (solid to 80%) on all three platforms. Seen on web only; iOS and Android are device check 42a.
 - Redesign gaps, batch 4 (was 52a): web call screen on design tokens (#586, 5296800c). Web raw-value baseline 44 to 2 (only api/review-demo-code.ts left); PracticeCall, LearnMap and AlphonsoAvatar on tokens; theme faces kept; night-stable fallbacks for the room colour and the LearnMap locked node; behaviour unchanged.
