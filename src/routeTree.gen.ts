@@ -73,6 +73,7 @@ import { Route as AuthenticatedPathBuildRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPathWeekRouteImport } from './routes/_authenticated/path_.week'
 import { Route as AuthenticatedPathWhyRouteImport } from './routes/_authenticated/path_.why'
 import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile_.friends'
+import { Route as AuthenticatedProfileInviteRouteImport } from './routes/_authenticated/profile_.invite'
 import { Route as AuthenticatedProfileMemoryRouteImport } from './routes/_authenticated/profile_.memory'
 import { Route as AuthenticatedTeamsTeamIdRouteImport } from './routes/_authenticated/teams_.$teamId'
 import { Route as ApiInternalMaintenanceRouteImport } from './routes/api/internal/maintenance'
@@ -407,6 +408,12 @@ const AuthenticatedProfileFriendsRoute =
     path: '/profile/friends',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProfileInviteRoute =
+  AuthenticatedProfileInviteRouteImport.update({
+    id: '/profile_/invite',
+    path: '/profile/invite',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProfileMemoryRoute =
   AuthenticatedProfileMemoryRouteImport.update({
     id: '/profile_/memory',
@@ -515,6 +522,7 @@ export interface FileRoutesByFullPath {
   '/path/week': typeof AuthenticatedPathWeekRoute
   '/path/why': typeof AuthenticatedPathWhyRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
+  '/profile/invite': typeof AuthenticatedProfileInviteRoute
   '/profile/memory': typeof AuthenticatedProfileMemoryRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
@@ -588,6 +596,7 @@ export interface FileRoutesByTo {
   '/path/week': typeof AuthenticatedPathWeekRoute
   '/path/why': typeof AuthenticatedPathWhyRoute
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
+  '/profile/invite': typeof AuthenticatedProfileInviteRoute
   '/profile/memory': typeof AuthenticatedProfileMemoryRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
@@ -663,6 +672,7 @@ export interface FileRoutesById {
   '/_authenticated/path_/week': typeof AuthenticatedPathWeekRoute
   '/_authenticated/path_/why': typeof AuthenticatedPathWhyRoute
   '/_authenticated/profile_/friends': typeof AuthenticatedProfileFriendsRoute
+  '/_authenticated/profile_/invite': typeof AuthenticatedProfileInviteRoute
   '/_authenticated/profile_/memory': typeof AuthenticatedProfileMemoryRoute
   '/_authenticated/teams_/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
@@ -738,6 +748,7 @@ export interface FileRouteTypes {
     | '/path/week'
     | '/path/why'
     | '/profile/friends'
+    | '/profile/invite'
     | '/profile/memory'
     | '/teams/$teamId'
     | '/api/internal/maintenance'
@@ -811,6 +822,7 @@ export interface FileRouteTypes {
     | '/path/week'
     | '/path/why'
     | '/profile/friends'
+    | '/profile/invite'
     | '/profile/memory'
     | '/teams/$teamId'
     | '/api/internal/maintenance'
@@ -885,6 +897,7 @@ export interface FileRouteTypes {
     | '/_authenticated/path_/week'
     | '/_authenticated/path_/why'
     | '/_authenticated/profile_/friends'
+    | '/_authenticated/profile_/invite'
     | '/_authenticated/profile_/memory'
     | '/_authenticated/teams_/$teamId'
     | '/api/internal/maintenance'
@@ -1393,6 +1406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileFriendsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile_/invite': {
+      id: '/_authenticated/profile_/invite'
+      path: '/profile/invite'
+      fullPath: '/profile/invite'
+      preLoaderRoute: typeof AuthenticatedProfileInviteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile_/memory': {
       id: '/_authenticated/profile_/memory'
       path: '/profile/memory'
@@ -1488,6 +1508,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPathWeekRoute: typeof AuthenticatedPathWeekRoute
   AuthenticatedPathWhyRoute: typeof AuthenticatedPathWhyRoute
   AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
+  AuthenticatedProfileInviteRoute: typeof AuthenticatedProfileInviteRoute
   AuthenticatedProfileMemoryRoute: typeof AuthenticatedProfileMemoryRoute
   AuthenticatedTeamsTeamIdRoute: typeof AuthenticatedTeamsTeamIdRoute
 }
@@ -1517,6 +1538,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPathWeekRoute: AuthenticatedPathWeekRoute,
   AuthenticatedPathWhyRoute: AuthenticatedPathWhyRoute,
   AuthenticatedProfileFriendsRoute: AuthenticatedProfileFriendsRoute,
+  AuthenticatedProfileInviteRoute: AuthenticatedProfileInviteRoute,
   AuthenticatedProfileMemoryRoute: AuthenticatedProfileMemoryRoute,
   AuthenticatedTeamsTeamIdRoute: AuthenticatedTeamsTeamIdRoute,
 }

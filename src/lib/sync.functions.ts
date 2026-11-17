@@ -587,6 +587,10 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       },
       await liveHeartsServerDeps(),
     );
+    // Referral reward: the first saved lesson of a referred learner pays both sides. Best effort (never throws), a
+    // no-op for everyone without a pending referral; after hearts are settled so the grant is not overwritten.
+    const { settleReferralReward, liveReferralDeps } = await import("./referral.server");
+    await settleReferralReward(userId, await liveReferralDeps());
     const heartsResult = settled ?? applied.heartsResult;
     const { xpGain, streak, longest, freezes, heartsBonus, xp, oldIdx, newIdx, leagueTier } =
       applied;

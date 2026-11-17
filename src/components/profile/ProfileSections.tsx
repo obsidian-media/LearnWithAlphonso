@@ -970,6 +970,19 @@ export function FriendsWeek({ o }: { o: ProfileOverview }) {
           XP over the last {FRIENDS_WEEK_DAYS} days
         </p>
       </div>
+      <Link
+        to="/profile/invite"
+        data-invite-friends=""
+        className={`${CARD} flex items-center gap-3 p-3 ds-type-footnote font-bold text-ds-ink`}
+      >
+        <DsIcon name="friends" className="size-8 shrink-0 text-ds-choice" />
+        <span className="min-w-0 flex-1">
+          Invite friends
+          <span className="block ds-type-caption font-normal text-ds-ink-soft">
+            You both get a reward when they finish a first lesson.
+          </span>
+        </span>
+      </Link>
     </section>
   );
 }

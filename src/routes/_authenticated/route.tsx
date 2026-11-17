@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { safeNextPath } from "@/lib/safe-next-path";
 import { PodcastAudio } from "@/components/PodcastAudio";
 import { NamePrompt } from "@/components/NamePrompt";
+import { ReferralClaim } from "@/components/ReferralBridge";
 import { AiConsentProvider } from "@/lib/ai-consent-context";
 import { browserFirstRunStore, completeProfileSkippedThisVisit } from "@/lib/first-run";
 import {
@@ -55,6 +56,7 @@ export const Route = createFileRoute("/_authenticated")({
     <AiConsentProvider>
       <PodcastAudio />
       <NamePrompt />
+      <ReferralClaim />
       <Outlet />
     </AiConsentProvider>
   ),

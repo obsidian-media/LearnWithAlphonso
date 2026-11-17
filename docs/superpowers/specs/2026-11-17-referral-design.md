@@ -9,11 +9,11 @@ reward. The program must not be farmable.
 
 ## Reward
 
-| Who | Reward |
-| --- | --- |
-| Invited friend (the referee, always a brand-new account, so free at referral time) | Bonus hearts |
-| Referrer, free | Bonus hearts |
-| Referrer, Pro | ONE streak freeze instead (Pro already has unlimited hearts, so hearts mean nothing to them) |
+| Who                                                                                | Reward                                                                                       |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Invited friend (the referee, always a brand-new account, so free at referral time) | Bonus hearts                                                                                 |
+| Referrer, free                                                                     | Bonus hearts                                                                                 |
+| Referrer, Pro                                                                      | ONE streak freeze instead (Pro already has unlimited hearts, so hearts mean nothing to them) |
 
 - Hearts amount lives in ONE documented constant (`REFERRAL_REWARD_HEARTS`). The hearts column is hard-capped at 5
   (`user_progress_hearts_range`), and a streak milestone already means "refill to full", so a "day's worth" collapses to a
