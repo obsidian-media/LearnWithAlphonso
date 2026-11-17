@@ -5,6 +5,7 @@ import { edgeButtonClass } from "../lesson/LessonParts";
 import { HectorInvite } from "../HectorInvite";
 import { PracticeStars, StarTally } from "./PracticeStars";
 import { SayThePicture } from "./SayThePicture";
+import { SayItRight } from "./SayItRight";
 import { PreCallSheet, type CallMode, type PreCallTarget } from "./PreCallSheet";
 import type { Course } from "@/data/courses";
 import { CAMPAIGNS, localizeCampaign } from "@/data/campaigns";
@@ -78,6 +79,7 @@ export function PracticeHub({
   const [level, setLevel] = useState<ScenarioLevel | "All">("All");
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const [sayPicture, setSayPicture] = useState(false);
+  const [sayItRight, setSayItRight] = useState(false);
   const greeting = GREETING[course];
 
   const openScenario = (id: string) => {
@@ -126,6 +128,7 @@ export function PracticeHub({
   const resumeCampaign = resume ? campaigns.find((c) => c.id === resume.campaignId) : undefined;
   const shownScenarios = level === "All" ? scenarios : scenarios.filter((s) => s.level === level);
 
+  if (sayItRight) return <SayItRight course={course} onExit={() => setSayItRight(false)} />;
   if (sayPicture) return <SayThePicture course={course} onExit={() => setSayPicture(false)} />;
 
   return (
@@ -348,6 +351,28 @@ export function PracticeHub({
             </span>
             <span className="block ds-type-caption font-semibold text-ds-ink-soft">
               See a picture, say the word. 8 quick words.
+            </span>
+          </span>
+          <DsIcon name="chevron" className="size-5 shrink-0 text-ds-ink-soft" />
+        </button>
+
+        {/* Say it right: hear a learned word, say it, find out if you were clearly understood. */}
+        <button
+          type="button"
+          data-say-it-right-card=""
+          onClick={() => setSayItRight(true)}
+          className="flex items-center gap-3 rounded-[18px] border-2 border-b-4 border-ds-line bg-ds-card p-3 text-left"
+        >
+          <span
+            aria-hidden="true"
+            className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-ds-choice-tint text-ds-choice"
+          >
+            <DsIcon name="speaker" className="size-6" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block ds-type-headline font-extrabold text-ds-ink">Say it right</span>
+            <span className="block ds-type-caption font-semibold text-ds-ink-soft">
+              Hear a word you learned, say it back. 8 quick words.
             </span>
           </span>
           <DsIcon name="chevron" className="size-5 shrink-0 text-ds-ink-soft" />
