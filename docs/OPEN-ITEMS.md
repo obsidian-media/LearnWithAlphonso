@@ -10,7 +10,7 @@ Sweep of 2026-11-15 against main, merged pull requests and read-only checks of t
 
 **How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
 
-Counts: owner only 21, decision needed 9, device check 15, agent can do 12, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
+Counts: owner only 23, decision needed 9, device check 15, agent can do 12, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
 
 ### A. STILL OPEN - owner only (in priority order)
 
@@ -37,6 +37,8 @@ Counts: owner only 21, decision needed 9, device check 15, agent can do 12, done
 19. Moved to E: stale worktree and branch cleanup was done by the owner on 2026-11-15.
 20. **Store listing leftovers (likely moot):** subscription review screenshot, walkthrough recording, upgrade test 50 to 51. (0.0-am)
 20a. **Limrun top-up for cloud iOS QA (owner).** Limrun refused the 2026-11-16 run: the organisation has no credits or subscription. Without a top-up the agent cannot check iOS on a simulator.
+69. **OWNER ONLY: submit the sitemap to Google Search Console** once the domain learn.alphonsoecosystem.app is attached there: https://learn.alphonsoecosystem.app/sitemap.xml (from #600).
+70. **OWNER ONLY: unblock the Instagram System User token.** Enable 2FA and add contact info on the Meta account. The Graph API Explorer path is unavailable (the login is Instagram/Business-only, with no personal Facebook).
 
 ### B. DECISION NEEDED (owner choice)
 
@@ -83,7 +85,7 @@ Counts: owner only 21, decision needed 9, device check 15, agent can do 12, done
 59. **Vocab image quality** beyond metadata triage; Android needs no change for empty lines (verified done). (3 Content)
 63. **Dev server does not boot in the Windows sandbox.** (4)
 66. **Later: monthly per-user cost budget**, to be revisited after about a month of real cost data from the AI cost log (#588). Ties to the lifetime-pricing usage cap in item 29.
-67. **LAUNCH READINESS (owner 2026-11-16).** Web first, then iOS and Android; paid from day one; polished full launch; content run already done. In flight: web launch gaps PR (robots, sitemap, SEO, error pages); database hardening PR (indexes and RLS initplan; owner merges; migration); store privacy answer sheets (doc); a self-pentest paused at scoping until the owner gives the go-ahead. Build 70 is on TestFlight, not submitted.
+67. **LAUNCH READINESS (owner 2026-11-16).** Web first, then iOS and Android; paid from day one; polished full launch; content run already done. Done and live: #598 DB hardening, #600 web launch readiness, #601 security fix (see Recently closed). In flight: store privacy answer sheets (doc); a fix PR for the AI-tutor safety findings (1 Medium: recap looksPersonal filter gaps; 2 Low: Miya link guard, which is moot while Miya AI is off in prod, and a TTS length cap). Build 70 is on TestFlight, not submitted.
 68. **Owner dashboard toggle:** turn on leaked-password protection in the Supabase auth settings (cannot be done from code).
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
@@ -112,6 +114,10 @@ Counts: owner only 21, decision needed 9, device check 15, agent can do 12, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- #598 (cc980a55) DB hardening: 21 foreign-key indexes and 4 RLS initplan policy fixes; live on prod (index verified).
+- #600 (8a94bb6d) Web launch readiness: robots.txt and sitemap.xml generated from the route tree, SEO, canonical and OG tags on the 7 public pages, redesigned 404 and error pages. Owner follow-up is item 69.
+- #601 (bf003ed4) Security: the status helpers is_restricted and is_social_restricted are limited to server callers; a new scoped policy_social_restricted helper serves 4 RLS policies (friendships, friend_activity, nudges, team_members). Migration 20261120110000, live and verified on prod: authenticated can no longer call the oracle.
+- Self-pentest (2026-11-16/17): clean, no Critical or High, 1 Low (fixed by #601). AI-tutor safety pass: no Critical or High; the 1 Medium and 2 Low are in item 67.
 - FR/ES review-panel disagreements (was 44): folded into the content run that finished 2026-11-06 (closure report).
 - Build 69 cut and uploaded to TestFlight 2026-11-16 (#593, 840c7948), not submitted; carries call scenes v2, Royal-night rooms, the avatar fade and AI cost tracking. Device check 42a applies to it.
 - AI cost tracking (was 65): merged and live 2026-11-16 (#588, ecc7e584). Migration 20261118200000_ai_cost_log applied and verified in production: `ai_cost_log` and `ai_cost_daily` exist, the `tts-cache` bucket is private, `authenticated` has no read; deploy job succeeded; types regenerated automatically (2956fe03; the types-fresh job was red on ecc7e584 only until then). Owner steps are item 1c. Item 66 stays open.
