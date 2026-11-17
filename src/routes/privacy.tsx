@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage, Section, Bullets } from "../components/LegalPage";
+import { canonicalLink, shareMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/privacy")({
   component: Privacy,
   head: () => ({
+    links: [canonicalLink("/privacy")],
     meta: [
+      ...shareMeta("/privacy"),
       { title: "Privacy Policy — Alphonso" },
       {
         name: "description",

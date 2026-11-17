@@ -190,6 +190,16 @@ describe("first-paint theme script", () => {
     expect(script).toContain("localStorage");
   });
 
+  it("sets the page language and a theme-colour for light and dark", () => {
+    expect(markup).toContain('<html lang="en">');
+    expect(markup).toContain(
+      'name="theme-color" content="#FBF6EC" media="(prefers-color-scheme: light)"',
+    );
+    expect(markup).toContain(
+      'name="theme-color" content="#0E1330" media="(prefers-color-scheme: dark)"',
+    );
+  });
+
   // Night: Royal follows the device's dark mode, Meadow never does (owner: "Meadow stays light, even in dark mode").
   function runDark(stored: string | null, dark: boolean | "throws" | "absent") {
     document.documentElement.removeAttribute("data-palette");

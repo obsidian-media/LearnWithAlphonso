@@ -18,6 +18,7 @@ import { isAccountSuspendedError, useAccountStatus } from "../lib/account-suspen
 import { roomSrc } from "../lib/first-run";
 import { expressionSrc } from "../lib/lesson-stage";
 import { edgeButtonClass } from "../components/lesson/LessonParts";
+import { canonicalLink, shareMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -27,7 +28,9 @@ export const Route = createFileRoute("/auth")({
     ...(s.mode === "signup" ? { mode: "signup" as const } : {}),
   }),
   head: () => ({
+    links: [canonicalLink("/auth")],
     meta: [
+      ...shareMeta("/auth"),
       { title: "Sign in — Alphonso" },
       {
         name: "description",

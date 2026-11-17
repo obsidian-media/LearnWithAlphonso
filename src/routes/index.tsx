@@ -5,11 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Icon } from "@/components/ds/Blocks";
 import { dsButtonClass } from "@/components/ds/buttons";
 import { DsIcon } from "@/components/ds/DsIcon";
+import { canonicalLink, shareMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
+    links: [canonicalLink("/")],
     meta: [
+      ...shareMeta("/").filter((m) => m.property === "og:url"),
       { title: "Learn With Alphonso: Learn English, French and Spanish" },
       {
         name: "description",
