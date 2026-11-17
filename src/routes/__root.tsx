@@ -14,7 +14,7 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { CookieConsent } from "../components/CookieConsent";
 import { AttributionBridge } from "../components/AttributionBridge";
-import { SHARE_IMAGE, SHARE_IMAGE_ALT } from "../lib/seo";
+import { SHARE_IMAGE, SHARE_IMAGE_ALT, THEME_COLOR_LIGHT, THEME_COLOR_NIGHT } from "../lib/seo";
 import { StatusPage } from "../components/StatusPage";
 import { dsButtonClass } from "../components/ds/buttons";
 import { SuspendedScreen } from "../components/SuspendedScreen";
@@ -123,8 +123,12 @@ function RootShell({ children }: { children: ReactNode }) {
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         {/* Royal light and Royal night page backgrounds (--c-surface); the browser picks by the OS setting.
             Written here, not in head(): the head merges meta tags of the same name into one. */}
-        <meta name="theme-color" content="#FBF6EC" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#0E1330" media="(prefers-color-scheme: dark)" />
+        <meta
+          name="theme-color"
+          content={THEME_COLOR_LIGHT}
+          media="(prefers-color-scheme: light)"
+        />
+        <meta name="theme-color" content={THEME_COLOR_NIGHT} media="(prefers-color-scheme: dark)" />
         <HeadContent />
       </head>
       <body>

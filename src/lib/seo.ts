@@ -9,6 +9,10 @@
 /** The public origin of the web app (the one the legal pages and the share card already name). */
 export const SITE_ORIGIN = "https://learn.alphonsoecosystem.app";
 
+/** Browser-chrome colours: the Royal light and Royal night page backgrounds (--c-surface). Kept here, outside view code, because a meta tag cannot read a CSS variable. */
+export const THEME_COLOR_LIGHT = "#FBF6EC";
+export const THEME_COLOR_NIGHT = "#0E1330";
+
 /** The share card every public page uses: public/og-image.png, 1200 x 630. */
 export const SHARE_IMAGE = `${SITE_ORIGIN}/og-image.png`;
 export const SHARE_IMAGE_ALT = "Alphonso the llama, mascot of Learn With Alphonso";
