@@ -10,6 +10,8 @@ works now_.
 
 ## Unreleased
 
+2026-11-17 R41: referral on iOS and Android: Profile > Social > Invite friends (native share sheet and copy, the learner's `/?ref=<code>` link, successful-referral count, reward explainer, the monthly-limit state) and a manual "Got an invite code?" field that calls `claim_referral`; a `?ref` link that reaches the app is kept and claimed once after sign-in. No migration, no rule change; the reward is still granted only by the server on a first completed lesson (Android already completes through the same `complete-lesson` function). Deep-link capture still needs an app-link association for the referral URL (owner/infra). Not seen on a simulator or emulator.
+
 2026-11-16 R14-E2: call scenes v2 and Royal-night rooms (web, iOS, Android): the call reads its own call-<scenario>.webp (12 scenarios plus the study room day and evening), lessons and campaigns keep the old room files; learn, hector, listen, profile and practice scenes swap to night-<scene> in Royal night only (Meadow and Lesson complete stay light, living clips unchanged); the call avatar fades out over its last 20% (no hard robe edge); web call now follows Royal night (was hard-coded light). Not seen on a simulator or emulator.
 ### Redesign on web, iOS and Android, Help chat, support inbox (2026-11-14)
 

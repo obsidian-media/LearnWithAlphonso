@@ -76,6 +76,7 @@ import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeScreen
 import com.obsidianmedia.learnwithalphonso.ui.practice.ScenarioConversationScreen
 import com.obsidianmedia.learnwithalphonso.ui.friends.FriendsScreen
 import com.obsidianmedia.learnwithalphonso.ui.friends.InviteAcceptScreen
+import com.obsidianmedia.learnwithalphonso.ui.referral.ReferralInviteScreen
 import com.obsidianmedia.learnwithalphonso.ui.league.LeaderboardScreen
 import com.obsidianmedia.learnwithalphonso.ui.league.SeasonScreen
 import com.obsidianmedia.learnwithalphonso.ui.league.TeamsScreen
@@ -197,6 +198,8 @@ private fun SignedInApp(
     var firstRunCover by remember { mutableStateOf<FirstRunCover?>(null) }
     val scope = rememberCoroutineScope()
 
+    // A referral code captured from a link is sent to the server once the account exists (a no-op when none was kept).
+    LaunchedEffect(Unit) { container.claimPendingReferral() }
     LaunchedEffect(pendingInviteCode) {
         if (pendingInviteCode != null) {
             nav.navigate(Routes.invite(pendingInviteCode))
@@ -373,6 +376,7 @@ private fun SignedInApp(
                     onEditAnswers = { firstRunCover = FirstRunCover.Complete(edit = true) },
                     onOpenLeague = { nav.navigate(Routes.LEAGUE) },
                     onOpenFriends = { nav.navigate(Routes.FRIENDS) },
+                    onOpenInvite = { nav.navigate(Routes.REFERRAL) },
                     onOpenAchievements = { nav.navigate(Routes.ACHIEVEMENTS) },
                     onOpenSettings = { nav.navigate(Routes.SETTINGS) },
                     onOpenReview = { course -> nav.navigate(Routes.review(course.code)) },
@@ -384,6 +388,7 @@ private fun SignedInApp(
             composable(Routes.TEAMS) { TeamsScreen(container, onBack = { nav.popBackStack() }) }
             composable(Routes.SEASON) { SeasonScreen(container, onBack = { nav.popBackStack() }) }
             composable(Routes.FRIENDS) { FriendsScreen(container, onBack = { nav.popBackStack() }, onOpenDuels = { nav.navigate(Routes.DUELS) }, onEnterCode = { code -> nav.navigate(Routes.invite(code)) }) }
+            composable(Routes.REFERRAL) { ReferralInviteScreen(container, onBack = { nav.popBackStack() }) }
             composable(Routes.DUELS) { DuelsScreen(container, onBack = { nav.popBackStack() }) }
             composable(Routes.ACHIEVEMENTS) { AchievementsScreen(container, onBack = { nav.popBackStack() }) }
             composable(Routes.INVITE) { entry -> InviteAcceptScreen(container, entry.arguments?.getString("code") ?: "", onDone = { nav.popBackStack() }) }

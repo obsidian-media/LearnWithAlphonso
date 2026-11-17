@@ -30,7 +30,7 @@ struct ProfileHubView: View {
     var onEditAnswers: () -> Void = {}
 
     private enum Destination: String, Identifiable {
-        case league, friends, achievements, settings, review, paywall, picture, memory
+        case league, friends, invite, achievements, settings, review, paywall, picture, memory
         var id: String { rawValue }
     }
 
@@ -62,6 +62,8 @@ struct ProfileHubView: View {
                 LeaderboardView(session: session)
             case .friends:
                 FriendsView(session: session)
+            case .invite:
+                ReferralInviteView(session: session)
             case .achievements:
                 AchievementsView(
                     session: session,
@@ -184,6 +186,7 @@ extension ProfileHubView {
             Section {
                 row(.league, title: "League", subtitle: "Leaderboards, teams, and the season ladder", emoji: "🏆", tone: .sun)
                 row(.friends, title: "Friends", subtitle: "Your friends, their activity, and duels", emoji: "👥", tone: .sky)
+                row(.invite, title: "Invite friends", subtitle: "You both get a reward when they finish a first lesson", emoji: "🤝", tone: .mint)
             }
             .listRowBackground(Color.clear)
         }

@@ -142,11 +142,20 @@ struct LearnWithAlphonsoApp: App {
                 .environment(networkMonitor)
                 .environment(pendingInvite)
                 .onOpenURL { url in
-                    if let code = FriendInviteLink.code(from: url) { pendingInvite.code = code }
+                    if let code = FriendInviteLink.code(from: url) {
+                        pendingInvite.code = code
+                    } else {
+                        // A referral link (/?ref=<code>) that reached the app: kept until the account exists. Today the
+                        // site's app-link association covers /invite/ only, so this waits on that infra (see ReferralLink).
+                        ReferralPending.capture(ReferralLink.code(from: url), store: UserDefaultsReferralStore())
+                    }
                 }
                 // Account consent follows the signed-in account and is re-read whenever the app comes forward, so a
                 // withdrawal on the web takes effect here without a relaunch.
-                .task(id: session.userID) { await aiConsentStore.refresh() }
+                .task(id: session.userID) {
+                    await aiConsentStore.refresh()
+                    await ReferralAutoClaim.run(session: session)
+                }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { Task { await aiConsentStore.refresh() } }
                 }

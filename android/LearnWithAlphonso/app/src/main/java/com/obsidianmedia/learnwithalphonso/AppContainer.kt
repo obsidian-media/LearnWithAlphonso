@@ -9,6 +9,7 @@ import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
 import com.obsidianmedia.learnwithalphonso.sync.PassClients
 import com.obsidianmedia.learnwithalphonso.sync.SessionStartup
 import com.obsidianmedia.learnwithalphonso.firstrun.FirstRunDevice
+import com.obsidianmedia.learnwithalphonso.core.net.claimReferral
 import com.obsidianmedia.learnwithalphonso.core.net.LearnerProfileClient
 import com.obsidianmedia.learnwithalphonso.sync.SignOutCleanup
 import androidx.room.withTransaction
@@ -152,6 +153,20 @@ class AppContainer(context: Context) {
     val accountClient = AccountClient(apiHttp)
     /** Where the learner stands against this month's AI limit (/api/ai-usage): a percent and a state, never a price. */
     val aiUsageClient = com.obsidianmedia.learnwithalphonso.core.net.AiUsageClient(apiHttp)
+    /** A referral code captured from a link, kept (30 days, only the opaque code) until the account exists. */
+    val referralStore = com.obsidianmedia.learnwithalphonso.data.ReferralPrefsStore(prefs)
+
+    /**
+     * Once the learner is signed in, sends a captured referral code to the server exactly once (the code is cleared on
+     * every final answer; only an unexplained error keeps it for the next launch). The server decides: only a new
+     * account, only once, never yourself. Silent: a refusal is not an error worth a screen.
+     */
+    suspend fun claimPendingReferral() {
+        if (session.userId == null) return
+        com.obsidianmedia.learnwithalphonso.core.logic.ReferralPending.claimPending(referralStore, System.currentTimeMillis()) {
+            progressClient.claimReferral(it)
+        }
+    }
     val translationGrading = TranslationGradingClient(apiHttp)
     val aiClient = AiConversationClient(apiHttp)
     val goalClient = LearningGoalClient(apiHttp)
