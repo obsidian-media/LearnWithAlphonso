@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.*
 import com.obsidianmedia.learnwithalphonso.ui.components.DsField
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,14 +68,16 @@ fun PracticeScreen(container: AppContainer, onOpenScenario: (String, String) -> 
     var failed by remember(course) { mutableStateOf(false) }
     var reload by remember { mutableIntStateOf(0) }
     val entitlement by container.entitlements.state.collectAsState()
+    var sayingPicture by rememberSaveable { mutableStateOf(false) }
     val palette by container.themeManager.palette.collectAsState()
     val initialMode = if (container.prefs.getBoolean(com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference.KEY, com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference.DEFAULT)) "call" else "chat"
     LaunchedEffect(course, reload) {
         runCatching { container.aiClient.practiceHub(course.code) }.onSuccess { data = it; failed = false }.onFailure { failed = true }
     }
     CompositionLocalProvider(LocalAlphonsoTokens provides AlphonsoTokens.colors(palette, false)) {
+        if (sayingPicture) { SayThePictureScreen(container, course) { sayingPicture = false }; return@CompositionLocalProvider }
         PracticeHubContent(course, container.content.scenarios(course), container.content.campaigns(course), data, failed,
-            initialMode, !entitlement.isPro, { reload++ }, onOpenScenario, onOpenCampaign, onHector)
+            initialMode, !entitlement.isPro, { reload++ }, onOpenScenario, onOpenCampaign, onHector, onSayPicture = { sayingPicture = true })
     }
 }
 
@@ -85,6 +88,7 @@ internal fun PracticeHubContent(
     course: Course, scenarios: List<Scenario>, campaigns: List<Campaign>, data: PracticeHubData?, failed: Boolean,
     initialMode: String, showHector: Boolean, onRetry: () -> Unit,
     onOpenScenario: (String, String) -> Unit, onOpenCampaign: (String, Int, String) -> Unit, onHector: () -> Unit,
+    onSayPicture: () -> Unit = {},
 ) {
     val ds = LocalAlphonsoTokens.current
     var level by remember { mutableStateOf("All") }
@@ -156,6 +160,13 @@ internal fun PracticeHubContent(
                     Text("Practice speaking with Hector · Pro", style = Type.headline.toTextStyle(), color = ds.onHero)
                     Text("A voice tutor that remembers your level and weak spots. Part of Alphonso Pro.", style = Type.caption.toTextStyle(), color = ds.onHeroSoft)
                 }
+            }
+        }
+        item {
+            HubHeading("Say the picture")
+            Column(Modifier.testTag("practice-say-picture").fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onSayPicture).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
+                Text("Say the picture", style = Type.headline.toTextStyle(), color = ds.ink)
+                Text("See a picture and say the word. A miss shows you the word and how it sounds.", style = Type.caption.toTextStyle(), color = ds.inkSoft)
             }
         }
         item {
