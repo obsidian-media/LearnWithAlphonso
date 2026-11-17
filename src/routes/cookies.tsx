@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage, Section, Bullets } from "../components/LegalPage";
+import { canonicalLink, shareMeta } from "@/lib/seo";
 
 export const Route = createFileRoute("/cookies")({
   component: Cookies,
   head: () => ({
+    links: [canonicalLink("/cookies")],
     meta: [
+      ...shareMeta("/cookies"),
       { title: "Cookie Policy — Alphonso" },
       {
         name: "description",

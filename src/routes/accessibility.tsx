@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage, Section, Bullets } from "../components/LegalPage";
+import { canonicalLink, shareMeta } from "@/lib/seo";
 
 /**
  * The Accessibility URL App Store Connect's Accessibility section links
@@ -16,7 +17,9 @@ const CONTACT = "support@alphonsoecosystem.app";
 export const Route = createFileRoute("/accessibility")({
   component: Accessibility,
   head: () => ({
+    links: [canonicalLink("/accessibility")],
     meta: [
+      ...shareMeta("/accessibility"),
       { title: "Accessibility — Alphonso" },
       {
         name: "description",
