@@ -6,6 +6,8 @@ import { headline, nextStarHint } from "@/lib/practice-result-copy";
 import type { PracticeResult as Result } from "@/lib/practice-api";
 import { MAX_STARS } from "@/lib/practice-stars";
 import { practiceResultButtons, repliesMeter } from "@/lib/practice-result-buttons";
+import type { RecapController } from "@/lib/use-call-recap";
+import { RecapCard, RecapSkeleton } from "./RecapCard";
 
 /**
  * After the call (mock-up screen 5): the verdict in the same room. The stars are the server's, for this call; the
@@ -41,6 +43,7 @@ export function PracticeResult({
   seconds,
   slip,
   campaign,
+  recap,
   onRetry,
   onForward,
 }: {
@@ -52,6 +55,11 @@ export function PracticeResult({
   slip: { said: string; reply: string } | null;
   /** null for a scenario talk; for a campaign scene, whether it is the last one. */
   campaign: { isLastScene: boolean } | null;
+  /**
+   * The call recap. It takes the slip's slot while it is pending or ready; with no recap (a short call, offline, an
+   * AI error) the slip shows, exactly as before.
+   */
+  recap?: RecapController;
   onRetry: () => void;
   /** The gold forward button: Next scene, Finish campaign or Done. */
   onForward: () => void;
@@ -152,7 +160,9 @@ export function PracticeResult({
             </div>
           ))}
         </dl>
-        {slip && (
+        {recap?.status === "pending" && <RecapSkeleton />}
+        {recap?.status === "ready" && <RecapCard ctl={recap} lang={course} />}
+        {slip && (recap?.status ?? "off") === "off" && (
           <div
             data-slip=""
             className="rounded-[14px] border-2 border-ds-line bg-ds-card px-3 py-2 text-left"

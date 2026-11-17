@@ -379,6 +379,9 @@ const isoTime = z
 /** Every field the client may send. Strict: an unknown key (a birth date, say) fails the whole save. */
 const pathRestDaySchema = z.union([z.literal("none"), z.number().int().min(0).max(6)]);
 
+/** The answers a learner may remove again. */
+export const CLEARABLE = ["goal", "dailyMinutes", "interests"] as const;
+
 export const learnerProfilePatchSchema = z
   .object({
     name: nameSchema.optional(),
@@ -407,12 +410,14 @@ export const learnerProfilePatchSchema = z
     pathTrimUntil: isoDate.nullable().optional(),
     /** The learner's rest day on the path: a weekday 0 (Sunday) to 6 (Saturday), or "none" for seven study days. */
     pathRestDay: pathRestDaySchema.optional(),
+    /** Answers to remove (What Alphonso remembers lets a learner delete a goal line). Applied after the rest. */
+    clear: z.array(z.enum(CLEARABLE)).max(CLEARABLE.length).optional(),
   })
   .strict();
 
 export type LearnerProfilePatch = z.infer<typeof learnerProfilePatchSchema>;
 
-export type LearnerProfile = Omit<LearnerProfilePatch, "showFlag" | "pathTrimUntil"> & {
+export type LearnerProfile = Omit<LearnerProfilePatch, "showFlag" | "pathTrimUntil" | "clear"> & {
   pathTrimUntil?: string;
   showFlag: boolean;
   completedAt?: string;
@@ -474,7 +479,10 @@ export function mergeLearnerProfile(
   current: LearnerProfile,
   patch: LearnerProfilePatch & { completedAt?: string; dismissedAt?: string },
 ): LearnerProfile {
-  return parseLearnerProfile({ ...current, ...patch });
+  const { clear, ...rest } = patch;
+  const merged = parseLearnerProfile({ ...current, ...rest });
+  for (const key of clear ?? []) delete merged[key];
+  return merged;
 }
 
 /** "Complete your profile" shows once: until the learner finishes it or says Not now. */

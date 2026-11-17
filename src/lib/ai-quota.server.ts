@@ -5,7 +5,7 @@ import { nextMinute, nextUtcMidnight } from "./ai-quota-response";
 import { EXPLAIN_DAILY_LIMIT } from "./explain";
 
 export type QuotaKind =
-  "chat" | "stt" | "tts" | "translate" | "define" | "hector" | "explain" | "support";
+  "chat" | "stt" | "tts" | "translate" | "define" | "hector" | "explain" | "support" | "recap";
 
 /**
  * Per-user daily caps on AI usage, for display only — the real cap is
@@ -39,6 +39,9 @@ export const DAILY_LIMITS: Record<QuotaKind, number> = {
   // The Help chat's AI answers (/api/support/message): 30 a day, 5 a minute. Keyword hand-offs and refused requests
   // spend none. 20261117100100_support_quota_kind.sql.
   support: 30,
+  // The after-call recap (/api/call-recap): one short AI call per finished call, its own budget so it never spends the
+  // conversation turns (chat) a learner practises with. 5 a minute. 20261119100000_call_recap_memory.sql.
+  recap: 30,
 };
 
 export type QuotaResult =

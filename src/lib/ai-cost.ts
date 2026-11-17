@@ -18,6 +18,7 @@ export type AiCostKind =
   | "translate"
   | "define"
   | "support"
+  | "recap"
   | "practice"
   | "weakness"
   | "stt"

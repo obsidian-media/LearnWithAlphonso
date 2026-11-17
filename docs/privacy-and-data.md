@@ -85,3 +85,17 @@ A missed podcast question is stored as a `review_items` row (prompt, choices, an
 | **Logs** | The server logs an event name, outcome, hand-off reason, status code, quota result and message length only: no user id, no conversation id, no text. A failing provider is logged by status only. |
 | **Policy text** | `src/routes/privacy.tsx` has a Help chat section (what is stored, who reads it, what Miya sees, reply notices, retention, export and deletion), a collected-data bullet, a legal-basis bullet and the Resend and Anthropic processor entries; last updated 15 November 2026. `src/routes/privacy-current-uses.test.ts` pins the key sentences. |
 
+
+## Call recap and What Alphonso remembers
+
+| | |
+| --- | --- |
+| **What** | After a finished practice call of at least three learner replies, the app sends the call transcript to the AI provider once (`POST /api/call-recap`) to write up to three corrections and one new phrase. The transcript is not stored. Every recap records its topic labels as `weakness_events` (no text), as the iOS and Android analysis already did. For a **Pro** learner only, `tutor_memory` keeps one line per mistake topic (one example, `seen_count`, `last_seen_at`) and the phrases they add with Review these (phrase, meaning). `practice_calls.recap_at` marks the one recap per call. |
+| **Why** | The recap is the after-call learning aid (free). The notes let Alphonso and Hector plan the next calls (Pro). |
+| **Written by** | Only the server, through `remember_call_recap`, `remember_recap_phrase` and `claim_call_recap` (service role). Clients have SELECT and DELETE on their own `tutor_memory` rows and nothing else. |
+| **Pro gating** | Decided on the server from RevenueCat: memory is saved, read (`GET /api/tutor-memory`) and used for priming (`/api/chat`) only for an active subscriber. Deleting is open to everyone signed in. |
+| **Delete** | `delete_tutor_memory_line` removes a line with its `weakness_events` (events carry no course, so the same topic in any course) and the review items a recap made; `forget_tutor_memory` removes every line, every `weakness_events` row and every review item a recap made (keys `recap:%`) in one transaction (weak spots found in lessons and all other review progress stay), and the goals on the page are cleared from the account record. Any learner, free or Pro, can also delete only their topic labels (`weakness_events`) from Settings (`DELETE /api/tutor-memory { events: true }`). Lessons, stars, streak, XP and the learner's own saved words stay. |
+| **Export** | `tutor_memory` is in `USER_ID_EXPORT_TABLES` (`src/lib/account.functions.ts`). |
+| **Deletion** | `ON DELETE CASCADE` on `user_id`. No time-based sweep: lines are kept until removed or the account is deleted. |
+| **Under 13** | No change needed: the age screen blocks the device before an account exists and no under-13 range is stored anywhere, so no recap or memory can exist for them. |
+| **Policy text** | `src/routes/privacy.tsx`: a collected-data bullet, the legal-basis bullet, the Anthropic entry and the Hector section. |
