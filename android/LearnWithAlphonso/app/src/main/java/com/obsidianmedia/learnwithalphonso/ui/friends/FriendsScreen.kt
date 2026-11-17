@@ -10,7 +10,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGiftLogic
 import com.obsidianmedia.learnwithalphonso.core.logic.FriendsPresentation
+import com.obsidianmedia.learnwithalphonso.core.logic.GiftButtonState
 import com.obsidianmedia.learnwithalphonso.ui.components.DsBackBar
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
@@ -81,7 +83,7 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
     var reportTarget by remember { mutableStateOf<SocialTarget?>(null) }
     var manualCode by remember { mutableStateOf("") }
 
-    LifecycleResumeEffect(Unit) { vm.checkForNudges(); onPauseOrDispose { } }
+    LifecycleResumeEffect(Unit) { vm.checkForNudges(); vm.checkForFreezeGifts(); onPauseOrDispose { } }
 
     DsSceneScreen(DsScene.PRACTICE) {
         Column(Modifier.fillMaxWidth()) {
@@ -125,6 +127,7 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
                             if (index > 0) DsDivider()
                             FriendRow(
                                 friend = f, canNudge = remember(state.nudgeVersion, f.userId) { vm.canNudge(f) },
+                                giftState = remember(state.giftState, f.userId) { vm.giftButtonState(f) }, giftBusy = state.givingId != null, onGift = { vm.gift(f) },
                                 onNudge = { vm.nudge(f) }, onRemove = { removeTarget = f },
                                 onBlock = { blockTarget = f }, onReport = { reportTarget = SocialTarget(f.userId, f.displayName) },
                             )
@@ -162,7 +165,7 @@ fun FriendsScreen(container: AppContainer, onBack: () -> Unit, onOpenDuels: () -
 }
 
 @Composable
-private fun FriendRow(friend: FriendProgress, canNudge: Boolean, onNudge: () -> Unit, onRemove: () -> Unit, onBlock: () -> Unit, onReport: () -> Unit) {
+private fun FriendRow(friend: FriendProgress, canNudge: Boolean, giftState: GiftButtonState, giftBusy: Boolean, onGift: () -> Unit, onNudge: () -> Unit, onRemove: () -> Unit, onBlock: () -> Unit, onReport: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     Row(
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
@@ -181,6 +184,7 @@ private fun FriendRow(friend: FriendProgress, canNudge: Boolean, onNudge: () -> 
             Text("XP this week", style = CaptionType, color = ds.inkSoft)
         }
         DsCompactButton("👋", onNudge, enabled = canNudge)
+        DsCompactButton("❄️", onGift, enabled = !giftBusy && giftState == GiftButtonState.SEND, description = FreezeGiftLogic.accessibilityLabel(friend.displayName, giftState))
         SocialSafetyMenu(onBlock = onBlock, onReport = onReport)
     }
 }

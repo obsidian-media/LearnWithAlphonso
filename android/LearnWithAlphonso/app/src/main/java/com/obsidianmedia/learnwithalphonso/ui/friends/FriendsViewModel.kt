@@ -2,6 +2,11 @@ package com.obsidianmedia.learnwithalphonso.ui.friends
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGiftLogic
+import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGiftState
+import com.obsidianmedia.learnwithalphonso.core.logic.GiftButtonState
+import com.obsidianmedia.learnwithalphonso.core.logic.GiftFreezeOutcome
+import com.obsidianmedia.learnwithalphonso.core.logic.GiftFreezeReason
 import com.obsidianmedia.learnwithalphonso.core.net.FriendActivityEvent
 import com.obsidianmedia.learnwithalphonso.core.net.FriendInvitePreview
 import com.obsidianmedia.learnwithalphonso.core.net.FriendProgress
@@ -9,9 +14,13 @@ import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.acceptFriendInvite
 import com.obsidianmedia.learnwithalphonso.core.net.blockUser
 import com.obsidianmedia.learnwithalphonso.core.net.fetchFriendActivity
+import com.obsidianmedia.learnwithalphonso.core.net.fetchFreezeGiftState
 import com.obsidianmedia.learnwithalphonso.core.net.fetchFriendsProgress
+import com.obsidianmedia.learnwithalphonso.core.net.fetchUnreadFreezeGifts
 import com.obsidianmedia.learnwithalphonso.core.net.fetchUnreadNudges
 import com.obsidianmedia.learnwithalphonso.core.net.getFriendInvitePreview
+import com.obsidianmedia.learnwithalphonso.core.net.giftStreakFreeze
+import com.obsidianmedia.learnwithalphonso.core.net.markFreezeGiftsRead
 import com.obsidianmedia.learnwithalphonso.core.net.getMyFriendCode
 import com.obsidianmedia.learnwithalphonso.core.net.markNudgesRead
 import com.obsidianmedia.learnwithalphonso.core.net.removeFriend
@@ -32,6 +41,10 @@ data class FriendsUiState(
     val toast: String? = null,
     /** Bumped whenever a nudge is recorded so rows re-evaluate their cooldown. */
     val nudgeVersion: Int = 0,
+    /** The learner's own freeze balance (null = unknown) and the friends already gifted today; the server has the last word. */
+    val giftState: FreezeGiftState = FreezeGiftState(null, emptySet()),
+    /** The friend a gift is in flight to; one at a time. */
+    val givingId: String? = null,
 )
 
 /** Port of FriendsView.swift over the opaque-code invite contract. */
@@ -44,6 +57,8 @@ class FriendsViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(seed ?: FriendsUiState())
     val state: StateFlow<FriendsUiState> = _state.asStateFlow()
+
+    private val shownGiftIds = HashSet<String>()
 
     init { loadAll() }
 
@@ -64,6 +79,8 @@ class FriendsViewModel(
                 )
             }
             checkForNudges()
+            loadGiftState()
+            checkForFreezeGifts()
         }
     }
 
@@ -115,6 +132,44 @@ class FriendsViewModel(
             val message = if (names.size == 1) "${names[0]} nudged you!" else "${names.size} friends nudged you!"
             _state.update { it.copy(toast = message) }
             runCatching { client.markNudgesRead(unread.map { it.id }) }
+        }
+    }
+
+    /** What the row's gift button shows (disabled unless SEND, or while a gift is in flight). */
+    fun giftButtonState(friend: FriendProgress): GiftButtonState {
+        val s = _state.value
+        return FreezeGiftLogic.buttonState(s.giftState.freezes, s.giftState.giftedTodayTo, friend.userId)
+    }
+
+    fun loadGiftState() {
+        val me = userId ?: return
+        viewModelScope.launch {
+            val g = runCatching { client.fetchFreezeGiftState(me) }.getOrNull() ?: return@launch
+            _state.update { it.copy(giftState = g) }
+        }
+    }
+
+    /** Gifts a freeze. The database decides; this only shows its answer, then re-reads the balance and today's gifts. */
+    fun gift(friend: FriendProgress) {
+        if (_state.value.givingId != null) return
+        _state.update { it.copy(givingId = friend.userId) }
+        viewModelScope.launch {
+            val outcome = runCatching { client.giftStreakFreeze(friend.userId) }.getOrNull()
+                ?: GiftFreezeOutcome(false, GiftFreezeReason.ERROR, null)
+            _state.update { it.copy(givingId = null, toast = FreezeGiftLogic.message(outcome, friend.displayName)) }
+            loadGiftState()
+        }
+    }
+
+    /** The recipient side: a toast for each gift not yet shown, then marked read (the same surface as nudges). */
+    fun checkForFreezeGifts() {
+        val me = userId ?: return
+        viewModelScope.launch {
+            val fresh = runCatching { client.fetchUnreadFreezeGifts(me) }.getOrNull().orEmpty().filter { it.id !in shownGiftIds }
+            if (fresh.isEmpty()) return@launch
+            shownGiftIds.addAll(fresh.map { it.id })
+            _state.update { it.copy(toast = FreezeGiftLogic.receivedToast(fresh.map { g -> displayName(g.senderId) })) }
+            runCatching { client.markFreezeGiftsRead(fresh.map { it.id }) }
         }
     }
 

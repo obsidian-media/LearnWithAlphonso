@@ -26,6 +26,11 @@ struct FriendsView: View {
     @State private var currentBuddyID: String?
     @State private var reportTarget: SocialTarget?
     @State private var inviteLink: URL?
+    /// Gift a streak freeze: the learner's own balance and today's recipients (the database has the last word),
+    /// the friend a gift is in flight to, and the received gifts already toasted (a resume must not repeat one).
+    @State private var giftState = FreezeGiftState.unknown
+    @State private var givingID: String?
+    @State private var shownGiftIDs = Set<String>()
     @State private var pastedInvite = ""
     @Environment(PendingInvite.self) private var pendingInvite
 
@@ -59,7 +64,12 @@ struct FriendsView: View {
                             .dsListRow()
                     } else {
                         ForEach(friends, id: \.userID) { friend in
-                            FriendRowView(friend: friend) {
+                            FriendRowView(
+                                friend: friend,
+                                giftState: FreezeGiftCopy.buttonState(myFreezes: giftState.freezes, giftedTodayTo: giftState.giftedTodayTo, friendID: friend.userID),
+                                giftBusy: givingID != nil,
+                                onGift: { Task { await gift(friend) } }
+                            ) {
                                 await nudge(friend)
                             } onBlock: {
                                 friendPendingBlock = friend
@@ -113,7 +123,10 @@ struct FriendsView: View {
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
-                Task { await checkForNudges() }
+                Task {
+                    await checkForNudges()
+                    await checkForFreezeGifts()
+                }
             }
         }
         .alphonsoChoiceDialog(
@@ -229,6 +242,44 @@ struct FriendsView: View {
         }
         isLoading = false
         await checkForNudges()
+        await loadGiftState()
+        await checkForFreezeGifts()
+    }
+
+    private func loadGiftState() async {
+        guard let accessToken = session.accessToken, let me = session.userID else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        giftState = await client.fetchFreezeGiftState(userID: me)
+    }
+
+    /// Gifts a freeze. The database decides; this only shows its answer, then re-reads the balance and today's
+    /// gifts rather than guessing them.
+    private func gift(_ friend: FriendProgress) async {
+        guard givingID == nil, let accessToken = session.accessToken else { return }
+        givingID = friend.userID
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        let outcome: GiftFreezeOutcome
+        do {
+            outcome = try await client.giftStreakFreeze(recipientID: friend.userID)
+        } catch {
+            outcome = GiftFreezeOutcome(ok: false, reason: .error, freezes: nil)
+        }
+        givingID = nil
+        showToast(FreezeGiftCopy.message(for: outcome, friendName: friend.displayName), into: $nudgeBannerMessage)
+        await loadGiftState()
+    }
+
+    /// The recipient side, polled like nudges (when the screen opens and the app returns to the foreground; no push):
+    /// a toast for each gift not yet shown, then marked read.
+    private func checkForFreezeGifts() async {
+        guard let accessToken = session.accessToken, let me = session.userID else { return }
+        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        guard let unread = try? await client.fetchUnreadFreezeGifts(userID: me) else { return }
+        let fresh = unread.filter { !shownGiftIDs.contains($0.id) }
+        guard !fresh.isEmpty else { return }
+        shownGiftIDs.formUnion(fresh.map(\.id))
+        showToast(FreezeGiftCopy.receivedToast(senderNames: fresh.map { displayName(for: $0.senderID) }), into: $nudgeBannerMessage)
+        try? await client.markFreezeGiftsRead(ids: fresh.map(\.id))
     }
 
     private func openPastedInvite() {
@@ -306,6 +357,9 @@ struct FriendsView: View {
 
 private struct FriendRowView: View {
     let friend: FriendProgress
+    let giftState: GiftButtonState
+    let giftBusy: Bool
+    let onGift: () -> Void
     let onNudge: () async -> Void
     let onBlock: () -> Void
     let onReport: () -> Void
@@ -353,6 +407,13 @@ private struct FriendRowView: View {
                     .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
                     .disabled(!canNudge)
                     .accessibilityLabel("Nudge \(friend.displayName)")
+
+                    Button(action: onGift) {
+                        Image(systemName: "snowflake")
+                    }
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                    .disabled(giftBusy || giftState != .send)
+                    .accessibilityLabel(FreezeGiftCopy.accessibilityLabel(friendName: friend.displayName, state: giftState))
 
                     SocialSafetyMenu(onBlock: onBlock, onReport: onReport, accessibilityName: friend.displayName)
                 }
