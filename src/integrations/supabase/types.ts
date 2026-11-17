@@ -1622,6 +1622,7 @@ export type Database = {
           item_key: string;
           kind: string;
           last_reply_at: string;
+          recap_at: string | null;
           replies: number;
           right_replies: number;
           short_replies: number;
@@ -1637,6 +1638,7 @@ export type Database = {
           item_key: string;
           kind: string;
           last_reply_at?: string;
+          recap_at?: string | null;
           replies?: number;
           right_replies?: number;
           short_replies?: number;
@@ -1652,6 +1654,7 @@ export type Database = {
           item_key?: string;
           kind?: string;
           last_reply_at?: string;
+          recap_at?: string | null;
           replies?: number;
           right_replies?: number;
           short_replies?: number;
@@ -2604,6 +2607,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      tutor_memory: {
+        Row: {
+          call_id: string | null;
+          course: string;
+          created_at: string;
+          detail: string | null;
+          id: string;
+          kind: string;
+          last_seen_at: string;
+          memory_key: string;
+          review_key: string | null;
+          seen_count: number;
+          text: string;
+          user_id: string;
+        };
+        Insert: {
+          call_id?: string | null;
+          course: string;
+          created_at?: string;
+          detail?: string | null;
+          id?: string;
+          kind: string;
+          last_seen_at?: string;
+          memory_key: string;
+          review_key?: string | null;
+          seen_count?: number;
+          text: string;
+          user_id: string;
+        };
+        Update: {
+          call_id?: string | null;
+          course?: string;
+          created_at?: string;
+          detail?: string | null;
+          id?: string;
+          kind?: string;
+          last_seen_at?: string;
+          memory_key?: string;
+          review_key?: string | null;
+          seen_count?: number;
+          text?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       units: {
         Row: {
           course: string;
@@ -3155,6 +3203,10 @@ export type Database = {
         }[];
       };
       claim_ai_cost_alert_day: { Args: { p_day: string }; Returns: boolean };
+      claim_call_recap: {
+        Args: { _call_id: string; _user_id: string };
+        Returns: boolean;
+      };
       claim_device_token: {
         Args: { _platform: string; _token: string };
         Returns: undefined;
@@ -3213,6 +3265,10 @@ export type Database = {
           team_id: string;
         }[];
       };
+      delete_tutor_memory_line: {
+        Args: { _id: string; _user_id: string };
+        Returns: Json;
+      };
       display_name_problem: { Args: { _name: string }; Returns: string };
       end_buddy: {
         Args: never;
@@ -3233,6 +3289,7 @@ export type Database = {
           call_stars: number;
         }[];
       };
+      forget_tutor_memory: { Args: { _user_id: string }; Returns: Json };
       generate_learner_handle: { Args: never; Returns: string };
       get_ai_consent: { Args: never; Returns: string };
       get_buddy_messages: {
@@ -3540,6 +3597,28 @@ export type Database = {
       release_lesson_completion_slot: {
         Args: { _at: string; _user_id: string };
         Returns: undefined;
+      };
+      remember_call_recap: {
+        Args: {
+          _call_id: string;
+          _course: string;
+          _mistakes: Json;
+          _save: boolean;
+          _topics: string[];
+          _user_id: string;
+        };
+        Returns: number;
+      };
+      remember_recap_phrase: {
+        Args: {
+          _call_id: string;
+          _course: string;
+          _meaning: string;
+          _review_key: string;
+          _text: string;
+          _user_id: string;
+        };
+        Returns: boolean;
       };
       remove_friend: {
         Args: { _friend_id: string };
