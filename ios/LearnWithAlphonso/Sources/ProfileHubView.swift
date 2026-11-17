@@ -79,7 +79,6 @@ struct ProfileHubView: View {
                 NavigationStack {
                     TutorMemoryView(
                         session: session, course: activeCourse.course,
-                        weakSpots: Array((overview?.weak.top ?? []).prefix(2).map(\.display)),
                         onUpgrade: { destination = .paywall })
                 }
             case .picture:
