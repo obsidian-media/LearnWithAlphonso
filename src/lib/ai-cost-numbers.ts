@@ -143,16 +143,51 @@ export function aiCostPlaceholders(
     })),
     { id: "per_user", label: "Cost per active learner", kind: "list", note: `${w}, estimate` },
     { id: "heavy", label: "Heavy learners", kind: "number", note: "last 30 days, estimate" },
+    {
+      id: "capped",
+      label: "Learners at the monthly cap",
+      kind: "number",
+      note: "this month (UTC)",
+    },
     { id: "top", label: "Top 20 learners by cost", kind: "list", note: `${w}, short id only` },
     { id: "tts_hit", label: "Voice cache hit rate", kind: "percent", note: w },
     { id: "unpriced", label: "Calls without a price", kind: "number", note: "last 30 days" },
   ];
 }
 
+/** What admin_ai_cost_capped returns (20261120120000): learners at or over each ceiling this UTC month. */
+export type CapCounts = { overFree: number; overPro: number };
+
+export function parseCapCounts(raw: unknown): CapCounts | null {
+  const r = record(raw);
+  const a = r ? num(r.overFree) : null;
+  const b = r ? num(r.overPro) : null;
+  return a === null || b === null ? null : { overFree: a, overPro: b };
+}
+
+/** The "at the cap" tile. Pro is not known per learner here, so: everyone over the Pro ceiling is certainly blocked,
+ *  and those between the two ceilings are blocked unless they are Pro. Missing counts say so, never 0. */
+export function cappedTile(
+  caps: CapCounts | null,
+  freeUsd: number,
+  proUsd: number,
+  windowDays: WindowDays,
+): Tile {
+  const base = aiCostPlaceholders(windowDays).find((t) => t.id === "capped")!;
+  if (!caps) return { ...base, value: null, reason: "Monthly cap not deployed yet" };
+  const between = Math.max(caps.overFree - caps.overPro, 0);
+  return {
+    ...base,
+    value: caps.overPro,
+    note: `over the Pro ceiling ($${proUsd.toFixed(2)}), this month (UTC); ${between} more between the free ($${freeUsd.toFixed(2)}) and Pro ceilings, capped unless Pro`,
+  };
+}
+
 export function aiCostTilesFromPayload(
   p: CostPayload,
   windowDays: WindowDays,
   cfg: CostConfig,
+  capTile?: Tile,
 ): Tile[] {
   const ph = new Map(aiCostPlaceholders(windowDays).map((t) => [t.id, t]));
   const base = (id: string) => ph.get(id)!;
@@ -210,6 +245,7 @@ export function aiCostTilesFromPayload(
       cfg.heavyShare * 100,
     )}% at ${cfg.usdPerCad} USD per CAD), last 30 days, estimate`,
   });
+  if (capTile) tiles.push(capTile);
   tiles.push(
     p.top.length === 0
       ? { ...base("top"), value: null, reason: "No AI calls in this window" }

@@ -41,6 +41,7 @@ import { Route as AuthenticatedSeasonRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
 import { Route as ApiAccountDeleteRouteImport } from './routes/api/account-delete'
 import { Route as ApiAccountExportRouteImport } from './routes/api/account-export'
+import { Route as ApiAiUsageRouteImport } from './routes/api/ai-usage'
 import { Route as ApiAnalyzeWeaknessesRouteImport } from './routes/api/analyze-weaknesses'
 import { Route as ApiAppConfigRouteImport } from './routes/api/app-config'
 import { Route as ApiAppleLinkRouteImport } from './routes/api/apple-link'
@@ -240,6 +241,11 @@ const ApiAccountDeleteRoute = ApiAccountDeleteRouteImport.update({
 const ApiAccountExportRoute = ApiAccountExportRouteImport.update({
   id: '/api/account-export',
   path: '/api/account-export',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiUsageRoute = ApiAiUsageRouteImport.update({
+  id: '/api/ai-usage',
+  path: '/api/ai-usage',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAnalyzeWeaknessesRoute = ApiAnalyzeWeaknessesRouteImport.update({
@@ -477,6 +483,7 @@ export interface FileRoutesByFullPath {
   '/teams': typeof AuthenticatedTeamsRoute
   '/api/account-delete': typeof ApiAccountDeleteRoute
   '/api/account-export': typeof ApiAccountExportRoute
+  '/api/ai-usage': typeof ApiAiUsageRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/app-config': typeof ApiAppConfigRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
@@ -549,6 +556,7 @@ export interface FileRoutesByTo {
   '/teams': typeof AuthenticatedTeamsRoute
   '/api/account-delete': typeof ApiAccountDeleteRoute
   '/api/account-export': typeof ApiAccountExportRoute
+  '/api/ai-usage': typeof ApiAiUsageRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/app-config': typeof ApiAppConfigRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
@@ -623,6 +631,7 @@ export interface FileRoutesById {
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/api/account-delete': typeof ApiAccountDeleteRoute
   '/api/account-export': typeof ApiAccountExportRoute
+  '/api/ai-usage': typeof ApiAiUsageRoute
   '/api/analyze-weaknesses': typeof ApiAnalyzeWeaknessesRoute
   '/api/app-config': typeof ApiAppConfigRoute
   '/api/apple-link': typeof ApiAppleLinkRoute
@@ -697,6 +706,7 @@ export interface FileRouteTypes {
     | '/teams'
     | '/api/account-delete'
     | '/api/account-export'
+    | '/api/ai-usage'
     | '/api/analyze-weaknesses'
     | '/api/app-config'
     | '/api/apple-link'
@@ -769,6 +779,7 @@ export interface FileRouteTypes {
     | '/teams'
     | '/api/account-delete'
     | '/api/account-export'
+    | '/api/ai-usage'
     | '/api/analyze-weaknesses'
     | '/api/app-config'
     | '/api/apple-link'
@@ -842,6 +853,7 @@ export interface FileRouteTypes {
     | '/_authenticated/teams'
     | '/api/account-delete'
     | '/api/account-export'
+    | '/api/ai-usage'
     | '/api/analyze-weaknesses'
     | '/api/app-config'
     | '/api/apple-link'
@@ -900,6 +912,7 @@ export interface RootRouteChildren {
   DotwellKnownAppleAppSiteAssociationRoute: typeof DotwellKnownAppleAppSiteAssociationRoute
   ApiAccountDeleteRoute: typeof ApiAccountDeleteRoute
   ApiAccountExportRoute: typeof ApiAccountExportRoute
+  ApiAiUsageRoute: typeof ApiAiUsageRoute
   ApiAnalyzeWeaknessesRoute: typeof ApiAnalyzeWeaknessesRoute
   ApiAppConfigRoute: typeof ApiAppConfigRoute
   ApiAppleLinkRoute: typeof ApiAppleLinkRoute
@@ -1154,6 +1167,13 @@ declare module '@tanstack/react-router' {
       path: '/api/account-export'
       fullPath: '/api/account-export'
       preLoaderRoute: typeof ApiAccountExportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai-usage': {
+      id: '/api/ai-usage'
+      path: '/api/ai-usage'
+      fullPath: '/api/ai-usage'
+      preLoaderRoute: typeof ApiAiUsageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/analyze-weaknesses': {
@@ -1522,6 +1542,7 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownAppleAppSiteAssociationRoute,
   ApiAccountDeleteRoute: ApiAccountDeleteRoute,
   ApiAccountExportRoute: ApiAccountExportRoute,
+  ApiAiUsageRoute: ApiAiUsageRoute,
   ApiAnalyzeWeaknessesRoute: ApiAnalyzeWeaknessesRoute,
   ApiAppConfigRoute: ApiAppConfigRoute,
   ApiAppleLinkRoute: ApiAppleLinkRoute,

@@ -3106,6 +3106,10 @@ export type Database = {
         Args: { p_days: number; p_heavy_micro: number };
         Returns: Json;
       };
+      admin_ai_cost_capped: {
+        Args: { p_free_micro: number; p_pro_micro: number };
+        Returns: Json;
+      };
       admin_numbers_own: { Args: { p_days: number }; Returns: Json };
       admin_rename_team: {
         Args: { _name: string; _team_id: string };
@@ -3559,6 +3563,13 @@ export type Database = {
       moderation_contextual_terms: { Args: never; Returns: string[] };
       moderation_edge_patterns: { Args: never; Returns: string[] };
       moderation_fold: { Args: { input: string }; Returns: string };
+      my_ai_cost_month: {
+        Args: never;
+        Returns: {
+          month_micro: number;
+          uid: string;
+        }[];
+      };
       name_policy_bare_brand_terms: { Args: never; Returns: string[] };
       name_policy_blocked: { Args: { input: string }; Returns: boolean };
       name_policy_brand_roles: { Args: never; Returns: string[] };

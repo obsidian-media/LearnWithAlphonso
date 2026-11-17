@@ -65,6 +65,26 @@ Account ids are not written to the server logs on any of these paths.
 
 Staff deletion (#496) is recorded in `staff_audit_log` (`user.delete`, and `user.delete.failed` with the step for each failed web-subscription cancel or Apple revocation, which do not stop the deletion; only a failed Auth delete stops it). The action record keeps ids only and outlives the account on purpose.
 
+## Monthly AI cost cap
+
+The daily request caps (`consume_ai_quota`) bound requests, not cost, so each learner also has a MONTHLY ceiling on measured AI cost (the `ai_cost_log` + `ai_cost_daily` sum, USD micro-dollars) over the current UTC calendar month. Calendar month, not rolling 30 days: the learner is told one reset date ("1 December"), it follows the billing month, and a spike never lingers past it. Rules in `src/lib/ai-monthly-cap.ts`, enforcement in `src/lib/ai-monthly-cap.server.ts`, called first thing in `consumeQuotaFor` (so a refused call burns no burst token and no daily unit). Migration `20261120120000_ai_monthly_cost_cap.sql` adds the learner's own read `my_ai_cost_month()` and the admin count `admin_ai_cost_capped`.
+
+**What is blocked.** Only the costly kinds: `chat`, `hector`, `tts`, `stt`, `recap`, `explain`, `translate`, `define`. Lessons, review, reading and the Help chat (`support`) never call it and keep working. A blocked call answers `429 { error: "quota-exceeded", reason: "monthly-cap", resetsAt: <first of next month>, message }`; web, iOS and Android show "You've hit this month's usage limit for AI practice. It resets on 1 December. Lessons and review still work." (a reset more than 36 hours away is the monthly one; the daily and per-minute copy is unchanged).
+
+**Settings (web server environment, all optional; the only place the numbers live).**
+- `AI_MONTHLY_CAP_FREE_USD` default `2`: a free learner's ceiling. Free learners pay nothing; this is an acquisition cost we accept, about a quarter of a Pro learner's.
+- `AI_MONTHLY_CAP_PRO_USD` default `8`: a Pro learner's ceiling (never below the free one). The heavy-learner line on the Numbers page is CAD 12.99 x 85% x 0.72 = about USD 7.95; 8 keeps that same line, so a Pro learner at the cap is about break-even after store fees. A heavy learner used to be able to cost about USD 50 a month.
+- `AI_MONTHLY_CAP_WARN_PERCENT` default `80`: where the soft warning starts.
+- `AI_MONTHLY_CAP_ENABLED`: set to `false` to switch the cap off (kill switch, no deploy of code needed).
+
+**Tier.** Pro is known only through RevenueCat, so it is looked up only for a learner already past 80% of the FREE ceiling (almost nobody), and Hector calls (already entitlement-checked) are Pro by construction.
+
+**Fail-safe.** Every failure ALLOWS the call and logs one line (`[ai-cap] ...`): the cost read failing or timing out, the migration not applied yet, a malformed answer, the entitlement lookup unavailable (the learner gets the Pro ceiling). Locking out paying learners because of our own outage is worse than one extra costly call; the daily caps still apply. Calls whose price is unknown (NULL cost) add nothing to the sum.
+
+**Telling the client.** `GET /api/ai-usage` (signed in) answers `{ state: "ok" | "warn" | "capped" | "unknown", percentUsed, resetsAt }`: percent only, never a dollar figure; no client holds any number. Not yet shown in any app UI. Known gap: the written-translation fallback inside the `grade-review` and `complete-lesson` edge functions (Deno) is not checked against the monthly cap (it stays under the 60 a day `translate` quota).
+
+**Admin.** Numbers, "AI cost": "Learners at the monthly cap" counts learners over the Pro ceiling this month (certainly blocked) and notes how many more sit between the free and Pro ceilings (blocked unless Pro).
+
 ## AI cost tracking
 
 Every billable AI call is logged to `ai_cost_log` (migration `20261118200000_ai_cost_log.sql`; service role only, no client grants): user id, kind (chat, hector, explain, translate, define, support, practice, weakness, stt, tts), vendor, model, units (STT audio seconds as Deepgram reports them, TTS characters sent, LLM tokens as OpenRouter reports them), estimated cost in USD micro-dollars, where the cost came from (`provider` = the vendor's own charge, `table` = our price table, `unknown` = NULL, never a guess), a cache-hit flag and the time. A write is handed to the platform's `waitUntil` (or simply runs on) and is bounded to 4 s: it can never fail or delay a learner's answer. Written by `src/lib/ai-cost-log.server.ts` (web routes, through `llmChatCompletion({ track })`, `/api/stt`, `/api/tts`, Hector's speech) and `supabase/functions/_shared/ai-cost-log.ts` (the written-translation grade in `grade-review` and `complete-lesson`; the edge side has no price table and logs the provider's charge or NULL). Owner-run authoring calls (pack drafts, vocab proposals) are not logged: no learner is billed for them.

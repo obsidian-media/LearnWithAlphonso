@@ -194,6 +194,10 @@ class AiConversationClientTest {
         assertEquals("You've reached today's AI practice limit. Try again tomorrow.", msg(429, "quota-exceeded"))
         assertEquals("You've reached today's AI practice limit. It resets at 12:00 AM.", msg(429, "quota-exceeded", "2026-10-17T00:00:00.000Z"))
         assertEquals("Too many requests. Wait a minute and try again.", msg(429, "quota-exceeded", "2026-10-16T20:01:00Z"))
+        assertEquals(
+            "You've hit this month's usage limit for AI practice. It resets on 1 November. Lessons and review still work.",
+            msg(429, "quota-exceeded", "2026-11-01T00:00:00.000Z"),
+        )
         assertEquals("Hector is part of Alphonso Pro.", msg(403, "not-entitled"))
         assertEquals("We can't check your Pro access right now. Please try again shortly.", msg(503, "entitlement-unavailable"))
         assertEquals("Turn on AI features to practice speaking with a tutor.", msg(403, "ai-consent-required"))
