@@ -18,6 +18,8 @@ import androidx.lifecycle.lifecycleScope
 import com.obsidianmedia.learnwithalphonso.core.logic.InviteLink
 import com.obsidianmedia.learnwithalphonso.core.logic.PushTap
 import com.obsidianmedia.learnwithalphonso.core.logic.PushTapDestination
+import com.obsidianmedia.learnwithalphonso.core.logic.ReferralLink
+import com.obsidianmedia.learnwithalphonso.core.logic.ReferralPending
 import com.obsidianmedia.learnwithalphonso.ui.RootScreen
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoPalettes
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTheme
@@ -37,6 +39,7 @@ class MainActivity : ComponentActivity() {
         container.notificationPermission.register(this)
         handleOAuthCallback(intent)
         handleInviteLink(intent)
+        handleReferralLink(intent)
         handlePushTap(intent)
         setContent {
             val themeId by container.themeManager.theme.collectAsState()
@@ -69,6 +72,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         handleOAuthCallback(intent)
         handleInviteLink(intent)
+        handleReferralLink(intent)
         handlePushTap(intent)
     }
 
@@ -89,6 +93,18 @@ class MainActivity : ComponentActivity() {
         if (intent.action != Intent.ACTION_VIEW || uri.scheme != "https") return
         val code = InviteLink.codeFrom(uri.pathSegments) ?: return
         pendingInviteCode = code
+        intent.action = null
+    }
+
+    /**
+     * https://learn.alphonsoecosystem.app/?ref=<code>: kept until the account exists (the first code wins). The app link
+     * association covers /invite/ only today, so this waits on that infra; the manual code field is the fallback.
+     */
+    private fun handleReferralLink(intent: Intent?) {
+        val uri = intent?.data ?: return
+        if (intent.action != Intent.ACTION_VIEW) return
+        val code = ReferralLink.codeFromUrl(uri.toString()) ?: return
+        ReferralPending.capture(code, container.referralStore, System.currentTimeMillis())
         intent.action = null
     }
 
