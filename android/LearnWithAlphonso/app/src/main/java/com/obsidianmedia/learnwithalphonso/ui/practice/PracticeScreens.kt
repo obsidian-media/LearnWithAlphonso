@@ -163,7 +163,7 @@ private fun ConversationBody(container: AppContainer, vm: BaseConversationViewMo
 }
 
 @Composable
-fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBack: () -> Unit, chatMode: Boolean = false) {
+fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBack: () -> Unit, chatMode: Boolean = false, onOpenMemory: () -> Unit = {}) {
     // The course is fixed when the screen opens; the conversation stays in it. The view model is keyed by it.
     val course = remember { container.activeCourse.course.value }
     val scenario = container.content.scenarios(course).firstOrNull { it.id == scenarioId } ?: run { onBack(); return }
@@ -187,7 +187,9 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
         return
     }
     result?.let { r ->
-        PracticeResultScreen(r, scenario.id, course.code, vm.elapsedSeconds, vm.slip, context = PracticeResultContext.Scenario, retry = { vm.retryScenario(speak = false) }, forward = onBack)
+        val recapUi by vm.recap.ui.collectAsState()
+        PracticeResultScreen(r, scenario.id, course.code, vm.elapsedSeconds, vm.slip, context = PracticeResultContext.Scenario, retry = { vm.retryScenario(speak = false) }, forward = onBack,
+            recap = recapUi, onSpeakPhrase = vm::speakPhrase, onReviewRecap = vm.recap::addToReview, onOpenMemory = onOpenMemory)
         return
     }
     val palette = LocalAlphonsoTokens.current
@@ -218,7 +220,7 @@ fun ScenarioConversationScreen(container: AppContainer, scenarioId: String, onBa
 }
 
 @Composable
-fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBack: () -> Unit, startScene: Int = 0, chatMode: Boolean = false) {
+fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBack: () -> Unit, startScene: Int = 0, chatMode: Boolean = false, onOpenMemory: () -> Unit = {}) {
     val course = remember { container.activeCourse.course.value }
     val campaign = container.content.campaigns(course).firstOrNull { it.id == campaignId } ?: run { onBack(); return }
     val playback = remember { container.newPlayback() }
@@ -245,12 +247,14 @@ fun CampaignConversationScreen(container: AppContainer, campaignId: String, onBa
         return
     }
     result?.let { r ->
+        val recapUi by vm.recap.ui.collectAsState()
         PracticeResultScreen(
             r, com.obsidianmedia.learnwithalphonso.core.logic.PracticeHub.room(campaign.id, vm.scene.id), course.code, vm.elapsedSeconds, vm.slip,
             context = PracticeResultContext.CampaignScene(isLast = vm.isLastScene),
             retry = { vm.restartScene(speak = false) },
             // Next scene needs a star: a scene with none shows Done, which leaves (a talk counts done from one star, #511).
             forward = { if (r.stars >= 1) vm.continueToNextScene(speak = false) else onBack() },
+            recap = recapUi, onSpeakPhrase = vm::speakPhrase, onReviewRecap = vm.recap::addToReview, onOpenMemory = onOpenMemory,
         )
         return
     }

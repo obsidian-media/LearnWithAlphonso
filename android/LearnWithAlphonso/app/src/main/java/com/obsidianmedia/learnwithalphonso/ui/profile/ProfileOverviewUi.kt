@@ -478,6 +478,30 @@ fun ProfileHector(m: ProfileOverviewModel, onPaywall: () -> Unit) {
     }
 }
 
+/**
+ * "What Alphonso remembers" on Profile: opens the page. Pro learners see their notes there; a free learner sees it
+ * locked, with a teaser made only from their own weak spots (the same rule as "Hector can help").
+ */
+@Composable
+fun ProfileMemory(isPro: Boolean, topics: List<String>, summary: String?, onOpen: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+    Column(
+        Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clip(shape).background(ds.hero).clickable(role = Role.Button, onClick = onOpen).padding(AlphonsoTokens.Space.s3),
+        verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
+    ) {
+        Text(if (isPro) "What Alphonso remembers  Pro" else "What Alphonso can remember  Pro", style = HeadlineType, color = ds.onHero)
+        Text(
+            when {
+                isPro -> summary?.let { "$it See and edit." } ?: "See and edit the notes he keeps from your calls."
+                topics.isEmpty() -> "With Pro, Alphonso keeps notes between calls."
+                else -> "He could remember ${ProfileMath.joinTopics(topics)}. See what Pro keeps."
+            },
+            style = CaptionType, color = ds.onHeroSoft,
+        )
+    }
+}
+
 @Composable
 private fun LinkButton(label: String, onClick: () -> Unit) {
     val ds = LocalAlphonsoTokens.current

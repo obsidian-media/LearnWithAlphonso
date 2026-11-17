@@ -213,7 +213,7 @@ internal fun PracticeHubContent(
     Text(text, style = Type.title.toTextStyle(), color = LocalAlphonsoTokens.current.ink, modifier = Modifier.semantics { heading() })
 }
 @Composable internal fun HubButton(text: String, onClick: () -> Unit) { HubAction(text, false, onClick) }
-@Composable private fun HubSecondaryButton(text: String, onClick: () -> Unit) { HubAction(text, true, onClick) }
+@Composable internal fun HubSecondaryButton(text: String, onClick: () -> Unit) { HubAction(text, true, onClick) }
 @Composable private fun HubAction(text: String, secondary: Boolean, onClick: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     Button(onClick, border = if (secondary) BorderStroke(AlphonsoTokens.Edge.pressedSliver, ds.line) else null, modifier = Modifier.fillMaxWidth().heightIn(min = Space.minTouch), shape = RoundedCornerShape(AlphonsoTokens.Radius.control), colors = ButtonDefaults.buttonColors(containerColor = if (secondary) ds.card else ds.action, contentColor = if (secondary) ds.brand else ds.onAction), contentPadding = PaddingValues(Space.s3)) {
@@ -343,7 +343,11 @@ internal fun PracticeHubContent(
  * The result screen (Practice hub v3 plus the 0-star refinement). [context] picks the buttons ([PracticeResultButtons]);
  * [forward] is the right-hand button: Next scene, Finish campaign or Done.
  */
-@Composable internal fun PracticeResultScreen(result: PracticeResult, room: String, course: String, seconds: Int, slip: Pair<String, String>?, context: PracticeResultContext, retry: () -> Unit, forward: () -> Unit) {
+@Composable internal fun PracticeResultScreen(
+    result: PracticeResult, room: String, course: String, seconds: Int, slip: Pair<String, String>?, context: PracticeResultContext, retry: () -> Unit, forward: () -> Unit,
+    /** The call recap: it takes the slip's slot while pending or ready; with none (a short call, offline, an AI error) the slip shows as before. */
+    recap: CallRecapController.Ui? = null, onSpeakPhrase: (String) -> Unit = {}, onReviewRecap: () -> Unit = {}, onOpenMemory: () -> Unit = {},
+) {
     val ds = LocalAlphonsoTokens.current
     val largeText = androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.3f
     val buttons = result.buttons(context)
@@ -368,7 +372,9 @@ internal fun PracticeHubContent(
                 stats.forEach { (value, label) -> Box(Modifier.weight(1f)) { ResultStat(value, label) } }
             }
         }
-        val shownSlip = result.slipToShow(slip)
+        val recapShowing = recap != null && recap.status != CallRecapController.Status.OFF
+        if (recapShowing) item { RecapSection(recap!!, onSpeakPhrase, onReviewRecap, onOpenMemory) }
+        val shownSlip = if (recapShowing) null else result.slipToShow(slip)
         if (shownSlip != null) item {
             val slipShape = RoundedCornerShape(AlphonsoTokens.Radius.control)
             Column(Modifier.fillMaxWidth().clip(slipShape).background(ds.card).border(2.dp, ds.line, slipShape).padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s2)) {

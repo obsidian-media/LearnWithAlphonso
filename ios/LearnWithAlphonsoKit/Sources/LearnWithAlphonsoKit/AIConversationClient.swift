@@ -281,6 +281,111 @@ public final class AIConversationClient: Sendable {
         return count
     }
 
+    // MARK: Call recap and What Alphonso remembers
+
+    private func recapRequest(_ path: String, method: String, body: [String: Any]?) throws -> URLRequest {
+        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+        request.httpMethod = method
+        request.setValue("Bearer \(accessToken())", forHTTPHeaderField: "Authorization")
+        if let body {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        }
+        return request
+    }
+
+    /// POST /api/call-recap -- the after-call recap (free). One attempt: nil on anything but a clean recap (a short
+    /// call, offline, the AI or its checks failing, consent off, over the limit), and the result screen then keeps its
+    /// slip. Nothing is sent for a call under `CallRecap.minLearnerTurns` learner replies.
+    public func callRecap(callId: String, transcript: [ChatMessage], cefrLevel: String? = nil, scene: String? = nil, timeout: TimeInterval = 10) async -> CallRecap? {
+        guard CallRecap.qualifies(transcript) else { return nil }
+        var payload: [String: Any] = [
+            "callId": callId,
+            "messages": transcript.map { ["role": $0.role, "content": $0.content] },
+        ]
+        if let cefrLevel { payload["cefrLevel"] = cefrLevel }
+        if let scene { payload["scene"] = scene }
+        guard var request = try? recapRequest("api/call-recap", method: "POST", body: payload) else { return nil }
+        request.timeoutInterval = timeout
+        // A total deadline: timeoutInterval only limits idle time, so a slow trickle could hold the recap up for minutes.
+        let sent = request
+        let outcome: (Data, URLResponse)? = await withTaskGroup(of: (Data, URLResponse)?.self) { group in
+            group.addTask { try? await self.perform(sent) }
+            group.addTask {
+                _ = try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                return nil
+            }
+            var first: (Data, URLResponse)?
+            if let next = await group.next() { first = next }
+            group.cancelAll()
+            return first
+        }
+        guard let (data, response) = outcome,
+              let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else { return nil }
+        return CallRecap.parse(data)
+    }
+
+    /// POST /api/call-recap-review -- "Review these": the server adds the recap's items to the review queue from the
+    /// signed recap it wrote. A second tap adds nothing.
+    public func addRecapToReview(callId: String, reviewToken: String) async -> Bool {
+        guard let request = try? recapRequest("api/call-recap-review", method: "POST", body: ["callId": callId, "reviewToken": reviewToken]),
+              let (_, response) = try? await perform(request),
+              let http = response as? HTTPURLResponse else { return false }
+        return (200...299).contains(http.statusCode)
+    }
+
+    /// GET /api/tutor-memory -- Pro only, checked on the server (403 reads as locked).
+    public func tutorMemory() async -> TutorMemoryLoad {
+        guard let request = try? recapRequest("api/tutor-memory", method: "GET", body: nil),
+              let (data, response) = try? await perform(request),
+              let http = response as? HTTPURLResponse else { return .failed }
+        if http.statusCode == 403 { return .locked }
+        guard (200...299).contains(http.statusCode), let memory = TutorMemory.parse(data) else { return .failed }
+        return .ready(memory)
+    }
+
+    /// DELETE /api/tutor-memory { id } -- one memory line, with its weakness events and review items.
+    public func removeMemoryLine(id: String) async -> Bool {
+        await deleteMemory(["id": id])
+    }
+
+    /// DELETE /api/tutor-memory { all: true } -- Forget everything. Lessons, stars, streak and XP stay.
+    public func forgetEverything() async -> Bool {
+        await deleteMemory(["all": true])
+    }
+
+    private func deleteMemory(_ body: [String: Any]) async -> Bool {
+        guard let request = try? recapRequest("api/tutor-memory", method: "DELETE", body: body),
+              let (_, response) = try? await perform(request),
+              let http = response as? HTTPURLResponse else { return false }
+        return (200...299).contains(http.statusCode)
+    }
+
+    /// DELETE /api/tutor-memory { events: true } -- removes only the topic labels recorded after calls. Any learner.
+    public func forgetTopicNotes() async -> Bool {
+        await deleteMemory(["events": true])
+    }
+
+    /// "Travel, 10 minutes a day": the learner's own first-run answers, for the locked What Alphonso remembers page.
+    public func goalsNote() async -> String? {
+        guard let request = try? recapRequest("api/learner-profile", method: "GET", body: nil),
+              let (data, response) = try? await perform(request),
+              let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode),
+              let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let profile = root["profile"] as? [String: Any] else { return nil }
+        let goals = TutorMemory.Goals(goal: profile["goal"] as? String, dailyMinutes: profile["dailyMinutes"] as? Int, interests: [])
+        let lines = TutorMemory(mistakes: [], phrases: [], goals: goals).goalLines
+        return lines.isEmpty ? nil : lines.map(\.title).joined(separator: ", ")
+    }
+
+    /// PUT /api/learner-profile { patch } -- adds or removes one goal answer (presets only, checked on the server).
+    public func saveGoalPatch(_ patch: [String: Any]) async -> Bool {
+        guard let request = try? recapRequest("api/learner-profile", method: "PUT", body: ["patch": patch]),
+              let (_, response) = try? await perform(request),
+              let http = response as? HTTPURLResponse else { return false }
+        return (200...299).contains(http.statusCode)
+    }
+
     /// POST /api/define-word -- saves a tapped word with its sentence and
     /// returns its stored explanation. The server writes the review item; the
     /// client never sends choices or an answer. HTTP failures throw a

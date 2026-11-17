@@ -364,8 +364,8 @@ private fun SignedInApp(
                 ListenFolderScreen(container, listenVm, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }, onOpenFolder = { nav.navigate(Routes.listenFolder(it)) })
             }
             composable(Routes.PRACTICE) { PracticeScreen(container, onOpenScenario = { id, mode -> nav.navigate(Routes.scenario(id, mode)) }, onOpenCampaign = { id, scene, mode -> nav.navigate(Routes.campaign(id, scene, mode)) }, onHector = { nav.navigate(Routes.HECTOR) }) }
-            composable(Routes.SCENARIO) { entry -> ScenarioConversationScreen(container, entry.arguments?.getString("id") ?: "", chatMode = entry.arguments?.getString("mode") == "chat", onBack = { nav.popBackStack() }) }
-            composable(Routes.CAMPAIGN) { entry -> CampaignConversationScreen(container, entry.arguments?.getString("id") ?: "", startScene = entry.arguments?.getString("scene")?.toIntOrNull() ?: 0, chatMode = entry.arguments?.getString("mode") == "chat", onBack = { nav.popBackStack() }) }
+            composable(Routes.SCENARIO) { entry -> ScenarioConversationScreen(container, entry.arguments?.getString("id") ?: "", chatMode = entry.arguments?.getString("mode") == "chat", onBack = { nav.popBackStack() }, onOpenMemory = { nav.navigate(Routes.MEMORY) }) }
+            composable(Routes.CAMPAIGN) { entry -> CampaignConversationScreen(container, entry.arguments?.getString("id") ?: "", startScene = entry.arguments?.getString("scene")?.toIntOrNull() ?: 0, chatMode = entry.arguments?.getString("mode") == "chat", onBack = { nav.popBackStack() }, onOpenMemory = { nav.navigate(Routes.MEMORY) }) }
             composable(Routes.HECTOR) { HectorTab(container) }
             composable(Routes.PROFILE) {
                 ProfileHubScreen(
@@ -377,6 +377,7 @@ private fun SignedInApp(
                     onOpenSettings = { nav.navigate(Routes.SETTINGS) },
                     onOpenReview = { course -> nav.navigate(Routes.review(course.code)) },
                     onOpenPaywall = { nav.navigate(Routes.HECTOR) { launchSingleTop = true } },
+                    onOpenMemory = { nav.navigate(Routes.MEMORY) },
                 )
             }
             composable(Routes.LEAGUE) { LeaderboardScreen(container, onBack = { nav.popBackStack() }, onOpenTeams = { nav.navigate(Routes.TEAMS) }, onOpenSeason = { nav.navigate(Routes.SEASON) }) }
@@ -401,7 +402,13 @@ private fun SignedInApp(
             composable(Routes.PLACEMENT) { entry ->
                 PlacementScreen(container, Course.fromCode(entry.arguments?.getString("course") ?: "en"), onFinished = { nav.popBackStack() })
             }
-            composable(Routes.SETTINGS) { SettingsScreen(container, onBack = { nav.popBackStack() }, onOpenHelp = { nav.navigate(Routes.HELP) }) }
+            composable(Routes.SETTINGS) { SettingsScreen(container, onBack = { nav.popBackStack() }, onOpenHelp = { nav.navigate(Routes.HELP) }, onOpenMemory = { nav.navigate(Routes.MEMORY) }) }
+            composable(Routes.MEMORY) {
+                com.obsidianmedia.learnwithalphonso.ui.memory.TutorMemoryScreen(
+                    container, onBack = { nav.popBackStack() },
+                    onPaywall = { nav.navigate(Routes.HECTOR) { launchSingleTop = true } },
+                )
+            }
             composable(Routes.HELP) {
                 HelpChatScreen(
                     container, parent = "Settings", onBack = { nav.popBackStack() },

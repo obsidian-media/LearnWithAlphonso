@@ -26,10 +26,15 @@ struct ConversationSessionView: View {
     let conversationStore: ConversationStore
 
     var chatMode: Bool = false
+    /// Builds the subscription screen for the memory sheet (supplied by the Practice hub).
+    var upgradeView: UpgradeViewBuilder?
     @State private var callId = UUID().uuidString
     @State private var startedAt = Date()
     @State private var result: PracticeResult?
     @State private var slip: (said: String, reply: String)?
+    /// The after-call recap (RecapViews.swift); replaced for each call.
+    @State private var recapModel = CallRecapModel()
+    @State private var showMemory = false
     @State private var ending = false
     /// The call came back without a score (offline): the screen stays, with a notice and Try again.
     @State private var unscored = false
@@ -61,7 +66,8 @@ struct ConversationSessionView: View {
                 PracticeUnscoredView(retry: { unscored = false; startNewConversation() })
             } else if let result {
                 PracticeResultView(result: result, room: scenario.id, course: course.wireCode, seconds: elapsed, slip: slip, context: .scenario,
-                    retry: { self.result = nil; startNewConversation() }, forward: { dismiss() })
+                    retry: { self.result = nil; startNewConversation() }, forward: { dismiss() },
+                    recap: recapModel, session: session, callId: callId, onOpenMemory: { showMemory = true })
             } else if !chatMode { callScreen } else { classicScreen }
         }
         // Alphonso says the scene's opening line out loud (build 59 only showed it). Inside the AI gate, so nothing is
@@ -72,6 +78,9 @@ struct ConversationSessionView: View {
             await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
         }
         .navigationBarBackButtonHidden(true)
+        .sheet(isPresented: $showMemory) {
+            MemorySheetHost(session: session, course: course, upgradeView: upgradeView, close: { showMemory = false })
+        }
         .aiDisclosureGate()
         .onAppear {
             if !initialized {
@@ -336,9 +345,10 @@ struct ConversationSessionView: View {
     }
 
     private func startNewConversation() {
-        resetCall()
-        // Analyse what was said before it is cleared (same once-per-stretch rule as leaving the screen).
+        // Analyse what was said before it is cleared (same once-per-stretch rule as leaving the screen). Before
+        // resetCall, which forgets whether this call already had its recap.
         analyzeWeaknessesIfNew()
+        resetCall()
         conversation = conversationStore.startNew(key, opener: scenario.opener)
         notice = nil
         openerCue += 1
@@ -348,6 +358,8 @@ struct ConversationSessionView: View {
     /// tab switches, so a call on every disappear would re-analyze the same
     /// transcript (and spend quota) each time.
     private func analyzeWeaknessesIfNew() {
+        // The recap already sent this call once and recorded its topic labels; a second send would bill twice.
+        guard !recapModel.attempted else { return }
         let snapshot = conversationStore.snapshot(for: key) ?? conversation
         guard snapshot.turns.count >= 4, snapshot.turns.count > snapshot.analyzedTurnCount,
               let accessToken = session.accessToken else { return }
@@ -404,7 +416,7 @@ struct ConversationSessionView: View {
         }
     }
     private func resetCall() {
-        callId = UUID().uuidString; startedAt = Date(); slip = nil; ending = false
+        callId = UUID().uuidString; startedAt = Date(); slip = nil; ending = false; recapModel = CallRecapModel()
         voice.appeared()
     }
     private func finishCall() async {
@@ -417,6 +429,8 @@ struct ConversationSessionView: View {
             let finished = try await practiceClient(session).finishPractice(callId: callId)
             Analytics.track(.practiceCallCompleted, ["scenario_id": scenario.id, "stars": finished.stars])
             result = finished
+            recapModel = CallRecapModel()
+            recapModel.start(session: session, callId: callId, transcript: conversation.recentTurns, cefrLevel: cefrLevel, scene: scenario.id)
         }
         catch {
             // Offline or unreachable: stay with a notice when replies were sent; with none there is nothing to keep.

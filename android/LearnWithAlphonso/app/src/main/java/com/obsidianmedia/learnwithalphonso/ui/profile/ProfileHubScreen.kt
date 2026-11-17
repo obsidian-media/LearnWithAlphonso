@@ -41,7 +41,7 @@ import kotlinx.coroutines.CancellationException
 fun ProfileHubScreen(
     container: AppContainer, onEditAnswers: () -> Unit,
     onOpenLeague: () -> Unit, onOpenFriends: () -> Unit, onOpenAchievements: () -> Unit, onOpenSettings: () -> Unit,
-    onOpenReview: (Course) -> Unit, onOpenPaywall: () -> Unit,
+    onOpenReview: (Course) -> Unit, onOpenPaywall: () -> Unit, onOpenMemory: () -> Unit = {},
 ) {
     val course by container.activeCourse.course.collectAsState()
     val isPro = container.entitlements.state.collectAsState().value.isPro
@@ -50,6 +50,11 @@ fun ProfileHubScreen(
     var tab by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(ProfileTab.OVERVIEW) }
     var picking by remember { mutableStateOf(false) }
     var reload by remember { mutableStateOf(0) }
+    // Pro: the counts on the memory card, read from the server (null until they arrive, or when the read fails).
+    var memorySummary by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(isPro, reload) {
+        memorySummary = if (isPro) (container.aiClient.tutorMemory() as? com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryLoad.Ready)?.memory?.summary else null
+    }
     val userId = container.session.userId
     LaunchedEffect(course, userId, isPro, reload) {
         val id = userId ?: return@LaunchedEffect
@@ -83,6 +88,7 @@ fun ProfileHubScreen(
                             if (!m.hasAnyActivity) Text("Your first lesson starts your streak and fills in this page.", color = ds.ink)
                             ProfileWeekSection(m)
                             ProfileHector(m, onPaywall = onOpenPaywall)
+                            ProfileMemory(isPro, m.weak.first.take(2).map { it.display }, memorySummary, onOpenMemory)
                         }
                         ProfileTab.PROGRESS -> {
                             ProfileCompactHeader(m)

@@ -3,6 +3,9 @@ package com.obsidianmedia.learnwithalphonso.core.net
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
+import com.obsidianmedia.learnwithalphonso.core.logic.CallRecap
+import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemory
+import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryLoad
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordException
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordResult
@@ -119,6 +122,66 @@ class AiConversationClient(private val http: ApiHttp) {
         return obj["weaknessesDetected"]?.jsonPrimitive?.intOrNull ?: throw AiConversationError.InvalidPayload()
     }
 
+    // ---- Call recap and What Alphonso remembers -------------------------------------------------------------------
+
+    /**
+     * POST /api/call-recap: the after-call recap (free). One attempt: null on anything but a clean recap (a short call,
+     * offline, the AI or its checks failing, consent off, over the limit), and the result screen then keeps its slip.
+     * Nothing is sent for a call under [CallRecap.MIN_LEARNER_TURNS] learner replies.
+     */
+    suspend fun callRecap(callId: String, transcript: List<ChatMessage>, cefrLevel: String? = null, scene: String? = null): CallRecap? {
+        if (!CallRecap.qualifies(transcript.map { it.role })) return null
+        val body = buildJsonObject {
+            put("callId", callId)
+            putJsonArray("messages") { transcript.forEach { add(buildJsonObject { put("role", it.role); put("content", it.content) }) } }
+            if (cefrLevel != null) put("cefrLevel", cefrLevel)
+            if (scene != null) put("scene", scene)
+        }
+        return runCatching {
+            val response = http.post("api/call-recap", body, timeoutMillis = RECAP_TIMEOUT_MS)
+            if (response.status.value !in 200..299) null else CallRecap.parse(response.bodyAsText())
+        }.getOrNull()
+    }
+
+    /** POST /api/call-recap-review: "Review these". The server adds the recap's items from the signed recap it wrote. */
+    suspend fun addRecapToReview(callId: String, reviewToken: String): Boolean = runCatching {
+        http.post("api/call-recap-review", buildJsonObject { put("callId", callId); put("reviewToken", reviewToken) }).status.value in 200..299
+    }.getOrDefault(false)
+
+    /** GET /api/tutor-memory: Pro only, checked on the server (403 reads as locked). */
+    suspend fun tutorMemory(): TutorMemoryLoad = runCatching {
+        val response = http.get("api/tutor-memory")
+        val status = response.status.value
+        if (status == 403) TutorMemoryLoad.Locked
+        else if (status !in 200..299) TutorMemoryLoad.Failed
+        else TutorMemory.parse(response.bodyAsText())?.let { TutorMemoryLoad.Ready(it) } ?: TutorMemoryLoad.Failed
+    }.getOrDefault(TutorMemoryLoad.Failed)
+
+    /** DELETE /api/tutor-memory { id }: one memory line, with its weakness events and review items. */
+    suspend fun removeMemoryLine(id: String): Boolean = deleteMemory(buildJsonObject { put("id", id) })
+
+    /** DELETE /api/tutor-memory { all: true }: Forget everything. Lessons, stars, streak and XP stay. */
+    suspend fun forgetEverything(): Boolean = deleteMemory(buildJsonObject { put("all", true) })
+
+    private suspend fun deleteMemory(body: JsonObject): Boolean =
+        runCatching { http.deleteWithBody("api/tutor-memory", body).status.value in 200..299 }.getOrDefault(false)
+
+    /** DELETE /api/tutor-memory { events: true }: removes only the topic labels recorded after calls. Any learner. */
+    suspend fun forgetTopicNotes(): Boolean = deleteMemory(buildJsonObject { put("events", true) })
+
+    /** "Travel, 10 minutes a day": the learner's own first-run answers, for the locked What Alphonso remembers page. */
+    suspend fun goalsNote(): String? = runCatching {
+        val response = http.get("api/learner-profile")
+        if (response.status.value !in 200..299) return@runCatching null
+        val profile = json.parseToJsonElement(response.bodyAsText()).jsonObject["profile"]?.jsonObject ?: return@runCatching null
+        val goals = TutorMemory.Goals(profile.str("goal"), profile["dailyMinutes"]?.jsonPrimitive?.intOrNull, emptyList())
+        TutorMemory(emptyList(), emptyList(), goals).goalLines.map { it.title }.joinToString(", ").ifEmpty { null }
+    }.getOrNull()
+
+    /** PUT /api/learner-profile { patch }: adds or removes one goal answer (presets only, checked on the server). */
+    suspend fun saveGoalPatch(patch: JsonObject): Boolean =
+        runCatching { http.put("api/learner-profile", buildJsonObject { put("patch", patch) }).status.value in 200..299 }.getOrDefault(false)
+
     /**
      * POST /api/define-word: saves a tapped word with its sentence and returns its stored explanation. The server writes
      * the review item; the client never sends choices or an answer. An HTTP failure throws a [SavedWordException] so the
@@ -179,6 +242,7 @@ class AiConversationClient(private val http: ApiHttp) {
     companion object {
         const val GENERATE_TIMEOUT_MS = 45_000L
         const val DEFINE_WORD_TIMEOUT_MS = 60_000L
+        const val RECAP_TIMEOUT_MS = 10_000L
 
         fun extensionFor(mimeType: String): String = when (mimeType) {
             "audio/m4a", "audio/mp4", "audio/x-m4a" -> "m4a"
