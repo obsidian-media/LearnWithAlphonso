@@ -9,12 +9,12 @@ final class SayThePictureTests: XCTestCase {
     private let base = VocabImagePolicy.allowedURLPrefix
     private func image(_ name: String) -> VocabImageRef { VocabImageRef(url: base + name + ".jpg", alt: name, credit: "c") }
     /// A Unit has no public initialiser (it is only ever decoded), so build one the way the app does.
-    private func unit(_ answers: [String]) throws -> Unit {
+    private func unit(_ answers: [String]) throws -> LearnWithAlphonsoKit.Unit {
         let questions = answers.enumerated().map {
             #"{"type":"fill","id":"q\#($0.offset)","prompt":"I see a ___.","bank":["\#($0.element)"],"answer":"\#($0.element)","explanation":"x"}"#
         }.joined(separator: ",")
         let json = #"{"id":"u1","level":"A1","eyebrow":"e","title":"t","description":"d","lessons":[{"id":"l1","title":"t","subtitle":"s","questions":[\#(questions)]}]}"#
-        return try JSONDecoder().decode(Unit.self, from: Data(json.utf8))
+        return try JSONDecoder().decode(LearnWithAlphonsoKit.Unit.self, from: Data(json.utf8))
     }
     private func words(_ n: Int) -> [SayThePicture.PictureWord] {
         (0..<n).map { SayThePicture.PictureWord(term: "word\($0)", image: image("w\($0)")) }
