@@ -2205,6 +2205,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      streak_freeze_gifts: {
+        Row: {
+          created_at: string;
+          gift_day: string;
+          id: string;
+          read_at: string | null;
+          recipient_id: string;
+          sender_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          gift_day?: string;
+          id?: string;
+          read_at?: string | null;
+          recipient_id: string;
+          sender_id: string;
+        };
+        Update: {
+          created_at?: string;
+          gift_day?: string;
+          id?: string;
+          read_at?: string | null;
+          recipient_id?: string;
+          sender_id?: string;
+        };
+        Relationships: [];
+      };
       support_conversations: {
         Row: {
           ai_summary: string | null;
@@ -3477,6 +3504,14 @@ export type Database = {
           threshold: number;
           title: string;
           type: string;
+        }[];
+      };
+      gift_streak_freeze: {
+        Args: { _recipient: string };
+        Returns: {
+          freezes: number;
+          ok: boolean;
+          reason: string;
         }[];
       };
       hearts_refill_resolve: {

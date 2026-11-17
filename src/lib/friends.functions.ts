@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { FriendActivityEvent } from "./friend-activity";
+import { giftFreezeReason, type GiftFreezeResult } from "./freeze-gift";
 
 export type FriendEntry = {
   userId: string;
@@ -228,6 +229,79 @@ export const markNudgesRead = createServerFn({ method: "POST" })
     if (data.ids.length === 0) return { ok: true };
     const { error } = await context.supabase
       .from("nudges")
+      .update({ read_at: new Date().toISOString() })
+      .in("id", data.ids)
+      .is("read_at", null);
+    return { ok: !error };
+  });
+
+/**
+ * Gifts one streak freeze to a friend. Everything is decided by gift_streak_freeze (SECURITY DEFINER): the caller
+ * is the database's auth.uid(), never an argument, and the sender's and friend's balances are only ever changed
+ * there. A refusal carries a reason the page turns into words (freeze-gift.ts).
+ */
+export const giftStreakFreeze = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ recipientId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }): Promise<GiftFreezeResult> => {
+    const { data: rows, error } = await context.supabase.rpc("gift_streak_freeze", {
+      _recipient: data.recipientId,
+    });
+    const row = rows?.[0];
+    if (error || !row) return { ok: false, reason: "error", freezes: null };
+    if (row.ok) return { ok: true, freezes: row.freezes ?? 0 };
+    return { ok: false, reason: giftFreezeReason(row.reason), freezes: row.freezes ?? null };
+  });
+
+/**
+ * What the Friends page needs to draw the gift buttons: the caller's own freeze count and the friends already
+ * gifted today (UTC, the database's day). Both reads are the caller's own rows (RLS); a failed read says
+ * "unknown" so the page offers the button and lets the database answer.
+ */
+export const getFreezeGiftState = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ freezes: number | null; giftedTodayTo: string[] }> => {
+    const today = new Date().toISOString().slice(0, 10);
+    const [progress, sent] = await Promise.all([
+      context.supabase
+        .from("user_progress")
+        .select("streak_freezes")
+        .eq("user_id", context.userId)
+        .maybeSingle(),
+      context.supabase
+        .from("streak_freeze_gifts")
+        .select("recipient_id")
+        .eq("sender_id", context.userId)
+        .eq("gift_day", today),
+    ]);
+    return {
+      freezes: progress.error ? null : (progress.data?.streak_freezes ?? 0),
+      giftedTodayTo: sent.error ? [] : (sent.data ?? []).map((r) => r.recipient_id),
+    };
+  });
+
+/** The caller's unread received gifts (the recipient reads their own; RLS `streak_freeze_gifts_select_own`). */
+export const getUnreadFreezeGifts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ id: string; senderId: string; createdAt: string }[]> => {
+    const { data, error } = await context.supabase
+      .from("streak_freeze_gifts")
+      .select("id,sender_id,created_at")
+      .eq("recipient_id", context.userId)
+      .is("read_at", null)
+      .order("created_at", { ascending: false });
+    if (error) return [];
+    return (data ?? []).map((r) => ({ id: r.id, senderId: r.sender_id, createdAt: r.created_at }));
+  });
+
+/** Marks received gifts read once shown (the recipient may update only `read_at` on their own; RLS + column grant). */
+export const markFreezeGiftsRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ ids: z.array(z.string().uuid()).max(200) }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: boolean }> => {
+    if (data.ids.length === 0) return { ok: true };
+    const { error } = await context.supabase
+      .from("streak_freeze_gifts")
       .update({ read_at: new Date().toISOString() })
       .in("id", data.ids)
       .is("read_at", null);
