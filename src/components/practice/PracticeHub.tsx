@@ -4,6 +4,7 @@ import { DsIcon } from "../ds/DsIcon";
 import { edgeButtonClass } from "../lesson/LessonParts";
 import { HectorInvite } from "../HectorInvite";
 import { PracticeStars, StarTally } from "./PracticeStars";
+import { SayThePicture } from "./SayThePicture";
 import { PreCallSheet, type CallMode, type PreCallTarget } from "./PreCallSheet";
 import type { Course } from "@/data/courses";
 import { CAMPAIGNS, localizeCampaign } from "@/data/campaigns";
@@ -76,6 +77,7 @@ export function PracticeHub({
   const campaigns = useMemo(() => CAMPAIGNS.map((c) => localizeCampaign(c, course)), [course]);
   const [level, setLevel] = useState<ScenarioLevel | "All">("All");
   const [sheet, setSheet] = useState<Sheet | null>(null);
+  const [sayPicture, setSayPicture] = useState(false);
   const greeting = GREETING[course];
 
   const openScenario = (id: string) => {
@@ -123,6 +125,8 @@ export function PracticeHub({
   const pickScenario = pick ? scenarios.find((s) => s.id === pick.scenarioId) : undefined;
   const resumeCampaign = resume ? campaigns.find((c) => c.id === resume.campaignId) : undefined;
   const shownScenarios = level === "All" ? scenarios : scenarios.filter((s) => s.level === level);
+
+  if (sayPicture) return <SayThePicture course={course} onExit={() => setSayPicture(false)} />;
 
   return (
     <div
@@ -324,6 +328,30 @@ export function PracticeHub({
 
         {/* Hector: Pro's one feature, offered where the learner already practices speaking (hidden for Pro). */}
         <HectorInvite source="practice_hector_card" look="hub" />
+
+        {/* Say the picture: a quick word-by-picture speaking drill. */}
+        <button
+          type="button"
+          data-say-the-picture-card=""
+          onClick={() => setSayPicture(true)}
+          className="flex items-center gap-3 rounded-[18px] border-2 border-b-4 border-ds-line bg-ds-card p-3 text-left"
+        >
+          <span
+            aria-hidden="true"
+            className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-ds-choice-tint text-ds-choice"
+          >
+            <DsIcon name="mic" className="size-6" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block ds-type-headline font-extrabold text-ds-ink">
+              Say the picture
+            </span>
+            <span className="block ds-type-caption font-semibold text-ds-ink-soft">
+              See a picture, say the word. 8 quick words.
+            </span>
+          </span>
+          <DsIcon name="chevron" className="size-5 shrink-0 text-ds-ink-soft" />
+        </button>
 
         {/* Scenarios. */}
         <section aria-labelledby="scenarios" className="mt-1 grid gap-3">
