@@ -109,7 +109,7 @@ export function appearsIn(needle: string, turns: Turn[], role: Turn["role"]): bo
  */
 const PERSONAL = [
   /[^\s@]+@[^\s@]+\.[^\s@]+/,
-  /\bhttps?:\/\/|\bwww\.|\b[a-z0-9-]+\.(com|net|org|io|app|es|fr|co|me)b/i,
+  /\bhttps?:\/\/|\bwww\.|\b[a-z0-9-]+\.(com|net|org|io|app|es|fr|co|me)\b/i,
   /(?:\d[\s().-]*){6,}/,
   /\b(my name is|my name's|i am called|i'm called|my surname|my address|i live (in|at|on)|my (phone|number|email)|me llamo|mi nombre es|mi apellido|mi direcci[oó]n|vivo en|mi (tel[eé]fono|correo)|je m['’]appelle|mon nom est|mon nom de famille|j['’]habite|mon adresse|mon (t[eé]l[eé]phone|e-?mail))\b/i,
 ];

@@ -147,6 +147,7 @@ describe("personal details never reach the recap or the memory", () => {
     ["a phone number", "Mi numero es 612 345 678 ok", "Mi número es 612 345 678, ok"],
     ["a long digit run", "Mi tarjeta es 4111111111111111", "Mi tarjeta es 4111111111111111."],
     ["a web address", "Visito www.ejemplo.es cada dia", "Visito www.ejemplo.es cada día"],
+    ["a bare domain", "Mira ejemplo.es para mas", "Mira ejemplo.es para más"],
     [
       "where they live",
       "I live in Elm Street 4 and I are tired",
