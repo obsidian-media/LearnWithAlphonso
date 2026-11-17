@@ -149,6 +149,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -
                 VoicesSection(container)
                 AnalyticsSection()
                 AiFeaturesSection(container)
+                AiUsageSection(container)
                 Section("Account", footer = null) {
                     Text("Download the data in your Alphonso account, or permanently erase it.", style = FootnoteType, color = ds.inkSoft)
                     Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {

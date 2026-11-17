@@ -26,6 +26,8 @@ struct SettingsView: View {
     @State private var showHelpPaywall = false
     @State private var isUpdatingAIConsent = false
     @State private var aiConsentErrorMessage: String?
+    /// Nil until a read lands, and again whenever it fails or the state is unknown: the card then draws nothing.
+    @State private var aiUsage: AiUsageView?
 
     @State private var selectedTheme = AlphonsoThemeManager.shared.themeID
 
@@ -85,6 +87,9 @@ struct SettingsView: View {
 
                 DSOverline(AIConsentCopy.settingsTitle).dsListRow(bottom: AlphonsoDS.Space.s2)
                 aiConsentCard.dsListRow()
+                if let aiUsage {
+                    AiUsageSettingsCard(usage: aiUsage).dsListRow()
+                }
 
                 MemorySettingsRow(session: session, course: ActiveCoursePreference.load(for: session.userID), onUpgrade: { showHelpPaywall = true }).dsListRow()
                 TopicNotesSettingsCard(session: session).dsListRow()
@@ -113,6 +118,7 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .task { await loadIdentity() }
             .task { await aiConsent.refresh() }
+            .task { await loadAiUsage() }
             .onChange(of: aiConsent.isGranted) { _, _ in aiConsentErrorMessage = nil }
             .aiDisclosureSheet(isPresented: $showAIDisclosure) {}
             .sheet(isPresented: $showHelpPaywall) {
@@ -379,6 +385,15 @@ struct SettingsView: View {
         } catch {
             aiConsentErrorMessage = AIConsentCopy.saveFailed
         }
+    }
+
+    /// One read of /api/ai-usage; any failure leaves the card hidden. The loader lives here, on the List, never on the card.
+    private func loadAiUsage() async {
+        guard let token = await session.freshAccessToken() else { aiUsage = nil; return }
+        aiUsage = await AiUsage.fetch(
+            baseURL: AppConfig.apiBaseURL,
+            accessToken: { token },
+            refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
     }
 
     private func loadIdentity() async {

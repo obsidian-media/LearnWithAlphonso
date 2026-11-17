@@ -81,7 +81,7 @@ The daily request caps (`consume_ai_quota`) bound requests, not cost, so each le
 
 **Fail-safe.** Every failure ALLOWS the call and logs one line (`[ai-cap] ...`): the cost read failing or timing out, the migration not applied yet, a malformed answer, the entitlement lookup unavailable (the learner gets the Pro ceiling). Locking out paying learners because of our own outage is worse than one extra costly call; the daily caps still apply. Calls whose price is unknown (NULL cost) add nothing to the sum.
 
-**Telling the client.** `GET /api/ai-usage` (signed in) answers `{ state: "ok" | "warn" | "capped" | "unknown", percentUsed, resetsAt }`: percent only, never a dollar figure; no client holds any number. Not yet shown in any app UI. Known gap: the written-translation fallback inside the `grade-review` and `complete-lesson` edge functions (Deno) is not checked against the monthly cap (it stays under the 60 a day `translate` quota).
+**Telling the client.** `GET /api/ai-usage` (signed in) answers `{ state: "ok" | "warn" | "capped" | "unknown", percentUsed, resetsAt }`: percent only, never a dollar figure; no client holds any number. Shown as the "AI practice this month" card in Settings on web (`src/lib/ai-usage-view.ts`), iOS (`AiUsage.swift`) and Android (`AiUsage.kt`); an unknown state or a failed read draws nothing. Known gap: the written-translation fallback inside the `grade-review` and `complete-lesson` edge functions (Deno) is not checked against the monthly cap (it stays under the 60 a day `translate` quota).
 
 **Admin.** Numbers, "AI cost": "Learners at the monthly cap" counts learners over the Pro ceiling this month (certainly blocked) and notes how many more sit between the free and Pro ceilings (blocked unless Pro).
 
