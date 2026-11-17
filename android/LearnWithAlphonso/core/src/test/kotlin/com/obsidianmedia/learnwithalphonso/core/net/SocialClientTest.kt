@@ -1,6 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.net.FakeSupabase.Companion.json
+import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGift
+import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGiftState
+import com.obsidianmedia.learnwithalphonso.core.logic.GiftFreezeOutcome
+import com.obsidianmedia.learnwithalphonso.core.logic.GiftFreezeReason
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -88,6 +92,48 @@ class SocialClientTest {
         assertEquals("""{"_course":"en"}""", ok.seen.single().body)
         val no = FakeSupabase { json("""[{"ok":false,"streak_freezes":1}]""") }
         assertEquals(BuyStreakFreezeResult.InsufficientXp(1), client(no).buyStreakFreezeWithXp("en"))
+    }
+
+    @Test
+    fun `gift a freeze calls the rpc with only the recipient and maps ok and each refusal`() = runTest {
+        val ok = FakeSupabase { json("""[{"ok":true,"reason":null,"freezes":1}]""") }
+        assertEquals(GiftFreezeOutcome(true, null, 1), client(ok).giftStreakFreeze("u2"))
+        assertEquals("/rest/v1/rpc/gift_streak_freeze", ok.seen.single().path)
+        assertEquals("""{"_recipient":"u2"}""", ok.seen.single().body)
+        for ((raw, reason) in listOf("recipient-full" to GiftFreezeReason.RECIPIENT_FULL, "already-gifted-today" to GiftFreezeReason.ALREADY_GIFTED_TODAY, "no-freeze" to GiftFreezeReason.NO_FREEZE, "not-friends" to GiftFreezeReason.NOT_FRIENDS, "weird" to GiftFreezeReason.ERROR)) {
+            val no = FakeSupabase { json("""[{"ok":false,"reason":"$raw","freezes":2}]""") }
+            assertEquals(GiftFreezeOutcome(false, reason, 2), client(no).giftStreakFreeze("u2"))
+        }
+    }
+
+    @Test
+    fun `gift state, unread gifts and marking them read`() = runTest {
+        val fake = FakeSupabase { req ->
+            when {
+                req.path.endsWith("user_progress") -> json("""[{"streak_freezes":2}]""")
+                req.method == "GET" && req.path.endsWith("streak_freeze_gifts") && req.query["sender_id"] != null -> json("""[{"recipient_id":"u2"}]""")
+                req.method == "GET" && req.path.endsWith("streak_freeze_gifts") -> json("""[{"id":"g1","sender_id":"u2"}]""")
+                else -> json("")
+            }
+        }
+        val c = client(fake)
+        assertEquals(FreezeGiftState(2, setOf("u2")), c.fetchFreezeGiftState("me"))
+        assertEquals("eq.2025-09-16", fake.seen[1].query["gift_day"])
+        assertEquals(listOf(FreezeGift("g1", "u2")), c.fetchUnreadFreezeGifts("me"))
+        assertEquals("is.null", fake.seen[2].query["read_at"])
+        assertEquals("eq.me", fake.seen[2].query["recipient_id"])
+        c.markFreezeGiftsRead(emptyList())
+        assertEquals(3, fake.seen.size)
+        c.markFreezeGiftsRead(listOf("g1"))
+        assertEquals("PATCH", fake.seen[3].method)
+        assertEquals("in.(g1)", fake.seen[3].query["id"])
+        assertTrue(fake.seen[3].body.startsWith("""{"read_at":"2025-09-16T05:20:00"""))
+    }
+
+    @Test
+    fun `an unreadable balance is unknown, not zero, so the button is still offered`() = runTest {
+        val fake = FakeSupabase { req -> if (req.path.endsWith("user_progress")) json("not json") else json("[]") }
+        assertEquals(FreezeGiftState(null, emptySet()), client(fake).fetchFreezeGiftState("me"))
     }
 
     @Test

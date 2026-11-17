@@ -1,5 +1,9 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
+import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGift
+import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGiftLogic
+import com.obsidianmedia.learnwithalphonso.core.logic.FreezeGiftState
+import com.obsidianmedia.learnwithalphonso.core.logic.GiftFreezeOutcome
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorAllowance
 import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.JsonObject
@@ -139,6 +143,59 @@ suspend fun ProgressSyncClient.markNudgesRead(ids: List<String>) {
     http.requireSuccess(
         http.rest(
             HttpMethod.Patch, "nudges", mapOf("id" to "in.(${ids.joinToString(",")})"),
+            body = buildJsonObject { put("read_at", now) }, headers = mapOf("Prefer" to "return=minimal"),
+        ),
+    )
+}
+
+// ---- gift a streak freeze ----
+
+/**
+ * Gifts one streak freeze to a friend. Everything is decided by gift_streak_freeze (SECURITY DEFINER): the app sends
+ * only the recipient. A refusal carries a reason the screen turns into words (FreezeGiftLogic).
+ */
+suspend fun ProgressSyncClient.giftStreakFreeze(recipientId: String): GiftFreezeOutcome {
+    val row = firstRow(http.rpc("gift_streak_freeze", buildJsonObject { put("_recipient", recipientId) }))
+    if (row.bool("ok") == true) return GiftFreezeOutcome(true, null, row.int("freezes"))
+    return GiftFreezeOutcome(false, FreezeGiftLogic.reason(row.string("reason")), row.int("freezes"))
+}
+
+/**
+ * The caller's own freeze balance and the friends already gifted today (UTC, the database's day). Both are the
+ * caller's own rows (RLS); a failed read says "unknown" so the button is offered and the database answers.
+ */
+suspend fun ProgressSyncClient.fetchFreezeGiftState(userId: String): FreezeGiftState {
+    val freezes = runCatching {
+        rowsOf(http.rest(HttpMethod.Get, "user_progress", mapOf("select" to "streak_freezes", "user_id" to "eq.$userId")))
+            .firstOrNull()?.int("streak_freezes") ?: 0
+    }.getOrNull()
+    val sent = runCatching {
+        rowsOf(
+            http.rest(
+                HttpMethod.Get, "streak_freeze_gifts",
+                mapOf("select" to "recipient_id", "sender_id" to "eq.$userId", "gift_day" to "eq.${HectorAllowance.utcDay(nowMillis())}"),
+            ),
+        ).mapNotNull { it.string("recipient_id") }.toSet()
+    }.getOrDefault(emptySet())
+    return FreezeGiftState(freezes, sent)
+}
+
+/** The caller's unread received gifts (RLS: streak_freeze_gifts_select_own), newest first. */
+suspend fun ProgressSyncClient.fetchUnreadFreezeGifts(userId: String): List<FreezeGift> =
+    rowsOf(
+        http.rest(
+            HttpMethod.Get, "streak_freeze_gifts",
+            mapOf("select" to "id,sender_id", "recipient_id" to "eq.$userId", "read_at" to "is.null", "order" to "created_at.desc"),
+        ),
+    ).mapNotNull { row -> FreezeGift(row.string("id") ?: return@mapNotNull null, row.string("sender_id") ?: return@mapNotNull null) }
+
+/** Marks received gifts read once shown (the recipient may update only read_at on their own rows). */
+suspend fun ProgressSyncClient.markFreezeGiftsRead(ids: List<String>) {
+    if (ids.isEmpty()) return
+    val now = DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(nowMillis()).atOffset(ZoneOffset.UTC))
+    http.requireSuccess(
+        http.rest(
+            HttpMethod.Patch, "streak_freeze_gifts", mapOf("id" to "in.(${ids.joinToString(",")})", "read_at" to "is.null"),
             body = buildJsonObject { put("read_at", now) }, headers = mapOf("Prefer" to "return=minimal"),
         ),
     )
