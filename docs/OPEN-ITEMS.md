@@ -6,9 +6,11 @@ Sweep of 2026-11-15 against main, merged pull requests and read-only checks of t
 
 **GitHub upkeep.** Since 2026-11-16 the owner has delegated GitHub upkeep (update, rebase and merge reviewed green pull requests, including migrations) to the coordinating agent.
 
+**Staleness sweep (standing rule, every pass).** Besides closing new merges, reconcile every standing risk, weak-spot, not-done or blocker statement against merged reality (closure reports, migrations, the database) and never cite a dated analysis document as current state without checking it against ground truth. Anything that cannot be reconciled is flagged to the coordinator, not left to age.
+
 **How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
 
-Counts: owner only 20, decision needed 9, device check 15, agent can do 12, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
+Counts: owner only 21, decision needed 9, device check 15, agent can do 12, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
 
 ### A. STILL OPEN - owner only (in priority order)
 
@@ -38,7 +40,7 @@ Counts: owner only 20, decision needed 9, device check 15, agent can do 12, done
 
 ### B. DECISION NEEDED (owner choice)
 
-**Order of work (owner 2026-11-16).** A small fixes, then B redesign gaps and social parity, then C reliability. D content waits for "content run approved". E art waits for mock approval.
+**Order of work (owner 2026-11-16).** A small fixes, then B redesign gaps and social parity, then C reliability. D content run: DONE 2026-11-06 (see item 43). E art: done (#589).
 
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
 28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
@@ -49,7 +51,7 @@ Counts: owner only 20, decision needed 9, device check 15, agent can do 12, done
     - Honest billing kit plus an AI minutes meter.
     - Graded stories.
     - Quick wins: say-the-picture, and gift-a-streak-freeze.
-    - Pricing risk to keep in view: heavy users are estimated at CAD 17.12 a month against the CAD 12.99 price (market-decision-2026-10-24 note), so lifetime pricing needs a usage cap.
+    - Pricing risk to keep in view: heavy users are estimated at CAD 17.12 a month against the CAD 12.99 price (market-decision-2026-10-24 note; a point-in-time analysis from before the content run, so check it against current data before citing it as current), so lifetime pricing needs a usage cap.
 29a. **Podcast audio bucket is public by URL, including unpublished episodes** (documented trade-off, #582). Decide whether to make unpublished audio private.
 
 ### C. DEVICE CHECK (needs a real phone; nothing can show these from code)
@@ -74,14 +76,15 @@ Counts: owner only 20, decision needed 9, device check 15, agent can do 12, done
 
 ### D. STILL OPEN - agent can do
 
-43. **Content: failed fixes.** About 438 English review fixes and about 580 content fixes overall still fail the checks; 16 gated refused FR/ES fixes (duplicate English prompts); about 190 English-term FR/ES cards need an authored FR/ES term; after any content merge the owner reseeds. (2026-11-07, round 7 notes)
-44. **FR/ES review-panel disagreements** (77 from the first run) were folded into the content closure project; the state of the closure run and its caps is unverified from here. (0.0-ay, #428, content closure)
+43. **Content residue after the finished content run.** The full content review is DONE (2026-11-06, `docs/content-review/closure-report.md`): 17,196 English, French and Spanish items reviewed, 10,922 fixes applied including 2,074 French/Spanish word-card meanings. What remains by design: 681 items whose proposed fixes still failed the checks after two judge rounds (left as they are); 93 held answer keys (17 on the owner short list in `docs/content-review/owner-list.md`); 59 roleplay-prompt, campaign-premise and podcast-quiz fixes that need a whitelist of the previous prompt before they can ship; measured defect rate of the final content 13.5% (4.2% high-confidence). After any content merge the owner reseeds. Older figures ("about 438 English", "about 580", "about 190 English-term FR/ES cards") were pre-run and are superseded; the 190 cards are probably covered by the 2,074 meanings, unverified.
 52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
 53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
 57. **Remove the unused push-to-talk capability** from the App ID. (1.1 #9)
 59. **Vocab image quality** beyond metadata triage; Android needs no change for empty lines (verified done). (3 Content)
 63. **Dev server does not boot in the Windows sandbox.** (4)
 66. **Later: monthly per-user cost budget**, to be revisited after about a month of real cost data from the AI cost log (#588). Ties to the lifetime-pricing usage cap in item 29.
+67. **LAUNCH READINESS (owner 2026-11-16).** Web first, then iOS and Android; paid from day one; polished full launch; content run already done. In flight: web launch gaps PR (robots, sitemap, SEO, error pages); database hardening PR (indexes and RLS initplan; owner merges; migration); store privacy answer sheets (doc); a self-pentest paused at scoping until the owner gives the go-ahead. Build 70 is on TestFlight, not submitted.
+68. **Owner dashboard toggle:** turn on leaked-password protection in the Supabase auth settings (cannot be done from code).
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
 
@@ -109,6 +112,7 @@ Counts: owner only 20, decision needed 9, device check 15, agent can do 12, done
 - Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
 
 ### Recently closed
+- FR/ES review-panel disagreements (was 44): folded into the content run that finished 2026-11-06 (closure report).
 - Build 69 cut and uploaded to TestFlight 2026-11-16 (#593, 840c7948), not submitted; carries call scenes v2, Royal-night rooms, the avatar fade and AI cost tracking. Device check 42a applies to it.
 - AI cost tracking (was 65): merged and live 2026-11-16 (#588, ecc7e584). Migration 20261118200000_ai_cost_log applied and verified in production: `ai_cost_log` and `ai_cost_daily` exist, the `tts-cache` bucket is private, `authenticated` has no read; deploy job succeeded; types regenerated automatically (2956fe03; the types-fresh job was red on ecc7e584 only until then). Owner steps are item 1c. Item 66 stays open.
 - Call scenes v2 and Royal-night rooms (was 45 and 46): merged in #589 (71c2646c). 14 call-*.webp (12 scenarios plus study room day and evening) and 5 Royal-night screen scenes (learn, hector, listen, profile, practice) on web, iOS and Android (about 2.9 MB per platform). Lessons and story campaigns keep today's rooms (tests); Hector's calls use the new study room; Royal light and Meadow (even in device dark) keep day art; Lesson complete stays light; living clips unchanged; the web call now follows Royal night; Alphonso's call avatar has a bottom fade (solid to 80%) on all three platforms. Seen on web only; iOS and Android are device check 42a.
