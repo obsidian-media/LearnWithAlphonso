@@ -9,6 +9,16 @@
     "reviewedBy": "agent:p2-r3-b001+agent:p2-second-b001",
     "reviewedAt": "2026-10-09"
   },
+  "abrazar": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/abrazar.jpg?v=e937937f",
+    "alt": "two people hugging, faces not visible",
+    "credit": "Ketut Subiyanto",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/two-men-hugging-4669899/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49-b001+agent:review-r49-2nd-b001",
+    "reviewedAt": "2026-11-17"
+  },
   "abre la ventana": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/abre-la-ventana.jpg?v=c566935a",
     "alt": "opening a window",
@@ -2039,6 +2049,16 @@
     "reviewedBy": "agent:review-r45-b001+agent:review-r45-2nd",
     "reviewedAt": "2026-11-17"
   },
+  "cima": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/cima.jpg?v=01b0fdc3",
+    "alt": "snow-covered mountain summit",
+    "credit": "Oskar Gross",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/majestic-snow-capped-alps-in-graubunden-34125807/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49-b001",
+    "reviewedAt": "2026-11-17"
+  },
   "cinturón": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/cinturon-b7568496.jpg?v=a191d1b4",
     "alt": "Four rolled leather belts in black, green, brown and tan with metal buckles on dark fabric.",
@@ -2788,6 +2808,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r1-b004+agent:review2-r1-2nd-b002",
     "reviewedAt": "2026-10-07"
+  },
+  "cv": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/cv.jpg?v=689f4759",
+    "alt": "resume on a clipboard beside a laptop",
+    "credit": "Markus Winkler",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/a-clipboard-near-pen-and-laptop-on-a-marble-surface-4101343/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49b-b001",
+    "reviewedAt": "2026-11-17"
   },
   "cycling": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/cycling.jpg?v=f5f1048d",
@@ -5349,6 +5379,16 @@
     "reviewedBy": "agent:review-r45-b001",
     "reviewedAt": "2026-11-17"
   },
+  "l'agence immobilière": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/l-agence-immobiliere-20253cb7.jpg?v=1bbbdb06",
+    "alt": "agent handing keys to clients at a desk",
+    "credit": "Pavel Danilyuk",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/smiling-employee-holding-keys-over-table-near-sitting-clients-8112163/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49c-b001+agent:review-r49-2nd-b001",
+    "reviewedAt": "2026-11-17"
+  },
   "l'agriculteur": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/l-agriculteur-32362514.jpg?v=7b45a681",
     "alt": "A farmer in a straw hat leans on a red tractor and looks at the camera.",
@@ -5358,6 +5398,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p6-b003+agent:p6-2nd-b002",
     "reviewedAt": "2026-11-04"
+  },
+  "l'ambassade": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/l-ambassade-0c41720a.jpg?v=185cef84",
+    "alt": "stately building facade with flags",
+    "credit": "MART  PRODUCTION",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/old-building-with-flags-hanging-on-balcony-7312243/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49c-b001",
+    "reviewedAt": "2026-11-17"
   },
   "l'appareil photo": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/l-appareil-photo-8535c6f4.jpg?v=3903c733",
@@ -5888,6 +5938,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:p2-q1-b003",
     "reviewedAt": "2026-10-09"
+  },
+  "l'énergie renouvelable": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/l-energie-renouvelable-e5ba583a.jpg?v=3a943945",
+    "alt": "wind turbines and solar panels",
+    "credit": "Kindel Media",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/wind-turbines-and-solar-panels-during-daytime-9800092/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49-b001",
+    "reviewedAt": "2026-11-17"
   },
   "l'éolienne": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/l-eolienne-2ccce47a.jpg?v=72d99e29",
@@ -6517,6 +6577,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/close-up-photo-of-bare-chest-9050658/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r45-b001",
+    "reviewedAt": "2026-11-17"
+  },
+  "la police": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/la-police.jpg?v=ef6f720c",
+    "alt": "police officer in uniform with badge",
+    "credit": "Kindel Media",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/man-in-black-police-uniform-7714732/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49-b001+agent:review-r49-2nd-b001",
     "reviewedAt": "2026-11-17"
   },
   "la pollution": {
@@ -7748,6 +7818,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:p2-q1-b006",
     "reviewedAt": "2026-10-09"
+  },
+  "le lycée": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/le-lycee-79e9f5bb.jpg?v=846a903a",
+    "alt": "school building around a courtyard",
+    "credit": "Vũ  Bụi",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/university-campus-in-quy-nh-n-vietnam-30201087/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49c-b001",
+    "reviewedAt": "2026-11-17"
   },
   "le légume": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/le-legume-397e8d05.jpg?v=66111208",
@@ -11189,6 +11269,16 @@
     "reviewedBy": "agent:review-r45-b001",
     "reviewedAt": "2026-11-17"
   },
+  "pozo": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/pozo.jpg?v=11b372bc",
+    "alt": "old stone water well with a bucket",
+    "credit": "Boris Hamer",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/rustic-stone-well-with-bucket-in-garden-setting-33130942/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49b-b001",
+    "reviewedAt": "2026-11-17"
+  },
   "prado": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/prado.jpg?v=1fc4f759",
     "alt": "A wildflower meadow with blue cornflowers and a red poppy in soft sunlight.",
@@ -11497,6 +11587,16 @@
     "sourcePageUrl": "https://www.pexels.com/photo/woman-holding-a-pen-7195122/",
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:review-r45-b001+agent:review-r45-2nd",
+    "reviewedAt": "2026-11-17"
+  },
+  "receta médica": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/receta-medica-b0471140.jpg?v=5e609026",
+    "alt": "doctor writing a prescription",
+    "credit": "https://kaboompics.com/",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/woman-holding-a-pen-7195122/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49-b001+agent:review-r49-2nd-b001",
     "reviewedAt": "2026-11-17"
   },
   "recibo": {
@@ -11948,6 +12048,16 @@
     "license": "Pexels License (https://www.pexels.com/license/)",
     "reviewedBy": "agent:p7-b004",
     "reviewedAt": "2026-11-04"
+  },
+  "sala de urgencias": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/sala-de-urgencias.jpg?v=4d5ac92b",
+    "alt": "nurse wheeling a patient down a hospital emergency corridor",
+    "credit": "RDNE Stock project",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/nurse-assisting-a-patient-on-a-wheelchair-6129870/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49d-b001+agent:review-r49e-2nd-b001",
+    "reviewedAt": "2026-11-17"
   },
   "salir a comer": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/salir-a-comer.jpg?v=ddcf3de9",
@@ -13729,6 +13839,16 @@
     "reviewedBy": "agent:p6-b009",
     "reviewedAt": "2026-11-04"
   },
+  "visa": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/visa.jpg?v=68798979",
+    "alt": "passport with visa documents",
+    "credit": "DΛVΞ GΛRCIΛ",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/black-and-white-image-of-passport-and-us-visas-39356222/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49-b001+agent:review-r49-2nd-b001",
+    "reviewedAt": "2026-11-17"
+  },
   "visitar": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/visitar.jpg?v=1dc25477",
     "alt": "Three tourists stand with their backs to the camera looking at a stone cathedral across a square.",
@@ -13938,6 +14058,16 @@
     "license": "Pixabay Content License (https://pixabay.com/service/license-summary/)",
     "reviewedBy": "agent:review-r1-b012",
     "reviewedAt": "2026-10-07"
+  },
+  "warm up": {
+    "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/warm-up.jpg?v=114af66d",
+    "alt": "athlete stretching on a field",
+    "credit": "RDNE Stock project",
+    "source": "pexels",
+    "sourcePageUrl": "https://www.pexels.com/photo/an-active-man-stretching-his-body-7188053/",
+    "license": "Pexels License (https://www.pexels.com/license/)",
+    "reviewedBy": "agent:review-r49-b001+agent:review-r49-2nd-b001",
+    "reviewedAt": "2026-11-17"
   },
   "wash": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/wash.jpg?v=66936507",

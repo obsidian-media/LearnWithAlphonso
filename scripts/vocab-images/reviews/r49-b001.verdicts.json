@@ -1,0 +1,84 @@
+{
+ "batch": "r49-b001",
+ "pass": "first",
+ "reviewer": "agent:review-r49-b001",
+ "reviewedAt": "2026-11-17",
+ "verdicts": {
+  "abrazar": {
+   "verdict": "approve",
+   "alt": "two people hugging, faces not visible",
+   "peopleVisible": true
+  },
+  "cima": {
+   "verdict": "approve",
+   "alt": "snow-covered mountain summit",
+   "peopleVisible": false
+  },
+  "cv": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text",
+    "off-term"
+   ],
+   "note": "German-language document under magnifier"
+  },
+  "l'agence immobilière": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "toy houses and keys, not an agency"
+  },
+  "l'ambassade": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "generic street of buildings, embassy not identifiable"
+  },
+  "l'énergie renouvelable": {
+   "verdict": "approve",
+   "alt": "wind turbines and solar panels",
+   "peopleVisible": false
+  },
+  "la police": {
+   "verdict": "approve",
+   "alt": "police officer in uniform with badge",
+   "peopleVisible": true
+  },
+  "le lycée": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "Chinese signage on school"
+  },
+  "pozo": {
+   "verdict": "reject",
+   "reasons": [
+    "off-term"
+   ],
+   "note": "stacked stones by water, not a well"
+  },
+  "receta médica": {
+   "verdict": "approve",
+   "alt": "doctor writing a prescription",
+   "peopleVisible": true
+  },
+  "sala de urgencias": {
+   "verdict": "approve",
+   "alt": "hospital emergency room entrance",
+   "peopleVisible": false
+  },
+  "visa": {
+   "verdict": "approve",
+   "alt": "passport with visa documents",
+   "peopleVisible": true
+  },
+  "warm up": {
+   "verdict": "approve",
+   "alt": "athlete stretching on a field",
+   "peopleVisible": true
+  }
+ }
+}

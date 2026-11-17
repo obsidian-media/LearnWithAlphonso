@@ -1,0 +1,39 @@
+{
+ "batch": "r49b-b001",
+ "pass": "first",
+ "reviewer": "agent:review-r49b-b001",
+ "reviewedAt": "2026-11-17",
+ "verdicts": {
+  "cv": {
+   "verdict": "approve",
+   "alt": "resume on a clipboard beside a laptop",
+   "peopleVisible": false
+  },
+  "pozo": {
+   "verdict": "approve",
+   "alt": "old stone water well with a bucket",
+   "peopleVisible": false
+  },
+  "l'agence immobilière": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "English mortgage text on board"
+  },
+  "l'ambassade": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "named building signage"
+  },
+  "le lycée": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "school brand signage"
+  }
+ }
+}

@@ -532,6 +532,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:263402": {
+    "key": "sala de urgencias",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:264502": {
     "key": "shopping",
     "reasons": [
@@ -561,6 +567,13 @@
     "key": "shuttle",
     "reasons": [
       "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:270238": {
+    "key": "cv",
+    "reasons": [
+      "brand-logo-or-foreign-text",
+      "off-term"
     ]
   },
   "pexels:27116276": {
@@ -669,6 +682,12 @@
   },
   "pexels:30719169": {
     "key": "sucursal",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:30945258": {
+    "key": "le lycée",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -923,6 +942,12 @@
     "reasons": [
       "nudity-or-suggestive",
       "stereotype-demeaning-poverty-distress"
+    ]
+  },
+  "pexels:36159725": {
+    "key": "le lycée",
+    "reasons": [
+      "brand-logo-or-foreign-text"
     ]
   },
   "pexels:36328523": {
@@ -1613,6 +1638,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:7913030": {
+    "key": "l'ambassade",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:7927530": {
     "key": "frustré",
     "reasons": [
@@ -1645,6 +1676,12 @@
   },
   "pexels:8266773": {
     "key": "boleto",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:8293743": {
+    "key": "l'agence immobilière",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
