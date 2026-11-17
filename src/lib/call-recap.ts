@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Course } from "../data/courses";
 import { buildSavedWordCard } from "./saved-word";
+import { normalizeForScan } from "./text-normalize";
 
 /**
  * The call recap's pure rules (no I/O): the topic lists, the strict check of what the model wrote, the review items
@@ -102,18 +103,51 @@ export function appearsIn(needle: string, turns: Turn[], role: Turn["role"]): bo
   return turns.some((t) => t.role === role && fold(t.content).includes(n));
 }
 
+const TLDS =
+  "com|net|org|io|app|es|fr|co|me|ai|us|uk|de|it|ca|to|tv|cc|ly|xyz|info|biz|ru|cn|tk|top|site|online|link|dev|edu|gov";
+const DIGIT_WORDS =
+  "zero|oh|one|two|three|four|five|six|seven|eight|nine|cero|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|z[eé]ro|un|deux|trois|quatre|cinq|sept|huit|neuf";
+const NAME = "[A-ZÁÉÍÓÚÑÀÂÇÈÉÊËÎÏÔÙÛÜ][A-Za-zÁÉÍÓÚÑÀÂÇÈÉÊËÎÏÔÙÛÜáéíóúñàâçèéêëîïôùûü'-]+";
+
 /**
  * Personal details. A correction or phrase that looks like one is dropped whole, so neither the recap card nor the
- * memory ever holds it: an email, a web address, a phone number or any long run of digits (an ID, a card, an address
- * number), and the common ways of introducing a name or a home ("my name is", "me llamo", "je m'appelle", "I live in").
+ * memory ever holds it: an email (also written "name at host dot com"), a web address, a phone number or any long run
+ * of digits (also spelled out or full-width: an ID, a card, an address number), a password, a school or a home, and
+ * the common ways of introducing a name in English, French and Spanish ("my name is", "I'm Ann Lee", "soy Carlos").
+ * The text is flattened first (normalizeForScan) so odd spacing and look-alike characters change nothing. Name parts
+ * are case-sensitive on purpose: "I'm tired" and "I'm English" are fine; "I'm Ann Lee" is not.
  */
 const PERSONAL = [
   /[^\s@]+@[^\s@]+\.[^\s@]+/,
-  /\bhttps?:\/\/|\bwww\.|\b[a-z0-9-]+\.(com|net|org|io|app|es|fr|co|me)\b/i,
+  new RegExp(
+    String.raw`\b[\w.-]+\s*(?:\(at\)|\[at\]|\bat\b|\barroba\b)\s*[\w-]+\s*(?:\(dot\)|\[dot\]|\.|\bdot\b|\bpunto\b|\bpoint\b)\s*(?:${TLDS})\b`,
+    "i",
+  ),
+  /\bhttps?:\/\/|\bwww\./i,
+  new RegExp(String.raw`\b[a-z0-9-]+(?:\.|\s+(?:dot|punto|point)\s+)(?:${TLDS})\b`, "i"),
   /(?:\d[\s().-]*){6,}/,
-  /\b(my name is|my name's|i am called|i'm called|my surname|my address|i live (in|at|on)|my (phone|number|email)|me llamo|mi nombre es|mi apellido|mi direcci[oó]n|vivo en|mi (tel[eé]fono|correo)|je m['’]appelle|mon nom est|mon nom de famille|j['’]habite|mon adresse|mon (t[eé]l[eé]phone|e-?mail))\b/i,
+  new RegExp(String.raw`(?:\b(?:${DIGIT_WORDS}|\d)\b[\s,.-]*){6,}`, "i"),
+  /(?<!\p{L})(?:(my name is|my name's|i am called|i'm called|my surname|my address|i live (in|at|on)|my (phone|number|email)|me llamo|mi nombre es|mi apellido|mi direcci[oó]n|vivo en|mi (tel[eé]fono|correo)|je m['’]appelle|mon nom est|mon nom de famille|j['’]habite|mon adresse|mon (t[eé]l[eé]phone|e-?mail)))(?!\p{L})/iu,
+  new RegExp(String.raw`\b(?:[Ii]['’]m|[Ii] am|[Ii]m)\s+${NAME}\s+${NAME}`),
+  new RegExp(
+    String.raw`\b(?:[Cc]all me|[Tt]hey call me|[Tt]his is|[Nn]ame['’]s|[Ss]oy|[Mm]e dicen|[Mm]e llaman|[Jj]e suis|[Mm]oi,? c['’]est|[Oo]n m['’]appelle)\s+${NAME}`,
+  ),
+  /(?<!\p{L})(?:(password|passcode|contrase[nñ]a|mot de passe|mdp)|(my|mi|mon) (secret|pin|clave|code secret))(?!\p{L})/iu,
+  /(?<!\p{L})(?:(my|our) (school|university|college|boss|employer|workplace)|(mi|nuestra) (escuela|colegio|universidad|instituto)|(mon|notre) (école|ecole|lycée|lycee|collège|college|université|universite))(?!\p{L})/iu,
+  new RegExp(
+    String.raw`\b(?:${NAME}\s+){1,3}(?:High School|University|College|Academy|Institute|School)\b|\b(?:(?:[Ss]chool|[Uu]niversity|[Cc]ollege) of|[Uu]niversidad|[Ee]scuela|[Cc]olegio|[Ii]nstituto|[Ll]ycée|[Cc]ollège|[Éé]cole|[Uu]niversité)\s+(?:de |du |des |la |el )?${NAME}`,
+  ),
 ];
-export const looksPersonal = (text: string): boolean => PERSONAL.some((re) => re.test(text));
+export const looksPersonal = (raw: string): boolean => {
+  const text = normalizeForScan(raw);
+  return PERSONAL.some((re) => re.test(text));
+};
+
+/** Every piece of text of a correction that can reach the recap card or the memory. */
+const correctionIsPersonal = (c: Correction): boolean =>
+  [c.said, c.fixed, c.why, ...c.wrong].some(looksPersonal);
+const phraseIsPersonal = (p: NewPhrase): boolean =>
+  [p.text, p.meaning, ...p.wrong].some(looksPersonal);
 
 /**
  * The model's reply, strictly checked. Anything malformed is dropped, never repaired: a correction whose "said" is not
@@ -142,7 +176,7 @@ export function parseRecap(content: string, turns: Turn[], course: Course): Reca
     if (fold(v.said) === fold(v.fixed)) continue;
     if (!topicLabel(course, v.topic)) continue;
     if (!appearsIn(v.said, turns, "user")) continue;
-    if (looksPersonal(v.said) || looksPersonal(v.fixed)) continue;
+    if (correctionIsPersonal(v)) continue;
     const options = [v.fixed, v.said, ...v.wrong].map(fold);
     if (new Set(options).size !== 4) continue;
     if (seenTopics.has(v.topic)) continue;
@@ -152,7 +186,7 @@ export function parseRecap(content: string, turns: Turn[], course: Course): Reca
   }
   let phrase: NewPhrase | null = null;
   const p = phraseSchema.safeParse(raw.phrase);
-  if (p.success && appearsIn(p.data.text, turns, "assistant") && !looksPersonal(p.data.text)) {
+  if (p.success && appearsIn(p.data.text, turns, "assistant") && !phraseIsPersonal(p.data)) {
     const options = [p.data.meaning, ...p.data.wrong].map(fold);
     if (new Set(options).size === 4) phrase = p.data;
   }

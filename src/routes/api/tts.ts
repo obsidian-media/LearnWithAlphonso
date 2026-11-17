@@ -2,7 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveTtsVoice } from "@/lib/voice-catalog";
 
-/** Speech for the 2,000-character cap streams in a few seconds. */
+/**
+ * The most text one request may speak. A tutor turn is a few sentences, so this is generous for real use and bounds
+ * what a single (or scripted) call can cost. Over the cap the request is refused, not shortened: a half-spoken reply
+ * would be worse than a clear error, and the client already treats a failed speech request as "no voice this turn".
+ */
+export const TTS_MAX_CHARS = 600;
+
+/** Speech for the capped text streams in a few seconds. */
 const TTS_TIMEOUT_MS = 30_000;
 
 export const Route = createFileRoute("/api/tts")({
@@ -22,6 +29,11 @@ export const Route = createFileRoute("/api/tts")({
         }
         const text = (body.text ?? "").trim();
         if (!text) return Response.json({ error: "text required" }, { status: 400 });
+        if (text.length > TTS_MAX_CHARS)
+          return Response.json(
+            { error: "text-too-long", maxChars: TTS_MAX_CHARS },
+            { status: 413 },
+          );
         // The learner's chosen voice (Settings > Voices) arrives as `voice`; it is used only when it is on the
         // allow-list for the conversation's course (src/lib/voice-catalog.ts). Anything else, including an arbitrary
         // Deepgram model id, falls back to the character's default, so a client cannot pick a pricier model.
@@ -30,7 +42,7 @@ export const Route = createFileRoute("/api/tts")({
         // our own store for every learner; anything else, above all a model reply, is never stored.
         // src/lib/tts-cache.ts says exactly which lines; a hit still spends the learner's quota unit (above), it
         // only stops the vendor being paid again.
-        const spoken = text.slice(0, 2000);
+        const spoken = text;
         const { isCacheableSpokenLine, ttsCacheKey } = await import("@/lib/tts-cache");
         const cacheKey = isCacheableSpokenLine(spoken) ? await ttsCacheKey(model, spoken) : null;
         const { recordAiCost, scheduleBackground } = await import("@/lib/ai-cost-log.server");
