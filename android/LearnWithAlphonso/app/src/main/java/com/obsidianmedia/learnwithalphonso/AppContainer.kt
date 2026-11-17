@@ -150,6 +150,8 @@ class AppContainer(context: Context) {
         onAiConsentRequired = aiConsent.consentRefusalHook(appScope),
     )
     val accountClient = AccountClient(apiHttp)
+    /** Where the learner stands against this month's AI limit (/api/ai-usage): a percent and a state, never a price. */
+    val aiUsageClient = com.obsidianmedia.learnwithalphonso.core.net.AiUsageClient(apiHttp)
     val translationGrading = TranslationGradingClient(apiHttp)
     val aiClient = AiConversationClient(apiHttp)
     val goalClient = LearningGoalClient(apiHttp)
