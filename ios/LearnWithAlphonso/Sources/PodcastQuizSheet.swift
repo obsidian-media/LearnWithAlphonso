@@ -16,19 +16,28 @@ struct PodcastQuizSheet: View {
     let best: PodcastQuizBest?
     /// Called with the server's result once saved, so the caller can refresh its "best" label.
     let onSaved: ((PodcastQuizResult) -> Void)?
+    /// Sends the answers somewhere other than a podcast quiz's Edge Function. The story check passes its own (graded on
+    /// the server too); nil keeps the podcast quiz's.
+    let send: ((PodcastClient, [PodcastQuizAnswer], Date) async throws -> PodcastQuizResult)?
+    /// The line under the result; nil keeps the podcast quiz's XP line.
+    let resultNote: ((PodcastQuizResult) -> String)?
 
     init(
         title: String,
         episodeID: String,
         offer: PodcastQuizOffer,
         session: Session,
-        onSaved: ((PodcastQuizResult) -> Void)? = nil
+        onSaved: ((PodcastQuizResult) -> Void)? = nil,
+        send: ((PodcastClient, [PodcastQuizAnswer], Date) async throws -> PodcastQuizResult)? = nil,
+        resultNote: ((PodcastQuizResult) -> String)? = nil
     ) {
         self.title = title
         self.episodeID = episodeID
         self.session = session
         self.best = offer.best
         self.onSaved = onSaved
+        self.send = send
+        self.resultNote = resultNote
         _run = State(initialValue: PodcastQuizRun(questions: offer.questions))
     }
 
@@ -204,7 +213,7 @@ struct PodcastQuizSheet: View {
             continueTitle: "Done",
             onContinue: { dismiss() }
         ) {
-            Text(PodcastQuizCopy.xpLine(for: result)).dsText(.body).foregroundStyle(ds.inkSoft)
+            Text(resultNote?(result) ?? PodcastQuizCopy.xpLine(for: result)).dsText(.body).foregroundStyle(ds.inkSoft)
                 .multilineTextAlignment(.center)
             if !missed.isEmpty {
                 DSOverline("To review")
@@ -233,9 +242,15 @@ struct PodcastQuizSheet: View {
         let answers = run.answers
         let finished = finishedAt
         let episodeID = episodeID
+        let send = send
         Task { @MainActor in
             do {
-                let result = try await client.submitQuiz(episodeID: episodeID, answers: answers, completedAt: finished)
+                let result: PodcastQuizResult
+                if let send {
+                    result = try await send(client, answers, finished)
+                } else {
+                    result = try await client.submitQuiz(episodeID: episodeID, answers: answers, completedAt: finished)
+                }
                 run.saved(result)
                 onSaved?(result)
             } catch let error as PodcastQuizError {

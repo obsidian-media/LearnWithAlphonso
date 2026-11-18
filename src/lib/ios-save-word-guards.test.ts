@@ -76,6 +76,7 @@ describe("tap-to-save never offers English words under French or Spanish", () =>
       ],
       "LessonPlayerView.swift": [".allWords"],
       "PodcastMiniBar.swift": [".allWords"],
+      "StoriesViews.swift": [".allWords"],
     });
   });
 
