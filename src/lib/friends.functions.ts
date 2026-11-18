@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { FriendActivityEvent } from "./friend-activity";
 import { giftFreezeReason, type GiftFreezeResult } from "./freeze-gift";
+import { publicError } from "./public-error";
 
 export type FriendEntry = {
   userId: string;
@@ -16,7 +17,9 @@ export type FriendEntry = {
 export const getFriends = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<FriendEntry[]> => {
-    const { data } = await context.supabase.rpc("get_friends_progress");
+    const { data, error } = await context.supabase.rpc("get_friends_progress");
+    // A failed read must not look like "no friends yet": the page shows an error with a retry instead.
+    if (error) throw publicError("getFriends", error);
     return (data ?? []).map((r) => ({
       userId: r.user_id,
       displayName: r.display_name ?? "Learner",
@@ -40,9 +43,11 @@ export const acceptFriendInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ code: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: boolean; message: string }> => {
-    const { data: rows } = await context.supabase.rpc("accept_friend_invite", {
+    const { data: rows, error } = await context.supabase.rpc("accept_friend_invite", {
       _code: data.code,
     });
+    // A failed call is not a refusal: throw so the page offers a retry instead of a dead end.
+    if (error) throw publicError("acceptFriendInvite", error);
     const row = rows?.[0];
     return row ?? { ok: false, message: "unknown error" };
   });
@@ -55,7 +60,8 @@ export const acceptFriendInvite = createServerFn({ method: "POST" })
 export const getMyFriendCode = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<string | null> => {
-    const { data: rows } = await context.supabase.rpc("get_or_create_my_friend_code");
+    const { data: rows, error } = await context.supabase.rpc("get_or_create_my_friend_code");
+    if (error) throw publicError("getMyFriendCode", error);
     return rows?.[0]?.code ?? null;
   });
 
@@ -70,9 +76,11 @@ export const removeFriend = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ friendId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: boolean; message: string }> => {
-    const { data: rows } = await context.supabase.rpc("remove_friend", {
+    const { data: rows, error } = await context.supabase.rpc("remove_friend", {
       _friend_id: data.friendId,
     });
+    // The page drops the friend from its list only on success; a failed call must say so, not pass silently.
+    if (error) throw publicError("removeFriend", error);
     const row = rows?.[0];
     return row ?? { ok: false, message: "unknown error" };
   });
@@ -87,9 +95,11 @@ export const getFriendInvitePreview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ code: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: rows } = await context.supabase.rpc("get_friend_invite_preview", {
+    const { data: rows, error } = await context.supabase.rpc("get_friend_invite_preview", {
       _code: data.code,
     });
+    // null means "no such invite"; a failed lookup throws, so the page can say it could not load and offer a retry.
+    if (error) throw publicError("getFriendInvitePreview", error);
     const row = rows?.[0];
     if (!row?.ok) return null;
     return {
@@ -172,7 +182,8 @@ export const respondToDuel = createServerFn({ method: "POST" })
 export const getMyDuels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<Duel[]> => {
-    const { data } = await context.supabase.rpc("get_my_duels");
+    const { data, error } = await context.supabase.rpc("get_my_duels");
+    if (error) throw publicError("getMyDuels", error);
     return (data ?? []).map((r) => ({
       duelId: r.duel_id,
       challengerId: r.challenger_id,

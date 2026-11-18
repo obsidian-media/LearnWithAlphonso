@@ -255,7 +255,7 @@ struct PaywallFacts: View {
     }
 }
 
-/// "Everything else stays free": lessons, Alphonso calls, audio, review.
+/// What stays free (lessons, Alphonso calls, audio, review) and what Pro adds (freeNote).
 struct PaywallFreeRow: View {
     @Environment(\.alphonsoDS) private var ds
 

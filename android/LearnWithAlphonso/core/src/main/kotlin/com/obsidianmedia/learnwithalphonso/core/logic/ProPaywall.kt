@@ -193,7 +193,7 @@ object ProPaywallCopy {
     const val FACTS_SPOKEN = "Any topic, no script. Remembers your weak spots. A long conversation every day."
     const val FREE_LABEL = "Free for everyone"
     val freeItems = listOf("Lessons", "Alphonso calls", "Audio", "Review")
-    const val FREE_NOTE = "Everything else stays free, always."
+    const val FREE_NOTE = "These stay free, always. Pro adds Hector, unlimited hearts and more AI practice each month."
     const val ROOM_LABEL = "Hector in his library"
     const val WELCOME_EYEBROW = "Welcome to Pro"
     const val WELCOME_READY = "Hector's ready."

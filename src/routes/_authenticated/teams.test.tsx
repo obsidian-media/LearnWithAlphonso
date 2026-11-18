@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { doubleClick } from "../../lib/double-click.testutil";
 
 const navigateMock = vi.fn();
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -206,5 +207,58 @@ describe("Teams page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create team" }));
 
     expect(await screen.findByText("That name is too short or too long.")).toBeInTheDocument();
+  });
+
+  it("after joining, refreshes every team read, not only the team lookup", async () => {
+    getMyTeam.mockResolvedValue(null);
+    getTeamLeaderboard.mockResolvedValue([]);
+    autoJoinTeam.mockResolvedValue({ ok: true, reason: null, teamId: "t2" });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    // A previous team's members and mission, still cached from its page.
+    client.setQueryData(["teamMembers"], [{ userId: "old", displayName: "Old mate" }]);
+    client.setQueryData(["teamMission"], { headline: "Old mission" });
+    const TeamsPage = Route.options.component!;
+    render(
+      <QueryClientProvider client={client}>
+        <TeamsPage />
+      </QueryClientProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Put me on a team" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith({ to: "/teams/$teamId", params: { teamId: "t2" } }),
+    );
+    expect(client.getQueryData(["teamMembers"])).toBeUndefined();
+    expect(client.getQueryData(["teamMission"])).toBeUndefined();
+  });
+
+  it("sends one join for a double click", async () => {
+    getMyTeam.mockResolvedValue(null);
+    getTeamLeaderboard.mockResolvedValue([]);
+    let resolve: (v: {
+      ok: boolean;
+      reason: string | null;
+      teamId: string | null;
+    }) => void = () => {};
+    autoJoinTeam.mockReturnValue(new Promise((r) => (resolve = r)));
+    renderPage();
+
+    const join = await screen.findByRole("button", { name: "Put me on a team" });
+    doubleClick(join);
+    resolve({ ok: true, reason: null, teamId: "t2" });
+    await waitFor(() => expect(navigateMock).toHaveBeenCalled());
+    expect(autoJoinTeam).toHaveBeenCalledTimes(1);
+  });
+
+  it("says the top teams could not load, with Try again, instead of dropping the section", async () => {
+    getMyTeam.mockResolvedValue(null);
+    getTeamLeaderboard
+      .mockRejectedValueOnce(new Error("getTeamLeaderboard: request-failed"))
+      .mockResolvedValue([{ teamId: "t9", name: "Coffee Club", weeklyXp: 10 }]);
+    renderPage();
+
+    expect(await screen.findByText("Couldn't load the top teams.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Coffee Club")).toBeInTheDocument();
   });
 });
