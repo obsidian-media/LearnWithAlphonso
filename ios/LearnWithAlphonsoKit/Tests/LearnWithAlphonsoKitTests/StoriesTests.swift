@@ -47,11 +47,15 @@ final class StoriesTests: XCTestCase {
         XCTAssertEqual(Stories.visible(list, course: "en").map(\.title), ["ok"])
     }
 
-    func testABranchingStoryWithNoSentencesIsNotListedInThisReader() {
+    func testALinearStoryWithNoSentencesIsNotListedButABranchingOneIs() {
+        let empty = StorySummary(
+            id: "e", course: "en", level: "A1", slug: "e", title: "Empty", sortOrder: 0, published: true,
+            segmentIndex: 0, segmentCount: 0, bestCorrect: nil, checkTotal: nil, completed: false)
         let branching = StorySummary(
             id: "b", course: "en", level: "A1", slug: "b", title: "Branching", sortOrder: 0, published: true,
-            segmentIndex: 0, segmentCount: 0, bestCorrect: nil, checkTotal: nil, completed: false)
-        XCTAssertEqual(Stories.visible([branching, summary("plain")], course: "en").map(\.title), ["plain"])
+            segmentIndex: 0, segmentCount: 0, bestCorrect: nil, checkTotal: nil, completed: false, branching: true)
+        XCTAssertEqual(
+            Stories.visible([empty, branching, summary("plain")], course: "en").map(\.title), ["Branching", "plain"])
     }
 
     func testStoriesAreGroupedByLevelInOrder() {

@@ -79,7 +79,7 @@ Numbers-dashboard tiles (`numbers-sources.server.ts`) — each tile shows "Not c
 ## Supabase — Edge Function secrets
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` are injected by Supabase. Functions:
-`complete-lesson`, `start-lesson-session`, `grade-review`, `send-push`, `get-season-status`, `complete-podcast-quiz`, `complete-story-check`.
+`complete-lesson`, `start-lesson-session`, `grade-review`, `send-push`, `get-season-status`, `complete-podcast-quiz`, `complete-story-check`, `finish-branching-story`.
 
 | Var | R/O | Notes |
 |---|---|---|
