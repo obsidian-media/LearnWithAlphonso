@@ -7725,14 +7725,14 @@ export const VOCAB_IMAGES: Record<string, VocabImage> = {
     reviewedAt: "2026-10-09",
   },
   "le cv": {
-    url: "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/le-cv.jpg?v=16ee55b1",
-    alt: "resume document",
-    credit: "Pixabay",
+    url: "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/fr/le-cv.jpg?v=689f4759",
+    alt: "resume on a clipboard beside a laptop",
+    credit: "Markus Winkler",
     source: "pexels",
     sourcePageUrl:
-      "https://www.pexels.com/photo/magnifying-glass-beside-white-printer-paper-270238/",
+      "https://www.pexels.com/photo/a-clipboard-near-pen-and-laptop-on-a-marble-surface-4101343/",
     license: "Pexels License (https://www.pexels.com/license/)",
-    reviewedBy: "agent:review-r45-b001",
+    reviewedBy: "agent:review-r49b-b001",
     reviewedAt: "2026-11-17",
   },
   "le cyclisme": {
