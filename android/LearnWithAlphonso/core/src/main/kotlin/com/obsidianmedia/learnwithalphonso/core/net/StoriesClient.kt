@@ -1,6 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
+import com.obsidianmedia.learnwithalphonso.core.podcast.Branching
+import com.obsidianmedia.learnwithalphonso.core.podcast.BranchingFinish
+import com.obsidianmedia.learnwithalphonso.core.podcast.BranchingStory
+import com.obsidianmedia.learnwithalphonso.core.podcast.EndingQuality
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizAnswer
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizError
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizException
@@ -39,9 +43,11 @@ import java.io.IOException
  */
 class StoriesClient(private val http: SupabaseHttp) {
     internal companion object {
-        const val STORY_COLUMNS = "id,course,level_id,slug,title,segments,sort_order,published"
+        const val STORY_COLUMNS = "id,course,level_id,slug,title,segments,sort_order,published,branching"
         const val PROGRESS_COLUMNS = "story_id,segment_index,best_correct,check_total,completed_at"
         const val CHECK_FUNCTION = "complete-story-check"
+        const val BRANCHING_FUNCTION = "finish-branching-story"
+        const val BRANCHING_COLUMNS = "id,course,level_id,title,nodes,branching,published"
     }
 
     /**
@@ -83,6 +89,7 @@ class StoriesClient(private val http: SupabaseHttp) {
                 bestCorrect = saved?.int("best_correct"),
                 checkTotal = saved?.int("check_total"),
                 completed = saved?.str("completed_at") != null,
+                branching = row.bool("branching") ?: false,
             )
         }
     }
@@ -167,6 +174,63 @@ class StoriesClient(private val http: SupabaseHttp) {
             bestCorrect = obj.int("bestCorrect") ?: throw PodcastQuizException(PodcastQuizError.SERVER),
             bestXp = 0,
             missedQuestionIds = (obj["missedQuestionIds"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content } ?: emptyList(),
+        )
+    }
+
+    /**
+     * One published branching story with its node graph; null when it does not exist, is not published, is not a branching
+     * story or has no usable graph. RLS limits the read to published stories.
+     */
+    suspend fun fetchBranchingStory(id: String): BranchingStory? {
+        val row = rows(
+            http.rest(
+                HttpMethod.Get, "stories",
+                mapOf("select" to BRANCHING_COLUMNS, "id" to "eq.$id", "published" to "eq.true", "branching" to "eq.true"),
+            ),
+        ).firstOrNull() ?: return null
+        val course = row.str("course")?.takeIf { it in Stories.COURSES } ?: return null
+        val level = row.str("level_id") ?: return null
+        val title = row.str("title") ?: return null
+        val graph = Branching.parseGraph(row["nodes"], http.baseUrl) ?: return null
+        return BranchingStory(id, course, level, title, graph)
+    }
+
+    /**
+     * Sends the option index chosen at each choice point (never an ending, a score or a user id) to the
+     * finish-branching-story Edge Function, which re-walks the stored graph through the service-role-only
+     * finish_branching_story. Throws [PodcastQuizException]; a 2xx that cannot be read is an error, never a result (a resend
+     * is harmless: endings found are a set and the reading credit is given once).
+     */
+    suspend fun finishBranching(storyId: String, path: List<Int>): BranchingFinish {
+        val body = buildJsonObject {
+            put("storyId", storyId)
+            put("path", buildJsonArray { path.forEach { add(JsonPrimitive(it)) } })
+        }
+        val response = try {
+            http.function(BRANCHING_FUNCTION, body)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: IOException) {
+            throw PodcastQuizException(PodcastQuizError.OFFLINE)
+        } catch (e: Exception) {
+            throw PodcastQuizException(PodcastQuizError.SERVER)
+        }
+        when (response.status.value) {
+            in 200..299 -> Unit
+            404 -> throw PodcastQuizException(PodcastQuizError.NOT_FOUND)
+            400 -> throw PodcastQuizException(PodcastQuizError.INVALID_ANSWERS)
+            401, 403 -> throw PodcastQuizException(PodcastQuizError.UNAUTHORIZED)
+            else -> throw PodcastQuizException(PodcastQuizError.SERVER)
+        }
+        val text = try { response.bodyAsText() } catch (e: CancellationException) { throw e } catch (e: Exception) { throw PodcastQuizException(PodcastQuizError.SERVER) }
+        val obj = runCatching { ContentJson.json.parseToJsonElement(text).jsonObject }.getOrNull() ?: throw PodcastQuizException(PodcastQuizError.SERVER)
+        if (obj.str("status") != "applied") throw PodcastQuizException(PodcastQuizError.SERVER)
+        return BranchingFinish(
+            endingId = obj.str("endingId") ?: throw PodcastQuizException(PodcastQuizError.SERVER),
+            quality = EndingQuality.fromWire(obj.str("quality")) ?: throw PodcastQuizException(PodcastQuizError.SERVER),
+            endingsFound = (obj["endingsFound"] as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content } ?: throw PodcastQuizException(PodcastQuizError.SERVER),
+            endingsTotal = obj.int("endingsTotal") ?: throw PodcastQuizException(PodcastQuizError.SERVER),
+            credited = obj.bool("credited") ?: false,
         )
     }
 

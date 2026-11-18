@@ -19,9 +19,10 @@ class StoriesTest {
     }
 
     @Test
-    fun `a branching story with no sentences is not listed in this reader`() {
-        val branching = summary("branching").copy(segmentCount = 0)
-        assertEquals(listOf("plain"), Stories.visible(listOf(branching, summary("plain")), "en").map { it.title })
+    fun `a linear story with no sentences is not listed but a branching one is`() {
+        val branching = summary("branching").copy(segmentCount = 0, branching = true)
+        val empty = summary("empty").copy(segmentCount = 0)
+        assertEquals(listOf("branching", "plain"), Stories.visible(listOf(empty, branching, summary("plain")), "en").map { it.title })
     }
 
     @Test
