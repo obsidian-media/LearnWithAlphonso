@@ -19,6 +19,12 @@ class StoriesTest {
     }
 
     @Test
+    fun `a branching story with no sentences is not listed in this reader`() {
+        val branching = summary("branching").copy(segmentCount = 0)
+        assertEquals(listOf("plain"), Stories.visible(listOf(branching, summary("plain")), "en").map { it.title })
+    }
+
+    @Test
     fun `stories are grouped by level in reading order`() {
         val groups = Stories.groupByLevel(
             Stories.visible(listOf(summary("b", "A2", 1), summary("c", "A1", 2), summary("a", "A1", 1)), "en"),

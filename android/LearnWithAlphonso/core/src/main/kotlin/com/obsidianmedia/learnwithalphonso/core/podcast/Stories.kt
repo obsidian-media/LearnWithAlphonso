@@ -43,9 +43,12 @@ data class StoryLevelGroup(val level: String, val stories: List<StorySummary>)
 object Stories {
     val COURSES = setOf("en", "fr", "es")
 
-    /** Only published stories in the learner's course, in a stable order. */
+    /**
+     * Only published stories in the learner's course, in a stable order. A story with no sentences is a branching story (its
+     * text lives in `nodes`, which this reader does not draw yet), so it is left out rather than opened empty.
+     */
     fun visible(stories: List<StorySummary>, course: String): List<StorySummary> =
-        stories.filter { it.published && it.course == course }
+        stories.filter { it.published && it.course == course && it.segmentCount > 0 }
             .sortedWith(compareBy<StorySummary> { it.level }.thenBy { it.sortOrder }.thenBy { it.title })
 
     /** Stories grouped by level (A1 before A2), each group in reading order. */

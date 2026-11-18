@@ -116,6 +116,8 @@ class StoriesClient(private val http: SupabaseHttp) {
             0
         }
         val segments = segmentList(row["segments"])
+        // A branching story has no sentences (see Stories.visible): not a story this reader can show.
+        if (segments.isEmpty()) return null
         return Story(id, course, level, title, segments, questions, Stories.clampSegment(resume, segments.size))
     }
 

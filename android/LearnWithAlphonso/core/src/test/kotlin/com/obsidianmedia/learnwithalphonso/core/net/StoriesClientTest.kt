@@ -79,6 +79,12 @@ class StoriesClientTest {
     }
 
     @Test
+    fun `a story with no sentences is null, not an empty reader`() = runTest {
+        val fake = FakeSupabase { req -> if (req.path.endsWith("/stories")) json("[${storyRow("[]")}]") else json("[]") }
+        assertNull(client(fake).fetchStory(storyId))
+    }
+
+    @Test
     fun `a missing or unpublished story is null`() = runTest {
         assertNull(client(FakeSupabase { json("[]") }).fetchStory(storyId))
     }
