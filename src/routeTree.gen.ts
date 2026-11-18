@@ -75,6 +75,8 @@ import { Route as AuthenticatedPathWhyRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProfileFriendsRouteImport } from './routes/_authenticated/profile_.friends'
 import { Route as AuthenticatedProfileInviteRouteImport } from './routes/_authenticated/profile_.invite'
 import { Route as AuthenticatedProfileMemoryRouteImport } from './routes/_authenticated/profile_.memory'
+import { Route as AuthenticatedStoriesIndexRouteImport } from './routes/_authenticated/stories.index'
+import { Route as AuthenticatedStoriesStoryIdRouteImport } from './routes/_authenticated/stories.$storyId'
 import { Route as AuthenticatedTeamsTeamIdRouteImport } from './routes/_authenticated/teams_.$teamId'
 import { Route as ApiInternalMaintenanceRouteImport } from './routes/api/internal/maintenance'
 import { Route as ApiInternalReportNotifyRouteImport } from './routes/api/internal/report-notify'
@@ -420,6 +422,18 @@ const AuthenticatedProfileMemoryRoute =
     path: '/profile/memory',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStoriesIndexRoute =
+  AuthenticatedStoriesIndexRouteImport.update({
+    id: '/stories/',
+    path: '/stories/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStoriesStoryIdRoute =
+  AuthenticatedStoriesStoryIdRouteImport.update({
+    id: '/stories/$storyId',
+    path: '/stories/$storyId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTeamsTeamIdRoute =
   AuthenticatedTeamsTeamIdRouteImport.update({
     id: '/teams_/$teamId',
@@ -524,6 +538,7 @@ export interface FileRoutesByFullPath {
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
   '/profile/invite': typeof AuthenticatedProfileInviteRoute
   '/profile/memory': typeof AuthenticatedProfileMemoryRoute
+  '/stories/$storyId': typeof AuthenticatedStoriesStoryIdRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
@@ -531,6 +546,7 @@ export interface FileRoutesByFullPath {
   '/api/support/conversation': typeof ApiSupportConversationRoute
   '/api/support/handoff': typeof ApiSupportHandoffRoute
   '/api/support/message': typeof ApiSupportMessageRoute
+  '/stories/': typeof AuthenticatedStoriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -598,6 +614,7 @@ export interface FileRoutesByTo {
   '/profile/friends': typeof AuthenticatedProfileFriendsRoute
   '/profile/invite': typeof AuthenticatedProfileInviteRoute
   '/profile/memory': typeof AuthenticatedProfileMemoryRoute
+  '/stories/$storyId': typeof AuthenticatedStoriesStoryIdRoute
   '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
@@ -605,6 +622,7 @@ export interface FileRoutesByTo {
   '/api/support/conversation': typeof ApiSupportConversationRoute
   '/api/support/handoff': typeof ApiSupportHandoffRoute
   '/api/support/message': typeof ApiSupportMessageRoute
+  '/stories': typeof AuthenticatedStoriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -674,6 +692,7 @@ export interface FileRoutesById {
   '/_authenticated/profile_/friends': typeof AuthenticatedProfileFriendsRoute
   '/_authenticated/profile_/invite': typeof AuthenticatedProfileInviteRoute
   '/_authenticated/profile_/memory': typeof AuthenticatedProfileMemoryRoute
+  '/_authenticated/stories/$storyId': typeof AuthenticatedStoriesStoryIdRoute
   '/_authenticated/teams_/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/api/internal/maintenance': typeof ApiInternalMaintenanceRoute
   '/api/internal/report-notify': typeof ApiInternalReportNotifyRoute
@@ -681,6 +700,7 @@ export interface FileRoutesById {
   '/api/support/conversation': typeof ApiSupportConversationRoute
   '/api/support/handoff': typeof ApiSupportHandoffRoute
   '/api/support/message': typeof ApiSupportMessageRoute
+  '/_authenticated/stories/': typeof AuthenticatedStoriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -750,6 +770,7 @@ export interface FileRouteTypes {
     | '/profile/friends'
     | '/profile/invite'
     | '/profile/memory'
+    | '/stories/$storyId'
     | '/teams/$teamId'
     | '/api/internal/maintenance'
     | '/api/internal/report-notify'
@@ -757,6 +778,7 @@ export interface FileRouteTypes {
     | '/api/support/conversation'
     | '/api/support/handoff'
     | '/api/support/message'
+    | '/stories/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -824,6 +846,7 @@ export interface FileRouteTypes {
     | '/profile/friends'
     | '/profile/invite'
     | '/profile/memory'
+    | '/stories/$storyId'
     | '/teams/$teamId'
     | '/api/internal/maintenance'
     | '/api/internal/report-notify'
@@ -831,6 +854,7 @@ export interface FileRouteTypes {
     | '/api/support/conversation'
     | '/api/support/handoff'
     | '/api/support/message'
+    | '/stories'
   id:
     | '__root__'
     | '/'
@@ -899,6 +923,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile_/friends'
     | '/_authenticated/profile_/invite'
     | '/_authenticated/profile_/memory'
+    | '/_authenticated/stories/$storyId'
     | '/_authenticated/teams_/$teamId'
     | '/api/internal/maintenance'
     | '/api/internal/report-notify'
@@ -906,6 +931,7 @@ export interface FileRouteTypes {
     | '/api/support/conversation'
     | '/api/support/handoff'
     | '/api/support/message'
+    | '/_authenticated/stories/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1420,6 +1446,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileMemoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/stories/': {
+      id: '/_authenticated/stories/'
+      path: '/stories'
+      fullPath: '/stories/'
+      preLoaderRoute: typeof AuthenticatedStoriesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/stories/$storyId': {
+      id: '/_authenticated/stories/$storyId'
+      path: '/stories/$storyId'
+      fullPath: '/stories/$storyId'
+      preLoaderRoute: typeof AuthenticatedStoriesStoryIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/teams_/$teamId': {
       id: '/_authenticated/teams_/$teamId'
       path: '/teams/$teamId'
@@ -1510,7 +1550,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileFriendsRoute: typeof AuthenticatedProfileFriendsRoute
   AuthenticatedProfileInviteRoute: typeof AuthenticatedProfileInviteRoute
   AuthenticatedProfileMemoryRoute: typeof AuthenticatedProfileMemoryRoute
+  AuthenticatedStoriesStoryIdRoute: typeof AuthenticatedStoriesStoryIdRoute
   AuthenticatedTeamsTeamIdRoute: typeof AuthenticatedTeamsTeamIdRoute
+  AuthenticatedStoriesIndexRoute: typeof AuthenticatedStoriesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1540,7 +1582,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileFriendsRoute: AuthenticatedProfileFriendsRoute,
   AuthenticatedProfileInviteRoute: AuthenticatedProfileInviteRoute,
   AuthenticatedProfileMemoryRoute: AuthenticatedProfileMemoryRoute,
+  AuthenticatedStoriesStoryIdRoute: AuthenticatedStoriesStoryIdRoute,
   AuthenticatedTeamsTeamIdRoute: AuthenticatedTeamsTeamIdRoute,
+  AuthenticatedStoriesIndexRoute: AuthenticatedStoriesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
