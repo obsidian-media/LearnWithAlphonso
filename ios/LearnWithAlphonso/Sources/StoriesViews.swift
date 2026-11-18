@@ -178,7 +178,11 @@ struct StoriesLibraryView: View {
                             DSOverline(Stories.levelLabel(group.level))
                             ForEach(group.stories) { story in
                                 NavigationLink {
-                                    StoryReaderScreen(story: story, session: session, player: player)
+                                    if story.branching {
+                                        BranchingStoryReaderScreen(story: story, session: session, player: player)
+                                    } else {
+                                        StoryReaderScreen(story: story, session: session, player: player)
+                                    }
                                 } label: {
                                     row(story)
                                 }
