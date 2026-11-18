@@ -60,7 +60,7 @@ import { ACHIEVEMENTS_BY_ID, type LeagueTier } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
-import { lessonSessionNeedsRenewal } from "../../lib/lesson-session-age";
+import { isInvalidLessonSession, lessonSessionNeedsRenewal } from "../../lib/lesson-session-age";
 import { RouteError } from "../../components/RouteError";
 
 export const Route = createFileRoute("/_authenticated/lesson/$id")({
@@ -221,6 +221,8 @@ function LessonPage() {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   // When this device received the token, to renew it before the server's three-hour limit (lesson-session-age.ts).
   const sessionReceivedAt = useRef(0);
+  // The token the first completion attempt went out with; retries reuse it (see complete()).
+  const completionToken = useRef<string | null>(null);
   // The session could not be started (offline, a server error). Without a token no completion can ever save, so the
   // lesson start says so and offers a retry instead of letting the learner do a lesson that is lost at the end.
   const [sessionFailed, setSessionFailed] = useState(false);
@@ -478,7 +480,12 @@ function LessonPage() {
     // transaction as the completion. A separate fire-and-forget write here
     // could leave review items behind when completion failed.
     try {
-      const token = await freshSessionToken();
+      // Once a completion has gone out with a token, every retry reuses that exact token: the reply may have been
+      // lost after the server saved, and the same token gets the stored result back (single-use tokens), where a
+      // new one would be a second completion and a second heart charge. Only before the first send, or after the
+      // server refused the session itself, is a token minted.
+      const token = completionToken.current ?? (await freshSessionToken());
+      completionToken.current = token;
       const res = await completeLessonRemote({
         data: {
           lessonId: lesson.id,
@@ -535,6 +542,11 @@ function LessonPage() {
     } catch (err) {
       // Free for Try again.
       finishing.current = false;
+      if (isInvalidLessonSession(err)) {
+        // The server refused the session itself: the next Try again asks for a new one (an age of zero forces it).
+        completionToken.current = null;
+        sessionReceivedAt.current = 0;
+      }
       setSaveFailed({ notice: isCompletionRefusal(err) ? SLOW_DOWN_MESSAGE : undefined });
     } finally {
       setSaving(false);

@@ -15,3 +15,12 @@ export const LESSON_SESSION_RENEW_MARGIN_MS = 10 * 60 * 1000;
 export function lessonSessionNeedsRenewal(receivedAtMs: number, nowMs: number): boolean {
   return nowMs - receivedAtMs >= LESSON_SESSION_MAX_AGE_MS - LESSON_SESSION_RENEW_MARGIN_MS;
 }
+
+/**
+ * True when the server refused the lesson session itself (expired, or not this user's/lesson's), the one completion
+ * failure where a retry needs a new token. Anything else (offline, a lost reply, a 500) retries with the same one.
+ */
+export function isInvalidLessonSession(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+  return message.includes("Invalid or expired lesson session");
+}

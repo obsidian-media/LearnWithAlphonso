@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   LESSON_SESSION_MAX_AGE_MS,
   LESSON_SESSION_RENEW_MARGIN_MS,
+  isInvalidLessonSession,
   lessonSessionNeedsRenewal,
 } from "./lesson-session-age";
 
@@ -24,5 +25,14 @@ describe("lesson session age", () => {
     expect(lessonSessionNeedsRenewal(t0, edge - 1)).toBe(false);
     expect(lessonSessionNeedsRenewal(t0, edge)).toBe(true);
     expect(lessonSessionNeedsRenewal(t0, t0 + LESSON_SESSION_MAX_AGE_MS + 1)).toBe(true);
+  });
+});
+
+describe("isInvalidLessonSession", () => {
+  it("is true only for the server refusing the session itself", () => {
+    expect(isInvalidLessonSession(new Error("Invalid or expired lesson session"))).toBe(true);
+    expect(isInvalidLessonSession(new Error("network down"))).toBe(false);
+    expect(isInvalidLessonSession(new Error("request-failed"))).toBe(false);
+    expect(isInvalidLessonSession(undefined)).toBe(false);
   });
 });

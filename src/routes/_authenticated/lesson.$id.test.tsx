@@ -992,6 +992,52 @@ describe("Lesson page", () => {
     expect(useProgress.getState().completedLessons).toContain("u1l1");
   });
 
+  it("a retry after a lost reply reuses the token it was sent with, even once that token is old", async () => {
+    // The first send may have saved on the server; a new token would complete (and charge) a second time.
+    const realNow = Date.now();
+    const clock = vi.spyOn(Date, "now").mockReturnValue(realNow);
+    try {
+      startLessonSession.mockResolvedValue({ token: "first-tok" });
+      completeLessonRemote.mockRejectedValueOnce(new Error("network down")).mockResolvedValue(SAVED);
+      const user = userEvent.setup();
+      renderPage();
+      await skipToQuiz(user);
+      await answerAll(user);
+      await screen.findByRole("button", { name: "Try again" });
+      // The learner comes back to the Not saved yet screen hours later.
+      clock.mockReturnValue(realNow + 3 * 60 * 60 * 1000);
+      await user.click(screen.getByRole("button", { name: "Try again" }));
+      expect(await screen.findByLabelText("XP: +100")).toBeInTheDocument();
+      expect(startLessonSession).toHaveBeenCalledTimes(1);
+      expect(completeLessonRemote.mock.calls.map((c) => c[0].data.sessionToken)).toEqual([
+        "first-tok",
+        "first-tok",
+      ]);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it("only a session the server refused is swapped for a new one on Try again", async () => {
+    startLessonSession
+      .mockResolvedValueOnce({ token: "first-tok" })
+      .mockResolvedValueOnce({ token: "second-tok" });
+    completeLessonRemote
+      .mockRejectedValueOnce(new Error("Invalid or expired lesson session"))
+      .mockResolvedValue(SAVED);
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await answerAll(user);
+    await user.click(await screen.findByRole("button", { name: "Try again" }));
+    expect(await screen.findByLabelText("XP: +100")).toBeInTheDocument();
+    expect(startLessonSession).toHaveBeenCalledTimes(2);
+    expect(completeLessonRemote.mock.calls.map((c) => c[0].data.sessionToken)).toEqual([
+      "first-tok",
+      "second-tok",
+    ]);
+  });
+
   it("asks for a new session before completing when the first one is near its three-hour limit", async () => {
     const realNow = Date.now();
     const clock = vi.spyOn(Date, "now").mockReturnValue(realNow);
