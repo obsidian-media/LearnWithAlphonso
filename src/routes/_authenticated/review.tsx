@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { REVIEW_BATCH_SIZE } from "../../lib/review-batch";
 import { AnswerExplanation } from "../../components/AnswerFeedback";
 import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
 import { DsEmptyState, DsPill, Icon, dsButtonClass } from "../../components/ds/Blocks";
@@ -115,6 +116,7 @@ function ReviewPage() {
     "idle",
   );
   const gradeInFlight = useRef<Promise<GradeOutcome> | null>(null);
+  const continuing = useRef(false);
 
   useEffect(() => {
     let alive = true;
@@ -225,6 +227,7 @@ function ReviewPage() {
     answer: string,
     localOk: boolean,
     translate: boolean,
+    retry = false,
   ): Promise<GradeOutcome> {
     setGrading("pending");
     const sent: Promise<GradeOutcome> = grade({
@@ -237,6 +240,18 @@ function ReviewPage() {
       },
     })
       .then((r) => {
+        // A retry after a lost reply: "superseded" is most likely the first attempt, which did land. That is this
+        // learner's own answer, so it counts and nothing is said about another tab.
+        if ("superseded" in r && r.superseded && retry) {
+          if (translate) setTranslationVerdict({ correct: localOk, reason: null, source: "local" });
+          setStats((s) => ({
+            ...s,
+            right: s.right + (localOk ? 1 : 0),
+            wrong: s.wrong + (localOk ? 0 : 1),
+          }));
+          setGrading("saved");
+          return "saved" as const;
+        }
         if ("superseded" in r && r.superseded) {
           // Already graded elsewhere: this answer is not counted, and the screen says so.
           if (translate) setTranslationVerdict({ correct: localOk, reason: null, source: "local" });
@@ -285,9 +300,9 @@ function ReviewPage() {
     });
   }
 
-  function retryGrade() {
-    if (!card || !submittedAnswer) return;
-    void sendGrade(card, submittedAnswer, isCorrect, q?.type === "translate");
+  function retryGrade(): Promise<GradeOutcome | null> {
+    if (!card || !submittedAnswer) return Promise.resolve(null);
+    return sendGrade(card, submittedAnswer, isCorrect, q?.type === "translate", true);
   }
 
   function next() {
@@ -302,16 +317,24 @@ function ReviewPage() {
 
   /** Continue on the verdict sheet: waits for a save still in flight, and never moves on past a failed one. */
   async function continueFromVerdict() {
-    if (grading === "failed") {
-      retryGrade();
-      return;
+    // One tap at a time: a second tap while the first waits on the save (or on a Try again) would advance twice
+    // and skip a card. The sheet has no disabled state, so the guard lives here.
+    if (continuing.current) return;
+    continuing.current = true;
+    try {
+      if (grading === "failed") {
+        await retryGrade();
+        return;
+      }
+      if (grading === "pending" && gradeInFlight.current) {
+        const inFlight = gradeInFlight.current;
+        // Settled as a failure: the sheet now shows Try again instead of moving on.
+        if ((await inFlight) === "failed" || gradeInFlight.current !== inFlight) return;
+      }
+      next();
+    } finally {
+      continuing.current = false;
     }
-    if (grading === "pending" && gradeInFlight.current) {
-      const inFlight = gradeInFlight.current;
-      // Settled as a failure: the sheet now shows Try again instead of moving on.
-      if ((await inFlight) === "failed" || gradeInFlight.current !== inFlight) return;
-    }
-    next();
   }
   const stage = reviewStage(cards === null ? null : cards.length, idx);
 
@@ -352,7 +375,7 @@ function ReviewPage() {
           title="That's this round done"
           body={`${doneSummary(stats)} ${moreDue} more ${moreDue === 1 ? "is" : "are"} due.`}
           action={{
-            label: `Keep going (${Math.min(moreDue, 20)} more)`,
+            label: `Keep going (${Math.min(moreDue, REVIEW_BATCH_SIZE)} more)`,
             onClick: () => setBatch((b) => b + 1),
           }}
         />

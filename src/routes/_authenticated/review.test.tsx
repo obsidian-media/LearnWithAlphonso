@@ -433,6 +433,42 @@ describe("Review page -- failures are said, never mistaken for an empty or finis
     expect(screen.queryByText("Nice to ___ you.")).not.toBeInTheDocument();
   });
 
+  it("two taps on Continue while the save is on its way move on one card, not two", async () => {
+    fetchDueReviews.mockResolvedValue({
+      due: [{ itemKey: "u1l1:q1" }, { itemKey: "u1l1:q2" }],
+      total: 2,
+    });
+    let land!: (v: unknown) => void;
+    gradeReview.mockReturnValueOnce(new Promise((resolve) => (land = resolve)));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Good morning." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    const continueButton = screen.getByRole("button", { name: "Continue" });
+    await user.click(continueButton);
+    await user.click(continueButton);
+    land({ retired: false, dueOn: "2026-09-20" });
+    // The second card, not the end of the queue that a double advance would reach.
+    expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
+    expect(screen.queryByText("Review complete")).not.toBeInTheDocument();
+  });
+
+  it("a Try again whose first attempt did land is counted as this learner's own, not another tab's", async () => {
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l1:q1" }], total: 1 });
+    gradeReview
+      .mockRejectedValueOnce(new Error("reply lost"))
+      .mockResolvedValue({ retired: false, dueOn: "2026-09-21", superseded: true });
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Good morning." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("This answer didn't save");
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    await user.click(await screen.findByRole("button", { name: "Finish" }));
+    expect(screen.queryByText(/another tab/)).not.toBeInTheDocument();
+    expect(await screen.findByText(/1 correct · 0 to revisit/)).toBeInTheDocument();
+  });
+
   it("an answer another tab already graded is said to be superseded and is not counted", async () => {
     fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l1:q1" }], total: 1 });
     gradeReview.mockResolvedValue({ retired: false, dueOn: "2026-09-21", superseded: true });

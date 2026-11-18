@@ -6,6 +6,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { computeReviewOutcome, deriveAnswerCorrectness, reviewSnapshotMatches } from "./srs";
 import { getCourse } from "../data/courses";
 import { resolveLlmApiKey } from "@/lib/llm-chat-model.server";
+import { REVIEW_BATCH_SIZE } from "./review-batch";
 
 /** Same course-awareness pattern as sync.functions.ts. */
 const courseSchema = z.enum(["en", "fr", "es"]).default("en");
@@ -124,9 +125,6 @@ export const recordMisses = createServerFn({ method: "POST" })
     if (error) throw publicError(null, error);
     return { added: rows.length };
   });
-
-/** How many due items one load of the Review screen asks; the rest come with the next batch. */
-const REVIEW_BATCH_SIZE = 20;
 
 /**
  * Items due today (plus overdue), oldest first, for the given course: at most REVIEW_BATCH_SIZE of them, with
