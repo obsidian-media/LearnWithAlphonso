@@ -113,7 +113,11 @@ function BranchingBody({ story, finish, onFinished }: Props) {
 
   const enter = reduce
     ? {}
-    : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -12 } };
+    : {
+        initial: { opacity: 0, y: 12 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -12 },
+      };
 
   return (
     <div className="grid gap-3">
@@ -137,9 +141,7 @@ function BranchingBody({ story, finish, onFinished }: Props) {
             />
           ) : null}
 
-          {kind === "link" ? (
-            <DsButton onClick={advance}>Continue</DsButton>
-          ) : null}
+          {kind === "link" ? <DsButton onClick={advance}>Continue</DsButton> : null}
 
           {kind === "choice" && node?.choice ? (
             <DsCard data-story-choice="">

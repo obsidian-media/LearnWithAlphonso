@@ -11,8 +11,8 @@ vi.mock("../lib/voice-prefs", () => ({ voiceFor: async () => "voice" }));
 vi.mock("../lib/use-model-speech", () => ({ useModelSpeech: () => vi.fn() }));
 // Render framer-motion as plain elements so the tests exercise the reader's logic, not animation timing. The
 // reduced-motion path is what these elements collapse to anyway.
-vi.mock("framer-motion", () => {
-  const React = require("react");
+vi.mock("framer-motion", async () => {
+  const React = await import("react");
   const strip = (p: Record<string, unknown>) => {
     const {
       initial: _i,
@@ -32,13 +32,13 @@ vi.mock("framer-motion", () => {
       get:
         (_t, tag: string) =>
         ({ children, ...props }: { children?: unknown } & Record<string, unknown>) =>
-          React.createElement(tag, strip(props), children),
+          React.createElement(tag, strip(props), children as import("react").ReactNode),
     },
   );
   return {
     motion,
     AnimatePresence: ({ children }: { children?: unknown }) =>
-      React.createElement(React.Fragment, null, children),
+      React.createElement(React.Fragment, null, children as import("react").ReactNode),
     useReducedMotion: () => true,
   };
 });
@@ -84,7 +84,12 @@ const story: BranchingStory = {
       good: {
         segments: ["Mrs Patel gives him a ride."],
         artUrl: null,
-        ending: { id: "kind", title: "Kind and on time", wrap: "You did the kind thing.", quality: "good" },
+        ending: {
+          id: "kind",
+          title: "Kind and on time",
+          wrap: "You did the kind thing.",
+          quality: "good",
+        },
       },
       lesser: {
         segments: ["He feels uneasy."],
@@ -110,15 +115,13 @@ afterEach(() => {
 
 describe("BranchingStoryReader", () => {
   it("walks the attentive path, submits only the choices, and shows the good ending + credit", async () => {
-    const finish = vi.fn(
-      async (): Promise<FinishBranchingResult> => ({
-        endingId: "kind",
-        quality: "good",
-        endingsFound: ["kind"],
-        endingsTotal: 3,
-        credited: true,
-      }),
-    );
+    const finish = vi.fn(async (): Promise<FinishBranchingResult> => ({
+      endingId: "kind",
+      quality: "good",
+      endingsFound: ["kind"],
+      endingsTotal: 3,
+      credited: true,
+    }));
     render(<BranchingStoryReader story={story} finish={finish} />);
 
     // The passage text is split into tappable words, so it is asserted on the segment element, like v1.
@@ -135,15 +138,13 @@ describe("BranchingStoryReader", () => {
   });
 
   it("reaches a lesser ending when a clue is skipped, with no credit (soft)", async () => {
-    const finish = vi.fn(
-      async (): Promise<FinishBranchingResult> => ({
-        endingId: "late",
-        quality: "lesser",
-        endingsFound: ["late"],
-        endingsTotal: 3,
-        credited: false,
-      }),
-    );
+    const finish = vi.fn(async (): Promise<FinishBranchingResult> => ({
+      endingId: "late",
+      quality: "lesser",
+      endingsFound: ["late"],
+      endingsTotal: 3,
+      credited: false,
+    }));
     render(<BranchingStoryReader story={story} finish={finish} />);
     await userEvent.click(screen.getByRole("button", { name: "Make breakfast" }));
     await waitFor(() => expect(finish).toHaveBeenCalledWith([1]));
@@ -157,15 +158,13 @@ describe("BranchingStoryReader", () => {
   });
 
   it("offers another path from the ending screen and returns to the start", async () => {
-    const finish = vi.fn(
-      async (): Promise<FinishBranchingResult> => ({
-        endingId: "late",
-        quality: "lesser",
-        endingsFound: ["late"],
-        endingsTotal: 3,
-        credited: false,
-      }),
-    );
+    const finish = vi.fn(async (): Promise<FinishBranchingResult> => ({
+      endingId: "late",
+      quality: "lesser",
+      endingsFound: ["late"],
+      endingsTotal: 3,
+      credited: false,
+    }));
     render(<BranchingStoryReader story={story} finish={finish} />);
     await userEvent.click(screen.getByRole("button", { name: "Make breakfast" }));
     await userEvent.click(await screen.findByRole("button", { name: "Try another path" }));

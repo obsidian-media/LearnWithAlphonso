@@ -48,9 +48,18 @@ const graph: StoryGraph = {
         ],
       },
     },
-    n4: { segments: ["On time and kind."], ending: { id: "good-end", title: "Kind", wrap: "w", quality: "good" } },
-    n5: { segments: ["Uneasy."], ending: { id: "uneasy", title: "Uneasy", wrap: "w", quality: "lesser" } },
-    n6: { segments: ["Calm."], ending: { id: "calm", title: "Calm", wrap: "w", quality: "lesser" } },
+    n4: {
+      segments: ["On time and kind."],
+      ending: { id: "good-end", title: "Kind", wrap: "w", quality: "good" },
+    },
+    n5: {
+      segments: ["Uneasy."],
+      ending: { id: "uneasy", title: "Uneasy", wrap: "w", quality: "lesser" },
+    },
+    n6: {
+      segments: ["Calm."],
+      ending: { id: "calm", title: "Calm", wrap: "w", quality: "lesser" },
+    },
     n7: { segments: ["Ready."], ending: { id: "ready", title: "Ready", wrap: "w", quality: "ok" } },
   },
 };
@@ -88,7 +97,10 @@ describe("walk", () => {
 
   it("auto-follows a linear link through to the next choice and its endings", () => {
     expect(walk(graph, [1])).toMatchObject({ status: "awaiting", nodeId: "n3" });
-    expect(walk(graph, [1, 0])).toMatchObject({ status: "ended", ending: { id: "ready", quality: "ok" } });
+    expect(walk(graph, [1, 0])).toMatchObject({
+      status: "ended",
+      ending: { id: "ready", quality: "ok" },
+    });
     expect(walk(graph, [1, 1])).toMatchObject({ status: "ended", ending: { id: "calm" } });
   });
 

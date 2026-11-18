@@ -70,7 +70,13 @@ const stringsOf = (v: unknown): string[] =>
 /** Build the public URL for a story-art object key, or null when there is no key (graceful placeholder). */
 const artUrlOf = (client: unknown, key: unknown): string | null => {
   if (typeof key !== "string" || key.length === 0) return null;
-  const storage = (client as { storage?: { from: (b: string) => { getPublicUrl: (p: string) => { data: { publicUrl: string } } } } }).storage;
+  const storage = (
+    client as {
+      storage?: {
+        from: (b: string) => { getPublicUrl: (p: string) => { data: { publicUrl: string } } };
+      };
+    }
+  ).storage;
   const url = storage?.from(STORY_ART_BUCKET).getPublicUrl(key).data.publicUrl;
   return url ?? null;
 };

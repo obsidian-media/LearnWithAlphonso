@@ -25,7 +25,9 @@ describe("branching stories migration", () => {
   });
 
   it("the grader is SECURITY DEFINER with an empty search_path, like v1", () => {
-    expect(code).toMatch(/finish_branching_story[\s\S]*?SECURITY DEFINER[\s\S]*?SET search_path = ''/);
+    expect(code).toMatch(
+      /finish_branching_story[\s\S]*?SECURITY DEFINER[\s\S]*?SET search_path = ''/,
+    );
   });
 
   it("grades only a published, branching story (the published-only gate)", () => {
