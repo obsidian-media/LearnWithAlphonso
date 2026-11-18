@@ -61,6 +61,8 @@ struct ListenShelfRoot: View {
 
                 WatchShelfHost(session: session, player: player, course: activeCourse)
 
+                StoriesEntryRow(session: session, player: player, course: activeCourse)
+
                 if !levels.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: AlphonsoDS.Space.s2) {
