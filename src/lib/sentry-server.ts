@@ -22,14 +22,28 @@ function parseFrames(stack: string | undefined): Frame[] {
   return frames.reverse();
 }
 
+/**
+ * The deployed commit, the same release name the client and the source-map upload use. Vercel sets
+ * VERCEL_GIT_COMMIT_SHA at runtime; the build-time copy covers a runtime without system env vars.
+ */
+export function serverRelease(): string | undefined {
+  return (
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    (import.meta.env.VITE_SENTRY_RELEASE as string | undefined) ||
+    undefined
+  );
+}
+
 export function buildServerEvent(error: unknown, context: Record<string, unknown> = {}) {
   const err = error instanceof Error ? error : new Error(String(error));
+  const release = serverRelease();
   const event = {
     event_id: crypto.randomUUID().replace(/-/g, ""),
     timestamp: Date.now() / 1000,
     platform: "node",
     level: "error",
     environment: "production",
+    ...(release ? { release } : {}),
     exception: {
       values: [
         {

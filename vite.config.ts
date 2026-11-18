@@ -39,15 +39,54 @@ export default defineConfig(async ({ command, mode }) => {
     viteReact(),
   ];
 
+  // Sentry release = the deployed commit. Vercel sets VERCEL_GIT_COMMIT_SHA during the build; elsewhere it is "".
+  const sentryRelease = process.env.VERCEL_GIT_COMMIT_SHA ?? "";
+  // Source maps are built (hidden: no sourceMappingURL comment) and uploaded only when all three Sentry settings
+  // are present, then deleted before the output is deployed, so no .map file is ever served. Without them (local,
+  // CI, a Vercel project without the token) the build is exactly as before: no maps, no upload, no network.
+  const sentryUpload = Boolean(
+    isBuild &&
+    process.env.SENTRY_AUTH_TOKEN &&
+    process.env.SENTRY_ORG &&
+    process.env.SENTRY_PROJECT,
+  );
+
   if (isBuild) {
     const { nitro } = await import("nitro/vite");
-    plugins.push(nitro({}));
+    const { nitroStaticRoutes, staticHeaderRecord } = await import("./src/lib/static-headers.ts");
+    // Static files skip src/server.ts, so their security headers come from here (Nitro writes them into
+    // .vercel/output/config.json) and from vercel.json; src/lib/static-headers.ts is the one list.
+    const headers = staticHeaderRecord();
+    const routeRules = Object.fromEntries(nitroStaticRoutes().map((r) => [r, { headers }]));
+    plugins.push(nitro({ routeRules }));
+  }
+
+  if (sentryUpload) {
+    const { sentryVitePlugin } = await import("@sentry/vite-plugin");
+    plugins.push(
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        release: { name: sentryRelease || undefined },
+        sourcemaps: {
+          filesToDeleteAfterUpload: [
+            "./dist/**/*.map",
+            "./.output/**/*.map",
+            "./.vercel/output/**/*.map",
+          ],
+        },
+        telemetry: false,
+      }),
+    );
   }
 
   const config: UserConfig = {
+    build: { sourcemap: sentryUpload ? "hidden" : false },
     define: {
       ...envDefine,
       "import.meta.env.VITE_VERCEL_ENV": JSON.stringify(process.env.VERCEL_ENV ?? ""),
+      "import.meta.env.VITE_SENTRY_RELEASE": JSON.stringify(sentryRelease),
     },
     css: { transformer: "lightningcss" },
     resolve: {
