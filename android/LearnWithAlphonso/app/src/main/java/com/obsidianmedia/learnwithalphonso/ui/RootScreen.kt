@@ -365,7 +365,8 @@ private fun SignedInApp(
                 )
             }
             composable(Routes.STORIES) { entry ->
-                StoriesLibraryScreen(container, entry.arguments?.getString("course") ?: container.activeCourse.course.value.code, onBack = { nav.popBackStack() }, onOpen = { nav.navigate(Routes.story(it)) })
+                val activeCourse by container.activeCourse.course.collectAsState()
+                StoriesLibraryScreen(container, entry.arguments?.getString("course") ?: activeCourse.code, onBack = { nav.popBackStack() }, onOpen = { nav.navigate(Routes.story(it)) })
             }
             composable(Routes.STORY) { entry -> StoryReaderScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }
             composable(Routes.LISTEN_FOLDER) { entry ->
