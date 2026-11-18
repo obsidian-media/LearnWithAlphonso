@@ -26,7 +26,13 @@ const next = (xp: number) => ({
   best_xp: xp,
   day_xp: xp,
 });
-const RESULT = { xpGain: 100, correct: 8, newlyUnlocked: [], heartsBonus: null, progress: { xp: 100 } };
+const RESULT = {
+  xpGain: 100,
+  correct: 8,
+  newlyUnlocked: [],
+  heartsBonus: null,
+  progress: { xp: 100 },
+};
 
 describe("single-use lesson sessions (real Postgres)", () => {
   let db: PGlite;
@@ -183,7 +189,11 @@ describe("single-use lesson sessions (real Postgres)", () => {
       token: T2,
       expected: { p_updated_at: snap.p, lp_updated_at: snap.lp, completion_xp: 100, day_xp: 100 },
     });
-    const rows = (await db.query<{ token_hash: string }>("SELECT token_hash FROM public.lesson_session_redemptions")).rows;
+    const rows = (
+      await db.query<{ token_hash: string }>(
+        "SELECT token_hash FROM public.lesson_session_redemptions",
+      )
+    ).rows;
     expect(rows.map((r) => r.token_hash)).toEqual([T2]);
   });
 
@@ -211,7 +221,9 @@ describe("redemption retention in the maintenance sweep", () => {
   it("the newest run_maintenance_sweep deletes redemptions older than 7 days and keeps the earlier pruning", () => {
     const dir = path.join(process.cwd(), "supabase/migrations");
     let latest = "";
-    for (const f of readdirSync(dir).filter((x) => x.endsWith(".sql")).sort()) {
+    for (const f of readdirSync(dir)
+      .filter((x) => x.endsWith(".sql"))
+      .sort()) {
       const sql = readFileSync(path.join(dir, f), "utf8");
       for (const m of sql.matchAll(
         /CREATE (?:OR REPLACE )?FUNCTION public\.run_maintenance_sweep\(\)[\s\S]*?\n\$\$;/g,
