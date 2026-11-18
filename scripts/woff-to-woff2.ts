@@ -6,7 +6,7 @@
  *   bun scripts/woff-to-woff2.ts public/fonts/figtree-variable.woff [more.woff ...]
  *
  * Writes <name>.woff2 next to each input. Verify in a browser (Chromium's OTS sanitiser rejects a bad file):
- * src/lib/fonts.test.ts checks the structure; the PR notes how it was checked in Chromium.
+ * src/lib/fonts-woff2.test.ts checks the structure; the PR notes how it was checked in Chromium.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { brotliCompressSync, constants, inflateSync } from "node:zlib";

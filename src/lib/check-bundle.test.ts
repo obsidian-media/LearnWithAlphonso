@@ -1,8 +1,13 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   LANDING_BUDGET_BROTLI,
   isCourseChunk,
   landingChunks,
+  newestBuild,
+  publicSourceMaps,
   staticImports,
   violations,
   type LandingReport,
@@ -55,6 +60,33 @@ describe("check:bundle guard", () => {
       "/assets/auth-c.js",
     ]);
     expect(() => landingChunks(routes, "/missing")).toThrow();
+  });
+
+  it("fails loudly when / or the root is missing, instead of measuring less", () => {
+    const noLanding = { __root__: { preloads: ["/assets/index-a.js"] } };
+    expect(() => landingChunks(noLanding, "/")).toThrow(/route \/ is not in the start manifest/);
+    expect(() => landingChunks({ "/": { preloads: [] } }, "/")).toThrow(/__root__/);
+  });
+
+  it("measures the newest build when .vercel/output and .output both exist", () => {
+    const vercel = { manifest: "v", publicDir: ".vercel/output/static", mtimeMs: 2000 };
+    const local = { manifest: "o", publicDir: ".output/public", mtimeMs: 1000 };
+    expect(newestBuild([vercel, local])).toBe(vercel);
+    expect(newestBuild([{ ...vercel, mtimeMs: 500 }, local])).toBe(local);
+    expect(() => newestBuild([])).toThrow(/no build found/);
+  });
+
+  it("lists source maps left in a public output directory", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "check-bundle-"));
+    try {
+      mkdirSync(path.join(dir, "assets"));
+      writeFileSync(path.join(dir, "assets", "index-a.js"), "");
+      expect(publicSourceMaps(dir, dir)).toEqual([]);
+      writeFileSync(path.join(dir, "assets", "index-a.js.map"), "{}");
+      expect(publicSourceMaps(dir, dir)).toEqual([path.join("assets", "index-a.js.map")]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("follows minified static imports of sibling chunks", () => {

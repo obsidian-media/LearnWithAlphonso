@@ -57,12 +57,16 @@ export type LandingReport = {
   brotli: number;
 };
 
-/** The chunk URLs a route preloads: the root's plus its own, deduplicated, in manifest order. */
+/**
+ * The chunk URLs a route preloads: the root's plus its own, deduplicated, in manifest order. A route (or the root)
+ * missing from the manifest is an error, never a smaller measurement: a renamed route must not turn the guard green.
+ */
 export function landingChunks(routes: RouteManifest, route: string): string[] {
-  const root = routes.__root__?.preloads ?? [];
-  const own = routes[route]?.preloads;
-  if (!own && route !== "/") throw new Error(`route ${route} is not in the start manifest`);
-  return [...new Set([...root, ...(own ?? [])])].filter((f) => f.endsWith(".js"));
+  if (!routes.__root__) throw new Error("the start manifest has no __root__ route");
+  const own = routes[route];
+  if (!own) throw new Error(`route ${route} is not in the start manifest`);
+  const root = routes.__root__.preloads ?? [];
+  return [...new Set([...root, ...(own.preloads ?? [])])].filter((f) => f.endsWith(".js"));
 }
 
 /** Static imports a chunk makes of sibling chunks (`from"./x.js"`, `import"./x.js"`). */
@@ -102,20 +106,38 @@ function walk(dir: string, pred: (f: string) => boolean, acc: string[] = []): st
   return acc;
 }
 
-/** Nitro writes .output locally and .vercel/output on Vercel. */
-export function findBuild(root: string): { manifest: string; publicDir: string } {
+export type BuildCandidate = { manifest: string; publicDir: string; mtimeMs: number };
+
+/** The most recently written build wins, so a stale .output never stands in for a fresh .vercel/output. */
+export function newestBuild(candidates: BuildCandidate[]): BuildCandidate {
+  if (candidates.length === 0) throw new Error("no build found: run `bunx vite build` first");
+  return [...candidates].sort((a, b) => b.mtimeMs - a.mtimeMs)[0];
+}
+
+/** Nitro writes .output locally and .vercel/output on Vercel; both can exist side by side. */
+export function findBuild(root: string): BuildCandidate {
   const layouts = [
     { server: ".vercel/output/functions", publicDir: ".vercel/output/static" },
     { server: ".output/server", publicDir: ".output/public" },
   ];
+  const candidates: BuildCandidate[] = [];
   for (const l of layouts) {
-    const manifests = walk(path.join(root, l.server), (f) =>
+    const manifest = walk(path.join(root, l.server), (f) =>
       /^_tanstack-start-manifest.*\.m?js$/.test(f),
-    );
-    if (manifests.length > 0)
-      return { manifest: manifests[0], publicDir: path.join(root, l.publicDir) };
+    )[0];
+    if (manifest)
+      candidates.push({
+        manifest,
+        publicDir: path.join(root, l.publicDir),
+        mtimeMs: statSync(manifest).mtimeMs,
+      });
   }
-  throw new Error("no build found: run `bunx vite build` first");
+  return newestBuild(candidates);
+}
+
+/** Source maps left in a public output directory (they are uploaded to Sentry and deleted, never served). */
+export function publicSourceMaps(root: string, publicDir: string): string[] {
+  return walk(publicDir, (f) => f.endsWith(".map")).map((f) => path.relative(root, f));
 }
 
 function measure(publicDir: string, url: string): { code: string; info: ChunkInfo } {
@@ -178,11 +200,25 @@ export async function run(
       brotli: chunks.reduce((s, c) => s + c.brotli, 0),
     });
   }
-  const mapFiles = walk(publicDir, (f) => f.endsWith(".map")).map((f) => path.relative(root, f));
-  return { reports, problems: violations(reports, mapFiles) };
+  return { reports, problems: violations(reports, publicSourceMaps(root, publicDir)) };
 }
 
 if (import.meta.main) {
+  // --maps-only runs after every `bun run build` (package.json): Vercel and CI both fail if a .map is left public.
+  if (process.argv.includes("--maps-only")) {
+    const { publicDir } = findBuild(process.cwd());
+    const maps = publicSourceMaps(process.cwd(), publicDir);
+    if (maps.length > 0) {
+      console.error(
+        `source maps in the public output (must never be served):\n- ${maps.join("\n- ")}`,
+      );
+      process.exit(1);
+    }
+    console.log(
+      `check:bundle --maps-only ok: no .map files in ${path.relative(process.cwd(), publicDir)}`,
+    );
+    process.exit(0);
+  }
   const { reports, problems } = await run();
   const kb = (n: number) => `${(n / 1024).toFixed(1)} KB`;
   for (const r of reports) {
