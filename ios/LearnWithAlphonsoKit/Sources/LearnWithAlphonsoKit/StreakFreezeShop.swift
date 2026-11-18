@@ -55,7 +55,8 @@ public enum StreakFreezeShop {
     public static func cachedProgress(freezes: Int, from p: LessonCompletionProgress) -> LessonCompletionProgress {
         LessonCompletionProgress(
             xp: p.xp, streak: p.streak, longestStreak: p.longestStreak, lastActiveDate: p.lastActiveDate,
-            hearts: p.hearts, heartsRefillAt: p.heartsRefillAt, streakFreezes: freezes, leagueTier: p.leagueTier
+            hearts: p.hearts, heartsRefillAt: p.heartsRefillAt, streakFreezes: freezes, leagueTier: p.leagueTier,
+            dayBasis: p.dayBasis
         )
     }
 

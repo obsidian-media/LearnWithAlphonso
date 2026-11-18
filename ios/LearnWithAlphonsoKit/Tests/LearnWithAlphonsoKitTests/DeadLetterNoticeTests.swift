@@ -76,4 +76,10 @@ final class DeadLetterNoticeTests: XCTestCase {
             XCTAssertFalse(s.contains("--"), s)
         }
     }
+
+    func testReviewAnswersThatCouldNotSyncGetTheirOwnLine() {
+        XCTAssertNil(DeadLetterNotice.reviewMessage(count: 0))
+        XCTAssertEqual(DeadLetterNotice.reviewMessage(count: 1), "1 review answer couldn't sync. That card will come back in Review.")
+        XCTAssertEqual(DeadLetterNotice.reviewMessage(count: 3), "3 review answers couldn't sync. Those cards will come back in Review.")
+    }
 }

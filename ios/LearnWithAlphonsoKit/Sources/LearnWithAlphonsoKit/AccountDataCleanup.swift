@@ -6,8 +6,11 @@ import Foundation
 public protocol AccountScopedQueue: AnyObject {
     func pendingLessonCompletions() -> [PendingLessonCompletion]
     func pendingReviewGrades() -> [PendingReviewGrade]
-    /// Removes every queued item AND every cached copy of this account's server state.
-    func clearAll()
+    /// Deletes and owner-stamps queued rows as `plan` says (AccountQueueRetention). Rows in neither set stay.
+    func applyRetention(_ plan: QueueRetentionPlan)
+    /// Removes every cached copy of the account's server state: the due-review cache, the last-known progress
+    /// row and the dead letters. Never touches queued rows.
+    func clearCachedAccountState()
 }
 
 /// The entitlement side of sign-out: Pro off, products and trial eligibility dropped, and
@@ -29,7 +32,9 @@ public enum AccountCacheKeys {
     public static let deadLetterDismissals = DeadLetterDismissals.key
     /// The account's voice choices (VoicePrefsCache); the account copy restores them on the next sign-in.
     public static let voicePrefs = VoicePrefsCache.key
-    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals, voicePrefs]
+    /// user_progress.day_basis beside the cached progress row (StreakRule's one-time UTC bridge).
+    public static let streakDayBasis = "lastKnownStreakDayBasis"
+    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals, voicePrefs, streakDayBasis]
 }
 
 public struct AccountLocalCaches {
@@ -53,7 +58,9 @@ public struct AccountLocalCaches {
 ///
 /// Order matters:
 /// 1. The queue goes first, because it is the one with privacy impact and it is synchronous.
-///    A process kill mid-cleanup is least likely to strand it.
+///    A process kill mid-cleanup is least likely to strand it. A sign-out keeps queued rows for the account
+///    that played them; account deletion removes that account's rows (AccountQueueRetention). Either way the
+///    cached copies of the account's server state go.
 /// 2. The local caches.
 /// 3. The widget.
 /// 4. RevenueCat goes last, because it is the only step that waits on the network.
@@ -69,11 +76,17 @@ public enum AccountDataCleanup {
     public static func register(
         on lifecycle: SessionLifecycle,
         queue: any AccountScopedQueue,
+        retiringUserID: @escaping @MainActor () -> String?,
         caches: AccountLocalCaches,
         clearWidget: @escaping @MainActor () -> Void,
         entitlements: any EntitlementResetting
     ) {
-        lifecycle.register(HandlerID.syncQueue) { _ in queue.clearAll() }
+        lifecycle.register(HandlerID.syncQueue) { event in
+            queue.applyRetention(AccountQueueRetention.plan(
+                event: event, retiringUserID: retiringUserID(),
+                lessons: queue.pendingLessonCompletions(), grades: queue.pendingReviewGrades()))
+            queue.clearCachedAccountState()
+        }
         lifecycle.register(HandlerID.localCaches) { _ in caches.clear() }
         lifecycle.register(HandlerID.widget) { _ in clearWidget() }
         lifecycle.register(HandlerID.entitlements) { _ in await entitlements.reset() }

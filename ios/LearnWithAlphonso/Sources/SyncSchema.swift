@@ -10,8 +10,8 @@ import os
 // - Never edit SyncSchemaV1: it is byte-for-byte what build 49 (e3004f5) stored. ios-learning-flow-guards pins
 //   its property lists.
 // - Never edit SyncSchemaV2 either: it is what builds 50 and 51 (a9da1dc) stored, frozen the same way.
-// - SyncSchemaV3 is the current schema (the top-level models). Until the build that introduces V3 is live it may
-//   still change. After that, any change to a model listed in it needs SyncSchemaV4 + a new MigrationStage
+// - SyncSchemaV3 is the current schema (the top-level models). It has shipped in TestFlight builds, so it
+//   is frozen too: any change to a model listed in it needs SyncSchemaV4 + a new MigrationStage
 //   (PodcastDownloadRecord is in this container too).
 
 enum SyncSchemaV1: VersionedSchema {
@@ -219,23 +219,25 @@ enum SyncMigrationPlan: SchemaMigrationPlan {
 /// 1. the versioned schema with the migration plan (a store written by build 49 or a later one);
 /// 2. the same models with NO plan, so SwiftData's lightweight inference can rescue an older compatible store
 ///    that matches no versioned schema (for example one written before offline podcast downloads existed);
-/// 3. an in-memory store, so the app still opens. The offline queue then does not persist across launches.
+/// 3. an in-memory store, so the app still opens. The offline queue then does not persist across launches, and
+///    `isPersistent` is false: SyncQueueStore reports storage as degraded and the lesson player stops saying
+///    "Saved" for a lesson that only lives until the app closes.
 enum SyncStoreFactory {
     private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "LearnWithAlphonso", category: "sync")
 
-    static func makeContainer() -> ModelContainer {
+    static func makeContainer() -> (container: ModelContainer, isPersistent: Bool) {
         let schema = Schema(versionedSchema: SyncSchemaV3.self)
         let persistent = ModelConfiguration(schema: schema)
         do {
-            return try ModelContainer(for: schema, migrationPlan: SyncMigrationPlan.self, configurations: [persistent])
+            return (try ModelContainer(for: schema, migrationPlan: SyncMigrationPlan.self, configurations: [persistent]), true)
         } catch {
             log.error("Migration plan failed, retrying without it: \(String(describing: error), privacy: .public)")
         }
         do {
-            return try ModelContainer(for: schema, configurations: [persistent])
+            return (try ModelContainer(for: schema, configurations: [persistent]), true)
         } catch {
             log.fault("Persistent store failed to open, using memory (the offline queue will not persist): \(String(describing: error), privacy: .public)")
         }
-        return try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
+        return (try! ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]), false)
     }
 }

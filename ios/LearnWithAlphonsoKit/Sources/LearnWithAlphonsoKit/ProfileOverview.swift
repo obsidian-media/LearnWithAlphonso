@@ -118,6 +118,11 @@ public struct ProfileOverviewData: Sendable, Equatable {
     public var streak: Int
     public var longestStreak: Int
     public var streakFreezes: Int
+    /// For the displayed streak (StreakDisplay), which the header uses too: the last active day, the account's
+    /// day basis, and the learner's LOCAL today (`today` above is the UTC day the heat map uses).
+    public var lastActiveDate: String?
+    public var dayBasis: String?
+    public var localToday: String?
     public var completions: [ProfileCompletion]
     public var activity: [ProfileActivityDay]
     public var bestDayXP: Int
@@ -140,8 +145,10 @@ public struct ProfileOverviewData: Sendable, Equatable {
         speech: [ProfileSpeechDay] = [], weakItems: [ProfileWeakItem] = [], savedWords: Int = 0,
         weaknessEvents: [ProfileWeaknessEvent] = [], achievements: [ProfileAchievementRow] = [],
         friends: [FriendProgress] = [], learning: [ProfileLearningDay] = [], masteredWords: Int = 0,
-        league: ProfileLeagueStanding? = nil, timeZone: String? = nil, skills: [ProfileSkillDay] = []
+        league: ProfileLeagueStanding? = nil, timeZone: String? = nil, skills: [ProfileSkillDay] = [],
+        lastActiveDate: String? = nil, dayBasis: String? = nil, localToday: String? = nil
     ) {
+        self.lastActiveDate = lastActiveDate; self.dayBasis = dayBasis; self.localToday = localToday
         self.learning = learning; self.masteredWords = masteredWords; self.league = league
         self.timeZone = timeZone; self.skills = skills
         self.today = today; self.course = course; self.displayName = displayName; self.avatarSeed = avatarSeed
@@ -308,7 +315,9 @@ public enum ProfileMath {
     // MARK: Big numbers
 
     public struct BigNumbers: Sendable, Equatable {
+        /// The displayed streak: the same StreakDisplay value the header shows.
         public let streak: Int
+        public let streakState: StreakDisplay.State
         public let longestStreak: Int
         public let courseXP: Int
         public let xpThisWeek: Int
@@ -325,8 +334,12 @@ public enum ProfileMath {
         let total = mine.reduce(0) { $0 + $1.total }
         let words = Set(mine.flatMap { vocabTerms($0.lessonID) }.map { $0.lowercased() })
         let monday = weekStart(o.today)
+        let shown = StreakDisplay.shown(
+            streak: o.streak, lastActiveDate: o.lastActiveDate, streakFreezes: o.streakFreezes, dayBasis: o.dayBasis,
+            today: o.localToday ?? o.today)
         return BigNumbers(
-            streak: o.streak,
+            streak: shown.streak,
+            streakState: shown.state,
             longestStreak: o.longestStreak,
             courseXP: o.courses.first { $0.course == o.course }?.xp ?? 0,
             xpThisWeek: o.activity.filter { $0.day >= monday && $0.day <= o.today }.reduce(0) { $0 + $1.xp },

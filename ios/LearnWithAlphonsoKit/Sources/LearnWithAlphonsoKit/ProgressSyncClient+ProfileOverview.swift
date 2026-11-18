@@ -85,7 +85,7 @@ extension ProgressSyncClient {
             URLQueryItem(name: "user_id", value: me),
         ])
         async let prog = profileRows("user_progress", [
-            URLQueryItem(name: "select", value: "streak,longest_streak,streak_freezes"),
+            URLQueryItem(name: "select", value: "streak,longest_streak,streak_freezes,last_active_date,day_basis"),
             URLQueryItem(name: "user_id", value: me),
         ])
         async let comps = profileRows("lesson_completions", [
@@ -200,6 +200,9 @@ extension ProgressSyncClient {
             skills: (await skillRows ?? []).compactMap { r in
                 guard let d = r["day"] as? String, let s = r["skill"] as? String else { return nil }
                 return ProfileSkillDay(day: d, skill: s, right: r["right_answers"] as? Int ?? 0, total: r["total_answers"] as? Int ?? 0)
-            })
+            },
+            lastActiveDate: u?["last_active_date"] as? String,
+            dayBasis: u?["day_basis"] as? String,
+            localToday: localDateString(now))
     }
 }

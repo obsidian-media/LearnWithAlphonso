@@ -19,6 +19,15 @@ public enum DeadLetterNotice {
             : "\(count) lessons couldn't be saved. Contact support."
     }
 
+    /// The Learn-tab line for review answers that ran out of retries (or were refused). Unlike a lesson, a lost
+    /// review answer costs no XP or streak: the card simply comes back. Before this they vanished silently.
+    public static func reviewMessage(count: Int) -> String? {
+        guard count > 0 else { return nil }
+        return count == 1
+            ? "1 review answer couldn't sync. That card will come back in Review."
+            : "\(count) review answers couldn't sync. Those cards will come back in Review."
+    }
+
     /// A mailto with the queue identities (lesson id, course, queued time) and the stable reason codes, so
     /// support can find and fix the record. Nothing else about the learner is added.
     public static func supportMailURL(identities: [String], reasons: [String], appVersion: String) -> URL? {
