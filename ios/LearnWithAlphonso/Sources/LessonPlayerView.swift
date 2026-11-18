@@ -73,10 +73,15 @@ struct LessonPlayerView: View {
     @State private var isLeaguePromotion = false
     @State private var showReminderCard = false
     @State private var queuedOffline: PendingLessonCompletion?
-    /// Why the completion was queued (offline, timeout or server), for the offline finish screen's wording.
-    @State private var queuedReason: LessonCompletionError = .offline
-    /// A completion failure that is NOT queued (a rejected 4xx, or signed out).
+    /// The offline finish screen's headline: why it was queued (offline, timeout, server), that it waits behind
+    /// older lessons, or that it is not on disk (QueuedLessonPolicy.finishMessage).
+    @State private var queuedMessage: String = Copy.savedOffline
+    /// A completion failure that is NOT queued (a rejected 4xx), or signed out.
     @State private var completionFailure: LessonCompletionError?
+    /// Signed out at finish, but the attempt was kept in the queue for this account: the failure screen says so.
+    @State private var keptForSignIn = false
+    /// The account that opened this lesson, so an attempt finished after the session ended still has an owner.
+    @State private var lessonOwnerUserID: String?
     /// The start-lesson-session token from when this lesson opened. Using it at finish means a heart lost
     /// mid-lesson never blocks saving the lesson (the hearts gate applies when a lesson starts, as on the web).
     @State private var sessionToken: String?
@@ -182,7 +187,8 @@ struct LessonPlayerView: View {
         isLeaguePromotion = false
         queuedOffline = nil
         completionFailure = nil
-        queuedReason = .offline
+        keptForSignIn = false
+        queuedMessage = Copy.savedOffline
         sessionToken = nil
         pendingReinforcement = nil
         activeReinforcement = nil
@@ -346,11 +352,17 @@ struct LessonPlayerView: View {
             completeScreen(result: result, topInset: topInset)
         } else if let queuedOffline {
             OfflineFinishView(
-                pending: queuedOffline, correct: correctCount, total: total, reason: queuedReason,
+                pending: queuedOffline, correct: correctCount, total: total, message: queuedMessage,
                 onContinue: nextLessonID != nil ? continueToNextLesson : { dismiss() },
                 onPracticeWithHector: hectorAccess == nil ? nil : practiceWithHector)
         } else if let completionFailure {
-            LessonSaveFailureView(error: completionFailure, onSignIn: { session.signOut() }, onDone: { dismiss() })
+            // "Sign in" ends this session to reach the sign-in screen. That no longer clears the offline queue
+            // (AccountQueueRetention), and this attempt is already in it for this account, so signing back in
+            // sends it.
+            LessonSaveFailureView(
+                error: completionFailure,
+                message: keptForSignIn ? QueuedLessonPolicy.keptForSignInMessage : nil,
+                onSignIn: { session.signOut() }, onDone: { dismiss() })
         } else if total == 0 {
             DSEmptyState(art: "Alphonso-thinking", title: "This lesson has no questions yet")
                 .padding()
@@ -705,12 +717,13 @@ struct LessonPlayerView: View {
                 hearts: cached.hearts,
                 heartsRefillAt: cached.heartsRefillAt.map { Date(timeIntervalSince1970: $0 / 1000) },
                 now: Date())
+            // A local estimate, not a sync: "last synced" stays where it was.
             syncQueueStore.updateLastKnownProgress(LessonCompletionProgress(
                 xp: cached.xp, streak: cached.streak, longestStreak: cached.longestStreak,
                 lastActiveDate: cached.lastActiveDate, hearts: after.hearts,
                 heartsRefillAt: after.heartsRefillAt.map { $0.timeIntervalSince1970 * 1000 },
                 streakFreezes: cached.streakFreezes, leagueTier: cached.leagueTier
-            ))
+            ), synced: false)
             heartLost = true
         }
         guard let accessToken = session.accessToken else { return heartLost }
@@ -724,6 +737,7 @@ struct LessonPlayerView: View {
     /// A failure here is not fatal: finish() mints a token if none is held.
     private func openLessonSession() async {
         sessionToken = nil
+        lessonOwnerUserID = session.userID
         guard networkMonitor.isConnected else {
             if let cached = syncQueueStore.lastKnownProgress(),
                case let .outOfHearts(refillAt) = HeartsEconomy.gate(
@@ -766,8 +780,9 @@ struct LessonPlayerView: View {
         lessonTimer?.pause(now: now)
         isSubmitting = true
         defer { isSubmitting = false }
-        guard session.accessToken != nil else {
-            completionFailure = .unauthorized
+        guard session.accessToken != nil, lessonOwner == session.userID else {
+            // Signed out, or another account is signed in now: keep it for the account that played it.
+            failSignedOut()
             return
         }
         // Offline: never attempt the calls. The queued row keeps the session token from the lesson's start, so
@@ -775,6 +790,22 @@ struct LessonPlayerView: View {
         guard networkMonitor.isConnected else {
             queueOffline(reason: .offline)
             return
+        }
+        // Lessons reach the server strictly oldest first (SyncEngine): this one may not overtake an older one
+        // still queued, or that older day is lost for the streak. Send the lessons ahead first (lessons only, at
+        // most 15 s); if something is still waiting, this one waits behind it.
+        // `self.session`: a local `session` is declared below.
+        if let owner = lessonOwner, owner == self.session.userID, syncQueueStore.blockingLessonCount(for: owner) > 0 {
+            await drainQueue(for: owner)
+            // The drain's refresh can end the session: keep the attempt for this account, never drop it.
+            guard self.session.userID == owner else {
+                failSignedOut()
+                return
+            }
+            if QueuedLessonPolicy.mustQueueBehindPending(pendingLessons: syncQueueStore.blockingLessonCount(for: owner)) {
+                queueOffline(reason: .offline, message: QueuedLessonPolicy.queuedBehindMessage)
+                return
+            }
         }
         let session = self.session
         let service = LessonCompletionService(
@@ -798,7 +829,8 @@ struct LessonPlayerView: View {
             LeagueTierCache.lastKnownTier = completion.progress.leagueTier
             isLeaguePromotion = previousTier != nil && previousTier != completion.progress.leagueTier
             result = completion
-            syncQueueStore.updateLastKnownProgress(completion.progress)
+            // A completion always leaves the account on local days (StreakRule's bridge is spent).
+            syncQueueStore.updateLastKnownProgress(completion.progress.withDayBasis("local"))
             await scheduleStreakReminderAfterCompletion(lastActiveDate: completion.progress.lastActiveDate)
             if (isLeaguePromotion || !completion.newlyUnlocked.isEmpty) && SoundEffectsPreference.isOn() {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -810,6 +842,14 @@ struct LessonPlayerView: View {
             // rejected attempt is never queued (it would sit in the queue forever), and is never "offline".
             switch error.finishDisposition {
             case .queue: queueOffline(reason: error)
+            case .showFailure where error == .unauthorized:
+                // A token the server refused while the session is still here is not a sign-out: queue it, and the
+                // next sync refreshes the session. Only a session that has actually ended asks to sign in.
+                if self.session.accessToken != nil {
+                    queueOffline(reason: .unauthorized, message: QueuedLessonPolicy.authRetryMessage)
+                } else {
+                    failSignedOut()
+                }
             case .showFailure: completionFailure = error
             }
         }
@@ -820,7 +860,11 @@ struct LessonPlayerView: View {
     /// played an entire lesson. `optimisticXpEstimate` is a naive guess
     /// (see PendingLessonCompletion's doc comment); the real XP is shown
     /// once sync confirms it.
-    private func queueOffline(reason: LessonCompletionError) {
+    ///
+    /// The device then acts as if the lesson counted (QueuedLessonPolicy.optimisticProgress): the header and the
+    /// widget read "studied today" and tonight's streak reminder is cancelled, instead of nagging a learner who
+    /// just finished a lesson on a train. The next real sync replaces the estimate.
+    private func queueOffline(reason: LessonCompletionError, message: String? = nil) {
         let pending = PendingLessonCompletion(
             lessonID: lesson.id,
             total: total,
@@ -829,13 +873,55 @@ struct LessonPlayerView: View {
             queuedAt: Date(),
             // A known earlier best caps it at what the replay rule pays (0 when this try is no better).
             optimisticXpEstimate: LessonXP.queuedEstimate(correct: correctCount, total: total, previousBest: previousBest),
-            ownerUserID: session.userID,
+            // The account that opened the lesson, never whoever is signed in by now.
+            ownerUserID: lessonOwner,
             sessionToken: sessionToken
         )
-        syncQueueStore.appendLessonCompletion(pending)
-        queuedReason = reason
+        let appended = syncQueueStore.appendLessonCompletion(pending)
+        // No owner (signed out before the lesson ever had one): the queue refuses it; say so instead of "Saved".
+        guard appended.isStored else {
+            failSignedOut()
+            return
+        }
+        let isDurable = appended.isOnDisk
+        let now = Date()
+        if let cached = syncQueueStore.lastKnownProgress() {
+            // Publishes the widget too (updateLastKnownProgress). Not a sync, so "last synced" stays.
+            syncQueueStore.updateLastKnownProgress(QueuedLessonPolicy.optimisticProgress(after: cached, now: now), synced: false)
+        }
+        notificationScheduler.scheduleStreakReminder(lastActiveDate: localDateString(now))
+        // Not on disk: never "Saved". The row still syncs on reconnect while the app stays open.
+        queuedMessage = isDurable
+            ? (message ?? QueuedLessonPolicy.finishMessage(reason: reason, isDurable: true))
+            : QueuedLessonPolicy.notDurableMessage
         queuedOffline = pending
     }
+
+    /// Signed out (or the token was refused) at finish. The attempt is kept in the queue for the account that
+    /// played it, so signing back in sends it; only with no known account is it lost, as before.
+    private func failSignedOut() {
+        if let owner = lessonOwner {
+            keptForSignIn = syncQueueStore.appendLessonCompletion(PendingLessonCompletion(
+                lessonID: lesson.id, total: total, answers: answers, course: course.wireCode, queuedAt: Date(),
+                optimisticXpEstimate: LessonXP.queuedEstimate(correct: correctCount, total: total, previousBest: previousBest),
+                ownerUserID: owner, sessionToken: sessionToken)).isStored
+        }
+        completionFailure = .unauthorized
+    }
+
+    /// The lessons ahead of this one only (no grades, no progress read, no due lists), at most 15 s, bound to this
+    /// account (SyncQueueStore.drainLessonsBeforeLiveFinish).
+    private func drainQueue(for userID: String) async {
+        // The token fetch runs inside the 15 s cap too.
+        await syncQueueStore.drainLessonsBeforeLiveFinish(
+            accessToken: { [session] in await session.freshAccessToken() },
+            userID: userID,
+            refreshAccessToken: session.refresher(for: userID),
+            isCurrentAccount: { [session] in session.userID == userID })
+    }
+
+    /// Who played this lesson: the account that opened it, else the one signed in now.
+    private var lessonOwner: String? { lessonOwnerUserID ?? session.userID }
 
     /// Reschedules today's streak reminder, since completing a lesson changes whether one is still needed.
     /// Never asks for permission: a cold system dialog over the first celebration gets permanent "Don't Allow"
@@ -1297,7 +1383,7 @@ private struct OfflineFinishView: View {
     let pending: PendingLessonCompletion
     let correct: Int
     let total: Int
-    let reason: LessonCompletionError
+    let message: String
     let onContinue: () -> Void
     let onPracticeWithHector: (() -> Void)?
 
@@ -1310,7 +1396,7 @@ private struct OfflineFinishView: View {
             Image("Alphonso-refill-hourglass").resizable().scaledToFit()
                 .frame(height: AlphonsoDS.Space.s12 * 3)
                 .accessibilityHidden(true)
-            Text(reason.userMessage)
+            Text(message)
                 .dsText(.title)
                 .foregroundStyle(ds.ink)
                 .multilineTextAlignment(.center)
