@@ -70,7 +70,7 @@ struct SettingsView: View {
             await syncQueueStore.runSync(
                 accessToken: accessToken,
                 userID: userID,
-                refreshAccessToken: { [session] in await session.freshAccessToken(forceRefresh: true) },
+                refreshAccessToken: session.refresher(for: userID),
                 isCurrentAccount: { session.userID == userID })
         }
         // A forced sign-out during the drain already ended the session.

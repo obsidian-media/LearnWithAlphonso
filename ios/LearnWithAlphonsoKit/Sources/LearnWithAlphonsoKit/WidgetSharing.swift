@@ -63,10 +63,12 @@ public struct StreakWidgetSnapshot: Codable, Sendable, Equatable {
     /// Missed days that the freezes cover: the widget shows the streak with a freeze mark. False in an older
     /// snapshot.
     public let isStreakProtected: Bool
+    /// user_progress.day_basis when written (StreakRule's one-time UTC bridge). Nil in an older snapshot.
+    public let dayBasis: String?
 
     public init(
         streak: Int, longestStreak: Int, studiedToday: Bool, updatedAt: Date, theme: String? = nil,
-        lastActiveDate: String? = nil, streakFreezes: Int? = nil, isStreakProtected: Bool = false
+        lastActiveDate: String? = nil, streakFreezes: Int? = nil, isStreakProtected: Bool = false, dayBasis: String? = nil
     ) {
         self.streak = streak
         self.longestStreak = longestStreak
@@ -76,6 +78,7 @@ public struct StreakWidgetSnapshot: Codable, Sendable, Equatable {
         self.lastActiveDate = lastActiveDate
         self.streakFreezes = streakFreezes
         self.isStreakProtected = isStreakProtected
+        self.dayBasis = dayBasis
     }
 
     /// Reads a snapshot written by any build: the theme key may be missing (old snapshots), and is then nil.
@@ -89,29 +92,32 @@ public struct StreakWidgetSnapshot: Codable, Sendable, Equatable {
         lastActiveDate = try c.decodeIfPresent(String.self, forKey: .lastActiveDate)
         streakFreezes = try c.decodeIfPresent(Int.self, forKey: .streakFreezes)
         isStreakProtected = try c.decodeIfPresent(Bool.self, forKey: .isStreakProtected) ?? false
+        dayBasis = try c.decodeIfPresent(String.self, forKey: .dayBasis)
     }
 
     /// The same numbers under another theme: what the app writes when the learner changes theme.
     public func withTheme(_ theme: String?) -> StreakWidgetSnapshot {
         StreakWidgetSnapshot(
             streak: streak, longestStreak: longestStreak, studiedToday: studiedToday, updatedAt: updatedAt, theme: theme,
-            lastActiveDate: lastActiveDate, streakFreezes: streakFreezes, isStreakProtected: isStreakProtected)
+            lastActiveDate: lastActiveDate, streakFreezes: streakFreezes, isStreakProtected: isStreakProtected,
+            dayBasis: dayBasis)
     }
 
     /// This snapshot as it should read at `date`. "Studied today" was true for the learner's local day it was written
     /// on; read on a later day it is false. Without this the widget kept saying "Studied today" after midnight
-    /// until the app was next opened. Likewise the streak (StreakDisplay): missed days the freezes cover read as
-    /// protected, more than that read 0, instead of the old count until the app is next opened.
+    /// until the app was next opened. Likewise the streak (StreakDisplay, the server's own rule): alive only by a
+    /// freeze reads as protected, a run the next lesson would restart reads 0.
     public func asOf(_ date: Date, timeZone: TimeZone = .current) -> StreakWidgetSnapshot {
         let studied = studiedToday
             && localDateString(date, timeZone: timeZone) == localDateString(updatedAt, timeZone: timeZone)
         let shown = StreakDisplay.shown(
-            streak: streak, lastActiveDate: lastActiveDate, streakFreezes: streakFreezes, now: date, timeZone: timeZone)
+            streak: streak, lastActiveDate: lastActiveDate, streakFreezes: streakFreezes, dayBasis: dayBasis, now: date,
+            timeZone: timeZone)
         let isProtected = shown.state == .protected
         guard studied != studiedToday || shown.streak != streak || isProtected != isStreakProtected else { return self }
         return StreakWidgetSnapshot(
             streak: shown.streak, longestStreak: longestStreak, studiedToday: studied, updatedAt: updatedAt, theme: theme,
-            lastActiveDate: lastActiveDate, streakFreezes: streakFreezes, isStreakProtected: isProtected)
+            lastActiveDate: lastActiveDate, streakFreezes: streakFreezes, isStreakProtected: isProtected, dayBasis: dayBasis)
     }
 }
 
@@ -138,11 +144,13 @@ public func makeStreakWidgetSnapshot(
     now: Date = Date(),
     timeZone: TimeZone = .current,
     theme: String? = nil,
-    streakFreezes: Int? = nil
+    streakFreezes: Int? = nil,
+    dayBasis: String? = nil
 ) -> StreakWidgetSnapshot {
     // The streak column keeps the old run after a missed day; the widget shows what it is now.
     let shown = StreakDisplay.shown(
-        streak: streak, lastActiveDate: lastActiveDate, streakFreezes: streakFreezes, now: now, timeZone: timeZone)
+        streak: streak, lastActiveDate: lastActiveDate, streakFreezes: streakFreezes, dayBasis: dayBasis, now: now,
+        timeZone: timeZone)
     return StreakWidgetSnapshot(
         streak: shown.streak,
         longestStreak: longestStreak,
@@ -151,6 +159,7 @@ public func makeStreakWidgetSnapshot(
         theme: theme,
         lastActiveDate: lastActiveDate,
         streakFreezes: streakFreezes,
-        isStreakProtected: shown.state == .protected
+        isStreakProtected: shown.state == .protected,
+        dayBasis: dayBasis
     )
 }

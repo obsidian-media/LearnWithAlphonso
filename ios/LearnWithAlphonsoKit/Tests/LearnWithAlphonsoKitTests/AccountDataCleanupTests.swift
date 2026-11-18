@@ -12,14 +12,11 @@ final class InMemoryAccountQueue: AccountScopedQueue {
     private(set) var cachedStateClearCount = 0
     func pendingLessonCompletions() -> [PendingLessonCompletion] { lessons }
     func pendingReviewGrades() -> [PendingReviewGrade] { grades }
-    /// The same row-by-identity application SyncQueueStore does.
+    /// Through the plan's own row dispositions, the ones SyncQueueStore applies to its records.
     func applyRetention(_ plan: QueueRetentionPlan) {
-        lessons.removeAll { plan.deleteLessonIdentities.contains($0.queueIdentity) }
-        grades.removeAll { plan.deleteGradeIdentities.contains($0.queueIdentity) }
-        if let owner = plan.owner {
-            lessons = lessons.map { plan.tagLessonIdentities.contains($0.queueIdentity) ? $0.owned(by: owner) : $0 }
-            grades = grades.map { plan.tagGradeIdentities.contains($0.queueIdentity) ? $0.owned(by: owner) : $0 }
-        }
+        let kept = plan.applied(lessons: lessons, grades: grades)
+        lessons = kept.lessons
+        grades = kept.grades
     }
     func clearCachedAccountState() { cachedStateClearCount += 1 }
 }
@@ -196,7 +193,7 @@ final class AccountDataCleanupTests: XCTestCase {
     func testAccountCacheKeysAreTheAppCaches() {
         XCTAssertEqual(AccountCacheKeys.all, [
             "lastGlobalWeeklyLeaderboardSnapshot", "lastRecapLeagueTier", "lastKnownLeagueTier", "nudgeCooldowns",
-            "deadLetterNotice.dismissed.v1", "voicePrefs.v1",
+            "deadLetterNotice.dismissed.v1", "voicePrefs.v1", "lastKnownStreakDayBasis",
         ])
     }
 }

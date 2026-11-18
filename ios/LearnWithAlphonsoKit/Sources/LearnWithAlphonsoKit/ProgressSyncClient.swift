@@ -260,8 +260,15 @@ public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
     public let heartsRefillAt: Double?
     public let streakFreezes: Int
     public let leagueTier: String
+    /// user_progress.day_basis: "utc" until the account's first completion under local days, then "local". The
+    /// streak display needs it for the one-time UTC bridge (StreakRule). Nil when not read (complete-lesson's
+    /// response does not carry it; a completion always leaves it "local").
+    public let dayBasis: String?
 
-    public init(xp: Int, streak: Int, longestStreak: Int, lastActiveDate: String, hearts: Int, heartsRefillAt: Double?, streakFreezes: Int, leagueTier: String) {
+    public init(
+        xp: Int, streak: Int, longestStreak: Int, lastActiveDate: String, hearts: Int, heartsRefillAt: Double?,
+        streakFreezes: Int, leagueTier: String, dayBasis: String? = nil
+    ) {
         self.xp = xp
         self.streak = streak
         self.longestStreak = longestStreak
@@ -270,6 +277,14 @@ public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
         self.heartsRefillAt = heartsRefillAt
         self.streakFreezes = streakFreezes
         self.leagueTier = leagueTier
+        self.dayBasis = dayBasis
+    }
+
+    /// The same values with a known day basis.
+    public func withDayBasis(_ dayBasis: String?) -> LessonCompletionProgress {
+        LessonCompletionProgress(
+            xp: xp, streak: streak, longestStreak: longestStreak, lastActiveDate: lastActiveDate, hearts: hearts,
+            heartsRefillAt: heartsRefillAt, streakFreezes: streakFreezes, leagueTier: leagueTier, dayBasis: dayBasis)
     }
 }
 
@@ -1152,7 +1167,7 @@ public final class ProgressSyncClient: Sendable {
         var userRequest = restRequest(path: "user_progress", query: [
             URLQueryItem(
                 name: "select",
-                value: "streak,longest_streak,last_active_date,hearts,hearts_refill_at,streak_freezes"
+                value: "streak,longest_streak,last_active_date,hearts,hearts_refill_at,streak_freezes,day_basis"
             ),
         ])
         userRequest.httpMethod = "GET"
@@ -1193,7 +1208,8 @@ public final class ProgressSyncClient: Sendable {
             hearts: resolvedHearts,
             heartsRefillAt: resolvedRefillAt,
             streakFreezes: userRow["streak_freezes"] as? Int ?? 0,
-            leagueTier: languageRow["league_tier"] as? String ?? "bronze"
+            leagueTier: languageRow["league_tier"] as? String ?? "bronze",
+            dayBasis: userRow["day_basis"] as? String
         )
     }
 

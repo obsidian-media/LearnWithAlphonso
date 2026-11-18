@@ -791,13 +791,17 @@ struct LessonPlayerView: View {
             return
         }
         // Lessons reach the server strictly oldest first (SyncEngine): this one may not overtake an older one
-        // still queued, or that older day is lost for the streak. Send the queue first; if something is still
-        // waiting, this one waits behind it.
+        // still queued, or that older day is lost for the streak. Send the lessons ahead first (lessons only, at
+        // most 15 s); if something is still waiting, this one waits behind it.
         // `self.session`: a local `session` is declared below.
-        if let owner = self.session.userID, syncQueueStore.pendingCounts(for: owner).lessons > 0 {
+        if let owner = lessonOwner, owner == self.session.userID, syncQueueStore.blockingLessonCount(for: owner) > 0 {
             await drainQueue(for: owner)
-            guard self.session.userID == owner else { return }
-            if QueuedLessonPolicy.mustQueueBehindPending(pendingLessons: syncQueueStore.pendingCounts(for: owner).lessons) {
+            // The drain's refresh can end the session: keep the attempt for this account, never drop it.
+            guard self.session.userID == owner else {
+                failSignedOut()
+                return
+            }
+            if QueuedLessonPolicy.mustQueueBehindPending(pendingLessons: syncQueueStore.blockingLessonCount(for: owner)) {
                 queueOffline(reason: .offline, message: QueuedLessonPolicy.queuedBehindMessage)
                 return
             }
@@ -824,7 +828,8 @@ struct LessonPlayerView: View {
             LeagueTierCache.lastKnownTier = completion.progress.leagueTier
             isLeaguePromotion = previousTier != nil && previousTier != completion.progress.leagueTier
             result = completion
-            syncQueueStore.updateLastKnownProgress(completion.progress)
+            // A completion always leaves the account on local days (StreakRule's bridge is spent).
+            syncQueueStore.updateLastKnownProgress(completion.progress.withDayBasis("local"))
             await scheduleStreakReminderAfterCompletion(lastActiveDate: completion.progress.lastActiveDate)
             if (isLeaguePromotion || !completion.newlyUnlocked.isEmpty) && SoundEffectsPreference.isOn() {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -836,7 +841,14 @@ struct LessonPlayerView: View {
             // rejected attempt is never queued (it would sit in the queue forever), and is never "offline".
             switch error.finishDisposition {
             case .queue: queueOffline(reason: error)
-            case .showFailure where error == .unauthorized: failSignedOut()
+            case .showFailure where error == .unauthorized:
+                // A token the server refused while the session is still here is not a sign-out: queue it, and the
+                // next sync refreshes the session. Only a session that has actually ended asks to sign in.
+                if self.session.accessToken != nil {
+                    queueOffline(reason: .unauthorized, message: QueuedLessonPolicy.authRetryMessage)
+                } else {
+                    failSignedOut()
+                }
             case .showFailure: completionFailure = error
             }
         }
@@ -860,10 +872,17 @@ struct LessonPlayerView: View {
             queuedAt: Date(),
             // A known earlier best caps it at what the replay rule pays (0 when this try is no better).
             optimisticXpEstimate: LessonXP.queuedEstimate(correct: correctCount, total: total, previousBest: previousBest),
-            ownerUserID: session.userID,
+            // The account that opened the lesson, never whoever is signed in by now.
+            ownerUserID: lessonOwner,
             sessionToken: sessionToken
         )
-        let isDurable = syncQueueStore.appendLessonCompletion(pending)
+        let appended = syncQueueStore.appendLessonCompletion(pending)
+        // No owner (signed out before the lesson ever had one): the queue refuses it; say so instead of "Saved".
+        guard appended.isStored else {
+            failSignedOut()
+            return
+        }
+        let isDurable = appended.isOnDisk
         let now = Date()
         if let cached = syncQueueStore.lastKnownProgress() {
             // Publishes the widget too (updateLastKnownProgress). Not a sync, so "last synced" stays.
@@ -880,25 +899,28 @@ struct LessonPlayerView: View {
     /// Signed out (or the token was refused) at finish. The attempt is kept in the queue for the account that
     /// played it, so signing back in sends it; only with no known account is it lost, as before.
     private func failSignedOut() {
-        if let owner = lessonOwnerUserID ?? session.userID {
-            syncQueueStore.appendLessonCompletion(PendingLessonCompletion(
+        if let owner = lessonOwner {
+            keptForSignIn = syncQueueStore.appendLessonCompletion(PendingLessonCompletion(
                 lessonID: lesson.id, total: total, answers: answers, course: course.wireCode, queuedAt: Date(),
                 optimisticXpEstimate: LessonXP.queuedEstimate(correct: correctCount, total: total, previousBest: previousBest),
-                ownerUserID: owner, sessionToken: sessionToken))
-            keptForSignIn = true
+                ownerUserID: owner, sessionToken: sessionToken)).isStored
         }
         completionFailure = .unauthorized
     }
 
-    /// The same pass RootView runs on foreground and reconnect, with the same same-account guard.
+    /// The lessons ahead of this one only (no grades, no progress read, no due lists), at most 15 s, bound to this
+    /// account (SyncQueueStore.drainLessonsBeforeLiveFinish).
     private func drainQueue(for userID: String) async {
         guard let accessToken = await session.freshAccessToken() else { return }
-        await syncQueueStore.runSync(
+        await syncQueueStore.drainLessonsBeforeLiveFinish(
             accessToken: accessToken,
             userID: userID,
-            refreshAccessToken: { [session] in await session.freshAccessToken(forceRefresh: true) },
-            isCurrentAccount: { session.userID == userID })
+            refreshAccessToken: session.refresher(for: userID),
+            isCurrentAccount: { [session] in session.userID == userID })
     }
+
+    /// Who played this lesson: the account that opened it, else the one signed in now.
+    private var lessonOwner: String? { lessonOwnerUserID ?? session.userID }
 
     /// Reschedules today's streak reminder, since completing a lesson changes whether one is still needed.
     /// Never asks for permission: a cold system dialog over the first celebration gets permanent "Don't Allow"

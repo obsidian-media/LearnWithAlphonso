@@ -153,7 +153,11 @@ final class Session {
                 } else if error is CancellationError {
                     // Nothing to retry for.
                 } else {
-                    self.scheduleProactiveRefresh(after: 30)
+                    // A 30 s retry only when the token is actually about to expire; otherwise the expiry timer is
+                    // re-armed (RefreshSchedule). A failed forced refresh with hours left used to replace the expiry
+                    // timer with a retry that then found nothing due and armed nothing.
+                    self.scheduleProactiveRefresh(after: RefreshSchedule.nextDelay(
+                        expiresAt: current.expiresAt, now: Date(), afterFailure: true))
                 }
                 return .failed
             }
@@ -166,6 +170,15 @@ final class Session {
     private static func isRejectedRefreshToken(_ error: Error) -> Bool {
         guard case SupabaseAuthError.server(let status, _) = error else { return false }
         return [400, 401, 403].contains(status)
+    }
+
+    /// A token refresher bound to `userID` (Kit SyncPass.accountBoundRefresher): it answers nil once another
+    /// account is signed in, so a sync pass started for one account can never continue with the next one's token.
+    func refresher(for userID: String) -> @Sendable () async -> String? {
+        SyncPass.accountBoundRefresher(
+            for: userID,
+            currentUserID: { [weak self] in self?.userID },
+            refresh: { [weak self] in await self?.freshAccessToken(forceRefresh: true) })
     }
 
     /// The signed-in user's own id -- for anything that needs to reference
@@ -254,7 +267,8 @@ final class Session {
         await finishPendingCleanup()
         defer { isRestoring = false }
         // A previous run was killed between a sign-out and its cleanup finishing.
-        await lifecycle.resumePending(pendingCleanup)
+        // The stored leaving account, so a resumed cleanup keeps or removes the right queued rows.
+        await lifecycle.resumePending(pendingCleanup, setRetiringUserID: { retiringUserID = $0 })
         if let bootstrapped = Self.uiTestBootstrapSession() {
             establishSession(bootstrapped)
             return
@@ -474,7 +488,7 @@ final class Session {
         KeychainSessionStore.clear()
         // Durable before anything can suspend: if the process dies now, the next launch
         // runs the cleanup (restoreSession).
-        pendingCleanup.mark(event)
+        pendingCleanup.mark(event, userID: endingUserID)
         cleanupSequence += 1
         let sequence = cleanupSequence
         // Chained, never concurrent: a second sign-out waits for the first one's cleanup, and each run sees
@@ -510,8 +524,12 @@ final class Session {
     /// failed until relaunch. Keeping the stored token fresh here fixes
     /// all of them at once instead of converting each call site.
     func refreshIfNeeded(leeway: TimeInterval = 300) async {
-        guard case .signedIn(let current) = state,
-              current.expiresAt <= Date().addingTimeInterval(leeway) else { return }
+        guard case .signedIn(let current) = state else { return }
+        guard current.expiresAt <= Date().addingTimeInterval(leeway) else {
+            // Nothing due: make sure the expiry timer is armed, so no path can leave the session without one.
+            scheduleProactiveRefresh(after: RefreshSchedule.nextDelay(expiresAt: current.expiresAt, now: Date(), afterFailure: false))
+            return
+        }
         // Same flight as freshAccessToken: a sign-out (or a different sign-in) while it is in flight wins over the
         // stale result, a network failure retries in 30s, and only a rejected refresh token signs out.
         _ = await refreshSession()

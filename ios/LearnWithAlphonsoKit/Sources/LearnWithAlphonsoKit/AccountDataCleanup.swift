@@ -32,7 +32,9 @@ public enum AccountCacheKeys {
     public static let deadLetterDismissals = DeadLetterDismissals.key
     /// The account's voice choices (VoicePrefsCache); the account copy restores them on the next sign-in.
     public static let voicePrefs = VoicePrefsCache.key
-    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals, voicePrefs]
+    /// user_progress.day_basis beside the cached progress row (StreakRule's one-time UTC bridge).
+    public static let streakDayBasis = "lastKnownStreakDayBasis"
+    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals, voicePrefs, streakDayBasis]
 }
 
 public struct AccountLocalCaches {

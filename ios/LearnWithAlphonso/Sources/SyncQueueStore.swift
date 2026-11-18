@@ -242,8 +242,10 @@ final class AppSyncStateRecord {
 /// `ModelContext` directly.
 @MainActor
 @Observable
-final class SyncQueueStore: AccountScopedQueue {
+final class SyncQueueStore: SyncQueueBacking {
     @ObservationIgnored private let modelContext: ModelContext
+    /// Whether the container is on disk (SyncStoreFactory). A row's own save outcome is reported per append.
+    @ObservationIgnored private let isPersistent: Bool
 
     /// Bumped whenever the cached due-review list changes. SwiftUI cannot see
     /// a SwiftData `fetch` made inside `body`, so a view that reads the count
@@ -267,13 +269,16 @@ final class SyncQueueStore: AccountScopedQueue {
     /// The account the badge counts for: remembered from the last sync, because the active course is stored per
     /// account. Nil (never synced this launch) counts English.
     @ObservationIgnored private var badgeUserID: String?
-    /// Launch, foreground and reconnect each trigger a sync; two overlapping passes would send the same grades twice.
-    @ObservationIgnored private var isSyncing = false
+    /// The pass in flight. Launch, foreground and reconnect each trigger a sync; two overlapping passes would send
+    /// the same grades twice, so a second request waits for this one. A live finish waits for it too, instead of
+    /// queueing behind it needlessly.
+    @ObservationIgnored private var currentPass: Task<Void, Never>?
     @ObservationIgnored private var lastBadgeCourse = "en"
     @ObservationIgnored private var defaultsObserver: NSObjectProtocol?
 
     init(modelContext: ModelContext, isPersistent: Bool = true) {
         self.modelContext = modelContext
+        self.isPersistent = isPersistent
         isStorageDegraded = !isPersistent
         // The badge counts the ACTIVE course; repaint it when the learner switches course.
         defaultsObserver = NotificationCenter.default.addObserver(
@@ -303,14 +308,17 @@ final class SyncQueueStore: AccountScopedQueue {
 
     // MARK: - Pending lesson completions
 
-    /// Returns whether the row is on disk. False means it lives only in this process (in-memory store, or the
-    /// save failed): it still syncs while the app stays open, but the learner must not be told it is saved.
+    /// Refuses a row with no owner (QueueAppendResult): it would be adopted by whoever syncs next. `onDisk` false
+    /// means this row lives only in this process (in-memory store, or this save failed): it still syncs while the
+    /// app stays open, but the learner must not be told it is saved.
     @discardableResult
-    func appendLessonCompletion(_ pending: PendingLessonCompletion) -> Bool {
-        modelContext.insert(PendingLessonCompletionRecord(pending))
-        let saved = save("appendLessonCompletion")
-        queueRevision += 1
-        return saved && !isStorageDegraded
+    func appendLessonCompletion(_ pending: PendingLessonCompletion) -> QueueAppendResult {
+        let result = QueueAppendResult.decide(owner: pending.ownerUserID, saved: {
+            modelContext.insert(PendingLessonCompletionRecord(pending))
+            return save("appendLessonCompletion")
+        }, isPersistent: isPersistent)
+        if result.isStored { queueRevision += 1 }
+        return result
     }
 
     /// Saves, and records a failure as degraded storage instead of dropping it with `try?`.
@@ -333,10 +341,14 @@ final class SyncQueueStore: AccountScopedQueue {
 
     // MARK: - Pending review grades
 
-    func appendReviewGrade(_ pending: PendingReviewGrade) {
-        modelContext.insert(PendingReviewGradeRecord(pending))
-        save("appendReviewGrade")
-        queueRevision += 1
+    @discardableResult
+    func appendReviewGrade(_ pending: PendingReviewGrade) -> QueueAppendResult {
+        let result = QueueAppendResult.decide(owner: pending.ownerUserID, saved: {
+            modelContext.insert(PendingReviewGradeRecord(pending))
+            return save("appendReviewGrade")
+        }, isPersistent: isPersistent)
+        if result.isStored { queueRevision += 1 }
+        return result
     }
 
     func pendingReviewGrades() -> [PendingReviewGrade] {
@@ -361,6 +373,30 @@ final class SyncQueueStore: AccountScopedQueue {
         SyncEngine.nextWakeup(lessons: pendingLessonCompletions(), grades: pendingReviewGrades(), userID: userID, now: now)
     }
 
+    /// This account's lessons that ran out of automatic retries (SyncRetryPolicy.isParked), for the Learn-tab line.
+    func parkedLessonCount(for userID: String?) -> Int {
+        _ = queueRevision
+        guard let userID else { return 0 }
+        return pendingLessonCompletions().filter { ($0.ownerUserID == nil || $0.ownerUserID == userID) && SyncRetryPolicy.standard.isParked($0) }.count
+    }
+
+    /// The learner's "Try again" on parked lessons: one more automatic try each (SyncRetryPolicy.retryParked).
+    func retryParkedLessons(for userID: String) {
+        let policy = SyncRetryPolicy.standard
+        for record in (try? modelContext.fetch(FetchDescriptor<PendingLessonCompletionRecord>())) ?? [] {
+            let row = record.asPending
+            guard row.ownerUserID == nil || row.ownerUserID == userID, policy.isParked(row) else { continue }
+            record.apply(policy.retryParked(row))
+        }
+        save("retryParkedLessons")
+        queueRevision += 1
+    }
+
+    /// This account's queued lessons a live finish must wait behind (parked ones hold nothing up).
+    func blockingLessonCount(for userID: String) -> Int {
+        QueuedLessonPolicy.blockingLessons(pendingLessonCompletions(), userID: userID)
+    }
+
     /// Review answers that will not be retried (refused, or out of retries), by identity, for the Learn-tab line
     /// (dismissed like the lesson one).
     var reviewDeadLetterIdentities: [String] {
@@ -371,8 +407,10 @@ final class SyncQueueStore: AccountScopedQueue {
 
     // MARK: - Last-known cache (for offline display)
 
+    /// The day basis rides beside the frozen V3 row (AccountCacheKeys.streakDayBasis), since adding a column would
+    /// need a new schema version.
     func lastKnownProgress() -> LessonCompletionProgress? {
-        appSyncState()?.cachedProgress
+        appSyncState()?.cachedProgress?.withDayBasis(UserDefaults.standard.string(forKey: AccountCacheKeys.streakDayBasis))
     }
 
     /// `synced` is true only for progress the server just returned. A local estimate (a heart spent on a wrong
@@ -381,6 +419,7 @@ final class SyncQueueStore: AccountScopedQueue {
     func updateLastKnownProgress(_ progress: LessonCompletionProgress, synced: Bool = true) {
         let state = appSyncState() ?? insertAppSyncState()
         state.setProgress(progress)
+        if let basis = progress.dayBasis { UserDefaults.standard.set(basis, forKey: AccountCacheKeys.streakDayBasis) }
         if synced { state.lastSyncedAt = Date() }
         save("updateLastKnownProgress")
         // Every caller of this function (LessonPlayerView after a
@@ -429,81 +468,96 @@ final class SyncQueueStore: AccountScopedQueue {
 
     // MARK: - Sync
 
-    /// Drains the queue and refreshes the progress and per-course due caches. `isCurrentAccount` is the
-    /// same-account guard: a sign-out (or another sign-in) while this was in flight means the results belong to
-    /// the previous account, whose data the session lifecycle already cleared, so nothing is written back.
+    /// Drains the queue and refreshes the progress and per-course due caches (Kit SyncPass, where the ordering,
+    /// the same-account guard and the progress merge are tested). `refreshAccessToken` must be bound to `userID`
+    /// (Session.refresher(for:)), and `isCurrentAccount` is asked before every send. A pass already in flight is
+    /// awaited instead of overlapped: two overlapping passes would send the same grades twice.
     func runSync(
         accessToken: String,
         userID: String,
         refreshAccessToken: @escaping @Sendable () async -> String?,
-        isCurrentAccount: () -> Bool
+        isCurrentAccount: @escaping @MainActor () -> Bool
     ) async {
-        guard !isSyncing else { return }
-        isSyncing = true
-        // The wakeup is re-armed only once the whole pass is over. Re-arming from apply(), mid-pass, let the new
-        // wakeup fire into the `isSyncing` guard above, do nothing, and never be re-armed.
-        defer {
-            isSyncing = false
-            queueRevision += 1
+        if let currentPass {
+            await currentPass.value
+            return
         }
+        await startPass(accessToken: accessToken, userID: userID, refreshAccessToken: refreshAccessToken,
+                        isCurrentAccount: isCurrentAccount, lessonsOnly: false).value
+    }
+
+    /// A live finish's drain: only the lessons ahead of it, the head sent even inside its backoff, waiting at most
+    /// `timeout`. A pass already in flight is waited for first (within the same timeout) rather than skipped.
+    func drainLessonsBeforeLiveFinish(
+        accessToken: String,
+        userID: String,
+        refreshAccessToken: @escaping @Sendable () async -> String?,
+        isCurrentAccount: @escaping @MainActor () -> Bool,
+        timeout: TimeInterval = 15
+    ) async {
+        _ = await SyncPass.waitAtMost(timeout) { [weak self] in
+            guard let self else { return }
+            if let running = self.currentPass { await running.value }
+            guard self.blockingLessonCount(for: userID) > 0, isCurrentAccount() else { return }
+            await self.startPass(accessToken: accessToken, userID: userID, refreshAccessToken: refreshAccessToken,
+                                 isCurrentAccount: isCurrentAccount, lessonsOnly: true).value
+        }
+    }
+
+    private func startPass(
+        accessToken: String,
+        userID: String,
+        refreshAccessToken: @escaping @Sendable () async -> String?,
+        isCurrentAccount: @escaping @MainActor () -> Bool,
+        lessonsOnly: Bool
+    ) -> Task<Void, Never> {
+        if let currentPass { return currentPass }
         badgeUserID = userID
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        let result = await SyncEngine.sync(
-            pendingLessonCompletions: pendingLessonCompletions(),
-            pendingReviewGrades: pendingReviewGrades(),
-            client: client,
-            currentUserID: userID,
-            refreshAccessToken: refreshAccessToken)
-        guard isCurrentAccount() else { return }
-        apply(result)
-
-        if let lastKnownProgress = result.lastKnownProgress {
-            updateLastKnownProgress(lastKnownProgress)
-        } else if let fetched = try? await client.fetchProgress(course: ActiveCoursePreference.load(for: userID).wireCode) {
-            // SyncEngine only learns progress as a side effect of pushing a completion; with an empty queue
-            // read it directly so the header reflects the server, for the course on screen. Best-effort: a
-            // failure keeps the old cache. While lessons are still queued the server has not seen them, so the
-            // optimistic "studied today" they set stays (QueuedLessonPolicy.merge).
-            guard isCurrentAccount() else { return }
-            let stillQueued = pendingCounts(for: userID).lessons > 0
-            updateLastKnownProgress(QueuedLessonPolicy.merge(fetched: fetched, local: lastKnownProgress(), hasPendingLessons: stillQueued))
-        } else {
-            markSyncedNow()
+        let course = ActiveCoursePreference.load(for: userID).wireCode
+        let pass = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await SyncPass.run(
+                backing: self, client: client, userID: userID, activeCourse: course,
+                refreshAccessToken: refreshAccessToken, isCurrentAccount: isCurrentAccount, lessonsOnly: lessonsOnly)
+            // The wakeup is re-armed only once the whole pass is over. Re-arming mid-pass let the new wakeup fire
+            // into the in-flight guard, do nothing, and never be re-armed.
+            self.currentPass = nil
+            self.queueRevision += 1
         }
-
-        // Every course's due list, so the badge and an offline Review match the course on screen. A course
-        // whose fetch fails is absent, so its last good cache stays.
-        let due = await SyncEngine.refreshDueReviews { course in try await client.fetchDueReviews(course: course) }
-        guard isCurrentAccount() else { return }
-        for (course, items) in due { replaceLastKnownDueReviews(items, course: course) }
+        currentPass = pass
+        return pass
     }
 
     /// Writes one SyncEngine pass back: synced and dropped rows go, dead letters move to their own table,
     /// rescheduled rows keep their place with new attempt and backoff fields. Rows are matched by
     /// queueIdentity, which a retry never changes.
+    /// Row by row through the Kit's own sets (SyncResult.lessonIdentitiesToRemove / lessonUpdates, the same
+    /// ones SyncResult.applied uses in the Kit tests). Another account's rows are in no set, so they stay.
     func apply(_ result: SyncResult, now: Date = Date()) {
-        let lessonRecords = (try? modelContext.fetch(FetchDescriptor<PendingLessonCompletionRecord>())) ?? []
-        let byLesson = Dictionary(lessonRecords.map { ($0.queueIdentity, $0) }, uniquingKeysWith: { a, _ in a })
-        // Another account's rows are in no list, so they stay untouched (AccountQueueRetention).
-        for item in result.syncedLessonCompletions {
-            if let record = byLesson[item.queueIdentity] { modelContext.delete(record) }
+        let removeLessons = result.lessonIdentitiesToRemove, lessonUpdates = result.lessonUpdates
+        for record in (try? modelContext.fetch(FetchDescriptor<PendingLessonCompletionRecord>())) ?? [] {
+            if removeLessons.contains(record.queueIdentity) {
+                modelContext.delete(record)
+            } else if let update = lessonUpdates[record.queueIdentity] {
+                record.apply(update)
+            }
         }
         for dead in result.deadLetteredLessonCompletions {
-            if let record = byLesson[dead.item.queueIdentity] { modelContext.delete(record) }
             modelContext.insert(SyncDeadLetterRecord(kind: "lesson", identity: dead.item.queueIdentity, reason: dead.reason, ownerUserID: dead.item.ownerUserID, failedAt: now))
         }
-        for item in result.rescheduledLessonCompletions { byLesson[item.queueIdentity]?.apply(item) }
 
-        let gradeRecords = (try? modelContext.fetch(FetchDescriptor<PendingReviewGradeRecord>())) ?? []
-        let byGrade = Dictionary(gradeRecords.map { ($0.queueIdentity, $0) }, uniquingKeysWith: { a, _ in a })
-        for item in result.syncedReviewGrades {
-            if let record = byGrade[item.queueIdentity] { modelContext.delete(record) }
+        let removeGrades = result.gradeIdentitiesToRemove, gradeUpdates = result.gradeUpdates
+        for record in (try? modelContext.fetch(FetchDescriptor<PendingReviewGradeRecord>())) ?? [] {
+            if removeGrades.contains(record.queueIdentity) {
+                modelContext.delete(record)
+            } else if let update = gradeUpdates[record.queueIdentity] {
+                record.apply(update)
+            }
         }
         for dead in result.deadLetteredReviewGrades {
-            if let record = byGrade[dead.item.queueIdentity] { modelContext.delete(record) }
             modelContext.insert(SyncDeadLetterRecord(kind: "grade", identity: dead.item.queueIdentity, reason: dead.reason, ownerUserID: dead.item.ownerUserID, failedAt: now))
         }
-        for item in result.rescheduledReviewGrades { byGrade[item.queueIdentity]?.apply(item) }
 
         trimDeadLetters(keeping: 50)
         save("apply")
@@ -536,18 +590,20 @@ final class SyncQueueStore: AccountScopedQueue {
     /// with that account when they had no owner) for its next sign-in here; deletion removes the deleted
     /// account's. AccountQueueRetention decides; this applies it by queueIdentity.
     func applyRetention(_ plan: QueueRetentionPlan) {
+        // Row by row through the plan's own dispositions (the same ones QueueRetentionPlan.applied uses in the Kit
+        // tests).
         for record in (try? modelContext.fetch(FetchDescriptor<PendingLessonCompletionRecord>())) ?? [] {
-            if plan.deleteLessonIdentities.contains(record.queueIdentity) {
-                modelContext.delete(record)
-            } else if let owner = plan.owner, plan.tagLessonIdentities.contains(record.queueIdentity) {
-                record.ownerUserID = owner
+            switch plan.lessonDisposition(record.queueIdentity) {
+            case .keep: break
+            case .delete: modelContext.delete(record)
+            case let .stamp(owner): record.ownerUserID = owner
             }
         }
         for record in (try? modelContext.fetch(FetchDescriptor<PendingReviewGradeRecord>())) ?? [] {
-            if plan.deleteGradeIdentities.contains(record.queueIdentity) {
-                modelContext.delete(record)
-            } else if let owner = plan.owner, plan.tagGradeIdentities.contains(record.queueIdentity) {
-                record.ownerUserID = owner
+            switch plan.gradeDisposition(record.queueIdentity) {
+            case .keep: break
+            case .delete: modelContext.delete(record)
+            case let .stamp(owner): record.ownerUserID = owner
             }
         }
         save("applyRetention")

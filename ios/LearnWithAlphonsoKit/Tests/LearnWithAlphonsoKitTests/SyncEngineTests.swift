@@ -164,10 +164,9 @@ final class SyncEngineTests: XCTestCase {
         XCTAssertEqual(result.rescheduledReviewGrades, [first.rescheduled(attemptCount: 6, nextAttemptAt: fixedNow.addingTimeInterval(30))])
     }
 
-    /// A flaky server does not lose a lesson quickly: 19 transient failures (days of capped backoff) keep it
-    /// queued. The 20th dead-letters it, because both queues are strictly ordered and an item that never
-    /// succeeds would otherwise hold every lesson behind it forever. The dead letter shows on the Learn tab.
-    func testALessonCompletionIsKeptThroughNineteenTransientFailuresAndDeadLetteredOnTheTwentieth() async {
+    /// A flaky server never loses a lesson: 19 transient failures (days of capped backoff) keep it queued. The
+    /// 20th parks it: still queued, holding nothing up (the queue is strictly ordered), waiting for "Try again".
+    func testALessonCompletionIsKeptThroughNineteenTransientFailuresAndParkedOnTheTwentieth() async {
         var item = pendingCompletion(lessonID: "u1l1", queuedAt: fixedNow)
         var now = fixedNow
         let client = makeClient { request in self.jsonResponse(for: request.url!, body: [:], status: 503) }
@@ -180,8 +179,10 @@ final class SyncEngineTests: XCTestCase {
         XCTAssertEqual(item.attemptCount, 19)
         XCTAssertLessThanOrEqual(item.nextAttemptAt!.timeIntervalSince(now), 6 * 60 * 60, "the wait stays capped")
         let last = await SyncEngine.sync(pendingLessonCompletions: [item], pendingReviewGrades: [], client: client, now: now)
-        XCTAssertEqual(last.deadLetteredLessonCompletions, [DeadLetter(item: item, reason: SyncRetryPolicy.exhaustedReason)])
-        XCTAssertTrue(last.rescheduledLessonCompletions.isEmpty)
+        XCTAssertTrue(last.deadLetteredLessonCompletions.isEmpty, "a lesson is never dropped for being unlucky")
+        let parked = try! XCTUnwrap(last.rescheduledLessonCompletions.first)
+        XCTAssertTrue(SyncRetryPolicy.standard.isParked(parked))
+        XCTAssertEqual(parked.queueIdentity, item.queueIdentity)
     }
 
     func testAReviewGradeIsKeptThroughNineteenTransientFailuresAndDeadLetteredOnTheTwentieth() async {
@@ -223,9 +224,21 @@ final class SyncEngineTests: XCTestCase {
         let aged = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [failing], client: serverDown, now: aWeekLater)
         XCTAssertEqual(aged.deadLetteredReviewGrades.map(\.item), [failing])
 
-        let offlineAllWeek = pendingGrade(itemKey: "u1l1:q2", queuedAt: fixedNow)
-        let backOnline = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [offlineAllWeek], client: serverDown, now: aWeekLater)
-        XCTAssertTrue(backOnline.deadLetteredReviewGrades.isEmpty, "its first real failure is one, not three")
+        // A week offline: every pass fails with no connection, which never counts, so the age rule never fires.
+        var offlineAllWeek = pendingGrade(itemKey: "u1l1:q2", queuedAt: fixedNow)
+        let offline = makeClient { _ in throw URLError(.notConnectedToInternet) }
+        var day = fixedNow
+        while day <= aWeekLater.addingTimeInterval(86_400) {
+            let pass = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [offlineAllWeek], client: offline, now: day)
+            XCTAssertTrue(pass.deadLetteredReviewGrades.isEmpty)
+            offlineAllWeek = try! XCTUnwrap(pass.rescheduledReviewGrades.first)
+            day = day.addingTimeInterval(86_400)
+        }
+        XCTAssertEqual(offlineAllWeek.attemptCount, 0, "offline never counts as a failure")
+        // Back online, the first real failure is one, not three: still queued.
+        let backOnline = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [offlineAllWeek], client: serverDown, now: day)
+        XCTAssertTrue(backOnline.deadLetteredReviewGrades.isEmpty)
+        XCTAssertEqual(backOnline.rescheduledReviewGrades.first?.attemptCount, 1)
     }
 
     /// A permanent rejection dead-letters whatever its attempt count, and the queue keeps going.

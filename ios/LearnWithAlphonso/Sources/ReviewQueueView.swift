@@ -47,6 +47,9 @@ struct ReviewQueueView: View {
     /// Task let a quick second tap grade the same card twice and skip the next one.
     @State private var submitGate = SubmitGate()
     private var isSubmitting: Bool { submitGate.isBusy }
+    /// The account this review session opened for. Every attempt is stamped with it, never with whoever is signed
+    /// in by the time a request fails, so another account can never be credited with (or send) these answers.
+    @State private var reviewOwnerUserID: String?
     @State private var errorMessage: String?
     @State private var clearedBonusMessage: String?
     /// Set only when this queue is showing SyncQueueStore's cached
@@ -273,6 +276,7 @@ struct ReviewQueueView: View {
     /// lesson completion's write-loss problem. See docs/v2-kickoffs/
     /// 01-offline-first.md's "Review queue: cache-then-optimistic-grade".
     private func loadQueue() async {
+        reviewOwnerUserID = session.userID
         isLoading = true
         errorMessage = nil
         clearedBonusMessage = nil
@@ -439,7 +443,8 @@ struct ReviewQueueView: View {
         let outcome = computeReviewOutcome(input, today: today, addDays: { addDaysDateString($0) })
 
         // The same submission the online attempt used, so the queued retry carries the same attempt id.
-        syncQueueStore.appendReviewGrade(attempt(for: item, answer: answer))
+        // Refused when there is no owner (signed out before the review opened): nothing to queue then.
+        guard syncQueueStore.appendReviewGrade(attempt(for: item, answer: answer)).isStored else { return }
 
         switch outcome {
         case .retired:
@@ -480,7 +485,7 @@ struct ReviewQueueView: View {
             itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(),
             expectedDueOn: item.hasReviewSnapshot ? item.dueOn : nil,
             expectedLastReviewedAt: item.hasReviewSnapshot ? item.lastReviewedAt : nil,
-            ownerUserID: session.userID)
+            ownerUserID: reviewOwnerUserID ?? session.userID)
         gradeAttempt = started
         return started
     }

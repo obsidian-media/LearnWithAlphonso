@@ -42,6 +42,27 @@ public enum AccountQueueRetention {
     }
 }
 
+extension AccountQueueRetention {
+    /// How long another account's rows wait on this device for that account to sign back in.
+    public static let foreignRowLifetime: TimeInterval = 30 * 24 * 60 * 60
+
+    /// Rows another account left here more than `foreignRowLifetime` ago: that account has not been back, so
+    /// they are deleted instead of kept forever. Run at the start of each sync pass for the signed-in account.
+    public static func expiredForeignRows(
+        currentUserID: String, lessons: [PendingLessonCompletion], grades: [PendingReviewGrade], now: Date,
+        lifetime: TimeInterval = foreignRowLifetime
+    ) -> QueueRetentionPlan {
+        var plan = QueueRetentionPlan(owner: nil)
+        func expired(_ owner: String?, _ queuedAt: Date) -> Bool {
+            guard let owner, owner != currentUserID else { return false }
+            return now.timeIntervalSince(queuedAt) > lifetime
+        }
+        plan.deleteLessonIdentities = Set(lessons.filter { expired($0.ownerUserID, $0.queuedAt) }.map(\.queueIdentity))
+        plan.deleteGradeIdentities = Set(grades.filter { expired($0.ownerUserID, $0.queuedAt) }.map(\.queueIdentity))
+        return plan
+    }
+}
+
 /// Rows to delete and unowned rows to stamp with `owner`, matched by `queueIdentity`. Rows in neither set are
 /// left exactly as they are.
 public struct QueueRetentionPlan: Sendable, Equatable {
@@ -54,6 +75,73 @@ public struct QueueRetentionPlan: Sendable, Equatable {
     public init(owner: String?) {
         self.owner = owner
     }
+
+    public var isEmpty: Bool {
+        deleteLessonIdentities.isEmpty && tagLessonIdentities.isEmpty && deleteGradeIdentities.isEmpty && tagGradeIdentities.isEmpty
+    }
+
+    /// What happens to one stored row. The store and the tests both apply a plan through this, row by row.
+    public enum Disposition: Sendable, Equatable {
+        case keep
+        case delete
+        case stamp(owner: String)
+    }
+
+    public func lessonDisposition(_ identity: String) -> Disposition {
+        disposition(identity, delete: deleteLessonIdentities, tag: tagLessonIdentities)
+    }
+
+    public func gradeDisposition(_ identity: String) -> Disposition {
+        disposition(identity, delete: deleteGradeIdentities, tag: tagGradeIdentities)
+    }
+
+    private func disposition(_ identity: String, delete: Set<String>, tag: Set<String>) -> Disposition {
+        if delete.contains(identity) { return .delete }
+        if let owner, tag.contains(identity) { return .stamp(owner: owner) }
+        return .keep
+    }
+
+    /// The plan applied to plain rows (what SyncQueueStore does to its records, row by row, via the dispositions).
+    public func applied(
+        lessons: [PendingLessonCompletion], grades: [PendingReviewGrade]
+    ) -> (lessons: [PendingLessonCompletion], grades: [PendingReviewGrade]) {
+        let keptLessons: [PendingLessonCompletion] = lessons.compactMap {
+            switch lessonDisposition($0.queueIdentity) {
+            case .keep: return $0
+            case .delete: return nil
+            case let .stamp(owner): return $0.owned(by: owner)
+            }
+        }
+        let keptGrades: [PendingReviewGrade] = grades.compactMap {
+            switch gradeDisposition($0.queueIdentity) {
+            case .keep: return $0
+            case .delete: return nil
+            case let .stamp(owner): return $0.owned(by: owner)
+            }
+        }
+        return (keptLessons, keptGrades)
+    }
+}
+
+/// The one rule every append to the offline queue goes through: a row must name the account that played it. An
+/// unowned row would be adopted by whoever syncs next, so another account could be credited with (or send) this
+/// learner's work. The store refuses it; the caller takes the signed-out path instead.
+public enum QueueAppendResult: Sendable, Equatable {
+    /// Written. `onDisk` is whether THIS save reached a persistent store.
+    case stored(onDisk: Bool)
+    case refusedNoOwner
+
+    public static func decide(owner: String?, saved: () -> Bool, isPersistent: Bool) -> QueueAppendResult {
+        guard let owner, !owner.isEmpty else { return .refusedNoOwner }
+        return .stored(onDisk: saved() && isPersistent)
+    }
+
+    public var isStored: Bool {
+        if case .stored = self { return true }
+        return false
+    }
+
+    public var isOnDisk: Bool { self == .stored(onDisk: true) }
 }
 
 extension PendingLessonCompletion {

@@ -123,11 +123,10 @@ struct StatusHeaderView: View {
         }
     }
 
-    /// The streak as it reads today (StreakDisplay): the stored column keeps the old run after missed days, which
-    /// read as protected while freezes cover them and 0 after that.
+    /// The streak as it reads today (StreakDisplay, the server's own rule): alive only by a freeze reads as
+    /// protected, a run the next lesson would restart reads 0. The profile tile uses the same function.
     static func displayedStreak(_ progress: LessonCompletionProgress, now: Date = Date()) -> StreakDisplay.Shown {
-        StreakDisplay.shown(
-            streak: progress.streak, lastActiveDate: progress.lastActiveDate, streakFreezes: progress.streakFreezes, now: now)
+        StreakDisplay.shown(progress, now: now)
     }
 
     static func shownStreak(_ progress: LessonCompletionProgress?, now: Date = Date()) -> Int {
