@@ -88,8 +88,8 @@ export async function monthlyCapAllows(
     if (error) {
       const code = (error as { code?: string }).code;
       const message = String((error as { message?: string }).message ?? "");
-      const missing =
-        code === "42883" || code === "PGRST202" || /schema cache|does not exist/i.test(message);
+      // Only these two codes mean "my_ai_cost_month does not exist yet"; wording is not matched (see the web twin).
+      const missing = code === "42883" || code === "PGRST202";
       if (missing) {
         console.error(
           "[ai-cap] my_ai_cost_month is not deployed yet; the monthly cap is not enforced",

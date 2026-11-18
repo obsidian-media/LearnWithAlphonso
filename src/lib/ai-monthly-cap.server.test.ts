@@ -182,6 +182,27 @@ describe("a failed cost read: free fails closed, Pro stays open", () => {
   it("kinds the cap never blocks are never refused on a failure either", async () => {
     expect(await monthlyCapRefusal(failing({ message: "boom" }), "support", NOW)).toBeNull();
   });
+  it("only the two 'function missing' codes count as not deployed: wording alone is a failed read", async () => {
+    const wording = failing({ message: 'relation "ai_cost_log" does not exist' });
+    expect(
+      await monthlyCapRefusal(wording, "chat", NOW, { entitlement: ent("inactive") }, "u1"),
+    ).toEqual(UNVERIFIED);
+    const schemaCache = failing({ message: "Could not find the function in the schema cache" });
+    expect(
+      await monthlyCapRefusal(schemaCache, "chat", NOW, { entitlement: ent("inactive") }, "u1"),
+    ).toEqual(UNVERIFIED);
+    for (const code of ["42883", "PGRST202"]) {
+      expect(
+        await monthlyCapRefusal(
+          failing({ message: "x", code }),
+          "chat",
+          NOW,
+          { entitlement: ent("inactive") },
+          "u1",
+        ),
+      ).toBeNull();
+    }
+  });
   it("migration not applied yet: allowed, warned once", async () => {
     const c = failing({
       message: "Could not find the function in the schema cache",

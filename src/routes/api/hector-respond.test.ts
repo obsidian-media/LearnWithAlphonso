@@ -4,6 +4,11 @@ import { AI_OUTPUT_FALLBACK, SAFETY_PREAMBLE } from "@/lib/ai-safety";
 import { buildHectorSystemPrompt } from "@/lib/hector-conversation";
 
 const getUser = vi.fn();
+// is_restricted (the ban check) has its own spy; blockedRpc stays the blocked-term check the tests below drive.
+const banResult = vi.fn(async (_fn: string, _args: unknown) => ({
+  data: false as unknown,
+  error: null as unknown,
+}));
 const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
   data: args._texts.map(() => false),
   error: null,
@@ -12,7 +17,12 @@ let weaknessRows: { category: string; event_type: string; created_at: string }[]
 const weaknessEq = vi.fn(async (_k: string, _v: string) => ({ data: weaknessRows, error: null }));
 const adminFrom = vi.fn((_t: string) => ({ select: (_c: string) => ({ eq: weaknessEq }) }));
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { auth: { getUser }, rpc: blockedRpc, from: adminFrom },
+  supabaseAdmin: {
+    auth: { getUser },
+    rpc: (fn: string, args: { _texts: string[] }) =>
+      fn === "is_restricted" ? banResult(fn, args) : blockedRpc(fn, args),
+    from: adminFrom,
+  },
 }));
 
 const requireAiConsent = vi.fn();
@@ -53,6 +63,8 @@ const realFetch = globalThis.fetch;
 
 beforeEach(() => {
   getUser.mockReset();
+  banResult.mockReset();
+  banResult.mockResolvedValue({ data: false, error: null });
   revenueCatConfigFromEnv.mockReset();
   getProEntitlementStatus.mockReset();
   consumeQuota.mockReset();
@@ -181,6 +193,27 @@ describe("POST /api/hector-respond", () => {
     expect(sent?.signal).toBeInstanceOf(AbortSignal);
     expect(JSON.parse(String(sent?.body)).max_tokens).toBe(512);
     timeout.mockRestore();
+  });
+
+  it("refuses a banned learner with 403 account_suspended before the switch, consent, entitlement or quota", async () => {
+    banResult.mockResolvedValueOnce({ data: true, error: null });
+    globalThis.fetch = vi.fn() as unknown as typeof fetch;
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: "account_suspended" });
+    expect(banResult).toHaveBeenCalledWith("is_restricted", { p_user: "user-1", p_kind: "ban" });
+    expect(requireAiSwitchedOn).not.toHaveBeenCalled();
+    expect(requireAiConsent).not.toHaveBeenCalled();
+    expect(getProEntitlementStatus).not.toHaveBeenCalled();
+    expect(consumeQuota).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it("an unreadable ban check is a retryable 503, not a pass", async () => {
+    banResult.mockResolvedValueOnce({ data: null, error: { message: "down" } });
+    const res = await handler({ request: req() });
+    expect(res.status).toBe(503);
+    expect(consumeQuota).not.toHaveBeenCalled();
   });
 
   it("bounds the whole history sent to the model, not only each turn (40 turns of 4000 characters)", async () => {

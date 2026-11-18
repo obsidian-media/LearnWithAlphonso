@@ -11,6 +11,8 @@ import {
   type MaintenanceDeps,
 } from "./maintenance.server";
 import type { EmailMessage } from "./report-notify.server";
+import { costConfig } from "./ai-cost-config";
+import type { AiCostSweepDeps } from "./ai-cost-sweep.server";
 
 type Row = Record<string, unknown>;
 
@@ -473,6 +475,59 @@ describe("handleMaintenance", () => {
       erasures: { erased: 0, stillPending: 0, expired: 0 },
     });
     expect(body).not.toContain("token-a");
+  });
+
+  describe("the spend breaker's failures reach the pass's status", () => {
+    const cfg = costConfig({});
+    const aiCost = (
+      trip: { data: unknown; error: { message: string; code?: string } | null },
+      send: () => Promise<void> = async () => {},
+    ): AiCostSweepDeps => ({
+      rpc: async (fn) =>
+        fn === "trip_ai_spend_breaker"
+          ? trip
+          : { data: fn === "rollup_ai_cost_log" ? 0 : null, error: null },
+      now: () => new Date("2026-11-18T00:30:00Z"),
+      send,
+      ownerEmail: "owner@example.com",
+      from: "Alphonso <a@example.com>",
+      cfg,
+    });
+    const run = async (a: AiCostSweepDeps) => {
+      process.env.REPORT_NOTIFY_SECRET = SECRET;
+      const { deps } = makeDeps({}, { aiCost: a });
+      const res = await handleMaintenance(req(SECRET), async () => deps);
+      return { status: res.status, body: await res.json() };
+    };
+
+    it("a breaker that cannot be asked fails the pass (500, named in failures)", async () => {
+      const r = await run(aiCost({ data: null, error: { message: "db down" } }));
+      expect(r.status).toBe(500);
+      expect(r.body.ok).toBe(false);
+      expect(r.body.failures).toContain("ai-spend-breaker");
+    });
+
+    it("a trip whose email could not be sent fails the pass too (AI is off and nobody was told)", async () => {
+      const r = await run(
+        aiCost({ data: { tripped: true, totalMicro: 120_000_000 }, error: null }, async () => {
+          throw new Error("smtp");
+        }),
+      );
+      expect(r.status).toBe(500);
+      expect(r.body.failures).toContain("ai-spend-breaker");
+    });
+
+    it("a trip that was emailed, a quiet pass and a database without the function are all fine", async () => {
+      for (const trip of [
+        { data: { tripped: true, totalMicro: 120_000_000 }, error: null },
+        { data: { tripped: false, totalMicro: 1 }, error: null },
+        { data: null, error: { message: "no function", code: "PGRST202" } },
+      ]) {
+        const r = await run(aiCost(trip));
+        expect(r.status, JSON.stringify(trip)).toBe(200);
+        expect(r.body.failures).toEqual([]);
+      }
+    });
   });
 
   it("also runs the support notices when they are wired in, and a failure there stops nothing else", async () => {

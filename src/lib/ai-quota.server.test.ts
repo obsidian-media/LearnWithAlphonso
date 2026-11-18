@@ -4,12 +4,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getUser = vi.fn();
 const rpc = vi.fn();
-// is_restricted (the ban check verifyAuth makes) is answered here, so the queued answers on `rpc` below are only the
-// quota functions, in order.
+// is_restricted (the ban check verifyAuth makes) must go through the SERVICE-ROLE client: signed-in users may not
+// execute it. The learner's own client therefore throws if it is ever asked, and the queued answers on `rpc` below
+// are only the quota functions, in order.
 const banRpc = vi.fn();
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: { rpc: (fn: string, args: unknown) => banRpc(fn, args) },
+}));
 const createClient = vi.fn().mockReturnValue({
   auth: { getUser },
-  rpc: (fn: string, args: unknown) => (fn === "is_restricted" ? banRpc(fn, args) : rpc(fn, args)),
+  rpc: (fn: string, args: unknown) => {
+    if (fn === "is_restricted") throw new Error("is_restricted must not use the learner's client");
+    return rpc(fn, args);
+  },
 });
 vi.mock("@supabase/supabase-js", () => ({ createClient }));
 
@@ -179,6 +186,16 @@ describe("verifyAuth", () => {
 
 describe("verifyAuth refuses a banned learner", () => {
   const authed = () => getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
+
+  it("asks the SERVICE-ROLE client, never the learner's own, and the learner's client is never given the call", async () => {
+    authed();
+    const { verifyAuth } = await import("./ai-quota.server");
+    const r = await verifyAuth(req({ Authorization: "Bearer tok" }));
+    // the learner's client throws on is_restricted, so an ok result proves it was not used for it
+    expect(r.ok).toBe(true);
+    expect(banRpc).toHaveBeenCalledTimes(1);
+    expect(rpc.mock.calls.some((c) => c[0] === "is_restricted")).toBe(false);
+  });
 
   it("asks is_restricted for this user and the ban kind", async () => {
     authed();

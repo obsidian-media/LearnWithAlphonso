@@ -73,6 +73,16 @@ describe("monthlyCapAllows", () => {
       0,
     );
   });
+  it("wording alone is not 'not deployed': a missing-table error is a failed read (free refused)", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    expect(
+      await monthlyCapAllows(
+        failing({ message: 'relation "ai_cost_log" does not exist' }),
+        pro(false),
+      ),
+    ).toBe(false);
+    expect(await monthlyCapAllows(failing({ message: "x", code: "42883" }), pro(false))).toBe(true);
+  });
   it("migration not applied yet: allowed", async () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     expect(await monthlyCapAllows(failing({ message: "x", code: "PGRST202" }), pro(false))).toBe(

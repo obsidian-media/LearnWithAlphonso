@@ -12,7 +12,7 @@
 -- with  UPDATE public.app_switches SET enabled = true, note = NULL, updated_at = now() WHERE key = 'ai';
 -- (docs/operations.md, "AI spend circuit breaker").
 --
--- Depends on app_switches (20261015100000) and ai_cost_union (20261118200000). Version 20261123140100 follows
+-- Depends on app_switches (20261015100000) and ai_cost_union (20261118200000). Version 20261125130000 follows
 -- 20261123140000 (staff rate limits) in the same workstream and is after both dependencies.
 --
 -- Rollback: DROP FUNCTION public.trip_ai_spend_breaker(bigint);

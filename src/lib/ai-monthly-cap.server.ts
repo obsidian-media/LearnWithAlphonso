@@ -89,10 +89,10 @@ export async function readMonthlyCap(
     if (!cfg.enabled) return { status: null, resetsAt };
     const { data, error } = await (supabase as RpcClient).rpc("my_ai_cost_month");
     if (error) {
-      const missing =
-        error.code === "42883" ||
-        error.code === "PGRST202" ||
-        /schema cache|does not exist/i.test(error.message);
+      // Only these two codes mean "my_ai_cost_month does not exist yet" (PostgREST: no such function in the schema
+      // cache; Postgres: undefined function). Message wording is not matched: a different failure that happens to
+      // say "does not exist" (a missing table, say) is a failed read, and a free learner is refused.
+      const missing = error.code === "42883" || error.code === "PGRST202";
       if (missing) {
         if (!warnedNotDeployed) {
           warnedNotDeployed = true;

@@ -12,8 +12,8 @@ import {
 
 const MICRO = 1_000_000;
 
-/** trip_ai_spend_breaker (20261123140100), EXECUTED in a real Postgres (PGlite) over stand-ins for its two dependencies. */
-const FILE = "20261123140100_ai_spend_breaker.sql";
+/** trip_ai_spend_breaker (20261125130000), EXECUTED in a real Postgres (PGlite) over stand-ins for its two dependencies. */
+const FILE = "20261125130000_ai_spend_breaker.sql";
 const sqlText = readFileSync(path.join(process.cwd(), "supabase/migrations", FILE), "utf8");
 
 let db: PGlite;

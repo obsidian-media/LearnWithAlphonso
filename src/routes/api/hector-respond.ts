@@ -54,6 +54,11 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     return noStoreJson({ error: "unauthorized" }, { status: 401 });
   }
   const userId = userData.user.id;
+  // A banned learner's token is still valid: refuse before the switch, consent, entitlement and quota steps (the
+  // shared check makes the same decision verifyAuth makes later, through consumeQuota).
+  const { checkBan } = await import("@/lib/account-ban.server");
+  const banned = await checkBan(userId);
+  if (banned) return noStoreJson({ error: banned.message }, { status: banned.status });
 
   // Account consent comes before entitlement and quota: a learner who has not allowed AI sees the consent sheet,
   // not the paywall, and a refused request spends nothing.

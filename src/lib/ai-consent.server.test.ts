@@ -8,7 +8,10 @@ const from = vi.fn(() => ({ select: () => ({ eq: () => ({ maybeSingle }) }) }));
 const banRpc = vi.fn(async (..._args: unknown[]) => ({ data: false, error: null as unknown }));
 const createClient = vi.fn(() => ({
   auth: { getUser },
-  rpc: (fn: string, args: unknown) => (fn === "is_restricted" ? banRpc(fn, args) : rpc(fn, args)),
+  rpc: (fn: string, args: unknown) => {
+    if (fn === "is_restricted") throw new Error("is_restricted must not use the learner's client");
+    return rpc(fn, args);
+  },
   from,
 }));
 vi.mock("@supabase/supabase-js", () => ({ createClient }));
@@ -16,7 +19,12 @@ const adminMaybeSingle = vi.fn();
 const adminFrom = vi.fn(() => ({
   select: () => ({ eq: () => ({ maybeSingle: adminMaybeSingle }) }),
 }));
-vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: adminFrom } }));
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: {
+    from: adminFrom,
+    rpc: (fn: string, args: unknown) => banRpc(fn, args),
+  },
+}));
 
 const isSwitchOn = vi.fn(async (_key: string) => true);
 vi.mock("./app-switches.server", () => ({ isSwitchOn }));
