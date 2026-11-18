@@ -4,9 +4,10 @@ import { Outlet, isRedirect } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
 
 const getSession = vi.fn();
+const getUser = vi.fn();
 const signOut = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { auth: { getSession, signOut } },
+  supabase: { auth: { getSession, getUser, signOut } },
 }));
 const invalidate = vi.fn();
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -31,6 +32,7 @@ const { Route } = await import("./route");
 
 beforeEach(() => {
   getSession.mockReset();
+  getUser.mockReset();
   invalidate.mockReset();
   signOut.mockReset();
   localStorage.removeItem("lwa.under13.v1");
@@ -97,6 +99,7 @@ describe("_authenticated route guard", () => {
     getSession.mockResolvedValue(signedIn({ id: "u1" }));
     await Route.options.beforeLoad!({} as never);
     expect(getSession).toHaveBeenCalledTimes(1);
+    expect(getUser).not.toHaveBeenCalled();
   });
 
   it("its error screen offers Try again, which re-runs the check, for an offline failure", async () => {
@@ -136,12 +139,43 @@ describe("_authenticated route guard", () => {
 
   it("sends a learner who never completed their profile from /learn to Complete your profile, once", async () => {
     getSession.mockResolvedValue(signedIn({ id: "u1", user_metadata: {} }));
+    getUser.mockResolvedValue({ data: { user: { id: "u1", user_metadata: {} } }, error: null });
     await expect(
       Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never),
     ).rejects.toSatisfy(
       (err: unknown) =>
         isRedirect(err) && (err as { options: { to: string } }).options.to === "/complete-profile",
     );
+  });
+
+  it("a session that still says 'profile needed' after it was completed elsewhere lets the learner in (no loop)", async () => {
+    // The save went through the admin API (or another device): this browser's session is stale, the server is not.
+    getSession.mockResolvedValue(signedIn({ id: "u1", user_metadata: {} }));
+    const fresh = { learner_profile: { completedAt: "2026-11-18T00:00:00Z" } };
+    getUser.mockResolvedValue({ data: { user: { id: "u1", user_metadata: fresh } }, error: null });
+    await expect(
+      Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never),
+    ).resolves.toBeTruthy();
+    expect(getUser).toHaveBeenCalledTimes(1);
+  });
+
+  it("lets the learner in when the double check with the auth server fails, rather than looping", async () => {
+    getSession.mockResolvedValue(signedIn({ id: "u1", user_metadata: {} }));
+    getUser.mockResolvedValue({ data: { user: null }, error: new Error("503") });
+    await expect(
+      Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never),
+    ).resolves.toBeTruthy();
+    getUser.mockRejectedValue(new TypeError("Failed to fetch"));
+    await expect(
+      Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never),
+    ).resolves.toBeTruthy();
+  });
+
+  it("does not ask the auth server when the session already shows the profile done", async () => {
+    const done = { learner_profile: { completedAt: "2026-11-06T00:00:00Z" } };
+    getSession.mockResolvedValue(signedIn({ id: "u1", user_metadata: done }));
+    await Route.options.beforeLoad!({ location: { pathname: "/learn" } } as never);
+    expect(getUser).not.toHaveBeenCalled();
   });
 
   it("does not redirect once completed or dismissed, nor away from any page but /learn", async () => {

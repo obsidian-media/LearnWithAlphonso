@@ -8,7 +8,7 @@ import {
 } from "@/lib/explain";
 import { announceExplainSettingsChanged, useExplainSettings } from "@/lib/explain-settings";
 import { NATIVE_LANGUAGES } from "@/lib/learner-profile";
-import { saveLearnerProfile } from "@/lib/learner-profile.functions";
+import { saveLearnerProfile } from "@/lib/learner-profile.client";
 
 const PANEL = "mt-2 rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card p-4";
 

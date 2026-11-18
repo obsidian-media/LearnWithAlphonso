@@ -8,7 +8,7 @@ import { AvatarPicker } from "./AvatarPicker";
 import { SwitchRow } from "./FirstRunParts";
 import { countryName } from "./FirstRunFlow";
 import { updateProfile } from "../../lib/leaderboard.functions";
-import { saveLearnerProfile } from "../../lib/learner-profile.functions";
+import { saveLearnerProfile } from "../../lib/learner-profile.client";
 import {
   LEARNER_PROFILE_KEY,
   parseLearnerProfile,

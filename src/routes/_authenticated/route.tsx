@@ -29,6 +29,20 @@ function signedOutRedirect(location: { href?: string; pathname?: string } | unde
   } as const;
 }
 
+function profileNeeded(user: { user_metadata?: Record<string, unknown> | null }): boolean {
+  return needsCompleteProfile(parseLearnerProfile(user.user_metadata?.[LEARNER_PROFILE_KEY]));
+}
+
+async function freshUserStillNeedsProfile(): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) return false;
+    return profileNeeded(data.user);
+  } catch {
+    return false;
+  }
+}
+
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ location }) => {
@@ -57,7 +71,11 @@ export const Route = createFileRoute("/_authenticated")({
     if (
       location?.pathname === "/learn" &&
       !completeProfileSkippedThisVisit() &&
-      needsCompleteProfile(parseLearnerProfile(user.user_metadata?.[LEARNER_PROFILE_KEY]))
+      profileNeeded(user) &&
+      // The session's copy of the metadata can be stale: the profile is saved server-side (admin API), maybe on
+      // another device, and Complete your profile itself reads getUser(). Ask the auth server before redirecting;
+      // if it cannot answer, let the learner in rather than risk a /learn <-> /complete-profile loop.
+      (await freshUserStillNeedsProfile())
     ) {
       throw redirect({ to: "/complete-profile" });
     }
