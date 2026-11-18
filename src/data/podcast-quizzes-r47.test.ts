@@ -84,7 +84,7 @@ describe("round 47 podcast quizzes (five drafted episodes, not yet published)", 
 
   it("its seed migration is exactly what the generator builds, version-ordered after the live seed", () => {
     const dir = path.join(process.cwd(), "supabase/migrations");
-    const file = "20261121100000_podcast_quiz_seed_r47.sql";
+    const file = "20261121110000_podcast_quiz_seed_r47.sql";
     expect(readFileSync(path.join(dir, file), "utf8")).toBe(
       buildPodcastQuizSeedSql(PODCAST_QUIZZES_R47),
     );
