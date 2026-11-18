@@ -81,7 +81,10 @@ Deno.test("happy path: a token for this user, lesson and course", async () => {
 
 Deno.test("method, auth and body are checked first", async () => {
   assertEquals((await setup().handler(post(ok, "GET"))).status, 405);
-  assertEquals((await setup({ auth: new Response("no", { status: 401 }) }).handler(post(ok))).status, 401);
+  assertEquals(
+    (await setup({ auth: new Response("no", { status: 401 }) }).handler(post(ok))).status,
+    401,
+  );
   assertEquals((await setup().handler(post({ lessonId: "BAD ID", course: "fr" }))).status, 400);
 });
 
@@ -122,14 +125,17 @@ Deno.test("0 hearts with the gate switched off: a token", async () => {
   assertEquals((await handler(post(ok))).status, 200);
 });
 
-Deno.test("0 hearts and Pro unknown with no stored answer: treated as not Pro, so the normal 409 (never a 503)", async () => {
-  const { handler, db, issued } = setup({ pro: null, cached: null });
-  db.progress = zeroHearts;
-  const res = await handler(post(ok));
-  assertEquals(res.status, 409);
-  assertEquals((await res.json()).error, "out-of-hearts");
-  assertEquals(issued.length, 0);
-});
+Deno.test(
+  "0 hearts and Pro unknown with no stored answer: treated as not Pro, so the normal 409 (never a 503)",
+  async () => {
+    const { handler, db, issued } = setup({ pro: null, cached: null });
+    db.progress = zeroHearts;
+    const res = await handler(post(ok));
+    assertEquals(res.status, 409);
+    assertEquals((await res.json()).error, "out-of-hearts");
+    assertEquals(issued.length, 0);
+  },
+);
 
 Deno.test("0 hearts and Pro unknown: the last stored answer decides, at any age", async () => {
   const pro = setup({ pro: null, cached: true });
@@ -140,19 +146,25 @@ Deno.test("0 hearts and Pro unknown: the last stored answer decides, at any age"
   assertEquals((await notPro.handler(post(ok))).status, 409);
 });
 
-Deno.test("Pro status unreadable while hearts remain: still a token (Pro is not needed)", async () => {
-  const { handler, db } = setup({ pro: null });
-  db.progress = { hearts: 3, hearts_refill_at: null };
-  assertEquals((await handler(post(ok))).status, 200);
-});
+Deno.test(
+  "Pro status unreadable while hearts remain: still a token (Pro is not needed)",
+  async () => {
+    const { handler, db } = setup({ pro: null });
+    db.progress = { hearts: 3, hearts_refill_at: null };
+    assertEquals((await handler(post(ok))).status, 200);
+  },
+);
 
-Deno.test("a hearts read error fails OPEN by design (economy rule): a token, neither a rejection nor a write", async () => {
-  const { handler, db } = setup();
-  db.failReads.add("user_progress");
-  const res = await handler(post(ok));
-  assertEquals(res.status, 200);
-  assert((await res.json()).token);
-});
+Deno.test(
+  "a hearts read error fails OPEN by design (economy rule): a token, neither a rejection nor a write",
+  async () => {
+    const { handler, db } = setup();
+    db.failReads.add("user_progress");
+    const res = await handler(post(ok));
+    assertEquals(res.status, 200);
+    assert((await res.json()).token);
+  },
+);
 
 Deno.test("no progress row is a new learner with a full set", async () => {
   const { handler, db } = setup();

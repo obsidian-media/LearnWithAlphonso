@@ -21,7 +21,9 @@ describe("referral reward wiring", () => {
 
   it("the Edge path settles the referral after the transition is applied and hearts are settled", () => {
     const applied = edge.search(/admin\.rpc\(\s*"apply_lesson_completion_once"/);
-    const settledHearts = edge.indexOf("if (settled.ok && settled.settlement) heartsResult = settled.settlement;");
+    const settledHearts = edge.indexOf(
+      "if (settled.ok && settled.settlement) heartsResult = settled.settlement;",
+    );
     const referral = edge.indexOf(
       "await settleReferralReward(admin, userId, deps.heartsUnlimited)",
     );

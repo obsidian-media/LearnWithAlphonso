@@ -12,18 +12,31 @@ type ConsentReader = { from: (table: string) => any };
  */
 export async function isAiSwitchedOn(admin: ConsentReader): Promise<boolean> {
   try {
-    const { data, error } = await admin.from("app_switches").select("enabled").eq("key", "ai").maybeSingle();
+    const { data, error } = await admin
+      .from("app_switches")
+      .select("enabled")
+      .eq("key", "ai")
+      .maybeSingle();
     if (error) throw new Error(error.message);
     return (data as { enabled?: boolean } | null)?.enabled !== false;
   } catch (e) {
-    console.error(JSON.stringify({ event: "app_switch_read_failed", error: e instanceof Error ? e.message : String(e) }));
+    console.error(
+      JSON.stringify({
+        event: "app_switch_read_failed",
+        error: e instanceof Error ? e.message : String(e),
+      }),
+    );
     return true;
   }
 }
 
 export async function hasAiConsent(admin: ConsentReader, userId: string): Promise<boolean> {
   if (!(await isAiSwitchedOn(admin))) return false;
-  const { data, error } = await admin.from("profiles").select("ai_consent_at").eq("id", userId).maybeSingle();
+  const { data, error } = await admin
+    .from("profiles")
+    .select("ai_consent_at")
+    .eq("id", userId)
+    .maybeSingle();
   if (error) {
     console.error(JSON.stringify({ event: "ai_consent_read_failed", error: error.message }));
     return false;
@@ -47,7 +60,11 @@ export class AiConsentReadError extends Error {
  */
 export async function hasAiConsentOrThrow(admin: ConsentReader, userId: string): Promise<boolean> {
   if (!(await isAiSwitchedOn(admin))) return false;
-  const { data, error } = await admin.from("profiles").select("ai_consent_at").eq("id", userId).maybeSingle();
+  const { data, error } = await admin
+    .from("profiles")
+    .select("ai_consent_at")
+    .eq("id", userId)
+    .maybeSingle();
   if (error) {
     console.error(JSON.stringify({ event: "ai_consent_read_failed", error: error.message }));
     throw new AiConsentReadError(error.message);

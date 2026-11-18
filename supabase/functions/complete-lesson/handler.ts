@@ -319,9 +319,7 @@ async function findLesson(
   admin: SupabaseClient,
   course: string,
   lessonId: string,
-): Promise<
-  { questions: (QuestionRow & { id: string })[]; level: string } | null | "read-failed"
-> {
+): Promise<{ questions: (QuestionRow & { id: string })[]; level: string } | null | "read-failed"> {
   const { data, error } = await admin
     .from("lessons")
     .select(

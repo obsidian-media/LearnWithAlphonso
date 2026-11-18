@@ -59,9 +59,7 @@ function jsonResponse(body: unknown, status: number): Response {
   });
 }
 
-async function authenticate(
-  req: Request,
-): Promise<{ userId: string } | Response> {
+async function authenticate(req: Request): Promise<{ userId: string } | Response> {
   const authHeader = req.headers.get("authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return jsonResponse({ error: "Unauthorized: missing bearer token" }, 401);
@@ -95,11 +93,9 @@ async function authenticate(
 }
 
 function adminClient(): SupabaseClient {
-  return createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { auth: { persistSession: false } },
-  );
+  return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+    auth: { persistSession: false },
+  });
 }
 
 export function liveDeps(): StartLessonSessionDeps {
@@ -149,7 +145,13 @@ async function readHearts(
     .eq("user_id", userId)
     .maybeSingle();
   if (error) {
-    console.error(JSON.stringify({ event: "hearts_gate_read_failed", fn: "start-lesson-session", message: error.message }));
+    console.error(
+      JSON.stringify({
+        event: "hearts_gate_read_failed",
+        fn: "start-lesson-session",
+        message: error.message,
+      }),
+    );
     return null;
   }
   if (!data) return { hearts: MAX_HEARTS, heartsRefillAt: null };
