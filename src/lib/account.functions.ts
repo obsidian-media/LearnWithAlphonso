@@ -129,7 +129,7 @@ export const RLS_SCOPED_EXPORT_TABLES = ["buddy_weeks", "buddy_messages"] as con
 // 20261006130000, BACKLOG 0.0-ae). Everything else, including those four, is
 // cleaned up by ON DELETE CASCADE from auth.users when deleteUser() runs
 // below, so nothing is left behind. review_items, lesson_completions,
-// user_achievements and language_progress were listed here until 20261123100000,
+// user_achievements and language_progress were listed here until 20261125100000,
 // which revoked the client DELETE grant on them (progress rows must not be
 // removable from a client); the cascade removes them with the account.
 // content_reports is the one exception: its

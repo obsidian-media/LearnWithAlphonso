@@ -15,7 +15,7 @@ const migrations = readdirSync(DIR)
   .filter((f) => f.endsWith(".sql"))
   .map((f) => ({ version: f.split("_")[0]!, sql: readFileSync(path.join(DIR, f), "utf8") }));
 
-const THIS_MIGRATION = "20261123100000";
+const THIS_MIGRATION = "20261125100000";
 
 /**
  * Reviewed allow-list of every INSERT / UPDATE / DELETE privilege `anon` or `authenticated` may hold on a

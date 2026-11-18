@@ -787,7 +787,7 @@ describe("GDPR export table coverage", () => {
 
   it("is exactly the tables with a DELETE policy (no dead pre-delete calls)", () => {
     // review_items, lesson_completions, user_achievements and language_progress left this list when the client
-    // DELETE grant on them was revoked (20261123100000): progress rows must not be removable from a client.
+    // DELETE grant on them was revoked (20261125100000): progress rows must not be removable from a client.
     expect([...deleteTables]).toEqual(["friendships"]);
   });
 });
