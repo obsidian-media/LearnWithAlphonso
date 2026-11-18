@@ -153,7 +153,7 @@ fun WatchShelfHost(container: AppContainer, course: String, onOpenPractice: (Vid
 
 /** The Listen home (round 6.1, option A): continue card, course switch, level chips, a painted room per folder. All logic is [ListenShelf]. */
 @Composable
-fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}) {
+fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}, onOpenStories: (String) -> Unit = {}) {
     val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     val positionsRevision by container.podcastPlayer.positionsRevision.collectAsState()
@@ -211,6 +211,7 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
         if (watch.failed || watchVideos.isNotEmpty()) {
             item(key = "watch") { WatchShelfSection(watchVideos, watch.failed, onRetry = watchVm::load, onOpen = openVideo) }
         }
+        item(key = "stories") { StoriesEntryRow { onOpenStories(course) } }
         if (levels.isNotEmpty()) {
             item {
                 DsChipRow {

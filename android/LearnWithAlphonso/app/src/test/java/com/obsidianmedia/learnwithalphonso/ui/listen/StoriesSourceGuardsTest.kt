@@ -1,0 +1,101 @@
+package com.obsidianmedia.learnwithalphonso.ui.listen
+
+import java.io.File
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/**
+ * The graded-stories promises, pinned in the source because the Compose views are not run on the JVM (the twin of
+ * PodcastQuizSourceGuardsTest and ios-stories-guards.test.ts): the check is graded on the server through the
+ * complete-story-check Edge Function (never the service-role RPC from the client), the client sends only the chosen answers,
+ * and the screen shows only what the server returned.
+ */
+class StoriesSourceGuardsTest {
+    private fun read(path: String) = File(path).readText().replace("\r\n", "\n")
+
+    private val client = "../core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/StoriesClient.kt"
+    private val ui = "src/main/java/com/obsidianmedia/learnwithalphonso/ui/listen/StoriesUi.kt"
+    private val shelf = "src/main/java/com/obsidianmedia/learnwithalphonso/ui/listen/ListenShelfUi.kt"
+    private val quiz = "src/main/java/com/obsidianmedia/learnwithalphonso/ui/listen/PodcastQuizUi.kt"
+
+    /** Code only: comments may say what is forbidden. */
+    private fun code(text: String) = text.lines().filterNot { it.trim().startsWith("//") || it.trim().startsWith("*") || it.trim().startsWith("/*") }.joinToString("\n")
+
+    private fun submitBody(): String {
+        val src = code(read(client))
+        val start = src.indexOf("suspend fun submitCheck(")
+        assertTrue("submitCheck exists", start >= 0)
+        val bodyStart = src.indexOf("val body = buildJsonObject {", start)
+        val bodyEnd = src.indexOf("http.function(CHECK_FUNCTION, body)", bodyStart)
+        assertTrue("the body is built before it is sent", bodyStart in 0 until bodyEnd)
+        return src.substring(bodyStart, bodyEnd)
+    }
+
+    @Test
+    fun `the request carries exactly storyId and the chosen answers`() {
+        val keys = Regex("""put\("([A-Za-z]+)"""").findAll(submitBody()).map { it.groupValues[1] }.toList()
+        assertEquals(listOf("storyId", "answers", "questionId", "choiceIndex"), keys)
+    }
+
+    @Test
+    fun `no score, count, XP or user id is ever put in the request`() {
+        val body = submitBody()
+        for (word in listOf("score", "correct", "xp", "total", "streak", "best", "answerIndex", "user")) {
+            assertFalse("the request must not carry '$word'", Regex(word, RegexOption.IGNORE_CASE).containsMatchIn(body))
+        }
+    }
+
+    @Test
+    fun `the check goes to the grading Edge Function and the service-role rpc is never called from the client`() {
+        val src = code(read(client))
+        assertTrue(src.contains("const val CHECK_FUNCTION = \"complete-story-check\""))
+        assertEquals(1, Regex(""""complete-story-check"""").findAll(src).count())
+        assertFalse(src.contains("submit_story_check"))
+        assertFalse(code(read(ui)).contains("submit_story_check"))
+    }
+
+    @Test
+    fun `progress is written only through the save_story_progress rpc`() {
+        val src = code(read(client))
+        assertTrue(src.contains("http.rpc(\"save_story_progress\""))
+        // The table has no client write grant: nothing posts or patches story_progress itself.
+        assertFalse(Regex("""HttpMethod\.(Post|Patch|Put),\s*"story_progress"""").containsMatchIn(src))
+        assertTrue(src.contains("\"published\" to \"eq.true\""))
+    }
+
+    @Test
+    fun `the check sheet is the shared quiz run with the story's own sender and no XP line`() {
+        val src = code(read(ui))
+        assertTrue(src.contains("submit = { answers, _ -> container.storiesClient.submitCheck(story.id, answers) }"))
+        assertTrue(src.contains("resultNote = { StoryCopy.COUNTS_LINE }"))
+        // The score on screen is the server's: nothing here counts right answers.
+        for (banned in listOf(".count {", ".count(", "sumOf", "xpGain", "answerIndex")) {
+            assertFalse("the stories UI must not compute '$banned'", src.contains(banned))
+        }
+    }
+
+    @Test
+    fun `the podcast quiz keeps its own sender and XP line by default`() {
+        val src = read(quiz)
+        assertTrue(src.contains("submit = submit ?: { answers, finishedAt -> container.podcastClient.submitQuiz(episodeId, answers, finishedAt) }"))
+        assertTrue(src.contains("resultNote?.invoke(result) ?: PodcastQuizCopy.xpLine(result)"))
+    }
+
+    @Test
+    fun `narration uses the existing tts client and the core narration rules, and a tapped word opens the save sheet`() {
+        val src = code(read(ui))
+        assertTrue(src.contains("container.aiClient.synthesizeSpeech("))
+        assertTrue(src.contains("Stories.nextSegment("))
+        assertTrue(src.contains("finishedCurrent()"))
+        assertTrue(src.contains("TappableText("))
+        assertTrue(src.contains("SaveWordMode.AllWords"))
+        assertTrue(src.contains("SaveWordHost(container)"))
+    }
+
+    @Test
+    fun `the library is reachable from the Listen shelf`() {
+        assertTrue(code(read(shelf)).contains("StoriesEntryRow { onOpenStories(course) }"))
+    }
+}

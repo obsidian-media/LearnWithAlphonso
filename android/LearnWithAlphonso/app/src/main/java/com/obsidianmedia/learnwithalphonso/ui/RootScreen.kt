@@ -84,6 +84,8 @@ import com.obsidianmedia.learnwithalphonso.ui.profile.ProfileHubScreen
 import com.obsidianmedia.learnwithalphonso.ui.learn.LearnScreen
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenFolderScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.StoriesLibraryScreen
+import com.obsidianmedia.learnwithalphonso.ui.listen.StoryReaderScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenScreen
 import com.obsidianmedia.learnwithalphonso.ui.listen.ListenViewModel
 import com.obsidianmedia.learnwithalphonso.ui.listen.PodcastMiniBar
@@ -351,6 +353,7 @@ private fun SignedInApp(
                 ListenScreen(
                     container, listenVm,
                     onOpenFolder = { nav.navigate(Routes.listenFolder(it)) },
+                    onOpenStories = { nav.navigate(Routes.stories(it)) },
                     // After a video: one tap to the matching lesson, Talk scenario or story scene.
                     onOpenPractice = { target ->
                         when (target) {
@@ -361,6 +364,10 @@ private fun SignedInApp(
                     },
                 )
             }
+            composable(Routes.STORIES) { entry ->
+                StoriesLibraryScreen(container, entry.arguments?.getString("course") ?: container.activeCourse.course.value.code, onBack = { nav.popBackStack() }, onOpen = { nav.navigate(Routes.story(it)) })
+            }
+            composable(Routes.STORY) { entry -> StoryReaderScreen(container, entry.arguments?.getString("id") ?: "", onBack = { nav.popBackStack() }) }
             composable(Routes.LISTEN_FOLDER) { entry ->
                 val owner = remember(entry) { nav.getBackStackEntry(Routes.LISTEN) }
                 val listenVm: ListenViewModel = viewModel(owner) { ListenViewModel(container.podcastClient, { container.downloads.entries() }, { container.connectivity.isConnected.value }, { container.activeCourse.course.value.code }, { container.downloads.removeAll(it) }, { container.podcastPlayer.state.value.episode?.id }, onFolders = { container.podcastFolders.value = it }) }

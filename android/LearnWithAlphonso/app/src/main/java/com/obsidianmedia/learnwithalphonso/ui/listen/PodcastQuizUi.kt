@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastEpisode
+import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizAnswer
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizBest
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizError
@@ -78,14 +79,20 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PodcastQuizSheet(container: AppContainer, title: String, episodeId: String, offer: PodcastQuizOffer, onSaved: (PodcastQuizResult) -> Unit, onDismiss: () -> Unit) {
+fun PodcastQuizSheet(
+    container: AppContainer, title: String, episodeId: String, offer: PodcastQuizOffer, onSaved: (PodcastQuizResult) -> Unit, onDismiss: () -> Unit,
+    /** Sends the answers somewhere other than a podcast quiz's Edge Function (the story check passes its own); null keeps the podcast quiz's. */
+    submit: (suspend (answers: List<PodcastQuizAnswer>, completedAtMillis: Long) -> PodcastQuizResult)? = null,
+    /** The line under the result; null keeps the podcast quiz's XP line. */
+    resultNote: ((PodcastQuizResult) -> String)? = null,
+) {
     val ds = LocalAlphonsoTokens.current
     // One session per time the sheet is opened.
     val session = remember {
         PodcastQuizSession(
             offer = offer,
             scope = container.appLifetimeScope,
-            submit = { answers, finishedAt -> container.podcastClient.submitQuiz(episodeId, answers, finishedAt) },
+            submit = submit ?: { answers, finishedAt -> container.podcastClient.submitQuiz(episodeId, answers, finishedAt) },
             onSaved = onSaved,
         )
     }
@@ -111,7 +118,7 @@ fun PodcastQuizSheet(container: AppContainer, title: String, episodeId: String, 
                     }
                 }
                 is PodcastQuizPhase.Error -> ErrorView(phase.error, onRetry = session::retry)
-                PodcastQuizPhase.Done -> run.result?.let { result -> ResultView(result, run.questions) }
+                PodcastQuizPhase.Done -> run.result?.let { result -> ResultView(result, run.questions, resultNote) }
                 PodcastQuizPhase.Empty -> DsEmptyState(PodcastQuizCopy.message(PodcastQuizError.NOT_FOUND), null, artAsset = "lesson/hmm.webp")
             }
             LessonEdgeButton(if (run.phase == PodcastQuizPhase.Done) "Done" else "Leave", EdgeVariant.SECONDARY, onDismiss)
@@ -162,13 +169,13 @@ private fun ErrorView(error: PodcastQuizError, onRetry: () -> Unit) {
 }
 
 @Composable
-private fun ResultView(result: PodcastQuizResult, questions: List<PodcastQuizQuestion>) {
+private fun ResultView(result: PodcastQuizResult, questions: List<PodcastQuizQuestion>, resultNote: ((PodcastQuizResult) -> String)?) {
     val ds = LocalAlphonsoTokens.current
     val pose = rememberFirstRunAsset("poses/alphonso-listening-headphones.webp")
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
         pose?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * 3).clearAndSetSemantics { }) }
         Text("${result.correct} of ${result.total} correct", style = DisplayType, color = ds.brand, textAlign = TextAlign.Center)
-        Text(PodcastQuizCopy.xpLine(result), style = FootnoteType, color = ds.inkSoft)
+        Text(resultNote?.invoke(result) ?: PodcastQuizCopy.xpLine(result), style = FootnoteType, color = ds.inkSoft)
     }
     val missed = questions.filter { it.id in result.missedQuestionIds }
     if (missed.isNotEmpty()) {
