@@ -352,10 +352,6 @@ suspend fun ProgressSyncClient.fetchProfileCountry(userId: String): String? {
     return row.string("country")?.takeIf { it in com.obsidianmedia.learnwithalphonso.core.firstrun.LearnerProfileLists.countries }
 }
 
-suspend fun ProgressSyncClient.updateProfileDisplayName(displayName: String, userId: String) {
-    http.requireSuccess(http.rest(HttpMethod.Patch, "profiles", mapOf("id" to "eq.$userId"), body = buildJsonObject { put("display_name", displayName) }, headers = mapOf("Prefer" to "return=minimal")))
-}
-
 suspend fun ProgressSyncClient.updateProfileAvatarSeed(avatarSeed: String, userId: String) {
     http.requireSuccess(http.rest(HttpMethod.Patch, "profiles", mapOf("id" to "eq.$userId"), body = buildJsonObject { put("avatar_seed", avatarSeed) }, headers = mapOf("Prefer" to "return=minimal")))
 }

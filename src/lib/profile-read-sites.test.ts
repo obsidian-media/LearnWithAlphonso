@@ -34,12 +34,12 @@ const EXPECTED_SITES: Record<string, number> = {
   "src/lib/support-chat-runtime.server.ts": 1, // Help chat: display name of the staff author of a reply, reduced to a first name before it leaves the server (service role)
   "src/lib/support-notify.server.ts": 1, // reply notice: the staff author's display name, reduced to a first name for the notice label (service role)
   "src/lib/staff-user-facts.server.ts": 1, // staff console learner page: display names of one learner and note authors (service role)
-  "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+DisplayIdentity.swift": 3, // own GET + 2 PATCH
+  "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+DisplayIdentity.swift": 2, // own GET + avatar_seed PATCH (the name goes through confirm_display_name)
   // 3 = own theme GET + PATCH, plus the PATCH shape quoted in the file's doc comment (line 13).
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+Profile.swift": 3,
   // Complete your profile's prefill: the leaderboard country, own row GET.
   "ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/ProgressSyncClient+Country.swift": 1,
-  "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/SocialClient.kt": 4, // + the own-row country GET (Complete your profile)
+  "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/SocialClient.kt": 3, // own identity GET, avatar_seed PATCH, the own-row country GET (Complete your profile); the name goes through confirm_display_name
   "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/ProgressSyncClient.kt": 2,
   // Profile overview: display_name, avatar_seed, country, own row (id = me).
   "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/net/ProfileOverviewClient.kt": 1,

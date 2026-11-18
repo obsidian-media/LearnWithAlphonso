@@ -131,3 +131,9 @@ no client INSERT or UPDATE (`claim_device_token` only) and a token-shape check; 
 `sender_id, recipient_id` and UPDATE on `read_at` only. A trigger caps nudges and content reports at 20 per hour per
 sender and drops podcast play events past 120 per hour. `profiles.country` must be two capital letters
 (`20261105100200`). The `podcast-audio` bucket can no longer be listed (`20261105100300`).
+
+### Client write privileges, 2026-11-23 (`20261125100000_client_write_privileges.sql`)
+
+Progress and reward tables are no longer deletable from a client: `authenticated` lost DELETE on `lesson_completions`, `language_progress`, `review_items`, `user_achievements`, and UPDATE and DELETE on `podcast_play_events`. `deleteMyAccount` no longer pre-deletes from them (ON DELETE CASCADE removes the rows with the account). `profiles` went from table-level INSERT/UPDATE to a column-level UPDATE on `avatar_seed`, `theme`, `country`; the name is written only through `confirm_display_name`. Per-table reasoning for the grants that stay is in the migration header.
+
+`src/lib/client-write-grants-guard.test.ts` (parser: `src/lib/client-write-grants.ts`) computes every table's final INSERT/UPDATE/DELETE privileges for `anon` and `authenticated` from all migrations, including the implicit platform grants of tables created before 2026-10-06, and fails on anything not on its reviewed allow-list. A new client write privilege needs an entry there with a reason.

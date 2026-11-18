@@ -107,7 +107,8 @@ DB triggers call `learn.alphonsoecosystem.app/api/internal/{report-notify,suppor
 ## GitHub Actions secrets (build / deploy / mobile)
 
 - **Deploy & CI:** `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
-  `LESSON_SESSION_SECRET`, `SEND_PUSH_SECRET`, `APNS_*`, `FCM_*`, `TYPES_REGEN_DEPLOY_KEY`.
+  `LESSON_SESSION_SECRET`, `SEND_PUSH_SECRET`, `APNS_*`, `FCM_*`, `TYPES_REGEN_DEPLOY_KEY`, `VERCEL_TOKEN` (see
+  below).
 - **iOS:** `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_KEY_P8_BASE64`,
   `IOS_DIST_CERTIFICATE_P12_BASE64`, `IOS_DIST_CERTIFICATE_PASSWORD`, `IOS_PROVISIONING_PROFILE_BASE64`,
   `IOS_PROVISIONING_PROFILE_UUID`, `IOS_WIDGET_PROVISIONING_PROFILE_BASE64`, `IOS_WIDGET_PROVISIONING_PROFILE_UUID`,
@@ -121,6 +122,37 @@ DB triggers call `learn.alphonsoecosystem.app/api/internal/{report-notify,suppor
 
 Mobile apps have **no runtime env** — Supabase URL/key and the API base are compiled in; the only build-time
 injections are the RevenueCat public keys and PostHog keys above.
+
+### `VERCEL_TOKEN`: web goes live only after the database deploy
+
+Vercel builds every main commit and, by default, points the production domains (`learn.alphonsoecosystem.app`,
+`admin.alphonsoecosystem.app`) at the build as soon as it is ready, which can be before the CI job "Deploy Supabase
+migrations + Edge Functions" has applied the migrations the new code needs. The CI job **"Promote web to
+production"** (`promote-web` in `.github/workflows/ci.yml`, runs after that deploy; logic in
+`scripts/promote-vercel.ts`) points both domains at this commit's Vercel build once the database is ready. It never
+moves production back to an older commit, and skips a project Vercel did not build for that commit.
+
+**⚠ O** until set: without the secret the job prints a warning and passes, and Vercel keeps going live on its own.
+
+Owner steps, in this order:
+
+1. Vercel → Account Settings → Tokens: create a token scoped to the team **shayans-projects-d00acc44** (the team that
+   owns `learnwithalphonso` and `learnwithalphonso-admin`), with an expiry you will track.
+2. GitHub → repo Settings → Secrets and variables → Actions → New repository secret: name `VERCEL_TOKEN`, value the
+   token.
+3. Merge any change to main and wait for "Promote web to production" to go green with a log line "now serves …" or
+   "the production domain already serves this build" for both web and admin. While Auto-assign is still on, the
+   second message is expected: the job sees that Vercel already moved the domain and sends no promote request.
+4. Only after step 3 is green: on **both** Vercel projects, open Settings → Environments → Production → Branch
+   Tracking and turn off **Auto-assign Custom Production Domains**. From then on each main build waits as a staged
+   deployment until the job promotes it.
+
+If the job fails after step 4, each project has its own outcome: web may already be on the new build while admin
+stays on the previous one (or the other way round). A project that failed stays on its previous build (safe, just
+stale). Check the job log, which has one line per project, and both domains before acting; then promote the stale
+one by hand from that project's Deployments list (… → Promote), or rerun the job. The job also fails, without moving
+anything, when git cannot tell whether the live commit is newer than this one. To undo the whole change, turn the
+toggle back on.
 
 ---
 

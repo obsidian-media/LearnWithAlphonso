@@ -14,33 +14,45 @@ import Foundation
 /// it stays covered by this Kit's normal fake-requester XCTest pattern
 /// instead of needing an app-target test target this project doesn't have.
 ///
-/// Failures are classified (LessonCompletionError): transient ones back off
-/// and retry forever, only permanent ones are dead-lettered, so one bad item
-/// never blocks the queue and a flaky network never loses one. Rows that belong to another account are dropped, never sent.
+/// Failures are classified (LessonCompletionError): transient ones back off and retry, permanent ones are
+/// dead-lettered, and an item that keeps failing transiently stops holding the queue once its retries run out
+/// (SyncRetryPolicy: a grade is dead-lettered, a lesson is parked for the learner's "Try again"), so one poison
+/// item cannot hold the queue behind it forever. Rows that belong to another account are left in place, never
+/// sent (AccountQueueRetention).
+///
+/// `isCurrentAccount` is asked before every send: a pass started for one account stops the moment another
+/// account is signed in, instead of finishing the first account's queue with whatever token comes next.
 public enum SyncEngine {
-    /// Lesson completions drain oldest-first but independently of outcome
-    /// -- `complete-lesson` is replay-safe (see the design doc's "Sync
-    /// conflict handling"), so a failed item doesn't block later ones.
+    /// Both queues drain **strictly** oldest-first and stop at the first item that must wait (a transient
+    /// failure, a backoff not yet over, out of hearts, no valid token), rather than skipping ahead.
     ///
-    /// Review grades drain **strictly** oldest-first and stop at the first
-    /// transient failure, rather than skipping ahead: `grade-review` reads
-    /// and advances an item's *current* SM-2 state, so grade N+1 must be
-    /// replayed against whatever state grade N actually left the item in
-    /// server-side. Applying grade N+1 before N even landed (because N
-    /// merely failed this attempt, not permanently) would silently corrupt
-    /// that item's schedule. A grade the server will never accept (a 4xx)
-    /// is dead-lettered and the next one continues. See the design doc's
-    /// "Known limitation: concurrent-device review grading" for the one
-    /// case this still can't fully protect against.
+    /// Lesson completions: `complete-lesson` books the day it is told about as `max(last_active_date, day)`, so
+    /// a newer day landing first moves last_active_date past an older queued day, and that older day is then
+    /// lost for the streak. Sending them in order is the only way every day counts.
+    ///
+    /// Review grades: `grade-review` reads and advances an item's *current* SM-2 state, so grade N+1 must be
+    /// replayed against whatever state grade N actually left the item in server-side. Applying grade N+1 before N
+    /// even landed (because N merely failed this attempt, not permanently) would silently corrupt that item's
+    /// schedule. See the design doc's "Known limitation: concurrent-device review grading" for the one case this
+    /// still can't fully protect against.
+    ///
+    /// An item the server will never accept (a 4xx) is dead-lettered and the next one continues.
     public static func sync(
         pendingLessonCompletions: [PendingLessonCompletion],
         pendingReviewGrades: [PendingReviewGrade],
         client: ProgressSyncClient,
         currentUserID: String? = nil,
         refreshAccessToken: (@Sendable () async -> String?)? = nil,
+        isCurrentAccount: (@Sendable () async -> Bool)? = nil,
+        ignoreHeadLessonBackoff: Bool = false,
         now: Date = Date(),
         policy: SyncRetryPolicy = .standard
     ) async -> SyncResult {
+        func stillCurrent() async -> Bool {
+            guard let isCurrentAccount else { return true }
+            return await isCurrentAccount()
+        }
+        var accountChanged = false
         func isForeign(_ owner: String?) -> Bool {
             guard let owner, let currentUserID else { return false }
             return owner != currentUserID
@@ -61,23 +73,31 @@ public enum SyncEngine {
         var synced: [PendingLessonCompletion] = []
         var rescheduled: [PendingLessonCompletion] = []
         var dead: [DeadLetter<PendingLessonCompletion>] = []
-        var foreign: [PendingLessonCompletion] = []
         var lastKnownProgress: LessonCompletionProgress?
 
-        for completion in pendingLessonCompletions.sorted(by: { $0.queuedAt < $1.queuedAt }) {
-            if isForeign(completion.ownerUserID) { foreign.append(completion); continue }
-            if let next = completion.nextAttemptAt, next > now { continue }
+        var isHead = true
+        lessonLoop: for completion in pendingLessonCompletions.sorted(by: { $0.queuedAt < $1.queuedAt }) {
+            // Another account's row is not in this account's order at all: skip it, keep it. A parked lesson
+            // waits for the learner's "Try again" and holds nothing up.
+            if isForeign(completion.ownerUserID) || policy.isParked(completion) { continue }
+            // A live finish is about to send its own lesson: the head's backoff must not make it wait behind.
+            let skipBackoff = isHead && ignoreHeadLessonBackoff
+            isHead = false
+            if !skipBackoff, let next = policy.clampedNextAttempt(completion.nextAttemptAt, now: now), next > now { break lessonLoop }
+            guard await stillCurrent() else { accountChanged = true; break lessonLoop }
             switch await service.complete(LessonCompletionRequest(completion)) {
             case let .success(result):
                 synced.append(completion)
                 lastKnownProgress = result.progress
             case .failure(.rejected(code: "out-of-hearts")):
-                // Not a failure of the lesson: wait for a refill, without spending an attempt.
+                // Not a failure of the lesson: wait for a refill, without spending an attempt. The ones behind it
+                // would be refused the same way.
                 rescheduled.append(completion.rescheduled(
                     attemptCount: completion.attemptCount,
                     nextAttemptAt: now.addingTimeInterval(HeartsEconomy.heartRefillSeconds)))
+                break lessonLoop
             case .failure(.unauthorized):
-                continue
+                break lessonLoop
             case .failure(.offline):
                 // No connection is not the server struggling, so it earns no growing backoff: the item waits the
                 // shortest delay and its failure count is left alone. Backing off here left a lesson finished on
@@ -85,12 +105,20 @@ public enum SyncEngine {
                 rescheduled.append(completion.rescheduled(
                     attemptCount: completion.attemptCount,
                     nextAttemptAt: now.addingTimeInterval(policy.baseDelay)))
+                break lessonLoop
             case let .failure(error) where error.shouldQueue:
-                // Transient: back off and keep it, however many times it fails. attemptCount only drives the backoff.
                 let failures = completion.attemptCount + 1
+                if policy.hasExhaustedRetries(failures: failures, queuedAt: completion.queuedAt, now: now, isTimeout: error == .timeout) {
+                    // Parked, not dropped: it stays queued (attemptCount at the cap) for "Try again".
+                    rescheduled.append(completion.rescheduled(
+                        attemptCount: max(failures, policy.maxAttempts),
+                        nextAttemptAt: now.addingTimeInterval(policy.maxDelay)))
+                    continue lessonLoop
+                }
                 rescheduled.append(completion.rescheduled(
                     attemptCount: failures,
                     nextAttemptAt: now.addingTimeInterval(policy.delay(afterAttempt: failures))))
+                break lessonLoop
             case let .failure(error):
                 dead.append(DeadLetter(item: completion, reason: error.reasonCode))
             }
@@ -99,26 +127,21 @@ public enum SyncEngine {
         var syncedGrades: [PendingReviewGrade] = []
         var rescheduledGrades: [PendingReviewGrade] = []
         var deadGrades: [DeadLetter<PendingReviewGrade>] = []
-        var foreignGrades: [PendingReviewGrade] = []
         var gradeRefreshed = false
 
         gradeLoop: for grade in pendingReviewGrades.sorted(by: { $0.queuedAt < $1.queuedAt }) {
-            if isForeign(grade.ownerUserID) { foreignGrades.append(grade); continue }
-            if let next = grade.nextAttemptAt, next > now { break gradeLoop }
+            if accountChanged { break gradeLoop }
+            if isForeign(grade.ownerUserID) { continue }
+            if let next = policy.clampedNextAttempt(grade.nextAttemptAt, now: now), next > now { break gradeLoop }
+            guard await stillCurrent() else { accountChanged = true; break gradeLoop }
             do {
                 do {
-                    _ = try await makeClient(tokenBox.value).gradeReview(
-                        itemKey: grade.itemKey, answer: grade.answer, course: grade.course,
-                        attemptID: grade.queueIdentity, expectedDueOn: grade.expectedDueOn,
-                        expectedLastReviewedAt: grade.expectedLastReviewedAt)
+                    _ = try await makeClient(tokenBox.value).gradeReview(grade)
                 } catch let ProgressSyncError.server(status, _) where status == 401 && !gradeRefreshed {
                     gradeRefreshed = true
                     guard let refreshAccessToken, let fresh = await refreshAccessToken() else { break gradeLoop }
                     tokenBox.value = fresh
-                    _ = try await makeClient(fresh).gradeReview(
-                        itemKey: grade.itemKey, answer: grade.answer, course: grade.course,
-                        attemptID: grade.queueIdentity, expectedDueOn: grade.expectedDueOn,
-                        expectedLastReviewedAt: grade.expectedLastReviewedAt)
+                    _ = try await makeClient(fresh).gradeReview(grade)
                 }
                 syncedGrades.append(grade)
             } catch {
@@ -133,6 +156,11 @@ public enum SyncEngine {
                 }
                 if classified.shouldQueue {
                     let failures = grade.attemptCount + 1
+                    if policy.hasExhaustedRetries(failures: failures, queuedAt: grade.queuedAt, now: now, isTimeout: classified == .timeout) {
+                        // A grade that has failed this long is poison, not unlucky: let the ones behind it through.
+                        deadGrades.append(DeadLetter(item: grade, reason: SyncRetryPolicy.exhaustedReason))
+                        continue gradeLoop
+                    }
                     rescheduledGrades.append(grade.rescheduled(
                         attemptCount: failures,
                         nextAttemptAt: now.addingTimeInterval(policy.delay(afterAttempt: failures))))
@@ -145,8 +173,29 @@ public enum SyncEngine {
         return SyncResult(
             syncedLessonCompletions: synced, syncedReviewGrades: syncedGrades, lastKnownProgress: lastKnownProgress,
             rescheduledLessonCompletions: rescheduled, deadLetteredLessonCompletions: dead,
-            droppedForeignLessonCompletions: foreign, rescheduledReviewGrades: rescheduledGrades,
-            deadLetteredReviewGrades: deadGrades, droppedForeignReviewGrades: foreignGrades)
+            rescheduledReviewGrades: rescheduledGrades, deadLetteredReviewGrades: deadGrades,
+            stoppedForAccountChange: accountChanged)
+    }
+
+    /// When the next `sync` pass could send something for `userID`; nil means there is nothing to wake for.
+    /// Mirrors `sync`: each queue is strictly ordered, so only its oldest row of this account counts (nothing
+    /// behind it can go first), and a retry time is read clamped like `sync` reads it. Rows with no owner (queued
+    /// by an older build) are synced as the current account's, so they count too.
+    public static func nextWakeup(
+        lessons: [PendingLessonCompletion],
+        grades: [PendingReviewGrade],
+        userID: String,
+        now: Date = Date(),
+        policy: SyncRetryPolicy = .standard
+    ) -> Date? {
+        let mine: (String?) -> Bool = { $0 == nil || $0 == userID }
+        let oldestLesson = lessons.filter { mine($0.ownerUserID) && !policy.isParked($0) }.min { $0.queuedAt < $1.queuedAt }
+        let oldestGrade = grades.filter { mine($0.ownerUserID) }.min { $0.queuedAt < $1.queuedAt }
+        let dates = [
+            oldestLesson.map { policy.clampedNextAttempt($0.nextAttemptAt, now: now) ?? now },
+            oldestGrade.map { policy.clampedNextAttempt($0.nextAttemptAt, now: now) ?? now },
+        ].compactMap { $0 }
+        return dates.min()
     }
 
     /// The courses whose due-review cache the app keeps.

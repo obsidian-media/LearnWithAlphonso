@@ -4,16 +4,12 @@ import Foundation
 /// extension file, not added to ProgressSyncClient.swift directly, same
 /// merge-conflict-avoidance reasoning as ProgressSyncClient+Season.swift.
 ///
-/// `profiles` never had its direct-write grant revoked the way the
-/// gamification tables did (see ARCHITECTURE.md's database section) --
-/// `GRANT INSERT, UPDATE ON public.profiles TO authenticated` plus an
-/// own-row RLS policy (`profiles_update_own`) has been in place since
-/// the table was created, the same policy the web's `updateProfile`
-/// server function relies on (`supabase/migrations/
-/// 20260725012934_...sql`, `.from("profiles").update(data).eq("id",
-/// userId)` in `src/lib/leaderboard.functions.ts`). So this is a plain
-/// PostgREST GET/PATCH, no RPC needed -- mirrors that same direct-write
-/// pattern, just from Swift instead of the web server.
+/// `authenticated` holds a column-level UPDATE grant on `profiles`
+/// (avatar_seed, theme, country) plus the own-row RLS policy
+/// (`profiles_update_own`), the same path the web's `updateProfile`
+/// server function uses (`.from("profiles").update(data).eq("id", userId)`
+/// in `src/lib/leaderboard.functions.ts`). So this is a plain PostgREST
+/// GET/PATCH of the theme, no RPC needed.
 extension ProgressSyncClient {
 
 /// Reads this user's saved theme, if any (`nil` covers both "no row
