@@ -72,7 +72,6 @@ The daily request caps (`consume_ai_quota`) bound requests, not cost, so each le
 **What is blocked.** Only the costly kinds: `chat`, `hector`, `tts`, `stt`, `recap`, `explain`, `translate`, `define`. Lessons, review, reading and the Help chat (`support`) never call it and keep working. A blocked call answers `429 { error: "quota-exceeded", reason: "monthly-cap", resetsAt: <first of next month>, message }`; web, iOS and Android show "You've hit this month's usage limit for AI practice. It resets on 1 December. Lessons and review still work." (a reset more than 36 hours away is the monthly one; the daily and per-minute copy is unchanged).
 
 **Settings (web server environment, all optional; the only place the numbers live).**
-
 - `AI_MONTHLY_CAP_FREE_USD` default `2`: a free learner's ceiling. Free learners pay nothing; this is an acquisition cost we accept, about a quarter of a Pro learner's.
 - `AI_MONTHLY_CAP_PRO_USD` default `8`: a Pro learner's ceiling (never below the free one). The heavy-learner line on the Numbers page is CAD 12.99 x 85% x 0.72 = about USD 7.95; 8 keeps that same line, so a Pro learner at the cap is about break-even after store fees. A heavy learner used to be able to cost about USD 50 a month.
 - `AI_MONTHLY_CAP_WARN_PERCENT` default `80`: where the soft warning starts.
