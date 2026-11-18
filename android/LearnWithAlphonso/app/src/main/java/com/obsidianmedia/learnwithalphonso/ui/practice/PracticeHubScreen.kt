@@ -69,6 +69,7 @@ fun PracticeScreen(container: AppContainer, onOpenScenario: (String, String) -> 
     var reload by remember { mutableIntStateOf(0) }
     val entitlement by container.entitlements.state.collectAsState()
     var sayingPicture by rememberSaveable { mutableStateOf(false) }
+    var sayingItRight by rememberSaveable { mutableStateOf(false) }
     val palette by container.themeManager.palette.collectAsState()
     val initialMode = if (container.prefs.getBoolean(com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference.KEY, com.obsidianmedia.learnwithalphonso.core.avatar.AvatarPreference.DEFAULT)) "call" else "chat"
     LaunchedEffect(course, reload) {
@@ -76,8 +77,9 @@ fun PracticeScreen(container: AppContainer, onOpenScenario: (String, String) -> 
     }
     CompositionLocalProvider(LocalAlphonsoTokens provides AlphonsoTokens.colors(palette, false)) {
         if (sayingPicture) { SayThePictureScreen(container, course) { sayingPicture = false }; return@CompositionLocalProvider }
+        if (sayingItRight) { PronunciationScreen(container, course) { sayingItRight = false }; return@CompositionLocalProvider }
         PracticeHubContent(course, container.content.scenarios(course), container.content.campaigns(course), data, failed,
-            initialMode, !entitlement.isPro, { reload++ }, onOpenScenario, onOpenCampaign, onHector, onSayPicture = { sayingPicture = true })
+            initialMode, !entitlement.isPro, { reload++ }, onOpenScenario, onOpenCampaign, onHector, onSayPicture = { sayingPicture = true }, onSayItRight = { sayingItRight = true })
     }
 }
 
@@ -89,6 +91,7 @@ internal fun PracticeHubContent(
     initialMode: String, showHector: Boolean, onRetry: () -> Unit,
     onOpenScenario: (String, String) -> Unit, onOpenCampaign: (String, Int, String) -> Unit, onHector: () -> Unit,
     onSayPicture: () -> Unit = {},
+    onSayItRight: () -> Unit = {},
 ) {
     val ds = LocalAlphonsoTokens.current
     var level by remember { mutableStateOf("All") }
@@ -167,6 +170,13 @@ internal fun PracticeHubContent(
             Column(Modifier.testTag("practice-say-picture").fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onSayPicture).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
                 Text("Say the picture", style = Type.headline.toTextStyle(), color = ds.ink)
                 Text("See a picture and say the word. A miss shows you the word and how it sounds.", style = Type.caption.toTextStyle(), color = ds.inkSoft)
+            }
+        }
+        item {
+            HubHeading("Say it right")
+            Column(Modifier.testTag("practice-say-it-right").fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onSayItRight).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
+                Text("Say it right", style = Type.headline.toTextStyle(), color = ds.ink)
+                Text("Hear a word you have learned, say it, and find out how clearly you were understood. A miss teaches, it never punishes.", style = Type.caption.toTextStyle(), color = ds.inkSoft)
             }
         }
         item {

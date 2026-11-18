@@ -19,6 +19,7 @@ struct PracticeHubView: View {
     @State private var modeInitialized = false
     @State private var paywall = false
     @State private var sayPicture = false
+    @State private var sayItRight = false
     /// A talk or campaign stop tapped on the learning path: opened here once Practice is showing.
     @Environment(PathDeepLink.self) private var deepLink
     /// The subscription screen for the memory sheet over a call's result.
@@ -113,6 +114,17 @@ struct PracticeHubView: View {
                         }.padding(AlphonsoDS.Space.s4).frame(maxWidth: .infinity, alignment: .leading)
                             .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
                     }.buttonStyle(.plain).accessibilityIdentifier("practiceSayPictureCard")
+                    practiceSectionLabel("Say it right")
+                    Button { sayItRight = true } label: {
+                        HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
+                            Image(systemName: "waveform").dsText(.title).accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                                Text("Say it right").dsText(.headline)
+                                Text("Hear a word you have learned, say it, and find out how clearly you were understood. A miss teaches, it never punishes.").dsText(.caption).foregroundStyle(ds.inkSoft)
+                            }
+                        }.padding(AlphonsoDS.Space.s4).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
+                    }.buttonStyle(.plain).accessibilityIdentifier("practiceSayItRightCard")
                     practiceSectionLabel("Scenarios")
                     ScrollView(.horizontal) {
                         HStack(spacing: AlphonsoDS.Space.s2) {
@@ -141,6 +153,9 @@ struct PracticeHubView: View {
                 }
                 .navigationDestination(isPresented: $sayPicture) {
                     SayThePictureView(contentStore: contentStore, session: session, course: course, onExit: { sayPicture = false }).environment(\.alphonsoDS, ds)
+                }
+                .navigationDestination(isPresented: $sayItRight) {
+                    PronunciationView(contentStore: contentStore, session: session, course: course, onExit: { sayItRight = false }).environment(\.alphonsoDS, ds)
                 }
                 .sheet(isPresented: $paywall) { PaywallView(entitlementStore: entitlementStore, source: .practiceCard, onClose: { paywall = false }) }
                 .navigationDestination(item: $playing) { t in
