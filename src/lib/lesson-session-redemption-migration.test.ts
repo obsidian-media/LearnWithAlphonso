@@ -10,7 +10,7 @@ const T2 = "b".repeat(64);
 const read = (f: string) =>
   readFileSync(path.join(process.cwd(), "supabase/migrations", f), "utf8");
 const atomic = read("20261014100300_atomic_lesson_completion.sql");
-const migration = read("20261123110000_lesson_session_single_use.sql");
+const migration = read("20261125110000_lesson_session_single_use.sql");
 
 const next = (xp: number) => ({
   streak: 1,

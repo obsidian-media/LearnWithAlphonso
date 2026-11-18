@@ -151,7 +151,7 @@ BEGIN
   DELETE FROM public.podcast_play_events WHERE started_at < now() - interval '400 days';
   -- Reports kept after an account was deleted: 90 days from that deletion (20261105101100).
   DELETE FROM public.content_reports WHERE account_deleted_at < now() - interval '90 days';
-  -- Lesson-session redemptions: a token's window is far shorter than this (20261123110000).
+  -- Lesson-session redemptions: a token's window is far shorter than this (20261125110000).
   DELETE FROM public.lesson_session_redemptions WHERE created_at < now() - interval '7 days';
 
   -- Support chats: solved conversations go 12 months after they were solved (this file). Its own block, so a failure
