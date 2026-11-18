@@ -123,10 +123,17 @@ struct StatusHeaderView: View {
         }
     }
 
+    /// The streak as it reads today: the stored column keeps the old run after a missed day (StreakDisplay).
+    static func shownStreak(_ progress: LessonCompletionProgress?, now: Date = Date()) -> Int {
+        guard let progress else { return 0 }
+        return StreakDisplay.visibleStreak(streak: progress.streak, lastActiveDate: progress.lastActiveDate, now: now)
+    }
+
     private func streakPill(progress: LessonCompletionProgress) -> some View {
-        hudPill(icon: { DSIconView(icon: .flameSolid, size: AlphonsoDS.Space.s5 + 2).foregroundStyle(ds.flame).pulsingGlow() }, value: "\(progress.streak)")
+        let streak = Self.shownStreak(progress)
+        return hudPill(icon: { DSIconView(icon: .flameSolid, size: AlphonsoDS.Space.s5 + 2).foregroundStyle(ds.flame).pulsingGlow() }, value: "\(streak)")
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Streak: \(progress.streak) day\(progress.streak == 1 ? "" : "s")")
+            .accessibilityLabel("Streak: \(streak) day\(streak == 1 ? "" : "s")")
     }
 
     private func leagueBadge(progress: LessonCompletionProgress) -> some View {

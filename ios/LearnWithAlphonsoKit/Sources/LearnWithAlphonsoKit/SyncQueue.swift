@@ -21,7 +21,8 @@ public struct PendingLessonCompletion: Sendable, Equatable {
     public let queuedAt: Date
     public let optimisticXpEstimate: Int
     /// The account that played this lesson. Nil only for rows written before the owner was recorded; the
-    /// first account to sync adopts those.
+    /// first account to sync adopts those, and a sign-out stamps them with the leaving account
+    /// (AccountQueueRetention).
     public let ownerUserID: String?
     /// The start-lesson-session token from when the lesson opened, if it was online then.
     public let sessionToken: String?
@@ -98,7 +99,8 @@ public struct PendingReviewGrade: Sendable, Equatable {
 
 /// What `SyncEngine.sync` actually managed to drain in one pass. Items not
 /// present in any list here are untouched (still queued, waiting out a
-/// backoff, or unauthorized this pass) and stay as they are.
+/// backoff, behind an item that must wait, unauthorized this pass, or owned
+/// by another account) and stay as they are.
 public struct SyncResult: Sendable, Equatable {
     public let syncedLessonCompletions: [PendingLessonCompletion]
     public let syncedReviewGrades: [PendingReviewGrade]
@@ -110,11 +112,8 @@ public struct SyncResult: Sendable, Equatable {
     public let rescheduledLessonCompletions: [PendingLessonCompletion]
     /// Can never succeed (rejected by the server, or out of attempts): move out of the queue.
     public let deadLetteredLessonCompletions: [DeadLetter<PendingLessonCompletion>]
-    /// Belong to another account: delete, never send.
-    public let droppedForeignLessonCompletions: [PendingLessonCompletion]
     public let rescheduledReviewGrades: [PendingReviewGrade]
     public let deadLetteredReviewGrades: [DeadLetter<PendingReviewGrade>]
-    public let droppedForeignReviewGrades: [PendingReviewGrade]
 
     public init(
         syncedLessonCompletions: [PendingLessonCompletion],
@@ -122,19 +121,15 @@ public struct SyncResult: Sendable, Equatable {
         lastKnownProgress: LessonCompletionProgress?,
         rescheduledLessonCompletions: [PendingLessonCompletion] = [],
         deadLetteredLessonCompletions: [DeadLetter<PendingLessonCompletion>] = [],
-        droppedForeignLessonCompletions: [PendingLessonCompletion] = [],
         rescheduledReviewGrades: [PendingReviewGrade] = [],
-        deadLetteredReviewGrades: [DeadLetter<PendingReviewGrade>] = [],
-        droppedForeignReviewGrades: [PendingReviewGrade] = []
+        deadLetteredReviewGrades: [DeadLetter<PendingReviewGrade>] = []
     ) {
         self.syncedLessonCompletions = syncedLessonCompletions
         self.syncedReviewGrades = syncedReviewGrades
         self.lastKnownProgress = lastKnownProgress
         self.rescheduledLessonCompletions = rescheduledLessonCompletions
         self.deadLetteredLessonCompletions = deadLetteredLessonCompletions
-        self.droppedForeignLessonCompletions = droppedForeignLessonCompletions
         self.rescheduledReviewGrades = rescheduledReviewGrades
         self.deadLetteredReviewGrades = deadLetteredReviewGrades
-        self.droppedForeignReviewGrades = droppedForeignReviewGrades
     }
 }

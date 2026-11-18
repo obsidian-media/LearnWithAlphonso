@@ -259,6 +259,11 @@ final class SyncQueueStore: AccountScopedQueue {
     /// Changes when something is queued and when a sync pass ends, so RootView can re-arm its retry wakeup.
     private(set) var queueRevision = 0
 
+    /// True when queued work may not survive the app closing: the store opened in memory
+    /// (SyncStoreFactory's last fallback), or a save to disk failed. The lesson player then stops saying
+    /// "Saved" for a queued lesson (QueuedLessonPolicy.finishMessage).
+    private(set) var isStorageDegraded: Bool
+
     /// The account the badge counts for: remembered from the last sync, because the active course is stored per
     /// account. Nil (never synced this launch) counts English.
     @ObservationIgnored private var badgeUserID: String?
@@ -267,8 +272,9 @@ final class SyncQueueStore: AccountScopedQueue {
     @ObservationIgnored private var lastBadgeCourse = "en"
     @ObservationIgnored private var defaultsObserver: NSObjectProtocol?
 
-    init(modelContext: ModelContext) {
+    init(modelContext: ModelContext, isPersistent: Bool = true) {
         self.modelContext = modelContext
+        isStorageDegraded = !isPersistent
         // The badge counts the ACTIVE course; repaint it when the learner switches course.
         defaultsObserver = NotificationCenter.default.addObserver(
             forName: UserDefaults.didChangeNotification, object: nil, queue: .main
@@ -297,10 +303,27 @@ final class SyncQueueStore: AccountScopedQueue {
 
     // MARK: - Pending lesson completions
 
-    func appendLessonCompletion(_ pending: PendingLessonCompletion) {
+    /// Returns whether the row is on disk. False means it lives only in this process (in-memory store, or the
+    /// save failed): it still syncs while the app stays open, but the learner must not be told it is saved.
+    @discardableResult
+    func appendLessonCompletion(_ pending: PendingLessonCompletion) -> Bool {
         modelContext.insert(PendingLessonCompletionRecord(pending))
-        try? modelContext.save()
+        let saved = save("appendLessonCompletion")
         queueRevision += 1
+        return saved && !isStorageDegraded
+    }
+
+    /// Saves, and records a failure as degraded storage instead of dropping it with `try?`.
+    @discardableResult
+    private func save(_ caller: String) -> Bool {
+        do {
+            try modelContext.save()
+            return true
+        } catch {
+            print("[SyncQueueStore] \(caller) save failed: \(error)")
+            isStorageDegraded = true
+            return false
+        }
     }
 
     func pendingLessonCompletions() -> [PendingLessonCompletion] {
@@ -312,7 +335,7 @@ final class SyncQueueStore: AccountScopedQueue {
 
     func appendReviewGrade(_ pending: PendingReviewGrade) {
         modelContext.insert(PendingReviewGradeRecord(pending))
-        try? modelContext.save()
+        save("appendReviewGrade")
         queueRevision += 1
     }
 
@@ -333,19 +356,17 @@ final class SyncQueueStore: AccountScopedQueue {
     }
 
     /// When the next sync pass could send something for this account; nil means there is nothing to wake for.
-    /// Mirrors SyncEngine: every lesson completion is tried on its own schedule, but review grades are sent
-    /// strictly oldest first, so only the oldest grade's time counts (a later grade cannot go before it).
-    /// Rows with no owner (queued by an older build) are synced as the current account's, so they count too.
+    /// SyncEngine.nextWakeup: both queues go strictly oldest first, so only each queue's oldest row counts.
     func nextPendingAttempt(for userID: String, now: Date = Date()) -> Date? {
-        let mine: (String?) -> Bool = { $0 == nil || $0 == userID }
-        let lessonDates = pendingLessonCompletions()
-            .filter { mine($0.ownerUserID) }
-            .map { $0.nextAttemptAt ?? now }
-        let oldestGrade = pendingReviewGrades()
-            .filter { mine($0.ownerUserID) }
-            .min { $0.queuedAt < $1.queuedAt }
-        let gradeDates = oldestGrade.map { [$0.nextAttemptAt ?? now] } ?? []
-        return (lessonDates + gradeDates).min()
+        SyncEngine.nextWakeup(lessons: pendingLessonCompletions(), grades: pendingReviewGrades(), userID: userID, now: now)
+    }
+
+    /// Review answers that will not be retried (refused, or out of retries), by identity, for the Learn-tab line
+    /// (dismissed like the lesson one).
+    var reviewDeadLetterIdentities: [String] {
+        _ = deadLetterRevision
+        let descriptor = FetchDescriptor<SyncDeadLetterRecord>(predicate: #Predicate { $0.kind == "grade" })
+        return ((try? modelContext.fetch(descriptor)) ?? []).map(\.identity)
     }
 
     // MARK: - Last-known cache (for offline display)
@@ -354,11 +375,14 @@ final class SyncQueueStore: AccountScopedQueue {
         appSyncState()?.cachedProgress
     }
 
-    func updateLastKnownProgress(_ progress: LessonCompletionProgress) {
+    /// `synced` is true only for progress the server just returned. A local estimate (a heart spent on a wrong
+    /// answer, a freeze bought, a lesson queued offline) must not move "last synced", or the Learn tab claimed a
+    /// sync that never happened.
+    func updateLastKnownProgress(_ progress: LessonCompletionProgress, synced: Bool = true) {
         let state = appSyncState() ?? insertAppSyncState()
         state.setProgress(progress)
-        state.lastSyncedAt = Date()
-        try? modelContext.save()
+        if synced { state.lastSyncedAt = Date() }
+        save("updateLastKnownProgress")
         // Every caller of this function (LessonPlayerView after a
         // completion, RootView after a sync) is exactly the set of moments
         // the home-screen streak widget also needs to refresh -- see
@@ -435,11 +459,14 @@ final class SyncQueueStore: AccountScopedQueue {
 
         if let lastKnownProgress = result.lastKnownProgress {
             updateLastKnownProgress(lastKnownProgress)
-        } else if let fetched = try? await client.fetchProgress() {
+        } else if let fetched = try? await client.fetchProgress(course: ActiveCoursePreference.load(for: userID).wireCode) {
             // SyncEngine only learns progress as a side effect of pushing a completion; with an empty queue
-            // read it directly so the header reflects the server. Best-effort: a failure keeps the old cache.
+            // read it directly so the header reflects the server, for the course on screen. Best-effort: a
+            // failure keeps the old cache. While lessons are still queued the server has not seen them, so the
+            // optimistic "studied today" they set stays (QueuedLessonPolicy.merge).
             guard isCurrentAccount() else { return }
-            updateLastKnownProgress(fetched)
+            let stillQueued = pendingCounts(for: userID).lessons > 0
+            updateLastKnownProgress(QueuedLessonPolicy.merge(fetched: fetched, local: lastKnownProgress(), hasPendingLessons: stillQueued))
         } else {
             markSyncedNow()
         }
@@ -457,7 +484,8 @@ final class SyncQueueStore: AccountScopedQueue {
     func apply(_ result: SyncResult, now: Date = Date()) {
         let lessonRecords = (try? modelContext.fetch(FetchDescriptor<PendingLessonCompletionRecord>())) ?? []
         let byLesson = Dictionary(lessonRecords.map { ($0.queueIdentity, $0) }, uniquingKeysWith: { a, _ in a })
-        for item in result.syncedLessonCompletions + result.droppedForeignLessonCompletions {
+        // Another account's rows are in no list, so they stay untouched (AccountQueueRetention).
+        for item in result.syncedLessonCompletions {
             if let record = byLesson[item.queueIdentity] { modelContext.delete(record) }
         }
         for dead in result.deadLetteredLessonCompletions {
@@ -468,7 +496,7 @@ final class SyncQueueStore: AccountScopedQueue {
 
         let gradeRecords = (try? modelContext.fetch(FetchDescriptor<PendingReviewGradeRecord>())) ?? []
         let byGrade = Dictionary(gradeRecords.map { ($0.queueIdentity, $0) }, uniquingKeysWith: { a, _ in a })
-        for item in result.syncedReviewGrades + result.droppedForeignReviewGrades {
+        for item in result.syncedReviewGrades {
             if let record = byGrade[item.queueIdentity] { modelContext.delete(record) }
         }
         for dead in result.deadLetteredReviewGrades {
@@ -478,14 +506,15 @@ final class SyncQueueStore: AccountScopedQueue {
         for item in result.rescheduledReviewGrades { byGrade[item.queueIdentity]?.apply(item) }
 
         trimDeadLetters(keeping: 50)
-        do { try modelContext.save() } catch { print("[SyncQueueStore] apply save failed: \(error)") }
+        save("apply")
         if !result.deadLetteredLessonCompletions.isEmpty || !result.deadLetteredReviewGrades.isEmpty {
             deadLetterRevision += 1
         }
     }
 
-    /// Lesson completions the server permanently rejected, newest first, for the Learn-tab notice.
-    /// Review-grade dead letters are not shown: a lost grade only reschedules a card.
+    /// Lesson completions the server permanently rejected (or that ran out of retries), newest first, for the
+    /// Learn-tab notice. Review-grade dead letters get their own quieter line (reviewDeadLetterIdentities): a
+    /// lost grade only reschedules a card.
     var lessonDeadLetters: [(identity: String, reason: String)] {
         _ = deadLetterRevision
         let descriptor = FetchDescriptor<SyncDeadLetterRecord>(
@@ -503,21 +532,36 @@ final class SyncQueueStore: AccountScopedQueue {
 
     // MARK: - Sign-out / account deletion (SessionLifecycle, AccountDataCleanup)
 
-    /// Everything in this store belongs to the account that was signed in: queued
-    /// completions and grades, dead letters, the due-review cache and the last-known progress row. The
-    /// next account on this device must start with none of it. The widget is cleared by
-    /// its own lifecycle handler.
-    func clearAll() {
-        deleteAll(PendingLessonCompletionRecord.self)
-        deleteAll(PendingReviewGradeRecord.self)
+    /// Queued completions and grades belong to the account that played them. A sign-out keeps them (stamped
+    /// with that account when they had no owner) for its next sign-in here; deletion removes the deleted
+    /// account's. AccountQueueRetention decides; this applies it by queueIdentity.
+    func applyRetention(_ plan: QueueRetentionPlan) {
+        for record in (try? modelContext.fetch(FetchDescriptor<PendingLessonCompletionRecord>())) ?? [] {
+            if plan.deleteLessonIdentities.contains(record.queueIdentity) {
+                modelContext.delete(record)
+            } else if let owner = plan.owner, plan.tagLessonIdentities.contains(record.queueIdentity) {
+                record.ownerUserID = owner
+            }
+        }
+        for record in (try? modelContext.fetch(FetchDescriptor<PendingReviewGradeRecord>())) ?? [] {
+            if plan.deleteGradeIdentities.contains(record.queueIdentity) {
+                modelContext.delete(record)
+            } else if let owner = plan.owner, plan.tagGradeIdentities.contains(record.queueIdentity) {
+                record.ownerUserID = owner
+            }
+        }
+        save("applyRetention")
+        queueRevision += 1
+    }
+
+    /// Everything else in this store is a cached copy of the signed-in account's server state: dead letters,
+    /// the due-review cache and the last-known progress row. The next account on this device must start with
+    /// none of it. The widget is cleared by its own lifecycle handler.
+    func clearCachedAccountState() {
         deleteAll(CachedCourseDueReviewRecord.self)
         deleteAll(SyncDeadLetterRecord.self)
         deleteAll(AppSyncStateRecord.self)
-        do {
-            try modelContext.save()
-        } catch {
-            print("[SyncQueueStore] clearAll save failed: \(error)")
-        }
+        save("clearCachedAccountState")
         dueReviewRevision += 1
         deadLetterRevision += 1
         queueRevision += 1

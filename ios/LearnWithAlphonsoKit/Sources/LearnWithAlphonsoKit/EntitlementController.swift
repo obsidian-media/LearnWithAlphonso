@@ -159,6 +159,10 @@ public final class EntitlementController: EntitlementResetting {
             state.isGift = snapshot.isGift
         } catch {
             guard started == generation else { return }
+            // A failed read is not an answer. Offline, or during a RevenueCat outage, a paying learner kept losing
+            // Hector until the next good read. The last known value stands while RevenueCat still holds the
+            // account it was read for; any other identity (or none) fails closed. Sign-out clears it in reset().
+            if let expected = expectedUserID, provider.currentAppUserID() == expected { return }
             state.isPro = false
             state.webManagementURL = nil
             state.isGift = false

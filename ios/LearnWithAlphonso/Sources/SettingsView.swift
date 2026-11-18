@@ -19,6 +19,10 @@ struct SettingsView: View {
     let session: Session
     /// Optional so a Settings screen without Pro context (previews) still builds; the Pro row shows only with it.
     var entitlementStore: EntitlementStore? = nil
+    /// The offline queue, so "Sign out" can send what is waiting first and ask when something still is
+    /// (SignOutGuard). Optional for previews; without it sign-out goes straight through, which no longer
+    /// deletes anything queued (AccountQueueRetention).
+    var syncQueueStore: SyncQueueStore? = nil
     @EnvironmentObject private var aiConsent: AIConsentStore
     @AppStorage(AvatarPreference.key) private var showAlphonso = AvatarPreference.defaultValue
     @State private var showAIDisclosure = false
@@ -44,9 +48,41 @@ struct SettingsView: View {
     @State private var isPresentingDeleteConfirmation = false
     @State private var deleteConfirmationText = ""
     @State private var accountErrorMessage: String?
+    @State private var isPreparingSignOut = false
+    @State private var signOutConfirmation: (title: String, message: String)?
 
     @Environment(\.alphonsoDS) private var ds
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// "Sign out": first try to send whatever this account still has queued, then sign out at once if nothing is
+    /// left, or ask (SignOutGuard). Queued rows are kept for this account either way; the question is only so a
+    /// learner who never comes back on this device knows their last lessons have not reached the server.
+    private func signOutTapped() async {
+        guard !isPreparingSignOut else { return }
+        guard let syncQueueStore, let userID = session.userID else {
+            session.signOut()
+            return
+        }
+        isPreparingSignOut = true
+        defer { isPreparingSignOut = false }
+        let before = syncQueueStore.pendingCounts(for: userID)
+        if before.lessons + before.reviewAnswers > 0, let accessToken = await session.freshAccessToken() {
+            await syncQueueStore.runSync(
+                accessToken: accessToken,
+                userID: userID,
+                refreshAccessToken: { [session] in await session.freshAccessToken(forceRefresh: true) },
+                isCurrentAccount: { session.userID == userID })
+        }
+        // A forced sign-out during the drain already ended the session.
+        guard session.userID == userID else { return }
+        let waiting = syncQueueStore.pendingCounts(for: userID)
+        switch SignOutGuard.decide(pendingLessons: waiting.lessons, pendingReviewAnswers: waiting.reviewAnswers) {
+        case .signOut:
+            session.signOut()
+        case let .confirm(title, message):
+            signOutConfirmation = (title, message)
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -108,8 +144,11 @@ struct SettingsView: View {
                 // the conventional place a reviewer or user looks first.
                 linksCard.dsListRow()
 
-                Button("Sign out", role: .destructive) { session.signOut() }
+                Button(isPreparingSignOut ? "Syncing..." : "Sign out", role: .destructive) {
+                    Task { await signOutTapped() }
+                }
                     .buttonStyle(.dsButton(.danger, fullWidth: false))
+                    .disabled(isPreparingSignOut)
                     .frame(maxWidth: .infinity)
                     .dsListRow()
             }
@@ -141,6 +180,18 @@ struct SettingsView: View {
             // section on web -- disabling the destructive action until the
             // typed text matches exactly is the whole point of the gate, so
             // it lives on the button here rather than being pre-validated.
+            .alert(
+                signOutConfirmation?.title ?? "",
+                isPresented: Binding(get: { signOutConfirmation != nil }, set: { if !$0 { signOutConfirmation = nil } })
+            ) {
+                Button(SignOutGuard.cancelTitle, role: .cancel) { signOutConfirmation = nil }
+                Button(SignOutGuard.confirmTitle, role: .destructive) {
+                    signOutConfirmation = nil
+                    session.signOut()
+                }
+            } message: {
+                Text(signOutConfirmation?.message ?? "")
+            }
             .alert("Delete your account?", isPresented: $isPresentingDeleteConfirmation) {
                 TextField("Type DELETE to confirm", text: $deleteConfirmationText)
                     .textInputAutocapitalization(.characters)

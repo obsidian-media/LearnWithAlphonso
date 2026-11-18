@@ -46,6 +46,13 @@ final class Session {
     /// The access token of the session that is ending, readable only while SessionLifecycle handlers run, so
     /// the push-token handler can delete the old account's device row (AuthAccountCleanup).
     @ObservationIgnored private(set) var retiringAccessToken: String?
+    /// The account that is leaving, readable only while SessionLifecycle handlers run, so the offline queue keeps
+    /// its rows for it (AccountQueueRetention) instead of deleting them.
+    @ObservationIgnored private(set) var retiringUserID: String?
+    /// Every token refresh goes through this one flight (Kit SingleFlight): Supabase rotates refresh tokens, so two
+    /// overlapping refreshes sent the same one twice, the second was rejected as already used, and a rejected
+    /// refresh signs out. Foreground fires several fresh-token requests at once (sync, header, voice screens).
+    private let refreshFlight = SingleFlight<RefreshOutcome>()
     private let lifecycle: SessionLifecycle
     /// The cleanup started by the last sign-out or deletion. Every path that can establish a
     /// new session awaits it first, so a quick re-sign-in never interleaves with the previous
@@ -108,17 +115,48 @@ final class Session {
         if !forceRefresh && current.expiresAt > Date().addingTimeInterval(60) {
             return current.accessToken
         }
-        do {
-            let refreshed = try await authClient.refresh(current)
-            establishSession(refreshed)
-            return refreshed.accessToken
-        } catch {
-            // Only a refresh token the server actually rejects ends the
-            // session. Being offline or rate-limited used to sign the
-            // learner out too (2026-09-29 audit); now the caller just gets
-            // nil and shows its own error.
-            if Self.isRejectedRefreshToken(error) { endAfterRejectedRefresh(error) }
-            return nil
+        switch await refreshSession() {
+        case .refreshed(let session): return session.accessToken
+        // Only a refresh token the server actually rejects ends the
+        // session (inside refreshSession). Being offline or rate-limited
+        // used to sign the learner out too (2026-09-29 audit); now the
+        // caller just gets nil and shows its own error.
+        case .failed, .superseded: return nil
+        }
+    }
+
+    enum RefreshOutcome: Sendable {
+        case refreshed(SupabaseSession)
+        /// Transient (offline, 429, 5xx), or rejected (the session has already ended).
+        case failed
+        /// A sign-out or a different sign-in happened while the request was in flight.
+        case superseded
+    }
+
+    /// The single refresh path (freshAccessToken, refreshIfNeeded). A caller arriving while one is in flight gets
+    /// that refresh's outcome instead of sending the same refresh token again. Both the new session and a
+    /// rejection are applied once, here, and only to the session the refresh was for.
+    private func refreshSession() async -> RefreshOutcome {
+        await refreshFlight.run { [weak self] in
+            guard let self, case .signedIn(let current) = self.state else { return .superseded }
+            do {
+                let refreshed = try await self.authClient.refresh(current)
+                guard case .signedIn(let stillCurrent) = self.state, stillCurrent == current else { return .superseded }
+                self.establishSession(refreshed)
+                return .refreshed(refreshed)
+            } catch {
+                // A failure that belongs to a session that has since been
+                // replaced must not touch the new one.
+                guard case .signedIn(let stillCurrent) = self.state, stillCurrent == current else { return .superseded }
+                if Self.isRejectedRefreshToken(error) {
+                    self.endAfterRejectedRefresh(error)
+                } else if error is CancellationError {
+                    // Nothing to retry for.
+                } else {
+                    self.scheduleProactiveRefresh(after: 30)
+                }
+                return .failed
+            }
         }
     }
 
@@ -386,8 +424,10 @@ final class Session {
     }
 
     /// Ends the session locally and runs every SessionLifecycle handler for `.signedOut`
-    /// (entitlements, the offline queue, caches, the widget, and whatever other features
-    /// registered).
+    /// (entitlements, caches, the widget, and whatever other features registered). The offline queue keeps
+    /// this account's rows for its next sign-in on this device (AccountQueueRetention); Settings asks first
+    /// when some are still waiting (SignOutGuard). Forced sign-outs (a rejected refresh, a revoked Apple ID)
+    /// go through the same path, so they no longer delete unsynced lessons either.
     func signOut() {
         endSession(.signedOut)
     }
@@ -422,7 +462,9 @@ final class Session {
     private func endSession(_ event: SessionLifecycle.Event, notice: String? = nil) {
         // Captured BEFORE the state is cleared: the push-token handler deletes the old account's device row with
         // it, and the server-session handler ends this device's session on the auth server (AuthAccountCleanup).
+        // The queue handler keeps the leaving account's queued lessons for it (AccountQueueRetention).
         let endingAccessToken = accessToken
+        let endingUserID = userID
         proactiveRefreshTask?.cancel()
         proactiveRefreshTask = nil
         state = .signedOut
@@ -442,8 +484,10 @@ final class Session {
         lifecycleTask = Task { @MainActor [weak self] in
             await previous?.value
             self?.retiringAccessToken = endingAccessToken
+            self?.retiringUserID = endingUserID
             await lifecycle.run(event)
             self?.retiringAccessToken = nil
+            self?.retiringUserID = nil
             // Only the newest sign-out clears the marker; an older one finishing must not
             // hide a newer cleanup that is still owed.
             if let self, self.cleanupSequence == sequence {
@@ -468,22 +512,9 @@ final class Session {
     func refreshIfNeeded(leeway: TimeInterval = 300) async {
         guard case .signedIn(let current) = state,
               current.expiresAt <= Date().addingTimeInterval(leeway) else { return }
-        do {
-            let refreshed = try await authClient.refresh(current)
-            // A sign-out (or a different sign-in) while the request was in
-            // flight wins over this now-stale refresh.
-            guard case .signedIn(let stillCurrent) = state, stillCurrent == current else { return }
-            establishSession(refreshed)
-        } catch {
-            // Same rule as the success path: a failure that belongs to a
-            // session that has since been replaced must not touch the new one.
-            guard case .signedIn(let stillCurrent) = state, stillCurrent == current else { return }
-            if Self.isRejectedRefreshToken(error) {
-                endAfterRejectedRefresh(error)
-            } else {
-                scheduleProactiveRefresh(after: 30)
-            }
-        }
+        // Same flight as freshAccessToken: a sign-out (or a different sign-in) while it is in flight wins over the
+        // stale result, a network failure retries in 30s, and only a rejected refresh token signs out.
+        _ = await refreshSession()
     }
 
     /// The one place `state` transitions to `.signedIn` -- every path

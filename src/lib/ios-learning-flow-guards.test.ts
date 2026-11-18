@@ -293,15 +293,16 @@ describe("Sync store", () => {
     expect(review).toContain("total = queue.count");
     expect(review).not.toContain("total = result.total");
   });
-  it("clearAll deletes every record type, including the ones added later", () => {
-    const clear = between(store, "func clearAll()", /\n {4}}\n/);
-    for (const t of [
-      "PendingLessonCompletionRecord",
-      "PendingReviewGradeRecord",
-      "CachedCourseDueReviewRecord",
-      "AppSyncStateRecord",
-      "SyncDeadLetterRecord",
-    ]) {
+  it("account cleanup covers every record type, including the ones added later", () => {
+    // Queued rows follow AccountQueueRetention (kept for their owner on sign-out, removed on deletion);
+    // every cached copy of the account's server state is deleted.
+    const retain = between(store, "func applyRetention(", /\n {4}}\n/);
+    for (const t of ["PendingLessonCompletionRecord", "PendingReviewGradeRecord"]) {
+      expect(retain, t).toContain(`FetchDescriptor<${t}>`);
+    }
+    expect(retain).toContain("modelContext.delete(record)");
+    const clear = between(store, "func clearCachedAccountState()", /\n {4}}\n/);
+    for (const t of ["CachedCourseDueReviewRecord", "AppSyncStateRecord", "SyncDeadLetterRecord"]) {
       expect(clear, t).toContain(`${t}.self`);
     }
   });
