@@ -203,7 +203,7 @@ describe("failed reads", () => {
     renderPage();
 
     fireEvent.click(screen.getByRole("button", { name: "Recap" }));
-    expect(await screen.findByText("Couldn't load your recap.")).toBeInTheDocument();
+    expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't load your recap.");
     expect(screen.queryByText("0 XP")).toBeNull();
     expect(window.localStorage.getItem(`lwa.lastRecapTier.${ME}`)).toBe("bronze");
 
