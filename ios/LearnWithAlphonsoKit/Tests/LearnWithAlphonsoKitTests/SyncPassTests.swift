@@ -154,18 +154,45 @@ final class SyncPassTests: XCTestCase {
     }
 
     @MainActor
-    func testAnotherAccountsRowsArePurgedAfterThirtyDaysAndKeptBefore() async {
+    func testAnotherAccountsRowsArePurgedThirtyDaysAfterItLeftNotAfterQueueing() async {
+        let clock = ForeignOwnerClock(defaults: UserDefaults(suiteName: "foreign-\(UUID().uuidString)")!)
+        // b queued 29 days ago and left yesterday; c left 31 days ago.
+        clock.markRetired("b", at: now.addingTimeInterval(-1 * 86_400))
+        clock.markRetired("c", at: now.addingTimeInterval(-31 * 86_400))
         let backing = InMemorySyncBacking()
         backing.lessons = [
-            lesson("theirs-old", owner: "b", queuedAt: now.addingTimeInterval(-31 * 86_400)),
-            lesson("theirs-recent", owner: "b", queuedAt: now.addingTimeInterval(-29 * 86_400)),
+            lesson("b-queued-29-days-ago", owner: "b", queuedAt: now.addingTimeInterval(-29 * 86_400)),
+            lesson("b-queued-40-days-ago", owner: "b", queuedAt: now.addingTimeInterval(-40 * 86_400)),
+            lesson("c-left-31-days-ago", owner: "c", queuedAt: now.addingTimeInterval(-32 * 86_400)),
+            lesson("d-unknown-departure", owner: "d", queuedAt: now.addingTimeInterval(-90 * 86_400)),
         ]
         let sent = TestCapture<[String]>([])
         await SyncPass.run(
             backing: backing, client: client(sent: sent), userID: "a", activeCourse: "en",
-            refreshAccessToken: { nil }, isCurrentAccount: { true }, now: now)
-        XCTAssertEqual(backing.lessons.map(\.lessonID), ["theirs-recent"])
+            refreshAccessToken: { nil }, isCurrentAccount: { true }, now: now, foreignClock: clock)
+        XCTAssertEqual(backing.lessons.map(\.lessonID), ["b-queued-29-days-ago", "b-queued-40-days-ago", "d-unknown-departure"])
         XCTAssertEqual(sent.value, [])
+        // An older build's rows start their 30 days at first sight, and a returning account is not foreign.
+        XCTAssertEqual(clock.retiredAt("d"), now)
+        clock.markRetired("a", at: now)
+        await SyncPass.run(
+            backing: backing, client: client(sent: sent), userID: "a", activeCourse: "en",
+            refreshAccessToken: { nil }, isCurrentAccount: { true }, now: now, foreignClock: clock)
+        XCTAssertNil(clock.retiredAt("a"))
+    }
+
+    /// A pass whose account is already gone touches nothing, not even another account's expired rows.
+    @MainActor
+    func testAPassForAnAccountAlreadyGoneDoesNotPurge() async {
+        let clock = ForeignOwnerClock(defaults: UserDefaults(suiteName: "foreign-\(UUID().uuidString)")!)
+        clock.markRetired("b", at: now.addingTimeInterval(-60 * 86_400))
+        let backing = InMemorySyncBacking()
+        backing.lessons = [lesson("b-old", owner: "b", queuedAt: now.addingTimeInterval(-60 * 86_400))]
+        let sent = TestCapture<[String]>([])
+        await SyncPass.run(
+            backing: backing, client: client(sent: sent), userID: "a", activeCourse: "en",
+            refreshAccessToken: { nil }, isCurrentAccount: { false }, now: now, foreignClock: clock)
+        XCTAssertEqual(backing.lessons.map(\.lessonID), ["b-old"])
     }
 
     /// A live finish drains only lessons, and sends the head even inside its backoff (the live call is next).

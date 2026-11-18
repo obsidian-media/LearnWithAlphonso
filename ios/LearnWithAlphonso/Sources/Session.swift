@@ -489,6 +489,8 @@ final class Session {
         // Durable before anything can suspend: if the process dies now, the next launch
         // runs the cleanup (restoreSession).
         pendingCleanup.mark(event, userID: endingUserID)
+        // Rows kept for this account expire 30 days from now, not from when they were queued.
+        if let endingUserID { ForeignOwnerClock().markRetired(endingUserID, at: Date()) }
         cleanupSequence += 1
         let sequence = cleanupSequence
         // Chained, never concurrent: a second sign-out waits for the first one's cleanup, and each run sees

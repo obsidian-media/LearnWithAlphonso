@@ -444,7 +444,10 @@ struct ReviewQueueView: View {
 
         // The same submission the online attempt used, so the queued retry carries the same attempt id.
         // Refused when there is no owner (signed out before the review opened): nothing to queue then.
-        guard syncQueueStore.appendReviewGrade(attempt(for: item, answer: answer)).isStored else { return }
+        guard syncQueueStore.appendReviewGrade(attempt(for: item, answer: answer)).isStored else {
+            errorMessage = "You're signed out, so this answer couldn't be saved. Sign in and review again."
+            return
+        }
 
         switch outcome {
         case .retired:

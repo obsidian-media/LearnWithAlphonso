@@ -46,20 +46,54 @@ extension AccountQueueRetention {
     /// How long another account's rows wait on this device for that account to sign back in.
     public static let foreignRowLifetime: TimeInterval = 30 * 24 * 60 * 60
 
-    /// Rows another account left here more than `foreignRowLifetime` ago: that account has not been back, so
+    /// Rows of an account that left this device more than `foreignRowLifetime` ago (timed from when it left,
+    /// ForeignOwnerClock, never from queuedAt: a row queued 29 days before its account signed out still gets 30
+    /// days). An owner with no recorded departure is kept. That account has not been back, so
     /// they are deleted instead of kept forever. Run at the start of each sync pass for the signed-in account.
     public static func expiredForeignRows(
         currentUserID: String, lessons: [PendingLessonCompletion], grades: [PendingReviewGrade], now: Date,
-        lifetime: TimeInterval = foreignRowLifetime
+        lifetime: TimeInterval = foreignRowLifetime, retiredAt: (String) -> Date?
     ) -> QueueRetentionPlan {
         var plan = QueueRetentionPlan(owner: nil)
-        func expired(_ owner: String?, _ queuedAt: Date) -> Bool {
-            guard let owner, owner != currentUserID else { return false }
-            return now.timeIntervalSince(queuedAt) > lifetime
+        func expired(_ owner: String?) -> Bool {
+            guard let owner, owner != currentUserID, let left = retiredAt(owner) else { return false }
+            return now.timeIntervalSince(left) > lifetime
         }
-        plan.deleteLessonIdentities = Set(lessons.filter { expired($0.ownerUserID, $0.queuedAt) }.map(\.queueIdentity))
-        plan.deleteGradeIdentities = Set(grades.filter { expired($0.ownerUserID, $0.queuedAt) }.map(\.queueIdentity))
+        plan.deleteLessonIdentities = Set(lessons.filter { expired($0.ownerUserID) }.map(\.queueIdentity))
+        plan.deleteGradeIdentities = Set(grades.filter { expired($0.ownerUserID) }.map(\.queueIdentity))
         return plan
+    }
+}
+
+/// When each account last left this device, so its kept rows expire 30 days after it left. Kept beside the
+/// frozen SwiftData schema, and deliberately not in AccountCacheKeys (those are wiped at every sign-out).
+public struct ForeignOwnerClock: @unchecked Sendable {
+    public static let key = "queue.foreignOwnerRetiredAt.v1"
+    private let defaults: UserDefaults
+
+    public init(defaults: UserDefaults = .standard) { self.defaults = defaults }
+
+    private var all: [String: Double] { (defaults.dictionary(forKey: Self.key) as? [String: Double]) ?? [:] }
+
+    public func retiredAt(_ owner: String) -> Date? { all[owner].map(Date.init(timeIntervalSince1970:)) }
+
+    /// At sign-out: the account's rows become foreign from now (a later departure restarts the 30 days).
+    public func markRetired(_ owner: String, at date: Date) {
+        var map = all
+        map[owner] = date.timeIntervalSince1970
+        defaults.set(map, forKey: Self.key)
+    }
+
+    /// For rows left by an older build that never recorded a departure: start their clock now.
+    public func markRetiredIfUnknown(_ owner: String, at date: Date) {
+        if retiredAt(owner) == nil { markRetired(owner, at: date) }
+    }
+
+    /// The account is back: its rows are not foreign.
+    public func forget(_ owner: String) {
+        var map = all
+        guard map.removeValue(forKey: owner) != nil else { return }
+        defaults.set(map, forKey: Self.key)
     }
 }
 

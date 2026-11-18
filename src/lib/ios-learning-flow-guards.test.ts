@@ -302,7 +302,12 @@ describe("Sync store", () => {
     expect(pass).toContain("currentUserID: userID");
     expect(pass).toContain("isCurrentAccount: { await isCurrentAccount() }");
     // Every sync call site binds its refresher to the pass's account.
-    for (const f of ["RootView.swift", "PendingSyncSection.swift", "SettingsView.swift"]) {
+    for (const f of [
+      "RootView.swift",
+      "PendingSyncSection.swift",
+      "SettingsView.swift",
+      "LessonPlayerView.swift",
+    ]) {
       const code = read(`${APP}/${f}`);
       expect(code, f).toContain("refreshAccessToken: session.refresher(for:");
       expect(code, f).not.toContain(

@@ -362,7 +362,8 @@ final class SyncQueueStore: SyncQueueBacking {
         guard let userID else { return (0, 0) }
         let mine: (String?) -> Bool = { $0 == nil || $0 == userID }
         return (
-            pendingLessonCompletions().filter { mine($0.ownerUserID) }.count,
+            // Parked lessons have their own "Try again" line; not counted twice.
+            QueuedLessonPolicy.blockingLessons(pendingLessonCompletions(), userID: userID),
             pendingReviewGrades().filter { mine($0.ownerUserID) }.count
         )
     }
@@ -489,7 +490,7 @@ final class SyncQueueStore: SyncQueueBacking {
     /// A live finish's drain: only the lessons ahead of it, the head sent even inside its backoff, waiting at most
     /// `timeout`. A pass already in flight is waited for first (within the same timeout) rather than skipped.
     func drainLessonsBeforeLiveFinish(
-        accessToken: String,
+        accessToken: @escaping @MainActor () async -> String?,
         userID: String,
         refreshAccessToken: @escaping @Sendable () async -> String?,
         isCurrentAccount: @escaping @MainActor () -> Bool,
@@ -499,7 +500,9 @@ final class SyncQueueStore: SyncQueueBacking {
             guard let self else { return }
             if let running = self.currentPass { await running.value }
             guard self.blockingLessonCount(for: userID) > 0, isCurrentAccount() else { return }
-            await self.startPass(accessToken: accessToken, userID: userID, refreshAccessToken: refreshAccessToken,
+            // Inside the cap: a slow token refresh counts against the same 15 s.
+            guard let token = await accessToken(), isCurrentAccount() else { return }
+            await self.startPass(accessToken: token, userID: userID, refreshAccessToken: refreshAccessToken,
                                  isCurrentAccount: isCurrentAccount, lessonsOnly: true).value
         }
     }

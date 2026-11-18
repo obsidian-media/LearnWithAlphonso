@@ -34,10 +34,21 @@ public enum SyncPass {
         isCurrentAccount: @escaping @MainActor () -> Bool,
         lessonsOnly: Bool = false,
         now: Date = Date(),
-        policy: SyncRetryPolicy = .standard
+        policy: SyncRetryPolicy = .standard,
+        foreignClock: ForeignOwnerClock = ForeignOwnerClock()
     ) async -> SyncResult {
+        // Signed out (or switched) before the pass even started: touch nothing, not even the purge.
+        guard isCurrentAccount() else {
+            return SyncResult(syncedLessonCompletions: [], syncedReviewGrades: [], lastKnownProgress: nil)
+        }
+        foreignClock.forget(userID)
+        for owner in Set((backing.pendingLessonCompletions().map(\.ownerUserID) + backing.pendingReviewGrades().map(\.ownerUserID))
+            .compactMap { $0 }) where owner != userID {
+            foreignClock.markRetiredIfUnknown(owner, at: now)
+        }
         let expired = AccountQueueRetention.expiredForeignRows(
-            currentUserID: userID, lessons: backing.pendingLessonCompletions(), grades: backing.pendingReviewGrades(), now: now)
+            currentUserID: userID, lessons: backing.pendingLessonCompletions(), grades: backing.pendingReviewGrades(), now: now,
+            retiredAt: { foreignClock.retiredAt($0) })
         if !expired.isEmpty { backing.applyRetention(expired) }
 
         let result = await SyncEngine.sync(
@@ -60,7 +71,8 @@ public enum SyncPass {
         backing.apply(result, now: now)
 
         let sentSomething = !result.syncedLessonCompletions.isEmpty || !result.syncedReviewGrades.isEmpty
-        let stillQueued = backing.pendingLessonCompletions().contains { $0.ownerUserID == nil || $0.ownerUserID == userID }
+        // Parked lessons hold nothing up, so they do not keep the optimistic day either.
+        let stillQueued = QueuedLessonPolicy.blockingLessons(backing.pendingLessonCompletions(), userID: userID, policy: policy) > 0
         if let synced = result.lastKnownProgress {
             // A completion always leaves the account on local days.
             let fromServer = synced.withDayBasis(synced.dayBasis ?? "local")

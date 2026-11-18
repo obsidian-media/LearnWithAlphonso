@@ -780,7 +780,8 @@ struct LessonPlayerView: View {
         lessonTimer?.pause(now: now)
         isSubmitting = true
         defer { isSubmitting = false }
-        guard session.accessToken != nil else {
+        guard session.accessToken != nil, lessonOwner == session.userID else {
+            // Signed out, or another account is signed in now: keep it for the account that played it.
             failSignedOut()
             return
         }
@@ -911,9 +912,9 @@ struct LessonPlayerView: View {
     /// The lessons ahead of this one only (no grades, no progress read, no due lists), at most 15 s, bound to this
     /// account (SyncQueueStore.drainLessonsBeforeLiveFinish).
     private func drainQueue(for userID: String) async {
-        guard let accessToken = await session.freshAccessToken() else { return }
+        // The token fetch runs inside the 15 s cap too.
         await syncQueueStore.drainLessonsBeforeLiveFinish(
-            accessToken: accessToken,
+            accessToken: { [session] in await session.freshAccessToken() },
             userID: userID,
             refreshAccessToken: session.refresher(for: userID),
             isCurrentAccount: { [session] in session.userID == userID })
