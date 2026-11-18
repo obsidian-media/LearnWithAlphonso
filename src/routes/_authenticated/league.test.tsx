@@ -29,11 +29,14 @@ const { useProgress } = await import("../../lib/progress");
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const LeaguePage = Route.options.component!;
-  return render(
-    <QueryClientProvider client={client}>
-      <LeaguePage />
-    </QueryClientProvider>,
-  );
+  return {
+    client,
+    ...render(
+      <QueryClientProvider client={client}>
+        <LeaguePage />
+      </QueryClientProvider>,
+    ),
+  };
 }
 
 beforeEach(() => {
@@ -204,5 +207,39 @@ describe("League page", () => {
     renderPage();
     await screen.findByRole("heading", { name: /league$/ });
     expect(screen.queryByText("XP this week")).not.toBeInTheDocument();
+  });
+
+  it("shows an error with Try again, not 'Nothing here yet', when the board cannot load", async () => {
+    getLeaderboard
+      .mockRejectedValueOnce(new Error("getLeaderboard: request-failed"))
+      .mockRejectedValueOnce(new Error("getLeaderboard: request-failed"))
+      .mockResolvedValue([]);
+    renderPage();
+    expect(await screen.findByText("Couldn't load the leaderboard.")).toBeInTheDocument();
+    expect(screen.queryByText("Nothing here yet")).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Nothing here yet")).toBeInTheDocument();
+  });
+
+  it("keeps the board on screen when a background refresh fails, with a small Try again", async () => {
+    getLeaderboard.mockResolvedValue([
+      {
+        user_id: "u1",
+        display_name: "Ada",
+        country: null,
+        avatar_seed: "A",
+        xp: 500,
+        isYou: false,
+      },
+    ]);
+    const { client } = renderPage();
+    expect(await screen.findByText("Ada")).toBeInTheDocument();
+
+    getLeaderboard.mockRejectedValue(new Error("getLeaderboard: request-failed"));
+    await client.refetchQueries({ queryKey: ["leaderboard", "global", "weekly"] });
+
+    expect(await screen.findByText("Couldn't refresh the leaderboard.")).toBeInTheDocument();
+    expect(screen.getByText("Ada")).toBeInTheDocument();
+    expect(screen.queryByText("Couldn't load the leaderboard.")).not.toBeInTheDocument();
   });
 });

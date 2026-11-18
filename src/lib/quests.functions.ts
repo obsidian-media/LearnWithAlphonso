@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { QUESTS, currentWeekStart } from "../data/quests";
+import { publicError } from "./public-error";
 
 const courseSchema = z.enum(["en", "fr", "es"]).default("en");
 
@@ -29,7 +30,7 @@ export const getWeeklyQuestProgress = createServerFn({ method: "GET" })
     weekEnd.setUTCDate(weekEnd.getUTCDate() + 7);
     const weekEndStr = weekEnd.toISOString().slice(0, 10);
 
-    const [{ data: activityRows }, { data: completionRows }, { data: claims }] = await Promise.all([
+    const [activity, completions, claimRows] = await Promise.all([
       supabase
         .from("activity_days")
         .select("xp_earned")
@@ -49,6 +50,12 @@ export const getWeeklyQuestProgress = createServerFn({ method: "GET" })
         .eq("user_id", userId)
         .eq("week_start", weekStart),
     ]);
+    // A failed read must not show zero progress (or an unclaimed quest as claimable): fail the whole call instead.
+    const failed = activity.error ?? completions.error ?? claimRows.error;
+    if (failed) throw publicError("getWeeklyQuestProgress", failed);
+    const activityRows = activity.data;
+    const completionRows = completions.data;
+    const claims = claimRows.data;
 
     const xpThisWeek = (activityRows ?? []).reduce((sum, r) => sum + (r.xp_earned ?? 0), 0);
     const lessonsThisWeek = completionRows?.length ?? 0;

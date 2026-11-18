@@ -9,6 +9,14 @@ on:
 permissions:
   contents: read
 
+# A new push to a PR branch cancels that PR's older, now-stale run. Pushes to main are never cancelled: each one
+# carries a deploy (deploy-supabase, below) and its own post-merge checks, so every main run finishes. Non-PR runs get
+# a group of their own (the run id) on purpose: a shared group with cancel-in-progress false still keeps only ONE
+# pending run and cancels the others, which would drop main runs during a burst of merges.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint-and-typecheck:
     runs-on: ubuntu-latest
@@ -30,6 +38,17 @@ jobs:
 
       - name: Test
         run: bun run test
+
+      # A migration added by this PR must be newer than every migration already on the base branch. Supabase
+      # refuses to `db push` a version older than one it has applied, so an out-of-order file merges green and then
+      # breaks main's deploy. Logic and its tests: scripts/check-migration-order.ts, src/lib/check-migration-order.test.ts.
+      - name: Added migrations are newer than the base branch's newest
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          bun scripts/check-migration-order.ts "$BASE_SHA"
 
       # scripts/export-ios-content.ts is a MANUAL step -- the native app
       # bundles its content as JSON rather than fetching it, so any change to
@@ -472,6 +491,13 @@ jobs:
     # (doesn't fail the job) if those two secrets aren't set yet.
     name: Deploy Supabase migrations + Edge Functions
     runs-on: ubuntu-latest
+    # Two quick pushes to main must not run `db push` and `functions deploy` against production at the same time.
+    # A running deploy is never cancelled (it could stop between migrations and functions). GitHub keeps one pending
+    # job per group, so in a burst of three merges the middle deploy is skipped; the newest one ships its commit,
+    # which already contains the middle one's changes.
+    concurrency:
+      group: deploy-supabase-${{ github.ref }}
+      cancel-in-progress: false
     environment: production-supabase
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     # deno-tests added deliberately: it is the ONLY CI job that ever runs or

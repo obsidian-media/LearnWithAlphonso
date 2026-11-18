@@ -4,7 +4,7 @@ import { canonicalLink, shareMeta } from "@/lib/seo";
 
 /**
  * The Accessibility URL App Store Connect's Accessibility section links
- * to. Apple's bar for claiming a feature is that users must be able to
+ * to, and the accessibility page for the website and the Android app. Apple's bar for claiming a feature is that users must be able to
  * complete the app's common tasks using it -- so this page says what is
  * actually true today, including what is not supported yet.
  *
@@ -39,12 +39,21 @@ export const Route = createFileRoute("/accessibility")({
 
 function Accessibility() {
   return (
-    <LegalPage title="Accessibility" updated="26 September 2026">
+    <LegalPage title="Accessibility" updated="18 November 2026">
       <Section heading="Our position">
         <p>
           Learning a language should not depend on how well you see, hear or move. We would rather
           tell you plainly what works today than claim support you then discover is missing — so
-          this page lists both.
+          this page lists both. It covers the website at learn.alphonsoecosystem.app, the iPhone app
+          and the Android app.
+        </p>
+        <p>
+          Our goal is for the website and both apps to meet the Web Content Accessibility Guidelines
+          (WCAG) 2.2 at level AA. That is a target we are working towards, not a claim that we meet
+          it today: the app has not been independently audited or certified. Automated checks for
+          WCAG 2 level A and AA issues run on our public web pages (such as the home, sign-in and
+          legal pages) with every change. They catch some problems, not all, and they do not yet
+          cover the signed-in website or the apps.
         </p>
         <p>
           If something here is wrong, or something you need is missing, write to {CONTACT}. We read
@@ -55,14 +64,14 @@ function Accessibility() {
       <Section heading="What we are building">
         <p>
           The following are implemented and shipping, and we are verifying each one on real devices
-          before we claim it formally on the App Store:
+          before we claim it formally in the App Store or on Google Play:
         </p>
         <Bullets
           items={[
-            "Larger Text: the app follows your system text size, including the accessibility sizes, rather than using fixed type.",
-            "Dark Interface: the app follows your system appearance instead of forcing its own.",
-            "VoiceOver: screens, controls and question results are labelled, and whether an answer was correct is announced rather than shown only in colour.",
-            "Reduced Motion: animations are shortened or removed when you turn that setting on.",
+            "Larger text: the iPhone app follows your system text size, including the accessibility sizes, and the Android app follows your font size setting, rather than using fixed type. On the website, you can use your browser's zoom.",
+            "Dark mode: the Royal theme follows your device's light or dark setting on the website, iPhone and Android. Meadow is a light theme.",
+            "Screen readers: in the iPhone app (VoiceOver) and the Android app (TalkBack), screens, controls and question results are labelled, and whether an answer was correct is announced rather than shown only in colour. The website labels its controls for screen readers in the same way.",
+            "Reduced motion: animations are shortened or removed when you turn on Reduce Motion on iPhone, Remove animations on Android, or the reduced motion setting your browser follows.",
           ]}
         />
       </Section>
@@ -70,9 +79,9 @@ function Accessibility() {
       <Section heading="What we do not support yet">
         <Bullets
           items={[
-            "Voice Control: not tested, so we do not claim it.",
+            "Voice Control and Voice Access: not tested, so we do not claim them.",
             "Captions and audio descriptions: our audio library has written transcripts, but they are not synchronised captions.",
-            "iPad and Apple Silicon Macs: the app is built for iPhone. It has not been tested elsewhere, so we do not offer it there.",
+            "iPad and Apple Silicon Macs: the iOS app is built for iPhone. It has not been tested elsewhere, so we do not offer it there.",
           ]}
         />
       </Section>
@@ -89,7 +98,8 @@ function Accessibility() {
       <Section heading="Telling us what you need">
         <p>
           Write to {CONTACT}. Describe what you were trying to do and what got in the way — that is
-          more useful to us than naming a feature, and it is how the list above gets shorter.
+          more useful to us than naming a feature, and it is how the list above gets shorter. Tell
+          us whether you were on the website, the iPhone app or the Android app.
         </p>
       </Section>
     </LegalPage>

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const getWeeklyChallenges = vi.fn();
@@ -62,5 +62,24 @@ describe("WeeklyChallengesCard", () => {
     getWeeklyChallenges.mockReturnValue(new Promise(() => {}));
     const { container } = renderCard();
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("says the challenges could not load, with Try again, instead of hiding the card", async () => {
+    getWeeklyChallenges
+      .mockRejectedValueOnce(new Error("getWeeklyChallenges: request-failed"))
+      .mockResolvedValueOnce([
+        {
+          templateId: "lessons_5",
+          title: "On a roll",
+          description: "",
+          progress: 3,
+          threshold: 5,
+          completed: false,
+        },
+      ]);
+    renderCard();
+    expect(await screen.findByText("Couldn't load this week's challenges.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("On a roll")).toBeInTheDocument();
   });
 });

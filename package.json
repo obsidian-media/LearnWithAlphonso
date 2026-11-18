@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && bun scripts/check-bundle.ts --maps-only",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "dev:admin": "vite dev --config vite.admin.config.ts",
@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check:bundle": "bun scripts/check-bundle.ts"
   },
   "dependencies": {
     "@fontsource-variable/baloo-2": "^5.3.0",
@@ -47,6 +48,7 @@
     "@electric-sql/pglite": "^0.5.8",
     "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.63.0",
+    "@sentry/vite-plugin": "11.10.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",
