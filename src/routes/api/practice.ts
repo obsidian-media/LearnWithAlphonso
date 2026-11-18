@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isCourse } from "@/data/courses";
@@ -25,7 +26,7 @@ type Admin = (typeof import("@/integrations/supabase/client.server"))["supabaseA
  */
 const practiceTables = (admin: Admin) => admin as unknown as SupabaseClient;
 
-const json = (body: unknown, status = 200) => Response.json(body, { status });
+const json = (body: unknown, status = 200) => noStoreJson(body, { status });
 const iso = (t: string) => new Date(t).toISOString();
 
 async function authenticate(request: Request, admin: Admin): Promise<string | Response> {

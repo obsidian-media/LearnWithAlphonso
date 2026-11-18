@@ -16,7 +16,10 @@ export const LLM_PROVIDER_PREFS = { data_collection: "deny" } as const;
 export const LLM_CHAT_MODELS_DEFAULT: readonly string[] = ["anthropic/claude-haiku-5.5"];
 
 export function parseLlmChatModels(raw: string | undefined): string[] {
-  const models = (raw ?? "").split(",").map((m) => m.trim()).filter(Boolean);
+  const models = (raw ?? "")
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
   return models.length > 0 ? models : [...LLM_CHAT_MODELS_DEFAULT];
 }
 
@@ -35,7 +38,10 @@ export function resolveLlmChatModels(): string[] {
 export const LLM_PROVIDERS_DEFAULT: readonly string[] = ["anthropic"];
 
 export function parseLlmProviders(raw: string | undefined): string[] {
-  const hosts = (raw ?? "").split(",").map((h) => h.trim().toLowerCase()).filter(Boolean);
+  const hosts = (raw ?? "")
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
   return hosts.length > 0 ? hosts : [...LLM_PROVIDERS_DEFAULT];
 }
 
@@ -69,12 +75,42 @@ type LlmChatBody = { model: string; messages: LlmMessage[] } & Record<string, un
 
 const jsonHeaders = { "content-type": "application/json" };
 
+// Twins of upstreamErrorCode / upstreamRequestId in src/lib/api-response.server.ts: what is logged about a provider
+// failure is the status, a short error code and the request id, never the body (it can echo the learner's text).
+const SAFE_TOKEN = /^[A-Za-z0-9_.-]{1,64}$/;
+export function upstreamErrorCode(rawBody: string): string {
+  try {
+    const b = JSON.parse(rawBody) as {
+      error?: { code?: unknown; type?: unknown } | unknown;
+      err_code?: unknown;
+    };
+    const e =
+      typeof b.error === "object" && b.error ? (b.error as { code?: unknown; type?: unknown }) : {};
+    for (const c of [e.code, e.type, b.err_code]) {
+      if ((typeof c === "string" || typeof c === "number") && SAFE_TOKEN.test(String(c)))
+        return String(c);
+    }
+  } catch {
+    // not JSON
+  }
+  return "unknown";
+}
+export function upstreamRequestId(res: Response): string {
+  for (const name of ["x-request-id", "x-generation-id", "cf-ray"]) {
+    const v = res.headers.get(name);
+    if (v && SAFE_TOKEN.test(v)) return v;
+  }
+  return "none";
+}
+
 // Same mapping as the web twin: 401/402/403 (unusable account or provider key) becomes 503, a 200 that carries an
 // error and no choices becomes 502. Both are logged.
 export async function normalizeLlmResponse(res: Response): Promise<Response> {
   if (res.status === 401 || res.status === 402 || res.status === 403) {
     const text = await res.text();
-    console.error(`[llm] provider unavailable (${res.status}): ${text.slice(0, 500)}`);
+    console.error(
+      `[llm] provider unavailable status=${res.status} code=${upstreamErrorCode(text)} request=${upstreamRequestId(res)}`,
+    );
     return new Response(text, { status: 503, headers: jsonHeaders });
   }
   if (res.status === 200 && (res.headers.get("content-type") ?? "").includes("application/json")) {
@@ -87,7 +123,9 @@ export async function normalizeLlmResponse(res: Response): Promise<Response> {
     }
     const obj = parsed as { error?: unknown; choices?: unknown } | null;
     if (obj && typeof obj === "object" && obj.error && !Array.isArray(obj.choices)) {
-      console.error(`[llm] provider error inside a 200: ${text.slice(0, 500)}`);
+      console.error(
+        `[llm] provider error inside a 200 status=200 code=${upstreamErrorCode(text)} request=${upstreamRequestId(res)}`,
+      );
       return new Response(text, { status: 502, headers: jsonHeaders });
     }
     return new Response(text, { status: 200, headers: jsonHeaders });

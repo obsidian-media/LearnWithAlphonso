@@ -4,11 +4,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getUser = vi.fn();
 const rpc = vi.fn();
-const createClient = vi.fn().mockReturnValue({ auth: { getUser }, rpc });
+// is_restricted (the ban check verifyAuth makes) is answered here, so the queued answers on `rpc` below are only the
+// quota functions, in order.
+const banRpc = vi.fn();
+const createClient = vi.fn().mockReturnValue({
+  auth: { getUser },
+  rpc: (fn: string, args: unknown) => (fn === "is_restricted" ? banRpc(fn, args) : rpc(fn, args)),
+});
 vi.mock("@supabase/supabase-js", () => ({ createClient }));
 
 // The monthly cost cap has its own tests (ai-monthly-cap.*.test.ts); here it must not eat the mocked rpc sequence.
-vi.mock("./ai-monthly-cap.server", () => ({ monthlyCapRefusal: async () => null }));
+const monthlyCapRefusal = vi.fn(async (..._args: unknown[]): Promise<unknown> => null);
+vi.mock("./ai-monthly-cap.server", () => ({
+  monthlyCapRefusal,
+  USAGE_UNVERIFIED_MESSAGE: "Could not verify your usage. Try again shortly.",
+}));
 
 const { consumeQuota, DAILY_LIMITS } = await import("./ai-quota.server");
 
@@ -19,6 +29,8 @@ function req(headers: Record<string, string> = {}) {
 beforeEach(() => {
   getUser.mockReset();
   rpc.mockReset();
+  banRpc.mockReset().mockResolvedValue({ data: false, error: null });
+  monthlyCapRefusal.mockClear();
   createClient.mockClear();
   process.env.SUPABASE_URL = "https://example.supabase.co";
   process.env.SUPABASE_PUBLISHABLE_KEY = "publishable-key";
@@ -162,5 +174,77 @@ describe("verifyAuth", () => {
     const { verifyAuth } = await import("./ai-quota.server");
     const r = await verifyAuth(req({ Authorization: "Bearer tok" }));
     expect(r.ok && r.userId).toBe("u1");
+  });
+});
+
+describe("verifyAuth refuses a banned learner", () => {
+  const authed = () => getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
+
+  it("asks is_restricted for this user and the ban kind", async () => {
+    authed();
+    const { verifyAuth } = await import("./ai-quota.server");
+    await verifyAuth(req({ Authorization: "Bearer tok" }));
+    expect(banRpc).toHaveBeenCalledWith("is_restricted", { p_user: "u1", p_kind: "ban" });
+  });
+
+  it("a banned learner gets 403 account_suspended, the same string the Edge Functions send", async () => {
+    authed();
+    banRpc.mockResolvedValue({ data: true, error: null });
+    const { verifyAuth } = await import("./ai-quota.server");
+    expect(await verifyAuth(req({ Authorization: "Bearer tok" }))).toEqual({
+      ok: false,
+      status: 403,
+      message: "account_suspended",
+    });
+    const edge = fs.readFileSync(
+      path.resolve(import.meta.dirname, "../../supabase/functions/_shared/account-status.ts"),
+      "utf8",
+    );
+    expect(edge).toContain('ACCOUNT_SUSPENDED_ERROR = "account_suspended"');
+  });
+
+  it("consumeQuota stops a banned learner before any quota is spent", async () => {
+    authed();
+    banRpc.mockResolvedValue({ data: true, error: null });
+    const result = await consumeQuota(req({ Authorization: "Bearer tok" }), "chat");
+    expect(result).toMatchObject({ ok: false, status: 403, message: "account_suspended" });
+    expect(rpc).not.toHaveBeenCalled();
+    expect(monthlyCapRefusal).not.toHaveBeenCalled();
+  });
+
+  it("an unreadable status check is a 503, not a pass", async () => {
+    authed();
+    banRpc.mockResolvedValue({ data: null, error: { message: "down" } });
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { verifyAuth } = await import("./ai-quota.server");
+    expect(await verifyAuth(req({ Authorization: "Bearer tok" }))).toMatchObject({
+      ok: false,
+      status: 503,
+    });
+    logged.mockRestore();
+  });
+
+  it("an active learner passes", async () => {
+    authed();
+    const { verifyAuth } = await import("./ai-quota.server");
+    expect(await verifyAuth(req({ Authorization: "Bearer tok" }))).toMatchObject({
+      ok: true,
+      userId: "u1",
+    });
+  });
+});
+
+describe("the monthly cap's unverified refusal", () => {
+  it("passes the learner's id on and answers 503 without spending any quota", async () => {
+    getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
+    monthlyCapRefusal.mockResolvedValue({ kind: "unverified" });
+    const result = await consumeQuota(req({ Authorization: "Bearer tok" }), "chat");
+    expect(result).toEqual({
+      ok: false,
+      status: 503,
+      message: "Could not verify your usage. Try again shortly.",
+    });
+    expect(monthlyCapRefusal.mock.calls[0]![4]).toBe("u1");
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { isCourse } from "@/data/courses";
@@ -13,23 +14,42 @@ const STT_TIMEOUT_MS = 20_000;
  */
 export const MAX_STT_BYTES = 1_000_000;
 
+/**
+ * What the apps and the browser really send: audio/* (webm, mp4, x-m4a, wav, ...), the webm/mp4 video containers a
+ * MediaRecorder can label an audio-only clip with, or no type at all (treated as webm below; a part with no type
+ * of its own reads back as application/octet-stream). Anything else (an
+ * image, a document, JSON) is refused before it is counted or forwarded.
+ */
+export function isAcceptedAudioType(type: string): boolean {
+  const t = type.trim().toLowerCase();
+  // A multipart part sent without a type of its own arrives as application/octet-stream, so that is accepted too:
+  // the route forwards the bytes to the speech provider, which detects the format itself.
+  if (t === "" || t === "application/octet-stream") return true;
+  return t.startsWith("audio/") || t === "video/webm" || t === "video/mp4";
+}
+
 export const Route = createFileRoute("/api/stt")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const key = process.env.DEEPGRAM_API_KEY;
-        if (!key) return Response.json({ error: "STT is not configured" }, { status: 500 });
+        if (!key) return noStoreJson({ error: "STT is not configured" }, { status: 500 });
         const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
-        const access = await authorizeAiRequest(request, "stt", { route: "stt" });
+        // Auth, the AI switch and consent first; the quota is spent only after the upload has passed its own checks
+        // (size and type), so a refused upload costs the learner no call and no burst token.
+        const access = await authorizeAiRequest(request, "stt", { route: "stt", deferQuota: true });
         if (!access.ok) return access.response;
         const budget = await import("@/lib/stt-audio-budget.server");
         const inForm = await request.formData().catch(() => null);
         const file = inForm?.get("file");
         if (!(file instanceof Blob) || file.size < 512) {
-          return Response.json({ error: "Empty or missing audio" }, { status: 400 });
+          return noStoreJson({ error: "Empty or missing audio" }, { status: 400 });
         }
         if (file.size > MAX_STT_BYTES) {
-          return Response.json({ error: "audio-too-long" }, { status: 413 });
+          return noStoreJson({ error: "audio-too-long" }, { status: 413 });
+        }
+        if (!isAcceptedAudioType(file.type)) {
+          return noStoreJson({ error: "unsupported-audio-type" }, { status: 415 });
         }
         // Deepgram's course->language codes are identical to this repo's own
         // course codes ("en"/"fr"/"es"), so no separate mapping table is
@@ -58,8 +78,11 @@ export const Route = createFileRoute("/api/stt")({
         // lie, so this only refuses; the charge below uses the provider's own length.
         const declared = headerDurationSeconds(audioBytes);
         if (declared !== null && declared > budget.maxCallSeconds()) {
-          return Response.json({ error: "audio-too-long" }, { status: 413 });
+          return noStoreJson({ error: "audio-too-long" }, { status: 413 });
         }
+        // Every check that needs no vendor call has passed: now the call is counted.
+        const quotaDenied = await access.chargeQuota!(); // always present with deferQuota; a missing one throws, never passes
+        if (quotaDenied) return quotaDenied;
         // Reserve the per-call maximum first: atomic, so parallel calls cannot pass the day's budget together.
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const reserved = await budget.reserveAudioSeconds(supabaseAdmin, access.userId);
@@ -89,7 +112,7 @@ export const Route = createFileRoute("/api/stt")({
           const timedOut =
             e instanceof DOMException && (e.name === "TimeoutError" || e.name === "AbortError");
           if (!timedOut) await settle(0);
-          return Response.json({ error: "transcription-unavailable" }, { status: 504 });
+          return noStoreJson({ error: "transcription-unavailable" }, { status: 504 });
         }
         if (!resp.ok) {
           // An error answer means no transcription: refund.
@@ -109,7 +132,7 @@ export const Route = createFileRoute("/api/stt")({
         } catch {
           // A success status means the audio was transcribed (and billed) even though the answer cannot be read:
           // the reservation stands.
-          return Response.json({ error: "transcription-unavailable" }, { status: 502 });
+          return noStoreJson({ error: "transcription-unavailable" }, { status: 502 });
         }
         // Settled to the length the provider billed. An over-long recording (a WebM states no length up front) is
         // charged in full and still answered: the cost is already paid, and the budget then stops the rest of the day.
@@ -144,7 +167,7 @@ export const Route = createFileRoute("/api/stt")({
         // decision in CHANGELOG.md's V3 entry for why: no new vendor, no
         // new cost, ships with data already in this response).
         const confidence = typeof alt?.confidence === "number" ? alt.confidence : null;
-        return Response.json({ text, confidence });
+        return noStoreJson({ text, confidence });
       },
     },
   },

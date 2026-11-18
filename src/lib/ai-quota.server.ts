@@ -4,6 +4,13 @@ import { createSupabaseFetch } from "@/integrations/supabase/fetch";
 import { nextMinute, nextUtcMidnight } from "./ai-quota-response";
 import { EXPLAIN_DAILY_LIMIT } from "./explain";
 
+/** What a banned learner's request gets as its error; the clients recognise it. Kept in step with
+ *  ACCOUNT_SUSPENDED_MESSAGE (src/integrations/supabase/auth-middleware.ts) and the Edge twin. */
+export const ACCOUNT_SUSPENDED_ERROR = "account_suspended";
+
+/** The 503 a free learner gets when the month's AI cost cannot be read (see ai-monthly-cap.server.ts). */
+export const USAGE_UNVERIFIED_MESSAGE = "Could not verify your usage. Try again shortly.";
+
 export type QuotaKind =
   "chat" | "stt" | "tts" | "translate" | "define" | "hector" | "explain" | "support" | "recap";
 
@@ -98,6 +105,20 @@ export async function verifyAuth(request: Request): Promise<AuthResult> {
   if (userErr || !userData.user) {
     return { ok: false, status: 401, message: "Session expired — sign in again." };
   }
+  // A banned learner's token is still valid, so ask the database (the same check requireSupabaseAuth and the Edge
+  // Functions make). Every route that verifies through here gets it. A failed check is refused with a 503 rather than
+  // let through: these routes cost real money per call, a ban exists to stop exactly that, and a retry a moment later
+  // costs the learner nothing. (requireSupabaseAuth, which guards no per-call vendor cost, lets an unreadable check
+  // through.)
+  const { data: banned, error: banErr } = await supabase.rpc("is_restricted", {
+    p_user: userData.user.id,
+    p_kind: "ban",
+  });
+  if (banErr) {
+    console.error("[auth] could not check the account status");
+    return { ok: false, status: 503, message: "Could not verify your account. Try again shortly." };
+  }
+  if (banned === true) return { ok: false, status: 403, message: ACCOUNT_SUSPENDED_ERROR };
   return { ok: true, supabase, userId: userData.user.id };
 }
 
@@ -113,7 +134,7 @@ export async function consumeQuota(
 ): Promise<QuotaResult> {
   const auth = await verifyAuth(request);
   if (!auth.ok) return auth;
-  return consumeQuotaFor(auth.supabase, kind, now);
+  return consumeQuotaFor(auth.supabase, kind, now, auth.userId);
 }
 
 /** The rate-limit and daily-cap half of consumeQuota, for a caller that has already verified the session. */
@@ -121,11 +142,16 @@ export async function consumeQuotaFor(
   supabase: ReturnType<typeof createClient<Database>>,
   kind: QuotaKind,
   now: Date = new Date(),
+  userId?: string,
 ): Promise<QuotaResult> {
   // The monthly COST cap first, so a refused call also burns no burst token and no daily unit. Only the costly kinds
-  // are ever refused; any failure to read the cost allows the call (see ai-monthly-cap.server.ts).
+  // are ever refused; when the cost cannot be read a free learner is refused and a Pro learner is let through (see
+  // the failure rule in ai-monthly-cap.server.ts).
   const { monthlyCapRefusal } = await import("./ai-monthly-cap.server");
-  const capped = await monthlyCapRefusal(supabase, kind, now);
+  const capped = await monthlyCapRefusal(supabase, kind, now, {}, userId);
+  if (capped?.kind === "unverified") {
+    return { ok: false, status: 503, message: USAGE_UNVERIFIED_MESSAGE };
+  }
   if (capped) {
     const { monthlyCapMessage } = await import("./ai-monthly-cap");
     return {

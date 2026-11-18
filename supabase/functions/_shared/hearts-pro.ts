@@ -49,7 +49,8 @@ export function accountAppUserIds(config: ProConfig, userId: string): string[] {
 }
 
 export function proConfigFromEnv(
-  get: (k: string) => string | undefined = (k) => Deno.env.get(k),
+  get: (k: string) => string | undefined = (k) =>
+    (globalThis as { Deno?: { env: { get(k: string): string | undefined } } }).Deno?.env.get(k),
 ): ProConfig | null {
   const secretApiKey = get("REVENUECAT_SECRET_API_KEY");
   if (!secretApiKey) return null;

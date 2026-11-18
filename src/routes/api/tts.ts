@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveTtsVoice } from "@/lib/voice-catalog";
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/api/tts")({
     handlers: {
       POST: async ({ request }) => {
         const key = process.env.DEEPGRAM_API_KEY;
-        if (!key) return Response.json({ error: "TTS is not configured" }, { status: 500 });
+        if (!key) return noStoreJson({ error: "TTS is not configured" }, { status: 500 });
         const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
         const access = await authorizeAiRequest(request, "tts", { route: "tts" });
         if (!access.ok) return access.response;
@@ -25,15 +26,12 @@ export const Route = createFileRoute("/api/tts")({
         try {
           body = await request.json();
         } catch {
-          return Response.json({ error: "Invalid JSON" }, { status: 400 });
+          return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
         }
         const text = (body.text ?? "").trim();
-        if (!text) return Response.json({ error: "text required" }, { status: 400 });
+        if (!text) return noStoreJson({ error: "text required" }, { status: 400 });
         if (text.length > TTS_MAX_CHARS)
-          return Response.json(
-            { error: "text-too-long", maxChars: TTS_MAX_CHARS },
-            { status: 413 },
-          );
+          return noStoreJson({ error: "text-too-long", maxChars: TTS_MAX_CHARS }, { status: 413 });
         // The learner's chosen voice (Settings > Voices) arrives as `voice`; it is used only when it is on the
         // allow-list for the conversation's course (src/lib/voice-catalog.ts). Anything else, including an arbitrary
         // Deepgram model id, falls back to the character's default, so a client cannot pick a pricier model.
@@ -75,7 +73,7 @@ export const Route = createFileRoute("/api/tts")({
             },
           );
         } catch {
-          return Response.json({ error: "speech-unavailable" }, { status: 504 });
+          return noStoreJson({ error: "speech-unavailable" }, { status: 504 });
         }
         if (!resp.ok) {
           const t = await resp.text().catch(() => "");

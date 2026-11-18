@@ -4,7 +4,13 @@ const getUser = vi.fn();
 const rpc = vi.fn();
 const maybeSingle = vi.fn();
 const from = vi.fn(() => ({ select: () => ({ eq: () => ({ maybeSingle }) }) }));
-const createClient = vi.fn(() => ({ auth: { getUser }, rpc, from }));
+// is_restricted (the ban check verifyAuth makes) is answered separately, so `rpc` stays the quota functions only.
+const banRpc = vi.fn(async (..._args: unknown[]) => ({ data: false, error: null as unknown }));
+const createClient = vi.fn(() => ({
+  auth: { getUser },
+  rpc: (fn: string, args: unknown) => (fn === "is_restricted" ? banRpc(fn, args) : rpc(fn, args)),
+  from,
+}));
 vi.mock("@supabase/supabase-js", () => ({ createClient }));
 const adminMaybeSingle = vi.fn();
 const adminFrom = vi.fn(() => ({
@@ -32,6 +38,7 @@ beforeEach(() => {
   process.env.SUPABASE_URL = "https://example.supabase.co";
   process.env.SUPABASE_PUBLISHABLE_KEY = "pk";
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+  banRpc.mockResolvedValue({ data: false, error: null });
   rpc.mockResolvedValue({ data: [{ allowed: true, used: 1 }], error: null });
   vi.spyOn(console, "info").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});

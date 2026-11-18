@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 /**
  * Every AI quota rejection reaches clients as
  * 429 { error: "quota-exceeded", resetsAt, message }. `error` is the stable
@@ -28,7 +29,7 @@ export function nextMinute(now: Date): string {
 
 export function quotaFailureResponse(failure: QuotaFailure): Response {
   if (failure.status === 429) {
-    return Response.json(
+    return noStoreJson(
       {
         error: "quota-exceeded",
         resetsAt: failure.resetsAt ?? null,
@@ -39,5 +40,5 @@ export function quotaFailureResponse(failure: QuotaFailure): Response {
       { status: 429 },
     );
   }
-  return Response.json({ error: failure.message }, { status: failure.status });
+  return noStoreJson({ error: failure.message }, { status: failure.status });
 }

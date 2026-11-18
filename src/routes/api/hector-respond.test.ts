@@ -183,6 +183,28 @@ describe("POST /api/hector-respond", () => {
     timeout.mockRestore();
   });
 
+  it("bounds the whole history sent to the model, not only each turn (40 turns of 4000 characters)", async () => {
+    let sent: RequestInit | undefined;
+    globalThis.fetch = vi.fn(async (_url: string, init?: RequestInit) => {
+      sent = init;
+      throw new DOMException("timed out", "TimeoutError");
+    }) as unknown as typeof fetch;
+    const history = Array.from({ length: 40 }, (_, i) => ({
+      role: i % 2 === 0 ? "user" : "assistant",
+      content: `${i}:`.padEnd(4000, "x"),
+    }));
+    await handler({ request: req({ text: "now", history }) });
+    const messages = JSON.parse(String(sent?.body)).messages as { role: string; content: string }[];
+    const historyChars = messages
+      .filter((m) => /^\d+:x+$/.test(m.content))
+      .reduce((n, m) => n + m.content.length, 0);
+    // chat-transcript-limits: 16,000 characters in total (the newest turns are kept), not 160,000.
+    expect(historyChars).toBeGreaterThan(0);
+    expect(historyChars).toBeLessThanOrEqual(16_000);
+    expect(messages.some((m) => m.content.startsWith("39:"))).toBe(true);
+    expect(messages.some((m) => m.content.startsWith("0:"))).toBe(false);
+  });
+
   it("bounds the speech call and returns a retryable failure when it times out", async () => {
     const timeout = vi.spyOn(AbortSignal, "timeout");
     let speech: RequestInit | undefined;

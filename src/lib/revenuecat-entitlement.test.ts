@@ -1,10 +1,14 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import {
   deleteRevenueCatSubscriber,
   getProEntitlementStatus,
   isProSubscriber,
   revenueCatConfigFromEnv,
+  resetEntitlementCache,
 } from "./revenuecat-entitlement";
+
+// A confirmed "active" answer is kept for a minute (revenuecat-entitlement-cache.test.ts); these tests reuse learner ids.
+beforeEach(() => resetEntitlementCache());
 
 describe("revenueCatConfigFromEnv", () => {
   it("returns null when the secret key is missing", () => {

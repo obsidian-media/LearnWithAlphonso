@@ -10,6 +10,11 @@ import type { CostConfig } from "./ai-cost-config";
  *      YESTERDAY. If the total reached AI_COST_ALERT_DAILY_TOTAL_USD, or any one learner reached
  *      AI_COST_ALERT_DAILY_USER_USD, email the owner. A learner appears only as the first 8 characters of their id.
  *
+ *   3. The spend circuit breaker, every pass: when TODAY's estimated total reaches AI_SPEND_BREAKER_DAILY_USD the "ai"
+ *      switch (app_switches, the owner's off switch) is turned off by trip_ai_spend_breaker, which flips it in one
+ *      statement, so exactly one pass sees the trip and sends the one email. It never turns anything back on: see
+ *      docs/operations.md ("AI spend circuit breaker") for the reset.
+ *
  * Failure rules: a send that fails releases the claim, so the next pass tries again; a missing recipient or sender is
  * logged and skipped (the claim stays, the day is not retried every 15 minutes), never a crash. A database that does
  * not have the functions yet (the migration is applied at deploy) skips quietly.
@@ -37,7 +42,9 @@ export type DayReport = {
 };
 
 export type AlertOutcome = "none" | "sent" | "skipped" | "failed";
-export type AiCostSweepResult = { rolledUp: number; alert: AlertOutcome };
+export type BreakerOutcome = "tripped" | "emailed" | "failed";
+/** `breaker` is present only when the breaker tripped (or failed to be asked); a quiet pass leaves it out. */
+export type AiCostSweepResult = { rolledUp: number; alert: AlertOutcome; breaker?: BreakerOutcome };
 
 /** The UTC date (YYYY-MM-DD) before `now`'s. */
 export function yesterdayUtc(now: Date): string {
@@ -76,6 +83,16 @@ export function parseDayReport(raw: unknown): DayReport {
 
 export function alertExceeded(report: DayReport, cfg: CostConfig): boolean {
   return report.totalMicro >= cfg.dailyTotalUsd * MICRO || report.overCount > 0;
+}
+
+export type BreakerTrip = { tripped: boolean; totalMicro: number };
+
+export function parseBreakerTrip(raw: unknown): BreakerTrip {
+  const r = raw as { tripped?: unknown; totalMicro?: unknown } | null;
+  if (!r || typeof r.tripped !== "boolean" || typeof r.totalMicro !== "number") {
+    throw new Error("bad breaker answer");
+  }
+  return { tripped: r.tripped, totalMicro: r.totalMicro };
 }
 
 const dollars = (micro: number) => `$${(micro / MICRO).toFixed(micro >= 10 * MICRO ? 2 : 3)}`;
@@ -125,6 +142,73 @@ export function buildAlertEmail(
   };
 }
 
+export function buildBreakerEmail(
+  trip: BreakerTrip,
+  cfg: CostConfig,
+  to: string,
+  from: string,
+): EmailMessage {
+  return {
+    from,
+    to,
+    subject: `[Alphonso] AI switched OFF: today's spend reached ${dollars(trip.totalMicro)}`,
+    text: [
+      `Today's estimated AI spend (UTC) reached ${dollars(trip.totalMicro)}, at or over the circuit breaker of $${cfg.breakerDailyUsd}.`,
+      "",
+      'The AI switch is now OFF: conversation, speech, AI grading, word lookup and the tutor return "ai-unavailable". Lessons, reviews and progress still work.',
+      "",
+      "Nothing turns it back on by itself. To look: the admin console Numbers page, then the AI cost group (heaviest learners).",
+      "To turn AI back on (after raising AI_SPEND_BREAKER_DAILY_USD on Vercel, or after the UTC day changes):",
+      "  UPDATE public.app_switches SET enabled = true, note = NULL, updated_at = now() WHERE key = 'ai';",
+      "It takes effect within 30 seconds on every server. If today's spend is still over the breaker and the setting is unchanged, the next 15-minute pass trips it again.",
+      "",
+      "Figures are estimates (the vendor's charge when it reported one, otherwise our price table). Setting: AI_SPEND_BREAKER_DAILY_USD (see docs/operations.md).",
+    ].join("\n"),
+  };
+}
+
+/** One pass of the breaker. Never throws; a database without the function yet skips quietly. */
+async function runBreaker(deps: AiCostSweepDeps, result: AiCostSweepResult): Promise<void> {
+  if (!deps.cfg.breakerEnabled) return;
+  let trip: BreakerTrip;
+  try {
+    const { data, error } = await deps.rpc("trip_ai_spend_breaker", {
+      p_limit_micro: Math.round(deps.cfg.breakerDailyUsd * MICRO),
+    });
+    if (error) {
+      if (!notDeployed(error)) {
+        console.error("[ai-cost] breaker check failed:", error.message);
+        result.breaker = "failed";
+      }
+      return;
+    }
+    trip = parseBreakerTrip(data);
+  } catch (e) {
+    console.error("[ai-cost] breaker check failed:", e instanceof Error ? e.message : "error");
+    result.breaker = "failed";
+    return;
+  }
+  if (!trip.tripped) return;
+  result.breaker = "tripped";
+  console.error(
+    `[ai-cost] BREAKER TRIPPED: AI switched off, today's estimated spend ${dollars(trip.totalMicro)} >= $${deps.cfg.breakerDailyUsd}`,
+  );
+  // The switch is already off; the email is a notice. It is not retried (the trip happens once), so a missing
+  // recipient or a failed send is logged loudly above and here.
+  if (!deps.ownerEmail || !deps.from) {
+    console.error(
+      "[ai-cost] breaker email NOT sent: REPORT_NOTIFY_TO or SUPPORT_NOTIFY_FROM is not set",
+    );
+    return;
+  }
+  try {
+    await deps.send(buildBreakerEmail(trip, deps.cfg, deps.ownerEmail, deps.from));
+    result.breaker = "emailed";
+  } catch (e) {
+    console.error("[ai-cost] breaker email failed:", e instanceof Error ? e.message : "error");
+  }
+}
+
 export async function sweepAiCost(deps: AiCostSweepDeps): Promise<AiCostSweepResult> {
   const result: AiCostSweepResult = { rolledUp: 0, alert: "none" };
 
@@ -138,6 +222,8 @@ export async function sweepAiCost(deps: AiCostSweepDeps): Promise<AiCostSweepRes
   } catch (e) {
     console.error("[ai-cost] rollup failed:", e instanceof Error ? e.message : "error");
   }
+
+  await runBreaker(deps, result);
 
   const now = deps.now();
   if (now.getUTCHours() < ALERT_AFTER_UTC_HOUR) return result;

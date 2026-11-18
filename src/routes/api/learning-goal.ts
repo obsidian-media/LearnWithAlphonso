@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { isCourse, type Course } from "@/data/courses";
 import type { Level } from "@/data/levels";
@@ -20,7 +21,7 @@ type Admin = (typeof import("@/integrations/supabase/client.server"))["supabaseA
 
 /** PostgREST sends microseconds and +00:00; clients (Swift's ISO8601 decoders) need ms and Z. */
 const isoTime = (timestamp: string) => new Date(timestamp).toISOString();
-const json = (body: unknown, status = 200) => Response.json(body, { status });
+const json = (body: unknown, status = 200) => noStoreJson(body, { status });
 const loadFailed = () => json({ error: "Could not load your goal." }, 500);
 
 async function authenticate(request: Request, admin: Admin): Promise<string | Response> {

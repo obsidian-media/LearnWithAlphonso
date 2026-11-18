@@ -44,6 +44,7 @@ first.
 | `STT_DAILY_AUDIO_SECONDS` (1200), `STT_MAX_CALL_SECONDS` (120) | O | voice limits |
 | `LLM_CHAT_MODELS`, `LLM_PROVIDERS` | O | model routing (defaults to Anthropic) |
 | `ENFORCE_HEARTS_GATE`, `SERVER_HEARTS` | O | hearts enforcement (on by default) |
+| `AI_SPEND_BREAKER_DAILY_USD` (default 100), `AI_SPEND_BREAKER_ENABLED` | O | switches AI off and emails the owner when today's spend reaches it; reset in operations.md |
 | `AI_COST_ALERT_DAILY_TOTAL_USD`, `AI_COST_ALERT_DAILY_USER_USD`, `AI_COST_USD_PER_CAD`, `AI_COST_HEAVY_PRICE_CAD`, `AI_COST_HEAVY_SHARE` | O | cost dashboard/alerts |
 | `AI_MONTHLY_CAP_FREE_USD`, `AI_MONTHLY_CAP_PRO_USD`, `AI_MONTHLY_CAP_WARN_PERCENT`, `AI_MONTHLY_CAP_ENABLED` | O | per-learner monthly AI-cost cap (defaults in `ai-monthly-cap.ts`) |
 | `REPORT_NOTIFY_FROM`, `SUPPORT_NOTIFY_FROM` | O | email "from" addresses |

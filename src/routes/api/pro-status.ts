@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
@@ -10,10 +11,10 @@ import { createFileRoute } from "@tanstack/react-router";
  */
 async function handle(request: Request): Promise<Response> {
   const accessToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
-  if (!accessToken) return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (!accessToken) return noStoreJson({ error: "unauthorized" }, { status: 401 });
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin.auth.getUser(accessToken);
-  if (error || !data?.user) return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (error || !data?.user) return noStoreJson({ error: "unauthorized" }, { status: 401 });
 
   const { revenueCatConfigFromEnv, getAccountSubscriberSummary } =
     await import("@/lib/revenuecat-entitlement");
@@ -21,9 +22,9 @@ async function handle(request: Request): Promise<Response> {
   // Every id the account's purchases can be under (its subscription identifier and, for older purchases, its id).
   const summary = config ? await getAccountSubscriberSummary(config, data.user.id) : null;
   if (!summary || summary.status === "unavailable") {
-    return Response.json({ error: "entitlement-unavailable" }, { status: 503 });
+    return noStoreJson({ error: "entitlement-unavailable" }, { status: 503 });
   }
-  return Response.json(
+  return noStoreJson(
     {
       pro: summary.status === "active",
       store: summary.store,

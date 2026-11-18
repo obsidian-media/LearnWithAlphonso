@@ -119,3 +119,36 @@ describe("normalizeLlmResponse", () => {
     expect(res.status).toBe(503);
   });
 });
+
+describe("what is logged about a provider failure", () => {
+  const SECRET = "my private essay about my landlord";
+  it("is the status, the error code and the request id, never the body (it can echo the learner's text)", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const body = {
+      error: { code: 402, message: `flagged input: ${SECRET}`, metadata: { raw: SECRET } },
+    };
+    const res = new Response(JSON.stringify(body), {
+      status: 402,
+      headers: { "content-type": "application/json", "x-request-id": "req_abc-123" },
+    });
+    await normalizeLlmResponse(res);
+    const line = String(log.mock.calls[0]?.[0]);
+    expect(line).toContain("status=402");
+    expect(line).toContain("code=402");
+    expect(line).toContain("request=req_abc-123");
+    expect(line).not.toContain(SECRET);
+  });
+
+  it("the same holds for an error inside a 200, and a hostile request id header is not logged", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const res = new Response(JSON.stringify({ error: { type: "moderation", message: SECRET } }), {
+      status: 200,
+      headers: { "content-type": "application/json", "x-request-id": `bad id ${SECRET}` },
+    });
+    await normalizeLlmResponse(res);
+    const line = String(log.mock.calls[0]?.[0]);
+    expect(line).toContain("code=moderation");
+    expect(line).toContain("request=none");
+    expect(line).not.toContain(SECRET);
+  });
+});

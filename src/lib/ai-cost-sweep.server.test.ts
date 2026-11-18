@@ -47,6 +47,8 @@ function make(opts: {
             : { data: c, error: null },
         );
       }
+      if (fn === "trip_ai_spend_breaker")
+        return Promise.resolve({ data: { tripped: false, totalMicro: 0 }, error: null });
       if (fn === "ai_cost_day_report")
         return Promise.resolve({ data: opts.report ?? report(), error: null });
       return Promise.resolve({ data: null, error: null });

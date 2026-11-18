@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { getCourse, isCourse, type Course } from "@/data/courses";
 import type { Question } from "@/data/curriculum";
@@ -35,21 +36,21 @@ export const Route = createFileRoute("/api/generate-practice")({
       POST: async ({ request }) => {
         const key = resolveLlmApiKey();
         if (!key)
-          return Response.json({ error: "Practice generation is not configured" }, { status: 500 });
+          return noStoreJson({ error: "Practice generation is not configured" }, { status: 500 });
 
         let body: { lessonId?: string; course?: string };
         try {
           body = await request.json();
         } catch {
-          return Response.json({ error: "Invalid JSON" }, { status: 400 });
+          return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
         }
         const lessonId = typeof body.lessonId === "string" ? body.lessonId : "";
         const rawCourse = body.course ?? "";
         const course: Course = isCourse(rawCourse) ? rawCourse : "en";
-        if (!lessonId) return Response.json({ error: "Missing lessonId" }, { status: 400 });
+        if (!lessonId) return noStoreJson({ error: "Missing lessonId" }, { status: 400 });
 
         const found = getCourse(course).findLesson(lessonId);
-        if (!found) return Response.json({ error: "Unknown lesson" }, { status: 400 });
+        if (!found) return noStoreJson({ error: "Unknown lesson" }, { status: 400 });
 
         // Resolved BEFORE spending quota. A lesson whose questions all answer
         // with whole sentences (reorder, listening) can produce no sample, so
@@ -62,7 +63,7 @@ export const Route = createFileRoute("/api/generate-practice")({
         // publicly bundled course data, so running them before the auth check
         // in consumeQuota leaks nothing new.
         if (!hasUsableSamples(found.lesson.questions)) {
-          return Response.json({ questions: [], source: "fallback" });
+          return noStoreJson({ questions: [], source: "fallback" });
         }
 
         // Not consent-gated: the model sees only the lesson's own public wording, never anything the learner
@@ -95,12 +96,12 @@ export const Route = createFileRoute("/api/generate-practice")({
         const safe = questions.filter((_, i) => !blocked[i]);
         // Never an empty answer for a lesson that has practiceable questions.
         if (safe.length === 0) {
-          return Response.json({
+          return noStoreJson({
             questions: buildFallbackPractice(found.lesson, found.lesson.id),
             source: "fallback",
           });
         }
-        return Response.json({ questions: safe, source: "ai" });
+        return noStoreJson({ questions: safe, source: "ai" });
       },
     },
   },

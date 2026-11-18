@@ -60,3 +60,30 @@ Deno.test("the edge chokepoint maps OpenRouter failures onto statuses callers ha
     console.error = quiet;
   }
 });
+
+Deno.test("a provider failure is logged as status, code and request id, never the body", async () => {
+  const lines: string[] = [];
+  const quiet = console.error;
+  console.error = (...a: unknown[]) => lines.push(a.join(" "));
+  const secret = "my private essay about my landlord";
+  try {
+    await normalizeLlmResponse(
+      new Response(JSON.stringify({ error: { code: 402, message: `flagged: ${secret}` } }), {
+        status: 402,
+        headers: { "content-type": "application/json", "x-request-id": "req_abc-123" },
+      }),
+    );
+    await normalizeLlmResponse(
+      new Response(JSON.stringify({ error: { type: "moderation", message: secret } }), {
+        status: 200,
+        headers: { "content-type": "application/json", "x-request-id": `bad id ${secret}` },
+      }),
+    );
+  } finally {
+    console.error = quiet;
+  }
+  assertEquals(lines.length, 2);
+  assertEquals(lines[0].includes("status=402") && lines[0].includes("code=402") && lines[0].includes("request=req_abc-123"), true);
+  assertEquals(lines[1].includes("code=moderation") && lines[1].includes("request=none"), true);
+  assertEquals(lines.some((l) => l.includes(secret)), false);
+});

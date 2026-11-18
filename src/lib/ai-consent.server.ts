@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { isSwitchOn } from "./app-switches.server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -42,7 +43,7 @@ export const AI_UNAVAILABLE = "ai-unavailable" as const;
 export async function requireAiSwitchedOn(route?: string): Promise<Response | null> {
   if (await isSwitchOn("ai")) return null;
   console.info(JSON.stringify({ event: "ai_switched_off", route: route ?? "unknown" }));
-  return Response.json({ error: AI_UNAVAILABLE }, { status: 503 });
+  return noStoreJson({ error: AI_UNAVAILABLE }, { status: 503 });
 }
 
 /**
@@ -56,31 +57,55 @@ export async function requireAiConsent(
   const db = opts.db ?? (await import("@/integrations/supabase/client.server")).supabaseAdmin;
   const state = await readAiConsent(db, userId);
   if (state === "granted") return null;
-  if (state === "error") return Response.json({ error: "consent-check-failed" }, { status: 503 });
+  if (state === "error") return noStoreJson({ error: "consent-check-failed" }, { status: 503 });
   console.info(JSON.stringify({ event: "ai_consent_denied", route: opts.route ?? "unknown" }));
-  return Response.json({ error: AI_CONSENT_REQUIRED }, { status: 403 });
+  return noStoreJson({ error: AI_CONSENT_REQUIRED }, { status: 403 });
 }
 
 type UserClient = Extract<Awaited<ReturnType<typeof verifyAuth>>, { ok: true }>["supabase"];
 export type AuthorizedAi =
-  { ok: true; userId: string; supabase: UserClient } | { ok: false; response: Response };
+  | {
+      ok: true;
+      userId: string;
+      supabase: UserClient;
+      /**
+       * Only with `deferQuota`: spends the quota (null = go ahead, else the response to return). The route calls it
+       * after it has validated the request, so a request it refuses spends nothing.
+       */
+      chargeQuota?: () => Promise<Response | null>;
+    }
+  | { ok: false; response: Response };
 
-/** Auth, then consent (unless the route is exempt), then quota. */
+/**
+ * Auth, then consent (unless the route is exempt), then quota. With `deferQuota` the quota is NOT spent here: the
+ * result carries `chargeQuota` and the route calls it once the request has passed its own cheap checks (size, type).
+ */
 export async function authorizeAiRequest(
   request: Request,
   kind: QuotaKind,
-  opts: { route: string; requireConsent?: boolean },
+  opts: { route: string; requireConsent?: boolean; deferQuota?: boolean },
 ): Promise<AuthorizedAi> {
   const auth = await verifyAuth(request);
   if (!auth.ok)
-    return { ok: false, response: Response.json({ error: auth.message }, { status: auth.status }) };
+    return { ok: false, response: noStoreJson({ error: auth.message }, { status: auth.status }) };
   const off = await requireAiSwitchedOn(opts.route);
   if (off) return { ok: false, response: off };
   if (opts.requireConsent !== false) {
     const denied = await requireAiConsent(auth.userId, { db: auth.supabase, route: opts.route });
     if (denied) return { ok: false, response: denied };
   }
-  const quota = await consumeQuotaFor(auth.supabase, kind);
+  if (opts.deferQuota) {
+    return {
+      ok: true,
+      userId: auth.userId,
+      supabase: auth.supabase,
+      chargeQuota: async () => {
+        const quota = await consumeQuotaFor(auth.supabase, kind, undefined, auth.userId);
+        return quota.ok ? null : quotaFailureResponse(quota);
+      },
+    };
+  }
+  const quota = await consumeQuotaFor(auth.supabase, kind, undefined, auth.userId);
   if (!quota.ok)
     return {
       ok: false,

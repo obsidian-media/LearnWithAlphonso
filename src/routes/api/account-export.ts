@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { exportMyData } from "@/lib/account.functions";
 
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/api/account-export")({
         try {
           const result = await exportMyData();
           const tables = JSON.parse(result.tables) as Record<string, unknown>;
-          return Response.json({
+          return noStoreJson({
             exported_at: result.exported_at,
             user_id: result.user_id,
             email: result.email,
@@ -29,10 +30,10 @@ export const Route = createFileRoute("/api/account-export")({
         } catch (error) {
           const message = error instanceof Error ? error.message : "Export failed";
           if (message.startsWith("Unauthorized")) {
-            return Response.json({ error: "Unauthorized" }, { status: 401 });
+            return noStoreJson({ error: "Unauthorized" }, { status: 401 });
           }
           console.error("[account-export] Account export failed", error);
-          return Response.json({ error: "Export failed" }, { status: 500 });
+          return noStoreJson({ error: "Export failed" }, { status: 500 });
         }
       },
     },

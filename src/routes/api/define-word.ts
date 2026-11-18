@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
@@ -22,17 +23,16 @@ import { defineWord, savedWordItemKey } from "@/lib/saved-word.server";
  */
 async function handleDefine(request: Request, timer: StageTimer): Promise<Response> {
   const llmKey = resolveLlmApiKey();
-  if (!llmKey) return Response.json({ error: "Word saving is not configured" }, { status: 500 });
+  if (!llmKey) return noStoreJson({ error: "Word saving is not configured" }, { status: 500 });
 
   const accessToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
-  if (!accessToken) return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (!accessToken) return noStoreJson({ error: "unauthorized" }, { status: 401 });
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: userData, error: userError } = await timer.time("auth", () =>
     supabaseAdmin.auth.getUser(accessToken),
   );
-  if (userError || !userData?.user)
-    return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (userError || !userData?.user) return noStoreJson({ error: "unauthorized" }, { status: 401 });
   const userId = userData.user.id;
 
   // Same order as every AI route: auth, the owner's AI switch, consent, then quota.
@@ -46,10 +46,10 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
   try {
     raw = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+    return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
   }
   const parsed = validateSavedWordInput(raw);
-  if (!parsed.ok) return Response.json({ error: parsed.error }, { status: 400 });
+  if (!parsed.ok) return noStoreJson({ error: parsed.error }, { status: 400 });
   const input = parsed.value;
   const itemKey = savedWordItemKey(input.course, input.word);
 
@@ -70,9 +70,9 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
       .maybeSingle();
     return { row: data as StoredWord | null, error };
   };
-  const dbError = () => Response.json({ error: "Could not save that word." }, { status: 500 });
+  const dbError = () => noStoreJson({ error: "Could not save that word." }, { status: 500 });
   const alreadySaved = (row: StoredWord) =>
-    Response.json({
+    noStoreJson({
       alreadySaved: true,
       word: row.saved_word ?? "",
       sentence: row.saved_context ?? "",
@@ -102,7 +102,7 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
     return dbError();
   }
   if ((count ?? 0) >= SAVED_WORD_LIMIT) {
-    return Response.json({ error: "saved-word-limit" }, { status: 409 });
+    return noStoreJson({ error: "saved-word-limit" }, { status: 409 });
   }
 
   const quota = await timer.time("quota", async () => {
@@ -121,7 +121,7 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
     }),
   );
   if (!definition) {
-    return Response.json({ error: "Could not look that word up. Try again." }, { status: 502 });
+    return noStoreJson({ error: "Could not look that word up. Try again." }, { status: 502 });
   }
 
   const [definitionBlocked] = await filterModelOutputs(
@@ -129,7 +129,7 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
     { check: makeBlockedTermCheck(supabaseAdmin), course: input.course, route: "define-word" },
   );
   if (definitionBlocked) {
-    return Response.json({ error: "Could not look that word up. Try again." }, { status: 502 });
+    return noStoreJson({ error: "Could not look that word up. Try again." }, { status: 502 });
   }
 
   const card = buildSavedWordCard({ word: input.word, sentence: input.sentence, definition });
@@ -166,7 +166,7 @@ async function handleDefine(request: Request, timer: StageTimer): Promise<Respon
     return dbError();
   }
 
-  return Response.json({
+  return noStoreJson({
     alreadySaved: false,
     word: input.word,
     sentence: input.sentence,
