@@ -59,6 +59,27 @@ export const ADMIN_FUNCTION_NAMES = [
 
 const BUCKET = "podcast-audio";
 
+/**
+ * Writes one podcast or folder change to the staff action record (staff_record), after the change itself succeeded.
+ * No learner is involved, so the target is empty and the ids go in `after`. Never put text a person typed into it
+ * (titles and transcripts stay in their own tables); only ids and sizes.
+ */
+async function recordPodcastAction(
+  context: { supabaseAdmin: SupabaseClient; userId: string; staffRole: StaffRole },
+  action: string,
+  after: Record<string, Json>,
+): Promise<void> {
+  const { recordStaffAction } = await import("./staff-audit.server");
+  await recordStaffAction(context.supabaseAdmin, {
+    actor: context.userId,
+    role: context.staffRole,
+    action,
+    target: null,
+    reason: null,
+    after,
+  });
+}
+
 const slugSchema = z.string().min(1).max(80).refine(isValidSlug, "use lowercase kebab-case");
 
 /**
@@ -212,6 +233,11 @@ export const adminCreateFolder = createServerFn({ method: "POST" })
           : error.message,
       );
     }
+    await recordPodcastAction(context, "podcast.folder.create", {
+      folderId: row.id,
+      parentId: data.parentId,
+      slug: data.slug,
+    });
     return { id: row.id };
   });
 
@@ -235,6 +261,7 @@ export const adminRenameFolder = createServerFn({ method: "POST" })
       .update({ title: data.title, description: data.description }, { count: "exact" })
       .eq("id", data.id);
     affectedOrThrow(result, "That folder no longer exists. Reload the list.");
+    await recordPodcastAction(context, "podcast.folder.rename", { folderId: data.id });
     return { ok: true };
   });
 
@@ -274,6 +301,10 @@ export const adminMoveFolder = createServerFn({ method: "POST" })
       .update({ parent_id: data.parentId }, { count: "exact" })
       .eq("id", data.id);
     affectedOrThrow(result, "That folder no longer exists. Reload the list.");
+    await recordPodcastAction(context, "podcast.folder.move", {
+      folderId: data.id,
+      parentId: data.parentId,
+    });
     return { ok: true };
   });
 
@@ -305,6 +336,7 @@ export const adminDeleteFolder = createServerFn({ method: "POST" })
       .delete({ count: "exact" })
       .eq("id", data.id);
     affectedOrThrow(result, "That folder was already deleted. Reload the list.");
+    await recordPodcastAction(context, "podcast.folder.delete", { folderId: data.id });
     return { ok: true };
   });
 
@@ -364,6 +396,7 @@ export const adminUpdateEpisode = createServerFn({ method: "POST" })
       .update({ title: data.title, description: data.description }, { count: "exact" })
       .eq("id", data.id);
     affectedOrThrow(result, "That episode no longer exists. Reload the list.");
+    await recordPodcastAction(context, "podcast.episode.update", { episodeId: data.id });
     return { ok: true };
   });
 
@@ -402,6 +435,11 @@ export const adminSetPublished = createServerFn({ method: "POST" })
       .update({ published: data.published }, { count: "exact" })
       .eq("id", data.id);
     affectedOrThrow(result, "That episode no longer exists. Reload the list.");
+    await recordPodcastAction(
+      context,
+      data.published ? "podcast.episode.publish" : "podcast.episode.unpublish",
+      { episodeId: data.id },
+    );
     return { ok: true };
   });
 
@@ -652,6 +690,11 @@ export const adminCreateEpisode = createServerFn({ method: "POST" })
           : `Upload succeeded but the database insert failed: ${error.message}. Orphaned object: ${BUCKET}/${audioPath}`,
       );
     }
+    await recordPodcastAction(context, "podcast.episode.create", {
+      episodeId: row.id,
+      folderId: data.folderId,
+      slug: data.slug,
+    });
     return { id: row.id, durationSeconds };
   });
 
@@ -736,6 +779,10 @@ export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
       .update({ duration_seconds: durationSeconds })
       .eq("id", data.episodeId);
     if (error) throw new Error(error.message);
+    await recordPodcastAction(context, "podcast.episode.audio_replace", {
+      episodeId: data.episodeId,
+      durationSeconds,
+    });
     return { ok: true, durationSeconds };
   });
 
@@ -783,12 +830,19 @@ export const adminSaveTranscript = createServerFn({ method: "POST" })
         .delete()
         .eq("episode_id", data.episodeId);
       if (deleteError) throw new Error(deleteError.message);
+      await recordPodcastAction(context, "podcast.transcript.delete", {
+        episodeId: data.episodeId,
+      });
       return { ok: true };
     }
     const { error } = await context.supabaseAdmin
       .from("podcast_transcripts")
       .upsert({ episode_id: data.episodeId, text: normalized }, { onConflict: "episode_id" });
     if (error) throw new Error(error.message);
+    await recordPodcastAction(context, "podcast.transcript.save", {
+      episodeId: data.episodeId,
+      characters: normalized.length,
+    });
     return { ok: true };
   });
 

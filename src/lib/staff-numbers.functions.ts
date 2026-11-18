@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireStaff } from "./staff-middleware";
-import { createRateLimiter } from "./staff-rate-limit";
+import { consumeStaffLimit, STAFF_LIMITS } from "./staff-rate-limit";
 import { parseWindow, type NumbersResponse } from "./numbers-core";
 
 export type { NumbersResponse, NumbersGroup, Tile } from "./numbers-core";
@@ -13,8 +13,6 @@ export type { NumbersResponse, NumbersGroup, Tile } from "./numbers-core";
  * with one scope never receives (nor does the server even fetch) the other scope's groups. Reads only, no personal
  * data in the answer, no entry in the action record (nothing about a learner is opened).
  */
-const limiter = createRateLimiter(30, 60_000);
-const refreshLimiter = createRateLimiter(6, 60_000);
 
 export const TOO_MANY_NUMBERS = "Too many requests. Wait a minute and try again.";
 
@@ -30,8 +28,13 @@ export const staffGetNumbers = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }): Promise<NumbersResponse> => {
-    if (!limiter.allow(context.userId)) throw new Error(TOO_MANY_NUMBERS);
-    if (data.refresh && !refreshLimiter.allow(context.userId)) throw new Error(TOO_MANY_NUMBERS);
+    if (!(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.numbers)))
+      throw new Error(TOO_MANY_NUMBERS);
+    if (
+      data.refresh &&
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.numbersRefresh))
+    )
+      throw new Error(TOO_MANY_NUMBERS);
     const { collectNumbers } = await import("./numbers-core");
     const { createSources, createOwnFetcher } = await import("./numbers-sources.server");
     return collectNumbers({

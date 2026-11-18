@@ -140,8 +140,15 @@ describe("admin second factor", () => {
     expect(meetsAdminAssurance(undefined, "true")).toBe(false);
   });
 
-  it("when not switched on, a password session still passes (enrol first, then switch it on)", () => {
-    expect(meetsAdminAssurance({ aal: "aal1" }, undefined)).toBe(true);
+  it('is required by default: unset, empty or any value other than the exact "false" demands aal2', () => {
+    for (const v of [undefined, "", "true", "0", "FALSE", "no", " false"]) {
+      expect(meetsAdminAssurance({ aal: "aal1" }, v), String(v)).toBe(false);
+      expect(meetsAdminAssurance(undefined, v), String(v)).toBe(false);
+      expect(meetsAdminAssurance({ aal: "aal2" }, v), String(v)).toBe(true);
+    }
+  });
+
+  it('only the exact string "false" opts out', () => {
     expect(meetsAdminAssurance({ aal: "aal1" }, "false")).toBe(true);
   });
 

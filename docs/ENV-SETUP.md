@@ -60,7 +60,7 @@ Admin-specific:
 
 | Var | R/O | Purpose |
 |---|---|---|
-| `ADMIN_REQUIRE_AAL2` | **⚠ launch-critical** | admin second factor. **Only the exact string `"true"` enforces 2FA** — unset/anything-else = 2FA silently OFF (`admin-auth.ts`: `if (requireAal2 !== "true") return true`) |
+| `ADMIN_REQUIRE_AAL2` | optional | admin second factor. **Required by default (fail closed):** only the exact string `"false"` turns it off (`admin-auth.ts`: `if (requireAal2 === "false") return true`); unset, empty or any other value requires an authenticator code. Never set `"false"` in production |
 | `REVENUECAT_SECRET_API_KEY`, `REVENUECAT_V2_SECRET_KEY`, `REVENUECAT_PROJECT_ID` | R (for staff Pro view) | staff-users Pro column + web-sub cancel |
 | `RESEND_API_KEY`, `REPORT_NOTIFY_TO`, `SUPPORT_NOTIFY_FROM`, `AI_COST_*` | O | support + cost emails/tiles |
 
@@ -133,7 +133,7 @@ via the RevenueCat REST API using `REVENUECAT_SECRET_API_KEY`. So there is no we
 
 ## Quick "check these are set" list (the silent ones)
 
-1. **`ADMIN_REQUIRE_AAL2="true"`** on the admin project (else admin 2FA is off).
+1. **`ADMIN_REQUIRE_AAL2`** on the admin project must be unset (or anything but `"false"`); the second factor is required by default.
 2. **Supabase function secrets CI does not set:** `REVENUECAT_SECRET_API_KEY`, `OPENROUTER_API_KEY`,
    `SUBSCRIPTION_ID_SECRET`.
 3. `SUBSCRIPTION_ID_SECRET` is **32+ chars** and **identical** in Vercel web + Supabase.
