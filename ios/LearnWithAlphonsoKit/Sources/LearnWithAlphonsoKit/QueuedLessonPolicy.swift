@@ -69,19 +69,6 @@ public enum QueuedLessonPolicy {
     }
 }
 
-/// The streak as it should read right now. The `streak` column is only rewritten when the learner next studies,
-/// so after a missed day it still holds the old run: the header and widget showed "12" to a learner whose
-/// streak had already ended. A last active day older than yesterday (local) means the run is over.
-public enum StreakDisplay {
-    public static func visibleStreak(
-        streak: Int, lastActiveDate: String?, now: Date, timeZone: TimeZone = .current
-    ) -> Int {
-        guard let lastActiveDate else { return streak }
-        let yesterday = localDateString(previousLocalDay(before: now, timeZone: timeZone), timeZone: timeZone)
-        return lastActiveDate >= yesterday ? streak : 0
-    }
-}
-
 /// Noon of the previous local calendar day: safe across DST changes, unlike `now - 86_400`.
 func previousLocalDay(before date: Date, timeZone: TimeZone) -> Date {
     var calendar = Calendar(identifier: .gregorian)

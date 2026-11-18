@@ -123,17 +123,35 @@ struct StatusHeaderView: View {
         }
     }
 
-    /// The streak as it reads today: the stored column keeps the old run after a missed day (StreakDisplay).
+    /// The streak as it reads today (StreakDisplay): the stored column keeps the old run after missed days, which
+    /// read as protected while freezes cover them and 0 after that.
+    static func displayedStreak(_ progress: LessonCompletionProgress, now: Date = Date()) -> StreakDisplay.Shown {
+        StreakDisplay.shown(
+            streak: progress.streak, lastActiveDate: progress.lastActiveDate, streakFreezes: progress.streakFreezes, now: now)
+    }
+
     static func shownStreak(_ progress: LessonCompletionProgress?, now: Date = Date()) -> Int {
-        guard let progress else { return 0 }
-        return StreakDisplay.visibleStreak(streak: progress.streak, lastActiveDate: progress.lastActiveDate, now: now)
+        progress.map { displayedStreak($0, now: now).streak } ?? 0
     }
 
     private func streakPill(progress: LessonCompletionProgress) -> some View {
-        let streak = Self.shownStreak(progress)
-        return hudPill(icon: { DSIconView(icon: .flameSolid, size: AlphonsoDS.Space.s5 + 2).foregroundStyle(ds.flame).pulsingGlow() }, value: "\(streak)")
+        let shown = Self.displayedStreak(progress)
+        return hudPill(icon: {
+            DSIconView(icon: .flameSolid, size: AlphonsoDS.Space.s5 + 2).foregroundStyle(ds.flame).pulsingGlow()
+                .overlay(alignment: .bottomTrailing) {
+                    if shown.state == .protected {
+                        // Missed days a streak freeze covers: the same snowflake the freeze row uses.
+                        Image(systemName: "snowflake")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(ds.choice)
+                            .padding(1)
+                            .background(Circle().fill(ds.card))
+                            .offset(x: 4, y: 4)
+                    }
+                }
+        }, value: "\(shown.streak)")
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Streak: \(streak) day\(streak == 1 ? "" : "s")")
+            .accessibilityLabel(StreakDisplay.accessibilityLabel(shown))
     }
 
     private func leagueBadge(progress: LessonCompletionProgress) -> some View {

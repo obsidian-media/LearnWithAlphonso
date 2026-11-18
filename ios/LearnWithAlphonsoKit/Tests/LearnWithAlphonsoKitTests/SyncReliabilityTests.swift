@@ -141,29 +141,89 @@ final class SyncReliabilityTests: XCTestCase {
 
     // MARK: - Displayed streak
 
-    func testTheStreakReadsZeroOnceADayWasMissed() {
-        XCTAssertEqual(StreakDisplay.visibleStreak(streak: 12, lastActiveDate: "2026-11-17", now: now, timeZone: utc), 12)
-        XCTAssertEqual(StreakDisplay.visibleStreak(streak: 12, lastActiveDate: "2026-11-16", now: now, timeZone: utc), 12,
+    private func shown(_ streak: Int, _ last: String, freezes: Int?, tz: TimeZone? = nil) -> StreakDisplay.Shown {
+        StreakDisplay.shown(streak: streak, lastActiveDate: last, streakFreezes: freezes, now: now, timeZone: tz ?? utc)
+    }
+
+    /// Studied today or yesterday: no day is missed, whatever the freezes.
+    func testTheStreakReadsNormallyWhenStudiedTodayOrYesterday() {
+        XCTAssertEqual(shown(12, "2026-11-17", freezes: 0), StreakDisplay.Shown(streak: 12, state: .active))
+        XCTAssertEqual(shown(12, "2026-11-16", freezes: 0), StreakDisplay.Shown(streak: 12, state: .active),
                        "yesterday still counts: today is not over")
-        XCTAssertEqual(StreakDisplay.visibleStreak(streak: 12, lastActiveDate: "2026-11-15", now: now, timeZone: utc), 0)
+        XCTAssertEqual(StreakDisplay.missedDays(lastActiveDate: "2026-11-16", now: now, timeZone: utc), 0)
+        XCTAssertEqual(StreakDisplay.missedDays(lastActiveDate: "2026-11-14", now: now, timeZone: utc), 2)
+    }
+
+    /// Missed days the freezes cover keep the streak, marked protected.
+    func testMissedDaysCoveredByFreezesKeepTheStreakAsProtected() {
+        XCTAssertEqual(shown(12, "2026-11-15", freezes: 1), StreakDisplay.Shown(streak: 12, state: .protected))
+        XCTAssertEqual(shown(12, "2026-11-14", freezes: 2), StreakDisplay.Shown(streak: 12, state: .protected),
+                       "exactly as many freezes as missed days is enough")
+        XCTAssertEqual(StreakDisplay.accessibilityLabel(shown(12, "2026-11-15", freezes: 1)),
+                       "12-day streak, protected by a streak freeze")
+        XCTAssertEqual(StreakDisplay.accessibilityLabel(shown(1, "2026-11-17", freezes: 0)), "Streak: 1 day")
+    }
+
+    /// More missed days than freezes: the run is over.
+    func testTheStreakReadsZeroOnceTheFreezesRunOut() {
+        XCTAssertEqual(shown(12, "2026-11-15", freezes: 0), StreakDisplay.Shown(streak: 0, state: .lapsed))
+        XCTAssertEqual(shown(12, "2026-11-13", freezes: 2), StreakDisplay.Shown(streak: 0, state: .lapsed), "3 missed, 2 freezes")
+        XCTAssertEqual(shown(12, "2026-11-15", freezes: nil).streak, 0, "an unknown freeze count protects nothing")
+        XCTAssertEqual(StreakDisplay.accessibilityLabel(shown(12, "2026-11-15", freezes: 0)), "Streak: 0 days")
     }
 
     func testTheStreakUsesTheLearnersLocalDay() {
-        // 15:00 UTC is already 2026-11-18 in Auckland (UTC+13), so the 16th is two days ago there.
+        // 15:00 UTC is already 2026-11-18 in Auckland (UTC+13), so the 16th is two days ago there: one missed day.
         let auckland = TimeZone(identifier: "Pacific/Auckland")!
-        XCTAssertEqual(StreakDisplay.visibleStreak(streak: 3, lastActiveDate: "2026-11-16", now: now, timeZone: auckland), 0)
-        XCTAssertEqual(StreakDisplay.visibleStreak(streak: 3, lastActiveDate: "2026-11-17", now: now, timeZone: auckland), 3)
+        XCTAssertEqual(shown(3, "2026-11-16", freezes: 0, tz: auckland).state, .lapsed)
+        XCTAssertEqual(shown(3, "2026-11-16", freezes: 1, tz: auckland).state, .protected)
+        XCTAssertEqual(shown(3, "2026-11-17", freezes: 0, tz: auckland).state, .active)
+        // In Los Angeles (UTC-8) it is still 07:00 on the 17th: the 16th is yesterday.
+        let losAngeles = TimeZone(identifier: "America/Los_Angeles")!
+        XCTAssertEqual(shown(3, "2026-11-16", freezes: 0, tz: losAngeles).state, .active)
+        XCTAssertEqual(shown(3, "2026-11-15", freezes: 0, tz: losAngeles).state, .lapsed)
     }
 
-    func testTheWidgetSnapshotShowsZeroAfterAMissedDay() {
+    /// One second either side of local midnight decides whether a day was missed.
+    func testTheDayChangesAtLocalMidnight() {
+        let utcMidnight18th = Date(timeIntervalSince1970: 1_794_960_000) // 2026-11-18 00:00 UTC
+        XCTAssertEqual(StreakDisplay.missedDays(lastActiveDate: "2026-11-16", now: utcMidnight18th.addingTimeInterval(-1), timeZone: utc), 0)
+        XCTAssertEqual(StreakDisplay.missedDays(lastActiveDate: "2026-11-16", now: utcMidnight18th, timeZone: utc), 1)
+    }
+
+    func testTheWidgetSnapshotShowsProtectedThenZeroAsTheFreezesRunOut() {
         let stale = makeStreakWidgetSnapshot(streak: 12, longestStreak: 12, lastActiveDate: "2026-11-14", now: now, timeZone: utc)
         XCTAssertEqual(stale.streak, 0)
+        XCTAssertFalse(stale.isStreakProtected)
         XCTAssertEqual(stale.longestStreak, 12)
-        // Published while the streak was alive, read by the widget two days later.
-        let published = makeStreakWidgetSnapshot(streak: 6, longestStreak: 6, lastActiveDate: "2026-11-17", now: now, timeZone: utc)
+        // Published while the streak was alive with one freeze, read by the widget on later days.
+        let published = makeStreakWidgetSnapshot(
+            streak: 6, longestStreak: 6, lastActiveDate: "2026-11-17", now: now, timeZone: utc, streakFreezes: 1)
         XCTAssertEqual(published.streak, 6)
-        XCTAssertEqual(published.asOf(now.addingTimeInterval(24 * 3600), timeZone: utc).streak, 6)
-        XCTAssertEqual(published.asOf(now.addingTimeInterval(2 * 24 * 3600), timeZone: utc).streak, 0)
+        XCTAssertFalse(published.isStreakProtected)
+        let nextDay = published.asOf(now.addingTimeInterval(24 * 3600), timeZone: utc)
+        XCTAssertEqual(nextDay.streak, 6)
+        XCTAssertFalse(nextDay.isStreakProtected)
+        let oneMissed = published.asOf(now.addingTimeInterval(2 * 24 * 3600), timeZone: utc)
+        XCTAssertEqual(oneMissed.streak, 6)
+        XCTAssertTrue(oneMissed.isStreakProtected)
+        let twoMissed = published.asOf(now.addingTimeInterval(3 * 24 * 3600), timeZone: utc)
+        XCTAssertEqual(twoMissed.streak, 0)
+        XCTAssertFalse(twoMissed.isStreakProtected)
+    }
+
+    /// A snapshot written before the freeze fields existed still decodes, as unprotected with no freezes.
+    func testAnOlderWidgetSnapshotDecodesWithoutTheFreezeFields() throws {
+        let json = #"{"streak":4,"longestStreak":9,"studiedToday":false,"updatedAt":0}"#
+        let decoded = try JSONDecoder().decode(StreakWidgetSnapshot.self, from: Data(json.utf8))
+        XCTAssertNil(decoded.streakFreezes)
+        XCTAssertFalse(decoded.isStreakProtected)
+        XCTAssertNil(decoded.lastActiveDate)
+        let roundTrip = try JSONDecoder().decode(
+            StreakWidgetSnapshot.self,
+            from: JSONEncoder().encode(makeStreakWidgetSnapshot(streak: 2, longestStreak: 2, lastActiveDate: "2026-11-15", now: now, timeZone: utc, streakFreezes: 1)))
+        XCTAssertTrue(roundTrip.isStreakProtected)
+        XCTAssertEqual(roundTrip.streakFreezes, 1)
     }
 
     // MARK: - Retry caps and clamps

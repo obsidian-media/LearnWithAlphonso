@@ -29,7 +29,8 @@ enum WidgetProgressPublisher {
             longestStreak: progress.longestStreak,
             lastActiveDate: progress.lastActiveDate,
             now: now,
-            theme: AlphonsoThemeManager.shared.themeID.rawValue
+            theme: AlphonsoThemeManager.shared.themeID.rawValue,
+            streakFreezes: progress.streakFreezes
         )
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         defaults.set(data, forKey: WidgetSharing.streakSnapshotDefaultsKey)
