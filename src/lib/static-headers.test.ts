@@ -60,6 +60,9 @@ describe("static-file security headers", () => {
         new Request("https://learn.example/"),
         "n",
       );
+      expect(record["Strict-Transport-Security"]).toBe(
+        app.headers.get("strict-transport-security"),
+      );
       expect(record["Referrer-Policy"]).toBe(app.headers.get("referrer-policy"));
       expect(record["X-Content-Type-Options"]).toBe(app.headers.get("x-content-type-options"));
     } finally {
