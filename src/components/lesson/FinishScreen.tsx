@@ -68,6 +68,9 @@ export function NotSavedScreen({
   );
 }
 
+/** Makes each finish screen's cue key unique (two screens in the same millisecond); no randomness needed. */
+let finishScreenSeq = 0;
+
 export function FinishScreen({
   xp,
   awardedCorrect,
@@ -121,7 +124,7 @@ export function FinishScreen({
   const [amazed, setAmazed] = useState(!reduceMotion);
   // The jingle with the confetti, then XP and any achievement as their tiles land. Keyed per screen, so a re-render
   // (or React's development double effect) never plays them twice. Sound plays under Reduce Motion too.
-  const [cueKey] = useState(() => `finish:${lessonId}:${Date.now()}:${Math.random()}`);
+  const [cueKey] = useState(() => `finish:${lessonId}:${Date.now()}:${++finishScreenSeq}`);
   const cueXp = saved ? xp : 0;
   const cueUnlocked = unlocked.length;
   useEffect(
