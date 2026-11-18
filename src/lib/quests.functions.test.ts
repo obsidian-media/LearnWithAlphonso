@@ -59,6 +59,17 @@ describe("getWeeklyQuestProgress", () => {
     const result = await getWeeklyQuestProgress({ context: ctx(supabase), data: { course: "en" } });
     expect(result.every((r) => r.progress === 0 && !r.claimed)).toBe(true);
   });
+
+  it("throws when a read fails, instead of showing zero progress or a claimed quest as unclaimed", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(chainable({ data: [{ xp_earned: 80 }], error: null }))
+      .mockReturnValueOnce(chainable({ data: [], error: null }))
+      .mockReturnValueOnce(chainable({ data: null, error: { message: "boom" } }));
+    await expect(
+      getWeeklyQuestProgress({ context: ctx(supabase), data: { course: "en" } }),
+    ).rejects.toThrow("getWeeklyQuestProgress: request-failed");
+  });
 });
 
 describe("claimWeeklyQuest", () => {

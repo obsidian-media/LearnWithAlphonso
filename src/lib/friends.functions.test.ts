@@ -261,3 +261,59 @@ describe("getMyDuels", () => {
     expect(await getMyDuels({ context: ctx(supabase) })).toEqual([]);
   });
 });
+
+const { removeFriend } = asTestFns(await import("./friends.functions"));
+
+describe("a failed RPC is an error, never empty data", () => {
+  // Each of these used to drop `error` and return [] / null / ok:false, which the pages drew as "No friends yet",
+  // "Invite not found" or a removal that had silently happened. A thrown publicError lets them show a retry.
+  const failing = () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: "column x does not exist" } });
+    return supabase;
+  };
+
+  it("getFriends throws request-failed instead of returning no friends", async () => {
+    await expect(getFriends({ context: ctx(failing()) })).rejects.toThrow(
+      "getFriends: request-failed",
+    );
+  });
+
+  it("getMyDuels throws instead of returning no duels", async () => {
+    await expect(getMyDuels({ context: ctx(failing()) })).rejects.toThrow(
+      "getMyDuels: request-failed",
+    );
+  });
+
+  it("getMyFriendCode throws instead of returning no code", async () => {
+    await expect(getMyFriendCode({ context: ctx(failing()) })).rejects.toThrow(
+      "getMyFriendCode: request-failed",
+    );
+  });
+
+  it("removeFriend throws instead of a quiet ok:false", async () => {
+    await expect(
+      removeFriend({ context: ctx(failing()), data: { friendId: INVITER_ID } }),
+    ).rejects.toThrow("removeFriend: request-failed");
+  });
+
+  it("getFriendInvitePreview throws, so a lookup failure is not 'Invite not found'", async () => {
+    await expect(
+      getFriendInvitePreview({ context: ctx(failing()), data: { code: INVITE_CODE } }),
+    ).rejects.toThrow("getFriendInvitePreview: request-failed");
+  });
+
+  it("acceptFriendInvite throws instead of a generic refusal", async () => {
+    await expect(
+      acceptFriendInvite({ context: ctx(failing()), data: { code: INVITE_CODE } }),
+    ).rejects.toThrow("acceptFriendInvite: request-failed");
+  });
+
+  it("still returns null for a code that resolves to nobody (not an error)", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: [{ ok: false }], error: null });
+    await expect(
+      getFriendInvitePreview({ context: ctx(supabase), data: { code: INVITE_CODE } }),
+    ).resolves.toBeNull();
+  });
+});

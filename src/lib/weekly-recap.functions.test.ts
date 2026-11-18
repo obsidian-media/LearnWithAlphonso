@@ -88,15 +88,24 @@ describe("getWeeklyRecap", () => {
     });
   });
 
-  it("a part that cannot be read comes back as 0 or none, never an error", async () => {
+  // A made-up 0 drew a "quiet week" that never happened and spent the once-only promotion celebration on it.
+  it("fails when the activity days cannot be read, instead of claiming a quiet week", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockReturnValueOnce(
-      chainable({ data: [{ xp_earned: 50 }], error: { code: "x" } }),
+      chainable({ data: [{ xp_earned: 50 }], error: { message: "boom" } }),
     );
-    supabase.rpc.mockResolvedValue({ data: [{ user_id: USER_ID }], error: { code: "x" } });
-    expect(await getWeeklyRecap({ context: ctx(supabase) })).toEqual({
-      lastWeekXp: 0,
-      currentRank: null,
-    });
+    supabase.rpc.mockResolvedValue({ data: [{ user_id: USER_ID }], error: null });
+    await expect(getWeeklyRecap({ context: ctx(supabase) })).rejects.toThrow(
+      "getWeeklyRecap: request-failed",
+    );
+  });
+
+  it("fails when the board cannot be read, instead of saying the learner is not on it", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chainable({ data: [{ xp_earned: 50 }], error: null }));
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
+    await expect(getWeeklyRecap({ context: ctx(supabase) })).rejects.toThrow(
+      "getWeeklyRecap: request-failed",
+    );
   });
 });
