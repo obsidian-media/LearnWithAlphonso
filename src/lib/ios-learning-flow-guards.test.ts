@@ -49,7 +49,13 @@ describe("Review never blank", () => {
     expect(src).toMatch(/replaceLastKnownDueReviews\([^)]*course: course\.wireCode\)/);
   });
   it("queued grades carry the owning account", () => {
-    expect(src).toMatch(/PendingReviewGrade\([\s\S]{0,300}ownerUserID: session\.userID/);
+    // The account the review session opened for (stamped at load), not whoever is signed in when a request fails.
+    expect(src).toMatch(
+      /PendingReviewGrade\([\s\S]{0,300}ownerUserID: reviewOwnerUserID \?\? session\.userID/,
+    );
+    expect(src.slice(src.indexOf("private func loadQueue()")).slice(0, 120)).toContain(
+      "reviewOwnerUserID = session.userID",
+    );
   });
   it("opens on the learner's active course and keeps the picker usable", () => {
     expect(src).toContain("ActiveCoursePreference.load(for: session.userID)");
@@ -335,7 +341,11 @@ describe("Sync store", () => {
     const root = read(`${APP}/RootView.swift`);
     expect(root).toContain("syncQueueStore.runSync(");
     expect(root).not.toContain('fetchDueReviews(course: "en")');
-    expect(store).toContain("SyncEngine.refreshDueReviews");
+    // The pass itself (with the per-course due refresh) is the Kit's SyncPass, exercised by SyncPassTests.
+    expect(store).toContain("SyncPass.run(");
+    expect(read("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/SyncPass.swift")).toContain(
+      "SyncEngine.refreshDueReviews",
+    );
   });
   it("keeps the same-account guard and the account cleanup registration", () => {
     expect(read(`${APP}/RootView.swift`)).toContain(
