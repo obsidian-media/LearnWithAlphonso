@@ -345,6 +345,9 @@ describe("deleteMyAccount", () => {
     // the result carries no hectorRevoked field at all.
     expect("hectorRevoked" in result).toBe(false);
     expect(supabaseAdminFrom).toHaveBeenCalledWith("friendships");
+    // Progress and reward rows are not deletable by a client any more; the auth deletion cascades them.
+    const callerTables = supabase.from.mock.calls.map((c: unknown[]) => c[0]);
+    expect(callerTables).toEqual(["friendships"]);
     expect(deleteUser).toHaveBeenCalledWith(USER_ID);
   });
 
@@ -374,8 +377,8 @@ describe("deleteMyAccount", () => {
   it("stops before auth deletion when an owned-row delete fails", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockImplementation((table: string) =>
-      table === "review_items"
-        ? chainable({ error: { message: "review cleanup failed" } })
+      table === "friendships"
+        ? chainable({ error: { message: "friendship cleanup failed" } })
         : chainable({ error: null }),
     );
 
@@ -389,7 +392,7 @@ describe("deleteMyAccount", () => {
     const supabase = createSupabaseMock();
     let failOnce = true;
     supabase.from.mockImplementation((table: string) => {
-      if (table === "review_items" && failOnce) {
+      if (table === "friendships" && failOnce) {
         failOnce = false;
         return chainable({ error: { message: "temporary database failure" } });
       }
@@ -783,15 +786,9 @@ describe("GDPR export table coverage", () => {
   });
 
   it("is exactly the tables with a DELETE policy (no dead pre-delete calls)", () => {
-    expect([...deleteTables].sort()).toEqual(
-      [
-        "review_items",
-        "lesson_completions",
-        "user_achievements",
-        "friendships",
-        "language_progress",
-      ].sort(),
-    );
+    // review_items, lesson_completions, user_achievements and language_progress left this list when the client
+    // DELETE grant on them was revoked (20261125100000): progress rows must not be removable from a client.
+    expect([...deleteTables]).toEqual(["friendships"]);
   });
 });
 

@@ -195,7 +195,7 @@ export const DS_TOKENS = {
       postScriptName: "BricolageGrotesque-96ptExtraBold",
       ios: "BricolageGrotesque-Variable.ttf",
       android: "bricolage_grotesque_variable",
-      web: "bricolage-grotesque-variable.woff",
+      web: "bricolage-grotesque-variable.woff2",
       axes: {
         opsz: [12, 96],
         wght: [200, 800],
@@ -207,7 +207,7 @@ export const DS_TOKENS = {
       postScriptName: "Figtree-Light",
       ios: "Figtree-Variable.ttf",
       android: "figtree_variable",
-      web: "figtree-variable.woff",
+      web: "figtree-variable.woff2",
       axes: {
         wght: [300, 900],
       },

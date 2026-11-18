@@ -88,9 +88,12 @@ function InvitePage() {
         {overview.isLoading ? (
           <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
         ) : failed ? (
-          <p role="alert" className="ds-type-footnote text-ds-ink-soft">
-            {REFERRAL_COPY.loadError}
-          </p>
+          <div role="alert" className="grid gap-2">
+            <p className="ds-type-footnote text-ds-ink-soft">{REFERRAL_COPY.loadError}</p>
+            <DsButton small variant="secondary" onClick={() => void overview.refetch()}>
+              Try again
+            </DsButton>
+          </div>
         ) : (
           <>
             <p

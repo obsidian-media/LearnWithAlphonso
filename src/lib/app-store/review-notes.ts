@@ -54,7 +54,7 @@ export const REQUIRED_NOTE_MARKERS = [
 ] as const;
 
 export function buildReviewNotes(i: ReviewNotesInput): string {
-  return `Learn With Alphonso teaches English, French and Spanish (CEFR A1 to C1) to learners aged 13+: lessons, spaced review, speaking practice, an audio library and Hector, an AI voice tutor (Pro). Screen recording on a physical iPhone: ${i.recordingURL}
+  return `Learn With Alphonso teaches English, French and Spanish (CEFR A1 to C1) to learners aged 13+: lessons, spaced review, speaking practice, an audio library and Hector, an AI voice tutor (Pro). Screen recording: ${i.recordingURL}
 
 SIGN IN (no password)
 1. Enter ${i.demoAccountEmail} and tap "Send code".
@@ -67,11 +67,11 @@ LEARNING
 - Hearts: a wrong answer costs one. At 0 a lesson cannot start: wait, spend 50 XP on one, or use review or practice.
 - Practice tab: pick a scenario, hold the mic to talk (active course).
 - Hector tab (Pro, unlocked): same mic; replies follow the course and level.
-- Listen tab follows the Learn course: English > A1 > "Ordering Coffee". FR and ES: switch course. Plays when locked; downloadable.
+- Listen tab follows the Learn course: English > A1 > "Ordering Coffee". Plays when locked; downloadable.
 - New since build 49: AI consent, native FR and ES tutor voices, learning goals, saved words, team missions, study buddies.
 
 AI CONSENT
-Nothing goes to an AI provider until the learner taps Allow on a sheet naming Deepgram (speech) and Anthropic via OpenRouter (text). The choice is saved on the account and enforced by our server. With "Not now" the app still works: answers are checked on the device and speaking falls back to typing. Change it in Profile > Settings > AI features. Report an AI reply: press and hold, then "Report this response".
+Nothing goes to an AI provider until the learner taps Allow on a sheet naming Deepgram (speech) and Anthropic via OpenRouter (text). Saved on the account, enforced by our server. With "Not now" the app still works: answers are checked on the device and speaking falls back to typing. Change it in Profile > Settings > AI features. Report an AI reply: press and hold, then "Report this response".
 
 SOCIAL SAFETY
 - New accounts choose a public display name once (filtered; Skip gives a name like Learner-4F2A). Emails are never shown.
@@ -80,13 +80,13 @@ SOCIAL SAFETY
 - Delete account: Profile > Settings > Account > Delete My Account (type DELETE). Export My Data is next to it.
 
 SUBSCRIPTION
-"${i.productTitle}", a monthly auto-renewable subscription with a free trial for eligible users, unlocks Hector and is submitted with this version. To see the paywall: Profile > Settings > Sign out, create a new account with "Continue with Apple", open Hector. It shows the price, trial terms, Restore, Terms of Use and Privacy Policy.
+"${i.productTitle}" (auto-renewable, free trial if eligible) unlocks Hector, unlimited hearts, call memory and more AI use; submitted with this version. To see the paywall: Profile > Settings > Sign out, create a new account with "Continue with Apple", open Hector. It shows the price, trial terms, Restore, Terms of Use and Privacy Policy.
 
 OTHER 2.1 ANSWERS
-- Services: Supabase (database, sign-in), Vercel (API), Resend (sign-in email), Deepgram (speech, no training), Anthropic via OpenRouter (AI text), RevenueCat (subscription status), Sign in with Apple, Google Sign-In, Apple Push Notifications.
-- Regional differences: none; StoreKit sets the price per storefront.
+- Services: Supabase (database, sign-in), Vercel (API), Resend (sign-in email), Deepgram (speech, no training), Anthropic via OpenRouter (AI text), RevenueCat (subscription status), Cloudflare Turnstile (email bot check), Sign in with Apple, Google Sign-In, Apple Push Notifications.
+- Regional differences: none.
 - Regulated or protected content: none. Images are licensed stock photos we host; podcast audio is AI-narrated (Deepgram) from scripts we wrote.
-- No ads, analytics, tracking or crash SDKs. Background audio is used only by Listen.`;
+- No ads or tracking. Crash reports via Sentry; usage analytics via PostHog only if the learner opts in. Background audio is used only by Listen.`;
 }
 
 export function buildBetaReviewNotes(

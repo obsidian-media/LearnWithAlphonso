@@ -9,7 +9,7 @@
  *
  * Previews never call TTS: each voice has a static clip at /voices/<id>.mp3 (public/voices/).
  */
-import { isCourse, type Course } from "@/data/courses";
+import { isCourse, type Course } from "@/data/course-meta";
 
 export type VoiceCharacter = "alphonso" | "hector";
 export const VOICE_CHARACTERS: readonly VoiceCharacter[] = ["alphonso", "hector"];

@@ -3,8 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
 import { PathCard } from "../../components/path/PathCard";
-import { TeamMissionCard } from "../../components/TeamMissionCard";
-import { WeeklyChallengesCard } from "../../components/WeeklyChallengesCard";
+import { WeeklySocialCards } from "../../components/WeeklySocialCards";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
@@ -661,8 +660,7 @@ function LearnPage() {
         </Link>
 
         <div data-sheet className="mt-6 grid gap-6">
-          <TeamMissionCard />
-          <WeeklyChallengesCard />
+          <WeeklySocialCards />
         </div>
       </div>
       {here && !hereVisible && (

@@ -133,6 +133,17 @@ describe("Invite friends screen", () => {
     expect(document.querySelector("[data-referral-link]")).toBeNull();
   });
 
+  it("error: Try again asks for the link again", async () => {
+    getReferralOverview
+      .mockRejectedValueOnce(new Error("down"))
+      .mockResolvedValue({ code: "AbCd1234", summary: null });
+    renderPage();
+    await screen.findByRole("alert");
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByRole("button", { name: REFERRAL_COPY.copy })).toBeEnabled();
+    expect(getReferralOverview).toHaveBeenCalledTimes(2);
+  });
+
   it("an unreadable count is not drawn as zero", async () => {
     getReferralOverview.mockResolvedValue({ code: "AbCd1234", summary: null });
     renderPage();

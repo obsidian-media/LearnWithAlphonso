@@ -237,11 +237,9 @@ class SocialClientTest {
         val fake = FakeSupabase { req -> if (req.method == "GET") json("""[{"display_name":"Ana","avatar_seed":"ab12cd34"}]""") else json("") }
         val c = client(fake)
         assertEquals(ProfileIdentity("Ana", "ab12cd34"), c.fetchProfileIdentity("u1"))
-        c.updateProfileDisplayName("Ana B", "u1")
         c.updateProfileAvatarSeed("deadbeef", "u1")
-        assertEquals("""{"display_name":"Ana B"}""", fake.seen[1].body)
-        assertEquals("""{"avatar_seed":"deadbeef"}""", fake.seen[2].body)
-        assertEquals("eq.u1", fake.seen[2].query["id"])
+        assertEquals("""{"avatar_seed":"deadbeef"}""", fake.seen[1].body)
+        assertEquals("eq.u1", fake.seen[1].query["id"])
     }
 
     @Test

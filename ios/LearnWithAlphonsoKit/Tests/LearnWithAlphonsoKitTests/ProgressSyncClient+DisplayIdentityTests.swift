@@ -35,20 +35,6 @@ final class ProgressSyncClientDisplayIdentityTests: XCTestCase {
         XCTAssertNil(identity)
     }
 
-    func testUpdateProfileDisplayNamePatchesTheRow() async throws {
-        let captured = TestCapture<URLRequest?>(nil)
-        let client = makeClient { request in
-            captured.value = request
-            return self.jsonResponse(for: request.url!, body: [String: String]())
-        }
-        try await client.updateProfileDisplayName("Grace", userID: userID)
-        let request = try XCTUnwrap(captured.value)
-        XCTAssertEqual(request.httpMethod, "PATCH")
-        XCTAssertTrue(request.url!.absoluteString.contains("id=eq.\(userID)"))
-        let body = try JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as! [String: Any]
-        XCTAssertEqual(body["display_name"] as? String, "Grace")
-    }
-
     func testUpdateProfileAvatarSeedPatchesTheRow() async throws {
         let captured = TestCapture<URLRequest?>(nil)
         let client = makeClient { request in

@@ -69,6 +69,8 @@ afterEach(() => {
 });
 
 const plansReady = () => screen.findByRole("radiogroup", { name: "Choose a plan" });
+const WITHDRAWAL = /I ask for Alphonso Pro to start straight away/;
+const tickWithdrawal = () => userEvent.click(screen.getByRole("checkbox", { name: WITHDRAWAL }));
 
 describe("WebPaywall: the top", () => {
   it("tells the story: the headline, a labelled example call and three facts, with no daily number", async () => {
@@ -134,6 +136,7 @@ describe("WebPaywall: the plans", () => {
         /^First payment on (November 13|13 November)\. Cancel before then and you pay nothing\.$/,
       ),
     ).toBeInTheDocument();
+    await tickWithdrawal();
     await userEvent.click(screen.getByRole("button", { name: "Start free trial" }));
     expect(assign).toHaveBeenCalledWith("https://pay.rev.cat/year/u1");
   });
@@ -163,6 +166,7 @@ describe("WebPaywall: the plans", () => {
     const group = await plansReady();
     await userEvent.click(within(group).getAllByRole("radio")[1]);
     expect(screen.getByText("$9.99 a month after the trial")).toBeInTheDocument();
+    await tickWithdrawal();
     await userEvent.click(screen.getByRole("button", { name: "Start free trial" }));
     expect(assign).toHaveBeenCalledWith("https://pay.rev.cat/month/u1");
   });
@@ -202,7 +206,13 @@ describe("WebPaywall: the plans", () => {
   it("says what stays free, the renewal terms, and links Restore, Terms and Privacy", async () => {
     render(<WebPaywall source="hector_tab" />);
     await plansReady();
-    expect(screen.getByText("Everything else stays free, always.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "These stay free, always. Pro adds Hector, unlimited hearts and more AI practice each month.",
+      ),
+    ).toBeInTheDocument();
+    // Hearts are limited without Pro, so the paywall must not promise that everything else is free.
+    expect(document.body.textContent).not.toMatch(/Everything else stays free/);
     const free = screen.getByRole("list", { name: "Free for everyone" });
     expect(
       within(free)
@@ -244,6 +254,45 @@ describe("WebPaywall: the plans", () => {
       await screen.findByText("Couldn't check your subscription. Try again."),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Get help" })).toHaveAttribute("href", "/help");
+  });
+});
+
+describe("WebPaywall: the request for an immediate start (EU and UK withdrawal)", () => {
+  it("is a labelled, required checkbox, unticked by default", async () => {
+    render(<WebPaywall source="hector_tab" />);
+    await plansReady();
+    const box = screen.getByRole("checkbox", { name: WITHDRAWAL });
+    expect(box).not.toBeChecked();
+    expect(box).toBeRequired();
+    expect(box).toHaveAccessibleName(/minus a proportionate amount for the time Pro was available/);
+    // Pro is a service: ticking the box asks for an immediate start, it never gives up the right to withdraw.
+    expect(document.body.textContent).not.toMatch(/lose (my|your) right to withdraw/);
+  });
+
+  it("checkout cannot start while it is unticked", async () => {
+    render(<WebPaywall source="hector_tab" />);
+    await plansReady();
+    const buy = screen.getByRole("button", { name: "Start free trial" });
+    expect(buy).toBeDisabled();
+    expect(buy).toHaveAccessibleDescription("Tick the box above to continue to checkout.");
+    await userEvent.click(buy);
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it("checkout starts once it is ticked, and stops again if it is unticked", async () => {
+    serve(200, { plans: [noTrial(YEARLY), noTrial(MONTHLY)] });
+    render(<WebPaywall source="hector_tab" />);
+    await plansReady();
+    const buy = screen.getByRole("button", { name: "Subscribe" });
+    await tickWithdrawal();
+    expect(buy).toBeEnabled();
+    await userEvent.click(buy);
+    expect(assign).toHaveBeenCalledWith("https://pay.rev.cat/year/u1");
+    assign.mockReset();
+    await tickWithdrawal();
+    expect(buy).toBeDisabled();
+    await userEvent.click(buy);
+    expect(assign).not.toHaveBeenCalled();
   });
 });
 
