@@ -36,10 +36,14 @@ The DSNs are the public client DSNs (they can only submit events), so they are c
 
 ## Disabled until the auth token exists
 
+- Web source maps: wired, off until configured. `vite.config.ts` runs `@sentry/vite-plugin` (11.10.0) with hidden source
+  maps only when `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` (`obsidian-media`) and `SENTRY_PROJECT` (`learnwithalphonso-web`) are
+  all set as Vercel environment variables (Production). It uploads the maps under the release name
+  `VERCEL_GIT_COMMIT_SHA`, then deletes every `.map` before the deploy, so none is served. Without the three variables the
+  build makes no maps and no upload. Web events (client and server) already carry that release.
+
 Documented, not wired, because they need `SENTRY_AUTH_TOKEN`:
 
-- Web source maps: add `@sentry/vite-plugin` to `vite.config.ts` (`org: obsidian-media`, `project: learnwithalphonso-web`,
-  `authToken: process.env.SENTRY_AUTH_TOKEN`, `sourcemaps.filesToDeleteAfterUpload`) and set `build.sourcemap: "hidden"`.
 - iOS dSYMs: a step in `.github/workflows/ios-release.yml` after archive, `sentry-cli debug-files upload --org obsidian-media
 --project learnwithalphonso-ios <path to .xcarchive/dSYMs>`.
 - Android mapping file: the `io.sentry.android.gradle` plugin, or `sentry-cli upload-proguard` with

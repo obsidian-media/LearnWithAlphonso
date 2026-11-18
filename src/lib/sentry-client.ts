@@ -37,6 +37,8 @@ export function initSentryClient(): boolean {
   Sentry.init({
     dsn,
     environment: "production",
+    // The deployed commit (VERCEL_GIT_COMMIT_SHA, baked in by vite.config.ts): matches the source-map upload's release.
+    release: (import.meta.env.VITE_SENTRY_RELEASE as string | undefined) || undefined,
     sendDefaultPii: false,
     tracesSampleRate: SENTRY_TRACES_SAMPLE_RATE,
     // fetch/xhr breadcrumbs record Supabase URLs (user_id=eq.<uuid>): off, not just scrubbed.
