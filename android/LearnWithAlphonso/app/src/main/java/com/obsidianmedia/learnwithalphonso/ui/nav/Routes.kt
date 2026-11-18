@@ -47,6 +47,10 @@ object Routes {
     fun campaign(id: String, scene: Int = 0, mode: String = "call") = "practice/campaign/$id?scene=$scene&mode=$mode"
 
     const val LISTEN_FOLDER = "listen/folder/{id}"
+    const val STORIES = "listen/stories/{course}"
+    fun stories(course: String) = "listen/stories/$course"
+    const val STORY = "listen/story/{id}"
+    fun story(id: String) = "listen/story/$id"
     fun listenFolder(id: String) = "listen/folder/$id"
 
     const val INVITE = "invite/{code}"
