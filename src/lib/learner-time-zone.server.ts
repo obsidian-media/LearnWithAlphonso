@@ -14,17 +14,26 @@ type ZoneReader = {
   };
 };
 
-export async function readLearnerTimeZone(client: unknown, userId: string): Promise<string | null> {
+export async function readLearnerTimeZone(
+  client: unknown,
+  userId: string,
+  opts: { strict?: boolean } = {},
+): Promise<string | null> {
   try {
     const { data, error } = await (client as ZoneReader)
       .from("learner_time_zones")
       .select("time_zone")
       .eq("user_id", userId)
       .maybeSingle();
-    if (error) return null;
+    // strict: a caller that BOOKS A DAY from the zone must not book it from a zone it never read.
+    if (error) {
+      if (opts.strict) throw new Error("Could not load lesson progress");
+      return null;
+    }
     const zone = (data as { time_zone?: unknown } | null)?.time_zone;
     return typeof zone === "string" && zone.length > 0 ? zone : null;
-  } catch {
+  } catch (e) {
+    if (opts.strict) throw e instanceof Error ? e : new Error("Could not load lesson progress");
     return null;
   }
 }

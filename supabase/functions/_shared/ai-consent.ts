@@ -30,3 +30,27 @@ export async function hasAiConsent(admin: ConsentReader, userId: string): Promis
   }
   return !!(data as { ai_consent_at?: string | null } | null)?.ai_consent_at;
 }
+
+/** The consent row could not be read. Distinct from "no consent": a caller that WRITES a verdict must not guess. */
+export class AiConsentReadError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AiConsentReadError";
+  }
+}
+
+/**
+ * Like hasAiConsent, but an unreadable consent row throws AiConsentReadError instead of reading as "no consent".
+ * complete-lesson uses it: "no consent" keeps the curated verdict (a translate answer that is only right by the AI's
+ * judgement is marked wrong), so guessing it on a failed read would save a wrong grade, which is a write from data
+ * that was never read.
+ */
+export async function hasAiConsentOrThrow(admin: ConsentReader, userId: string): Promise<boolean> {
+  if (!(await isAiSwitchedOn(admin))) return false;
+  const { data, error } = await admin.from("profiles").select("ai_consent_at").eq("id", userId).maybeSingle();
+  if (error) {
+    console.error(JSON.stringify({ event: "ai_consent_read_failed", error: error.message }));
+    throw new AiConsentReadError(error.message);
+  }
+  return !!(data as { ai_consent_at?: string | null } | null)?.ai_consent_at;
+}

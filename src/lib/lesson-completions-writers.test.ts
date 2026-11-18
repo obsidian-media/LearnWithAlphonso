@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 const SRC = path.resolve(import.meta.dirname, "..");
 const ALLOWED = new Set(["lib/sync.functions.ts"]);
 const WRITE = /\.from\(\s*["']lesson_completions["']\s*\)\s*\.(insert|update|upsert|delete)\b/g;
-const RPC_WRITE = /\.rpc\(\s*["']apply_lesson_completion["']/g;
+const RPC_WRITE = /\.rpc\(\s*["']apply_lesson_completion(?:_once)?["']/g;
 
 function sourceFiles(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

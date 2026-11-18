@@ -9,7 +9,8 @@ export type ReferralOutcome = "none" | "granted" | "capped" | "not-yet" | "error
 export async function settleReferralReward(
   admin: SupabaseClient,
   userId: string,
-  isPro: (admin: SupabaseClient, userId: string) => Promise<boolean>,
+  /** null = Pro status could not be established: nothing is granted this time (the next completion retries). */
+  isPro: (admin: SupabaseClient, userId: string) => Promise<boolean | null>,
 ): Promise<ReferralOutcome> {
   try {
     const { data: pending, error } = await admin
@@ -22,6 +23,8 @@ export async function settleReferralReward(
     const referrerId = (pending as { referrer_id?: unknown } | null)?.referrer_id;
     if (typeof referrerId !== "string") return "none";
     const referrerPro = await isPro(admin, referrerId);
+    // The reward depends on the referrer's Pro status; "unknown" must not be written as "not Pro".
+    if (referrerPro === null) return "error";
     const { data, error: rpcError } = await admin.rpc("grant_referral_reward", {
       _referee: userId,
       _referrer_pro: referrerPro,

@@ -223,9 +223,11 @@ export const startLessonSession = createServerFn({ method: "POST" })
     // its countdown. A failed hearts read fails OPEN (an economy rule must not lock a learner out).
     const { heartsGateEnforced } = await import("./hearts-gate.server");
     // Alphonso Pro has unlimited hearts. Asked on every start (cached for up to an hour) so lose_heart() also honours
-    // it for the whole lesson; fails closed to "not Pro".
-    const { heartsUnlimited, liveHeartsServerDeps } = await import("./hearts-server.server");
-    const unlimited = liveHeartsServerDeps().then((deps) => heartsUnlimited(context.userId, deps));
+    // it for the whole lesson. null = could not be established (never read as "not Pro").
+    const { heartsUnlimitedOrUnknown, liveHeartsServerDeps } = await import("./hearts-server.server");
+    const unlimited = liveHeartsServerDeps().then((deps) =>
+      heartsUnlimitedOrUnknown(context.userId, deps),
+    );
     if (heartsGateEnforced()) {
       const { data: row, error } = await context.supabase
         .from("user_progress")
@@ -238,8 +240,12 @@ export const startLessonSession = createServerFn({ method: "POST" })
           row?.hearts_refill_at ? new Date(row.hearts_refill_at).getTime() : null,
           Date.now(),
         );
-        if (gate.blocked && !(await unlimited)) {
-          return { error: "out-of-hearts", refillAt: gate.refillAt };
+        if (gate.blocked) {
+          const pro = await unlimited;
+          // At 0 hearts the answer depends on Pro, and Pro could not be established: a retryable error, not an
+          // out-of-hearts answer (a Pro learner is never out of hearts).
+          if (pro === null) throw new Error("Could not check hearts; retry");
+          if (!pro) return { error: "out-of-hearts", refillAt: gate.refillAt };
         }
       }
     }
@@ -280,12 +286,115 @@ const completeLessonSchema = z.object({
 /** How many times a completion is recomputed from a fresh read after the transaction refuses a stale snapshot. */
 const COMPLETION_CONFLICT_RETRIES = 3;
 
+/** The reply the apps and the web page read (also what a redeemed token answers with). */
+type CompletionResponse = {
+  xpGain: number;
+  correct: number;
+  newlyUnlocked: string[];
+  heartsBonus: "streak" | "perfect" | null;
+  previousLeagueTier: LeagueTier;
+  progress: {
+    xp: number;
+    streak: number;
+    longestStreak: number;
+    lastActiveDate: string;
+    hearts: number;
+    heartsRefillAt: number | null;
+    streakFreezes: number;
+    leagueTier: LeagueTier;
+  };
+};
+
 export const completeLessonRemote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => completeLessonSchema.parse(d))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<CompletionResponse> => {
     const { supabase, userId } = context;
     const { lessonId, total, answers, course, sessionToken } = data;
+
+    const { createHash } = await import("node:crypto");
+    const tokenHash = createHash("sha256").update(sessionToken).digest("hex");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // The redemption table and functions are not in the generated types until they are regenerated.
+    const redemptionDb = supabaseAdmin as unknown as {
+      from: (t: string) => {
+        select: (c: string) => {
+          eq: (
+            c: string,
+            v: string,
+          ) => {
+            eq: (
+              c: string,
+              v: string,
+            ) => {
+              maybeSingle: () => Promise<{
+                data: {
+                  result: CompletionResponse;
+                  misses: number;
+                  settle_since: string;
+                  lesson_id: string;
+                  course: string;
+                } | null;
+                error: unknown;
+              }>;
+            };
+          };
+        };
+      };
+      rpc: (
+        name: string,
+        args: Record<string, unknown>,
+      ) => Promise<{ data: unknown; error: { message: string } | null }>;
+    };
+    // Hearts for a completion this token already saved: settled from the ORIGINAL misses (idempotent per token, so a
+    // retry after a settlement charges nothing more, and a first attempt that saved but never settled is settled now).
+    const replayRedeemed = async (prior: {
+      result: CompletionResponse;
+      misses: number;
+      settle_since: string;
+    }): Promise<CompletionResponse> => {
+      const { serverHeartsMode } = await import("./hearts-gate.server");
+      const { settleLessonHeartsStrict, liveHeartsServerDeps } =
+        await import("./hearts-server.server");
+      const again = await settleLessonHeartsStrict(
+        {
+          userId,
+          sessionToken,
+          misses: prior.misses,
+          sinceMs: Date.parse(prior.settle_since),
+          mode: serverHeartsMode(),
+        },
+        await liveHeartsServerDeps(),
+      );
+      if (!again.ok) throw new Error("Could not settle lesson hearts; retry");
+      return again.settlement
+        ? {
+            ...prior.result,
+            progress: {
+              ...prior.result.progress,
+              hearts: again.settlement.hearts,
+              heartsRefillAt: again.settlement.heartsRefillAt,
+            },
+          }
+        : prior.result;
+    };
+
+    // A token redeems once: a repeat (a retry after a lost response) is answered from what the first completion stored,
+    // before anything is re-graded or written, whatever answers it carries.
+    const priorRead = await redemptionDb
+      .from("lesson_session_redemptions")
+      .select("result, misses, settle_since, lesson_id, course")
+      .eq("token_hash", tokenHash)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (priorRead.error) throw new Error("Could not load lesson progress");
+    if (
+      priorRead.data &&
+      priorRead.data.lesson_id === lessonId &&
+      priorRead.data.course === course
+    ) {
+      return await replayRedeemed(priorRead.data);
+    }
 
     // Trust boundary: the client reports its own score, so verify the
     // lesson exists, that `total` matches its real question count, that
@@ -328,7 +437,9 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     let consent: Promise<boolean> | undefined;
     const aiAllowed = async () => {
       const { hasAiConsent } = await import("./ai-consent.server");
-      consent ??= hasAiConsent(supabase, userId);
+      // strict: an unreadable consent row throws (nothing is saved yet) rather than reading as "no consent", which
+      // would keep the curated verdict and could save a wrong grade.
+      consent ??= hasAiConsent(supabase, userId, { strict: true });
       return consent;
     };
 
@@ -350,12 +461,15 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
 
     // The learner's own calendar day (owner decision 2026-11-12): their stored zone, UTC when none is known.
     const { readLearnerTimeZone } = await import("./learner-time-zone.server");
-    const today = localDay(Date.now(), await readLearnerTimeZone(supabase, userId));
+    // strict: an unreadable zone throws (nothing is saved yet) rather than booking the day as UTC.
+    const today = localDay(
+      Date.now(),
+      await readLearnerTimeZone(supabase, userId, { strict: true }),
+    );
 
     // Read the current state, derive the next one, and write it in one transaction. Another write to the same
     // account (a lost heart, a quest reward, a second device) between the read and the write makes the snapshot
     // stale; the transaction refuses it and this runs again from a fresh read, so the lesson is never dropped.
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Hourly ceiling (anti-farming.ts): taken once per completion, only when it pays XP (an already-recorded replay is a
     // no-op), refused before any write, and given back if the save then fails so the client's retry is not double counted.
     let slotHeld = false;
@@ -497,8 +611,25 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         if (!(await consumeCompletionSlot(userId, slotAtIso))) throw new Error("rate-limited");
         slotHeld = true;
       }
-      const { data: transition, error: transitionError } = (await supabaseAdmin.rpc(
-        "apply_lesson_completion",
+      const storedResult: CompletionResponse = {
+        xpGain,
+        correct,
+        newlyUnlocked: [],
+        heartsBonus,
+        previousLeagueTier: LEAGUES[oldIdx] ?? leagueTier,
+        progress: {
+          xp,
+          streak,
+          longestStreak: longest,
+          lastActiveDate: today,
+          hearts: heartsResult.hearts,
+          heartsRefillAt: heartsResult.heartsRefillAt,
+          streakFreezes: freezes,
+          leagueTier,
+        },
+      };
+      const { data: transition, error: transitionError } = (await redemptionDb.rpc(
+        "apply_lesson_completion_once",
         {
           _user_id: userId,
           _course: course,
@@ -530,12 +661,39 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
           },
           _missed_question_ids: missedQuestionIds,
           _activity_events: activityEvents,
+          _token_hash: tokenHash,
+          _result: storedResult as unknown as Json,
+          _misses: missedQuestionIds.length,
+          _settle_since: new Date(sessionIssuedAt).toISOString(),
         },
-      )) as { data: { status: string } | null; error: { message: string } | null };
+      )) as unknown as {
+        data: {
+          status: string;
+          result?: CompletionResponse;
+          misses?: number;
+          settle_since?: string;
+        } | null;
+        error: { message: string } | null;
+      };
       if (transitionError || !transition) {
         throw new Error("Could not save lesson completion; retry");
       }
       if (transition.status === "conflict") return null;
+      // Lost a race with a request carrying the same token: nothing was saved here, so the slot goes back.
+      if (transition.status === "redeemed" && transition.result) {
+        if (slotHeld) {
+          const { releaseCompletionSlot } = await import("./completion-slot.server");
+          await releaseCompletionSlot(userId, slotAtIso);
+          slotHeld = false;
+        }
+        return {
+          redeemed: {
+            result: transition.result,
+            misses: transition.misses ?? 0,
+            settle_since: transition.settle_since ?? new Date(sessionIssuedAt).toISOString(),
+          },
+        };
+      }
       if (transition.status !== "applied") {
         throw new Error("Could not save lesson completion; retry");
       }
@@ -565,6 +723,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       }
     }
     if (!applied) throw new Error("Could not save lesson completion; retry");
+    if ("redeemed" in applied && applied.redeemed) return await replayRedeemed(applied.redeemed);
 
     // Profile data: the lesson's time and each answer's result by this server's own grading. Never fails the save.
     const { recordLessonProfileData } = await import("./profile-data.server");
@@ -576,8 +735,9 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
 
     // Hearts are settled on the server from this grading (same as the complete-lesson Edge Function).
     const { serverHeartsMode } = await import("./hearts-gate.server");
-    const { settleLessonHearts, liveHeartsServerDeps } = await import("./hearts-server.server");
-    const settled = await settleLessonHearts(
+    const { settleLessonHeartsStrict, liveHeartsServerDeps } =
+      await import("./hearts-server.server");
+    const settled = await settleLessonHeartsStrict(
       {
         userId,
         sessionToken,
@@ -591,7 +751,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // no-op for everyone without a pending referral; after hearts are settled so the grant is not overwritten.
     const { settleReferralReward, liveReferralDeps } = await import("./referral.server");
     await settleReferralReward(userId, await liveReferralDeps());
-    const heartsResult = settled ?? applied.heartsResult;
+    const heartsResult = (settled.ok ? settled.settlement : null) ?? applied.heartsResult;
     const { xpGain, streak, longest, freezes, heartsBonus, xp, oldIdx, newIdx, leagueTier } =
       applied;
 
@@ -684,7 +844,13 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // Wrapped in try/catch -- a classification failure must never fail
     // the lesson completion itself.
     const llmApiKey = resolveLlmApiKey();
-    if (missedQuestionIds.length > 0 && xpGain > 0 && llmApiKey && (await aiAllowed())) {
+    // The lesson is saved: an unreadable consent row here just skips the (best-effort) weakness step.
+    if (
+      missedQuestionIds.length > 0 &&
+      xpGain > 0 &&
+      llmApiKey &&
+      (await aiAllowed().catch(() => false))
+    ) {
       try {
         const missedQuestions = found.lesson.questions.filter((q) =>
           missedQuestionIds.includes(q.id),
@@ -770,7 +936,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     }
 
     // return refreshed snapshot for optimistic apply
-    return {
+    const response: CompletionResponse = {
       xpGain,
       /** Right answers by this server's own grading: the count xpGain was computed from (the complete screen's XP lines). */
       correct,
@@ -793,6 +959,21 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         leagueTier,
       },
     };
+    // So a retry of this token returns what this reply says (the achievements it announced, the settled hearts).
+    // Best effort: the stored first copy is already a complete answer.
+    try {
+      await redemptionDb.rpc("finalize_lesson_session_result", {
+        _user_id: userId,
+        _token_hash: tokenHash,
+        _result: response,
+      });
+    } catch {
+      // Nothing to do: the earlier stored result stands.
+    }
+    // Saved, but the hearts could not be settled: ask for a retry. The retry is answered from the stored completion
+    // and settles with the original misses; returning normally here would make those misses free.
+    if (!settled.ok) throw new Error("Could not settle lesson hearts; retry");
+    return response;
   });
 
 /**

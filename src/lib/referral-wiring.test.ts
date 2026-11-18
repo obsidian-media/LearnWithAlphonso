@@ -11,8 +11,8 @@ describe("referral reward wiring", () => {
   const edge = readFileSync("supabase/functions/complete-lesson/handler.ts", "utf8");
 
   it("the web path settles the referral after the transition is applied and hearts are settled", () => {
-    const applied = web.indexOf('"apply_lesson_completion"');
-    const settledHearts = web.indexOf("await settleLessonHearts(");
+    const applied = web.indexOf('"apply_lesson_completion_once"');
+    const settledHearts = web.indexOf("const settled = await settleLessonHeartsStrict(");
     const referral = web.indexOf("settleReferralReward(userId");
     expect(applied).toBeGreaterThan(-1);
     expect(referral).toBeGreaterThan(settledHearts);
@@ -20,8 +20,8 @@ describe("referral reward wiring", () => {
   });
 
   it("the Edge path settles the referral after the transition is applied and hearts are settled", () => {
-    const applied = edge.indexOf('admin.rpc("apply_lesson_completion"');
-    const settledHearts = edge.indexOf("if (settled) heartsResult = settled;");
+    const applied = edge.indexOf('admin.rpc("apply_lesson_completion_once"');
+    const settledHearts = edge.indexOf("if (settled.ok && settled.settlement) heartsResult = settled.settlement;");
     const referral = edge.indexOf(
       "await settleReferralReward(admin, userId, deps.heartsUnlimited)",
     );
