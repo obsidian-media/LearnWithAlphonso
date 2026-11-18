@@ -16,7 +16,7 @@ import {
   type Achievement,
   type LeagueTier,
 } from "@/data/achievements";
-import { COURSES, type Course } from "@/data/courses";
+import { COURSES, type Course } from "@/data/course-meta";
 import type { DsIconName } from "@/design/icons.generated";
 import {
   FRIENDS_WEEK_DAYS,

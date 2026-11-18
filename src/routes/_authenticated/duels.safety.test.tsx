@@ -30,6 +30,7 @@ vi.mock("../../lib/leaderboard.functions", () => ({
 vi.mock("../../lib/challenges.functions", () => ({
   joinOpenDuelQueue: vi.fn(),
   leaveOpenDuelQueue: vi.fn(),
+  getMyDuelQueue: vi.fn().mockResolvedValue({ queued: false }),
 }));
 const blockUser = vi.fn();
 const reportUser = vi.fn();

@@ -276,3 +276,28 @@ describe("getTeamMission", () => {
     );
   });
 });
+
+describe("a failed RPC throws instead of passing for a refusal or an empty list", () => {
+  // These used to drop `error`: a join/create/leave became "unknown-error" (or a null-reason refusal) and a failed
+  // leaderboard read made the "top teams" section vanish as if there were none.
+  function rpcFailing() {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: "deadlock detected" } });
+    return supabase;
+  }
+  const TEAM_ID = "33333333-3333-4333-8333-333333333333";
+
+  it.each([
+    ["joinTeamByCode", () => joinTeamByCode({ context: ctx(rpcFailing()), data: { code: "ABC" } })],
+    [
+      "joinPublicTeam",
+      () => joinPublicTeam({ context: ctx(rpcFailing()), data: { teamId: TEAM_ID } }),
+    ],
+    ["autoJoinTeam", () => autoJoinTeam({ context: ctx(rpcFailing()) })],
+    ["createTeam", () => createTeam({ context: ctx(rpcFailing()), data: { name: "Owls" } })],
+    ["leaveTeam", () => leaveTeam({ context: ctx(rpcFailing()) })],
+    ["getTeamLeaderboard", () => getTeamLeaderboard({ context: ctx(rpcFailing()) })],
+  ])("%s throws request-failed", async (name, call) => {
+    await expect(call()).rejects.toThrow(`${name}: request-failed`);
+  });
+});

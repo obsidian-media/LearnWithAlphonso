@@ -14,6 +14,7 @@ import {
   RankBadge,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
+import { RefreshError } from "@/components/ds/RefreshError";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LeagueTierBadge } from "../../components/LeagueTierBadge";
@@ -69,9 +70,10 @@ function LeaguePage() {
   const tier = useProgress((s) => s.leagueTier);
   const course = useProgress((s) => s.course);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["leaderboard", scope, period],
     queryFn: () => getLeaderboard({ data: { scope, period } }),
+    retry: false,
   });
   // The learner's own XP this week from their activity, whatever board is showing; nothing when it cannot load.
   const overview = useQuery({
@@ -94,6 +96,7 @@ function LeaguePage() {
   });
   const [toast, showToast] = useToast();
   useEffect(() => {
+    // A failed read has no data (getLeaderboard throws), so the saved snapshot is never replaced by an empty board.
     if (!myId || !overtakeBoard.data) return;
     const current = overtakeBoard.data.map((r) => ({ userId: r.user_id, xp: r.xp }));
     const storage = safeStorage();
@@ -200,7 +203,20 @@ function LeaguePage() {
           <p className="ds-type-footnote text-center text-ds-ink-soft">Loading…</p>
         </DsCard>
       )}
-      {!isLoading && (data?.length ?? 0) === 0 && (
+      {/* The full error is for a board with nothing to show; a failed refresh keeps the rows (below) on screen. */}
+      {!isLoading && isError && !data && (
+        <DsEmptyState
+          tone="error"
+          art="/mascots/alphonso-encouraging.png"
+          title="Couldn't load the leaderboard."
+          message="Check your connection and try again."
+        >
+          <DsButton small variant="secondary" onClick={() => void refetch()}>
+            Try again
+          </DsButton>
+        </DsEmptyState>
+      )}
+      {!isLoading && !isError && (data?.length ?? 0) === 0 && (
         <DsEmptyState
           art="/mascots/alphonso-waving.png"
           title="Nothing here yet"
@@ -213,6 +229,7 @@ function LeaguePage() {
           }
         />
       )}
+      {isError && data && <RefreshError what="the leaderboard" onRetry={() => void refetch()} />}
       {(data?.length ?? 0) > 0 && (
         <DsCard className="gap-0 p-1.5">
           <ol>
