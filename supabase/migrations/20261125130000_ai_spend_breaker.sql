@@ -13,7 +13,7 @@
 -- (docs/operations.md, "AI spend circuit breaker").
 --
 -- Depends on app_switches (20261015100000) and ai_cost_union (20261118200000). Version 20261125130000 follows
--- 20261123140000 (staff rate limits) in the same workstream and is after both dependencies.
+-- 20261125120000 (staff rate limits) in the same workstream and is after both dependencies.
 --
 -- Rollback: DROP FUNCTION public.trip_ai_spend_breaker(bigint);
 
