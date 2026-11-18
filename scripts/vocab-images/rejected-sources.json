@@ -198,6 +198,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:13994117": {
+    "key": "alcohol",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling"
+    ]
+  },
   "pexels:144608": {
     "key": "dog",
     "reasons": [
@@ -406,6 +412,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:18804128": {
+    "key": "bank",
+    "reasons": [
+      "owner-objection"
+    ]
+  },
   "pexels:18811648": {
     "key": "le match",
     "reasons": [
@@ -436,6 +448,12 @@
       "violence-weapons-disaster-injury"
     ]
   },
+  "pexels:19377071": {
+    "key": "envoyer",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:19406560": {
     "key": "boxing",
     "reasons": [
@@ -464,6 +482,12 @@
     "key": "fast",
     "reasons": [
       "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:20239897": {
+    "key": "le cœur",
+    "reasons": [
+      "nudity-or-suggestive"
     ]
   },
   "pexels:20414013": {
@@ -643,6 +667,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:30719169": {
+    "key": "sucursal",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:3098": {
     "key": "la radio",
     "reasons": [
@@ -678,6 +708,12 @@
     "key": "le roman",
     "reasons": [
       "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:31870673": {
+    "key": "alcohol",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling"
     ]
   },
   "pexels:32081456": {
@@ -1156,6 +1192,18 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:40887934": {
+    "key": "le rugby",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:4135324": {
+    "key": "sucursal",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
   "pexels:4440715": {
     "key": "le dictionnaire",
     "reasons": [
@@ -1254,6 +1302,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:5212116": {
+    "key": "carriage",
+    "reasons": [
+      "owner-objection"
+    ]
+  },
   "pexels:5215410": {
     "key": "post office",
     "reasons": [
@@ -1290,6 +1344,12 @@
       "brand-logo-or-foreign-text"
     ]
   },
+  "pexels:5791650": {
+    "key": "alcohol",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling"
+    ]
+  },
   "pexels:5807683": {
     "key": "cycling",
     "reasons": [
@@ -1313,6 +1373,12 @@
     "reasons": [
       "brand-logo-or-foreign-text",
       "off-term"
+    ]
+  },
+  "pexels:5938362": {
+    "key": "estómago",
+    "reasons": [
+      "stereotype-demeaning-poverty-distress"
     ]
   },
   "pexels:6025036": {
@@ -1439,6 +1505,12 @@
   },
   "pexels:724994": {
     "key": "head",
+    "reasons": [
+      "brand-logo-or-foreign-text"
+    ]
+  },
+  "pexels:7260884": {
+    "key": "sucursal",
     "reasons": [
       "brand-logo-or-foreign-text"
     ]
@@ -2652,6 +2724,12 @@
     "key": "le taxi",
     "reasons": [
       "brand-logo-or-foreign-text"
+    ]
+  },
+  "pixabay:7933223": {
+    "key": "drinks",
+    "reasons": [
+      "alcohol-tobacco-drugs-gambling"
     ]
   },
   "pixabay:7933279": {
