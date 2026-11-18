@@ -83,6 +83,9 @@ function LessonPageWithSave() {
   );
 }
 
+/** How long a lesson from another course waits for the account's course before offering Try again. */
+const COURSE_WAIT_MS = 8000;
+
 function lessonInAnyCourse(id: string): boolean {
   return COURSES.some((c) =>
     getCourse(c.id).curriculum.some((u) => u.lessons.some((l) => l.id === id)),
@@ -279,20 +282,43 @@ function LessonPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startRequested, sessionToken, phase]);
 
+  // Waiting for the account's course is bounded: if __root never adopts one (getSession failed), the page stops
+  // waiting and offers a retry instead of a blank screen forever.
+  const waitingForCourse = !maybeLesson && !courseAdopted && lessonInAnyCourse(id);
+  const [courseWaitTimedOut, setCourseWaitTimedOut] = useState(false);
+  useEffect(() => {
+    if (!waitingForCourse) return;
+    const t = window.setTimeout(() => setCourseWaitTimedOut(true), COURSE_WAIT_MS);
+    return () => window.clearTimeout(t);
+  }, [waitingForCourse]);
+
   if (!maybeLesson) {
     // A reload of /lesson/fra1p1 starts on the default course: wait for the account's own course instead of
     // flashing "Lesson not found" for a lesson that is just in another course.
-    if (!courseAdopted && lessonInAnyCourse(id)) {
+    if (waitingForCourse && !courseWaitTimedOut) {
       return (
         <LessonScreen>
-          <div className="p-6 text-center" role="status" aria-label="Loading lesson" />
+          <div className="p-6 text-center" role="status" aria-label="Loading lesson">
+            <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
+          </div>
         </LessonScreen>
       );
     }
     return (
       <LessonScreen>
         <div className="p-6 text-center">
-          <p className="ds-type-footnote text-ds-ink-soft">Lesson not found.</p>
+          <p className="ds-type-footnote text-ds-ink-soft">
+            {waitingForCourse ? "This lesson didn't load." : "Lesson not found."}
+          </p>
+          {waitingForCourse ? (
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className={`mt-4 ${edgeButtonClass("primary")}`}
+            >
+              Try again
+            </button>
+          ) : null}
           <Link to="/learn" className="mt-4 inline-block ds-type-footnote text-ds-choice underline">
             Back to learn
           </Link>

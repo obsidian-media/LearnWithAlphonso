@@ -118,6 +118,10 @@ let completeProfileSkipped = false;
 export function skipCompleteProfileThisVisit(): void {
   completeProfileSkipped = true;
 }
+/** Called when the account changes (sign-out, another sign-in): the skip was the last account's, not the next one's. */
+export function resetCompleteProfileSkip(): void {
+  completeProfileSkipped = false;
+}
 export function completeProfileSkippedThisVisit(): boolean {
   return completeProfileSkipped;
 }

@@ -439,6 +439,41 @@ describe("AuthSync (inside RootComponent)", () => {
     expect(hydrate).not.toHaveBeenCalled();
   });
 
+  it("a Complete your profile skip does not carry over to the next account (sign-out, or another sign-in)", async () => {
+    const { skipCompleteProfileThisVisit, completeProfileSkippedThisVisit } =
+      await import("../lib/first-run");
+    getSession.mockResolvedValue({ data: { session: { user: { id: "u1" } } } });
+    fetchProgress.mockResolvedValue({ xp: 1 });
+    getMyProfile.mockResolvedValue(null);
+    render(<RootComponent />);
+    await waitFor(() => expect(hydrate).toHaveBeenCalledTimes(1));
+    const handler = onAuthStateChange.mock.calls[0]![0] as (
+      e: string,
+      s?: { user: { id: string } } | null,
+    ) => void;
+
+    // The same account coming back to a hidden tab keeps its skip.
+    skipCompleteProfileThisVisit();
+    handler("SIGNED_IN", { user: { id: "u1" } });
+    expect(completeProfileSkippedThisVisit()).toBe(true);
+    // Another account signing in over it does not inherit it.
+    handler("SIGNED_IN", { user: { id: "u2" } });
+    expect(completeProfileSkippedThisVisit()).toBe(false);
+    // Nor does whoever signs in after a sign-out.
+    skipCompleteProfileThisVisit();
+    handler("SIGNED_OUT", null);
+    expect(completeProfileSkippedThisVisit()).toBe(false);
+  });
+
+  it("a getSession that rejects (blocked storage) leaves the app running, signed-out state untouched", async () => {
+    getSession.mockRejectedValue(new Error("storage blocked"));
+    render(<RootComponent />);
+    await waitFor(() => expect(getSession).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 0));
+    expect(fetchProgress).not.toHaveBeenCalled();
+    expect(hydrate).not.toHaveBeenCalled();
+  });
+
   it("ignores the SIGNED_IN supabase re-emits for the same account when a hidden tab comes back", async () => {
     getSession.mockResolvedValue({ data: { session: { user: { id: "u1" } } } });
     fetchProgress.mockResolvedValue({ xp: 1 });

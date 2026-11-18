@@ -324,11 +324,36 @@ describe("Lesson page", () => {
     currentLessonId = frId;
     useProgress.setState({ userId: null, course: "en" });
     renderPage();
-    expect(await screen.findByRole("status", { name: "Loading lesson" })).toBeInTheDocument();
+    expect(await screen.findByRole("status", { name: "Loading lesson" })).toHaveTextContent(
+      "Loading…",
+    );
     expect(screen.queryByText("Lesson not found.")).not.toBeInTheDocument();
     // __root adopts the account and its course.
     act(() => useProgress.setState({ userId: "u1", course: "fr" }));
     expect(await screen.findByRole("button", { name: "Start lesson" })).toBeInTheDocument();
+  });
+
+  it("stops waiting for the account's course after a while and offers Try again", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const { getCourse } = await import("../../data/courses");
+      const enIds = new Set(getCourse("en").curriculum.flatMap((u) => u.lessons.map((l) => l.id)));
+      currentLessonId = getCourse("fr")
+        .curriculum.flatMap((u) => u.lessons.map((l) => l.id))
+        .find((x) => !enIds.has(x))!;
+      useProgress.setState({ userId: null, course: "en" });
+      renderPage();
+      expect(await screen.findByText("Loading…")).toBeInTheDocument();
+      // __root never adopts a course (its getSession failed).
+      act(() => {
+        vi.advanceTimersByTime(8000);
+      });
+      expect(screen.getByText("This lesson didn't load.")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Back to learn" })).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("shows a not-found message for an unknown lesson id", async () => {

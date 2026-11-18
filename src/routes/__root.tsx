@@ -27,7 +27,7 @@ import { THEME_BOOT_SCRIPT, useTheme } from "../lib/theme";
 import { fetchProgress } from "../lib/sync.functions";
 import { getMyProfile } from "../lib/leaderboard.functions";
 import { clearCachedVoicePrefs } from "../lib/voice-prefs";
-import { browserFirstRunStore } from "../lib/first-run";
+import { browserFirstRunStore, resetCompleteProfileSkip } from "../lib/first-run";
 import { takeStaleSessionDrop } from "../lib/auth-offline";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "../lib/learner-profile";
 
@@ -187,7 +187,13 @@ function AuthSync() {
     // for the same account that is not a sign-in, and reloading on it threw away whatever the learner was doing.
     let currentUserId: string | null | undefined;
     async function load() {
-      const { data } = await supabase.auth.getSession();
+      let data;
+      try {
+        ({ data } = await supabase.auth.getSession());
+      } catch {
+        // Storage or the network failed: nothing to adopt. Pages waiting on the account give up on their own timer.
+        return;
+      }
       if (cancelled) return;
       const user = data.session?.user;
       if (!user) {
@@ -217,12 +223,15 @@ function AuthSync() {
       if (event === "SIGNED_IN") {
         const id = session?.user?.id;
         if (id && id === currentUserId) return;
+        // Another account than the one loaded: a Complete your profile skip was the last account's.
+        if (id && currentUserId && id !== currentUserId) resetCompleteProfileSkip();
         if (id) currentUserId = id;
       }
       router.invalidate();
       if (event === "SIGNED_OUT") {
         currentUserId = null;
         reset();
+        resetCompleteProfileSkip();
         // Nothing the last account loaded may show to the next one on this browser (a shared computer).
         qc.clear();
         // A stale session dropped on the sign-in page keeps the draft: it belongs to the person signing up now.
