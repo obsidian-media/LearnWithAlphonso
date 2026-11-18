@@ -126,7 +126,7 @@ export const recordMisses = createServerFn({ method: "POST" })
   });
 
 /** How many due items one load of the Review screen asks; the rest come with the next batch. */
-export const REVIEW_BATCH_SIZE = 20;
+const REVIEW_BATCH_SIZE = 20;
 
 /**
  * Items due today (plus overdue), oldest first, for the given course: at most REVIEW_BATCH_SIZE of them, with
