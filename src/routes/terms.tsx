@@ -25,7 +25,7 @@ export const Route = createFileRoute("/terms")({
 const CONTACT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
 const STANDARD_EULA = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
-const UPDATED = "15 November 2026"; // same on all four legal pages
+const UPDATED = "18 November 2026"; // same on all four legal pages
 
 function Terms() {
   return (
@@ -138,26 +138,38 @@ function Terms() {
           items={[
             "AI output can be wrong, incomplete or inappropriate, even though we instruct our AI models to stay on language learning and to keep content suitable for teenagers. Treat it as practice, not as professional, certified or authoritative instruction.",
             "Do not use the AI features to create content that is sexual, hateful, violent, harassing or unlawful, and do not try to get around their safety rules.",
-            "If an AI reply is inappropriate, press and hold it in the iOS app and choose Report, or write to " +
+            "If an AI reply is inappropriate, report it from the reply itself: press and hold it in the iOS or Android app and choose Report, or use the Report button next to it on the website. You can also write to " +
               CONTACT +
               ". We review these reports like any other.",
             "Do not rely on AI features for medical, legal, financial or safety decisions. If you are in danger or in crisis, contact your local emergency services.",
-            "Daily fair-use limits apply to AI features on each account.",
+            "Daily and monthly fair-use limits apply to AI features on each account. Alphonso Pro has a larger monthly allowance.",
           ]}
         />
       </Section>
 
       <Section heading="Alphonso Pro subscription">
         <p>
-          Alphonso Pro is an optional, auto-renewing monthly subscription. It unlocks Hector, the AI
-          voice tutor. Everything else in the app is free.
+          Alphonso Pro is an optional, auto-renewing subscription, paid monthly or yearly. It gives
+          you:
+        </p>
+        <Bullets
+          items={[
+            "Hector, the AI voice tutor, including explanations in your own language inside Hector;",
+            "unlimited hearts in lessons;",
+            "What Alphonso remembers: short notes kept from your practice calls, so your next calls build on them;",
+            "a larger monthly allowance for the AI features than free accounts have.",
+          ]}
+        />
+        <p>
+          Lessons, review, the placement test, the audio library and practice calls with Alphonso
+          stay free, within the hearts and AI limits that apply to free accounts.
         </p>
         <Bullets
           items={[
             "Price: the price and billing period are shown before you confirm the purchase, in the app or on our website.",
-            "Free trial: if a free trial is offered and you are eligible, the app shows it before you confirm. When the trial ends, your paid subscription starts automatically unless you cancel at least 24 hours before the trial ends. Apple or Google decides who is eligible for a trial in the apps. There is one free trial per person: if you have already had Alphonso Pro, on any device, no new trial is offered.",
+            "Free trial: if a free trial is offered and you are eligible, the app shows it before you confirm. When the trial ends, your paid subscription starts automatically unless you cancel at least 24 hours before the trial ends. In the iOS and Android apps, Apple or Google decides who is eligible for a trial, under their own rules. On our website, a free trial is offered only to an account that has never had an Alphonso Pro subscription.",
             "Billing: Payment is charged to your Apple Account at confirmation of purchase. If you subscribe through Google Play on Android, payment is charged to your Google Play account. If you subscribe on our website, payment is handled by Stripe. We never receive your card details.",
-            "Renewal: your subscription renews automatically for another period of the same length (a month on the monthly plan) unless you cancel it at least 24 hours before the end of the current period. Your account is charged for the renewal within the 24 hours before the current period ends.",
+            "Renewal: your subscription renews automatically for another period of the same length (a month on the monthly plan, a year on the yearly plan) unless you cancel it at least 24 hours before the end of the current period. Your account is charged for the renewal within the 24 hours before the current period ends.",
             "Cancelling: manage or cancel your subscription in your Apple Account settings (on iPhone: Settings → your name → Subscriptions), or on Android in Google Play → Payments & subscriptions. A subscription bought on our website is managed or cancelled from Manage Subscription on the Hector page. Cancelling stops the next renewal, and you keep Pro until the end of the period you have paid for. Deleting your Alphonso account does not cancel an App Store or Google Play subscription; cancel it in your Apple or Google account first.",
             "Deleting your Alphonso account cancels a subscription bought on our website: you are not charged again, and the current period is not refunded.",
             "Refunds: App Store purchases are handled by Apple under Apple’s refund policies. You can ask Apple for a refund at reportaproblem.apple.com. Google Play purchases are handled under Google Play’s refund policies. We cannot refund store purchases ourselves. For a subscription bought on our website, contact us; where the law gives you a right to a refund, we honour it.",
@@ -167,11 +179,27 @@ function Terms() {
         />
       </Section>
 
+      <Section heading="Your right to withdraw (EU and UK)">
+        <p>
+          If you live in the European Union or the United Kingdom, you normally have 14 days to
+          withdraw from an online purchase. Alphonso Pro is a digital service that starts as soon as
+          you subscribe. Before you go to checkout on our website, we ask you to tick a box to
+          confirm that you want Pro to start straight away and that you understand you lose your
+          right to withdraw once it has started. The buy button stays off until you tick it.
+        </p>
+        <p>
+          For a subscription bought in the iOS or Android app, Apple's or Google Play's own
+          withdrawal and refund rules apply, as described under Refunds above. Whatever you bought,
+          you can cancel at any time to stop the next renewal.
+        </p>
+      </Section>
+
       <Section heading="XP, hearts and other in-app items">
         <p>
           XP, hearts, streaks, streak freezes, league positions, badges and other in-app items have
           no monetary value. They cannot be bought with money, sold, transferred or exchanged for
-          cash, and we may change how they work to keep the app fair.
+          cash, and we may change how they work to keep the app fair. Alphonso Pro removes the limit
+          on hearts while it is active, but hearts themselves are never sold.
         </p>
       </Section>
 

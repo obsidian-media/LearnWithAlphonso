@@ -25,9 +25,9 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     id: "pro",
     title: "Alphonso Pro",
     body: [
-      "Alphonso Pro is an auto-renewing monthly subscription. It unlocks Hector, the AI voice tutor. Lessons, reviews and the rest of the app are free.",
-      "If you start with a free trial, you are charged when it ends unless you cancel at least 24 hours before.",
-      "On iPhone, manage or cancel it in the Settings app: tap your name, then Subscriptions. On Android, use Google Play, under Payments and subscriptions. If you subscribed on our website, use the link in your Profile. We cannot cancel a subscription for you.",
+      "Alphonso Pro is an auto-renewing subscription, paid monthly or yearly. It gives Hector, the AI voice tutor, unlimited hearts in lessons, What Alphonso remembers, and a larger monthly allowance for the AI features. Lessons, review, the placement test, the audio library and practice calls with Alphonso stay free, within the hearts and AI limits of a free account.",
+      "If you start with a free trial, you are charged when it ends unless you cancel at least 24 hours before. In the apps, Apple or Google decides who gets a trial. On the website, a trial is offered only to an account that has never had Pro.",
+      "On iPhone, manage or cancel it in the Settings app: tap your name, then Subscriptions. On Android, use Google Play, under Payments and subscriptions. If you subscribed on our website, use Manage Subscription on the Hector page. We cannot cancel an App Store or Google Play subscription for you.",
       "Pro can also be a gift from us for a set time. The facts about the learner say whether Pro is active and where it comes from.",
     ].join("\n"),
   },

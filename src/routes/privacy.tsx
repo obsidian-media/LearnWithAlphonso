@@ -27,7 +27,7 @@ export const Route = createFileRoute("/privacy")({
 
 const SUPPORT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
-const UPDATED = "15 November 2026"; // same date on all four legal pages
+const UPDATED = "18 November 2026"; // same date on all four legal pages
 
 function Privacy() {
   return (
@@ -108,8 +108,9 @@ function Privacy() {
           and labelled as AI. We keep each explanation in a shared store so the same item in the
           same language is only written once; it is not tied to your account, and another learner
           who asks for the same item in the same language may see it. Because an explanation can
-          quote your answer, it may contain a few of your words. Your language is read from your
-          profile, never sent by the app.
+          quote your answer, it may contain a few of your words. Because nothing in the store links
+          an explanation to you, deleting your account does not remove it. Your language is read
+          from your profile, never sent by the app.
         </p>
         <p>
           You can withdraw your consent at any time, in the iOS app under Profile → Settings → AI
@@ -140,7 +141,7 @@ function Privacy() {
             "To review reports, enforce our Terms of Use and keep learners safe (our legitimate interests and our legal obligations).",
             "To prevent abuse and control cost, including per-account daily limits on AI features (our legitimate interests).",
             "To count which links and communities bring new learners, using the campaign tags above (your consent, given by choosing Accept all; if you choose Essential only nothing is saved). The tags are deleted with your account.",
-            "To keep the app secure and diagnose faults (our legitimate interests).",
+            "To keep the app secure and diagnose faults, including the Cloudflare bot check on email sign-in and sign-up (our legitimate interests).",
           ]}
         />
         <p>
@@ -207,6 +208,7 @@ function Privacy() {
             "PostHog (United States data region): receives the anonymous usage data described above, only if you have opted in, so we can see which features are used and improve lessons. It does not receive your name, email or account identifier, and does not use the data for advertising.",
             "Apple: Sign in with Apple if you choose it, App Store billing for Alphonso Pro, and the Apple Push Notification service for notifications on iPhone.",
             "Google: Sign in with Google if you choose it and, on Android, Google Play billing and Firebase Cloud Messaging for notifications.",
+            "Cloudflare (Turnstile): checks that a person, not an automated script, is signing in, signing up or resetting a password with an email address, on the website and in the small web page the iOS and Android apps show on their email sign-in screens. It receives your IP address and signals about your browser and device, not your email address or password, and we use it only to protect accounts (our legitimate interest).",
             "Neon: hosts the database behind the launch email list on our marketing website. It stores the email address you enter there and when you entered it.",
             "Vercel Web Analytics: counts page views and a few events, such as joining the launch email list, on our marketing website. It counts them in aggregate and does not use cookies.",
           ]}

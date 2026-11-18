@@ -27,7 +27,7 @@ export const Route = createFileRoute("/cookies")({
 
 function Cookies() {
   return (
-    <LegalPage title="Cookie Policy" updated="15 November 2026">
+    <LegalPage title="Cookie Policy" updated="18 November 2026">
       <Section heading="What this covers">
         <p>
           The Learn with Alphonso website stores a few small items in your browser, in cookies or in
@@ -41,6 +41,7 @@ function Cookies() {
           items={[
             "Sign-in session: kept in your browser’s local storage so you stay signed in and your progress syncs to your account. Without it the website cannot work.",
             "Sign-in security: a short-lived value used while you sign in with Google, to protect the sign-in from tampering.",
+            "Bot check: when you sign in, sign up or reset your password with your email address, Cloudflare Turnstile runs a check in your browser to tell people from automated sign-ups. Cloudflare receives your IP address and signals about your browser and device for that check, and may store a short-lived value in your browser while it runs. We use it only to protect accounts (our legitimate interest), never for advertising. The iOS and Android apps show the same check in a small web page on their email sign-in screens.",
             "Your cookie choice, so we do not ask again on every visit.",
             "Your answers while you get started: what you tell Alphonso before you create an account stays in your browser until you sign up, then it is saved to your account and removed from your browser.",
             "If you said you are under 13 when you started, a note of that choice, so sign-up stays closed on this device. It is never sent to us.",

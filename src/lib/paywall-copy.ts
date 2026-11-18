@@ -21,6 +21,14 @@ export const PAYWALL_COPY = {
 /** Web-only wording (there is no iPhone equivalent). */
 export const WEB_PAYWALL_COPY = {
   manageOnIphone: "Manage it in your iPhone's Settings.",
+  /**
+   * The EU and UK right-of-withdrawal acknowledgement (Terms, "Your right to withdraw"). Required, unticked by
+   * default, before any redirect to checkout. No digits and no "trial": the paywall's no-trial and no-price checks
+   * read the whole page.
+   */
+  withdrawalConsent:
+    "I want Alphonso Pro to start straight away, and I understand that I lose my right to withdraw (the EU and UK cooling-off period) once it starts.",
+  withdrawalConsentNeeded: "Tick the box above to continue to checkout.",
   checkFailed: "Couldn't check your subscription. Try again.",
   activating: "Payment received, activating…",
   continueWithHector: "Continue with Hector",
@@ -102,7 +110,8 @@ export const PRO_PAYWALL_COPY = {
   ],
   freeLabel: "Free for everyone",
   freeItems: ["Lessons", "Alphonso calls", "Audio", "Review"],
-  freeNote: "Everything else stays free, always.",
+  freeNote:
+    "These stay free, always. Pro adds Hector, unlimited hearts and more AI practice each month.",
   plansLabel: "Choose a plan",
   renewal: "Renews automatically until cancelled. Cancel any time in Manage Subscription.",
   restore: "Restore purchases",
@@ -111,7 +120,7 @@ export const PRO_PAYWALL_COPY = {
   privacy: "Privacy",
   comingSoonTitle: "Coming soon",
   comingSoonBody:
-    "Alphonso Pro isn't on sale on the web yet. Hector will be here soon, and everything else stays free in the meantime.",
+    "Alphonso Pro isn't on sale on the web yet. Hector will be here soon, and lessons, Alphonso calls, audio and review stay free in the meantime.",
   close: "Close",
   roomAlt: "Hector in his library",
 } as const;

@@ -18,6 +18,7 @@ const { Route: CookiesRoute } = await import("./cookies");
 const { Route: TermsRoute } = await import("./terms");
 const { Route: PrivacyRoute } = await import("./privacy");
 const { Route: SupportRoute } = await import("./support");
+const { Route: AccessibilityRoute } = await import("./accessibility");
 
 describe("Cookies route", () => {
   it("renders the cookie policy with its sections", () => {
@@ -216,5 +217,88 @@ describe("AI text hosts", () => {
         host,
       ).toBeInTheDocument();
     }
+  });
+});
+
+describe("Privacy route: the processors list", () => {
+  // Every third party that receives learner data must have its own entry in "Who processes it". Cloudflare was
+  // missing while Turnstile (src/lib/turnstile.ts, challenges.cloudflare.com in the CSP frame-src) ran on email
+  // sign-in on the web and, through /native-captcha, in the iOS and Android apps.
+  const PROCESSORS = [
+    "Supabase:",
+    "Vercel:",
+    "Resend:",
+    "Deepgram:",
+    "OpenRouter:",
+    "Anthropic (Claude), reached through OpenRouter:",
+    "RevenueCat:",
+    "Stripe:",
+    "Sentry:",
+    "PostHog (United States data region):",
+    "Cloudflare (Turnstile):",
+    "Apple:",
+    "Google:",
+    "Neon:",
+    "Vercel Web Analytics:",
+  ];
+  it.each(PROCESSORS.map((p) => [p]))("lists %s as a processor entry", (entry) => {
+    const Privacy = PrivacyRoute.options.component!;
+    const { container } = render(<Privacy />);
+    const items = [...container.querySelectorAll("li")].map((li) => li.textContent ?? "");
+    expect(items.some((t) => t.startsWith(entry))).toBe(true);
+  });
+
+  it("the cookie policy names the Cloudflare bot check as strictly necessary", () => {
+    const Cookies = CookiesRoute.options.component!;
+    const { container } = render(<Cookies />);
+    const strict = [...container.querySelectorAll("section")].find((s) =>
+      s.textContent?.startsWith("Strictly necessary"),
+    );
+    expect(strict?.textContent).toMatch(/Cloudflare Turnstile/);
+  });
+});
+
+describe("Terms route: Alphonso Pro", () => {
+  it("sells monthly and yearly and lists every Pro benefit, with no 'everything else is free'", () => {
+    const Terms = TermsRoute.options.component!;
+    const { container } = render(<Terms />);
+    const text = container.textContent ?? "";
+    expect(text).toMatch(/paid monthly or yearly/);
+    expect(text).toMatch(/a year on the yearly plan/);
+    expect(text).toMatch(/Hector, the AI voice tutor/);
+    expect(text).toMatch(/unlimited hearts/);
+    expect(text).toMatch(/What Alphonso remembers/);
+    expect(text).toMatch(/larger monthly allowance/);
+    expect(text).not.toMatch(/Everything else in the app is free/);
+    expect(text).not.toMatch(/one free trial per person/);
+  });
+
+  it("has an EU and UK withdrawal clause that matches the checkout checkbox", () => {
+    const Terms = TermsRoute.options.component!;
+    render(<Terms />);
+    expect(screen.getByRole("heading", { name: /right to withdraw/ })).toBeInTheDocument();
+    expect(screen.getByText(/tick a box/)).toBeInTheDocument();
+  });
+
+  it("says AI replies can be reported on every platform", () => {
+    const Terms = TermsRoute.options.component!;
+    render(<Terms />);
+    expect(screen.getByText(/iOS or Android app and choose Report/)).toBeInTheDocument();
+    expect(screen.getByText(/the Report button next to it on the website/)).toBeInTheDocument();
+  });
+});
+
+describe("Accessibility route", () => {
+  it("covers the website, iPhone and Android, and states WCAG 2.2 AA as a goal, not a certification", () => {
+    const Accessibility = AccessibilityRoute.options.component!;
+    const { container } = render(<Accessibility />);
+    const text = container.textContent ?? "";
+    expect(text).toMatch(/website/);
+    expect(text).toMatch(/iPhone/);
+    expect(text).toMatch(/Android/);
+    expect(text).toMatch(/WCAG\) 2\.2 at level AA/);
+    expect(text).toMatch(/not a claim that we meet\s+it today/);
+    expect(text).toMatch(/support@alphonsoecosystem\.app/);
+    expect(text).not.toMatch(/26 September 2026/);
   });
 });

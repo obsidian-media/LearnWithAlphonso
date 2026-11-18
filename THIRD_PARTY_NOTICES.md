@@ -31,6 +31,26 @@ The 3D icons (`public/icons3d/`, the iOS and Android icon sets; 30 on the web) a
 
 The design system's two faces (visual round 6): Bricolage Grotesque (display and numerals) and Figtree (body), both from google/fonts under the SIL Open Font License 1.1. One variable file each ships in the iOS app (`ios/LearnWithAlphonso/Sources/Fonts/`), the Android app (`res/font/`) and on the web as WOFF (`public/fonts/`), and each place keeps the OFL text next to the font (`*-OFL.txt`; Android's are in `android/LearnWithAlphonso/fonts-licenses/`). `src/lib/design-fonts.test.ts` checks all of it.
 
+## Baloo 2, Fraunces and Geist (shipped)
+
+The theme faces: Baloo 2 (Royal display) and Geist (body, both themes), and Fraunces (Meadow display). All three are under the SIL Open Font License 1.1:
+
+- Baloo 2: Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2).
+- Fraunces: Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces).
+- Geist: Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font).
+
+One variable file each ships in the iOS app (`ios/LearnWithAlphonso/Sources/Fonts/*-Variable.ttf`, with `*-OFL.txt` beside each) and the Android app (`android/LearnWithAlphonso/app/src/main/res/font/*_variable.ttf`, with the OFL texts in `android/LearnWithAlphonso/fonts-licenses/`). The website self-hosts the same faces from the `@fontsource-variable/baloo-2`, `@fontsource-variable/fraunces` and `@fontsource-variable/geist` packages (imported in `src/styles.css`), which carry the OFL text in the package. The fonts are not sold on their own and keep their original names.
+
+## Vocabulary photos (shipped, not redistributed)
+
+The photos on vocabulary questions (`src/data/vocab-images.ts`, and `android/LearnWithAlphonso/app/src/main/assets/content/vocab-images.json` for Android) are stock photos, each with its photographer credit, source page and licence recorded in that file:
+
+- Pexels, under the Pexels License (https://www.pexels.com/license/).
+- Pixabay, under the Pixabay Content License (https://pixabay.com/service/license-summary/).
+- Kaboompics (Karolina Grabowska): the photos credited to Kaboompics were taken from Pexels and are used under the Pexels License, as their entries record.
+
+They are served from our own storage only to illustrate a word inside a lesson. We do not offer them for download, sell them or redistribute them as standalone files, which is what both licences require. `src/data/vocab-images.guard.test.ts` checks that each entry's source, licence, photo page and credit agree.
+
 ## Kenney sound effects (shipped)
 
 Sound effects by Kenney (kenney.nl), CC0. The nine short effects (right and wrong answer, lesson complete, XP, heart lost, tap, call start and end, achievement) are from three Kenney.nl packs released under Creative Commons Zero (CC0 1.0, public domain; http://creativecommons.org/publicdomain/zero/1.0/). No credit is required; we give it anyway. They ship as identical MP3s on the web (`public/sfx/`), iOS (`ios/LearnWithAlphonso/Sources/Sounds/`, credited in Settings, Acknowledgements, with `Sources/Licenses/Kenney-CC0.txt`) and Android (`res/raw/`). `src/lib/sound-effects-assets.test.ts` checks all of it.
