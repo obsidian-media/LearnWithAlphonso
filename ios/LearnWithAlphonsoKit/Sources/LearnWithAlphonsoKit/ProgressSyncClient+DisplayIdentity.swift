@@ -5,10 +5,11 @@ import FoundationNetworking
 
 /// Display name + avatar-color editing (BACKLOG §0.0p). Own extension
 /// file, same merge-conflict-avoidance reasoning as
-/// ProgressSyncClient+Profile.swift (theme) and +Teams.swift. Plain
-/// PostgREST GET/PATCH against `profiles` -- profiles_update_own already
-/// lets a user write their own row (see +Profile.swift's own comment),
-/// this just adds the two columns web's updateProfile already writes.
+/// ProgressSyncClient+Profile.swift (theme) and +Teams.swift. The name is
+/// read with a plain PostgREST GET and saved through confirm_display_name
+/// (display_name is not a client-writable column); the avatar seed is a
+/// PATCH, allowed by the column-level UPDATE grant on profiles
+/// (avatar_seed, theme, country) plus the own-row policy profiles_update_own.
 public struct ProfileIdentity: Sendable, Equatable {
     public let displayName: String
     public let avatarSeed: String
@@ -34,17 +35,6 @@ public func fetchProfileIdentity(userID: String) async throws -> ProfileIdentity
         return nil
     }
     return ProfileIdentity(displayName: displayName, avatarSeed: avatarSeed)
-}
-
-public func updateProfileDisplayName(_ displayName: String, userID: String) async throws {
-    var request = restRequest(path: "profiles", query: [
-        URLQueryItem(name: "id", value: "eq.\(userID)"),
-    ])
-    request.httpMethod = "PATCH"
-    request.setValue("return=minimal", forHTTPHeaderField: "Prefer")
-    request.httpBody = try JSONSerialization.data(withJSONObject: ["display_name": displayName])
-    let (data, response) = try await requester(request)
-    try Self.requireSuccess(data: data, response: response)
 }
 
 /// `confirm_display_name` (supabase/migrations/20261008130100_display_name_onboarding.sql): the validated way to set
