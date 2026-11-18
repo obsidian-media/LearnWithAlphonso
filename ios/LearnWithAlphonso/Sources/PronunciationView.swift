@@ -255,7 +255,7 @@ struct PronunciationView: View {
         captureFailed = false
         guard let accessToken = await session.freshAccessToken() else { loading = false; loadFailed = true; return }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        guard let ids = try? await client.fetchCompletedLessonIds(course: course.code) else { loading = false; loadFailed = true; return }
+        guard let ids = try? await client.fetchCompletedLessonIds(course: course.wireCode) else { loading = false; loadFailed = true; return }
         let pool = Pronunciation.learnedPool(units: contentStore.bundle(for: course).units, completedLessonIDs: Set(ids), course: course)
         // Too few words for a session: an empty run, shown as the "learn a few words first" state.
         run = pool.count >= Pronunciation.minPool ? PronunciationSession(words: Pronunciation.draw(pool)) : PronunciationSession(words: pool)
