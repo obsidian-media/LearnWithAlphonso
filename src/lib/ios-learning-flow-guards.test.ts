@@ -299,7 +299,9 @@ describe("Sync store", () => {
     for (const f of ["RootView.swift", "PendingSyncSection.swift", "SettingsView.swift"]) {
       const code = read(`${APP}/${f}`);
       expect(code, f).toContain("refreshAccessToken: session.refresher(for:");
-      expect(code, f).not.toContain("refreshAccessToken: { [session] in await session.freshAccessToken(forceRefresh: true) }");
+      expect(code, f).not.toContain(
+        "refreshAccessToken: { [session] in await session.freshAccessToken(forceRefresh: true) }",
+      );
     }
   });
   it("the review count shown is the resolved queue, not the server total", () => {
@@ -312,8 +314,12 @@ describe("Sync store", () => {
     // AccountDataCleanupTests and SyncPassTests apply to plain rows); every cached copy of the account's
     // server state is deleted.
     const retain = between(store, "func applyRetention(", /\n {4}}\n/);
-    expect(retain).toMatch(/FetchDescriptor<PendingLessonCompletionRecord>[\s\S]*plan\.lessonDisposition\(record\.queueIdentity\)/);
-    expect(retain).toMatch(/FetchDescriptor<PendingReviewGradeRecord>[\s\S]*plan\.gradeDisposition\(record\.queueIdentity\)/);
+    expect(retain).toMatch(
+      /FetchDescriptor<PendingLessonCompletionRecord>[\s\S]*plan\.lessonDisposition\(record\.queueIdentity\)/,
+    );
+    expect(retain).toMatch(
+      /FetchDescriptor<PendingReviewGradeRecord>[\s\S]*plan\.gradeDisposition\(record\.queueIdentity\)/,
+    );
     expect(retain.match(/case \.delete: modelContext\.delete\(record\)/g)?.length).toBe(2);
     expect(retain.match(/case let \.stamp\(owner\): record\.ownerUserID = owner/g)?.length).toBe(2);
     const apply = between(store, "func apply(_ result: SyncResult", /\n {4}}\n/);
