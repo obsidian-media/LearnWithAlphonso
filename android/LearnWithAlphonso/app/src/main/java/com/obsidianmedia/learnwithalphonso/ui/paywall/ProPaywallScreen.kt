@@ -345,7 +345,7 @@ private fun PaywallFacts() {
     }
 }
 
-/** "Everything else stays free": lessons, Alphonso calls, audio, review. */
+/** What stays free (lessons, Alphonso calls, audio, review) and what Pro adds (FREE_NOTE). */
 @Composable
 private fun PaywallFreeRow() {
     val ds = LocalAlphonsoTokens.current

@@ -80,7 +80,7 @@ SOCIAL SAFETY
 - Delete account: Profile > Settings > Account > Delete My Account (type DELETE). Export My Data is next to it.
 
 SUBSCRIPTION
-"${i.productTitle}", a monthly auto-renewable subscription with a free trial for eligible users, unlocks Hector and is submitted with this version. To see the paywall: Profile > Settings > Sign out, create a new account with "Continue with Apple", open Hector. It shows the price, trial terms, Restore, Terms of Use and Privacy Policy.
+"${i.productTitle}" (auto-renewable, free trial if eligible) unlocks Hector, unlimited hearts, call memory and more AI use; submitted with this version. To see the paywall: Profile > Settings > Sign out, create a new account with "Continue with Apple", open Hector. It shows the price, trial terms, Restore, Terms of Use and Privacy Policy.
 
 OTHER 2.1 ANSWERS
 - Services: Supabase (database, sign-in), Vercel (API), Resend (sign-in email), Deepgram (speech, no training), Anthropic via OpenRouter (AI text), RevenueCat (subscription status), Sign in with Apple, Google Sign-In, Apple Push Notifications.
