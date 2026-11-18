@@ -19,7 +19,7 @@ import { z } from "zod";
 import { suspendedResponseIfBanned } from "../_shared/account-status.ts";
 import { issueLessonSessionToken, type LessonSessionClaim } from "./lesson-session.ts";
 import { heartsGate, heartsGateEnforced, MAX_HEARTS, outOfHeartsBody } from "../_shared/hearts.ts";
-import { heartsUnlimitedOrUnknown } from "../_shared/hearts-pro.ts";
+import { heartsProCachedAnyAge, heartsUnlimitedOrUnknown } from "../_shared/hearts-pro.ts";
 
 // Was missing "es" -- same gap and same fix as complete-lesson/index.ts,
 // which verifies the token this issues and must agree on what a valid
@@ -46,6 +46,8 @@ export type StartLessonSessionDeps = {
   heartsGateEnforced: () => boolean;
   /** Alphonso Pro: unlimited hearts. null = could not be established (never read as "not Pro"). */
   heartsUnlimited: (admin: SupabaseClient, userId: string) => Promise<boolean | null>;
+  /** The last stored Pro answer at any age (null = none). The fallback when heartsUnlimited is null. Absent = none. */
+  heartsProCached?: (admin: SupabaseClient, userId: string) => Promise<boolean | null>;
   issueToken: (claim: LessonSessionClaim) => string;
   now: () => number;
 };
@@ -106,6 +108,7 @@ export function liveDeps(): StartLessonSessionDeps {
     admin: adminClient,
     heartsGateEnforced: () => heartsGateEnforced(),
     heartsUnlimited: (admin, userId) => heartsUnlimitedOrUnknown(admin, userId),
+    heartsProCached: (admin, userId) => heartsProCachedAnyAge(admin, userId),
     issueToken: issueLessonSessionToken,
     now: () => Date.now(),
   };
@@ -195,10 +198,19 @@ async function handleRequest(req: Request, deps: StartLessonSessionDeps): Promis
     if (state) {
       const gate = heartsGate(state.hearts, state.heartsRefillAt, deps.now());
       if (gate.blocked) {
-        const pro = await unlimited;
-        // At 0 hearts the answer depends on Pro, and Pro could not be established: a retryable 503, not a 409 the
-        // learner would read as "out of hearts" (a Pro learner is never out of hearts).
-        if (pro === null) return jsonResponse({ error: "Could not check hearts; retry" }, 503);
+        let pro = await unlimited;
+        if (pro === null) {
+          // Pro could not be established (RevenueCat unreachable): the last stored answer at any age, and with none
+          // the learner is treated as not Pro, so the normal out-of-hearts answer applies. Never a 503 here.
+          const cached = deps.heartsProCached ? await deps.heartsProCached(admin, userId) : null;
+          pro = cached ?? false;
+          console.error(
+            JSON.stringify({
+              event: cached === null ? "hearts_gate_pro_unknown" : "hearts_gate_stale_pro",
+              fn: "start-lesson-session",
+            }),
+          );
+        }
         if (!pro) return jsonResponse(outOfHeartsBody(gate.refillAt), 409);
       }
     }

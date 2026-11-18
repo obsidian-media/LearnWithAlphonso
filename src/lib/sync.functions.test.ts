@@ -39,7 +39,10 @@ vi.mock("@tanstack/react-start", () => ({
 const supabaseAdminFrom = vi.fn();
 // The model-written question passes the blocked-term check (ai_output_blocked, service role) before it is stored.
 const adminRpc = vi.fn(
-  async (_name?: string, _args?: unknown): Promise<{ data: unknown; error: { message: string } | null }> => ({
+  async (
+    _name?: string,
+    _args?: unknown,
+  ): Promise<{ data: unknown; error: { message: string } | null }> => ({
     data: [false],
     error: null,
   }),
@@ -101,7 +104,10 @@ beforeEach(() => {
   adminRpc.mockReset();
   // The hearts the last save wrote: a settlement that charges nothing answers with them (the real function reads
   // the row the save just wrote). A settlement that cannot answer is a retryable error, so it must answer by default.
-  let savedHearts: { hearts: unknown; hearts_refill_at: unknown } = { hearts: 5, hearts_refill_at: null };
+  let savedHearts: { hearts: unknown; hearts_refill_at: unknown } = {
+    hearts: 5,
+    hearts_refill_at: null,
+  };
   adminRpc.mockImplementation(async (name?: string, args?: unknown) => {
     if (name === "apply_lesson_completion_once") {
       const next = (args as { _next?: { hearts?: unknown; hearts_refill_at?: unknown } })._next;
@@ -1368,20 +1374,47 @@ describe("completeLessonRemote reports the league the learner started the lesson
 });
 
 describe("completeLessonRemote: single-use sessions and retryable read errors", () => {
-  const CORRECT = ["Good morning.", "meet", "I am fine, thanks.", "Good", "Good night.", "Hey!", "later", "You're welcome."];
+  const CORRECT = [
+    "Good morning.",
+    "meet",
+    "I am fine, thanks.",
+    "Good",
+    "Good night.",
+    "Hey!",
+    "later",
+    "You're welcome.",
+  ];
   const answersFor = (wrong: number) =>
-    CORRECT.map((answer, i) => ({ questionId: `q${i + 1}`, answer: i < wrong ? "zzz wrong" : answer }));
-  const token = () => issueLessonSessionToken({ userId: USER_ID, lessonId: LESSON_ID, course: "en" });
+    CORRECT.map((answer, i) => ({
+      questionId: `q${i + 1}`,
+      answer: i < wrong ? "zzz wrong" : answer,
+    }));
+  const token = () =>
+    issueLessonSessionToken({ userId: USER_ID, lessonId: LESSON_ID, course: "en" });
   const run = (supabase: ReturnType<typeof createSupabaseMock>, sessionToken: string, wrong = 0) =>
     completeLessonRemote({
       context: ctx(supabase),
-      data: { lessonId: LESSON_ID, total: 8, answers: answersFor(wrong), course: "en", sessionToken },
+      data: {
+        lessonId: LESSON_ID,
+        total: 8,
+        answers: answersFor(wrong),
+        course: "en",
+        sessionToken,
+      },
     });
   function snapshot(supabase: ReturnType<typeof createSupabaseMock>) {
     supabase.from
       .mockReturnValueOnce(
         chainable({
-          data: { streak: 0, longest_streak: 0, last_active_date: null, hearts: 5, hearts_refill_at: null, streak_freezes: 0, updated_at: "v1" },
+          data: {
+            streak: 0,
+            longest_streak: 0,
+            last_active_date: null,
+            hearts: 5,
+            hearts_refill_at: null,
+            streak_freezes: 0,
+            updated_at: "v1",
+          },
         }),
       )
       .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze", updated_at: "v1" } }))
@@ -1394,12 +1427,29 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
     newlyUnlocked: ["first_lesson"],
     heartsBonus: null,
     previousLeagueTier: "bronze",
-    progress: { xp: 80, streak: 1, longestStreak: 1, lastActiveDate: "2026-11-17", hearts: 5, heartsRefillAt: null, streakFreezes: 0, leagueTier: "bronze" },
+    progress: {
+      xp: 80,
+      streak: 1,
+      longestStreak: 1,
+      lastActiveDate: "2026-11-17",
+      hearts: 5,
+      heartsRefillAt: null,
+      streakFreezes: 0,
+      leagueTier: "bronze",
+    },
   };
-  const redemptionRow = { result: STORED, misses: 3, settle_since: "2026-11-17T10:00:00.000Z", lesson_id: LESSON_ID, course: "en" };
+  const redemptionRow = {
+    result: STORED,
+    misses: 3,
+    settle_since: "2026-11-17T10:00:00.000Z",
+    lesson_id: LESSON_ID,
+    course: "en",
+  };
   const rpcNames = () => (adminRpc.mock.calls as unknown as [string][]).map(([n]) => n);
   const settleArgs = () =>
-    (adminRpc.mock.calls as unknown as [string, Record<string, unknown>][]).filter(([n]) => n === "settle_lesson_hearts").map(([, a]) => a);
+    (adminRpc.mock.calls as unknown as [string, Record<string, unknown>][])
+      .filter(([n]) => n === "settle_lesson_hearts")
+      .map(([, a]) => a);
 
   afterEach(() => {
     delete process.env.REVENUECAT_SECRET_API_KEY;
@@ -1423,7 +1473,11 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
     );
     await run(createSupabaseMock(), token(), 0); // the retry carries 0 misses
     expect(settleArgs()).toHaveLength(1);
-    expect(settleArgs()[0]).toMatchObject({ _misses: 3, _since: "2026-11-17T10:00:00.000Z", _enforce: true });
+    expect(settleArgs()[0]).toMatchObject({
+      _misses: 3,
+      _since: "2026-11-17T10:00:00.000Z",
+      _enforce: true,
+    });
   });
 
   it("a retry returns the settled hearts", async () => {
@@ -1431,7 +1485,9 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
       chainable({ data: t === "lesson_session_redemptions" ? redemptionRow : null, error: null }),
     );
     adminRpc.mockImplementation(async (name?: string) =>
-      name === "settle_lesson_hearts" ? { data: [{ hearts: 2, hearts_refill_at: null }], error: null } : { data: [false], error: null },
+      name === "settle_lesson_hearts"
+        ? { data: [{ hearts: 2, hearts_refill_at: null }], error: null }
+        : { data: [false], error: null },
     );
     const res = await run(createSupabaseMock(), token());
     expect(res.progress.hearts).toBe(2);
@@ -1439,8 +1495,12 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
   });
 
   it("an unreadable redemption lookup is a retryable error and nothing is written", async () => {
-    supabaseAdminFrom.mockImplementation(() => chainable({ data: null, error: { message: "down" } }));
-    await expect(run(createSupabaseMock(), token())).rejects.toThrow("Could not load lesson progress");
+    supabaseAdminFrom.mockImplementation(() =>
+      chainable({ data: null, error: { message: "down" } }),
+    );
+    await expect(run(createSupabaseMock(), token())).rejects.toThrow(
+      "Could not load lesson progress",
+    );
     expect(rpcNames()).not.toContain("apply_lesson_completion_once");
   });
 
@@ -1458,7 +1518,9 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
     snapshot(supabase);
     const sessionToken = token();
     await run(supabase, sessionToken, 2);
-    const call = (adminRpc.mock.calls as unknown as [string, Record<string, unknown>][]).find(([n]) => n === "apply_lesson_completion_once")![1];
+    const call = (adminRpc.mock.calls as unknown as [string, Record<string, unknown>][]).find(
+      ([n]) => n === "apply_lesson_completion_once",
+    )![1];
     const { createHash } = await import("node:crypto");
     expect(call._token_hash).toBe(createHash("sha256").update(sessionToken).digest("hex"));
     expect(call._misses).toBe(2);
@@ -1469,7 +1531,15 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
   it("losing a race for the same token gives the slot back and answers the winner's result", async () => {
     adminRpc.mockImplementation(async (name?: string) =>
       name === "apply_lesson_completion_once"
-        ? { data: { status: "redeemed", result: STORED, misses: 0, settle_since: "2026-11-17T10:00:00.000Z" }, error: null }
+        ? {
+            data: {
+              status: "redeemed",
+              result: STORED,
+              misses: 0,
+              settle_since: "2026-11-17T10:00:00.000Z",
+            },
+            error: null,
+          }
         : { data: [{ hearts: 5, hearts_refill_at: null }], error: null },
     );
     const supabase = createSupabaseMock();
@@ -1478,7 +1548,19 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
     expect(releaseCompletionSlot).toHaveBeenCalledTimes(1);
   });
 
-  it("a failed hearts settlement after the save is a retryable error (the retry settles; misses are never free)", async () => {
+  const oldPro = () => new Date(Date.now() - 48 * 3_600_000).toISOString();
+  /** RevenueCat answers 500 (unavailable) for the duration of fn. */
+  async function withRevenueCatDown(fn: () => Promise<void>) {
+    process.env.REVENUECAT_SECRET_API_KEY = "k";
+    const realFetch = global.fetch;
+    global.fetch = vi.fn(async () => new Response("", { status: 500 })) as typeof fetch;
+    try {
+      await fn();
+    } finally {
+      global.fetch = realFetch;
+    }
+  }
+  const failingSettle = () =>
     adminRpc.mockImplementation(async (name?: string) =>
       name === "apply_lesson_completion_once"
         ? { data: { status: "applied" }, error: null }
@@ -1486,25 +1568,279 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
           ? { data: null, error: { message: "down" } }
           : { data: [false], error: null },
     );
+
+  it("a failed hearts settlement after the save retries once inline, then succeeds with settlementPending (the lesson is saved)", async () => {
+    failingSettle();
     const supabase = createSupabaseMock();
     snapshot(supabase);
-    await expect(run(supabase, token(), 2)).rejects.toThrow("Could not settle lesson hearts; retry");
-    expect(rpcNames()).toContain("apply_lesson_completion_once");
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const res = await run(supabase, token(), 2);
+      expect(res.settlementPending).toBe(true);
+      expect(res.xpGain).toBeGreaterThan(0);
+      expect(settleArgs()).toHaveLength(2); // the first attempt and one inline retry
+      expect(
+        errors.mock.calls.some((c) => String(c[0]).includes("hearts_settlement_pending")),
+      ).toBe(true);
+    } finally {
+      errors.mockRestore();
+    }
   });
 
-  it("an unreadable Pro status at 0 hearts is a retryable error, not out-of-hearts", async () => {
-    process.env.REVENUECAT_SECRET_API_KEY = "k";
-    const realFetch = global.fetch;
-    global.fetch = vi.fn(async () => new Response("", { status: 500 })) as typeof fetch;
+  it("a settlement that fails once and then works is a plain success (no pending flag)", async () => {
+    let settles = 0;
+    adminRpc.mockImplementation(async (name?: string) => {
+      if (name === "apply_lesson_completion_once")
+        return { data: { status: "applied" }, error: null };
+      if (name === "settle_lesson_hearts") {
+        settles += 1;
+        return settles === 1
+          ? { data: null, error: { message: "blip" } }
+          : { data: [{ hearts: 3, hearts_refill_at: null }], error: null };
+      }
+      return { data: [false], error: null };
+    });
+    const supabase = createSupabaseMock();
+    snapshot(supabase);
+    const res = await run(supabase, token(), 2);
+    expect(res.settlementPending).toBeUndefined();
+    expect(res.progress.hearts).toBe(3);
+  });
+
+  it("a replay whose settlement keeps failing is also a success with settlementPending", async () => {
+    supabaseAdminFrom.mockImplementation((t: string) =>
+      chainable({ data: t === "lesson_session_redemptions" ? redemptionRow : null, error: null }),
+    );
+    adminRpc.mockImplementation(async () => ({ data: null, error: { message: "down" } }));
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
+      const res = await run(createSupabaseMock(), token());
+      expect(res.settlementPending).toBe(true);
+      expect(res.xpGain).toBe(80);
+    } finally {
+      errors.mockRestore();
+    }
+  });
+
+  it("a replay returns the CURRENT progress (read only), not the stored snapshot", async () => {
+    supabaseAdminFrom.mockImplementation((t: string) =>
+      chainable({
+        data:
+          t === "lesson_session_redemptions"
+            ? redemptionRow
+            : t === "user_progress"
+              ? {
+                  streak: 9,
+                  longest_streak: 12,
+                  last_active_date: "2026-11-20",
+                  hearts: 2,
+                  hearts_refill_at: "2026-11-20T10:00:00.000Z",
+                  streak_freezes: 1,
+                }
+              : t === "language_progress"
+                ? { xp: 4321, league_tier: "gold" }
+                : null,
+        error: null,
+      }),
+    );
+    const res = await run(createSupabaseMock(), token());
+    expect(res.xpGain).toBe(80); // the reward is the original's
+    expect(res.progress).toMatchObject({
+      xp: 4321,
+      leagueTier: "gold",
+      streak: 9,
+      longestStreak: 12,
+      lastActiveDate: "2026-11-20",
+      hearts: 2,
+      heartsRefillAt: Date.parse("2026-11-20T10:00:00.000Z"),
+      streakFreezes: 1,
+    });
+  });
+
+  it("a replay whose progress read fails keeps the stored copy", async () => {
+    supabaseAdminFrom.mockImplementation((t: string) =>
+      chainable(
+        t === "lesson_session_redemptions"
+          ? { data: redemptionRow, error: null }
+          : { data: null, error: { message: "down" } },
+      ),
+    );
+    const res = await run(createSupabaseMock(), token());
+    expect(res.progress.xp).toBe(STORED.progress.xp);
+    expect(res.progress.streak).toBe(STORED.progress.streak);
+  });
+
+  it("Pro unknown at settlement never fails the saved lesson: the stored answer decides, at any age", async () => {
+    for (const cachedPro of [true, false]) {
+      adminRpc.mockClear();
+      supabaseAdminFrom.mockImplementation((t: string) =>
+        chainable({
+          data: t === "hearts_pro_status" ? { pro: cachedPro, checked_at: oldPro() } : null,
+          error: null,
+        }),
+      );
+      await withRevenueCatDown(async () => {
+        const supabase = createSupabaseMock();
+        snapshot(supabase);
+        const res = await run(supabase, token(), 2);
+        expect(res.settlementPending).toBeUndefined();
+      });
+      expect(settleArgs()[0]).toMatchObject({ _pro: cachedPro, _enforce: true });
+    }
+  });
+
+  it("Pro unknown with no stored answer is a shadow settlement (charges nothing, never _pro=true), not an error", async () => {
+    supabaseAdminFrom.mockImplementation(() => chainable({ data: null, error: null }));
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await withRevenueCatDown(async () => {
+        const supabase = createSupabaseMock();
+        snapshot(supabase);
+        const res = await run(supabase, token(), 2);
+        expect(res.xpGain).toBeGreaterThan(0);
+        expect(res.settlementPending).toBeUndefined();
+      });
+      expect(settleArgs()[0]).toMatchObject({ _pro: false, _enforce: false });
+      expect(
+        errors.mock.calls.some((c) =>
+          String(c[0]).includes("hearts_settlement_shadow_pro_unknown"),
+        ),
+      ).toBe(true);
+    } finally {
+      errors.mockRestore();
+    }
+  });
+
+  it("at 0 hearts with Pro unknown and no stored answer: the normal out-of-hearts answer (not an error)", async () => {
+    supabaseAdminFrom.mockImplementation(() => chainable({ data: null, error: null }));
+    await withRevenueCatDown(async () => {
       const refill = new Date(Date.now() + 10 * 60_000).toISOString();
       const supabase = createSupabaseMock();
-      supabase.from.mockReturnValueOnce(chainable({ data: { hearts: 0, hearts_refill_at: refill }, error: null }));
-      await expect(
-        startLessonSession({ context: ctx(supabase), data: { lessonId: LESSON_ID, course: "en" } }),
-      ).rejects.toThrow("Could not check hearts; retry");
+      supabase.from.mockReturnValueOnce(
+        chainable({ data: { hearts: 0, hearts_refill_at: refill }, error: null }),
+      );
+      const result = await startLessonSession({
+        context: ctx(supabase),
+        data: { lessonId: LESSON_ID, course: "en" },
+      });
+      expect(result).toEqual({ error: "out-of-hearts", refillAt: new Date(refill).getTime() });
+    });
+  });
+
+  it("at 0 hearts with Pro unknown but a stored Pro answer (any age): a token", async () => {
+    supabaseAdminFrom.mockImplementation((t: string) =>
+      chainable({
+        data: t === "hearts_pro_status" ? { pro: true, checked_at: oldPro() } : null,
+        error: null,
+      }),
+    );
+    await withRevenueCatDown(async () => {
+      const refill = new Date(Date.now() + 10 * 60_000).toISOString();
+      const supabase = createSupabaseMock();
+      supabase.from.mockReturnValueOnce(
+        chainable({ data: { hearts: 0, hearts_refill_at: refill }, error: null }),
+      );
+      const result = await startLessonSession({
+        context: ctx(supabase),
+        data: { lessonId: LESSON_ID, course: "en" },
+      });
+      expect("token" in result).toBe(true);
+    });
+  });
+
+  it("before the migration (function missing) the save falls back to apply_lesson_completion and the lesson saves", async () => {
+    adminRpc.mockImplementation(async (name?: string) =>
+      name === "apply_lesson_completion_once"
+        ? { data: null, error: { code: "PGRST202", message: "not found" } }
+        : name === "apply_lesson_completion"
+          ? { data: { status: "applied" }, error: null }
+          : name === "settle_lesson_hearts"
+            ? { data: [{ hearts: 5, hearts_refill_at: null }], error: null }
+            : { data: null, error: { code: "PGRST202", message: "not found" } },
+    );
+    const supabase = createSupabaseMock();
+    snapshot(supabase);
+    const res = await run(supabase, token());
+    expect(res.xpGain).toBeGreaterThan(0);
+    const calls = adminRpc.mock.calls as unknown as [string, Record<string, unknown>][];
+    const legacy = calls.find(([n]) => n === "apply_lesson_completion");
+    expect(legacy).toBeDefined();
+    expect("_token_hash" in legacy![1]).toBe(false);
+    expect("_result" in legacy![1]).toBe(false);
+  });
+
+  it("each of 42P01, PGRST205, PGRST202 and 42883 on the save falls back; any other error is a retryable error", async () => {
+    for (const code of ["42P01", "PGRST205", "PGRST202", "42883"]) {
+      adminRpc.mockClear();
+      adminRpc.mockImplementation(async (name?: string) =>
+        name === "apply_lesson_completion_once"
+          ? { data: null, error: { code, message: "missing" } }
+          : name === "apply_lesson_completion"
+            ? { data: { status: "applied" }, error: null }
+            : { data: [{ hearts: 5, hearts_refill_at: null }], error: null },
+      );
+      const supabase = createSupabaseMock();
+      snapshot(supabase);
+      await run(supabase, token());
+      expect(rpcNames(), code).toContain("apply_lesson_completion");
+    }
+    adminRpc.mockClear();
+    adminRpc.mockImplementation(async () => ({
+      data: null,
+      error: { code: "40001", message: "serialization" },
+    }));
+    const supabase = createSupabaseMock();
+    snapshot(supabase);
+    await expect(run(supabase, token())).rejects.toThrow("Could not save lesson completion");
+    expect(rpcNames()).not.toContain("apply_lesson_completion");
+  });
+
+  it("a missing redemption table on the early lookup is 'not redeemed', not an error", async () => {
+    supabaseAdminFrom.mockImplementation(() =>
+      chainable({ data: null, error: { code: "42P01", message: "no table" } }),
+    );
+    const supabase = createSupabaseMock();
+    snapshot(supabase);
+    const res = await run(supabase, token());
+    expect(res.xpGain).toBeGreaterThan(0);
+  });
+
+  it("a token that belongs to another completion is a non-retryable 'Invalid or expired lesson session', and the slot goes back", async () => {
+    adminRpc.mockImplementation(async (name?: string) =>
+      name === "apply_lesson_completion_once"
+        ? {
+            data: null,
+            error: { message: "lesson session token belongs to a different completion" },
+          }
+        : { data: [false], error: null },
+    );
+    const supabase = createSupabaseMock();
+    snapshot(supabase);
+    await expect(run(supabase, token())).rejects.toThrow("Invalid or expired lesson session");
+    expect(releaseCompletionSlot).toHaveBeenCalledTimes(1);
+  });
+
+  it("a finalize that returns an error is logged, and the lesson still succeeds", async () => {
+    adminRpc.mockImplementation(async (name?: string) =>
+      name === "apply_lesson_completion_once"
+        ? { data: { status: "applied" }, error: null }
+        : name === "finalize_lesson_session_result"
+          ? { data: null, error: { message: "boom" } }
+          : name === "settle_lesson_hearts"
+            ? { data: [{ hearts: 5, hearts_refill_at: null }], error: null }
+            : { data: [false], error: null },
+    );
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const supabase = createSupabaseMock();
+      snapshot(supabase);
+      const res = await run(supabase, token());
+      expect(res.xpGain).toBeGreaterThan(0);
+      expect(
+        errors.mock.calls.some((c) => String(c[0]).includes("lesson_result_finalize_failed")),
+      ).toBe(true);
     } finally {
-      global.fetch = realFetch;
+      errors.mockRestore();
     }
   });
 });

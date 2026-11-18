@@ -41,7 +41,9 @@ class FakeDb {
 const NOW = Date.parse("2026-11-17T12:00:00Z");
 const USER = "user-1";
 
-function setup(opts: { pro?: boolean | null; enforced?: boolean; auth?: Response } = {}) {
+function setup(
+  opts: { pro?: boolean | null; enforced?: boolean; auth?: Response; cached?: boolean | null } = {},
+) {
   const db = new FakeDb();
   const issued: unknown[] = [];
   const deps: StartLessonSessionDeps = {
@@ -49,6 +51,7 @@ function setup(opts: { pro?: boolean | null; enforced?: boolean; auth?: Response
     admin: () => db.client(),
     heartsGateEnforced: () => opts.enforced ?? true,
     heartsUnlimited: () => Promise.resolve(opts.pro === undefined ? false : opts.pro),
+    heartsProCached: () => Promise.resolve(opts.cached ?? null),
     issueToken: (claim) => {
       issued.push(claim);
       return "signed-token";
@@ -119,11 +122,22 @@ Deno.test("0 hearts with the gate switched off: a token", async () => {
   assertEquals((await handler(post(ok))).status, 200);
 });
 
-Deno.test("0 hearts and Pro status unreadable: 503, not a 409 out-of-hearts", async () => {
-  const { handler, db, issued } = setup({ pro: null });
+Deno.test("0 hearts and Pro unknown with no stored answer: treated as not Pro, so the normal 409 (never a 503)", async () => {
+  const { handler, db, issued } = setup({ pro: null, cached: null });
   db.progress = zeroHearts;
-  assertEquals((await handler(post(ok))).status, 503);
+  const res = await handler(post(ok));
+  assertEquals(res.status, 409);
+  assertEquals((await res.json()).error, "out-of-hearts");
   assertEquals(issued.length, 0);
+});
+
+Deno.test("0 hearts and Pro unknown: the last stored answer decides, at any age", async () => {
+  const pro = setup({ pro: null, cached: true });
+  pro.db.progress = zeroHearts;
+  assertEquals((await pro.handler(post(ok))).status, 200);
+  const notPro = setup({ pro: null, cached: false });
+  notPro.db.progress = zeroHearts;
+  assertEquals((await notPro.handler(post(ok))).status, 409);
 });
 
 Deno.test("Pro status unreadable while hearts remain: still a token (Pro is not needed)", async () => {

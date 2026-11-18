@@ -223,10 +223,11 @@ export const startLessonSession = createServerFn({ method: "POST" })
     // its countdown. A failed hearts read fails OPEN (an economy rule must not lock a learner out).
     const { heartsGateEnforced } = await import("./hearts-gate.server");
     // Alphonso Pro has unlimited hearts. Asked on every start (cached for up to an hour) so lose_heart() also honours
-    // it for the whole lesson. null = could not be established (never read as "not Pro").
-    const { heartsUnlimitedOrUnknown, liveHeartsServerDeps } = await import("./hearts-server.server");
+    // it for the whole lesson. When RevenueCat cannot be asked: the last stored answer at any age, else not Pro (so
+    // the normal out-of-hearts answer applies); never an error.
+    const { heartsProWithFallback, liveHeartsServerDeps } = await import("./hearts-server.server");
     const unlimited = liveHeartsServerDeps().then((deps) =>
-      heartsUnlimitedOrUnknown(context.userId, deps),
+      heartsProWithFallback(context.userId, deps),
     );
     if (heartsGateEnforced()) {
       const { data: row, error } = await context.supabase
@@ -242,10 +243,15 @@ export const startLessonSession = createServerFn({ method: "POST" })
         );
         if (gate.blocked) {
           const pro = await unlimited;
-          // At 0 hearts the answer depends on Pro, and Pro could not be established: a retryable error, not an
-          // out-of-hearts answer (a Pro learner is never out of hearts).
-          if (pro === null) throw new Error("Could not check hearts; retry");
-          if (!pro) return { error: "out-of-hearts", refillAt: gate.refillAt };
+          if (pro.source !== "live") {
+            console.error(
+              JSON.stringify({
+                event: pro.source === "stale" ? "hearts_gate_stale_pro" : "hearts_gate_pro_unknown",
+                fn: "startLessonSession",
+              }),
+            );
+          }
+          if (!pro.pro) return { error: "out-of-hearts", refillAt: gate.refillAt };
         }
       }
     }
@@ -283,6 +289,16 @@ const completeLessonSchema = z.object({
   sessionToken: z.string().min(1).max(2000),
 });
 
+/**
+ * The redemption table or function is not there (yet): Postgres 42P01 / 42883, PostgREST PGRST205 / PGRST202. The
+ * migration ships first, but if this code ever runs before it, a completion falls back to the pre-redemption path
+ * instead of failing every lesson.
+ */
+function isMissingObject(error: { code?: string } | null | undefined): boolean {
+  const code = error?.code;
+  return code === "42P01" || code === "42883" || code === "PGRST205" || code === "PGRST202";
+}
+
 /** How many times a completion is recomputed from a fresh read after the transaction refuses a stale snapshot. */
 const COMPLETION_CONFLICT_RETRIES = 3;
 
@@ -303,6 +319,8 @@ type CompletionResponse = {
     streakFreezes: number;
     leagueTier: LeagueTier;
   };
+  /** Set when the lesson is saved but its hearts could not be settled just now (logged; the apps ignore it). */
+  settlementPending?: boolean;
 };
 
 export const completeLessonRemote = createServerFn({ method: "POST" })
@@ -335,7 +353,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
                   lesson_id: string;
                   course: string;
                 } | null;
-                error: unknown;
+                error: { code?: string } | null;
               }>;
             };
           };
@@ -344,7 +362,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       rpc: (
         name: string,
         args: Record<string, unknown>,
-      ) => Promise<{ data: unknown; error: { message: string } | null }>;
+      ) => Promise<{ data: unknown; error: { message: string; code?: string } | null }>;
     };
     // Hearts for a completion this token already saved: settled from the ORIGINAL misses (idempotent per token, so a
     // retry after a settlement charges nothing more, and a first attempt that saved but never settled is settled now).
@@ -356,27 +374,61 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       const { serverHeartsMode } = await import("./hearts-gate.server");
       const { settleLessonHeartsStrict, liveHeartsServerDeps } =
         await import("./hearts-server.server");
-      const again = await settleLessonHeartsStrict(
-        {
-          userId,
-          sessionToken,
-          misses: prior.misses,
-          sinceMs: Date.parse(prior.settle_since),
-          mode: serverHeartsMode(),
-        },
-        await liveHeartsServerDeps(),
-      );
-      if (!again.ok) throw new Error("Could not settle lesson hearts; retry");
-      return again.settlement
-        ? {
-            ...prior.result,
-            progress: {
-              ...prior.result.progress,
-              hearts: again.settlement.hearts,
-              heartsRefillAt: again.settlement.heartsRefillAt,
-            },
-          }
-        : prior.result;
+      const settleArgs = {
+        userId,
+        sessionToken,
+        misses: prior.misses,
+        sinceMs: Date.parse(prior.settle_since),
+        mode: serverHeartsMode(),
+      };
+      const heartsDeps = await liveHeartsServerDeps();
+      // One inline retry; the lesson is saved either way, so a second failure is reported as pending, not an error.
+      let again = await settleLessonHeartsStrict(settleArgs, heartsDeps);
+      if (!again.ok) again = await settleLessonHeartsStrict(settleArgs, heartsDeps);
+      const progress = { ...prior.result.progress };
+      if (again.ok && again.settlement) {
+        progress.hearts = again.settlement.hearts;
+        progress.heartsRefillAt = again.settlement.heartsRefillAt;
+      }
+      // The stored copy is the first completion's snapshot and the apps overwrite their cache with this reply, so the
+      // progress is the CURRENT one (read only). A failed read keeps the stored values for that part.
+      const [pr, lpr] = await Promise.all([
+        supabaseAdmin
+          .from("user_progress")
+          .select(
+            "streak, longest_streak, last_active_date, hearts, hearts_refill_at, streak_freezes",
+          )
+          .eq("user_id", userId)
+          .maybeSingle(),
+        supabaseAdmin
+          .from("language_progress")
+          .select("xp, league_tier")
+          .eq("user_id", userId)
+          .eq("language", course)
+          .maybeSingle(),
+      ]);
+      if (!pr.error && pr.data) {
+        progress.streak = pr.data.streak ?? progress.streak;
+        progress.longestStreak = pr.data.longest_streak ?? progress.longestStreak;
+        progress.lastActiveDate = pr.data.last_active_date ?? progress.lastActiveDate;
+        progress.hearts = pr.data.hearts ?? progress.hearts;
+        progress.heartsRefillAt = pr.data.hearts_refill_at
+          ? new Date(pr.data.hearts_refill_at).getTime()
+          : null;
+        progress.streakFreezes = pr.data.streak_freezes ?? progress.streakFreezes;
+      }
+      if (!lpr.error && lpr.data) {
+        progress.xp = lpr.data.xp ?? progress.xp;
+        progress.leagueTier = (lpr.data.league_tier as LeagueTier) ?? progress.leagueTier;
+      }
+      const reply: CompletionResponse = { ...prior.result, progress };
+      if (!again.ok) {
+        console.error(
+          JSON.stringify({ event: "hearts_settlement_pending", fn: "completeLessonRemote" }),
+        );
+        reply.settlementPending = true;
+      }
+      return reply;
     };
 
     // A token redeems once: a repeat (a retry after a lost response) is answered from what the first completion stored,
@@ -387,7 +439,10 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       .eq("token_hash", tokenHash)
       .eq("user_id", userId)
       .maybeSingle();
-    if (priorRead.error) throw new Error("Could not load lesson progress");
+    // Before the migration is applied (deploy order) nothing has been redeemed: the old path below still works.
+    if (priorRead.error && !isMissingObject(priorRead.error)) {
+      throw new Error("Could not load lesson progress");
+    }
     if (
       priorRead.data &&
       priorRead.data.lesson_id === lessonId &&
@@ -628,53 +683,80 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
           leagueTier,
         },
       };
-      const { data: transition, error: transitionError } = (await redemptionDb.rpc(
-        "apply_lesson_completion_once",
-        {
-          _user_id: userId,
-          _course: course,
-          _lesson_id: lessonId,
-          _level: found.unit.level,
-          _today: today,
-          _expected: {
-            p_updated_at: pRow?.updated_at ?? null,
-            lp_updated_at: lpRow?.updated_at ?? null,
-            completion_xp: existingComp?.xp_earned ?? null,
-            day_xp: existingDay?.xp_earned ?? null,
-          },
-          _next: {
-            streak,
-            longest_streak: longest,
-            last_active_date: today,
-            hearts: heartsResult.hearts,
-            hearts_refill_at: heartsResult.heartsRefillAt
-              ? new Date(heartsResult.heartsRefillAt).toISOString()
-              : null,
-            streak_freezes: freezes,
-            day_basis: "local",
-            xp,
-            league_tier: leagueTier,
-            best_correct: bestCorrect,
-            total,
-            best_xp: bestXp,
-            day_xp: (existingDay?.xp_earned ?? 0) + xpGain,
-          },
-          _missed_question_ids: missedQuestionIds,
-          _activity_events: activityEvents,
-          _token_hash: tokenHash,
-          _result: storedResult as unknown as Json,
-          _misses: missedQuestionIds.length,
-          _settle_since: new Date(sessionIssuedAt).toISOString(),
+      const onceArgs = {
+        _user_id: userId,
+        _course: course,
+        _lesson_id: lessonId,
+        _level: found.unit.level,
+        _today: today,
+        _expected: {
+          p_updated_at: pRow?.updated_at ?? null,
+          lp_updated_at: lpRow?.updated_at ?? null,
+          completion_xp: existingComp?.xp_earned ?? null,
+          day_xp: existingDay?.xp_earned ?? null,
         },
-      )) as unknown as {
+        _next: {
+          streak,
+          longest_streak: longest,
+          last_active_date: today,
+          hearts: heartsResult.hearts,
+          hearts_refill_at: heartsResult.heartsRefillAt
+            ? new Date(heartsResult.heartsRefillAt).toISOString()
+            : null,
+          streak_freezes: freezes,
+          day_basis: "local",
+          xp,
+          league_tier: leagueTier,
+          best_correct: bestCorrect,
+          total,
+          best_xp: bestXp,
+          day_xp: (existingDay?.xp_earned ?? 0) + xpGain,
+        },
+        _missed_question_ids: missedQuestionIds,
+        _activity_events: activityEvents,
+        _token_hash: tokenHash,
+        _result: storedResult as unknown as Json,
+        _misses: missedQuestionIds.length,
+        _settle_since: new Date(sessionIssuedAt).toISOString(),
+      };
+      type OnceReply = {
         data: {
           status: string;
           result?: CompletionResponse;
           misses?: number;
           settle_since?: string;
         } | null;
-        error: { message: string } | null;
+        error: { message: string; code?: string } | null;
       };
+      let { data: transition, error: transitionError } = (await redemptionDb.rpc(
+        "apply_lesson_completion_once",
+        onceArgs,
+      )) as unknown as OnceReply;
+      // The migration is not applied yet (deploy order): save through the pre-redemption transaction. No token is
+      // claimed then, so a retry is not recognised, but the lesson still saves (as it did before this change).
+      if (transitionError && isMissingObject(transitionError)) {
+        console.error(
+          JSON.stringify({ event: "lesson_redemption_unavailable", fn: "completeLessonRemote" }),
+        );
+        const { _token_hash, _result, _misses, _settle_since, ...legacyArgs } = onceArgs;
+        void _token_hash;
+        void _result;
+        void _misses;
+        void _settle_since;
+        ({ data: transition, error: transitionError } = (await redemptionDb.rpc(
+          "apply_lesson_completion",
+          legacyArgs,
+        )) as unknown as OnceReply);
+      }
+      // A token that belongs to another completion: not retryable (the same answer as any session not accepted).
+      if (transitionError && /different completion/i.test(transitionError.message ?? "")) {
+        if (slotHeld) {
+          const { releaseCompletionSlot } = await import("./completion-slot.server");
+          await releaseCompletionSlot(userId, slotAtIso);
+          slotHeld = false;
+        }
+        throw new Error("Invalid or expired lesson session");
+      }
       if (transitionError || !transition) {
         throw new Error("Could not save lesson completion; retry");
       }
@@ -737,16 +819,18 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     const { serverHeartsMode } = await import("./hearts-gate.server");
     const { settleLessonHeartsStrict, liveHeartsServerDeps } =
       await import("./hearts-server.server");
-    const settled = await settleLessonHeartsStrict(
-      {
-        userId,
-        sessionToken,
-        misses: missedQuestionIds.length,
-        sinceMs: sessionIssuedAt,
-        mode: serverHeartsMode(),
-      },
-      await liveHeartsServerDeps(),
-    );
+    const settleArgs = {
+      userId,
+      sessionToken,
+      misses: missedQuestionIds.length,
+      sinceMs: sessionIssuedAt,
+      mode: serverHeartsMode(),
+    };
+    const heartsDeps = await liveHeartsServerDeps();
+    // One inline retry (settlement is idempotent per token). The lesson is saved either way: a second failure is
+    // reported as settlementPending, never as a failed lesson.
+    let settled = await settleLessonHeartsStrict(settleArgs, heartsDeps);
+    if (!settled.ok) settled = await settleLessonHeartsStrict(settleArgs, heartsDeps);
     // Referral reward: the first saved lesson of a referred learner pays both sides. Best effort (never throws), a
     // no-op for everyone without a pending referral; after hearts are settled so the grant is not overwritten.
     const { settleReferralReward, liveReferralDeps } = await import("./referral.server");
@@ -962,17 +1046,32 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // So a retry of this token returns what this reply says (the achievements it announced, the settled hearts).
     // Best effort: the stored first copy is already a complete answer.
     try {
-      await redemptionDb.rpc("finalize_lesson_session_result", {
+      // supabase-js returns the error rather than throwing it, so it is checked here.
+      const { error: finalizeError } = await redemptionDb.rpc("finalize_lesson_session_result", {
         _user_id: userId,
         _token_hash: tokenHash,
         _result: response,
       });
+      if (finalizeError && !isMissingObject(finalizeError)) {
+        console.error(
+          JSON.stringify({
+            event: "lesson_result_finalize_failed",
+            fn: "completeLessonRemote",
+            message: finalizeError.message,
+          }),
+        );
+      }
     } catch {
       // Nothing to do: the earlier stored result stands.
     }
-    // Saved, but the hearts could not be settled: ask for a retry. The retry is answered from the stored completion
-    // and settles with the original misses; returning normally here would make those misses free.
-    if (!settled.ok) throw new Error("Could not settle lesson hearts; retry");
+    // Saved, but the hearts could not be settled even after one retry: the lesson is NOT reported as failed (it is
+    // saved; an error would make the page say it was not). Logged and flagged for the caller.
+    if (!settled.ok) {
+      console.error(
+        JSON.stringify({ event: "hearts_settlement_pending", fn: "completeLessonRemote" }),
+      );
+      response.settlementPending = true;
+    }
     return response;
   });
 

@@ -31,6 +31,10 @@ class FakeDb {
   settleResult: { data: unknown; error: unknown } | null = null;
   lastNext: Row | null = null;
   finalizeCalls: Record<string, unknown>[] = [];
+  /** The migration is not applied yet: the new function answers PGRST202, the new table 42P01. */
+  onceMissing = false;
+  missingTables = new Set<string>();
+  finalizeError: unknown = null;
   rpc(name: string, args: Record<string, unknown>) {
     // The hearts settlement is recorded on its own, so the completion's rpcCalls stay exactly the save.
     if (name === "settle_lesson_hearts") {
@@ -52,6 +56,7 @@ class FakeDb {
     // Stored on its own as well, so rpcCalls stays exactly the save.
     if (name === "finalize_lesson_session_result") {
       this.finalizeCalls.push(args);
+      if (this.finalizeError) return Promise.resolve({ data: null, error: this.finalizeError });
       const row = (this.tables.lesson_session_redemptions ?? []).find(
         (r) => r.token_hash === args._token_hash,
       );
@@ -64,6 +69,9 @@ class FakeDb {
       return Promise.resolve({ data: null, error: null });
     }
     this.rpcCalls.push({ name, args });
+    if (name === "apply_lesson_completion_once" && this.onceMissing) {
+      return Promise.resolve({ data: null, error: { code: "PGRST202", message: "not found" } });
+    }
     // Like the real apply_lesson_completion_once: a token already redeemed answers with what it stored and saves nothing.
     if (name === "apply_lesson_completion_once") {
       const prior = (this.tables.lesson_session_redemptions ?? []).find(
@@ -83,24 +91,26 @@ class FakeDb {
     }
     // Like the real apply_lesson_completion_once: an applied save writes the completion row the later reads see.
     if (
-      name === "apply_lesson_completion_once" &&
+      (name === "apply_lesson_completion_once" || name === "apply_lesson_completion") &&
       this.recordCompletions &&
       (this.rpcResult.data as Row | null)?.status === "applied"
     ) {
       const next = args._next as Row;
       this.lastNext = next;
-      this.tables.lesson_session_redemptions = [
-        ...(this.tables.lesson_session_redemptions ?? []),
-        {
-          token_hash: args._token_hash,
-          user_id: args._user_id,
-          lesson_id: args._lesson_id,
-          course: args._course,
-          result: args._result,
-          misses: args._misses,
-          settle_since: args._settle_since,
-        },
-      ];
+      if (name === "apply_lesson_completion_once") {
+        this.tables.lesson_session_redemptions = [
+          ...(this.tables.lesson_session_redemptions ?? []),
+          {
+            token_hash: args._token_hash,
+            user_id: args._user_id,
+            lesson_id: args._lesson_id,
+            course: args._course,
+            result: args._result,
+            misses: args._misses,
+            settle_since: args._settle_since,
+          },
+        ];
+      }
       const rows = (this.tables.lesson_completions ?? []).filter(
         (r) => r.lesson_id !== args._lesson_id,
       );
@@ -164,6 +174,9 @@ class Query {
     );
   }
   private result() {
+    if (this.db.missingTables.has(this.table)) {
+      return { data: null, error: { code: "42P01", message: "no such table" }, count: null };
+    }
     if (this.db.failReads.has(this.table)) {
       return { data: null, error: { message: "read failed" }, count: null };
     }
@@ -1222,7 +1235,7 @@ Deno.test("a retry returns the settled hearts, not the stale ones", async () => 
   assertEquals(json.progress.hearts, 2);
 });
 
-Deno.test("a lost race for the same token gives the slot back and answers the winner's result", async () => {
+Deno.test("a second claim for the same token (the winner already stored it) gives the slot back and answers the winner's result", async () => {
   const { db, handler, slots } = setup();
   // The early lookup misses, the transaction then finds the winner's row.
   db.rpcResult = {
@@ -1291,14 +1304,170 @@ Deno.test("an unreadable AI consent is a 503, not a guessed 'no consent' that sa
   assertEquals(db.rpcCalls.length, 0);
 });
 
-Deno.test("Pro status unreadable at settlement is a 503: nothing is charged from an unread entitlement, the retry settles", async () => {
+/** Captures console.error JSON lines for the duration of fn. */
+async function captureErrors(fn: () => Promise<void>): Promise<string[]> {
+  const lines: string[] = [];
+  const original = console.error;
+  console.error = (...a: unknown[]) => {
+    lines.push(String(a[0]));
+  };
+  try {
+    await fn();
+  } finally {
+    console.error = original;
+  }
+  return lines;
+}
+
+Deno.test("Pro unknown never fails a saved completion: the last stored answer is used at any age", async () => {
+  for (const cached of [false, true]) {
+    const { db } = setup();
+    const handler = createCompleteLessonHandler(
+      depsOver(db, {
+        heartsUnlimited: () => Promise.resolve(null),
+        heartsProCached: () => Promise.resolve(cached),
+      }),
+    );
+    const res = await handler(post(body(["b", "c"])));
+    assertEquals(res.status, 200);
+    assertEquals(db.settleCalls.length, 1);
+    assertEquals(db.settleCalls[0]._pro, cached);
+    assertEquals(db.settleCalls[0]._enforce, true); // a known answer settles as usual
+    assertEquals(db.settleCalls[0]._misses, 2);
+  }
+});
+
+Deno.test("Pro unknown with no stored answer at all is a SHADOW settlement: charges nothing, never _pro=true", async () => {
   const { db } = setup();
-  const handler = createCompleteLessonHandler(depsOver(db, { heartsUnlimited: () => Promise.resolve(null) }));
-  const res = await handler(post(body(["b", "c"])));
-  assertEquals(res.status, 503);
-  assertEquals(db.settleCalls.length, 0);
-  assertEquals(db.rpcCalls.length, 1); // the lesson is saved
-  const retry = createCompleteLessonHandler(depsOver(db, {}));
-  assertEquals((await retry(post(body(["a", "d"])))).status, 200);
-  assertEquals(db.settleCalls[0]._misses, 2);
+  const handler = createCompleteLessonHandler(
+    depsOver(db, {
+      heartsUnlimited: () => Promise.resolve(null),
+      heartsProCached: () => Promise.resolve(null),
+    }),
+  );
+  const lines = await captureErrors(async () => {
+    const res = await handler(post(body(["b", "c"])));
+    assertEquals(res.status, 200);
+  });
+  assertEquals(db.settleCalls.length, 1);
+  assertEquals(db.settleCalls[0]._pro, false);
+  assertEquals(db.settleCalls[0]._enforce, false);
+  assert(lines.some((l) => l.includes("hearts_settlement_shadow_pro_unknown")));
+});
+
+Deno.test("Pro unknown with no cache dependency at all is also a shadow settlement, never a 503", async () => {
+  const { db } = setup();
+  const handler = createCompleteLessonHandler(
+    depsOver(db, { heartsUnlimited: () => Promise.resolve(null) }),
+  );
+  assertEquals((await handler(post(body(["b", "c"])))).status, 200);
+  assertEquals(db.settleCalls[0]._pro, false);
+  assertEquals(db.settleCalls[0]._enforce, false);
+});
+
+Deno.test("a settlement whose database call fails is still a retryable 503 on the native path", async () => {
+  const { db, handler } = setup();
+  db.settleResult = { data: null, error: { message: "down" } };
+  assertEquals((await handler(post(body(["b", "c"])))).status, 503);
+});
+
+Deno.test("a replay returns the CURRENT progress, not the first completion's snapshot", async () => {
+  const { db, handler } = setup();
+  const first = await (await handler(post(body(["a", "d"])))).json();
+  // Later the learner earned more XP and lost a heart elsewhere.
+  db.tables.user_progress = [
+    {
+      user_id: USER,
+      streak: 9,
+      longest_streak: 12,
+      last_active_date: "2026-10-20",
+      hearts: 2,
+      hearts_refill_at: "2026-10-20T10:00:00.000Z",
+      streak_freezes: 1,
+    },
+  ];
+  db.tables.language_progress = [
+    { user_id: USER, language: "fr", xp: 4321, league_tier: "gold" },
+  ];
+  const again = await (await handler(post(body(["b", "c"])))).json();
+  assertEquals(again.xpGain, first.xpGain); // the reward itself is the original's
+  assertEquals(again.progress.xp, 4321);
+  assertEquals(again.progress.leagueTier, "gold");
+  assertEquals(again.progress.streak, 9);
+  assertEquals(again.progress.longestStreak, 12);
+  assertEquals(again.progress.lastActiveDate, "2026-10-20");
+  assertEquals(again.progress.hearts, 2);
+  assertEquals(again.progress.heartsRefillAt, Date.parse("2026-10-20T10:00:00.000Z"));
+  assertEquals(again.progress.streakFreezes, 1);
+});
+
+Deno.test("a replay whose progress read fails keeps the stored copy", async () => {
+  const { db, handler } = setup();
+  const first = await (await handler(post(body(["a", "d"])))).json();
+  db.failReads.add("user_progress");
+  db.failReads.add("language_progress");
+  const again = await (await handler(post(body(["a", "d"])))).json();
+  assertEquals(again.progress.xp, first.progress.xp);
+  assertEquals(again.progress.streak, first.progress.streak);
+});
+
+Deno.test("before the migration (function missing) the save falls back to apply_lesson_completion and the lesson still saves", async () => {
+  const { db, handler } = setup();
+  db.onceMissing = true;
+  db.tables.lesson_session_redemptions = [];
+  db.missingTables.add("lesson_session_redemptions");
+  const res = await handler(post(body(["a", "d"])));
+  assertEquals(res.status, 200);
+  assertEquals(
+    db.rpcCalls.map((c) => c.name),
+    ["apply_lesson_completion_once", "apply_lesson_completion"],
+  );
+  const legacy = db.rpcCalls[1].args;
+  assertEquals("_token_hash" in legacy, false);
+  assertEquals("_result" in legacy, false);
+  assertEquals(legacy._lesson_id, "u1l1");
+  assert((await res.json()).xpGain > 0);
+});
+
+Deno.test("only a missing object falls back: any other save error is still a retryable 503", async () => {
+  const { db, handler } = setup();
+  db.rpcResult = { data: null, error: { code: "40001", message: "serialization" } };
+  assertEquals((await handler(post(body(["a", "d"])))).status, 503);
+  assertEquals(db.rpcCalls.map((c) => c.name), ["apply_lesson_completion_once"]);
+});
+
+Deno.test("a missing redemption table on the early lookup is 'not redeemed', not a 503", async () => {
+  const { db, handler } = setup();
+  db.missingTables.add("lesson_session_redemptions");
+  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+});
+
+Deno.test("a token that belongs to another completion is a non-retryable 403, and the slot goes back", async () => {
+  const { db, handler, slots } = setup();
+  db.rpcResult = {
+    data: null,
+    error: { message: "lesson session token belongs to a different completion" },
+  };
+  const res = await handler(post(body(["a", "d"])));
+  assertEquals(res.status, 403);
+  assertEquals((await res.json()).error, "Invalid or expired lesson session");
+  assertEquals(slots.length, 0);
+});
+
+Deno.test("a finalize that returns an error is logged (the stored first copy stands) and the lesson still succeeds", async () => {
+  const { db, handler } = setup();
+  db.finalizeError = { message: "boom" };
+  const lines = await captureErrors(async () => {
+    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+  });
+  assert(lines.some((l) => l.includes("lesson_result_finalize_failed")));
+});
+
+Deno.test("a finalize against a missing function is quiet (migration not applied yet)", async () => {
+  const { db, handler } = setup();
+  db.finalizeError = { code: "PGRST202", message: "not found" };
+  const lines = await captureErrors(async () => {
+    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+  });
+  assertEquals(lines.some((l) => l.includes("lesson_result_finalize_failed")), false);
 });

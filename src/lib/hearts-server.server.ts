@@ -97,6 +97,32 @@ export async function heartsUnlimitedOrUnknown(
   }
 }
 
+/**
+ * Pro for a decision that must still be made when RevenueCat cannot be asked (a lesson already saved, the start gate):
+ * the live or fresh answer; else the last stored answer at ANY age ("stale"); else "unknown". Never throws. A caller
+ * treats "unknown" as not Pro WITHOUT charging (a shadow settlement), and never as Pro (that refills hearts).
+ */
+export async function heartsProWithFallback(
+  userId: string,
+  deps: HeartsServerDeps,
+): Promise<{ pro: boolean; source: "live" | "stale" | "unknown" }> {
+  const live = await heartsUnlimitedOrUnknown(userId, deps);
+  if (live !== null) return { pro: live, source: "live" };
+  try {
+    const db = await deps.db();
+    const { data } = await db
+      .from("hearts_pro_status")
+      .select("pro")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const pro = (data as { pro?: unknown } | null)?.pro;
+    if (typeof pro === "boolean") return { pro, source: "stale" };
+  } catch {
+    // no cache readable: unknown
+  }
+  return { pro: false, source: "unknown" };
+}
+
 /** Whether this learner has unlimited hearts right now. Never throws; fails closed (false). Read-only uses only. */
 export async function heartsUnlimited(userId: string, deps: HeartsServerDeps): Promise<boolean> {
   return (await heartsUnlimitedOrUnknown(userId, deps)) === true;
@@ -124,9 +150,11 @@ export async function settleLessonHearts(
 }
 
 /**
- * Like settleLessonHearts, but says whether the settlement could not run (Pro unknown, the database call failed):
- * ok:false means "answer with a retryable error", because the retry is answered from the stored completion and settles
- * with the ORIGINAL misses. Pro unknown is never read as "not Pro" (that would charge a Pro learner).
+ * Like settleLessonHearts, but says whether the settlement could not run (the database call failed): ok:false means
+ * the caller must not report a finished settlement; the retry is answered from the stored completion and settles with
+ * the ORIGINAL misses. Pro unknown (RevenueCat down) never fails a saved lesson: the last stored answer is used at any
+ * age, and with none the settlement is a shadow one (_enforce=false, _pro=false: charges nothing, records the token).
+ * It is never settled as Pro, which would refill hearts.
  */
 export async function settleLessonHeartsStrict(
   args: {
@@ -140,16 +168,21 @@ export async function settleLessonHeartsStrict(
 ): Promise<{ ok: true; settlement: HeartsSettlement | null } | { ok: false }> {
   if (args.mode === "off") return { ok: true, settlement: null };
   try {
-    const pro = await heartsUnlimitedOrUnknown(args.userId, deps);
-    if (pro === null) {
+    const proAnswer = await heartsProWithFallback(args.userId, deps);
+    const pro = proAnswer.pro;
+    let enforce = args.mode === "on";
+    if (proAnswer.source === "stale") {
+      console.error(
+        JSON.stringify({ event: "hearts_settlement_stale_pro", fn: "completeLessonRemote" }),
+      );
+    } else if (proAnswer.source === "unknown") {
+      enforce = false;
       console.error(
         JSON.stringify({
-          event: "hearts_settlement_failed",
+          event: "hearts_settlement_shadow_pro_unknown",
           fn: "completeLessonRemote",
-          reason: "pro-unknown",
         }),
       );
-      return { ok: false };
     }
     const db = await deps.db();
     const { data, error } = await db.rpc("settle_lesson_hearts", {
@@ -157,7 +190,7 @@ export async function settleLessonHeartsStrict(
       _token_hash: createHash("sha256").update(args.sessionToken).digest("hex"),
       _misses: args.misses,
       _since: new Date(args.sinceMs).toISOString(),
-      _enforce: args.mode === "on",
+      _enforce: enforce,
       _pro: pro,
     });
     const row = (Array.isArray(data) ? data[0] : data) as {

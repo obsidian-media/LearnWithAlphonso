@@ -40,6 +40,7 @@ describe("only completeLessonRemote writes lesson_completions", () => {
   it("completeLessonRemote is the only write in its file", () => {
     const source = fs.readFileSync(path.join(SRC, "lib/sync.functions.ts"), "utf8");
     expect([...source.matchAll(WRITE)]).toHaveLength(0);
-    expect([...source.matchAll(RPC_WRITE)]).toHaveLength(1);
+    // The transaction (apply_lesson_completion_once) and its pre-migration fallback (apply_lesson_completion).
+    expect([...source.matchAll(RPC_WRITE)]).toHaveLength(2);
   });
 });

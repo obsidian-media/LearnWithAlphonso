@@ -163,6 +163,26 @@ export async function heartsUnlimitedOrUnknown(
 }
 
 /**
+ * The last Pro answer stored for this learner, at ANY age (a stale answer beats none when RevenueCat cannot be asked
+ * after a lesson is already saved). null when nothing is stored or it cannot be read. Never throws.
+ */
+export async function heartsProCachedAnyAge(
+  admin: SupabaseClient,
+  userId: string,
+): Promise<boolean | null> {
+  try {
+    const { data } = await admin
+      .from("hearts_pro_status")
+      .select("pro")
+      .eq("user_id", userId)
+      .maybeSingle();
+    return typeof data?.pro === "boolean" ? data.pro : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Whether this learner has unlimited hearts right now. Never throws, and fails closed (false: hearts work as for
  * everyone) when RevenueCat cannot be asked. For a READ-ONLY use (the start gate's cache warm-up); anything that
  * writes from the answer uses heartsUnlimitedOrUnknown instead.
