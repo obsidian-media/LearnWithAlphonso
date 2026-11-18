@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Staff console rate limits, counted in the database (consume_staff_rate_limit, migration 20261123140000) so every
+ * Staff console rate limits, counted in the database (consume_staff_rate_limit, migration 20261125120000) so every
  * server instance shares one window. They are a brake on a staff account that runs away (a stuck script, a stolen
  * session), not a precise quota: fixed windows, and a refused call is not counted.
  *

@@ -63,21 +63,29 @@ const BUCKET = "podcast-audio";
  * Writes one podcast or folder change to the staff action record (staff_record), after the change itself succeeded.
  * No learner is involved, so the target is empty and the ids go in `after`. Never put text a person typed into it
  * (titles and transcripts stay in their own tables); only ids and sizes.
+ *
+ * The change has already been committed, so a record that cannot be written must not turn it into an error (the
+ * caller would retry a finished change): it is logged (action and ids only, event audit_write_failed) and the call
+ * goes on, as staffDeleteUser does after the account is gone.
  */
-async function recordPodcastAction(
+export async function recordPodcastAction(
   context: { supabaseAdmin: SupabaseClient; userId: string; staffRole: StaffRole },
   action: string,
   after: Record<string, Json>,
 ): Promise<void> {
-  const { recordStaffAction } = await import("./staff-audit.server");
-  await recordStaffAction(context.supabaseAdmin, {
-    actor: context.userId,
-    role: context.staffRole,
-    action,
-    target: null,
-    reason: null,
-    after,
-  });
+  try {
+    const { recordStaffAction } = await import("./staff-audit.server");
+    await recordStaffAction(context.supabaseAdmin, {
+      actor: context.userId,
+      role: context.staffRole,
+      action,
+      target: null,
+      reason: null,
+      after,
+    });
+  } catch {
+    console.error(JSON.stringify({ event: "audit_write_failed", action, ids: after }));
+  }
 }
 
 const slugSchema = z.string().min(1).max(80).refine(isValidSlug, "use lowercase kebab-case");

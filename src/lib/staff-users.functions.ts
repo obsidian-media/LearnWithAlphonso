@@ -384,7 +384,33 @@ export const staffDeleteUser = createServerFn({ method: "POST" })
     // Same rule block and ban enforce in the database: an owner is never a target, and only an owner may act on
     // another staff member. Checked before anything is written or any external service is called (the email check
     // above only reads).
-    await assertMayDelete(context.supabaseAdmin, context.staffRole, data.id);
+    try {
+      await assertMayDelete(context.supabaseAdmin, context.staffRole, data.id);
+    } catch (e) {
+      if (e instanceof Error && e.message === STAFF_TARGET_MESSAGE) {
+        // A refused attempt on a staff account is itself worth a row. Nothing else has been written, and a record
+        // that cannot be written does not change the answer.
+        try {
+          await recordStaffAction(context.supabaseAdmin, {
+            actor: context.userId,
+            role: context.staffRole,
+            action: "user.delete.refused",
+            target: data.id,
+            reason,
+            after: { why: "protected_account" },
+          });
+        } catch {
+          console.error(
+            JSON.stringify({
+              event: "audit_write_failed",
+              action: "user.delete.refused",
+              target: data.id,
+            }),
+          );
+        }
+      }
+      throw e;
+    }
 
     const base = {
       actor: context.userId,

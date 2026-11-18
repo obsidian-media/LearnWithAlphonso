@@ -251,7 +251,15 @@ describe("staffDeleteUser", () => {
 describe("staffDeleteUser and staff targets", () => {
   const nothingHappened = (admin: ReturnType<typeof adminClient>) => {
     expect(recorded(admin, "user.delete.requested")).toHaveLength(0);
-    expect(admin.rpc.mock.calls.filter((c) => c[0] === "staff_record")).toHaveLength(0);
+    // The only row is the refusal itself (reason and target, no email or hash).
+    const rows = admin.rpc.mock.calls.filter((c) => c[0] === "staff_record");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]![1]).toMatchObject({
+      p_action: "user.delete.refused",
+      p_target: LEARNER,
+      p_after: { why: "protected_account" },
+    });
+    expect(JSON.stringify(rows[0]![1])).not.toContain("example.com");
     expect(cancelWeb).not.toHaveBeenCalled();
     expect(revokeApple).not.toHaveBeenCalled();
     expect(admin.auth.admin.deleteUser).not.toHaveBeenCalled();
@@ -277,6 +285,21 @@ describe("staffDeleteUser and staff targets", () => {
     const admin = adminClient();
     await expect(del(admin, { id: LEARNER }, OTHER_OWNER)).rejects.toThrow(/belongs to staff/i);
     nothingHappened(admin);
+  });
+
+  it("a refusal whose record cannot be written is still a refusal, and is logged", async () => {
+    staffTargets[LEARNER] = "owner";
+    const admin = adminClient();
+    admin.rpc.mockImplementation(async (name: string, args: { p_action?: string }) =>
+      name === "staff_assert_may_restrict"
+        ? assertMayRestrict(args as never)
+        : { data: null, error: { message: "audit down" } },
+    );
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(del(admin, {}, SUPPORT)).rejects.toThrow(/belongs to staff/i);
+    expect(admin.auth.admin.deleteUser).not.toHaveBeenCalled();
+    expect(JSON.stringify(logged.mock.calls)).toContain("audit_write_failed");
+    logged.mockRestore();
   });
 
   it("an owner may delete a support member", async () => {

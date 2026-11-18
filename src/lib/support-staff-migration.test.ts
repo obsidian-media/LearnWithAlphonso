@@ -130,10 +130,14 @@ async function ticket(
   opts: { body?: string; assignedTo?: string | null; updated?: string } = {},
 ) {
   await db.exec(
-    `INSERT INTO public.support_conversations (id, user_id, status, assigned_to, topic, handoff_reason, updated_at, solved_at)
+    // created_at is explicit and strictly increasing with n: "the learner's newest chat" is decided by it, and two rows
+    // inserted back to back by now() can share a timestamp, which made the order (and these tests) depend on the clock.
+    `INSERT INTO public.support_conversations (id, user_id, status, assigned_to, topic, handoff_reason, created_at, updated_at, solved_at)
      VALUES ('${cid(n)}', '${user}', '${status}', ${opts.assignedTo ? `'${opts.assignedTo}'` : "null"},
        ${status === "ai" ? "null" : "'billing'"}, ${status === "ai" ? "null" : "'learner_asked'"},
-       ${opts.updated ? `'${opts.updated}'` : "now()"}, ${status === "solved" ? "now()" : "null"})`,
+       timestamptz '2026-11-01T00:00:00Z' + ${n} * interval '1 second',
+       ${opts.updated ? `'${opts.updated}'` : `timestamptz '2026-11-01T00:00:00Z' + ${n} * interval '1 second'`},
+       ${status === "solved" ? "now()" : "null"})`,
   );
   if (opts.body) {
     await db.query(

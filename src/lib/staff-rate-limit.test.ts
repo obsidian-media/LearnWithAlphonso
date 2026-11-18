@@ -9,8 +9,8 @@ import {
   type StaffLimit,
 } from "./staff-rate-limit";
 
-/** consume_staff_rate_limit (20261123140000), EXECUTED in a real Postgres (PGlite). */
-const FILE = "20261123140000_staff_rate_limits.sql";
+/** consume_staff_rate_limit (20261125120000), EXECUTED in a real Postgres (PGlite). */
+const FILE = "20261125120000_staff_rate_limits.sql";
 const sqlText = readFileSync(path.join(process.cwd(), "supabase/migrations", FILE), "utf8");
 
 const A = "00000000-0000-4000-8000-0000000000a1";

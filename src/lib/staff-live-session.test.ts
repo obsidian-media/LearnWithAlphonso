@@ -49,8 +49,25 @@ describe("requireStaff confirms the session is live", () => {
   });
 
   it("refuses a signed-out session whose token still verifies locally", async () => {
-    getUser.mockResolvedValue({ data: { user: null }, error: { message: "session missing" } });
+    getUser.mockResolvedValue({
+      data: { user: null },
+      error: { message: "session missing", status: 401 },
+    });
     await expect(run(live)).rejects.toThrow("Unauthorized: Session has ended");
+  });
+
+  it("an auth-server outage is its own message, not 'Session has ended'", async () => {
+    const unavailable = "Session check unavailable. Try again shortly.";
+    for (const error of [
+      { message: "bad gateway", status: 502 },
+      { message: "fetch failed", name: "AuthRetryableFetchError", status: 0 },
+      { message: "no status at all" },
+    ]) {
+      getUser.mockResolvedValueOnce({ data: { user: null }, error });
+      await expect(run(live)).rejects.toThrow(unavailable);
+    }
+    getUser.mockRejectedValueOnce(new Error("network down"));
+    await expect(run(live)).rejects.toThrow(unavailable);
   });
 
   it("refuses when the auth server answers for a different user", async () => {
