@@ -47,6 +47,13 @@ final class StoriesTests: XCTestCase {
         XCTAssertEqual(Stories.visible(list, course: "en").map(\.title), ["ok"])
     }
 
+    func testABranchingStoryWithNoSentencesIsNotListedInThisReader() {
+        let branching = StorySummary(
+            id: "b", course: "en", level: "A1", slug: "b", title: "Branching", sortOrder: 0, published: true,
+            segmentIndex: 0, segmentCount: 0, bestCorrect: nil, checkTotal: nil, completed: false)
+        XCTAssertEqual(Stories.visible([branching, summary("plain")], course: "en").map(\.title), ["plain"])
+    }
+
     func testStoriesAreGroupedByLevelInOrder() {
         let list = Stories.visible(
             [summary("b", level: "A2", order: 1), summary("c", level: "A1", order: 2), summary("a", level: "A1", order: 1)],
@@ -184,6 +191,17 @@ final class StoriesTests: XCTestCase {
         XCTAssertEqual(story?.questions.first?.answerIndex, 1)
         XCTAssertEqual(story?.segmentIndex, 1, "a saved position past the end is clamped")
         XCTAssertEqual(story?.course, "fr")
+    }
+
+    func testAStoryWithNoSentencesIsNilNotAnEmptyReader() async throws {
+        let client = makeClient { request in
+            if request.url!.path.hasSuffix("/stories") {
+                return self.json([["id": self.storyID, "course": "en", "level_id": "A1", "title": "Branch", "published": true, "segments": []]])
+            }
+            return self.json([])
+        }
+        let story = try await client.fetchStory(id: storyID)
+        XCTAssertNil(story)
     }
 
     func testAMissingOrUnpublishedStoryIsNil() async throws {

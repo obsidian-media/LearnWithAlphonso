@@ -80,10 +80,11 @@ public struct StoryLevelGroup: Equatable, Sendable {
 public enum Stories {
     public static let courses: Set<String> = ["en", "fr", "es"]
 
-    /// Only published stories in the learner's course, in a stable order.
+    /// Only published stories in the learner's course, in a stable order. A story with no sentences is a branching story
+    /// (its text lives in `nodes`, which this reader does not draw yet), so it is left out rather than opened empty.
     public static func visible(_ stories: [StorySummary], course: String) -> [StorySummary] {
         stories
-            .filter { $0.published && $0.course == course }
+            .filter { $0.published && $0.course == course && $0.segmentCount > 0 }
             .sorted {
                 if $0.level != $1.level { return $0.level < $1.level }
                 if $0.sortOrder != $1.sortOrder { return $0.sortOrder < $1.sortOrder }
@@ -300,6 +301,8 @@ extension PodcastClient {
             resume = saved
         }
         let segments = Stories.segments(from: row["segments"])
+        // A branching story has no sentences (see `Stories.visible`): not a story this reader can show.
+        guard !segments.isEmpty else { return nil }
         return Story(
             id: id, course: course, level: level, title: title, segments: segments, questions: questions,
             segmentIndex: Stories.clampSegment(resume, count: segments.count)
