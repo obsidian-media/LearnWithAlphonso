@@ -2247,11 +2247,13 @@ export type Database = {
       stories: {
         Row: {
           audio_path: string | null;
+          branching: boolean;
           course: string;
           created_at: string;
           id: string;
           level_id: string;
           needs_review: boolean;
+          nodes: Json | null;
           published: boolean;
           published_at: string | null;
           segments: Json;
@@ -2261,11 +2263,13 @@ export type Database = {
         };
         Insert: {
           audio_path?: string | null;
+          branching?: boolean;
           course: string;
           created_at?: string;
           id?: string;
           level_id: string;
           needs_review?: boolean;
+          nodes?: Json | null;
           published?: boolean;
           published_at?: string | null;
           segments: Json;
@@ -2275,11 +2279,13 @@ export type Database = {
         };
         Update: {
           audio_path?: string | null;
+          branching?: boolean;
           course?: string;
           created_at?: string;
           id?: string;
           level_id?: string;
           needs_review?: boolean;
+          nodes?: Json | null;
           published?: boolean;
           published_at?: string | null;
           segments?: Json;
@@ -2302,6 +2308,8 @@ export type Database = {
           best_correct: number | null;
           check_total: number | null;
           completed_at: string | null;
+          endings_found: Json;
+          reading_credited: boolean;
           segment_index: number;
           story_id: string;
           updated_at: string;
@@ -2311,6 +2319,8 @@ export type Database = {
           best_correct?: number | null;
           check_total?: number | null;
           completed_at?: string | null;
+          endings_found?: Json;
+          reading_credited?: boolean;
           segment_index?: number;
           story_id: string;
           updated_at?: string;
@@ -2320,6 +2330,8 @@ export type Database = {
           best_correct?: number | null;
           check_total?: number | null;
           completed_at?: string | null;
+          endings_found?: Json;
+          reading_credited?: boolean;
           segment_index?: number;
           story_id?: string;
           updated_at?: string;
@@ -3478,6 +3490,10 @@ export type Database = {
         Returns: {
           status: string;
         }[];
+      };
+      finish_branching_story: {
+        Args: { _path: Json; _story_id: string; _user_id: string };
+        Returns: Json;
       };
       finish_practice_call: {
         Args: {
