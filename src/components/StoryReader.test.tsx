@@ -196,6 +196,7 @@ describe("StoriesLibraryView", () => {
     course: "en" as const,
     slug: "x",
     sortOrder: 0,
+    branching: false,
     segmentIndex: 0,
     segmentCount: 3,
     bestCorrect: null,

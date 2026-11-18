@@ -890,3 +890,265 @@ export const PODCAST_QUIZZES: PodcastQuiz[] = [
     ),
   ]),
 ];
+
+/**
+ * Quizzes for the five episodes drafted on 2026-11-17 (round 47). They are NOT in PODCAST_QUIZZES yet: that list is
+ * "the live episodes" (podcast-quizzes.test.ts pins it to the 16 live on 2026-11-04) and its seed migration is already
+ * applied. When the owner has synthesised and published these five, fold this array into PODCAST_QUIZZES and move the
+ * five slugs into LIVE in the test. Until then they are seeded by their own migration, which is a no-op for any
+ * episode that does not exist in the database.
+ *
+ * `evidence` is verbatim from the drafted transcripts in the Podcast workspace (kept outside this repo). The two
+ * non-English quizzes are REVIEW-PENDING: the scripts need a native-speaker review before audio, and if the review
+ * changes a sentence, re-check the question and its evidence against the new text.
+ */
+export const PODCAST_QUIZZES_R47: PodcastQuiz[] = [
+  quiz("en", "c1", "why-we-dread-small-talk", [
+    q(
+      "What does the host say is the first reason we dread small talk?",
+      [
+        "It is unscripted and the stakes feel strangely high",
+        "The topics are too difficult to understand",
+        "We never have anything to say",
+      ],
+      0,
+      "We don't dread it because it's trivial. We dread it because it's unscripted and the stakes feel strangely high.",
+    ),
+    q(
+      "In the liking gap studies, what did people underestimate?",
+      [
+        "How long the conversation lasted",
+        "How much their partner liked them",
+        "How interesting their story was",
+      ],
+      1,
+      "people consistently underestimated how much their partner liked them.",
+    ),
+    q(
+      "While you replay your last awkward sentence, what is the other person probably doing?",
+      ["Enjoying the silence", "Thinking about work", "Doing the same thing as you"],
+      2,
+      "the other person was probably doing exactly the same thing. Both of you were busy judging yourselves",
+    ),
+    q(
+      "Why does small talk feel like a negotiation?",
+      [
+        "Every sentence quietly asks how personal we are allowed to get",
+        "Both people try to win the conversation",
+        "Nobody wants to pay for the coffee",
+      ],
+      0,
+      'Every sentence quietly asks, "How personal are we allowed to get?" Say too little, and you seem cold.',
+    ),
+    q(
+      "What did most people predict before talking to a stranger?",
+      ["That they would feel better", "That they would feel nothing", "That they would feel worse"],
+      2,
+      "Yet before the conversation, most of them predicted they'd feel worse.",
+    ),
+    q(
+      "Which open question does the host suggest?",
+      ["How was your weekend?", "What's keeping you busy these days?", "What do you do for fun?"],
+      1,
+      'A simple, open question, like "What\'s keeping you busy these days?", does most of the work',
+    ),
+    q(
+      "What does the host say about a short silence?",
+      [
+        "It means the other person is bored",
+        "You should fill it as quickly as you can",
+        "It feels enormous inside but barely registers outside",
+      ],
+      2,
+      "A short silence feels enormous from the inside, but from the outside it barely registers.",
+    ),
+  ]),
+  quiz("en", "b1", "asking-for-directions", [
+    q(
+      "Why did the host need to ask a stranger for help?",
+      ["She forgot the address", "Her phone battery died", "The train was late"],
+      1,
+      "My phone battery died, and I had no map.",
+    ),
+    q(
+      "Which polite opening does the host recommend?",
+      ["Excuse me, could you help me, please?", "Where is the station?", "Hello, I am lost."],
+      0,
+      'Say, "Excuse me, could you help me, please?"',
+    ),
+    q(
+      "What did the woman say to do at the traffic lights?",
+      ["Turn right", "Go straight", "Turn left"],
+      2,
+      "Then turn left at the traffic lights.",
+    ),
+    q(
+      "Where was the station?",
+      ["Opposite a pharmacy", "Next to a bank", "Between two shops"],
+      1,
+      "The station is on your right, next to a bank.",
+    ),
+    q(
+      "What can you say when the answer is too fast?",
+      ["Could you say that again, more slowly?", "Thank you, goodbye", "Where is the station?"],
+      0,
+      'Say, "Sorry, could you say that again, more slowly?"',
+    ),
+    q(
+      "Why does the host repeat the answer in her own words?",
+      [
+        "It is faster than asking again",
+        "It makes the other person laugh",
+        "It shows you are listening and protects you from mistakes",
+      ],
+      2,
+      "People like this, because it shows you are listening, and it protects you from mistakes.",
+    ),
+    q(
+      "How late was the host when she arrived?",
+      ["Thirty minutes", "Ten minutes", "Five minutes"],
+      2,
+      "I was only five minutes late, and my colleagues were very kind about it.",
+    ),
+  ]),
+  quiz("en", "a2", "taking-the-train", [
+    q(
+      "Where did the host go last Saturday?",
+      ["To a big city", "To a small town", "To the beach"],
+      1,
+      "Last Saturday, I went to a small town by train.",
+    ),
+    q(
+      'What does "round trip" mean?',
+      ["You go there and come back", "You stay in the town for a week", "You travel at night"],
+      0,
+      '"Round trip" means you go there and come back.',
+    ),
+    q(
+      "How much was the ticket?",
+      ["Fifteen dollars", "Ten dollars", "Twelve dollars"],
+      2,
+      "The ticket was twelve dollars.",
+    ),
+    q(
+      "Which platform did the train leave from?",
+      ["Platform three", "Platform two", "Platform five"],
+      0,
+      "The train leaves at nine fifteen, from platform three.",
+    ),
+    q(
+      "How long did the journey take?",
+      ["Two hours", "One hour", "Thirty minutes"],
+      1,
+      "The journey took one hour.",
+    ),
+    q(
+      "What does the man next to her ask?",
+      ["Is this train late?", "Where are you going?", "Is this seat free?"],
+      2,
+      'A man sat next to me and asked, "Is this seat free?"',
+    ),
+    q(
+      "What time did they arrive?",
+      ["Nine fifteen", "Eleven fifteen", "Ten fifteen"],
+      2,
+      "At ten fifteen, we arrived.",
+    ),
+  ]),
+  quiz("fr", "b1", "rendre-un-article", [
+    q(
+      "Combien coûtait la veste ?",
+      ["Soixante euros", "Quatre-vingt-dix euros", "Cent euros"],
+      1,
+      "Elle coûtait quatre-vingt-dix euros.",
+    ),
+    q(
+      "Pourquoi la narratrice a-t-elle voulu rendre la veste ?",
+      ["La couleur ne lui allait pas", "Elle était trop chère", "Elle était déchirée"],
+      0,
+      "j'ai compris que la couleur ne m'allait pas du tout.",
+    ),
+    q(
+      "Quel document est le plus important, selon la narratrice ?",
+      ["La carte d'identité", "La carte bancaire", "Le ticket de caisse"],
+      2,
+      "j'ai pris mon ticket de caisse. C'est le document le plus important, parce que sans ticket, le magasin n'est pas obligé de vous rembourser.",
+    ),
+    q(
+      "Comment la narratrice est-elle restée avec la vendeuse ?",
+      ["Impatiente et pressée", "Polie et claire", "Triste et silencieuse"],
+      1,
+      "Je suis restée polie et claire.",
+    ),
+    q(
+      "Quelle question la vendeuse pose-t-elle ?",
+      ["Remboursement ou échange", "Espèces ou carte", "Taille ou couleur"],
+      0,
+      "« Vous préférez un remboursement ou un échange ? »",
+    ),
+    q(
+      "Qu'est-ce que la narratrice choisit finalement ?",
+      ["Un échange", "Un bon d'achat", "Le remboursement"],
+      2,
+      "Finalement, j'ai choisi le remboursement, parce que je ne voulais plus acheter de veste.",
+    ),
+    q(
+      "Combien de temps faut-il pour que l'argent arrive sur la carte ?",
+      ["Un à deux jours", "Trois à cinq jours", "Deux semaines"],
+      1,
+      "l'argent arriverait sur ma carte dans trois à cinq jours.",
+    ),
+  ]),
+  quiz("es", "b1", "un-paquete-que-no-llego", [
+    q(
+      "¿Qué compró la narradora por internet?",
+      ["Un libro para su mamá", "Una mochila para su hermano", "Un reloj para ella"],
+      1,
+      "Era una mochila para mi hermano, y costó sesenta dólares.",
+    ),
+    q(
+      "¿Cuánto costó el regalo?",
+      ["Sesenta dólares", "Cincuenta dólares", "Setenta dólares"],
+      0,
+      "Era una mochila para mi hermano, y costó sesenta dólares.",
+    ),
+    q(
+      "¿Qué descubrió con el número de seguimiento?",
+      [
+        "Que el paquete se perdió en el mar",
+        "Que el paquete ya estaba en su casa",
+        "Que el paquete estaba parado en un almacén",
+      ],
+      2,
+      "el paquete estaba parado en un almacén desde hacía cuatro días.",
+    ),
+    q(
+      "¿Cómo fue el mensaje que escribió a la tienda?",
+      ["Largo y enojado", "Muy formal", "Breve y claro"],
+      2,
+      "escribí un mensaje a la tienda. Fui breve y clara.",
+    ),
+    q(
+      "¿Qué hizo cuando no recibió respuesta?",
+      ["Llamó por teléfono", "Fue a la tienda", "Pidió ayuda a su hermano"],
+      0,
+      "Como no recibí respuesta, llamé por teléfono.",
+    ),
+    q(
+      "¿Qué opciones le ofreció la empleada?",
+      [
+        "Cambiar la mochila o pagar menos",
+        "Esperar un poco más o cancelar el pedido",
+        "Recibir un regalo o una disculpa",
+      ],
+      1,
+      "Después me ofreció dos opciones: esperar un poco más, o cancelar el pedido y recibir mi dinero de vuelta.",
+    ),
+    q(
+      "¿Cuándo llegó el paquete?",
+      ["El sábado por la tarde", "El domingo", "El viernes por la mañana"],
+      2,
+      "el paquete llegó el viernes por la mañana, un día antes del cumpleaños.",
+    ),
+  ]),
+];
