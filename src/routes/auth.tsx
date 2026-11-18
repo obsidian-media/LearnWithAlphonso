@@ -20,7 +20,7 @@ import { expressionSrc } from "../lib/lesson-stage";
 import { edgeButtonClass } from "../components/lesson/LessonParts";
 import { canonicalLink, shareMeta } from "@/lib/seo";
 import { authErrorKind, friendlyAuthError } from "@/lib/auth-errors";
-import { isNetworkAuthError } from "@/lib/auth-offline";
+import { isNetworkAuthError, isRefusedSessionError, markStaleSessionDrop } from "@/lib/auth-offline";
 
 /**
  * The address a sign-up code was sent to, kept for this tab: a refresh on "Check your email" used to drop it, and the
@@ -98,6 +98,9 @@ function AuthPage() {
     pendingVerifyEmail ? "verify" : startMode === "signup" ? "signup" : "signin",
   );
   const [email, setEmail] = useState(pendingVerifyEmail ?? "");
+  // False when the code screen was reached from a sign-in to an unconfirmed account: no code went out this time, so
+  // the screen asks for Send a new code instead of claiming one was sent.
+  const [codeSent, setCodeSent] = useState(true);
   const [password, setPassword] = useState("");
   // The first run's name, if they gave one; the field says it is the public display name, and they can change it.
   const [displayName, setDisplayName] = useState(() => firstRun.readDraft().name ?? "");
@@ -126,11 +129,16 @@ function AuthPage() {
         afterAuth();
         return;
       }
-      // Offline: the session is not known to be bad, and the app's own offline screen takes it from there.
-      if (error && isNetworkAuthError(error)) {
+      // Only a refusal from the server drops the session. Offline, a 500 or a 429 during an auth outage: the session
+      // is not known to be bad, so the learner goes on (the signed-in layout reads the session in this browser and
+      // has its own offline screen), rather than being signed out by an outage.
+      const refused = error ? isRefusedSessionError(error) && !isNetworkAuthError(error) : true;
+      if (!refused) {
         afterAuth();
         return;
       }
+      // Not the learner's own sign-out: the first-run draft of whoever signs up next stays.
+      markStaleSessionDrop();
       await supabase.auth.signOut({ scope: "local" }).catch(() => {});
     })();
     return () => {
@@ -139,7 +147,8 @@ function AuthPage() {
   }, [afterAuth]);
 
   /** "Check your email" for this address: remembered for the tab, so a refresh keeps the code entry. */
-  function enterVerify() {
+  function enterVerify(sent = true) {
+    setCodeSent(sent);
     setCode("");
     writePendingVerifyEmail(email);
     setMode("verify");
@@ -214,9 +223,10 @@ function AuthPage() {
       // A banned account's sign-in gets its own plain screen, not the raw error text.
       if (isAccountSuspendedError(err)) useAccountStatus.getState().setSuspended();
       else {
-        setError(friendlyAuthError(err));
-        // An account made earlier but never confirmed: straight to the code screen, where a new code can be sent.
-        if (mode === "signin" && authErrorKind(err) === "emailNotConfirmed") enterVerify();
+        // An account made earlier but never confirmed: straight to the code screen, which says to send a new code
+        // (none was sent by this sign-in).
+        if (mode === "signin" && authErrorKind(err) === "emailNotConfirmed") enterVerify(false);
+        else setError(friendlyAuthError(err));
       }
     } finally {
       setBusy(false);
@@ -238,6 +248,7 @@ function AuthPage() {
         },
       });
       if (error) throw error;
+      setCodeSent(true);
       setNotice("We sent a new code. It can take a minute to arrive.");
     } catch (err) {
       setError(friendlyAuthError(err, "We couldn't send a new code. Please try again."));
@@ -303,7 +314,9 @@ function AuthPage() {
         }
         sub={
           mode === "verify"
-            ? `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`
+            ? codeSent
+              ? `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`
+              : `${email} isn't confirmed yet. Tap Send a new code, then enter the 6-digit code from that email.`
             : mode === "signup"
               ? "Save your streak and pick up on any device."
               : mode === "forgot"

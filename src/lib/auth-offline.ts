@@ -39,3 +39,29 @@ export function isNetworkAuthError(error: unknown): boolean {
   }
   return typeof navigator !== "undefined" && navigator.onLine === false;
 }
+
+/**
+ * True when the auth server answered that this session is no good: 401/403, or a session or user it no longer has.
+ * Only that drops the session from this browser; a 500 or a 429 during an auth outage says nothing about the session.
+ */
+export function isRefusedSessionError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const { status, code } = error as { status?: unknown; code?: unknown };
+  if (status === 401 || status === 403) return true;
+  return code === "session_not_found" || code === "user_not_found" || code === "bad_jwt";
+}
+
+/**
+ * A sign-out the learner did not ask for (a stale session dropped on the sign-in page). The app's SIGNED_OUT handler
+ * still clears the last account's data, but keeps the first-run draft of the person about to sign up.
+ */
+let keepDraftOnNextSignOut = false;
+export function markStaleSessionDrop(): void {
+  keepDraftOnNextSignOut = true;
+}
+/** Read once by the SIGNED_OUT handler: true when the sign-out was a stale-session drop. */
+export function takeStaleSessionDrop(): boolean {
+  const was = keepDraftOnNextSignOut;
+  keepDraftOnNextSignOut = false;
+  return was;
+}

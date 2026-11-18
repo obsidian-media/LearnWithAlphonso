@@ -28,6 +28,7 @@ import { fetchProgress } from "../lib/sync.functions";
 import { getMyProfile } from "../lib/leaderboard.functions";
 import { clearCachedVoicePrefs } from "../lib/voice-prefs";
 import { browserFirstRunStore } from "../lib/first-run";
+import { takeStaleSessionDrop } from "../lib/auth-offline";
 
 function NotFoundComponent() {
   return (
@@ -220,7 +221,8 @@ function AuthSync() {
         reset();
         // Nothing the last account loaded may show to the next one on this browser (a shared computer).
         qc.clear();
-        browserFirstRunStore().clearDraft();
+        // A stale session dropped on the sign-in page keeps the draft: it belongs to the person signing up now.
+        if (!takeStaleSessionDrop()) browserFirstRunStore().clearDraft();
         // Voice choices are the account's; the next account on this browser starts from its own.
         clearCachedVoicePrefs();
       } else {

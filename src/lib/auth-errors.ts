@@ -16,7 +16,8 @@ export const AUTH_ERROR_COPY = {
   weakPassword:
     "That password is too easy to guess. Try a longer one, or mix in numbers and symbols.",
   invalidCredentials: "That email and password don't match. Check them and try again.",
-  emailNotConfirmed: "This email isn't confirmed yet. Enter the 6-digit code we sent you.",
+  emailNotConfirmed:
+    "This email isn't confirmed yet. Tap Send a new code, then enter the 6-digit code from that email.",
   badCode: "That code is wrong or has expired. Check it, or send a new code.",
   offline: "We couldn't reach the server. Check your connection and try again.",
   generic: "Something went wrong. Please try again.",

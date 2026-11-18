@@ -459,6 +459,23 @@ describe("AuthSync (inside RootComponent)", () => {
     expect(localStorage.getItem("lwa.firstRun.v1")).toBeNull();
   });
 
+  it("keeps the first-run draft when the sign-out was a stale session dropped on the sign-in page", async () => {
+    localStorage.setItem("lwa.firstRun.v1", '{"name":"Sam"}');
+    getSession.mockResolvedValue({ data: { session: null } });
+    render(<RootComponent />);
+    await waitFor(() => expect(onAuthStateChange).toHaveBeenCalled());
+    const handler = onAuthStateChange.mock.calls[0]![0] as (e: string) => void;
+    const { markStaleSessionDrop } = await import("@/lib/auth-offline");
+    markStaleSessionDrop();
+    handler("SIGNED_OUT");
+    // The last account's data still goes; the draft is the person signing up now.
+    expect(clearQueries).toHaveBeenCalled();
+    expect(localStorage.getItem("lwa.firstRun.v1")).toBe('{"name":"Sam"}');
+    // Only that one sign-out: the next one clears it again.
+    handler("SIGNED_OUT");
+    expect(localStorage.getItem("lwa.firstRun.v1")).toBeNull();
+  });
+
   it("ignores auth events it does not care about", async () => {
     getSession.mockResolvedValue({ data: { session: null } });
     render(<RootComponent />);
