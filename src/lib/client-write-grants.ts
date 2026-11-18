@@ -197,7 +197,7 @@ export function computeClientWriteGrants(
         continue;
       }
       // REVOKE GRANT OPTION FOR removes only the right to re-grant, never the privilege itself.
-      if (/^REVOKE\s+GRANT OPTION FOR/i.test(st)) continue;
+      if (/^REVOKE\s+GRANT OPTION FOR\b/i.test(st)) continue;
       m = /^(GRANT|REVOKE)\s+(.+?)\s+ON\s+(.+?)\s+(TO|FROM)\s+(.+)$/i.exec(st);
       if (!m) continue;
       const [, verb, privPart, onPart, , roleList] = m;
