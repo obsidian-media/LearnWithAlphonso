@@ -24,15 +24,21 @@ const THIS_MIGRATION = "20261125100000";
  * Key: role.table.PRIV, with the column list in parentheses for a column-level grant.
  */
 const ALLOWED: Record<string, string> = {
-  "authenticated.blocked_users.INSERT": "own-row policy; the block list is the learner's own safety setting",
+  "authenticated.blocked_users.INSERT":
+    "own-row policy; the block list is the learner's own safety setting",
   "authenticated.blocked_users.DELETE": "unblock; own-row policy",
   "authenticated.device_tokens.DELETE": "sign-out removes this device's push token; own-row policy",
-  "authenticated.friendships.DELETE": "unfriend and the caller-side step of account deletion; own-row policy",
-  "authenticated.listen_progress.DELETE": "clear my listening history; written only by save_listen_progress, read by nothing that rewards",
-  "authenticated.video_watches.DELETE": "clear my watch history; written only by a definer function, read by nothing that rewards",
+  "authenticated.friendships.DELETE":
+    "unfriend and the caller-side step of account deletion; own-row policy",
+  "authenticated.listen_progress.DELETE":
+    "clear my listening history; written only by save_listen_progress, read by nothing that rewards",
+  "authenticated.video_watches.DELETE":
+    "clear my watch history; written only by a definer function, read by nothing that rewards",
   "authenticated.tutor_memory.DELETE": "forget what the tutor remembers; written only server-side",
-  "authenticated.podcast_playback.INSERT": "resume position upsert from web, iOS and Android; no reward reads it",
-  "authenticated.podcast_playback.UPDATE": "resume position upsert incl. completed_at; only admin_numbers_own reads it",
+  "authenticated.podcast_playback.INSERT":
+    "resume position upsert from web, iOS and Android; no reward reads it",
+  "authenticated.podcast_playback.UPDATE":
+    "resume position upsert incl. completed_at; only admin_numbers_own reads it",
   "authenticated.podcast_playback.DELETE": "reset a resume position; own-row policy",
   "authenticated.profiles.UPDATE(avatar_seed,country,theme)":
     "the only profile columns clients write directly; display_name and name_confirmed_at go through confirm_display_name",
@@ -104,7 +110,9 @@ describe("client write privileges, computed from every migration", () => {
 
 describe("parser behaviour on small inputs", () => {
   const run = (...sqls: string[]) =>
-    computeClientWriteGrants(sqls.map((sql, i) => ({ version: `2027010${i}000000`, sql }))).map(grantKey);
+    computeClientWriteGrants(sqls.map((sql, i) => ({ version: `2027010${i}000000`, sql }))).map(
+      grantKey,
+    );
 
   it("new tables start empty after the cutoff, a comment or function body grants nothing", () => {
     expect(
@@ -116,19 +124,29 @@ describe("parser behaviour on small inputs", () => {
   });
 
   it("handles PUBLIC, column grants, table-level revoke removing column grants, and DROP", () => {
-    expect(run(`CREATE TABLE public.t (a int, b int); GRANT UPDATE (a, b) ON public.t TO authenticated;`)).toEqual([
-      "authenticated.t.UPDATE(a,b)",
-    ]);
     expect(
-      run(`CREATE TABLE public.t (a int); GRANT UPDATE (a) ON public.t TO authenticated; REVOKE UPDATE ON public.t FROM authenticated;`),
+      run(
+        `CREATE TABLE public.t (a int, b int); GRANT UPDATE (a, b) ON public.t TO authenticated;`,
+      ),
+    ).toEqual(["authenticated.t.UPDATE(a,b)"]);
+    expect(
+      run(
+        `CREATE TABLE public.t (a int); GRANT UPDATE (a) ON public.t TO authenticated; REVOKE UPDATE ON public.t FROM authenticated;`,
+      ),
     ).toEqual([]);
     expect(run(`CREATE TABLE public.t (a int); GRANT INSERT ON public.t TO PUBLIC;`)).toEqual([
       "anon.t.INSERT",
       "authenticated.t.INSERT",
     ]);
-    expect(run(`CREATE TABLE public.t (a int); GRANT ALL ON public.t TO authenticated; DROP TABLE public.t;`)).toEqual([]);
     expect(
-      run(`CREATE TABLE public.t (a int); GRANT ALL ON public.t TO authenticated; REVOKE DELETE ON ALL TABLES IN SCHEMA public FROM authenticated;`),
+      run(
+        `CREATE TABLE public.t (a int); GRANT ALL ON public.t TO authenticated; DROP TABLE public.t;`,
+      ),
+    ).toEqual([]);
+    expect(
+      run(
+        `CREATE TABLE public.t (a int); GRANT ALL ON public.t TO authenticated; REVOKE DELETE ON ALL TABLES IN SCHEMA public FROM authenticated;`,
+      ),
     ).toEqual(["authenticated.t.INSERT", "authenticated.t.UPDATE"]);
   });
 
@@ -157,9 +175,15 @@ describe("blind spots the parser cannot model are failures, not silent passes", 
     expect(findHiddenRoleGrants(`DO $body$ BEGIN ${g}; END $body$;`)).toHaveLength(1);
     expect(findHiddenRoleGrants(`DO $fn1$ BEGIN ${g}; END $fn1$;`)).toHaveLength(1);
     expect(findHiddenRoleGrants(`DO $a$ BEGIN EXECUTE '${g}'; END $a$;`)).toHaveLength(1);
-    expect(findHiddenRoleGrants(`DO $o$ BEGIN EXECUTE $i1$ ${g} $i1$; END $o$;`).length).toBeGreaterThan(0);
-    expect(findHiddenRoleGrants(`SELECT 1; EXECUTE 'REVOKE ALL ON public.t FROM public';`)).toHaveLength(1);
-    expect(findHiddenRoleGrants(`DO $$ BEGIN GRANT SELECT ON public.t TO service_role; END $$;`)).toEqual([]);
+    expect(
+      findHiddenRoleGrants(`DO $o$ BEGIN EXECUTE $i1$ ${g} $i1$; END $o$;`).length,
+    ).toBeGreaterThan(0);
+    expect(
+      findHiddenRoleGrants(`SELECT 1; EXECUTE 'REVOKE ALL ON public.t FROM public';`),
+    ).toHaveLength(1);
+    expect(
+      findHiddenRoleGrants(`DO $$ BEGIN GRANT SELECT ON public.t TO service_role; END $$;`),
+    ).toEqual([]);
     expect(findHiddenRoleGrants(`-- ${g};\n/* ${g}; */ SELECT 1;`)).toEqual([]);
   });
 
@@ -186,30 +210,43 @@ describe("blind spots the parser cannot model are failures, not silent passes", 
 
   it("the reviewed default-privilege files still contain such a statement (no stale entries)", () => {
     for (const f of Object.keys(DEFAULT_PRIVS_ALLOWED))
-      expect(findDefaultPrivilegeChanges(readFileSync(path.join(DIR, f), "utf8")).length, f).toBeGreaterThan(0);
+      expect(
+        findDefaultPrivilegeChanges(readFileSync(path.join(DIR, f), "utf8")).length,
+        f,
+      ).toBeGreaterThan(0);
   });
 
   it("detects ALTER DEFAULT PRIVILEGES naming client roles, and ignores other roles and comments", () => {
     expect(
-      findDefaultPrivilegeChanges("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO authenticated;"),
+      findDefaultPrivilegeChanges(
+        "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO authenticated;",
+      ),
     ).toHaveLength(1);
     expect(
-      findDefaultPrivilegeChanges("ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;"),
+      findDefaultPrivilegeChanges(
+        "ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;",
+      ),
     ).toHaveLength(1);
     expect(
-      findDefaultPrivilegeChanges("DO $x1$ BEGIN ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO anon; END $x1$;"),
+      findDefaultPrivilegeChanges(
+        "DO $x1$ BEGIN ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO anon; END $x1$;",
+      ),
     ).toHaveLength(1);
     expect(
       findDefaultPrivilegeChanges("ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO service_role;"),
     ).toEqual([]);
     expect(
-      findDefaultPrivilegeChanges("-- ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO anon;\nSELECT 1;"),
+      findDefaultPrivilegeChanges(
+        "-- ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO anon;\nSELECT 1;",
+      ),
     ).toEqual([]);
   });
 
   it("REVOKE GRANT OPTION FOR does not remove the privilege itself", () => {
     const run = (...sqls: string[]) =>
-      computeClientWriteGrants(sqls.map((sql, i) => ({ version: `2027010${i}000000`, sql }))).map(grantKey);
+      computeClientWriteGrants(sqls.map((sql, i) => ({ version: `2027010${i}000000`, sql }))).map(
+        grantKey,
+      );
     expect(
       run(`CREATE TABLE public.t (a int); GRANT DELETE ON public.t TO authenticated;
            REVOKE GRANT OPTION FOR DELETE ON public.t FROM authenticated;`),
@@ -221,7 +258,7 @@ describe("blind spots the parser cannot model are failures, not silent passes", 
   });
 });
 
-describe("the migration's profiles column grant, executed in Postgres",{ timeout: 60_000 }, () => {
+describe("the migration's profiles column grant, executed in Postgres", { timeout: 60_000 }, () => {
   async function db() {
     const d = new PGlite();
     await d.exec(`
@@ -259,20 +296,35 @@ describe("the migration's profiles column grant, executed in Postgres",{ timeout
 
   it("lets a client change avatar_seed, theme and country but not name_confirmed_at or display_name", async () => {
     const d = await db();
-    expect(await as(d, "UPDATE public.profiles SET avatar_seed='x', theme='royal', country='NL'")).toBe("ok");
-    expect(await as(d, "UPDATE public.profiles SET name_confirmed_at = now()")).toMatch(/permission denied/);
-    expect(await as(d, "UPDATE public.profiles SET display_name = 'Zed'")).toMatch(/permission denied/);
-    expect(await as(d, "UPDATE public.profiles SET ai_consent_at = now()")).toMatch(/permission denied/);
-    expect(await as(d, "INSERT INTO public.profiles (id, display_name) VALUES (gen_random_uuid(), 'X')")).toMatch(
+    expect(
+      await as(d, "UPDATE public.profiles SET avatar_seed='x', theme='royal', country='NL'"),
+    ).toBe("ok");
+    expect(await as(d, "UPDATE public.profiles SET name_confirmed_at = now()")).toMatch(
       /permission denied/,
     );
+    expect(await as(d, "UPDATE public.profiles SET display_name = 'Zed'")).toMatch(
+      /permission denied/,
+    );
+    expect(await as(d, "UPDATE public.profiles SET ai_consent_at = now()")).toMatch(
+      /permission denied/,
+    );
+    expect(
+      await as(d, "INSERT INTO public.profiles (id, display_name) VALUES (gen_random_uuid(), 'X')"),
+    ).toMatch(/permission denied/);
   });
 
   it("stops a client deleting progress rows and updating play events", async () => {
     const d = await db();
-    for (const t of ["lesson_completions", "language_progress", "review_items", "user_achievements"])
+    for (const t of [
+      "lesson_completions",
+      "language_progress",
+      "review_items",
+      "user_achievements",
+    ])
       expect(await as(d, `DELETE FROM public.${t}`), t).toMatch(/permission denied/);
-    expect(await as(d, "UPDATE public.podcast_play_events SET user_id = NULL")).toMatch(/permission denied/);
+    expect(await as(d, "UPDATE public.podcast_play_events SET user_id = NULL")).toMatch(
+      /permission denied/,
+    );
     expect(await as(d, "DELETE FROM public.podcast_play_events")).toMatch(/permission denied/);
     expect(await as(d, "SELECT * FROM public.lesson_completions")).toBe("ok");
   });

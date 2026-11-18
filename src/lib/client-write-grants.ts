@@ -35,7 +35,8 @@ const emptyTable = (): TableGrants => ({
 
 /** Any dollar-quote tag: $$, $tag$, $fn1$ (a tag may contain digits after its first character). */
 const DOLLAR_QUOTE = /\$([A-Za-z_][A-Za-z_0-9]*)?\$[\s\S]*?\$\1\$/g;
-const stripComments = (sql: string) => sql.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/--[^\n]*/g, "");
+const stripComments = (sql: string) =>
+  sql.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/--[^\n]*/g, "");
 
 /** Text inside dollar-quoted bodies (nested ones included) and single-quoted string literals. */
 function quotedTexts(sql: string): string[] {
@@ -63,7 +64,15 @@ const namesClientRole = (stmt: string, verbs: RegExp) => {
   const roles = m[1]!
     .replace(/\s+WITH GRANT OPTION.*$/i, "")
     .split(",")
-    .map((r) => r.trim().replace(/^GROUP\s+/i, "").replace(/"/g, "").toLowerCase().split(" ")[0]!);
+    .map(
+      (r) =>
+        r
+          .trim()
+          .replace(/^GROUP\s+/i, "")
+          .replace(/"/g, "")
+          .toLowerCase()
+          .split(" ")[0]!,
+    );
   return roles.some((r) => CLIENT_ROLES.includes(r)) ? stmt.trim() : null;
 };
 
@@ -121,7 +130,11 @@ function splitTop(list: string): string[] {
   return out;
 }
 
-const bare = (name: string) => name.trim().toLowerCase().replace(/^public\./, "");
+const bare = (name: string) =>
+  name
+    .trim()
+    .toLowerCase()
+    .replace(/^public\./, "");
 
 export type ClientWriteGrant = {
   role: "anon" | "authenticated";
@@ -152,7 +165,8 @@ export function computeClientWriteGrants(
       .filter(Boolean);
 
     for (const st of statements) {
-      let m = /^CREATE (?:UNLOGGED )?TABLE (?:IF NOT EXISTS )?(?:([a-z_0-9]+)\.)?([a-z_0-9]+)/i.exec(st);
+      let m =
+        /^CREATE (?:UNLOGGED )?TABLE (?:IF NOT EXISTS )?(?:([a-z_0-9]+)\.)?([a-z_0-9]+)/i.exec(st);
       if (m) {
         if (m[1] && m[1].toLowerCase() !== "public") continue; // another schema
         const name = m[2].toLowerCase();
@@ -169,7 +183,10 @@ export function computeClientWriteGrants(
         for (const n of splitTop(m[1])) tables.delete(bare(n));
         continue;
       }
-      m = /^ALTER TABLE (?:IF EXISTS )?(?:ONLY )?(?:public\.)?([a-z_0-9]+) RENAME TO ([a-z_0-9]+)$/i.exec(st);
+      m =
+        /^ALTER TABLE (?:IF EXISTS )?(?:ONLY )?(?:public\.)?([a-z_0-9]+) RENAME TO ([a-z_0-9]+)$/i.exec(
+          st,
+        );
       if (m) {
         const from = m[1].toLowerCase();
         const to = m[2].toLowerCase();
@@ -187,13 +204,19 @@ export function computeClientWriteGrants(
       const on = onPart.trim();
       let targetNames: string[];
       if (/^ALL TABLES IN SCHEMA public$/i.test(on)) targetNames = [...tables.keys()];
-      else if (/^(FUNCTION|ALL FUNCTIONS|PROCEDURE|SCHEMA|SEQUENCE|ALL SEQUENCES|DATABASE|TYPE|DOMAIN|LANGUAGE|LARGE OBJECT|FOREIGN|TABLESPACE|PARAMETER)\b/i.test(on))
+      else if (
+        /^(FUNCTION|ALL FUNCTIONS|PROCEDURE|SCHEMA|SEQUENCE|ALL SEQUENCES|DATABASE|TYPE|DOMAIN|LANGUAGE|LARGE OBJECT|FOREIGN|TABLESPACE|PARAMETER)\b/i.test(
+          on,
+        )
+      )
         continue;
       else
         targetNames = splitTop(on.replace(/^TABLE\s+/i, ""))
           .filter((n) => !n.includes(".") || n.toLowerCase().startsWith("public."))
           .map(bare);
-      const roles = splitTop(roleList.replace(/\s+WITH GRANT OPTION$/i, "").replace(/\s+(CASCADE|RESTRICT)$/i, ""))
+      const roles = splitTop(
+        roleList.replace(/\s+WITH GRANT OPTION$/i, "").replace(/\s+(CASCADE|RESTRICT)$/i, ""),
+      )
         .map((r) => r.replace(/^GROUP\s+/i, "").toLowerCase())
         .filter((r): r is Role => (ROLES as string[]).includes(r));
       if (roles.length === 0) continue;
@@ -205,7 +228,8 @@ export function computeClientWriteGrants(
         if (!pm) continue;
         const word = pm[1].trim().toUpperCase();
         const cols = pm[2] ? pm[2].split(",").map((c) => c.trim().toLowerCase()) : null;
-        if (word === "ALL" || word === "ALL PRIVILEGES") for (const p of WRITE_PRIVS) items.push([p, cols]);
+        if (word === "ALL" || word === "ALL PRIVILEGES")
+          for (const p of WRITE_PRIVS) items.push([p, cols]);
         else if ((WRITE_PRIVS as string[]).includes(word)) items.push([word as WritePriv, cols]);
       }
 
@@ -238,7 +262,10 @@ export function computeClientWriteGrants(
           out.push({ role, table, priv, columns: null });
           continue;
         }
-        const cols = new Set([...(t[role].cols.get(priv) ?? []), ...(t.public.cols.get(priv) ?? [])]);
+        const cols = new Set([
+          ...(t[role].cols.get(priv) ?? []),
+          ...(t.public.cols.get(priv) ?? []),
+        ]);
         if (cols.size > 0) out.push({ role, table, priv, columns: [...cols].sort() });
       }
     }
