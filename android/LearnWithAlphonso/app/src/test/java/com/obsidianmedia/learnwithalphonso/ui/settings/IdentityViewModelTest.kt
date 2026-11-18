@@ -14,7 +14,11 @@ import kotlin.random.Random
 class IdentityViewModelTest {
     @get:Rule val main = MainDispatcherRule()
 
-    private fun server() = FakeServer { req -> if (req.method == "GET") json("""[{"display_name":"Ana","avatar_seed":"ab12cd34"}]""") else json("") }
+    private fun server() = FakeServer { req -> when {
+        req.method == "GET" -> json("""[{"display_name":"Ana","avatar_seed":"ab12cd34"}]""")
+        req.path.endsWith("confirm_display_name") -> json("\"Ana Banana\"")
+        else -> json("")
+    } }
 
     @Test
     fun `loads identity, saves a trimmed capped name, and shuffles an 8-hex seed`() = runBlocking {
@@ -26,7 +30,9 @@ class IdentityViewModelTest {
         v.editName("  Ana Banana  ")
         v.saveName()
         awaitTrue("saved") { !v.state.value.saving && v.state.value.displayName == "Ana Banana" }
-        assertEquals("""{"display_name":"Ana Banana"}""", s.seen.first { it.method == "PATCH" }.body)
+        // The name goes through the validated RPC, never a PATCH of profiles.display_name (not client-writable).
+        assertEquals("""{"_name":"Ana Banana"}""", s.seen.first { it.path.endsWith("confirm_display_name") }.body)
+        assertTrue(s.seen.none { it.method == "PATCH" && it.body.contains("display_name") })
         v.shuffleAvatar()
         awaitTrue("shuffled") { !v.state.value.shuffling && v.state.value.avatarSeed != "ab12cd34" }
         assertTrue(v.state.value.avatarSeed.matches(Regex("[0-9a-f]{8}")))

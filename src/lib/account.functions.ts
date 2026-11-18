@@ -128,16 +128,14 @@ export const RLS_SCOPED_EXPORT_TABLES = ["buddy_weeks", "buddy_messages"] as con
 // listed that way until 2026-10-06; their DELETE grants were revoked in
 // 20261006130000, BACKLOG 0.0-ae). Everything else, including those four, is
 // cleaned up by ON DELETE CASCADE from auth.users when deleteUser() runs
-// below, so nothing is left behind. content_reports is the one exception: its
+// below, so nothing is left behind. review_items, lesson_completions,
+// user_achievements and language_progress were listed here until 20261123100000,
+// which revoked the client DELETE grant on them (progress rows must not be
+// removable from a client); the cascade removes them with the account.
+// content_reports is the one exception: its
 // reporter/reported become NULL and the report is kept for 90 days for moderation
 // (20261105101100), with nothing from the profile.
-export const USER_DELETE_TABLES = [
-  "review_items",
-  "lesson_completions",
-  "user_achievements",
-  "friendships",
-  "language_progress",
-] as const;
+export const USER_DELETE_TABLES = ["friendships"] as const;
 
 const ACCOUNT_DELETION_RETRY_MESSAGE =
   "We couldn't finish deleting your account. Your account is still active; please try again. Contact support if the problem continues.";

@@ -7,7 +7,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncError
 import com.obsidianmedia.learnwithalphonso.core.net.fetchProfileIdentity
 import com.obsidianmedia.learnwithalphonso.core.net.updateProfileAvatarSeed
-import com.obsidianmedia.learnwithalphonso.core.net.updateProfileDisplayName
+import com.obsidianmedia.learnwithalphonso.core.net.confirmDisplayName
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,11 +38,13 @@ class IdentityViewModel(private val client: ProgressSyncClient, private val user
         if (trimmed.isEmpty()) return
         _state.update { it.copy(saving = true, error = null) }
         viewModelScope.launch {
-            val failure = runCatching { client.updateProfileDisplayName(trimmed, id) }.exceptionOrNull()
+            // confirm_display_name is the only write path for the name (profiles.display_name is not client-writable).
+            val saved = runCatching { client.confirmDisplayName(trimmed) }
+            val failure = saved.exceptionOrNull()
             // A name the server filter refuses says so ("That name isn't allowed. Try another."), not a generic failure.
             val server = failure as? ProgressSyncError.Server
             val error = failure?.let { NameReasonCopy.nameSaveMessage(server?.status, server?.serverMessage, isConnectionFailure = it is java.io.IOException || it is ProgressSyncError.InvalidPayload) }
-            _state.update { it.copy(saving = false, displayName = if (failure == null) trimmed else it.displayName, error = error) }
+            _state.update { it.copy(saving = false, displayName = saved.getOrNull() ?: it.displayName, error = error) }
         }
     }
 
