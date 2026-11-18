@@ -95,8 +95,8 @@ describe("legal pages share one 'Last updated' date", () => {
     expect(new Set(dates).size).toBe(1);
   });
 
-  // The privacy policy's report-retention sentence (20261105101100) is dated with the change.
-  it("is 15 November 2026", () => {
-    expect(pageText("/privacy")).toMatch(/Last updated 15 November 2026/);
+  // Dated with the Pro terms, processors and immediate-start request (Cloudflare Turnstile, yearly plan).
+  it("is 18 November 2026", () => {
+    expect(pageText("/privacy")).toMatch(/Last updated 18 November 2026/);
   });
 });

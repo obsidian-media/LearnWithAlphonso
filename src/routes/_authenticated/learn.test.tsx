@@ -73,16 +73,11 @@ vi.mock("../../lib/sync.functions", () => ({
 const fetchDueReviews = vi.fn();
 vi.mock("../../lib/review.functions", () => ({ fetchDueReviews }));
 
-// WeeklyChallengesCard uses react-query's useQuery, which needs a
-// QueryClientProvider this test doesn't set up (this page has never
-// needed react-query before) -- stubbed out since this test isn't
-// exercising that card's own behavior (see WeeklyChallengesCard.test.tsx
-// for that).
-vi.mock("../../components/WeeklyChallengesCard", () => ({ WeeklyChallengesCard: () => null }));
 // The path card has its own tests (PathCard.test.tsx); here we only check the page mounts it for the current course.
-// The team mission card has its own tests (TeamMissionCard.test.tsx); here we only check the page mounts it.
-vi.mock("../../components/TeamMissionCard", () => ({
-  TeamMissionCard: () => <div data-testid="team-mission-card" />,
+// The team mission and weekly challenges cards use react-query, which this test does not set up; they have their own
+// tests (TeamMissionCard, WeeklyChallengesCard, WeeklySocialCards). Here we only check the page mounts them.
+vi.mock("../../components/WeeklySocialCards", () => ({
+  WeeklySocialCards: () => <div data-testid="weekly-social-cards" />,
 }));
 vi.mock("../../components/path/PathCard", () => ({
   PathCard: ({ course }: { course: string }) => <div data-testid="path-card">{course}</div>,
@@ -119,9 +114,9 @@ beforeEach(() => {
 });
 
 describe("Learn page", () => {
-  it("shows the team mission card", async () => {
+  it("shows the team mission and weekly challenges cards", async () => {
     renderPage();
-    expect(await screen.findByTestId("team-mission-card")).toBeInTheDocument();
+    expect(await screen.findByTestId("weekly-social-cards")).toBeInTheDocument();
   });
 
   it("shows the learning goal card for the current course", async () => {

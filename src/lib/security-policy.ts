@@ -1,5 +1,6 @@
 import { POSTHOG_ORIGIN } from "./analytics-config";
 import { SENTRY_INGEST_ORIGIN } from "./sentry-config";
+import { HSTS_VALUE } from "./static-headers";
 import { TURNSTILE_ORIGIN } from "./turnstile";
 
 const CSP_NONCE_HEADER = "x-app-csp-nonce";
@@ -79,8 +80,9 @@ export function addSecurityHeaders(response: Response, request: Request, nonce: 
   if (process.env.NODE_ENV === "production") {
     headers.set("content-security-policy", contentSecurityPolicy(nonce, process.env.SUPABASE_URL));
     if (new URL(request.url).protocol === "https:") {
-      // Deliberately omit includeSubDomains until every sibling host is confirmed HTTPS-only.
-      headers.set("strict-transport-security", "max-age=31536000");
+      // Same value as the static files (static-headers.ts / vercel.json). includeSubDomains covers only hosts under
+      // this one (*.learn.alphonsoecosystem.app), never siblings such as discover.alphonsoecosystem.app.
+      headers.set("strict-transport-security", HSTS_VALUE);
     }
   }
   return new Response(response.body, {

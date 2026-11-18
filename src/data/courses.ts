@@ -20,15 +20,11 @@ import { PLACEMENT_QUESTIONS_ES } from "./placement-es";
 import type { PlacementQuestion } from "./placement";
 import type { Level } from "./levels";
 
-export type Course = "en" | "fr" | "es";
+import type { Course } from "./course-meta";
 
-export type CourseMeta = { id: Course; label: string; flag: string; targetLanguage: string };
-
-export const COURSES: CourseMeta[] = [
-  { id: "en", label: "English", flag: "🇬🇧", targetLanguage: "English" },
-  { id: "fr", label: "French", flag: "🇫🇷", targetLanguage: "French" },
-  { id: "es", label: "Spanish", flag: "🇪🇸", targetLanguage: "Spanish" },
-];
+// Ids, labels and locales live in ./course-meta (no curriculum) so every-page code can import them cheaply.
+export { COURSES, isCourse, localeForCourse } from "./course-meta";
+export type { Course, CourseMeta } from "./course-meta";
 
 export type QuestionRef = {
   lessonId: string;
@@ -90,17 +86,4 @@ const bundles: Record<Course, CourseBundle> = {
 /** Returns the full content bundle (curriculum, indices, placement) for a course. */
 export function getCourse(course: Course): CourseBundle {
   return bundles[course];
-}
-
-export function isCourse(value: string): value is Course {
-  return value === "en" || value === "fr" || value === "es";
-}
-
-// The Spanish course is Latin American, so device speech uses es-MX. Kept equal to the iOS Kit's
-// Course.speechLocale by src/lib/ios-binary-polish.test.ts.
-const LOCALES: Record<Course, string> = { en: "en-US", fr: "fr-FR", es: "es-MX" };
-
-/** BCP-47 locale for the Web Speech API / AVSpeechSynthesisVoice, per course. */
-export function localeForCourse(course: Course): string {
-  return LOCALES[course];
 }
