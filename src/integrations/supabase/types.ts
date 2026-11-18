@@ -2244,6 +2244,132 @@ export type Database = {
         };
         Relationships: [];
       };
+      stories: {
+        Row: {
+          audio_path: string | null;
+          course: string;
+          created_at: string;
+          id: string;
+          level_id: string;
+          needs_review: boolean;
+          published: boolean;
+          published_at: string | null;
+          segments: Json;
+          slug: string;
+          sort_order: number;
+          title: string;
+        };
+        Insert: {
+          audio_path?: string | null;
+          course: string;
+          created_at?: string;
+          id?: string;
+          level_id: string;
+          needs_review?: boolean;
+          published?: boolean;
+          published_at?: string | null;
+          segments: Json;
+          slug: string;
+          sort_order?: number;
+          title: string;
+        };
+        Update: {
+          audio_path?: string | null;
+          course?: string;
+          created_at?: string;
+          id?: string;
+          level_id?: string;
+          needs_review?: boolean;
+          published?: boolean;
+          published_at?: string | null;
+          segments?: Json;
+          slug?: string;
+          sort_order?: number;
+          title?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "stories_level_id_fkey";
+            columns: ["level_id"];
+            isOneToOne: false;
+            referencedRelation: "levels";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      story_progress: {
+        Row: {
+          best_correct: number | null;
+          check_total: number | null;
+          completed_at: string | null;
+          segment_index: number;
+          story_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          best_correct?: number | null;
+          check_total?: number | null;
+          completed_at?: string | null;
+          segment_index?: number;
+          story_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          best_correct?: number | null;
+          check_total?: number | null;
+          completed_at?: string | null;
+          segment_index?: number;
+          story_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "story_progress_story_id_fkey";
+            columns: ["story_id"];
+            isOneToOne: false;
+            referencedRelation: "stories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      story_quiz_questions: {
+        Row: {
+          answer_index: number;
+          choices: Json;
+          id: string;
+          position: number;
+          prompt: string;
+          story_id: string;
+        };
+        Insert: {
+          answer_index: number;
+          choices: Json;
+          id?: string;
+          position: number;
+          prompt: string;
+          story_id: string;
+        };
+        Update: {
+          answer_index?: number;
+          choices?: Json;
+          id?: string;
+          position?: number;
+          prompt?: string;
+          story_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "story_quiz_questions_story_id_fkey";
+            columns: ["story_id"];
+            isOneToOne: false;
+            referencedRelation: "stories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       streak_freeze_gifts: {
         Row: {
           created_at: string;
@@ -3767,6 +3893,13 @@ export type Database = {
         Args: { _language: string; _level: string; _score: number };
         Returns: string;
       };
+      save_story_progress: {
+        Args: { p_segment_index: number; p_story_id: string };
+        Returns: {
+          completed_at: string;
+          segment_index: number;
+        }[];
+      };
       save_video_progress: {
         Args: { p_progress_s: number; p_video_id: string };
         Returns: {
@@ -4010,6 +4143,10 @@ export type Database = {
           _limit?: number;
           _user_id: string;
         };
+        Returns: Json;
+      };
+      submit_story_check: {
+        Args: { _answers: Json; _story_id: string; _user_id: string };
         Returns: Json;
       };
       support_add_ai_message: {
