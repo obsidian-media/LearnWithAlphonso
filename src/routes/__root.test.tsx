@@ -417,7 +417,9 @@ describe("AuthSync (inside RootComponent)", () => {
 
   it("offers the account's profile course as the fallback for a new device", async () => {
     getSession.mockResolvedValue({
-      data: { session: { user: { id: "u1", user_metadata: { learner_profile: { course: "es" } } } } },
+      data: {
+        session: { user: { id: "u1", user_metadata: { learner_profile: { course: "es" } } } },
+      },
     });
     fetchProgress.mockResolvedValue({ xp: 1 });
     getMyProfile.mockResolvedValue(null);

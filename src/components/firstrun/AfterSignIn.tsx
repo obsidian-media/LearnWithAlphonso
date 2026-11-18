@@ -3,7 +3,7 @@ import { authHeaders } from "@/lib/auth-headers";
 import { canSpeak, speak } from "../../lib/speech";
 import { expressionSrc } from "../../lib/lesson-stage";
 import { updateProfile } from "../../lib/leaderboard.functions";
-import { saveLearnerProfile } from "../../lib/learner-profile.client";
+import { saveLearnerProfile } from "../../lib/learner-profile-save";
 import { greetingFor, listInWords, roomForAnswers, roomSrc } from "../../lib/first-run";
 import type { HeardFrom, Interest, ProfileCourse } from "../../lib/learner-profile";
 import { parseAvatarSeed } from "../../lib/profile-avatars";

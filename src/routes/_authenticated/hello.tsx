@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AfterSignIn, type FinishTarget } from "../../components/firstrun/AfterSignIn";
 import { FirstRunFooter, FirstRunScreen } from "../../components/firstrun/FirstRunParts";
 import { answersToSend, browserFirstRunStore } from "../../lib/first-run";
-import { saveLearnerProfile } from "../../lib/learner-profile.client";
+import { saveLearnerProfile } from "../../lib/learner-profile-save";
 import type { LearnerProfilePatch } from "../../lib/learner-profile";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { holdNamePrompt } from "../../lib/name-prompt-gate";

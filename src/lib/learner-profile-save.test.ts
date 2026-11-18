@@ -12,7 +12,7 @@ beforeEach(() => {
 });
 
 async function load() {
-  const client = await import("./learner-profile.client");
+  const client = await import("./learner-profile-save");
   const firstRun = await import("./first-run");
   return { ...client, ...firstRun };
 }

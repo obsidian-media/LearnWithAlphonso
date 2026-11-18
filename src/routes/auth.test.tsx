@@ -171,22 +171,28 @@ describe("Auth page", () => {
   it.each([
     ["a 500", { name: "AuthApiError", status: 500 }],
     ["a 429", { name: "AuthApiError", status: 429 }],
-  ])("does not sign the learner out when the auth server answers %s (an outage)", async (_, err) => {
-    getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
-    getUser.mockResolvedValue({
-      data: { user: null },
-      error: Object.assign(new Error("server trouble"), err),
-    });
-    renderPage();
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true }));
-    expect(signOut).not.toHaveBeenCalled();
-  });
+  ])(
+    "does not sign the learner out when the auth server answers %s (an outage)",
+    async (_, err) => {
+      getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
+      getUser.mockResolvedValue({
+        data: { user: null },
+        error: Object.assign(new Error("server trouble"), err),
+      });
+      renderPage();
+      await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true }));
+      expect(signOut).not.toHaveBeenCalled();
+    },
+  );
 
   it("drops a session whose user is gone (user_not_found), marked so the sign-up draft is kept", async () => {
     getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
     getUser.mockResolvedValue({
       data: { user: null },
-      error: Object.assign(new Error("User not found"), { name: "AuthApiError", code: "user_not_found" }),
+      error: Object.assign(new Error("User not found"), {
+        name: "AuthApiError",
+        code: "user_not_found",
+      }),
     });
     renderPage();
     await waitFor(() => expect(signOut).toHaveBeenCalledWith({ scope: "local" }));
@@ -261,7 +267,9 @@ describe("Auth page", () => {
     await user.click(screen.getByRole("button", { name: "Sign in" }));
     expect(await screen.findByLabelText("6-digit code")).toBeInTheDocument();
     // This sign-in sent nothing: the screen asks for a new code rather than pointing at one that never came.
-    expect(screen.getByText(/ada@example.com isn't confirmed yet. Tap Send a new code/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/ada@example.com isn't confirmed yet. Tap Send a new code/),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/We sent a 6-digit code/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send a new code" })).toBeInTheDocument();
   });

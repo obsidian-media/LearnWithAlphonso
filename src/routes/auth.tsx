@@ -20,7 +20,11 @@ import { expressionSrc } from "../lib/lesson-stage";
 import { edgeButtonClass } from "../components/lesson/LessonParts";
 import { canonicalLink, shareMeta } from "@/lib/seo";
 import { authErrorKind, friendlyAuthError } from "@/lib/auth-errors";
-import { isNetworkAuthError, isRefusedSessionError, markStaleSessionDrop } from "@/lib/auth-offline";
+import {
+  isNetworkAuthError,
+  isRefusedSessionError,
+  markStaleSessionDrop,
+} from "@/lib/auth-offline";
 
 /**
  * The address a sign-up code was sent to, kept for this tab: a refresh on "Check your email" used to drop it, and the

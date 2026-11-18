@@ -1014,7 +1014,9 @@ describe("Lesson page", () => {
     const clock = vi.spyOn(Date, "now").mockReturnValue(realNow);
     try {
       startLessonSession.mockResolvedValue({ token: "first-tok" });
-      completeLessonRemote.mockRejectedValueOnce(new Error("network down")).mockResolvedValue(SAVED);
+      completeLessonRemote
+        .mockRejectedValueOnce(new Error("network down"))
+        .mockResolvedValue(SAVED);
       const user = userEvent.setup();
       renderPage();
       await skipToQuiz(user);
