@@ -54,7 +54,7 @@ export const REQUIRED_NOTE_MARKERS = [
 ] as const;
 
 export function buildReviewNotes(i: ReviewNotesInput): string {
-  return `Learn With Alphonso teaches English, French and Spanish (CEFR A1 to C1) to learners aged 13+: lessons, spaced review, speaking practice, an audio library and Hector, an AI voice tutor (Pro). Screen recording on a physical iPhone: ${i.recordingURL}
+  return `Learn With Alphonso teaches English, French and Spanish (CEFR A1 to C1) to learners aged 13+: lessons, spaced review, speaking practice, an audio library and Hector, an AI voice tutor (Pro). Screen recording: ${i.recordingURL}
 
 SIGN IN (no password)
 1. Enter ${i.demoAccountEmail} and tap "Send code".
@@ -84,9 +84,9 @@ SUBSCRIPTION
 
 OTHER 2.1 ANSWERS
 - Services: Supabase (database, sign-in), Vercel (API), Resend (sign-in email), Deepgram (speech, no training), Anthropic via OpenRouter (AI text), RevenueCat (subscription status), Cloudflare Turnstile (email bot check), Sign in with Apple, Google Sign-In, Apple Push Notifications.
-- Regional differences: none; StoreKit sets the price per storefront.
+- Regional differences: none.
 - Regulated or protected content: none. Images are licensed stock photos we host; podcast audio is AI-narrated (Deepgram) from scripts we wrote.
-- No ads, analytics, tracking or crash SDKs. Background audio is used only by Listen.`;
+- No ads or tracking. Crash reports via Sentry; usage analytics via PostHog only if the learner opts in. Background audio is used only by Listen.`;
 }
 
 export function buildBetaReviewNotes(

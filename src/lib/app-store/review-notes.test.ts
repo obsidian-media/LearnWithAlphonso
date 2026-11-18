@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   NOTES_LIMIT,
@@ -184,5 +186,24 @@ describe("buildBetaReviewNotes", () => {
     expect(b.length).toBeLessThanOrEqual(NOTES_LIMIT);
     expect(b).toContain(worst.demoCodeURL);
     expect(b).toContain("Send code");
+  });
+});
+
+describe("review notes match the SDKs the iOS app ships", () => {
+  // Text-level: project.yml is the iOS app's package list. If it ships Sentry or PostHog, the notes must not say
+  // "no analytics" or "no crash" SDKs, and must name them (PostHog runs only after the learner opts in, Analytics.swift).
+  const projectYml = fs.readFileSync(
+    path.resolve(import.meta.dirname, "../../../ios/LearnWithAlphonso/project.yml"),
+    "utf8",
+  );
+  const notes = buildReviewNotes(worst);
+  it("names Sentry when the app ships it, and never claims no crash SDK", () => {
+    if (/^\s*- package: Sentry\b/m.test(projectYml)) expect(notes).toContain("Sentry");
+    expect(notes).not.toMatch(/no[^.\n]*\bcrash\b/i);
+  });
+  it("names PostHog as opt-in when the app ships it, and never claims no analytics", () => {
+    if (/^\s*- package: PostHog\b/m.test(projectYml))
+      expect(notes).toMatch(/PostHog only if the learner opts in/);
+    expect(notes).not.toMatch(/no[^.\n]*\banalytics\b/i);
   });
 });
