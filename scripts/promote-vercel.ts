@@ -341,23 +341,28 @@ function gitOk(args: string[]): number {
     execFileSync("git", args, { stdio: "ignore" });
     return 0;
   } catch (e) {
-    return (e as { status?: number }).status ?? 1;
+    // No exit status (git missing, spawn failure) must never read as "not an ancestor".
+    return (e as { status?: number | null }).status ?? -1;
   }
 }
 
-/** `git merge-base --is-ancestor`, fetching the descendant first if this checkout does not have it yet. */
+/**
+ * `git merge-base --is-ancestor`, fetching the descendant first if this checkout does not have it yet.
+ * Exit 1 is a real "no". Anything else (commit not fetchable, git error) throws, so the project fails WITHOUT moving
+ * its domain: an unknown live commit may be newer than ours, and guessing "older" could roll production back.
+ */
 export function gitIsAncestor(ancestor: string, descendant: string): boolean {
   if (gitOk(["cat-file", "-e", `${descendant}^{commit}`]) !== 0) {
-    gitOk(["fetch", "--no-tags", "--quiet", "origin", descendant]);
+    if (gitOk(["fetch", "--no-tags", "--quiet", "origin", descendant]) !== 0) {
+      throw new Error(`could not fetch the live commit ${descendant.slice(0, 12)}; not promoting`);
+    }
   }
   const status = gitOk(["merge-base", "--is-ancestor", ancestor, descendant]);
   if (status === 0) return true;
-  if (status !== 1) {
-    console.log(
-      `::warning::Could not compare ${ancestor.slice(0, 12)} with ${descendant.slice(0, 12)} in git; treating production as older.`,
-    );
-  }
-  return false;
+  if (status === 1) return false;
+  throw new Error(
+    `git could not compare ${ancestor.slice(0, 12)} with ${descendant.slice(0, 12)} (exit ${status}); not promoting`,
+  );
 }
 
 if (import.meta.main) {

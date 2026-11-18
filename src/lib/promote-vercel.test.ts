@@ -325,6 +325,22 @@ describe("run", () => {
     expect(out).not.toContain("secret-looking body");
   });
 
+  it("fails without promoting when git cannot compare the live commit", async () => {
+    const v = fakeVercel({
+      builds: { [WEB.projectId]: [dep("web-new", SHA, 2)], [ADMIN.projectId]: [] },
+      aliases: { [WEB.domain]: "web-live" },
+      shas: { "web-live": NEWER },
+    });
+    const { d, lines } = deps(v.fetchImpl, {
+      isAncestor: () => {
+        throw new Error("could not fetch the live commit");
+      },
+    });
+    expect(await run(d)).toBe(1);
+    expect(v.promoted).toEqual([]);
+    expect(lines.join("\n")).toMatch(/::error::web: could not fetch/);
+  });
+
   it("rejects a missing or short GITHUB_SHA", async () => {
     const v = fakeVercel({ builds: {}, aliases: {}, shas: {} });
     const { d } = deps(v.fetchImpl, { env: { VERCEL_TOKEN: "t", GITHUB_SHA: "abc" } });

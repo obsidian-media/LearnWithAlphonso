@@ -147,8 +147,12 @@ Owner steps, in this order:
    Tracking and turn off **Auto-assign Custom Production Domains**. From then on each main build waits as a staged
    deployment until the job promotes it.
 
-If the job fails after step 4, production stays on the previous build (safe, just stale). Promote by hand from the
-project's Deployments list (… → Promote), or rerun the job. To undo the whole change, turn the toggle back on.
+If the job fails after step 4, each project has its own outcome: web may already be on the new build while admin
+stays on the previous one (or the other way round). A project that failed stays on its previous build (safe, just
+stale). Check the job log, which has one line per project, and both domains before acting; then promote the stale
+one by hand from that project's Deployments list (… → Promote), or rerun the job. The job also fails, without moving
+anything, when git cannot tell whether the live commit is newer than this one. To undo the whole change, turn the
+toggle back on.
 
 ---
 

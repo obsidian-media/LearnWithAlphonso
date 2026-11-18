@@ -711,7 +711,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [deploy-supabase]
-    timeout-minutes: 30
+    # Web then admin, each up to 15 min for the build plus 5 min for the domain switch, plus setup.
+    timeout-minutes: 50
     # One promotion at a time; a running one is never cancelled. In a burst of merges GitHub drops the middle pending
     # job, and the newest one promotes its commit, which contains the middle one's changes (same trade as deploy-supabase).
     concurrency:
