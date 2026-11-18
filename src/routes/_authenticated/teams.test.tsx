@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { doubleClick } from "../../lib/double-click.testutil";
 
 const navigateMock = vi.fn();
 vi.mock("@tanstack/react-router", async (importOriginal) => {
@@ -243,8 +244,7 @@ describe("Teams page", () => {
     renderPage();
 
     const join = await screen.findByRole("button", { name: "Put me on a team" });
-    fireEvent.click(join);
-    fireEvent.click(join);
+    doubleClick(join);
     resolve({ ok: true, reason: null, teamId: "t2" });
     await waitFor(() => expect(navigateMock).toHaveBeenCalled());
     expect(autoJoinTeam).toHaveBeenCalledTimes(1);

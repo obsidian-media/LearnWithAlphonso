@@ -12,12 +12,14 @@ import {
   Overline,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
+import { RefreshError } from "@/components/ds/RefreshError";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { AskBuddyButton, BuddyCard } from "../../components/BuddyCard";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import { ToastBanner } from "../../components/ToastBanner";
 import { useToast } from "../../lib/use-toast";
+import { useInFlight } from "../../lib/use-in-flight";
 import {
   getFriendActivity,
   getFreezeGiftState,
@@ -125,9 +127,13 @@ function FriendsPage() {
   const [copied, setCopied] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  // Synchronous guards: a second click can land before the state above re-renders the buttons disabled.
+  const removeFlight = useInFlight();
+  const giftFlight = useInFlight();
+  const nudgeFlight = useInFlight();
 
   async function confirmRemove(friend: FriendEntry) {
-    if (removingId) return;
+    if (!removeFlight.begin()) return;
     const friendId = friend.userId;
     setRemovingId(friendId);
     try {
@@ -144,6 +150,7 @@ function FriendsPage() {
     } catch {
       showToast(`Couldn't remove ${friend.displayName}. Try again.`);
     } finally {
+      removeFlight.end();
       setRemovingId(null);
       setConfirmingId(null);
     }
@@ -175,7 +182,7 @@ function FriendsPage() {
   }, [unreadGifts, friends, showToast]);
 
   async function gift(friend: FriendEntry) {
-    if (givingId) return;
+    if (!giftFlight.begin()) return;
     setGivingId(friend.userId);
     try {
       const result = await giftStreakFreeze({ data: { recipientId: friend.userId } });
@@ -185,6 +192,7 @@ function FriendsPage() {
         giftFreezeMessage({ ok: false, reason: "error", freezes: null }, friend.displayName),
       );
     } finally {
+      giftFlight.end();
       setGivingId(null);
       // The database's answer is the truth: re-read the balance and today's gifts rather than guessing.
       void queryClient.invalidateQueries({ queryKey: ["freezeGiftState"] });
@@ -192,7 +200,7 @@ function FriendsPage() {
   }
 
   async function nudge(friend: FriendEntry) {
-    if (!myId || nudgingId) return;
+    if (!myId || !nudgeFlight.begin()) return;
     const at = Date.now();
     setNow(at);
     setNudgingId(friend.userId);
@@ -207,6 +215,7 @@ function FriendsPage() {
     } catch {
       showToast(`Couldn't nudge ${friend.displayName}. Try again.`);
     } finally {
+      nudgeFlight.end();
       setNudgingId(null);
     }
   }
@@ -283,11 +292,15 @@ function FriendsPage() {
         </DsCard>
       )}
 
+      {/* The full error is for a list with nothing to show; a failed refresh keeps the friends on screen. */}
+      {friendsQuery.isError && friends && (
+        <RefreshError what="your friends" onRetry={() => void friendsQuery.refetch()} />
+      )}
       {isLoading ? (
         <DsCard>
           <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
         </DsCard>
-      ) : friendsQuery.isError ? (
+      ) : friendsQuery.isError && !friends ? (
         <DsEmptyState
           tone="error"
           art="/mascots/alphonso-encouraging.png"

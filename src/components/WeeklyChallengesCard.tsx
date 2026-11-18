@@ -1,27 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import { getWeeklyChallenges } from "../lib/challenges.functions";
+import { useWeeklyChallenges } from "../lib/use-weekly-challenges";
 
 export function WeeklyChallengesCard() {
-  const {
-    data: challenges,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ["weeklyChallenges"],
-    queryFn: () => getWeeklyChallenges(),
-    retry: false,
-  });
+  const { challenges, isLoading, failed, retry } = useWeeklyChallenges();
 
   // A failed read says so, with a retry, instead of hiding the challenges as if there were none this week.
-  if (isError)
+  if (failed)
     return (
       <div role="alert" className="card-lift rounded-3xl bg-tile-sky-bg p-4">
         <p className="font-display text-sm font-semibold text-ds-ink">This week's challenges</p>
         <p className="mt-2 text-xs text-ds-ink-soft">Couldn't load this week's challenges.</p>
         <button
           type="button"
-          onClick={() => void refetch()}
+          onClick={retry}
           className="mt-2 min-h-11 rounded-full px-3 text-xs font-semibold text-ds-ink underline"
         >
           Try again

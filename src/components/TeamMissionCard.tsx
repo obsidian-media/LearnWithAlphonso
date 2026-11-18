@@ -1,28 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
 import { DsButton, DsCard, Icon } from "@/components/ds/Blocks";
-import { getTeamMission } from "../lib/teams.functions";
+import { useTeamMission } from "../lib/use-team-mission";
 
 /**
  * The team's weekly shared mission. Renders nothing without a team or while loading; a failed read says so, with a
- * retry, rather than hiding the mission as if there were none.
+ * retry, rather than hiding the mission as if there were none (see useTeamMission for who is told).
  */
 export function TeamMissionCard() {
-  const {
-    data: mission,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ["teamMission"],
-    queryFn: () => getTeamMission(),
-    retry: false,
-  });
+  const { mission, showError, retry } = useTeamMission();
 
-  if (isError)
+  if (showError)
     return (
       <DsCard role="alert" className="gap-2">
         <p className="ds-type-overline text-ds-xp-text">Team mission</p>
         <p className="ds-type-footnote text-ds-ink-soft">Couldn't load the team mission.</p>
-        <DsButton small variant="secondary" onClick={() => void refetch()}>
+        <DsButton small variant="secondary" onClick={retry}>
           Try again
         </DsButton>
       </DsCard>

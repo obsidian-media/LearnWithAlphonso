@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { doubleClick } from "../../lib/double-click.testutil";
 
 const navigate = vi.fn();
 let mockCode = "abc123";
@@ -134,12 +135,10 @@ describe("Invite route failures", () => {
     getFriendInvitePreview.mockResolvedValue(preview);
     let resolve: (v: { ok: boolean; message: string }) => void = () => {};
     acceptFriendInvite.mockReturnValue(new Promise((r) => (resolve = r)));
-    const user = userEvent.setup();
     render(<InvitePage />);
 
     const add = await screen.findByRole("button", { name: "Add friend" });
-    await user.click(add);
-    await user.click(screen.getByRole("button", { name: "Adding…" }));
+    doubleClick(add);
     resolve({ ok: true, message: "friends" });
 
     expect(await screen.findByText("You're friends!")).toBeInTheDocument();

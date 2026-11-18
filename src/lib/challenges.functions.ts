@@ -35,16 +35,31 @@ export const joinOpenDuelQueue = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({ course: courseSchema, matchByLevel: z.boolean().default(true) }).parse(d),
   )
-  .handler(async ({ data, context }): Promise<{ matched: boolean; duelId: string | null }> => {
-    const { data: rows, error } = await context.supabase.rpc("join_open_duel_queue", {
-      _course: data.course,
-      _match_by_level: data.matchByLevel,
-    });
-    // A failed call is not "queued, no match yet": the page would say "Waiting for an opponent…" for nothing.
-    if (error) throw publicError("joinOpenDuelQueue", error);
-    const row = rows?.[0];
-    return { matched: row?.matched ?? false, duelId: row?.duel_id ?? null };
-  });
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ matched: boolean; duelId: string | null; queued: boolean }> => {
+      const { data: rows, error } = await context.supabase.rpc("join_open_duel_queue", {
+        _course: data.course,
+        _match_by_level: data.matchByLevel,
+      });
+      // A failed call is not "queued, no match yet": the page would say "Waiting for an opponent…" for nothing.
+      if (error) throw publicError("joinOpenDuelQueue", error);
+      const row = rows?.[0];
+      if (row?.matched) return { matched: true, duelId: row.duel_id ?? null, queued: false };
+      // (false, null) means either "queued, no match yet" or "not let in" (open duels switched off, or the account is
+      // kept out of contact with strangers): the function then deletes the caller's queue row instead of writing it.
+      // The caller's own row tells the two apart. If that read fails, keep the old reading (queued): the page then
+      // offers Leave queue, which is harmless, rather than claiming duels are off.
+      const { data: own, error: readError } = await context.supabase
+        .from("duel_queue")
+        .select("user_id")
+        .eq("user_id", context.userId)
+        .maybeSingle();
+      return { matched: false, duelId: null, queued: readError ? true : own !== null };
+    },
+  );
 
 export const leaveOpenDuelQueue = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

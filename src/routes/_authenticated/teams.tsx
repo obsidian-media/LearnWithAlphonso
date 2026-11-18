@@ -23,6 +23,7 @@ import {
 } from "../../lib/teams.functions";
 import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
 import { invalidateTeamQueries } from "../../lib/team-queries";
+import { useInFlight } from "../../lib/use-in-flight";
 
 export const Route = createFileRoute("/_authenticated/teams")({
   component: TeamsPage,
@@ -61,6 +62,8 @@ function TeamsPage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // One join or create at a time: the state above is for the look; the ref stops a second click before a re-render.
+  const inFlight = useInFlight();
   const [teamName, setTeamName] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
 
@@ -78,7 +81,8 @@ function TeamsPage() {
         </DsCard>
       </DsScreen>
     );
-  if (myTeamFailed)
+  // Only when nothing is known: a failed refresh after "no team" keeps the join and create forms.
+  if (myTeamFailed && myTeam === undefined)
     return (
       <DsScreen scene="profile">
         <GlassTitle title="Teams" />
@@ -96,7 +100,7 @@ function TeamsPage() {
     );
 
   async function handleJoinByCode() {
-    if (busy) return;
+    if (!inFlight.begin()) return;
     setBusy(true);
     setError(null);
     try {
@@ -110,12 +114,13 @@ function TeamsPage() {
     } catch (e) {
       setError(socialFailureMessage(e));
     } finally {
+      inFlight.end();
       setBusy(false);
     }
   }
 
   async function handleAutoJoin() {
-    if (busy) return;
+    if (!inFlight.begin()) return;
     setBusy(true);
     setError(null);
     try {
@@ -129,12 +134,13 @@ function TeamsPage() {
     } catch (e) {
       setError(socialFailureMessage(e));
     } finally {
+      inFlight.end();
       setBusy(false);
     }
   }
 
   async function handleCreate() {
-    if (busy) return;
+    if (!inFlight.begin()) return;
     setBusy(true);
     setError(null);
     try {
@@ -148,6 +154,7 @@ function TeamsPage() {
     } catch (e) {
       setError(socialFailureMessage(e));
     } finally {
+      inFlight.end();
       setBusy(false);
     }
   }

@@ -14,6 +14,7 @@ import {
   RankBadge,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
+import { RefreshError } from "@/components/ds/RefreshError";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LeagueTierBadge } from "../../components/LeagueTierBadge";
@@ -202,7 +203,8 @@ function LeaguePage() {
           <p className="ds-type-footnote text-center text-ds-ink-soft">Loading…</p>
         </DsCard>
       )}
-      {!isLoading && isError && (
+      {/* The full error is for a board with nothing to show; a failed refresh keeps the rows (below) on screen. */}
+      {!isLoading && isError && !data && (
         <DsEmptyState
           tone="error"
           art="/mascots/alphonso-encouraging.png"
@@ -227,7 +229,8 @@ function LeaguePage() {
           }
         />
       )}
-      {!isError && (data?.length ?? 0) > 0 && (
+      {isError && data && <RefreshError what="the leaderboard" onRetry={() => void refetch()} />}
+      {(data?.length ?? 0) > 0 && (
         <DsCard className="gap-0 p-1.5">
           <ol>
             {(data ?? []).map((row, i) => (

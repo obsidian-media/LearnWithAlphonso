@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { LessonFrame } from "../../components/AppShell";
 import { StarIcon } from "../../components/icons";
 import { acceptFriendInvite, getFriendInvitePreview } from "../../lib/friends.functions";
+import { useInFlight } from "../../lib/use-in-flight";
 
 export const Route = createFileRoute("/_authenticated/invite/$code")({
   component: InvitePage,
@@ -28,6 +29,8 @@ function InvitePage() {
   >("loading");
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
+  // One accept at a time, synchronously: a second click can land before `busy` re-renders the button disabled.
+  const acceptFlight = useInFlight();
 
   useEffect(() => {
     let alive = true;
@@ -55,7 +58,7 @@ function InvitePage() {
   }, [code, loadPreview, attempt]);
 
   async function confirmAccept() {
-    if (busy) return;
+    if (!acceptFlight.begin()) return;
     setBusy(true);
     try {
       const res = await accept({ data: { code } });
@@ -68,6 +71,7 @@ function InvitePage() {
     } catch {
       setState("error");
     } finally {
+      acceptFlight.end();
       setBusy(false);
     }
   }

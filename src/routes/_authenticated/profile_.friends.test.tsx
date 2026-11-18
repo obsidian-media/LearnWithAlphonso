@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { doubleClick } from "../../lib/double-click.testutil";
 
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
@@ -50,11 +51,14 @@ const { Route } = await import("./profile_.friends");
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const FriendsPage = Route.options.component!;
-  return render(
-    <QueryClientProvider client={client}>
-      <FriendsPage />
-    </QueryClientProvider>,
-  );
+  return {
+    client,
+    ...render(
+      <QueryClientProvider client={client}>
+        <FriendsPage />
+      </QueryClientProvider>,
+    ),
+  };
 }
 
 /** Remove lives in the row's menu (so the row stays one line on a phone): open it, then pick Remove friend. */
@@ -248,6 +252,39 @@ describe("Friends page", () => {
 
     expect(await screen.findByText("Couldn't remove Ada. Try again.")).toBeInTheDocument();
     expect(screen.getByText("Ada")).toBeInTheDocument();
+  });
+
+  it("sends one removal for a double click on Confirm", async () => {
+    getFriends.mockResolvedValue([
+      { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
+    ]);
+    getMyFriendCode.mockResolvedValue("me-code");
+    let resolve: (v: { ok: boolean }) => void = () => {};
+    removeFriend.mockReturnValue(new Promise((r) => (resolve = r)));
+    renderPage();
+
+    await clickRemoveFriend("Ada");
+    doubleClick(await screen.findByRole("button", { name: "Confirm" }));
+    resolve({ ok: true });
+
+    await waitFor(() => expect(screen.queryByText("Ada")).not.toBeInTheDocument());
+    expect(removeFriend).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the friends on screen when a background refresh fails, with a small Try again", async () => {
+    getFriends.mockResolvedValue([
+      { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
+    ]);
+    getMyFriendCode.mockResolvedValue("me-code");
+    const { client } = renderPage();
+    expect(await screen.findByText("Ada")).toBeInTheDocument();
+
+    getFriends.mockRejectedValue(new Error("getFriends: request-failed"));
+    await client.refetchQueries({ queryKey: ["friends"] });
+
+    expect(await screen.findByText("Couldn't refresh your friends.")).toBeInTheDocument();
+    expect(screen.getByText("Ada")).toBeInTheDocument();
+    expect(screen.queryByText("Couldn't load your friends.")).not.toBeInTheDocument();
   });
 
   it("says the invite link could not load, with Try again, instead of a dead disabled button", async () => {

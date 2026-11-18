@@ -15,6 +15,7 @@ import {
   Overline,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
+import { RefreshError } from "@/components/ds/RefreshError";
 import { TopTeams } from "@/components/teams/TeamParts";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import { TeamMissionCard } from "../../components/TeamMissionCard";
@@ -28,6 +29,7 @@ import {
 } from "../../lib/teams.functions";
 import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
 import { invalidateTeamQueries } from "../../lib/team-queries";
+import { useInFlight } from "../../lib/use-in-flight";
 
 export const Route = createFileRoute("/_authenticated/teams_/$teamId")({
   component: TeamDetailPage,
@@ -67,9 +69,12 @@ function TeamDetailPage() {
   const [kickId, setKickId] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
   const [kickingId, setKickingId] = useState<string | null>(null);
+  // Synchronous guards: a second click can arrive before the state above re-renders the buttons disabled.
+  const leaveFlight = useInFlight();
+  const kickFlight = useInFlight();
 
   async function handleLeave() {
-    if (leaving) return;
+    if (!leaveFlight.begin()) return;
     setLeaving(true);
     setNotice(null);
     setLeft(false);
@@ -88,12 +93,13 @@ function TeamDetailPage() {
     } catch (e) {
       setNotice(socialFailureMessage(e));
     } finally {
+      leaveFlight.end();
       setLeaving(false);
     }
   }
 
   async function handleKick(member: TeamMember) {
-    if (kickingId) return;
+    if (!kickFlight.begin()) return;
     setKickingId(member.userId);
     setNotice(null);
     try {
@@ -108,6 +114,7 @@ function TeamDetailPage() {
     } catch (e) {
       setNotice(socialFailureMessage(e));
     } finally {
+      kickFlight.end();
       setKickingId(null);
     }
   }
@@ -121,7 +128,8 @@ function TeamDetailPage() {
         </DsCard>
       </DsScreen>
     );
-  if (isError)
+  // A failed refresh of a team already on screen keeps the page; the full error is for nothing loaded.
+  if (isError && myTeam === undefined)
     return (
       <DsScreen scene="profile">
         <GlassTitle title="Teams" />
@@ -227,7 +235,7 @@ function TeamDetailPage() {
 
       <TeamMissionCard />
 
-      {membersQuery.isError && (
+      {membersQuery.isError && !members && (
         <>
           <Overline>Members</Overline>
           <DsCard role="alert">
@@ -238,9 +246,12 @@ function TeamDetailPage() {
           </DsCard>
         </>
       )}
-      {!membersQuery.isError && (members ?? []).length > 0 && (
+      {(members ?? []).length > 0 && (
         <>
           <Overline>Members</Overline>
+          {membersQuery.isError && (
+            <RefreshError what="the members" onRetry={() => void membersQuery.refetch()} />
+          )}
           <DsCard flush>
             {(members ?? []).map((m, i) => (
               <DsRow key={m.userId} first={i === 0} className="min-h-14">

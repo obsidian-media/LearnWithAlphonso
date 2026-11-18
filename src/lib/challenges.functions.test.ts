@@ -102,7 +102,9 @@ describe("joinOpenDuelQueue", () => {
       _course: "fr",
       _match_by_level: false,
     });
-    expect(result).toEqual({ matched: true, duelId: "d1" });
+    expect(result).toEqual({ matched: true, duelId: "d1", queued: false });
+    // A match needs no queue read.
+    expect(supabase.from).not.toHaveBeenCalled();
   });
 
   it("defaults to english and match-by-level when given an empty object", async () => {
@@ -120,14 +122,32 @@ describe("joinOpenDuelQueue", () => {
     // Queued-but-unmatched is the common case; duelId must stay null so the
     // caller doesn't navigate to a duel that doesn't exist.
     const supabase = rpcReturning([{ matched: false, duel_id: null }]);
+    supabase.from.mockReturnValueOnce(chainable({ data: { user_id: "user-1" }, error: null }));
     const result = await joinOpenDuelQueue({ context: ctx(supabase), data: {} });
-    expect(result).toEqual({ matched: false, duelId: null });
+    expect(supabase.from).toHaveBeenCalledWith("duel_queue");
+    expect(result).toEqual({ matched: false, duelId: null, queued: true });
+  });
+
+  it("reports not queued when the server did not let the learner in (no queue row was written)", async () => {
+    // Open duels switched off, or the account kept out of contact with strangers: the RPC answers (false, null) too,
+    // but deletes the caller's row instead of writing it. "Waiting for an opponent…" would wait forever.
+    const supabase = rpcReturning([{ matched: false, duel_id: null }]);
+    supabase.from.mockReturnValueOnce(chainable({ data: null, error: null }));
+    const result = await joinOpenDuelQueue({ context: ctx(supabase), data: {} });
+    expect(result).toEqual({ matched: false, duelId: null, queued: false });
+  });
+
+  it("keeps the queued reading when the queue row cannot be read", async () => {
+    const supabase = rpcReturning([{ matched: false, duel_id: null }]);
+    supabase.from.mockReturnValueOnce(chainable({ data: null, error: { message: "boom" } }));
+    const result = await joinOpenDuelQueue({ context: ctx(supabase), data: {} });
+    expect(result).toEqual({ matched: false, duelId: null, queued: true });
   });
 
   it("fails closed when the RPC returns no rows", async () => {
     const supabase = rpcReturning([]);
     const result = await joinOpenDuelQueue({ context: ctx(supabase), data: {} });
-    expect(result).toEqual({ matched: false, duelId: null });
+    expect(result).toEqual({ matched: false, duelId: null, queued: false });
   });
 
   it("rejects an unsupported course before hitting the network", async () => {

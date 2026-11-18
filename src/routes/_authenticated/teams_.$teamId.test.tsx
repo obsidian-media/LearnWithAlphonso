@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { doubleClick } from "../../lib/double-click.testutil";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const navigateMock = vi.fn();
@@ -39,11 +40,14 @@ const { Route } = await import("./teams_.$teamId");
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const Page = Route.options.component!;
-  return render(
-    <QueryClientProvider client={client}>
-      <Page />
-    </QueryClientProvider>,
-  );
+  return {
+    client,
+    ...render(
+      <QueryClientProvider client={client}>
+        <Page />
+      </QueryClientProvider>,
+    ),
+  };
 }
 
 beforeEach(() => {
@@ -306,8 +310,7 @@ describe("Team detail page", () => {
       renderPage();
 
       const leave = await screen.findByRole("button", { name: "Leave team" });
-      fireEvent.click(leave);
-      fireEvent.click(leave);
+      doubleClick(leave);
       expect(await screen.findByRole("button", { name: "Leaving…" })).toBeDisabled();
       resolve({ ok: true, reason: null });
       await waitFor(() => expect(navigateMock).toHaveBeenCalledWith({ to: "/teams" }));
@@ -360,8 +363,7 @@ describe("Team detail page", () => {
 
       fireEvent.click(await screen.findByRole("button", { name: "Remove Mina from the team" }));
       const remove = screen.getByRole("button", { name: "Remove" });
-      fireEvent.click(remove);
-      fireEvent.click(remove);
+      doubleClick(remove);
       expect(await screen.findByRole("button", { name: "Removing…" })).toBeDisabled();
       resolve({ ok: true, reason: null });
       await waitFor(() => expect(screen.queryByRole("button", { name: "Removing…" })).toBeNull());
@@ -387,6 +389,28 @@ describe("Team detail page", () => {
 
       expect(await screen.findByText("Couldn't load the top teams.")).toBeInTheDocument();
       expect(screen.getByText("This week's top teams")).toBeInTheDocument();
+    });
+
+    it("keeps the team, members and top teams on screen when a background refresh fails", async () => {
+      getMyTeam.mockResolvedValue(owned);
+      getTeamMembers.mockResolvedValue(members);
+      getTeamLeaderboard.mockResolvedValue([{ teamId: "t9", name: "Early Birds", weeklyXp: 900 }]);
+      const { client } = renderPage();
+      expect(await screen.findByText("Mina")).toBeInTheDocument();
+      expect(await screen.findByText("Early Birds")).toBeInTheDocument();
+
+      getMyTeam.mockRejectedValue(new Error("getMyTeam: request-failed"));
+      getTeamMembers.mockRejectedValue(new Error("getTeamMembers: request-failed"));
+      getTeamLeaderboard.mockRejectedValue(new Error("getTeamLeaderboard: request-failed"));
+      await client.refetchQueries();
+
+      expect(await screen.findByText("Couldn't refresh the members.")).toBeInTheDocument();
+      expect(screen.getByText("Couldn't refresh the top teams.")).toBeInTheDocument();
+      expect(screen.getByText("Mina")).toBeInTheDocument();
+      expect(screen.getByText("Early Birds")).toBeInTheDocument();
+      expect(screen.queryByText("Couldn't load your team.")).not.toBeInTheDocument();
+      expect(screen.queryByText("Couldn't load the members.")).not.toBeInTheDocument();
+      expect(screen.queryByText("Couldn't load the top teams.")).not.toBeInTheDocument();
     });
   });
 });
