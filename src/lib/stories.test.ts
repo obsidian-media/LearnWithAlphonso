@@ -16,6 +16,7 @@ const s = (over: Partial<StorySummary>): StorySummary => ({
   title: "Title",
   sortOrder: 0,
   published: true,
+  branching: false,
   segmentIndex: 0,
   segmentCount: 5,
   bestCorrect: null,
@@ -63,6 +64,12 @@ describe("storyStatus", () => {
     expect(storyStatus(s({}))).toBe("New");
     expect(storyStatus(s({ segmentIndex: 3 }))).toBe("Continue reading");
     expect(storyStatus(s({ bestCorrect: 2, checkTotal: 3, completed: true }))).toBe("Best: 2 of 3");
+  });
+  it("labels a branching story by its path state, not a score", () => {
+    expect(storyStatus(s({ branching: true }))).toBe("Choose your path");
+    expect(storyStatus(s({ branching: true, completed: true }))).toBe(
+      "Ending found — try another path",
+    );
   });
 });
 
