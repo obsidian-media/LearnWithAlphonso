@@ -22,12 +22,13 @@ export const PAYWALL_COPY = {
 export const WEB_PAYWALL_COPY = {
   manageOnIphone: "Manage it in your iPhone's Settings.",
   /**
-   * The EU and UK right-of-withdrawal acknowledgement (Terms, "Your right to withdraw"). Required, unticked by
-   * default, before any redirect to checkout. No digits and no "trial": the paywall's no-trial and no-price checks
-   * read the whole page.
+   * The learner's request for Pro to start straight away (Terms, "Your right to withdraw"). Pro is a service, so an
+   * EU or UK learner keeps the right to withdraw and is refunded minus the time Pro was available. Required, unticked
+   * by default, before any redirect to checkout. No digits and no "trial": the paywall's no-trial and no-price
+   * checks read the whole page.
    */
   withdrawalConsent:
-    "I want Alphonso Pro to start straight away, and I understand that I lose my right to withdraw (the EU and UK cooling-off period) once it starts.",
+    "I ask for Alphonso Pro to start straight away. If I live in the EU or UK and withdraw within fourteen days, I get a refund minus a proportionate amount for the time Pro was available.",
   withdrawalConsentNeeded: "Tick the box above to continue to checkout.",
   checkFailed: "Couldn't check your subscription. Try again.",
   activating: "Payment received, activating…",

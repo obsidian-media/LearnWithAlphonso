@@ -69,7 +69,7 @@ afterEach(() => {
 });
 
 const plansReady = () => screen.findByRole("radiogroup", { name: "Choose a plan" });
-const WITHDRAWAL = /I want Alphonso Pro to start straight away/;
+const WITHDRAWAL = /I ask for Alphonso Pro to start straight away/;
 const tickWithdrawal = () => userEvent.click(screen.getByRole("checkbox", { name: WITHDRAWAL }));
 
 describe("WebPaywall: the top", () => {
@@ -257,14 +257,16 @@ describe("WebPaywall: the plans", () => {
   });
 });
 
-describe("WebPaywall: the EU and UK withdrawal acknowledgement", () => {
+describe("WebPaywall: the request for an immediate start (EU and UK withdrawal)", () => {
   it("is a labelled, required checkbox, unticked by default", async () => {
     render(<WebPaywall source="hector_tab" />);
     await plansReady();
     const box = screen.getByRole("checkbox", { name: WITHDRAWAL });
     expect(box).not.toBeChecked();
     expect(box).toBeRequired();
-    expect(box).toHaveAccessibleName(/lose my right to withdraw/);
+    expect(box).toHaveAccessibleName(/minus a proportionate amount for the time Pro was available/);
+    // Pro is a service: ticking the box asks for an immediate start, it never gives up the right to withdraw.
+    expect(document.body.textContent).not.toMatch(/lose (my|your) right to withdraw/);
   });
 
   it("checkout cannot start while it is unticked", async () => {

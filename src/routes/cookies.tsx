@@ -54,6 +54,7 @@ function Cookies() {
           items={[
             "Your theme, so the website looks the way you chose before it finishes loading.",
             "Small reminders, such as how many times we have shown you the save-a-word hint, and a copy of your learning goal so it appears quickly.",
+            "A friend’s invite code: if you open an invite link (one with ?ref= in it), we keep only that code in your browser’s local storage, for up to 30 days, so the invite still counts when you sign up. Once you are signed in it is sent to us once and removed from your browser; it is never used for analytics.",
           ]}
         />
         <p>These make the website work the way you set it up and do not require consent.</p>

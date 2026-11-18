@@ -140,8 +140,8 @@ function ComingSoon() {
 
 function Plans({ plans, source }: { plans: PaywallPlan[]; source: PaywallSource }) {
   const [selected, setSelected] = useState(0);
-  // EU and UK right of withdrawal: checkout cannot start until the learner asks for Pro to start straight away and
-  // acknowledges losing the withdrawal right once it does (Terms, "Your right to withdraw"). Unticked by default.
+  // EU and UK right of withdrawal: checkout cannot start until the learner asks for Pro to start straight away. They
+  // keep the right to withdraw (refund minus the time Pro was available; Terms, "Your right to withdraw"). Unticked.
   const [consented, setConsented] = useState(false);
   const consentId = useId();
   const plan = plans[selected] ?? plans[0];

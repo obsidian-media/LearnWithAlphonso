@@ -43,13 +43,13 @@ One variable file each ships in the iOS app (`ios/LearnWithAlphonso/Sources/Font
 
 ## Vocabulary photos (shipped, not redistributed)
 
-The photos on vocabulary questions (`src/data/vocab-images.ts`, and `android/LearnWithAlphonso/app/src/main/assets/content/vocab-images.json` for Android) are stock photos, each with its photographer credit, source page and licence recorded in that file:
+The photos on vocabulary questions (`src/data/vocab-images.ts`, with copies in `ios/LearnWithAlphonso/Resources/vocab-images.json` for iOS and `android/LearnWithAlphonso/app/src/main/assets/content/vocab-images.json` for Android) are stock photos, each with its photographer credit, source page and licence recorded in that file:
 
 - Pexels, under the Pexels License (https://www.pexels.com/license/).
 - Pixabay, under the Pixabay Content License (https://pixabay.com/service/license-summary/).
 - Kaboompics (Karolina Grabowska): the photos credited to Kaboompics were taken from Pexels and are used under the Pexels License, as their entries record.
 
-They are served from our own storage only to illustrate a word inside a lesson. We do not offer them for download, sell them or redistribute them as standalone files, which is what both licences require. `src/data/vocab-images.guard.test.ts` checks that each entry's source, licence, photo page and credit agree.
+They are served from our own storage, on the website and in the iOS and Android apps, only to illustrate a word inside a lesson. We do not offer them for download, sell them or redistribute them as standalone files, which both licences prohibit. `src/data/vocab-images.guard.test.ts` checks that each entry's source, licence, photo page and credit agree.
 
 ## Kenney sound effects (shipped)
 

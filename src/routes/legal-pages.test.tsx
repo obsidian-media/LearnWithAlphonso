@@ -263,7 +263,8 @@ describe("Terms route: Alphonso Pro", () => {
     const Terms = TermsRoute.options.component!;
     const { container } = render(<Terms />);
     const text = container.textContent ?? "";
-    expect(text).toMatch(/paid monthly or yearly/);
+    expect(text).toMatch(/paid monthly or, where offered,\s+yearly/);
+    expect(text).toMatch(/plans offered, their price and their billing period are shown/);
     expect(text).toMatch(/a year on the yearly plan/);
     expect(text).toMatch(/Hector, the AI voice tutor/);
     expect(text).toMatch(/unlimited hearts/);
@@ -273,11 +274,19 @@ describe("Terms route: Alphonso Pro", () => {
     expect(text).not.toMatch(/one free trial per person/);
   });
 
-  it("has an EU and UK withdrawal clause that matches the checkout checkbox", () => {
+  it("keeps the EU and UK right to withdraw, with a proportionate refund and how to use it", () => {
     const Terms = TermsRoute.options.component!;
-    render(<Terms />);
+    const { container } = render(<Terms />);
     expect(screen.getByRole("heading", { name: /right to withdraw/ })).toBeInTheDocument();
-    expect(screen.getByText(/tick a box/)).toBeInTheDocument();
+    expect(screen.getByText(/tick a box to ask for Pro to start/)).toBeInTheDocument();
+    const text = container.textContent ?? "";
+    expect(text).toMatch(/Alphonso Pro is a service/);
+    expect(text).toMatch(/within 14 days of\s+subscribing/);
+    expect(text).toMatch(
+      /minus a proportionate amount for the time Pro was available before you told us/,
+    );
+    expect(text).toMatch(/support@alphonsoecosystem\.app or use the Help chat/);
+    expect(text).not.toMatch(/lose your\s+right to withdraw/);
   });
 
   it("says AI replies can be reported on every platform", () => {

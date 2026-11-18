@@ -50,8 +50,10 @@ function Accessibility() {
         <p>
           Our goal is for the website and both apps to meet the Web Content Accessibility Guidelines
           (WCAG) 2.2 at level AA. That is a target we are working towards, not a claim that we meet
-          it today: the app has not been independently audited or certified. Automated accessibility
-          checks run on our public web pages with every change, and we fix what they find.
+          it today: the app has not been independently audited or certified. Automated checks for
+          WCAG 2 level A and AA issues run on our public web pages (such as the home, sign-in and
+          legal pages) with every change. They catch some problems, not all, and they do not yet
+          cover the signed-in website or the apps.
         </p>
         <p>
           If something here is wrong, or something you need is missing, write to {CONTACT}. We read

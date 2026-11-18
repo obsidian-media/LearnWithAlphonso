@@ -108,9 +108,11 @@ function Privacy() {
           and labelled as AI. We keep each explanation in a shared store so the same item in the
           same language is only written once; it is not tied to your account, and another learner
           who asks for the same item in the same language may see it. Because an explanation can
-          quote your answer, it may contain a few of your words. Because nothing in the store links
-          an explanation to you, deleting your account does not remove it. Your language is read
-          from your profile, never sent by the app.
+          quote your answer, or the chat message it explains (a tutor reply, which may repeat
+          something you said), it may contain a few of your words. Because nothing in the store
+          links an explanation to you, deleting your account does not remove it, and old
+          explanations are not yet deleted on a schedule. Your language is read from your profile,
+          never sent by the app.
         </p>
         <p>
           You can withdraw your consent at any time, in the iOS app under Profile → Settings → AI
@@ -139,7 +141,7 @@ function Privacy() {
             "To send push notifications you have enabled (your consent, which you can withdraw in your device settings at any time).",
             "To answer your Help chat messages and tell you when we reply (performance of our contract; AI answers only with your consent, which you can withdraw at any time).",
             "To review reports, enforce our Terms of Use and keep learners safe (our legitimate interests and our legal obligations).",
-            "To prevent abuse and control cost, including per-account daily limits on AI features (our legitimate interests).",
+            "To prevent abuse and control cost, including per-account daily and monthly limits on AI features (our legitimate interests).",
             "To count which links and communities bring new learners, using the campaign tags above (your consent, given by choosing Accept all; if you choose Essential only nothing is saved). The tags are deleted with your account.",
             "To keep the app secure and diagnose faults, including the Cloudflare bot check on email sign-in and sign-up (our legitimate interests).",
           ]}
