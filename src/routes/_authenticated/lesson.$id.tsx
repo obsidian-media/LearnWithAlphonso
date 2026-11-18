@@ -60,9 +60,14 @@ import { ACHIEVEMENTS_BY_ID, type LeagueTier } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
+import { lessonSessionNeedsRenewal } from "../../lib/lesson-session-age";
+import { RouteError } from "../../components/RouteError";
 
 export const Route = createFileRoute("/_authenticated/lesson/$id")({
   component: LessonPageWithSave,
+  errorComponent: ({ error, reset }) => (
+    <RouteError error={error} reset={reset} boundary="lesson_route" />
+  ),
   head: () => ({
     meta: [
       { title: "Lesson — Alphonso" },
@@ -214,6 +219,18 @@ function LessonPage() {
   }, []);
 
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  // When this device received the token, to renew it before the server's three-hour limit (lesson-session-age.ts).
+  const sessionReceivedAt = useRef(0);
+  // The session could not be started (offline, a server error). Without a token no completion can ever save, so the
+  // lesson start says so and offers a retry instead of letting the learner do a lesson that is lost at the end.
+  const [sessionFailed, setSessionFailed] = useState(false);
+  // Start lesson was tapped before the token arrived: the lesson opens as soon as it does.
+  const [startRequested, setStartRequested] = useState(false);
+  // The completion did not reach the server. The answers and the session stay on this page so Try again resends them.
+  const [saveFailed, setSaveFailed] = useState<{ notice?: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+  // The time on screen, fixed at the first Finish so a retry later does not count the minutes spent retrying.
+  const finishedElapsedMs = useRef<number | undefined>(undefined);
   // The server refuses to start a lesson at 0 hearts. Held here so the page shows the hearts dialog
   // (countdown, XP purchase, review instead) instead of a lesson that could never be saved.
   const [heartsBlock, setHeartsBlock] = useState<{ refillAt: number | null } | null>(null);
@@ -226,6 +243,7 @@ function LessonPage() {
   useEffect(() => {
     if (!maybeLesson) return;
     let alive = true;
+    setSessionFailed(false);
     void startLessonSession({ data: { lessonId: maybeLesson.id, course } })
       .then((res) => {
         if (!alive) return;
@@ -235,13 +253,28 @@ function LessonPage() {
         }
         setHeartsBlock(null);
         setSessionToken(res.token);
+        sessionReceivedAt.current = Date.now();
         void track("lesson_started", { lesson_id: maybeLesson.id, level: lessonLevel, course });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (alive) setSessionFailed(true);
+      });
     return () => {
       alive = false;
     };
   }, [maybeLesson, course, sessionAttempt, lessonLevel]);
+
+  function beginLesson() {
+    timer.current = new ActiveTimer(performance.now());
+    setPhase(vocab.length > 0 ? "vocab" : "quiz");
+  }
+  // Start lesson waits for the session: the tap is kept, and the lesson opens the moment the token lands.
+  useEffect(() => {
+    if (!startRequested || !sessionToken || phase !== "overview") return;
+    setStartRequested(false);
+    beginLesson();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startRequested, sessionToken, phase]);
 
   if (!maybeLesson) {
     return (
@@ -413,28 +446,55 @@ function LessonPage() {
       setTranslationVerdict(null);
       return;
     }
+    await complete();
+  }
+
+  /** A token the server will still accept: the one from the lesson start, or a new one when that is near its limit. */
+  async function freshSessionToken(): Promise<string> {
+    if (sessionToken && !lessonSessionNeedsRenewal(sessionReceivedAt.current, Date.now())) {
+      return sessionToken;
+    }
+    const res = await startLessonSession({ data: { lessonId: lesson.id, course } });
+    if ("error" in res) throw new Error(res.error);
+    setSessionToken(res.token);
+    sessionReceivedAt.current = Date.now();
+    return res.token;
+  }
+
+  /**
+   * Saves the finished lesson. Also Try again on the "Not saved yet" screen: the same answers and session go again,
+   * and only a saved completion is celebrated (a failure used to show "+0 XP" and the lesson was silently lost).
+   */
+  async function complete() {
     if (finishing.current) return;
     finishing.current = true;
-    const elapsedMs = timer.current?.elapsedMs(performance.now());
-    timer.current?.pause(performance.now());
+    if (finishedElapsedMs.current === undefined) {
+      finishedElapsedMs.current = timer.current?.elapsedMs(performance.now());
+      timer.current?.pause(performance.now());
+    }
+    const elapsedMs = finishedElapsedMs.current;
+    setSaving(true);
     // Misses are re-derived server-side and enrolled by the same atomic
     // transaction as the completion. A separate fire-and-forget write here
     // could leave review items behind when completion failed.
     try {
+      const token = await freshSessionToken();
       const res = await completeLessonRemote({
         data: {
           lessonId: lesson.id,
           total,
           answers: answeredQs,
           course,
-          sessionToken: sessionToken ?? "",
+          sessionToken: token,
         },
       });
+      // The server's own count of right answers; the client's is only what this screen showed along the way.
+      const awardedCorrect = typeof res.correct === "number" ? res.correct : correct;
       void track("lesson_completed", {
         lesson_id: lesson.id,
         level: lessonLevel,
         course,
-        score_bucket: scoreBucket(total > 0 ? (res.correct / total) * 100 : 0),
+        score_bucket: scoreBucket(total > 0 ? (awardedCorrect / total) * 100 : 0),
       });
       const completed = state.completedLessons.includes(lesson.id)
         ? state.completedLessons
@@ -451,7 +511,7 @@ function LessonPage() {
           ...state.answersByLesson,
           // The best score is kept (as the server keeps it), so the next replay's XP chips start from it.
           [lesson.id]: {
-            correct: Math.max(state.answersByLesson[lesson.id]?.correct ?? 0, correct),
+            correct: Math.max(state.answersByLesson[lesson.id]?.correct ?? 0, awardedCorrect),
             total,
           },
         },
@@ -460,9 +520,10 @@ function LessonPage() {
           ...res.newlyUnlocked.filter((a) => !state.unlockedAchievements.includes(a)),
         ],
       });
+      setSaveFailed(null);
       setDone({
         xp: res.xpGain,
-        awardedCorrect: res.correct,
+        awardedCorrect,
         unlocked: res.newlyUnlocked,
         heartsBonus: res.heartsBonus,
         saved: true,
@@ -472,14 +533,11 @@ function LessonPage() {
           : undefined,
       });
     } catch (err) {
-      setDone({
-        xp: 0,
-        unlocked: [],
-        heartsBonus: null,
-        saved: false,
-        notice: isCompletionRefusal(err) ? SLOW_DOWN_MESSAGE : undefined,
-        elapsedMs,
-      });
+      // Free for Try again.
+      finishing.current = false;
+      setSaveFailed({ notice: isCompletionRefusal(err) ? SLOW_DOWN_MESSAGE : undefined });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -507,6 +565,18 @@ function LessonPage() {
   );
   const unitLine = unitNumber && unit ? `Unit ${unitNumber} · ${unit.title}` : lesson.subtitle;
 
+  if (saveFailed && !done) {
+    return (
+      <LessonScreen>
+        <NotSavedScreen
+          roomSrc={roomSrc}
+          notice={saveFailed.notice}
+          saving={saving}
+          onRetry={() => void complete()}
+        />
+      </LessonScreen>
+    );
+  }
   if (done) {
     return (
       <LessonScreen>
@@ -543,10 +613,12 @@ function LessonPage() {
           maxXp={maxLessonXp(total)}
           roomSrc={roomSrc}
           hud={hud(0)}
+          start={sessionFailed ? "failed" : startRequested && !sessionToken ? "waiting" : "ready"}
           onStart={() => {
-            timer.current = new ActiveTimer(performance.now());
-            setPhase(vocab.length > 0 ? "vocab" : "quiz");
+            if (sessionToken) beginLesson();
+            else setStartRequested(true);
           }}
+          onRetry={() => setSessionAttempt((n) => n + 1)}
         />
       </LessonScreen>
     );
@@ -1005,7 +1077,9 @@ function OverviewScreen({
   maxXp,
   roomSrc,
   hud,
+  start = "ready",
   onStart,
+  onRetry,
 }: {
   title: string;
   unitLine: string;
@@ -1016,7 +1090,10 @@ function OverviewScreen({
   maxXp: number;
   roomSrc: string;
   hud: React.ReactNode;
+  /** "waiting": Start lesson was tapped and the session is still on its way; "failed": it could not be started. */
+  start?: "ready" | "waiting" | "failed";
   onStart: () => void;
+  onRetry?: () => void;
 }) {
   const steps = [
     ...(words > 0
@@ -1090,10 +1167,61 @@ function OverviewScreen({
           </div>
         ))}
       </div>
-      <div className="sticky bottom-0 z-20 mt-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
-        <button onClick={onStart} className={edgeButtonClass("primary")}>
-          Start lesson
+      <div className="sticky bottom-0 z-20 mt-auto grid gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
+        {start === "failed" ? (
+          <>
+            <p role="alert" className="text-center ds-type-footnote text-ds-wrong-ink">
+              This lesson couldn&apos;t start, so it couldn&apos;t be saved. Check your connection
+              and try again.
+            </p>
+            <button onClick={onRetry} className={edgeButtonClass("primary")}>
+              Try again
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={onStart}
+            disabled={start === "waiting"}
+            className={edgeButtonClass("primary")}
+          >
+            {start === "waiting" ? "Getting your lesson ready…" : "Start lesson"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The end of a lesson whose completion did not reach the server: nothing is celebrated until it is saved. */
+export function NotSavedScreen({
+  roomSrc,
+  notice,
+  saving,
+  onRetry,
+}: {
+  roomSrc: string;
+  /** Replaces the connection line, e.g. when the server asked the learner to slow down. */
+  notice?: string;
+  saving: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <div data-stage="not-saved" className="flex flex-1 flex-col">
+      <LessonRoom roomSrc={roomSrc} expression="hmm" height={320} alphonsoWidth={290} />
+      <div className="relative z-[4] grid gap-2 px-4 pb-4 pt-4 text-center">
+        <h1 className="ds-type-title text-ds-ink">Not saved yet</h1>
+        <p role="status" className="ds-type-body text-ds-ink-soft">
+          {notice ??
+            "Your lesson didn't reach us. Your answers are still here: check your connection and try again."}
+        </p>
+      </div>
+      <div className="sticky bottom-0 z-20 mt-auto grid gap-2 bg-ds-surface/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+        <button onClick={onRetry} disabled={saving} className={edgeButtonClass("primary")}>
+          {saving ? "Saving…" : "Try again"}
         </button>
+        <Link to="/learn" className={edgeButtonClass("tertiary")}>
+          Leave without saving
+        </Link>
       </div>
     </div>
   );
@@ -1140,7 +1268,14 @@ export function FinishScreen({
 }) {
   const streak = useProgress((s) => s.streak);
   const reduceMotion = usePrefersReducedMotion();
-  const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
+  // What the server counted right (it re-grades every answer); the client's own tally only when it sent none.
+  const rightCount = awardedCorrect ?? correct;
+  const chips = lessonRewardChips({
+    xp,
+    streak: saved ? streak : null,
+    correct: rightCount,
+    total,
+  });
   // He says "wow", then smiles (1.4 s in). Under Reduce Motion he is already smiling.
   const [amazed, setAmazed] = useState(!reduceMotion);
   // The jingle with the confetti, then XP and any achievement as their tiles land. Keyed per screen, so a re-render
@@ -1181,10 +1316,8 @@ export function FinishScreen({
     return () => window.clearTimeout(t);
   }, [cueUnlocked, reduceMotion, waitingForPromotion]);
   // Only a saved completion has a real award to explain; the lines always add up to it (lesson-xp.ts).
-  const xpLines = saved
-    ? lessonXpBreakdown({ correct: awardedCorrect ?? correct, total, awarded: xp }).lines
-    : [];
-  const headline = total > 0 ? `Nice work! You got ${correct} of ${total}.` : "Nice work!";
+  const xpLines = saved ? lessonXpBreakdown({ correct: rightCount, total, awarded: xp }).lines : [];
+  const headline = total > 0 ? `Nice work! You got ${rightCount} of ${total}.` : "Nice work!";
   return (
     <div data-stage="complete" className="flex flex-1 flex-col">
       <motion.div
@@ -1245,7 +1378,7 @@ export function FinishScreen({
           </div>
         )}
         <p className="text-center ds-type-footnote tabular-nums text-ds-ink-soft">
-          {correct}/{total} correct
+          {rightCount}/{total} correct
         </p>
         {heartsBonus && (
           <span className="justify-self-center">

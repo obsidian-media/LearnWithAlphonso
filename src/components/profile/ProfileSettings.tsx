@@ -23,6 +23,7 @@ import {
   socialReasonMessage,
 } from "../../lib/social-reason-copy";
 import { useTheme } from "../../lib/theme";
+import { saveBlobAsFile } from "@/lib/download-file";
 
 /** The name went through confirm_display_name first; only a later write failed. */
 const DETAILS_SAVE_FAILED = "Your name was saved, but something else wasn't. Try again.";
@@ -250,12 +251,7 @@ function YourData({ onSignedOut }: { onSignedOut: () => void }) {
         ...JSON.parse(payload.tables),
       };
       const blob = new Blob([JSON.stringify(pretty, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "alphonso-my-data.json";
-      a.click();
-      URL.revokeObjectURL(url);
+      saveBlobAsFile(blob, "alphonso-my-data.json");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Export failed");
     } finally {

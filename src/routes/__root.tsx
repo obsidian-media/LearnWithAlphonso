@@ -27,6 +27,7 @@ import { THEME_BOOT_SCRIPT, useTheme } from "../lib/theme";
 import { fetchProgress } from "../lib/sync.functions";
 import { getMyProfile } from "../lib/leaderboard.functions";
 import { clearCachedVoicePrefs } from "../lib/voice-prefs";
+import { browserFirstRunStore } from "../lib/first-run";
 
 function NotFoundComponent() {
   return (
@@ -174,21 +175,31 @@ function RootComponent() {
 function AuthSync() {
   const hydrate = useProgress((s) => s.hydrate);
   const reset = useProgress((s) => s.reset);
+  const adoptUser = useProgress((s) => s.adoptUser);
   const hydrateTheme = useTheme((s) => s.hydrateFromServer);
   const router = useRouter();
   const qc = useQueryClient();
   useEffect(() => {
     let cancelled = false;
+    // The account the app last loaded for. supabase-js emits SIGNED_IN again whenever a hidden tab becomes visible;
+    // for the same account that is not a sign-in, and reloading on it threw away whatever the learner was doing.
+    let currentUserId: string | null | undefined;
     async function load() {
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
-      if (!data.session) {
+      const user = data.session?.user;
+      if (!user) {
+        currentUserId = null;
         reset();
         return;
       }
+      currentUserId = user.id;
+      // The account's own course (remembered in this browser), not the server's default of English.
+      const course = adoptUser(user.id);
       try {
-        const snap = await fetchProgress();
-        if (!cancelled) hydrate(snap);
+        const snap = await fetchProgress({ data: { course } });
+        // A course switch while this was in flight has already loaded its own numbers.
+        if (!cancelled && useProgress.getState().course === course) hydrate(snap);
         const profile = await getMyProfile();
         if (!cancelled) hydrateTheme(profile?.theme ?? null);
       } catch {
@@ -196,11 +207,20 @@ function AuthSync() {
       }
     }
     void load();
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      if (event === "SIGNED_IN") {
+        const id = session?.user?.id;
+        if (id && id === currentUserId) return;
+        if (id) currentUserId = id;
+      }
       router.invalidate();
       if (event === "SIGNED_OUT") {
+        currentUserId = null;
         reset();
+        // Nothing the last account loaded may show to the next one on this browser (a shared computer).
+        qc.clear();
+        browserFirstRunStore().clearDraft();
         // Voice choices are the account's; the next account on this browser starts from its own.
         clearCachedVoicePrefs();
       } else {
@@ -212,6 +232,6 @@ function AuthSync() {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, [hydrate, reset, hydrateTheme, router, qc]);
+  }, [hydrate, reset, adoptUser, hydrateTheme, router, qc]);
   return null;
 }

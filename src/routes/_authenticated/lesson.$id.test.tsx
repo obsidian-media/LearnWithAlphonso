@@ -116,6 +116,36 @@ function renderPage(consentApi = fakeConsentApi()) {
   return render(withAiConsent(<LessonPage />, consentApi));
 }
 
+/** A saved completion of all eight right. */
+const SAVED = {
+  xpGain: 100,
+  correct: 8,
+  newlyUnlocked: [],
+  heartsBonus: null,
+  previousLeagueTier: "bronze",
+  progress: {
+    xp: 100,
+    streak: 1,
+    longestStreak: 1,
+    lastActiveDate: "2026-09-19",
+    hearts: 5,
+    heartsRefillAt: null,
+    streakFreezes: 0,
+    leagueTier: "bronze",
+  },
+};
+
+/** Answers every question right and taps Finish. */
+async function answerAll(user: ReturnType<typeof userEvent.setup>) {
+  for (let i = 0; i < ANSWERS.length; i++) {
+    await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await user.click(
+      screen.getByRole("button", { name: i === ANSWERS.length - 1 ? "Finish" : "Continue" }),
+    );
+  }
+}
+
 async function skipToQuiz(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole("button", { name: "Start lesson" }));
   await user.click(await screen.findByRole("button", { name: "Skip to practice" }));
@@ -897,7 +927,7 @@ describe("Lesson page", () => {
   });
 
   it("the lesson time leaves out the minutes the tab was hidden", async () => {
-    completeLessonRemote.mockRejectedValue(new Error("network down"));
+    completeLessonRemote.mockResolvedValue(SAVED);
     let now = 0;
     const clock = vi.spyOn(performance, "now").mockImplementation(() => now);
     let hidden = false;
@@ -928,23 +958,77 @@ describe("Lesson page", () => {
     }
   });
 
-  it("shows a graceful finish screen when completion fails", async () => {
+  it("says Not saved yet, with Try again, when completion fails; never a +0 XP celebration", async () => {
     completeLessonRemote.mockRejectedValue(new Error("network down"));
     const user = userEvent.setup();
     renderPage();
     await skipToQuiz(user);
+    await answerAll(user);
 
-    for (let i = 0; i < ANSWERS.length; i++) {
-      await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
-      await user.click(screen.getByRole("button", { name: "Check" }));
-      const label = i === ANSWERS.length - 1 ? "Finish" : "Continue";
-      await user.click(screen.getByRole("button", { name: label }));
-    }
-
-    expect(await screen.findByLabelText("XP: +0")).toBeInTheDocument();
-    expect(useProgress.getState().completedLessons).not.toContain("u1l1");
+    expect(await screen.findByRole("heading", { name: "Not saved yet" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
+    expect(screen.queryByText("Lesson complete")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^XP:/)).not.toBeInTheDocument();
     // Nothing was saved, so a streak from the stored progress would be a claim the server never made.
     expect(screen.queryByLabelText(/^Streak:/)).not.toBeInTheDocument();
+    expect(useProgress.getState().completedLessons).not.toContain("u1l1");
+  });
+
+  it("Try again resends the same answers and session, and celebrates only once it is saved", async () => {
+    completeLessonRemote.mockRejectedValueOnce(new Error("network down")).mockResolvedValue(SAVED);
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await answerAll(user);
+
+    await user.click(await screen.findByRole("button", { name: "Try again" }));
+    expect(await screen.findByLabelText("XP: +100")).toBeInTheDocument();
+    expect(completeLessonRemote).toHaveBeenCalledTimes(2);
+    expect(completeLessonRemote.mock.calls[1]).toEqual(completeLessonRemote.mock.calls[0]);
+    expect(completeLessonRemote.mock.calls[1]![0].data.sessionToken).toBe("session-tok");
+    expect(completeLessonRemote.mock.calls[1]![0].data.answers).toHaveLength(8);
+    // No new session was asked for: the one from the lesson start is still good.
+    expect(startLessonSession).toHaveBeenCalledTimes(1);
+    expect(useProgress.getState().completedLessons).toContain("u1l1");
+  });
+
+  it("asks for a new session before completing when the first one is near its three-hour limit", async () => {
+    const realNow = Date.now();
+    const clock = vi.spyOn(Date, "now").mockReturnValue(realNow);
+    try {
+      startLessonSession
+        .mockResolvedValueOnce({ token: "old-tok" })
+        .mockResolvedValueOnce({ token: "new-tok" });
+      completeLessonRemote.mockResolvedValue(SAVED);
+      const user = userEvent.setup();
+      renderPage();
+      await skipToQuiz(user);
+      for (let i = 0; i < ANSWERS.length; i++) {
+        await user.click(await screen.findByRole("button", { name: ANSWERS[i].correct }));
+        await user.click(screen.getByRole("button", { name: "Check" }));
+        if (i === ANSWERS.length - 1) clock.mockReturnValue(realNow + 3 * 60 * 60 * 1000);
+        await user.click(
+          screen.getByRole("button", { name: i === ANSWERS.length - 1 ? "Finish" : "Continue" }),
+        );
+      }
+      expect(await screen.findByLabelText("XP: +100")).toBeInTheDocument();
+      expect(startLessonSession).toHaveBeenCalledTimes(2);
+      expect(completeLessonRemote.mock.calls[0]![0].data.sessionToken).toBe("new-tok");
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it("the finish headline counts the server's right answers, not the screen's", async () => {
+    // The server re-grades every answer; here it accepted one fewer than the player showed.
+    completeLessonRemote.mockResolvedValue({ ...SAVED, xpGain: 80, correct: 7 });
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await answerAll(user);
+    expect(await screen.findByText("Nice work! You got 7 of 8.")).toBeInTheDocument();
+    expect(screen.getByText("7/8 correct")).toBeInTheDocument();
+    expect(useProgress.getState().answersByLesson.u1l1).toEqual({ correct: 7, total: 8 });
   });
 
   it("asks for calm, not an error, when the server refuses a completion over the hourly ceiling", async () => {
@@ -961,7 +1045,33 @@ describe("Lesson page", () => {
     }
 
     expect(await screen.findByText("Slow down a little and try again.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
     expect(useProgress.getState().completedLessons).not.toContain("u1l1");
+  });
+
+  it("a lesson whose session cannot start says so, with Try again, instead of a lesson that can never save", async () => {
+    startLessonSession.mockRejectedValueOnce(new Error("offline")).mockResolvedValue({
+      token: "session-tok",
+    });
+    const user = userEvent.setup();
+    renderPage();
+    expect(await screen.findByRole("alert")).toHaveTextContent("couldn't start");
+    expect(screen.queryByRole("button", { name: "Start lesson" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByRole("button", { name: "Start lesson" })).toBeInTheDocument();
+    expect(startLessonSession).toHaveBeenCalledTimes(2);
+  });
+
+  it("Start lesson waits for the session, then opens the lesson the moment it lands", async () => {
+    let resolve!: (v: unknown) => void;
+    startLessonSession.mockReturnValue(new Promise((r) => (resolve = r)));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Start lesson" }));
+    expect(screen.getByRole("button", { name: "Getting your lesson ready…" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Skip to practice" })).not.toBeInTheDocument();
+    await act(async () => resolve({ token: "session-tok" }));
+    expect(await screen.findByRole("button", { name: "Skip to practice" })).toBeInTheDocument();
   });
 
   it("navigates to /learn when the close button is clicked", async () => {

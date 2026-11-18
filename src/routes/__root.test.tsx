@@ -25,8 +25,10 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 });
 
 const invalidateQueries = vi.fn();
+const clearQueries = vi.fn();
 const queryClient = {
   invalidateQueries,
+  clear: clearQueries,
   // QueryClientProvider pokes at these on mount.
   mount: () => {},
   unmount: () => {},
@@ -55,14 +57,20 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 const fetchProgress = vi.fn();
-vi.mock("../lib/sync.functions", () => ({ fetchProgress: () => fetchProgress() }));
+vi.mock("../lib/sync.functions", () => ({
+  fetchProgress: (...args: unknown[]) => fetchProgress(...args),
+}));
 const getMyProfile = vi.fn();
 vi.mock("../lib/leaderboard.functions", () => ({ getMyProfile: () => getMyProfile() }));
 
 const hydrate = vi.fn();
 const reset = vi.fn();
+// The account's remembered course (lib/progress.ts adoptUser); the real store's own tests are progress-course.test.ts.
+const progressState = { hydrate, reset, adoptUser: vi.fn((_id: string) => "en"), course: "en" };
 vi.mock("../lib/progress", () => ({
-  useProgress: (sel: (s: unknown) => unknown) => sel({ hydrate, reset }),
+  useProgress: Object.assign((sel: (s: unknown) => unknown) => sel(progressState), {
+    getState: () => progressState,
+  }),
 }));
 const hydrateFromServer = vi.fn();
 vi.mock("../lib/theme", async (importOriginal) => ({
@@ -293,7 +301,10 @@ describe("AuthSync (inside RootComponent)", () => {
     reset.mockReset();
     hydrateFromServer.mockReset();
     invalidateQueries.mockReset();
+    clearQueries.mockReset();
     unsubscribe.mockReset();
+    progressState.course = "en";
+    progressState.adoptUser.mockReset().mockImplementation(() => progressState.course);
   });
 
   it("resets progress when there is no session", async () => {
@@ -369,19 +380,83 @@ describe("AuthSync (inside RootComponent)", () => {
     expect(localStorage.getItem("alphonso.voicePrefs.v1")).toBeNull();
   });
 
-  it("refetches on SIGNED_IN rather than resetting", async () => {
-    getSession.mockResolvedValue({ data: { session: { user: { id: "u1" } } } });
+  it("refetches on SIGNED_IN for a new account rather than resetting", async () => {
+    getSession.mockResolvedValue({ data: { session: null } });
     fetchProgress.mockResolvedValue({ xp: 1 });
     getMyProfile.mockResolvedValue({ theme: "meadow" });
     render(<RootComponent />);
-    await waitFor(() => expect(onAuthStateChange).toHaveBeenCalled());
-    const handler = onAuthStateChange.mock.calls[0]![0] as (e: string) => void;
+    await waitFor(() => expect(reset).toHaveBeenCalled());
+    const handler = onAuthStateChange.mock.calls[0]![0] as (
+      e: string,
+      s: { user: { id: string } } | null,
+    ) => void;
 
     reset.mockClear();
-    handler("SIGNED_IN");
+    getSession.mockResolvedValue({ data: { session: { user: { id: "u2" } } } });
+    handler("SIGNED_IN", { user: { id: "u2" } });
 
+    expect(invalidate).toHaveBeenCalled();
     expect(invalidateQueries).toHaveBeenCalled();
+    await waitFor(() => expect(hydrate).toHaveBeenCalledWith({ xp: 1 }));
     expect(reset).not.toHaveBeenCalled();
+  });
+
+  it("asks the server for the account's remembered course, not the default", async () => {
+    progressState.adoptUser.mockImplementation(() => {
+      progressState.course = "fr";
+      return "fr";
+    });
+    getSession.mockResolvedValue({ data: { session: { user: { id: "u1" } } } });
+    fetchProgress.mockResolvedValue({ xp: 7 });
+    getMyProfile.mockResolvedValue(null);
+    render(<RootComponent />);
+    await waitFor(() => expect(hydrate).toHaveBeenCalledWith({ xp: 7 }));
+    expect(progressState.adoptUser).toHaveBeenCalledWith("u1");
+    expect(fetchProgress).toHaveBeenCalledWith({ data: { course: "fr" } });
+  });
+
+  it("does not hydrate a stale course's numbers over a switch made while they loaded", async () => {
+    let resolve!: (v: unknown) => void;
+    fetchProgress.mockReturnValue(new Promise((r) => (resolve = r)));
+    getSession.mockResolvedValue({ data: { session: { user: { id: "u1" } } } });
+    render(<RootComponent />);
+    await waitFor(() => expect(fetchProgress).toHaveBeenCalled());
+    progressState.course = "es"; // the learner switched course meanwhile
+    resolve({ xp: 3 });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(hydrate).not.toHaveBeenCalled();
+  });
+
+  it("ignores the SIGNED_IN supabase re-emits for the same account when a hidden tab comes back", async () => {
+    getSession.mockResolvedValue({ data: { session: { user: { id: "u1" } } } });
+    fetchProgress.mockResolvedValue({ xp: 1 });
+    getMyProfile.mockResolvedValue(null);
+    render(<RootComponent />);
+    await waitFor(() => expect(hydrate).toHaveBeenCalledTimes(1));
+    const handler = onAuthStateChange.mock.calls[0]![0] as (
+      e: string,
+      s: { user: { id: string } } | null,
+    ) => void;
+
+    invalidate.mockClear();
+    handler("SIGNED_IN", { user: { id: "u1" } });
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(invalidate).not.toHaveBeenCalled();
+    expect(invalidateQueries).not.toHaveBeenCalled();
+    expect(fetchProgress).toHaveBeenCalledTimes(1);
+    expect(hydrate).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears the query cache and the first-run draft on SIGNED_OUT (a shared browser)", async () => {
+    localStorage.setItem("lwa.firstRun.v1", '{"name":"Sam"}');
+    getSession.mockResolvedValue({ data: { session: null } });
+    render(<RootComponent />);
+    await waitFor(() => expect(onAuthStateChange).toHaveBeenCalled());
+    const handler = onAuthStateChange.mock.calls[0]![0] as (e: string) => void;
+    handler("SIGNED_OUT");
+    expect(clearQueries).toHaveBeenCalled();
+    expect(localStorage.getItem("lwa.firstRun.v1")).toBeNull();
   });
 
   it("ignores auth events it does not care about", async () => {

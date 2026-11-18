@@ -2,6 +2,9 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { safeNextPath } from "@/lib/safe-next-path";
 import { PodcastAudio } from "@/components/PodcastAudio";
+import { RouteError } from "@/components/RouteError";
+import { AuthOfflineError, isAuthOfflineError, isNetworkAuthError } from "@/lib/auth-offline";
+import { OfflineScreen } from "@/components/OfflineScreen";
 import { NamePrompt } from "@/components/NamePrompt";
 import { ReferralClaim } from "@/components/ReferralBridge";
 import { AiConsentProvider } from "@/lib/ai-consent-context";
@@ -29,8 +32,20 @@ function signedOutRedirect(location: { href?: string; pathname?: string } | unde
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ location }) => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect(signedOutRedirect(location));
+    // The session kept in this browser, not a round trip to the auth server: getUser() failed on every flaky
+    // connection, and any failure sent a signed-in learner to the sign-in page. Only a missing session does now; a
+    // network failure (getSession refreshing an expired token offline) shows the offline screen with Try again.
+    let session;
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error && isNetworkAuthError(error)) throw new AuthOfflineError();
+      session = data.session;
+    } catch (err) {
+      if (isNetworkAuthError(err)) throw new AuthOfflineError();
+      throw err;
+    }
+    if (!session) throw redirect(signedOutRedirect(location));
+    const user = session.user;
     // A device that answered Under 13 in the first run keeps no account open (BACKLOG 0.0-bd): sign out, and the
     // sign-in page shows the kind stop.
     if (browserFirstRunStore().isBlocked()) {
@@ -42,12 +57,19 @@ export const Route = createFileRoute("/_authenticated")({
     if (
       location?.pathname === "/learn" &&
       !completeProfileSkippedThisVisit() &&
-      needsCompleteProfile(parseLearnerProfile(data.user.user_metadata?.[LEARNER_PROFILE_KEY]))
+      needsCompleteProfile(parseLearnerProfile(user.user_metadata?.[LEARNER_PROFILE_KEY]))
     ) {
       throw redirect({ to: "/complete-profile" });
     }
-    return { user: data.user };
+    return { user };
   },
+  // A page under this layout that throws keeps the app around it; the lesson and Hector have their own as well.
+  errorComponent: ({ error, reset }) =>
+    isAuthOfflineError(error) ? (
+      <OfflineScreen onRetry={reset} />
+    ) : (
+      <RouteError error={error} reset={reset} boundary="authenticated_layout" />
+    ),
   // PodcastAudio sits BESIDE the Outlet, not inside it: every page
   // renders its own MobileFrame/LessonFrame, so anything mounted in
   // those unmounts on navigation. The audio element has to outlive the

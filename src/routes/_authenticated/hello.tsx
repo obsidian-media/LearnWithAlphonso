@@ -8,6 +8,8 @@ import type { LearnerProfilePatch } from "../../lib/learner-profile";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { holdNamePrompt } from "../../lib/name-prompt-gate";
 import { useProgress } from "../../lib/progress";
+import { fetchProgress } from "../../lib/sync.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/hello")({
   component: Hello,
@@ -38,10 +40,31 @@ function Hello() {
   const navigate = useNavigate();
   const store = useMemo(() => browserFirstRunStore(), []);
   const setCourse = useProgress((s) => s.setCourse);
+  const adoptUser = useProgress((s) => s.adoptUser);
+  const hydrate = useProgress((s) => s.hydrate);
   const placementTaken = useProgress((s) => Boolean(s.placementTakenAt));
   const [state, setState] = useState<State>({ kind: "saving" });
 
   useEffect(() => holdNamePrompt(), []);
+
+  /** The first run's course becomes the account's, remembered and with its own progress loaded (not English's). */
+  async function switchTo(course: NonNullable<LearnerProfilePatch["course"]>) {
+    // Ties the store to this account first, so the choice is remembered for it even if the root load is still on
+    // its way.
+    const { data } = await supabase.auth.getSession();
+    if (data.session) adoptUser(data.session.user.id);
+    if (
+      useProgress.getState().course === course &&
+      useProgress.getState().hydratedCourse === course
+    )
+      return;
+    setCourse(course);
+    try {
+      hydrate(await fetchProgress({ data: { course } }));
+    } catch {
+      // Offline: the course is remembered, so the next page load fetches its progress.
+    }
+  }
 
   async function save() {
     const answers = answersToSend(store);
@@ -54,7 +77,7 @@ function Hello() {
     try {
       await saveLearnerProfile({ data: { patch: answers, mark: "completed" } });
       store.clearDraft();
-      if (answers.course) setCourse(answers.course);
+      if (answers.course) await switchTo(answers.course);
       const me = await getMyProfile().catch(() => null);
       setState({ kind: "ready", answers, avatarSeed: me?.avatar_seed ?? "a" });
     } catch {

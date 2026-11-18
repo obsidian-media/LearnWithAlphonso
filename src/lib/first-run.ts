@@ -78,6 +78,22 @@ export function createFirstRunStore(storage: Store | null): FirstRunStore {
   return store;
 }
 
+/**
+ * The same store with the answers kept in memory only: the Under 13 block still reads and writes the device, but no
+ * draft is read from or written to it. For Complete your profile, which runs signed in: the device-wide draft
+ * belongs to whoever last did the first run on this browser (another account on a shared computer), so it must never
+ * show here or override what this account already saved.
+ */
+export function withoutDraft(store: FirstRunStore): FirstRunStore {
+  return {
+    readDraft: () => ({}),
+    writeDraft: () => {},
+    clearDraft: () => {},
+    isBlocked: () => store.isBlocked(),
+    blockUnder13: () => store.blockUnder13(),
+  };
+}
+
 /** The browser's store, or one that keeps nothing (server render). */
 export function browserFirstRunStore(): FirstRunStore {
   const storage =

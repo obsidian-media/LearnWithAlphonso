@@ -190,11 +190,14 @@ describe("fetchDueReviews", () => {
           ],
         }),
       )
-      .mockReturnValueOnce(chainable({ count: 7 }));
+      .mockReturnValueOnce(chainable({ count: 7 }))
+      .mockReturnValueOnce(chainable({ count: 31 }));
 
     const result = await fetchDueReviews({ context: ctx(supabase), data: { course: "en" } });
 
     expect(result.total).toBe(7);
+    // All that is due, not just this batch: the screen says how many are left after it.
+    expect(result.dueTotal).toBe(31);
     expect(result.due).toEqual([
       {
         itemKey: "u1l1:q1",
@@ -213,9 +216,40 @@ describe("fetchDueReviews", () => {
     const supabase = createSupabaseMock();
     supabase.from
       .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ count: null }))
       .mockReturnValueOnce(chainable({ count: null }));
     const result = await fetchDueReviews({ context: ctx(supabase), data: { course: "en" } });
-    expect(result).toEqual({ due: [], total: 0 });
+    expect(result).toEqual({ due: [], total: 0, dueTotal: 0 });
+  });
+
+  it("throws on a failed read rather than answering with an empty queue", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(chainable({ data: null, error: { message: "timeout" } }))
+      .mockReturnValueOnce(chainable({ count: 3 }))
+      .mockReturnValueOnce(chainable({ count: 3 }));
+    await expect(
+      fetchDueReviews({ context: ctx(supabase), data: { course: "en" } }),
+    ).rejects.toThrow("Could not load reviews");
+  });
+});
+
+describe("gradeReview answer length", () => {
+  it("takes an answer as long as a lesson answer (2000), and refuses a longer one", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValue(chainable({ data: null }));
+    await expect(
+      gradeReview({
+        context: ctx(supabase),
+        data: { itemKey: "u1l1:q1", answer: "a".repeat(2000), course: "en" },
+      }),
+    ).resolves.toMatchObject({ retired: false });
+    await expect(
+      gradeReview({
+        context: ctx(supabase),
+        data: { itemKey: "u1l1:q1", answer: "a".repeat(2001), course: "en" },
+      }),
+    ).rejects.toThrow();
   });
 });
 

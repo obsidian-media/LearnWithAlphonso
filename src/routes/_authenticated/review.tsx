@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AnswerExplanation } from "../../components/AnswerFeedback";
 import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
@@ -69,6 +69,8 @@ function ReviewPageWithSave() {
   );
 }
 
+type GradeOutcome = "saved" | "failed" | "superseded";
+
 type Card = {
   itemKey: string;
   question: Question;
@@ -101,10 +103,24 @@ function ReviewPage() {
   const [checking, setChecking] = useState(false);
   const [stats, setStats] = useState({ right: 0, wrong: 0, retired: 0 });
   const [heartBonusGranted, setHeartBonusGranted] = useState(false);
+  // The queue could not be loaded. Shown as an error with Try again: it used to read "Nothing due today".
+  const [loadFailed, setLoadFailed] = useState(false);
+  // Bumped by Try again and by "Keep going" to load the queue (or its next batch) again.
+  const [batch, setBatch] = useState(0);
+  // Items due beyond this batch (the server sends at most 20 at a time).
+  const [moreDue, setMoreDue] = useState(0);
+  // The current answer's save: "failed" keeps the learner on it with Try again, rather than moving on as if it
+  // had counted; "superseded" means another tab or device graded the item first, so this answer did not count.
+  const [grading, setGrading] = useState<"idle" | "pending" | "saved" | "failed" | "superseded">(
+    "idle",
+  );
+  const gradeInFlight = useRef<Promise<GradeOutcome> | null>(null);
 
   useEffect(() => {
     let alive = true;
     setCards(null);
+    setLoadFailed(false);
+    setIdx(0);
     const questionIndex = getCourse(course).questionIndex;
     void load({ data: { course } })
       .then((res) => {
@@ -150,18 +166,22 @@ function ReviewPage() {
         }
         setCards(built);
         setTotal(res.total);
+        setMoreDue(Math.max(0, (res.dueTotal ?? res.due.length) - res.due.length));
       })
-      .catch(() => setCards([]));
+      .catch(() => {
+        if (alive) setLoadFailed(true);
+      });
     return () => {
       alive = false;
     };
-  }, [load, course]);
+  }, [load, course, batch]);
 
   const card = cards && idx < cards.length ? cards[idx] : null;
   const queueCleared = cards !== null && cards.length > 0 && idx >= cards.length;
 
   useEffect(() => {
-    if (!queueCleared) return;
+    // More are due after this batch: the queue is not cleared, so there is no bonus to ask for yet.
+    if (!queueCleared || moreDue > 0) return;
     let alive = true;
     void claimBonus({ data: { course } })
       .then((res) => {
@@ -196,6 +216,54 @@ function ReviewPage() {
   const shownCorrect =
     q?.type === "translate" && translationVerdict ? translationVerdict.correct : isCorrect;
 
+  /**
+   * Sends this answer to the server, which re-grades it and moves the item's schedule. For a translation the
+   * server's verdict is the one shown; for every other type the local verdict already is, and agrees by design.
+   */
+  function sendGrade(
+    c: Card,
+    answer: string,
+    localOk: boolean,
+    translate: boolean,
+  ): Promise<GradeOutcome> {
+    setGrading("pending");
+    const sent: Promise<GradeOutcome> = grade({
+      data: {
+        itemKey: c.itemKey,
+        answer,
+        course,
+        expectedDueOn: c.dueOn,
+        expectedLastReviewedAt: c.lastReviewedAt,
+      },
+    })
+      .then((r) => {
+        if ("superseded" in r && r.superseded) {
+          // Already graded elsewhere: this answer is not counted, and the screen says so.
+          if (translate) setTranslationVerdict({ correct: localOk, reason: null, source: "local" });
+          setGrading("superseded");
+          return "superseded" as const;
+        }
+        const ok = translate && typeof r.correct === "boolean" ? r.correct : localOk;
+        if (translate) setTranslationVerdict({ correct: ok, reason: null, source: "local" });
+        setStats((s) => ({
+          right: s.right + (ok ? 1 : 0),
+          wrong: s.wrong + (ok ? 0 : 1),
+          retired: s.retired + (r.retired ? 1 : 0),
+        }));
+        setGrading("saved");
+        return "saved" as const;
+      })
+      .catch(() => {
+        // Unreachable server: the local verdict is shown rather than a question that never resolves, but the
+        // answer did not count, so the sheet offers Try again instead of moving on as if it had.
+        if (translate) setTranslationVerdict({ correct: localOk, reason: null, source: "local" });
+        setGrading("failed");
+        return "failed" as const;
+      });
+    gradeInFlight.current = sent;
+    return sent;
+  }
+
   function check() {
     if (!card || !submittedAnswer) return;
 
@@ -204,56 +272,22 @@ function ReviewPage() {
     // feedback can show immediately rather than waiting on the network.
     if (q?.type !== "translate") {
       setChecked(true);
-      const ok = isCorrect;
-      setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
-      void grade({
-        data: {
-          itemKey: card.itemKey,
-          answer: submittedAnswer,
-          course,
-          expectedDueOn: card.dueOn,
-          expectedLastReviewedAt: card.lastReviewedAt,
-        },
-      })
-        .then((r) => {
-          if (r.retired) setStats((s) => ({ ...s, retired: s.retired + 1 }));
-        })
-        .catch(() => {});
+      void sendGrade(card, submittedAnswer, isCorrect, false);
       return;
     }
 
     // A translation waits, because the curated phrasings are only a floor and
     // the AI second opinion that can lift them runs server-side.
     setChecking(true);
-    void grade({
-      data: {
-        itemKey: card.itemKey,
-        answer: submittedAnswer,
-        course,
-        expectedDueOn: card.dueOn,
-        expectedLastReviewedAt: card.lastReviewedAt,
-      },
-    })
-      .then((r) => {
-        const ok = typeof r.correct === "boolean" ? r.correct : isCorrect;
-        setTranslationVerdict({ correct: ok, reason: null, source: "local" });
-        setStats((s) => ({ ...s, right: s.right + (ok ? 1 : 0), wrong: s.wrong + (ok ? 0 : 1) }));
-        if (r.retired) setStats((s) => ({ ...s, retired: s.retired + 1 }));
-      })
-      .catch(() => {
-        // Unreachable server: fall back to the local verdict rather than
-        // leaving the learner on a question that will not resolve.
-        setTranslationVerdict({ correct: isCorrect, reason: null, source: "local" });
-        setStats((s) => ({
-          ...s,
-          right: s.right + (isCorrect ? 1 : 0),
-          wrong: s.wrong + (isCorrect ? 0 : 1),
-        }));
-      })
-      .finally(() => {
-        setChecking(false);
-        setChecked(true);
-      });
+    void sendGrade(card, submittedAnswer, isCorrect, true).finally(() => {
+      setChecking(false);
+      setChecked(true);
+    });
+  }
+
+  function retryGrade() {
+    if (!card || !submittedAnswer) return;
+    void sendGrade(card, submittedAnswer, isCorrect, q?.type === "translate");
   }
 
   function next() {
@@ -262,9 +296,36 @@ function ReviewPage() {
     setOrderPicks([]);
     setChecked(false);
     setTranslationVerdict(null);
+    setGrading("idle");
+    gradeInFlight.current = null;
   }
 
+  /** Continue on the verdict sheet: waits for a save still in flight, and never moves on past a failed one. */
+  async function continueFromVerdict() {
+    if (grading === "failed") {
+      retryGrade();
+      return;
+    }
+    if (grading === "pending" && gradeInFlight.current) {
+      const inFlight = gradeInFlight.current;
+      // Settled as a failure: the sheet now shows Try again instead of moving on.
+      if ((await inFlight) === "failed" || gradeInFlight.current !== inFlight) return;
+    }
+    next();
+  }
   const stage = reviewStage(cards === null ? null : cards.length, idx);
+
+  if (loadFailed) {
+    return (
+      <LessonScreen>
+        <Empty
+          title="Your review didn't load"
+          body="Check your connection and try again. Nothing in your queue was lost."
+          action={{ label: "Try again", onClick: () => setBatch((b) => b + 1) }}
+        />
+      </LessonScreen>
+    );
+  }
 
   if (stage === "loading") {
     return (
@@ -280,6 +341,21 @@ function ReviewPage() {
     return (
       <LessonScreen>
         <Empty title="Nothing due today" body={emptyBody(total)} />
+      </LessonScreen>
+    );
+  }
+
+  if ((stage === "done" || !card || !q || !cards) && moreDue > 0) {
+    return (
+      <LessonScreen>
+        <Empty
+          title="That's this round done"
+          body={`${doneSummary(stats)} ${moreDue} more ${moreDue === 1 ? "is" : "are"} due.`}
+          action={{
+            label: `Keep going (${Math.min(moreDue, 20)} more)`,
+            onClick: () => setBatch((b) => b + 1),
+          }}
+        />
       </LessonScreen>
     );
   }
@@ -500,12 +576,36 @@ function ReviewPage() {
               />
             }
             extra={
-              shownCorrect ? null : (
-                <ExplainInMyLanguage request={wrongAnswerRequest(q, submittedAnswer, course)} />
-              )
+              <>
+                {grading === "failed" ? (
+                  <div role="alert" className="grid gap-2 rounded-[14px] bg-ds-card/75 px-3 py-2.5">
+                    <p className="ds-type-footnote text-ds-ink">
+                      This answer didn&apos;t save. Try again, or skip it for now: it stays in your
+                      queue.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={next}
+                      className="justify-self-start ds-type-footnote font-bold text-ds-choice underline"
+                    >
+                      Skip for now
+                    </button>
+                  </div>
+                ) : grading === "superseded" ? (
+                  <p role="status" className="ds-type-footnote text-ds-ink-soft">
+                    You already reviewed this one in another tab or on another device, so this
+                    answer wasn&apos;t counted.
+                  </p>
+                ) : null}
+                {shownCorrect ? null : (
+                  <ExplainInMyLanguage request={wrongAnswerRequest(q, submittedAnswer, course)} />
+                )}
+              </>
             }
-            continueLabel={idx < cards.length - 1 ? "Continue" : "Finish"}
-            onContinue={next}
+            continueLabel={
+              grading === "failed" ? "Try again" : idx < cards.length - 1 ? "Continue" : "Finish"
+            }
+            onContinue={() => void continueFromVerdict()}
           />
         ) : (
           <div
@@ -570,7 +670,18 @@ function ReviewScene({ pose, tall = false }: { pose: "reading" | "proud"; tall?:
 }
 
 /** The Review screen's empty and finished cards: the scene, a card with what happened, and the way back. */
-export function Empty({ title, body, bonus }: { title: string; body: string; bonus?: string }) {
+export function Empty({
+  title,
+  body,
+  bonus,
+  action,
+}: {
+  title: string;
+  body: string;
+  bonus?: string;
+  /** A main button in place of Back to path (Try again, Keep going); Back to path stays as the second way out. */
+  action?: { label: string; onClick: () => void };
+}) {
   const isComplete = title === "Review complete";
   return (
     <div className="flex flex-1 flex-col pb-6">
@@ -584,7 +695,12 @@ export function Empty({ title, body, bonus }: { title: string; body: string; bon
             </p>
           )}
         </DsEmptyState>
-        <Link to="/learn" className={edgeButtonClass("primary")}>
+        {action ? (
+          <button type="button" onClick={action.onClick} className={edgeButtonClass("primary")}>
+            {action.label}
+          </button>
+        ) : null}
+        <Link to="/learn" className={edgeButtonClass(action ? "secondary" : "primary")}>
           Back to path
         </Link>
       </div>
