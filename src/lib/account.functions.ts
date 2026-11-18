@@ -482,8 +482,8 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
 
     // Remove owned rows first, as the caller, so RLS stays the source of
     // truth. "profiles" is deliberately not deleted here -- its FK to
-    // auth.users is ON DELETE CASCADE, and "authenticated" only has
-    // SELECT/INSERT/UPDATE grants on it (no DELETE), so a client-side
+    // auth.users is ON DELETE CASCADE, and "authenticated" holds no DELETE
+    // grant on it (only SELECT and a column-level UPDATE), so a client-side
     // delete would just fail; the deleteUser() call below cleans it up.
     const deleteResults = await Promise.all(
       USER_DELETE_TABLES.map(async (table) => ({

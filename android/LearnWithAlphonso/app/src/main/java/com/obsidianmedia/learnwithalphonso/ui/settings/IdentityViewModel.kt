@@ -33,7 +33,7 @@ class IdentityViewModel(private val client: ProgressSyncClient, private val user
     fun editName(value: String) = _state.update { it.copy(displayName = value.take(MAX_NAME)) }
 
     fun saveName() {
-        val id = userId ?: return
+        if (userId == null) return
         val trimmed = _state.value.displayName.trim().take(MAX_NAME)
         if (trimmed.isEmpty()) return
         _state.update { it.copy(saving = true, error = null) }

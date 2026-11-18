@@ -2,7 +2,13 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
 import { describe, expect, it } from "vitest";
-import { computeClientWriteGrants, grantKey } from "./client-write-grants";
+import {
+  computeClientWriteGrants,
+  findDefaultPrivilegeChanges,
+  findHiddenRoleGrants,
+  grantKey,
+  stripSql,
+} from "./client-write-grants";
 
 const DIR = path.join(process.cwd(), "supabase/migrations");
 const migrations = readdirSync(DIR)
@@ -135,7 +141,87 @@ describe("parser behaviour on small inputs", () => {
   });
 });
 
-describe("the migration's profiles column grant, executed in Postgres", { timeout: 60_000 }, () => {
+describe("blind spots the parser cannot model are failures, not silent passes", () => {
+  const FILES = readdirSync(DIR).filter((f) => f.endsWith(".sql"));
+
+  it("no GRANT/REVOKE naming a client role hides inside a dollar-quoted body or an EXECUTE string", () => {
+    const offenders = FILES.flatMap((f) =>
+      findHiddenRoleGrants(readFileSync(path.join(DIR, f), "utf8")).map((s) => `${f}: ${s}`),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it("finds a hidden grant in $$, $tag$, $fn1$ bodies, nested bodies and EXECUTE strings", () => {
+    const g = "GRANT DELETE ON public.t TO authenticated";
+    expect(findHiddenRoleGrants(`DO $$ BEGIN ${g}; END $$;`)).toHaveLength(1);
+    expect(findHiddenRoleGrants(`DO $body$ BEGIN ${g}; END $body$;`)).toHaveLength(1);
+    expect(findHiddenRoleGrants(`DO $fn1$ BEGIN ${g}; END $fn1$;`)).toHaveLength(1);
+    expect(findHiddenRoleGrants(`DO $a$ BEGIN EXECUTE '${g}'; END $a$;`)).toHaveLength(1);
+    expect(findHiddenRoleGrants(`DO $o$ BEGIN EXECUTE $i1$ ${g} $i1$; END $o$;`).length).toBeGreaterThan(0);
+    expect(findHiddenRoleGrants(`SELECT 1; EXECUTE 'REVOKE ALL ON public.t FROM public';`)).toHaveLength(1);
+    expect(findHiddenRoleGrants(`DO $$ BEGIN GRANT SELECT ON public.t TO service_role; END $$;`)).toEqual([]);
+    expect(findHiddenRoleGrants(`-- ${g};\n/* ${g}; */ SELECT 1;`)).toEqual([]);
+  });
+
+  it("strips dollar quotes with any tag, digits included, so a body never counts as a statement", () => {
+    expect(stripSql("a $fn1$ GRANT x $fn1$ b")).not.toMatch(/GRANT/);
+    expect(stripSql("a $$ GRANT x $$ b")).not.toMatch(/GRANT/);
+    expect(stripSql("a $tag_2$ GRANT x $tag_2$ b")).not.toMatch(/GRANT/);
+  });
+
+  // The existing, reviewed ALTER DEFAULT PRIVILEGES statements that name client roles. A new one fails.
+  const DEFAULT_PRIVS_ALLOWED: Record<string, string> = {
+    "20261006120000_tighten_default_table_privileges.sql":
+      "revokes the default table privileges from anon and authenticated (the reason new tables start empty)",
+    "20261105100000_function_default_privileges.sql":
+      "revokes the default function and sequence privileges from public, anon and authenticated",
+  };
+
+  it("no migration changes default privileges for a client role except the reviewed ones", () => {
+    const offenders = FILES.filter((f) => !(f in DEFAULT_PRIVS_ALLOWED)).flatMap((f) =>
+      findDefaultPrivilegeChanges(readFileSync(path.join(DIR, f), "utf8")).map((s) => `${f}: ${s}`),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it("the reviewed default-privilege files still contain such a statement (no stale entries)", () => {
+    for (const f of Object.keys(DEFAULT_PRIVS_ALLOWED))
+      expect(findDefaultPrivilegeChanges(readFileSync(path.join(DIR, f), "utf8")).length, f).toBeGreaterThan(0);
+  });
+
+  it("detects ALTER DEFAULT PRIVILEGES naming client roles, and ignores other roles and comments", () => {
+    expect(
+      findDefaultPrivilegeChanges("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO authenticated;"),
+    ).toHaveLength(1);
+    expect(
+      findDefaultPrivilegeChanges("ALTER DEFAULT PRIVILEGES FOR ROLE postgres REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;"),
+    ).toHaveLength(1);
+    expect(
+      findDefaultPrivilegeChanges("DO $x1$ BEGIN ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO anon; END $x1$;"),
+    ).toHaveLength(1);
+    expect(
+      findDefaultPrivilegeChanges("ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO service_role;"),
+    ).toEqual([]);
+    expect(
+      findDefaultPrivilegeChanges("-- ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO anon;\nSELECT 1;"),
+    ).toEqual([]);
+  });
+
+  it("REVOKE GRANT OPTION FOR does not remove the privilege itself", () => {
+    const run = (...sqls: string[]) =>
+      computeClientWriteGrants(sqls.map((sql, i) => ({ version: `2027010${i}000000`, sql }))).map(grantKey);
+    expect(
+      run(`CREATE TABLE public.t (a int); GRANT DELETE ON public.t TO authenticated;
+           REVOKE GRANT OPTION FOR DELETE ON public.t FROM authenticated;`),
+    ).toEqual(["authenticated.t.DELETE"]);
+    expect(
+      run(`CREATE TABLE public.t (a int); GRANT DELETE ON public.t TO authenticated;
+           REVOKE DELETE ON public.t FROM authenticated;`),
+    ).toEqual([]);
+  });
+});
+
+describe("the migration's profiles column grant, executed in Postgres",{ timeout: 60_000 }, () => {
   async function db() {
     const d = new PGlite();
     await d.exec(`

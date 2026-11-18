@@ -10,10 +10,11 @@
  * Modelled: CREATE TABLE, DROP TABLE, ALTER TABLE ... RENAME TO, GRANT/REVOKE on named tables or
  * ALL TABLES IN SCHEMA public, column-level privileges, the PUBLIC pseudo-role (effective = own + PUBLIC), and
  * that a table-level REVOKE also removes column-level grants of that privilege. Comments and dollar-quoted
- * function bodies are stripped first, so a commented-out or in-function statement is never counted.
- * Not modelled (the post-deploy query in docs/database-privileges.md covers them): tables created inside
- * dynamic SQL or DO blocks, ALTER DEFAULT PRIVILEGES effects on already-created tables (none exist), and
- * tables created by roles other than the migration role.
+ * function bodies (any $tag$) are stripped first, so a commented-out or in-function statement is never counted.
+ * Not modelled, and made failures instead: GRANT/REVOKE for these roles inside dollar-quoted bodies or EXECUTE strings
+ * (findHiddenRoleGrants) and ALTER DEFAULT PRIVILEGES for them (findDefaultPrivilegeChanges, with a reviewed
+ * per-file allow-list in the test). REVOKE GRANT OPTION FOR is a no-op. Still outside the model (the post-deploy
+ * query in docs/database-privileges.md covers them): tables created by roles other than the migration role.
  */
 export const DEFAULT_GRANTS_CUTOFF = "20261006120000";
 
@@ -32,11 +33,73 @@ const emptyTable = (): TableGrants => ({
   public: emptyRole(),
 });
 
+/** Any dollar-quote tag: $$, $tag$, $fn1$ (a tag may contain digits after its first character). */
+const DOLLAR_QUOTE = /\$([A-Za-z_][A-Za-z_0-9]*)?\$[\s\S]*?\$\1\$/g;
+const stripComments = (sql: string) => sql.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/--[^\n]*/g, "");
+
+/** Text inside dollar-quoted bodies (nested ones included) and single-quoted string literals. */
+function quotedTexts(sql: string): string[] {
+  const out: string[] = [];
+  const scan = (text: string) => {
+    for (const m of text.matchAll(/\$([A-Za-z_][A-Za-z_0-9]*)?\$([\s\S]*?)\$\1\$/g)) {
+      out.push(m[2]!);
+      scan(m[2]!);
+    }
+    for (const m of text.replace(DOLLAR_QUOTE, " ").matchAll(/'((?:[^']|'')*)'/g)) {
+      const lit = m[1]!.replace(/''/g, "'");
+      out.push(lit);
+      scan(lit);
+    }
+  };
+  scan(stripComments(sql));
+  return out;
+}
+
+const CLIENT_ROLES = ["anon", "authenticated", "public"];
+/** Returns the statement when it matches `verbs` and its trailing role list names a client role. */
+const namesClientRole = (stmt: string, verbs: RegExp) => {
+  const m = verbs.exec(stmt.replace(/\s+/g, " "));
+  if (!m) return null;
+  const roles = m[1]!
+    .replace(/\s+WITH GRANT OPTION.*$/i, "")
+    .split(",")
+    .map((r) => r.trim().replace(/^GROUP\s+/i, "").replace(/"/g, "").toLowerCase().split(" ")[0]!);
+  return roles.some((r) => CLIENT_ROLES.includes(r)) ? stmt.trim() : null;
+};
+
+/**
+ * GRANT / REVOKE statements that name anon, authenticated or public but sit inside a dollar-quoted body or a
+ * string literal (DO blocks, EXECUTE '...', function bodies). The computed model cannot see them, so any such
+ * statement is a failure rather than a silent pass.
+ */
+export function findHiddenRoleGrants(sql: string): string[] {
+  const found: string[] = [];
+  for (const text of quotedTexts(sql)) {
+    for (const st of text.split(";")) {
+      const hit = namesClientRole(st, /\b(?:GRANT|REVOKE)\b.*?\b(?:TO|FROM)\s+(.+)$/i);
+      if (hit) found.push(hit);
+    }
+  }
+  return found;
+}
+
+/** ALTER DEFAULT PRIVILEGES statements (top level or hidden in a body) that name anon, authenticated or public. */
+export function findDefaultPrivilegeChanges(sql: string): string[] {
+  const found: string[] = [];
+  for (const text of [stripSql(sql), ...quotedTexts(sql)]) {
+    for (const st of text.split(";")) {
+      const hit = namesClientRole(st, /\bALTER DEFAULT PRIVILEGES\b.*?\b(?:TO|FROM)\s+(.+)$/i);
+      if (hit) found.push(hit);
+    }
+  }
+  return [...new Set(found)];
+}
+
 export function stripSql(sql: string): string {
   return sql
     .replace(/\/\*[\s\S]*?\*\//g, " ")
     .replace(/--[^\n]*/g, "")
-    .replace(/\$([a-z_]*)\$[\s\S]*?\$\1\$/gi, " ")
+    .replace(DOLLAR_QUOTE, " ")
     .replace(/'(?:[^']|'')*'/g, "''")
     .replace(/"([a-z_0-9]+)"/gi, "$1");
 }
@@ -116,7 +179,9 @@ export function computeClientWriteGrants(
         }
         continue;
       }
-      m = /^(GRANT|REVOKE)\s+(?:GRANT OPTION FOR\s+)?(.+?)\s+ON\s+(.+?)\s+(TO|FROM)\s+(.+)$/i.exec(st);
+      // REVOKE GRANT OPTION FOR removes only the right to re-grant, never the privilege itself.
+      if (/^REVOKE\s+GRANT OPTION FOR/i.test(st)) continue;
+      m = /^(GRANT|REVOKE)\s+(.+?)\s+ON\s+(.+?)\s+(TO|FROM)\s+(.+)$/i.exec(st);
       if (!m) continue;
       const [, verb, privPart, onPart, , roleList] = m;
       const on = onPart.trim();
