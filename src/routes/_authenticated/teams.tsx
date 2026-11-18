@@ -22,6 +22,7 @@ import {
   createTeam,
 } from "../../lib/teams.functions";
 import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
+import { invalidateTeamQueries } from "../../lib/team-queries";
 
 export const Route = createFileRoute("/_authenticated/teams")({
   component: TeamsPage,
@@ -47,9 +48,15 @@ function TeamsPage() {
     // A failing lookup is not transient (the default 3 retries would show the forms for ~7 s first).
     retry: false,
   });
-  const { data: leaderboard, isLoading: loadingBoard } = useQuery({
+  const {
+    data: leaderboard,
+    isLoading: loadingBoard,
+    isError: boardFailed,
+    refetch: retryBoard,
+  } = useQuery({
     queryKey: ["teamLeaderboard"],
     queryFn: () => getTeamLeaderboard(),
+    retry: false,
   });
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +96,7 @@ function TeamsPage() {
     );
 
   async function handleJoinByCode() {
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -97,7 +105,7 @@ function TeamsPage() {
         setError(socialReasonMessage(result.reason ?? "unknown-error"));
         return;
       }
-      await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
+      await invalidateTeamQueries(queryClient);
       navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
     } catch (e) {
       setError(socialFailureMessage(e));
@@ -107,6 +115,7 @@ function TeamsPage() {
   }
 
   async function handleAutoJoin() {
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -115,7 +124,7 @@ function TeamsPage() {
         setError(socialReasonMessage(result.reason ?? "unknown-error"));
         return;
       }
-      await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
+      await invalidateTeamQueries(queryClient);
       navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
     } catch (e) {
       setError(socialFailureMessage(e));
@@ -125,6 +134,7 @@ function TeamsPage() {
   }
 
   async function handleCreate() {
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -133,7 +143,7 @@ function TeamsPage() {
         setError(socialReasonMessage(result.reason ?? "unknown-error"));
         return;
       }
-      await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
+      await invalidateTeamQueries(queryClient);
       navigate({ to: "/teams/$teamId", params: { teamId: result.teamId! } });
     } catch (e) {
       setError(socialFailureMessage(e));
@@ -194,7 +204,13 @@ function TeamsPage() {
         </DsButton>
       </DsCard>
 
-      <TopTeams loading={loadingBoard} rows={leaderboard ?? []} myTeamId={null} />
+      <TopTeams
+        loading={loadingBoard}
+        failed={boardFailed}
+        onRetry={() => void retryBoard()}
+        rows={leaderboard ?? []}
+        myTeamId={null}
+      />
     </DsScreen>
   );
 }

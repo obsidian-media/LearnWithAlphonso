@@ -224,3 +224,21 @@ describe("getMyProfile", () => {
     expect(result).toBeNull();
   });
 });
+
+describe("a failed read is an error, not empty data", () => {
+  it("getLeaderboard throws instead of returning an empty board", async () => {
+    const supabase = createSupabaseMock();
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: "relation x does not exist" } });
+    await expect(
+      getLeaderboard({ context: ctx(supabase), data: { scope: "global", period: "weekly" } }),
+    ).rejects.toThrow("getLeaderboard: request-failed");
+  });
+
+  it("getMyProfile throws instead of returning no profile", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chainable({ data: null, error: { message: "boom" } }));
+    await expect(getMyProfile({ context: ctx(supabase) })).rejects.toThrow(
+      "getMyProfile: request-failed",
+    );
+  });
+});

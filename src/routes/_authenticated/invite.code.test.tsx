@@ -109,3 +109,65 @@ describe("Invite route", () => {
     expect(await screen.findByText("Something went wrong")).toBeInTheDocument();
   });
 });
+
+describe("Invite route failures", () => {
+  const InvitePage = Route.options.component!;
+  const preview = { isSelf: false, displayName: "Ada", avatarSeed: "1" };
+
+  it("says it could not load the invite (not 'not found'), and Try again looks it up again", async () => {
+    getFriendInvitePreview
+      .mockRejectedValueOnce(new Error("getFriendInvitePreview: request-failed"))
+      .mockResolvedValueOnce(preview);
+    const user = userEvent.setup();
+    render(<InvitePage />);
+
+    expect(await screen.findByText("Couldn't load this invite")).toBeInTheDocument();
+    expect(screen.queryByText("Loading invite…")).not.toBeInTheDocument();
+    expect(screen.queryByText("Invite not found")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Add Ada as a friend?")).toBeInTheDocument();
+    expect(getFriendInvitePreview).toHaveBeenCalledTimes(2);
+  });
+
+  it("sends one accept for a double click", async () => {
+    getFriendInvitePreview.mockResolvedValue(preview);
+    let resolve: (v: { ok: boolean; message: string }) => void = () => {};
+    acceptFriendInvite.mockReturnValue(new Promise((r) => (resolve = r)));
+    const user = userEvent.setup();
+    render(<InvitePage />);
+
+    const add = await screen.findByRole("button", { name: "Add friend" });
+    await user.click(add);
+    await user.click(screen.getByRole("button", { name: "Adding…" }));
+    resolve({ ok: true, message: "friends" });
+
+    expect(await screen.findByText("You're friends!")).toBeInTheDocument();
+    expect(acceptFriendInvite).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers Try again after a failed accept, which tries the same code again", async () => {
+    getFriendInvitePreview.mockResolvedValue(preview);
+    acceptFriendInvite
+      .mockRejectedValueOnce(new Error("acceptFriendInvite: request-failed"))
+      .mockResolvedValueOnce({ ok: true, message: "friends" });
+    const user = userEvent.setup();
+    render(<InvitePage />);
+
+    await user.click(await screen.findByRole("button", { name: "Add friend" }));
+    expect(await screen.findByText("Something went wrong")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("You're friends!")).toBeInTheDocument();
+    expect(acceptFriendInvite).toHaveBeenLastCalledWith({ data: { code: "abc123" } });
+  });
+
+  it("says the invite is not found when the database refuses the code at accept time", async () => {
+    getFriendInvitePreview.mockResolvedValue(preview);
+    acceptFriendInvite.mockResolvedValue({ ok: false, message: "invalid-code" });
+    const user = userEvent.setup();
+    render(<InvitePage />);
+
+    await user.click(await screen.findByRole("button", { name: "Add friend" }));
+    expect(await screen.findByText("Invite not found")).toBeInTheDocument();
+  });
+});

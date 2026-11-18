@@ -4,6 +4,7 @@ import {
   BackPill,
   DsButton,
   DsCard,
+  DsEmptyState,
   DsLinkButton,
   DsRow,
   GlassTitle,
@@ -76,16 +77,22 @@ function FriendsPage() {
   const queryClient = useQueryClient();
   // Same cache entry as BuddyCard: blocking the current buddy from their friend row gets the buddy wording.
   const myBuddy = useQuery({ queryKey: ["myBuddy"], queryFn: () => getMyBuddy(), retry: false });
-  const { data: friendCode } = useQuery({
+  const friendCodeQuery = useQuery({
     queryKey: ["myFriendCode"],
     queryFn: () => getMyFriendCode(),
+    retry: false,
   });
-  const { data: friends, isLoading } = useQuery({
+  const friendCode = friendCodeQuery.data;
+  const friendsQuery = useQuery({
     queryKey: ["friends"],
     queryFn: () => getFriends(),
+    retry: false,
   });
-  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
-  const myId = me?.id ?? null;
+  const { data: friends, isLoading } = friendsQuery;
+  // Nudges need the learner's own id (the cooldown is kept per account): a failed read says so, with a retry,
+  // instead of leaving every Nudge button disabled with no reason.
+  const meQuery = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile(), retry: false });
+  const myId = meQuery.data?.id ?? null;
   const { data: activity } = useQuery({
     queryKey: ["friendActivity"],
     queryFn: () => getFriendActivity(),
@@ -119,14 +126,23 @@ function FriendsPage() {
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
-  async function confirmRemove(friendId: string) {
+  async function confirmRemove(friend: FriendEntry) {
+    if (removingId) return;
+    const friendId = friend.userId;
     setRemovingId(friendId);
     try {
-      await removeFriend({ data: { friendId } });
-      queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
-        (prev ?? []).filter((f) => f.userId !== friendId),
-      );
-      dropActivityFrom(friendId);
+      const result = await removeFriend({ data: { friendId } });
+      // Only a confirmed removal leaves the list; otherwise the friend is still a friend, and the page says so.
+      if (result.ok) {
+        queryClient.setQueryData<FriendEntry[]>(["friends"], (prev) =>
+          (prev ?? []).filter((f) => f.userId !== friendId),
+        );
+        dropActivityFrom(friendId);
+      } else {
+        showToast(`Couldn't remove ${friend.displayName}. Try again.`);
+      }
+    } catch {
+      showToast(`Couldn't remove ${friend.displayName}. Try again.`);
     } finally {
       setRemovingId(null);
       setConfirmingId(null);
@@ -235,9 +251,18 @@ function FriendsPage() {
             </p>
           </div>
         </div>
-        <DsButton full onClick={copyInvite} disabled={!inviteLink}>
-          {copied ? "Link copied!" : "Copy invite link"}
-        </DsButton>
+        {friendCodeQuery.isError ? (
+          <div role="alert" className="grid gap-2">
+            <p className="ds-type-footnote text-ds-ink-soft">Couldn't load your invite link.</p>
+            <DsButton small variant="secondary" onClick={() => void friendCodeQuery.refetch()}>
+              Try again
+            </DsButton>
+          </div>
+        ) : (
+          <DsButton full onClick={copyInvite} disabled={!inviteLink}>
+            {copied ? "Link copied!" : "Copy invite link"}
+          </DsButton>
+        )}
         <span role="status" aria-live="polite" className="sr-only">
           {copied ? "Link copied to clipboard" : ""}
         </span>
@@ -247,10 +272,32 @@ function FriendsPage() {
 
       <Overline>Your friends</Overline>
 
+      {meQuery.isError && (friends?.length ?? 0) > 0 && (
+        <DsCard role="alert">
+          <p className="ds-type-footnote text-ds-ink-soft">
+            Couldn't load your profile, so nudges are paused.
+          </p>
+          <DsButton small variant="secondary" onClick={() => void meQuery.refetch()}>
+            Try again
+          </DsButton>
+        </DsCard>
+      )}
+
       {isLoading ? (
         <DsCard>
           <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
         </DsCard>
+      ) : friendsQuery.isError ? (
+        <DsEmptyState
+          tone="error"
+          art="/mascots/alphonso-encouraging.png"
+          title="Couldn't load your friends."
+          message="Check your connection and try again."
+        >
+          <DsButton small variant="secondary" onClick={() => void friendsQuery.refetch()}>
+            Try again
+          </DsButton>
+        </DsEmptyState>
       ) : !friends || friends.length === 0 ? (
         <DsCard className="text-center">
           <p className="ds-type-footnote text-ds-ink-soft">
@@ -279,7 +326,7 @@ function FriendsPage() {
                   <DsButton
                     small
                     variant="danger"
-                    onClick={() => confirmRemove(f.userId)}
+                    onClick={() => void confirmRemove(f)}
                     disabled={removingId === f.userId}
                   >
                     {removingId === f.userId ? "Removing…" : "Confirm"}

@@ -205,4 +205,16 @@ describe("League page", () => {
     await screen.findByRole("heading", { name: /league$/ });
     expect(screen.queryByText("XP this week")).not.toBeInTheDocument();
   });
+
+  it("shows an error with Try again, not 'Nothing here yet', when the board cannot load", async () => {
+    getLeaderboard
+      .mockRejectedValueOnce(new Error("getLeaderboard: request-failed"))
+      .mockRejectedValueOnce(new Error("getLeaderboard: request-failed"))
+      .mockResolvedValue([]);
+    renderPage();
+    expect(await screen.findByText("Couldn't load the leaderboard.")).toBeInTheDocument();
+    expect(screen.queryByText("Nothing here yet")).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Nothing here yet")).toBeInTheDocument();
+  });
 });

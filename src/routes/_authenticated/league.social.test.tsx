@@ -180,3 +180,35 @@ describe("Weekly recap", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 });
+
+describe("failed reads", () => {
+  it("keeps the saved overtake snapshot when the board cannot be read", async () => {
+    saveSnapshot(["a", ME, "b"]);
+    const before = window.localStorage.getItem(`lwa.leaderboardSnapshot.${ME}`);
+    getLeaderboard.mockRejectedValue(new Error("getLeaderboard: request-failed"));
+    renderPage();
+    expect(await screen.findByText("Couldn't load the leaderboard.")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(getLeaderboard).toHaveBeenCalledWith({ data: { scope: "global", period: "weekly" } }),
+    );
+    expect(window.localStorage.getItem(`lwa.leaderboardSnapshot.${ME}`)).toBe(before);
+  });
+
+  it("a failed recap neither shows a quiet week nor spends the promotion celebration", async () => {
+    window.localStorage.setItem(`lwa.lastRecapTier.${ME}`, "bronze");
+    useProgress.setState({ leagueTier: "silver" });
+    getWeeklyRecap
+      .mockRejectedValueOnce(new Error("getWeeklyRecap: request-failed"))
+      .mockResolvedValueOnce({ lastWeekXp: 320, currentRank: 12 });
+    renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "Recap" }));
+    expect(await screen.findByText("Couldn't load your recap.")).toBeInTheDocument();
+    expect(screen.queryByText("0 XP")).toBeNull();
+    expect(window.localStorage.getItem(`lwa.lastRecapTier.${ME}`)).toBe("bronze");
+
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    fireEvent.click(screen.getByRole("button", { name: "Recap" }));
+    expect(await screen.findByText("You moved up to Sapling!")).toBeInTheDocument();
+  });
+});

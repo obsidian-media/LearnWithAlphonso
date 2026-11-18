@@ -1,28 +1,43 @@
-import { DsCard, Overline, RankBadge } from "@/components/ds/Blocks";
+import { DsButton, DsCard, Overline, RankBadge } from "@/components/ds/Blocks";
 import type { TeamLeaderboardEntry } from "@/lib/teams.functions";
 import { TeamNameReportMenu } from "../SocialSafetyMenu";
 
 /**
- * "This week's top teams": ranked rows; the learner's own team is tinted. Draws nothing while empty and settled. Every
- * team but one the learner owns has a "Report team name" menu, as on iOS and Android.
+ * "This week's top teams": ranked rows; the learner's own team is tinted. Draws nothing while empty and settled. A
+ * failed read says so, with a retry, instead of vanishing like an empty board. Every team but one the learner owns
+ * has a "Report team name" menu, as on iOS and Android.
  */
 export function TopTeams({
   loading,
+  failed = false,
+  onRetry,
   rows,
   myTeamId,
   ownedTeamId = null,
 }: {
   loading: boolean;
+  /** The read failed: show an error with Try again (`onRetry`) rather than nothing. */
+  failed?: boolean;
+  onRetry?: () => void;
   rows: TeamLeaderboardEntry[];
   myTeamId: string | null;
   /** The team the learner owns, if any: its name cannot be reported by its own creator, so it gets no menu. */
   ownedTeamId?: string | null;
 }) {
-  if (!loading && rows.length === 0) return null;
+  if (!loading && !failed && rows.length === 0) return null;
   return (
     <>
       <Overline>This week's top teams</Overline>
-      {loading ? (
+      {failed && !loading ? (
+        <DsCard role="alert">
+          <p className="ds-type-footnote text-ds-ink-soft">Couldn't load the top teams.</p>
+          {onRetry && (
+            <DsButton small variant="secondary" onClick={onRetry}>
+              Try again
+            </DsButton>
+          )}
+        </DsCard>
+      ) : loading ? (
         <DsCard>
           <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
         </DsCard>

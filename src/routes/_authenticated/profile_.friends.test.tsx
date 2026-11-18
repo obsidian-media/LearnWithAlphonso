@@ -24,6 +24,8 @@ const getFriends = vi.fn();
 const removeFriend = vi.fn();
 const getMyFriendCode = vi.fn();
 vi.mock("../../lib/friends.functions", () => ({ getFriends, removeFriend, getMyFriendCode }));
+const getMyProfile = vi.fn();
+vi.mock("../../lib/leaderboard.functions", () => ({ getMyProfile }));
 const getMyBuddy = vi.fn();
 const getBuddyRequests = vi.fn();
 const requestBuddy = vi.fn();
@@ -65,6 +67,7 @@ beforeEach(() => {
   getFriends.mockReset();
   removeFriend.mockReset();
   getMyFriendCode.mockReset();
+  getMyProfile.mockReset().mockResolvedValue({ id: "me" });
   getMyBuddy.mockReset().mockResolvedValue(null);
   getBuddyRequests.mockReset().mockResolvedValue([]);
   requestBuddy.mockReset();
@@ -197,5 +200,84 @@ describe("Friends page", () => {
     await waitFor(() => expect(screen.queryByText("Ada")).not.toBeInTheDocument());
     expect(screen.getByText("Bo")).toBeInTheDocument();
     expect(await screen.findByText("1 friend")).toBeInTheDocument();
+  });
+
+  // --- failure states (launch fix: a failed call must not read as empty, nor pass for a success) ---
+
+  it("shows an error with Try again, not 'No friends yet', when the list cannot load", async () => {
+    getFriends
+      .mockRejectedValueOnce(new Error("getFriends: request-failed"))
+      .mockResolvedValue([
+        { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
+      ]);
+    getMyFriendCode.mockResolvedValue("me-code");
+    renderPage();
+
+    expect(await screen.findByText("Couldn't load your friends.")).toBeInTheDocument();
+    expect(screen.queryByText(/No friends yet/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Ada")).toBeInTheDocument();
+  });
+
+  it("keeps the friend in the list and says so when the removal is refused", async () => {
+    getFriends.mockResolvedValue([
+      { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
+    ]);
+    getMyFriendCode.mockResolvedValue("me-code");
+    removeFriend.mockResolvedValue({ ok: false, message: "not authenticated" });
+    renderPage();
+
+    await clickRemoveFriend("Ada");
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }));
+
+    expect(await screen.findByText("Couldn't remove Ada. Try again.")).toBeInTheDocument();
+    expect(screen.getByText("Ada")).toBeInTheDocument();
+    expect(screen.getByText("1 friend")).toBeInTheDocument();
+  });
+
+  it("keeps the friend in the list and says so when the removal call fails", async () => {
+    getFriends.mockResolvedValue([
+      { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
+    ]);
+    getMyFriendCode.mockResolvedValue("me-code");
+    removeFriend.mockRejectedValue(new Error("removeFriend: request-failed"));
+    renderPage();
+
+    await clickRemoveFriend("Ada");
+    fireEvent.click(await screen.findByRole("button", { name: "Confirm" }));
+
+    expect(await screen.findByText("Couldn't remove Ada. Try again.")).toBeInTheDocument();
+    expect(screen.getByText("Ada")).toBeInTheDocument();
+  });
+
+  it("says the invite link could not load, with Try again, instead of a dead disabled button", async () => {
+    getFriends.mockResolvedValue([]);
+    getMyFriendCode
+      .mockRejectedValueOnce(new Error("getMyFriendCode: request-failed"))
+      .mockResolvedValue("me-code");
+    renderPage();
+
+    expect(await screen.findByText("Couldn't load your invite link.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    const copy = await screen.findByRole("button", { name: "Copy invite link" });
+    await waitFor(() => expect(copy).toBeEnabled());
+  });
+
+  it("explains why Nudge is off when the profile cannot load, and Try again turns it back on", async () => {
+    getFriends.mockResolvedValue([
+      { userId: "f1", displayName: "Ada", avatarSeed: "A", streak: 5, weekXp: 120 },
+    ]);
+    getMyFriendCode.mockResolvedValue("me-code");
+    getMyProfile
+      .mockRejectedValueOnce(new Error("getMyProfile: request-failed"))
+      .mockResolvedValue({ id: "me" });
+    renderPage();
+
+    expect(
+      await screen.findByText("Couldn't load your profile, so nudges are paused."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Nudge Ada" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Nudge Ada" })).toBeEnabled());
   });
 });

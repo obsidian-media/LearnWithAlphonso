@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const getTeamMission = vi.fn();
@@ -88,12 +88,13 @@ describe("TeamMissionCard", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("renders nothing when the call fails (never a fabricated empty mission)", async () => {
-    getTeamMission.mockImplementation(async () => {
-      throw new Error("down");
-    });
-    const { client, container } = renderCard();
-    await vi.waitFor(() => expect(client.getQueryState(["teamMission"])?.status).toBe("error"));
-    expect(container).toBeEmptyDOMElement();
+  it("says the mission could not load, with Try again, when the call fails (never hidden, never fabricated)", async () => {
+    getTeamMission.mockRejectedValueOnce(new Error("getTeamMission: request-failed"));
+    getTeamMission.mockResolvedValueOnce(base);
+    renderCard();
+    expect(await screen.findByText("Couldn't load the team mission.")).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("3 of 8 lessons done")).toBeInTheDocument();
   });
 });

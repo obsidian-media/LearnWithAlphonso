@@ -27,6 +27,7 @@ import {
   type TeamMember,
 } from "../../lib/teams.functions";
 import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
+import { invalidateTeamQueries } from "../../lib/team-queries";
 
 export const Route = createFileRoute("/_authenticated/teams_/$teamId")({
   component: TeamDetailPage,
@@ -44,23 +45,32 @@ function TeamDetailPage() {
     queryKey: ["myTeam"],
     queryFn: () => getMyTeam(),
   });
-  const { data: members } = useQuery({
+  const membersQuery = useQuery({
     queryKey: ["teamMembers"],
     queryFn: () => getTeamMembers(),
     enabled: !!myTeam,
+    retry: false,
   });
-  const { data: leaderboard, isLoading: loadingBoard } = useQuery({
+  const members = membersQuery.data;
+  const boardQuery = useQuery({
     queryKey: ["teamLeaderboard"],
     queryFn: () => getTeamLeaderboard(),
     enabled: !!myTeam,
+    retry: false,
   });
+  const leaderboard = boardQuery.data;
+  const loadingBoard = boardQuery.isLoading;
 
   const [notice, setNotice] = useState<string | null>(null);
   const [left, setLeft] = useState(false);
   const [shared, setShared] = useState(false);
   const [kickId, setKickId] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState(false);
+  const [kickingId, setKickingId] = useState<string | null>(null);
 
   async function handleLeave() {
+    if (leaving) return;
+    setLeaving(true);
     setNotice(null);
     setLeft(false);
     try {
@@ -70,16 +80,21 @@ function TeamDetailPage() {
         return;
       }
       setLeft(true);
-      await queryClient.invalidateQueries({ queryKey: ["myTeam"] });
+      // Members, mission and board all belong to the team just left: refresh every one, not only ["myTeam"].
+      await invalidateTeamQueries(queryClient);
       // A plain leave goes back to the list; a hand-on or a close is said first.
       if (result.reason) setNotice(socialReasonMessage(result.reason));
       else navigate({ to: "/teams" });
     } catch (e) {
       setNotice(socialFailureMessage(e));
+    } finally {
+      setLeaving(false);
     }
   }
 
   async function handleKick(member: TeamMember) {
+    if (kickingId) return;
+    setKickingId(member.userId);
     setNotice(null);
     try {
       const result = await kickTeamMember({ data: { userId: member.userId } });
@@ -92,6 +107,8 @@ function TeamDetailPage() {
       await queryClient.invalidateQueries({ queryKey: ["teamMission"] });
     } catch (e) {
       setNotice(socialFailureMessage(e));
+    } finally {
+      setKickingId(null);
     }
   }
 
@@ -210,7 +227,18 @@ function TeamDetailPage() {
 
       <TeamMissionCard />
 
-      {(members ?? []).length > 0 && (
+      {membersQuery.isError && (
+        <>
+          <Overline>Members</Overline>
+          <DsCard role="alert">
+            <p className="ds-type-footnote text-ds-ink-soft">Couldn't load the members.</p>
+            <DsButton small variant="secondary" onClick={() => void membersQuery.refetch()}>
+              Try again
+            </DsButton>
+          </DsCard>
+        </>
+      )}
+      {!membersQuery.isError && (members ?? []).length > 0 && (
         <>
           <Overline>Members</Overline>
           <DsCard flush>
@@ -225,11 +253,21 @@ function TeamDetailPage() {
                 {myTeam.isOwner && !m.isOwner ? (
                   kickId === m.userId ? (
                     <span className="flex shrink-0 items-center gap-1.5">
-                      <DsButton small variant="secondary" onClick={() => setKickId(null)}>
+                      <DsButton
+                        small
+                        variant="secondary"
+                        onClick={() => setKickId(null)}
+                        disabled={kickingId === m.userId}
+                      >
                         Cancel
                       </DsButton>
-                      <DsButton small variant="danger" onClick={() => handleKick(m)}>
-                        Remove
+                      <DsButton
+                        small
+                        variant="danger"
+                        onClick={() => void handleKick(m)}
+                        disabled={kickingId !== null}
+                      >
+                        {kickingId === m.userId ? "Removing…" : "Remove"}
                       </DsButton>
                     </span>
                   ) : (
@@ -258,14 +296,21 @@ function TeamDetailPage() {
 
       <TopTeams
         loading={loadingBoard}
+        failed={boardQuery.isError}
+        onRetry={() => void boardQuery.refetch()}
         rows={leaderboard ?? []}
         myTeamId={myTeam.teamId}
         ownedTeamId={myTeam.isOwner ? myTeam.teamId : null}
       />
 
       <div className="grid justify-items-center gap-2">
-        <DsButton small variant="danger" onClick={handleLeave} disabled={locked}>
-          {locked ? "Can't leave yet (7-day lock)" : "Leave team"}
+        <DsButton
+          small
+          variant="danger"
+          onClick={() => void handleLeave()}
+          disabled={locked || leaving}
+        >
+          {locked ? "Can't leave yet (7-day lock)" : leaving ? "Leaving…" : "Leave team"}
         </DsButton>
         {notice && (
           <div role="status" className="ds-type-footnote text-ds-ink-soft">
