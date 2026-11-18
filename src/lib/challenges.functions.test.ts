@@ -151,7 +151,10 @@ describe("leaveOpenDuelQueue", () => {
 describe("a failed call is an error, not a quiet result", () => {
   function rpcFailing() {
     const supabase = createSupabaseMock();
-    supabase.rpc.mockResolvedValue({ data: null, error: { message: "permission denied for table x" } });
+    supabase.rpc.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table x" },
+    });
     return supabase;
   }
 

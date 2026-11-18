@@ -234,8 +234,11 @@ describe("Teams page", () => {
   it("sends one join for a double click", async () => {
     getMyTeam.mockResolvedValue(null);
     getTeamLeaderboard.mockResolvedValue([]);
-    let resolve: (v: { ok: boolean; reason: string | null; teamId: string | null }) => void =
-      () => {};
+    let resolve: (v: {
+      ok: boolean;
+      reason: string | null;
+      teamId: string | null;
+    }) => void = () => {};
     autoJoinTeam.mockReturnValue(new Promise((r) => (resolve = r)));
     renderPage();
 

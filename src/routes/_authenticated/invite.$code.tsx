@@ -82,9 +82,7 @@ function InvitePage() {
             <h1 className="font-display text-lg font-semibold text-ds-ink">
               Couldn't load this invite
             </h1>
-            <p className="mt-2 text-sm text-ds-ink-soft/80">
-              Check your connection and try again.
-            </p>
+            <p className="mt-2 text-sm text-ds-ink-soft/80">Check your connection and try again.</p>
             <button
               type="button"
               onClick={() => setAttempt((n) => n + 1)}
@@ -194,7 +192,10 @@ function InvitePage() {
             >
               {busy ? "Adding…" : "Try again"}
             </button>
-            <Link to="/profile/friends" className="mt-3 text-sm font-semibold text-ds-ink underline">
+            <Link
+              to="/profile/friends"
+              className="mt-3 text-sm font-semibold text-ds-ink underline"
+            >
               Back to friends
             </Link>
           </div>

@@ -315,7 +315,12 @@ describe("Team detail page", () => {
     });
 
     it("drops the old team's cached members and mission after leaving, and refreshes the board", async () => {
-      const mission = { headline: "3 of 8 lessons done", status: "in_progress", percent: 37, footer: "" };
+      const mission = {
+        headline: "3 of 8 lessons done",
+        status: "in_progress",
+        percent: 37,
+        footer: "",
+      };
       // The server's answers after the leave: no team, so no members and no mission.
       getMyTeam.mockResolvedValueOnce(owned).mockResolvedValue(null);
       getTeamMembers.mockResolvedValueOnce(members).mockResolvedValue([]);
