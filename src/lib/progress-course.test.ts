@@ -31,6 +31,15 @@ describe("the active course is remembered per account", () => {
     expect(rememberedCourse("u1")).toBe("es");
   });
 
+  it("on a new device the account's profile course is used before English, and this browser's memory wins", () => {
+    expect(useProgress.getState().adoptUser("u1", "es")).toBe("es");
+    useProgress.getState().reset();
+    expect(useProgress.getState().adoptUser("u2", null)).toBe("en");
+    useProgress.getState().reset();
+    localStorage.setItem(COURSE_KEY_PREFIX + "u3", "fr");
+    expect(useProgress.getState().adoptUser("u3", "es")).toBe("fr");
+  });
+
   it("adopting the same account again keeps the course already in memory", () => {
     useProgress.getState().adoptUser("u1");
     useProgress.getState().setCourse("fr");

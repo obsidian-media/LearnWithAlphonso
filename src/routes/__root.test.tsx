@@ -411,8 +411,18 @@ describe("AuthSync (inside RootComponent)", () => {
     getMyProfile.mockResolvedValue(null);
     render(<RootComponent />);
     await waitFor(() => expect(hydrate).toHaveBeenCalledWith({ xp: 7 }));
-    expect(progressState.adoptUser).toHaveBeenCalledWith("u1");
+    expect(progressState.adoptUser).toHaveBeenCalledWith("u1", null);
     expect(fetchProgress).toHaveBeenCalledWith({ data: { course: "fr" } });
+  });
+
+  it("offers the account's profile course as the fallback for a new device", async () => {
+    getSession.mockResolvedValue({
+      data: { session: { user: { id: "u1", user_metadata: { learner_profile: { course: "es" } } } } },
+    });
+    fetchProgress.mockResolvedValue({ xp: 1 });
+    getMyProfile.mockResolvedValue(null);
+    render(<RootComponent />);
+    await waitFor(() => expect(progressState.adoptUser).toHaveBeenCalledWith("u1", "es"));
   });
 
   it("does not hydrate a stale course's numbers over a switch made while they loaded", async () => {

@@ -39,10 +39,11 @@ export type ProgressState = {
   /** The signed-in account this store belongs to; null when signed out. */
   userId: string | null;
   /**
-   * Called once a session is known: takes that account's remembered course (English when none) and returns it, so the
+   * Called once a session is known: takes that account's remembered course (else `fallback`, the course in its
+   * learner profile; English when neither) and returns it, so the
    * caller fetches the right course's progress. The same account again keeps the course already in memory.
    */
-  adoptUser: (userId: string) => Course;
+  adoptUser: (userId: string, fallback?: Course | null) => Course;
   /** The course the last hydrate() was for; null before any. A mismatch with `course` means the numbers are stale. */
   hydratedCourse: Course | null;
   xp: number;
@@ -124,10 +125,11 @@ export const useProgress = create<ProgressState>()((set, get) => ({
     set({ course });
   },
   userId: null,
-  adoptUser: (userId) => {
+  adoptUser: (userId, fallback) => {
     const s = get();
     if (s.userId === userId) return s.course;
-    const course = rememberedCourse(userId) ?? "en";
+    // This browser's memory first; on a new device, the course the account chose (its learner profile); English last.
+    const course = rememberedCourse(userId) ?? fallback ?? "en";
     set({ userId, course });
     return course;
   },

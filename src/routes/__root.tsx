@@ -29,6 +29,7 @@ import { getMyProfile } from "../lib/leaderboard.functions";
 import { clearCachedVoicePrefs } from "../lib/voice-prefs";
 import { browserFirstRunStore } from "../lib/first-run";
 import { takeStaleSessionDrop } from "../lib/auth-offline";
+import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "../lib/learner-profile";
 
 function NotFoundComponent() {
   return (
@@ -196,7 +197,10 @@ function AuthSync() {
       }
       currentUserId = user.id;
       // The account's own course (remembered in this browser), not the server's default of English.
-      const course = adoptUser(user.id);
+      const course = adoptUser(
+        user.id,
+        parseLearnerProfile(user.user_metadata?.[LEARNER_PROFILE_KEY]).course ?? null,
+      );
       try {
         const snap = await fetchProgress({ data: { course } });
         // A course switch while this was in flight has already loaded its own numbers.

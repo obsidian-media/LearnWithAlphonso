@@ -315,6 +315,22 @@ describe("Lesson page", () => {
     );
   });
 
+  it("a reload of a French lesson waits for the account's course instead of flashing Lesson not found", async () => {
+    const { getCourse } = await import("../../data/courses");
+    const enIds = new Set(getCourse("en").curriculum.flatMap((u) => u.lessons.map((l) => l.id)));
+    const frId = getCourse("fr")
+      .curriculum.flatMap((u) => u.lessons.map((l) => l.id))
+      .find((x) => !enIds.has(x))!;
+    currentLessonId = frId;
+    useProgress.setState({ userId: null, course: "en" });
+    renderPage();
+    expect(await screen.findByRole("status", { name: "Loading lesson" })).toBeInTheDocument();
+    expect(screen.queryByText("Lesson not found.")).not.toBeInTheDocument();
+    // __root adopts the account and its course.
+    act(() => useProgress.setState({ userId: "u1", course: "fr" }));
+    expect(await screen.findByRole("button", { name: "Start lesson" })).toBeInTheDocument();
+  });
+
   it("shows a not-found message for an unknown lesson id", async () => {
     currentLessonId = "does-not-exist";
     renderPage();

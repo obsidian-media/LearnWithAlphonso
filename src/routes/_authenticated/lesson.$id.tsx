@@ -37,7 +37,7 @@ import { SaveWordProvider } from "../../components/SaveWord";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
 import { VocabImage } from "../../components/VocabImage";
-import { getCourse, localeForCourse, type Course } from "../../data/courses";
+import { COURSES, getCourse, localeForCourse, type Course } from "../../data/courses";
 import { pickReinforcementQuestion, reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
@@ -90,10 +90,16 @@ function LessonPageWithSave() {
   );
 }
 
+function lessonInAnyCourse(id: string): boolean {
+  return COURSES.some((c) => getCourse(c.id).curriculum.some((u) => u.lessons.some((l) => l.id === id)));
+}
+
 function LessonPage() {
   const { id } = useParams({ from: "/_authenticated/lesson/$id" });
   const navigate = useNavigate();
   const course = useProgress((s) => s.course);
+  // Null until the signed-in account's course is adopted (__root): before that `course` is only the default.
+  const courseAdopted = useProgress((s) => s.userId !== null);
   // The written-translation second opinion sends the learner's answer to the AI grader, so it needs the account's
   // AI consent. Without it (or without a provider) the curated answer list alone decides.
   const aiConsent = useOptionalAiConsent();
@@ -279,6 +285,15 @@ function LessonPage() {
   }, [startRequested, sessionToken, phase]);
 
   if (!maybeLesson) {
+    // A reload of /lesson/fra1p1 starts on the default course: wait for the account's own course instead of
+    // flashing "Lesson not found" for a lesson that is just in another course.
+    if (!courseAdopted && lessonInAnyCourse(id)) {
+      return (
+        <LessonScreen>
+          <div className="p-6 text-center" role="status" aria-label="Loading lesson" />
+        </LessonScreen>
+      );
+    }
     return (
       <LessonScreen>
         <div className="p-6 text-center">
