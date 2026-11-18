@@ -8,8 +8,11 @@
  * includeSubDomains here covers only hosts *under* learn.alphonsoecosystem.app, never sibling hosts such as
  * discover.alphonsoecosystem.app: HSTS is scoped to the host that sends it.
  */
+/** The one HSTS value: static files (here) and app responses (security-policy.ts) both send exactly this. */
+export const HSTS_VALUE = "max-age=31536000; includeSubDomains";
+
 export const STATIC_SECURITY_HEADERS: ReadonlyArray<{ key: string; value: string }> = [
-  { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+  { key: "Strict-Transport-Security", value: HSTS_VALUE },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
 ];

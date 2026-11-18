@@ -25,6 +25,8 @@ describe("learner server CSP integration", () => {
     expect(receivedNonce).toBeTruthy();
     expect(receivedNonce).not.toBe("attacker");
     expect(response.headers.get("content-security-policy")).toContain(`nonce-${receivedNonce}`);
-    expect(response.headers.get("strict-transport-security")).toBe("max-age=31536000");
+    expect(response.headers.get("strict-transport-security")).toBe(
+      "max-age=31536000; includeSubDomains",
+    );
   });
 });
