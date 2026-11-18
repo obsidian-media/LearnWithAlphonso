@@ -2,8 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BackPill, DsEmptyState, GlassTitle } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
+import { BranchingStoryReader } from "../../components/BranchingStoryReader";
 import { StoryReader } from "../../components/StoryReader";
-import { completeStoryCheck, getStory, saveStoryProgress } from "../../lib/stories.functions";
+import { isBranchingStory } from "../../lib/stories";
+import {
+  completeStoryCheck,
+  finishBranchingStory,
+  getStory,
+  saveStoryProgress,
+} from "../../lib/stories.functions";
 
 export const Route = createFileRoute("/_authenticated/stories/$storyId")({
   component: StoryPage,
@@ -37,6 +44,17 @@ function StoryPage() {
         />
       ) : !story ? (
         <DsEmptyState icon="books" title="Story not found" message="It may not be available yet." />
+      ) : isBranchingStory(story) ? (
+        <>
+          <GlassTitle title={story.title} sub="Read along, then choose what happens next." />
+          <BranchingStoryReader
+            story={story}
+            finish={(path) => finishBranchingStory({ data: { storyId, path } })}
+            onFinished={() => {
+              void queryClient.invalidateQueries({ queryKey: ["stories"] });
+            }}
+          />
+        </>
       ) : (
         <>
           <GlassTitle title={story.title} sub={null} />

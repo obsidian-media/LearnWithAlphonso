@@ -6,7 +6,7 @@ import {
   visibleStories,
   type StorySummary,
 } from "../lib/stories";
-import { DsCard, DsEmptyState, DsRow, Icon, Overline } from "./ds/Blocks";
+import { DsCard, DsEmptyState, DsPill, DsRow, Icon, Overline } from "./ds/Blocks";
 
 /**
  * The Stories library: the reading analog of the Listen library. Stories are grouped by level; only published stories
@@ -43,9 +43,14 @@ export function StoriesLibraryView({
                 params={{ storyId: story.id }}
                 className="flex min-h-14 items-center gap-3 py-2"
               >
-                <Icon name="books" size={40} />
+                <Icon name={story.branching ? "compass" : "books"} size={40} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate ds-type-headline text-ds-ink">{story.title}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="min-w-0 truncate ds-type-headline text-ds-ink">
+                      {story.title}
+                    </span>
+                    {story.branching ? <DsPill tone="choice">Choose your path</DsPill> : null}
+                  </span>
                   <span className="block ds-type-caption text-ds-ink-soft">
                     {storyStatus(story)}
                   </span>

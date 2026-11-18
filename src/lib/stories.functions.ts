@@ -3,7 +3,26 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publicError } from "./public-error";
 import type { PodcastQuizResult } from "./podcast-quiz.functions";
-import { clampSegment, isStoryCourse, type Story, type StorySummary } from "./stories";
+import type { StoryGraph } from "./branching";
+import {
+  clampSegment,
+  isStoryCourse,
+  type BranchingStory,
+  type LoadedStory,
+  type Story,
+  type StorySummary,
+} from "./stories";
+
+const STORY_ART_BUCKET = "story-art";
+
+/** The result of finishing a branching path; the ending and credit are the server's, never the client's. */
+export type FinishBranchingResult = {
+  endingId: string;
+  quality: "good" | "ok" | "lesser";
+  endingsFound: string[];
+  endingsTotal: number;
+  credited: boolean;
+};
 
 // Not in the generated types until they are regenerated against a database that has the migration.
 type Rows = { data: unknown[] | null; error: { message: string } | null };
@@ -25,6 +44,8 @@ type StoryRow = {
   segments: unknown;
   sort_order: number;
   published: boolean;
+  branching: boolean;
+  nodes: unknown;
 };
 type ProgressRow = {
   story_id: string;
@@ -32,13 +53,52 @@ type ProgressRow = {
   best_correct: number | null;
   check_total: number | null;
   completed_at: string | null;
+  endings_found: unknown;
+  reading_credited: boolean | null;
 };
 
-const STORY_COLS = "id,course,level_id,slug,title,segments,sort_order,published";
-const PROGRESS_COLS = "story_id,segment_index,best_correct,check_total,completed_at";
+const STORY_COLS = "id,course,level_id,slug,title,segments,sort_order,published,branching,nodes";
+const PROGRESS_COLS =
+  "story_id,segment_index,best_correct,check_total,completed_at,endings_found,reading_credited";
 
 const segmentsOf = (v: unknown): string[] =>
   Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+
+const stringsOf = (v: unknown): string[] =>
+  Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+
+/** Build the public URL for a story-art object key, or null when there is no key (graceful placeholder). */
+const artUrlOf = (client: unknown, key: unknown): string | null => {
+  if (typeof key !== "string" || key.length === 0) return null;
+  const storage = (client as { storage?: { from: (b: string) => { getPublicUrl: (p: string) => { data: { publicUrl: string } } } } }).storage;
+  const url = storage?.from(STORY_ART_BUCKET).getPublicUrl(key).data.publicUrl;
+  return url ?? null;
+};
+
+/**
+ * Turn the stored nodes jsonb into a StoryGraph, attaching a resolved art URL (or null) to each node. Returns null
+ * when the graph is malformed (a draft error), so the reader shows "not found" rather than a broken tree.
+ */
+function toGraph(client: unknown, raw: unknown): StoryGraph | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as { start?: unknown; map?: unknown };
+  if (typeof r.start !== "string" || !r.map || typeof r.map !== "object") return null;
+  const map: StoryGraph["map"] = {};
+  for (const [id, node] of Object.entries(r.map as Record<string, unknown>)) {
+    if (!node || typeof node !== "object") return null;
+    const n = node as Record<string, unknown>;
+    map[id] = {
+      segments: segmentsOf(n.segments),
+      art: typeof n.art === "string" ? n.art : undefined,
+      artUrl: artUrlOf(client, n.art),
+      choice: n.choice as StoryGraph["map"][string]["choice"],
+      next: typeof n.next === "string" ? n.next : undefined,
+      ending: n.ending as StoryGraph["map"][string]["ending"],
+    };
+  }
+  if (!map[r.start]) return null;
+  return { start: r.start, map };
+}
 
 /**
  * The stories the signed-in learner may see in one course, with their own progress. Read with the learner's client, so
@@ -78,6 +138,7 @@ export const listStories = createServerFn({ method: "GET" })
         title: r.title,
         sortOrder: r.sort_order,
         published: r.published,
+        branching: !!r.branching,
         segmentIndex: p?.segment_index ?? 0,
         segmentCount: segmentsOf(r.segments).length,
         bestCorrect: p?.best_correct ?? null,
@@ -87,11 +148,14 @@ export const listStories = createServerFn({ method: "GET" })
     });
   });
 
-/** One published story with its check questions; null when it does not exist or is not published. */
+/**
+ * One published story loaded for the reader: a linear read-along with its check questions, or a branching story with
+ * its node graph (resolved art URLs) and the learner's endings. Null when it does not exist or is not published.
+ */
 export const getStory = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ storyId: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }): Promise<Story | null> => {
+  .handler(async ({ data, context }): Promise<LoadedStory | null> => {
     const db = loose(context.supabase);
     const res = await db
       .from("stories")
@@ -101,6 +165,30 @@ export const getStory = createServerFn({ method: "GET" })
     if (res.error) throw publicError(null, res.error);
     const row = ((res.data ?? []) as StoryRow[])[0];
     if (!row || !isStoryCourse(row.course)) return null;
+
+    // A branching story carries its text in the node graph; there is no MC quiz.
+    if (row.branching) {
+      const graph = toGraph(context.supabase, row.nodes);
+      if (!graph) return null;
+      const bprog = await db
+        .from("story_progress")
+        .select(PROGRESS_COLS)
+        .eq("user_id", context.userId)
+        .eq("story_id", row.id);
+      const bp = ((bprog.data ?? []) as ProgressRow[])[0];
+      const branchingStory: BranchingStory = {
+        id: row.id,
+        course: row.course,
+        level: row.level_id,
+        title: row.title,
+        branching: true,
+        graph,
+        endingsFound: stringsOf(bp?.endings_found),
+        readingCredited: !!bp?.reading_credited,
+      };
+      return branchingStory;
+    }
+
     const qs = await db
       .from("story_quiz_questions")
       .select("position,prompt,choices,answer_index")
@@ -215,5 +303,56 @@ export const completeStoryCheck = createServerFn({ method: "POST" })
       bestCorrect: r.bestCorrect ?? 0,
       bestXp: 0,
       missedQuestionIds: r.missedQuestionIds ?? [],
+    };
+  });
+
+/**
+ * Finishes a branching path. The server (public.finish_branching_story) re-walks the stored node graph from the
+ * learner's choices and decides, from the stored graph alone, which ending was reached and whether the reading skill
+ * is credited (once, on the first good ending) — the client's `path` can only pick options, never claim an ending or
+ * a credit. Throws the stable code "not-found" (unpublished / not a branching story) or "invalid-path".
+ */
+export const finishBranchingStory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        storyId: z.string().uuid(),
+        // One option index per choice node on the path; a short, bounded list.
+        path: z.array(z.number().int().min(0).max(9)).max(64),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<FinishBranchingResult> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const rpc = supabaseAdmin.rpc.bind(supabaseAdmin) as unknown as (
+      name: string,
+      args: Record<string, unknown>,
+    ) => Promise<{
+      data: {
+        status?: string;
+        endingId?: string;
+        quality?: "good" | "ok" | "lesser";
+        endingsFound?: string[];
+        endingsTotal?: number;
+        credited?: boolean;
+      } | null;
+      error: { message: string } | null;
+    }>;
+    const { data: r, error } = await rpc("finish_branching_story", {
+      _user_id: context.userId,
+      _story_id: data.storyId,
+      _path: data.path,
+    });
+    if (error || !r) throw new Error("Could not save your path; retry");
+    if (r.status === "not-found") throw new Error("not-found");
+    if (r.status === "invalid") throw new Error("invalid-path");
+    if (r.status !== "applied") throw new Error("Could not save your path; retry");
+    return {
+      endingId: r.endingId ?? "",
+      quality: r.quality ?? "lesser",
+      endingsFound: r.endingsFound ?? [],
+      endingsTotal: r.endingsTotal ?? 0,
+      credited: !!r.credited,
     };
   });

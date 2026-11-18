@@ -3,6 +3,7 @@
  * and the read-along. The database decides what a learner may see (RLS: published only); the filter here is a second
  * line, so a draft that ever reached the client still never shows.
  */
+import type { StoryGraph, StoryNode } from "./branching";
 import type { QuizQuestion } from "./podcast-quiz-run";
 
 export type StoryCourse = "en" | "fr" | "es";
@@ -15,6 +16,8 @@ export type StorySummary = {
   title: string;
   sortOrder: number;
   published: boolean;
+  /** A branching ("choose your path") story rather than a plain linear one; drives the library badge. */
+  branching: boolean;
   /** Segments read so far, from the learner's saved progress; 0 when never opened. */
   segmentIndex: number;
   segmentCount: number;
@@ -34,6 +37,26 @@ export type Story = {
   /** Where the learner left off. */
   segmentIndex: number;
 };
+
+/** A branching story loaded for the reader: the node graph (with resolved art URLs) and the learner's endings. */
+export type BranchingStory = {
+  id: string;
+  course: StoryCourse;
+  level: string;
+  title: string;
+  branching: true;
+  graph: StoryGraph;
+  /** Ending ids the learner has already reached, for the endings-found tracker. */
+  endingsFound: string[];
+  readingCredited: boolean;
+};
+
+/** What getStory returns: a plain read-along (no `graph`) or a branching story (`graph` present). */
+export type LoadedStory = Story | BranchingStory;
+
+export const isBranchingStory = (s: LoadedStory): s is BranchingStory => "graph" in s;
+
+export type { StoryNode };
 
 export const isStoryCourse = (c: unknown): c is StoryCourse =>
   c === "en" || c === "fr" || c === "es";
@@ -72,6 +95,7 @@ export const levelLabel = (level: string) => LEVEL_LABELS[level] ?? level;
 
 /** A short status for a library row. */
 export function storyStatus(s: StorySummary): string {
+  if (s.branching) return s.completed ? "Ending found — try another path" : "Choose your path";
   if (s.checkTotal !== null && s.bestCorrect !== null)
     return `Best: ${s.bestCorrect} of ${s.checkTotal}`;
   if (s.segmentIndex > 0 && !s.completed) return "Continue reading";
