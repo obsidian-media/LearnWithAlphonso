@@ -29,16 +29,16 @@ type Untyped = {
 
 export type ReferralDeps = {
   db: () => Promise<Untyped>;
-  /** Whether the learner has Pro (unlimited hearts). Fails closed (false). */
-  isPro: (userId: string) => Promise<boolean>;
+  /** Whether the learner has Pro (unlimited hearts). null = not established: nothing is granted this time. */
+  isPro: (userId: string) => Promise<boolean | null>;
 };
 
 export async function liveReferralDeps(): Promise<ReferralDeps> {
-  const { heartsUnlimited, liveHeartsServerDeps } = await import("./hearts-server.server");
+  const { heartsUnlimitedOrUnknown, liveHeartsServerDeps } = await import("./hearts-server.server");
   const heartsDeps = await liveHeartsServerDeps();
   return {
     db: () => heartsDeps.db() as unknown as Promise<Untyped>,
-    isPro: (userId) => heartsUnlimited(userId, heartsDeps),
+    isPro: (userId) => heartsUnlimitedOrUnknown(userId, heartsDeps),
   };
 }
 
@@ -60,6 +60,8 @@ export async function settleReferralReward(
     const referrerId = (pending as { referrer_id?: unknown } | null)?.referrer_id;
     if (typeof referrerId !== "string") return "none";
     const referrerPro = await deps.isPro(referrerId);
+    // The reward depends on the referrer's Pro status; "unknown" must not be written as "not Pro".
+    if (referrerPro === null) return "error";
     const { data, error: rpcError } = await db.rpc("grant_referral_reward", {
       _referee: userId,
       _referrer_pro: referrerPro,

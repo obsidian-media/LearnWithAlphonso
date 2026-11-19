@@ -30,10 +30,18 @@ export async function readAiConsent(
 }
 
 /** For paths that degrade to local grading: anything but a stored consent means "no AI". */
-export async function hasAiConsent(db: ConsentReader, userId: string): Promise<boolean> {
+export async function hasAiConsent(
+  db: ConsentReader,
+  userId: string,
+  opts: { strict?: boolean } = {},
+): Promise<boolean> {
   // AI switched off by the owner: these paths fall back to local grading, exactly as without consent.
   if (!(await isSwitchOn("ai"))) return false;
-  return (await readAiConsent(db, userId)) === "granted";
+  const state = await readAiConsent(db, userId);
+  // strict: a caller that WRITES a verdict must not guess "no consent" from a failed read (the curated verdict would
+  // stand and a translate answer only the AI would accept is saved as wrong).
+  if (state === "error" && opts.strict) throw new Error("Could not load lesson progress");
+  return state === "granted";
 }
 
 export const AI_UNAVAILABLE = "ai-unavailable" as const;
