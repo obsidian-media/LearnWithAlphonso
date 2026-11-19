@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { ServerHeartsMode } from "./hearts-gate.server";
 import type { ProEntitlementStatus, RevenueCatConfig } from "./revenuecat-entitlement";
+import { OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS, recordOpsEvent } from "./ops-events.server";
 
 /**
  * The web's half of "hearts are settled on the server" (the Edge Functions have the Deno half:
@@ -178,6 +179,12 @@ export async function settleLessonHeartsStrict(
       console.error(
         JSON.stringify({ event: "hearts_settlement_shadow_stale_pro", fn: "completeLessonRemote" }),
       );
+      await recordOpsEvent(
+        "hearts_settlement_shadow_stale_pro",
+        { fn: "completeLessonRemote" },
+        args.userId,
+        OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS,
+      );
     } else if (proAnswer.source === "stale") {
       console.error(
         JSON.stringify({ event: "hearts_settlement_stale_pro", fn: "completeLessonRemote" }),
@@ -189,6 +196,12 @@ export async function settleLessonHeartsStrict(
           event: "hearts_settlement_shadow_pro_unknown",
           fn: "completeLessonRemote",
         }),
+      );
+      await recordOpsEvent(
+        "hearts_settlement_shadow_pro_unknown",
+        { fn: "completeLessonRemote" },
+        args.userId,
+        OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS,
       );
     }
     const db = await deps.db();
@@ -208,6 +221,7 @@ export async function settleLessonHeartsStrict(
       console.error(
         JSON.stringify({ event: "hearts_settlement_failed", fn: "completeLessonRemote" }),
       );
+      await recordOpsEvent("hearts_settlement_failed", { fn: "completeLessonRemote" }, args.userId);
       return { ok: false };
     }
     return {
@@ -222,6 +236,7 @@ export async function settleLessonHeartsStrict(
     console.error(
       JSON.stringify({ event: "hearts_settlement_failed", fn: "completeLessonRemote" }),
     );
+    await recordOpsEvent("hearts_settlement_failed", { fn: "completeLessonRemote" }, args.userId);
     return { ok: false };
   }
 }

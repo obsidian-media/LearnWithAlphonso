@@ -103,6 +103,8 @@ export const SERVICE_SCOPED_EXPORT_TABLES = [
   // What each AI call cost (20261118200000): the learner's own usage by kind, vendor, model and day. No content.
   { table: "ai_cost_log", column: "user_id" },
   { table: "ai_cost_daily", column: "user_id" },
+  // Server-side failure events that involved this learner (20261125140000): event name, source and ids/codes only.
+  { table: "ops_events", column: "user_id" },
   // The Help chat (20261117100000): what the learner wrote and was answered, with explicit columns so staff internals
   // (assigned_to, ai_summary, handoff_reason, ai_facts, author_id) stay out. Never support_notes. Deleting the account
   // removes all of it by ON DELETE CASCADE.

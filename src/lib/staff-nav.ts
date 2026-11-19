@@ -14,6 +14,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     scope: "numbers.read",
     alsoScope: "numbers.revenue",
   },
+  { key: "health", label: "System health", to: "/health", scope: "numbers.read" },
   { key: "users", label: "Users", to: "/users", scope: "users.read" },
   { key: "support", label: "Support", to: "/support", scope: "support.read" },
   { key: "reports", label: "Reports", to: "/reports", scope: "reports.manage" },
@@ -32,7 +33,7 @@ export function navItemsFor(scopes: readonly string[]): NavItem[] {
 
 /** Where the console opens: Users when allowed, otherwise the first thing the person can use. */
 export function homeFor(scopes: readonly string[]): string | null {
-  const order = ["users", "reports", "podcasts", "support", "numbers", "staff", "audit"];
+  const order = ["users", "reports", "podcasts", "support", "numbers", "health", "staff", "audit"];
   const visible = navItemsFor(scopes);
   for (const key of order) {
     const item = visible.find((i) => i.key === key);

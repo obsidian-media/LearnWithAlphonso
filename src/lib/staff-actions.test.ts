@@ -54,9 +54,10 @@ describe("the console navigation", () => {
     const keys = navItemsFor(DEFAULT_SCOPES.support).map((i) => i.key);
     expect(keys).toEqual(["users", "support", "reports"]);
   });
-  it("the owner sees every item, in the order Numbers, Users, Support, Reports, Podcasts, Staff, Action record", () => {
+  it("the owner sees every item, in the order Numbers, System health, Users, Support, Reports, Podcasts, Staff, Action record", () => {
     expect(navItemsFor([...SCOPES]).map((i) => i.key)).toEqual([
       "numbers",
+      "health",
       "users",
       "support",
       "reports",

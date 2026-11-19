@@ -20,6 +20,7 @@ export const STAFF_LIMITS = {
   numbersRefresh: { bucket: "numbers_refresh", max: 6, windowSeconds: 60 },
   support_read: { bucket: "support_read", max: 120, windowSeconds: 60 },
   support_write: { bucket: "support_write", max: 60, windowSeconds: 60 },
+  system_health: { bucket: "system_health", max: 30, windowSeconds: 60 },
   user_search: { bucket: "user_search", max: 30, windowSeconds: 60 },
 } as const satisfies Record<string, StaffLimit>;
 

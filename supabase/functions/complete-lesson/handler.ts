@@ -54,8 +54,11 @@ import { sendPushToUser } from "../_shared/apns.ts";
 import { AiConsentReadError, hasAiConsentOrThrow } from "../_shared/ai-consent.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 import { makeTranslateCostLogger } from "../_shared/ai-cost-log.ts";
+import { OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS, recordOpsEvent } from "../_shared/ops-events.ts";
 import { recordLessonProfileData } from "../_shared/profile-data.ts";
 import { makeTranslateQuotaCheck, proLookupWith } from "../_shared/ai-quota.ts";
+
+const SRC = "edge:complete-lesson";
 
 // Was missing "es" -- predates Spanish's 2026-09-21 launch and was never
 // updated, unlike grade-review's identical schema. Silently rejected every
@@ -206,10 +209,11 @@ async function settleLessonHearts(
 ): Promise<{ ok: true; settlement: HeartsSettlement | null } | { ok: false }> {
   const mode = deps.heartsMode();
   if (mode === "off") return { ok: true, settlement: null };
-  const failed = (reason: string) => {
+  const failed = async (reason: string) => {
     console.error(
       JSON.stringify({ event: "hearts_settlement_failed", fn: "complete-lesson", reason }),
     );
+    await recordOpsEvent(admin, SRC, "hearts_settlement_failed", { reason }, userId);
     return { ok: false } as const;
   };
   try {
@@ -225,14 +229,18 @@ async function settleLessonHearts(
       } else {
         pro = false;
         enforce = false;
-        console.error(
-          JSON.stringify({
-            event:
-              cached === true
-                ? "hearts_settlement_shadow_stale_pro"
-                : "hearts_settlement_shadow_pro_unknown",
-            fn: "complete-lesson",
-          }),
+        const shadowEvent =
+          cached === true
+            ? "hearts_settlement_shadow_stale_pro"
+            : "hearts_settlement_shadow_pro_unknown";
+        console.error(JSON.stringify({ event: shadowEvent, fn: "complete-lesson" }));
+        await recordOpsEvent(
+          admin,
+          SRC,
+          shadowEvent,
+          {},
+          userId,
+          OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS,
         );
       }
     }
@@ -988,6 +996,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
           message: finalizeError.message,
         }),
       );
+      await recordOpsEvent(admin, SRC, "lesson_result_finalize_failed", {}, userId);
     }
   } catch {
     // Nothing to do: the earlier stored result stands.

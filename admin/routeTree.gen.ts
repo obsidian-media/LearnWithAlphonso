@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as FoldersRouteImport } from './routes/folders'
+import { Route as HealthRouteImport } from './routes/health'
 import { Route as NumbersRouteImport } from './routes/numbers'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SigninRouteImport } from './routes/signin'
@@ -35,6 +36,11 @@ const AuditRoute = AuditRouteImport.update({
 const FoldersRoute = FoldersRouteImport.update({
   id: '/folders',
   path: '/folders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthRoute = HealthRouteImport.update({
+  id: '/health',
+  path: '/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NumbersRoute = NumbersRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/folders': typeof FoldersRoute
+  '/health': typeof HealthRoute
   '/numbers': typeof NumbersRoute
   '/reports': typeof ReportsRoute
   '/signin': typeof SigninRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/folders': typeof FoldersRoute
+  '/health': typeof HealthRoute
   '/numbers': typeof NumbersRoute
   '/reports': typeof ReportsRoute
   '/signin': typeof SigninRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/folders': typeof FoldersRoute
+  '/health': typeof HealthRoute
   '/numbers': typeof NumbersRoute
   '/reports': typeof ReportsRoute
   '/signin': typeof SigninRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/audit'
     | '/folders'
+    | '/health'
     | '/numbers'
     | '/reports'
     | '/signin'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/audit'
     | '/folders'
+    | '/health'
     | '/numbers'
     | '/reports'
     | '/signin'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/'
     | '/audit'
     | '/folders'
+    | '/health'
     | '/numbers'
     | '/reports'
     | '/signin'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditRoute: typeof AuditRoute
   FoldersRoute: typeof FoldersRoute
+  HealthRoute: typeof HealthRoute
   NumbersRoute: typeof NumbersRoute
   ReportsRoute: typeof ReportsRoute
   SigninRoute: typeof SigninRoute
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       path: '/folders'
       fullPath: '/folders'
       preLoaderRoute: typeof FoldersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/health': {
+      id: '/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof HealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/numbers': {
@@ -279,6 +299,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditRoute: AuditRoute,
   FoldersRoute: FoldersRoute,
+  HealthRoute: HealthRoute,
   NumbersRoute: NumbersRoute,
   ReportsRoute: ReportsRoute,
   SigninRoute: SigninRoute,
