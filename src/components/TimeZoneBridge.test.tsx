@@ -33,6 +33,9 @@ describe("TimeZoneBridge", () => {
     first.unmount();
     render(<TimeZoneBridge />);
     await waitFor(() => expect(getSession).toHaveBeenCalledTimes(2));
+    // Let the second mount's getSession().then() run (and its send, if the cache were ignored) before asserting.
+    await getSession.mock.results[1]!.value;
+    await new Promise((r) => setTimeout(r, 20));
     expect(setTimeZone).toHaveBeenCalledTimes(1);
   });
 

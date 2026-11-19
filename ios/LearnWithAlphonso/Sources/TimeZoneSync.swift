@@ -9,6 +9,8 @@ enum TimeZoneSync {
         guard let userID = session.userID, !FirstRunDevice.isBlocked else { return }
         await TimeZoneReporter().syncIfChanged(userID: userID, zone: TimeZone.current.identifier) { zone in
             guard let token = await session.freshAccessToken() else { throw SupabaseAuthError.invalidPayload }
+            // A sign-out or account switch while the token refreshed: do not send, so nothing is stamped for the old user.
+            guard session.userID == userID else { throw SupabaseAuthError.invalidPayload }
             try await ProgressSyncClient(
                 supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: token
             ).setMyTimeZone(zone)
