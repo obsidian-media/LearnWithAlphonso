@@ -1,11 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.17";
-  };
   graphql_public: {
     Tables: {
       [_ in never]: never;
@@ -15,12 +10,7 @@ export type Database = {
     };
     Functions: {
       graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
+        Args: { extensions?: Json; operationName?: string; query?: string; variables?: Json };
         Returns: Json;
       };
     };
@@ -855,21 +845,21 @@ export type Database = {
           created_at: string;
           event_type: string;
           id: string;
-          payload: Json;
+          payload: NonNullable<Json>;
           user_id: string;
         };
         Insert: {
           created_at?: string;
           event_type: string;
           id?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           user_id: string;
         };
         Update: {
           created_at?: string;
           event_type?: string;
           id?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           user_id?: string;
         };
         Relationships: [];
@@ -1156,7 +1146,7 @@ export type Database = {
           created_at: string;
           lesson_id: string;
           misses: number;
-          result: Json;
+          result: NonNullable<Json>;
           settle_since: string;
           token_hash: string;
           user_id: string;
@@ -1166,7 +1156,7 @@ export type Database = {
           created_at?: string;
           lesson_id: string;
           misses: number;
-          result: Json;
+          result: NonNullable<Json>;
           settle_since: string;
           token_hash: string;
           user_id: string;
@@ -1176,7 +1166,7 @@ export type Database = {
           created_at?: string;
           lesson_id?: string;
           misses?: number;
-          result?: Json;
+          result?: NonNullable<Json>;
           settle_since?: string;
           token_hash?: string;
           user_id?: string;
@@ -1331,7 +1321,7 @@ export type Database = {
       ops_events: {
         Row: {
           created_at: string;
-          detail: Json;
+          detail: NonNullable<Json>;
           event: string;
           id: number;
           source: string;
@@ -1339,7 +1329,7 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
-          detail?: Json;
+          detail?: NonNullable<Json>;
           event: string;
           id?: number;
           source: string;
@@ -1347,7 +1337,7 @@ export type Database = {
         };
         Update: {
           created_at?: string;
-          detail?: Json;
+          detail?: NonNullable<Json>;
           event?: string;
           id?: number;
           source?: string;
@@ -1627,7 +1617,7 @@ export type Database = {
       podcast_quiz_questions: {
         Row: {
           answer_index: number;
-          choices: Json;
+          choices: NonNullable<Json>;
           episode_id: string;
           id: string;
           prompt: string;
@@ -1635,7 +1625,7 @@ export type Database = {
         };
         Insert: {
           answer_index: number;
-          choices: Json;
+          choices: NonNullable<Json>;
           episode_id: string;
           id: string;
           prompt: string;
@@ -1643,7 +1633,7 @@ export type Database = {
         };
         Update: {
           answer_index?: number;
-          choices?: Json;
+          choices?: NonNullable<Json>;
           episode_id?: string;
           id?: string;
           prompt?: string;
@@ -1954,7 +1944,7 @@ export type Database = {
           created_at: string;
           item_key: string;
           language: string;
-          result: Json;
+          result: NonNullable<Json>;
           user_id: string;
         };
         Insert: {
@@ -1962,7 +1952,7 @@ export type Database = {
           created_at?: string;
           item_key: string;
           language: string;
-          result: Json;
+          result: NonNullable<Json>;
           user_id: string;
         };
         Update: {
@@ -1970,7 +1960,7 @@ export type Database = {
           created_at?: string;
           item_key?: string;
           language?: string;
-          result?: Json;
+          result?: NonNullable<Json>;
           user_id?: string;
         };
         Relationships: [];
@@ -2352,7 +2342,7 @@ export type Database = {
           nodes: Json | null;
           published: boolean;
           published_at: string | null;
-          segments: Json;
+          segments: NonNullable<Json>;
           slug: string;
           sort_order: number;
           title: string;
@@ -2368,7 +2358,7 @@ export type Database = {
           nodes?: Json | null;
           published?: boolean;
           published_at?: string | null;
-          segments: Json;
+          segments: NonNullable<Json>;
           slug: string;
           sort_order?: number;
           title: string;
@@ -2384,7 +2374,7 @@ export type Database = {
           nodes?: Json | null;
           published?: boolean;
           published_at?: string | null;
-          segments?: Json;
+          segments?: NonNullable<Json>;
           slug?: string;
           sort_order?: number;
           title?: string;
@@ -2404,7 +2394,7 @@ export type Database = {
           best_correct: number | null;
           check_total: number | null;
           completed_at: string | null;
-          endings_found: Json;
+          endings_found: NonNullable<Json>;
           reading_credited: boolean;
           segment_index: number;
           story_id: string;
@@ -2415,7 +2405,7 @@ export type Database = {
           best_correct?: number | null;
           check_total?: number | null;
           completed_at?: string | null;
-          endings_found?: Json;
+          endings_found?: NonNullable<Json>;
           reading_credited?: boolean;
           segment_index?: number;
           story_id: string;
@@ -2426,7 +2416,7 @@ export type Database = {
           best_correct?: number | null;
           check_total?: number | null;
           completed_at?: string | null;
-          endings_found?: Json;
+          endings_found?: NonNullable<Json>;
           reading_credited?: boolean;
           segment_index?: number;
           story_id?: string;
@@ -2446,7 +2436,7 @@ export type Database = {
       story_quiz_questions: {
         Row: {
           answer_index: number;
-          choices: Json;
+          choices: NonNullable<Json>;
           id: string;
           position: number;
           prompt: string;
@@ -2454,7 +2444,7 @@ export type Database = {
         };
         Insert: {
           answer_index: number;
-          choices: Json;
+          choices: NonNullable<Json>;
           id?: string;
           position: number;
           prompt: string;
@@ -2462,7 +2452,7 @@ export type Database = {
         };
         Update: {
           answer_index?: number;
-          choices?: Json;
+          choices?: NonNullable<Json>;
           id?: string;
           position?: number;
           prompt?: string;
@@ -3334,15 +3324,9 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      _buddy_count: {
-        Args: { _from: string; _to: string; _user: string };
-        Returns: number;
-      };
+      _buddy_count: { Args: { _from: string; _to: string; _user: string }; Returns: number };
       _cefr_rank: { Args: { _level: string }; Returns: number };
-      _create_buddy_pair: {
-        Args: { _source: string; _x: string; _y: string };
-        Returns: string;
-      };
+      _create_buddy_pair: { Args: { _source: string; _x: string; _y: string }; Returns: string };
       _end_buddy_pair_between: {
         Args: { _reason: string; _x: string; _y: string };
         Returns: undefined;
@@ -3355,13 +3339,10 @@ export type Database = {
           team_id: string;
         }[];
       };
-      _lock_buddy_users: {
-        Args: { _x: string; _y: string };
-        Returns: undefined;
-      };
-      _my_team_id: { Args: never; Returns: string };
-      _new_join_code: { Args: never; Returns: string };
-      _random_team_name: { Args: never; Returns: string };
+      _lock_buddy_users: { Args: { _x: string; _y: string }; Returns: undefined };
+      _my_team_id: { Args: Record<PropertyKey, never>; Returns: string };
+      _new_join_code: { Args: Record<PropertyKey, never>; Returns: string };
+      _random_team_name: { Args: Record<PropertyKey, never>; Returns: string };
       _reset_failing_public_names: {
         Args: { _approved_names: number; _approved_teams: number };
         Returns: {
@@ -3370,11 +3351,8 @@ export type Database = {
         }[];
       };
       _resolve_buddy_pair: { Args: { _pair: string }; Returns: undefined };
-      _resolve_team_mission: {
-        Args: { _team: string; _wk: string };
-        Returns: undefined;
-      };
-      _safe_random_team_name: { Args: never; Returns: string };
+      _resolve_team_mission: { Args: { _team: string; _wk: string }; Returns: undefined };
+      _safe_random_team_name: { Args: Record<PropertyKey, never>; Returns: string };
       _team_mission_count: {
         Args: { _team: string; _user?: string; _wk: string };
         Returns: number;
@@ -3387,39 +3365,17 @@ export type Database = {
         }[];
       };
       add_learning_seconds: {
-        Args: {
-          _lesson_seconds: number;
-          _practice_seconds: number;
-          _user_id: string;
-        };
+        Args: { _lesson_seconds: number; _practice_seconds: number; _user_id: string };
         Returns: string;
       };
-      add_skill_results: {
-        Args: { _results: Json; _user_id: string };
-        Returns: number;
-      };
-      add_speech_seconds: {
-        Args: { _seconds: number; _user_id: string };
-        Returns: string;
-      };
-      admin_ai_cost: {
-        Args: { p_days: number; p_heavy_micro: number };
-        Returns: Json;
-      };
-      admin_ai_cost_capped: {
-        Args: { p_free_micro: number; p_pro_micro: number };
-        Returns: Json;
-      };
+      add_skill_results: { Args: { _results: Json; _user_id: string }; Returns: number };
+      add_speech_seconds: { Args: { _seconds: number; _user_id: string }; Returns: string };
+      admin_ai_cost: { Args: { p_days: number; p_heavy_micro: number }; Returns: Json };
+      admin_ai_cost_capped: { Args: { p_free_micro: number; p_pro_micro: number }; Returns: Json };
       admin_numbers_own: { Args: { p_days: number }; Returns: Json };
-      admin_rename_team: {
-        Args: { _name: string; _team_id: string };
-        Returns: string;
-      };
+      admin_rename_team: { Args: { _name: string; _team_id: string }; Returns: string };
       admin_reset_display_name: { Args: { _user_id: string }; Returns: string };
-      ai_cost_day_report: {
-        Args: { p_day: string; p_user_micro: number };
-        Returns: Json;
-      };
+      ai_cost_day_report: { Args: { p_day: string; p_user_micro: number }; Returns: Json };
       ai_cost_union: {
         Args: { p_since: string };
         Returns: {
@@ -3485,7 +3441,7 @@ export type Database = {
         Returns: Json;
       };
       auto_join_team: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           ok: boolean;
           reason: string;
@@ -3499,7 +3455,7 @@ export type Database = {
           ok: boolean;
         }[];
       };
-      blocked_moderation_terms: { Args: never; Returns: string[] };
+      blocked_moderation_terms: { Args: Record<PropertyKey, never>; Returns: string[] };
       buy_heart_with_xp: {
         Args: { _course: string };
         Returns: {
@@ -3525,14 +3481,8 @@ export type Database = {
         }[];
       };
       claim_ai_cost_alert_day: { Args: { p_day: string }; Returns: boolean };
-      claim_call_recap: {
-        Args: { _call_id: string; _user_id: string };
-        Returns: boolean;
-      };
-      claim_device_token: {
-        Args: { _platform: string; _token: string };
-        Returns: undefined;
-      };
+      claim_call_recap: { Args: { _call_id: string; _user_id: string }; Returns: boolean };
+      claim_device_token: { Args: { _platform: string; _token: string }; Returns: undefined };
       claim_referral: {
         Args: { _code: string };
         Returns: {
@@ -3577,12 +3527,7 @@ export type Database = {
         Returns: boolean;
       };
       consume_staff_rate_limit: {
-        Args: {
-          p_actor: string;
-          p_bucket: string;
-          p_max: number;
-          p_window_seconds: number;
-        };
+        Args: { p_actor: string; p_bucket: string; p_max: number; p_window_seconds: number };
         Returns: boolean;
       };
       contains_blocked_term: { Args: { input: string }; Returns: boolean };
@@ -3603,13 +3548,10 @@ export type Database = {
           team_id: string;
         }[];
       };
-      delete_tutor_memory_line: {
-        Args: { _id: string; _user_id: string };
-        Returns: Json;
-      };
+      delete_tutor_memory_line: { Args: { _id: string; _user_id: string }; Returns: Json };
       display_name_problem: { Args: { _name: string }; Returns: string };
       end_buddy: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           status: string;
         }[];
@@ -3623,12 +3565,7 @@ export type Database = {
         Returns: Json;
       };
       finish_practice_call: {
-        Args: {
-          _call_id: string;
-          _replies: number;
-          _stars: number;
-          _user_id: string;
-        };
+        Args: { _call_id: string; _replies: number; _stars: number; _user_id: string };
         Returns: {
           best_after: number;
           best_before: number;
@@ -3636,8 +3573,8 @@ export type Database = {
         }[];
       };
       forget_tutor_memory: { Args: { _user_id: string }; Returns: Json };
-      generate_learner_handle: { Args: never; Returns: string };
-      get_ai_consent: { Args: never; Returns: string };
+      generate_learner_handle: { Args: Record<PropertyKey, never>; Returns: string };
+      get_ai_consent: { Args: Record<PropertyKey, never>; Returns: string };
       get_buddy_messages: {
         Args: { _since?: string };
         Returns: {
@@ -3649,7 +3586,7 @@ export type Database = {
         }[];
       };
       get_buddy_pool: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           course: string;
           courses: string[];
@@ -3658,7 +3595,7 @@ export type Database = {
         }[];
       };
       get_buddy_requests: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           direction: string;
           other_avatar_seed: string;
@@ -3685,7 +3622,7 @@ export type Database = {
         }[];
       };
       get_friends_progress: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           avatar_seed: string;
           display_name: string;
@@ -3705,7 +3642,7 @@ export type Database = {
         }[];
       };
       get_my_buddy: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           buddy_avatar_seed: string;
           buddy_count: number;
@@ -3724,7 +3661,7 @@ export type Database = {
         }[];
       };
       get_my_duels: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           challenger_id: string;
           challenger_xp_now: number;
@@ -3751,14 +3688,14 @@ export type Database = {
         }[];
       };
       get_my_name_status: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           display_name: string;
           name_confirmed_at: string;
         }[];
       };
       get_my_team: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           is_owner: boolean;
           join_code: string;
@@ -3770,13 +3707,13 @@ export type Database = {
         }[];
       };
       get_or_create_my_friend_code: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           code: string;
         }[];
       };
       get_team_leaderboard: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           name: string;
           team_id: string;
@@ -3784,7 +3721,7 @@ export type Database = {
         }[];
       };
       get_team_members: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           avatar_seed: string;
           blocked: boolean;
@@ -3795,7 +3732,7 @@ export type Database = {
         }[];
       };
       get_team_mission: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           member_count: number;
           my_count: number;
@@ -3810,7 +3747,7 @@ export type Database = {
         }[];
       };
       get_weekly_challenges: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           completed: boolean;
           description: string;
@@ -3829,10 +3766,7 @@ export type Database = {
           reason: string;
         }[];
       };
-      grant_referral_reward: {
-        Args: { _referee: string; _referrer_pro: boolean };
-        Returns: Json;
-      };
+      grant_referral_reward: { Args: { _referee: string; _referrer_pro: boolean }; Returns: Json };
       hearts_refill_resolve: {
         Args: { _hearts: number; _now: string; _refill: string };
         Returns: {
@@ -3841,10 +3775,7 @@ export type Database = {
         }[];
       };
       hearts_unlimited: { Args: { _user_id: string }; Returns: boolean };
-      is_restricted: {
-        Args: { p_kind: string; p_user: string };
-        Returns: boolean;
-      };
+      is_restricted: { Args: { p_kind: string; p_user: string }; Returns: boolean };
       is_social_restricted: { Args: { p_user: string }; Returns: boolean };
       join_buddy_pool: {
         Args: { _age_confirmed: boolean; _course: string };
@@ -3882,58 +3813,55 @@ export type Database = {
           reason: string;
         }[];
       };
-      learner_local_date: {
-        Args: { _at: string; _user_id: string };
-        Returns: string;
-      };
+      learner_local_date: { Args: { _at: string; _user_id: string }; Returns: string };
       leave_buddy_pool: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           status: string;
         }[];
       };
-      leave_duel_queue: { Args: never; Returns: undefined };
+      leave_duel_queue: { Args: Record<PropertyKey, never>; Returns: undefined };
       leave_team: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           ok: boolean;
           reason: string;
         }[];
       };
       lose_heart: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           hearts: number;
           hearts_refill_at: string;
         }[];
       };
-      moderation_accented_allowlist_pattern: { Args: never; Returns: string };
-      moderation_allowlist_pattern: { Args: never; Returns: string };
-      moderation_anatomy_markers: { Args: never; Returns: string[] };
-      moderation_anatomy_terms: { Args: never; Returns: string[] };
-      moderation_anywhere_patterns: { Args: never; Returns: string[] };
+      moderation_accented_allowlist_pattern: { Args: Record<PropertyKey, never>; Returns: string };
+      moderation_allowlist_pattern: { Args: Record<PropertyKey, never>; Returns: string };
+      moderation_anatomy_markers: { Args: Record<PropertyKey, never>; Returns: string[] };
+      moderation_anatomy_terms: { Args: Record<PropertyKey, never>; Returns: string[] };
+      moderation_anywhere_patterns: { Args: Record<PropertyKey, never>; Returns: string[] };
       moderation_clean_text: { Args: { input: string }; Returns: string };
-      moderation_context_markers: { Args: never; Returns: string[] };
-      moderation_contextual_terms: { Args: never; Returns: string[] };
-      moderation_edge_patterns: { Args: never; Returns: string[] };
+      moderation_context_markers: { Args: Record<PropertyKey, never>; Returns: string[] };
+      moderation_contextual_terms: { Args: Record<PropertyKey, never>; Returns: string[] };
+      moderation_edge_patterns: { Args: Record<PropertyKey, never>; Returns: string[] };
       moderation_fold: { Args: { input: string }; Returns: string };
       my_ai_cost_month: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           month_micro: number;
           uid: string;
         }[];
       };
-      name_policy_bare_brand_terms: { Args: never; Returns: string[] };
+      name_policy_bare_brand_terms: { Args: Record<PropertyKey, never>; Returns: string[] };
       name_policy_blocked: { Args: { input: string }; Returns: boolean };
-      name_policy_brand_roles: { Args: never; Returns: string[] };
-      name_policy_brand_terms: { Args: never; Returns: string[] };
-      name_policy_edge_patterns: { Args: never; Returns: string[] };
-      name_policy_staff_terms: { Args: never; Returns: string[] };
-      name_policy_terms: { Args: never; Returns: string[] };
+      name_policy_brand_roles: { Args: Record<PropertyKey, never>; Returns: string[] };
+      name_policy_brand_terms: { Args: Record<PropertyKey, never>; Returns: string[] };
+      name_policy_edge_patterns: { Args: Record<PropertyKey, never>; Returns: string[] };
+      name_policy_staff_terms: { Args: Record<PropertyKey, never>; Returns: string[] };
+      name_policy_terms: { Args: Record<PropertyKey, never>; Returns: string[] };
       normalize_for_moderation: { Args: { input: string }; Returns: string };
       ops_events_summary: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           count_1h: number;
           count_24h: number;
@@ -3961,12 +3889,7 @@ export type Database = {
         Returns: number;
       };
       record_signup_attribution: {
-        Args: {
-          p_campaign: string;
-          p_landed_at: string;
-          p_medium: string;
-          p_source: string;
-        };
+        Args: { p_campaign: string; p_landed_at: string; p_medium: string; p_source: string };
         Returns: string;
       };
       release_ai_cost_alert_day: { Args: { p_day: string }; Returns: undefined };
@@ -4027,14 +3950,14 @@ export type Database = {
         }[];
       };
       restore_hearts_if_due: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           hearts: number;
           hearts_refill_at: string;
         }[];
       };
       rollup_ai_cost_log: { Args: { p_keep_days?: number }; Returns: number };
-      run_maintenance_sweep: { Args: never; Returns: undefined };
+      run_maintenance_sweep: { Args: Record<PropertyKey, never>; Returns: undefined };
       save_listen_progress: {
         Args: { p_episode_id: string; p_position_s: number };
         Returns: {
@@ -4067,14 +3990,8 @@ export type Database = {
         }[];
       };
       set_ai_consent: { Args: { _granted: boolean }; Returns: string };
-      set_cefr_level: {
-        Args: { _language: string; _level: string };
-        Returns: undefined;
-      };
-      set_learner_time_zone: {
-        Args: { _time_zone: string; _user_id: string };
-        Returns: string;
-      };
+      set_cefr_level: { Args: { _language: string; _level: string }; Returns: undefined };
+      set_learner_time_zone: { Args: { _time_zone: string; _user_id: string }; Returns: string };
       set_my_time_zone: { Args: { _time_zone: string }; Returns: string };
       settle_lesson_hearts: {
         Args: {
@@ -4093,15 +4010,10 @@ export type Database = {
         }[];
       };
       settle_stt_audio_seconds: {
-        Args: {
-          _actual: number;
-          _day: string;
-          _reserved: number;
-          _user_id: string;
-        };
+        Args: { _actual: number; _day: string; _reserved: number; _user_id: string };
         Returns: undefined;
       };
-      skip_display_name_prompt: { Args: never; Returns: string };
+      skip_display_name_prompt: { Args: Record<PropertyKey, never>; Returns: string };
       staff_add_member: {
         Args: {
           p_actor: string;
@@ -4114,12 +4026,7 @@ export type Database = {
         Returns: undefined;
       };
       staff_add_note: {
-        Args: {
-          p_actor: string;
-          p_body: string;
-          p_role: string;
-          p_target: string;
-        };
+        Args: { p_actor: string; p_body: string; p_role: string; p_target: string };
         Returns: string;
       };
       staff_assert_may_restrict: {
@@ -4137,12 +4044,7 @@ export type Database = {
         Returns: boolean;
       };
       staff_dismiss_report: {
-        Args: {
-          p_actor: string;
-          p_report: string;
-          p_role: string;
-          p_target: string;
-        };
+        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
         Returns: boolean;
       };
       staff_lift_restriction: {
@@ -4201,12 +4103,7 @@ export type Database = {
         Returns: string;
       };
       staff_reset_display_name: {
-        Args: {
-          p_actor: string;
-          p_report: string;
-          p_role: string;
-          p_target: string;
-        };
+        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
         Returns: string;
       };
       staff_revoke_sessions: { Args: { p_target: string }; Returns: undefined };
@@ -4230,21 +4127,11 @@ export type Database = {
         Returns: string;
       };
       staff_support_add_note: {
-        Args: {
-          p_actor: string;
-          p_body: string;
-          p_conversation: string;
-          p_role: string;
-        };
+        Args: { p_actor: string; p_body: string; p_conversation: string; p_role: string };
         Returns: string;
       };
       staff_support_assign: {
-        Args: {
-          p_actor: string;
-          p_assignee: string;
-          p_conversation: string;
-          p_role: string;
-        };
+        Args: { p_actor: string; p_assignee: string; p_conversation: string; p_role: string };
         Returns: boolean;
       };
       staff_support_inbox: {
@@ -4259,21 +4146,11 @@ export type Database = {
         Returns: Json;
       };
       staff_support_reply: {
-        Args: {
-          p_actor: string;
-          p_body: string;
-          p_conversation: string;
-          p_role: string;
-        };
+        Args: { p_actor: string; p_body: string; p_conversation: string; p_role: string };
         Returns: number;
       };
       staff_support_set_status: {
-        Args: {
-          p_actor: string;
-          p_conversation: string;
-          p_role: string;
-          p_status: string;
-        };
+        Args: { p_actor: string; p_conversation: string; p_role: string; p_status: string };
         Returns: boolean;
       };
       staff_update_member: {
@@ -4304,21 +4181,11 @@ export type Database = {
         Returns: Json;
       };
       support_add_ai_message: {
-        Args: {
-          p_body: string;
-          p_conversation: string;
-          p_facts: Json;
-          p_handoff: Json;
-        };
+        Args: { p_body: string; p_conversation: string; p_facts: Json; p_handoff: Json };
         Returns: number;
       };
       support_add_learner_message: {
-        Args: {
-          p_body: string;
-          p_client_id: string;
-          p_conversation: string;
-          p_user: string;
-        };
+        Args: { p_body: string; p_client_id: string; p_conversation: string; p_user: string };
         Returns: number;
       };
       support_handoff: {
@@ -4332,17 +4199,11 @@ export type Database = {
         Returns: boolean;
       };
       support_learner_view: { Args: { p_user: string }; Returns: Json };
-      support_open_conversation: {
-        Args: { p_channel: string; p_user: string };
-        Returns: string;
-      };
-      support_purge_old: { Args: never; Returns: number };
+      support_open_conversation: { Args: { p_channel: string; p_user: string }; Returns: string };
+      support_purge_old: { Args: Record<PropertyKey, never>; Returns: number };
       team_name_problem: { Args: { _name: string }; Returns: string };
       trip_ai_spend_breaker: { Args: { p_limit_micro: number }; Returns: Json };
-      weekly_xp: {
-        Args: { _user_id: string; _week_start: string };
-        Returns: number;
-      };
+      weekly_xp: { Args: { _user_id: string; _week_start: string }; Returns: number };
     };
     Enums: {
       [_ in never]: never;
@@ -4367,9 +4228,7 @@ export type Tables<
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R;
@@ -4392,9 +4251,7 @@ export type TablesInsert<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I;
     }
@@ -4416,9 +4273,7 @@ export type TablesUpdate<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U;
     }
@@ -4440,9 +4295,7 @@ export type Enums<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never) = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
@@ -4456,9 +4309,7 @@ export type CompositeTypes<
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never) = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
