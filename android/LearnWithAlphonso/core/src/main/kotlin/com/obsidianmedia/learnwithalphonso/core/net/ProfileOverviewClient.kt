@@ -34,7 +34,7 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
 
     val profile = async { rowsOf(http.rest(HttpMethod.Get, "profiles", mapOf("select" to "display_name,avatar_seed,country", "id" to me))) }
     val langs = async { rows("language_progress", mapOf("select" to "language,xp,cefr_level,league_tier")) }
-    val prog = async { rows("user_progress", mapOf("select" to "streak,longest_streak,streak_freezes")) }
+    val prog = async { rows("user_progress", mapOf("select" to "streak,longest_streak,streak_freezes,last_active_date,day_basis")) }
     val comps = async { rows("lesson_completions", mapOf("select" to "lesson_id,language,correct,total")) }
     val acts = async { rows("activity_days", mapOf("select" to "day,xp_earned", "day" to "gte.$from", "order" to "day.asc")) }
     val best = async { rows("activity_days", mapOf("select" to "xp_earned", "order" to "xp_earned.desc", "limit" to "1")) }
@@ -112,6 +112,9 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
         streak = u?.int("streak") ?: 0,
         longestStreak = u?.int("longest_streak") ?: 0,
         streakFreezes = u?.int("streak_freezes") ?: 0,
+        lastActiveDate = u?.string("last_active_date"),
+        dayBasis = u?.string("day_basis"),
+        localToday = com.obsidianmedia.learnwithalphonso.core.logic.localDateString(nowMillis, java.time.ZoneId.systemDefault()),
         completions = comps.await().mapNotNull { r ->
             ProfileCompletion(r.string("lesson_id") ?: return@mapNotNull null, r.string("language") ?: return@mapNotNull null, r.int("correct") ?: 0, r.int("total") ?: 0)
         },

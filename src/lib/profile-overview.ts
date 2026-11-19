@@ -1,3 +1,4 @@
+import { shownStreak, type StreakState } from "@/lib/streak-display";
 import {
   ACHIEVEMENTS,
   LEAGUE_TIERS,
@@ -48,7 +49,14 @@ export type ProfileOverview = {
     createdAt: string | null;
   };
   courses: { course: Course; xp: number; cefrLevel: string; leagueTier: LeagueTier }[];
-  progress: { streak: number; longestStreak: number; streakFreezes: number };
+  progress: {
+    streak: number;
+    longestStreak: number;
+    streakFreezes: number;
+    /** What the shown streak is read from (shownStreak); optional so older callers and fixtures still type-check. */
+    lastActiveDate?: string | null;
+    dayBasis?: string | null;
+  };
   completions: CompletionRow[];
   /** activity_days in the heat-map window (and so this week). */
   activity: ActivityRow[];
@@ -197,7 +205,10 @@ export type GoalRingDay = {
 };
 
 export type BigNumbers = {
+  /** The streak as it reads today (shownStreak): 0 once the next lesson would restart it. */
   streak: number;
+  /** "protected" while only a streak freeze keeps it alive: the same state as the top bar. */
+  streakState: StreakState;
   longestStreak: number;
   courseXp: number;
   /** XP across every course: the same scope as xpThisWeek (activity_days is account-wide), so the two always agree. */
@@ -220,8 +231,21 @@ export function bigNumbers(o: ProfileOverview): BigNumbers {
     mine.flatMap((c) => vocabForLesson(c.lessonId, o.course).map((v) => v.term.toLowerCase())),
   );
   const monday = weekStart(o.today);
+  // o.today is the learner's own day in their stored zone (streakToday), the day the server counts.
+  const shown = o.progress.lastActiveDate
+    ? shownStreak(
+        {
+          streak: o.progress.streak,
+          lastActiveDate: o.progress.lastActiveDate,
+          streakFreezes: o.progress.streakFreezes,
+          dayBasis: o.progress.dayBasis,
+        },
+        o.today,
+      )
+    : { streak: o.progress.streak, state: "active" as const };
   return {
-    streak: o.progress.streak,
+    streak: shown.streak,
+    streakState: shown.state,
     longestStreak: o.progress.longestStreak,
     courseXp: o.courses.find((c) => c.course === o.course)?.xp ?? 0,
     totalXp: o.courses.reduce((s, c) => s + c.xp, 0),

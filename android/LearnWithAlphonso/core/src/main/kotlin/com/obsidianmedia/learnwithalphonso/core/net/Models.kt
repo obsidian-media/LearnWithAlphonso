@@ -19,6 +19,12 @@ data class LessonCompletionProgress(
     val heartsRefillAt: Double? = null,
     val streakFreezes: Int,
     val leagueTier: String,
+    /**
+     * user_progress.day_basis: "utc" until the account's first completion under local days, then "local" (the one-time
+     * UTC bridge, StreakRule). Null when unread (complete-lesson's reply carries none), which reads as the server's own
+     * default, "utc".
+     */
+    val dayBasis: String? = null,
 )
 
 @Serializable

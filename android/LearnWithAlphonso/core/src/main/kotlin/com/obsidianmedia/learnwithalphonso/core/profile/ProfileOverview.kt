@@ -39,6 +39,10 @@ data class ProfileOverviewData(
     val streak: Int = 0,
     val longestStreak: Int = 0,
     val streakFreezes: Int = 0,
+    /** user_progress.last_active_date and day_basis, and the learner's own day: what the shown streak is read from (StreakDisplay). */
+    val lastActiveDate: String? = null,
+    val dayBasis: String? = null,
+    val localToday: String? = null,
     val completions: List<ProfileCompletion> = emptyList(),
     val activity: List<ProfileActivityDay> = emptyList(),
     val bestDayXp: Int = 0,
@@ -124,6 +128,9 @@ object ProfileMath {
     data class BigNumbers(
         val streak: Int, val longestStreak: Int, val courseXp: Int, val xpThisWeek: Int,
         val wordsLearned: Int, val savedWords: Int, val lessonsDone: Int, val accuracyPct: Int?,
+        /** The same displayed streak as the Learn header: protected while a freeze keeps it alive. */
+        val streakState: com.obsidianmedia.learnwithalphonso.core.logic.StreakDisplay.State =
+            com.obsidianmedia.learnwithalphonso.core.logic.StreakDisplay.State.ACTIVE,
     )
 
     /** [vocabTerms] maps a finished lesson id to the words it teaches (the app's content), so this stays pure. */
@@ -132,8 +139,12 @@ object ProfileMath {
         val correct = mine.sumOf { it.correct }
         val total = mine.sumOf { it.total }
         val monday = weekStart(o.today)
+        val shown = com.obsidianmedia.learnwithalphonso.core.logic.StreakDisplay.shown(
+            o.streak, o.lastActiveDate, o.streakFreezes, o.dayBasis, o.localToday ?: o.today,
+        )
         return BigNumbers(
-            streak = o.streak,
+            streak = shown.streak,
+            streakState = shown.state,
             longestStreak = o.longestStreak,
             courseXp = o.courses.firstOrNull { it.course == o.course }?.xp ?: 0,
             xpThisWeek = o.activity.filter { it.day >= monday && it.day <= o.today }.sumOf { it.xp },

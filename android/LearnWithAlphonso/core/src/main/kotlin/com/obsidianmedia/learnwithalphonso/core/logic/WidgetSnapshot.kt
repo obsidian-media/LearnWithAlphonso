@@ -18,9 +18,28 @@ data class StreakWidgetSnapshot(
      * written before the widget knew themes: it reads as Royal (resolveStreakWidgetLook).
      */
     val theme: String? = null,
+    /** The learner's last active local day when this was written, so [asOf] can end the streak on a day the app is not opened. */
+    val lastActiveDate: String? = null,
+    /** The streak freezes when written, so [asOf] can tell a protected streak from a lapsed one. Null reads as none. */
+    val streakFreezes: Int? = null,
+    /** Missed days that the freezes cover: the widget shows the streak with the protected line. */
+    val isStreakProtected: Boolean = false,
+    /** user_progress.day_basis when written (StreakRule's one-time UTC bridge). */
+    val dayBasis: String? = null,
 ) {
     /** The same numbers under another theme: what the app writes when the learner changes theme. */
     fun withTheme(theme: String?): StreakWidgetSnapshot = copy(theme = theme)
+
+    /**
+     * This snapshot as it should read at [nowMillis] (asOf in WidgetSharing.swift): "Studied today" only on the local
+     * day it was written, and the streak as the server's own rule reads it then (StreakDisplay): alive only by a
+     * freeze reads as protected, a run the next lesson would restart reads 0.
+     */
+    fun asOf(nowMillis: Long, zone: java.time.ZoneId = java.time.ZoneId.systemDefault()): StreakWidgetSnapshot {
+        val studied = studiedToday && localDateString(nowMillis, zone) == localDateString(updatedAtMillis, zone)
+        val shown = StreakDisplay.shown(streak, lastActiveDate, streakFreezes, dayBasis, nowMillis, zone)
+        return copy(streak = shown.streak, studiedToday = studied, isStreakProtected = shown.state == StreakDisplay.State.PROTECTED)
+    }
 }
 
 const val STREAK_WIDGET_PREFS = "alphonso.widget"
@@ -34,8 +53,13 @@ fun makeStreakWidgetSnapshot(
     nowMillis: Long,
     zone: java.time.ZoneId = java.time.ZoneId.systemDefault(),
     theme: String? = null,
+    streakFreezes: Int? = null,
+    dayBasis: String? = null,
 ): StreakWidgetSnapshot =
-    StreakWidgetSnapshot(streak, longestStreak, lastActiveDate == localDateString(nowMillis, zone), nowMillis, theme)
+    StreakWidgetSnapshot(
+        streak, longestStreak, lastActiveDate == localDateString(nowMillis, zone), nowMillis, theme,
+        lastActiveDate = lastActiveDate, streakFreezes = streakFreezes, dayBasis = dayBasis,
+    ).asOf(nowMillis, zone)
 
 /** The widget's words, the same on both platforms (the iOS Kit's StreakWidgetCopy). */
 object StreakWidgetCopy {

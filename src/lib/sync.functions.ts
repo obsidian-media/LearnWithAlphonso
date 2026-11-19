@@ -44,6 +44,8 @@ export type ProgressSnapshot = {
   streak: number;
   longestStreak: number;
   lastActiveDate: string | null;
+  /** user_progress.day_basis: the shown streak's one-time UTC bridge (streak-display.ts). */
+  dayBasis: string | null;
   hearts: number;
   heartsRefillAt: number | null;
   streakFreezes: number;
@@ -182,6 +184,7 @@ export const fetchProgress = createServerFn({ method: "GET" })
       streak: p?.streak ?? 0,
       longestStreak: p?.longest_streak ?? 0,
       lastActiveDate: p?.last_active_date ?? null,
+      dayBasis: p?.day_basis ?? null,
       hearts: shownHearts.hearts,
       heartsRefillAt: shownHearts.heartsRefillAt,
       streakFreezes: p?.streak_freezes ?? 0,

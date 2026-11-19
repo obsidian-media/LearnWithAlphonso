@@ -73,6 +73,10 @@ android {
     buildTypes {
         release {
             if (uploadKeystore != null) signingConfig = signingConfigs.getByName("upload")
+            // android-ci.yml's minified-release check only: with no upload keystore, sign with the throwaway debug key
+            // so R8's output can be installed and launched on the emulator. Never set by android-release.yml, and the
+            // upload key always wins when present.
+            else if (System.getenv("ANDROID_RELEASE_CHECK_DEBUG_SIGNING") == "true") signingConfig = signingConfigs.getByName("debug")
             // Spec section 9: a release build must carry a real RevenueCat public key.
             val rcKey = System.getenv("REVENUECAT_ANDROID_PUBLIC_KEY") ?: ""
             if (gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) } && (rcKey.isBlank() || rcKey.startsWith("test_"))) {

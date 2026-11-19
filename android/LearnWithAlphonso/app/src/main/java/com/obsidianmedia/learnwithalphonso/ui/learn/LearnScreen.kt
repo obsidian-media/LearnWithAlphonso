@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.learn
 
+import com.obsidianmedia.learnwithalphonso.core.logic.StreakDisplay
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
 import com.obsidianmedia.learnwithalphonso.ui.components.DsChip
@@ -413,9 +414,13 @@ private fun LevelBandPicker(selected: String, onSelect: (String) -> Unit) {
 fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> Unit)? = null) {
     if (progress == null) return
     val ds = LocalAlphonsoTokens.current
+    // The streak as it reads today (StreakDisplay, the server's own rule): alive only by a freeze reads as protected,
+    // and a run the next lesson would restart reads 0 instead of the old number.
+    val streak = StreakDisplay.shown(progress, System.currentTimeMillis())
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            StatPill("🔥", "${progress.streak}", "Streak: ${progress.streak} day${if (progress.streak == 1) "" else "s"}")
+            // Missed days a streak freeze covers: the snowflake the freeze row uses, as on iOS.
+            StatPill("🔥", "${streak.streak}", StreakDisplay.accessibilityLabel(streak), hint = if (streak.state == StreakDisplay.State.PROTECTED) "❄️" else null)
             HeartsPill(progress)
             StatPill("⭐", "${progress.xp}", "XP: ${progress.xp}")
             Spacer(Modifier.weight(1f))
@@ -427,7 +432,7 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
                 modifier = Modifier.clip(CircleShape).background(LeagueTierPalette.color(progress.leagueTier)).padding(horizontal = 10.dp, vertical = 6.dp),
             )
         }
-        AlphonsoMascotBanner(if (progress.streak > 0) "Nice ${progress.streak}-day streak! Ready for today's lesson?" else "Ready for today's lesson?")
+        AlphonsoMascotBanner(if (streak.streak > 0) "Nice ${streak.streak}-day streak! Ready for today's lesson?" else "Ready for today's lesson?")
         if (onBuyStreakFreeze != null) {
             // A card like the other Learn rows (parchment, hairline edge), so the words never sit straight on the garden photo.
             // Ink on parchment, and the buy button is the secondary button: moss text alone is under 4.5:1 on Studio Ink's parchment.

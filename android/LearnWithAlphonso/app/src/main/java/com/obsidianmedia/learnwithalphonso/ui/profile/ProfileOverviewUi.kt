@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.profile
 
+import com.obsidianmedia.learnwithalphonso.core.logic.StreakDisplay
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -167,7 +168,15 @@ fun ProfileHero(m: ProfileOverviewModel, onCourse: (Course) -> Unit, onPicture: 
         val b = m.big
         Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s4)) {
             Row(Modifier.fillMaxWidth()) {
-                Stat(b.streak.toString(), "day streak", "Longest ${b.longestStreak}", "${b.streak} day streak, longest ${b.longestStreak}", Modifier.weight(1f))
+                // The same displayed streak as the Learn header (StreakDisplay), with the same protected wording.
+                val protected = b.streakState == StreakDisplay.State.PROTECTED
+                Stat(
+                    b.streak.toString(), "day streak",
+                    if (protected) StreakDisplay.PROTECTED_CAPTION else "Longest ${b.longestStreak}",
+                    if (protected) "${StreakDisplay.accessibilityLabel(StreakDisplay.Shown(b.streak, b.streakState))}, longest ${b.longestStreak}"
+                    else "${b.streak} day streak, longest ${b.longestStreak}",
+                    Modifier.weight(1f),
+                )
                 Stat(b.courseXp.toString(), "XP in ${m.course.label}", "${b.xpThisWeek} this week", "${b.courseXp} XP in ${m.course.label}, ${b.xpThisWeek} this week", Modifier.weight(1f))
             }
             Row(Modifier.fillMaxWidth()) {
