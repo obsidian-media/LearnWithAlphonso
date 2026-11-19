@@ -36,7 +36,7 @@ describe("the System health server function is staff-only", () => {
     expect(fn.match(/createServerFn\(/g)).toHaveLength(1);
     expect(fn).toMatch(/\.middleware\(\[requireStaff\("numbers\.read"\)\]\)/);
     expect(fn).toMatch(/readOpsHealth\(context\.supabaseAdmin\)/);
-    expect(fn).toMatch(/limiter\.allow\(context\.userId\)/);
+    expect(fn).toMatch(/consumeStaffLimit\([^)]*STAFF_LIMITS\.system_health\)/);
   });
 
   const call = (c: SupabaseClient, claims: { aal?: unknown } = { aal: "aal2" }) =>

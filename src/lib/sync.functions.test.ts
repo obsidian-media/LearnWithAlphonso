@@ -58,7 +58,7 @@ vi.mock("./completion-slot.server", () => ({ consumeCompletionSlot, releaseCompl
 
 // The operational-event recorder (20261125140000_ops_events.sql): a spy, so no test writes to a database.
 const recordOpsEvent = vi.hoisted(() => vi.fn(async () => {}));
-vi.mock("./ops-events.server", () => ({ recordOpsEvent }));
+vi.mock("./ops-events.server", () => ({ recordOpsEvent, OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS: 500 }));
 
 // The learner's time zone (learner_time_zones). UTC (null) unless a test sets one; kept out of the Supabase mocks'
 // call order so the sequences below stay as they are.
