@@ -55,9 +55,10 @@ All rows: **not used for tracking**. "Linked" means the row is keyed to the Supa
 - **RevenueCat / StoreKit.** App user id plus purchase and renewal info from Apple; no payment details. Purchase History.
 - **Deepgram, OpenRouter (Anthropic).** Processors for audio and AI text, only after the learner taps Allow on the AI
   consent sheet; already covered by Audio Data, Other User Content and Customer Support above.
-- **Cloudflare Turnstile.** Bot check in a small web view on the email sign-in screen; Cloudflare sees IP and device
-  signals for that check only (service provider, security). ASC has no fraud-prevention purpose; it falls under
-  Diagnostics at most. See mismatch 3.
+- **Cloudflare Turnstile (third-party partner).** Bot check in a small web view on the email sign-in screen; Cloudflare sees
+  the IP address and device and browser signals for that check only, to stop automated sign-ups. It is a service provider
+  acting on our behalf, not used for tracking or ads. ASC has no fraud-prevention purpose; it falls under Diagnostics at
+  most. See mismatch 3.
 - **Not present:** ad networks, IDFA, an ATT prompt, location, contacts, photos, HealthKit. The widget manifest collects
   nothing (`UserDefaults` 1C8F.1 only).
 
@@ -81,3 +82,9 @@ Mismatches found (no legal page was changed; listed for the owner):
    Help chat line only if App Review asks.
 5. Time zone (another builder's work in flight) is listed under Other Data Types; confirm the privacy page time zone
    wording still matches once that PR merges.
+
+## Owner step before answering Crash Data as not linked
+
+In the Sentry project `learnwithalphonso-ios`, Settings > Security & Privacy: turn ON "Prevent Storing of IP Addresses" (and Data Scrubber).
+The code removes the user, device name and install id, but Sentry derives an IP from the request unless this setting is on; the
+"not linked" answer depends on it.
