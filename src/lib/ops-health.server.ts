@@ -14,7 +14,7 @@ export type OpsLatest = {
   event: string;
   source: string;
   userId: string | null;
-  detail: unknown;
+  detail: Record<string, string | number | boolean | null>;
   createdAt: string;
 };
 export type OpsHealth = { events: OpsHealthRow[]; latest: OpsLatest[] };
@@ -76,7 +76,7 @@ export async function readOpsHealth(db: SupabaseClient): Promise<OpsHealth> {
       event: String(r.event),
       source: String(r.source),
       userId: typeof r.user_id === "string" ? r.user_id : null,
-      detail: r.detail,
+      detail: (r.detail ?? {}) as OpsLatest["detail"],
       createdAt: String(r.created_at),
     })),
   };

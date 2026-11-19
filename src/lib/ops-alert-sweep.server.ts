@@ -22,8 +22,14 @@ export type OpsAlertDb = {
       error: { message: string; code?: string } | null;
     }>;
     update: (row: { last_alert_at: string }) => {
-      eq: (col: string, v: string) => {
-        eq: (col: string, v: string) => {
+      eq: (
+        col: string,
+        v: string,
+      ) => {
+        eq: (
+          col: string,
+          v: string,
+        ) => {
           select: (cols: string) => Res<{ event: string }[] | null>;
         };
       };
@@ -94,7 +100,8 @@ export async function sweepOpsAlerts(deps: OpsAlertDeps): Promise<OpsAlertResult
       .eq("event", row.event)
       .eq("last_alert_at", prev.last_alert_at)
       .select("event");
-    if (!updateError && won && won.length === 1) claimed.push({ row, previous: prev.last_alert_at });
+    if (!updateError && won && won.length === 1)
+      claimed.push({ row, previous: prev.last_alert_at });
   }
   if (claimed.length === 0) return result;
 

@@ -17,6 +17,10 @@ class FakeDb {
   profileCalls: { name: string; args: Record<string, unknown> }[] = [];
   recordCompletions = true;
   upserts: { table: string; rows: Row[] }[] = [];
+  /** Rows the handler wrote to ops_events (the operational-event recorder). */
+  opsEvents: Row[] = [];
+  /** Make the ops_events write fail or hang, to prove a recording failure never touches the lesson. */
+  opsEventsMode: "ok" | "error" | "throw" | "hang" = "ok";
   rpcResult: { data: unknown; error: unknown } = {
     data: { status: "applied" },
     error: null,
@@ -157,6 +161,15 @@ class Query {
   lte(col: string, val: unknown) {
     this.filters.push({ op: "lte", col, val });
     return this;
+  }
+  insert(row: Row) {
+    if (this.table !== "ops_events") return Promise.resolve({ data: null, error: null });
+    const mode = this.db.opsEventsMode;
+    if (mode === "throw") throw new Error("insert exploded");
+    if (mode === "hang") return new Promise<never>(() => {});
+    if (mode === "error") return Promise.resolve({ data: null, error: { message: "denied" } });
+    this.db.opsEvents.push(row);
+    return Promise.resolve({ data: null, error: null });
   }
   upsert(rows: Row[], _opts?: unknown) {
     this.db.upserts.push({ table: this.table, rows });
@@ -1420,6 +1433,12 @@ Deno.test(
     assertEquals(db.settleCalls[0]._pro, false);
     assertEquals(db.settleCalls[0]._enforce, false);
     assert(lines.some((l) => l.includes("hearts_settlement_shadow_stale_pro")));
+    assertEquals(
+      db.opsEvents.map((e) => e.event),
+      ["hearts_settlement_shadow_stale_pro"],
+    );
+    assertEquals(db.opsEvents[0].source, "edge:complete-lesson");
+    assertEquals(db.opsEvents[0].user_id, USER);
   },
 );
 
@@ -1441,8 +1460,41 @@ Deno.test(
     assertEquals(db.settleCalls[0]._pro, false);
     assertEquals(db.settleCalls[0]._enforce, false);
     assert(lines.some((l) => l.includes("hearts_settlement_shadow_pro_unknown")));
+    assertEquals(
+      db.opsEvents.map((e) => e.event),
+      ["hearts_settlement_shadow_pro_unknown"],
+    );
   },
 );
+
+Deno.test(
+  "a failed settlement is recorded as an ops event with a code, not free text",
+  async () => {
+    const { handler, db } = setup({ heartsMode: "on" });
+    db.settleResult = { data: null, error: { message: "secret detail from the database" } };
+    await captureErrors(async () => {
+      assertEquals((await handler(post(body(["b", "c"])))).status, 503);
+    });
+    assertEquals(db.opsEvents.length, 1);
+    assertEquals(db.opsEvents[0].event, "hearts_settlement_failed");
+    assertEquals(db.opsEvents[0].detail, { reason: "rpc" });
+    assert(!JSON.stringify(db.opsEvents).includes("secret detail"));
+  },
+);
+
+for (const mode of ["error", "throw", "hang"] as const) {
+  Deno.test(
+    `a recording failure (${mode}) never changes the failed-settlement answer`,
+    async () => {
+      const { handler, db } = setup({ heartsMode: "on" });
+      db.settleResult = { data: null, error: { message: "down" } };
+      db.opsEventsMode = mode;
+      await captureErrors(async () => {
+        assertEquals((await handler(post(body(["b", "c"])))).status, 503);
+      });
+    },
+  );
+}
 
 Deno.test(
   "Pro unknown with no cache dependency at all is also a shadow settlement, never a 503",
@@ -1567,6 +1619,10 @@ Deno.test(
       assertEquals((await handler(post(body(["a", "d"])))).status, 200);
     });
     assert(lines.some((l) => l.includes("lesson_result_finalize_failed")));
+    assertEquals(
+      db.opsEvents.map((e) => e.event),
+      ["lesson_result_finalize_failed"],
+    );
   },
 );
 
@@ -1579,5 +1635,6 @@ Deno.test(
       assertEquals((await handler(post(body(["a", "d"])))).status, 200);
     });
     assert(lines.some((l) => l.includes("lesson_result_finalize_failed")));
+    assertEquals(db.opsEvents.length, 1);
   },
 );

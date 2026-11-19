@@ -110,6 +110,15 @@ Every billable AI call is logged to `ai_cost_log` (migration `20261118200000_ai_
 - **Server hearts.** `SERVER_HEARTS` enforces by default (#494); set it to exactly `shadow` or `off` to back out. The Edge Functions need `REVENUECAT_SECRET_API_KEY` in Supabase secrets or nobody counts as Pro there.
 - **Analytics.** PostHog is off until the learner opts in and until a key is set (`VITE_POSTHOG_KEY`, iOS `PostHogKey`, Android `POSTHOG_PROJECT_KEY`); see `docs/privacy-and-data.md`.
 
+## Operational events (System health)
+
+Server-side failures that used to be only console lines are also written to `public.ops_events` (service role only): `hearts_settlement_failed`, `lesson_result_finalize_failed`, `hearts_settlement_shadow_pro_unknown` and `hearts_settlement_shadow_stale_pro`, from the web server (`src/lib/ops-events.server.ts`) and the `complete-lesson` Edge function (`_shared/ops-events.ts`). Recording is best effort with a 2 second bound and never fails or delays a lesson save. `detail` holds ids, codes and counts only.
+
+- **Look**: admin console, System health (needs the `numbers.read` scope). Counts for 24 hours and 7 days, last occurrence, green/amber/red, and the latest 50 rows.
+- **Thresholds**: one object, `src/lib/ops-events-config.ts` (amber and red by the 24 hour count, `alertPerHour` for the email). A new event name is shown automatically with the default thresholds; add it there to tune it.
+- **Alert**: the 15-minute maintenance sweep emails `REPORT_NOTIFY_TO` when an event's last-hour count reaches its `alertPerHour`, at most once per event per 24 hours (`ops_event_alerts` keeps the time). A failed send is retried on the next pass.
+- **Retention**: rows older than 90 days are deleted by `run_maintenance_sweep`.
+
 ## Deadlines on provider calls
 
 No request waits on a provider without a limit. A timeout returns a retryable `504`.

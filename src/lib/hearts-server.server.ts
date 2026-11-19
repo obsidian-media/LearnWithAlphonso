@@ -179,7 +179,11 @@ export async function settleLessonHeartsStrict(
       console.error(
         JSON.stringify({ event: "hearts_settlement_shadow_stale_pro", fn: "completeLessonRemote" }),
       );
-      await recordOpsEvent("hearts_settlement_shadow_stale_pro", { fn: "completeLessonRemote" }, args.userId);
+      await recordOpsEvent(
+        "hearts_settlement_shadow_stale_pro",
+        { fn: "completeLessonRemote" },
+        args.userId,
+      );
     } else if (proAnswer.source === "stale") {
       console.error(
         JSON.stringify({ event: "hearts_settlement_stale_pro", fn: "completeLessonRemote" }),
@@ -192,7 +196,11 @@ export async function settleLessonHeartsStrict(
           fn: "completeLessonRemote",
         }),
       );
-      await recordOpsEvent("hearts_settlement_shadow_pro_unknown", { fn: "completeLessonRemote" }, args.userId);
+      await recordOpsEvent(
+        "hearts_settlement_shadow_pro_unknown",
+        { fn: "completeLessonRemote" },
+        args.userId,
+      );
     }
     const db = await deps.db();
     const { data, error } = await db.rpc("settle_lesson_hearts", {

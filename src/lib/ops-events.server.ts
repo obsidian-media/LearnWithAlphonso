@@ -9,7 +9,9 @@
 export const OPS_EVENT_TIMEOUT_MS = 2000;
 
 type InsertResult = PromiseLike<{ error: { message: string } | null }>;
-export type OpsEventsDb = { from: (table: "ops_events") => { insert: (row: unknown) => InsertResult } };
+export type OpsEventsDb = {
+  from: (table: "ops_events") => { insert: (row: unknown) => InsertResult };
+};
 
 const OPS_EVENT_NAME = /^[a-z0-9_]{1,64}$/;
 

@@ -1036,7 +1036,11 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
             message: finalizeError.message,
           }),
         );
-        await recordOpsEvent("lesson_result_finalize_failed", { fn: "completeLessonRemote" }, userId);
+        await recordOpsEvent(
+          "lesson_result_finalize_failed",
+          { fn: "completeLessonRemote" },
+          userId,
+        );
       }
     } catch {
       // Nothing to do: the earlier stored result stands.

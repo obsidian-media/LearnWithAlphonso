@@ -29,6 +29,7 @@ CREATE INDEX ops_events_created_idx ON public.ops_events (created_at DESC);
 ALTER TABLE public.ops_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.ops_events FROM PUBLIC, anon, authenticated;
 GRANT ALL ON public.ops_events TO service_role;
+REVOKE ALL ON SEQUENCE public.ops_events_id_seq FROM PUBLIC, anon, authenticated;
 GRANT USAGE, SELECT ON SEQUENCE public.ops_events_id_seq TO service_role;
 
 -- client-grants: none public.ops_event_alerts

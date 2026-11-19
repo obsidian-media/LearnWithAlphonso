@@ -1,5 +1,5 @@
 import { thresholdFor, type OpsStatus } from "../../lib/ops-events-config";
-import type { OpsHealth } from "../../lib/ops-health.server";
+import type { OpsHealth } from "../../lib/staff-health.functions";
 
 const PILL: Record<OpsStatus, { text: string; cls: string }> = {
   green: { text: "OK", cls: "bg-ds-right-tint text-ds-right-ink" },
@@ -9,14 +9,24 @@ const PILL: Record<OpsStatus, { text: string; cls: string }> = {
 
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : "never");
 
-export function SystemHealthView({ data, error }: { data: OpsHealth | null; error: string | null }) {
+export function SystemHealthView({
+  data,
+  error,
+}: {
+  data: OpsHealth | null;
+  error: string | null;
+}) {
   return (
     <div className="grid gap-4">
       <h1 className="font-display text-2xl font-semibold text-ds-ink">System health</h1>
       <p className="ds-type-footnote text-ds-ink-soft">
         Server-side failures that used to be only log lines. Ids and codes only, no learner content.
       </p>
-      {error ? <p role="alert" className="text-sm font-bold text-ds-wrong-ink">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm font-bold text-ds-wrong-ink">
+          {error}
+        </p>
+      ) : null}
       {!data && !error ? <p className="text-sm text-ds-ink-soft">Loading...</p> : null}
       {data ? (
         <>
@@ -28,7 +38,9 @@ export function SystemHealthView({ data, error }: { data: OpsHealth | null; erro
               >
                 <div className="flex items-center justify-between gap-2">
                   <code className="text-sm font-bold text-ds-ink">{e.event}</code>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${PILL[e.status].cls}`}>
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${PILL[e.status].cls}`}
+                  >
                     {PILL[e.status].text}
                   </span>
                 </div>

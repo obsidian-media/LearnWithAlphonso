@@ -11,11 +11,7 @@ import {
 import { MIN_SHARED_SECRET_LENGTH, secretMatches } from "./shared-secret.server";
 import { defaultSupportDeps, sweepSupport, type SupportNotifyDeps } from "./support-notify.server";
 import { defaultAiCostDeps, sweepAiCost, type AiCostSweepDeps } from "./ai-cost-sweep.server";
-import {
-  defaultOpsAlertDeps,
-  sweepOpsAlerts,
-  type OpsAlertDeps,
-} from "./ops-alert-sweep.server";
+import { defaultOpsAlertDeps, sweepOpsAlerts, type OpsAlertDeps } from "./ops-alert-sweep.server";
 
 /**
  * The scheduled maintenance pass. Called every 15 minutes by the database (run_maintenance_sweep in
