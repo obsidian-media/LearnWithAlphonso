@@ -4,20 +4,18 @@ import LearnWithAlphonsoKit
 /// Learn screen, round 6.1 option A: the pinned "you are here" card, the slim fold rows and the jump button.
 /// The folding rules live in the Kit (LearnFold); these are only the views.
 
-/// The current unit as a room-art card: the eyebrow, the unit title, the next lesson and a gold Continue.
+/// The current unit's info and one gold Continue lesson button, drawn on the scene inside LearnHeroStage (Learn's one hero).
 struct LearnCurrentUnitCard: View {
     let unitNumber: Int
     let unitCount: Int
     let unitTitle: String
     let lessonTitle: String
-    let roomID: String
+
     @Environment(\.alphonsoDS) private var ds
-    @ScaledMetric(relativeTo: .body) private var artClearance = AlphonsoDS.Space.s12
 
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-            Spacer(minLength: artClearance)
-            Text("You are here · Unit \(unitNumber) of \(unitCount)")
+            Text("You are here \u{00B7} Unit \(unitNumber) of \(unitCount)")
                 .dsText(.overline)
                 .foregroundStyle(ds.onHeroKick)
             Text(unitTitle)
@@ -28,29 +26,24 @@ struct LearnCurrentUnitCard: View {
                 .dsText(.footnote)
                 .foregroundStyle(ds.onHeroSoft)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Continue")
+            // The one way in: the design system's primary button look (gold face, darker edge). The whole hero is the
+            // tap target (the NavigationLink sits behind it), so this is drawn, not a second Button.
+            Text("Continue lesson")
                 .dsText(.headline)
-                .foregroundStyle(ds.ink)
-                .padding(.horizontal, AlphonsoDS.Space.s5)
-                .frame(minHeight: AlphonsoDS.Space.minTouch)
-                .background(ds.xp, in: Capsule())
+                .foregroundStyle(ds.onAction)
+                .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
+                .background(ds.action, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
+                .background(
+                    RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+                        .fill(ds.actionEdge)
+                        .offset(y: 4)
+                )
+                .padding(.bottom, 4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AlphonsoDS.Space.s4)
-        .background {
-            ZStack {
-                ds.hero
-                if let art = LessonArt.room(roomID) {
-                    Image(uiImage: art).resizable().scaledToFill()
-                }
-                LinearGradient(colors: [ds.hero.opacity(0), ds.hero.opacity(0.92)], startPoint: .top, endPoint: .bottom)
-            }
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("You are here. Unit \(unitNumber) of \(unitCount), \(unitTitle). Continue with \(lessonTitle)")
+        .accessibilityLabel("You are here. Unit \(unitNumber) of \(unitCount), \(unitTitle). Continue lesson: \(lessonTitle)")
         .accessibilityAddTraits(.isButton)
     }
 }

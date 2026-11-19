@@ -113,25 +113,24 @@ describe("SceneClip: the looping clip view", () => {
 // Lesson complete no longer plays a clip: since visual round 6 it is drawn in code in the unit's room, and the
 // complete clip is retired (ios-lesson-room-guards.test.ts, scenes.test.ts).
 
-describe("Learn plays the garden clip with Alphonso's bubble pinned on him", () => {
+describe("Learn is one hero card: no full-screen clip, the greeting bubble sits in the card", () => {
   const browser = read("LessonBrowserView.swift");
-  const map = read("LearnPathMap.swift");
+  const map = read("LearnHeroStage.swift");
 
-  it("the backdrop is the learn clip and the greeting bubble is pinned at about 64%, 53% of it", () => {
-    expect(browser).toMatch(/\.screenScene\(\s*\.learn,\s*clip: \.learn/);
-    expect(browser).toContain("ClipPin(x: 64, y: 53");
-    expect(browser).toContain("PathSpeechBubble(message:");
+  it("the screen has no full-screen clip or pinned bubble; the hero card draws the bubble itself", () => {
+    expect(browser).not.toContain(".screenScene(");
+    expect(browser).not.toContain("ClipPin(");
+    expect(map).toContain("PathSpeechBubble(message: greeting)");
   });
 
-  it("the cut-out Alphonso is gone from the map, but his room stays clear and VoiceOver still hears him", () => {
-    expect(map).not.toContain('SceneFigure(assetName: "Figure-alphonso-waving"');
+  it("Alphonso is drawn in the hero card at full strength, and VoiceOver still hears his greeting", () => {
     expect(map).not.toContain("SceneFigure(");
     expect(map).not.toContain("Figure-alphonso-waving");
+    expect(map).toContain("LessonArt.expression(.happy)");
     expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
     expect(map).toContain("Self.figureColumnWidth");
-    // The nodes still reserve the room above the current node for him.
+    // The stage still reserves the room for him and his bubble above the current-unit card.
     expect(map).toContain("Self.figureHeight");
-    expect(map).toContain("Self.bubbleReserve");
   });
 });
 

@@ -10,12 +10,12 @@ const read = (p: string) => fs.readFileSync(p, "utf8");
 const KT = "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso";
 
 describe("the shown streak is used wherever the learner's streak appears", () => {
-  it("web: the top bar and the Learn pill use useShownStreak, with the protected mark", () => {
+  it("web: the top bar uses useShownStreak with the protected mark, and Learn no longer repeats the pill", () => {
     const shell = read("src/components/AppShell.tsx");
     expect(shell).toMatch(/const shown = useShownStreak\(\)/);
     expect(shell).toMatch(/shown\.state === "protected"/);
     const learn = read("src/routes/_authenticated/learn.tsx");
-    expect(learn).toMatch(/useShownStreak\(\)/);
+    // Learn dropped its own stat pills (the shell's top bar shows them), so it must not read a raw streak either.
     expect(learn).not.toMatch(/useProgress\(\(s\) => s\.streak\)/);
   });
 
