@@ -10,7 +10,7 @@ import { LessonFrame } from "../../components/AppShell";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
 import type { Course } from "../../data/courses";
-import { getScenario, localizeScenario, type LocalizedScenario } from "../../data/scenarios";
+import { localizeScenario, type LocalizedScenario } from "../../data/scenarios";
 import { useProgress } from "../../lib/progress";
 import { authHeaders } from "../../lib/auth-headers";
 import { readApiError } from "../../lib/read-api-error";
@@ -38,7 +38,9 @@ export const Route = createFileRoute("/_authenticated/converse_/$scenarioId")({
   // ?mode=call|chat from the pre-call sheet; without it the learner's own setting decides.
   validateSearch: (search: Record<string, unknown>): PracticeModeSearch =>
     practiceModeSearch(search),
-  loader: ({ params }) => {
+  // Imported here so the scenario catalog stays out of the entry chunk the landing page loads.
+  loader: async ({ params }) => {
+    const { getScenario } = await import("../../data/scenarios");
     const scenario = getScenario(params.scenarioId);
     if (!scenario) throw notFound();
     return { scenario };

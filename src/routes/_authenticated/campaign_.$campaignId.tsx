@@ -10,7 +10,6 @@ import { TappableText } from "../../components/TappableText";
 import type { Course } from "../../data/courses";
 import {
   campaignPrompt,
-  getCampaign,
   localizeCampaign,
   type LocalizedCampaign,
   type LocalizedCampaignScene,
@@ -48,7 +47,10 @@ export const Route = createFileRoute("/_authenticated/campaign_/$campaignId")({
   // ?scene=N (where "Continue" resumes) and ?mode=call|chat, both from the Practice hub's pre-call sheet.
   validateSearch: (search: Record<string, unknown>): CampaignSearch =>
     campaignSearch(search, MAX_SCENE_PARAM),
-  loader: ({ params }) => {
+  // The catalog is imported here, not at the top: a static import would pull every campaign into the entry chunk that
+  // the landing page loads (the loader stays in the route's main chunk; only the component is split out).
+  loader: async ({ params }) => {
+    const { getCampaign } = await import("../../data/campaigns");
     const campaign = getCampaign(params.campaignId);
     if (!campaign) throw notFound();
     return { campaign };
