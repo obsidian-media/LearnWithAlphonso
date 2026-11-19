@@ -90,6 +90,16 @@ struct ListenShelfRoot: View {
                 }
 
                 if tab == .listen {
+                    if let chip = ListenShelf.monthChip(seconds: monthSeconds) {
+                        Label(chip, systemImage: "timer")
+                            .dsText(.footnote)
+                            .foregroundStyle(ds.inkSoft)
+                            .padding(.horizontal, AlphonsoDS.Space.s4)
+                            .frame(minHeight: AlphonsoDS.Space.minTouch)
+                            .background(Capsule().fill(ds.card))
+                            .accessibilityElement(children: .combine)
+                    }
+
                     if !levels.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: AlphonsoDS.Space.s2) {
