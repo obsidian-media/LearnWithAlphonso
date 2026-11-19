@@ -1,15 +1,22 @@
 import LearnWithAlphonsoKit
 import SwiftUI
 
+/// The stage's sizes. A generic type cannot hold stored statics, so they live here.
+enum LearnHeroMetrics {
+    static let figureHeight: CGFloat = 190
+    /// Room above the figure's head for the speech bubble.
+    static let bubbleReserve: CGFloat = 96
+    static let figureColumnWidth: CGFloat = 150
+}
+
 /// Learn's one hero. The garden clip (Alphonso waving, his greeting bubble pinned on him, see LessonBrowserView) plays
 /// behind the list; this row is the clear window it shows through, and the current-unit info and the single gold
 /// "Continue lesson" button sit ON that scene, in the left column beside Alphonso, as one unit. VoiceOver reads the
 /// greeting first, then the lesson line, then the button.
 struct LearnHeroStage<Content: View>: View {
-    static let figureHeight: CGFloat = 190
-    /// Room above the figure's head for the speech bubble.
-    private static let bubbleReserve: CGFloat = 96
-    private static let figureColumnWidth: CGFloat = 150
+    static var figureHeight: CGFloat { LearnHeroMetrics.figureHeight }
+    private static var bubbleReserve: CGFloat { LearnHeroMetrics.bubbleReserve }
+    private static var figureColumnWidth: CGFloat { LearnHeroMetrics.figureColumnWidth }
 
     let greeting: String
     @ViewBuilder var content: Content
