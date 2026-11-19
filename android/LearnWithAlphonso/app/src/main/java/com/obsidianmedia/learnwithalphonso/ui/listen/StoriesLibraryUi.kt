@@ -138,10 +138,9 @@ internal fun StoryCoverCard(story: StorySummary, small: Boolean, onOpen: (String
     val ds = LocalAlphonsoTokens.current
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
     Column(
-        modifier.clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+        modifier.testTag("story-card-${story.id}").clip(shape).background(ds.card).border(2.dp, ds.line, shape)
             .clickable(role = Role.Button) { onOpen(story.id) }
-            .clearAndSetSemantics { contentDescription = Stories.cardLabel(story); role = Role.Button }
-            .testTag("story-card-${story.id}"),
+            .clearAndSetSemantics { contentDescription = Stories.cardLabel(story); role = Role.Button },
     ) {
         Box(Modifier.fillMaxWidth().aspectRatio(if (small) 4f / 3f else 3f / 4f)) {
             StoryCover(story, if (small) 36 else 52, Modifier.fillMaxSize())
@@ -167,10 +166,9 @@ private fun StoryHeroCard(story: StorySummary, onOpen: (String) -> Unit) {
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
     val action = if (story.endingsFound > 0) "Continue" else "Read now"
     Box(
-        Modifier.fillMaxWidth().heightIn(min = 224.dp).clip(shape)
+        Modifier.testTag("stories-hero").fillMaxWidth().heightIn(min = 224.dp).clip(shape)
             .clickable(role = Role.Button) { onOpen(story.id) }
-            .clearAndSetSemantics { contentDescription = "${Stories.cardLabel(story)}, $action"; role = Role.Button }
-            .testTag("stories-hero"),
+            .clearAndSetSemantics { contentDescription = "${Stories.cardLabel(story)}, $action"; role = Role.Button },
     ) {
         StoryCover(story, 96, Modifier.matchParentSize())
         Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.3f), Color.Black.copy(alpha = 0.8f)))))
@@ -199,10 +197,9 @@ private fun StoryContinueLine(story: StorySummary, onOpen: (String) -> Unit) {
     val ds = LocalAlphonsoTokens.current
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
     Row(
-        Modifier.fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+        Modifier.testTag("stories-continue").fillMaxWidth().heightIn(min = AlphonsoTokens.Space.minTouch).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
             .clickable(role = Role.Button) { onOpen(story.id) }
             .clearAndSetSemantics { contentDescription = "${story.title}, ${Stories.resumeLine(story)}, Resume"; role = Role.Button }
-            .testTag("stories-continue")
             .padding(AlphonsoTokens.Space.s2),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),

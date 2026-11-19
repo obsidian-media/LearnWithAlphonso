@@ -37,6 +37,8 @@ class StoriesLibraryTest {
             AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) { StoriesLibraryContent(stories, "en", { opened += it }) }
         }
         rule.waitForIdle()
+        val hero = rule.onNodeWithTag("stories-hero").assertExists().getBoundsInRoot()
+        assertTrue("hero has a size: $hero", hero.right.value > hero.left.value && hero.bottom.value > hero.top.value)
         rule.onNodeWithTag("stories-hero").assertIsDisplayed().assertHasClickAction()
         rule.onNodeWithTag("stories-hero").assertContentDescriptionEquals("The Lost Key, A2, Choose your path, 1 of 4 endings, Continue")
         rule.onNodeWithTag("stories-continue").assertIsDisplayed()
