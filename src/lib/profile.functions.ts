@@ -262,9 +262,9 @@ export const getProfileOverview = createServerFn({ method: "GET" })
   });
 
 /**
- * Stores the device's IANA time zone (Intl.DateTimeFormat().resolvedOptions().timeZone). Stored and exposed only:
- * streaks and days stay on UTC. The write is service-role only and validated again by the database against its own
- * zone list; a client cannot write the table.
+ * Stores the device's IANA time zone (Intl.DateTimeFormat().resolvedOptions().timeZone). The server books learner days
+ * (streaks, daily goal, reminders) from it; the AI quota day stays UTC. The write is service-role only, validated here
+ * and again by the database against its own zone list, and an unchanged zone is a no-op; a client cannot write the table.
  */
 export const setTimeZone = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
