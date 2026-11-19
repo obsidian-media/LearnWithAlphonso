@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
@@ -136,14 +138,21 @@ private fun EndingsRing(story: StorySummary, size: Dp) {
 @Composable
 internal fun StoryCoverCard(story: StorySummary, small: Boolean, onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
     val ds = LocalAlphonsoTokens.current
-    val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+    val shape = RoundedCornerShape(16.dp)
     Column(
         modifier.testTag("story-card-${story.id}").clip(shape).background(ds.card).border(2.dp, ds.line, shape)
             .clickable(role = Role.Button) { onOpen(story.id) }
             .clearAndSetSemantics { contentDescription = Stories.cardLabel(story); role = Role.Button },
     ) {
-        Box(Modifier.fillMaxWidth().aspectRatio(if (small) 4f / 3f else 3f / 4f)) {
+        Box(Modifier.fillMaxWidth().aspectRatio(4f / 3f)) {
             StoryCover(story, if (small) 36 else 52, Modifier.fillMaxSize())
+            Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(0.5f).background(Brush.verticalGradient(listOf(Color.Transparent, ds.hero.copy(alpha = 0.7f)))))
+            if (story.branching) {
+                Text(
+                    "⑂ Path", color = Color.White, fontWeight = FontWeight.Bold, style = CaptionType,
+                    modifier = Modifier.align(Alignment.TopStart).padding(AlphonsoTokens.Space.s2).background(ds.choice, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp).clearAndSetSemantics { },
+                )
+            }
             if (story.branching && story.endingsTotal > 0) {
                 Box(Modifier.align(Alignment.TopEnd).padding(AlphonsoTokens.Space.s2)) { EndingsRing(story, if (small) 30.dp else 36.dp) }
             }
@@ -163,7 +172,7 @@ internal fun StoryCoverCard(story: StorySummary, small: Boolean, onOpen: (String
 @Composable
 private fun StoryHeroCard(story: StorySummary, onOpen: (String) -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+    val shape = RoundedCornerShape(20.dp)
     val action = if (story.endingsFound > 0) "Continue" else "Read now"
     Box(
         Modifier.testTag("stories-hero").fillMaxWidth().heightIn(min = 224.dp).clip(shape)
@@ -171,22 +180,24 @@ private fun StoryHeroCard(story: StorySummary, onOpen: (String) -> Unit) {
             .clearAndSetSemantics { contentDescription = "${Stories.cardLabel(story)}, $action"; role = Role.Button },
     ) {
         StoryCover(story, 96, Modifier.matchParentSize())
-        Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.3f), Color.Black.copy(alpha = 0.8f)))))
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(0f to Color.Transparent, 0.25f to Color.Transparent, 0.6f to ds.hero.copy(alpha = 0.55f), 1f to ds.hero.copy(alpha = 0.92f))))
         Column(
             Modifier.fillMaxWidth().heightIn(min = 224.dp).padding(AlphonsoTokens.Space.s4),
             verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2, Alignment.Bottom),
         ) {
             Text(
-                "CHOOSE YOUR PATH", color = ds.onChoice, fontWeight = FontWeight.Bold, style = CaptionType,
+                "⑂ CHOOSE YOUR PATH", color = Color.White, fontWeight = FontWeight.Bold, style = CaptionType,
                 modifier = Modifier.background(ds.choice, CircleShape).padding(horizontal = 10.dp, vertical = 2.dp),
             )
             Text(story.title, color = ds.onHero, style = TitleType)
             Text(Stories.heroLine(story), color = ds.onHero, style = FootnoteType)
-            Text(
-                action, color = ds.onAction, fontWeight = FontWeight.Bold, style = HeadlineType,
-                modifier = Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).background(ds.action, RoundedCornerShape(AlphonsoTokens.Radius.control))
-                    .padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s2),
-            )
+            Row(
+                Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).background(ds.action, CircleShape).padding(start = AlphonsoTokens.Space.s4, end = 6.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(action, color = ds.onAction, fontWeight = FontWeight.Bold, style = HeadlineType)
+                Text("▶", color = ds.onAction, style = CaptionType, modifier = Modifier.size(28.dp).background(ds.onAction.copy(alpha = 0.15f), CircleShape).wrapContentSize())
+            }
         }
     }
 }
@@ -204,15 +215,14 @@ private fun StoryContinueLine(story: StorySummary, onOpen: (String) -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3),
     ) {
-        StoryCover(story, 24, Modifier.size(AlphonsoTokens.Space.s12).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)))
+        StoryCover(story, 22, Modifier.size(width = 52.dp, height = 40.dp).clip(RoundedCornerShape(9.dp)))
         Column(Modifier.weight(1f)) {
             Text(story.title, color = ds.ink, fontWeight = FontWeight.Bold, style = HeadlineType)
             Text(Stories.resumeLine(story), color = ds.inkSoft, style = CaptionType)
         }
         Text(
-            "Resume", color = ds.choice, fontWeight = FontWeight.Bold, style = FootnoteType,
-            modifier = Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).background(ds.choiceTint, RoundedCornerShape(AlphonsoTokens.Radius.control))
-                .padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s3),
+            "Resume", color = Color.White, fontWeight = FontWeight.Bold, style = FootnoteType,
+            modifier = Modifier.background(ds.choice, CircleShape).padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s2),
         )
     }
 }

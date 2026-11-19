@@ -97,10 +97,19 @@ function StoryCard({ story, small = false }: { story: StorySummary; small?: bool
       params={{ storyId: story.id }}
       aria-label={cardLabel(story)}
       data-testid="story-card"
-      className="block min-h-11 overflow-hidden rounded-[18px] border-2 border-ds-line bg-ds-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice"
+      className="block min-h-11 overflow-hidden rounded-2xl border-2 border-ds-line bg-ds-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice"
     >
-      <span className={`relative block ${small ? "aspect-[4/3]" : "aspect-[3/4]"}`}>
+      <span className="relative block aspect-[4/3]">
         <Cover story={story} iconSize={small ? 40 : 56} className="h-full w-full" />
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-ds-hero/70 to-transparent"
+        />
+        {story.branching ? (
+          <span className="absolute left-2 top-2 rounded-full bg-ds-choice px-2 py-0.5 text-xs font-extrabold text-white">
+            <span aria-hidden="true">⑂ </span>Path
+          </span>
+        ) : null}
         {story.branching && story.endingsTotal > 0 ? (
           <span className="absolute right-2 top-2 text-white">
             <EndingsRing story={story} size={small ? 30 : 36} />
@@ -128,21 +137,27 @@ function FeaturedHero({ story }: { story: StorySummary }) {
       params={{ storyId: story.id }}
       aria-label={`${cardLabel(story)}, ${action}`}
       data-testid="stories-hero"
-      className="relative block min-h-56 overflow-hidden rounded-[22px] shadow-[var(--ds-shadow-floating)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice"
+      className="relative block min-h-56 overflow-hidden rounded-[20px] shadow-[var(--ds-shadow-floating)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice"
     >
       <Cover story={story} iconSize={96} className="absolute inset-0 h-full w-full" />
       <span
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
+        className="absolute inset-0 bg-gradient-to-t from-ds-hero/90 via-ds-hero/55 via-[40%] to-transparent to-[75%]"
       />
       <span className="relative flex min-h-56 flex-col justify-end gap-1.5 p-4 text-white">
-        <span className="w-fit rounded-full bg-ds-choice px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide">
-          Choose your path
+        <span className="w-fit rounded-full bg-ds-choice px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide text-white">
+          <span aria-hidden="true">⑂ </span>Choose your path
         </span>
-        <span className="font-display text-2xl font-extrabold leading-tight">{story.title}</span>
-        <span className="text-sm font-semibold">{heroLine(story)}</span>
-        <span className="mt-1 inline-flex min-h-11 w-fit items-center rounded-[14px] bg-ds-action px-4 text-sm font-extrabold text-ds-on-action">
+        <span className="font-display text-xl font-extrabold leading-tight">{story.title}</span>
+        <span className="text-xs font-semibold text-white/80">{heroLine(story)}</span>
+        <span className="mt-1 inline-flex min-h-11 w-fit items-center gap-2 rounded-full bg-ds-action pl-4 pr-1.5 text-sm font-extrabold text-ds-on-action">
           {action}
+          <span
+            aria-hidden="true"
+            className="grid size-7 place-items-center rounded-full bg-ds-on-action/15 text-xs"
+          >
+            ▶
+          </span>
         </span>
       </span>
     </Link>
@@ -158,14 +173,14 @@ function ContinueLine({ story }: { story: StorySummary }) {
       data-testid="stories-continue"
       className="flex min-h-14 items-center gap-3 rounded-[18px] border-2 border-ds-line bg-ds-card p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice"
     >
-      <Cover story={story} iconSize={28} className="size-12 shrink-0 rounded-xl" />
+      <Cover story={story} iconSize={28} className="h-10 w-[52px] shrink-0 rounded-[9px]" />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-display text-sm font-extrabold text-ds-ink">
           {story.title}
         </span>
         <span className="block text-xs font-semibold text-ds-ink-soft">{resumeLine(story)}</span>
       </span>
-      <span className="rounded-[14px] bg-ds-choice-tint px-3 py-2 text-sm font-extrabold text-ds-choice">
+      <span className="rounded-full bg-ds-choice px-3 py-2 text-xs font-extrabold text-white">
         Resume
       </span>
     </Link>

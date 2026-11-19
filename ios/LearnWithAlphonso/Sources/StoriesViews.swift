@@ -343,7 +343,20 @@ private struct StoryCoverCard: View {
         VStack(alignment: .leading, spacing: 0) {
             StoryCover(story: story, iconSize: small ? AlphonsoDS.Space.s8 : AlphonsoDS.Space.s12)
                 .frame(maxWidth: .infinity)
-                .aspectRatio(small ? 4.0 / 3.0 : 3.0 / 4.0, contentMode: .fit)
+                .aspectRatio(4.0 / 3.0, contentMode: .fit)
+                .overlay(alignment: .bottom) {
+                    LinearGradient(colors: [.clear, ds.hero.opacity(0.7)], startPoint: .top, endPoint: .bottom)
+                        .frame(height: small ? 48 : 72)
+                        .allowsHitTesting(false)
+                }
+                .overlay(alignment: .topLeading) {
+                    if story.branching {
+                        Text("⑂ Path").dsText(.caption).foregroundStyle(Color.white)
+                            .padding(.horizontal, AlphonsoDS.Space.s2)
+                            .background(Capsule().fill(ds.choice))
+                            .padding(AlphonsoDS.Space.s2)
+                    }
+                }
                 .overlay(alignment: .topTrailing) {
                     if story.branching && story.endingsTotal > 0 {
                         EndingsRing(story: story, size: small ? 30 : 36).padding(AlphonsoDS.Space.s2)
@@ -363,8 +376,8 @@ private struct StoryCoverCard: View {
         }
         .frame(width: small ? 168 : nil)
         .frame(minHeight: AlphonsoDS.Space.minTouch)
-        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.card))
-        .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous))
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(ds.card))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Stories.cardLabel(story))
@@ -382,16 +395,21 @@ private struct StoryHeroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
             Spacer(minLength: AlphonsoDS.Space.s12 * 2)
-            Text(BranchingCopy.badge.uppercased()).dsText(.overline).foregroundStyle(ds.onChoice)
+            Text("⑂ " + BranchingCopy.badge.uppercased()).dsText(.overline).foregroundStyle(Color.white)
                 .padding(.horizontal, AlphonsoDS.Space.s3).padding(.vertical, AlphonsoDS.Space.s1)
                 .background(Capsule().fill(ds.choice))
             Text(story.title).dsText(.title).foregroundStyle(ds.onHero)
                 .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
-            Text(Stories.heroLine(story)).dsText(.footnote).foregroundStyle(ds.onHero)
-            Text(action).dsText(.headline).foregroundStyle(ds.onAction)
-                .padding(.horizontal, AlphonsoDS.Space.s4)
-                .frame(minHeight: AlphonsoDS.Space.minTouch)
-                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.action))
+            Text(Stories.heroLine(story)).dsText(.footnote).foregroundStyle(ds.onHero.opacity(0.8))
+            HStack(spacing: AlphonsoDS.Space.s2) {
+                Text(action).dsText(.headline).foregroundStyle(ds.onAction)
+                Image(systemName: "play.fill").font(.caption).foregroundStyle(ds.onAction)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(ds.onAction.opacity(0.15)))
+            }
+            .padding(.leading, AlphonsoDS.Space.s4).padding(.trailing, 6)
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .background(Capsule().fill(ds.action))
         }
         .padding(AlphonsoDS.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -399,11 +417,12 @@ private struct StoryHeroCard: View {
             ZStack {
                 StoryCover(story: story, iconSize: AlphonsoDS.Space.s12 * 2)
                 LinearGradient(
-                    colors: [Color.black.opacity(0.8), Color.black.opacity(0.3), .clear],
+                    stops: [.init(color: ds.hero.opacity(0.92), location: 0), .init(color: ds.hero.opacity(0.55), location: 0.4),
+                            .init(color: .clear, location: 0.75), .init(color: .clear, location: 1)],
                     startPoint: .bottom, endPoint: .top)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(Stories.cardLabel(story)), \(action)")
     }
@@ -417,18 +436,17 @@ private struct StoryContinueLine: View {
     var body: some View {
         HStack(spacing: AlphonsoDS.Space.s3) {
             StoryCover(story: story, iconSize: AlphonsoDS.Space.s6)
-                .frame(width: AlphonsoDS.Space.s12, height: AlphonsoDS.Space.s12)
-                .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
+                .frame(width: 52, height: 40)
+                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
             VStack(alignment: .leading, spacing: 2) {
                 Text(story.title).dsText(.headline).foregroundStyle(ds.ink)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(Stories.resumeLine(story)).dsText(.caption).foregroundStyle(ds.inkSoft)
             }
             Spacer(minLength: 0)
-            Text("Resume").dsText(.footnote).foregroundStyle(ds.choice)
-                .padding(.horizontal, AlphonsoDS.Space.s3)
-                .frame(minHeight: AlphonsoDS.Space.minTouch)
-                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.choiceTint))
+            Text("Resume").dsText(.footnote).foregroundStyle(Color.white)
+                .padding(.horizontal, AlphonsoDS.Space.s3).padding(.vertical, AlphonsoDS.Space.s2)
+                .background(Capsule().fill(ds.choice))
         }
         .padding(AlphonsoDS.Space.s2)
         .frame(minHeight: AlphonsoDS.Space.minTouch)

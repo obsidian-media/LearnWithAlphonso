@@ -36,22 +36,22 @@ class StoriesLibraryTest {
         rule.setContent {
             AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) { StoriesLibraryContent(stories, "en", { opened += it }) }
         }
-        rule.waitForIdle()
-        val hero = rule.onNodeWithTag("stories-hero").assertExists().getBoundsInRoot()
-        assertTrue("hero has a size: $hero", hero.right.value > hero.left.value && hero.bottom.value > hero.top.value)
-        rule.onNodeWithTag("stories-hero").assertIsDisplayed().assertHasClickAction()
-        rule.onNodeWithTag("stories-hero").assertContentDescriptionEquals("The Lost Key, A2, Choose your path, 1 of 4 endings, Continue")
-        rule.onNodeWithTag("stories-continue").assertIsDisplayed()
-            .assertContentDescriptionEquals("Tea Time, Continue · Scene 3, Resume")
-        for (tag in listOf("stories-hero", "stories-continue")) {
+        val list = rule.onNodeWithTag("stories-library")
+        rule.waitUntil(5_000) { rule.onAllNodesWithTag("stories-hero").fetchSemanticsNodes().isNotEmpty() }
+        // Scroll each part into view first: the list is lazy and the emulator screen is short.
+        fun shown(tag: String) {
+            list.performScrollToNode(hasTestTag(tag))
+            rule.waitUntil(5_000) { rule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() }
+            rule.onNodeWithTag(tag).assertIsDisplayed()
             val box = rule.onNodeWithTag(tag).getBoundsInRoot()
-            assertTrue("$tag has a size", box.right.value > box.left.value && box.bottom.value > box.top.value)
+            assertTrue("$tag has a size: $box", box.right.value > box.left.value && box.bottom.value > box.top.value)
         }
-        for (id in listOf("b2", "l1", "l2")) {
-            val card = rule.onNodeWithTag("story-card-$id").assertIsDisplayed()
-            val box = card.getBoundsInRoot()
-            assertTrue("card $id has a size", box.right.value > box.left.value && box.bottom.value > box.top.value)
-        }
+        shown("stories-hero")
+        rule.onNodeWithTag("stories-hero").assertHasClickAction()
+        rule.onNodeWithTag("stories-hero").assertContentDescriptionEquals("The Lost Key, A2, Choose your path, 1 of 4 endings, Continue")
+        shown("stories-continue")
+        rule.onNodeWithTag("stories-continue").assertContentDescriptionEquals("Tea Time, Continue · Scene 3, Resume")
+        for (id in listOf("b2", "l1", "l2")) shown("story-card-$id")
         // The featured story is not repeated in the grid.
         rule.onNodeWithTag("story-card-b1").assertDoesNotExist()
         rule.onNodeWithTag("story-card-b2").assertContentDescriptionEquals("Older Path, A2, Choose your path, 0 of 4 endings")
