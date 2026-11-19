@@ -151,7 +151,14 @@ private fun rememberRemoteImage(url: String?): Bitmap? = produceState<Bitmap?>(n
  * or a failure to show (no empty box). A finished video shows a tick, one part-way through shows a bar.
  */
 @Composable
-fun WatchShelfSection(videos: List<LibraryVideo>, failed: Boolean, onRetry: () -> Unit, onOpen: (LibraryVideo) -> Unit) {
+fun WatchShelfSection(
+    videos: List<LibraryVideo>,
+    failed: Boolean,
+    onRetry: () -> Unit,
+    onOpen: (LibraryVideo) -> Unit,
+    peek: Boolean = false,
+    onSeeAll: (() -> Unit)? = null,
+) {
     val ds = LocalAlphonsoTokens.current
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
         if (failed) {
@@ -163,36 +170,73 @@ fun WatchShelfSection(videos: List<LibraryVideo>, failed: Boolean, onRetry: () -
             }
             return@Column
         }
-        DsOverline("Watch")
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
-            items(videos, key = { it.id }) { video ->
-                val state = VideoShelf.state(video)
-                val word = when (state) { VideoState.DONE -> "watched"; VideoState.IN_PROGRESS -> "in progress"; VideoState.NEW -> "new" }
-                val poster = rememberRemoteImage(video.posterUrl)
-                Column(
-                    Modifier.width(AlphonsoTokens.Space.s12 * 2.5f).clickable(role = Role.Button) { onOpen(video) }
-                        .clearAndSetSemantics { contentDescription = "${video.title}, ${VideoShelf.clock(video.durationSeconds.toDouble())}, $word"; role = Role.Button },
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Box(Modifier.fillMaxWidth().aspectRatio(9f / 16f).clip(RoundedCornerShape(16.dp)).background(ds.card)) {
-                        poster?.let { Image(it.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
-                        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, ds.hero.copy(alpha = 0.7f)))))
-                        video.level?.let {
-                            Text(it, color = ds.ink, fontWeight = FontWeight.Bold, style = CaptionType, modifier = Modifier.align(Alignment.TopStart).padding(8.dp).background(ds.surface, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp))
-                        }
-                        if (state == VideoState.DONE) {
-                            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = ds.choice, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp))
-                        }
-                        Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = ds.ink, modifier = Modifier.align(Alignment.BottomStart).padding(8.dp).size(32.dp).background(ds.surface.copy(alpha = 0.9f), CircleShape).padding(4.dp))
-                        if (state == VideoState.IN_PROGRESS) {
-                            LinearProgressIndicator(progress = { VideoShelf.fraction(video).toFloat() }, color = ds.action, trackColor = ds.surface.copy(alpha = 0.6f), modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth())
-                        }
-                    }
-                    Text(video.title, color = ds.ink, fontWeight = FontWeight.Bold, style = FootnoteType)
-                    Text(VideoShelf.clock(video.durationSeconds.toDouble()) + if (state == VideoState.NEW) " · New" else "", color = ds.inkSoft, style = CaptionType)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Watch", color = ds.ink, style = TitleType, modifier = Modifier.semantics { heading() })
+            if (peek && onSeeAll != null) {
+                Text(
+                    "See all", color = ds.choice, fontWeight = FontWeight.Bold, style = FootnoteType,
+                    modifier = Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = Role.Button, onClick = onSeeAll)
+                        .clearAndSetSemantics { contentDescription = "See all videos"; role = Role.Button }.padding(horizontal = AlphonsoTokens.Space.s1),
+                )
+            }
+        }
+        if (peek) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                items(videos.take(LIBRARY_PEEK_COUNT), key = { it.id }) { video ->
+                    WatchPoster(video, Modifier.width(104.dp), onOpen)
+                }
+            }
+        } else {
+            // The focused Watch tab: every video, three to a row (a lazy grid cannot nest in the Library's lazy column).
+            videos.chunked(3).forEach { row ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                    row.forEach { video -> WatchPoster(video, Modifier.weight(1f), onOpen) }
+                    repeat(3 - row.size) { Box(Modifier.weight(1f)) }
                 }
             }
         }
+    }
+}
+
+/** How many posters and story cards the All tab's one-row peek shows. */
+internal const val LIBRARY_PEEK_COUNT = 3
+
+/**
+ * One poster: its state (a New badge, a bar part-way through, a tick when watched) and its length, all from the rows
+ * ([VideoShelf]); the database tracks all three states. One button with one spoken label: title, length, state.
+ */
+@Composable
+private fun WatchPoster(video: LibraryVideo, modifier: Modifier, onOpen: (LibraryVideo) -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val state = VideoShelf.state(video)
+    val word = when (state) { VideoState.DONE -> "watched"; VideoState.IN_PROGRESS -> "in progress"; VideoState.NEW -> "new" }
+    val length = VideoShelf.clock(video.durationSeconds.toDouble())
+    val poster = rememberRemoteImage(video.posterUrl)
+    Column(
+        modifier.clickable(role = Role.Button) { onOpen(video) }
+            .clearAndSetSemantics { contentDescription = "${video.title}, $length, $word"; role = Role.Button },
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Box(Modifier.fillMaxWidth().aspectRatio(2f / 3f).clip(RoundedCornerShape(16.dp)).background(ds.card)) {
+            poster?.let { Image(it.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
+            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(androidx.compose.ui.graphics.Color.Transparent, ds.hero.copy(alpha = 0.6f)))))
+            video.level?.let {
+                Text(it, color = ds.choice, fontWeight = FontWeight.Bold, style = CaptionType, modifier = Modifier.align(Alignment.TopStart).padding(6.dp).background(ds.choiceTint, RoundedCornerShape(8.dp)).padding(horizontal = 6.dp))
+            }
+            if (state == VideoState.NEW) {
+                Text("NEW", color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.ExtraBold, style = CaptionType, modifier = Modifier.align(Alignment.TopEnd).padding(6.dp).background(ds.heart, RoundedCornerShape(8.dp)).padding(horizontal = 6.dp))
+            }
+            Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = androidx.compose.ui.graphics.Color.White, modifier = Modifier.align(Alignment.Center).size(28.dp))
+            if (state == VideoState.DONE) {
+                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = ds.right, modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp).size(20.dp).background(ds.card, CircleShape))
+            } else {
+                Text(length, color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold, style = CaptionType, modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp).background(ds.hero.copy(alpha = 0.7f), RoundedCornerShape(8.dp)).padding(horizontal = 6.dp))
+            }
+            if (state == VideoState.IN_PROGRESS) {
+                LinearProgressIndicator(progress = { VideoShelf.fraction(video).toFloat() }, color = ds.xp, trackColor = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.3f), modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth())
+            }
+        }
+        Text(video.title, color = ds.ink, fontWeight = FontWeight.Bold, style = FootnoteType)
     }
 }
 

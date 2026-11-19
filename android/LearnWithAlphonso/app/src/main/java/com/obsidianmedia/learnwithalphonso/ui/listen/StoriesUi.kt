@@ -14,6 +14,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.semantics.heading
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -94,14 +100,96 @@ import kotlinx.coroutines.launch
  * file only draws them. StoriesSourceGuardsTest pins the wiring.
  */
 
-/** The Stories row on the Listen shelf. */
+/** The stories for the course on screen, read on their own so a failed read never hides the podcasts. */
+class StoriesFeed(val stories: List<StorySummary>, val loading: Boolean, val failed: Boolean, val retry: () -> Unit)
+
 @Composable
-fun StoriesEntryRow(onClick: () -> Unit) {
+fun rememberStories(container: AppContainer, courseCode: String): StoriesFeed {
+    var stories by remember { mutableStateOf<List<StorySummary>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var failed by remember { mutableStateOf(false) }
+    var reload by remember { mutableIntStateOf(0) }
+    LaunchedEffect(courseCode, reload) {
+        loading = true
+        failed = false
+        try {
+            stories = container.storiesClient.fetchStories(courseCode)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            failed = true
+        }
+        loading = false
+    }
+    return StoriesFeed(stories, loading, failed) { reload++ }
+}
+
+/** One story row of the Stories tab: title and status ("Choose your path" for a branching story), one button. */
+@Composable
+private fun StoryRow(story: StorySummary, onOpen: (String) -> Unit) {
+    val status = Stories.status(story)
     Box(
-        Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick)
-            .clearAndSetSemantics { contentDescription = "Stories, read along while you listen"; role = Role.Button },
+        Modifier.fillMaxWidth().clickable(role = Role.Button) { onOpen(story.id) }
+            .clearAndSetSemantics { contentDescription = "${story.title}, $status"; role = Role.Button },
     ) {
-        AlphonsoRowCard("Stories", "Read along while you listen", leadingEmoji = "📚")
+        AlphonsoRowCard(story.title, status, leadingEmoji = if (story.branching) "🧭" else "📚")
+    }
+}
+
+/** The Library's Stories tab: published stories grouped by level. A failed load is never shown as an empty library. */
+fun LazyListScope.storiesFullItems(feed: StoriesFeed, courseCode: String, onOpen: (String) -> Unit) {
+    val groups = Stories.groupByLevel(Stories.visible(feed.stories, courseCode))
+    when {
+        feed.loading -> item(key = "stories-loading") { Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
+        feed.failed -> item(key = "stories-failed") {
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+                DsEmptyState("Couldn't load stories", "Check your connection and try again.", artAsset = "lesson/hmm.webp")
+                AlphonsoSecondaryButton("Try again", onClick = feed.retry, fullWidth = false)
+            }
+        }
+        groups.isEmpty() -> item(key = "stories-empty") { DsEmptyState(StoryCopy.EMPTY_TITLE, StoryCopy.EMPTY_MESSAGE, artAsset = "lesson/happy.webp") }
+        else -> groups.forEach { group ->
+            item(key = "level-${group.level}") { DsOverline(Stories.levelLabel(group.level)) }
+            items(group.stories, key = { it.id }) { story -> StoryRow(story, onOpen) }
+        }
+    }
+}
+
+/** The All tab's one-row peek at Stories, with "See all". Draws nothing while loading, when there are none, or on a failed read (the failure shows on the Stories tab). */
+@Composable
+fun StoriesPeekSection(feed: StoriesFeed, courseCode: String, onOpen: (String) -> Unit, onSeeAll: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val shown = Stories.visible(feed.stories, courseCode).take(LIBRARY_PEEK_COUNT)
+    if (feed.loading || feed.failed || shown.isEmpty()) return
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Stories", color = ds.ink, style = TitleType, modifier = Modifier.semantics { heading() })
+            Text(
+                "See all", color = ds.choice, fontWeight = FontWeight.Bold, style = FootnoteType,
+                modifier = Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = Role.Button, onClick = onSeeAll)
+                    .clearAndSetSemantics { contentDescription = "See all stories"; role = Role.Button }.padding(horizontal = AlphonsoTokens.Space.s1),
+            )
+        }
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+            items(shown, key = { it.id }) { story ->
+                val status = Stories.status(story)
+                val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+                Column(
+                    Modifier.width(168.dp).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+                        .clickable(role = Role.Button) { onOpen(story.id) }
+                        .clearAndSetSemantics { contentDescription = "${story.title}, ${story.level}, $status"; role = Role.Button }
+                        .padding(AlphonsoTokens.Space.s3),
+                    verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
+                ) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(if (story.branching) "🧭" else "📚", style = TitleType)
+                        Text(story.level, color = ds.choice, fontWeight = FontWeight.Bold, style = CaptionType, modifier = Modifier.background(ds.choiceTint, RoundedCornerShape(8.dp)).padding(horizontal = 6.dp))
+                    }
+                    Text(story.title, color = ds.ink, fontWeight = FontWeight.Bold, style = HeadlineType)
+                    Text(status, color = ds.inkSoft, style = CaptionType)
+                }
+            }
+        }
     }
 }
 

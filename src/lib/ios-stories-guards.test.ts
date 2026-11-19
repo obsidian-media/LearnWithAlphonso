@@ -105,12 +105,13 @@ describe("iOS graded stories: the check is graded on the server", () => {
     expect(text).toContain("SaveWordSheet(request: request, session: session)");
   });
 
-  it("only published stories are asked for, and the library is reachable from the Listen shelf", () => {
+  it("only published stories are asked for, and the library reaches them through its All peek and Stories tab", () => {
     expect(kit()).toContain("published=eq.true");
     const shelf = code(read("ios/LearnWithAlphonso/Sources/ListenShelfViews.swift"));
     expect(shelf).toContain(
-      "StoriesEntryRow(session: session, player: player, course: activeCourse)",
+      "StoriesSection(session: session, player: player, course: activeCourse,",
     );
+    expect(shelf).toContain("presentation: tab == .all ? .peek : .full");
   });
 
   it("the podcast quiz keeps its own sender by default", () => {

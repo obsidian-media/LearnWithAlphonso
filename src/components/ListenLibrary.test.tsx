@@ -108,7 +108,7 @@ describe("Listen library", () => {
     });
     expect(within(card).getByText("Episode 2 of 3 · 6:10 left")).toBeInTheDocument();
     // The new studio art, filling the card (the platform crops the centre of the square picture).
-    expect(card.querySelector("img")).toHaveAttribute("src", "/library/continue-studio.webp");
+    expect(card.querySelector("img")).toHaveAttribute("src", "/avatar/scenes/continue-studio.webp");
     await userEvent.click(card);
     expect(usePodcastPlayer.getState().episode?.id).toBe("e2");
   });

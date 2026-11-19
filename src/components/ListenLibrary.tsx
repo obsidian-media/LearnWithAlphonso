@@ -78,7 +78,7 @@ const LIBRARY_TABS: { id: LibraryTab; label: string }[] = [
 ];
 
 /** The studio art for the Continue card: one square picture, centre-cropped by `object-cover`. */
-export const CONTINUE_ART = "/library/continue-studio.webp";
+export const CONTINUE_ART = "/avatar/scenes/continue-studio.webp";
 
 /**
  * The sub-tab picked this session. It survives leaving the Library and coming back (a podcast folder, the player),

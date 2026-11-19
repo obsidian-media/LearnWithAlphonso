@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
@@ -67,6 +68,7 @@ import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.R
 import com.obsidianmedia.learnwithalphonso.core.podcast.ListenEpisodeState
 import com.obsidianmedia.learnwithalphonso.core.podcast.ListenShelf
+import com.obsidianmedia.learnwithalphonso.core.podcast.ListenContinueTarget
 import com.obsidianmedia.learnwithalphonso.core.podcast.ListenShelfFolder
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastLabel
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastTimings
@@ -151,9 +153,50 @@ fun WatchShelfHost(container: AppContainer, course: String, onOpenPractice: (Vid
     if (watch.failed || videos.isNotEmpty()) WatchShelfSection(videos, watch.failed, onRetry = watchVm::load, onOpen = openVideo)
 }
 
-/** The Listen home (round 6.1, option A): continue card, course switch, level chips, a painted room per folder. All logic is [ListenShelf]. */
+/** The Library's four sub-tabs. All is a Continue card plus a one-row peek of Watch and of Stories, each with "See all" (which switches tab); the other three are the focused screens. */
+enum class LibraryTab(val title: String) {
+    All("All"), Listen("Listen"), Watch("Watch"), Stories("Stories");
+
+    /** The spoken name of this tab's "See all" link. */
+    val seeAllLabel: String get() = when (this) { Watch -> "See all videos"; Stories -> "See all stories"; Listen -> "See all episodes"; All -> "See all" }
+}
+
+/** The sub-tab picked this session: it survives leaving the Library and coming back, and a fresh launch starts on All. */
+internal object LibrarySession {
+    var tab: LibraryTab = LibraryTab.All
+}
+
+/** The sub-tab row: a real tab control (each tab has the Tab role and its selected state announced). */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}, onOpenStories: (String) -> Unit = {}) {
+private fun LibraryTabs(tab: LibraryTab, onSelect: (LibraryTab) -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+    androidx.compose.foundation.layout.FlowRow(
+        Modifier.fillMaxWidth().semantics { contentDescription = "Library sections" },
+        horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
+    ) {
+        LibraryTab.entries.forEach { item ->
+            val on = item == tab
+            Box(
+                Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clip(shape).background(if (on) ds.choiceTint else ds.card)
+                    .border(2.dp, if (on) ds.choice else ds.line, shape)
+                    .selectable(selected = on, role = Role.Tab, onClick = { onSelect(item) })
+                    .padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s2)
+                    .semantics { contentDescription = "${item.title} tab" },
+                contentAlignment = Alignment.Center,
+            ) { Text(item.title, style = FootnoteType, fontWeight = FontWeight.ExtraBold, color = if (on) ds.choice else ds.brand) }
+        }
+    }
+}
+
+/**
+ * The Library home under four sub-tabs (All, Listen, Watch, Stories). All: the Continue card, then a one-row peek of Watch
+ * and of Stories. Listen: the course's painted rooms, level chips and the month stat. Watch and Stories: the focused
+ * screens. All logic is [ListenShelf]; the Watch host (its player sheet and the path deep link) stays mounted on every tab.
+ */
+@Composable
+fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}, onOpenStory: (String) -> Unit = {}) {
     val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     val positionsRevision by container.podcastPlayer.positionsRevision.collectAsState()
@@ -164,6 +207,9 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
     val openVideo = rememberWatchSheet(container, watchVm, watch, onOpenPractice)
     var course by rememberSaveable(state.courseCode) { mutableStateOf(state.courseCode) }
     var level by rememberSaveable(course) { mutableStateOf<String?>(null) }
+    var tab by remember { mutableStateOf(LibrarySession.tab) }
+    val select: (LibraryTab) -> Unit = { next -> tab = next; LibrarySession.tab = next }
+    val stories = rememberStories(container, course)
     // Back from a folder, or after an episode played, the shelf reflects what was just heard.
     LaunchedEffect(positionsRevision, playerEpisode.episode?.id) { vm.refreshProgress() }
 
@@ -173,75 +219,103 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
     val levels = ListenShelf.levels(shelves)
     val shown = level?.takeIf { it in levels }?.let { l -> shelves.filter { it.level == l } } ?: shelves
     val target = remember(shelves, state.progress) { ListenShelf.continueListening(shelves, state.progress) }
+    val watchVideos = VideoShelf.shelf(watch.videos, course)
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
         item {
             DsSegmented(COURSES.map { (code, label) -> code to label }, course, { course = it }, "Course")
         }
-        ListenShelf.monthChip(state.monthSeconds)?.let { chip ->
-            item { DsPill("⏱ $chip", DsPillTone.NEUTRAL) }
-        }
-        target?.let { t ->
-            item {
-                val left = ListenShelf.secondsLeft(t.episode, t.progress)
-                val number = t.shelf.episodes.indexOfFirst { it.id == t.episode.id } + 1
-                Box(
-                    Modifier.fillMaxWidth().heightIn(min = 176.dp).clip(RoundedCornerShape(24.dp)).border(2.dp, ds.action, RoundedCornerShape(24.dp))
-                        .clickable(role = Role.Button) { scope.launch { playEpisode(container, t.episode, t.shelf.episodes) } }
-                        .clearAndSetSemantics { contentDescription = "Continue listening: ${t.episode.title}, ${ListenShelf.clock(left)} left"; role = Role.Button },
-                ) {
-                    RoomImage(t.shelf.room, Modifier.matchParentSize())
-                    Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(ds.hero.copy(alpha = 0.4f), ds.hero.copy(alpha = 0.9f)))))
-                    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.Bottom) {
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text("CONTINUE LISTENING", color = ds.onHeroKick, fontWeight = FontWeight.Bold, style = CaptionType)
-                            Text(t.episode.title, color = ds.onHero, fontWeight = FontWeight.Bold, style = TitleType)
-                            Text(
-                                listOfNotNull(t.shelf.level, "Episode $number", if (t.progress == null) ListenShelf.clock(left) else "${ListenShelf.clock(left)} left").joinToString(" · "),
-                                color = ds.onHero, style = FootnoteType,
-                            )
-                            LinearProgressIndicator(progress = { ListenShelf.fraction(t.episode, t.progress).toFloat() }, color = ds.action, trackColor = ds.onHero.copy(alpha = 0.25f), modifier = Modifier.fillMaxWidth())
+        item { LibraryTabs(tab, select) }
+        when (tab) {
+            LibraryTab.All -> {
+                target?.let { t -> item(key = "continue") { ContinueCard(t) { scope.launch { playEpisode(container, t.episode, t.shelf.episodes) } } } }
+                if (watch.failed || watchVideos.isNotEmpty()) {
+                    item(key = "watch") { WatchShelfSection(watchVideos, watch.failed, onRetry = watchVm::load, onOpen = openVideo, peek = true, onSeeAll = { select(LibraryTab.Watch) }) }
+                }
+                item(key = "stories") { StoriesPeekSection(stories, course, onOpenStory) { select(LibraryTab.Stories) } }
+                if (state.libraryFailed) item(key = "failed") { LibraryFailedCard { scope.launch { vm.loadLibrary() } } }
+            }
+            LibraryTab.Listen -> {
+                ListenShelf.monthChip(state.monthSeconds)?.let { chip ->
+                    item { DsPill("⏱ $chip", DsPillTone.NEUTRAL) }
+                }
+                if (levels.isNotEmpty()) {
+                    item {
+                        DsChipRow {
+                            (listOf<String?>(null) + levels).forEach { chip ->
+                                DsChip(chip ?: "All", selected = level == chip, onClick = { level = chip }, accessibilityText = chip?.let { "Level $it" } ?: "All levels")
+                            }
                         }
-                        Image(painterResource(R.drawable.mascot_alphonso), contentDescription = null, modifier = Modifier.width(96.dp))
+                    }
+                }
+                when {
+                    state.libraryLoading -> item { Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) } }
+                    state.libraryFailed -> item { LibraryFailedCard { scope.launch { vm.loadLibrary() } } }
+                    shown.isEmpty() -> item {
+                        DsEmptyState(
+                            if (state.libraryEpisodes.isEmpty()) PodcastLibrary.EMPTY_MESSAGE
+                            else "No ${COURSES.first { it.first == course }.second} episodes${level?.let { " at $it" } ?: ""} yet.",
+                            null, artAsset = "lesson/happy.webp",
+                        )
+                    }
+                    else -> items(shown.chunked(2), key = { row -> row.first().folder.id }) { pair ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            pair.forEach { shelf -> RoomTile(shelf, Modifier.weight(1f)) { onOpenFolder(shelf.folder.id) } }
+                            if (pair.size == 1) Box(Modifier.weight(1f))
+                        }
                     }
                 }
             }
-        }
-        val watchVideos = VideoShelf.shelf(watch.videos, course)
-        if (watch.failed || watchVideos.isNotEmpty()) {
-            item(key = "watch") { WatchShelfSection(watchVideos, watch.failed, onRetry = watchVm::load, onOpen = openVideo) }
-        }
-        item(key = "stories") { StoriesEntryRow { onOpenStories(course) } }
-        if (levels.isNotEmpty()) {
-            item {
-                DsChipRow {
-                    (listOf<String?>(null) + levels).forEach { chip ->
-                        DsChip(chip ?: "All", selected = level == chip, onClick = { level = chip }, accessibilityText = chip?.let { "Level $it" } ?: "All levels")
-                    }
+            LibraryTab.Watch -> {
+                if (watch.failed || watchVideos.isNotEmpty()) {
+                    item(key = "watch") { WatchShelfSection(watchVideos, watch.failed, onRetry = watchVm::load, onOpen = openVideo) }
+                } else if (watch.loaded) {
+                    item(key = "no-videos") { DsEmptyState("No videos yet", "Alphonso videos appear here as they are published.", artAsset = "lesson/happy.webp") }
+                } else {
+                    item(key = "loading-videos") { Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) } }
                 }
             }
+            LibraryTab.Stories -> storiesFullItems(stories, course, onOpenStory)
         }
-        when {
-            state.libraryLoading -> item { Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) } }
-            state.libraryFailed -> item {
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
-                    DsEmptyState("Couldn't load these episodes", null, artAsset = "lesson/hmm.webp")
-                    AlphonsoSecondaryButton("Try again", onClick = { scope.launch { vm.loadLibrary() } }, fullWidth = false)
-                }
-            }
-            shown.isEmpty() -> item {
-                DsEmptyState(
-                    if (state.libraryEpisodes.isEmpty()) PodcastLibrary.EMPTY_MESSAGE
-                    else "No ${COURSES.first { it.first == course }.second} episodes${level?.let { " at $it" } ?: ""} yet.",
-                    null, artAsset = "lesson/happy.webp",
-                )
-            }
-            else -> items(shown.chunked(2), key = { row -> row.first().folder.id }) { pair ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    pair.forEach { shelf -> RoomTile(shelf, Modifier.weight(1f)) { onOpenFolder(shelf.folder.id) } }
-                    if (pair.size == 1) Box(Modifier.weight(1f))
-                }
-            }
+    }
+}
+
+@Composable
+private fun LibraryFailedCard(onRetry: () -> Unit) {
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+        DsEmptyState("Couldn't load these episodes", null, artAsset = "lesson/hmm.webp")
+        AlphonsoSecondaryButton("Try again", onClick = onRetry, fullWidth = false)
+    }
+}
+
+/**
+ * The All tab's Continue card: the podcast-studio art (one square picture, centre-cropped to fill), a gold play button and
+ * "Episode N of M". It resumes [ListenShelf.continueListening] (the most recently touched episode still in progress, else the
+ * next new one in that series). One button, one spoken label.
+ */
+@Composable
+private fun ContinueCard(t: ListenContinueTarget, onPlay: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val left = ListenShelf.secondsLeft(t.episode, t.progress)
+    val number = t.shelf.episodes.indexOfFirst { it.id == t.episode.id } + 1
+    val count = t.shelf.episodes.size
+    val detail = if (t.progress == null) ListenShelf.clock(left) else "${ListenShelf.clock(left)} left"
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.sheet)
+    Box(
+        Modifier.fillMaxWidth().heightIn(min = 208.dp).clip(shape)
+            .clickable(role = Role.Button, onClick = onPlay)
+            .clearAndSetSemantics { contentDescription = "Continue ${t.shelf.folder.title}, episode $number of $count: ${t.episode.title}, $detail"; role = Role.Button },
+    ) {
+        RoomImage("continue-studio", Modifier.matchParentSize())
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(0.45f to Color.Transparent, 1f to ds.hero.copy(alpha = 0.95f))))
+        Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 80.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("CONTINUE LISTENING", color = ds.onHeroKick, fontWeight = FontWeight.Bold, style = CaptionType)
+            Text(t.episode.title, color = ds.onHero, fontWeight = FontWeight.Bold, style = TitleType)
+            Text("Episode $number of $count · $detail", color = ds.onHeroSoft, style = FootnoteType)
+            LinearProgressIndicator(progress = { ListenShelf.fraction(t.episode, t.progress).toFloat() }, color = ds.action, trackColor = ds.onHero.copy(alpha = 0.25f), modifier = Modifier.fillMaxWidth())
+        }
+        Box(Modifier.align(Alignment.BottomEnd).padding(16.dp).size(48.dp).background(ds.actionEdge, CircleShape).padding(bottom = 4.dp).background(ds.action, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = ds.onAction)
         }
     }
 }
