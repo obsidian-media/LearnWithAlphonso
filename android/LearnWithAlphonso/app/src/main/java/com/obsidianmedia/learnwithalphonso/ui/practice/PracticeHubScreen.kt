@@ -172,8 +172,15 @@ internal fun PracticeHubContent(
         item {
             DrillCard("Say the picture", "See a picture and say the word. A miss shows you the word and how it sounds.", "practice-say-picture", onSayPicture) {
                 Column(Modifier.fillMaxSize().background(ds.choiceTint).padding(Space.s2), verticalArrangement = Arrangement.spacedBy(Space.s1), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(Space.s1)) { Text("☕", style = Type.title.toTextStyle()); Text("✈️", style = Type.title.toTextStyle()) }
-                    Row(horizontalArrangement = Arrangement.spacedBy(Space.s1)) { Text("🩺", style = Type.title.toTextStyle()); Text("🍝", style = Type.title.toTextStyle()) }
+                    val context = LocalContext.current
+                    listOf(listOf("hot_beverage", "airplane"), listOf("stethoscope", "spaghetti")).forEach { pair ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(Space.s1)) {
+                            pair.forEach { name ->
+                                val icon by produceState<ImageBitmap?>(null, name) { value = withContext(Dispatchers.IO) { loadAsset(context, "icons3d/$name.png") } }
+                                Box(Modifier.size(Space.s8)) { icon?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize()) } }
+                            }
+                        }
+                    }
                 }
             }
         }
