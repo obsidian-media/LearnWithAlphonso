@@ -6,6 +6,7 @@ import { MobileFrame } from "../../components/AppShell";
 import { ForYouRail } from "../../components/learn/ForYouRail";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
+import { UNIT_ROOMS } from "../../data/unit-rooms";
 import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
 import { useServerFn } from "@tanstack/react-start";
@@ -49,6 +50,7 @@ function LearnHero({
   index,
   count,
   artIndex,
+  unitId,
   unitTitle,
   level,
   lessonId,
@@ -61,6 +63,7 @@ function LearnHero({
   count: number;
   /** Its place in the whole course, which picks the room painting. */
   artIndex: number;
+  unitId: string;
   unitTitle: string;
   level: string;
   lessonId: string;
@@ -68,7 +71,8 @@ function LearnHero({
   blocked: boolean;
   onBlockedClick: () => void;
 }) {
-  const art = roomArtFor(artIndex - 1);
+  // The same unit -> room table iOS and Android read; the rotation only for a unit it does not know.
+  const art = UNIT_ROOMS[unitId] ?? roomArtFor(artIndex - 1);
   return (
     <div className="grid gap-3" data-learn-hero="">
       <div className="ds-light relative block h-48 overflow-hidden rounded-3xl border-2 border-ds-brand bg-ds-brand text-left">
@@ -448,6 +452,7 @@ function LearnPage() {
             index={hereLevelPlace.index}
             count={hereLevelPlace.count}
             artIndex={here.index}
+            unitId={hereUnit.id}
             unitTitle={hereUnit.title}
             level={hereUnit.level}
             lessonId={hereLesson.id}

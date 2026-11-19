@@ -186,7 +186,7 @@ struct LessonBrowserView: View {
     /// The painted room behind a unit: the bundled unit -> room map first, then the fixed rotation by place in the band.
     private func roomID(for unit: LearnWithAlphonsoKit.Unit) -> String {
         if let mapped = LessonData.roomMap?.roomID(forUnit: unit.id) { return mapped }
-        let index0 = unitsForSelectedLevel.firstIndex(where: { $0.id == unit.id }) ?? 0
+        let index0 = contentStore.bundle(for: course).units.firstIndex(where: { $0.id == unit.id }) ?? 0
         return LearnFold.roomArtFor(index0)
     }
 

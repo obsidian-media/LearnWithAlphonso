@@ -38,7 +38,7 @@ class LearnHeroRailTest {
         rule.setContent {
             AlphonsoTheme(AlphonsoThemeId.ROYAL, systemDark = false) {
                 Column(Modifier.fillMaxWidth()) {
-                    CurrentUnitCard(unit, CurrentUnit(1, 3, "u1", "l1"), 1, 28, "Saying Hello", "Ready for today's lesson?", onContinue = {})
+                    CurrentUnitCard(unit, CurrentUnit(1, 3, "u1", "l1"), "smalltalk", 1, 28, "Saying Hello", "Ready for today's lesson?", onContinue = {})
                 }
             }
         }

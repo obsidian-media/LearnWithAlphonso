@@ -4,7 +4,7 @@ import SwiftUI
 /// The hero's sizes. A generic type cannot hold stored statics, so they live here.
 enum LearnHeroMetrics {
     static let figureHeight: CGFloat = 190
-    static let figureColumnWidth: CGFloat = 120
+    static let figureColumnWidth: CGFloat = 100
 }
 
 /// Learn's one hero, a single rounded card like the web's and Android's: the unit's painted room, Alphonso at full
@@ -50,7 +50,7 @@ struct LearnHeroStage<Content: View>: View {
                 if showsAlphonso, let face = LessonArt.expression(.happy) {
                     Image(uiImage: face)
                         .resizable().scaledToFit()
-                        .frame(height: Self.figureHeight * 0.75)
+                        .frame(height: Self.figureHeight * 0.6)
                         .accessibilityHidden(true)
                 }
             }

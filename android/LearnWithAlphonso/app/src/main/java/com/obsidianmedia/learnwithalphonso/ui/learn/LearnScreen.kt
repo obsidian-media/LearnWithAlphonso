@@ -196,6 +196,8 @@ fun LearnScreen(
     var expandedKeys by rememberSaveable { mutableStateOf("") }
     fun isExpanded(key: String) = expandedKeys.split(",").contains(key)
     fun toggle(key: String) { expandedKeys = (expandedKeys.split(",").filter { it.isNotEmpty() && it != key } + if (isExpanded(key)) emptyList() else listOf(key)).joinToString(",") }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val unitRooms = remember { runCatching { com.obsidianmedia.learnwithalphonso.core.logic.UnitRooms.fromJson(context.assets.open("content/unit-rooms.json").bufferedReader().use { it.readText() }) }.getOrDefault(emptyMap()) }
     val scope = rememberCoroutineScope()
     // The one path view-model for this course: the rail card reads its goal, and the card opened from the rail shows it in full.
     val pathVm = com.obsidianmedia.learnwithalphonso.ui.path.rememberPathViewModel(container, state.course)
@@ -229,7 +231,7 @@ fun LearnScreen(
                     // "Unit 1 of 28": the unit's place among the units of its own level, the same count on every platform.
                     val levelUnits = container.content.bundle(state.course).units.filter { it.level == u.level }
                     val nextLessonTitle = u.lessons.firstOrNull { it.id == place.lessonId }?.title
-                    item(key = "current-unit") { CurrentUnitCard(u, place, levelUnits.indexOfFirst { it.id == u.id } + 1, levelUnits.size, nextLessonTitle, greeting(progress), onContinue = { onOpenLesson(state.course, place.lessonId) }) }
+                    item(key = "current-unit") { CurrentUnitCard(u, place, unitRooms[u.id], levelUnits.indexOfFirst { it.id == u.id } + 1, levelUnits.size, nextLessonTitle, greeting(progress), onContinue = { onOpenLesson(state.course, place.lessonId) }) }
                 }
             }
             item(key = "for-you") {
@@ -362,9 +364,10 @@ private fun FoldHeaderRow(label: String, open: Boolean, kind: String, onClick: (
  * Continue lesson button (the design-system primary button look: gold face, darker edge). Replaces the old pinned card.
  */
 @Composable
-internal fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, levelIndex: Int, levelCount: Int, lessonTitle: String?, greeting: String, onContinue: () -> kotlin.Unit) {
+internal fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, roomId: String?, levelIndex: Int, levelCount: Int, lessonTitle: String?, greeting: String, onContinue: () -> kotlin.Unit) {
     val ds = LocalAlphonsoTokens.current
-    val art = LearnFold.roomArtFor(place.index - 1)
+    // The same unit -> room table the lesson and iOS read; the rotation only for a unit it does not know.
+    val art = roomId ?: LearnFold.roomArtFor(place.index - 1)
     val room = rememberFirstRunAsset("scenes/$art.webp") ?: rememberFirstRunAsset("scenes/${LessonStage.FALLBACK_ROOM}.webp")
     val alphonso = rememberFirstRunAsset("lesson/happy.webp")
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)

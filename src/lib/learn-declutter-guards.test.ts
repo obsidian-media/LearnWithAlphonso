@@ -178,3 +178,22 @@ describe("the hero's unit count is per level on every platform", () => {
     expect(read(`${KT}/LearnScreen.kt`)).toContain("filter { it.level == u.level }");
   });
 });
+
+describe("the hero's room is the unit's mapped room on every platform", () => {
+  it("unit u1 (Everyday Basics) maps to one room, and web, iOS and Android all read that table", async () => {
+    const { UNIT_ROOMS } = await import("../data/unit-rooms");
+    const room = UNIT_ROOMS.u1;
+    expect(room).toBeTruthy();
+    // iOS and Android bundle the same table, so unit 1 is the same room on all three.
+    for (const path of [
+      "ios/LearnWithAlphonso/Resources/unit-rooms.json",
+      "android/LearnWithAlphonso/app/src/main/assets/content/unit-rooms.json",
+    ])
+      expect(JSON.parse(read(path)).units.u1, path).toBe(room);
+    expect(read("src/routes/_authenticated/learn.tsx")).toContain("UNIT_ROOMS[unitId]");
+    expect(read(`${IOS}/LessonBrowserView.swift`)).toContain(
+      "LessonData.roomMap?.roomID(forUnit: unit.id)",
+    );
+    expect(read(`${KT}/LearnScreen.kt`)).toContain("unitRooms[u.id]");
+  });
+});
