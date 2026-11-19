@@ -3,13 +3,27 @@
  * server instead of trusting the locally verified token alone. A token whose session was signed out, or whose user
  * was deleted, keeps a valid signature until it expires; the auth server refuses it at once.
  */
+import { isRefusedSessionError } from "./auth-offline";
+
 /** What a caller gets when the auth server could not be asked (not the same as the session having ended). */
 export const SESSION_CHECK_UNAVAILABLE = "Session check unavailable. Try again shortly.";
 
-export function isAuthServerOutage(error: { status?: number; name?: string }): boolean {
+/**
+ * True only when the auth server could not answer: a network failure (no status, status 0, the retryable fetch
+ * error), a 5xx, or a 429. A refusal (401/403, session_not_found / user_not_found / bad_jwt, or that wording in the
+ * message when no status came back) is the session having ended, never an outage.
+ */
+export function isAuthServerOutage(error: {
+  status?: number;
+  name?: string;
+  code?: string;
+  message?: string;
+}): boolean {
+  if (isRefusedSessionError(error)) return false;
+  if (/session not found|user not found|invalid jwt/i.test(error.message ?? "")) return false;
   if (error.name === "AuthRetryableFetchError") return true;
   const status = error.status;
-  return typeof status !== "number" || status === 0 || status >= 500;
+  return typeof status !== "number" || status === 0 || status === 429 || status >= 500;
 }
 
 export async function requireLiveSession(

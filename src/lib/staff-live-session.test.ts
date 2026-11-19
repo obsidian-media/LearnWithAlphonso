@@ -70,6 +70,38 @@ describe("requireStaff confirms the session is live", () => {
     await expect(run(live)).rejects.toThrow(unavailable);
   });
 
+  it("a refusal shaped like auth-js's own (403 session_not_found, 401, bad_jwt, or the words alone) is a sign-out", async () => {
+    for (const error of [
+      {
+        name: "AuthApiError",
+        message: "Session not found",
+        status: 403,
+        code: "session_not_found",
+      },
+      { name: "AuthApiError", message: "invalid JWT", status: 401, code: "bad_jwt" },
+      { name: "AuthApiError", message: "User not found", status: 404, code: "user_not_found" },
+      { message: "Session not found" },
+    ]) {
+      getUser.mockResolvedValueOnce({ data: { user: null }, error });
+      await expect(run(live)).rejects.toThrow("Unauthorized: Session has ended");
+    }
+  });
+
+  it("a 500 or a 429 from the auth server is an outage, not a sign-out", async () => {
+    for (const error of [
+      { name: "AuthApiError", message: "internal error", status: 500, code: "unexpected_failure" },
+      {
+        name: "AuthApiError",
+        message: "rate limited",
+        status: 429,
+        code: "over_request_rate_limit",
+      },
+    ]) {
+      getUser.mockResolvedValueOnce({ data: { user: null }, error });
+      await expect(run(live)).rejects.toThrow("Session check unavailable. Try again shortly.");
+    }
+  });
+
   it("refuses when the auth server answers for a different user", async () => {
     getUser.mockResolvedValue({ data: { user: { id: "someone-else" } }, error: null });
     await expect(run(live)).rejects.toThrow("Unauthorized: Session has ended");
