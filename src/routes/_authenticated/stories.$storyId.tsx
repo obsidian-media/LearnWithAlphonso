@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BackPill, DsEmptyState, GlassTitle } from "@/components/ds/Blocks";
+import { LessonFrame } from "@/components/AppShell";
 import { DsScreen } from "@/components/ds/DsScreen";
 import { BranchingStoryReader } from "../../components/BranchingStoryReader";
 import { StoryReader } from "../../components/StoryReader";
@@ -28,6 +29,20 @@ function StoryPage() {
     retry: false,
   });
   const story = query.data;
+  // The cinematic reader is full-bleed with its own back bar and title: no scene, back pill or glass title.
+  if (story && isBranchingStory(story)) {
+    return (
+      <LessonFrame>
+        <BranchingStoryReader
+          story={story}
+          finish={(path) => finishBranchingStory({ data: { storyId, path } })}
+          onFinished={() => {
+            void queryClient.invalidateQueries({ queryKey: ["stories"] });
+          }}
+        />
+      </LessonFrame>
+    );
+  }
   return (
     <DsScreen scene="listen">
       <BackPill to="/stories" label="Back to stories">
@@ -44,17 +59,6 @@ function StoryPage() {
         />
       ) : !story ? (
         <DsEmptyState icon="books" title="Story not found" message="It may not be available yet." />
-      ) : isBranchingStory(story) ? (
-        <>
-          <GlassTitle title={story.title} sub="Read along, then choose what happens next." />
-          <BranchingStoryReader
-            story={story}
-            finish={(path) => finishBranchingStory({ data: { storyId, path } })}
-            onFinished={() => {
-              void queryClient.invalidateQueries({ queryKey: ["stories"] });
-            }}
-          />
-        </>
       ) : (
         <>
           <GlassTitle title={story.title} sub={null} />

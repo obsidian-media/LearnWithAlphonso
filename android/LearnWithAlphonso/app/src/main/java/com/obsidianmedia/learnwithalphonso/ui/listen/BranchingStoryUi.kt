@@ -1,7 +1,17 @@
 package com.obsidianmedia.learnwithalphonso.ui.listen
 
 import android.graphics.BitmapFactory
-import androidx.compose.foundation.BorderStroke
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,16 +19,22 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,42 +50,71 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStatus
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
+import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordRequest
+import com.obsidianmedia.learnwithalphonso.core.podcast.BranchMap
 import com.obsidianmedia.learnwithalphonso.core.podcast.BranchWalk
 import com.obsidianmedia.learnwithalphonso.core.podcast.Branching
 import com.obsidianmedia.learnwithalphonso.core.podcast.BranchingCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.BranchingFinish
 import com.obsidianmedia.learnwithalphonso.core.podcast.BranchingStory
+import com.obsidianmedia.learnwithalphonso.core.podcast.MapEdgeStyle
+import com.obsidianmedia.learnwithalphonso.core.podcast.MapEndingState
+import com.obsidianmedia.learnwithalphonso.core.podcast.MapNodeKind
 import com.obsidianmedia.learnwithalphonso.core.podcast.NodeKind
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizException
-import com.obsidianmedia.learnwithalphonso.core.podcast.Stories
+import com.obsidianmedia.learnwithalphonso.core.podcast.SceneProgress
 import com.obsidianmedia.learnwithalphonso.core.podcast.Story
 import com.obsidianmedia.learnwithalphonso.core.podcast.StoryCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.StoryEnding
+import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoPrimaryButton
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoSecondaryButton
-import com.obsidianmedia.learnwithalphonso.ui.components.DsCard
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
-import com.obsidianmedia.learnwithalphonso.ui.components.DsGlassTitle
-import com.obsidianmedia.learnwithalphonso.ui.components.DsOverline
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.CaptionType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.DisplayType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
-import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.OverlineType
 import com.obsidianmedia.learnwithalphonso.ui.lesson.Speech
+import com.obsidianmedia.learnwithalphonso.ui.lesson.rememberReduceMotion
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
@@ -77,46 +122,68 @@ import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
 import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
 
 /**
  * Interactive branching stories: the "choose your path" reader. Port of the web BranchingStoryReader; the rules are
- * [Branching] in core (JVM tests), this file only draws them. Each node is a read-along page (the same narration, highlight
- * and tap-to-define as the graded reader); a choice point shows the real Alphonso with soft options; an ending shows the
- * wrap, the endings found, stars and try-another-path. The finished path goes to the finish-branching-story Edge Function
- * (never the RPC); the ending and stars shown are the server's. BranchingSourceGuardsTest pins the wiring.
+ * [Branching] in core (JVM tests), this file draws them. A node is a full-bleed scene (art, or a gradient when there is none)
+ * with the read-along passage over a dark fade, then Continue or the choice bubbles; an ending shows the art, stars, the wrap,
+ * the branch map and the two buttons. The stateful screens ([BranchingStoryReader], [NodePage], [EndingScreen]) own the
+ * narrator and the server call; the stateless [BranchingSceneContent] and [BranchingEndingContent] only draw fixture-able
+ * data, so BranchingStoryUiTest (androidTest) renders them with no network or AppContainer. The finished path goes to the
+ * finish-branching-story Edge Function (never the RPC); the ending and stars shown are the server's.
+ * BranchingSourceGuardsTest pins the wiring.
  */
 @Composable
 internal fun BranchingStoryReader(container: AppContainer, story: BranchingStory) {
-    val ds = LocalAlphonsoTokens.current
-    val scope = rememberCoroutineScope()
     // The option index chosen at each choice point, in order: the only thing sent to the server.
     val path = remember(story.id) { emptyList<Int>().toMutableStateList() }
+    // Every node shown so far, links included: "Scene N" is its size.
+    val visited = remember(story.id) { listOf(story.graph.start).toMutableStateList() }
     var nodeId by remember(story.id) { mutableStateOf(story.graph.start) }
     var round by remember(story.id) { mutableIntStateOf(0) }
-    val node = story.graph.map[nodeId]
-    val kind = Branching.nodeKind(node)
+    val reduce = rememberReduceMotion()
 
     fun restart() {
         path.clear()
+        visited.clear()
+        visited.add(story.graph.start)
         nodeId = story.graph.start
         round++
     }
 
+    fun go(target: String) {
+        nodeId = target
+        visited.add(target)
+    }
+
     SaveWordHost(container) {
-        if (node == null || kind == NodeKind.INVALID) {
-            NotReady(::restart)
-        } else if (kind == NodeKind.ENDING) {
-            EndingScreen(container, story, path.toList(), node.ending!!, ::restart)
-        } else {
-            NodePage(container, story, nodeId, round, onChoose = { index ->
-                Branching.chooseOption(story.graph, nodeId, index)?.let { target ->
-                    path.add(index)
-                    nodeId = target
-                }
-            }, onContinue = { node.next?.let { nodeId = it } })
+        // The same fade and slide as before between scenes; with Reduce Motion, a plain swap.
+        AnimatedContent(
+            targetState = nodeId to round,
+            transitionSpec = {
+                if (reduce) ContentTransform(fadeIn(tween(0)), fadeOut(tween(0)))
+                else (fadeIn(tween(260)) + slideInHorizontally(tween(260)) { it / 12 }) togetherWith (fadeOut(tween(160)) + slideOutHorizontally(tween(160)) { -it / 12 })
+            },
+            label = "branching-scene",
+        ) { (shownId, shownRound) ->
+            val shown = story.graph.map[shownId]
+            val shownKind = Branching.nodeKind(shown)
+            if (shown == null || shownKind == NodeKind.INVALID) {
+                NotReady(::restart)
+            } else if (shownKind == NodeKind.ENDING) {
+                EndingFlow(container, story, path.toList(), shownId, shownRound, visited.size, shown.ending!!, shown.artUrl, ::restart)
+            } else {
+                NodePage(container, story, shownId, shownRound, visited.size, onChoose = { index ->
+                    Branching.chooseOption(story.graph, shownId, index)?.let { target ->
+                        path.add(index)
+                        go(target)
+                    }
+                }, onContinue = { shown.next?.let { go(it) } })
+            }
         }
     }
 }
@@ -130,10 +197,9 @@ private fun NotReady(onStartOver: () -> Unit) {
     }
 }
 
-/** One node: its scene art (or a placeholder), the read-along text, then Continue or the choice. */
+/** One node: owns the narrator, hands everything else to the stateless [BranchingSceneContent]. */
 @Composable
-private fun NodePage(container: AppContainer, story: BranchingStory, nodeId: String, round: Int, onChoose: (Int) -> Unit, onContinue: () -> Unit) {
-    val ds = LocalAlphonsoTokens.current
+private fun NodePage(container: AppContainer, story: BranchingStory, nodeId: String, round: Int, sceneNumber: Int, onChoose: (Int) -> Unit, onContinue: () -> Unit, onReveal: (() -> Unit)? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val node = story.graph.map.getValue(nodeId)
@@ -145,94 +211,186 @@ private fun NodePage(container: AppContainer, story: BranchingStory, nodeId: Str
     DisposableEffect(narrator) { onDispose { narrator.stop() } }
     val consent by container.aiConsent.state.collectAsState()
     val hasAiConsent = container.aiConsent.statusOf(consent) == AiConsentStatus.GRANTED
+    val saveWord = LocalSaveWordHandler.current
+    val choice = node.choice
+    val back = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-        item(key = "title") { DsGlassTitle(story.title, BranchingCopy.BADGE) }
-        item(key = "art") { SceneArt(node.artUrl) }
-        item(key = "hint") { Text(StoryCopy.TAP_HINT, style = CaptionType, color = ds.inkSoft) }
-        node.segments.forEachIndexed { index, segment ->
-            item(key = "segment-$nodeId-$index") {
-                val active = narration.current == index
-                val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
-                Box(
-                    Modifier.fillMaxWidth().background(if (active) ds.choiceTint else ds.surface, shape)
-                        .border(BorderStroke(AlphonsoTokens.Space.s1 / 2, if (active) ds.choice else ds.surface), shape)
-                        .padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s2)
-                        .semantics(mergeDescendants = true) { if (active) stateDescription = "Reading now" },
+    BranchingSceneContent(
+        title = story.title,
+        courseCode = story.course,
+        sceneNumber = sceneNumber,
+        progress = Branching.sceneProgress(story.graph, sceneNumber, nodeId),
+        artUrl = node.artUrl,
+        segments = node.segments,
+        activeSegment = narration.current,
+        playing = narration.playing,
+        narrationNote = if (narration.failed) (if (hasAiConsent) StoryCopy.NARRATION_UNAVAILABLE else StoryCopy.NARRATION_NEEDS_AI) else null,
+        beat = if (choice != null && node.next == null) choice.prompt else null,
+        choiceLabels = if (choice != null && node.next == null) choice.options.map { it.label } else emptyList(),
+        showContinue = node.next != null || onReveal != null,
+        continueLabel = if (onReveal != null) BranchingCopy.SEE_YOUR_ENDING else BranchingCopy.CONTINUE,
+        onBack = back?.let { dispatcher -> { dispatcher.onBackPressed() } },
+        onListen = { narrator.begin(0, hasAiConsent) { } },
+        onPause = { narrator.stop() },
+        onChoose = { narrator.stop(); onChoose(it) },
+        onContinue = { narrator.stop(); (onReveal ?: onContinue)() },
+        onWordTap = saveWord?.let { handler ->
+            { request: SaveWordRequest ->
+                narrator.stop()
+                Speech.get(context).speak(request.word, course)
+                handler(request)
+            }
+        },
+    )
+}
+
+// The mock's overlay values: fixed colours, because the art and the fade behind them do not follow the theme.
+private val ReaderFade = Brush.verticalGradient(
+    0.20f to Color(0x1A080A1A), 0.40f to Color(0x0D080A1A), 0.66f to Color(0xB8080A1A), 0.86f to Color(0xF7060816),
+)
+private val TopScrim = Brush.verticalGradient(listOf(Color(0x80080A1A), Color.Transparent))
+private val OnArt = Color.White
+private val BubbleFace = Color.White.copy(alpha = 0.93f)
+
+/**
+ * The cinematic reader, stateless: full-bleed art (a gradient when there is none), a top bar with back, title and scene dots,
+ * and a bottom panel (scrolls at large font sizes) with "SCENE N", the passage, then the beat and choice bubbles or Continue.
+ */
+@Composable
+internal fun BranchingSceneContent(
+    title: String,
+    courseCode: String,
+    sceneNumber: Int,
+    progress: SceneProgress,
+    artUrl: String?,
+    segments: List<String>,
+    activeSegment: Int?,
+    playing: Boolean,
+    narrationNote: String?,
+    beat: String?,
+    choiceLabels: List<String>,
+    showContinue: Boolean,
+    continueLabel: String,
+    onBack: (() -> Unit)?,
+    onListen: () -> Unit,
+    onPause: () -> Unit,
+    onChoose: (Int) -> Unit,
+    onContinue: () -> Unit,
+    onWordTap: ((SaveWordRequest) -> Unit)?,
+) {
+    val ds = LocalAlphonsoTokens.current
+    Box(Modifier.fillMaxSize().testTag("branching-scene")) {
+        SceneArtFill(artUrl, Modifier.fillMaxSize())
+        Box(Modifier.fillMaxSize().background(ReaderFade))
+        Column(Modifier.fillMaxSize()) {
+            ReaderTopBar(title, progress, onBack)
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.BottomCenter) {
+                Column(
+                    Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3),
+                    verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
                 ) {
-                    val saveWord = LocalSaveWordHandler.current
-                    if (saveWord != null) {
-                        TappableText(
-                            segment, story.course, SaveWordMode.AllWords,
-                            onSave = { request ->
-                                narrator.stop()
-                                Speech.get(context).speak(request.word, course)
-                                saveWord(request)
-                            },
-                            style = BodyType, color = ds.ink,
-                        )
-                    } else {
-                        Text(segment, style = BodyType, color = ds.ink)
+                    Text("Scene $sceneNumber".uppercase(), style = OverlineType, color = ds.onHeroKick, modifier = Modifier.semantics { heading() })
+                    segments.forEachIndexed { index, segment ->
+                        val active = activeSegment == index
+                        Box(
+                            Modifier.fillMaxWidth().testTag("branching-passage-$index")
+                                .background(if (active) Color.White.copy(alpha = 0.14f) else Color.Transparent, RoundedCornerShape(AlphonsoTokens.Space.s2))
+                                .padding(horizontal = AlphonsoTokens.Space.s1, vertical = AlphonsoTokens.Space.s1)
+                                .semantics(mergeDescendants = true) { if (active) stateDescription = "Reading now" },
+                        ) {
+                            if (onWordTap != null) {
+                                TappableText(segment, courseCode, SaveWordMode.AllWords, onSave = onWordTap, style = BodyType.copy(lineHeight = 25.sp), color = OnArt)
+                            } else {
+                                Text(segment, style = BodyType.copy(lineHeight = 25.sp), color = OnArt)
+                            }
+                        }
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2), verticalAlignment = Alignment.CenterVertically) {
+                        if (playing) DsCompactButton("Pause narration", onPause, primary = true) else DsCompactButton("Listen", onListen)
+                    }
+                    if (narrationNote != null) Text(narrationNote, style = FootnoteType, color = OnArt.copy(alpha = 0.78f))
+                    if (beat != null) {
+                        Text(beat, style = BodyType.copy(fontSize = 14.5.sp, lineHeight = 20.sp), color = OnArt.copy(alpha = 0.84f), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1))
+                        choiceLabels.forEachIndexed { index, label -> ChoiceBubble(label, index) { onChoose(index) } }
+                    } else if (showContinue) {
+                        AlphonsoPrimaryButton(continueLabel, onClick = onContinue, fullWidth = false)
                     }
                 }
             }
         }
-        item(key = "controls") {
-            Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2), verticalAlignment = Alignment.CenterVertically) {
-                if (narration.playing) {
-                    DsCompactButton("Pause narration", { narrator.stop() }, primary = true)
-                } else {
-                    DsCompactButton("Listen", { narrator.begin(0, hasAiConsent) { } })
-                }
+    }
+}
+
+/** A frosted-solid option: a real button with the full label. The face is fixed white, so its text uses the light brand. */
+@Composable
+private fun ChoiceBubble(label: String, index: Int, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(18.dp)
+    Box(
+        Modifier.fillMaxWidth().testTag("branching-choice-$index")
+            .shadow(10.dp, shape, ambientColor = Color.Black.copy(alpha = 0.5f), spotColor = Color.Black.copy(alpha = 0.5f))
+            .background(BubbleFace, shape).border(1.5.dp, Color.White.copy(alpha = 0.9f), shape)
+            .heightIn(min = AlphonsoTokens.Space.minTouch)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 13.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, style = HeadlineType.copy(fontSize = 15.sp, lineHeight = 20.sp), color = AlphonsoTokens.royalLight.brand, textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
+private fun ReaderTopBar(title: String, progress: SceneProgress, onBack: (() -> Unit)?) {
+    val ds = LocalAlphonsoTokens.current
+    Row(
+        Modifier.fillMaxWidth().background(TopScrim).padding(horizontal = AlphonsoTokens.Space.s2, vertical = AlphonsoTokens.Space.s1),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
+    ) {
+        // A 30 x 30 chip inside a 48 x 48 hit target.
+        Box(
+            Modifier.size(AlphonsoTokens.Space.minTouch)
+                .then(if (onBack != null) Modifier.clickable(role = Role.Button, onClick = onBack) else Modifier)
+                .semantics { contentDescription = "Back" },
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(Modifier.size(30.dp).background(Color.White.copy(alpha = 0.16f), RoundedCornerShape(9.dp)), contentAlignment = Alignment.Center) {
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null, tint = OnArt)
             }
         }
-        if (narration.failed) item(key = "failed") {
-            Text(if (hasAiConsent) StoryCopy.NARRATION_UNAVAILABLE else StoryCopy.NARRATION_NEEDS_AI, style = FootnoteType, color = ds.inkSoft)
-        }
-        val choice = node.choice
-        if (choice != null && node.next == null) {
-            item(key = "choice") { ChoicePoint(choice.prompt, choice.options.map { it.label }) { narrator.stop(); onChoose(it) } }
-        } else if (node.next != null) {
-            item(key = "continue") { DsCompactButton(BranchingCopy.CONTINUE, { narrator.stop(); onContinue() }, primary = true) }
+        Text(
+            title, style = DisplayType.copy(fontSize = 15.sp, lineHeight = 20.sp, letterSpacing = 0.sp), color = OnArt,
+            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).semantics { heading() },
+        )
+        val total = progress.total.coerceAtLeast(1)
+        val current = progress.current.coerceIn(1, total)
+        Row(
+            Modifier.padding(end = AlphonsoTokens.Space.s2).clearAndSetSemantics { contentDescription = "Scene $current of $total" },
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            for (i in 1..total) {
+                Box(Modifier.size(11.dp, 4.dp).background(if (i <= current) ds.action else Color.White.copy(alpha = 0.4f), RoundedCornerShape(999.dp)))
+            }
         }
     }
 }
 
-/** The real Alphonso asking, with two or three soft options. A wrong-seeming pick only leads somewhere else. */
+/**
+ * The scene art, full size: always a gradient underneath (hero brand into the deep scene colour), the picture on top only
+ * once it has loaded. No art, a 404 or a failed decode therefore never shows a broken image or a blank area.
+ */
 @Composable
-private fun ChoicePoint(prompt: String, labels: List<String>, onPick: (Int) -> Unit) {
+private fun SceneArtFill(url: String?, modifier: Modifier = Modifier) {
     val ds = LocalAlphonsoTokens.current
-    val pose = rememberFirstRunAsset("poses/alphonso-explaining-pointer.webp")
-    DsCard {
-        Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2), verticalAlignment = Alignment.CenterVertically) {
-            if (pose != null) Image(pose, contentDescription = null, modifier = Modifier.size(AlphonsoTokens.Space.s12 + AlphonsoTokens.Space.s6), contentScale = ContentScale.Fit)
-            Text(prompt, style = HeadlineType, color = ds.ink, modifier = Modifier.weight(1f))
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-            labels.forEachIndexed { index, label ->
-                AlphonsoSecondaryButton(label, onClick = { onPick(index) })
-            }
-        }
-    }
-}
-
-/** The scene illustration from the public story-art bucket; a quiet placeholder when there is none or it cannot load. */
-@Composable
-private fun SceneArt(url: String?) {
-    val ds = LocalAlphonsoTokens.current
-    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
-    val bitmap by produceState<androidx.compose.ui.graphics.ImageBitmap?>(null, url) {
+    val bitmap by produceState<ImageBitmap?>(null, url) {
         value = if (url == null) null else withContext(Dispatchers.IO) { fetchBitmap(url) }
     }
     val image = bitmap
-    if (image != null) {
-        Image(image, contentDescription = "Scene illustration", modifier = Modifier.fillMaxWidth().height(AlphonsoTokens.Space.s12 * 4).background(ds.choiceTint, shape), contentScale = ContentScale.Crop)
-    } else {
-        Box(Modifier.fillMaxWidth().height(AlphonsoTokens.Space.s12 * 2 + AlphonsoTokens.Space.s6).background(ds.choiceTint, shape).clearAndSetSemantics { })
+    Box(modifier.background(Brush.linearGradient(listOf(ds.heroA, ds.heroB))).clearAndSetSemantics { }) {
+        if (image != null) Image(image, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
     }
 }
 
-private fun fetchBitmap(url: String): androidx.compose.ui.graphics.ImageBitmap? = try {
+private fun fetchBitmap(url: String): ImageBitmap? = try {
     val connection = URL(url).openConnection() as HttpURLConnection
     connection.connectTimeout = 10_000
     connection.readTimeout = 10_000
@@ -254,10 +412,23 @@ private sealed interface FinishState {
     data class Done(val finish: BranchingFinish) : FinishState
 }
 
-/** The ending: wrap, endings found, stars (from the server's answer) and try-another-path. */
+/** What the ending content shows in the result slot: the wait, the failure, or the server's answer. */
+internal sealed interface EndingResult {
+    data object Saving : EndingResult
+    data class Failed(val message: String) : EndingResult
+    data class Done(val stars: Int, val credited: Boolean) : EndingResult
+}
+
+/**
+ * An ending node. The server is asked the moment it is ENTERED (so the credit is never lost); the node first reads as a normal
+ * scene (its closing text, narration, tap-to-save) with "See your ending", which then shows the celebration.
+ */
 @Composable
-private fun EndingScreen(container: AppContainer, story: BranchingStory, path: List<Int>, ending: StoryEnding, onRestart: () -> Unit) {
-    val ds = LocalAlphonsoTokens.current
+private fun EndingFlow(
+    container: AppContainer, story: BranchingStory, path: List<Int>, nodeId: String, round: Int, sceneNumber: Int,
+    ending: StoryEnding, artUrl: String?, onRestart: () -> Unit,
+) {
+    var revealed by remember(nodeId, round) { mutableStateOf(false) }
     var attempt by remember(path) { mutableIntStateOf(0) }
     var state by remember(path) { mutableStateOf<FinishState>(FinishState.Saving) }
     LaunchedEffect(path, attempt) {
@@ -275,31 +446,226 @@ private fun EndingScreen(container: AppContainer, story: BranchingStory, path: L
             FinishState.Failed(BranchingCopy.SAVE_FAILED)
         }
     }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
-        item(key = "title") { DsGlassTitle(ending.title, BranchingCopy.YOUR_ENDING) }
-        item(key = "wrap") { Text(ending.wrap, style = BodyType, color = ds.ink) }
-        item(key = "result") {
-            when (val current = state) {
-                FinishState.Saving -> CircularProgressIndicator(color = ds.choice)
-                is FinishState.Failed -> Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-                    Text(current.message, style = FootnoteType, color = ds.inkSoft)
-                    DsCompactButton(BranchingCopy.RETRY_SAVE, { attempt++ }, primary = true)
-                }
-                is FinishState.Done -> {
-                    // Everything shown here is the server's answer, read against the stored graph.
-                    val finish = current.finish
-                    val stars = Branching.stars(finish.endingsFound.size, finish.endingsTotal, Branching.reachedGood(story.graph, finish.endingsFound))
-                    DsCard {
-                        DsOverline(BranchingCopy.endingsFound(finish.endingsFound.size, finish.endingsTotal))
-                        Text(
-                            "★".repeat(stars) + "☆".repeat(3 - stars), style = DisplayType, color = ds.ink,
-                            modifier = Modifier.semantics { contentDescription = BranchingCopy.starsLabel(stars) },
-                        )
-                        if (finish.credited) Text(BranchingCopy.COUNTS_LINE, style = FootnoteType, color = ds.inkSoft)
+    val current = state
+    // Everything shown here is the server's answer, read against the stored graph.
+    val found = (current as? FinishState.Done)?.finish?.endingsFound ?: listOf(ending.id)
+    val result = when (current) {
+        FinishState.Saving -> EndingResult.Saving
+        is FinishState.Failed -> EndingResult.Failed(current.message)
+        is FinishState.Done -> {
+            val finish = current.finish
+            EndingResult.Done(
+                Branching.stars(finish.endingsFound.size, finish.endingsTotal, Branching.reachedGood(story.graph, finish.endingsFound)),
+                finish.credited,
+            )
+        }
+    }
+    if (revealed) {
+        BranchingEndingContent(story, path, ending, artUrl, found, result, onRetrySave = { attempt++ }, onRestart = onRestart)
+    } else {
+        NodePage(container, story, nodeId, round, sceneNumber, onChoose = {}, onContinue = {}, onReveal = { revealed = true })
+    }
+}
+
+/** The ending, stateless: art with a shine, eyebrow, title, stars, the wrap, the branch map and the two buttons. */
+@Composable
+internal fun BranchingEndingContent(
+    story: BranchingStory,
+    path: List<Int>,
+    ending: StoryEnding,
+    artUrl: String?,
+    found: List<String>,
+    result: EndingResult,
+    onRetrySave: () -> Unit,
+    onRestart: () -> Unit,
+) {
+    val ds = LocalAlphonsoTokens.current
+    val map = remember(story, path, found, ending.id) { Branching.branchMap(story.graph, path, found, ending.id) }
+    Column(Modifier.fillMaxSize().background(ds.surface).verticalScroll(rememberScrollState()).testTag("branching-ending")) {
+        Box(Modifier.fillMaxWidth()) {
+            Box(Modifier.fillMaxWidth().height(214.dp)) {
+                SceneArtFill(artUrl, Modifier.fillMaxSize())
+                Box(
+                    Modifier.size(200.dp).align(Alignment.BottomCenter).graphicsLayer { translationY = 20.dp.toPx() }.drawBehind {
+                        drawCircle(Brush.radialGradient(0f to Color(0x80F6D88A), 0.62f to Color.Transparent, center = center, radius = size.minDimension / 2))
+                    },
+                )
+                Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.30f to Color(0x0D0D1128), 1f to ds.surface)))
+            }
+            // Pulled up 50 over the fade.
+            Column(
+                Modifier.fillMaxWidth().padding(top = 164.dp).padding(horizontal = AlphonsoTokens.Space.s4).padding(bottom = AlphonsoTokens.Space.s6),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
+            ) {
+                Text(BranchingCopy.YOUR_ENDING.uppercase(), style = OverlineType.copy(letterSpacing = 0.12.em), color = ds.actionText)
+                Text(
+                    ending.title, style = DisplayType.copy(fontSize = 25.sp, lineHeight = 26.sp), color = ds.ink, textAlign = TextAlign.Center,
+                    modifier = Modifier.semantics { heading() },
+                )
+                when (result) {
+                    EndingResult.Saving -> CircularProgressIndicator(color = ds.choice)
+                    is EndingResult.Failed -> Column(
+                        Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+                        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
+                    ) {
+                        Text(result.message, style = FootnoteType, color = ds.inkSoft, textAlign = TextAlign.Center)
+                        DsCompactButton(BranchingCopy.RETRY_SAVE, onRetrySave, primary = true)
                     }
+                    is EndingResult.Done -> StarsRow(result.stars)
+                }
+                Text(ending.wrap, style = FootnoteType.copy(fontSize = 13.5.sp, lineHeight = 20.sp), color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.widthIn(max = 300.dp))
+                if (result is EndingResult.Done && result.credited) {
+                    Text(
+                        BranchingCopy.COUNTS_LINE, style = CaptionType, color = ds.rightInk, textAlign = TextAlign.Center,
+                        modifier = Modifier.background(ds.rightTint, RoundedCornerShape(999.dp)).padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s1),
+                    )
+                }
+                BranchMapCard(map)
+                Row(Modifier.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1), horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                    AlphonsoPrimaryButton(BranchingCopy.TRY_ANOTHER_PATH, onClick = onRestart, modifier = Modifier.weight(1f))
+                    AlphonsoSecondaryButton(BranchingCopy.READ_IT_AGAIN, onClick = onRestart, modifier = Modifier.weight(1f))
                 }
             }
         }
-        item(key = "again") { AlphonsoSecondaryButton(BranchingCopy.TRY_ANOTHER_PATH, onClick = onRestart, fullWidth = false) }
     }
+}
+
+/** Three gold stars, [earned] filled; each pops in (scale and a small turn, staggered) unless Reduce Motion is on. */
+@Composable
+private fun StarsRow(earned: Int) {
+    val ds = LocalAlphonsoTokens.current
+    val reduce = rememberReduceMotion()
+    Row(
+        Modifier.clearAndSetSemantics { contentDescription = BranchingCopy.starsLabel(earned) }.testTag("branching-stars"),
+        horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
+    ) {
+        for (i in 0 until 3) {
+            val pop = remember { Animatable(if (reduce) 1f else 0f) }
+            LaunchedEffect(reduce) {
+                if (!reduce) {
+                    delay(120L * i)
+                    pop.animateTo(1f, tween(500))
+                }
+            }
+            Text(
+                "★", fontSize = 30.sp, color = if (i < earned) ds.action else ds.line,
+                modifier = Modifier.graphicsLayer {
+                    val scale = 0.4f + 0.6f * pop.value
+                    scaleX = scale
+                    scaleY = scale
+                    rotationZ = -12f * (1f - pop.value)
+                    alpha = if (reduce) 1f else pop.value.coerceAtLeast(0.01f)
+                },
+            )
+        }
+    }
+}
+
+/** "The paths you've found": a card with the count pill, the tree drawn on a Canvas, and the caption. The text alternative is the summary. */
+@Composable
+private fun BranchMapCard(map: BranchMap) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(16.dp)
+    val summary = Branching.branchMapSummary(map)
+    Column(
+        Modifier.fillMaxWidth().testTag("branch-map-card")
+            .background(ds.card, shape).border(2.dp, ds.line, shape).padding(horizontal = 12.dp, vertical = 11.dp)
+            // One text alternative for the whole card; the drawing is hidden from assistive tech.
+            .clearAndSetSemantics { contentDescription = summary },
+        verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("The paths you've found", style = DisplayType.copy(fontSize = 13.sp, lineHeight = 16.sp), color = ds.ink, modifier = Modifier.weight(1f))
+            Text(
+                "${map.endingsFound} / ${map.endingsTotal}", style = CaptionType, color = ds.xpText,
+                modifier = Modifier.background(ds.xpTint, RoundedCornerShape(999.dp)).padding(horizontal = 9.dp, vertical = 2.dp),
+            )
+        }
+        BranchMapCanvas(map, Modifier.fillMaxWidth().aspectRatio(300f / 116f).testTag("branch-map-canvas"))
+        Text(Branching.branchMapCaption(map), style = CaptionType.copy(fontSize = 10.sp, lineHeight = 13.sp), color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+    }
+}
+
+@Composable
+private fun BranchMapCanvas(map: BranchMap, modifier: Modifier) {
+    val ds = LocalAlphonsoTokens.current
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    Canvas(modifier) {
+        // The mock's viewBox is 300 x 116; everything below is in those units and scaled to the card.
+        val s = size.width / 300f
+        fun px(x: Double) = (18f + x.toFloat() * 154f) * s
+        fun py(y: Double) = (12f + y.toFloat() * 92f) * s
+        val byId = map.nodes.associateBy { it.id }
+        for (edge in map.edges) {
+            val a = byId[edge.from] ?: continue
+            val b = byId[edge.to] ?: continue
+            val (color, width, dashed) = when (edge.style) {
+                MapEdgeStyle.TAKEN -> Triple(ds.action, 3f, false)
+                MapEdgeStyle.FOUND -> Triple(ds.right, 3f, false)
+                MapEdgeStyle.LOCKED -> Triple(ds.line, 2.5f, true)
+                MapEdgeStyle.PLAIN -> Triple(ds.line, 3f, false)
+            }
+            drawLine(
+                color, Offset(px(a.x), py(a.y)), Offset(px(b.x), py(b.y)), strokeWidth = width * s, cap = StrokeCap.Round,
+                pathEffect = if (dashed) PathEffect.dashPathEffect(floatArrayOf(3f * s, 4f * s)) else null,
+            )
+        }
+        for (node in map.nodes) {
+            val c = Offset(px(node.x), py(node.y))
+            val ending = node.ending
+            when {
+                node.kind == MapNodeKind.START && ending == null -> drawCircle(ds.brand, 9f * s, c)
+                ending == null -> {
+                    if (node.onPath) {
+                        drawCircle(ds.action, 7f * s, c)
+                    } else {
+                        drawCircle(ds.sunk, 7f * s, c)
+                        drawCircle(ds.line, 7f * s, c, style = Stroke(2f * s))
+                    }
+                }
+                ending.state == MapEndingState.CURRENT -> {
+                    drawCircle(ds.action, 9f * s, c)
+                    drawCheck(c, s, ds.onAction)
+                }
+                ending.state == MapEndingState.FOUND -> {
+                    drawCircle(ds.right, 9f * s, c)
+                    drawCheck(c, s, Color.White)
+                }
+                else -> {
+                    drawCircle(ds.sunk, 8f * s, c)
+                    drawCircle(ds.line, 8f * s, c, style = Stroke(2f * s))
+                    drawLabel(measurer, density, "?", ds.inkFaint, c, s, 9f, centered = true)
+                }
+            }
+            if (ending != null) {
+                val found = ending.state != MapEndingState.LOCKED
+                drawLabel(
+                    measurer, density, if (found) ending.title else "Hidden ending", if (found) ds.ink else ds.inkFaint,
+                    Offset(c.x + 16f * s, c.y), s, 8.5f, centered = false, maxWidth = (300f - 18f - 154f - 16f) * s,
+                )
+            }
+        }
+    }
+}
+
+private fun DrawScope.drawCheck(c: Offset, s: Float, color: Color) {
+    val stroke = 2f * s
+    drawLine(color, Offset(c.x - 4f * s, c.y), Offset(c.x - 1f * s, c.y + 3f * s), strokeWidth = stroke, cap = StrokeCap.Round)
+    drawLine(color, Offset(c.x - 1f * s, c.y + 3f * s), Offset(c.x + 4.5f * s, c.y - 3f * s), strokeWidth = stroke, cap = StrokeCap.Round)
+}
+
+private fun DrawScope.drawLabel(
+    measurer: TextMeasurer, density: Density, text: String, color: Color, at: Offset, s: Float, size: Float,
+    centered: Boolean, maxWidth: Float? = null,
+) {
+    // Figtree 700 (the headline role); the size follows the card, so it is converted from pixels.
+    val style = HeadlineType.copy(color = color, fontSize = with(density) { (size * s).toSp() }, lineHeight = androidx.compose.ui.unit.TextUnit.Unspecified)
+    val layout = measurer.measure(
+        text, style, overflow = TextOverflow.Ellipsis, maxLines = 1,
+        constraints = Constraints(maxWidth = maxWidth?.toInt()?.coerceAtLeast(1) ?: Constraints.Infinity),
+    )
+    val x = if (centered) at.x - layout.size.width / 2f else at.x
+    drawText(layout, topLeft = Offset(x, at.y - layout.size.height / 2f))
 }

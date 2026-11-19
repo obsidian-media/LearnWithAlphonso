@@ -250,6 +250,262 @@ public enum Branching {
     }
 }
 
+// MARK: - Reader scene numbering and the ending's branch map
+// Same algorithm and fixtures as src/lib/branching.ts and the Kotlin core (stories-reader spec).
+
+public enum BranchMapNodeKind: Equatable, Sendable { case start, branch, ending }
+public enum BranchMapEndingState: Equatable, Sendable { case current, found, locked }
+public enum BranchMapEdgeStyle: Equatable, Sendable { case taken, found, locked, plain }
+
+public struct BranchMapEnding: Equatable, Sendable {
+    public let id: String
+    public let title: String
+    public let state: BranchMapEndingState
+}
+
+public struct BranchMapNode: Equatable, Sendable {
+    public let id: String
+    public let kind: BranchMapNodeKind
+    /// Unit-box position (0...1).
+    public let x: Double
+    public let y: Double
+    public let depth: Int
+    public let onPath: Bool
+    public let ending: BranchMapEnding?
+}
+
+public struct BranchMapEdge: Equatable, Sendable {
+    public let from: String
+    public let to: String
+    public let style: BranchMapEdgeStyle
+}
+
+public struct BranchMap: Equatable, Sendable {
+    public let nodes: [BranchMapNode]
+    public let edges: [BranchMapEdge]
+    public let endingsTotal: Int
+    public let endingsFound: Int
+    public let lockedCount: Int
+}
+
+public struct SceneProgress: Equatable, Sendable {
+    public let current: Int
+    public let total: Int
+}
+
+extension Branching {
+    /// The node ids visited walking `path` from the start, links and the final node (the awaiting choice or the ending)
+    /// included. Same guards as `walk`; a missing node is not listed, a bad option stops the list at the choice.
+    public static func pathNodes(_ graph: StoryGraph, path: [Int]) -> [String] {
+        var visited: [String] = []
+        var current = graph.start
+        var step = 0
+        for _ in 0..<100 {
+            guard let node = graph.map[current] else { return visited }
+            visited.append(current)
+            if node.ending != nil { return visited }
+            if let choice = node.choice, !choice.options.isEmpty {
+                if step >= path.count { return visited }
+                let index = path[step]
+                guard index >= 0, index < choice.options.count else { return visited }
+                current = choice.options[index].goto
+                step += 1
+                continue
+            }
+            if let next = node.next {
+                current = next
+                continue
+            }
+            return visited
+        }
+        return visited
+    }
+
+    /// The reader's progress dots: `current` is `visitedCount`, `total` adds the shortest remaining route from
+    /// `currentNodeID` to any ending (in nodes, not counting the current one). Capped at 12; 0 remaining at an ending.
+    public static func sceneProgress(_ graph: StoryGraph, visitedCount: Int, currentNodeID: String) -> SceneProgress {
+        let cap = 12
+        var remaining = 0
+        if graph.map[currentNodeID]?.ending == nil {
+            var seen: Set<String> = [currentNodeID]
+            var frontier = [currentNodeID]
+            var distance = 0
+            search: while !frontier.isEmpty {
+                distance += 1
+                var nextFrontier: [String] = []
+                for id in frontier {
+                    guard let node = graph.map[id] else { continue }
+                    var targets: [String] = []
+                    if let choice = node.choice, !choice.options.isEmpty {
+                        targets = choice.options.map(\.goto)
+                    } else if let next = node.next {
+                        targets = [next]
+                    }
+                    for target in targets where !seen.contains(target) {
+                        seen.insert(target)
+                        guard let targetNode = graph.map[target] else { continue }
+                        if targetNode.ending != nil {
+                            remaining = distance
+                            break search
+                        }
+                        nextFrontier.append(target)
+                    }
+                }
+                frontier = nextFrontier
+            }
+        }
+        let total = min(cap, max(1, visitedCount + remaining))
+        return SceneProgress(current: min(max(1, visitedCount), total), total: total)
+    }
+
+    /// The tree of choices and endings for the ending screen. Linear chains collapse into the next choice or ending.
+    public static func branchMap(
+        _ graph: StoryGraph, takenPath: [Int], found: [String], currentEndingID: String?
+    ) -> BranchMap {
+        let empty = BranchMap(nodes: [], edges: [], endingsTotal: 0, endingsFound: 0, lockedCount: 0)
+
+        func resolve(_ id: String) -> String? {
+            var current = id
+            var seen: Set<String> = []
+            while true {
+                guard !seen.contains(current), let node = graph.map[current] else { return nil }
+                seen.insert(current)
+                switch nodeKind(node) {
+                case .ending, .choice: return current
+                case .link:
+                    guard let next = node.next else { return nil }
+                    current = next
+                case .invalid: return nil
+                }
+            }
+        }
+
+        guard let rootID = resolve(graph.start) else { return empty }
+
+        struct Draft {
+            let id: String
+            let depth: Int
+            var children: [Int]
+        }
+        var drafts: [Draft] = []
+        var placed: Set<String> = []
+
+        func visit(_ id: String, depth: Int) -> Int {
+            placed.insert(id)
+            let index = drafts.count
+            drafts.append(Draft(id: id, depth: depth, children: []))
+            if graph.map[id]?.ending == nil, let options = graph.map[id]?.choice?.options {
+                for option in options {
+                    guard let child = resolve(option.goto), !placed.contains(child) else { continue }
+                    let childIndex = visit(child, depth: depth + 1)
+                    drafts[index].children.append(childIndex)
+                }
+            }
+            return index
+        }
+        _ = visit(rootID, depth: 0)
+
+        let maxInternalDepth = drafts.filter { graph.map[$0.id]?.ending == nil }.map(\.depth).max() ?? 0
+        let leafCount = drafts.filter { $0.children.isEmpty }.count
+
+        var ys = [Double](repeating: 0, count: drafts.count)
+        var leafIndex = 0
+        func layout(_ index: Int) {
+            let children = drafts[index].children
+            guard let first = children.first, let last = children.last else {
+                ys[index] = (Double(leafIndex) + 0.5) / Double(leafCount)
+                leafIndex += 1
+                return
+            }
+            for child in children { layout(child) }
+            ys[index] = (ys[first] + ys[last]) / 2
+        }
+        layout(0)
+
+        var onPath: Set<String> = []
+        for id in pathNodes(graph, path: takenPath) {
+            let kind = nodeKind(graph.map[id])
+            if kind == .choice || kind == .ending { onPath.insert(id) }
+        }
+
+        var nodes: [BranchMapNode] = []
+        var endingStates: [String: BranchMapEndingState] = [:]
+        for (index, draft) in drafts.enumerated() {
+            let ending = graph.map[draft.id]?.ending
+            var mapEnding: BranchMapEnding?
+            if let ending {
+                let state: BranchMapEndingState
+                if ending.id == currentEndingID {
+                    state = .current
+                } else if found.contains(ending.id) {
+                    state = .found
+                } else {
+                    state = .locked
+                }
+                mapEnding = BranchMapEnding(id: ending.id, title: ending.title, state: state)
+                endingStates[draft.id] = state
+            }
+            let kind: BranchMapNodeKind = index == 0 ? .start : (ending != nil ? .ending : .branch)
+            nodes.append(BranchMapNode(
+                id: draft.id, kind: kind,
+                x: index == 0 ? 0 : (ending != nil ? 1 : Double(draft.depth) / Double(maxInternalDepth + 1)),
+                y: ys[index], depth: draft.depth, onPath: onPath.contains(draft.id), ending: mapEnding))
+        }
+
+        var edges: [BranchMapEdge] = []
+        for draft in drafts {
+            for child in draft.children {
+                let to = drafts[child].id
+                let style: BranchMapEdgeStyle
+                if onPath.contains(draft.id), onPath.contains(to) {
+                    style = .taken
+                } else if endingStates[to] == .found {
+                    style = .found
+                } else if endingStates[to] == .locked {
+                    style = .locked
+                } else {
+                    style = .plain
+                }
+                edges.append(BranchMapEdge(from: draft.id, to: to, style: style))
+            }
+        }
+
+        let endingNodes = nodes.filter { $0.ending != nil }
+        let foundCount = endingNodes.filter { $0.ending?.state != .locked }.count
+        return BranchMap(
+            nodes: nodes, edges: edges, endingsTotal: endingNodes.count, endingsFound: foundCount,
+            lockedCount: endingNodes.count - foundCount)
+    }
+
+    /// The text alternative for the diagram, e.g. "You found 2 of 4 endings: A, B. 2 endings are still hidden."
+    public static func branchMapSummary(_ map: BranchMap) -> String {
+        let titles = map.nodes.compactMap { node -> String? in
+            guard let ending = node.ending, ending.state != .locked else { return nil }
+            return ending.title
+        }
+        let list = titles.joined(separator: ", ")
+        if map.endingsTotal == 1, map.endingsFound == 1 { return "You found the only ending: \(list)." }
+        if map.endingsTotal > 0, map.endingsFound == map.endingsTotal {
+            return "You found all \(map.endingsTotal) endings: \(list)."
+        }
+        let hidden = map.lockedCount == 1 ? "1 ending is still hidden." : "\(map.lockedCount) endings are still hidden."
+        let head = titles.isEmpty
+            ? "You found 0 of \(map.endingsTotal) endings."
+            : "You found \(map.endingsFound) of \(map.endingsTotal) endings: \(list)."
+        return "\(head) \(hidden)"
+    }
+
+    /// The line under the diagram.
+    public static func branchMapCaption(_ map: BranchMap) -> String {
+        let lead = "Gold = the path you just took \u{00B7} "
+        if map.lockedCount > 0 {
+            let more = map.lockedCount == 1 ? "1 more ending" : "\(map.lockedCount) more endings"
+            return lead + "try the greyed branches for \(more)"
+        }
+        return lead + "you found every ending"
+    }
+}
+
 public enum BranchingCopy {
     /// The library badge on a story that has choices.
     public static let badge = "Choose your path"
@@ -258,6 +514,7 @@ public enum BranchingCopy {
     public static let tryAnotherPath = "Try another path"
     public static let readItAgain = "Read it again"
     public static let continueLabel = "Continue"
+    public static let seeYourEnding = "See your ending"
     public static let countsLine = "This counts toward your reading practice."
     public static let notReady = "This part of the story isn't ready yet."
     public static let startOver = "Start over"

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { BranchingStory } from "../lib/stories";
@@ -8,6 +8,13 @@ import { BranchingStoryReader } from "./BranchingStoryReader";
 
 vi.mock("../lib/auth-headers", () => ({ authHeaders: async () => ({}) }));
 vi.mock("../lib/voice-prefs", () => ({ voiceFor: async () => "voice" }));
+vi.mock("@tanstack/react-router", async () => {
+  const React = await import("react");
+  return {
+    Link: ({ to, children, ...rest }: { to: string; children?: import("react").ReactNode }) =>
+      React.createElement("a", { href: to, ...rest }, children),
+  };
+});
 vi.mock("../lib/use-model-speech", () => ({ useModelSpeech: () => vi.fn() }));
 // Render framer-motion as plain elements so the tests exercise the reader's logic, not animation timing. The
 // reduced-motion path is what these elements collapse to anyway.
@@ -132,9 +139,10 @@ describe("BranchingStoryReader", () => {
     await userEvent.click(screen.getByRole("button", { name: "Return it" }));
 
     await waitFor(() => expect(finish).toHaveBeenCalledWith([0, 0]));
-    expect(await screen.findByText("Kind and on time")).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole("button", { name: "See your ending" }));
+    expect(await screen.findByRole("heading", { name: "Kind and on time" })).toBeInTheDocument();
     expect(screen.getByText(/counts toward your reading practice/i)).toBeInTheDocument();
-    expect(screen.getByText(/Endings found: 1 of 3/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Endings found: 1 of 3")).toHaveTextContent("1 / 3");
   });
 
   it("reaches a lesser ending when a clue is skipped, with no credit (soft)", async () => {
@@ -148,13 +156,101 @@ describe("BranchingStoryReader", () => {
     render(<BranchingStoryReader story={story} finish={finish} />);
     await userEvent.click(screen.getByRole("button", { name: "Make breakfast" }));
     await waitFor(() => expect(finish).toHaveBeenCalledWith([1]));
-    expect(await screen.findByText("Late, but calm")).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole("button", { name: "See your ending" }));
+    expect(await screen.findByRole("heading", { name: "Late, but calm" })).toBeInTheDocument();
     expect(screen.queryByText(/counts toward your reading practice/i)).toBeNull();
   });
 
-  it("shows a themed placeholder when a node has no illustration", () => {
+  it("renders the passage, the beat line and full-label option buttons with no tutor image", () => {
+    render(<BranchingStoryReader story={story} finish={vi.fn()} />);
+    expect(document.querySelector("[data-segment='0']")).toHaveTextContent("Sam wakes up late.");
+    expect(screen.getByText("What does Sam do?")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Run to the bus" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Make breakfast" })).toBeInTheDocument();
+    expect(screen.getByText("Scene 1")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to stories" })).toHaveAttribute(
+      "href",
+      "/stories",
+    );
+    expect(screen.getByRole("heading", { name: "A Day" })).toBeInTheDocument();
+    expect(document.querySelector("img[src*='avatar']")).toBeNull();
+  });
+
+  it("counts every node visited as a scene", async () => {
+    render(<BranchingStoryReader story={story} finish={vi.fn()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Run to the bus" }));
+    expect(await screen.findByText("Scene 2")).toBeInTheDocument();
+  });
+
+  it("shows the gradient fallback, never an image, when a node has no art", () => {
     render(<BranchingStoryReader story={story} finish={vi.fn()} />);
     expect(document.querySelector("[data-scene-placeholder]")).toBeInTheDocument();
+    expect(document.querySelector("img")).toBeNull();
+  });
+
+  it("swaps a failed image for the gradient fallback", () => {
+    const withArt: BranchingStory = {
+      ...story,
+      graph: {
+        ...story.graph,
+        map: { ...story.graph.map, n1: { ...story.graph.map.n1, artUrl: "https://x.test/a.jpg" } },
+      },
+    };
+    render(<BranchingStoryReader story={withArt} finish={vi.fn()} />);
+    const img = document.querySelector("img") as HTMLImageElement;
+    expect(img).toBeInTheDocument();
+    fireEvent.error(img);
+    expect(document.querySelector("img")).toBeNull();
+    expect(document.querySelector("[data-scene-placeholder]")).toBeInTheDocument();
+  });
+
+  it("shows an ending node as a scene first, submits on entering, then celebrates on tap", async () => {
+    const finish = vi.fn(async (): Promise<FinishBranchingResult> => ({
+      endingId: "late",
+      quality: "lesser",
+      endingsFound: ["late"],
+      endingsTotal: 3,
+      credited: false,
+    }));
+    render(<BranchingStoryReader story={story} finish={finish} />);
+    await userEvent.click(screen.getByRole("button", { name: "Make breakfast" }));
+    // The closing passage is shown like any scene, with the button, and the path is already submitted.
+    expect(document.querySelector("[data-segment='0']")).toHaveTextContent("He eats slowly.");
+    expect(screen.getByText("Scene 2")).toBeInTheDocument();
+    expect(screen.queryByText("Your ending")).toBeNull();
+    await waitFor(() => expect(finish).toHaveBeenCalledWith([1]));
+    await userEvent.click(screen.getByRole("button", { name: "See your ending" }));
+    expect(await screen.findByText("Your ending")).toBeInTheDocument();
+    expect(document.querySelector("[data-branch-map]")).toBeInTheDocument();
+  });
+
+  it("shows the ending, the branch map text alternative, pill and both buttons", async () => {
+    const finish = vi.fn(async (): Promise<FinishBranchingResult> => ({
+      endingId: "kind",
+      quality: "good",
+      endingsFound: ["kind", "late"],
+      endingsTotal: 3,
+      credited: true,
+    }));
+    render(<BranchingStoryReader story={story} finish={finish} />);
+    await userEvent.click(screen.getByRole("button", { name: "Run to the bus" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Return it" }));
+    await userEvent.click(await screen.findByRole("button", { name: "See your ending" }));
+    expect(await screen.findByText("Your ending")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Kind and on time" })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("group", {
+          name: "You found 2 of 3 endings: Kind and on time, Late, but calm. 1 ending is still hidden.",
+        }),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText("Endings found: 2 of 3")).toHaveTextContent("2 / 3");
+    expect(screen.getByText(/try the greyed branches for 1 more ending/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try another path" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Read it again" })).toBeInTheDocument();
+    // Reduce Motion (mocked on): the stars render settled, with no entrance animation props.
+    expect(document.querySelectorAll("[data-star='earned']").length).toBeGreaterThan(0);
   });
 
   it("offers another path from the ending screen and returns to the start", async () => {
@@ -167,6 +263,7 @@ describe("BranchingStoryReader", () => {
     }));
     render(<BranchingStoryReader story={story} finish={finish} />);
     await userEvent.click(screen.getByRole("button", { name: "Make breakfast" }));
+    await userEvent.click(await screen.findByRole("button", { name: "See your ending" }));
     await userEvent.click(await screen.findByRole("button", { name: "Try another path" }));
     expect(await screen.findByText("What does Sam do?")).toBeInTheDocument();
     expect(document.querySelector("[data-segment='0']")).toHaveTextContent("Sam wakes up late.");
