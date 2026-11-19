@@ -1150,6 +1150,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      lesson_session_redemptions: {
+        Row: {
+          course: string;
+          created_at: string;
+          lesson_id: string;
+          misses: number;
+          result: Json;
+          settle_since: string;
+          token_hash: string;
+          user_id: string;
+        };
+        Insert: {
+          course: string;
+          created_at?: string;
+          lesson_id: string;
+          misses: number;
+          result: Json;
+          settle_since: string;
+          token_hash: string;
+          user_id: string;
+        };
+        Update: {
+          course?: string;
+          created_at?: string;
+          lesson_id?: string;
+          misses?: number;
+          result?: Json;
+          settle_since?: string;
+          token_hash?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       lessons: {
         Row: {
           id: string;
@@ -3352,6 +3385,24 @@ export type Database = {
         };
         Returns: Json;
       };
+      apply_lesson_completion_once: {
+        Args: {
+          _activity_events: Json;
+          _course: string;
+          _expected: Json;
+          _lesson_id: string;
+          _level: string;
+          _missed_question_ids: Json;
+          _misses: number;
+          _next: Json;
+          _result: Json;
+          _settle_since: string;
+          _today: string;
+          _token_hash: string;
+          _user_id: string;
+        };
+        Returns: Json;
+      };
       apply_review_grade: {
         Args: {
           _attempt_id: string;
@@ -3490,6 +3541,10 @@ export type Database = {
         Returns: {
           status: string;
         }[];
+      };
+      finalize_lesson_session_result: {
+        Args: { _result: Json; _token_hash: string; _user_id: string };
+        Returns: undefined;
       };
       finish_branching_story: {
         Args: { _path: Json; _story_id: string; _user_id: string };
