@@ -14,7 +14,8 @@ const AI_MARKERS =
 
 const GATED_ROUTES: Record<string, RegExp> = {
   "src/routes/api/chat.ts": /authorizeAiRequest\(request,\s*"chat",\s*\{\s*route:\s*"chat"\s*\}\)/,
-  "src/routes/api/stt.ts": /authorizeAiRequest\(request,\s*"stt",\s*\{\s*route:\s*"stt"\s*\}\)/,
+  "src/routes/api/stt.ts":
+    /authorizeAiRequest\(request,\s*"stt",\s*\{\s*route:\s*"stt",\s*deferQuota:\s*true\s*\}\)/,
   "src/routes/api/tts.ts": /authorizeAiRequest\(request,\s*"tts",\s*\{\s*route:\s*"tts"\s*\}\)/,
   "src/routes/api/analyze-weaknesses.ts":
     /authorizeAiRequest\(request,\s*"chat",\s*\{\s*route:\s*"analyze-weaknesses"\s*\}\)/,

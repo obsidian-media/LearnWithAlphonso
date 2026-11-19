@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { isPaywallSource } from "@/lib/paywall-copy";
 import type { WebOffering } from "@/lib/web-offering.server";
@@ -35,18 +36,18 @@ function planEnv(prefix: "REVENUECAT_WEB" | "REVENUECAT_WEB_YEARLY"): PlanEnv | 
 
 async function handle(request: Request): Promise<Response> {
   const accessToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
-  if (!accessToken) return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (!accessToken) return noStoreJson({ error: "unauthorized" }, { status: 401 });
   const source = new URL(request.url).searchParams.get("source");
-  if (!isPaywallSource(source)) return Response.json({ error: "bad source" }, { status: 400 });
+  if (!isPaywallSource(source)) return noStoreJson({ error: "bad source" }, { status: 400 });
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin.auth.getUser(accessToken);
-  if (error || !data?.user) return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (error || !data?.user) return noStoreJson({ error: "unauthorized" }, { status: 401 });
 
-  const unavailable = () => Response.json({ error: "offering-unavailable" }, { status: 503 });
+  const unavailable = () => noStoreJson({ error: "offering-unavailable" }, { status: 503 });
   // Not set up on this deployment (no products or links yet): the paywall says Pro is coming, not "try again".
   const notConfigured = () =>
-    Response.json({ error: "offering-unavailable", reason: "not-configured" }, { status: 503 });
+    noStoreJson({ error: "offering-unavailable", reason: "not-configured" }, { status: 503 });
   // The monthly plan is required. Both its links must be absolute https URLs; the no-trial link is what keeps it to
   // one free trial per person, so there is no falling back to the trial link. The yearly plan is optional and is
   // left out (never an error) when any of its three settings is missing or unreadable.
@@ -68,7 +69,7 @@ async function handle(request: Request): Promise<Response> {
   if (!monthOffer || monthOffer.period !== "month") return unavailable();
   if (summary.status === "unavailable" || !summary.loginId) return unavailable();
   // Already Pro (on any store): no checkout, so nobody can pay twice.
-  if (summary.status === "active") return Response.json({ error: "already-pro" }, { status: 409 });
+  if (summary.status === "active") return noStoreJson({ error: "already-pro" }, { status: 409 });
   const loginId = summary.loginId;
 
   // RevenueCat's price is for one country; checkout bills everyone else in their own currency, so elsewhere the
@@ -94,7 +95,7 @@ async function handle(request: Request): Promise<Response> {
     ...(yearly && yearOffer && yearOffer.period === "year" ? [plan(yearOffer, yearly)] : []),
     plan(monthOffer, monthly),
   ];
-  return Response.json({ plans }, { headers: { "Cache-Control": "no-store" } });
+  return noStoreJson({ plans }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export const Route = createFileRoute("/api/pro-offering")({

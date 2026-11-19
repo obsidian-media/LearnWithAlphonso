@@ -423,6 +423,13 @@ export async function handleMaintenance(
     : null;
   const aiCostDeps = deps.aiCost;
   const aiCost = aiCostDeps ? await run("ai-cost", () => sweepAiCost(aiCostDeps)) : null;
+  // The spend breaker must not fail silently. "failed": it could not be asked, so a spend spike would go unnoticed.
+  // "tripped": AI was switched off but the owner could not be told. Either makes the pass report a failure (500 and
+  // ok:false in the database's request log, "ai-spend-breaker" in failures), on top of the log line.
+  if (aiCost && (aiCost.breaker === "failed" || aiCost.breaker === "tripped")) {
+    failures.push("ai-spend-breaker");
+    console.error(`[maintenance] ai-spend-breaker ${aiCost.breaker}`);
+  }
   // Counts only: this response is stored in the database's request log.
   return json(
     {

@@ -4,6 +4,9 @@ import { createSupabaseFetch } from "@/integrations/supabase/fetch";
 import { nextMinute, nextUtcMidnight } from "./ai-quota-response";
 import { EXPLAIN_DAILY_LIMIT } from "./explain";
 
+/** The 503 a free learner gets when the month's AI cost cannot be read (see ai-monthly-cap.server.ts). */
+export const USAGE_UNVERIFIED_MESSAGE = "Could not verify your usage. Try again shortly.";
+
 export type QuotaKind =
   "chat" | "stt" | "tts" | "translate" | "define" | "hector" | "explain" | "support" | "recap";
 
@@ -68,6 +71,23 @@ function bearer(request: Request): string | null {
 }
 
 /**
+ * The learner's own client for `token` (the quota RPCs count against auth.uid()), or null when the server is not
+ * configured. It verifies nothing: a caller that has not already checked the token itself uses verifyAuth.
+ */
+export function userScopedClient(token: string): ReturnType<typeof createClient<Database>> | null {
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
+  if (!url || !key) return null;
+  return createClient<Database>(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      headers: { Authorization: `Bearer ${token}` },
+      fetch: createSupabaseFetch(key),
+    },
+  });
+}
+
+/**
  * Verifies the caller's Supabase session with no quota consumed -- the auth
  * half of consumeQuota, extracted so a route that must reject an
  * unauthenticated caller before its own free/local-only paths (which spend
@@ -82,22 +102,19 @@ export async function verifyAuth(request: Request): Promise<AuthResult> {
   const token = bearer(request);
   if (!token) return { ok: false, status: 401, message: "Sign in to use AI features." };
 
-  const url = process.env["SUPABASE_URL"];
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
-  if (!url || !key) return { ok: false, status: 500, message: "Server not configured." };
-
-  const supabase = createClient<Database>(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      headers: { Authorization: `Bearer ${token}` },
-      fetch: createSupabaseFetch(key),
-    },
-  });
+  const supabase = userScopedClient(token);
+  if (!supabase) return { ok: false, status: 500, message: "Server not configured." };
 
   const { data: userData, error: userErr } = await supabase.auth.getUser();
   if (userErr || !userData.user) {
     return { ok: false, status: 401, message: "Session expired — sign in again." };
   }
+  // A banned learner's token is still valid, so ask the database with the SERVICE-ROLE client (the learner's own
+  // client may not execute is_restricted): see account-ban.server.ts. Every route that verifies through here gets it;
+  // an unreadable check is a 503, not a pass.
+  const { checkBan } = await import("./account-ban.server");
+  const denied = await checkBan(userData.user.id);
+  if (denied) return { ok: false, ...denied };
   return { ok: true, supabase, userId: userData.user.id };
 }
 
@@ -113,7 +130,7 @@ export async function consumeQuota(
 ): Promise<QuotaResult> {
   const auth = await verifyAuth(request);
   if (!auth.ok) return auth;
-  return consumeQuotaFor(auth.supabase, kind, now);
+  return consumeQuotaFor(auth.supabase, kind, now, auth.userId);
 }
 
 /** The rate-limit and daily-cap half of consumeQuota, for a caller that has already verified the session. */
@@ -121,11 +138,16 @@ export async function consumeQuotaFor(
   supabase: ReturnType<typeof createClient<Database>>,
   kind: QuotaKind,
   now: Date = new Date(),
+  userId?: string,
 ): Promise<QuotaResult> {
   // The monthly COST cap first, so a refused call also burns no burst token and no daily unit. Only the costly kinds
-  // are ever refused; any failure to read the cost allows the call (see ai-monthly-cap.server.ts).
+  // are ever refused; when the cost cannot be read a free learner is refused and a Pro learner is let through (see
+  // the failure rule in ai-monthly-cap.server.ts).
   const { monthlyCapRefusal } = await import("./ai-monthly-cap.server");
-  const capped = await monthlyCapRefusal(supabase, kind, now);
+  const capped = await monthlyCapRefusal(supabase, kind, now, {}, userId);
+  if (capped?.kind === "unverified") {
+    return { ok: false, status: 503, message: USAGE_UNVERIFIED_MESSAGE };
+  }
   if (capped) {
     const { monthlyCapMessage } = await import("./ai-monthly-cap");
     return {

@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { detectAndRecordWeaknesses, type Weakness } from "@/lib/weakness-detection.server";
 import { COURSES, isCourse, type Course } from "@/data/courses";
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           console.error(
             "[analyze-weaknesses] OPENROUTER_API_KEY not configured in this environment",
           );
-          return Response.json({ error: "Analysis is not configured" }, { status: 500 });
+          return noStoreJson({ error: "Analysis is not configured" }, { status: 500 });
         }
 
         const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
@@ -33,14 +34,14 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
         try {
           body = await request.json();
         } catch {
-          return Response.json({ error: "Invalid JSON" }, { status: 400 });
+          return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
         }
         // A client could send role "system" here and it went to the model verbatim. Only the learner's and
         // partner's turns are transcript; the analysis instructions are this server's.
         // Bounded like /api/chat: the quota counts calls, so each call's input has a fixed ceiling.
         const messages = boundTranscript(body.messages);
         if (messages.length === 0) {
-          return Response.json({ weaknessesDetected: 0 });
+          return noStoreJson({ weaknessesDetected: 0 });
         }
 
         // The conversation's course. Clients that send none (earlier builds) are English.
@@ -101,7 +102,7 @@ export const Route = createFileRoute("/api/analyze-weaknesses")({
           },
         });
 
-        return Response.json({ weaknessesDetected: inserted });
+        return noStoreJson({ weaknessesDetected: inserted });
       },
     },
   },

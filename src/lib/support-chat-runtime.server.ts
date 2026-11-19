@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import type { SupportFacts } from "./support-facts.server";
 import {
   SUPPORT_TIMEOUT_MS,
@@ -166,11 +167,11 @@ export type LearnerAuth = { ok: true; userId: string } | { ok: false; response: 
 export async function authenticateLearner(request: Request): Promise<LearnerAuth> {
   const accessToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
   if (!accessToken)
-    return { ok: false, response: Response.json({ error: "unauthorized" }, { status: 401 }) };
+    return { ok: false, response: noStoreJson({ error: "unauthorized" }, { status: 401 }) };
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin.auth.getUser(accessToken);
   if (error || !data?.user) {
-    return { ok: false, response: Response.json({ error: "unauthorized" }, { status: 401 }) };
+    return { ok: false, response: noStoreJson({ error: "unauthorized" }, { status: 401 }) };
   }
   const userId = data.user.id;
   try {
@@ -183,7 +184,7 @@ export async function authenticateLearner(request: Request): Promise<LearnerAuth
       const { ACCOUNT_SUSPENDED_MESSAGE } = await import("@/integrations/supabase/auth-middleware");
       return {
         ok: false,
-        response: Response.json({ error: ACCOUNT_SUSPENDED_MESSAGE }, { status: 403 }),
+        response: noStoreJson({ error: ACCOUNT_SUSPENDED_MESSAGE }, { status: 403 }),
       };
     }
   } catch {
@@ -256,4 +257,4 @@ export async function createSupportRuntime(request: Request): Promise<SupportRun
 }
 
 export const toResponse = ({ status, body }: HandlerResult): Response =>
-  Response.json(body, { status });
+  noStoreJson(body, { status });

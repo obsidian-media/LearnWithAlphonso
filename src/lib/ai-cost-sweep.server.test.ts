@@ -25,7 +25,7 @@ const report = (over: Partial<DayReport> = {}): DayReport => ({
 
 function make(opts: {
   now?: string;
-  claim?: boolean | { error: string };
+  claim?: boolean | { error: string; code?: string };
   report?: DayReport;
   send?: () => Promise<void>;
   ownerEmail?: string;
@@ -43,10 +43,12 @@ function make(opts: {
         const c = opts.claim ?? true;
         return Promise.resolve(
           typeof c === "object"
-            ? { data: null, error: { message: c.error, code: "PGRST202" } }
+            ? { data: null, error: { message: c.error, code: c.code ?? "PGRST202" } }
             : { data: c, error: null },
         );
       }
+      if (fn === "trip_ai_spend_breaker")
+        return Promise.resolve({ data: { tripped: false, totalMicro: 0 }, error: null });
       if (fn === "ai_cost_day_report")
         return Promise.resolve({ data: opts.report ?? report(), error: null });
       return Promise.resolve({ data: null, error: null });
@@ -180,6 +182,16 @@ describe("the daily alert", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
+  it("a 'does not exist' raised inside the claim is logged, not taken for a missing function", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const m = make({
+      claim: { error: 'relation "public.ai_cost_alert_days" does not exist', code: "42P01" },
+    });
+    const r = await sweepAiCost(m.deps);
+    expect(r.alert).toBe("none");
+    expect(spy).toHaveBeenCalledWith("[ai-cost] alert claim failed:", expect.any(String));
+  });
+
   it("a malformed report is a failure that releases the day", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const m = make({ report: { nope: true } as never });
@@ -220,5 +232,21 @@ describe("the rollup", () => {
       fn === "rollup_ai_cost_log" ? Promise.reject(new Error("db down")) : base(fn, args);
     const r = await sweepAiCost(m.deps);
     expect(r.alert).toBe("sent");
+  });
+  it("only the rollup function itself missing is quiet; a missing helper inside it is logged", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const withRollupError = (message: string, code: string) => {
+      const m = make({ now: "2026-11-16T00:10:00Z" });
+      const base = m.deps.rpc;
+      m.deps.rpc = (fn, args) =>
+        fn === "rollup_ai_cost_log"
+          ? Promise.resolve({ data: null, error: { message, code } })
+          : base(fn, args);
+      return sweepAiCost(m.deps);
+    };
+    await withRollupError("function public.rollup_ai_cost_log(integer) does not exist", "42883");
+    expect(spy).not.toHaveBeenCalled();
+    await withRollupError("function public.ai_cost_union(date) does not exist", "42883");
+    expect(spy).toHaveBeenCalledWith("[ai-cost] rollup failed:", expect.any(String));
   });
 });

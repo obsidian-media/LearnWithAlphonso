@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
@@ -79,7 +80,7 @@ function withDifficultyHint(
 
 async function handleChat(request: Request, timer: StageTimer): Promise<Response> {
   const key = resolveLlmApiKey();
-  if (!key) return Response.json({ error: "Chat is not configured" }, { status: 500 });
+  if (!key) return noStoreJson({ error: "Chat is not configured" }, { status: 500 });
   const access = await timer.time("auth", async () => {
     const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
     return authorizeAiRequest(request, "chat", { route: "chat" });
@@ -96,7 +97,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+    return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
   }
   // A known persona is required, not merely allowed. With no system prompt the model would answer anything, which
   // is exactly the general-purpose proxy VALID_SYSTEM_PROMPTS exists to prevent.
@@ -105,7 +106,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   const canonicalPrompt =
     typeof body.systemPrompt === "string" ? canonicalSystemPrompt(body.systemPrompt) : undefined;
   if (canonicalPrompt === undefined || !VALID_SYSTEM_PROMPTS.has(canonicalPrompt)) {
-    return Response.json({ error: "unknown-system-prompt" }, { status: 400 });
+    return noStoreJson({ error: "unknown-system-prompt" }, { status: 400 });
   }
   body.systemPrompt = canonicalPrompt;
   // Found alongside the same bug in Hector's own message builder
@@ -117,7 +118,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   // A conversation can run long; the model only needs the recent turns, and each call's input stays bounded
   // (see chat-transcript-limits.ts).
   const messages: ChatMessage[] = boundTranscript(body.messages);
-  if (messages.length === 0) return Response.json({ error: "messages required" }, { status: 400 });
+  if (messages.length === 0) return noStoreJson({ error: "messages required" }, { status: 400 });
   // The conversation's course. Clients that send none (earlier builds) get the course the matched persona belongs
   // to, which is English for every earlier persona.
   const course: Course =
@@ -157,7 +158,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
       // Timed out, or the learner went away: retryable, and never an unhandled 500.
       return {
         ok: false as const,
-        failure: Response.json({ error: "reply-unavailable" }, { status: 504 }),
+        failure: noStoreJson({ error: "reply-unavailable" }, { status: 504 }),
       };
     }
     if (!resp.ok) {
@@ -180,7 +181,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
   const { text: replyText, verdict } = splitReplyVerdict(llm.content);
   if (!replyText) {
     console.warn(JSON.stringify({ event: "chat_empty_reply", model }));
-    return Response.json({ error: "empty-reply" }, { status: 502 });
+    return noStoreJson({ error: "empty-reply" }, { status: 502 });
   }
   // The fallback language and the output mask follow the persona the server matched, never a client field.
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -204,7 +205,7 @@ async function handleChat(request: Request, timer: StageTimer): Promise<Response
       verdict: replyVerdict,
     });
   }
-  return Response.json({ content: safe.text, verdict: replyVerdict });
+  return noStoreJson({ content: safe.text, verdict: replyVerdict });
 }
 
 export const Route = createFileRoute("/api/chat")({

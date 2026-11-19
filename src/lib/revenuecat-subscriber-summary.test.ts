@@ -1,5 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { getProEntitlementStatus, getSubscriberSummary } from "./revenuecat-entitlement";
+import { describe, expect, it, beforeEach } from "vitest";
+import {
+  getProEntitlementStatus,
+  getSubscriberSummary,
+  resetEntitlementCache,
+} from "./revenuecat-entitlement";
+
+// A confirmed "active" answer is kept for a minute (revenuecat-entitlement-cache.test.ts); these tests reuse learner ids.
+beforeEach(() => resetEntitlementCache());
 
 const CONFIG = { secretApiKey: "sk_test" };
 const FUTURE = new Date(Date.now() + 86_400_000).toISOString();
@@ -136,6 +143,8 @@ describe("getSubscriberSummary", () => {
       }),
     );
     expect(await getProEntitlementStatus(CONFIG, "u1", fake)).toBe("active");
+    // A confirmed "active" is kept for a minute; clear it to ask the (fake) server again.
+    resetEntitlementCache();
     expect(await getProEntitlementStatus(CONFIG, "u1", respond(404))).toBe("inactive");
     expect(await getProEntitlementStatus(CONFIG, "u1", respond(500))).toBe("unavailable");
   });

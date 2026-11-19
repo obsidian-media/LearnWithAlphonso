@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
@@ -26,14 +27,14 @@ export const Route = createFileRoute("/api/apple-link")({
         const authHeader = request.headers.get("Authorization");
         const accessToken = authHeader?.replace(/^Bearer\s+/i, "");
         if (!accessToken) {
-          return Response.json({ linked: false, reason: "unauthorized" }, { status: 401 });
+          return noStoreJson({ linked: false, reason: "unauthorized" }, { status: 401 });
         }
 
         let authorizationCode: string;
         try {
           authorizationCode = BodySchema.parse(await request.json()).authorizationCode;
         } catch {
-          return Response.json({ linked: false, reason: "bad-request" }, { status: 400 });
+          return noStoreJson({ linked: false, reason: "bad-request" }, { status: 400 });
         }
 
         const { appleConfigFromEnv, exchangeAuthorizationCode } =
@@ -51,13 +52,13 @@ export const Route = createFileRoute("/api/apple-link")({
         // Checkable from Vercel's dashboard -- no Mac or device needed.
         if (!config) {
           console.error("[apple-link] Apple secrets not configured in this environment");
-          return Response.json({ linked: false, reason: "not-configured" });
+          return noStoreJson({ linked: false, reason: "not-configured" });
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
         if (userError || !userData?.user) {
-          return Response.json({ linked: false, reason: "unauthorized" }, { status: 401 });
+          return noStoreJson({ linked: false, reason: "unauthorized" }, { status: 401 });
         }
 
         const refreshToken = await exchangeAuthorizationCode(config, authorizationCode);
@@ -68,7 +69,7 @@ export const Route = createFileRoute("/api/apple-link")({
         // shape, not that this is expected background noise.
         if (!refreshToken) {
           console.error(`[apple-link] Apple rejected the authorization code exchange`);
-          return Response.json({ linked: false, reason: "exchange-failed" });
+          return noStoreJson({ linked: false, reason: "exchange-failed" });
         }
 
         // Upsert: signing in with Apple again issues a new grant, and the
@@ -85,10 +86,10 @@ export const Route = createFileRoute("/api/apple-link")({
         );
         if (error) {
           console.error(`[apple-link] Failed to store the Apple refresh token: ${error.message}`);
-          return Response.json({ linked: false, reason: "store-failed" });
+          return noStoreJson({ linked: false, reason: "store-failed" });
         }
 
-        return Response.json({ linked: true });
+        return noStoreJson({ linked: true });
       },
     },
   },

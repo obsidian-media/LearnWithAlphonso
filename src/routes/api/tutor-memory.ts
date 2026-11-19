@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
 import { isCourse } from "@/data/courses";
@@ -19,7 +20,7 @@ import { saveLearnerProfileFor } from "@/lib/learner-profile.server";
  */
 type Admin = (typeof import("@/integrations/supabase/client.server"))["supabaseAdmin"];
 const json = (body: unknown, status = 200) =>
-  Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
+  noStoreJson(body, { status, headers: { "Cache-Control": "no-store" } });
 
 async function authenticate(request: Request, admin: Admin): Promise<string | Response> {
   const token = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
