@@ -398,7 +398,7 @@ export function SayThePicture({
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgb(8_10_26/0.42)_0%,transparent_16%,transparent_36%,rgb(8_10_26/0.14)_56%)]"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/10"
       />
 
       <div className="relative z-10 flex items-center gap-2.5 px-3.5 pb-2.5 pt-4">
@@ -432,7 +432,7 @@ export function SayThePicture({
               <i
                 key={w.term}
                 data-dot={kind}
-                className={`h-[7px] rounded-full shadow-[0_1px_2px_rgb(0_0_0/0.3)] ${
+                className={`h-[7px] rounded-full shadow-sm ${
                   kind === "now"
                     ? "w-5 bg-white"
                     : kind === "first"
@@ -466,7 +466,7 @@ export function SayThePicture({
                 key={c}
                 name="star"
                 solid
-                className={`stp-spark absolute text-[#F6D88A] drop-shadow-[0_2px_4px_rgb(176_122_18/0.5)] ${c}`}
+                className={`stp-spark absolute text-ds-on-hero-kick drop-shadow-md ${c}`}
               />
             ))}
           </span>
@@ -474,12 +474,12 @@ export function SayThePicture({
             data-testid="stp-combo"
             className="inline-flex items-center gap-1.5 rounded-full bg-ds-surface/95 px-3 py-1 ds-type-footnote font-extrabold text-ds-brand shadow-[var(--ds-shadow-resting)]"
           >
-            <DsIcon name="flame" solid className="size-4 text-[#D9700F]" />
+            <DsIcon name="flame" solid className="size-4 text-ds-flame" />
             {combo >= 2 ? `${combo} in a row` : "First try"}
           </span>
           <span
             lang={course}
-            className="stp-stamp font-[family-name:var(--ds-font-display)] text-[2.4rem] font-extrabold leading-none tracking-tight text-white [text-shadow:0_4px_18px_rgb(8_10_26/0.6)]"
+            className="stp-stamp font-[family-name:var(--ds-font-display)] ds-type-display font-extrabold leading-none tracking-tight text-white drop-shadow-lg"
           >
             {word.term}
           </span>
@@ -492,10 +492,10 @@ export function SayThePicture({
           data-testid="stp-reveal"
           className="relative z-10 mt-3 flex flex-col items-center gap-1.5 px-4 text-center"
         >
-          <p className="ds-type-overline font-extrabold text-[#F6D88A]">It is</p>
+          <p className="ds-type-overline font-extrabold text-ds-on-hero-kick">It is</p>
           <p
             lang={course}
-            className="stp-stamp font-[family-name:var(--ds-font-display)] text-[2.6rem] font-extrabold leading-none tracking-tight text-white [text-shadow:0_4px_18px_rgb(8_10_26/0.75)]"
+            className="stp-stamp font-[family-name:var(--ds-font-display)] ds-type-display font-extrabold leading-none tracking-tight text-white drop-shadow-lg"
           >
             {word.term}
           </p>
@@ -517,18 +517,18 @@ export function SayThePicture({
           src={`/figures/alphonso-${pose}.webp`}
           alt=""
           data-pose={pose}
-          className="stp-pose h-[28dvh] max-h-[260px] w-auto drop-shadow-[0_14px_22px_rgb(8_10_26/0.45)]"
+          className="stp-pose h-[28dvh] max-h-[260px] w-auto drop-shadow-xl"
         />
         <p
           aria-hidden="true"
-          className="relative mb-[22dvh] max-w-[190px] rounded-2xl border-[1.5px] border-ds-line bg-white px-3 py-2 text-[0.85rem] font-bold leading-snug text-ds-ink shadow-[var(--ds-shadow-floating)] before:absolute before:-left-[7px] before:bottom-3 before:size-[13px] before:rotate-45 before:border-b-[1.5px] before:border-l-[1.5px] before:border-ds-line before:bg-white before:content-['']"
+          className="relative mb-[22dvh] max-w-[190px] rounded-2xl border-[1.5px] border-ds-line bg-white px-3 py-2 ds-type-footnote font-bold leading-snug text-ds-ink shadow-[var(--ds-shadow-floating)] before:absolute before:-left-[7px] before:bottom-3 before:size-[13px] before:rotate-45 before:border-b-[1.5px] before:border-l-[1.5px] before:border-ds-line before:bg-white before:content-['']"
         >
           {bubble}
         </p>
       </div>
 
       {/* The frosted control stage. */}
-      <div className="relative z-10 grid justify-items-center gap-2.5 rounded-t-[30px] border-t-[1.5px] border-white/70 bg-ds-surface/95 px-[18px] pb-[calc(18px+env(safe-area-inset-bottom,0px))] pt-4 text-ds-ink shadow-[0_-12px_34px_-14px_rgb(20_27_61/0.4)] backdrop-blur-xl">
+      <div className="relative z-10 grid justify-items-center gap-2.5 rounded-t-[30px] border-t-[1.5px] border-white/70 bg-ds-surface/95 px-[18px] pb-[calc(18px+env(safe-area-inset-bottom,0px))] pt-4 text-ds-ink shadow-[var(--ds-shadow-floating)] backdrop-blur-xl">
         {phase === "ask" && (
           <>
             {ring("lg", "stp-record")}

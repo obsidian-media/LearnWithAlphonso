@@ -262,7 +262,7 @@ struct SayThePictureView: View {
     private var topBar: some View {
         HStack(spacing: AlphonsoDS.Space.s3) {
             Button(action: onExit) {
-                Image(systemName: "xmark").font(.system(size: 17, weight: .bold)).foregroundStyle(.white)
+                Image(systemName: "xmark").dsText(.headline).foregroundStyle(.white)
                     .frame(width: AlphonsoDS.Space.minTouch, height: AlphonsoDS.Space.minTouch)
                     .background(.ultraThinMaterial, in: Circle())
                     .overlay(Circle().stroke(Color.white.opacity(0.25), lineWidth: 1))
@@ -631,6 +631,7 @@ private struct SayPictureStamp: View {
 /// A small sparkle burst behind the win. Drawn once and static under Reduce Motion.
 private struct SayPictureSparks: View {
     let reduceMotion: Bool
+    @Environment(\.alphonsoDS) private var ds
     @State private var on = false
     private let sparks: [(x: CGFloat, y: CGFloat, size: CGFloat, delay: Double)] = [
         (-110, 18, 20, 0), (95, 6, 16, 0.12), (130, 66, 18, 0.2), (-135, 60, 16, 0.28),
@@ -640,8 +641,8 @@ private struct SayPictureSparks: View {
         ZStack {
             ForEach(Array(sparks.enumerated()), id: \.offset) { _, s in
                 Image(systemName: "star.fill")
-                    .font(.system(size: s.size)).foregroundStyle(Color(red: 0.96, green: 0.85, blue: 0.54))
-                    .shadow(color: Color(red: 0.69, green: 0.48, blue: 0.07).opacity(0.5), radius: 3, y: 2)
+                    .font(.system(size: s.size)).foregroundStyle(ds.onHeroKick)
+                    .shadow(color: ds.actionEdge.opacity(0.5), radius: 3, y: 2)
                     .offset(x: s.x, y: s.y)
                     .scaleEffect(on || reduceMotion ? 1 : 0.2)
                     .opacity(on || reduceMotion ? 0.95 : 0)

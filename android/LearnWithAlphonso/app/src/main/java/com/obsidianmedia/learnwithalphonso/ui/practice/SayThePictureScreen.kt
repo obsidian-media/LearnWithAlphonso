@@ -363,7 +363,7 @@ internal fun SayThePictureContent(
     Box(Modifier.testTag("say-the-picture").fillMaxSize().background(ds.brand)) {
         // The photo is the hero. While asking, its own description would give the answer away.
         key(word.image.url) { StpHero(word.image.url, if (session.phase == SayPicturePhase.ASK) null else word.image.alt, reduceMotion) }
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color(0x6B080A1A), 0.16f to Color.Transparent, 0.36f to Color.Transparent, 0.56f to Color(0x24080A1A), 1f to Color.Transparent)))
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color.Black.copy(alpha = 0.42f), 0.16f to Color.Transparent, 0.36f to Color.Transparent, 0.56f to Color.Black.copy(alpha = 0.14f), 1f to Color.Transparent)))
 
         Column(Modifier.fillMaxSize().statusBarsPadding()) {
             StpTopBar(session, onExit)
@@ -438,7 +438,7 @@ private fun StpWin(term: String, combo: Int, reduceMotion: Boolean) {
     Box(Modifier.fillMaxWidth().padding(top = Space.s4).testTag("stp-win").semantics { liveRegion = LiveRegionMode.Polite }) {
         // Sparks: drawn once, static under Reduce Motion.
         listOf(-110 to 18, 95 to 6, 130 to 66, -135 to 60).forEach { (x, y) ->
-            Icon(Icons.Filled.Star, null, tint = Color(0xFFF6D88A), modifier = Modifier.align(Alignment.TopCenter).padding(top = y.dp).graphicsLayer { translationX = x.dp.toPx(); this.alpha = 0.95f * alpha }.size(18.dp))
+            Icon(Icons.Filled.Star, null, tint = LocalAlphonsoTokens.current.onHeroKick, modifier = Modifier.align(Alignment.TopCenter).padding(top = y.dp).graphicsLayer { translationX = x.dp.toPx(); this.alpha = 0.95f * alpha }.size(18.dp))
         }
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Space.s2)) {
             Text(
