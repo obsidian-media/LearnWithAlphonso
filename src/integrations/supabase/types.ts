@@ -2250,6 +2250,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      staff_rate_limits: {
+        Row: {
+          actor_user_id: string;
+          bucket: string;
+          count: number;
+          window_start: string;
+        };
+        Insert: {
+          actor_user_id: string;
+          bucket: string;
+          count?: number;
+          window_start: string;
+        };
+        Update: {
+          actor_user_id?: string;
+          bucket?: string;
+          count?: number;
+          window_start?: string;
+        };
+        Relationships: [];
+      };
       staff_roles: {
         Row: {
           added_at: string;
@@ -3511,6 +3532,15 @@ export type Database = {
       };
       consume_lesson_completion_slot: {
         Args: { _at: string; _limit?: number; _user_id: string };
+        Returns: boolean;
+      };
+      consume_staff_rate_limit: {
+        Args: {
+          p_actor: string;
+          p_bucket: string;
+          p_max: number;
+          p_window_seconds: number;
+        };
         Returns: boolean;
       };
       contains_blocked_term: { Args: { input: string }; Returns: boolean };
