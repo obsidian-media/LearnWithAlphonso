@@ -88,6 +88,26 @@ public enum SayThePicture {
     }
 }
 
+/// How one picture ended: said right first time, or taught after a miss (or "Show me the word").
+public enum SayPictureResult: Sendable, Equatable { case first, missed }
+
+/// Alphonso's in-pose reactions. The raw value is the image asset's name in the app's asset catalogue.
+public enum SayPicturePose: String, Sendable, Equatable, CaseIterable {
+    case explainingPointer = "Alphonso-explaining-pointer"
+    case listeningHeadphones = "Alphonso-listening-headphones"
+    case thinkingTemple = "Alphonso-thinking-temple"
+    case levelupCheer = "Alphonso-levelup-cheer"
+
+    /// Asking he explains, while the learner holds the mic he listens, after a miss (the word is being taught) he thinks
+    /// it through with them, and on a win he cheers.
+    public static func pose(phase: SayThePictureSession.Phase, listening: Bool) -> SayPicturePose {
+        if phase == .right { return .levelupCheer }
+        if listening { return .listeningHeadphones }
+        if phase == .reveal { return .thinkingTemple }
+        return .explainingPointer
+    }
+}
+
 /// The state of one session: eight pictures, forgiving, a miss teaches the word and goes on. No hearts, no penalty.
 public struct SayThePictureSession: Sendable, Equatable {
     public enum Phase: Sendable, Equatable { case ask, right, reveal, done }
@@ -98,6 +118,8 @@ public struct SayThePictureSession: Sendable, Equatable {
     public private(set) var index = 0
     public private(set) var phase: Phase = .ask
     public private(set) var firstTry = 0
+    /// How each finished word ended, in order (one entry per word that has left the asking phase).
+    public private(set) var results: [SayPictureResult] = []
     /// What the learner said when repeating after a reveal (any speech ends the word).
     public private(set) var heard: String?
 
@@ -112,6 +134,19 @@ public struct SayThePictureSession: Sendable, Equatable {
     public var nextLabel: String { isLast ? "Finish" : "Next" }
     public var nextWordLabel: String { isLast ? "Finish" : "Next word" }
 
+    /// The run of first-time wins ending at the latest word ("3 in a row"); a miss resets it.
+    public var combo: Int { results.reversed().prefix(while: { $0 == .first }).count }
+
+    /// The words that were missed, in session order (what the summary's cross-links carry).
+    public var missedWords: [SayThePicture.PictureWord] {
+        words.enumerated().compactMap { results.indices.contains($0.offset) && results[$0.offset] == .missed ? $0.element : nil }
+    }
+
+    /// The summary's recap grid: every word with how it ended.
+    public var recap: [(word: SayThePicture.PictureWord, result: SayPictureResult)] {
+        words.enumerated().compactMap { results.indices.contains($0.offset) ? ($0.element, results[$0.offset]) : nil }
+    }
+
     /// A transcript arrived. Asking: a hit is a star, a miss reveals the word. After a reveal the word was taught,
     /// so whatever was said, it is recorded and the learner may move on. Silence changes nothing (not a miss).
     @discardableResult
@@ -125,10 +160,12 @@ public struct SayThePictureSession: Sendable, Equatable {
             let spoken = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
             if SayThePicture.said(spoken, term: word.term, course: course) {
                 firstTry += 1
+                results.append(.first)
                 phase = .right
                 return .right
             }
             if spoken.isEmpty { return .unheard }
+            results.append(.missed)
             phase = .reveal
             return .reveal
         case .right, .done:
@@ -141,6 +178,7 @@ public struct SayThePictureSession: Sendable, Equatable {
     @discardableResult
     public mutating func showWord() -> Bool {
         guard phase == .ask, current != nil else { return false }
+        results.append(.missed)
         phase = .reveal
         return true
     }
@@ -150,4 +188,19 @@ public struct SayThePictureSession: Sendable, Equatable {
         heard = nil
         if isLast { phase = .done } else { index += 1; phase = .ask }
     }
+}
+
+extension SayThePicture {
+    /// True when the save-word route would accept this term: one word, letters with inner apostrophes or hyphens, at
+    /// most 40 characters (the same rule as `validateSavedWordInput` on the server). A phrase such as "ice cream" is not.
+    public static func isSavable(_ term: String) -> Bool {
+        let trimmed = term.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.count <= 40 else { return false }
+        return trimmed.range(of: #"^\p{L}[\p{L}'’-]*$"#, options: .regularExpression) != nil
+    }
+}
+
+extension SayThePicture.PictureWord {
+    /// The word as a Say it right drill item, so the summary can hand the missed words to that drill.
+    public var vocabItem: VocabItem { VocabItem(term: term, meaning: "", example: "", image: image) }
 }
