@@ -353,7 +353,7 @@ private fun SignedInApp(
                 ListenScreen(
                     container, listenVm,
                     onOpenFolder = { nav.navigate(Routes.listenFolder(it)) },
-                    onOpenStories = { nav.navigate(Routes.stories(it)) },
+                    onOpenStory = { nav.navigate(Routes.story(it)) },
                     // After a video: one tap to the matching lesson, Talk scenario or story scene.
                     onOpenPractice = { target ->
                         when (target) {

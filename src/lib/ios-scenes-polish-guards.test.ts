@@ -13,13 +13,14 @@ const between = (s: string, a: string, b: string) => {
 };
 
 describe("iOS scenes follow-ups", () => {
-  const map = read("LearnPathMap.swift");
+  const map = read("LearnHeroStage.swift");
   const browser = read("LessonBrowserView.swift");
   const listen = read("ListenView.swift");
 
-  it("VoiceOver hears the map's current node as the current lesson, not a second 'Continue' button", () => {
+  it("VoiceOver hears the stage as Alphonso's greeting only; the Continue lesson card is the one way in", () => {
     expect(map).not.toContain('accessibilityLabel("Continue:');
-    expect(map).toContain("current lesson");
+    expect(map).not.toContain("Button");
+    expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
   });
 
   it("the Up next card no longer draws its own mini path, since the map shows the unit", () => {
@@ -35,8 +36,10 @@ describe("iOS scenes follow-ups", () => {
     expect(read("ListenShelfViews.swift")).not.toContain(".screenScene(");
   });
 
-  it("the current node stops bouncing when Reduce Motion is switched on mid-session", () => {
-    const node = map.slice(map.indexOf("struct PathNodeView"));
-    expect(node).toMatch(/\.onChange\(of: reduceMotion\)/);
+  it("the winding path map and its bouncing nodes are gone: one hero, no second way in", () => {
+    expect(map).not.toContain("PathNodeView");
+    expect(map).not.toContain("LearnPathMap");
+    expect(browser).not.toContain("LearnPathMap(");
+    expect(browser).toContain("LearnHeroStage(");
   });
 });

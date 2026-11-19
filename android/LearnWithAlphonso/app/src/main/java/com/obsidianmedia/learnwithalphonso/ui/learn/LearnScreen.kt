@@ -60,7 +60,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.net.LessonCompletionProgress
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoMascotBanner
 import com.obsidianmedia.learnwithalphonso.ui.social.ToastBanner
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.league.TeamMissionCard
@@ -88,6 +87,17 @@ import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.rememberFirstRunAsset
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonStage
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.heading
+import com.obsidianmedia.learnwithalphonso.R
+import com.obsidianmedia.learnwithalphonso.core.logic.LearnRail
+import com.obsidianmedia.learnwithalphonso.core.path.PathGoalCard
+import com.obsidianmedia.learnwithalphonso.ui.path.PathUi
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import kotlinx.coroutines.launch
 
@@ -186,17 +196,20 @@ fun LearnScreen(
     var expandedKeys by rememberSaveable { mutableStateOf("") }
     fun isExpanded(key: String) = expandedKeys.split(",").contains(key)
     fun toggle(key: String) { expandedKeys = (expandedKeys.split(",").filter { it.isNotEmpty() && it != key } + if (isExpanded(key)) emptyList() else listOf(key)).joinToString(",") }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val unitRooms = remember { runCatching { com.obsidianmedia.learnwithalphonso.core.logic.UnitRooms.fromJson(context.assets.open("content/unit-rooms.json").bufferedReader().use { it.readText() }) }.getOrDefault(emptyMap()) }
     val scope = rememberCoroutineScope()
-    // Items before the unit rows: header, goal, review, levels, jump button, plus the ones that come and go.
-    val fixedItems = 5 + (if (currentUnit != null) 1 else 0) + (if (teamMission != null) 1 else 0) + (if (state.challenges.isNotEmpty()) 1 else 0) + (if (state.placementTaken == false) 1 else 0)
+    // The one path view-model for this course: the rail card reads its goal, and the card opened from the rail shows it in full.
+    val pathVm = com.obsidianmedia.learnwithalphonso.ui.path.rememberPathViewModel(container, state.course)
+    val pathUi by pathVm.ui.collectAsState()
+    // Which rail card is open in place below the rail: "", "path", "team" or "weekly". The streak pill opens the freeze shop.
+    var forYouOpen by rememberSaveable { mutableStateOf("") }
+    var showFreezeShop by rememberSaveable { mutableStateOf(false) }
+    fun toggleForYou(which: String) { forYouOpen = if (forYouOpen == which) "" else which }
+    // Items before the unit rows: status, rail, units header, jump button, plus the ones that come and go.
+    val fixedItems = 4 + (if (currentUnit != null) 1 else 0) + (if (forYouOpen.isNotEmpty()) 1 else 0) + (if (state.placementTaken == false) 1 else 0)
     val currentRowIndex = rows.indexOfFirst { it is FoldRow.UnitRow && it.current }.let { if (it < 0) -1 else fixedItems + it }
-    var scrolled by remember { mutableStateOf(false) }
-    LaunchedEffect(currentRowIndex) {
-        if (scrolled || currentRowIndex < 0) return@LaunchedEffect
-        scrolled = true
-        listState.animateScrollToItem(currentRowIndex)
-    }
-
+    // No scroll on first show: the status row and the hero are the top of the screen. "Jump to current" is the way down.
     Column(Modifier.fillMaxSize().background(ds.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             CoursePicker(state.course, onSelect = { picked -> container.activeCourse.set(picked); vm.selectCourse(picked) })
@@ -210,41 +223,47 @@ fun LearnScreen(
         LazyColumn(state = listState, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             // Stable keys on every item: the header, challenges and placement card come and go as data loads,
             // and unkeyed items shifting index is the one way a lazy list can show a row twice.
+            // The slim status row (streak with its protected mark, hearts, XP, league). The streak pill opens the freeze shop.
+            item(key = "header") { StatusHeader(progress, showFreezeShop = showFreezeShop, onToggleFreezeShop = { showFreezeShop = !showFreezeShop }, onBuyStreakFreeze = vm::buyStreakFreeze) }
+            // The one hero: the current unit on its room with Alphonso and a single Continue lesson button.
             currentUnit?.let { place ->
                 container.content.bundle(state.course).units.firstOrNull { it.id == place.unitId }?.let { u ->
-                    item(key = "current-unit") { CurrentUnitCard(u, place, onContinue = { onOpenLesson(state.course, place.lessonId) }) }
+                    // "Unit 1 of 28": the unit's place among the units of its own level, the same count on every platform.
+                    val levelUnits = container.content.bundle(state.course).units.filter { it.level == u.level }
+                    val nextLessonTitle = u.lessons.firstOrNull { it.id == place.lessonId }?.title
+                    item(key = "current-unit") { CurrentUnitCard(u, place, unitRooms[u.id], levelUnits.indexOfFirst { it.id == u.id } + 1, levelUnits.size, nextLessonTitle, greeting(progress), onContinue = { onOpenLesson(state.course, place.lessonId) }) }
                 }
             }
-            item(key = "header") { StatusHeader(progress, onBuyStreakFreeze = vm::buyStreakFreeze) }
-            item(key = "path") {
-                // One view-model per course: a request still running for a course the learner just left can only
-                // write into that course's own (hidden) model, never into the card now on screen.
-                val pathVm = com.obsidianmedia.learnwithalphonso.ui.path.rememberPathViewModel(container, state.course)
-                com.obsidianmedia.learnwithalphonso.ui.path.PathCard(pathVm, onOpenRoad = onOpenPath, onBuild = onBuildPath, onOpenRef = onOpenPathRef)
+            item(key = "for-you") {
+                val hasNoGoal = pathUi is PathUi.None
+                val pathValue = when (val u = pathUi) {
+                    PathUi.Loading -> "Loading"
+                    is PathUi.Failed -> "Couldn't load"
+                    PathUi.None -> LearnRail.PATH_UNSET
+                    is PathUi.Ready -> PathGoalCard.lines(u.path).headline
+                }
+                // A full bar that is not yet completed or claimed is a reward waiting to be claimed.
+                val claimReady = state.challenges.any { it.progress >= it.threshold && !it.completed && it.templateId !in state.claimedChallengeIds }
+                val cards = buildList {
+                    add(RailItem("review", R.drawable.ds_book, "Review", LearnRail.reviewValue(dueCount), LearnRail.reviewSpoken(dueCount), showsDot = dueCount > 0, expanded = null) { onOpenReview(state.course) })
+                    add(RailItem("path", R.drawable.ds_target, if (hasNoGoal) "Build my path" else "My path", pathValue, "${if (hasNoGoal) "Build my path" else "My path"}, $pathValue", expanded = if (hasNoGoal) null else forYouOpen == "path") {
+                        // No goal yet: straight to the planner (what the goal card did). With a goal: open its detail below.
+                        if (hasNoGoal) onBuildPath() else toggleForYou("path")
+                    })
+                    teamMission?.let { m -> LearnRail.teamValue(m).let { v -> add(RailItem("team", R.drawable.ds_friends, "Team mission", v, "Team mission, $v", expanded = forYouOpen == "team") { toggleForYou("team") }) } }
+                    if (state.challenges.isNotEmpty()) LearnRail.weeklyValue(state.challenges).let { v -> add(RailItem("weekly", R.drawable.ds_star_solid, "Weekly", v, "Weekly challenges, $v${if (claimReady) ", reward ready to claim" else ""}", showsDot = claimReady, expanded = forYouOpen == "weekly") { toggleForYou("weekly") }) }
+                }
+                ForYouRail(cards)
             }
-            teamMission?.let { mission -> item(key = "team-mission") { TeamMissionCard(mission) } }
-            if (state.challenges.isNotEmpty()) {
-                item(key = "challenges") {
-                    DsCard(spacing = AlphonsoTokens.Space.s2) {
-                        DsOverline("This week's challenges")
-                        state.challenges.forEach { c ->
-                            val done = c.progress >= c.threshold
-                            Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
-                                Text(c.title, style = BodyType, color = if (c.completed) ds.inkSoft else ds.ink)
-                                DsProgressBar(minOf(c.progress, c.threshold).toFloat() / maxOf(c.threshold, 1))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("${minOf(c.progress, c.threshold)}/${c.threshold}", style = CaptionType, color = ds.inkSoft, modifier = Modifier.weight(1f))
-                                    if (done && !c.completed && c.templateId !in state.claimedChallengeIds) DsCompactButton("Claim", { vm.claimChallenge(c) }, primary = true)
-                                    else if (c.completed || c.templateId in state.claimedChallengeIds) Text("Claimed", style = FootnoteType, color = ds.actionText)
-                                }
-                            }
-                        }
+            // The opened card's full detail, in place under the rail.
+            if (forYouOpen.isNotEmpty()) {
+                item(key = "for-you-detail") {
+                    when (forYouOpen) {
+                        "path" -> com.obsidianmedia.learnwithalphonso.ui.path.PathCard(pathVm, onOpenRoad = onOpenPath, onBuild = onBuildPath, onOpenRef = onOpenPathRef)
+                        "team" -> teamMission?.let { TeamMissionCard(it) }
+                        "weekly" -> ChallengesCard(state.challenges, state.claimedChallengeIds, onClaim = vm::claimChallenge)
                     }
                 }
-            }
-            item(key = "review") {
-                val subtitle = when (dueCount) { 0 -> "Nothing due right now"; 1 -> "1 item ready to review"; else -> "$dueCount items ready to review" }
-                AlphonsoRowCard("Review", subtitle, accent = if (dueCount > 0) ds.flame else ds.line, modifier = Modifier.clickable { onOpenReview(state.course) })
             }
             if (state.placementTaken == false) {
                 item(key = "placement") {
@@ -255,7 +274,7 @@ fun LearnScreen(
                     }
                 }
             }
-            item(key = "levels") { LevelBandPicker(state.selectedLevel, onSelect = vm::selectLevel) }
+            item(key = "levels") { UnitsHeader(state.selectedLevel, units, state.completedLessonIds, onSelect = vm::selectLevel) }
             item(key = "jump") {
                 if (currentRowIndex >= 0) {
                     TextButton(
@@ -340,28 +359,112 @@ private fun FoldHeaderRow(label: String, open: Boolean, kind: String, onClick: (
     }
 }
 
-/** The current unit pinned on top as a room-art card: YOU ARE HERE, the unit's place, its title, and a gold Continue. */
+/**
+ * The one hero: the current unit on its painted room with Alphonso standing in it, his greeting, and a single gold
+ * Continue lesson button (the design-system primary button look: gold face, darker edge). Replaces the old pinned card.
+ */
 @Composable
-private fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, onContinue: () -> kotlin.Unit) {
+internal fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, roomId: String?, levelIndex: Int, levelCount: Int, lessonTitle: String?, greeting: String, onContinue: () -> kotlin.Unit) {
     val ds = LocalAlphonsoTokens.current
-    val art = LearnFold.roomArtFor(place.index - 1)
+    // The same unit -> room table the lesson and iOS read; the rotation only for a unit it does not know.
+    val art = roomId ?: LearnFold.roomArtFor(place.index - 1)
     val room = rememberFirstRunAsset("scenes/$art.webp") ?: rememberFirstRunAsset("scenes/${LessonStage.FALLBACK_ROOM}.webp")
+    val alphonso = rememberFirstRunAsset("lesson/happy.webp")
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
-    Box(Modifier.fillMaxWidth().clip(shape).background(ds.hero).semantics(mergeDescendants = true) {
-        contentDescription = "You are here, unit ${place.index} of ${place.count}, ${unit.title}, ${LearnFold.roomName(art)}"
-    }) {
-        room?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize()) }
-        Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, ds.hero.copy(alpha = 0.92f)))))
-        Column(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s4), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-            Spacer(Modifier.height(AlphonsoTokens.Space.s12 + AlphonsoTokens.Space.s6))
-            Text("YOU ARE HERE \u00B7 UNIT ${place.index} OF ${place.count}", style = OverlineType, color = ds.onHeroKick)
-            Text(unit.title, style = TitleType, color = ds.onHero)
-            Box(
-                Modifier.heightIn(min = 48.dp).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.xp)
-                    .clickable(role = Role.Button, onClickLabel = "Continue ${unit.title}", onClick = onContinue)
-                    .padding(horizontal = AlphonsoTokens.Space.s6, vertical = AlphonsoTokens.Space.s3),
-                contentAlignment = Alignment.Center,
-            ) { Text("Continue", style = HeadlineType, color = ds.ink) }
+    // At large font sizes the text takes the full width and Alphonso (decorative) steps aside, so nothing overlaps him.
+    val big = LocalDensity.current.fontScale >= 1.3f
+    val textWidth = if (big) 1f else 0.62f
+    Column {
+        // Not merged: TalkBack reads the greeting, then the lesson line, then the Continue lesson button.
+        Box(Modifier.fillMaxWidth().clip(shape).background(ds.hero)) {
+            room?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize()) }
+            Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, ds.hero.copy(alpha = 0.92f)))))
+            if (!big) alphonso?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.align(Alignment.BottomEnd).height(150.dp).clearAndSetSemantics { }) }
+            Column(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s4), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+                Text(greeting, style = CaptionType, color = ds.ink, modifier = Modifier.fillMaxWidth(textWidth).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s2))
+                Spacer(Modifier.height(AlphonsoTokens.Space.s12))
+                Text("YOU ARE HERE \u00B7 UNIT $levelIndex OF $levelCount", style = OverlineType, color = ds.onHeroKick)
+                Text(unit.title, style = TitleType, color = ds.onHero, modifier = Modifier.fillMaxWidth(textWidth))
+                if (lessonTitle != null) Text("Next: $lessonTitle", style = FootnoteType, color = ds.onHeroSoft, modifier = Modifier.fillMaxWidth(textWidth))
+                // The one way in, on the scene with the rest of the hero. The edge under the gold face is the button's darker lip.
+                val button = RoundedCornerShape(AlphonsoTokens.Radius.control)
+                Box(
+                    Modifier.fillMaxWidth(textWidth).clip(button).background(ds.actionEdge).padding(bottom = 4.dp).clip(button).background(ds.action)
+                        .heightIn(min = 48.dp)
+                        .clickable(role = Role.Button, onClickLabel = "Continue ${lessonTitle ?: unit.title}", onClick = onContinue)
+                        .padding(horizontal = AlphonsoTokens.Space.s6, vertical = AlphonsoTokens.Space.s3),
+                    contentAlignment = Alignment.Center,
+                ) { Text("Continue lesson", style = HeadlineType, color = ds.onAction) }
+            }
+        }
+    }
+}
+
+private fun greeting(progress: LessonCompletionProgress?): String {
+    val streak = progress?.let { StreakDisplay.shown(it, System.currentTimeMillis()).streak } ?: 0
+    return if (streak > 0) "Nice $streak-day streak! Ready for today's lesson?" else "Ready for today's lesson?"
+}
+
+/** One card of the For you rail. [expanded] is null for a card that opens a screen, true or false for one that opens in place. */
+internal class RailItem(
+    val id: String,
+    val icon: Int,
+    val title: String,
+    val value: String,
+    val spoken: String,
+    val showsDot: Boolean = false,
+    val expanded: Boolean?,
+    val onClick: () -> kotlin.Unit,
+)
+
+/** Learn's "For you" rail: Review, the goal path, the team mission and the weekly challenges as one row of small cards. */
+@Composable
+internal fun ForYouRail(items: List<RailItem>) {
+    val ds = LocalAlphonsoTokens.current
+    Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+        Text("For you", style = HeadlineType, color = ds.ink, modifier = Modifier.semantics { heading() })
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+            items.forEach { item ->
+                val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+                Column(
+                    Modifier.width((124 * LocalDensity.current.fontScale.coerceIn(1f, 2f)).dp).heightIn(min = 48.dp).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+                        .clickable(role = Role.Button, onClick = item.onClick)
+                        .semantics(mergeDescendants = true) {
+                            contentDescription = item.spoken
+                            item.expanded?.let { stateDescription = if (it) "Expanded" else "Collapsed" }
+                        }
+                        .padding(AlphonsoTokens.Space.s3),
+                    verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
+                ) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Icon(painterResource(item.icon), null, tint = ds.actionText, modifier = Modifier.size(AlphonsoTokens.Space.s8))
+                        if (item.showsDot) Box(Modifier.size(8.dp).clip(CircleShape).background(ds.heart))
+                    }
+                    Text(item.title, style = FootnoteType, fontWeight = FontWeight.Bold, color = ds.ink)
+                    Text(item.value, style = CaptionType, color = ds.inkSoft)
+                }
+            }
+        }
+    }
+}
+
+/** This week's challenges in full (what the rail's Weekly card opens): progress bars and the claim button. */
+@Composable
+private fun ChallengesCard(challenges: List<com.obsidianmedia.learnwithalphonso.core.net.WeeklyChallenge>, claimed: Set<String>, onClaim: (com.obsidianmedia.learnwithalphonso.core.net.WeeklyChallenge) -> kotlin.Unit) {
+    val ds = LocalAlphonsoTokens.current
+    DsCard(spacing = AlphonsoTokens.Space.s2) {
+        DsOverline("This week's challenges")
+        challenges.forEach { c ->
+            val done = c.progress >= c.threshold
+            Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1)) {
+                Text(c.title, style = BodyType, color = if (c.completed) ds.inkSoft else ds.ink)
+                DsProgressBar(minOf(c.progress, c.threshold).toFloat() / maxOf(c.threshold, 1))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("${minOf(c.progress, c.threshold)}/${c.threshold}", style = CaptionType, color = ds.inkSoft, modifier = Modifier.weight(1f))
+                    if (done && !c.completed && c.templateId !in claimed) DsCompactButton("Claim", { onClaim(c) }, primary = true)
+                    else if (c.completed || c.templateId in claimed) Text("Claimed", style = FootnoteType, color = ds.actionText)
+                }
+            }
         }
     }
 }
@@ -386,32 +489,64 @@ fun CoursePicker(course: Course, onSelect: (Course) -> Unit) {
     }
 }
 
+/**
+ * The units header: the band's name and how far through it the learner is, with the level picker as a compact menu
+ * (the web's select beside the same heading). One menu instead of five capsules.
+ */
 @Composable
-private fun LevelBandPicker(selected: String, onSelect: (String) -> Unit) {
+private fun UnitsHeader(selected: String, units: List<com.obsidianmedia.learnwithalphonso.core.content.Unit>, completed: Set<String>, onSelect: (String) -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        LEVELS.forEach { (id, name) ->
-            val isSelected = id == selected
-            Column(
-                Modifier
-                    .clip(CircleShape)
-                    .background(if (isSelected) ds.action else ds.card)
-                    .border(if (isSelected) 0.dp else 1.dp, ds.line, CircleShape)
-                    .clickable { onSelect(id) }
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
-                    .semantics { contentDescription = "$id $name${if (isSelected) ", selected" else ""}" },
-                horizontalAlignment = Alignment.CenterHorizontally,
+    val name = LEVELS.firstOrNull { it.first == selected }?.second ?: ""
+    val lessons = units.flatMap { it.lessons }
+    val percent = if (lessons.isEmpty()) 0 else Math.round(100f * lessons.count { it.id in completed } / lessons.size)
+    var open by remember { mutableStateOf(false) }
+    // At large font scales the menu drops under the title (as on iOS) so neither is cut off.
+    val stacked = LocalDensity.current.fontScale >= 1.3f
+    val title: @Composable (Modifier) -> kotlin.Unit = { m ->
+        Column(m.semantics(mergeDescendants = true) { heading() }) {
+            Text("$selected · $name", style = HeadlineType, color = ds.ink)
+            Text("$percent% complete", style = CaptionType, color = ds.inkSoft)
+        }
+    }
+    val menu: @Composable () -> kotlin.Unit = {
+        Box {
+            val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+            Row(
+                Modifier.heightIn(min = 48.dp).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+                    .clickable(role = Role.Button, onClickLabel = "Change level", onClick = { open = true })
+                    .semantics(mergeDescendants = true) { contentDescription = "Level: $selected, $name" }
+                    .padding(horizontal = AlphonsoTokens.Space.s3),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
             ) {
-                Text(id, style = FootnoteType, fontWeight = FontWeight.SemiBold, color = if (isSelected) ds.onAction else ds.ink)
-                Text(name, style = CaptionType, color = if (isSelected) ds.onAction else ds.ink)
+                Text(selected, style = FootnoteType, fontWeight = FontWeight.Bold, color = ds.ink)
+                Text("\u25BE", style = CaptionType, color = ds.inkSoft)
+            }
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                LEVELS.forEach { (id, levelName) ->
+                    DropdownMenuItem(
+                        text = { Text("$id \u00B7 $levelName", color = ds.ink) },
+                        onClick = { open = false; onSelect(id) },
+                        modifier = Modifier.semantics { contentDescription = "$id $levelName${if (id == selected) ", selected" else ""}" },
+                    )
+                }
             }
         }
     }
+    if (stacked) {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) { title(Modifier); menu() }
+    } else {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) { title(Modifier.weight(1f)); menu() }
+    }
 }
 
-/** Port of StatusHeaderView.swift: streak, hearts, XP, league, and the mascot greeting. Nothing when no cache yet. */
+/**
+ * The slim status row (StatusHeaderView.swift): streak, hearts, XP and league as small pills in one line. Android has no
+ * cross-tab top bar, so the stats stay here. The streak pill is also the way to the streak-freeze shop. Nothing when no
+ * cache yet.
+ */
 @Composable
-fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> Unit)? = null) {
+fun StatusHeader(progress: LessonCompletionProgress?, showFreezeShop: Boolean = false, onToggleFreezeShop: (() -> Unit)? = null, onBuyStreakFreeze: (() -> Unit)? = null) {
     if (progress == null) return
     val ds = LocalAlphonsoTokens.current
     // The streak as it reads today (StreakDisplay, the server's own rule): alive only by a freeze reads as protected,
@@ -420,7 +555,10 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             // Missed days a streak freeze covers: the snowflake the freeze row uses, as on iOS.
-            StatPill("🔥", "${streak.streak}", StreakDisplay.accessibilityLabel(streak), hint = if (streak.state == StreakDisplay.State.PROTECTED) "❄️" else null)
+            StatPill(
+                "🔥", "${streak.streak}", StreakDisplay.accessibilityLabel(streak), hint = if (streak.state == StreakDisplay.State.PROTECTED) "❄️" else null,
+                onClick = onToggleFreezeShop, stateText = if (showFreezeShop) "Streak freezes shown" else "Double tap for streak freezes",
+            )
             HeartsPill(progress)
             StatPill("⭐", "${progress.xp}", "XP: ${progress.xp}")
             Spacer(Modifier.weight(1f))
@@ -429,11 +567,10 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
                 color = ds.onHero,
                 style = CaptionType,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.clip(CircleShape).background(LeagueTierPalette.color(progress.leagueTier)).padding(horizontal = 10.dp, vertical = 6.dp),
+                modifier = Modifier.clip(CircleShape).background(LeagueTierPalette.color(progress.leagueTier)).padding(horizontal = 10.dp, vertical = 4.dp),
             )
         }
-        AlphonsoMascotBanner(if (streak.streak > 0) "Nice ${streak.streak}-day streak! Ready for today's lesson?" else "Ready for today's lesson?")
-        if (onBuyStreakFreeze != null) {
+        if (onBuyStreakFreeze != null && showFreezeShop) {
             // A card like the other Learn rows (parchment, hairline edge), so the words never sit straight on the garden photo.
             // Ink on parchment, and the buy button is the secondary button: moss text alone is under 4.5:1 on Studio Ink's parchment.
             Row(
@@ -448,16 +585,20 @@ fun StatusHeader(progress: LessonCompletionProgress?, onBuyStreakFreeze: (() -> 
 }
 
 @Composable
-private fun StatPill(icon: String, value: String, label: String, hint: String? = null) {
+private fun StatPill(icon: String, value: String, label: String, hint: String? = null, onClick: (() -> Unit)? = null, stateText: String? = null) {
     val ds = LocalAlphonsoTokens.current
+    val tap = if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier
     Row(
-        Modifier.clip(CircleShape).background(ds.card).border(1.dp, ds.line, CircleShape).padding(horizontal = 10.dp, vertical = 6.dp).semantics(mergeDescendants = true) { contentDescription = label },
+        Modifier.heightIn(min = if (onClick != null) 48.dp else 0.dp).clip(CircleShape).background(ds.card).border(1.dp, ds.line, CircleShape).then(tap).padding(horizontal = 10.dp, vertical = 4.dp)
+            .semantics(mergeDescendants = true) { contentDescription = label; if (stateText != null) stateDescription = stateText },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(icon, style = FootnoteType)
         Text(value, style = FootnoteType, fontWeight = FontWeight.Bold, color = ds.ink)
         if (hint != null) Text(hint, style = CaptionType, color = ds.inkSoft)
+        // A tappable pill says so: the chevron shows (and flips) the streak-freeze shop.
+        if (onClick != null) Text(if (stateText != null && stateText.startsWith("Streak freezes shown")) "▴" else "▾", style = CaptionType, color = ds.inkSoft, modifier = Modifier.clearAndSetSemantics { })
     }
 }
 

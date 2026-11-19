@@ -1,7 +1,7 @@
 import { useWeeklyChallenges } from "../lib/use-weekly-challenges";
 
-export function WeeklyChallengesCard() {
-  const { challenges, isLoading, failed, retry } = useWeeklyChallenges();
+export function WeeklyChallengesCard({ nested = false }: { nested?: boolean } = {}) {
+  const { challenges, isLoading, failed, retry } = useWeeklyChallenges({ nested });
 
   // A failed read says so, with a retry, instead of hiding the challenges as if there were none this week.
   if (failed)

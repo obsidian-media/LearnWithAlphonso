@@ -18,7 +18,7 @@ const THEMES = ["royal", "meadow"] as const;
 const WIDTHS = [390, 1280] as const;
 const LESSON = curriculum[0].lessons[0];
 const SCREENS: { name: string; path: string; ready: string }[] = [
-  { name: "learn", path: "/learn", ready: "Continue" },
+  { name: "learn", path: "/learn", ready: "Continue lesson" },
   { name: "practice", path: "/converse", ready: "Scenarios" },
   { name: "lesson-overview", path: `/lesson/${LESSON.id}`, ready: "Start lesson" },
   { name: "listen", path: "/listen", ready: "Library" },

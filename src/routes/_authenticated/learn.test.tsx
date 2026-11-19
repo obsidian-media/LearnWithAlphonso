@@ -73,14 +73,14 @@ vi.mock("../../lib/sync.functions", () => ({
 const fetchDueReviews = vi.fn();
 vi.mock("../../lib/review.functions", () => ({ fetchDueReviews }));
 
-// The path card has its own tests (PathCard.test.tsx); here we only check the page mounts it for the current course.
-// The team mission and weekly challenges cards use react-query, which this test does not set up; they have their own
-// tests (TeamMissionCard, WeeklyChallengesCard, WeeklySocialCards). Here we only check the page mounts them.
-vi.mock("../../components/WeeklySocialCards", () => ({
-  WeeklySocialCards: () => <div data-testid="weekly-social-cards" />,
-}));
-vi.mock("../../components/path/PathCard", () => ({
-  PathCard: ({ course }: { course: string }) => <div data-testid="path-card">{course}</div>,
+// The For you rail uses react-query and the path client, which this test does not set up; it has its own tests
+// (ForYouRail.test.tsx). Here we only check the page mounts it for the current course with the due count.
+vi.mock("../../components/learn/ForYouRail", () => ({
+  ForYouRail: ({ course, dueCount }: { course: string; dueCount: number }) => (
+    <div data-testid="for-you-rail">
+      {course}:{dueCount}
+    </div>
+  ),
 }));
 
 const { Route } = await import("./learn");
@@ -114,14 +114,26 @@ beforeEach(() => {
 });
 
 describe("Learn page", () => {
-  it("shows the team mission and weekly challenges cards", async () => {
+  it("mounts the For you rail for the current course", async () => {
     renderPage();
-    expect(await screen.findByTestId("weekly-social-cards")).toBeInTheDocument();
+    expect(await screen.findByTestId("for-you-rail")).toHaveTextContent("en:0");
   });
 
-  it("shows the learning goal card for the current course", async () => {
+  it("hands the rail the due-review count once fetchDueReviews resolves", async () => {
+    fetchDueReviews.mockResolvedValue({
+      due: [{ itemKey: "u1l1:q1" }, { itemKey: "u1l1:q2" }],
+      total: 2,
+    });
     renderPage();
-    expect(await screen.findByTestId("path-card")).toHaveTextContent("en");
+    await waitFor(() => expect(screen.getByTestId("for-you-rail")).toHaveTextContent("en:2"));
+  });
+
+  it("no longer repeats the streak and XP pills the app top bar already shows", async () => {
+    renderPage();
+    await screen.findByTestId("for-you-rail");
+    // The shell's top bar owns the one streak pill and the one XP pill; the page adds none of its own.
+    expect(screen.queryAllByLabelText(/^Streak/)).toHaveLength(1);
+    expect(screen.queryAllByLabelText(/^[\d,]+ XP$/).length).toBeLessThanOrEqual(1);
   });
 
   it("shows the placement banner before a placement test has been taken", async () => {
@@ -188,20 +200,11 @@ describe("Learn page", () => {
 
   it("shows 0% progress with no completions and updates as lessons complete", async () => {
     renderPage();
-    expect(await screen.findByText("0%")).toBeInTheDocument();
+    expect(await screen.findByText("0% complete")).toBeInTheDocument();
 
     useProgress.setState({ completedLessons: [firstLesson.id] });
     const expectedPct = Math.round((1 / a1Lessons.length) * 100);
-    expect(await screen.findByText(`${expectedPct}%`)).toBeInTheDocument();
-  });
-
-  it("shows the due-review badge once fetchDueReviews resolves", async () => {
-    fetchDueReviews.mockResolvedValue({
-      due: [{ itemKey: "u1l1:q1" }, { itemKey: "u1l1:q2" }],
-      total: 2,
-    });
-    renderPage();
-    expect(await screen.findByLabelText("2 items due")).toHaveTextContent("2");
+    expect(await screen.findByText(`${expectedPct}% complete`)).toBeInTheDocument();
   });
 
   it("switches CEFR level locally and persists it remotely", async () => {
@@ -210,7 +213,10 @@ describe("Learn page", () => {
     await screen.findByRole("button", { name: new RegExp(a1Units[0].title) });
 
     const nextLevel = LEVELS[1].id;
-    await user.click(screen.getByRole("tab", { name: new RegExp(`^${nextLevel}`) }));
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "Select CEFR level" }),
+      nextLevel,
+    );
 
     expect(useProgress.getState().cefrLevel).toBe(nextLevel);
     await waitFor(() =>
@@ -289,8 +295,10 @@ describe("Learn, round 6.1: pinned current unit and folded rooms", () => {
   it("pins the current unit on its room art, with its place in the whole course", async () => {
     renderPage();
     const link = await screen.findByRole("link", { name: /^Continue:/ });
-    expect(link).toHaveTextContent(/You are here · Unit 1 of \d+/);
-    expect(link.querySelector("img")?.getAttribute("src")).toMatch(
+    expect(link).toHaveTextContent("Continue lesson");
+    const hero = link.closest("[data-learn-hero]")!;
+    expect(hero).toHaveTextContent(`You are here · Unit 1 of ${a1Units.length}`);
+    expect(hero.querySelector("img")?.getAttribute("src")).toMatch(
       /^\/avatar\/scenes\/[a-z]+\.webp$/,
     );
   });
@@ -321,7 +329,7 @@ describe("Learn, round 6.1: pinned current unit and folded rooms", () => {
     await user.click(run);
     expect(screen.getByRole("link", { name: `Start ${title}` })).toBeInTheDocument();
     // The pinned card moved on to unit 2.
-    expect(screen.getByRole("link", { name: /^Continue:/ })).toHaveTextContent(/Unit 2 of/);
+    expect(screen.getByRole("link", { name: /unit 2 of/ })).toHaveAttribute("href");
   });
 
   it("folds future rooms: the next room is one row, the rest sit behind Show all units", async () => {

@@ -1,10 +1,9 @@
 {
   "$comment": "Raw colours and font sizes per file in view code, today. A count may only go down: lower it with bun scripts/design-raw-value-baseline.ts. Never raise one; use the design tokens instead.",
-  "total": 12,
+  "total": 11,
   "files": {
     "ios/LearnWithAlphonso/Sources/AvatarColor.swift": 2,
     "ios/LearnWithAlphonso/Sources/GoogleSignInButton.swift": 3,
-    "ios/LearnWithAlphonso/Sources/LeagueTierPalette.swift": 6,
-    "ios/LearnWithAlphonso/Sources/LearnPathMap.swift": 1
+    "ios/LearnWithAlphonso/Sources/LeagueTierPalette.swift": 6
   }
 }

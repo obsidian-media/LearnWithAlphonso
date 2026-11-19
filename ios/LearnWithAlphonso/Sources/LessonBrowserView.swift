@@ -66,7 +66,6 @@ struct LessonBrowserView: View {
     /// should be a sign that a user can know which unit was she studying
     /// ... right now endless scrolling."
     @State private var mostRecentlyCompletedLessonID: String?
-    @State private var hasScrolledToContinue = false
     /// Round 6.1: which folded rows the learner opened, and whether the current unit is on screen (for Jump to current).
     @State private var expandedFolds: Set<String> = []
     @State private var showAllUnits = false
@@ -78,6 +77,16 @@ struct LessonBrowserView: View {
     @State private var openedLesson: OpenedLesson?
     /// "Build my path" (the learning path's goal, level, date and type switches).
     @State private var showingPathBuild = false
+    /// "For you" rail: which card's detail is open below the rail (the path, the team mission or the challenges).
+    @State private var forYouDetail: ForYouDetail?
+    /// The streak-freeze shop row, shown from the streak pill on the slim status row.
+    @State private var showingFreezeShop = false
+    /// The path as the rail's card reads it (its own copy; the detail below loads another, like the road screen).
+    @State private var railPath: PathModel?
+    /// Bumped when the goal planner closes, so the opened path detail reads the new goal too.
+    @State private var pathReloadToken = 0
+
+    private enum ForYouDetail: Hashable { case path, team, weekly }
 
     private struct OpenedLesson: Hashable { let id: String }
 
@@ -137,6 +146,11 @@ struct LessonBrowserView: View {
         return flattened[(idx + 1)...].first(where: { !completedLessonIDs.contains($0.id) })?.id
     }
 
+    private var levelLessonCount: Int { unitsForSelectedLevel.reduce(0) { $0 + $1.lessons.count } }
+    private var levelDoneCount: Int {
+        unitsForSelectedLevel.reduce(0) { $0 + $1.lessons.filter { completedLessonIDs.contains($0.id) }.count }
+    }
+
     /// The first lesson in this band not yet completed, and its unit (web: learn.tsx's firstUndone).
     private var nextLesson: (unit: LearnWithAlphonsoKit.Unit, lesson: Lesson)? {
         for unit in unitsForSelectedLevel {
@@ -172,8 +186,14 @@ struct LessonBrowserView: View {
     /// The painted room behind a unit: the bundled unit -> room map first, then the fixed rotation by place in the band.
     private func roomID(for unit: LearnWithAlphonsoKit.Unit) -> String {
         if let mapped = LessonData.roomMap?.roomID(forUnit: unit.id) { return mapped }
-        let index0 = unitsForSelectedLevel.firstIndex(where: { $0.id == unit.id }) ?? 0
+        let index0 = contentStore.bundle(for: course).units.firstIndex(where: { $0.id == unit.id }) ?? 0
         return LearnFold.roomArtFor(index0)
+    }
+
+    /// A unit's place among the units of its own level, the same count the web hero and Android show ("Unit 1 of 28").
+    private func coursePlace(of unit: LearnWithAlphonsoKit.Unit) -> (index: Int, count: Int) {
+        let all = contentStore.bundle(for: course).units.filter { $0.level == unit.level }
+        return ((all.firstIndex { $0.id == unit.id } ?? 0) + 1, max(all.count, 1))
     }
 
     private func toggleFold(_ key: String) {
@@ -242,18 +262,86 @@ struct LessonBrowserView: View {
         .listRowSeparator(.hidden)
     }
 
+    /// "My path" / "Build my path": the value the rail card shows for the learner's goal.
+    private var railPathValue: String {
+        switch railPath?.phase ?? .loading {
+        case .loading: return "Loading"
+        case .failed: return "Couldn't load"
+        case .none: return "Set a goal"
+        case .ready(let path): return PathGoalCard.lines(for: path).headline
+        }
+    }
+
+    private func toggleForYou(_ detail: ForYouDetail) {
+        withAnimation(learnFoldAnimation(reduceMotion: reduceMotion)) {
+            forYouDetail = forYouDetail == detail ? nil : detail
+        }
+    }
+
+    /// The rail's cards. Team mission and weekly challenges appear only when there is something to show, as their
+    /// sections always did; Review and the path are always there (Review is the door to the queue, even at zero).
+    private var forYouItems: [LearnForYouRail.Item] {
+        let hasNoGoal = railPath?.hasNoPath == true
+        var items: [LearnForYouRail.Item] = [
+            LearnForYouRail.Item(
+                id: "review", emoji: "\u{1F4DA}", title: "Review",
+                value: dueReviewCount > 0 ? "\(dueReviewCount) due" : "All caught up",
+                spoken: "Review, \(reviewSubtitle)",
+                showsDot: dueReviewCount > 0,
+                action: { showingReview = true }),
+            LearnForYouRail.Item(
+                id: "path", emoji: "\u{1F9ED}",
+                title: hasNoGoal ? "Build my path" : "My path",
+                value: railPathValue,
+                spoken: "\(hasNoGoal ? "Build my path" : "My path"), \(railPathValue)",
+                expanded: hasNoGoal ? nil : (forYouDetail == .path),
+                action: {
+                    // No goal yet: straight to the planner (what the goal card did). With a goal: open its detail.
+                    // Still loading: nothing to open yet. Failed: try again.
+                    switch railPath?.phase ?? .loading {
+                    case .none: showingPathBuild = true
+                    case .ready: toggleForYou(.path)
+                    case .failed: Task { await railPath?.load() }
+                    case .loading: break
+                    }
+                }),
+        ]
+        if let mission = missionModel.mission {
+            let value = mission.status == .needsMembers ? "Invite a friend" : "\(mission.percent)% done"
+            items.append(LearnForYouRail.Item(
+                id: "team", emoji: "\u{1F3AF}", title: "Team mission", value: value,
+                spoken: "Team mission, \(value)",
+                expanded: forYouDetail == .team,
+                action: { toggleForYou(.team) }))
+        }
+        if !challenges.isEmpty {
+            let value = "\(challenges.filter(\.completed).count) of \(challenges.count) done"
+            // A full bar that is not yet completed is a reward waiting to be claimed.
+            let claimReady = challenges.contains { !$0.completed && $0.progress >= $0.threshold }
+            items.append(LearnForYouRail.Item(
+                id: "weekly", emoji: "\u{2B50}", title: "Weekly", value: value,
+                spoken: "Weekly challenges, \(value)\(claimReady ? ", reward ready to claim" : "")",
+                showsDot: claimReady,
+                expanded: forYouDetail == .weekly,
+                action: { toggleForYou(.weekly) }))
+        }
+        return items
+    }
 
     var body: some View {
         NavigationStack {
             ScrollViewReader { scrollProxy in
             List {
-                StatusHeaderView(progress: syncQueueStore.lastKnownProgress())
-                    .sceneScrollProbe()
+                StatusHeaderView(progress: syncQueueStore.lastKnownProgress(),
+                    onStreakTap: {
+                        withAnimation(learnFoldAnimation(reduceMotion: reduceMotion)) { showingFreezeShop.toggle() }
+                    },
+                    freezeShopOpen: showingFreezeShop)
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
 
-                if let progress = syncQueueStore.lastKnownProgress() {
+                if showingFreezeShop, let progress = syncQueueStore.lastKnownProgress() {
                     // Only the freeze count goes back into the shared cache: its XP is whichever course updated last.
                     StreakFreezeRow(
                         cachedFreezes: progress.streakFreezes, course: course, session: session,
@@ -269,30 +357,25 @@ struct LessonBrowserView: View {
                     .listRowBackground(Color.clear)
                 }
 
-                // One loud card for the next lesson in this band, with the unit's lessons as a short path.
+                // The one hero: one rounded card with the unit's room, Alphonso, his greeting and the single
+                // Continue lesson button.
                 if let next = nextLesson {
-                    // The unit as a winding path over the garden, Alphonso beside the current node.
-                    LearnPathMap(
-                        nodes: UnitPath.nodes(lessonIDs: next.unit.lessons.map(\.id), completed: completedLessonIDs).map { node in
-                            PathMapNode(id: node.id, title: next.unit.lessons.first { $0.id == node.id }?.title ?? "", state: node.state)
-                        },
+                    // The link sits invisibly behind the hero: a visible NavigationLink in a List adds a
+                    // disclosure chevron beside it and narrows it.
+                    LearnHeroStage(
                         greeting: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress())),
-                        onOpen: { openedLesson = OpenedLesson(id: $0) }
-                    )
-                    .listRowInsets(EdgeInsets())
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-
-                    // The link sits invisibly behind the card: a visible NavigationLink in a List adds a
-                    // disclosure chevron beside the card and narrows it.
-                    LearnCurrentUnitCard(
-                        unitNumber: currentUnit?.index ?? 1,
-                        unitCount: currentUnit?.count ?? 1,
-                        unitTitle: next.unit.title,
-                        lessonTitle: next.lesson.title,
                         roomID: roomID(for: next.unit)
-                    )
-                    .accessibilityAddTraits(.isButton)
+                    ) {
+                        // The unit's place among the units of its level (the web's and Android's count).
+                        LearnCurrentUnitCard(
+                            unitNumber: coursePlace(of: next.unit).index,
+                            unitCount: coursePlace(of: next.unit).count,
+                            unitTitle: next.unit.title,
+                            lessonTitle: next.lesson.title
+                        )
+                    }
+                    .background(NavigationLink(value: next.lesson.id) { EmptyView() }.opacity(0))
+                    .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 }
@@ -303,38 +386,32 @@ struct LessonBrowserView: View {
                 // Finished work still waiting to reach the server. Hidden when the queue is empty.
                 PendingSyncSection(syncQueueStore: syncQueueStore, session: session, isConnected: networkMonitor.isConnected)
 
-                // The way into the review queue. Before Phase 0 this was a
-                // tab of its own and ReviewQueueView was instantiated in
-                // exactly one place -- the tab bar -- so this row is what
-                // keeps the queue reachable, not a convenience shortcut.
+                // The way into the review queue lives in the For you rail (its first card). Before Phase 0 this was a
+                // tab of its own and ReviewQueueView was instantiated in exactly one place -- the tab bar -- so the
+                // card is what keeps the queue reachable, not a convenience shortcut.
                 //
-                // Shown even when nothing is due, rather than hidden: a row
-                // that vanishes at zero would make the queue unreachable in
-                // the very change meant to keep it reachable. The tab badge
-                // is the thing that hides at zero; this is the door.
+                // Shown even when nothing is due, rather than hidden: a card that vanished at zero would make the
+                // queue unreachable. The tab badge is the thing that hides at zero; this is the door.
                 //
-                // Presented rather than pushed, because ReviewQueueView owns
-                // its own NavigationStack -- pushing it would nest two.
-                Button {
-                    showingReview = true
-                } label: {
-                    AlphonsoRowCard(
-                        title: "Review",
-                        subtitle: reviewSubtitle,
-                        accent: dueReviewCount > 0 ? ds.flame : ds.line
-                    )
+                // Presented rather than pushed (showingReview), because ReviewQueueView owns its own
+                // NavigationStack -- pushing it would nest two.
+                LearnForYouRail(items: forYouItems)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+
+                // The opened card's full detail, in place under the rail. One card identity per course: a save or
+                // remove still in flight for the course the learner just left must not land in the new course's card.
+                if forYouDetail == .path {
+                    PathCardSection(session: session, course: course) { showingPathBuild = true }
+                        .id("\(course.translationCourseCode)-\(pathReloadToken)")
                 }
-                .buttonStyle(.plain)
-                .listRowBackground(Color.clear)
-
-                // One card identity per course: a save or remove still in flight for the course the
-                // learner just left must not land in the new course's card (its state is discarded).
-                PathCardSection(session: session, course: course) { showingPathBuild = true }
-                    .id(course.translationCourseCode)
-
-                TeamMissionSection(mission: missionModel.mission, plainInsets: true)
-
-                WeeklyChallengesSection(challenges: challenges)
+                if forYouDetail == .team {
+                    TeamMissionSection(mission: missionModel.mission, plainInsets: true)
+                }
+                if forYouDetail == .weekly {
+                    WeeklyChallengesSection(challenges: challenges)
+                }
 
                 // Fallback for anyone RootView's post-sign-in placement
                 // gate didn't reach (skipped it, or it fires for the
@@ -343,7 +420,7 @@ struct LessonBrowserView: View {
                 // exactly. See PlacementView.swift's doc comment.
                 PlacementBannerSection(isVisible: onboardingSettled && !isCheckingPlacement && !placementTaken) { showingPlacementTest = true }
 
-                LevelBandPicker(selectedLevel: $selectedLevel)
+                LearnUnitsHeader(selectedLevel: $selectedLevel, done: levelDoneCount, total: levelLessonCount)
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
@@ -406,28 +483,18 @@ struct LessonBrowserView: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .overlay(alignment: .bottom) {
+            // An inset, not an overlay: the list ends above the button, so it never covers a row.
+            .safeAreaInset(edge: .bottom) {
                 if !currentUnitVisible, currentUnit != nil {
                     JumpToCurrentButton {
                         withAnimation(learnFoldAnimation(reduceMotion: reduceMotion)) {
                             scrollProxy.scrollTo(LearnFoldAnchor.current, anchor: .top)
                         }
                     }
-                    .padding(.bottom, AlphonsoSpacing.md)
+                    .padding(.vertical, AlphonsoSpacing.sm)
                 }
             }
-            .screenScene(
-                .learn,
-                clip: .learn,
-                // Alphonso waves at 67% across with his head top 54% down in the clip: the greeting bubble is pinned just
-                // above it (its tail points down at him). Only when the map is on screen, since the map is what speaks it.
-                pin: nextLesson == nil ? nil : ClipPin(x: 64, y: 53) {
-                    PathSpeechBubble(message: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress())))
-                        .frame(width: 210)
-                }
-            )
-            // After the scene, so the flat surface sits BEHIND it. A `.background` added later is drawn behind an
-            // earlier one, so this used to be drawn over the scene (plain navy on builds 61 to 63).
+            // Learn sits on the flat cream surface (the hero card brings its own room); no full-screen clip.
             .background(ds.surface)
             // Re-fetches on every course switch too, since CEFR level is
             // tracked per-language server-side (language_progress), not
@@ -440,6 +507,11 @@ struct LessonBrowserView: View {
             .task(id: "\(course.code)-\(onboardingSettled)-\(placementTaken)") { await loadLevel() }
             .task { await missionModel.load(session: session) }
             .task { await loadChallenges() }
+            .task(id: course.translationCourseCode) {
+                let made = PathModel(session: session, courseCode: course.translationCourseCode)
+                railPath = made
+                await made.load()
+            }
             .task(id: "\(course.code)-\(onboardingSettled)") { await checkPlacement() }
             .fullScreenCover(isPresented: $showingPlacementTest) {
                 PlacementView(contentStore: contentStore, session: session, course: course) {
@@ -478,7 +550,11 @@ struct LessonBrowserView: View {
                     openedLesson = OpenedLesson(id: lessonID)
                 }
             }
-            .sheet(isPresented: $showingPathBuild) {
+            .sheet(isPresented: $showingPathBuild, onDismiss: {
+                // The goal may have been built, changed or removed: the rail card and any open detail read it again.
+                pathReloadToken += 1
+                Task { await railPath?.load() }
+            }) {
                 PathBuildView(session: session, course: course) { lessonID in
                     openedLesson = OpenedLesson(id: lessonID)
                 }
@@ -495,15 +571,8 @@ struct LessonBrowserView: View {
                     syncQueueStore: syncQueueStore
                 )
             }
-            // Fires once completion data has loaded and resolved a real
-            // target -- guarded so switching CEFR bands by hand afterward
-            // doesn't keep yanking the list back to "continue" underneath
-            // the user.
-            .onChange(of: continueLessonID) { _, newValue in
-                guard !hasScrolledToContinue, let newValue else { return }
-                hasScrolledToContinue = true
-                withAnimation { scrollProxy.scrollTo(newValue, anchor: .center) }
-            }
+            // No scroll to "continue" on first show: the status row and the hero are the top of the screen, and
+            // Jump to current is the way down.
             }
         }
         .tint(ds.choice)
@@ -604,43 +673,61 @@ private extension Course {
     }
 }
 
-/// A horizontally-scrolling row of CEFR band capsules -- iOS's equivalent
-/// of web's `SegmentedControl` in `learn.tsx`. A plain custom row instead
-/// of a native `Picker` since AlphonsoComponents has no segmented-capsule
-/// style to reuse today (CoursePicker above uses `.pickerStyle(.menu)`,
-/// wrong shape for "show all five bands at once").
-private struct LevelBandPicker: View {
+/// The units header: the band's name and how far through it the learner is, with the level picker as a compact menu
+/// (web: the select beside the same heading). A menu, not a row of capsules: five bands at once was the clutter.
+private struct LearnUnitsHeader: View {
     @Environment(\.alphonsoDS) private var ds
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Binding var selectedLevel: String
+    let done: Int
+    let total: Int
+
+    private var name: String {
+        LessonBrowserView.levels.first { $0.id == selectedLevel }?.name ?? ""
+    }
+
+    private var percent: Int { total > 0 ? Int((Double(done) / Double(total) * 100).rounded()) : 0 }
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: AlphonsoSpacing.sm) {
-                ForEach(LessonBrowserView.levels, id: \.id) { level in
-                    Button {
-                        selectedLevel = level.id
-                    } label: {
-                        VStack(spacing: 1) {
-                            Text(level.id)
-                                .dsText(.footnote)
-                            Text(level.name)
-                                .dsText(.caption)
-                        }
-                        .padding(.horizontal, AlphonsoSpacing.sm + 2)
-                        .padding(.vertical, AlphonsoSpacing.sm - 2)
-                        .foregroundStyle(level.id == selectedLevel ? ds.onAction : ds.ink)
-                        .background(
-                            Capsule().fill(level.id == selectedLevel ? ds.action : ds.sunk)
-                        )
-                        .overlay(
-                            Capsule().strokeBorder(ds.line, lineWidth: level.id == selectedLevel ? 0 : 1)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
+        // At accessibility sizes the menu drops under the title, so neither is cut off.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: AlphonsoSpacing.xs))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: AlphonsoSpacing.sm))
+        layout {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(selectedLevel) \u{00B7} \(name)")
+                    .dsText(.headline)
+                    .foregroundStyle(ds.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("\(percent)% complete")
+                    .dsText(.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(ds.inkSoft)
             }
-            .padding(.horizontal, 1)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
+            Spacer(minLength: 0)
+            Menu {
+                Picker("Level", selection: $selectedLevel) {
+                    ForEach(LessonBrowserView.levels, id: \.id) { level in
+                        Text("\(level.id) \u{00B7} \(level.name)").tag(level.id)
+                    }
+                }
+            } label: {
+                HStack(spacing: AlphonsoSpacing.xs) {
+                    Text(selectedLevel).dsText(.footnote)
+                    Image(systemName: "chevron.down").font(.caption2.weight(.bold))
+                }
+                .foregroundStyle(ds.ink)
+                .padding(.horizontal, AlphonsoSpacing.sm + 2)
+                .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card.opacity(0.94)))
+                .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(ds.line, lineWidth: 2))
+            }
+            .accessibilityLabel("Level: \(selectedLevel), \(name)")
+            .accessibilityHint("Double tap to change level")
         }
+        .padding(.horizontal, AlphonsoSpacing.md)
     }
 }
 

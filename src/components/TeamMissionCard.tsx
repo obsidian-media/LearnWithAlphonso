@@ -5,8 +5,8 @@ import { useTeamMission } from "../lib/use-team-mission";
  * The team's weekly shared mission. Renders nothing without a team or while loading; a failed read says so, with a
  * retry, rather than hiding the mission as if there were none (see useTeamMission for who is told).
  */
-export function TeamMissionCard() {
-  const { mission, showError, retry } = useTeamMission();
+export function TeamMissionCard({ nested = false }: { nested?: boolean } = {}) {
+  const { mission, showError, retry } = useTeamMission({ nested });
 
   if (showError)
     return (
