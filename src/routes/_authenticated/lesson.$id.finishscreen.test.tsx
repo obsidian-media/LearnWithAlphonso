@@ -18,7 +18,7 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 vi.mock("../../lib/auth-headers", () => ({ authHeaders: vi.fn().mockResolvedValue({}) }));
 vi.mock("@/lib/leaderboard.functions", () => ({ getMyProfile: async () => null }));
 
-const { FinishScreen } = await import("./lesson.$id");
+const { FinishScreen } = await import("../../components/lesson/FinishScreen");
 
 const originalFetch = global.fetch;
 afterEach(() => {

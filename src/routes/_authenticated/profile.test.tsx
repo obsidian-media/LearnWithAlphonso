@@ -287,7 +287,11 @@ describe("Profile page", () => {
     await waitFor(() => expect(exportMyData).toHaveBeenCalled());
     expect(global.URL.createObjectURL).toHaveBeenCalled();
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalled();
-    expect(global.URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
+    // The URL is revoked a moment after the click, not in the same tick (Safari cancels the download otherwise).
+    expect(global.URL.revokeObjectURL).not.toHaveBeenCalled();
+    await waitFor(() => expect(global.URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url"), {
+      timeout: 3000,
+    });
   });
 
   it("shows an error message when the export fails", async () => {

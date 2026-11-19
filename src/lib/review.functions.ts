@@ -6,6 +6,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { computeReviewOutcome, deriveAnswerCorrectness, reviewSnapshotMatches } from "./srs";
 import { getCourse } from "../data/courses";
 import { resolveLlmApiKey } from "@/lib/llm-chat-model.server";
+import { REVIEW_BATCH_SIZE } from "./review-batch";
 
 /** Same course-awareness pattern as sync.functions.ts. */
 const courseSchema = z.enum(["en", "fr", "es"]).default("en");
@@ -125,48 +126,65 @@ export const recordMisses = createServerFn({ method: "POST" })
     return { added: rows.length };
   });
 
-/** Items due today (plus overdue), oldest first, for the given course. */
+/**
+ * Items due today (plus overdue), oldest first, for the given course: at most REVIEW_BATCH_SIZE of them, with
+ * `dueTotal` saying how many are due in all, so the screen never calls a batch "Review complete" while more wait.
+ */
 export const fetchDueReviews = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ course: courseSchema }).parse(d ?? {}))
-  .handler(async ({ data, context }): Promise<{ due: ReviewItem[]; total: number }> => {
-    const { supabase, userId } = context;
-    const { course } = data;
-    const [dueRes, totalRes] = await Promise.all([
-      supabase
-        .from("review_items")
-        .select(
-          "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,last_reviewed_at,source,weakness_display,prompt,choices,answer_index,explanation",
-        )
-        .eq("user_id", userId)
-        .eq("language", course)
-        .lte("due_on", today())
-        .order("due_on", { ascending: true })
-        .limit(20),
-      supabase
-        .from("review_items")
-        .select("item_key", { count: "exact", head: true })
-        .eq("user_id", userId)
-        .eq("language", course),
-    ]);
-    const due = (dueRes.data ?? []).map((r) => ({
-      itemKey: r.item_key,
-      lessonId: r.lesson_id,
-      level: r.level,
-      ease: r.ease,
-      intervalDays: r.interval_days,
-      repetitions: r.repetitions,
-      dueOn: r.due_on,
-      lastReviewedAt: r.last_reviewed_at ?? null,
-      source: r.source,
-      weaknessDisplay: r.weakness_display,
-      prompt: r.prompt,
-      choices: r.choices as string[] | null,
-      answerIndex: r.answer_index,
-      explanation: r.explanation,
-    }));
-    return { due, total: totalRes.count ?? 0 };
-  });
+  .handler(
+    async ({ data, context }): Promise<{ due: ReviewItem[]; total: number; dueTotal: number }> => {
+      const { supabase, userId } = context;
+      const { course } = data;
+      const [dueRes, totalRes, dueTotalRes] = await Promise.all([
+        supabase
+          .from("review_items")
+          .select(
+            "item_key,lesson_id,level,ease,interval_days,repetitions,due_on,last_reviewed_at,source,weakness_display,prompt,choices,answer_index,explanation",
+          )
+          .eq("user_id", userId)
+          .eq("language", course)
+          .lte("due_on", today())
+          .order("due_on", { ascending: true })
+          .limit(REVIEW_BATCH_SIZE),
+        supabase
+          .from("review_items")
+          .select("item_key", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("language", course),
+        supabase
+          .from("review_items")
+          .select("item_key", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("language", course)
+          .lte("due_on", today()),
+      ]);
+      // A failed read must not look like an empty queue ("Nothing due today"): the screen shows an error with Try again.
+      if (dueRes.error) throw new Error("Could not load reviews");
+      const due = (dueRes.data ?? []).map((r) => ({
+        itemKey: r.item_key,
+        lessonId: r.lesson_id,
+        level: r.level,
+        ease: r.ease,
+        intervalDays: r.interval_days,
+        repetitions: r.repetitions,
+        dueOn: r.due_on,
+        lastReviewedAt: r.last_reviewed_at ?? null,
+        source: r.source,
+        weaknessDisplay: r.weakness_display,
+        prompt: r.prompt,
+        choices: r.choices as string[] | null,
+        answerIndex: r.answer_index,
+        explanation: r.explanation,
+      }));
+      return {
+        due,
+        total: totalRes.count ?? 0,
+        dueTotal: Math.max(dueTotalRes.count ?? due.length, due.length),
+      };
+    },
+  );
 
 /**
  * SM-2 style grading. `correct` used to be a raw client-supplied boolean
@@ -202,7 +220,8 @@ export const gradeReview = createServerFn({ method: "POST" })
             .min(1)
             .max(120)
             .regex(/^[a-z0-9]+:[a-z0-9]+$/, "invalid item key"),
-          answer: z.string().max(200),
+          // The same ceiling as a lesson answer (completeLessonRemote): a long written translation is not refused here.
+          answer: z.string().max(2000),
           course: courseSchema,
           // The due date and last-graded time the learner was shown. A second tab or device that already graded the
           // item has moved them, so this answer is superseded and must not grade the item a second time (a wrong

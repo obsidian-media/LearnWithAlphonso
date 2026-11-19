@@ -96,6 +96,7 @@ function PlacementPage() {
   const setCourse = useProgress((s) => s.setCourse);
   const hydrate = useProgress((s) => s.hydrate);
   const hydrated = useProgress((s) => s.hydrated);
+  const hydratedCourse = useProgress((s) => s.hydratedCourse);
   const placementTakenAt = useProgress((s) => s.placementTakenAt);
   const loadProgress = useServerFn(fetchProgress);
   // A new account's course is "en" until the learner changes it on the Learn screen, so without this
@@ -145,7 +146,9 @@ function PlacementPage() {
     if (switching) return;
     setSwitching(true);
     try {
-      if (next !== course) {
+      // Also when the course is already this one but the numbers on screen are another course's (the first run set
+      // the course without loading it): the placement result is saved against whatever is loaded here.
+      if (next !== course || hydratedCourse !== next) {
         setCourse(next);
         // Same as the Learn screen's course switch; if it fails (offline) the test still starts in the
         // chosen course and the progress loads on the next visit to Learn.

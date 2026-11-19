@@ -5,7 +5,8 @@ import userEvent from "@testing-library/user-event";
 import { useEffect } from "react";
 
 // With a Turnstile site key configured, every email form sends the widget's token with its request, so the auth
-// server can require a captcha. The widget itself is stubbed: it hands over one token as soon as it mounts.
+// server can require a captcha. The widget itself is stubbed: each widget it renders (each mount or reset) hands over
+// its own token, numbered, so a test can tell a fresh token from one already spent.
 vi.mock("@tanstack/react-router", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-router")>();
   return {
@@ -22,9 +23,16 @@ vi.mock("@/lib/turnstile", async (importOriginal) => ({
   turnstileSiteKey: () => "site-key",
 }));
 
+let widgets = 0;
 vi.mock("@/components/TurnstileWidget", () => ({
-  TurnstileWidget: ({ onToken }: { onToken: (t: string | null) => void }) => {
-    useEffect(() => onToken("captcha-token"), [onToken]);
+  TurnstileWidget: ({
+    onToken,
+    resetKey,
+  }: {
+    onToken: (t: string | null) => void;
+    resetKey: number;
+  }) => {
+    useEffect(() => onToken(`captcha-token-${++widgets}`), [onToken, resetKey]);
     return <div data-testid="turnstile" />;
   },
 }));
@@ -32,6 +40,7 @@ vi.mock("@/components/TurnstileWidget", () => ({
 const signInWithPassword = vi.fn();
 const signUp = vi.fn();
 const resetPasswordForEmail = vi.fn();
+const resend = vi.fn();
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
@@ -41,7 +50,7 @@ vi.mock("@/integrations/supabase/client", () => ({
       resetPasswordForEmail,
       signInWithOAuth: vi.fn(),
       verifyOtp: vi.fn(),
-      resend: vi.fn(),
+      resend,
     },
   },
 }));
@@ -59,6 +68,8 @@ beforeEach(() => {
   signInWithPassword.mockReset().mockResolvedValue({ error: { message: "nope" } });
   signUp.mockReset().mockResolvedValue({ data: { session: null }, error: null });
   resetPasswordForEmail.mockReset().mockResolvedValue({ error: null });
+  resend.mockReset().mockResolvedValue({ data: {}, error: null });
+  sessionStorage.clear();
 });
 
 describe("auth forms with a captcha configured", () => {
@@ -73,7 +84,7 @@ describe("auth forms with a captcha configured", () => {
       expect(signInWithPassword).toHaveBeenCalledWith({
         email: "ada@example.com",
         password: "hunter22-river",
-        options: { captchaToken: "captcha-token" },
+        options: { captchaToken: expect.stringMatching(/^captcha-token-\d+$/) },
       }),
     );
   });
@@ -86,6 +97,30 @@ describe("auth forms with a captcha configured", () => {
     await user.type(screen.getByLabelText("Password"), "hunter22-river");
     await user.click(screen.getByRole("button", { name: "Create account" }));
     await waitFor(() => expect(signUp).toHaveBeenCalled());
-    expect(signUp.mock.calls[0][0].options.captchaToken).toBe("captcha-token");
+    expect(signUp.mock.calls[0][0].options.captchaToken).toMatch(/^captcha-token-\d+$/);
+  });
+
+  it("Send a new code uses a fresh captcha token, not the one the sign-up already spent", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole("button", { name: /Create an account/ }));
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "hunter22-river");
+    await user.click(screen.getByRole("button", { name: "Create account" }));
+    await screen.findByLabelText("6-digit code");
+    const spent = signUp.mock.calls[0][0].options.captchaToken as string;
+
+    // The code screen has its own bot check for the resend.
+    expect(screen.getByTestId("turnstile")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Send a new code" }));
+    await waitFor(() => expect(resend).toHaveBeenCalledTimes(1));
+    const first = resend.mock.calls[0][0].options.captchaToken as string;
+    expect(first).toMatch(/^captcha-token-\d+$/);
+    expect(first).not.toBe(spent);
+
+    // And a second resend gets yet another one.
+    await user.click(await screen.findByRole("button", { name: "Send a new code" }));
+    await waitFor(() => expect(resend).toHaveBeenCalledTimes(2));
+    expect(resend.mock.calls[1][0].options.captchaToken).not.toBe(first);
   });
 });

@@ -151,31 +151,34 @@ Deno.test("omitting checkQuota (with consent) leaves the AI grader unlimited", a
   }
 });
 
-Deno.test("without consent the translate branch makes zero model calls, even with a key and quota", async () => {
-  Deno.env.set("OPENROUTER_API_KEY", "test-key");
-  let calls = 0;
-  globalThis.fetch = (() => {
-    calls += 1;
-    return Promise.resolve(new Response("{}"));
-  }) as typeof fetch;
-  let quotaAsked = false;
-  try {
-    assertEquals(
-      await deriveAnswerCorrectness(TRANSLATE, "I really do not follow you", "en", {
-        allowed: () => Promise.resolve(false),
-        checkQuota: () => {
-          quotaAsked = true;
-          return Promise.resolve(true);
-        },
-      }),
-      false,
-    );
-    assertEquals(calls, 0);
-    assertEquals(quotaAsked, false);
-  } finally {
-    restore();
-  }
-});
+Deno.test(
+  "without consent the translate branch makes zero model calls, even with a key and quota",
+  async () => {
+    Deno.env.set("OPENROUTER_API_KEY", "test-key");
+    let calls = 0;
+    globalThis.fetch = (() => {
+      calls += 1;
+      return Promise.resolve(new Response("{}"));
+    }) as typeof fetch;
+    let quotaAsked = false;
+    try {
+      assertEquals(
+        await deriveAnswerCorrectness(TRANSLATE, "I really do not follow you", "en", {
+          allowed: () => Promise.resolve(false),
+          checkQuota: () => {
+            quotaAsked = true;
+            return Promise.resolve(true);
+          },
+        }),
+        false,
+      );
+      assertEquals(calls, 0);
+      assertEquals(quotaAsked, false);
+    } finally {
+      restore();
+    }
+  },
+);
 
 Deno.test("omitting the AI options means no AI at all (safe default)", async () => {
   Deno.env.set("OPENROUTER_API_KEY", "test-key");
@@ -209,7 +212,11 @@ Deno.test("the AI grading prompt carries the safety preamble", async () => {
   globalThis.fetch = ((_u: string, init?: RequestInit) => {
     first = JSON.parse(String(init?.body)).messages[0];
     return Promise.resolve(
-      new Response(JSON.stringify({ choices: [{ message: { content: '{"correct": true, "reason": "ok"}' } }] })),
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: '{"correct": true, "reason": "ok"}' } }],
+        }),
+      ),
     );
   }) as typeof fetch;
   try {
@@ -252,4 +259,36 @@ Deno.test("the other question types still grade synchronously and unchanged", as
     answer_text: "meet",
   };
   assertEquals(await deriveAnswerCorrectness(fill, " MEET "), true);
+});
+
+// The same vectors as src/lib/fill-answer-parity.test.ts: iOS types a curly apostrophe, French keyboards a no-break
+// space, and the web and the apps must grade them alike.
+const FILL = (answer: string): QuestionRow => ({
+  type: "fill",
+  prompt: "___",
+  choices: null,
+  bank: [answer],
+  answer_index: null,
+  answer_text: answer,
+});
+
+for (const [typed, key] of [
+  ["l’ami", "l'ami"],
+  ["aujourd‘hui", "aujourd'hui"],
+  ["c ʼest", "c'est"],
+  ["  Je  m'appelle ", "je m'appelle"],
+  ["s' il vous plaît", "s'il vous plaît"],
+  ["à\u00a0bientôt", "à bientôt"],
+  ["bientôt".normalize("NFD"), "bientôt"],
+]) {
+  Deno.test(
+    `a fill answer ${JSON.stringify(typed)} matches the key ${JSON.stringify(key)}`,
+    async () => {
+      assertEquals(await deriveAnswerCorrectness(FILL(key), typed, "fr"), true);
+    },
+  );
+}
+
+Deno.test("a different fill word is still wrong", async () => {
+  assertEquals(await deriveAnswerCorrectness(FILL("l'ami"), "l'amie", "fr"), false);
 });
