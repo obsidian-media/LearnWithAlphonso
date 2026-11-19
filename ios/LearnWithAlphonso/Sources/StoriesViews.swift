@@ -171,44 +171,20 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
 // MARK: - Library
 
-/// The Stories row under the Listen shelf's Watch shelf: opens the library for the course on screen.
-struct StoriesEntryRow: View {
-    let session: Session
-    let player: PodcastAudioPlayer
-    let course: String
-    @Environment(\.alphonsoDS) private var ds
-
-    var body: some View {
-        NavigationLink {
-            StoriesLibraryView(session: session, player: player, course: course)
-        } label: {
-            HStack(spacing: AlphonsoDS.Space.s3) {
-                Icon3DView(emoji: "\u{1F4DA}", size: AlphonsoDS.Space.s12)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Stories").dsText(.headline).foregroundStyle(ds.ink)
-                    Text("Read along while you listen").dsText(.caption).foregroundStyle(ds.inkSoft)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right").dsText(.footnote).foregroundStyle(ds.inkSoft)
-                    .accessibilityHidden(true)
-            }
-            .padding(AlphonsoDS.Space.s3)
-            .frame(minHeight: AlphonsoDS.Space.minTouch)
-            .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
-            .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Stories, read along while you listen")
-        .accessibilityIdentifier("storiesEntryRow")
-    }
+/// How the Library draws its stories: `peek` is the All tab's one row (the first few, with "See all"), `full` is the Stories
+/// tab (every published story for the course, grouped by level).
+enum StoriesPresentation {
+    case peek, full
 }
 
-/// Published stories grouped by level, like the Listen library. A failed load is never shown as an empty library.
-struct StoriesLibraryView: View {
+/// Published stories for the course on screen, in the Library's All (peek) and Stories (full) tabs. A failed load is never
+/// shown as an empty library. It owns its read, so a story added to the database appears without a release.
+struct StoriesSection: View {
     let session: Session
     let player: PodcastAudioPlayer
     let course: String
+    let presentation: StoriesPresentation
+    var onSeeAll: (() -> Void)?
 
     @Environment(\.alphonsoDS) private var ds
     @State private var stories: [StorySummary] = []
@@ -216,49 +192,105 @@ struct StoriesLibraryView: View {
     @State private var failed = false
 
     var body: some View {
-        let groups = Stories.groupByLevel(Stories.visible(stories, course: course))
-        ScrollView {
-            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
-                if isLoading {
+        let visible = Stories.visible(stories, course: course)
+        // The loader hangs off `loadAnchor`, a real zero-size child that is always in the tree: a `.task` on content that
+        // can draw nothing would never fire (the same trap as the Watch shelf).
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+            if isLoading {
+                if presentation == .full {
                     ProgressView("Loading stories…").tint(ds.choice).frame(maxWidth: .infinity)
-                } else if failed {
-                    DSEmptyState(
-                        art: "Alphonso-thinking", title: "Couldn't load stories", message: Copy.connectionFailure,
-                        actionTitle: "Try again") { Task { await load() } }
-                } else if groups.isEmpty {
-                    DSEmptyState(art: "Alphonso-reading-book", title: StoryCopy.emptyTitle, message: StoryCopy.emptyMessage)
-                } else {
-                    ForEach(groups, id: \.level) { group in
-                        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-                            DSOverline(Stories.levelLabel(group.level))
-                            ForEach(group.stories) { story in
-                                NavigationLink {
-                                    if story.branching {
-                                        BranchingStoryReaderScreen(story: story, session: session, player: player)
-                                    } else {
-                                        StoryReaderScreen(story: story, session: session, player: player)
-                                    }
-                                } label: {
-                                    row(story)
-                                }
+                }
+            } else if failed {
+                DSEmptyState(
+                    art: "Alphonso-thinking", title: "Couldn't load stories", message: Copy.connectionFailure,
+                    actionTitle: "Try again") { Task { await load() } }
+            } else if presentation == .peek {
+                peek(Array(visible.prefix(LibraryTab.storiesPeekCount)))
+            } else if visible.isEmpty {
+                DSEmptyState(art: "Alphonso-reading-book", title: StoryCopy.emptyTitle, message: StoryCopy.emptyMessage)
+            } else {
+                ForEach(Stories.groupByLevel(visible), id: \.level) { group in
+                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+                        DSOverline(Stories.levelLabel(group.level))
+                        ForEach(group.stories) { story in
+                            NavigationLink { reader(story) } label: { row(story) }
                                 .buttonStyle(.plain)
-                            }
                         }
                     }
                 }
             }
-            .padding(AlphonsoDS.Space.s4)
+            loadAnchor
         }
-        .background(ds.surface)
-        .miniPlayerClearance(player)
-        .navigationTitle("Stories")
-        .navigationBarTitleDisplayMode(.inline)
-        .task { await load() }
+    }
+
+    /// Always present, draws nothing, takes no room.
+    private var loadAnchor: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+            .task(id: course) { await load() }
+    }
+
+    @ViewBuilder
+    private func peek(_ shown: [StorySummary]) -> some View {
+        if !shown.isEmpty {
+            HStack {
+                Text("Stories").dsText(.title).foregroundStyle(ds.ink)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: AlphonsoDS.Space.s2)
+                if let onSeeAll {
+                    Button("See all") { onSeeAll() }
+                        .dsText(.footnote).foregroundStyle(ds.choice)
+                        .frame(minHeight: AlphonsoDS.Space.minTouch)
+                        .accessibilityLabel(LibraryTab.stories.seeAllLabel)
+                }
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
+                    ForEach(shown) { story in
+                        NavigationLink { reader(story) } label: { peekCard(story) }
+                            .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func reader(_ story: StorySummary) -> some View {
+        if story.branching {
+            BranchingStoryReaderScreen(story: story, session: session, player: player)
+        } else {
+            StoryReaderScreen(story: story, session: session, player: player)
+        }
+    }
+
+    private func peekCard(_ story: StorySummary) -> some View {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+            HStack {
+                Icon3DView(emoji: story.branching ? "\u{1F9ED}" : "\u{1F4DA}", size: AlphonsoDS.Space.s8)
+                Spacer(minLength: 0)
+                Text(story.level).dsText(.caption).foregroundStyle(ds.choice)
+                    .padding(.horizontal, AlphonsoDS.Space.s2)
+                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.choiceTint))
+            }
+            Text(story.title).dsText(.headline).foregroundStyle(ds.ink)
+                .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+            Text(Stories.status(story)).dsText(.caption).foregroundStyle(ds.inkSoft)
+                .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(AlphonsoDS.Space.s3)
+        .frame(width: 168, alignment: .leading)
+        .frame(minHeight: AlphonsoDS.Space.minTouch)
+        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.card))
+        .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(story.title), \(story.level), \(Stories.status(story))")
     }
 
     private func row(_ story: StorySummary) -> some View {
         HStack(spacing: AlphonsoDS.Space.s3) {
-            Icon3DView(emoji: "\u{1F4DA}", size: AlphonsoDS.Space.s12)
+            Icon3DView(emoji: story.branching ? "\u{1F9ED}" : "\u{1F4DA}", size: AlphonsoDS.Space.s12)
             VStack(alignment: .leading, spacing: 2) {
                 Text(story.title).dsText(.headline).foregroundStyle(ds.ink)
                     .fixedSize(horizontal: false, vertical: true)
