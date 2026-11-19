@@ -29,9 +29,7 @@ function CardBody({
       <span className="ds-type-footnote block font-extrabold leading-tight text-ds-ink">
         {label}
       </span>
-      <span className="block text-[0.7rem] font-semibold leading-tight text-ds-ink-soft">
-        {value}
-      </span>
+      <span className="ds-type-caption block leading-tight text-ds-ink-soft">{value}</span>
       {badge}
     </>
   );
