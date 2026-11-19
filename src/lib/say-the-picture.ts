@@ -75,3 +75,45 @@ export function sessionStars(correct: number, total: number): 1 | 2 | 3 {
   const n = share >= 0.75 ? 3 : share >= 0.5 ? 2 : 1;
   return Math.min(n, MAX_STARS) as 1 | 2 | 3;
 }
+
+/** How one picture ended: said right first time, or taught after a miss (or "Show me the word"). */
+export type RoundResult = "first" | "missed";
+
+/** Alphonso's in-pose reactions, by file name under /figures (alphonso-<pose>.webp). */
+export type StpPose =
+  "explaining-pointer" | "listening-headphones" | "thinking-temple" | "levelup-cheer";
+
+/**
+ * Which pose Alphonso is in. Asking he explains, while the learner holds the mic he listens, after a miss (the word is
+ * being taught) he thinks it through with them, and on a win he cheers.
+ */
+export function poseFor(phase: "ask" | "right" | "reveal" | "done", listening: boolean): StpPose {
+  if (phase === "right") return "levelup-cheer";
+  if (listening) return "listening-headphones";
+  if (phase === "reveal") return "thinking-temple";
+  return "explaining-pointer";
+}
+
+/** The run of first-time wins ending at the latest result ("3 in a row"). */
+export function comboCount(results: readonly RoundResult[]): number {
+  let n = 0;
+  for (let i = results.length - 1; i >= 0 && results[i] === "first"; i--) n++;
+  return n;
+}
+
+/** The words that were missed, in session order (what the summary's cross-links carry). */
+export function missedWords<T>(rounds: readonly T[], results: readonly RoundResult[]): T[] {
+  return rounds.filter((_, i) => results[i] === "missed");
+}
+
+/** The sentence the save-word route needs: the model sentence when it holds the word, else the word on its own. */
+export function saveSentence(word: { term: string; example: string }): string {
+  const fold = (s: string) => s.toLowerCase().replace(/’/g, "'");
+  const hit = ` ${fold(word.example)} `
+    .replace(/[^\p{L}'-]+/gu, " ")
+    .includes(` ${fold(word.term)} `);
+  return hit ? word.example.trim() : word.term;
+}
+
+/** The mic ring fills over this long; when it is full the recording stops and is sent. Same on iOS and Android. */
+export const MAX_RECORD_MS = 6000;
