@@ -1,12 +1,9 @@
-import { useShownStreak } from "@/lib/use-shown-streak";
-import { streakAriaLabel } from "@/lib/streak-display";
+import { DsButton, dsButtonClass } from "@/components/ds/Blocks";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MobileFrame } from "../../components/AppShell";
-import { PathCard } from "../../components/path/PathCard";
-import { WeeklySocialCards } from "../../components/WeeklySocialCards";
-import { SegmentedControl } from "../../components/SegmentedControl";
+import { ForYouRail } from "../../components/learn/ForYouRail";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
 import { COURSES, getCourse } from "../../data/courses";
@@ -44,8 +41,11 @@ export const Route = createFileRoute("/_authenticated/learn")({
   }),
 });
 
-/** Pinned "you are here" card: the learner's current unit on its painted room, with one Continue. */
-function YouAreHere({
+/**
+ * The one hero: the learner's current unit on its painted room with Alphonso, and a single Continue lesson button
+ * (the design-system button) underneath. The scene itself is not a link; the button is the one way in.
+ */
+function LearnHero({
   index,
   count,
   unitTitle,
@@ -65,57 +65,52 @@ function YouAreHere({
   onBlockedClick: () => void;
 }) {
   const art = roomArtFor(index - 1);
-  const body = (
-    <span className="ds-light relative block h-48 overflow-hidden rounded-3xl border-2 border-ds-brand bg-ds-brand text-left">
-      <img
-        src={`/avatar/scenes/${art}.webp`}
-        alt=""
-        className="absolute inset-0 size-full object-cover"
-      />
-      <span
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-ds-brand/85 via-ds-brand/20 to-transparent"
-      />
-      <img
-        src="/alphonso/lesson/happy.webp"
-        alt=""
-        className="pointer-events-none absolute -bottom-1.5 -right-3.5 w-32"
-      />
-      <span className="absolute left-4 top-3.5 text-xs font-extrabold uppercase tracking-wider text-ds-card">
-        You are here · Unit {index} of {count}
-      </span>
-      <span className="absolute bottom-3.5 left-4 right-28 grid gap-0.5 text-ds-card">
-        <span className="text-xs font-semibold">
-          {roomName(art)} · {level} · {unitTitle}
-        </span>
-        <span className="font-display text-2xl font-bold leading-tight">{lessonTitle}</span>
-        <span className="mt-2 inline-flex min-h-11 items-center self-start rounded-full bg-ds-action px-4 font-display text-sm font-bold text-ds-on-action">
-          Continue →
-        </span>
-      </span>
-    </span>
-  );
-  if (blocked) {
-    return (
-      <button
-        type="button"
-        onClick={onBlockedClick}
-        aria-label={`Continue: ${lessonTitle} (out of hearts)`}
-        className="block w-full"
-      >
-        {body}
-      </button>
-    );
-  }
   return (
-    <Link
-      to="/lesson/$id"
-      params={{ id: lessonId }}
-      aria-label={`Continue: ${lessonTitle}, unit ${index} of ${count}`}
-      className="block"
-    >
-      {body}
-    </Link>
+    <div className="grid gap-3" data-learn-hero="">
+      <div className="ds-light relative block h-48 overflow-hidden rounded-3xl border-2 border-ds-brand bg-ds-brand text-left">
+        <img
+          src={`/avatar/scenes/${art}.webp`}
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+        />
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-ds-brand/85 via-ds-brand/20 to-transparent"
+        />
+        <img
+          src="/alphonso/lesson/happy.webp"
+          alt=""
+          className="pointer-events-none absolute -bottom-1.5 -right-3.5 w-32"
+        />
+        <span className="absolute left-4 top-3.5 text-xs font-extrabold uppercase tracking-wider text-ds-card">
+          You are here · Unit {index} of {count}
+        </span>
+        <span className="absolute bottom-3.5 left-4 right-28 grid gap-0.5 text-ds-card">
+          <span className="text-xs font-semibold">
+            {roomName(art)} · {level} · {unitTitle}
+          </span>
+          <span className="font-display text-2xl font-bold leading-tight">{lessonTitle}</span>
+        </span>
+      </div>
+      {blocked ? (
+        <DsButton
+          full
+          onClick={onBlockedClick}
+          aria-label={`Continue: ${lessonTitle} (out of hearts)`}
+        >
+          Continue lesson
+        </DsButton>
+      ) : (
+        <Link
+          to="/lesson/$id"
+          params={{ id: lessonId }}
+          aria-label={`Continue: ${lessonTitle}, unit ${index} of ${count}`}
+          className={dsButtonClass("primary", { full: true })}
+        >
+          Continue lesson
+        </Link>
+      )}
+    </div>
   );
 }
 
@@ -245,9 +240,6 @@ function LearnPage() {
   const hearts = useProgress((s) => s.hearts);
   const heartsRefillAt = useProgress((s) => s.heartsRefillAt);
   const xp = useProgress((s) => s.xp);
-  // The streak as it reads today (useShownStreak): the same number and protected mark as the top bar.
-  const shownStreakNow = useShownStreak();
-  const streak = shownStreakNow.streak;
   const refillHeartsLocal = useProgress((s) => s.refillHeartsLocal);
   const setHeartsLocal = useProgress((s) => s.setHeartsLocal);
   const spendXpForHeartLocal = useProgress((s) => s.spendXpForHeartLocal);
@@ -420,26 +412,7 @@ function LearnPage() {
   return (
     <MobileFrame>
       <div className="relative z-10 min-h-dvh bg-ds-surface px-6 pb-24 pt-6">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h1 className="font-display text-3xl font-extrabold text-ds-ink">Learn</h1>
-          {hydrated && (
-            <div className="flex gap-1.5 text-sm font-bold">
-              <span
-                className="rounded-full border border-ds-line bg-ds-card px-2.5 py-1 text-ds-flame"
-                aria-label={streakAriaLabel(shownStreakNow)}
-              >
-                🔥 {streak}
-                {shownStreakNow.state === "protected" ? " ❄️" : null}
-              </span>
-              <span
-                className="tnum rounded-full border border-ds-line bg-ds-card px-2.5 py-1 text-ds-ink"
-                aria-label={`${xp} XP`}
-              >
-                ★ {xp.toLocaleString("en-US")}
-              </span>
-            </div>
-          )}
-        </div>
+        <h1 className="mb-4 font-display text-3xl font-extrabold text-ds-ink">Learn</h1>
         <div className="mb-4 flex gap-2">
           {COURSES.map((c) => (
             <button
@@ -458,12 +431,8 @@ function LearnPage() {
           ))}
         </div>
 
-        <div className="mb-4">
-          <PathCard course={course} />
-        </div>
-
         {here && hereUnit && hereLesson ? (
-          <YouAreHere
+          <LearnHero
             index={here.index}
             count={here.count}
             unitTitle={hereUnit.title}
@@ -485,34 +454,8 @@ function LearnPage() {
           </div>
         ) : null}
 
-        <div className="-mx-6 my-4 overflow-x-auto px-6 pb-1 [scrollbar-width:none]">
-          <SegmentedControl
-            ariaLabel="Select CEFR level"
-            value={level}
-            onChange={pick}
-            options={LEVELS.map((l) => {
-              const done = hydrated ? (levelCompletion.get(l.id) ?? false) : false;
-              return { value: l.id, label: done && l.id !== level ? `${l.id} ✓` : l.id };
-            })}
-          />
-        </div>
-
-        <div className="mb-4 rounded-2xl border border-ds-line bg-ds-sunk p-4">
-          <div className="flex items-baseline justify-between">
-            <p className="font-display text-lg font-semibold text-ds-ink">
-              {meta.id} · {meta.name}
-            </p>
-            <span className="tnum text-xs font-medium text-ds-ink-soft">{pct}%</span>
-          </div>
-          <p className="mt-1 text-xs text-ds-ink-soft/80">{meta.blurb}</p>
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ds-line">
-            <motion.div
-              className="h-full rounded-full bg-ds-action"
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            />
-          </div>
+        <div className="my-4">
+          <ForYouRail course={course} dueCount={dueCount} />
         </div>
 
         {!placed && (
@@ -535,6 +478,43 @@ function LearnPage() {
             </Link>
           </motion.div>
         )}
+
+        <div className="mb-3 flex items-center justify-between gap-3" data-learn-units-header="">
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-extrabold text-ds-ink">
+              {meta.id} · {meta.name}
+            </h2>
+            <span className="tnum text-xs font-semibold text-ds-ink-soft">{pct}% complete</span>
+          </div>
+          <label className="relative shrink-0">
+            <span className="sr-only">Select CEFR level</span>
+            <select
+              value={level}
+              onChange={(e) => pick(e.target.value as Level)}
+              className="min-h-11 rounded-[14px] border-2 border-b-4 border-ds-line bg-ds-card px-3 font-extrabold text-ds-brand ds-type-footnote"
+            >
+              {LEVELS.map((l) => {
+                const done = hydrated ? (levelCompletion.get(l.id) ?? false) : false;
+                return (
+                  <option key={l.id} value={l.id}>
+                    {done && l.id !== level ? `${l.id} ✓` : l.id}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+        </div>
+        <div
+          aria-hidden="true"
+          className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-ds-line"
+        >
+          <motion.div
+            className="h-full rounded-full bg-ds-action"
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          />
+        </div>
 
         <div className="grid gap-2" data-learn-list="">
           {shown.rows.map((row) => {
@@ -637,35 +617,6 @@ function LearnPage() {
               Show all units in {level} ({shown.hidden} more)
             </button>
           )}
-        </div>
-
-        <Link
-          to="/review"
-          className="mt-6 flex items-center justify-between rounded-2xl border border-ds-line bg-ds-card px-4 py-3.5 transition hover:border-ds-brand/30"
-        >
-          <span>
-            <span className="flex items-center gap-2">
-              <span className="block font-display text-base font-semibold text-ds-ink">
-                Review missed items
-              </span>
-              {dueCount > 0 && (
-                <span
-                  className="tnum grid min-w-5 place-items-center rounded-full bg-ds-action px-1.5 py-0.5 text-xs font-semibold text-ds-on-action"
-                  aria-label={`${dueCount} item${dueCount === 1 ? "" : "s"} due`}
-                >
-                  {dueCount}
-                </span>
-              )}
-            </span>
-            <span className="block text-xs text-ds-ink-soft/80">
-              Spaced repetition brings back what you got wrong.
-            </span>
-          </span>
-          <span className="text-ds-ink-soft">→</span>
-        </Link>
-
-        <div data-sheet className="mt-6 grid gap-6">
-          <WeeklySocialCards />
         </div>
       </div>
       {here && !hereVisible && (

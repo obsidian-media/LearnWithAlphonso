@@ -12,6 +12,8 @@ export function useTeamMission() {
     queryKey: ["teamMission"],
     queryFn: () => getTeamMission(),
     retry: false,
+    // The rail and the card it opens both read this; a second observer must not reset a failed read to pending.
+    retryOnMount: false,
   });
   // A failed refresh of a mission already shown keeps showing it.
   const failed = missionQuery.isError && missionQuery.data === undefined;

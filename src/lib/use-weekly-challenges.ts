@@ -7,6 +7,8 @@ export function useWeeklyChallenges() {
     queryKey: ["weeklyChallenges"],
     queryFn: () => getWeeklyChallenges(),
     retry: false,
+    // The rail and the card it opens both read this; a second observer must not reset a failed read to pending.
+    retryOnMount: false,
   });
   return {
     challenges: query.data,
