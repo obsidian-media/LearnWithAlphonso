@@ -13,6 +13,7 @@ import {
   questionStepsFor,
   roomForAnswers,
   roomSrc,
+  withoutDraft,
   type AgeChoice,
   type FirstRunDraft,
   type FirstRunMode,
@@ -142,12 +143,15 @@ export type FirstRunFlowProps = {
 };
 
 export function FirstRunFlow(props: FirstRunFlowProps) {
-  const { mode, store } = props;
+  const { mode } = props;
+  // Complete your profile (signed in) never touches the device-wide draft: see withoutDraft.
+  const [store] = useState(() => (mode === "new" ? props.store : withoutDraft(props.store)));
   const [blocked, setBlocked] = useState(() => store.isBlocked());
+  // What the account already has wins over anything kept on the device.
   const [draft, setDraft] = useState<FirstRunDraft>(() => ({
+    ...store.readDraft(),
     ...(props.prefill ?? {}),
     ...(props.course ? { course: props.course } : {}),
-    ...store.readDraft(),
   }));
   const questions = questionStepsFor(mode);
   const stages: Stage[] = [
@@ -371,7 +375,9 @@ export function FirstRunFlow(props: FirstRunFlowProps) {
               setBlocked(true);
               return;
             }
-            setDraft(store.readDraft());
+            // From the answers in memory, not a read back from storage: where storage is blocked that read is empty
+            // and wiped every answer given so far.
+            if (choice !== "under-13") update({ ageRange: choice });
             next();
           }}
         />

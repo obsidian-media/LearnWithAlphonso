@@ -34,7 +34,7 @@ const EXEMPT_ROUTES: Record<string, string> = {
   "src/routes/api/generate-practice.ts": "sends only the lesson's own wording, no learner data",
 };
 const GATED_SERVER_FNS: Record<string, RegExp> = {
-  "src/lib/sync.functions.ts": /hasAiConsent\(supabase,\s*userId\)/,
+  "src/lib/sync.functions.ts": /hasAiConsent\(supabase,\s*userId[,)]/,
   "src/lib/review.functions.ts": /hasAiConsent\(supabase,\s*userId\)/,
 };
 

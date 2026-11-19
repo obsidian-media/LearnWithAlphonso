@@ -40,7 +40,7 @@ Where this file and the code disagree, the code wins; fix this file.
 | **Retention** | The action record is append-only and has no deletion path (a trigger refuses UPDATE, DELETE and TRUNCATE) and no expiry; it holds ids and short reasons, not learner content. A retention period is an owner decision and has not been set. |
 | **Export** | The learner's own `user_restrictions` and `pro_grants` rows are in the export. `staff_notes` and the action record are not (internal records; the record can contain other people's reasons). |
 | **Deletion** | `user_restrictions`, `pro_grants`, `staff_notes` and `staff_roles` cascade with the account. `staff_audit_log` has no foreign keys on purpose: its rows outlive the learner and the staff member, and keep only ids. Account deletion by staff is itself recorded (`user.delete`, and `user.delete.failed` per failed step). |
-| **Staff access** | Roles `owner` and `support` with named scopes; owners may manage staff and never their own row; `ADMIN_REQUIRE_AAL2=true` requires a second factor on every staff session. |
+| **Staff access** | Roles `owner` and `support` with named scopes; owners may manage staff and never their own row; a second factor is required on every staff session (unless `ADMIN_REQUIRE_AAL2` is exactly `false`). |
 
 ## Time zone and the learner's local day (#472, #497)
 

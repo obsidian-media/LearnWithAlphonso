@@ -88,3 +88,19 @@ describe("AttributionBridge", () => {
     expect(recordSignupAttribution).not.toHaveBeenCalled();
   });
 });
+
+describe("AttributionBridge with storage blocked", () => {
+  it("mounts without throwing when reading the cookie choice throws (blocked cookies)", async () => {
+    setUrl("?utm_source=r_testflight&utm_medium=post");
+    const spy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("The operation is insecure.", "SecurityError");
+    });
+    try {
+      expect(() => render(<AttributionBridge />)).not.toThrow();
+      await waitFor(() => expect(getSession).toHaveBeenCalled());
+      expect(recordSignupAttribution).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});

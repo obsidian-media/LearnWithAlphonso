@@ -19,6 +19,37 @@ import { roomSrc } from "../lib/first-run";
 import { expressionSrc } from "../lib/lesson-stage";
 import { edgeButtonClass } from "../components/lesson/LessonParts";
 import { canonicalLink, shareMeta } from "@/lib/seo";
+import { authErrorKind, friendlyAuthError } from "@/lib/auth-errors";
+import {
+  isNetworkAuthError,
+  isRefusedSessionError,
+  markStaleSessionDrop,
+} from "@/lib/auth-offline";
+
+/**
+ * The address a sign-up code was sent to, kept for this tab: a refresh on "Check your email" used to drop it, and the
+ * learner could no longer enter the code they were holding. Session storage only, cleared once the code is used.
+ */
+export const PENDING_VERIFY_EMAIL_KEY = "lwa.auth.verifyEmail.v1";
+
+function readPendingVerifyEmail(): string | null {
+  try {
+    return typeof window === "undefined"
+      ? null
+      : window.sessionStorage.getItem(PENDING_VERIFY_EMAIL_KEY) || null;
+  } catch {
+    return null; // storage blocked
+  }
+}
+
+function writePendingVerifyEmail(email: string | null) {
+  try {
+    if (email) window.sessionStorage.setItem(PENDING_VERIFY_EMAIL_KEY, email);
+    else window.sessionStorage.removeItem(PENDING_VERIFY_EMAIL_KEY);
+  } catch {
+    // storage blocked: the address holds until this page is reloaded
+  }
+}
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -66,10 +97,14 @@ function AuthPage() {
     },
     [next, navigate],
   );
+  const [pendingVerifyEmail] = useState(readPendingVerifyEmail);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "verify">(
-    startMode === "signup" ? "signup" : "signin",
+    pendingVerifyEmail ? "verify" : startMode === "signup" ? "signup" : "signin",
   );
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(pendingVerifyEmail ?? "");
+  // False when the code screen was reached from a sign-in to an unconfirmed account: no code went out this time, so
+  // the screen asks for Send a new code instead of claiming one was sent.
+  const [codeSent, setCodeSent] = useState(true);
   const [password, setPassword] = useState("");
   // The first run's name, if they gave one; the field says it is the public display name, and they can change it.
   const [displayName, setDisplayName] = useState(() => firstRun.readDraft().name ?? "");
@@ -85,10 +120,43 @@ function AuthPage() {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) afterAuth();
-    });
+    let live = true;
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!live || !data.session) return;
+      // A session kept in this browser can be one the server no longer accepts (signed out elsewhere, a deleted
+      // account). Going on to `next` with it looped: the page there sent the learner straight back here, forever.
+      // So the server is asked first; a session it refuses is dropped from this browser and the form stays.
+      const { data: checked, error } = await supabase.auth.getUser();
+      if (!live) return;
+      if (checked?.user && !error) {
+        afterAuth();
+        return;
+      }
+      // Only a refusal from the server drops the session. Offline, a 500 or a 429 during an auth outage: the session
+      // is not known to be bad, so the learner goes on (the signed-in layout reads the session in this browser and
+      // has its own offline screen), rather than being signed out by an outage.
+      const refused = error ? isRefusedSessionError(error) && !isNetworkAuthError(error) : true;
+      if (!refused) {
+        afterAuth();
+        return;
+      }
+      // Not the learner's own sign-out: the first-run draft of whoever signs up next stays.
+      markStaleSessionDrop();
+      await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+    })();
+    return () => {
+      live = false;
+    };
   }, [afterAuth]);
+
+  /** "Check your email" for this address: remembered for the tab, so a refresh keeps the code entry. */
+  function enterVerify(sent = true) {
+    setCodeSent(sent);
+    setCode("");
+    writePendingVerifyEmail(email);
+    setMode("verify");
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -105,6 +173,7 @@ function AuthPage() {
         }
         const { error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
         if (error) throw error;
+        writePendingVerifyEmail(null);
         void track("sign_in_completed", { method: "email" });
         afterAuth("/placement");
       } else if (mode === "forgot") {
@@ -142,8 +211,7 @@ function AuthPage() {
           void track("sign_in_completed", { method: "email" });
           afterAuth("/placement");
         } else {
-          setCode("");
-          setMode("verify");
+          enterVerify();
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -158,7 +226,12 @@ function AuthPage() {
     } catch (err) {
       // A banned account's sign-in gets its own plain screen, not the raw error text.
       if (isAccountSuspendedError(err)) useAccountStatus.getState().setSuspended();
-      else setError(err instanceof Error ? err.message : "Something went wrong");
+      else {
+        // An account made earlier but never confirmed: straight to the code screen, which says to send a new code
+        // (none was sent by this sign-in).
+        if (mode === "signin" && authErrorKind(err) === "emailNotConfirmed") enterVerify(false);
+        else setError(friendlyAuthError(err));
+      }
     } finally {
       setBusy(false);
       if (captchaSiteKey && mode !== "verify") setCaptchaReset((n) => n + 1);
@@ -179,11 +252,14 @@ function AuthPage() {
         },
       });
       if (error) throw error;
+      setCodeSent(true);
       setNotice("We sent a new code. It can take a minute to arrive.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't send a new code");
+      setError(friendlyAuthError(err, "We couldn't send a new code. Please try again."));
     } finally {
       setBusy(false);
+      // Each captcha token is single-use: the next resend needs a fresh widget.
+      if (captchaSiteKey) setCaptchaReset((n) => n + 1);
     }
   }
 
@@ -199,13 +275,13 @@ function AuthPage() {
         },
       });
       if (error) {
-        setError(error.message);
+        setError(friendlyAuthError(error, "Google sign-in didn't work. Please try again."));
         setBusy(false);
       }
       // On success the browser is redirected to Google, then back to
       // `redirectTo` — nothing left to do here.
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign-in failed");
+      setError(friendlyAuthError(err, "Google sign-in didn't work. Please try again."));
       setBusy(false);
     }
   }
@@ -242,7 +318,9 @@ function AuthPage() {
         }
         sub={
           mode === "verify"
-            ? `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`
+            ? codeSent
+              ? `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`
+              : `${email} isn't confirmed yet. Tap Send a new code, then enter the 6-digit code from that email.`
             : mode === "signup"
               ? "Save your streak and pick up on any device."
               : mode === "forgot"
@@ -376,11 +454,19 @@ function AuthPage() {
             </button>
           </form>
 
+          {/* The sign-up's captcha token was spent on the sign-up itself, so resending needs a fresh one. */}
+          {mode === "verify" && captchaSiteKey ? (
+            <TurnstileWidget
+              siteKey={captchaSiteKey}
+              onToken={setCaptchaToken}
+              resetKey={captchaReset}
+            />
+          ) : null}
           {mode === "verify" && (
             <button
               type="button"
               onClick={resendCode}
-              disabled={busy}
+              disabled={busy || (Boolean(captchaSiteKey) && !captchaToken)}
               className="w-full text-center text-xs text-ds-ink-soft hover:text-ds-ink disabled:opacity-50"
             >
               Send a new code
@@ -404,6 +490,7 @@ function AuthPage() {
           <button
             type="button"
             onClick={() => {
+              if (mode === "verify") writePendingVerifyEmail(null);
               setMode(mode === "verify" ? "signup" : mode === "signin" ? "signup" : "signin");
               setError(null);
               setNotice(null);

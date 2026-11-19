@@ -92,7 +92,15 @@ describe("authorizeStaff", () => {
     const r = await authorizeStaff({ client: support, userId: "s1", claims: ok });
     expect(r.staffRole).toBe("support");
   });
-  it("second factor is still enforced when ADMIN_REQUIRE_AAL2=true", async () => {
+  it("second factor is enforced by default (variable unset) and when ADMIN_REQUIRE_AAL2=true", async () => {
+    await expect(
+      authorizeStaff({
+        client: support,
+        userId: "s1",
+        claims: { aal: "aal1" },
+        scope: "users.read",
+      }),
+    ).rejects.toThrow(SECOND_FACTOR_REQUIRED_MESSAGE);
     await expect(
       authorizeStaff({
         client: support,

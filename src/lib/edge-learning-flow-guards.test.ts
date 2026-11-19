@@ -12,7 +12,8 @@ const ROOT = path.resolve(import.meta.dirname, "../..");
 const read = (f: string) => fs.readFileSync(path.join(ROOT, f), "utf8");
 
 describe("start-lesson-session hearts gate", () => {
-  const src = read("supabase/functions/start-lesson-session/index.ts");
+  // The handler lives in handler.ts (index.ts only serves it); handler.test.ts drives it end to end.
+  const src = read("supabase/functions/start-lesson-session/handler.ts");
   it("imports the shared gate, not a local copy", () => {
     expect(src).toMatch(/from "\.\.\/_shared\/hearts\.ts"/);
     expect(src).not.toMatch(/function resolveHeartsRefill/);
@@ -20,13 +21,13 @@ describe("start-lesson-session hearts gate", () => {
   it("checks the flag, reads hearts and returns the 409 body", () => {
     expect(src).toContain("heartsGateEnforced()");
     expect(src).toMatch(
-      /heartsGate\(\s*state\.hearts,\s*state\.heartsRefillAt,\s*Date\.now\(\)\s*\)/,
+      /heartsGate\(\s*state\.hearts,\s*state\.heartsRefillAt,\s*deps\.now\(\)\s*\)/,
     );
     expect(src).toMatch(/jsonResponse\(outOfHeartsBody\(gate\.refillAt\),\s*409\)/);
   });
   it("gates before issuing a token", () => {
     expect(src.indexOf("heartsGate(")).toBeGreaterThan(0);
-    expect(src.indexOf("heartsGate(")).toBeLessThan(src.indexOf("issueLessonSessionToken({"));
+    expect(src.indexOf("heartsGate(")).toBeLessThan(src.indexOf("deps.issueToken({"));
   });
 });
 

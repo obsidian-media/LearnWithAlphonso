@@ -90,3 +90,44 @@ describe("the apps' bot-check page", () => {
     expect(screen.getByRole("dialog", { name: "Cookie choices" })).toBeInTheDocument();
   });
 });
+
+describe("when the browser blocks storage", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function blockStorage() {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("The operation is insecure.", "SecurityError");
+    });
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("The operation is insecure.", "SecurityError");
+    });
+  }
+
+  it("still renders the banner instead of crashing the site", () => {
+    blockStorage();
+    expect(() => render(<CookieConsent />)).not.toThrow();
+    expect(screen.getByRole("dialog", { name: "Cookie choices" })).toBeInTheDocument();
+  });
+
+  it("a choice closes the banner and holds for the visit even though it cannot be saved", async () => {
+    blockStorage();
+    const { unmount } = render(<CookieConsent />);
+    await userEvent.click(screen.getByRole("button", { name: "Essential only" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(getConsent()).toBe("essential");
+    unmount();
+    render(<CookieConsent />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("survives localStorage itself being unreadable (the property throws)", () => {
+    const spy = vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
+      throw new DOMException("denied", "SecurityError");
+    });
+    try {
+      expect(() => getConsent()).not.toThrow();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});

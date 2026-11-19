@@ -17,8 +17,8 @@ vi.mock("@/integrations/supabase/client", () => ({
 vi.mock("../../lib/speech", () => ({ canSpeak: () => false, speak: vi.fn() }));
 
 const { FirstRunFlow } = await import("./FirstRunFlow");
-const { browserFirstRunStore, FIRST_RUN_DRAFT_KEY, UNDER_13_KEY } =
-  await import("../../lib/first-run");
+const firstRunModule = await import("../../lib/first-run");
+const { browserFirstRunStore, FIRST_RUN_DRAFT_KEY, UNDER_13_KEY } = firstRunModule;
 
 const fetchSpy = vi.fn(() => Promise.reject(new Error("no network in the first run")));
 
@@ -146,5 +146,81 @@ describe("the rest of the flow", () => {
     click(/Continue with email/);
     expect(onEmail).toHaveBeenCalled();
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("a shared browser: the device-wide draft", () => {
+  it("Complete your profile never shows another account's draft, nor lets it override the saved answers", () => {
+    // Someone else's first run, left on this computer.
+    localStorage.setItem(FIRST_RUN_DRAFT_KEY, JSON.stringify({ name: "Sam", goal: "work" }));
+    render(
+      <FirstRunFlow
+        mode="complete"
+        store={browserFirstRunStore()}
+        prefill={{ name: "Ana" }}
+        course="fr"
+        onExit={vi.fn()}
+        onUnder13Ok={vi.fn()}
+      />,
+    );
+    expect((screen.getByPlaceholderText("Your first name") as HTMLInputElement).value).toBe("Ana");
+    fireEvent.change(screen.getByPlaceholderText("Your first name"), {
+      target: { value: "Anabel" },
+    });
+    // This signed-in account's answers are not written to the device-wide draft either.
+    expect(JSON.parse(localStorage.getItem(FIRST_RUN_DRAFT_KEY)!)).toEqual({
+      name: "Sam",
+      goal: "work",
+    });
+  });
+
+  it("a signed-in account's empty answer is not filled from the device draft", () => {
+    localStorage.setItem(FIRST_RUN_DRAFT_KEY, JSON.stringify({ name: "Sam" }));
+    render(
+      <FirstRunFlow
+        mode="complete"
+        store={browserFirstRunStore()}
+        prefill={{}}
+        course="fr"
+        onExit={vi.fn()}
+        onUnder13Ok={vi.fn()}
+      />,
+    );
+    expect((screen.getByPlaceholderText("Your first name") as HTMLInputElement).value).toBe("");
+  });
+});
+
+describe("storage blocked (private mode)", () => {
+  it("the age answer keeps every earlier answer in memory instead of wiping them", () => {
+    const { createFirstRunStore } = firstRunModule;
+    const broken = {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+      removeItem: () => {
+        throw new Error("denied");
+      },
+    };
+    render(
+      <FirstRunFlow
+        mode="new"
+        store={createFirstRunStore(broken)}
+        onGoogle={vi.fn()}
+        onEmail={vi.fn()}
+        onHaveAccount={vi.fn()}
+        onUnder13Ok={vi.fn()}
+        onExit={vi.fn()}
+      />,
+    );
+    walkToAge();
+    click(/25–34/);
+    click("Continue");
+    click(/Food/);
+    click("Continue");
+    // The taste is in the course chosen earlier (Spanish): before the fix it fell back to English.
+    expect(screen.getByRole("button", { name: "Buenos días" })).toBeTruthy();
   });
 });

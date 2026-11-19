@@ -2,7 +2,11 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CONSOLE_FUNCTIONS, STAFF_READ_FUNCTIONS } from "./console-registry";
-import { REPORT_WRITE_FUNCTIONS, STAFF_WRITE_FUNCTIONS } from "./staff-audit.server";
+import {
+  PODCAST_WRITE_FUNCTIONS,
+  REPORT_WRITE_FUNCTIONS,
+  STAFF_WRITE_FUNCTIONS,
+} from "./staff-audit.server";
 
 /**
  * The one thing standing between this console and an endpoint that forgot its gate or its record. It reads the source
@@ -93,6 +97,36 @@ describe("the registry of console server functions", () => {
       .filter((n) => n !== "adminListReports")
       .sort();
     expect([...REPORT_WRITE_FUNCTIONS].sort()).toEqual(gated);
+  });
+
+  it("every podcast and folder write is recorded in the action record, and the list is complete", () => {
+    const src = read("admin.functions.ts");
+    const blocks = src
+      .split(/\r?\n(?=export const )/)
+      .filter((block) => /^export const \w+ = createServerFn/.test(block))
+      .filter((block) => block.includes('requireStaff("podcasts.manage")'));
+    const byName = new Map(blocks.map((b) => [/^export const (\w+)/.exec(b)![1]!, b]));
+    // What is left after the writes must be read-only: no insert, update, delete, upsert, or storage upload.
+    const reads = [...byName.keys()].filter(
+      (n) => !(PODCAST_WRITE_FUNCTIONS as readonly string[]).includes(n),
+    );
+    expect(reads.sort()).toEqual([
+      "adminCreateAudioUploadUrl",
+      "adminCreateEpisodeUploadUrl",
+      "adminGetTranscript",
+      "adminListEpisodes",
+      "adminListFolders",
+    ]);
+    for (const name of PODCAST_WRITE_FUNCTIONS) {
+      const body = byName.get(name);
+      expect(body, `${name} exists`).toBeDefined();
+      expect(body, `${name} must record what it did`).toMatch(/recordPodcastAction\(/);
+    }
+    // The helper writes through the one recording path, with the actor and role.
+    const helper = src.slice(src.indexOf("async function recordPodcastAction"));
+    expect(helper).toMatch(/recordStaffAction\(/);
+    expect(helper).toMatch(/actor: context\.userId/);
+    expect(helper).toMatch(/role: context\.staffRole/);
   });
 
   it("every staff_* SQL function the console calls exists in a migration", () => {

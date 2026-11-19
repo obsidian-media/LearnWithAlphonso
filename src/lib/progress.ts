@@ -8,10 +8,44 @@ export function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
+/**
+ * The course a learner was last studying, kept per account in this browser. Without it every reload (and every
+ * SIGNED_IN that supabase-js re-emits when a hidden tab comes back) started a French or Spanish learner on English.
+ */
+export const COURSE_KEY_PREFIX = "lwa.course.v1.";
+
+export function rememberedCourse(userId: string): Course | null {
+  try {
+    const v = window.localStorage.getItem(COURSE_KEY_PREFIX + userId);
+    return v === "en" || v === "fr" || v === "es" ? v : null;
+  } catch {
+    return null; // storage blocked, or no window (server render)
+  }
+}
+
+function rememberCourse(userId: string, course: Course) {
+  try {
+    window.localStorage.setItem(COURSE_KEY_PREFIX + userId, course);
+  } catch {
+    // storage blocked: the choice still holds for this visit
+  }
+}
+
 export type ProgressState = {
   /** Which course's lessons/xp/level the rest of this store reflects. */
   course: Course;
+  /** Sets the active course, and remembers it for the signed-in account (see adoptUser). */
   setCourse: (course: Course) => void;
+  /** The signed-in account this store belongs to; null when signed out. */
+  userId: string | null;
+  /**
+   * Called once a session is known: takes that account's remembered course (else `fallback`, the course in its
+   * learner profile; English when neither) and returns it, so the
+   * caller fetches the right course's progress. The same account again keeps the course already in memory.
+   */
+  adoptUser: (userId: string, fallback?: Course | null) => Course;
+  /** The course the last hydrate() was for; null before any. A mismatch with `course` means the numbers are stale. */
+  hydratedCourse: Course | null;
   xp: number;
   streak: number;
   longestStreak: number;
@@ -82,16 +116,37 @@ const initial = {
   placementTakenAt: null as string | null,
 };
 
-export const useProgress = create<ProgressState>()((set) => ({
+export const useProgress = create<ProgressState>()((set, get) => ({
   ...initial,
   course: "en",
-  setCourse: (course) => set({ course }),
+  setCourse: (course) => {
+    const { userId } = get();
+    if (userId) rememberCourse(userId, course);
+    set({ course });
+  },
+  userId: null,
+  adoptUser: (userId, fallback) => {
+    const s = get();
+    if (s.userId === userId) return s.course;
+    // This browser's memory first; on a new device, the course the account chose (its learner profile); English last.
+    const course = rememberedCourse(userId) ?? fallback ?? "en";
+    set({ userId, course });
+    return course;
+  },
+  hydratedCourse: null,
   hydrated: false,
   loading: false,
   setLoading: (v) => set({ loading: v }),
   setCefrLevelLocal: (level) => set({ cefrLevel: level }),
   setPlacementLocal: (p) => set({ ...p }),
-  hydrate: (input) => set({ ...initial, ...input, hydrated: true, loading: false }),
+  hydrate: (input) =>
+    set((s) => ({
+      ...initial,
+      ...input,
+      hydratedCourse: s.course,
+      hydrated: true,
+      loading: false,
+    })),
   applyCompletion: (patch) => set((s) => ({ ...s, ...patch })),
   loseHeartLocal: () => set((s) => loseHeart(s.hearts, s.heartsRefillAt, Date.now())),
   refillHeartsLocal: () => set((s) => resolveHeartsRefill(s.hearts, s.heartsRefillAt, Date.now())),
@@ -108,5 +163,6 @@ export const useProgress = create<ProgressState>()((set) => ({
   // setCourse() immediately before hydrate() with the just-fetched
   // snapshot). reset() has no such constraint, so it restores course here
   // explicitly instead.
-  reset: () => set({ ...initial, course: "en", hydrated: true }),
+  reset: () =>
+    set({ ...initial, course: "en", userId: null, hydratedCourse: null, hydrated: true }),
 }));

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PlacementQuestion } from "../../data/placement";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const navigate = vi.fn();
@@ -320,11 +320,23 @@ describe("Placement language choice", () => {
   });
 
   it("does not reload progress when the learner keeps the current course", async () => {
+    useProgress.setState({ hydratedCourse: "en" });
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole("button", { name: /english/i }));
     expect(fetchProgress).not.toHaveBeenCalled();
     expect(await screen.findByText("Pick 2")).toBeInTheDocument();
+  });
+
+  it("loads the course's progress when the course is already set but another course's numbers are loaded", async () => {
+    // The first run sets the course without loading it; the result must not be saved against English's numbers.
+    useProgress.setState({ course: "fr", hydratedCourse: "en" });
+    fetchProgress.mockResolvedValue({ xp: 0 });
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole("button", { name: /french/i }));
+    expect(fetchProgress).toHaveBeenCalledWith({ data: { course: "fr" } });
+    await waitFor(() => expect(useProgress.getState().hydratedCourse).toBe("fr"));
   });
 
   it("still starts the test in the chosen course when loading progress fails (offline)", async () => {
