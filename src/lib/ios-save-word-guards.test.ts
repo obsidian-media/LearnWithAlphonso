@@ -70,6 +70,7 @@ describe("tap-to-save never offers English words under French or Spanish", () =>
     }
     expect(found).toEqual({
       "AssistantReply.swift": [".allWords"],
+      "BranchingStoryViews.swift": [".allWords"],
       "DesignSystem/AlphonsoComponents.swift": [
         "mode",
         ".lesson(course: saveCourse, spans: courseSpans)",

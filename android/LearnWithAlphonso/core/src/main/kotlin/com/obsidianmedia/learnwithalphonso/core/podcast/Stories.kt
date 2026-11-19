@@ -24,6 +24,8 @@ data class StorySummary(
     val bestCorrect: Int?,
     val checkTotal: Int?,
     val completed: Boolean,
+    /** A "choose your path" story: its text lives in the node graph, so it has no top-level sentences. */
+    val branching: Boolean = false,
 )
 
 data class Story(
@@ -44,11 +46,12 @@ object Stories {
     val COURSES = setOf("en", "fr", "es")
 
     /**
-     * Only published stories in the learner's course, in a stable order. A story with no sentences is a branching story (its
-     * text lives in `nodes`, which this reader does not draw yet), so it is left out rather than opened empty.
+     * Only published stories in the learner's course, in a stable order. A branching story has no top-level sentences (its
+     * text lives in `nodes`, read by the branching reader), so it is listed by its flag; a linear story with no sentences is
+     * left out rather than opened empty.
      */
     fun visible(stories: List<StorySummary>, course: String): List<StorySummary> =
-        stories.filter { it.published && it.course == course && it.segmentCount > 0 }
+        stories.filter { it.published && it.course == course && (it.branching || it.segmentCount > 0) }
             .sortedWith(compareBy<StorySummary> { it.level }.thenBy { it.sortOrder }.thenBy { it.title })
 
     /** Stories grouped by level (A1 before A2), each group in reading order. */
@@ -66,6 +69,7 @@ object Stories {
 
     /** A short status for a library row. */
     fun status(story: StorySummary): String {
+        if (story.branching) return Branching.status(story.completed)
         val total = story.checkTotal
         val best = story.bestCorrect
         if (total != null && best != null) return "Best: $best of $total"

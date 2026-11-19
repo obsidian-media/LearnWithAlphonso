@@ -27,10 +27,13 @@ public struct StorySummary: Equatable, Identifiable, Sendable {
     public let bestCorrect: Int?
     public let checkTotal: Int?
     public let completed: Bool
+    /// A "choose your path" story: its text lives in the node graph, so it has no top-level sentences.
+    public let branching: Bool
 
     public init(
         id: String, course: String, level: String, slug: String, title: String, sortOrder: Int, published: Bool,
-        segmentIndex: Int, segmentCount: Int, bestCorrect: Int?, checkTotal: Int?, completed: Bool
+        segmentIndex: Int, segmentCount: Int, bestCorrect: Int?, checkTotal: Int?, completed: Bool,
+        branching: Bool = false
     ) {
         self.id = id
         self.course = course
@@ -44,6 +47,7 @@ public struct StorySummary: Equatable, Identifiable, Sendable {
         self.bestCorrect = bestCorrect
         self.checkTotal = checkTotal
         self.completed = completed
+        self.branching = branching
     }
 }
 
@@ -80,11 +84,12 @@ public struct StoryLevelGroup: Equatable, Sendable {
 public enum Stories {
     public static let courses: Set<String> = ["en", "fr", "es"]
 
-    /// Only published stories in the learner's course, in a stable order. A story with no sentences is a branching story
-    /// (its text lives in `nodes`, which this reader does not draw yet), so it is left out rather than opened empty.
+    /// Only published stories in the learner's course, in a stable order. A branching story has no top-level sentences
+    /// (its text lives in `nodes`, read by the branching reader), so it is listed by its flag; a linear story with no
+    /// sentences is left out rather than opened empty.
     public static func visible(_ stories: [StorySummary], course: String) -> [StorySummary] {
         stories
-            .filter { $0.published && $0.course == course && $0.segmentCount > 0 }
+            .filter { $0.published && $0.course == course && ($0.branching || $0.segmentCount > 0) }
             .sorted {
                 if $0.level != $1.level { return $0.level < $1.level }
                 if $0.sortOrder != $1.sortOrder { return $0.sortOrder < $1.sortOrder }
@@ -116,6 +121,7 @@ public enum Stories {
 
     /// A short status for a library row.
     public static func status(_ story: StorySummary) -> String {
+        if story.branching { return Branching.status(completed: story.completed) }
         if let total = story.checkTotal, let best = story.bestCorrect { return "Best: \(best) of \(total)" }
         if story.segmentIndex > 0 && !story.completed { return "Continue reading" }
         return "New"
@@ -203,7 +209,7 @@ public enum StoryCopy {
 }
 
 extension PodcastClient {
-    static let storyColumns = "id,course,level_id,slug,title,segments,sort_order,published"
+    static let storyColumns = "id,course,level_id,slug,title,segments,sort_order,published,branching"
     static let storyProgressColumns = "story_id,segment_index,best_correct,check_total,completed_at"
 
     /// The published stories in one course with this learner's progress (RLS limits both reads). A failed progress read
@@ -251,7 +257,8 @@ extension PodcastClient {
                 segmentCount: Stories.segments(from: row["segments"]).count,
                 bestCorrect: saved?["best_correct"] as? Int,
                 checkTotal: saved?["check_total"] as? Int,
-                completed: completedAt != nil && !(completedAt is NSNull)
+                completed: completedAt != nil && !(completedAt is NSNull),
+                branching: row["branching"] as? Bool ?? false
             )
         }
     }

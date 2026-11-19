@@ -49,6 +49,7 @@ import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStatus
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.net.PodcastClientError
+import com.obsidianmedia.learnwithalphonso.core.podcast.BranchingStory
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizOffer
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizResult
 import com.obsidianmedia.learnwithalphonso.core.podcast.Stories
@@ -168,6 +169,7 @@ private sealed interface StoryLoad {
     data object Missing : StoryLoad
     data object Failed : StoryLoad
     data class Ready(val story: Story) : StoryLoad
+    data class Branching(val story: BranchingStory) : StoryLoad
 }
 
 /** Loads one story, then shows the read-along. */
@@ -179,7 +181,10 @@ fun StoryReaderScreen(container: AppContainer, storyId: String, onBack: () -> Un
     LaunchedEffect(storyId, reload) {
         load = StoryLoad.Loading
         load = try {
-            container.storiesClient.fetchStory(storyId)?.let { StoryLoad.Ready(it) } ?: StoryLoad.Missing
+            // A branching story has no top-level sentences, so the linear read finds nothing and the node graph is tried.
+            container.storiesClient.fetchStory(storyId)?.let { StoryLoad.Ready(it) }
+                ?: container.storiesClient.fetchBranchingStory(storyId)?.let { StoryLoad.Branching(it) }
+                ?: StoryLoad.Missing
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -189,7 +194,7 @@ fun StoryReaderScreen(container: AppContainer, storyId: String, onBack: () -> Un
     BackHandler(onBack = onBack)
     Column(Modifier.fillMaxSize().background(ds.surface)) {
         val current = load
-        StoriesTopBar((current as? StoryLoad.Ready)?.story?.title ?: "Story", onBack)
+        StoriesTopBar((current as? StoryLoad.Ready)?.story?.title ?: (current as? StoryLoad.Branching)?.story?.title ?: "Story", onBack)
         when (current) {
             StoryLoad.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) }
             StoryLoad.Missing -> Box(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.gutter)) {
@@ -200,6 +205,7 @@ fun StoryReaderScreen(container: AppContainer, storyId: String, onBack: () -> Un
                 AlphonsoSecondaryButton("Try again", onClick = { reload++ }, fullWidth = false)
             }
             is StoryLoad.Ready -> StoryReader(container, current.story)
+            is StoryLoad.Branching -> BranchingStoryReader(container, current.story)
         }
     }
 }

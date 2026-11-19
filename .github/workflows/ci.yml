@@ -399,6 +399,12 @@ jobs:
           deno check index.ts
           deno test handler.test.ts
 
+      - name: Test the finish-branching-story handler
+        working-directory: supabase/functions/finish-branching-story
+        run: |
+          deno check index.ts
+          deno test handler.test.ts
+
       - name: Test the shared FCM sender (Android push)
         # No network and no key material: the test generates its own RSA key
         # and injects fetch. --allow-env only because fcm.ts reads Deno.env
@@ -564,6 +570,7 @@ jobs:
           supabase functions deploy get-season-status
           supabase functions deploy complete-podcast-quiz
           supabase functions deploy complete-story-check
+          supabase functions deploy finish-branching-story
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 

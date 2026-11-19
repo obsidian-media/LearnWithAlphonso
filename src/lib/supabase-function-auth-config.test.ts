@@ -13,7 +13,7 @@ const functionsDir = path.join(root, "supabase", "functions");
 const SELF_AUTHENTICATING = ["send-push"];
 
 /** Config entries whose directory lands in a separate, still-open change. Remove a name once its directory exists. */
-const PENDING_FUNCTIONS = ["finish-branching-story"];
+const PENDING_FUNCTIONS: string[] = [];
 
 /** Reads `[functions.<name>]` tables and their `verify_jwt` value. Throws on anything it does not understand. */
 function parseFunctionVerifyJwt(toml: string): Map<string, boolean | undefined> {
