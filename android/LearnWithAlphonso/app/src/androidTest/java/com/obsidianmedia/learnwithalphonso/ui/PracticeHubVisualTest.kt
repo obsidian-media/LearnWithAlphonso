@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.screenshot.Screenshot
@@ -19,6 +20,7 @@ import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeReplyBar
 import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeResultScreen
 import com.obsidianmedia.learnwithalphonso.ui.theme.*
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,6 +62,69 @@ class PracticeHubVisualTest {
         rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-level-Advanced"))
         rule.onNodeWithTag("practice-level-Advanced").performScrollTo().performClick()
         shot("03-advanced")
+    }
+
+    /**
+     * A real render, not a source check: every section of the hub is on screen with a real size (a sibling PR shipped
+     * cards of about zero height that every source guard passed). The hero, the conversations grid, the campaigns
+     * rail, both drills and the Pro nudge each get a minimum height; the carousel works through its dots.
+     */
+    @Test fun hubSectionsRenderWithRealSize() {
+        val scale = mutableStateOf(1f)
+        rule.setContent {
+            val density = LocalDensity.current.density
+            CompositionLocalProvider(LocalDensity provides Density(density, scale.value)) {
+                AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                    PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
+                }
+            }
+        }
+        fun minPx(dp: Int) = with(rule.density) { dp.dp.toPx() }
+        fun assertSized(tag: String, minHeightDp: Int, minWidthDp: Int = 40) {
+            rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag(tag))
+            val node = rule.onNodeWithTag(tag).assertIsDisplayed().fetchSemanticsNode()
+            assertTrue("$tag is ${node.size.width}x${node.size.height}px, under ${minHeightDp}dp tall", node.size.height >= minPx(minHeightDp) && node.size.width >= minPx(minWidthDp))
+        }
+        // The hero: the continue card first (the fixture has a campaign in progress), both answers, the dots.
+        assertSized("practice-hero", 300, 200)
+        assertSized("practice-hero-card-0", 300, 200)
+        assertSized("practice-continue", 48, 48)
+        assertSized("practice-hero-chat-0", 48, 48)
+        for (i in 0..2) rule.onNodeWithTag("practice-hero-dot-$i").assertExists()
+        rule.onNodeWithTag("practice-hero-dot-1").performClick()
+        rule.waitForIdle()
+        assertSized("practice-hero-card-1", 300, 200)
+        rule.onNodeWithTag("practice-hero-dot-1").assertContentDescriptionEquals("Show call 2 of 3")
+        // The conversations grid, the campaigns rail, both drills and the nudge.
+        assertSized("practice-tile-coffee", 100, 100)
+        assertSized("practice-campaign-rail", 100, 150)
+        assertSized("practice-campaign-doctors-visit", 100, 100)
+        assertSized("practice-say-picture", 80, 200)
+        assertSized("practice-say-it-right", 80, 200)
+        assertSized("practice-hector-card", 60, 200)
+        shot("04-hub-sections")
+        // Large text: the hero's answers stay reachable.
+        rule.runOnIdle { scale.value = 2f }
+        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-hero-chat-0"))
+        rule.onNodeWithTag("practice-hero-chat-0").assertIsDisplayed()
+        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-say-it-right"))
+        rule.onNodeWithTag("practice-say-it-right").assertIsDisplayed()
+        shot("05-hub-large-text")
+    }
+
+    /** The campaign's detail (the pre-call sheet) lists every scene with the stars it holds; the rail carries no stars. */
+    @Test fun campaignDetailListsSceneStars() {
+        rule.setContent {
+            AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
+            }
+        }
+        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-campaign-doctors-visit"))
+        rule.onNodeWithTag("practice-campaign-doctors-visit").performClick()
+        rule.onNodeWithTag("practice-pre-call").performScrollToNode(hasTestTag("practice-campaign-scenes"))
+        rule.onNodeWithTag("practice-campaign-scenes").assertIsDisplayed()
+        rule.onNodeWithContentDescription("Scene 1, ${content.campaigns(course).first { it.id == "doctors-visit" }.scenes[0].title}, 3 of 3 stars").assertExists()
+        shot("06-campaign-detail")
     }
 
     @Test fun resultAwardsAndLargeTextRemainReachable() {

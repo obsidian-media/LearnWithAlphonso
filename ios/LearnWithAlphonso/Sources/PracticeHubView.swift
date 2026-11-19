@@ -1,7 +1,7 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// The approved web hub, with native navigation and scrolling at large text sizes.
+/// The Practice hub ("Practice A"): call cards, conversations, a campaigns rail, split drills and Hector's quiet nudge, with native navigation and scrolling at large text sizes.
 struct PracticeHubView: View {
     let contentStore: ContentStore
     let session: Session
@@ -34,98 +34,26 @@ struct PracticeHubView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
-                    PracticePortrait(room: "coffee", expression: .talk)
-                        .overlay(alignment: .topLeading) {
-                            HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
-                                Text("Practice").dsText(.display).foregroundStyle(ds.onHero).lineLimit(1).minimumScaleFactor(0.5)
-                                Spacer(minLength: CGFloat.zero)
-                                if let data {
-                                    let tally = PracticeHub.tally(data.stars, scenarios: scenarios, campaigns: campaigns)
-                                    Label("\(tally.earned) / \(tally.total)", systemImage: "star.fill").dsText(.caption).lineLimit(1).minimumScaleFactor(0.6)
-                                        .foregroundStyle(ds.xpText).padding(AlphonsoDS.Space.s2).background(ds.card, in: Capsule())
-                                        .accessibilityLabel("\(tally.earned) of \(tally.total) stars earned")
-                                }
-                            }.padding(AlphonsoDS.Space.gutter)
+                    HStack(alignment: .firstTextBaseline, spacing: AlphonsoDS.Space.s3) {
+                        Text("Practice").dsText(.display).foregroundStyle(ds.ink).lineLimit(1).minimumScaleFactor(0.5).accessibilityAddTraits(.isHeader)
+                        Spacer(minLength: CGFloat.zero)
+                        if let data {
+                            let tally = PracticeHub.tally(data.stars, scenarios: scenarios, campaigns: campaigns)
+                            Label("\(tally.earned) / \(tally.total)", systemImage: "star.fill").dsText(.caption).lineLimit(1).minimumScaleFactor(0.6)
+                                .foregroundStyle(ds.xpText).padding(AlphonsoDS.Space.s2).background(ds.xpTint, in: Capsule())
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityLabel("\(tally.earned) of \(tally.total) stars earned")
                         }
-                        .overlay(alignment: .topTrailing) {
-                            if !dynamicTypeSize.isAccessibilitySize {
-                                Text(greeting).dsText(.caption).foregroundStyle(ds.ink).padding(AlphonsoDS.Space.s3)
-                                    .frame(maxWidth: AlphonsoDS.Space.s12 * 3)
-                                    .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
-                                    .padding(.top, AlphonsoDS.Space.s12 + AlphonsoDS.Space.s3).padding(.trailing, AlphonsoDS.Space.s2)
-                            }
-                        }
-                    if dynamicTypeSize.isAccessibilitySize { Text(greeting).dsText(.headline) }
+                    }
+                    Text(greeting).dsText(.caption).foregroundStyle(ds.inkSoft)
                     if let data {
-                        if let pick = PracticeHub.today(data, scenarios: scenarios), let s = scenarios.first(where: { $0.id == pick.scenarioID }) {
-                            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
-                                Text("Today's pick").dsText(.overline).foregroundStyle(ds.onHeroKick)
-                                Text(s.title).dsText(.questionSmall)
-                                PracticeStarsView(n: PracticeHub.stars(rows, kind: "scenario", key: s.id))
-                                Text(pick.weakSpot.map { "A \(s.level.lowercased()) scene that makes you use \(PracticeHub.weakSpotName($0)), your top weak spot." } ?? "A \(s.level.lowercased()) scene to put what you know into words.").dsText(.footnote)
-                                PracticeButton("Call Alphonso") { target = .scenario(s) }
-                            }.padding(AlphonsoDS.Space.s4).foregroundStyle(ds.onHero)
-                                .background(ds.hero, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
-                        }
-                        if let resume = PracticeHub.resume(rows, campaigns: campaigns), let c = campaigns.first(where: { $0.id == resume.campaignID }) {
-                            practiceSectionLabel("Continue")
-                            Button { target = .campaign(c, resume.sceneIndex) } label: {
-                                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-                                    Text(c.title).dsText(.title)
-                                    Text("Scene \(resume.sceneIndex + 1) of \(c.scenes.count) · \(c.scenes[resume.sceneIndex].title)").dsText(.footnote)
-                                    sceneStars(c)
-                                }.padding(AlphonsoDS.Space.s4).frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
-                            }.buttonStyle(.plain)
-                        }
+                        // The call cards: where the learner left off, then Today's picks (the Kit's rule).
+                        PracticeHeroCarousel(cards: heroCards(data), call: { card in chat = false; target = card.target }, chat: { card in chat = true; target = card.target })
                     } else if error {
                         Text("Could not load Practice.").dsText(.body)
                         Button("Try again") { Task { await load() } }
                     } else { ProgressView("Loading Practice…") }
-                    practiceSectionLabel("Campaigns · \(campaigns.count) stories")
-                    ForEach(campaigns) { c in
-                        Button { target = .campaign(c, PracticeHub.nextScene(c, rows: rows)) } label: {
-                            PracticePictureCard(room: PracticeHub.room(campaignID: c.id, sceneID: c.scenes[0].id), title: c.title, detail: "\(c.level) · Campaign · \(c.scenes.count) scenes", blurb: "") { sceneStars(c) }
-                        }.buttonStyle(.plain)
-                    }
-                    // Hector keeps the same entitlement and paywall source rules as the previous Practice card.
-                    if !entitlementStore.isPro {
-                        Button { paywall = true } label: {
-                            HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
-                                if let art = FirstRunArt.hector("hector-happy") {
-                                    Image(uiImage: art).resizable().scaledToFit().frame(width: AlphonsoDS.Space.s12).accessibilityHidden(true)
-                                }
-                                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-                                    Text(PaywallCopy.practiceCardTitle + " · Pro").dsText(.headline)
-                                    Text(PaywallCopy.practiceCardSubtitle).dsText(.caption).foregroundStyle(ds.onHeroSoft)
-                                }
-                            }.padding(AlphonsoDS.Space.s4).frame(maxWidth: .infinity, alignment: .leading).foregroundStyle(ds.onHero)
-                                .background(ds.hero, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
-                        }.buttonStyle(.plain).accessibilityIdentifier("practiceHectorCard")
-                    }
-                    practiceSectionLabel("Say the picture")
-                    Button { sayPicture = true } label: {
-                        HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
-                            Image(systemName: "photo").dsText(.title).accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
-                                Text("Say the picture").dsText(.headline)
-                                Text("See a picture and say the word. A miss shows you the word and how it sounds.").dsText(.caption).foregroundStyle(ds.inkSoft)
-                            }
-                        }.padding(AlphonsoDS.Space.s4).frame(maxWidth: .infinity, alignment: .leading)
-                            .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
-                    }.buttonStyle(.plain).accessibilityIdentifier("practiceSayPictureCard")
-                    practiceSectionLabel("Say it right")
-                    Button { sayItRight = true } label: {
-                        HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
-                            Image(systemName: "waveform").dsText(.title).accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
-                                Text("Say it right").dsText(.headline)
-                                Text("Hear a word you have learned, say it, and find out how clearly you were understood. A miss teaches, it never punishes.").dsText(.caption).foregroundStyle(ds.inkSoft)
-                            }
-                        }.padding(AlphonsoDS.Space.s4).frame(maxWidth: .infinity, alignment: .leading)
-                            .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
-                    }.buttonStyle(.plain).accessibilityIdentifier("practiceSayItRightCard")
-                    practiceSectionLabel("Scenarios")
+                    practiceSectionLabel("Conversations")
                     ScrollView(.horizontal) {
                         HStack(spacing: AlphonsoDS.Space.s2) {
                             ForEach(PracticeHub.levels, id: \.self) { l in
@@ -135,21 +63,55 @@ struct PracticeHubView: View {
                                 }.accessibilityAddTraits(level == l ? .isSelected : [])
                             }
                         }
-                    }
+                    }.scrollIndicators(.hidden)
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AlphonsoDS.Space.s3), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), alignment: .leading, spacing: AlphonsoDS.Space.s3) {
                         ForEach(PracticeHub.filtered(scenarios, level: level)) { scenario in
+                            let n = PracticeHub.stars(rows, kind: "scenario", key: scenario.id)
                             Button { target = .scenario(scenario) } label: {
-                                PracticePictureCard(room: scenario.id, title: scenario.title, detail: scenario.level, blurb: "", compact: true) {
-                                    if data != nil { PracticeStarsView(n: PracticeHub.stars(rows, kind: "scenario", key: scenario.id)) }
-                                }
+                                PracticeTile(room: scenario.id, overline: scenario.level, title: scenario.title, stars: data == nil ? nil : n, mastered: n >= 3)
                             }.buttonStyle(.plain)
                         }
+                    }
+                    practiceSectionLabel("Campaigns · \(campaigns.count) stories")
+                    // Each campaign is a card with its own room, how far in, and a dot per scene; the scene stars are in its detail.
+                    ScrollView(.horizontal) {
+                        HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
+                            ForEach(campaigns) { c in
+                                let progress = PracticeHub.progress(c, rows: rows)
+                                Button { target = .campaign(c, PracticeHub.nextScene(c, rows: rows)) } label: {
+                                    PracticeTile(room: PracticeHub.room(campaignID: c.id, sceneID: c.scenes[0].id), overline: "\(c.level) · \(c.scenes.count) scenes", title: c.title, stars: nil, mastered: false, progress: data == nil ? nil : progress)
+                                        .frame(width: AlphonsoDS.Space.s12 * 3 + AlphonsoDS.Space.s4)
+                                }.buttonStyle(.plain)
+                            }
+                        }
+                    }.scrollIndicators(.hidden)
+                    practiceSectionLabel("Quick practice")
+                    PracticeDrillCard(title: "Say the picture", detail: "See a picture and say the word. A miss shows you the word and how it sounds.", identifier: "practiceSayPictureCard", action: { sayPicture = true }) {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AlphonsoDS.Space.s1) {
+                            ForEach(["\u{2615}", "\u{2708}\u{FE0F}", "\u{1FA7A}", "\u{1F35D}"], id: \.self) { Icon3DView(emoji: $0, size: AlphonsoDS.Space.s6) }
+                        }.padding(AlphonsoDS.Space.s2).frame(maxHeight: .infinity).background(ds.choiceTint)
+                    }
+                    PracticeDrillCard(title: "Say it right", detail: "Hear a word you have learned, say it, and find out how clearly you were understood. A miss teaches, it never punishes.", identifier: "practiceSayItRightCard", action: { sayItRight = true }) {
+                        Image(systemName: "waveform").dsText(.display).foregroundStyle(ds.rightEdge).frame(maxWidth: .infinity, maxHeight: .infinity).background(ds.rightTint)
+                    }
+                    // Hector keeps the same entitlement and paywall source rules as the previous Practice card; quiet and last.
+                    if !entitlementStore.isPro {
+                        Button { paywall = true } label: {
+                            HStack(alignment: .center, spacing: AlphonsoDS.Space.s3) {
+                                Image("Hector-waving").resizable().scaledToFit().frame(height: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s3).accessibilityHidden(true)
+                                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                                    Text(PaywallCopy.practiceCardTitle + " · Pro").dsText(.headline)
+                                    Text(PaywallCopy.practiceCardSubtitle).dsText(.caption).foregroundStyle(ds.onHeroSoft)
+                                }
+                            }.padding(AlphonsoDS.Space.s3).frame(maxWidth: .infinity, alignment: .leading).foregroundStyle(ds.onHero)
+                                .background(ds.hero, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
+                        }.buttonStyle(.plain).accessibilityIdentifier("practiceHectorCard")
                     }
                 }.padding(AlphonsoDS.Space.gutter).environment(\.alphonsoDS, ds)
             }.background(ds.surface).foregroundStyle(ds.ink)
                 .task { if !modeInitialized { chat = !(UserDefaults.standard.object(forKey: AvatarPreference.key) as? Bool ?? AvatarPreference.defaultValue); modeInitialized = true }; await load() }.refreshable { await load() }
                 .sheet(item: $target) { t in
-                    PracticePreCall(target: t, chat: $chat) { target = nil; playing = t }.environment(\.alphonsoDS, ds).environment(\.colorScheme, .light)
+                    PracticePreCall(target: t, chat: $chat, rows: rows) { target = nil; playing = t }.environment(\.alphonsoDS, ds).environment(\.colorScheme, .light)
                 }
                 .navigationDestination(isPresented: $sayPicture) {
                     SayThePictureView(contentStore: contentStore, session: session, course: course, onExit: { sayPicture = false }).environment(\.alphonsoDS, ds)
@@ -168,6 +130,25 @@ struct PracticeHubView: View {
             .task(id: deepLink.pending) { openPathStop() }
     }
 
+    /// The carousel's cards: where the learner left off (if anywhere), then Today's picks, three in all (the Kit's rule).
+    private func heroCards(_ data: PracticeHubData) -> [PracticeHeroCard] {
+        var out: [PracticeHeroCard] = []
+        if let resume = PracticeHub.resume(rows, campaigns: campaigns), let c = campaigns.first(where: { $0.id == resume.campaignID }) {
+            let scene = c.scenes[resume.sceneIndex]
+            out.append(PracticeHeroCard(id: "continue:\(c.id):\(resume.sceneIndex)", kicker: "Continue", title: scene.title,
+                subtitle: "\(c.title) · Scene \(resume.sceneIndex + 1) of \(c.scenes.count)", reason: "Pick up where you left off",
+                room: PracticeHub.room(campaignID: c.id, sceneID: scene.id), stars: PracticeHub.stars(rows, kind: "scene", key: c.id + "/" + scene.id), target: .campaign(c, resume.sceneIndex)))
+        }
+        var first = true
+        for pick in PracticeHub.picks(data, scenarios: scenarios).prefix(max(0, PracticeHub.heroCards - out.count)) {
+            guard let s = scenarios.first(where: { $0.id == pick.scenarioID }) else { continue }
+            out.append(PracticeHeroCard(id: "pick:\(s.id)", kicker: first ? "Today's pick" : "Also for you", title: s.title, subtitle: s.level,
+                reason: PracticeHub.reason(pick, level: s.level, first: first), room: s.id, stars: PracticeHub.stars(rows, kind: "scenario", key: s.id), target: .scenario(s)))
+            first = false
+        }
+        return out
+    }
+
     /// Opens the pre-call sheet for the path stop that sent the learner here, if it is in this course's content.
     private func openPathStop() {
         guard let destination = deepLink.pending else { return }
@@ -180,20 +161,6 @@ struct PracticeHubView: View {
             if let c = campaigns.first(where: { $0.id == id }) { target = .campaign(c, scene) }
         case nil:
             break
-        }
-    }
-    @ViewBuilder private func sceneStars(_ c: Campaign) -> some View {
-        if data != nil {
-            ScrollView(.horizontal) {
-                HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
-                    ForEach(Array(c.scenes.enumerated()), id: \.element.id) { i, scene in
-                        VStack(spacing: AlphonsoDS.Space.s1) {
-                            PracticeRoomThumbnail(room: PracticeHub.room(campaignID: c.id, sceneID: scene.id))
-                            PracticeStarsView(n: PracticeHub.stars(rows, kind: "scene", key: c.id + "/" + scene.id))
-                        }.accessibilityElement(children: .combine).accessibilityLabel("Scene \(i + 1), \(scene.title), \(PracticeHub.starLabel(PracticeHub.stars(rows, kind: "scene", key: c.id + "/" + scene.id)))")
-                    }
-                }
-            }
         }
     }
     private var greeting: String {
@@ -223,6 +190,8 @@ enum PracticeTarget: Identifiable, Hashable {
 struct PracticePreCall: View {
     let target: PracticeTarget
     @Binding var chat: Bool
+    /// The learner's stars, for the campaign's scene list.
+    var rows: [PracticeStarRow] = []
     let start: () -> Void
     @Environment(\.alphonsoDS) private var ds
     @Environment(\.dismiss) private var dismiss
@@ -236,6 +205,21 @@ struct PracticePreCall: View {
                 Text("\(target.persona.components(separatedBy: ",").first ?? "Alphonso") starts the \(chat ? "chat" : "call"):").dsText(.caption)
                 Text(target.opener).dsText(.body).padding(AlphonsoDS.Space.s3)
                     .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
+                // A campaign's detail: every scene with the stars it holds, the one starting now first in line.
+                if case let .campaign(c, current) = target {
+                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                        Text("Scenes in this campaign").dsText(.overline)
+                        ForEach(Array(c.scenes.enumerated()), id: \.element.id) { i, scene in
+                            let n = PracticeHub.stars(rows, kind: "scene", key: c.id + "/" + scene.id)
+                            HStack(spacing: AlphonsoDS.Space.s2) {
+                                Text("\(i + 1). \(scene.title)").dsText(.caption).fontWeight(i == current ? .bold : .regular)
+                                Spacer(minLength: CGFloat.zero)
+                                PracticeStarsView(n: n)
+                            }.accessibilityElement(children: .combine).accessibilityLabel("Scene \(i + 1), \(scene.title), \(PracticeHub.starLabel(n))")
+                        }
+                    }.padding(AlphonsoDS.Space.s3).frame(maxWidth: .infinity, alignment: .leading)
+                        .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
+                }
                 Text("How to earn stars").dsText(.overline)
                 ForEach(Array(PracticeHub.starRules(chat: chat).enumerated()), id: \.offset) { i, line in
                     HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
@@ -250,6 +234,194 @@ struct PracticePreCall: View {
                 PracticeButton(chat ? "Start the chat" : "Start the call", action: start)
             }.padding(AlphonsoDS.Space.gutter)
         }.background(ds.surface).foregroundStyle(ds.ink)
+    }
+}
+
+/// One call card: a scenario picked for the learner, or the campaign scene they were in the middle of.
+struct PracticeHeroCard: Identifiable {
+    let id: String
+    let kicker: String
+    let title: String
+    let subtitle: String
+    let reason: String
+    let room: String
+    let stars: Int
+    let target: PracticeTarget
+}
+
+/// The swipeable call cards with page dots. The dots are buttons, so the carousel works without a swipe (VoiceOver,
+/// Switch Control); every card stays in the accessibility tree. It never advances by itself.
+struct PracticeHeroCarousel: View {
+    let cards: [PracticeHeroCard]
+    let call: (PracticeHeroCard) -> Void
+    let chat: (PracticeHeroCard) -> Void
+    @State private var current: String?
+    @Environment(\.alphonsoDS) private var ds
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private var index: Int { cards.firstIndex { $0.id == current } ?? 0 }
+    var body: some View {
+        VStack(spacing: AlphonsoDS.Space.s2) {
+            ScrollView(.horizontal) {
+                HStack(spacing: AlphonsoDS.Space.s3) {
+                    ForEach(Array(cards.enumerated()), id: \.element.id) { i, card in
+                        PracticeHeroCardView(card: card, position: i + 1, count: cards.count, call: { call(card) }, chat: { chat(card) })
+                            .containerRelativeFrame(.horizontal) { width, _ in cards.count > 1 ? width * 0.86 : width }
+                            .id(card.id)
+                    }
+                }.scrollTargetLayout()
+            }
+            .scrollIndicators(.hidden)
+            .scrollTargetBehavior(.viewAligned)
+            .scrollPosition(id: $current)
+            .accessibilityIdentifier("practiceHeroCarousel")
+            if cards.count > 1 {
+                HStack(spacing: CGFloat.zero) {
+                    ForEach(Array(cards.enumerated()), id: \.element.id) { i, card in
+                        Button {
+                            if reduceMotion { current = card.id } else { withAnimation { current = card.id } }
+                        } label: {
+                            Capsule().fill(i == index ? ds.choice : ds.line)
+                                .frame(width: i == index ? AlphonsoDS.Space.s5 : AlphonsoDS.Space.s2 - AlphonsoDS.Space.s1 / 2, height: AlphonsoDS.Space.s2 - AlphonsoDS.Space.s1 / 2)
+                                .frame(minWidth: AlphonsoDS.Space.s6, minHeight: AlphonsoDS.Space.s6)
+                        }.buttonStyle(.plain)
+                            .accessibilityLabel("Show call \(i + 1) of \(cards.count)")
+                            .accessibilityAddTraits(i == index ? .isSelected : [])
+                    }
+                }.frame(maxWidth: .infinity)
+            }
+        }
+    }
+}
+
+/// The incoming-call treatment: the scene behind, the full Alphonso, a "ready" cue and the round Call / Chat answers.
+/// The pre-call sheet (opened by either button) still carries the star rules and the call-or-chat choice.
+struct PracticeHeroCardView: View {
+    let card: PracticeHeroCard
+    let position: Int
+    let count: Int
+    let call: () -> Void
+    let chat: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    var body: some View {
+        VStack(spacing: AlphonsoDS.Space.s2) {
+            VStack(spacing: AlphonsoDS.Space.s1) {
+                Text("\(card.kicker) · \(position) of \(count)").dsText(.overline).foregroundStyle(ds.onHeroKick)
+                Text(card.title).dsText(.questionSmall)
+                HStack(spacing: AlphonsoDS.Space.s2) {
+                    Text(card.subtitle).dsText(.caption).foregroundStyle(ds.onHeroSoft)
+                    PracticeStarsView(n: card.stars)
+                }
+                Text(card.reason).dsText(.caption).padding(.horizontal, AlphonsoDS.Space.s3).padding(.vertical, AlphonsoDS.Space.s1)
+                    .background(ds.onHero.opacity(0.15), in: Capsule())
+            }.multilineTextAlignment(.center).accessibilityElement(children: .combine)
+            Spacer(minLength: AlphonsoDS.Space.s2)
+            if !dynamicTypeSize.isAccessibilitySize {
+                Image("Alphonso-waving").resizable().scaledToFit().frame(height: AlphonsoDS.Space.s12 * 3)
+                    .shadow(radius: AlphonsoDS.Space.s2).accessibilityHidden(true)
+            }
+            Text("Alphonso is ready").dsText(.caption).foregroundStyle(ds.callMint).accessibilityHidden(true)
+            HStack(alignment: .top, spacing: AlphonsoDS.Space.s8) {
+                answer("Call", icon: "mic.fill", gold: true, label: "Call Alphonso: \(card.title)", run: call)
+                answer("Chat", icon: "text.bubble.fill", gold: false, label: "Chat with Alphonso: \(card.title)", run: chat)
+            }
+        }
+        .padding(AlphonsoDS.Space.s4)
+        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.s12 * 7)
+        .foregroundStyle(ds.onHero)
+        .background {
+            ZStack {
+                ds.hero
+                if let art = LessonArt.room(card.room) { Image(uiImage: art).resizable().scaledToFill() }
+                LinearGradient(stops: [.init(color: ds.heroB.opacity(0.6), location: 0), .init(color: ds.heroB.opacity(0.1), location: 0.3), .init(color: ds.heroB.opacity(0.15), location: 0.5), .init(color: ds.heroB.opacity(0.85), location: 0.8), .init(color: ds.heroB, location: 1)], startPoint: .top, endPoint: .bottom)
+            }.allowsHitTesting(false)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("\(position) of \(count): \(card.title)")
+    }
+    private func answer(_ title: String, icon: String, gold: Bool, label: String, run: @escaping () -> Void) -> some View {
+        Button(action: run) {
+            VStack(spacing: AlphonsoDS.Space.s1) {
+                Image(systemName: icon).dsText(.title)
+                    .frame(width: AlphonsoDS.Space.s12 + (gold ? AlphonsoDS.Space.s3 : AlphonsoDS.Space.s1), height: AlphonsoDS.Space.s12 + (gold ? AlphonsoDS.Space.s3 : AlphonsoDS.Space.s1))
+                    .foregroundStyle(gold ? ds.onAction : ds.onHero)
+                    .background(gold ? ds.action : ds.onHero.opacity(0.2), in: Circle())
+                Text(title).dsText(.caption)
+            }
+        }.buttonStyle(.plain).accessibilityElement(children: .ignore).accessibilityLabel(label).accessibilityAddTraits(.isButton)
+    }
+}
+
+/// A scenario or campaign in its painted room: level, title, stars (or progress dots) and a gold Mastered badge at three stars.
+struct PracticeTile: View {
+    let room: String
+    let overline: String
+    let title: String
+    let stars: Int?
+    let mastered: Bool
+    var progress: PracticeCampaignProgress?
+    @Environment(\.alphonsoDS) private var ds
+    var body: some View {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+            HStack(alignment: .top) {
+                Spacer(minLength: CGFloat.zero)
+                if mastered {
+                    Label("Mastered", systemImage: "checkmark").dsText(.overline).foregroundStyle(ds.onAction)
+                        .padding(.horizontal, AlphonsoDS.Space.s2).padding(.vertical, AlphonsoDS.Space.s1 / 2).background(ds.action, in: Capsule())
+                }
+            }
+            Spacer(minLength: AlphonsoDS.Space.s12)
+            Text(overline).dsText(.overline).foregroundStyle(ds.onHeroKick)
+            Text(title).dsText(.footnote).fixedSize(horizontal: false, vertical: true)
+            if let stars { PracticeStarsView(n: stars) }
+            if let progress {
+                HStack(spacing: AlphonsoDS.Space.s2) {
+                    HStack(spacing: AlphonsoDS.Space.s1 / 2) {
+                        ForEach(Array(progress.scenes.enumerated()), id: \.offset) { _, done in
+                            Capsule().fill(done ? ds.action : ds.onHero.opacity(0.35)).frame(width: AlphonsoDS.Space.s3, height: AlphonsoDS.Space.s1)
+                        }
+                    }
+                    Text(PracticeHub.progressLabel(progress)).dsText(.overline).foregroundStyle(ds.onHeroSoft)
+                }.accessibilityElement(children: .ignore).accessibilityLabel("\(progress.done) of \(progress.total) scenes done")
+            }
+        }
+        .padding(AlphonsoDS.Space.s3)
+        .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.s12 * 3, alignment: .topLeading)
+        .foregroundStyle(ds.onHero)
+        .background {
+            ZStack {
+                ds.hero
+                if let art = LessonArt.room(room) { Image(uiImage: art).resizable().scaledToFill() }
+                LinearGradient(stops: [.init(color: ds.heroB.opacity(0), location: 0.3), .init(color: ds.heroB.opacity(0.78), location: 0.62), .init(color: ds.heroB.opacity(0.92), location: 1)], startPoint: .top, endPoint: .bottom)
+            }.allowsHitTesting(false)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
+    }
+}
+
+/// A featured drill: its own thumbnail, title, line and a Start button. The whole card is one button.
+struct PracticeDrillCard<Thumb: View>: View {
+    let title: String
+    let detail: String
+    let identifier: String
+    let action: () -> Void
+    @ViewBuilder let thumb: () -> Thumb
+    @Environment(\.alphonsoDS) private var ds
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: CGFloat.zero) {
+                thumb().frame(width: AlphonsoDS.Space.s12 * 2).frame(maxHeight: .infinity).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                    Text(title).dsText(.headline)
+                    Text(detail).dsText(.caption).foregroundStyle(ds.inkSoft).fixedSize(horizontal: false, vertical: true)
+                    Text("Start").dsText(.caption).foregroundStyle(ds.onChoice)
+                        .padding(.horizontal, AlphonsoDS.Space.s3).padding(.vertical, AlphonsoDS.Space.s2).background(ds.choice, in: Capsule())
+                        .padding(.top, AlphonsoDS.Space.s1)
+                }.padding(AlphonsoDS.Space.s3).frame(maxWidth: .infinity, alignment: .leading)
+            }.background(ds.card).clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
+                .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control).strokeBorder(ds.line, lineWidth: AlphonsoDS.Space.s1 / 2))
+        }.buttonStyle(.plain).accessibilityIdentifier(identifier)
     }
 }
 
@@ -302,45 +474,6 @@ struct PracticeButton: View {
         }.buttonStyle(.plain)
     }
 }
-struct PracticePortrait: View {
-    let room: String
-    let expression: LessonExpression
-    var body: some View {
-        Color.clear.frame(height: CGFloat(LessonStage.layout(viewportHeight: 0, prompt: "").roomHeight))
-            .overlay {
-                if let art = LessonArt.room(room) { Image(uiImage: art).resizable().scaledToFill() }
-            }
-            .overlay(alignment: .bottom) {
-                if let art = LessonArt.expression(expression) { Image(uiImage: art).resizable().scaledToFit() }
-            }.clipped().accessibilityHidden(true)
-    }
-}
-struct PracticePictureCard<Footer: View>: View {
-    let room: String
-    let title: String
-    let detail: String
-    let blurb: String
-    var compact = false
-    @ViewBuilder let footer: () -> Footer
-    @Environment(\.alphonsoDS) private var ds
-    var body: some View {
-        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-            Spacer(minLength: AlphonsoDS.Space.s12)
-            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-                Text(detail).dsText(.overline).foregroundStyle(ds.onHeroKick)
-                Text(title).dsText(compact ? .footnote : .questionSmall)
-                if !blurb.isEmpty { Text(blurb).dsText(.footnote).foregroundStyle(ds.onHeroSoft) }
-                footer()
-            }.padding(AlphonsoDS.Space.s4).frame(maxWidth: .infinity, alignment: .leading).background(ds.hero)
-        }.frame(maxWidth: .infinity, alignment: .leading).foregroundStyle(ds.onHero)
-            .background {
-                // The picture is taller than the card and spills over its neighbours: it must not take their taps
-                // (it covered Today's pick, so "Call Alphonso" did nothing).
-                if let art = LessonArt.room(room) { Image(uiImage: art).resizable().scaledToFill().allowsHitTesting(false) }
-            }.clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
-    }
-}
-
 @MainActor func practiceClient(_ session: Session) -> AIConversationClient {
     let token = session.accessToken ?? ""
     return AIConversationClient(baseURL: AppConfig.apiBaseURL, accessToken: { token },
