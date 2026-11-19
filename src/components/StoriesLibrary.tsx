@@ -71,9 +71,8 @@ function EndingsRing({ story, size = 36 }: { story: StorySummary; size?: number 
         cx="18"
         cy="18"
         r={r}
-        fill="rgba(0,0,0,0.45)"
-        stroke="rgba(255,255,255,0.35)"
         strokeWidth="4"
+        className="fill-ds-hero/70 stroke-ds-on-hero/35"
       />
       <circle
         cx="18"
