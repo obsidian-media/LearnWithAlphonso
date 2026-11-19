@@ -22,6 +22,8 @@ struct LearnForYouRail: View {
     }
 
     let items: [Item]
+    /// The card width grows with Dynamic Type so a larger title wraps instead of clipping.
+    @ScaledMetric(relativeTo: .body) private var cardWidth: CGFloat = 124
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
@@ -58,7 +60,7 @@ struct LearnForYouRail: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(AlphonsoDS.Space.s3)
-            .frame(width: 124, alignment: .leading)
+            .frame(width: cardWidth, alignment: .leading)
             .frame(minHeight: AlphonsoDS.Space.minTouch, alignment: .topLeading)
             .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card.opacity(0.94)))
             .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).strokeBorder(ds.line, lineWidth: 2))

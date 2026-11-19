@@ -14,6 +14,7 @@ struct LearnHeroStage<Content: View>: View {
     let greeting: String
     @ViewBuilder var content: Content
     @Environment(\.alphonsoDS) private var ds
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         Color.clear
@@ -27,7 +28,8 @@ struct LearnHeroStage<Content: View>: View {
             }
             .overlay(alignment: .bottom) {
                 content
-                    .padding(.trailing, Self.figureColumnWidth - AlphonsoDS.Space.s4)
+                    // At accessibility sizes the text takes the full width (Alphonso is decorative there) so nothing overlaps him.
+                    .padding(.trailing, dynamicTypeSize.isAccessibilitySize ? 0 : Self.figureColumnWidth - AlphonsoDS.Space.s4)
                     .background(alignment: .bottom) {
                         LinearGradient(colors: [ds.hero.opacity(0), ds.hero.opacity(0.85)], startPoint: .top, endPoint: .bottom)
                             .allowsHitTesting(false)

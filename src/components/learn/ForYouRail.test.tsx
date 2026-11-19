@@ -50,7 +50,7 @@ beforeEach(() => {
   getTeamMission.mockReset().mockResolvedValue(null);
   getMyTeam.mockReset().mockResolvedValue(null);
   getWeeklyChallenges.mockReset().mockResolvedValue([]);
-  usePathMock.mockReset().mockReturnValue({ state: { kind: "none" } });
+  usePathMock.mockReset().mockReturnValue({ state: { kind: "none" }, reload: vi.fn() });
 });
 
 describe("ForYouRail", () => {
@@ -97,5 +97,47 @@ describe("ForYouRail", () => {
     const card = await screen.findByRole("button", { name: "Team mission: Couldn't load" });
     await user.click(card);
     expect(await screen.findByRole("button", { name: "Try again" })).toBeInTheDocument();
+  });
+
+  it("while the path loads there is no planner link; a failed load offers Try again", async () => {
+    const reload = vi.fn();
+    usePathMock.mockReturnValue({ state: { kind: "loading" }, reload });
+    const { unmount } = renderRail();
+    expect(screen.getByRole("group", { name: "My path: loading" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /path/i })).toBeNull();
+    unmount();
+    usePathMock.mockReturnValue({ state: { kind: "error", offline: false }, reload });
+    renderRail();
+    await userEvent.click(screen.getByRole("button", { name: /couldn't load. Try again/ }));
+    expect(reload).toHaveBeenCalled();
+  });
+
+  it("marks the Weekly card when a full bar is waiting to be claimed", async () => {
+    getWeeklyChallenges.mockResolvedValue([{ ...challenge("a", false), progress: 5 }]);
+    renderRail();
+    expect(
+      await screen.findByRole("button", { name: /Weekly challenges: 0 of 1 done, reward ready/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("a failed first load recovers when the rail is mounted again", async () => {
+    getWeeklyChallenges
+      .mockRejectedValueOnce(new Error("x"))
+      .mockResolvedValue([challenge("a", true)]);
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+    });
+    const ui = (
+      <QueryClientProvider client={client}>
+        <ForYouRail course="en" dueCount={0} />
+      </QueryClientProvider>
+    );
+    const first = render(ui);
+    await screen.findByRole("button", { name: "Weekly challenges: Couldn't load" });
+    first.unmount();
+    render(ui);
+    expect(
+      await screen.findByRole("button", { name: "Weekly challenges: 1 of 1 done" }),
+    ).toBeInTheDocument();
   });
 });

@@ -41,7 +41,7 @@ function CardBody({
  * the rail (they have no screen of their own). Each card says what it holds in its accessible name.
  */
 export function ForYouRail({ course, dueCount }: { course: Course; dueCount: number }) {
-  const { state } = usePath(course);
+  const { state, reload } = usePath(course);
   const team = useTeamMission();
   const challenges = useWeeklyChallenges();
   const [open, setOpen] = useState<"team" | "weekly" | null>(null);
@@ -50,6 +50,8 @@ export function ForYouRail({ course, dueCount }: { course: Course; dueCount: num
   const pathHref = state.kind === "ready" ? "/path" : "/path/build";
   const pathLabel = state.kind === "ready" ? "My path" : "Build my path";
   const pathValue = state.kind === "ready" ? goal.headline : "Set a goal";
+  // Until the path is known there is no goal to show and no planner to offer.
+  const pathKnown = state.kind === "ready" || state.kind === "none";
 
   const showTeam = team.showError || Boolean(team.mission);
   const teamValue = team.showError
@@ -64,6 +66,8 @@ export function ForYouRail({ course, dueCount }: { course: Course; dueCount: num
   const showWeekly = challenges.failed || list.length > 0;
   const doneCount = list.filter((c) => c.completed).length;
   const weeklyValue = challenges.failed ? "Couldn't load" : `${doneCount} of ${list.length} done`;
+  // A challenge whose bar is full but not yet completed is a reward waiting to be claimed.
+  const claimReady = list.some((c) => !c.completed && c.progress >= c.threshold);
 
   return (
     <section aria-label="For you" className="grid gap-2">
@@ -92,13 +96,28 @@ export function ForYouRail({ course, dueCount }: { course: Course; dueCount: num
             }
           />
         </Link>
-        <Link
-          to={pathHref}
-          aria-label={`${pathLabel}: ${goal.headline}. ${goal.detail}`}
-          className={CARD}
-        >
-          <CardBody icon="compass" label={pathLabel} value={pathValue} />
-        </Link>
+        {pathKnown ? (
+          <Link
+            to={pathHref}
+            aria-label={`${pathLabel}: ${goal.headline}. ${goal.detail}`}
+            className={CARD}
+          >
+            <CardBody icon="compass" label={pathLabel} value={pathValue} />
+          </Link>
+        ) : state.kind === "loading" ? (
+          <div aria-busy="true" aria-label="My path: loading" role="group" className={CARD}>
+            <CardBody icon="compass" label="My path" value="Loading" />
+          </div>
+        ) : (
+          <button
+            type="button"
+            aria-label="My path: couldn't load. Try again"
+            onClick={() => void reload()}
+            className={CARD}
+          >
+            <CardBody icon="compass" label="My path" value="Couldn't load" />
+          </button>
+        )}
         {showTeam && (
           <button
             type="button"
@@ -116,17 +135,29 @@ export function ForYouRail({ course, dueCount }: { course: Course; dueCount: num
             type="button"
             aria-expanded={open === "weekly"}
             aria-controls="for-you-detail"
-            aria-label={`Weekly challenges: ${weeklyValue}`}
+            aria-label={`Weekly challenges: ${weeklyValue}${claimReady ? ", reward ready to claim" : ""}`}
             onClick={() => setOpen(open === "weekly" ? null : "weekly")}
             className={CARD}
           >
-            <CardBody icon="star" label="Weekly" value={weeklyValue} />
+            <CardBody
+              icon="star"
+              label="Weekly"
+              value={weeklyValue}
+              badge={
+                claimReady ? (
+                  <span
+                    aria-hidden="true"
+                    className="absolute right-2.5 top-2.5 size-2 rounded-full bg-ds-heart"
+                  />
+                ) : null
+              }
+            />
           </button>
         )}
       </div>
       <div id="for-you-detail" data-sheet>
-        {open === "team" && showTeam ? <TeamMissionCard /> : null}
-        {open === "weekly" && showWeekly ? <WeeklyChallengesCard /> : null}
+        {open === "team" && showTeam ? <TeamMissionCard nested /> : null}
+        {open === "weekly" && showWeekly ? <WeeklyChallengesCard nested /> : null}
       </div>
     </section>
   );

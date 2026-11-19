@@ -92,6 +92,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.heading
 import com.obsidianmedia.learnwithalphonso.R
 import com.obsidianmedia.learnwithalphonso.core.logic.LearnRail
@@ -243,6 +244,8 @@ fun LearnScreen(
                     PathUi.None -> LearnRail.PATH_UNSET
                     is PathUi.Ready -> PathGoalCard.lines(u.path).headline
                 }
+                // A full bar that is not yet completed or claimed is a reward waiting to be claimed.
+                val claimReady = state.challenges.any { it.progress >= it.threshold && !it.completed && it.templateId !in state.claimedChallengeIds }
                 val cards = buildList {
                     add(RailItem("review", R.drawable.ds_book, "Review", LearnRail.reviewValue(dueCount), LearnRail.reviewSpoken(dueCount), showsDot = dueCount > 0, expanded = null) { onOpenReview(state.course) })
                     add(RailItem("path", R.drawable.ds_target, if (hasNoGoal) "Build my path" else "My path", pathValue, "${if (hasNoGoal) "Build my path" else "My path"}, $pathValue", expanded = if (hasNoGoal) null else forYouOpen == "path") {
@@ -250,7 +253,7 @@ fun LearnScreen(
                         if (hasNoGoal) onBuildPath() else toggleForYou("path")
                     })
                     teamMission?.let { m -> LearnRail.teamValue(m).let { v -> add(RailItem("team", R.drawable.ds_friends, "Team mission", v, "Team mission, $v", expanded = forYouOpen == "team") { toggleForYou("team") }) } }
-                    if (state.challenges.isNotEmpty()) LearnRail.weeklyValue(state.challenges).let { v -> add(RailItem("weekly", R.drawable.ds_star_solid, "Weekly", v, "Weekly challenges, $v", expanded = forYouOpen == "weekly") { toggleForYou("weekly") }) }
+                    if (state.challenges.isNotEmpty()) LearnRail.weeklyValue(state.challenges).let { v -> add(RailItem("weekly", R.drawable.ds_star_solid, "Weekly", v, "Weekly challenges, $v${if (claimReady) ", reward ready to claim" else ""}", showsDot = claimReady, expanded = forYouOpen == "weekly") { toggleForYou("weekly") }) }
                 }
                 ForYouRail(cards)
             }
@@ -369,22 +372,25 @@ private fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.conte
     val room = rememberFirstRunAsset("scenes/$art.webp") ?: rememberFirstRunAsset("scenes/${LessonStage.FALLBACK_ROOM}.webp")
     val alphonso = rememberFirstRunAsset("lesson/happy.webp")
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
+    // At large font sizes the text takes the full width and Alphonso (decorative) steps aside, so nothing overlaps him.
+    val big = LocalDensity.current.fontScale >= 1.3f
+    val textWidth = if (big) 1f else 0.62f
     Column {
         // Not merged: TalkBack reads the greeting, then the lesson line, then the Continue lesson button.
         Box(Modifier.fillMaxWidth().clip(shape).background(ds.hero)) {
             room?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize()) }
             Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, ds.hero.copy(alpha = 0.92f)))))
-            alphonso?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.align(Alignment.BottomEnd).height(150.dp).clearAndSetSemantics { }) }
+            if (!big) alphonso?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.align(Alignment.BottomEnd).height(150.dp).clearAndSetSemantics { }) }
             Column(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s4), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-                Text(greeting, style = CaptionType, color = ds.ink, modifier = Modifier.fillMaxWidth(0.62f).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s2))
+                Text(greeting, style = CaptionType, color = ds.ink, modifier = Modifier.fillMaxWidth(textWidth).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s2))
                 Spacer(Modifier.height(AlphonsoTokens.Space.s12))
                 Text("YOU ARE HERE \u00B7 UNIT ${place.index} OF ${place.count}", style = OverlineType, color = ds.onHeroKick)
-                Text(unit.title, style = TitleType, color = ds.onHero, modifier = Modifier.fillMaxWidth(0.7f))
-                if (lessonTitle != null) Text("Next: $lessonTitle", style = FootnoteType, color = ds.onHeroSoft, modifier = Modifier.fillMaxWidth(0.7f))
+                Text(unit.title, style = TitleType, color = ds.onHero, modifier = Modifier.fillMaxWidth(textWidth))
+                if (lessonTitle != null) Text("Next: $lessonTitle", style = FootnoteType, color = ds.onHeroSoft, modifier = Modifier.fillMaxWidth(textWidth))
                 // The one way in, on the scene with the rest of the hero. The edge under the gold face is the button's darker lip.
                 val button = RoundedCornerShape(AlphonsoTokens.Radius.control)
                 Box(
-                    Modifier.fillMaxWidth().clip(button).background(ds.actionEdge).padding(bottom = 4.dp).clip(button).background(ds.action)
+                    Modifier.fillMaxWidth(textWidth).clip(button).background(ds.actionEdge).padding(bottom = 4.dp).clip(button).background(ds.action)
                         .heightIn(min = 48.dp)
                         .clickable(role = Role.Button, onClickLabel = "Continue ${lessonTitle ?: unit.title}", onClick = onContinue)
                         .padding(horizontal = AlphonsoTokens.Space.s6, vertical = AlphonsoTokens.Space.s3),
@@ -422,7 +428,7 @@ private fun ForYouRail(items: List<RailItem>) {
             items.forEach { item ->
                 val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
                 Column(
-                    Modifier.width(124.dp).heightIn(min = 48.dp).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+                    Modifier.width((124 * LocalDensity.current.fontScale.coerceIn(1f, 2f)).dp).heightIn(min = 48.dp).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
                         .clickable(role = Role.Button, onClick = item.onClick)
                         .semantics(mergeDescendants = true) {
                             contentDescription = item.spoken
@@ -495,11 +501,15 @@ private fun UnitsHeader(selected: String, units: List<com.obsidianmedia.learnwit
     val lessons = units.flatMap { it.lessons }
     val percent = if (lessons.isEmpty()) 0 else Math.round(100f * lessons.count { it.id in completed } / lessons.size)
     var open by remember { mutableStateOf(false) }
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-        Column(Modifier.weight(1f).semantics(mergeDescendants = true) { heading() }) {
-            Text("$selected \u00B7 $name", style = HeadlineType, color = ds.ink)
+    // At large font scales the menu drops under the title (as on iOS) so neither is cut off.
+    val stacked = LocalDensity.current.fontScale >= 1.3f
+    val title: @Composable (Modifier) -> kotlin.Unit = { m ->
+        Column(m.semantics(mergeDescendants = true) { heading() }) {
+            Text("$selected · $name", style = HeadlineType, color = ds.ink)
             Text("$percent% complete", style = CaptionType, color = ds.inkSoft)
         }
+    }
+    val menu: @Composable () -> kotlin.Unit = {
         Box {
             val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
             Row(
@@ -523,6 +533,11 @@ private fun UnitsHeader(selected: String, units: List<com.obsidianmedia.learnwit
                 }
             }
         }
+    }
+    if (stacked) {
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) { title(Modifier); menu() }
+    } else {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) { title(Modifier.weight(1f)); menu() }
     }
 }
 
@@ -583,6 +598,8 @@ private fun StatPill(icon: String, value: String, label: String, hint: String? =
         Text(icon, style = FootnoteType)
         Text(value, style = FootnoteType, fontWeight = FontWeight.Bold, color = ds.ink)
         if (hint != null) Text(hint, style = CaptionType, color = ds.inkSoft)
+        // A tappable pill says so: the chevron shows (and flips) the streak-freeze shop.
+        if (onClick != null) Text(if (stateText != null && stateText.startsWith("Streak freezes shown")) "▴" else "▾", style = CaptionType, color = ds.inkSoft, modifier = Modifier.clearAndSetSemantics { })
     }
 }
 

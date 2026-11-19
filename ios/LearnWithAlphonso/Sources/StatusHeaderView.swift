@@ -82,12 +82,16 @@ struct StatusHeaderView: View {
 
     /// One HUD pill: the drawn icon, then the number. Round 6 draws the HUD pills fully round on the card colour, 40 pt
     /// high, the number in the headline role with tabular figures.
-    private func hudPill<Icon: View>(@ViewBuilder icon: () -> Icon, value: String, hint: String? = nil) -> some View {
+    private func hudPill<Icon: View>(@ViewBuilder icon: () -> Icon, value: String, hint: String? = nil, trailingChevron: String? = nil) -> some View {
         HStack(spacing: AlphonsoDS.Space.s1 + 2) {
             icon()
             Text(value).dsText(.headline).monospacedDigit().foregroundStyle(ds.ink)
             if let hint {
                 Text(hint).dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            // A tappable pill says so: the chevron shows (and flips) the streak-freeze shop.
+            if let trailingChevron {
+                Image(systemName: trailingChevron).font(.caption2.weight(.bold)).foregroundStyle(ds.inkSoft).accessibilityHidden(true)
             }
         }
         .padding(.leading, AlphonsoDS.Space.s2 + 2)
@@ -155,7 +159,7 @@ struct StatusHeaderView: View {
                             .offset(x: 4, y: 4)
                     }
                 }
-        }, value: "\(shown.streak)")
+        }, value: "\(shown.streak)", trailingChevron: onStreakTap != nil ? (freezeShopOpen ? "chevron.up" : "chevron.down") : nil)
         if let onStreakTap {
             Button(action: onStreakTap) {
                 pill

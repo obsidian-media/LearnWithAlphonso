@@ -56,7 +56,7 @@ describe("iOS Learn", () => {
     for (const id of ['id: "review"', 'id: "path"', 'id: "team"', 'id: "weekly"'])
       expect(browser).toContain(id);
     expect(browser).toContain("action: { showingReview = true }");
-    expect(browser).toContain("if hasNoGoal { showingPathBuild = true }");
+    expect(browser).toContain("case .none: showingPathBuild = true");
   });
   it("every rail card is a button with one spoken label, and says whether it is expanded", () => {
     expect(rail).toContain("Button(action: item.action)");
@@ -131,5 +131,25 @@ describe("iOS hero is one unit on the scene", () => {
       stage.indexOf("content" + String.fromCharCode(10)),
     );
     expect(read(`${IOS}/LearnFoldViews.swift`)).not.toContain("LessonArt.room");
+  });
+});
+
+describe("review follow-ups", () => {
+  it("iOS and Android: the streak pill shows a chevron, the Weekly card a claim dot, the path reloads after the planner", () => {
+    const status = read(`${IOS}/StatusHeaderView.swift`);
+    expect(status).toContain("trailingChevron");
+    const browser = read(`${IOS}/LessonBrowserView.swift`);
+    expect(browser).toContain("showsDot: claimReady");
+    expect(browser).toMatch(
+      /\.sheet\(isPresented: \$showingPathBuild, onDismiss:[\s\S]*railPath\?\.load\(\)/,
+    );
+    const screen = read(`${KT}/LearnScreen.kt`);
+    expect(screen).toContain("showsDot = claimReady");
+    expect(screen).toContain("LocalDensity.current.fontScale");
+    expect(read(`${IOS}/LearnForYouRail.swift`)).toContain("@ScaledMetric");
+  });
+  it("web: only the nested card suppresses retry-on-mount, so the rail retries a failed load on return", () => {
+    expect(read("src/lib/use-team-mission.ts")).toContain("nested ? { retryOnMount: false }");
+    expect(read("src/components/learn/ForYouRail.tsx")).toContain("<TeamMissionCard nested />");
   });
 });

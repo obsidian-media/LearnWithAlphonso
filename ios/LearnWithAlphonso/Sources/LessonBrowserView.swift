@@ -84,6 +84,8 @@ struct LessonBrowserView: View {
     @State private var showingFreezeShop = false
     /// The path as the rail's card reads it (its own copy; the detail below loads another, like the road screen).
     @State private var railPath: PathModel?
+    /// Bumped when the goal planner closes, so the opened path detail reads the new goal too.
+    @State private var pathReloadToken = 0
 
     private enum ForYouDetail: Hashable { case path, team, weekly }
 
@@ -290,7 +292,13 @@ struct LessonBrowserView: View {
                 expanded: hasNoGoal ? nil : (forYouDetail == .path),
                 action: {
                     // No goal yet: straight to the planner (what the goal card did). With a goal: open its detail.
-                    if hasNoGoal { showingPathBuild = true } else { toggleForYou(.path) }
+                    // Still loading: nothing to open yet. Failed: try again.
+                    switch railPath?.phase ?? .loading {
+                    case .none: showingPathBuild = true
+                    case .ready: toggleForYou(.path)
+                    case .failed: Task { await railPath?.load() }
+                    case .loading: break
+                    }
                 }),
         ]
         if let mission = missionModel.mission {
@@ -303,9 +311,12 @@ struct LessonBrowserView: View {
         }
         if !challenges.isEmpty {
             let value = "\(challenges.filter(\.completed).count) of \(challenges.count) done"
+            // A full bar that is not yet completed is a reward waiting to be claimed.
+            let claimReady = challenges.contains { !$0.completed && $0.progress >= $0.threshold }
             items.append(LearnForYouRail.Item(
                 id: "weekly", emoji: "\u{2B50}", title: "Weekly", value: value,
-                spoken: "Weekly challenges, \(value)",
+                spoken: "Weekly challenges, \(value)\(claimReady ? ", reward ready to claim" : "")",
+                showsDot: claimReady,
                 expanded: forYouDetail == .weekly,
                 action: { toggleForYou(.weekly) }))
         }
@@ -385,7 +396,7 @@ struct LessonBrowserView: View {
                 // remove still in flight for the course the learner just left must not land in the new course's card.
                 if forYouDetail == .path {
                     PathCardSection(session: session, course: course) { showingPathBuild = true }
-                        .id(course.translationCourseCode)
+                        .id("\(course.translationCourseCode)-\(pathReloadToken)")
                 }
                 if forYouDetail == .team {
                     TeamMissionSection(mission: missionModel.mission, plainInsets: true)
@@ -541,7 +552,11 @@ struct LessonBrowserView: View {
                     openedLesson = OpenedLesson(id: lessonID)
                 }
             }
-            .sheet(isPresented: $showingPathBuild) {
+            .sheet(isPresented: $showingPathBuild, onDismiss: {
+                // The goal may have been built, changed or removed: the rail card and any open detail read it again.
+                pathReloadToken += 1
+                Task { await railPath?.load() }
+            }) {
                 PathBuildView(session: session, course: course) { lessonID in
                     openedLesson = OpenedLesson(id: lessonID)
                 }

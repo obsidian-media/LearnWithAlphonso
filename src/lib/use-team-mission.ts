@@ -7,13 +7,17 @@ import { getMyTeam, getTeamMission } from "./teams.functions";
  * from the team screens). A learner known to have no team has no mission to miss, so they see no error; one in a
  * team, or one the lookup cannot place either, does.
  */
-export function useTeamMission() {
+/**
+ * `nested`: the reader is the card the rail opens, which sits beside the rail's own reader of the same query. It must not
+ * reset a failed read to pending on mount (that would blink the rail card away); the rail itself keeps the default
+ * retry-on-mount, so a failed first load retries when the learner comes back.
+ */
+export function useTeamMission({ nested = false }: { nested?: boolean } = {}) {
   const missionQuery = useQuery({
     queryKey: ["teamMission"],
     queryFn: () => getTeamMission(),
     retry: false,
-    // The rail and the card it opens both read this; a second observer must not reset a failed read to pending.
-    retryOnMount: false,
+    ...(nested ? { retryOnMount: false } : {}),
   });
   // A failed refresh of a mission already shown keeps showing it.
   const failed = missionQuery.isError && missionQuery.data === undefined;
