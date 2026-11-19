@@ -7,10 +7,26 @@ const KEY = "lingua.cookie-consent.v1";
 
 export type ConsentValue = "essential" | "all";
 
+// The choice made this visit when the browser refuses storage (blocked cookies, some private modes). Without it a
+// blocked localStorage threw from the banner and took the whole site down with it.
+let unsavedChoice: ConsentValue | null = null;
+
+function storageArea(pick: () => Storage): Storage | null {
+  try {
+    return pick();
+  } catch {
+    return null; // storage blocked
+  }
+}
+
 export function getConsent(): ConsentValue | null {
   if (typeof window === "undefined") return null;
-  const v = window.localStorage.getItem(KEY);
-  return v === "essential" || v === "all" ? v : null;
+  try {
+    const v = window.localStorage.getItem(KEY);
+    return v === "essential" || v === "all" ? v : unsavedChoice;
+  } catch {
+    return unsavedChoice;
+  }
 }
 
 export function CookieConsent() {
@@ -23,12 +39,17 @@ export function CookieConsent() {
   }, []);
 
   function choose(value: ConsentValue) {
-    window.localStorage.setItem(KEY, value);
+    try {
+      window.localStorage.setItem(KEY, value);
+    } catch {
+      // Not kept past this visit; the banner asks again next time.
+      unsavedChoice = value;
+    }
     // "Accept all" keeps the campaign tags seen so far; "Essential only" discards them.
     promoteAttribution({
       consent: value,
-      local: window.localStorage,
-      session: window.sessionStorage,
+      local: storageArea(() => window.localStorage),
+      session: storageArea(() => window.sessionStorage),
     });
     // The same choice covers anonymous usage analytics (Settings can change it later).
     setAnalyticsConsent(value === "all");

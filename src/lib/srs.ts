@@ -61,8 +61,27 @@ export function deriveAnswerCorrectness(
   if (question.type === "translate") {
     return matchesAcceptableAnswer(answer, question.acceptableAnswers);
   }
-  return answer.trim().toLowerCase() === question.answer.trim().toLowerCase();
+  return normaliseFillAnswer(answer) === normaliseFillAnswer(question.answer);
 }
+
+// FILL-ANSWER-NORMALISER:BEGIN (kept identical in src/lib/srs.ts and supabase/functions/_shared/answer-correctness.ts;
+// fill-answer-parity.test.ts fails when they differ)
+/**
+ * A typed or tapped fill-in answer, reduced to what a learner means: iOS and many keyboards type a curly apostrophe
+ * (’) where the answer key has a straight one ('), and French answers like "l’ami" or "aujourd’hui" were marked
+ * wrong for it. Apostrophe look-alikes become ', any run of spaces (including the no-break spaces French typing
+ * inserts) becomes one, spaces hugging an apostrophe go, and case is ignored.
+ */
+export function normaliseFillAnswer(value: string): string {
+  return value
+    .normalize("NFC")
+    .replace(/[\u2018\u2019\u201A\u201B\u02BC\u02B9\u2032\u00B4\u0060\uFF07]/g, "'")
+    .replace(/\s+/g, " ")
+    .replace(/ ?' ?/g, "'")
+    .trim()
+    .toLowerCase();
+}
+// FILL-ANSWER-NORMALISER:END
 
 /**
  * Compare the schedule snapshot a learner was shown with the live row. Keep in sync with the Deno copy in

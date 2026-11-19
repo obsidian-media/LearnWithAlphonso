@@ -2,9 +2,7 @@ import { isCompletionRefusal, SLOW_DOWN_MESSAGE } from "@/lib/anti-farming";
 import { track } from "../../lib/analytics";
 import { scoreBucket } from "../../lib/analytics-events";
 import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-router";
-import { PracticeWithHector } from "../../components/PracticeWithHector";
 import { usePrefersReducedMotion } from "../../lib/use-prefers-reduced-motion";
-import { lessonRewardChips } from "../../lib/lesson-rewards";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LessonScreen } from "../../components/lesson/LessonScreen";
@@ -16,28 +14,24 @@ import {
   AlphonsoBubble,
   edgeButtonClass,
   LessonAnswer,
-  LessonChip,
   LessonHud,
   LessonRoom,
   useViewportHeight,
   VerdictSheet,
   WordTile,
 } from "../../components/lesson/LessonParts";
-import { AchievementUnlockSheet } from "../../components/AchievementUnlockSheet";
-import { LeaguePromotionTakeover } from "../../components/lesson/LeaguePromotionTakeover";
 import { isLeaguePromotion } from "../../lib/league-engagement";
-import { AchievementToast, Confetti, RewardTiles } from "../../components/lesson/LessonCelebration";
 import { lessonExpression, roomLayout, roomSrcForUnit } from "../../lib/lesson-stage";
-import { answerXpChip, lessonXpBreakdown, maxLessonXp } from "../../lib/lesson-xp";
-import { ActiveTimer, estimateLessonMinutes, formatElapsed } from "../../lib/lesson-time";
+import { answerXpChip, maxLessonXp } from "../../lib/lesson-xp";
+import { ActiveTimer, estimateLessonMinutes } from "../../lib/lesson-time";
 import { correctAnswerText, verdictTitle } from "../../lib/answer-verdict";
-import { finishCues, playSfx, playSfxCues, SFX_DURATION_MS } from "../../lib/sfx";
+import { playSfx, playSfxCues, SFX_DURATION_MS } from "../../lib/sfx";
 import { deckButtonTitle } from "../../lib/vocab-deck";
 import { SaveWordProvider } from "../../components/SaveWord";
 import { SpeakAnswer } from "../../components/SpeakAnswer";
 import { TranslateAnswer } from "../../components/TranslateAnswer";
 import { VocabImage } from "../../components/VocabImage";
-import { getCourse, localeForCourse, type Course } from "../../data/courses";
+import { COURSES, getCourse, localeForCourse, type Course } from "../../data/courses";
 import { pickReinforcementQuestion, reshuffleQuestion } from "../../data/bank-engine";
 import type { Question } from "../../data/curriculum";
 import { VOCAB_IMAGES } from "../../data/vocab-images";
@@ -56,13 +50,17 @@ import { deriveAnswerCorrectness } from "../../lib/srs";
 import { useOptionalAiConsent } from "../../lib/ai-consent-context";
 import { requestTranslationVerdict } from "../../lib/grade-translation-request";
 import type { TranslationVerdict } from "../api/grade-translation";
-import { ACHIEVEMENTS_BY_ID, type LeagueTier } from "../../data/achievements";
+import { type LeagueTier } from "../../data/achievements";
 import { vocabForLesson, type VocabItem } from "../../data/vocab";
-import { authHeaders } from "../../lib/auth-headers";
-import { readApiError } from "../../lib/read-api-error";
+import { isInvalidLessonSession, lessonSessionNeedsRenewal } from "../../lib/lesson-session-age";
+import { RouteError } from "../../components/RouteError";
+import { FinishScreen, NotSavedScreen } from "../../components/lesson/FinishScreen";
 
 export const Route = createFileRoute("/_authenticated/lesson/$id")({
   component: LessonPageWithSave,
+  errorComponent: ({ error, reset }) => (
+    <RouteError error={error} reset={reset} boundary="lesson_route" />
+  ),
   head: () => ({
     meta: [
       { title: "Lesson — Alphonso" },
@@ -85,10 +83,21 @@ function LessonPageWithSave() {
   );
 }
 
+/** How long a lesson from another course waits for the account's course before offering Try again. */
+const COURSE_WAIT_MS = 8000;
+
+function lessonInAnyCourse(id: string): boolean {
+  return COURSES.some((c) =>
+    getCourse(c.id).curriculum.some((u) => u.lessons.some((l) => l.id === id)),
+  );
+}
+
 function LessonPage() {
   const { id } = useParams({ from: "/_authenticated/lesson/$id" });
   const navigate = useNavigate();
   const course = useProgress((s) => s.course);
+  // Null until the signed-in account's course is adopted (__root): before that `course` is only the default.
+  const courseAdopted = useProgress((s) => s.userId !== null);
   // The written-translation second opinion sends the learner's answer to the AI grader, so it needs the account's
   // AI consent. Without it (or without a provider) the curated answer list alone decides.
   const aiConsent = useOptionalAiConsent();
@@ -214,6 +223,20 @@ function LessonPage() {
   }, []);
 
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  // When this device received the token, to renew it before the server's three-hour limit (lesson-session-age.ts).
+  const sessionReceivedAt = useRef(0);
+  // The token the first completion attempt went out with; retries reuse it (see complete()).
+  const completionToken = useRef<string | null>(null);
+  // The session could not be started (offline, a server error). Without a token no completion can ever save, so the
+  // lesson start says so and offers a retry instead of letting the learner do a lesson that is lost at the end.
+  const [sessionFailed, setSessionFailed] = useState(false);
+  // Start lesson was tapped before the token arrived: the lesson opens as soon as it does.
+  const [startRequested, setStartRequested] = useState(false);
+  // The completion did not reach the server. The answers and the session stay on this page so Try again resends them.
+  const [saveFailed, setSaveFailed] = useState<{ notice?: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+  // The time on screen, fixed at the first Finish so a retry later does not count the minutes spent retrying.
+  const finishedElapsedMs = useRef<number | undefined>(undefined);
   // The server refuses to start a lesson at 0 hearts. Held here so the page shows the hearts dialog
   // (countdown, XP purchase, review instead) instead of a lesson that could never be saved.
   const [heartsBlock, setHeartsBlock] = useState<{ refillAt: number | null } | null>(null);
@@ -226,6 +249,7 @@ function LessonPage() {
   useEffect(() => {
     if (!maybeLesson) return;
     let alive = true;
+    setSessionFailed(false);
     void startLessonSession({ data: { lessonId: maybeLesson.id, course } })
       .then((res) => {
         if (!alive) return;
@@ -235,19 +259,66 @@ function LessonPage() {
         }
         setHeartsBlock(null);
         setSessionToken(res.token);
+        sessionReceivedAt.current = Date.now();
         void track("lesson_started", { lesson_id: maybeLesson.id, level: lessonLevel, course });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (alive) setSessionFailed(true);
+      });
     return () => {
       alive = false;
     };
   }, [maybeLesson, course, sessionAttempt, lessonLevel]);
 
+  function beginLesson() {
+    timer.current = new ActiveTimer(performance.now());
+    setPhase(vocab.length > 0 ? "vocab" : "quiz");
+  }
+  // Start lesson waits for the session: the tap is kept, and the lesson opens the moment the token lands.
+  useEffect(() => {
+    if (!startRequested || !sessionToken || phase !== "overview") return;
+    setStartRequested(false);
+    beginLesson();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startRequested, sessionToken, phase]);
+
+  // Waiting for the account's course is bounded: if __root never adopts one (getSession failed), the page stops
+  // waiting and offers a retry instead of a blank screen forever.
+  const waitingForCourse = !maybeLesson && !courseAdopted && lessonInAnyCourse(id);
+  const [courseWaitTimedOut, setCourseWaitTimedOut] = useState(false);
+  useEffect(() => {
+    if (!waitingForCourse) return;
+    const t = window.setTimeout(() => setCourseWaitTimedOut(true), COURSE_WAIT_MS);
+    return () => window.clearTimeout(t);
+  }, [waitingForCourse]);
+
   if (!maybeLesson) {
+    // A reload of /lesson/fra1p1 starts on the default course: wait for the account's own course instead of
+    // flashing "Lesson not found" for a lesson that is just in another course.
+    if (waitingForCourse && !courseWaitTimedOut) {
+      return (
+        <LessonScreen>
+          <div className="p-6 text-center" role="status" aria-label="Loading lesson">
+            <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
+          </div>
+        </LessonScreen>
+      );
+    }
     return (
       <LessonScreen>
         <div className="p-6 text-center">
-          <p className="ds-type-footnote text-ds-ink-soft">Lesson not found.</p>
+          <p className="ds-type-footnote text-ds-ink-soft">
+            {waitingForCourse ? "This lesson didn't load." : "Lesson not found."}
+          </p>
+          {waitingForCourse ? (
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className={`mt-4 ${edgeButtonClass("primary")}`}
+            >
+              Try again
+            </button>
+          ) : null}
           <Link to="/learn" className="mt-4 inline-block ds-type-footnote text-ds-choice underline">
             Back to learn
           </Link>
@@ -413,28 +484,60 @@ function LessonPage() {
       setTranslationVerdict(null);
       return;
     }
+    await complete();
+  }
+
+  /** A token the server will still accept: the one from the lesson start, or a new one when that is near its limit. */
+  async function freshSessionToken(): Promise<string> {
+    if (sessionToken && !lessonSessionNeedsRenewal(sessionReceivedAt.current, Date.now())) {
+      return sessionToken;
+    }
+    const res = await startLessonSession({ data: { lessonId: lesson.id, course } });
+    if ("error" in res) throw new Error(res.error);
+    setSessionToken(res.token);
+    sessionReceivedAt.current = Date.now();
+    return res.token;
+  }
+
+  /**
+   * Saves the finished lesson. Also Try again on the "Not saved yet" screen: the same answers and session go again,
+   * and only a saved completion is celebrated (a failure used to show "+0 XP" and the lesson was silently lost).
+   */
+  async function complete() {
     if (finishing.current) return;
     finishing.current = true;
-    const elapsedMs = timer.current?.elapsedMs(performance.now());
-    timer.current?.pause(performance.now());
+    if (finishedElapsedMs.current === undefined) {
+      finishedElapsedMs.current = timer.current?.elapsedMs(performance.now());
+      timer.current?.pause(performance.now());
+    }
+    const elapsedMs = finishedElapsedMs.current;
+    setSaving(true);
     // Misses are re-derived server-side and enrolled by the same atomic
     // transaction as the completion. A separate fire-and-forget write here
     // could leave review items behind when completion failed.
     try {
+      // Once a completion has gone out with a token, every retry reuses that exact token: the reply may have been
+      // lost after the server saved, and the same token gets the stored result back (single-use tokens), where a
+      // new one would be a second completion and a second heart charge. Only before the first send, or after the
+      // server refused the session itself, is a token minted.
+      const token = completionToken.current ?? (await freshSessionToken());
+      completionToken.current = token;
       const res = await completeLessonRemote({
         data: {
           lessonId: lesson.id,
           total,
           answers: answeredQs,
           course,
-          sessionToken: sessionToken ?? "",
+          sessionToken: token,
         },
       });
+      // The server's own count of right answers; the client's is only what this screen showed along the way.
+      const awardedCorrect = typeof res.correct === "number" ? res.correct : correct;
       void track("lesson_completed", {
         lesson_id: lesson.id,
         level: lessonLevel,
         course,
-        score_bucket: scoreBucket(total > 0 ? (res.correct / total) * 100 : 0),
+        score_bucket: scoreBucket(total > 0 ? (awardedCorrect / total) * 100 : 0),
       });
       const completed = state.completedLessons.includes(lesson.id)
         ? state.completedLessons
@@ -451,7 +554,7 @@ function LessonPage() {
           ...state.answersByLesson,
           // The best score is kept (as the server keeps it), so the next replay's XP chips start from it.
           [lesson.id]: {
-            correct: Math.max(state.answersByLesson[lesson.id]?.correct ?? 0, correct),
+            correct: Math.max(state.answersByLesson[lesson.id]?.correct ?? 0, awardedCorrect),
             total,
           },
         },
@@ -460,9 +563,10 @@ function LessonPage() {
           ...res.newlyUnlocked.filter((a) => !state.unlockedAchievements.includes(a)),
         ],
       });
+      setSaveFailed(null);
       setDone({
         xp: res.xpGain,
-        awardedCorrect: res.correct,
+        awardedCorrect,
         unlocked: res.newlyUnlocked,
         heartsBonus: res.heartsBonus,
         saved: true,
@@ -472,14 +576,16 @@ function LessonPage() {
           : undefined,
       });
     } catch (err) {
-      setDone({
-        xp: 0,
-        unlocked: [],
-        heartsBonus: null,
-        saved: false,
-        notice: isCompletionRefusal(err) ? SLOW_DOWN_MESSAGE : undefined,
-        elapsedMs,
-      });
+      // Free for Try again.
+      finishing.current = false;
+      if (isInvalidLessonSession(err)) {
+        // The server refused the session itself: the next Try again asks for a new one (an age of zero forces it).
+        completionToken.current = null;
+        sessionReceivedAt.current = 0;
+      }
+      setSaveFailed({ notice: isCompletionRefusal(err) ? SLOW_DOWN_MESSAGE : undefined });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -507,6 +613,18 @@ function LessonPage() {
   );
   const unitLine = unitNumber && unit ? `Unit ${unitNumber} · ${unit.title}` : lesson.subtitle;
 
+  if (saveFailed && !done) {
+    return (
+      <LessonScreen>
+        <NotSavedScreen
+          roomSrc={roomSrc}
+          notice={saveFailed.notice}
+          saving={saving}
+          onRetry={() => void complete()}
+        />
+      </LessonScreen>
+    );
+  }
   if (done) {
     return (
       <LessonScreen>
@@ -543,10 +661,12 @@ function LessonPage() {
           maxXp={maxLessonXp(total)}
           roomSrc={roomSrc}
           hud={hud(0)}
+          start={sessionFailed ? "failed" : startRequested && !sessionToken ? "waiting" : "ready"}
           onStart={() => {
-            timer.current = new ActiveTimer(performance.now());
-            setPhase(vocab.length > 0 ? "vocab" : "quiz");
+            if (sessionToken) beginLesson();
+            else setStartRequested(true);
           }}
+          onRetry={() => setSessionAttempt((n) => n + 1)}
         />
       </LessonScreen>
     );
@@ -1005,7 +1125,9 @@ function OverviewScreen({
   maxXp,
   roomSrc,
   hud,
+  start = "ready",
   onStart,
+  onRetry,
 }: {
   title: string;
   unitLine: string;
@@ -1016,7 +1138,10 @@ function OverviewScreen({
   maxXp: number;
   roomSrc: string;
   hud: React.ReactNode;
+  /** "waiting": Start lesson was tapped and the session is still on its way; "failed": it could not be started. */
+  start?: "ready" | "waiting" | "failed";
   onStart: () => void;
+  onRetry?: () => void;
 }) {
   const steps = [
     ...(words > 0
@@ -1090,388 +1215,27 @@ function OverviewScreen({
           </div>
         ))}
       </div>
-      <div className="sticky bottom-0 z-20 mt-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
-        <button onClick={onStart} className={edgeButtonClass("primary")}>
-          Start lesson
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export function FinishScreen({
-  xp,
-  awardedCorrect,
-  unlocked,
-  heartsBonus,
-  lessonTitle,
-  correct,
-  total,
-  missedQs,
-  lessonId,
-  course,
-  roomSrc = roomSrcForUnit(undefined),
-  elapsedMs,
-  saved = true,
-  notice,
-  promotion,
-}: {
-  xp: number;
-  /** The league this completion moved the learner up from and to: the takeover opens after the celebration. */
-  promotion?: { from: LeagueTier; to: LeagueTier };
-  /** The server's count of right answers behind `xp`; the XP lines use it, so a re-grade is never called a replay. */
-  awardedCorrect?: number;
-  unlocked: string[];
-  heartsBonus: "streak" | "perfect" | null;
-  /** False when the completion did not reach the server: then no streak is shown, since none was confirmed. */
-  saved?: boolean;
-  /** A calm line shown instead of a save failure, e.g. when the server asked the learner to slow down. */
-  notice?: string;
-  lessonTitle: string;
-  correct: number;
-  total: number;
-  missedQs: { q: Question; yours: string }[];
-  lessonId: string;
-  course: string;
-  /** The unit's room: the celebration happens where the lesson did. */
-  roomSrc?: string;
-  /** The lesson's time on screen, for the Time tile. */
-  elapsedMs?: number;
-}) {
-  const streak = useProgress((s) => s.streak);
-  const reduceMotion = usePrefersReducedMotion();
-  const chips = lessonRewardChips({ xp, streak: saved ? streak : null, correct, total });
-  // He says "wow", then smiles (1.4 s in). Under Reduce Motion he is already smiling.
-  const [amazed, setAmazed] = useState(!reduceMotion);
-  // The jingle with the confetti, then XP and any achievement as their tiles land. Keyed per screen, so a re-render
-  // (or React's development double effect) never plays them twice. Sound plays under Reduce Motion too.
-  const [cueKey] = useState(() => `finish:${lessonId}:${Date.now()}:${Math.random()}`);
-  const cueXp = saved ? xp : 0;
-  const cueUnlocked = unlocked.length;
-  useEffect(
-    () => playSfxCues(finishCues({ xp: cueXp, unlocked: cueUnlocked }), cueKey),
-    [cueKey, cueXp, cueUnlocked],
-  );
-  useEffect(() => {
-    if (reduceMotion) return;
-    const t = window.setTimeout(() => setAmazed(false), 1400);
-    return () => window.clearTimeout(t);
-  }, [reduceMotion]);
-  // A new badge gets its own sheet once the tiles and toasts have landed (straight away under Reduce Motion).
-  // A league promotion comes first (2.4 s in, CD 01); a new badge waits until Continue has closed it.
-  const [promotionOpen, setPromotionOpen] = useState(false);
-  const [promotionShown, setPromotionShown] = useState(false);
-  const hasPromotion = promotion !== undefined;
-  useEffect(() => {
-    if (!hasPromotion) return;
-    const t = window.setTimeout(
-      () => {
-        setPromotionOpen(true);
-        setPromotionShown(true);
-      },
-      reduceMotion ? 300 : 2400,
-    );
-    return () => window.clearTimeout(t);
-  }, [hasPromotion, reduceMotion]);
-  const [unlockOpen, setUnlockOpen] = useState(false);
-  const waitingForPromotion = hasPromotion && (!promotionShown || promotionOpen);
-  useEffect(() => {
-    if (cueUnlocked === 0 || waitingForPromotion) return;
-    const t = window.setTimeout(() => setUnlockOpen(true), reduceMotion ? 300 : 2800);
-    return () => window.clearTimeout(t);
-  }, [cueUnlocked, reduceMotion, waitingForPromotion]);
-  // Only a saved completion has a real award to explain; the lines always add up to it (lesson-xp.ts).
-  const xpLines = saved
-    ? lessonXpBreakdown({ correct: awardedCorrect ?? correct, total, awarded: xp }).lines
-    : [];
-  const headline = total > 0 ? `Nice work! You got ${correct} of ${total}.` : "Nice work!";
-  return (
-    <div data-stage="complete" className="flex flex-1 flex-col">
-      <motion.div
-        initial={reduceMotion ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <LessonRoom
-          roomSrc={roomSrc}
-          expression={amazed ? "wow" : "happy"}
-          height={430}
-          alphonsoWidth={345}
-          glow
-          overlay={
-            <>
-              <Confetti reduce={reduceMotion} />
-              <p className="absolute inset-x-0 top-12 z-[5] text-center ds-type-display-x-l text-ds-on-hero [text-shadow:0_2px_16px_color-mix(in_srgb,var(--c-hero-b)_45%,transparent)]">
-                Lesson complete
-              </p>
-            </>
-          }
-        />
-      </motion.div>
-      <div className="relative z-[4] grid gap-3.5 px-4 pb-4">
-        <div className="-mt-9">
-          <AlphonsoBubble
-            label="Alphonso says"
-            compact
-            heading={false}
-            onPlay={canSpeak() ? () => speak(headline, localeForCourse("en")) : undefined}
-            playLabel="Hear Alphonso"
-          >
-            {headline}
-          </AlphonsoBubble>
-        </div>
-        <h2 className="sr-only">{lessonTitle}</h2>
-        {notice ? (
-          <p role="status" className="text-center ds-type-footnote text-ds-ink-soft">
-            {notice}
-          </p>
-        ) : null}
-        <RewardTiles
-          chips={chips}
-          time={elapsedMs === undefined ? null : formatElapsed(elapsedMs)}
-          reduce={reduceMotion}
-        />
-        {xpLines.length > 1 && (
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-            {xpLines.map((line) => (
-              <span
-                key={line.kind}
-                data-xp-line={line.xp}
-                className="ds-type-footnote text-ds-ink-soft"
-              >
-                {`${line.label} ${line.xp < 0 ? "−" : "+"}${Math.abs(line.xp)}`}
-              </span>
-            ))}
-          </div>
-        )}
-        <p className="text-center ds-type-footnote tabular-nums text-ds-ink-soft">
-          {correct}/{total} correct
-        </p>
-        {heartsBonus && (
-          <span className="justify-self-center">
-            <LessonChip icon="heart" tone="heart">
-              {heartsBonus === "streak"
-                ? "Streak milestone: hearts fully refilled"
-                : "Perfect lesson: +1 heart"}
-            </LessonChip>
-          </span>
-        )}
-
-        <AnimatePresence>
-          {unlocked.length > 0 && (
-            <div className="grid gap-2">
-              {unlocked.map((id, i) => {
-                const a = ACHIEVEMENTS_BY_ID[id];
-                if (!a) return null;
-                return (
-                  <AchievementToast key={id} achievement={a} index={i} reduce={reduceMotion} />
-                );
-              })}
-            </div>
-          )}
-        </AnimatePresence>
-
-        {promotionOpen && promotion && (
-          <LeaguePromotionTakeover
-            from={promotion.from}
-            to={promotion.to}
-            onContinue={() => setPromotionOpen(false)}
-          />
-        )}
-
-        {unlockOpen && (
-          <AchievementUnlockSheet ids={unlocked} onDone={() => setUnlockOpen(false)} />
-        )}
-
-        <PracticeWithHector />
-
-        {missedQs.length > 0 && (
-          <div className="grid gap-2 text-left">
-            <p className="ds-type-overline text-ds-ink-soft">
-              Review · {missedQs.length} to practice again
+      <div className="sticky bottom-0 z-20 mt-auto grid gap-3 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6">
+        {start === "failed" ? (
+          <>
+            <p role="alert" className="text-center ds-type-footnote text-ds-wrong-ink">
+              This lesson couldn&apos;t start, so it couldn&apos;t be saved. Check your connection
+              and try again.
             </p>
-            {missedQs.map(({ q, yours }, i) => (
-              <div
-                key={`${q.id}-${i}`}
-                className="rounded-[18px] bg-ds-card px-4 py-3 shadow-[var(--ds-shadow-resting)]"
-              >
-                <p className="ds-type-footnote text-ds-ink">{q.prompt}</p>
-                <p className="mt-1 ds-type-caption font-semibold text-ds-ink-soft">
-                  You said <span className="line-through">{yours}</span> ·{" "}
-                  <span className="text-ds-right-ink">
-                    {q.type === "mc"
-                      ? q.choices[q.answer]
-                      : q.type === "translate"
-                        ? // One of several accepted wordings, so it is shown as
-                          // an example rather than as "the" answer.
-                          q.acceptableAnswers[0]
-                        : q.answer}
-                  </span>
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <GeneratedPracticeSection lessonId={lessonId} course={course} />
-      </div>
-
-      {/* Pinned to the bottom of the screen: the way on is never scrolled out of view. */}
-      <div
-        data-finish-footer
-        className="sticky bottom-0 z-20 mt-auto bg-ds-surface/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-1px_0_var(--c-line)]"
-      >
-        <Link to="/learn" className={edgeButtonClass("primary")}>
-          Continue
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-/** Mirrors generate-practice.ts's response shape exactly. Defined locally
- * rather than imported from practice-generation.server.ts -- that module
- * is server-only, this is client-rendered. */
-type GeneratedPracticeQuestion = {
-  prompt: string;
-  choices: string[];
-  answerIndex: number;
-  explanation: string;
-};
-
-/**
- * V3 pkg 4b: "generative sentence content." On-demand extra practice a
- * learner can do immediately after finishing a lesson -- entirely
- * ephemeral (component-local state only), never touching XP/hearts/review
- * scheduling, same posture as in-lesson reinforcement above.
- */
-function GeneratedPracticeSection({ lessonId, course }: { lessonId: string; course: string }) {
-  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "empty" | "error">("idle");
-  const [questions, setQuestions] = useState<GeneratedPracticeQuestion[]>([]);
-  const [idx, setIdx] = useState(0);
-  const [picked, setPicked] = useState<number | null>(null);
-  const [errorText, setErrorText] = useState<string | null>(null);
-  const [checked, setChecked] = useState(false);
-
-  async function generate() {
-    setStatus("loading");
-    setErrorText(null);
-    try {
-      const resp = await fetch("/api/generate-practice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-        body: JSON.stringify({ lessonId, course }),
-      });
-      if (resp.status === 429) {
-        setErrorText((await readApiError(resp)) || null);
-        setStatus("error");
-        return;
-      }
-      if (!resp.ok) throw new Error("request failed");
-      const data = (await resp.json()) as { questions: GeneratedPracticeQuestion[] };
-      if (data.questions.length === 0) {
-        setStatus("empty");
-        return;
-      }
-      setQuestions(data.questions);
-      setIdx(0);
-      setPicked(null);
-      setChecked(false);
-      setStatus("ready");
-    } catch {
-      setStatus("error");
-    }
-  }
-
-  if (status !== "ready") {
-    return (
-      <div className="w-full">
-        <button
-          onClick={() => void generate()}
-          disabled={status === "loading"}
-          className={edgeButtonClass("tertiary")}
-        >
-          {status === "loading" ? "Writing more practice…" : "Generate more practice"}
-          <DsIcon name="chevron" className="size-5" />
-        </button>
-        {status === "empty" && (
-          <p className="mt-2 text-center ds-type-caption text-ds-ink-soft">
-            Couldn't generate practice for this lesson right now.
-          </p>
-        )}
-        {status === "error" && (
-          <p className="mt-2 text-center ds-type-caption text-ds-ink-soft">
-            {errorText ?? "Something went wrong. Try again."}
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  if (idx >= questions.length) {
-    return (
-      <div className="w-full rounded-[18px] bg-ds-card p-4 text-center ds-type-footnote text-ds-ink-soft shadow-[var(--ds-shadow-resting)]">
-        Nice work — that's all the extra practice for this lesson.
-      </div>
-    );
-  }
-
-  const q = questions[idx];
-  const isCorrect = picked === q.answerIndex;
-
-  return (
-    <div className="w-full text-left">
-      <p className="ds-type-overline text-ds-ink-soft">
-        Extra practice · {idx + 1}/{questions.length}
-      </p>
-      <p className="mt-2 ds-type-headline text-ds-brand">{q.prompt}</p>
-      <div className="mt-3 grid gap-2">
-        {q.choices.map((c, i) => (
-          <LessonAnswer
-            key={i}
-            index={i}
-            label={c}
-            checked={checked}
-            isPicked={picked === i}
-            isRight={q.answerIndex === i}
-            disabled={checked}
-            onClick={() => setPicked(i)}
-          />
-        ))}
-      </div>
-      {checked && (
-        <div
-          role="status"
-          data-verdict={isCorrect ? "correct" : "wrong"}
-          className={`mt-3 rounded-[18px] px-4 py-3 ${isCorrect ? "bg-ds-right-tint" : "bg-ds-wrong-tint"}`}
-        >
-          <p
-            className={`ds-type-headline font-extrabold ${isCorrect ? "text-ds-right-ink" : "text-ds-wrong-ink"}`}
+            <button onClick={onRetry} className={edgeButtonClass("primary")}>
+              Try again
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={onStart}
+            disabled={start === "waiting"}
+            className={edgeButtonClass("primary")}
           >
-            {isCorrect ? "Nice." : "Not quite."}
-          </p>
-          <AnswerExplanation
-            explanation={q.explanation}
-            saveCourse={course}
-            className="mt-0.5 ds-type-body text-ds-ink"
-          />
-        </div>
-      )}
-      <button
-        disabled={!checked && picked === null}
-        onClick={() => {
-          if (!checked) {
-            setChecked(true);
-            return;
-          }
-          setIdx((i) => i + 1);
-          setPicked(null);
-          setChecked(false);
-        }}
-        className={`mt-4 ${edgeButtonClass("primary")}`}
-      >
-        {!checked ? "Check" : idx < questions.length - 1 ? "Next" : "Finish practice"}
-      </button>
+            {start === "waiting" ? "Getting your lesson ready…" : "Start lesson"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

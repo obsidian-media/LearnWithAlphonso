@@ -16,7 +16,7 @@ import {
   parseLearnerProfile,
   type LearnerProfile,
 } from "../../lib/learner-profile";
-import { saveLearnerProfile } from "../../lib/learner-profile.functions";
+import { saveLearnerProfile } from "../../lib/learner-profile-save";
 import { getMyProfile } from "../../lib/leaderboard.functions";
 import { holdNamePrompt } from "../../lib/name-prompt-gate";
 import { isLearnerHandle } from "../../lib/name-onboarding";
