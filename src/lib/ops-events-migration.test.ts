@@ -154,4 +154,33 @@ describe("20261125140000_ops_events.sql (real Postgres)", () => {
       expect(migration, keep).toContain(keep);
     }
   });
+
+  it("the alert compare-and-swap round-trips a JS ISO time through the real column", async () => {
+    // What the sweep does: write last_alert_at from a JS ISO string (milliseconds), read it back the way PostgREST
+    // serialises it, and use that value as the CAS condition. It must match exactly one row.
+    const iso = new Date("2026-11-20T12:00:00.123Z").toISOString();
+    await db.query(`INSERT INTO public.ops_event_alerts(event, last_alert_at) VALUES ('e1', $1)`, [
+      iso,
+    ]);
+    const back = await db.query<{ v: string }>(
+      `SELECT to_json(last_alert_at) #>> '{}' AS v FROM public.ops_event_alerts WHERE event='e1'`,
+    );
+    const next = new Date("2026-11-21T13:00:00.000Z").toISOString();
+    for (const prev of [iso, back.rows[0]!.v]) {
+      await db.query(`UPDATE public.ops_event_alerts SET last_alert_at = $1 WHERE event='e1'`, [
+        prev,
+      ]);
+      const won = await db.query(
+        `UPDATE public.ops_event_alerts SET last_alert_at = $2 WHERE event = 'e1' AND last_alert_at = $1 RETURNING event`,
+        [prev, next],
+      );
+      expect(won.rows).toHaveLength(1);
+      // A second claimer holding the old value matches nothing.
+      const lost = await db.query(
+        `UPDATE public.ops_event_alerts SET last_alert_at = $2 WHERE event = 'e1' AND last_alert_at = $1 RETURNING event`,
+        [prev, next],
+      );
+      expect(lost.rows).toHaveLength(0);
+    }
+  });
 });

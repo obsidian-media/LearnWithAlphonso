@@ -7,6 +7,8 @@
  * free text, no email, no answer content. The console line stays at the call site.
  */
 export const OPS_EVENT_TIMEOUT_MS = 2000;
+/** Events that fire on a SUCCESSFUL save (the shadow settlements): a degraded database may add at most this much. */
+export const OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS = 500;
 
 type InsertResult = PromiseLike<{ error: { message: string } | null }>;
 export type OpsEventsDb = {
@@ -67,6 +69,7 @@ export function recordOpsEvent(
   event: string,
   detail: Record<string, string | number | boolean | null> = {},
   userId: string | null = null,
+  timeoutMs = OPS_EVENT_TIMEOUT_MS,
 ): Promise<void> {
   return recordOpsEventWith(
     async () => {
@@ -77,5 +80,6 @@ export function recordOpsEvent(
     detail,
     userId,
     "web",
+    timeoutMs,
   );
 }

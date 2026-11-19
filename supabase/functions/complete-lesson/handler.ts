@@ -54,7 +54,7 @@ import { sendPushToUser } from "../_shared/apns.ts";
 import { AiConsentReadError, hasAiConsentOrThrow } from "../_shared/ai-consent.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 import { makeTranslateCostLogger } from "../_shared/ai-cost-log.ts";
-import { recordOpsEvent } from "../_shared/ops-events.ts";
+import { OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS, recordOpsEvent } from "../_shared/ops-events.ts";
 import { recordLessonProfileData } from "../_shared/profile-data.ts";
 import { makeTranslateQuotaCheck, proLookupWith } from "../_shared/ai-quota.ts";
 
@@ -234,7 +234,14 @@ async function settleLessonHearts(
             ? "hearts_settlement_shadow_stale_pro"
             : "hearts_settlement_shadow_pro_unknown";
         console.error(JSON.stringify({ event: shadowEvent, fn: "complete-lesson" }));
-        await recordOpsEvent(admin, SRC, shadowEvent, {}, userId);
+        await recordOpsEvent(
+          admin,
+          SRC,
+          shadowEvent,
+          {},
+          userId,
+          OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS,
+        );
       }
     }
     const { data, error } = await admin.rpc("settle_lesson_hearts", {

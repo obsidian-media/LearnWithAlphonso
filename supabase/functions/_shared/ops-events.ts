@@ -10,6 +10,8 @@ type OpsAdmin = {
 };
 
 export const OPS_EVENT_TIMEOUT_MS = 2000;
+/** Events that fire on a SUCCESSFUL save (the shadow settlements): a degraded database may add at most this much. */
+export const OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS = 500;
 const OPS_EVENT_NAME = /^[a-z0-9_]{1,64}$/;
 
 export async function recordOpsEvent(

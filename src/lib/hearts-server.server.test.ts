@@ -4,7 +4,7 @@ import type { ProEntitlementStatus } from "./revenuecat-entitlement";
 import { heartsUnlimited, type HeartsServerDeps, settleLessonHearts } from "./hearts-server.server";
 
 const recordOpsEvent = vi.hoisted(() => vi.fn(async () => {}));
-vi.mock("./ops-events.server", () => ({ recordOpsEvent }));
+vi.mock("./ops-events.server", () => ({ recordOpsEvent, OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS: 500 }));
 beforeEach(() => recordOpsEvent.mockClear());
 
 const NOW = Date.parse("2026-11-05T12:00:00Z");
@@ -149,6 +149,7 @@ describe("settleLessonHearts", () => {
       "hearts_settlement_shadow_pro_unknown",
       { fn: "completeLessonRemote" },
       "u",
+      500,
     );
     recordOpsEvent.mockClear();
     await settleLessonHearts(
@@ -162,6 +163,7 @@ describe("settleLessonHearts", () => {
       "hearts_settlement_shadow_stale_pro",
       { fn: "completeLessonRemote" },
       "u",
+      500,
     );
     err.mockRestore();
   });

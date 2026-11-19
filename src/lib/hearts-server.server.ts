@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { ServerHeartsMode } from "./hearts-gate.server";
 import type { ProEntitlementStatus, RevenueCatConfig } from "./revenuecat-entitlement";
-import { recordOpsEvent } from "./ops-events.server";
+import { OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS, recordOpsEvent } from "./ops-events.server";
 
 /**
  * The web's half of "hearts are settled on the server" (the Edge Functions have the Deno half:
@@ -183,6 +183,7 @@ export async function settleLessonHeartsStrict(
         "hearts_settlement_shadow_stale_pro",
         { fn: "completeLessonRemote" },
         args.userId,
+        OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS,
       );
     } else if (proAnswer.source === "stale") {
       console.error(
@@ -200,6 +201,7 @@ export async function settleLessonHeartsStrict(
         "hearts_settlement_shadow_pro_unknown",
         { fn: "completeLessonRemote" },
         args.userId,
+        OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS,
       );
     }
     const db = await deps.db();
