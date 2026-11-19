@@ -84,6 +84,8 @@ export type ProgressState = {
     streakFreezes: number;
     leagueTier: LeagueTier;
     lastActiveDate: string;
+    /** user_progress.day_basis when the reply carries it; otherwise "local", which every completion writes. */
+    dayBasis?: string | null;
     completedLessons: string[];
     activityDates: string[];
     answersByLesson: Record<string, { correct: number; total: number }>;
@@ -151,7 +153,7 @@ export const useProgress = create<ProgressState>()((set, get) => ({
       loading: false,
     })),
   // Every completion writes day_basis "local" on the server (20261114100000_local_days.sql).
-  applyCompletion: (patch) => set((s) => ({ ...s, ...patch, dayBasis: "local" })),
+  applyCompletion: (patch) => set((s) => ({ ...s, ...patch, dayBasis: patch.dayBasis ?? "local" })),
   loseHeartLocal: () => set((s) => loseHeart(s.hearts, s.heartsRefillAt, Date.now())),
   refillHeartsLocal: () => set((s) => resolveHeartsRefill(s.hearts, s.heartsRefillAt, Date.now())),
   setHeartsLocal: (hearts, heartsRefillAt) => set({ hearts, heartsRefillAt }),

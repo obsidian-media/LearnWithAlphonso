@@ -120,6 +120,7 @@ jobs:
   release-build:
     name: Minified release build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: android/LearnWithAlphonso
@@ -148,6 +149,7 @@ jobs:
   release-launch:
     name: Minified release launches (API 34 emulator)
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     needs: [release-build]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
