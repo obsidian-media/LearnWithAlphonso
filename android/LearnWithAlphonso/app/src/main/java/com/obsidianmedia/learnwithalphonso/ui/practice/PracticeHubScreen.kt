@@ -305,7 +305,7 @@ internal fun HeroCarousel(cards: List<PracticeHeroCard>, onCall: (PracticeHeroCa
             cards.indices.forEach { i ->
                 val on = pager.currentPage == i
                 Box(
-                    Modifier.size(Space.s6).testTag("practice-hero-dot-$i")
+                    Modifier.size(Space.minTouch).testTag("practice-hero-dot-$i")
                         .clickable(role = Role.Button, onClickLabel = "Show call ${i + 1} of ${cards.size}") { scope.launch { if (reduce) pager.scrollToPage(i) else pager.animateScrollToPage(i) } }
                         .semantics { contentDescription = "Show call ${i + 1} of ${cards.size}"; selected = on },
                     contentAlignment = Alignment.Center,

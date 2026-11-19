@@ -267,12 +267,6 @@ export function PracticeHub({
                     className="absolute inset-0 z-[2]"
                     style={{ background: CARD_VIGNETTE }}
                   />
-                  <img
-                    src="/figures/alphonso-waving.webp"
-                    alt=""
-                    draggable={false}
-                    className="absolute bottom-20 left-1/2 z-[1] h-[150px] w-auto max-w-none -translate-x-1/2 select-none drop-shadow-[0_9px_15px_rgba(0,0,0,.5)]"
-                  />
                   <div className="relative z-[3] grid justify-items-center gap-1 px-3.5 pt-3 text-center">
                     <p className="ds-type-overline text-ds-on-hero-kick">
                       {card.kicker} · {i + 1} of {cards.length}
@@ -288,7 +282,19 @@ export function PracticeHub({
                       {card.reason}
                     </p>
                   </div>
-                  <div className="relative z-[3]" />
+                  {/* In the grid flow (never absolute) so the title and reason pill can't sit under Alphonso. Hidden on
+                      narrow viewports and, because the query is in rem, at large text sizes, like iOS/Android. */}
+                  <div
+                    data-hero-figure=""
+                    className="relative z-[1] hidden items-end justify-center min-[30rem]:flex"
+                  >
+                    <img
+                      src="/figures/alphonso-waving.webp"
+                      alt=""
+                      draggable={false}
+                      className="h-[150px] w-auto max-w-none select-none drop-shadow-[0_9px_15px_rgba(0,0,0,.5)]"
+                    />
+                  </div>
                   <div className="relative z-[3] grid justify-items-center gap-2 pb-3.5">
                     <p className="ds-type-caption font-extrabold text-ds-call-mint">
                       <i

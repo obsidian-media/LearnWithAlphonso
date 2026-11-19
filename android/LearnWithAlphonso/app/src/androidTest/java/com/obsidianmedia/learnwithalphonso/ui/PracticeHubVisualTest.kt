@@ -55,6 +55,7 @@ class PracticeHubVisualTest {
         rule.onNodeWithText(scene.opener).assertIsDisplayed()
         rule.onNodeWithText(scene.persona!!).assertIsDisplayed()
         shot("02-pre-call")
+        rule.onNodeWithTag("practice-pre-call").performScrollToNode(hasText("Chat (type)"))
         rule.onNodeWithText("Chat (type)").performClick()
         rule.onNodeWithTag("practice-pre-call").performScrollToNode(hasText("Start the chat"))
         rule.onNodeWithText("Start the chat").performClick()
@@ -81,7 +82,13 @@ class PracticeHubVisualTest {
         }
         fun minPx(dp: Int) = with(rule.density) { dp.dp.toPx() }
         fun assertSized(tag: String, minHeightDp: Int, minWidthDp: Int = 40) {
-            rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag(tag))
+            if (tag.startsWith("practice-campaign-") && tag != "practice-campaign-rail") {
+                // Campaign tiles live in a LazyRow: scroll the outer list to the rail, then the rail to the tile.
+                rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-campaign-rail"))
+                rule.onNodeWithTag("practice-campaign-rail").performScrollToNode(hasTestTag(tag))
+            } else {
+                rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag(tag))
+            }
             val node = rule.onNodeWithTag(tag).assertIsDisplayed().fetchSemanticsNode()
             assertTrue("$tag is ${node.size.width}x${node.size.height}px, under ${minHeightDp}dp tall", node.size.height >= minPx(minHeightDp) && node.size.width >= minPx(minWidthDp))
         }
@@ -119,7 +126,9 @@ class PracticeHubVisualTest {
                 PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
             }
         }
-        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-campaign-doctors-visit"))
+        rule.waitForIdle()
+        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-campaign-rail"))
+        rule.onNodeWithTag("practice-campaign-rail").performScrollToNode(hasTestTag("practice-campaign-doctors-visit"))
         rule.onNodeWithTag("practice-campaign-doctors-visit").performClick()
         rule.onNodeWithTag("practice-pre-call").performScrollToNode(hasTestTag("practice-campaign-scenes"))
         rule.onNodeWithTag("practice-campaign-scenes").assertIsDisplayed()
