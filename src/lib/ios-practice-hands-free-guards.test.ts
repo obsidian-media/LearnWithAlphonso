@@ -51,7 +51,7 @@ describe("the Hands-free switch is in both Practice entry points", () => {
     expect(view).toContain("struct HandsFreeSwitch: View");
     expect(view).toContain("Toggle(HandsFreeCopy.toggle");
     expect(view).toContain("get: { voice.isHandsFreeOn }");
-    expect(view).toContain("voice.setHandsFree(on)");
+    expect(view).toContain("voice.learnerSetHandsFree(on)");
   });
 
   it("is off when a call starts: each call makes its own controller and nothing persists the switch", () => {
@@ -78,7 +78,7 @@ describe("the Hands-free switch is in both Practice entry points", () => {
     );
     // It is re-armed for the next scene's call, after the opener has been spoken.
     expect(campaign).toMatch(
-      /await voice\.speakOpener\([^)]*\)\s*if rearmHandsFree \{\s*rearmHandsFree = false\s*if !conversation\.finished \{ voice\.setHandsFree\(true\) \}/,
+      /await voice\.speakOpener\([^)]*\)\s*if rearmHandsFree \{\s*rearmHandsFree = false\s*if !conversation\.finished \{ voice\.setHandsFree\(true\) \}(?: else if !conversation\.finished \{\s*voice\.applyStoredHandsFreePreference\(sceneActive: scenePhase == \.active\)\s*\})?/,
     );
     // Not across a finished campaign or a restarted scene; the flag is per view, so a new run starts off.
     expect(fn("CampaignView.swift", "continueToNextScene")).toMatch(
@@ -109,13 +109,13 @@ describe("the first-use note shows once", () => {
 
   it("asks before the first turn-on, and only then", () => {
     expect(view).toMatch(
-      /if on, !noteSeen \{\s*showNote = true\s*\} else \{\s*voice\.setHandsFree\(on\)/,
+      /if on, !noteSeen \{\s*showNote = true\s*\} else \{\s*voice\.learnerSetHandsFree\(on\)/,
     );
   });
 
   it("remembers it on confirm and turns hands-free on from the confirm button", () => {
     expect(view).toMatch(
-      /Button\(HandsFreeCopy\.firstUseConfirm\) \{\s*noteSeen = true\s*voice\.setHandsFree\(true\)/,
+      /Button\(HandsFreeCopy\.firstUseConfirm\) \{\s*noteSeen = true\s*voice\.learnerSetHandsFree\(true\)/,
     );
   });
 
@@ -240,8 +240,8 @@ describe("iOS call screen: hands-free is switchable on the call itself", () => {
   it("has an on-call chip (Practice, campaign and Hector all use PracticeCallView) with the first-use note", () => {
     expect(call).toContain("private var handsFreeChip: some View");
     expect(call).toContain('accessibilityIdentifier("callHandsFreeChip")');
-    expect(call).toContain("voice.setHandsFree(true)");
-    expect(call).toContain("voice.setHandsFree(false)");
+    expect(call).toContain("voice.learnerSetHandsFree(true)");
+    expect(call).toContain("voice.learnerSetHandsFree(false)");
     expect(call).toContain(".alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote)");
     expect(call.indexOf("handsFreeChip\n")).toBeLessThan(call.indexOf("controls\n"));
   });
@@ -254,6 +254,43 @@ describe("iOS call avatar rendering", () => {
     expect(v.indexOf(".compositingGroup()")).toBeGreaterThan(-1);
     expect(v.indexOf(".compositingGroup()")).toBeLessThan(
       v.indexOf(".scaleEffect(x: frame.breath.x"),
+    );
+  });
+});
+
+describe("the hands-free choice persists across calls (iOS)", () => {
+  it("only a learner tap remembers it; screen exits and campaign ends do not", () => {
+    const voice = code(`${APP}/VoiceSession.swift`);
+    expect(voice).toMatch(
+      /func learnerSetHandsFree\(_ on: Bool\) \{\s*HandsFreePreference\(\)\.remember\(on\)\s*setHandsFree\(on\)/,
+    );
+    const setter = voice.slice(
+      voice.indexOf("func setHandsFree("),
+      voice.indexOf("func learnerSetHandsFree"),
+    );
+    expect(setter).not.toContain("remember(");
+  });
+
+  it("starts on from the stored choice only once the note is confirmed, and after the opener", () => {
+    expect(code(`${KIT}/HandsFreeLoop.swift`)).toMatch(
+      /var shouldStartOn: Bool \{ isPreferred && defaults\.bool\(forKey: HandsFreeCopy\.noteSeenKey\) \}/,
+    );
+    for (const file of ["ConversationView.swift", "CampaignView.swift", "HectorView.swift"]) {
+      expect(code(`${APP}/${file}`), file).toMatch(
+        /await voice\.speakOpener\([^)]*\)[\s\S]{0,260}voice\.applyStoredHandsFreePreference\(sceneActive: scenePhase == \.active\)/,
+      );
+    }
+  });
+
+  it("does not auto-start while the app is backgrounded", () => {
+    expect(code(`${APP}/VoiceSession.swift`)).toMatch(
+      /func applyStoredHandsFreePreference\(sceneActive: Bool\) \{[\s\S]*?guard sceneActive else \{ return \}/,
+    );
+  });
+
+  it("a refused microphone falls back to hold-to-talk", () => {
+    expect(code(`${APP}/VoiceSession.swift`)).toMatch(
+      /autoStartedHandsFree, case \.paused\(\.failure\) = handsFree\.status, state\.microphoneUnavailable \{\s*setHandsFree\(false\)/,
     );
   });
 });

@@ -115,6 +115,41 @@ class HandsFreeLoopTest {
     }
 
     @Test
+    fun `speech then digital silence still ends the turn`() {
+        val loop = recordingLoop()
+        feed(loop, quiet, 0.0, 0.5)
+        feed(loop, speech, 0.5, 2.0)
+        assertEquals(Status.Hearing, loop.status)
+        assertEquals(emptyList<Effect>(), feed(loop, -160.0, 2.0, 3.0))
+        assertEquals(listOf(Effect.END_TURN), feed(loop, -160.0, 3.0, 4.0))
+    }
+
+    @Test
+    fun `no speech then digital silence hits the no-speech timeout`() {
+        val loop = recordingLoop()
+        feed(loop, quiet, 0.0, 0.5)
+        assertEquals(listOf(Effect.CANCEL_TURN), feed(loop, -160.0, 0.5, 9.0))
+        assertEquals(Status.Paused(PauseReason.NO_SPEECH), loop.status)
+    }
+
+    @Test
+    fun `warm-up readings before any audio are ignored for the grace period`() {
+        val loop = recordingLoop()
+        assertEquals(emptyList<Effect>(), feed(loop, -160.0, 0.0, 0.95))
+        assertEquals(Status.Listening, loop.status)
+        feed(loop, -30.0, 0.95, 1.9)
+        feed(loop, -22.0, 1.9, 2.5)
+        assertEquals(Status.Listening, loop.status)
+    }
+
+    @Test
+    fun `a turn that is silent from the first frame still hits the no-speech pause`() {
+        val loop = recordingLoop()
+        assertEquals(listOf(Effect.CANCEL_TURN), feed(loop, -160.0, 0.0, 9.0))
+        assertEquals(Status.Paused(PauseReason.NO_SPEECH), loop.status)
+    }
+
+    @Test
     fun `an empty transcript pauses instead of listening again`() {
         val loop = recordingLoop()
         feed(loop, speech, 0.0, 1.0)

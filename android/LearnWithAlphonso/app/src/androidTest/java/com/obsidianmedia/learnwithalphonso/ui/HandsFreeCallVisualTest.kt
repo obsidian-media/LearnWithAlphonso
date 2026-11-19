@@ -56,6 +56,7 @@ class HandsFreeCallVisualTest {
         override fun pressBegan() {}
         override fun pressEnded() {}
         override val handsFree = HandsFreeController(HandsFreeLoop.Tuning.PRACTICE) {}
+        override fun armAutoStartHandsFree(check: () -> Boolean) {}
     }
 
     private fun look(name: String, theme: AlphonsoThemeId, dark: Boolean) {

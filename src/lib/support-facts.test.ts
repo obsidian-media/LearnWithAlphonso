@@ -39,6 +39,8 @@ describe("buildSupportFacts", () => {
       "course",
       "level",
       "streak",
+      "streakProtected",
+      "streakFreezes",
       "daysActiveLast30",
       "lastActiveDay",
       "lessonsLast7Days",
@@ -107,6 +109,47 @@ describe("buildSupportFacts", () => {
       lastLessonDay: "2026-11-14",
       platforms: ["android", "ios"],
       socialBlocked: false,
+    });
+  });
+
+  describe("the streak is the one the apps show, never the raw column", () => {
+    const streaky = {
+      ...base,
+      streak: 1,
+      streakLastActiveDate: "2026-11-06",
+      streakFreezes: 0,
+      dayBasis: "local",
+      timeZone: "UTC",
+    };
+
+    it("a lapsed streak reads 0, not the stale 1 (the Help chat quoted 1 while the app showed 0)", () => {
+      const f = buildSupportFacts(streaky, NOW);
+      expect(f.streak).toBe(0);
+      expect(f.streakProtected).toBe(false);
+    });
+
+    it("a streak held by one freeze reads as protected with its length", () => {
+      const f = buildSupportFacts(
+        { ...streaky, streak: 6, streakLastActiveDate: "2026-11-12", streakFreezes: 2 },
+        NOW,
+      );
+      expect(f).toMatchObject({ streak: 6, streakProtected: true, streakFreezes: 2 });
+    });
+
+    it("a streak with study yesterday is active", () => {
+      const f = buildSupportFacts(
+        { ...streaky, streak: 6, streakLastActiveDate: "2026-11-13" },
+        NOW,
+      );
+      expect(f).toMatchObject({ streak: 6, streakProtected: false });
+    });
+
+    it("counts today in the learner's stored zone", () => {
+      // 23:30 UTC on the 14th is already the 15th in Auckland: study on the 13th is then two days back.
+      const late = Date.parse("2026-11-14T23:30:00Z");
+      const row = { ...streaky, streak: 6, streakLastActiveDate: "2026-11-13" };
+      expect(buildSupportFacts({ ...row, timeZone: "UTC" }, late).streak).toBe(6);
+      expect(buildSupportFacts({ ...row, timeZone: "Pacific/Auckland" }, late).streak).toBe(0);
     });
   });
 
@@ -206,6 +249,24 @@ describe("loadSupportFacts", () => {
     expect(facts.platforms).toEqual(["ios"]);
     expect(ids.length).toBeGreaterThan(5);
     expect(new Set(ids)).toEqual(new Set(["learner-A"]));
+  });
+
+  it("loads the streak columns and the learner's zone and reports the shown streak", async () => {
+    const facts = await loadSupportFacts(
+      fakeAdmin(
+        {
+          user_progress: [
+            { streak: 1, last_active_date: "2026-11-06", streak_freezes: 0, day_basis: "local" },
+          ],
+          learner_time_zones: [{ time_zone: "Europe/Paris" }],
+        },
+        [],
+      ),
+      "learner-A",
+      { now: NOW },
+    );
+    expect(facts.streak).toBe(0);
+    expect(facts.streakProtected).toBe(false);
   });
 
   it("a failed read throws instead of returning a partial picture", async () => {

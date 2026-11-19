@@ -29,6 +29,7 @@ struct CampaignSessionView: View {
     /// Per run (this view): a new campaign or scenario starts with it off, and a finished campaign clears it.
     @State private var rearmHandsFree = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dismiss) private var dismiss
     /// What the latest reply said about the learner's turn; the avatar reacts to it after the reply is spoken.
     @State private var replyVerdict = AvatarReplyVerdict()
@@ -76,6 +77,8 @@ struct CampaignSessionView: View {
             if rearmHandsFree {
                 rearmHandsFree = false
                 if !conversation.finished { voice.setHandsFree(true) }
+            } else if !conversation.finished {
+                voice.applyStoredHandsFreePreference(sceneActive: scenePhase == .active)
             }
         }
         .navigationBarBackButtonHidden(true)

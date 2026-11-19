@@ -61,6 +61,8 @@ const FACTS = {
   course: "fr",
   level: "A2",
   streak: 12,
+  streakProtected: false,
+  streakFreezes: 0,
   daysActiveLast30: 21,
   lastActiveDay: "2026-11-13",
   lessonsLast7Days: 9,

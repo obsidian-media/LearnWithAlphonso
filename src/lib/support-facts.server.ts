@@ -1,4 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { localDay } from "./local-day";
+import { shownStreak } from "./streak-display";
 import {
   getAccountSubscriberSummary,
   revenueCatConfigFromEnv,
@@ -24,7 +26,12 @@ export type SupportFacts = {
   };
   course: string | null;
   level: string | null;
+  /** The streak as the apps show it today (shownStreak, in the learner's stored time zone): 0 once it has lapsed. Never the raw column. */
   streak: number;
+  /** True while only a streak freeze keeps the shown streak alive (the apps say "protected"). */
+  streakProtected: boolean;
+  /** Streak freezes the learner holds right now. */
+  streakFreezes: number;
   daysActiveLast30: number;
   lastActiveDay: string | null;
   lessonsLast7Days: number;
@@ -41,6 +48,8 @@ export const SUPPORT_FACT_KEYS = [
   "course",
   "level",
   "streak",
+  "streakProtected",
+  "streakFreezes",
   "daysActiveLast30",
   "lastActiveDay",
   "lessonsLast7Days",
@@ -54,7 +63,13 @@ const MAX_PREVIOUS_TICKETS = 3;
 
 export type RawSupportFacts = {
   languageProgress: { language: string; cefr_level: string | null; updated_at: string }[];
+  /** The raw user_progress.streak column: only rewritten when the learner next studies, so never quoted as is. */
   streak: number;
+  /** user_progress.last_active_date, streak_freezes and day_basis, and the learner's stored time zone: what shownStreak reads. */
+  streakLastActiveDate?: string | null;
+  streakFreezes?: number | null;
+  dayBasis?: string | null;
+  timeZone?: string | null;
   /** Days (YYYY-MM-DD) with activity in the last 30 days. */
   activeDaysLast30: string[];
   lastActiveDay: string | null;
@@ -98,11 +113,24 @@ export function buildSupportFacts(raw: RawSupportFacts, now: number = Date.now()
   )[0];
   const cutoff30 = new Date(now - 30 * 86_400_000).toISOString().slice(0, 10);
   const cutoff7 = now - 7 * 86_400_000;
+  const rawStreak = Math.max(0, Math.trunc(raw.streak) || 0);
+  const freezes = Math.max(0, Math.trunc(raw.streakFreezes ?? 0) || 0);
+  const shown = shownStreak(
+    {
+      streak: rawStreak,
+      lastActiveDate: raw.streakLastActiveDate,
+      streakFreezes: freezes,
+      dayBasis: raw.dayBasis,
+    },
+    localDay(now, raw.timeZone),
+  );
   return {
     pro,
     course: current?.language ?? null,
     level: current?.cefr_level ?? null,
-    streak: Math.max(0, Math.trunc(raw.streak) || 0),
+    streak: shown.streak,
+    streakProtected: shown.state === "protected",
+    streakFreezes: freezes,
     daysActiveLast30: new Set(raw.activeDaysLast30.filter((d) => d >= cutoff30)).size,
     lastActiveDay: raw.lastActiveDay ? dayOf(raw.lastActiveDay) : null,
     lessonsLast7Days: raw.lessonTimesLast7Days.filter((t) => Date.parse(t) >= cutoff7).length,
@@ -138,6 +166,7 @@ export async function loadSupportFacts(
   const [
     lang,
     progress,
+    zone,
     active30,
     lastActive,
     lessons7,
@@ -152,7 +181,12 @@ export async function loadSupportFacts(
       .from("language_progress")
       .select("language, cefr_level, updated_at")
       .eq("user_id", userId),
-    admin.from("user_progress").select("streak").eq("user_id", userId).maybeSingle(),
+    admin
+      .from("user_progress")
+      .select("streak, last_active_date, streak_freezes, day_basis")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    admin.from("learner_time_zones").select("time_zone").eq("user_id", userId).maybeSingle(),
     admin.from("activity_days").select("day").eq("user_id", userId).gte("day", since30),
     admin
       .from("activity_days")
@@ -189,17 +223,29 @@ export async function loadSupportFacts(
       ? getAccountSubscriberSummary(config, userId, opts.fetchImpl ?? fetch)
       : Promise.resolve(null),
   ]);
-  if (block.error || progress.error) throw new Error("Could not read account status.");
+  // A missing zone row is UTC (the day rule before local days); a failed read must not be mistaken for it.
+  if (block.error || progress.error || zone.error)
+    throw new Error("Could not read account status.");
   const ticketRows = ok(tickets as never, "tickets") as {
     id: string;
     status: string;
     topic: string | null;
     created_at: string;
   }[];
+  const progressRow = progress.data as {
+    streak: number;
+    last_active_date: string | null;
+    streak_freezes: number;
+    day_basis: string;
+  } | null;
   return buildSupportFacts(
     {
       languageProgress: ok(lang as never, "progress") as RawSupportFacts["languageProgress"],
-      streak: (progress.data as { streak: number } | null)?.streak ?? 0,
+      streak: progressRow?.streak ?? 0,
+      streakLastActiveDate: progressRow?.last_active_date ?? null,
+      streakFreezes: progressRow?.streak_freezes ?? 0,
+      dayBasis: progressRow?.day_basis ?? null,
+      timeZone: (zone.data as { time_zone: string } | null)?.time_zone ?? null,
       activeDaysLast30: (ok(active30 as never, "activity") as { day: string }[]).map((r) => r.day),
       lastActiveDay: (ok(lastActive as never, "activity") as { day: string }[])[0]?.day ?? null,
       lessonTimesLast7Days: (ok(lessons7 as never, "lessons") as { completed_at: string }[]).map(

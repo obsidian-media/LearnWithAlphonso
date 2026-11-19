@@ -27,6 +27,8 @@ vi.mock("@/lib/support-facts.server", async (orig) => ({
     course: "en",
     level: null,
     streak: 0,
+    streakProtected: false,
+    streakFreezes: 0,
     daysActiveLast30: 0,
     lastActiveDay: null,
     lessonsLast7Days: 0,

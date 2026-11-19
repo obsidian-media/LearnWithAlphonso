@@ -39,7 +39,7 @@ export const Route = createFileRoute("/accessibility")({
 
 function Accessibility() {
   return (
-    <LegalPage title="Accessibility" updated="18 November 2026">
+    <LegalPage title="Accessibility" updated="19 November 2026">
       <Section heading="Our position">
         <p>
           Learning a language should not depend on how well you see, hear or move. We would rather

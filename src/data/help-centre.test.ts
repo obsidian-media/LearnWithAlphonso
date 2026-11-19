@@ -9,6 +9,9 @@ describe("help centre", () => {
         "pro",
         "restore",
         "streak",
+        "streak-freeze",
+        "hands-free",
+        "stories",
         "league",
         "account",
         "privacy",
@@ -31,6 +34,15 @@ describe("help centre", () => {
     for (const email of text.match(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g) ?? []) {
       expect(email).toBe(SUPPORT_EMAIL);
     }
+  });
+
+  it("states the streak-freeze rules the code runs (progress-math.ts, buy_streak_freeze_with_xp)", () => {
+    const body = HELP_TOPICS.find((t) => t.id === "streak-freeze")!.body;
+    expect(body).toMatch(/multiple of 10/);
+    expect(body).toMatch(/75 XP/);
+    expect(body).toMatch(/exactly one day/);
+    expect(body).toMatch(/two or more days/);
+    expect(body).toMatch(/Protected by a streak freeze/);
   });
 
   it("never promises a refund, credit or time", () => {

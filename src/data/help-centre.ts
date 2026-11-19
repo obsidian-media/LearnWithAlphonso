@@ -47,7 +47,8 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     title: "Streaks",
     body: [
       "A streak counts the days in a row you finished a lesson or review. Days follow the time zone of your phone or browser.",
-      "If a streak looks wrong, check that the app is up to date and that you are signed in to the same account. The facts show the current streak and the last day with activity.",
+      "The streak the app shows is the one the facts give. A streak that shows 0 has lapsed: you missed a day and had no streak freeze for it, so your next lesson starts a new streak at 1. The facts give the streak as the app shows it today, never an older stored number.",
+      "If a streak looks wrong, check that the app is up to date and that you are signed in to the same account. The facts show the streak, whether a streak freeze is protecting it, how many freezes the learner holds, and the last day with activity.",
       "We cannot change a streak from here. A person can look at it.",
     ].join("\n"),
   },
@@ -87,6 +88,37 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Anything about someone's safety, harassment or abuse goes to a person straight away.",
     ].join("\n"),
   },
+  // The first seven topic titles are the Help chat's starters (support-copy.ts and the native twins): new topics go after them.
+  {
+    id: "streak-freeze",
+    title: "Streak freezes",
+    body: [
+      "A streak freeze protects your streak when you miss one day. If you skip exactly one day, your next lesson uses one freeze, the streak carries on instead of restarting, and the freeze is used up. Missing two or more days in a row is not covered: the streak restarts at 1 even if you hold freezes.",
+      'A freeze is used on its own the next time you finish a lesson or review after the missed day; there is nothing to switch on. While a freeze is the only thing keeping the streak alive, the app shows the streak as protected (a snowflake mark, and the line "Protected by a streak freeze" on Profile).',
+      "You earn one freeze each time your streak reaches a multiple of 10 days (day 10, 20, 30 and so on). In the iPhone and Android apps you can also buy one for 75 XP, from the streak freeze row on the Learn screen (not on the website). The XP is taken from the course you are learning. A freeze can also arrive as a gift: a friend can give you one of theirs (they give up one of their own, and it cannot be given to someone who already holds 3), and a Pro learner whose invited friend finishes a first lesson is rewarded with one (not when they already hold 3). The facts show how many freezes you hold.",
+      "A freeze cannot bring back a streak that has already lapsed (one that shows 0). We cannot add freezes or restore a streak from here; a person can look at it.",
+    ].join("\n"),
+  },
+  {
+    id: "hands-free",
+    title: "Hands-free calls",
+    body: [
+      "On a practice call with Alphonso (single scenes and campaigns) and on a call with Hector, you can talk without holding the button. Turn on Hands-free, on the call screen on iPhone, or in the conversation sheet on Android and the web. The first time on a device, a short note explains how it works and asks you to confirm.",
+      "With Hands-free on, the call listens after each reply and answers when you pause. In Practice the turn ends after about 2.5 seconds of quiet; with Hector, after about 1.2 seconds. Tap Pause to stop listening and Resume to carry on; turning the switch off goes back to holding the button.",
+      "The app remembers your last choice on that device: if you left Hands-free on, the next call starts with it on, and off if you turned it off. If the microphone is not allowed, the call falls back to holding the button.",
+      "For safety it pauses by itself after 8 seconds of quiet, after only background noise, after a very long turn, after 20 turns in a row without you touching the screen, after a problem, or when the audio is interrupted (a phone call, earbuds removed). Tap Resume to carry on. On the web it works only while the page is open and awake. What it hears is sent for transcription like a held recording. It is best with earbuds or a quiet room, and not for use while driving.",
+      "Practice calls are free and use the same daily limits as a held press. Hector, and so Hector hands-free, is part of Alphonso Pro.",
+    ].join("\n"),
+  },
+  {
+    id: "stories",
+    title: "Stories",
+    body: [
+      "Stories are short graded stories in the Library, organised by level. Open one to read along: the story is cut into sentences, the narration voice reads them one by one with the current sentence highlighted, and you can tap any word to see it and save it. Tap Pause narration to stop it. When you have finished you can check what you understood.",
+      "Some stories are choose-your-path stories: you read a part, then choose what happens next, and the story continues from your choice.",
+      "Most stories play a pre-recorded narration, which needs no AI allowance. A sentence without a recording is read by the live voice instead. If the voice cannot be reached, the text stays readable.",
+    ].join("\n"),
+  },
   {
     id: "troubleshooting",
     title: "Things you can try yourself",
@@ -101,6 +133,8 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     id: "contact",
     title: "Reaching a person",
     body: [
+      "Miya is the AI helper in the Help chat. She is an AI, not a person. She answers from this help file and from a few facts about your account (such as your streak and whether Pro is active), and she cannot change anything on your account or see payments, passwords, lesson answers or chats with Alphonso or Hector.",
+      'To talk to a person, say so in the Help chat at any time (for example "I want to talk to a person"). Refunds, billing disputes, deleting an account, safety, and legal or privacy requests always go to a person.',
       `A person reads every conversation that is handed over, and replies in the same chat. You can also write to ${SUPPORT_EMAIL}.`,
       "We never promise a refund, a credit, a gift, a fix or a time. We say a person will look at it.",
     ].join("\n"),

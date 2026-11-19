@@ -534,6 +534,7 @@ describe("web Hector hands-free", () => {
 
   beforeEach(() => {
     localStorage.removeItem("showAlphonsoWhilePractising");
+    localStorage.removeItem("handsFree.preferred.v1");
     localStorage.removeItem(NOTE_KEY);
     installFakeAudioContext();
     recorders.length = 0;

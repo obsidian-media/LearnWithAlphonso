@@ -30,6 +30,7 @@ export function useSpeechCapture({
   handsFree = false,
   onNoWords,
   onFailure,
+  onMicDenied,
 }: {
   onTranscript: (text: string, confidence: number | null) => void | Promise<void>;
   /** Forwarded to /api/stt so Deepgram transcribes in the right language
@@ -44,6 +45,8 @@ export function useSpeechCapture({
   onNoWords?: () => void;
   /** Called for a real failure (denied microphone, transcription error): the hands-free loop pauses. */
   onFailure?: () => void;
+  /** The microphone was refused or could not open: hands-free falls back to hold-to-talk. */
+  onMicDenied?: () => void;
 }) {
   const [state, setState] = useState<SpeechCaptureState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +78,8 @@ export function useSpeechCapture({
   onNoWordsRef.current = onNoWords;
   const onFailureRef = useRef(onFailure);
   onFailureRef.current = onFailure;
+  const onMicDeniedRef = useRef(onMicDenied);
+  onMicDeniedRef.current = onMicDenied;
   // cancel() asks the recorder to stop and throw the clip away: nothing is transcribed or reported.
   const cancelRequestedRef = useRef(false);
   const startedAtRef = useRef(0);
@@ -190,6 +195,7 @@ export function useSpeechCapture({
       startingRef.current = false;
       setStarting(false);
       setState("idle");
+      onMicDeniedRef.current?.();
       onFailureRef.current?.();
     }
   }, []);
