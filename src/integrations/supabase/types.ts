@@ -4285,6 +4285,7 @@ export type Database = {
       };
       support_purge_old: { Args: never; Returns: number };
       team_name_problem: { Args: { _name: string }; Returns: string };
+      trip_ai_spend_breaker: { Args: { p_limit_micro: number }; Returns: Json };
       weekly_xp: {
         Args: { _user_id: string; _week_start: string };
         Returns: number;
