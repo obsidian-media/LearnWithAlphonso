@@ -111,4 +111,25 @@ describe("Android Learn", () => {
     expect(screen).toContain("StreakDisplay.accessibilityLabel(streak)");
     expect(screen).toContain("Buy freeze ($STREAK_FREEZE_XP_COST XP)");
   });
+  it("the hero is one piece: the lesson line and the CTA sit inside the same Box as the scene, not below it", () => {
+    const hero = screen.slice(
+      screen.indexOf("private fun CurrentUnitCard"),
+      screen.indexOf("private fun greeting("),
+    );
+    expect(hero.indexOf(`Text("Continue lesson"`)).toBeGreaterThan(hero.indexOf("alphonso?.let"));
+    expect(hero).not.toContain("Column(verticalArrangement");
+    expect(hero).not.toContain("semantics(mergeDescendants");
+  });
+});
+
+describe("iOS hero is one unit on the scene", () => {
+  it("the current-unit info and the CTA are the stage's content, in the order greeting, lesson, button", () => {
+    const browser = read(`${IOS}/LessonBrowserView.swift`);
+    expect(browser).toMatch(/LearnHeroStage\(greeting:[^\n]*\) \{\s*LearnCurrentUnitCard\(/);
+    const stage = read(`${IOS}/LearnHeroStage.swift`);
+    expect(stage.indexOf('"Alphonso: ')).toBeLessThan(
+      stage.indexOf("content" + String.fromCharCode(10)),
+    );
+    expect(read(`${IOS}/LearnFoldViews.swift`)).not.toContain("LessonArt.room");
+  });
 });

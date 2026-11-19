@@ -369,10 +369,9 @@ private fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.conte
     val room = rememberFirstRunAsset("scenes/$art.webp") ?: rememberFirstRunAsset("scenes/${LessonStage.FALLBACK_ROOM}.webp")
     val alphonso = rememberFirstRunAsset("lesson/happy.webp")
     val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
-    Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
-        Box(Modifier.fillMaxWidth().clip(shape).background(ds.hero).semantics(mergeDescendants = true) {
-            contentDescription = "You are here, unit ${place.index} of ${place.count}, ${unit.title}, ${LearnFold.roomName(art)}. Alphonso says: $greeting"
-        }) {
+    Column {
+        // Not merged: TalkBack reads the greeting, then the lesson line, then the Continue lesson button.
+        Box(Modifier.fillMaxWidth().clip(shape).background(ds.hero)) {
             room?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize()) }
             Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, ds.hero.copy(alpha = 0.92f)))))
             alphonso?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.align(Alignment.BottomEnd).height(150.dp).clearAndSetSemantics { }) }
@@ -382,17 +381,17 @@ private fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.conte
                 Text("YOU ARE HERE \u00B7 UNIT ${place.index} OF ${place.count}", style = OverlineType, color = ds.onHeroKick)
                 Text(unit.title, style = TitleType, color = ds.onHero, modifier = Modifier.fillMaxWidth(0.7f))
                 if (lessonTitle != null) Text("Next: $lessonTitle", style = FootnoteType, color = ds.onHeroSoft, modifier = Modifier.fillMaxWidth(0.7f))
+                // The one way in, on the scene with the rest of the hero. The edge under the gold face is the button's darker lip.
+                val button = RoundedCornerShape(AlphonsoTokens.Radius.control)
+                Box(
+                    Modifier.fillMaxWidth().clip(button).background(ds.actionEdge).padding(bottom = 4.dp).clip(button).background(ds.action)
+                        .heightIn(min = 48.dp)
+                        .clickable(role = Role.Button, onClickLabel = "Continue ${lessonTitle ?: unit.title}", onClick = onContinue)
+                        .padding(horizontal = AlphonsoTokens.Space.s6, vertical = AlphonsoTokens.Space.s3),
+                    contentAlignment = Alignment.Center,
+                ) { Text("Continue lesson", style = HeadlineType, color = ds.onAction) }
             }
         }
-        // The one way in. The edge under the gold face is the button's darker lip.
-        val button = RoundedCornerShape(AlphonsoTokens.Radius.control)
-        Box(
-            Modifier.fillMaxWidth().clip(button).background(ds.actionEdge).padding(bottom = 4.dp).clip(button).background(ds.action)
-                .heightIn(min = 48.dp)
-                .clickable(role = Role.Button, onClickLabel = "Continue ${lessonTitle ?: unit.title}", onClick = onContinue)
-                .padding(horizontal = AlphonsoTokens.Space.s6, vertical = AlphonsoTokens.Space.s3),
-            contentAlignment = Alignment.Center,
-        ) { Text("Continue lesson", style = HeadlineType, color = ds.onAction) }
     }
 }
 

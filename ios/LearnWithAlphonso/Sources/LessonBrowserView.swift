@@ -343,24 +343,20 @@ struct LessonBrowserView: View {
                 }
 
                 // The one hero: the garden clip (Alphonso waving, his bubble pinned on him) shows through the clear
-                // stage, and the current-unit card below it carries the single Continue lesson button.
+                // stage, and the current-unit info with the single Continue lesson button sit on it as one unit.
                 if let next = nextLesson {
-                    LearnHeroStage(greeting: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress())))
-                        .listRowInsets(EdgeInsets())
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-
-                    // The link sits invisibly behind the card: a visible NavigationLink in a List adds a
-                    // disclosure chevron beside the card and narrows it.
-                    LearnCurrentUnitCard(
-                        unitNumber: currentUnit?.index ?? 1,
-                        unitCount: currentUnit?.count ?? 1,
-                        unitTitle: next.unit.title,
-                        lessonTitle: next.lesson.title,
-                        roomID: roomID(for: next.unit)
-                    )
+                    // The link sits invisibly behind the hero: a visible NavigationLink in a List adds a
+                    // disclosure chevron beside it and narrows it.
+                    LearnHeroStage(greeting: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress()))) {
+                        LearnCurrentUnitCard(
+                            unitNumber: currentUnit?.index ?? 1,
+                            unitCount: currentUnit?.count ?? 1,
+                            unitTitle: next.unit.title,
+                            lessonTitle: next.lesson.title
+                        )
+                    }
                     .background(NavigationLink(value: next.lesson.id) { EmptyView() }.opacity(0))
-                    .accessibilityAddTraits(.isButton)
+                    .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 }

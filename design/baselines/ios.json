@@ -4,7 +4,6 @@
   "files": {
     "ios/LearnWithAlphonso/Sources/AvatarColor.swift": 2,
     "ios/LearnWithAlphonso/Sources/GoogleSignInButton.swift": 3,
-    "ios/LearnWithAlphonso/Sources/LeagueTierPalette.swift": 6,
-    "ios/LearnWithAlphonso/Sources/LearnHeroStage.swift": 1
+    "ios/LearnWithAlphonso/Sources/LeagueTierPalette.swift": 6
   }
 }

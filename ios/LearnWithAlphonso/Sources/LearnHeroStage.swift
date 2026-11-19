@@ -1,21 +1,23 @@
 import LearnWithAlphonsoKit
 import SwiftUI
 
-/// The scene half of Learn's one hero. The garden clip (with Alphonso waving and his greeting bubble pinned on him,
-/// see LessonBrowserView) plays behind the list; this is the clear window it shows through, sitting directly above the
-/// current-unit card whose single "Continue lesson" button is the one way in. It draws nothing itself: it reserves the
-/// room Alphonso stands in and is the one place VoiceOver hears his greeting.
-struct LearnHeroStage: View {
+/// Learn's one hero. The garden clip (Alphonso waving, his greeting bubble pinned on him, see LessonBrowserView) plays
+/// behind the list; this row is the clear window it shows through, and the current-unit info and the single gold
+/// "Continue lesson" button sit ON that scene, in the left column beside Alphonso, as one unit. VoiceOver reads the
+/// greeting first, then the lesson line, then the button.
+struct LearnHeroStage<Content: View>: View {
     static let figureHeight: CGFloat = 190
     /// Room above the figure's head for the speech bubble.
     private static let bubbleReserve: CGFloat = 96
     private static let figureColumnWidth: CGFloat = 150
 
     let greeting: String
+    @ViewBuilder var content: Content
+    @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
         Color.clear
-            .frame(height: Self.figureHeight + Self.bubbleReserve)
+            .frame(minHeight: Self.figureHeight + Self.bubbleReserve + 48)
             .frame(maxWidth: .infinity)
             .overlay(alignment: .bottomTrailing) {
                 Color.clear
@@ -23,20 +25,30 @@ struct LearnHeroStage: View {
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("Alphonso: \(greeting)")
             }
+            .overlay(alignment: .bottom) {
+                content
+                    .padding(.trailing, Self.figureColumnWidth - AlphonsoDS.Space.s4)
+                    .background(alignment: .bottom) {
+                        LinearGradient(colors: [ds.hero.opacity(0), ds.hero.opacity(0.85)], startPoint: .top, endPoint: .bottom)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                    }
+            }
     }
 }
 
 /// Alphonso's greeting: text on a frosted card, with a small tail pointing down at him.
 struct PathSpeechBubble: View {
     let message: String
+    @Environment(\.alphonsoDS) private var ds
     /// How far to the right of the bubble's centre the tail sits (the bubble is clamped inside the screen).
     var tailOffset: CGFloat = 0
 
     var body: some View {
         VStack(spacing: 0) {
             Text(message)
-                .font(AlphonsoFont.sans(14, weight: .bold))
-                .foregroundStyle(AlphonsoColor.ink)
+                .dsText(.footnote)
+                .foregroundStyle(ds.ink)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 12)
