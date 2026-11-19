@@ -38,9 +38,33 @@ describe("TopBar", () => {
   it("shows real stats once hydrated", () => {
     useProgress.setState({ hydrated: true, xp: 120, streak: 4, hearts: 3 });
     render(<TopBar />);
-    expect(screen.getByLabelText("Streak")).toHaveTextContent("4");
+    // The spoken label is the shown streak's, as on iOS and Android.
+    expect(screen.getByLabelText("Streak: 4 days")).toHaveTextContent("4");
     expect(screen.getByLabelText("XP")).toHaveTextContent("120");
     expect(screen.getByLabelText("Hearts")).toHaveTextContent("3");
+  });
+
+  it("shows the streak as it reads today: protected by a freeze, or 0 once the run is over", () => {
+    const day = (offset: number) => {
+      const d = new Date();
+      d.setDate(d.getDate() + offset);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+    useProgress.setState({
+      hydrated: true,
+      streak: 12,
+      lastActiveDate: day(-2),
+      streakFreezes: 1,
+      dayBasis: "local",
+    });
+    const { unmount } = render(<TopBar />);
+    const pill = screen.getByLabelText("12-day streak, protected by a streak freeze");
+    expect(pill).toHaveTextContent("12");
+    expect(pill).toHaveTextContent("❄️");
+    unmount();
+    useProgress.setState({ streakFreezes: 0 });
+    render(<TopBar />);
+    expect(screen.getByLabelText("Streak: 0 days")).toHaveTextContent("0");
   });
 
   it("shows the wait for the next heart while hearts are below the cap, and nothing at full hearts", () => {
