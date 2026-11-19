@@ -347,7 +347,7 @@ struct SayThePictureView: View {
 
     private var bubbleText: String {
         switch run.phase {
-        case .right: return "First try. Brilliant!"
+        case .right: return run.combo >= 2 ? "\(run.combo) in a row!" : "First try. Brilliant!"
         case .reveal: return voice.isRecording ? "Mm-hm, I'm listening..." : "Now say it with me."
         default: return voice.isRecording ? "Mm-hm, I'm listening..." : "Have a look. What's this one?"
         }
@@ -403,7 +403,6 @@ struct SayThePictureView: View {
 
     private var right: some View {
         VStack(spacing: AlphonsoDS.Space.s3) {
-            Text("First try. Brilliant!").dsText(.headline).foregroundStyle(ds.rightInk)
             Button(run.nextLabel) { run.next() }.buttonStyle(.dsButton(.primary))
         }
         .frame(maxWidth: .infinity)

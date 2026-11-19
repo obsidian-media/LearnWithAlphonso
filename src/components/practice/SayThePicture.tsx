@@ -390,7 +390,9 @@ export function SayThePicture({
   const combo = comboCount(results);
   const bubble =
     phase === "right"
-      ? BUBBLE.right
+      ? combo >= 2
+        ? `${combo} in a row!`
+        : BUBBLE.right
       : recording
         ? BUBBLE.listening
         : phase === "reveal"
@@ -579,9 +581,6 @@ export function SayThePicture({
 
         {phase === "right" && (
           <>
-            <p className="font-[family-name:var(--ds-font-display)] text-base font-extrabold text-ds-right-ink">
-              First try. Brilliant!
-            </p>
             <button type="button" onClick={next} className={`${edgeButtonClass("right")} w-full`}>
               {last ? "Finish" : "Next"}
             </button>

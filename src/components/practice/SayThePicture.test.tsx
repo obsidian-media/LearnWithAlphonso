@@ -240,9 +240,13 @@ describe("Say the picture", () => {
     const hits = drawRounds(h.words as PictureWord[], 8, () => 0).map((w) => w.term);
     say(hits[0]);
     expect(screen.getByTestId("stp-combo").textContent).toBe("First try");
+    expect(screen.getByTestId("stp-tutor").textContent).toBe("First try. Brilliant!");
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     say(hits[1]);
     expect(screen.getByTestId("stp-combo").textContent).toBe("2 in a row");
+    // The bubble agrees with the chip, and the win is said once (the stage repeats nothing).
+    expect(screen.getByTestId("stp-tutor").textContent).toBe("2 in a row!");
+    expect(screen.queryAllByText(/Brilliant/)).toHaveLength(0);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     say("zzzz"); // a miss breaks the run
     fireEvent.click(screen.getByRole("button", { name: "Next word" }));

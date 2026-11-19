@@ -373,7 +373,7 @@ internal fun SayThePictureContent(
                 else -> Unit
             }
             Spacer(Modifier.weight(1f))
-            StpTutor(pose, session.phase, listening)
+            StpTutor(pose, session.phase, listening, session.combo)
             StpStage(session, phase, canCapture, error, listening, reduceMotion, onPressBegan, onPressEnded, onShowWord, onNext, unavailable)
         }
     }
@@ -469,11 +469,11 @@ private fun StpReveal(term: String, onHear: () -> Unit) {
 
 /** Alphonso, fully in frame, reacting in pose, with a small speech bubble. */
 @Composable
-private fun StpTutor(pose: SayPicturePose, phase: SayPicturePhase, listening: Boolean) {
+private fun StpTutor(pose: SayPicturePose, phase: SayPicturePhase, listening: Boolean, combo: Int) {
     val ds = LocalAlphonsoTokens.current
     val image = rememberFirstRunAsset(pose.asset)
     val bubble = when {
-        phase == SayPicturePhase.RIGHT -> "First try. Brilliant!"
+        phase == SayPicturePhase.RIGHT -> if (combo >= 2) "$combo in a row!" else "First try. Brilliant!"
         listening -> "Mm-hm, I'm listening..."
         phase == SayPicturePhase.REVEAL -> "Now say it with me."
         else -> "Have a look. What's this one?"
@@ -525,7 +525,6 @@ private fun StpStage(
                 HubSecondaryButton("Show me the word", onShowWord)
             }
             SayPicturePhase.RIGHT -> {
-                Text("First try. Brilliant!", style = Type.headline.toTextStyle(), color = ds.rightInk)
                 HubButton(session.nextLabel, onNext)
             }
             SayPicturePhase.REVEAL -> {
