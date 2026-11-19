@@ -199,15 +199,16 @@ private struct BranchingBackdrop: View {
 
 /// The 30 pt translucent back button (44 pt hit target) that sits over the art.
 private struct BranchingBackButton: View {
+    @Environment(\.alphonsoDS) private var ds
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         Button { dismiss() } label: {
             Image(systemName: "chevron.left")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(Color.white)
+                .font(.footnote.weight(.bold))
+                .foregroundStyle(ds.onHero)
                 .frame(width: 30, height: 30)
-                .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color.white.opacity(0.16)))
+                .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(ds.onHero.opacity(0.16)))
                 .frame(minWidth: AlphonsoDS.Space.minTouch, minHeight: AlphonsoDS.Space.minTouch)
                 .contentShape(Rectangle())
         }
@@ -218,14 +219,15 @@ private struct BranchingBackButton: View {
 
 /// A quiet pill button for controls that sit on the dark scene (Listen, Pause narration).
 private struct BranchingGlassButtonStyle: ButtonStyle {
+    @Environment(\.alphonsoDS) private var ds
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .dsText(.footnote)
-            .foregroundStyle(Color.white)
+            .foregroundStyle(ds.onHero)
             .padding(.horizontal, AlphonsoDS.Space.s4)
             .frame(minHeight: AlphonsoDS.Space.minTouch)
-            .background(Capsule().fill(Color.white.opacity(configuration.isPressed ? 0.28 : 0.16)))
-            .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 1))
+            .background(Capsule().fill(ds.onHero.opacity(configuration.isPressed ? 0.28 : 0.16)))
+            .overlay(Capsule().stroke(ds.onHero.opacity(0.3), lineWidth: 1))
     }
 }
 
@@ -272,12 +274,12 @@ private struct BranchingNodePage: View {
     private var fade: some View {
         LinearGradient(
             stops: [
-                .init(color: Color(red: 8 / 255, green: 10 / 255, blue: 26 / 255).opacity(0.10), location: 0),
-                .init(color: Color(red: 8 / 255, green: 10 / 255, blue: 26 / 255).opacity(0.10), location: 0.20),
-                .init(color: Color(red: 8 / 255, green: 10 / 255, blue: 26 / 255).opacity(0.05), location: 0.40),
-                .init(color: Color(red: 8 / 255, green: 10 / 255, blue: 26 / 255).opacity(0.72), location: 0.66),
-                .init(color: Color(red: 6 / 255, green: 8 / 255, blue: 22 / 255).opacity(0.97), location: 0.86),
-                .init(color: Color(red: 6 / 255, green: 8 / 255, blue: 22 / 255).opacity(0.97), location: 1),
+                .init(color: ds.heroB.opacity(0.10), location: 0),
+                .init(color: ds.heroB.opacity(0.10), location: 0.20),
+                .init(color: ds.heroB.opacity(0.05), location: 0.40),
+                .init(color: ds.heroB.opacity(0.72), location: 0.66),
+                .init(color: ds.heroB.opacity(0.97), location: 0.86),
+                .init(color: ds.heroB.opacity(0.97), location: 1),
             ],
             startPoint: .top, endPoint: .bottom)
             .accessibilityHidden(true)
@@ -288,7 +290,7 @@ private struct BranchingNodePage: View {
             BranchingBackButton()
             Text(story.title)
                 .dsText(.title)
-                .foregroundStyle(Color.white)
+                .foregroundStyle(ds.onHero)
                 .lineLimit(1)
                 .minimumScaleFactor(0.65)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -297,7 +299,7 @@ private struct BranchingNodePage: View {
             HStack(spacing: 3) {
                 ForEach(0..<progress.total, id: \.self) { index in
                     Capsule()
-                        .fill(index < progress.current ? ds.action : Color.white.opacity(0.4))
+                        .fill(index < progress.current ? ds.xp : ds.onHero.opacity(0.4))
                         .frame(width: 11, height: 4)
                 }
             }
@@ -307,7 +309,7 @@ private struct BranchingNodePage: View {
         .padding(.trailing, AlphonsoDS.Space.s2)
         .background(
             LinearGradient(
-                colors: [Color(red: 8 / 255, green: 10 / 255, blue: 26 / 255).opacity(0.5), Color.clear],
+                colors: [ds.heroB.opacity(0.5), Color.clear],
                 startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea(edges: .top))
     }
@@ -374,7 +376,7 @@ private struct BranchingNodePage: View {
         VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
             ForEach(Array(node.segments.enumerated()), id: \.offset) { index, segment in
                 let active = current == index
-                TappableText(text: segment, color: Color.white, course: story.course, mode: .allWords) { request in
+                TappableText(text: segment, color: ds.onHero, course: story.course, mode: .allWords) { request in
                     // A tapped word is spoken as well as defined; the narration stops so the two never overlap.
                     narrator.stop()
                     FirstRunVoice.speak(request.word, course: courseValue)
@@ -387,7 +389,7 @@ private struct BranchingNodePage: View {
                 .padding(.vertical, AlphonsoDS.Space.s2)
                 .background(
                     RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
-                        .fill(active ? Color.white.opacity(0.16) : Color.clear))
+                        .fill(active ? ds.onHero.opacity(0.16) : Color.clear))
                 .overlay(
                     RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
                         .stroke(active ? ds.onHeroKick : Color.clear, lineWidth: 2))
@@ -414,7 +416,7 @@ private struct BranchingNodePage: View {
         VStack(spacing: AlphonsoDS.Space.s2 + 2) {
             Text(choice.prompt)
                 .dsText(.footnote)
-                .foregroundStyle(Color.white.opacity(0.84))
+                .foregroundStyle(ds.onHero.opacity(0.84))
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
                 .padding(.top, AlphonsoDS.Space.s2)
@@ -433,10 +435,10 @@ private struct BranchingNodePage: View {
                         .padding(.horizontal, AlphonsoDS.Space.s4)
                         .padding(.vertical, 13 - 6)
                         .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Color.white.opacity(0.93)))
+                            RoundedRectangle(cornerRadius: 18, style: .continuous).fill(ds.onHero.opacity(0.93)))
                         .overlay(
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(Color.white.opacity(0.9), lineWidth: 1.5))
+                                .stroke(ds.onHero.opacity(0.9), lineWidth: 1.5))
                         .shadow(color: Color.black.opacity(0.4), radius: 11, x: 0, y: 10)
                         .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
@@ -541,8 +543,8 @@ private struct BranchingEndingView: View {
             .overlay {
                 LinearGradient(
                     stops: [
-                        .init(color: Color(red: 13 / 255, green: 17 / 255, blue: 40 / 255).opacity(0.05), location: 0),
-                        .init(color: Color(red: 13 / 255, green: 17 / 255, blue: 40 / 255).opacity(0.05), location: 0.30),
+                        .init(color: ds.heroB.opacity(0.05), location: 0),
+                        .init(color: ds.heroB.opacity(0.05), location: 0.30),
                         .init(color: ds.surface, location: 1),
                     ],
                     startPoint: .top, endPoint: .bottom)
@@ -558,7 +560,7 @@ private struct BranchingEndingView: View {
                 VStack(spacing: AlphonsoDS.Space.s2) {
                     Text(BranchingCopy.yourEnding)
                         .dsText(.overline).tracking(1.4)
-                        .foregroundStyle(ds.actionText)
+                        .foregroundStyle(ds.xpText)
                         .accessibilityAddTraits(.isHeader)
                     Text(ending.title)
                         .dsText(.display)
@@ -647,7 +649,7 @@ private struct BranchingStarsRow: View {
             ForEach(0..<3, id: \.self) { index in
                 let settled = popped || reduceMotion
                 Image(systemName: "star.fill")
-                    .font(.system(size: 30))
+                    .font(.title)
                     .foregroundStyle(index < stars ? ds.xp : ds.line)
                     .shadow(color: index < stars ? ds.xpEdge.opacity(0.45) : Color.clear, radius: 3, x: 0, y: 2)
                     .scaleEffect(settled ? 1 : 0.4)
@@ -732,7 +734,7 @@ private struct BranchingMapDiagram: View {
                         line.addLine(to: to)
                         switch edge.style {
                         case .taken:
-                            context.stroke(line, with: .color(ds.action), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                            context.stroke(line, with: .color(ds.xp), style: StrokeStyle(lineWidth: 3, lineCap: .round))
                         case .found:
                             context.stroke(line, with: .color(ds.right), style: StrokeStyle(lineWidth: 3, lineCap: .round))
                         case .locked:
@@ -772,7 +774,7 @@ private struct BranchingMapDiagram: View {
             }
         case .branch:
             if node.onPath {
-                Circle().fill(ds.action).frame(width: 14, height: 14)
+                Circle().fill(ds.xp).frame(width: 14, height: 14)
             } else {
                 Circle().fill(ds.sunk).overlay(Circle().stroke(ds.line, lineWidth: 2)).frame(width: 14, height: 14)
             }
@@ -784,11 +786,11 @@ private struct BranchingMapDiagram: View {
     @ViewBuilder private func endingMark(_ state: BranchMapEndingState) -> some View {
         switch state {
         case .current:
-            Circle().fill(ds.action).frame(width: 18, height: 18)
-                .overlay(Image(systemName: "checkmark").font(.system(size: 10, weight: .heavy)).foregroundStyle(ds.ink))
+            Circle().fill(ds.xp).frame(width: 18, height: 18)
+                .overlay(Image(systemName: "checkmark").font(.caption2.weight(.heavy)).foregroundStyle(ds.ink))
         case .found:
             Circle().fill(ds.right).frame(width: 18, height: 18)
-                .overlay(Image(systemName: "checkmark").font(.system(size: 10, weight: .heavy)).foregroundStyle(ds.onRight))
+                .overlay(Image(systemName: "checkmark").font(.caption2.weight(.heavy)).foregroundStyle(ds.onRight))
         case .locked:
             Circle().fill(ds.sunk).overlay(Circle().stroke(ds.line, lineWidth: 2)).frame(width: 16, height: 16)
                 .overlay(Text("?").dsText(.caption).foregroundStyle(ds.inkFaint))

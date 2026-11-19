@@ -31,7 +31,7 @@ type Props = {
 };
 
 /** The Royal hero gradient, the stand-in for scene art that is missing or fails to load. */
-const ART_FALLBACK = "bg-[linear-gradient(160deg,var(--c-hero-a,#2C3F8F),var(--c-hero-b,#0E1430))]";
+const ART_FALLBACK = "bg-[linear-gradient(160deg,var(--c-hero-a),var(--c-hero-b))]";
 
 /**
  * Scene art that fills its (positioned) parent, degrading to the hero gradient when there is no art or it fails to
@@ -69,8 +69,9 @@ export function BranchingStoryReader(props: Props) {
 }
 
 const READER_FADE =
-  "bg-[linear-gradient(180deg,rgba(8,10,26,.10)_20%,rgba(8,10,26,.05)_40%,rgba(8,10,26,.72)_66%,rgba(6,8,22,.97)_86%)]";
-const TOP_SCRIM = "bg-[linear-gradient(180deg,rgba(8,10,26,.5),transparent)]";
+  "bg-[linear-gradient(180deg,color-mix(in_srgb,var(--c-hero-b)_10%,transparent)_20%,color-mix(in_srgb,var(--c-hero-b)_5%,transparent)_40%,color-mix(in_srgb,var(--c-hero-b)_72%,transparent)_66%,color-mix(in_srgb,var(--c-hero-b)_97%,transparent)_86%)]";
+const TOP_SCRIM =
+  "bg-[linear-gradient(180deg,color-mix(in_srgb,var(--c-hero-b)_50%,transparent),transparent)]";
 
 /**
  * Recolours the shared read-along card for the dark panel without touching ReadAlongPassage: the card goes
@@ -78,18 +79,25 @@ const TOP_SCRIM = "bg-[linear-gradient(180deg,rgba(8,10,26,.5),transparent)]";
  */
 const PASSAGE_ON_DARK = [
   "[&_[data-story-text]]:!border-transparent [&_[data-story-text]]:!bg-transparent [&_[data-story-text]]:!p-0",
-  "[&_[data-segment]]:!px-0 [&_[data-segment]]:!text-[1.04rem] [&_[data-segment]]:!leading-[1.55] [&_[data-segment]]:!text-white",
-  "[&_[data-segment][aria-current]]:!bg-white/15 [&_[data-segment][aria-current]]:!ring-white/50",
-  "[&_[data-save-word]]:underline [&_[data-save-word]]:decoration-dotted [&_[data-save-word]]:decoration-2 [&_[data-save-word]]:decoration-white/55 [&_[data-save-word]]:underline-offset-4",
-  "[&_.text-ds-ink-soft]:!text-white/75",
+  "[&_[data-segment]]:!px-0 [&_[data-segment]]:!leading-[1.55] [&_[data-segment]]:!text-ds-on-hero",
+  "[&_[data-segment][aria-current]]:!bg-ds-on-hero/15 [&_[data-segment][aria-current]]:!ring-ds-on-hero/50",
+  "[&_[data-save-word]]:underline [&_[data-save-word]]:decoration-dotted [&_[data-save-word]]:decoration-2 [&_[data-save-word]]:decoration-ds-on-hero/55 [&_[data-save-word]]:underline-offset-4",
+  "[&_.text-ds-ink-soft]:!text-ds-on-hero/75",
 ].join(" ");
 
 function BackChevron() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="none"
+      className="text-ds-on-hero"
+    >
       <path
         d="M15 5l-7 7 7 7"
-        stroke="#fff"
+        stroke="currentColor"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -192,7 +200,7 @@ function BranchingBody({ story, finish, onFinished }: Props) {
   return (
     <div
       data-story-reader=""
-      className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-ds-hero-b text-white"
+      className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-ds-hero-b text-ds-on-hero"
     >
       {/* Scene art and the dark fade, behind everything. */}
       <AnimatePresence initial={false}>
@@ -211,25 +219,24 @@ function BranchingBody({ story, finish, onFinished }: Props) {
       </AnimatePresence>
 
       <div className={`px-3 pb-6 pt-[max(0.5rem,env(safe-area-inset-top))] ${TOP_SCRIM}`}>
-        <div className="flex items-center gap-2 rounded-[14px] bg-white/10 pr-3 backdrop-blur-sm">
+        <div className="flex items-center gap-2 rounded-[14px] bg-ds-on-hero/10 pr-3 backdrop-blur-sm">
           <Link
             to="/stories"
             aria-label="Back to stories"
             className="flex size-11 shrink-0 items-center justify-center"
           >
-            <span className="flex size-[30px] items-center justify-center rounded-[9px] bg-white/[.16]">
+            <span className="flex size-[30px] items-center justify-center rounded-[9px] bg-ds-on-hero/16">
               <BackChevron />
             </span>
           </Link>
-          <h1 className="min-w-0 flex-1 truncate font-[family-name:var(--ds-font-display)] text-[0.9rem] font-extrabold text-white">
+          <h1 className="min-w-0 flex-1 truncate ds-type-footnote !font-[family-name:var(--ds-font-display)] !font-extrabold text-ds-on-hero">
             {story.title}
           </h1>
           <div aria-hidden="true" className="flex shrink-0 items-center gap-1">
             {Array.from({ length: progress.total }, (_, i) => (
               <span
                 key={i}
-                className="h-1 w-[11px] rounded-full"
-                style={{ background: i < progress.current ? "#E6A72A" : "rgba(255,255,255,.4)" }}
+                className={`h-1 w-[11px] rounded-full ${i < progress.current ? "bg-ds-xp" : "bg-ds-on-hero/40"}`}
               />
             ))}
           </div>
@@ -243,7 +250,7 @@ function BranchingBody({ story, finish, onFinished }: Props) {
           transition={{ duration: 0.28 }}
           className="mt-auto grid max-h-[68dvh] gap-3 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4"
         >
-          <p className="font-[family-name:var(--ds-font-body)] text-[0.7rem] font-extrabold uppercase tracking-[0.1em] text-ds-on-hero-kick">
+          <p className="ds-type-overline !tracking-[0.1em] text-ds-on-hero-kick">
             Scene {visited.length}
           </p>
 
@@ -274,7 +281,7 @@ function BranchingBody({ story, finish, onFinished }: Props) {
 
           {kind === "choice" && node?.choice ? (
             <div data-story-choice="" className="grid gap-2.5">
-              <p className="text-center font-[family-name:var(--ds-font-body)] text-[0.9rem] font-semibold text-white/85">
+              <p className="ds-type-footnote text-center text-ds-on-hero/85">
                 {node.choice.prompt}
               </p>
               <div role="group" aria-label={node.choice.prompt} className="grid gap-2.5">
@@ -284,7 +291,7 @@ function BranchingBody({ story, finish, onFinished }: Props) {
                     type="button"
                     whileTap={reduce ? undefined : { scale: 0.97 }}
                     onClick={() => pick(i)}
-                    className="min-h-11 w-full rounded-[18px] border-[1.5px] border-white/90 bg-white/[.93] px-4 py-[13px] text-center font-[family-name:var(--ds-font-body)] text-[0.95rem] font-extrabold leading-[1.3] text-[#1D2B64] shadow-[0_10px_22px_-10px_rgba(0,0,0,.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    className="min-h-11 w-full rounded-[18px] border-[1.5px] border-ds-on-hero/90 bg-ds-on-hero/93 px-4 py-[13px] text-center ds-type-footnote !font-extrabold !leading-[1.3] text-ds-hero shadow-[0_10px_22px_-10px_color-mix(in_srgb,var(--c-hero-b)_50%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-on-hero"
                   >
                     {option.label}
                   </motion.button>
@@ -349,30 +356,26 @@ function EndingScreen({
         <SceneArt url={node.artUrl ?? null} />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -bottom-5 left-1/2 size-[200px] -translate-x-1/2 bg-[radial-gradient(circle,rgba(246,216,138,.5),transparent_62%)]"
+          className="pointer-events-none absolute -bottom-5 left-1/2 size-[200px] -translate-x-1/2 bg-[radial-gradient(circle,color-mix(in_srgb,var(--c-on-hero-kick)_50%,transparent),transparent_62%)]"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,17,40,.05)_30%,var(--c-surface))]"
+          className="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--c-hero-b)_5%,transparent)_30%,var(--c-surface))]"
         />
         <Link
           to="/stories"
           aria-label="Back to stories"
           className="absolute left-1 top-[max(0.25rem,env(safe-area-inset-top))] flex size-11 items-center justify-center"
         >
-          <span className="flex size-[30px] items-center justify-center rounded-[9px] bg-black/30">
+          <span className="flex size-[30px] items-center justify-center rounded-[9px] bg-ds-hero-b/50">
             <BackChevron />
           </span>
         </Link>
       </div>
 
       <div className="relative -mt-[50px] grid justify-items-center gap-2 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-center">
-        <p className="font-[family-name:var(--ds-font-body)] text-[0.7rem] font-extrabold uppercase tracking-[0.12em] text-ds-action-text">
-          Your ending
-        </p>
-        <h1 className="font-[family-name:var(--ds-font-display)] text-[1.56rem] font-extrabold leading-[1.04] text-ds-ink">
-          {ending.title}
-        </h1>
+        <p className="ds-type-overline !tracking-[0.12em] text-ds-action-text">Your ending</p>
+        <h1 className="ds-type-question !leading-[1.04] text-ds-ink">{ending.title}</h1>
         <div role="img" aria-label={`${stars} of 3 stars`} className="flex gap-1">
           {[0, 1, 2].map((i) => (
             <motion.span
@@ -381,15 +384,13 @@ function EndingScreen({
               initial={reduce || i >= stars ? false : { scale: 0.4, rotate: -12, opacity: 0 }}
               animate={{ scale: 1, rotate: 0, opacity: i < stars ? 1 : 0.3 }}
               transition={{ duration: 0.5, delay: i * 0.12 }}
-              style={{ filter: "drop-shadow(0 3px 4px rgba(176,122,18,.45))" }}
+              className="drop-shadow-[0_3px_4px_color-mix(in_srgb,var(--c-xp-edge)_45%,transparent)]"
             >
               <Icon name="star" size={30} />
             </motion.span>
           ))}
         </div>
-        <p className="max-w-[30ch] font-[family-name:var(--ds-font-body)] text-[0.84rem] font-medium text-ds-ink">
-          {ending.wrap}
-        </p>
+        <p className="max-w-[30ch] ds-type-footnote !font-medium text-ds-ink">{ending.wrap}</p>
 
         <BranchMapCard map={treeMap} />
 
@@ -407,14 +408,14 @@ function EndingScreen({
           <button
             type="button"
             onClick={onRetry}
-            className="min-h-11 flex-1 rounded-[15px] bg-ds-action px-3 py-2.5 font-[family-name:var(--ds-font-body)] text-[0.9rem] font-extrabold text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)]"
+            className="min-h-11 flex-1 rounded-[15px] bg-ds-action px-3 py-2.5 ds-type-footnote !font-extrabold text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)]"
           >
             Try another path
           </button>
           <button
             type="button"
             onClick={onRetry}
-            className="min-h-11 flex-1 rounded-[15px] border-2 border-ds-line bg-ds-card px-3 py-2.5 font-[family-name:var(--ds-font-body)] text-[0.9rem] font-extrabold text-ds-brand"
+            className="min-h-11 flex-1 rounded-[15px] border-2 border-ds-line bg-ds-card px-3 py-2.5 ds-type-footnote !font-extrabold text-ds-brand"
           >
             Read it again
           </button>
@@ -441,9 +442,9 @@ function BranchMapCard({ map }: { map: BranchMap }) {
   const byId = new Map(map.nodes.map((n) => [n.id, n]));
   const edgeLook = (style: BranchMap["edges"][number]["style"]) =>
     style === "taken"
-      ? { stroke: "#E6A72A", width: 3, dash: undefined }
+      ? { stroke: "var(--c-xp)", width: 3, dash: undefined }
       : style === "found"
-        ? { stroke: "#1B7D52", width: 3, dash: undefined }
+        ? { stroke: "var(--c-right)", width: 3, dash: undefined }
         : style === "locked"
           ? { stroke: "var(--c-line)", width: 2.5, dash: "3 4" }
           : { stroke: "var(--c-line)", width: 3, dash: undefined };
@@ -456,13 +457,13 @@ function BranchMapCard({ map }: { map: BranchMap }) {
       className="grid w-full gap-1.5 rounded-[16px] border-2 border-ds-line bg-ds-card px-3 py-[11px] text-left"
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="font-[family-name:var(--ds-font-display)] text-[0.8rem] font-extrabold text-ds-ink">
+        <p className="ds-type-caption !font-[family-name:var(--ds-font-display)] !font-extrabold text-ds-ink">
           The paths you&apos;ve found
         </p>
         <span
           role="img"
           aria-label={`Endings found: ${map.endingsFound} of ${map.endingsTotal}`}
-          className="rounded-full bg-ds-xp-tint px-2 py-0.5 font-[family-name:var(--ds-font-body)] text-[0.7rem] font-extrabold text-ds-xp-text"
+          className="rounded-full bg-ds-xp-tint px-2 py-0.5 ds-type-caption !font-extrabold text-ds-xp-text"
         >
           {map.endingsFound} / {map.endingsTotal}
         </span>
@@ -496,7 +497,7 @@ function BranchMapCard({ map }: { map: BranchMap }) {
           <MapNode key={n.id} n={n} />
         ))}
       </svg>
-      <p className="text-center font-[family-name:var(--ds-font-body)] text-[0.62rem] font-semibold leading-snug text-ds-ink-soft">
+      <p className="ds-type-caption text-center !font-semibold text-ds-ink-soft">
         {branchMapCaption(map)}
       </p>
     </div>
@@ -507,11 +508,11 @@ function MapNode({ n }: { n: BranchMap["nodes"][number] }) {
   const cx = px(n.x);
   const cy = py(n.y);
   if (n.kind === "start") {
-    return <circle cx={cx} cy={cy} r={9} fill="#1D2B64" />;
+    return <circle cx={cx} cy={cy} r={9} style={{ fill: "var(--c-brand)" }} />;
   }
   if (n.kind === "branch") {
     return n.onPath ? (
-      <circle cx={cx} cy={cy} r={7} fill="#E6A72A" />
+      <circle cx={cx} cy={cy} r={7} style={{ fill: "var(--c-xp)" }} />
     ) : (
       <circle
         cx={cx}
@@ -528,11 +529,11 @@ function MapNode({ n }: { n: BranchMap["nodes"][number] }) {
     <g>
       {state === "current" ? (
         <>
-          <circle cx={cx} cy={cy} r={9} fill="#E6A72A" />
+          <circle cx={cx} cy={cy} r={9} style={{ fill: "var(--c-xp)" }} />
           <path
             d={check}
             fill="none"
-            stroke="#141B3D"
+            style={{ stroke: "var(--c-ink)" }}
             strokeWidth={2.2}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -540,11 +541,11 @@ function MapNode({ n }: { n: BranchMap["nodes"][number] }) {
         </>
       ) : state === "found" ? (
         <>
-          <circle cx={cx} cy={cy} r={9} fill="#1B7D52" />
+          <circle cx={cx} cy={cy} r={9} style={{ fill: "var(--c-right)" }} />
           <path
             d={check}
             fill="none"
-            stroke="#fff"
+            style={{ stroke: "var(--c-on-hero)" }}
             strokeWidth={2.2}
             strokeLinecap="round"
             strokeLinejoin="round"

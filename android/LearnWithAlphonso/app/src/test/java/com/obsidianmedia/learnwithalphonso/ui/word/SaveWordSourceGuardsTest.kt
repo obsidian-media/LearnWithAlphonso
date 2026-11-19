@@ -42,6 +42,8 @@ class SaveWordSourceGuardsTest {
                 "hector/HectorScreen.kt" to listOf("SaveWordMode.AllWords"),
                 // The lesson's verdict sheet (round 6): the explanation's mode from SavedWordPolicy, as the card's.
                 "lesson/QuestionCard.kt" to listOf("mode"),
+                // The branching story reader: its passage text is wholly in the course language.
+                "listen/BranchingStoryUi.kt" to listOf("SaveWordMode.AllWords"),
                 "listen/ListenScreen.kt" to listOf("SaveWordMode.AllWords"),
                 "practice/PracticeScreens.kt" to listOf("SaveWordMode.AllWords"),
             ),

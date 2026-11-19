@@ -83,7 +83,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import com.obsidianmedia.learnwithalphonso.AppContainer
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStatus
@@ -117,6 +116,7 @@ import com.obsidianmedia.learnwithalphonso.ui.lesson.Speech
 import com.obsidianmedia.learnwithalphonso.ui.lesson.rememberReduceMotion
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
+import com.obsidianmedia.learnwithalphonso.ui.theme.toTextStyle
 import com.obsidianmedia.learnwithalphonso.ui.word.LocalSaveWordHandler
 import com.obsidianmedia.learnwithalphonso.ui.word.SaveWordHost
 import com.obsidianmedia.learnwithalphonso.ui.word.TappableText
@@ -244,13 +244,10 @@ private fun NodePage(container: AppContainer, story: BranchingStory, nodeId: Str
     )
 }
 
-// The mock's overlay values: fixed colours, because the art and the fade behind them do not follow the theme.
-private val ReaderFade = Brush.verticalGradient(
-    0.20f to Color(0x1A080A1A), 0.40f to Color(0x0D080A1A), 0.66f to Color(0xB8080A1A), 0.86f to Color(0xF7060816),
+// The mock's overlay: the dark of the fade is the hero's deep colour and the white is the on-hero colour, so both come from tokens.
+private fun readerFade(dark: Color) = Brush.verticalGradient(
+    0.20f to dark.copy(alpha = 0.10f), 0.40f to dark.copy(alpha = 0.05f), 0.66f to dark.copy(alpha = 0.72f), 0.86f to dark.copy(alpha = 0.97f),
 )
-private val TopScrim = Brush.verticalGradient(listOf(Color(0x80080A1A), Color.Transparent))
-private val OnArt = Color.White
-private val BubbleFace = Color.White.copy(alpha = 0.93f)
 
 /**
  * The cinematic reader, stateless: full-bleed art (a gradient when there is none), a top bar with back, title and scene dots,
@@ -281,7 +278,7 @@ internal fun BranchingSceneContent(
     val ds = LocalAlphonsoTokens.current
     Box(Modifier.fillMaxSize().testTag("branching-scene")) {
         SceneArtFill(artUrl, Modifier.fillMaxSize())
-        Box(Modifier.fillMaxSize().background(ReaderFade))
+        Box(Modifier.fillMaxSize().background(readerFade(ds.heroB)))
         Column(Modifier.fillMaxSize()) {
             ReaderTopBar(title, progress, onBack)
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.BottomCenter) {
@@ -294,23 +291,23 @@ internal fun BranchingSceneContent(
                         val active = activeSegment == index
                         Box(
                             Modifier.fillMaxWidth().testTag("branching-passage-$index")
-                                .background(if (active) Color.White.copy(alpha = 0.14f) else Color.Transparent, RoundedCornerShape(AlphonsoTokens.Space.s2))
+                                .background(if (active) ds.onHero.copy(alpha = 0.14f) else Color.Transparent, RoundedCornerShape(AlphonsoTokens.Space.s2))
                                 .padding(horizontal = AlphonsoTokens.Space.s1, vertical = AlphonsoTokens.Space.s1)
                                 .semantics(mergeDescendants = true) { if (active) stateDescription = "Reading now" },
                         ) {
                             if (onWordTap != null) {
-                                TappableText(segment, courseCode, SaveWordMode.AllWords, onSave = onWordTap, style = BodyType.copy(lineHeight = 25.sp), color = OnArt)
+                                TappableText(segment, courseCode, SaveWordMode.AllWords, onSave = onWordTap, style = BodyType, color = ds.onHero)
                             } else {
-                                Text(segment, style = BodyType.copy(lineHeight = 25.sp), color = OnArt)
+                                Text(segment, style = BodyType, color = ds.onHero)
                             }
                         }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2), verticalAlignment = Alignment.CenterVertically) {
                         if (playing) DsCompactButton("Pause narration", onPause, primary = true) else DsCompactButton("Listen", onListen)
                     }
-                    if (narrationNote != null) Text(narrationNote, style = FootnoteType, color = OnArt.copy(alpha = 0.78f))
+                    if (narrationNote != null) Text(narrationNote, style = FootnoteType, color = ds.onHero.copy(alpha = 0.78f))
                     if (beat != null) {
-                        Text(beat, style = BodyType.copy(fontSize = 14.5.sp, lineHeight = 20.sp), color = OnArt.copy(alpha = 0.84f), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1))
+                        Text(beat, style = FootnoteType, color = ds.onHero.copy(alpha = 0.84f), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = AlphonsoTokens.Space.s1))
                         choiceLabels.forEachIndexed { index, label -> ChoiceBubble(label, index) { onChoose(index) } }
                     } else if (showContinue) {
                         AlphonsoPrimaryButton(continueLabel, onClick = onContinue, fullWidth = false)
@@ -324,17 +321,18 @@ internal fun BranchingSceneContent(
 /** A frosted-solid option: a real button with the full label. The face is fixed white, so its text uses the light brand. */
 @Composable
 private fun ChoiceBubble(label: String, index: Int, onClick: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
     val shape = RoundedCornerShape(18.dp)
     Box(
         Modifier.fillMaxWidth().testTag("branching-choice-$index")
             .shadow(10.dp, shape, ambientColor = Color.Black.copy(alpha = 0.5f), spotColor = Color.Black.copy(alpha = 0.5f))
-            .background(BubbleFace, shape).border(1.5.dp, Color.White.copy(alpha = 0.9f), shape)
+            .background(ds.onHero.copy(alpha = 0.93f), shape).border(1.5.dp, ds.onHero.copy(alpha = 0.9f), shape)
             .heightIn(min = AlphonsoTokens.Space.minTouch)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 13.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(label, style = HeadlineType.copy(fontSize = 15.sp, lineHeight = 20.sp), color = AlphonsoTokens.royalLight.brand, textAlign = TextAlign.Center)
+        Text(label, style = HeadlineType, color = ds.hero, textAlign = TextAlign.Center)
     }
 }
 
@@ -342,7 +340,7 @@ private fun ChoiceBubble(label: String, index: Int, onClick: () -> Unit) {
 private fun ReaderTopBar(title: String, progress: SceneProgress, onBack: (() -> Unit)?) {
     val ds = LocalAlphonsoTokens.current
     Row(
-        Modifier.fillMaxWidth().background(TopScrim).padding(horizontal = AlphonsoTokens.Space.s2, vertical = AlphonsoTokens.Space.s1),
+        Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(ds.heroB.copy(alpha = 0.5f), Color.Transparent))).padding(horizontal = AlphonsoTokens.Space.s2, vertical = AlphonsoTokens.Space.s1),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
     ) {
@@ -353,12 +351,12 @@ private fun ReaderTopBar(title: String, progress: SceneProgress, onBack: (() -> 
                 .semantics { contentDescription = "Back" },
             contentAlignment = Alignment.Center,
         ) {
-            Box(Modifier.size(30.dp).background(Color.White.copy(alpha = 0.16f), RoundedCornerShape(9.dp)), contentAlignment = Alignment.Center) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null, tint = OnArt)
+            Box(Modifier.size(30.dp).background(ds.onHero.copy(alpha = 0.16f), RoundedCornerShape(9.dp)), contentAlignment = Alignment.Center) {
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null, tint = ds.onHero)
             }
         }
         Text(
-            title, style = DisplayType.copy(fontSize = 15.sp, lineHeight = 20.sp, letterSpacing = 0.sp), color = OnArt,
+            title, style = AlphonsoTokens.Type.questionSmall.toTextStyle(), color = ds.onHero,
             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).semantics { heading() },
         )
         val total = progress.total.coerceAtLeast(1)
@@ -368,7 +366,7 @@ private fun ReaderTopBar(title: String, progress: SceneProgress, onBack: (() -> 
             horizontalArrangement = Arrangement.spacedBy(3.dp),
         ) {
             for (i in 1..total) {
-                Box(Modifier.size(11.dp, 4.dp).background(if (i <= current) ds.action else Color.White.copy(alpha = 0.4f), RoundedCornerShape(999.dp)))
+                Box(Modifier.size(11.dp, 4.dp).background(if (i <= current) ds.xp else ds.onHero.copy(alpha = 0.4f), RoundedCornerShape(999.dp)))
             }
         }
     }
@@ -487,10 +485,10 @@ internal fun BranchingEndingContent(
                 SceneArtFill(artUrl, Modifier.fillMaxSize())
                 Box(
                     Modifier.size(200.dp).align(Alignment.BottomCenter).graphicsLayer { translationY = 20.dp.toPx() }.drawBehind {
-                        drawCircle(Brush.radialGradient(0f to Color(0x80F6D88A), 0.62f to Color.Transparent, center = center, radius = size.minDimension / 2))
+                        drawCircle(Brush.radialGradient(0f to ds.onHeroKick.copy(alpha = 0.5f), 0.62f to Color.Transparent, center = center, radius = size.minDimension / 2))
                     },
                 )
-                Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.30f to Color(0x0D0D1128), 1f to ds.surface)))
+                Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.30f to ds.heroB.copy(alpha = 0.05f), 1f to ds.surface)))
             }
             // Pulled up 50 over the fade.
             Column(
@@ -500,7 +498,7 @@ internal fun BranchingEndingContent(
             ) {
                 Text(BranchingCopy.YOUR_ENDING.uppercase(), style = OverlineType.copy(letterSpacing = 0.12.em), color = ds.actionText)
                 Text(
-                    ending.title, style = DisplayType.copy(fontSize = 25.sp, lineHeight = 26.sp), color = ds.ink, textAlign = TextAlign.Center,
+                    ending.title, style = AlphonsoTokens.Type.question.toTextStyle(), color = ds.ink, textAlign = TextAlign.Center,
                     modifier = Modifier.semantics { heading() },
                 )
                 when (result) {
@@ -514,7 +512,7 @@ internal fun BranchingEndingContent(
                     }
                     is EndingResult.Done -> StarsRow(result.stars)
                 }
-                Text(ending.wrap, style = FootnoteType.copy(fontSize = 13.5.sp, lineHeight = 20.sp), color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.widthIn(max = 300.dp))
+                Text(ending.wrap, style = FootnoteType, color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.widthIn(max = 300.dp))
                 if (result is EndingResult.Done && result.credited) {
                     Text(
                         BranchingCopy.COUNTS_LINE, style = CaptionType, color = ds.rightInk, textAlign = TextAlign.Center,
@@ -549,7 +547,7 @@ private fun StarsRow(earned: Int) {
                 }
             }
             Text(
-                "★", fontSize = 30.sp, color = if (i < earned) ds.action else ds.line,
+                "★", style = AlphonsoTokens.Type.numeralXL.toTextStyle(), color = if (i < earned) ds.xp else ds.line,
                 modifier = Modifier.graphicsLayer {
                     val scale = 0.4f + 0.6f * pop.value
                     scaleX = scale
@@ -576,14 +574,14 @@ private fun BranchMapCard(map: BranchMap) {
         verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("The paths you've found", style = DisplayType.copy(fontSize = 13.sp, lineHeight = 16.sp), color = ds.ink, modifier = Modifier.weight(1f))
+            Text("The paths you've found", style = FootnoteType, color = ds.ink, modifier = Modifier.weight(1f))
             Text(
                 "${map.endingsFound} / ${map.endingsTotal}", style = CaptionType, color = ds.xpText,
                 modifier = Modifier.background(ds.xpTint, RoundedCornerShape(999.dp)).padding(horizontal = 9.dp, vertical = 2.dp),
             )
         }
         BranchMapCanvas(map, Modifier.fillMaxWidth().aspectRatio(300f / 116f).testTag("branch-map-canvas"))
-        Text(Branching.branchMapCaption(map), style = CaptionType.copy(fontSize = 10.sp, lineHeight = 13.sp), color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        Text(Branching.branchMapCaption(map), style = CaptionType, color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
     }
 }
 
@@ -602,7 +600,7 @@ private fun BranchMapCanvas(map: BranchMap, modifier: Modifier) {
             val a = byId[edge.from] ?: continue
             val b = byId[edge.to] ?: continue
             val (color, width, dashed) = when (edge.style) {
-                MapEdgeStyle.TAKEN -> Triple(ds.action, 3f, false)
+                MapEdgeStyle.TAKEN -> Triple(ds.xp, 3f, false)
                 MapEdgeStyle.FOUND -> Triple(ds.right, 3f, false)
                 MapEdgeStyle.LOCKED -> Triple(ds.line, 2.5f, true)
                 MapEdgeStyle.PLAIN -> Triple(ds.line, 3f, false)
@@ -619,19 +617,19 @@ private fun BranchMapCanvas(map: BranchMap, modifier: Modifier) {
                 node.kind == MapNodeKind.START && ending == null -> drawCircle(ds.brand, 9f * s, c)
                 ending == null -> {
                     if (node.onPath) {
-                        drawCircle(ds.action, 7f * s, c)
+                        drawCircle(ds.xp, 7f * s, c)
                     } else {
                         drawCircle(ds.sunk, 7f * s, c)
                         drawCircle(ds.line, 7f * s, c, style = Stroke(2f * s))
                     }
                 }
                 ending.state == MapEndingState.CURRENT -> {
-                    drawCircle(ds.action, 9f * s, c)
+                    drawCircle(ds.xp, 9f * s, c)
                     drawCheck(c, s, ds.onAction)
                 }
                 ending.state == MapEndingState.FOUND -> {
                     drawCircle(ds.right, 9f * s, c)
-                    drawCheck(c, s, Color.White)
+                    drawCheck(c, s, ds.onHero)
                 }
                 else -> {
                     drawCircle(ds.sunk, 8f * s, c)

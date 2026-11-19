@@ -288,7 +288,8 @@ fun StoryReaderScreen(container: AppContainer, storyId: String, onBack: () -> Un
     BackHandler(onBack = onBack)
     Column(Modifier.fillMaxSize().background(ds.surface)) {
         val current = load
-        StoriesTopBar((current as? StoryLoad.Ready)?.story?.title ?: (current as? StoryLoad.Branching)?.story?.title ?: "Story", onBack)
+        // The branching reader is full-bleed and draws its own back bar over the scene.
+        if (current !is StoryLoad.Branching) StoriesTopBar((current as? StoryLoad.Ready)?.story?.title ?: "Story", onBack)
         when (current) {
             StoryLoad.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = ds.choice) }
             StoryLoad.Missing -> Box(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.gutter)) {
