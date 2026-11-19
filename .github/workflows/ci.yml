@@ -198,6 +198,8 @@ jobs:
         run: bun run build
       - name: No Lefff lexicon data in the built bundle
         run: bun scripts/check-no-lefff-in-bundle.ts
+      - name: Landing bundle budget and no course content on / or /auth
+        run: bun run check:bundle
 
   e2e:
     runs-on: ubuntu-latest

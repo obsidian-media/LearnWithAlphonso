@@ -21,11 +21,11 @@ import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 export const LANDING_ROUTES = ["/", "/auth"] as const;
 
 /**
- * Brotli bytes of JavaScript per landing route. Set when this guard was added: / measured 1,144.7 KB, of which the
- * courses chunk was 819.7 KB, so ~325 KB without it; this is ~20% above that. Tighten it to 1.2x the measured size
- * once course content is out of the landing set. Raise it on purpose, in review, never to make a red build green.
+ * Brotli bytes of JavaScript per landing route. Measured after the campaign and scenario catalogs left the entry
+ * chunk: / 281.7 KB, /auth 300.1 KB (307,300 bytes, the larger); this is 1.2x that, rounded up. Raise it on purpose,
+ * in review, never to make a red build green.
  */
-export const LANDING_BUDGET_BROTLI = 400_000;
+export const LANDING_BUDGET_BROTLI = 370_000;
 
 /**
  * Strings that only exist in course content, one per module that must stay out of the landing graph: the English
