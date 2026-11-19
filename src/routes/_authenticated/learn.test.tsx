@@ -297,7 +297,7 @@ describe("Learn, round 6.1: pinned current unit and folded rooms", () => {
     const link = await screen.findByRole("link", { name: /^Continue:/ });
     expect(link).toHaveTextContent("Continue lesson");
     const hero = link.closest("[data-learn-hero]")!;
-    expect(hero).toHaveTextContent(/You are here · Unit 1 of \d+/);
+    expect(hero).toHaveTextContent(`You are here · Unit 1 of ${a1Units.length}`);
     expect(hero.querySelector("img")?.getAttribute("src")).toMatch(
       /^\/avatar\/scenes\/[a-z]+\.webp$/,
     );

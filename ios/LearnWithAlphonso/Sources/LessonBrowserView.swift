@@ -190,6 +190,12 @@ struct LessonBrowserView: View {
         return LearnFold.roomArtFor(index0)
     }
 
+    /// A unit's place among the units of its own level, the same count the web hero and Android show ("Unit 1 of 28").
+    private func coursePlace(of unit: LearnWithAlphonsoKit.Unit) -> (index: Int, count: Int) {
+        let all = contentStore.bundle(for: course).units.filter { $0.level == unit.level }
+        return ((all.firstIndex { $0.id == unit.id } ?? 0) + 1, max(all.count, 1))
+    }
+
     private func toggleFold(_ key: String) {
         withAnimation(learnFoldAnimation(reduceMotion: reduceMotion)) {
             if expandedFolds.contains(key) { expandedFolds.remove(key) } else { expandedFolds.insert(key) }
@@ -331,7 +337,6 @@ struct LessonBrowserView: View {
                         withAnimation(learnFoldAnimation(reduceMotion: reduceMotion)) { showingFreezeShop.toggle() }
                     },
                     freezeShopOpen: showingFreezeShop)
-                    .sceneScrollProbe()
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
@@ -352,15 +357,19 @@ struct LessonBrowserView: View {
                     .listRowBackground(Color.clear)
                 }
 
-                // The one hero: the garden clip (Alphonso waving, his bubble pinned on him) shows through the clear
-                // stage, and the current-unit info with the single Continue lesson button sit on it as one unit.
+                // The one hero: one rounded card with the unit's room, Alphonso, his greeting and the single
+                // Continue lesson button.
                 if let next = nextLesson {
                     // The link sits invisibly behind the hero: a visible NavigationLink in a List adds a
                     // disclosure chevron beside it and narrows it.
-                    LearnHeroStage(greeting: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress()))) {
+                    LearnHeroStage(
+                        greeting: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress())),
+                        roomID: roomID(for: next.unit)
+                    ) {
+                        // The unit's place among the units of its level (the web's and Android's count).
                         LearnCurrentUnitCard(
-                            unitNumber: currentUnit?.index ?? 1,
-                            unitCount: currentUnit?.count ?? 1,
+                            unitNumber: coursePlace(of: next.unit).index,
+                            unitCount: coursePlace(of: next.unit).count,
                             unitTitle: next.unit.title,
                             lessonTitle: next.lesson.title
                         )
@@ -474,28 +483,18 @@ struct LessonBrowserView: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .overlay(alignment: .bottom) {
+            // An inset, not an overlay: the list ends above the button, so it never covers a row.
+            .safeAreaInset(edge: .bottom) {
                 if !currentUnitVisible, currentUnit != nil {
                     JumpToCurrentButton {
                         withAnimation(learnFoldAnimation(reduceMotion: reduceMotion)) {
                             scrollProxy.scrollTo(LearnFoldAnchor.current, anchor: .top)
                         }
                     }
-                    .padding(.bottom, AlphonsoSpacing.md)
+                    .padding(.vertical, AlphonsoSpacing.sm)
                 }
             }
-            .screenScene(
-                .learn,
-                clip: .learn,
-                // Alphonso waves at 67% across with his head top 54% down in the clip: the greeting bubble is pinned just
-                // above it (its tail points down at him). Only when the map is on screen, since the map is what speaks it.
-                pin: nextLesson == nil ? nil : ClipPin(x: 64, y: 53) {
-                    PathSpeechBubble(message: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress())))
-                        .frame(width: 210)
-                }
-            )
-            // After the scene, so the flat surface sits BEHIND it. A `.background` added later is drawn behind an
-            // earlier one, so this used to be drawn over the scene (plain navy on builds 61 to 63).
+            // Learn sits on the flat cream surface (the hero card brings its own room); no full-screen clip.
             .background(ds.surface)
             // Re-fetches on every course switch too, since CEFR level is
             // tracked per-language server-side (language_progress), not

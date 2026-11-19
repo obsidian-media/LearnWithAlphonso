@@ -84,14 +84,11 @@ describe("Learn tab: garden scene, one hero, standing Alphonso", () => {
   const map = read("LearnHeroStage.swift");
   const header = read("StatusHeaderView.swift");
 
-  it("the garden scene (its living clip) sits behind the Learn list, with a scroll probe for parallax", () => {
-    expect(browser).toMatch(/\.screenScene\(\s*\.learn,\s*clip: \.learn/);
-    // The flat surface no longer paints over the scene: the list's own background is the scene.
-    const list = from(browser, "List {");
-    expect(list.slice(0, list.indexOf(".task(id:"))).not.toContain(
-      ".background(AlphonsoColor.surface)",
-    );
-    expect(browser).toContain(".sceneScrollProbe()");
+  it("Learn sits on the flat surface; the hero card brings its own room (no full-screen clip, no scroll probe)", () => {
+    expect(browser).not.toMatch(/\.screenScene\(/);
+    expect(browser).not.toContain(".sceneScrollProbe()");
+    expect(browser).toContain(".background(ds.surface)");
+    expect(map).toContain("LessonArt.room(roomID)");
   });
 
   it("the greeting moved from the small banner into Alphonso's speech bubble, text unchanged", () => {

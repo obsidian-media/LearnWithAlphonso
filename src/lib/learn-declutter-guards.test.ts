@@ -125,7 +125,9 @@ describe("Android Learn", () => {
 describe("iOS hero is one unit on the scene", () => {
   it("the current-unit info and the CTA are the stage's content, in the order greeting, lesson, button", () => {
     const browser = read(`${IOS}/LessonBrowserView.swift`);
-    expect(browser).toMatch(/LearnHeroStage\(greeting:[^\n]*\) \{\s*LearnCurrentUnitCard\(/);
+    expect(browser).toMatch(
+      /LearnHeroStage\(\s*greeting:[\s\S]*?roomID: roomID\(for: next\.unit\)\s*\) \{\s*(\/\/[^\n]*\s*)?LearnCurrentUnitCard\(/,
+    );
     const stage = read(`${IOS}/LearnHeroStage.swift`);
     expect(stage.indexOf('"Alphonso: ')).toBeLessThan(
       stage.indexOf("content" + String.fromCharCode(10)),
@@ -164,5 +166,15 @@ describe("Learn does not scroll its own hero out of view", () => {
     const browser = read(`${IOS}/LessonBrowserView.swift`);
     expect(browser).not.toContain("hasScrolledToContinue");
     expect(browser).not.toContain("scrollProxy.scrollTo(newValue");
+  });
+});
+
+describe("the hero's unit count is per level on every platform", () => {
+  it("web, iOS and Android all count the units of the unit's own level", () => {
+    expect(read("src/routes/_authenticated/learn.tsx")).toContain(
+      "curriculum.filter((u) => u.level === hereUnit.level)",
+    );
+    expect(read(`${IOS}/LessonBrowserView.swift`)).toContain("filter { $0.level == unit.level }");
+    expect(read(`${KT}/LearnScreen.kt`)).toContain("filter { it.level == u.level }");
   });
 });

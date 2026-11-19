@@ -226,8 +226,10 @@ fun LearnScreen(
             // The one hero: the current unit on its room with Alphonso and a single Continue lesson button.
             currentUnit?.let { place ->
                 container.content.bundle(state.course).units.firstOrNull { it.id == place.unitId }?.let { u ->
+                    // "Unit 1 of 28": the unit's place among the units of its own level, the same count on every platform.
+                    val levelUnits = container.content.bundle(state.course).units.filter { it.level == u.level }
                     val nextLessonTitle = u.lessons.firstOrNull { it.id == place.lessonId }?.title
-                    item(key = "current-unit") { CurrentUnitCard(u, place, nextLessonTitle, greeting(progress), onContinue = { onOpenLesson(state.course, place.lessonId) }) }
+                    item(key = "current-unit") { CurrentUnitCard(u, place, levelUnits.indexOfFirst { it.id == u.id } + 1, levelUnits.size, nextLessonTitle, greeting(progress), onContinue = { onOpenLesson(state.course, place.lessonId) }) }
                 }
             }
             item(key = "for-you") {
@@ -360,7 +362,7 @@ private fun FoldHeaderRow(label: String, open: Boolean, kind: String, onClick: (
  * Continue lesson button (the design-system primary button look: gold face, darker edge). Replaces the old pinned card.
  */
 @Composable
-internal fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, lessonTitle: String?, greeting: String, onContinue: () -> kotlin.Unit) {
+internal fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, levelIndex: Int, levelCount: Int, lessonTitle: String?, greeting: String, onContinue: () -> kotlin.Unit) {
     val ds = LocalAlphonsoTokens.current
     val art = LearnFold.roomArtFor(place.index - 1)
     val room = rememberFirstRunAsset("scenes/$art.webp") ?: rememberFirstRunAsset("scenes/${LessonStage.FALLBACK_ROOM}.webp")
@@ -378,7 +380,7 @@ internal fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.cont
             Column(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s4), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
                 Text(greeting, style = CaptionType, color = ds.ink, modifier = Modifier.fillMaxWidth(textWidth).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s2))
                 Spacer(Modifier.height(AlphonsoTokens.Space.s12))
-                Text("YOU ARE HERE \u00B7 UNIT ${place.index} OF ${place.count}", style = OverlineType, color = ds.onHeroKick)
+                Text("YOU ARE HERE \u00B7 UNIT $levelIndex OF $levelCount", style = OverlineType, color = ds.onHeroKick)
                 Text(unit.title, style = TitleType, color = ds.onHero, modifier = Modifier.fillMaxWidth(textWidth))
                 if (lessonTitle != null) Text("Next: $lessonTitle", style = FootnoteType, color = ds.onHeroSoft, modifier = Modifier.fillMaxWidth(textWidth))
                 // The one way in, on the scene with the rest of the hero. The edge under the gold face is the button's darker lip.

@@ -48,6 +48,7 @@ export const Route = createFileRoute("/_authenticated/learn")({
 function LearnHero({
   index,
   count,
+  artIndex,
   unitTitle,
   level,
   lessonId,
@@ -55,8 +56,11 @@ function LearnHero({
   blocked,
   onBlockedClick,
 }: {
+  /** The unit's place among the units of its level ("Unit 1 of 28"). */
   index: number;
   count: number;
+  /** Its place in the whole course, which picks the room painting. */
+  artIndex: number;
   unitTitle: string;
   level: string;
   lessonId: string;
@@ -64,7 +68,7 @@ function LearnHero({
   blocked: boolean;
   onBlockedClick: () => void;
 }) {
-  const art = roomArtFor(index - 1);
+  const art = roomArtFor(artIndex - 1);
   return (
     <div className="grid gap-3" data-learn-hero="">
       <div className="ds-light relative block h-48 overflow-hidden rounded-3xl border-2 border-ds-brand bg-ds-brand text-left">
@@ -357,6 +361,14 @@ function LearnPage() {
   );
   const hereUnit = here ? curriculum.find((u) => u.id === here.unitId) : undefined;
   const hereLesson = hereUnit?.lessons.find((l) => l.id === here?.lessonId);
+  // "Unit 1 of 28": the unit's place among the units of its own level, the same count on every platform.
+  const hereLevelPlace = useMemo(() => {
+    const inLevel = hereUnit ? curriculum.filter((u) => u.level === hereUnit.level) : [];
+    return {
+      index: hereUnit ? inLevel.findIndex((u) => u.id === hereUnit.id) + 1 : 0,
+      count: inLevel.length,
+    };
+  }, [curriculum, hereUnit]);
   const levelFoldUnits = useMemo(
     () => foldUnits.filter((fu) => curriculum.find((u) => u.id === fu.id)?.level === level),
     [foldUnits, curriculum, level],
@@ -433,8 +445,9 @@ function LearnPage() {
 
         {here && hereUnit && hereLesson ? (
           <LearnHero
-            index={here.index}
-            count={here.count}
+            index={hereLevelPlace.index}
+            count={hereLevelPlace.count}
+            artIndex={here.index}
             unitTitle={hereUnit.title}
             level={hereUnit.level}
             lessonId={hereLesson.id}

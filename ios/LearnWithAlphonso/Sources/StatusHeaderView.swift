@@ -85,7 +85,7 @@ struct StatusHeaderView: View {
     private func hudPill<Icon: View>(@ViewBuilder icon: () -> Icon, value: String, hint: String? = nil, trailingChevron: String? = nil) -> some View {
         HStack(spacing: AlphonsoDS.Space.s1 + 2) {
             icon()
-            Text(value).dsText(.headline).monospacedDigit().foregroundStyle(ds.ink)
+            Text(value).dsText(.headline).monospacedDigit().foregroundStyle(ds.ink).lineLimit(1).fixedSize(horizontal: true, vertical: false)
             if let hint {
                 Text(hint).dsText(.caption).foregroundStyle(ds.inkSoft)
             }
@@ -97,6 +97,7 @@ struct StatusHeaderView: View {
         .padding(.leading, AlphonsoDS.Space.s2 + 2)
         .padding(.trailing, AlphonsoDS.Space.s3)
         .frame(minHeight: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s1)
+        .fixedSize(horizontal: true, vertical: false)
         .background(Capsule().fill(ds.card.opacity(0.94)))
         .dsElevation(AlphonsoDS.Elevation.floating, line: ds.line)
     }
