@@ -116,7 +116,7 @@ describe("iOS Library tabs", () => {
     );
     expect(section).toMatch(/Color\.clear[\s\S]*?\.task\(id: course\) \{ await load\(\) \}/);
     expect(section).toMatch(/\n\s*loadAnchor\n/);
-    expect(section).toContain("Stories.status(story)");
+    expect(section).toContain("Stories.cardLabel(story)");
     // The narrator and the reader were not touched by this change.
     expect(views).toContain("final class StoryNarrator");
   });
@@ -173,7 +173,9 @@ describe("Android Library tabs", () => {
     const root = code(read(`${KT}/RootScreen.kt`));
     expect(root).toContain("onOpenStory = { nav.navigate(Routes.story(it)) }");
     const stories = code(read(`${KT}/listen/StoriesUi.kt`));
-    expect(stories).toContain("Stories.status(story)");
+    expect(stories).toContain("storiesLibraryItems(layout, onOpen)");
+    expect(stories).toContain("StoriesPeekCard(story, onOpen)");
+    expect(code(read(`${KT}/listen/StoriesLibraryUi.kt`))).toContain("Stories.cardLabel(story)");
     expect(stories).toContain("internal class StoryNarrator(");
   });
 });

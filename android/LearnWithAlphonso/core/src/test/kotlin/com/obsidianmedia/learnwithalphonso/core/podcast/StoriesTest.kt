@@ -95,4 +95,40 @@ class StoriesTest {
         assertEquals("This check isn't available right now.", StoryCopy.message(PodcastQuizError.NOT_FOUND))
         assertEquals(PodcastQuizCopy.message(PodcastQuizError.SERVER), StoryCopy.message(PodcastQuizError.SERVER))
     }
+
+    private fun branching(title: String, order: Int, total: Int = 4, found: Int = 1, index: Int = 0, published: Boolean = true) =
+        summary(title, "A2", order, published = published, index = index)
+            .copy(segmentCount = 0, branching = true, endingsTotal = total, endingsFound = found)
+
+    @Test
+    fun `the newest branching story is featured and left out of the grid`() {
+        val layout = Stories.library(
+            listOf(branching("old", 1), branching("new", 9), summary("lin", order = 20), branching("draft", 99, published = false)),
+            "en",
+        )
+        assertEquals("new", layout.featured?.title)
+        assertEquals(setOf("old", "lin"), layout.grid.map { it.title }.toSet())
+        assertNull(Stories.library(listOf(summary("lin")), "en").featured)
+    }
+
+    @Test
+    fun `only a started unfinished linear story is offered to resume`() {
+        assertEquals("a", Stories.library(listOf(summary("a", index = 2)), "en").resume?.title)
+        assertNull(Stories.library(listOf(summary("a", index = 2, completed = true)), "en").resume)
+        assertNull(Stories.library(listOf(summary("a")), "en").resume)
+        assertNull(Stories.library(listOf(branching("b", 1, index = 3)), "en").resume)
+    }
+
+    @Test
+    fun `library labels carry the endings and the full card name`() {
+        val b = branching("The Key", 1)
+        assertEquals("1 of 4 endings", Stories.endingsLine(b))
+        assertEquals("A2 · 4 endings · 1 found", Stories.heroLine(b))
+        assertEquals("The Key, A2, Choose your path, 1 of 4 endings", Stories.cardLabel(b))
+        assertEquals("Tea, A1, New", Stories.cardLabel(summary("Tea")))
+        assertEquals("Continue · Scene 3", Stories.resumeLine(summary("s", index = 2)))
+        assertEquals(0.25f, Stories.endingsFraction(b))
+        assertEquals(0f, Stories.endingsFraction(summary("lin")))
+        assertEquals("2 of 2 endings", Stories.endingsLine(branching("x", 1, total = 2, found = 5)))
+    }
 }
