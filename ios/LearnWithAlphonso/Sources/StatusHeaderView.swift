@@ -1,7 +1,9 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// Streak/hearts/XP, shown at the top of the Learn tab -- the app had no
+/// The slim status row at the top of the Learn tab (streak with its protected mark, hearts, XP and the league badge,
+/// small pills in one line). iOS has no cross-tab top bar like the web's, so the stats stay here. The old big tiles
+/// are gone; the streak pill is also the way to the streak-freeze shop. Originally: the app had no
 /// always-visible "here's where you stand" summary anywhere before this
 /// (direct user feedback: the app "feels like an empty piece of
 /// background with some written knowledge on it," no live element).
@@ -12,6 +14,10 @@ import LearnWithAlphonsoKit
 /// (not a placeholder skeleton) before the very first sync has ever run.
 struct StatusHeaderView: View {
     let progress: LessonCompletionProgress?
+    /// Tapping the streak pill opens the streak-freeze shop (the host shows or hides its row). nil: the pill is plain.
+    var onStreakTap: (() -> Void)? = nil
+    /// Whether that row is showing, spoken as the pill's value.
+    var freezeShopOpen = false
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
@@ -61,7 +67,7 @@ struct StatusHeaderView: View {
                 }
 
                 // The greeting that used to be a small banner here is now Alphonso's speech bubble on
-                // the Learn path map (LearnPathMap), built from `greeting(streak:)` below.
+                // the Learn hero stage (LearnHeroStage), built from `greeting(streak:)` below.
             }
             .padding(.horizontal, AlphonsoDS.Space.gutter)
             .padding(.vertical, AlphonsoDS.Space.s2)
@@ -86,7 +92,7 @@ struct StatusHeaderView: View {
         }
         .padding(.leading, AlphonsoDS.Space.s2 + 2)
         .padding(.trailing, AlphonsoDS.Space.s3)
-        .frame(minHeight: AlphonsoDS.Space.s12 - AlphonsoDS.Space.s2)
+        .frame(minHeight: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s1)
         .background(Capsule().fill(ds.card.opacity(0.94)))
         .dsElevation(AlphonsoDS.Elevation.floating, line: ds.line)
     }
@@ -133,9 +139,10 @@ struct StatusHeaderView: View {
         progress.map { displayedStreak($0, now: now).streak } ?? 0
     }
 
+    @ViewBuilder
     private func streakPill(progress: LessonCompletionProgress) -> some View {
         let shown = Self.displayedStreak(progress)
-        return hudPill(icon: {
+        let pill = hudPill(icon: {
             DSIconView(icon: .flameSolid, size: AlphonsoDS.Space.s5 + 2).foregroundStyle(ds.flame).pulsingGlow()
                 .overlay(alignment: .bottomTrailing) {
                     if shown.state == .protected {
@@ -149,8 +156,23 @@ struct StatusHeaderView: View {
                     }
                 }
         }, value: "\(shown.streak)")
+        if let onStreakTap {
+            Button(action: onStreakTap) {
+                pill
+                    .padding(.vertical, AlphonsoDS.Space.s1)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(StreakDisplay.accessibilityLabel(shown))
+            .accessibilityValue(freezeShopOpen ? "Streak freezes shown" : "")
+            .accessibilityHint(freezeShopOpen ? "Double tap to hide streak freezes" : "Double tap for streak freezes")
+            .accessibilityAddTraits(.isButton)
+        } else {
+            pill
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(StreakDisplay.accessibilityLabel(shown))
+        }
     }
 
     private func leagueBadge(progress: LessonCompletionProgress) -> some View {

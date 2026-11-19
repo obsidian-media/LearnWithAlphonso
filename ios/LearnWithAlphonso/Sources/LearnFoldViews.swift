@@ -4,7 +4,8 @@ import LearnWithAlphonsoKit
 /// Learn screen, round 6.1 option A: the pinned "you are here" card, the slim fold rows and the jump button.
 /// The folding rules live in the Kit (LearnFold); these are only the views.
 
-/// The current unit as a room-art card: the eyebrow, the unit title, the next lesson and a gold Continue.
+/// The current unit as a room-art card: the eyebrow, the unit title, the next lesson and one gold Continue lesson
+/// button. With the scene above it (LearnHeroStage) this is Learn's one hero.
 struct LearnCurrentUnitCard: View {
     let unitNumber: Int
     let unitCount: Int
@@ -28,12 +29,19 @@ struct LearnCurrentUnitCard: View {
                 .dsText(.footnote)
                 .foregroundStyle(ds.onHeroSoft)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Continue")
+            // The one way in: the design system's primary button look (gold face, darker edge). The whole card is the
+            // tap target (the NavigationLink sits behind it), so this is drawn, not a second Button.
+            Text("Continue lesson")
                 .dsText(.headline)
-                .foregroundStyle(ds.ink)
-                .padding(.horizontal, AlphonsoDS.Space.s5)
-                .frame(minHeight: AlphonsoDS.Space.minTouch)
-                .background(ds.xp, in: Capsule())
+                .foregroundStyle(ds.onAction)
+                .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
+                .background(ds.action, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
+                .background(
+                    RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
+                        .fill(ds.actionEdge)
+                        .offset(y: 4)
+                )
+                .padding(.bottom, 4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AlphonsoDS.Space.s4)

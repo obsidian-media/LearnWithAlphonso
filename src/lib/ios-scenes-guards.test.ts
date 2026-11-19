@@ -79,9 +79,9 @@ describe("ScreenScene: the reusable scene background", () => {
   });
 });
 
-describe("Learn tab: garden scene, path map, standing Alphonso", () => {
+describe("Learn tab: garden scene, one hero, standing Alphonso", () => {
   const browser = read("LessonBrowserView.swift");
-  const map = read("LearnPathMap.swift");
+  const map = read("LearnHeroStage.swift");
   const header = read("StatusHeaderView.swift");
 
   it("the garden scene (its living clip) sits behind the Learn list, with a scroll probe for parallax", () => {
@@ -108,46 +108,28 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
     expect(bubble).toContain(".regularMaterial");
   });
 
-  it("nodes are big round 3D icons: 72 pt, the current one 92 pt, with a darker bottom edge", () => {
-    expect(map).toMatch(/static let nodeSize: CGFloat = 72/);
-    expect(map).toMatch(/static let currentNodeSize: CGFloat = 92/);
-    expect(map).toContain('"\\u{1F4DA}"'); // books: done
-    expect(map).toContain('"\\u{1F3AF}"'); // bullseye: current
-    expect(map).toContain('"\\u{1F512}"'); // lock: locked
-    const node = from(map, "struct PathNodeView");
-    expect(node).toContain("Icon3DView(");
-    // The chunky edge: a darker disc behind the face, pushed down.
-    expect(node).toMatch(/Color\.black\.opacity\(0\.\d+\)/);
-    expect(node).toMatch(/\.offset\(y: edge\)/);
+  it("the hero is the scene stage plus the current-unit card, with one gold Continue lesson button", () => {
+    expect(browser).toContain("LearnHeroStage(");
+    const card = from(read("LearnFoldViews.swift"), "struct LearnCurrentUnitCard");
+    expect(card.slice(0, card.indexOf("/// One slim row"))).toContain('Text("Continue lesson")');
+    expect(card).toContain("ds.actionEdge");
+    // The card was never wired to open its lesson (only the map's node was); with the map gone the link sits behind it.
+    expect(browser).toContain(
+      ".background(NavigationLink(value: next.lesson.id) { EmptyView() }.opacity(0))",
+    );
   });
 
-  it("the current node glows, bounces gently, and is still under Reduce Motion", () => {
-    const node = from(map, "struct PathNodeView");
-    expect(node).toContain("@Environment(\\.accessibilityReduceMotion)");
-    expect(node).toContain("guard state == .next, !reduceMotion else");
-    const guardAt = node.indexOf("guard state == .next, !reduceMotion else");
-    const loopAt = node.indexOf("repeatForever(autoreverses: true)");
-    expect(guardAt).toBeGreaterThan(-1);
-    expect(loopAt).toBeGreaterThan(guardAt);
-    expect(node).toMatch(/\.shadow\(color: [^\n]*radius: 2\d/); // the soft glow
-  });
-
-  it("only the current node is tappable, and it opens the lesson exactly like Up next's Continue", () => {
-    expect(map).toContain("onOpen(node.id)");
-    expect(map).toContain(', current lesson")');
-    expect(map).toContain("minWidth: AlphonsoSpacing.minTouchTarget");
-    // The same destination builder serves the list rows, the Up next link and the node.
+  it("the Continue lesson card opens the lesson through the same destination builder as the list rows", () => {
     expect(browser).toContain("private func lessonDestination(");
     expect(browser).toContain(".navigationDestination(item: $openedLesson)");
     const dest = from(browser, "private func lessonDestination(");
     expect(dest).toContain("LessonPlayerView(lesson: found.lesson");
     expect(dest).toContain("hectorAccess: hectorAccess");
-    // Done and locked nodes are not buttons.
-    const view = from(map, "struct PathNodeView");
-    expect(view).not.toContain("Button");
+    // The stage is not a button.
+    expect(map).not.toContain("Button");
   });
 
-  it("Alphonso waves in the garden clip beside the current node; the map keeps 170 to 200 pt of room clear for him", () => {
+  it("Alphonso waves in the garden clip; the stage keeps 170 to 200 pt of room clear for him", () => {
     // The cut-out is gone (ios-clips-guards.test.ts pins the clip and the bubble); the room it took stays.
     expect(map).not.toContain("Figure-alphonso-waving");
     const h = /static let figureHeight: CGFloat = (\d+)/.exec(map);
@@ -161,6 +143,7 @@ describe("Learn tab: garden scene, path map, standing Alphonso", () => {
     for (const keep of [
       "StatusHeaderView(progress:",
       "LearnCurrentUnitCard(",
+      "LearnForYouRail(",
       "PathCardSection(",
       "TeamMissionSection(",
       "WeeklyChallengesSection(",

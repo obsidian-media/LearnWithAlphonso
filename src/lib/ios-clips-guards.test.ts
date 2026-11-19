@@ -115,7 +115,7 @@ describe("SceneClip: the looping clip view", () => {
 
 describe("Learn plays the garden clip with Alphonso's bubble pinned on him", () => {
   const browser = read("LessonBrowserView.swift");
-  const map = read("LearnPathMap.swift");
+  const map = read("LearnHeroStage.swift");
 
   it("the backdrop is the learn clip and the greeting bubble is pinned at about 64%, 53% of it", () => {
     expect(browser).toMatch(/\.screenScene\(\s*\.learn,\s*clip: \.learn/);
@@ -123,13 +123,13 @@ describe("Learn plays the garden clip with Alphonso's bubble pinned on him", () 
     expect(browser).toContain("PathSpeechBubble(message:");
   });
 
-  it("the cut-out Alphonso is gone from the map, but his room stays clear and VoiceOver still hears him", () => {
+  it("the cut-out Alphonso is gone from the stage, but his room stays clear and VoiceOver still hears him", () => {
     expect(map).not.toContain('SceneFigure(assetName: "Figure-alphonso-waving"');
     expect(map).not.toContain("SceneFigure(");
     expect(map).not.toContain("Figure-alphonso-waving");
     expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
     expect(map).toContain("Self.figureColumnWidth");
-    // The nodes still reserve the room above the current node for him.
+    // The stage still reserves the room for him and his bubble above the current-unit card.
     expect(map).toContain("Self.figureHeight");
     expect(map).toContain("Self.bubbleReserve");
   });
