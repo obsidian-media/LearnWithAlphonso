@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Story } from "../lib/stories";
@@ -224,22 +224,84 @@ describe("StoriesLibraryView", () => {
     bestCorrect: null,
     checkTotal: null,
     completed: false,
+    coverUrl: null,
+    endingsTotal: 0,
+    endingsFound: 0,
   };
-  it("groups published stories by level and hides drafts", () => {
+  const branching = {
+    ...base,
+    id: "b1",
+    level: "A2",
+    title: "The Lost Key",
+    published: true,
+    branching: true,
+    sortOrder: 5,
+    segmentCount: 0,
+    endingsTotal: 4,
+    endingsFound: 1,
+    coverUrl: "https://x.supabase.co/storage/v1/object/public/story-art/en/lost-key/n1.jpg",
+  };
+  it("draws a hero, a continue line and cover cards, hides drafts", () => {
     render(
       <StoriesLibraryView
         course="en"
         stories={[
-          { ...base, id: "1", level: "A1", title: "Live one", published: true },
+          branching,
+          { ...base, id: "1", level: "A1", title: "Live one", published: true, segmentIndex: 2 },
           { ...base, id: "2", level: "A2", title: "Live two", published: true },
           { ...base, id: "3", level: "A1", title: "Secret draft", published: false },
         ]}
       />,
     );
-    expect(screen.getByText("Live one")).toBeInTheDocument();
-    expect(screen.getByText("Live two")).toBeInTheDocument();
+    const hero = screen.getByTestId("stories-hero");
+    expect(hero).toHaveAccessibleName(
+      "The Lost Key, A2, Choose your path, 1 of 4 endings, Continue",
+    );
+    expect(within(hero).getByText("A2 · 4 endings · 1 found")).toBeInTheDocument();
+    expect(hero.querySelector("img")).toHaveAttribute("src", branching.coverUrl);
+    expect(screen.getByTestId("stories-continue")).toHaveAccessibleName(
+      "Live one, Continue · Scene 3, Resume",
+    );
+    const cards = within(screen.getByTestId("stories-grid")).getAllByTestId("story-card");
+    expect(cards).toHaveLength(2);
     expect(screen.queryByText("Secret draft")).toBeNull();
-    expect(screen.getByText(/A1 · Beginner/)).toBeInTheDocument();
+  });
+  it("gives a linear story a designed fallback, never a broken image", () => {
+    render(
+      <StoriesLibraryView
+        course="en"
+        stories={[{ ...base, id: "1", level: "A1", title: "Tea", published: true }]}
+      />,
+    );
+    const card = screen.getByTestId("story-card");
+    expect(card.querySelector("img[src='']")).toBeNull();
+    expect(card.querySelector("[data-cover='fallback']")).not.toBeNull();
+    expect(card).toHaveAccessibleName("Tea, A1, New");
+  });
+  it("falls back to the designed cover when the art fails to load", () => {
+    render(<StoriesLibraryView course="en" stories={[branching]} />);
+    const img = screen.getByTestId("stories-hero").querySelector("img")!;
+    fireEvent.error(img);
+    expect(
+      screen.getByTestId("stories-hero").querySelector(`img[src="${branching.coverUrl}"]`),
+    ).toBeNull();
+    expect(
+      screen.getByTestId("stories-hero").querySelector("[data-cover='fallback']"),
+    ).not.toBeNull();
+  });
+  it("shows the endings ring on a branching card with its fraction", () => {
+    render(
+      <StoriesLibraryView
+        course="en"
+        stories={[
+          branching,
+          { ...branching, id: "b0", sortOrder: 1, title: "Older", endingsFound: 2 },
+        ]}
+      />,
+    );
+    const ring = within(screen.getByTestId("stories-grid")).getByTestId("endings-ring");
+    expect(ring).toHaveAttribute("data-fraction", "0.5");
+    expect(ring).toHaveAttribute("aria-hidden", "true");
   });
   it("shows an empty state when nothing is published", () => {
     render(<StoriesLibraryView course="en" stories={[]} />);

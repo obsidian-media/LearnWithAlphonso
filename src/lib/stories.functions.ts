@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publicError } from "./public-error";
 import type { PodcastQuizResult } from "./podcast-quiz.functions";
-import type { StoryGraph } from "./branching";
+import { allEndings, type StoryGraph } from "./branching";
 import {
   clampSegment,
   isStoryCourse,
@@ -106,6 +106,25 @@ function toGraph(client: unknown, raw: unknown): StoryGraph | null {
   return { start: r.start, map };
 }
 
+/** Cover URL and endings counts for a library card, from the stored node graph and the learner's saved endings. */
+function branchingFacts(
+  client: unknown,
+  r: StoryRow,
+  p: ProgressRow | undefined,
+): Pick<StorySummary, "coverUrl" | "endingsTotal" | "endingsFound"> {
+  const none = { coverUrl: null, endingsTotal: 0, endingsFound: 0 };
+  if (!r.branching) return none;
+  const graph = toGraph(client, r.nodes);
+  if (!graph) return none;
+  const ids = new Set(allEndings(graph).map((e) => e.id));
+  const found = new Set(stringsOf(p?.endings_found).filter((id) => ids.has(id)));
+  return {
+    coverUrl: graph.map[graph.start]?.artUrl ?? null,
+    endingsTotal: ids.size,
+    endingsFound: found.size,
+  };
+}
+
 /**
  * The stories the signed-in learner may see in one course, with their own progress. Read with the learner's client, so
  * the database's rules decide: an unpublished story returns nothing. `.eq("published", true)` states the same intent.
@@ -150,6 +169,7 @@ export const listStories = createServerFn({ method: "GET" })
         bestCorrect: p?.best_correct ?? null,
         checkTotal: p?.check_total ?? null,
         completed: !!p?.completed_at,
+        ...branchingFacts(context.supabase, r, p),
       };
     });
   });
