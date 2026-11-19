@@ -32,11 +32,23 @@ const MESSAGE: Record<Verdict, string> = {
   again: "Let's try again.",
 };
 
-export function SayItRight({ course, onExit }: { course: Course; onExit: () => void }) {
+export function SayItRight({
+  course,
+  onExit,
+  words,
+}: {
+  course: Course;
+  onExit: () => void;
+  /** Hand-picked words to drill (Say the picture's missed words); without it the drill draws from the learned pool. */
+  words?: VocabItem[];
+}) {
   // The live pool is read when a session starts: a word learned since the last session is in this one.
   const [session, setSession] = useState(0);
   const rounds = useMemo<VocabItem[]>(
-    () => drawRounds(learnedWordPool(course, useProgress.getState().completedLessons)),
+    () =>
+      words && words.length > 0
+        ? words
+        : drawRounds(learnedWordPool(course, useProgress.getState().completedLessons)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [course, session],
   );
@@ -110,7 +122,7 @@ export function SayItRight({ course, onExit }: { course: Course; onExit: () => v
     </div>
   );
 
-  if (rounds.length < MIN_POOL) {
+  if (rounds.length < (words && words.length > 0 ? 1 : MIN_POOL)) {
     return (
       <div data-say-it-right="empty" className={shell}>
         {header}

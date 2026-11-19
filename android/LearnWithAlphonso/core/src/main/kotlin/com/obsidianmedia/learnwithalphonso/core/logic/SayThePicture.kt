@@ -20,10 +20,34 @@ object SayThePicture {
     /** Fewer image words than this and the activity says "not enough words with pictures yet". */
     const val MIN_POOL = 4
 
+    /** The mic ring fills over this long; when it is full the recording stops and is sent. Same on web and iOS. */
+    const val MAX_RECORD_MS = 6000
+
     /** Only photos from the project's own public bucket are ever drawn (same origin as VocabImagePolicy on iOS). */
     private const val ALLOWED_URL_PREFIX = "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/"
 
-    data class PictureWord(val term: String, val image: VocabImageRef)
+    data class PictureWord(val term: String, val image: VocabImageRef, val example: String = "") {
+        /**
+         * The sentence the save-word route needs: the model sentence when it holds the word as a whole word, else the
+         * word on its own (the same rule as `saveSentence` on web).
+         */
+        val saveSentence: String get() {
+            fun fold(s: String) = s.lowercase().replace('\u2019', '\'')
+            val padded = " " + fold(example).replace(Regex("""[^\p{L}'-]+"""), " ") + " "
+            return if (padded.contains(" " + fold(term) + " ")) example.trim() else term
+        }
+
+        /** The word as a Say it right drill item, so the summary can hand the missed words to that drill. */
+        fun toVocabItem(): VocabItem = VocabItem(term, "", "", image)
+    }
+
+    private val SAVABLE = Regex("""^\p{L}[\p{L}'’-]*$""")
+
+    /**
+     * True when the save-word route would accept this term: one word, letters with inner apostrophes or hyphens, at
+     * most 40 characters (the same rule as `validateSavedWordInput` on the server). A phrase such as "ice cream" is not.
+     */
+    fun isSavable(term: String): Boolean = term.trim().let { it.isNotEmpty() && it.length <= 40 && SAVABLE.matches(it) }
 
     /**
      * Every word of the course that has a renderable picture, learned or not.
@@ -39,7 +63,7 @@ object SayThePicture {
             val image = item.image ?: continue
             if (!image.url.startsWith(ALLOWED_URL_PREFIX)) continue
             if (!seen.add(item.term.trim().lowercase())) continue
-            pool.add(PictureWord(item.term, image))
+            pool.add(PictureWord(item.term, image, item.example))
         }
         return pool
     }
@@ -75,6 +99,31 @@ object SayThePicture {
 
 enum class SayPicturePhase { ASK, RIGHT, REVEAL, DONE }
 
+/** How one picture ended: said right first time, or taught after a miss (or "Show me the word"). */
+enum class SayPictureResult { FIRST, MISSED }
+
+/** Alphonso's in-pose reactions; [asset] is the file under assets/poses. */
+enum class SayPicturePose(val asset: String) {
+    EXPLAINING("poses/alphonso-explaining-pointer.webp"),
+    LISTENING("poses/alphonso-listening-headphones.webp"),
+    THINKING("poses/alphonso-thinking-temple.webp"),
+    CHEER("poses/alphonso-levelup-cheer.webp"),
+    ;
+
+    companion object {
+        /**
+         * Asking he explains, while the learner holds the mic he listens, after a miss (the word is being taught) he
+         * thinks it through with them, and on a win he cheers.
+         */
+        fun of(phase: SayPicturePhase, listening: Boolean): SayPicturePose = when {
+            phase == SayPicturePhase.RIGHT -> CHEER
+            listening -> LISTENING
+            phase == SayPicturePhase.REVEAL -> THINKING
+            else -> EXPLAINING
+        }
+    }
+}
+
 /** What a spoken transcript did, so the screen knows whether to play the model audio. */
 enum class SayPictureOutcome { RIGHT, REVEAL, REPEATED, UNHEARD }
 
@@ -87,6 +136,8 @@ data class SayPictureSession(
     val index: Int = 0,
     val phase: SayPicturePhase = if (words.isEmpty()) SayPicturePhase.DONE else SayPicturePhase.ASK,
     val firstTry: Int = 0,
+    /** How each finished word ended, in order (one entry per word that has left the asking phase). */
+    val results: List<SayPictureResult> = emptyList(),
     /** What the learner said when repeating after a reveal (any speech ends the word). */
     val heard: String? = null,
 ) {
@@ -95,6 +146,15 @@ data class SayPictureSession(
     val stars: Int get() = SayThePicture.stars(firstTry, words.size)
     val nextLabel: String get() = if (isLast) "Finish" else "Next"
     val nextWordLabel: String get() = if (isLast) "Finish" else "Next word"
+
+    /** The run of first-time wins ending at the latest word ("3 in a row"); a miss resets it. */
+    val combo: Int get() = results.takeLastWhile { it == SayPictureResult.FIRST }.size
+
+    /** The words that were missed, in session order (what the summary's cross-links carry). */
+    val missedWords: List<SayThePicture.PictureWord> get() = words.filterIndexed { i, _ -> results.getOrNull(i) == SayPictureResult.MISSED }
+
+    /** The summary's recap grid: every finished word with how it ended. */
+    val recap: List<Pair<SayThePicture.PictureWord, SayPictureResult>> get() = results.mapIndexedNotNull { i, r -> words.getOrNull(i)?.let { it to r } }
 
     /**
      * A transcript arrived. Asking: a hit is a star, a miss reveals the word. After a reveal the word was taught, so
@@ -108,9 +168,9 @@ data class SayPictureSession(
                 val spoken = transcript.trim()
                 when {
                     SayThePicture.said(spoken, word.term, course) ->
-                        copy(firstTry = firstTry + 1, phase = SayPicturePhase.RIGHT) to SayPictureOutcome.RIGHT
+                        copy(firstTry = firstTry + 1, results = results + SayPictureResult.FIRST, phase = SayPicturePhase.RIGHT) to SayPictureOutcome.RIGHT
                     spoken.isEmpty() -> this to SayPictureOutcome.UNHEARD
-                    else -> copy(phase = SayPicturePhase.REVEAL) to SayPictureOutcome.REVEAL
+                    else -> copy(results = results + SayPictureResult.MISSED, phase = SayPicturePhase.REVEAL) to SayPictureOutcome.REVEAL
                 }
             }
             SayPicturePhase.RIGHT, SayPicturePhase.DONE -> this to SayPictureOutcome.UNHEARD
@@ -119,7 +179,7 @@ data class SayPictureSession(
 
     /** "Show me the word": always available, so a microphone or STT failure is never a dead end. Only while asking. */
     fun showWord(): SayPictureSession =
-        if (phase == SayPicturePhase.ASK && current != null) copy(phase = SayPicturePhase.REVEAL) else this
+        if (phase == SayPicturePhase.ASK && current != null) copy(results = results + SayPictureResult.MISSED, phase = SayPicturePhase.REVEAL) else this
 
     fun next(): SayPictureSession = when {
         phase != SayPicturePhase.RIGHT && phase != SayPicturePhase.REVEAL -> this

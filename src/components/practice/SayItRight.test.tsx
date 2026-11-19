@@ -62,6 +62,17 @@ describe("Say it right", () => {
     expect(h.capture.start).toHaveBeenCalled();
   });
 
+  it("seeded with exactly one word it drills that word, with no 'learn a few words first' gate", () => {
+    useProgress.setState({ completedLessons: [] });
+    const words = [{ term: "bike", meaning: "", example: "" }];
+    render(
+      withAiConsent(<SayItRight course="en" words={words} onExit={() => {}} />, fakeConsentApi()),
+    );
+    expect(screen.getByText("Word 1 of 1")).toBeTruthy();
+    expect(shownWord()).toBe("bike");
+    expect(screen.queryByText(/Learn a few words first/)).toBeNull();
+  });
+
   it("Hear it plays the model for the shown word", () => {
     view();
     fireEvent.click(screen.getByRole("button", { name: "Hear it" }));
