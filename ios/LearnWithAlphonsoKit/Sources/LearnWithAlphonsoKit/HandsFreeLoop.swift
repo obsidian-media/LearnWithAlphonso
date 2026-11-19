@@ -280,7 +280,7 @@ public struct HandsFreeLoop: Equatable, Sendable {
         lastLoudAt = nil
         heardSpeech = false
         warmedUp = false
-        firstLevelAt = null
+        firstLevelAt = nil
         turnEnding = false
     }
 }
