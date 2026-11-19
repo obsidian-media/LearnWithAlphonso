@@ -127,6 +127,11 @@ public struct PronunciationSession: Sendable, Equatable {
     public private(set) var phase: Phase = .ask
     public private(set) var verdict: Pronunciation.Verdict?
     public private(set) var greatFirst = 0
+    /// Greats shown so far this session (first time or on the retry); it alternates the cheer and the impressed pose.
+    public private(set) var greatShown = 0
+    /// Alphonso's current line for the result of an attempt (a varied praise line, or the move-on line), nil while asking.
+    public private(set) var line: String?
+    private var lastLine: [Pronunciation.Verdict: Int] = [:]
 
     public init(words: [VocabItem]) {
         self.words = words
@@ -138,9 +143,25 @@ public struct PronunciationSession: Sendable, Equatable {
     public var stars: Int { Pronunciation.stars(great: greatFirst, total: words.count) }
     public var nextLabel: String { isLast ? "Finish" : "Next" }
     public var skipLabel: String { isLast ? "Finish" : "Skip this word" }
+    /// The wrap line, "N of M clearly".
+    public var clearlyLine: String { SayItRight.clearly(greatFirst, of: words.count) }
+
+    /// Alphonso's pose for the current state; `listening` is true while the mic is recording or a clip is being checked.
+    public func pose(listening: Bool) -> SayItRightPose {
+        SayItRightPose.pose(phase: phase, listening: listening, verdict: verdict, greatCount: greatShown)
+    }
+
+    private mutating func say(_ verdict: Pronunciation.Verdict, roll: Double) {
+        let bank = SayItRight.praise(verdict)
+        let i = SayItRight.nextLineIndex(size: bank.count, last: lastLine[verdict], roll: roll)
+        lastLine[verdict] = i
+        line = bank[i]
+    }
 
     @discardableResult
-    public mutating func submit(transcript: String, confidence: Double?, course: Course) -> Outcome {
+    public mutating func submit(
+        transcript: String, confidence: Double?, course: Course, roll: Double = Double.random(in: 0..<1)
+    ) -> Outcome {
         guard let word = current else { return .unheard }
         let spoken = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         if spoken.isEmpty { return .unheard }
@@ -148,8 +169,10 @@ public struct PronunciationSession: Sendable, Equatable {
         case .ask:
             let v = Pronunciation.judge(transcript: spoken, confidence: confidence, term: word.term, course: course)
             verdict = v
+            say(v, roll: roll)
             if v == .great {
                 greatFirst += 1
+                greatShown += 1
                 phase = .result
                 return .great
             }
@@ -158,6 +181,12 @@ public struct PronunciationSession: Sendable, Equatable {
         case .retry:
             let v = Pronunciation.judge(transcript: spoken, confidence: confidence, term: word.term, course: course)
             verdict = v
+            if v == .great {
+                greatShown += 1
+                say(v, roll: roll)
+            } else {
+                line = SayItRight.moveOn
+            }
             phase = .result
             return .finished(v)
         case .result, .done:
@@ -169,6 +198,65 @@ public struct PronunciationSession: Sendable, Equatable {
     public mutating func next() {
         guard phase != .done else { return }
         verdict = nil
+        line = nil
         if isLast { phase = .done } else { index += 1; phase = .ask }
     }
+}
+
+/// Alphonso's in-pose reactions for Say it right ("Talk with Alphonso"). The raw value is the image asset's name in the
+/// app's asset catalogue. Mirrors src/lib/say-it-right.ts and core/logic/Pronunciation.kt.
+public enum SayItRightPose: String, Sendable, Equatable, CaseIterable {
+    case explainingPointer = "Alphonso-explaining-pointer"
+    case listeningHeadphones = "Alphonso-listening-headphones"
+    case thinkingTemple = "Alphonso-thinking-temple"
+    case levelupCheer = "Alphonso-levelup-cheer"
+    case surprisedImpressed = "Alphonso-surprised-impressed"
+
+    /// Asking he explains, while the learner talks (or the clip is checked) he listens, after a miss he thinks it through
+    /// with them, and on a great he cheers or is impressed, alternating by how many greats there have been (counting
+    /// this one) so a run of wins varies.
+    public static func pose(phase: PronunciationSession.Phase, listening: Bool, verdict: Pronunciation.Verdict?, greatCount: Int) -> SayItRightPose {
+        if listening { return .listeningHeadphones }
+        switch phase {
+        case .done: return .levelupCheer
+        case .retry: return .thinkingTemple
+        case .result:
+            if verdict == .great { return greatCount % 2 == 1 ? .levelupCheer : .surprisedImpressed }
+            return .thinkingTemple
+        case .ask: return .explainingPointer
+        }
+    }
+}
+
+/// The warm words of Say it right: a bank of lines per band (never "wrong"), chosen without an immediate repeat. The
+/// order of each bank is part of the contract: the web and Android twins carry the same lines.
+public enum SayItRight {
+    /// The mic ring and auto-stop length, matching Say the picture.
+    public static let maxRecordSeconds = SayThePicture.maxRecordSeconds
+
+    public static func praise(_ verdict: Pronunciation.Verdict) -> [String] {
+        switch verdict {
+        case .great: return ["Spot on!", "You've got it!", "Lovely!", "Beautifully said!", "That was clear!"]
+        case .almost: return ["So close. A touch clearer.", "Nearly there. Once more, nice and clear.", "Almost! Listen, then try again."]
+        case .again: return ["Let's try that one together.", "No rush. Listen, then say it with me.", "Let's hear it once more."]
+        }
+    }
+
+    /// After the one retry still misses: a kind move-on line.
+    public static let moveOn = "Good try. It gets easier each time."
+    public static let askLine = "Say this one after me"
+    public static let listeningLine = "I'm listening..."
+    public static let checkingLine = "Let me hear how clear that was..."
+    public static let retryHint = "Listen, then try once more."
+
+    /// Index of the next line from a bank of `size`, never equal to `last`. `roll` is in [0, 1): inject it in tests.
+    public static func nextLineIndex(size: Int, last: Int?, roll: Double) -> Int {
+        if size <= 1 { return 0 }
+        let clamped = min(max(roll, 0), 0.999999)
+        guard let last, last >= 0, last < size else { return Int(clamped * Double(size)) }
+        let i = Int(clamped * Double(size - 1))
+        return i >= last ? i + 1 : i
+    }
+
+    public static func clearly(_ clear: Int, of total: Int) -> String { "\(clear) of \(total) clearly" }
 }

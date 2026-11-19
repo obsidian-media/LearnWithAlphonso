@@ -126,6 +126,12 @@ data class PronunciationSession(
     val phase: PronunciationPhase = if (words.isEmpty()) PronunciationPhase.DONE else PronunciationPhase.ASK,
     val verdict: Pronunciation.Verdict? = null,
     val greatFirst: Int = 0,
+    /** Greats shown so far this session (first time or on the retry); it alternates the cheer and the impressed pose. */
+    val greatShown: Int = 0,
+    /** Alphonso's current line for the result of an attempt (a varied praise line or the move-on line); null while asking. */
+    val line: String? = null,
+    /** The last bank index said per band, so the same line is never said twice in a row. */
+    val lastLine: Map<Pronunciation.Verdict, Int> = emptyMap(),
 ) {
     val current: VocabItem? get() = words.getOrNull(index)
     val isLast: Boolean get() = index + 1 >= words.size
@@ -133,22 +139,47 @@ data class PronunciationSession(
     val nextLabel: String get() = if (isLast) "Finish" else "Next"
     val skipLabel: String get() = if (isLast) "Finish" else "Skip this word"
 
-    fun submit(transcript: String, confidence: Double?, course: Course): Pair<PronunciationSession, PronunciationOutcome> {
+    /** The wrap line, "N of M clearly". */
+    val clearlyLine: String get() = SayItRight.clearly(greatFirst, words.size)
+
+    /** Alphonso's pose for the current state; [listening] is true while the mic records or a clip is being checked. */
+    fun pose(listening: Boolean): SayItRightPose = SayItRightPose.of(phase, listening, verdict, greatShown)
+
+    private fun saying(v: Pronunciation.Verdict, roll: Double): Pair<String, Map<Pronunciation.Verdict, Int>> {
+        val bank = SayItRight.praise(v)
+        val i = SayItRight.nextLineIndex(bank.size, lastLine[v], roll)
+        return bank[i] to (lastLine + (v to i))
+    }
+
+    /** [roll] in [0, 1) picks the praise line; inject it in tests. */
+    fun submit(
+        transcript: String, confidence: Double?, course: Course, roll: Double = Random.nextDouble(),
+    ): Pair<PronunciationSession, PronunciationOutcome> {
         val word = current ?: return this to PronunciationOutcome.Unheard
         val spoken = transcript.trim()
         if (spoken.isEmpty()) return this to PronunciationOutcome.Unheard
         return when (phase) {
             PronunciationPhase.ASK -> {
                 val v = Pronunciation.judge(spoken, confidence, word.term, course)
+                val (said, last) = saying(v, roll)
                 if (v == Pronunciation.Verdict.GREAT) {
-                    copy(verdict = v, greatFirst = greatFirst + 1, phase = PronunciationPhase.RESULT) to PronunciationOutcome.Great
+                    copy(
+                        verdict = v, greatFirst = greatFirst + 1, greatShown = greatShown + 1, line = said, lastLine = last,
+                        phase = PronunciationPhase.RESULT,
+                    ) to PronunciationOutcome.Great
                 } else {
-                    copy(verdict = v, phase = PronunciationPhase.RETRY) to PronunciationOutcome.Retry(v)
+                    copy(verdict = v, line = said, lastLine = last, phase = PronunciationPhase.RETRY) to PronunciationOutcome.Retry(v)
                 }
             }
             PronunciationPhase.RETRY -> {
                 val v = Pronunciation.judge(spoken, confidence, word.term, course)
-                copy(verdict = v, phase = PronunciationPhase.RESULT) to PronunciationOutcome.Finished(v)
+                val next = if (v == Pronunciation.Verdict.GREAT) {
+                    val (said, last) = saying(v, roll)
+                    copy(verdict = v, greatShown = greatShown + 1, line = said, lastLine = last, phase = PronunciationPhase.RESULT)
+                } else {
+                    copy(verdict = v, line = SayItRight.MOVE_ON, phase = PronunciationPhase.RESULT)
+                }
+                next to PronunciationOutcome.Finished(v)
             }
             PronunciationPhase.RESULT, PronunciationPhase.DONE -> this to PronunciationOutcome.Unheard
         }
@@ -157,8 +188,8 @@ data class PronunciationSession(
     /** Next word, or done after the last. Allowed in every phase but done (skipping a word is never penalised). */
     fun next(): PronunciationSession = when {
         phase == PronunciationPhase.DONE -> this
-        isLast -> copy(verdict = null, phase = PronunciationPhase.DONE)
-        else -> copy(verdict = null, index = index + 1, phase = PronunciationPhase.ASK)
+        isLast -> copy(verdict = null, line = null, phase = PronunciationPhase.DONE)
+        else -> copy(verdict = null, line = null, index = index + 1, phase = PronunciationPhase.ASK)
     }
 }
 
@@ -172,4 +203,63 @@ class PronunciationSpeech(private val ai: AiConversationClient) {
 
     suspend fun modelAudio(term: String, voice: String?, course: Course): ByteArray =
         ai.synthesizeSpeech(term, voice = voice, course = course.code)
+}
+
+/** Alphonso's in-pose reactions for Say it right ("Talk with Alphonso"); [asset] is the file under assets/poses. */
+enum class SayItRightPose(val asset: String) {
+    EXPLAINING("poses/alphonso-explaining-pointer.webp"),
+    LISTENING("poses/alphonso-listening-headphones.webp"),
+    THINKING("poses/alphonso-thinking-temple.webp"),
+    CHEER("poses/alphonso-levelup-cheer.webp"),
+    IMPRESSED("poses/alphonso-surprised-impressed.webp"),
+    ;
+
+    companion object {
+        /**
+         * Asking he explains, while the learner talks (or the clip is checked) he listens, after a miss he thinks it
+         * through with them, and on a great he cheers or is impressed, alternating by how many greats there have been
+         * (counting this one) so a run of wins varies. Mirrors src/lib/say-it-right.ts.
+         */
+        fun of(phase: PronunciationPhase, listening: Boolean, verdict: Pronunciation.Verdict?, greatCount: Int): SayItRightPose = when {
+            listening -> LISTENING
+            phase == PronunciationPhase.DONE -> CHEER
+            phase == PronunciationPhase.RETRY -> THINKING
+            phase == PronunciationPhase.RESULT ->
+                if (verdict == Pronunciation.Verdict.GREAT) (if (greatCount % 2 == 1) CHEER else IMPRESSED) else THINKING
+            else -> EXPLAINING
+        }
+    }
+}
+
+/**
+ * The warm words of Say it right: a bank of lines per band (never "wrong"), chosen without an immediate repeat. The
+ * order of each bank is part of the contract: the web and iOS twins carry the same lines.
+ */
+object SayItRight {
+    /** The mic ring and auto-stop length, matching Say the picture. */
+    const val MAX_RECORD_MS = SayThePicture.MAX_RECORD_MS
+
+    fun praise(v: Pronunciation.Verdict): List<String> = when (v) {
+        Pronunciation.Verdict.GREAT -> listOf("Spot on!", "You've got it!", "Lovely!", "Beautifully said!", "That was clear!")
+        Pronunciation.Verdict.ALMOST -> listOf("So close. A touch clearer.", "Nearly there. Once more, nice and clear.", "Almost! Listen, then try again.")
+        Pronunciation.Verdict.AGAIN -> listOf("Let's try that one together.", "No rush. Listen, then say it with me.", "Let's hear it once more.")
+    }
+
+    /** After the one retry still misses: a kind move-on line. */
+    const val MOVE_ON = "Good try. It gets easier each time."
+    const val ASK_LINE = "Say this one after me"
+    const val LISTENING_LINE = "I'm listening..."
+    const val CHECKING_LINE = "Let me hear how clear that was..."
+    const val RETRY_HINT = "Listen, then try once more."
+
+    /** Index of the next line from a bank of [size], never equal to [last]. [roll] is in [0, 1): inject it in tests. */
+    fun nextLineIndex(size: Int, last: Int?, roll: Double): Int {
+        if (size <= 1) return 0
+        val clamped = roll.coerceIn(0.0, 0.999999)
+        if (last == null || last < 0 || last >= size) return (clamped * size).toInt()
+        val i = (clamped * (size - 1)).toInt()
+        return if (i >= last) i + 1 else i
+    }
+
+    fun clearly(clear: Int, total: Int): String = "$clear of $total clearly"
 }

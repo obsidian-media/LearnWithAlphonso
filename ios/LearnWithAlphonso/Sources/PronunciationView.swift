@@ -19,11 +19,12 @@ final class PronunciationModelPlayer {
     func stop() { player?.stop(); player = nil }
 }
 
-/// Say it right (Practice drill): a word the learner has already learned, a "Hear it" model, and a recording judged on
-/// how clearly it was understood. A miss replays the model and allows one retry, then the session goes on. No hearts,
-/// no penalty.
+/// Say it right ("Talk with Alphonso"): a warm 1:1 lesson. The word is the hero, shown in Alphonso's speech bubble with a
+/// "Hear it" model button; he reacts in pose to each state with a short, varied line, and the learner's mic sits opposite
+/// him (blue at rest, red while recording; hold to talk, double-tap to toggle for VoiceOver, auto-stop at the cap). A
+/// miss replays the model and allows one retry, then the session goes on. No hearts, no penalty.
 ///
-/// Mirrors the web's SayItRight.tsx (PR #616). Speech goes through the existing /api/stt (the speaking quota, `stt`
+/// Mirrors the web's SayItRight.tsx (PR #616, redesigned after). Speech goes through the existing /api/stt (the speaking quota, `stt`
 /// kind) and the model through /api/tts; the verdict bands are `Pronunciation.judge` (the web's two thresholds). The
 /// word pool is the vocabulary of the lessons the learner has completed, derived LIVE every time a session starts
 /// (`Pronunciation.learnedPool`), never cached, so it grows as they learn.
@@ -47,6 +48,8 @@ struct PronunciationView: View {
     @State private var modelPlayer = PronunciationModelPlayer()
     @EnvironmentObject private var aiConsent: AIConsentStore
     @Environment(\.alphonsoDS) private var ds
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var hasAIConsent: Bool { aiConsent.isGranted }
     private var micUnavailable: Bool { captureFailed || voice.microphoneUnavailable || voice.recorderStartFailed }
@@ -122,12 +125,17 @@ struct PronunciationView: View {
 
     private var summary: some View {
         VStack(spacing: AlphonsoDS.Space.s3) {
+            if !dynamicTypeSize.isAccessibilitySize {
+                Image(SayItRightPose.levelupCheer.rawValue).resizable().scaledToFit().frame(height: 160)
+                    .accessibilityHidden(true)
+            }
             PracticeStarsView(n: run.stars, prominent: true)
             Text("Practised \(run.words.count) words").dsText(.title).multilineTextAlignment(.center)
-            Text("\(run.greatFirst) of \(run.words.count) said clearly first time. Every word you say out loud sticks a little more.")
+            Text(run.clearlyLine).dsText(.headline).foregroundStyle(ds.brand).multilineTextAlignment(.center)
+            Text("Every word you say out loud sticks a little more.")
                 .dsText(.body).foregroundStyle(ds.inkSoft).multilineTextAlignment(.center)
             Button("Practise more") { Task { await startSession() } }.buttonStyle(.dsButton(.primary))
-            Button("Back to Practice", action: onExit).buttonStyle(.dsButton(.secondary))
+            Button("Back", action: onExit).buttonStyle(.dsButton(.secondary))
         }
         .padding(AlphonsoDS.Space.s4)
         .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
@@ -136,7 +144,7 @@ struct PronunciationView: View {
     @ViewBuilder private var round: some View {
         if let word = run.current {
             Text("Word \(run.index + 1) of \(run.words.count)").dsText(.caption).foregroundStyle(ds.inkSoft)
-            wordCard(word)
+            tutor(word)
             if run.phase == .result {
                 result
             } else {
@@ -145,8 +153,37 @@ struct PronunciationView: View {
         }
     }
 
-    private func wordCard(_ word: VocabItem) -> some View {
+    /// Alphonso, in pose, with the word in his speech bubble. The pose hides at accessibility text sizes so the bubble
+    /// (the word and the line) never clips.
+    private func tutor(_ word: VocabItem) -> some View {
+        HStack(alignment: .bottom, spacing: AlphonsoDS.Space.s2) {
+            if !dynamicTypeSize.isAccessibilitySize {
+                Image(pose.rawValue).resizable().scaledToFit().frame(height: 176)
+                    .id(pose)
+                    .transition(reduceMotion ? AnyTransition.identity : AnyTransition.opacity.combined(with: .offset(y: 12)))
+                    .accessibilityHidden(true)
+            }
+            wordBubble(word)
+        }
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: pose)
+    }
+
+    private var listening: Bool { voice.isRecording || voice.isBusy }
+    private var pose: SayItRightPose { run.pose(listening: listening) }
+
+    /// What Alphonso says right now: the prompt, that he is listening, or the line for the last attempt.
+    private var bubbleLine: String {
+        if voice.isRecording { return SayItRight.listeningLine }
+        if voice.isBusy { return SayItRight.checkingLine }
+        if run.phase == .ask { return SayItRight.askLine }
+        return run.line ?? SayItRight.askLine
+    }
+
+    private func wordBubble(_ word: VocabItem) -> some View {
         VStack(spacing: AlphonsoDS.Space.s2) {
+            Text(bubbleLine).dsText(.footnote).foregroundStyle(ds.inkSoft).multilineTextAlignment(.center)
+                .accessibilityAddTraits(.updatesFrequently)
+                .onChange(of: bubbleLine) { _, line in AccessibilityNotification.Announcement(line).post() }
             Text(word.term).dsText(.title).foregroundStyle(ds.brand).multilineTextAlignment(.center)
             if !word.meaning.isEmpty {
                 Text(word.meaning).dsText(.caption).foregroundStyle(ds.inkSoft).multilineTextAlignment(.center)
@@ -157,21 +194,19 @@ struct PronunciationView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(AlphonsoDS.Space.s4)
-        .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
+        .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
+        .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble).stroke(ds.line, lineWidth: 1.5))
         .accessibilityElement(children: .contain)
     }
 
     private var attempt: some View {
         VStack(spacing: AlphonsoDS.Space.s3) {
             if canCapture {
-                if run.phase == .retry, let verdict = run.verdict {
-                    Text(Self.message(verdict)).dsText(.footnote).foregroundStyle(ds.choice)
-                        .accessibilityAddTraits(.updatesFrequently)
-                }
                 if voice.isBusy {
-                    ProgressView("Checking how clear that was...").tint(ds.choice).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    ProgressView(SayItRight.checkingLine).tint(ds.choice).dsText(.footnote).foregroundStyle(ds.inkSoft)
                 } else {
-                    micButton
+                    // The learner's mic sits opposite Alphonso.
+                    HStack { Spacer(minLength: 0); micButton }
                 }
                 Text(captureHint).dsText(.footnote).foregroundStyle(ds.inkSoft)
             } else {
@@ -192,27 +227,16 @@ struct PronunciationView: View {
 
     private var result: some View {
         VStack(spacing: AlphonsoDS.Space.s3) {
-            if run.verdict == .great {
-                Label("Great!", systemImage: "star.fill").dsText(.title).foregroundStyle(ds.rightInk)
-            } else {
-                Text("Good try. It gets easier each time.").dsText(.headline).multilineTextAlignment(.center)
-            }
             Button(run.nextLabel) { errorMessage = nil; run.next() }.buttonStyle(.dsButton(.primary))
         }
         .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.updatesFrequently)
     }
 
     private var micButton: some View {
-        // Hold to talk, release to send: the same control as the conversation screens and the speak question.
-        HoldToTalkButton(
+        // Hold to talk, release to send; a double-tap toggles for VoiceOver; the recording stops itself at the cap.
+        SayItRightMic(
             isRecording: voice.isRecording,
-            idleColor: ds.choice,
-            recordingColor: ds.wrong,
-            iconColor: ds.onChoice,
-            recordingIconColor: ds.onWrong,
-            accessibilityLabel: "Hold to say the word",
+            reduceMotion: reduceMotion,
             onPress: { if voice.pressBegan() { errorMessage = nil } },
             onRelease: { voice.pressEnded() }
         )
@@ -220,20 +244,10 @@ struct PronunciationView: View {
 
     // MARK: Copy
 
-    /// What the verdict says on a miss. It never claims more than "clear": it reflects being understood, not which sound
-    /// was off.
-    private static func message(_ verdict: Pronunciation.Verdict) -> String {
-        switch verdict {
-        case .great: return "Great!"
-        case .almost: return "Almost - say it a touch clearer."
-        case .again: return "Let's try again."
-        }
-    }
-
     private var captureHint: String {
         if voice.isRecording { return "Listening. Let go when you are done." }
-        if voice.isBusy { return "Checking how clear that was..." }
-        return run.phase == .retry ? "Listen, then try once more." : "Hold and say it."
+        if voice.isBusy { return SayItRight.checkingLine }
+        return run.phase == .retry ? SayItRight.retryHint : "Hold and say it."
     }
 
     private var unavailableCopy: String {
@@ -323,5 +337,69 @@ struct PronunciationView: View {
                modelPlayer.play(audio) { return }
         }
         FirstRunVoice.speak(term, course: course)
+    }
+}
+
+/// The learner's mic for Say it right: BLUE at rest, RED while recording (deliberately not Say the picture's gold), in a
+/// ring that fills over the cap. Hold to talk, release to send; for assistive tech it is a button that says how to use
+/// it and whether it is recording, and a double-tap toggles so recording never needs hold-and-drag.
+private struct SayItRightMic: View {
+    let isRecording: Bool
+    let reduceMotion: Bool
+    let onPress: () -> Void
+    let onRelease: () -> Void
+    @State private var fill: CGFloat = 0
+    @Environment(\.alphonsoDS) private var ds
+
+    private let size: CGFloat = 98
+
+    var body: some View {
+        ZStack {
+            Circle().stroke(ds.ink.opacity(0.1), lineWidth: 4)
+            Circle().trim(from: 0, to: fill)
+                .stroke(ds.wrong, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Circle()
+                .fill(isRecording ? ds.wrong : ds.choice)
+                .padding(11)
+                .shadow(color: isRecording ? ds.wrongEdge : ds.choiceEdge, radius: 0, y: 4)
+                .overlay(
+                    Image(systemName: "mic.fill").font(.system(size: size * 0.32))
+                        .foregroundStyle(isRecording ? ds.onWrong : ds.onChoice)
+                )
+        }
+        .frame(width: size, height: size)
+        .contentShape(Circle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Hold to say the word")
+        .accessibilityValue(isRecording ? "Recording" : "Ready")
+        .accessibilityHint("Press and hold, say the word, then let go to send it. Or double-tap to start, and double-tap to stop.")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityDirectTouch(true, options: .requiresActivation)
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in onPress() }
+                .onEnded { _ in onRelease() }
+        )
+        .accessibilityAction {
+            // VoiceOver: a double-tap toggles.
+            if isRecording { onRelease() } else { onPress() }
+        }
+        .task(id: isRecording) {
+            // The ring is full: stop and send.
+            guard isRecording else { return }
+            try? await Task.sleep(for: .seconds(SayItRight.maxRecordSeconds))
+            if !Task.isCancelled && isRecording { onRelease() }
+        }
+        .onChange(of: isRecording) { _, recording in
+            if reduceMotion {
+                fill = recording ? 1 : 0
+            } else if recording {
+                fill = 0
+                withAnimation(.linear(duration: SayItRight.maxRecordSeconds)) { fill = 1 }
+            } else {
+                withAnimation(.easeOut(duration: 0.2)) { fill = 0 }
+            }
+        }
     }
 }
