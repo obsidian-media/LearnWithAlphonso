@@ -1749,29 +1749,9 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
     });
   });
 
-  it("before the migration (function missing) the save falls back to apply_lesson_completion and the lesson saves", async () => {
-    adminRpc.mockImplementation(async (name?: string) =>
-      name === "apply_lesson_completion_once"
-        ? { data: null, error: { code: "PGRST202", message: "not found" } }
-        : name === "apply_lesson_completion"
-          ? { data: { status: "applied" }, error: null }
-          : name === "settle_lesson_hearts"
-            ? { data: [{ hearts: 5, hearts_refill_at: null }], error: null }
-            : { data: null, error: { code: "PGRST202", message: "not found" } },
-    );
-    const supabase = createSupabaseMock();
-    snapshot(supabase);
-    const res = await run(supabase, token());
-    expect(res.xpGain).toBeGreaterThan(0);
-    const calls = adminRpc.mock.calls as unknown as [string, Record<string, unknown>][];
-    const legacy = calls.find(([n]) => n === "apply_lesson_completion");
-    expect(legacy).toBeDefined();
-    expect("_token_hash" in legacy![1]).toBe(false);
-    expect("_result" in legacy![1]).toBe(false);
-  });
-
-  it("each of 42P01, PGRST205, PGRST202 and 42883 on the save falls back; any other error is a retryable error", async () => {
-    for (const code of ["42P01", "PGRST205", "PGRST202", "42883"]) {
+  it("a missing apply_lesson_completion_once is a retryable error, never a save through apply_lesson_completion", async () => {
+    // A save through the older transaction claims no token, so the token could be spent again: no fallback, any code.
+    for (const code of ["42P01", "PGRST205", "PGRST202", "42883", "40001"]) {
       adminRpc.mockClear();
       adminRpc.mockImplementation(async (name?: string) =>
         name === "apply_lesson_completion_once"
@@ -1782,28 +1762,28 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
       );
       const supabase = createSupabaseMock();
       snapshot(supabase);
-      await run(supabase, token());
-      expect(rpcNames(), code).toContain("apply_lesson_completion");
+      await expect(run(supabase, token()), code).rejects.toThrow(
+        "Could not save lesson completion",
+      );
+      expect(rpcNames(), code).not.toContain("apply_lesson_completion");
     }
-    adminRpc.mockClear();
-    adminRpc.mockImplementation(async () => ({
-      data: null,
-      error: { code: "40001", message: "serialization" },
-    }));
-    const supabase = createSupabaseMock();
-    snapshot(supabase);
-    await expect(run(supabase, token())).rejects.toThrow("Could not save lesson completion");
-    expect(rpcNames()).not.toContain("apply_lesson_completion");
   });
 
-  it("a missing redemption table on the early lookup is 'not redeemed', not an error", async () => {
-    supabaseAdminFrom.mockImplementation(() =>
-      chainable({ data: null, error: { code: "42P01", message: "no table" } }),
-    );
-    const supabase = createSupabaseMock();
-    snapshot(supabase);
-    const res = await run(supabase, token());
-    expect(res.xpGain).toBeGreaterThan(0);
+  it("a failed read of the redemption table (missing included) is an error, never 'not redeemed'", async () => {
+    for (const code of ["42P01", "PGRST205", "57014"]) {
+      adminRpc.mockClear();
+      supabaseAdminFrom.mockImplementation((t: string) =>
+        chainable(
+          t === "lesson_session_redemptions"
+            ? { data: null, error: { code, message: "no table" } }
+            : { data: null, error: null },
+        ),
+      );
+      const supabase = createSupabaseMock();
+      snapshot(supabase);
+      await expect(run(supabase, token()), code).rejects.toThrow("Could not load lesson progress");
+      expect(rpcNames(), code).not.toContain("apply_lesson_completion_once");
+    }
   });
 
   it("a token that belongs to another completion is a non-retryable 'Invalid or expired lesson session', and the slot goes back", async () => {

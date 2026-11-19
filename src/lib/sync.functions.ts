@@ -289,16 +289,6 @@ const completeLessonSchema = z.object({
   sessionToken: z.string().min(1).max(2000),
 });
 
-/**
- * The redemption table or function is not there (yet): Postgres 42P01 / 42883, PostgREST PGRST205 / PGRST202. The
- * migration ships first, but if this code ever runs before it, a completion falls back to the pre-redemption path
- * instead of failing every lesson.
- */
-function isMissingObject(error: { code?: string } | null | undefined): boolean {
-  const code = error?.code;
-  return code === "42P01" || code === "42883" || code === "PGRST205" || code === "PGRST202";
-}
-
 /** How many times a completion is recomputed from a fresh read after the transaction refuses a stale snapshot. */
 const COMPLETION_CONFLICT_RETRIES = 3;
 
@@ -439,8 +429,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       .eq("token_hash", tokenHash)
       .eq("user_id", userId)
       .maybeSingle();
-    // Before the migration is applied (deploy order) nothing has been redeemed: the old path below still works.
-    if (priorRead.error && !isMissingObject(priorRead.error)) {
+    if (priorRead.error) {
       throw new Error("Could not load lesson progress");
     }
     if (
@@ -728,26 +717,12 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         } | null;
         error: { message: string; code?: string } | null;
       };
-      let { data: transition, error: transitionError } = (await redemptionDb.rpc(
+      // The only save path: the token is claimed in the same transaction (20261125110000). There is deliberately no
+      // fallback to the older apply_lesson_completion, which claims nothing and so would let a token be reused.
+      const { data: transition, error: transitionError } = (await redemptionDb.rpc(
         "apply_lesson_completion_once",
         onceArgs,
       )) as unknown as OnceReply;
-      // The migration is not applied yet (deploy order): save through the pre-redemption transaction. No token is
-      // claimed then, so a retry is not recognised, but the lesson still saves (as it did before this change).
-      if (transitionError && isMissingObject(transitionError)) {
-        console.error(
-          JSON.stringify({ event: "lesson_redemption_unavailable", fn: "completeLessonRemote" }),
-        );
-        const { _token_hash, _result, _misses, _settle_since, ...legacyArgs } = onceArgs;
-        void _token_hash;
-        void _result;
-        void _misses;
-        void _settle_since;
-        ({ data: transition, error: transitionError } = (await redemptionDb.rpc(
-          "apply_lesson_completion",
-          legacyArgs,
-        )) as unknown as OnceReply);
-      }
       // A token that belongs to another completion: not retryable (the same answer as any session not accepted).
       if (transitionError && /different completion/i.test(transitionError.message ?? "")) {
         if (slotHeld) {
@@ -1052,7 +1027,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
         _token_hash: tokenHash,
         _result: response,
       });
-      if (finalizeError && !isMissingObject(finalizeError)) {
+      if (finalizeError) {
         console.error(
           JSON.stringify({
             event: "lesson_result_finalize_failed",

@@ -10,7 +10,7 @@ import {
   monthlyCapAllows,
   monthlyCapConfig,
 } from "../../supabase/functions/_shared/ai-monthly-cap";
-import { makeTranslateQuotaCheck } from "../../supabase/functions/_shared/ai-quota";
+import { makeTranslateQuotaCheck, proLookupWith } from "../../supabase/functions/_shared/ai-quota";
 
 // The Edge Functions' copy of the monthly cap (supabase/functions/_shared/ai-monthly-cap.ts), run from here because
 // the repo's CI runs this suite; the module has no Deno-only imports at load time.
@@ -161,14 +161,28 @@ describe("makeTranslateQuotaCheck applies the cap before spending any quota", ()
   });
 });
 
-describe("the callers still use makeTranslateQuotaCheck with one argument", () => {
-  it("complete-lesson and grade-review pass only the user client (so the default Pro lookup applies)", () => {
+describe("the callers reuse their own service-role client for the Pro lookup", () => {
+  it("complete-lesson and grade-review pass proLookupWith(admin), and no Edge file makes its own client for it", () => {
     const root = path.resolve(import.meta.dirname, "../../supabase/functions");
     expect(readFileSync(path.join(root, "grade-review/index.ts"), "utf8")).toContain(
-      "makeTranslateQuotaCheck(userClient)",
+      "makeTranslateQuotaCheck(userClient, proLookupWith(admin))",
     );
     expect(readFileSync(path.join(root, "complete-lesson/handler.ts"), "utf8")).toContain(
-      "translateQuotaCheck: makeTranslateQuotaCheck",
+      "makeTranslateQuotaCheck(userClient, proLookupWith(admin))",
     );
+    expect(readFileSync(path.join(root, "_shared/ai-quota.ts"), "utf8")).not.toMatch(
+      /createClient\(/,
+    );
+  });
+
+  it("proLookupWith asks the given client, not a new one", async () => {
+    const admin = {
+      from: vi.fn(() => {
+        throw new Error("read the cache");
+      }),
+    };
+    const deps = proLookupWith(admin as unknown as Parameters<typeof proLookupWith>[0]);
+    await deps.isPro("u1").catch(() => undefined);
+    expect(admin.from).toHaveBeenCalled();
   });
 });

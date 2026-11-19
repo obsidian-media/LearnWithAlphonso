@@ -1510,31 +1510,11 @@ Deno.test("a replay whose progress read fails keeps the stored copy", async () =
 });
 
 Deno.test(
-  "before the migration (function missing) the save falls back to apply_lesson_completion and the lesson still saves",
+  "a missing apply_lesson_completion_once is a retryable 503, never a save through apply_lesson_completion",
   async () => {
+    // The older transaction claims no token, so saving through it would let the token be spent again.
     const { db, handler } = setup();
     db.onceMissing = true;
-    db.tables.lesson_session_redemptions = [];
-    db.missingTables.add("lesson_session_redemptions");
-    const res = await handler(post(body(["a", "d"])));
-    assertEquals(res.status, 200);
-    assertEquals(
-      db.rpcCalls.map((c) => c.name),
-      ["apply_lesson_completion_once", "apply_lesson_completion"],
-    );
-    const legacy = db.rpcCalls[1].args;
-    assertEquals("_token_hash" in legacy, false);
-    assertEquals("_result" in legacy, false);
-    assertEquals(legacy._lesson_id, "u1l1");
-    assert((await res.json()).xpGain > 0);
-  },
-);
-
-Deno.test(
-  "only a missing object falls back: any other save error is still a retryable 503",
-  async () => {
-    const { db, handler } = setup();
-    db.rpcResult = { data: null, error: { code: "40001", message: "serialization" } };
     assertEquals((await handler(post(body(["a", "d"])))).status, 503);
     assertEquals(
       db.rpcCalls.map((c) => c.name),
@@ -1543,12 +1523,23 @@ Deno.test(
   },
 );
 
+Deno.test("any other save error is a retryable 503 too", async () => {
+  const { db, handler } = setup();
+  db.rpcResult = { data: null, error: { code: "40001", message: "serialization" } };
+  assertEquals((await handler(post(body(["a", "d"])))).status, 503);
+  assertEquals(
+    db.rpcCalls.map((c) => c.name),
+    ["apply_lesson_completion_once"],
+  );
+});
+
 Deno.test(
-  "a missing redemption table on the early lookup is 'not redeemed', not a 503",
+  "a missing redemption table on the early lookup is a 503 and nothing is saved, never 'not redeemed'",
   async () => {
     const { db, handler } = setup();
     db.missingTables.add("lesson_session_redemptions");
-    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    assertEquals((await handler(post(body(["a", "d"])))).status, 503);
+    assertEquals(db.rpcCalls.length, 0);
   },
 );
 
@@ -1580,16 +1571,13 @@ Deno.test(
 );
 
 Deno.test(
-  "a finalize against a missing function is quiet (migration not applied yet)",
+  "a finalize against a missing function is logged like any other finalize error",
   async () => {
     const { db, handler } = setup();
     db.finalizeError = { code: "PGRST202", message: "not found" };
     const lines = await captureErrors(async () => {
       assertEquals((await handler(post(body(["a", "d"])))).status, 200);
     });
-    assertEquals(
-      lines.some((l) => l.includes("lesson_result_finalize_failed")),
-      false,
-    );
+    assert(lines.some((l) => l.includes("lesson_result_finalize_failed")));
   },
 );

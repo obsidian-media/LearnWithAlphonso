@@ -40,6 +40,10 @@ describe("single-use lesson sessions (real Postgres)", () => {
     db = new PGlite();
     await db.exec(`
       CREATE ROLE service_role; CREATE ROLE authenticated; CREATE ROLE anon;
+      -- What Supabase does for objects the migration role creates: every client role gets everything by default. The
+      -- migration's REVOKEs must take these away, so the privilege test below can fail (plain Postgres grants none).
+      ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
+      ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon, authenticated;
       CREATE SCHEMA auth;
       CREATE TABLE auth.users(id uuid PRIMARY KEY);
       CREATE TABLE public.user_progress(
@@ -68,6 +72,8 @@ describe("single-use lesson sessions (real Postgres)", () => {
     `);
     await db.exec(atomic);
     await db.exec(migration);
+    // A control table created the same way, with no REVOKE: proves the defaults above are in force.
+    await db.exec("CREATE TABLE public.grant_probe(id int)");
     await db.query("INSERT INTO auth.users(id) VALUES ($1), ($2)", [USER, OTHER]);
   }, 120_000);
   afterEach(async () => {
@@ -198,6 +204,13 @@ describe("single-use lesson sessions (real Postgres)", () => {
   });
 
   it("clients can do nothing to the table or the functions (zero client writes)", async () => {
+    // The harness is not vacuous: a table without the migration's REVOKE is fully open to the client roles.
+    for (const role of ["anon", "authenticated"]) {
+      const probe = await db.query<{ p: boolean }>(
+        `SELECT has_table_privilege('${role}', 'public.grant_probe', 'INSERT') AS p`,
+      );
+      expect(probe.rows[0]!.p).toBe(true);
+    }
     for (const role of ["anon", "authenticated"]) {
       const priv = await db.query<{ p: boolean }>(
         `SELECT has_table_privilege('${role}', 'public.lesson_session_redemptions', 'INSERT,UPDATE,DELETE,SELECT') AS p`,
@@ -209,10 +222,15 @@ describe("single-use lesson sessions (real Postgres)", () => {
         );
         expect(r.rows[0]!.p).toBe(false);
       }
-      const fn = await db.query<{ p: boolean }>(
-        `SELECT has_function_privilege('${role}', 'public.finalize_lesson_session_result(uuid,text,jsonb)', 'EXECUTE') AS p`,
-      );
-      expect(fn.rows[0]!.p).toBe(false);
+      for (const signature of [
+        "public.finalize_lesson_session_result(uuid,text,jsonb)",
+        "public.apply_lesson_completion_once(uuid,text,text,text,date,jsonb,jsonb,jsonb,jsonb,text,jsonb,integer,timestamptz)",
+      ]) {
+        const fn = await db.query<{ p: boolean }>(
+          `SELECT has_function_privilege('${role}', '${signature}', 'EXECUTE') AS p`,
+        );
+        expect(fn.rows[0]!.p, `${role} ${signature}`).toBe(false);
+      }
     }
   });
 });

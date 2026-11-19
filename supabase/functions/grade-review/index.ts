@@ -22,7 +22,7 @@ import { gradeSelfContained, isSelfContainedSource } from "./self-contained.ts";
 // logic for lesson completions (§0.1-d #6) instead of a second hand-kept copy.
 import { hasAiConsent } from "../_shared/ai-consent.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
-import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
+import { makeTranslateQuotaCheck, proLookupWith } from "../_shared/ai-quota.ts";
 import { makeTranslateCostLogger } from "../_shared/ai-cost-log.ts";
 
 const courseSchema = z.enum(["en", "fr", "es"]);
@@ -39,7 +39,10 @@ const gradeReviewSchema = z.object({
   // Snapshot the due date shown when the learner answered. This is essential
   // for offline replay: never apply a stale answer to another device's newer
   // SM-2 schedule. Optional for old clients during rollout.
-  expectedDueOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  expectedDueOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   expectedLastReviewedAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
@@ -105,7 +108,6 @@ export async function handleRequest(req: Request): Promise<Response> {
   const auth = await authenticate(req);
   if (auth instanceof Response) return auth;
   const { userId, userClient } = auth;
-  const checkQuota = makeTranslateQuotaCheck(userClient);
 
   let parsed: z.infer<typeof gradeReviewSchema>;
   try {
@@ -121,6 +123,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     { auth: { persistSession: false } },
   );
+  const checkQuota = makeTranslateQuotaCheck(userClient, proLookupWith(admin));
 
   const today = todayStr();
 
