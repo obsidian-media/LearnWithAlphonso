@@ -58,6 +58,14 @@ final class StoryRecordingsTests: XCTestCase {
         XCTAssertTrue(StoryRecordings.canNarrate(segments: ["a", "b"], recordings: parsed, aiConsentGranted: false))
     }
 
+    func testARecordingThatWillNotPlayFallsBackToLiveSpeechOnlyWithConsent() {
+        XCTAssertTrue(StoryRecordings.speakLiveAfterPlayFailure(wasRecorded: true, aiConsentGranted: true))
+        XCTAssertFalse(StoryRecordings.speakLiveAfterPlayFailure(wasRecorded: true, aiConsentGranted: false))
+        // Live audio that will not play is not retried live: that would only spend quota again.
+        XCTAssertFalse(StoryRecordings.speakLiveAfterPlayFailure(wasRecorded: false, aiConsentGranted: true))
+        XCTAssertFalse(StoryRecordings.speakLiveAfterPlayFailure(wasRecorded: false, aiConsentGranted: false))
+    }
+
     func testAnyUnrecordedSentenceNeedsAIConsentAsBefore() {
         let parsed = StoryRecordings.parse(manifest([("a", "stories/s/a.mp3")]))
         XCTAssertFalse(StoryRecordings.canNarrate(segments: ["a", "b"], recordings: parsed, aiConsentGranted: false))

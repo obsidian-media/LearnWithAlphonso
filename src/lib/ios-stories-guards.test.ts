@@ -66,7 +66,7 @@ describe("iOS graded stories: the check is graded on the server", () => {
 
   it("narration plays the recording first and the live voice only with consent; both readers prepare first", () => {
     const text = views();
-    const audio = functionBody(text, "private func audioData(for index: Int)");
+    const audio = functionBody(text, "private func audioData(for index: Int, live: Bool = false)");
     const recorded = audio.indexOf("StoryRecordings.audioURL(");
     const gate = audio.indexOf("guard liveAllowed else");
     const live = audio.indexOf("client.synthesizeSpeech(");
@@ -78,6 +78,25 @@ describe("iOS graded stories: the check is graded on the server", () => {
     const branching = code(read("ios/LearnWithAlphonso/Sources/BranchingStoryViews.swift"));
     expect(branching).toContain("narrator.prepare(aiConsentGranted: aiConsent.isGranted)");
     expect(branching).toContain("storyID: story.id");
+  });
+
+  it("a recording that will not play falls back to live speech through the Kit's consent rule", () => {
+    const text = views();
+    const play = functionBody(text, "func play(from index: Int, onSegment:");
+    const failed = play.indexOf("var played = await playAndWait(audio)");
+    const rule = play.indexOf("StoryRecordings.speakLiveAfterPlayFailure(");
+    const live = play.indexOf("audioData(for: current, live: true)");
+    expect(failed).toBeGreaterThan(-1);
+    expect(failed).toBeLessThan(rule);
+    expect(rule).toBeLessThan(live);
+    expect(play).toContain("aiConsentGranted: liveSpeechAllowed");
+    // The live retry skips the recording, and only a file that came from the recording is marked as one.
+    const audio = functionBody(text, "private func audioData(for index: Int, live: Bool = false)");
+    expect(audio).toContain(
+      "let recordedPath = live ? nil : recordings?.path(for: segments[index])",
+    );
+    expect(audio).toContain("self.recordedIndices.insert(index)");
+    expect(text).toContain("func audioPlayerDecodeErrorDidOccur(");
   });
 
   it("a tapped word opens the existing define-and-save sheet", () => {

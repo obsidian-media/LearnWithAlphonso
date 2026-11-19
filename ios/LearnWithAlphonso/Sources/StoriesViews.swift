@@ -11,8 +11,8 @@ import LearnWithAlphonsoKit
 
 /// Reads a story one sentence at a time, handing the highlight from sentence to sentence as each one ends. A sentence
 /// with a pre-recorded file (StoryRecordings, made by scripts/story-audio.ts) just plays it: no /api/tts call, no AI
-/// quota, no AI consent. Only a sentence with no recording (or whose file will not download) falls back to the live
-/// /api/tts voice (the learner's chosen Alphonso voice), which keeps today's consent and quota. The next sentence is
+/// quota, no AI consent. Only a sentence with no recording (or whose file will not download or play) falls back to the
+/// live /api/tts voice (the learner's chosen Alphonso voice), which keeps today's consent and quota. The next sentence is
 /// fetched while the current one plays. Sentence-level highlight is v1, like the web.
 @MainActor
 final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
@@ -27,6 +27,8 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private var recordingsLoaded = false
     /// Set by `prepare`: whether a sentence with no recording may use the live voice (AI speech is on).
     private var liveSpeechAllowed = false
+    /// The sentences whose cached audio is the recording (not live speech), for the play-failure fallback.
+    private var recordedIndices: Set<Int> = []
     private var player: AVAudioPlayer?
     private var finishContinuation: CheckedContinuation<Bool, Never>?
     private var runID = 0
@@ -68,7 +70,16 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
                 let audio = try await audioData(for: current)
                 if run != runID { return }
                 if let ahead { Task { _ = try? await self.audioData(for: ahead) } }
-                guard await playAndWait(audio), run == runID else {
+                var played = await playAndWait(audio)
+                if !played, run == runID, StoryRecordings.speakLiveAfterPlayFailure(
+                    wasRecorded: recordedIndices.contains(current), aiConsentGranted: liveSpeechAllowed) {
+                    // A recording that will not play (an unreadable file) falls back to live speech for this sentence.
+                    cache[current] = nil
+                    let live = try await audioData(for: current, live: true)
+                    if run != runID { return }
+                    played = await playAndWait(live)
+                }
+                guard played, run == runID else {
                     if run == runID { state.fail() }
                     return
                 }
@@ -93,9 +104,10 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
     /// Narration cannot start without AI speech turned on; the text stays readable.
     func markUnavailable() { state.fail() }
 
-    private func audioData(for index: Int) async throws -> Data {
-        if let cached = cache[index] { return try await cached.value }
-        let recordedPath = recordings?.path(for: segments[index])
+    /// `live` skips the recording (its file would not play) and asks the live voice.
+    private func audioData(for index: Int, live: Bool = false) async throws -> Data {
+        if !live, let cached = cache[index] { return try await cached.value }
+        let recordedPath = live ? nil : recordings?.path(for: segments[index])
         let liveAllowed = liveSpeechAllowed
         let task = Task { () -> Data in
             // The recording first: a plain public file, nothing to authorise or pay for.
@@ -103,8 +115,10 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
                let url = StoryRecordings.audioURL(supabaseURL: AppConfig.supabaseURL, path: recordedPath),
                let (data, response) = try? await URLSession.shared.data(from: url),
                (response as? HTTPURLResponse)?.statusCode == 200, !data.isEmpty {
+                self.recordedIndices.insert(index)
                 return data
             }
+            self.recordedIndices.remove(index)
             guard liveAllowed else { throw StoryNarrationError.unauthorized }
             guard let token = await self.session.freshAccessToken() else { throw StoryNarrationError.unauthorized }
             let client = AIConversationClient(
@@ -140,6 +154,14 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
     nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         Task { @MainActor in
             self.finishContinuation?.resume(returning: flag)
+            self.finishContinuation = nil
+        }
+    }
+
+    /// A file that starts but cannot be decoded ends the sentence as a failure (so a recording can fall back to live).
+    nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        Task { @MainActor in
+            self.finishContinuation?.resume(returning: false)
             self.finishContinuation = nil
         }
     }

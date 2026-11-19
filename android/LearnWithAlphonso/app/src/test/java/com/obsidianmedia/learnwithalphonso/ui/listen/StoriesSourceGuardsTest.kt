@@ -95,6 +95,20 @@ class StoriesSourceGuardsTest {
     }
 
     @Test
+    fun `a recording that will not play falls back to live speech through the core consent rule`() {
+        val src = code(read(ui))
+        val play = src.substring(src.indexOf("fun play(index: Int"), src.indexOf("fun stop()"))
+        val first = play.indexOf("playback.play(audio.bytes) ||")
+        val rule = play.indexOf("StoryRecordings.speakLiveAfterPlayFailure(audio.recorded, liveSpeechAllowed) &&")
+        val live = play.indexOf("audioFor(current, live = true)")
+        assertTrue("the recording plays, then the rule, then the live retry", first in 0 until rule && rule < live)
+        val audioFor = src.substring(src.indexOf("private fun audioFor("))
+        assertTrue(audioFor.contains("if (!live) {"))
+        assertTrue(audioFor.contains("NarrationAudio(it, recorded = true)"))
+        assertTrue(audioFor.contains("recorded = false"))
+    }
+
+    @Test
     fun `narration plays the recording first, falls back to live speech only with consent, and both readers use begin`() {
         val src = code(read(ui))
         val audioFor = src.substring(src.indexOf("private fun audioFor("))
