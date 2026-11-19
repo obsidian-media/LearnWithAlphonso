@@ -10,17 +10,16 @@
 // carrying the CALLER's own JWT (not the admin/service-role client) --
 // both RPCs are SECURITY DEFINER and resolve auth.uid() from that JWT,
 // same requirement as the web helper's own doc comment.
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { denoEnv, monthlyCapAllows, type MonthlyCapDeps } from "./ai-monthly-cap.ts";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { monthlyCapAllows, type MonthlyCapDeps } from "./ai-monthly-cap.ts";
 import { heartsUnlimitedFor } from "./hearts-pro.ts";
 
-/** Whether a learner has Pro, from the same lookup the hearts economy uses (cached an hour; false when unsure). */
-async function defaultIsPro(userId: string): Promise<boolean> {
-  const url = denoEnv("SUPABASE_URL");
-  const key = denoEnv("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !key) return false;
-  const admin = createClient(url, key, { auth: { persistSession: false } });
-  return heartsUnlimitedFor(admin, userId);
+/**
+ * The cap's Pro lookup through the caller's own service-role client: the same lookup the hearts economy uses
+ * (cached an hour; false when unsure), with no second client made per call.
+ */
+export function proLookupWith(admin: SupabaseClient): MonthlyCapDeps {
+  return { isPro: (userId) => heartsUnlimitedFor(admin, userId) };
 }
 
 /**
@@ -37,7 +36,7 @@ async function defaultIsPro(userId: string): Promise<boolean> {
  */
 export function makeTranslateQuotaCheck(
   userClient: SupabaseClient,
-  capDeps: MonthlyCapDeps = { isPro: defaultIsPro },
+  capDeps: MonthlyCapDeps,
 ): () => Promise<boolean> {
   return async () => {
     if (!(await monthlyCapAllows(userClient, capDeps))) return false;

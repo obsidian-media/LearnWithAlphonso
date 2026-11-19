@@ -55,7 +55,7 @@ import { AiConsentReadError, hasAiConsentOrThrow } from "../_shared/ai-consent.t
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 import { makeTranslateCostLogger } from "../_shared/ai-cost-log.ts";
 import { recordLessonProfileData } from "../_shared/profile-data.ts";
-import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
+import { makeTranslateQuotaCheck, proLookupWith } from "../_shared/ai-quota.ts";
 
 // Was missing "es" -- predates Spanish's 2026-09-21 launch and was never
 // updated, unlike grade-review's identical schema. Silently rejected every
@@ -97,7 +97,11 @@ export type CompleteLessonDeps = {
     req: Request,
   ) => Promise<{ userId: string; userClient: SupabaseClient } | Response>;
   admin: () => SupabaseClient;
-  translateQuotaCheck: (userClient: SupabaseClient) => () => Promise<boolean>;
+  /** The translate quota check; `admin` is the handler's own service-role client, reused for the cap's Pro lookup. */
+  translateQuotaCheck: (
+    userClient: SupabaseClient,
+    admin: SupabaseClient,
+  ) => () => Promise<boolean>;
   /** Whether the account allows AI grading. Throws AiConsentReadError when the row cannot be read (a 503, never a guess). */
   hasAiConsent: (admin: SupabaseClient, userId: string) => Promise<boolean>;
   verifySessionToken: typeof verifyLessonSessionToken;
@@ -162,7 +166,8 @@ export function liveDeps(): CompleteLessonDeps {
       createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
         auth: { persistSession: false },
       }),
-    translateQuotaCheck: makeTranslateQuotaCheck,
+    translateQuotaCheck: (userClient, admin) =>
+      makeTranslateQuotaCheck(userClient, proLookupWith(admin)),
     hasAiConsent: hasAiConsentOrThrow,
     verifySessionToken: verifyLessonSessionToken,
     sessionIssuedAt: lessonSessionIssuedAt,
@@ -347,15 +352,6 @@ async function findLesson(
   };
 }
 
-/**
- * The table or function is not there (yet): Postgres 42P01 / 42883, PostgREST PGRST205 / PGRST202. The code ships after
- * the migration, but if it ever runs first it falls back to the pre-redemption path instead of failing every lesson.
- */
-function isMissingObject(error: { code?: string } | null | undefined): boolean {
-  const code = error?.code;
-  return code === "42P01" || code === "42883" || code === "PGRST205" || code === "PGRST202";
-}
-
 /** What a redeemed token stored: the original response, the misses the original grading found, and the settle anchor. */
 type Redemption = { result: Record<string, unknown>; misses: number; settleSince: string };
 
@@ -373,8 +369,7 @@ async function readRedemption(
     .eq("token_hash", hash)
     .eq("user_id", userId)
     .maybeSingle();
-  // Before the redemption table exists (deploy order) nothing has been redeemed: the old path below still works.
-  if (error) return isMissingObject(error) ? null : "read-failed";
+  if (error) return "read-failed";
   if (!data) return null;
   // A token for another lesson never verifies below, so a mismatch is simply "not redeemed for this request".
   if (data.lesson_id !== lessonId || data.course !== course) return null;
@@ -453,7 +448,6 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const auth = await deps.authenticate(req);
   if (auth instanceof Response) return auth;
   const { userId, userClient } = auth;
-  const checkQuota = deps.translateQuotaCheck(userClient);
 
   let parsed: z.infer<typeof completeLessonSchema>;
   try {
@@ -464,6 +458,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const { lessonId, total, answers, course, sessionToken, completedAt } = parsed;
 
   const admin = deps.admin();
+  const checkQuota = deps.translateQuotaCheck(userClient, admin);
 
   // A token redeems once. A repeat (a retry after a lost response, a queued duplicate) is answered from what the first
   // completion stored, before anything is re-read or re-graded. Checked first so even a token past its window
@@ -787,28 +782,12 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     _misses: missedQuestionIds.length,
     _settle_since: new Date(settleSinceMs).toISOString(),
   };
-  let { data: transition, error: transitionError } = await admin.rpc(
+  // The only save path: the token is claimed in the same transaction (20261125110000). There is deliberately no
+  // fallback to the older apply_lesson_completion, which claims nothing and so would let a token be reused.
+  const { data: transition, error: transitionError } = await admin.rpc(
     "apply_lesson_completion_once",
     onceArgs,
   );
-  // The migration has not been applied yet (deploy order): save through the pre-redemption transaction. No token is
-  // claimed then, so a retry is not recognised, but the lesson still saves (it was safe before this change too).
-  if (transitionError && isMissingObject(transitionError)) {
-    console.error(
-      JSON.stringify({ event: "lesson_redemption_unavailable", fn: "complete-lesson" }),
-    );
-    const {
-      _token_hash: _h,
-      _result: _r,
-      _misses: _m,
-      _settle_since: _s,
-      ...legacyArgs
-    } = onceArgs;
-    ({ data: transition, error: transitionError } = await admin.rpc(
-      "apply_lesson_completion",
-      legacyArgs,
-    ));
-  }
   // A token that belongs to another completion (a database exception): not retryable, the same answer as any other
   // session the server will not accept (the apps re-mint once, then reject).
   if (transitionError && /different completion/i.test(transitionError.message ?? "")) {
@@ -1001,7 +980,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
       _token_hash: hash,
       _result: finalResult,
     });
-    if (finalizeError && !isMissingObject(finalizeError)) {
+    if (finalizeError) {
       console.error(
         JSON.stringify({
           event: "lesson_result_finalize_failed",
