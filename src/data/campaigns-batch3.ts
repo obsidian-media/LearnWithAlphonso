@@ -444,14 +444,14 @@ export const BATCH3_CAMPAIGNS: Campaign[] = [
           es: "Llegar a la estación",
         },
         persona: {
-          en: "Mia, a cousin",
+          en: "Dara, a cousin",
           fr: "Zoé, une cousine",
           es: "Camila, una prima",
         },
         systemPrompt: {
           en: en(
-            "You are Mia, the learner's cousin, waiting at the station. Give a big welcome, offer to carry the bag and ask about the trip (long, tired, hungry). Tell the learner the plan: a ride home and dinner with the family. Use very simple sentences.",
-            "greet Mia, say how the trip was and answer a question about food.",
+            "You are Dara, the learner's cousin, waiting at the station. Give a big welcome, offer to carry the bag and ask about the trip (long, tired, hungry). Tell the learner the plan: a ride home and dinner with the family. Use very simple sentences.",
+            "greet Dara, say how the trip was and answer a question about food.",
           ),
           fr: fr(
             "Tu es Zoé, la cousine de l'apprenant, qui l'attend à la gare de Rennes. Accueille l'apprenant avec joie, propose de porter le sac et demande comment s'est passé le voyage (long, fatigant, faim). Explique le programme : un trajet jusqu'à la maison puis le dîner avec la famille. Utilise des phrases très simples.",
