@@ -27,9 +27,15 @@ class StoryRecordings(private val files: Map<String, String>) {
     companion object {
         const val BUCKET = "podcast-audio"
 
+        /**
+         * JavaScript's `\s`: Java's own `\s` is ASCII-only, so NBSP and U+202F (common before French punctuation) would not
+         * collapse here and a recording would be silently skipped.
+         */
+        private val SPACES = Regex("[\\s\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF]+")
+
         /** NFC, whitespace collapsed, trimmed: the same rule as the web and the generator. */
         fun normalize(text: String): String =
-            Normalizer.normalize(text, Normalizer.Form.NFC).split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString(" ")
+            Normalizer.normalize(text, Normalizer.Form.NFC).split(SPACES).filter { it.isNotEmpty() }.joinToString(" ")
 
         fun manifestPath(storyId: String) = "stories/$storyId/manifest.json"
 

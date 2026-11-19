@@ -242,7 +242,8 @@ internal class StoryNarrator(
         scope.launch {
             if (!recordingsLoaded) {
                 recordings = container.storyRecordings.load(story.id)
-                recordingsLoaded = true
+                // A failed load (offline, no manifest yet) is not kept, so a later tap looks again.
+                recordingsLoaded = recordings != null
             }
             liveSpeechAllowed = aiConsentGranted
             if (StoryRecordings.canNarrate(story.segments, recordings, aiConsentGranted)) play(index, onSegment) else markUnavailable()

@@ -110,7 +110,7 @@ Graded and branching stories are narrated from pre-recorded files, not live spee
 ```
 bun run scripts/story-audio.ts generate                 # dry run, all published stories
 bun run scripts/story-audio.ts generate --confirm       # record whatever is missing
-bun run scripts/story-audio.ts generate --story <uuid> --confirm
+bun run scripts/story-audio.ts generate --story <uuid> --confirm    # still only if that story is published
 bun run scripts/story-audio.ts generate --course es --confirm
 ```
 

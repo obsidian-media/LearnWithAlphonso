@@ -11,7 +11,7 @@
  *
  *   bun run scripts/story-audio.ts generate                       # all published stories, dry run
  *   bun run scripts/story-audio.ts generate --confirm             # record everything that is missing
- *   bun run scripts/story-audio.ts generate --story <uuid> [--confirm]
+ *   bun run scripts/story-audio.ts generate --story <uuid> [--confirm]   # --story still requires the story to be published
  *   bun run scripts/story-audio.ts generate --course es [--confirm]
  *
  * Keys come from the environment only: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and DEEPGRAM_API_KEY. If they are not
@@ -28,7 +28,11 @@ import { ttsCostMicro } from "../src/lib/ai-cost";
 import { pickEnv } from "../src/lib/video-authoring";
 import { CliArgError, parseCliArgs, type CliFlags } from "../src/lib/podcast-cli-args";
 import { planStoryAudio } from "../src/lib/story-audio-plan";
-import { STORY_AUDIO_BUCKET, storyManifestPath } from "../src/lib/story-recordings";
+import {
+  STORY_AUDIO_BUCKET,
+  storyAudioPrefix,
+  storyManifestPath,
+} from "../src/lib/story-recordings";
 
 const FLAG_SPEC = { booleans: ["confirm"], values: ["story", "course"] } as const;
 const WANTED = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "DEEPGRAM_API_KEY"] as const;
@@ -46,13 +50,24 @@ function loadEnv() {
   for (const name of WANTED) if (!process.env[name] && found[name]) process.env[name] = found[name];
 }
 
+const RETRIES = 4;
+
+/** Deepgram answers 429 (rate limit) and 5xx under load; those are retried with a growing pause, anything else fails. */
 async function synthesise(text: string, voice: string, key: string): Promise<Uint8Array> {
-  const response = await fetch(deepgramSpeakUrl(voice), {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Token ${key}` },
-    body: JSON.stringify({ text }),
-  });
-  if (!response.ok) fail(`Deepgram returned ${response.status} for "${text.slice(0, 40)}".`);
+  let response: Response | undefined;
+  for (let attempt = 0; attempt <= RETRIES; attempt++) {
+    response = await fetch(deepgramSpeakUrl(voice), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Token ${key}` },
+      body: JSON.stringify({ text }),
+    });
+    const transient = response.status === 429 || response.status >= 500;
+    if (!transient || attempt === RETRIES) break;
+    await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** attempt));
+  }
+  if (!response || !response.ok) {
+    fail(`Deepgram returned ${response?.status} for "${text.slice(0, 40)}".`);
+  }
   const audio = new Uint8Array(await response.arrayBuffer());
   if (audio.length < 200) fail(`Deepgram returned an empty clip for "${text.slice(0, 40)}".`);
   return audio;
@@ -88,20 +103,37 @@ async function cmdGenerate(flags: CliFlags) {
     const manifestPath = storyManifestPath(story.id);
     let existing: unknown = null;
     const dl = await db.storage.from(STORY_AUDIO_BUCKET).download(manifestPath);
-    if (dl.data) existing = JSON.parse(await dl.data.text());
+    if (dl.data) {
+      try {
+        existing = JSON.parse(await dl.data.text());
+      } catch {
+        existing = null; // an unreadable manifest is treated as none: everything is planned afresh
+      }
+    }
+    // Files already in the story's folder (a partly finished earlier run wrote files but not the manifest) are not
+    // paid for twice: the name is a hash of voice + text, so a file that exists is the right audio.
+    const listed = await db.storage
+      .from(STORY_AUDIO_BUCKET)
+      .list(storyAudioPrefix(story.id), { limit: 1000 });
+    const present = new Set(
+      (listed.data ?? []).map((f) => `${storyAudioPrefix(story.id)}/${f.name}`),
+    );
 
     const plan = await planStoryAudio(story, voice, existing);
-    totalChars += plan.chars;
-    totalNew += plan.toGenerate.length;
-    totalReused += plan.reused;
+    // Only sentences with no file yet are synthesised (and billed); a manifest still gets written for the rest.
+    const todo = plan.toGenerate.filter((item) => !present.has(item.file));
+    const chars = todo.reduce((n, item) => n + item.text.length, 0);
+    totalChars += chars;
+    totalNew += todo.length;
+    totalReused += plan.manifest.entries.length - todo.length;
     console.log(
-      `${course}/${story.slug}: ${plan.manifest.entries.length} sentences, ${plan.reused} recorded, ` +
-        `${plan.toGenerate.length} to record (${plan.chars} chars, ${voice})`,
+      `${course}/${story.slug}: ${plan.manifest.entries.length} sentences, ` +
+        `${plan.manifest.entries.length - todo.length} recorded, ${todo.length} to record (${chars} chars, ${voice})`,
     );
     if (!confirm || plan.toGenerate.length === 0) continue;
 
     // Files first, manifest last: a reader never sees a manifest entry whose file is not there yet.
-    for (const item of plan.toGenerate) {
+    for (const item of todo) {
       const audio = await synthesise(item.text, voice, deepgramKey);
       const { error: upErr } = await db.storage.from(STORY_AUDIO_BUCKET).upload(item.file, audio, {
         contentType: "audio/mpeg",

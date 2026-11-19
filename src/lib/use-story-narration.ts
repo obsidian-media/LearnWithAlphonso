@@ -55,7 +55,10 @@ export function useStoryNarration(
             import.meta.env.VITE_SUPABASE_URL as string | undefined,
             storyId,
           );
-          const path = recordingPathFor(await recordingsRef.current, segments[index]);
+          const loaded = await recordingsRef.current;
+          // A failed load (offline, no manifest yet) is not kept, so a later play looks again.
+          if (!loaded) recordingsRef.current = null;
+          const path = recordingPathFor(loaded, segments[index]);
           if (path) {
             recordedRef.current.add(index);
             return storyAudioPublicUrl(import.meta.env.VITE_SUPABASE_URL as string, path);

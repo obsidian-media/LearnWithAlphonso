@@ -47,7 +47,8 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
             recordings = await StoryRecordings.load(
                 supabaseURL: AppConfig.supabaseURL, storyID: storyID,
                 requester: { request in try await URLSession.shared.data(for: request) })
-            recordingsLoaded = true
+            // A failed load (offline, no manifest yet) is not kept, so a later tap looks again.
+            recordingsLoaded = recordings != nil
         }
         liveSpeechAllowed = aiConsentGranted
         return StoryRecordings.canNarrate(segments: segments, recordings: recordings, aiConsentGranted: aiConsentGranted)

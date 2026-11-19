@@ -17,6 +17,14 @@ describe("story recordings", () => {
     expect(recordingPathFor(null, "Mia wakes up.")).toBeNull();
   });
 
+  it("collapses no-break spaces the way the native readers and the generator do", () => {
+    const m = parseStoryManifest(
+      manifest([{ text: "Tu viens\u00a0? Oui\u202f!", file: "stories/s/a.mp3" }]),
+    );
+    expect(recordingPathFor(m, "Tu viens ? Oui !")).toBe("stories/s/a.mp3");
+    expect(recordingPathFor(m, "\ufeffTu  viens\u00a0?\u3000Oui\u202f!")).toBe("stories/s/a.mp3");
+  });
+
   it("matches composed and decomposed accents as the same sentence", () => {
     const m = parseStoryManifest(manifest([{ text: "Café.", file: "stories/s/a.mp3" }]));
     expect(recordingPathFor(m, "Café.")).toBe("stories/s/a.mp3");

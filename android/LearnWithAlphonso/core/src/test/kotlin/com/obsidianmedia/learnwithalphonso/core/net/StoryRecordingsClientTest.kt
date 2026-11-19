@@ -25,6 +25,19 @@ class StoryRecordingsClientTest {
     }
 
     @Test
+    fun `no-break spaces normalise like the web and the generator`() {
+        val rec = StoryRecordings.parse(manifest("Tu viens\u00a0? Oui\u202f!" to "stories/s/a.mp3"))!!
+        assertEquals("stories/s/a.mp3", rec.pathFor("Tu viens ? Oui !"))
+        assertEquals("stories/s/a.mp3", rec.pathFor("\ufeffTu  viens\u00a0?\u3000Oui\u202f!"))
+    }
+
+    @Test
+    fun `a mixed story without consent is refused, so nothing is spent`() {
+        val rec = StoryRecordings.parse(manifest("a" to "stories/s/a.mp3"))
+        assertFalse(StoryRecordings.canNarrate(listOf("a", "b"), rec, aiConsentGranted = false))
+    }
+
+    @Test
     fun `composed and decomposed accents are the same sentence`() {
         val rec = StoryRecordings.parse(manifest("Café." to "stories/s/a.mp3"))!!
         assertEquals("stories/s/a.mp3", rec.pathFor("Café."))

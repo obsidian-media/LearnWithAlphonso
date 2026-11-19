@@ -14,10 +14,20 @@ public struct StoryRecordings: Equatable, Sendable {
 
     public init(files: [String: String]) { self.files = files }
 
+    /// The characters JavaScript's `\s` treats as whitespace (so this agrees with the web and the generator): NBSP and
+    /// U+202F, common before French punctuation, included; U+0085, which Swift counts but JavaScript does not, excluded.
+    private static func isSpace(_ scalar: Unicode.Scalar) -> Bool {
+        switch scalar.value {
+        case 0x09...0x0D, 0x20, 0xA0, 0x1680, 0x2000...0x200A, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000, 0xFEFF: return true
+        default: return false
+        }
+    }
+
     /// NFC, whitespace collapsed, trimmed: the same rule as the web and the generator.
     public static func normalize(_ text: String) -> String {
-        text.precomposedStringWithCanonicalMapping
-            .split(whereSeparator: { $0.isWhitespace })
+        text.precomposedStringWithCanonicalMapping.unicodeScalars
+            .split(whereSeparator: { isSpace($0) })
+            .map { String(String.UnicodeScalarView($0)) }
             .joined(separator: " ")
     }
 

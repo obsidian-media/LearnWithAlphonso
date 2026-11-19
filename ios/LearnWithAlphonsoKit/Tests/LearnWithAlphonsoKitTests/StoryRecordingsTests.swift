@@ -21,6 +21,17 @@ final class StoryRecordingsTests: XCTestCase {
         XCTAssertNil(parsed?.path(for: "Mia wakes up!"))
     }
 
+    func testNoBreakSpacesNormaliseLikeTheWebAndTheGenerator() {
+        let parsed = StoryRecordings.parse(manifest([("Tu viens\u{00A0}? Oui\u{202F}!", "stories/s/a.mp3")]))
+        XCTAssertEqual(parsed?.path(for: "Tu viens ? Oui !"), "stories/s/a.mp3")
+        XCTAssertEqual(parsed?.path(for: "\u{FEFF}Tu  viens\u{00A0}?\u{3000}Oui\u{202F}!"), "stories/s/a.mp3")
+    }
+
+    func testAMixedStoryWithoutConsentRefusesSoNothingIsSpent() {
+        let parsed = StoryRecordings.parse(manifest([("a", "stories/s/a.mp3")]))
+        XCTAssertFalse(StoryRecordings.canNarrate(segments: ["a", "b"], recordings: parsed, aiConsentGranted: false))
+    }
+
     func testComposedAndDecomposedAccentsAreTheSameSentence() {
         let parsed = StoryRecordings.parse(manifest([("Caf\u{00E9}.", "stories/s/a.mp3")]))
         XCTAssertEqual(parsed?.path(for: "Cafe\u{0301}."), "stories/s/a.mp3")
