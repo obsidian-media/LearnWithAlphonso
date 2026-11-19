@@ -185,6 +185,14 @@ final class SayThePictureTests: XCTestCase {
         ])
     }
 
+    func testSaveSentenceUsesTheModelSentenceOnlyWhenItHoldsTheWord() {
+        let img = image("dog")
+        XCTAssertEqual(SayThePicture.PictureWord(term: "dog", image: img, example: "The dog runs.").saveSentence, "The dog runs.")
+        XCTAssertEqual(SayThePicture.PictureWord(term: "he", image: img, example: "The dog runs.").saveSentence, "he")
+        XCTAssertEqual(SayThePicture.PictureWord(term: "dog", image: img).saveSentence, "dog")
+        XCTAssertEqual(SayThePicture.maxRecordSeconds, 6)
+    }
+
     func testOnlySingleWordsAreSavableToTheReviewDeck() {
         XCTAssertTrue(SayThePicture.isSavable("perro"))
         XCTAssertTrue(SayThePicture.isSavable("l'eau"))

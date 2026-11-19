@@ -230,7 +230,7 @@ class SayPictureViewModel(
             var saved = 0
             for (word in savable) {
                 try {
-                    defineWord(word.term, word.term, course.code)
+                    defineWord(word.term, word.saveSentence, course.code)
                     saved += 1
                 } catch (e: SavedWordException) {
                     _state.update { it.copy(save = SayPictureSave.Failed(e.error.userMessage)) }
@@ -553,9 +553,13 @@ internal fun StpMicRing(recording: Boolean, busy: Boolean, size: androidx.compos
     LaunchedEffect(recording, reduceMotion) {
         when {
             reduceMotion -> fill.snapTo(if (recording) 1f else 0f)
-            recording -> { fill.snapTo(0f); fill.animateTo(1f, tween(6000, easing = LinearEasing)) }
+            recording -> { fill.snapTo(0f); fill.animateTo(1f, tween(SayThePicture.MAX_RECORD_MS, easing = LinearEasing)) }
             else -> fill.animateTo(0f, tween(200))
         }
+    }
+    // The ring is full: stop and send.
+    LaunchedEffect(recording) {
+        if (recording) { kotlinx.coroutines.delay(SayThePicture.MAX_RECORD_MS.toLong()); onPressEnded() }
     }
     if (busy) {
         Text("Checking what you said...", style = Type.footnote.toTextStyle(), color = ds.inkSoft)

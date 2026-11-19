@@ -20,10 +20,23 @@ object SayThePicture {
     /** Fewer image words than this and the activity says "not enough words with pictures yet". */
     const val MIN_POOL = 4
 
+    /** The mic ring fills over this long; when it is full the recording stops and is sent. Same on web and iOS. */
+    const val MAX_RECORD_MS = 6000
+
     /** Only photos from the project's own public bucket are ever drawn (same origin as VocabImagePolicy on iOS). */
     private const val ALLOWED_URL_PREFIX = "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/"
 
-    data class PictureWord(val term: String, val image: VocabImageRef) {
+    data class PictureWord(val term: String, val image: VocabImageRef, val example: String = "") {
+        /**
+         * The sentence the save-word route needs: the model sentence when it holds the word as a whole word, else the
+         * word on its own (the same rule as `saveSentence` on web).
+         */
+        val saveSentence: String get() {
+            fun fold(s: String) = s.lowercase().replace('\u2019', '\'')
+            val padded = " " + fold(example).replace(Regex("""[^\p{L}'-]+"""), " ") + " "
+            return if (padded.contains(" " + fold(term) + " ")) example.trim() else term
+        }
+
         /** The word as a Say it right drill item, so the summary can hand the missed words to that drill. */
         fun toVocabItem(): VocabItem = VocabItem(term, "", "", image)
     }
@@ -50,7 +63,7 @@ object SayThePicture {
             val image = item.image ?: continue
             if (!image.url.startsWith(ALLOWED_URL_PREFIX)) continue
             if (!seen.add(item.term.trim().lowercase())) continue
-            pool.add(PictureWord(item.term, image))
+            pool.add(PictureWord(item.term, image, item.example))
         }
         return pool
     }

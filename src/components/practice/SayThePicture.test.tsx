@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 import { SayThePicture } from "./SayThePicture";
 import {
+  MAX_RECORD_MS,
   comboCount,
   drawRounds,
   missedWords,
@@ -247,6 +248,60 @@ describe("Say the picture", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next word" }));
     say(hits[3]);
     expect(screen.getByTestId("stp-combo").textContent).toBe("First try");
+  });
+
+  it("a pointer released outside the ring does not swallow the next keyboard press", () => {
+    view();
+    const mic = screen.getByRole("button", { name: "Record your answer" });
+    fireEvent.pointerDown(mic);
+    fireEvent.pointerLeave(mic); // released elsewhere: no click follows
+    expect(h.capture.stop).toHaveBeenCalledTimes(1);
+    h.capture.start.mockClear();
+    fireEvent.click(mic); // a keyboard Enter or Space
+    expect(h.capture.start).toHaveBeenCalledTimes(1);
+  });
+
+  it("stops and sends the recording when the ring is full", () => {
+    vi.useFakeTimers();
+    try {
+      h.capture.state = "recording";
+      h.capture.stop.mockClear();
+      view();
+      act(() => {
+        vi.advanceTimersByTime(MAX_RECORD_MS - 1);
+      });
+      expect(h.capture.stop).not.toHaveBeenCalled();
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(h.capture.stop).toHaveBeenCalledTimes(1);
+      expect(MAX_RECORD_MS).toBe(6000);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("the review-deck save sends the model sentence when it holds the word", async () => {
+    const save = vi.fn(async (i: { word: string; sentence: string }) => ({
+      alreadySaved: false,
+      word: i.word,
+      sentence: i.sentence,
+      explanation: "",
+    }));
+    h.words = (h.words as PictureWord[]).map((w) => ({
+      ...w,
+      example: `I like the ${w.term} a lot.`,
+    }));
+    render(
+      withAiConsent(<SayThePicture course="en" onExit={() => {}} save={save} />, fakeConsentApi()),
+    );
+    for (let i = 0; i < 8; i++) {
+      say("zzzz");
+      fireEvent.click(screen.getByRole("button", { name: i === 7 ? "Finish" : "Next word" }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Add them to your review deck" }));
+    await screen.findByText(/words added/);
+    expect(save.mock.calls[0][0].sentence).toBe(`I like the ${save.mock.calls[0][0].word} a lot.`);
   });
 
   describe("summary", () => {

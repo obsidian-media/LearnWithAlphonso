@@ -11,11 +11,15 @@ public enum SayThePicture {
     public static let rounds = 8
     /// Fewer image words than this and the activity says "not enough words with pictures yet".
     public static let minPool = 4
+    /// The mic ring fills over this long; when it is full the recording stops and is sent. Same on web and Android.
+    public static let maxRecordSeconds = 6.0
 
     public struct PictureWord: Sendable, Equatable {
         public let term: String
         public let image: VocabImageRef
-        public init(term: String, image: VocabImageRef) { self.term = term; self.image = image }
+        /// The lesson's model sentence for the word, when it has one (used by "add to your review deck").
+        public let example: String
+        public init(term: String, image: VocabImageRef, example: String = "") { self.term = term; self.image = image; self.example = example }
     }
 
     /// Every word of the course that has a renderable picture, learned or not.
@@ -33,7 +37,7 @@ public enum SayThePicture {
                     let key = item.term.trimmingCharacters(in: .whitespaces).lowercased()
                     guard let image = item.image, VocabImagePolicy.isRenderable(image.url), !seen.contains(key) else { continue }
                     seen.insert(key)
-                    pool.append(PictureWord(term: item.term, image: image))
+                    pool.append(PictureWord(term: item.term, image: image, example: item.example))
                 }
             }
         }
@@ -201,6 +205,14 @@ extension SayThePicture {
 }
 
 extension SayThePicture.PictureWord {
+    /// The sentence the save-word route needs: the model sentence when it holds the word as a whole word, else the word
+    /// on its own (the same rule as `saveSentence` on web).
+    public var saveSentence: String {
+        func fold(_ s: String) -> String { s.lowercased().replacingOccurrences(of: "\u{2019}", with: "'") }
+        let padded = " " + fold(example).replacingOccurrences(of: #"[^\p{L}'-]+"#, with: " ", options: .regularExpression) + " "
+        return padded.contains(" " + fold(term) + " ") ? example.trimmingCharacters(in: .whitespacesAndNewlines) : term
+    }
+
     /// The word as a Say it right drill item, so the summary can hand the missed words to that drill.
     public var vocabItem: VocabItem { VocabItem(term: term, meaning: "", example: "", image: image) }
 }

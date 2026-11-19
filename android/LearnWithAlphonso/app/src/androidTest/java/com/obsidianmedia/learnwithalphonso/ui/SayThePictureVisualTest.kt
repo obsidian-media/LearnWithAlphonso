@@ -119,4 +119,22 @@ class SayThePictureVisualTest {
             assertTrue(saved)
         }
     }
+
+    @Test fun theRingStopsAndSendsWhenFull() {
+        var began = 0
+        var ended = 0
+        rule.mainClock.autoAdvance = false
+        rule.setContent {
+            AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                com.obsidianmedia.learnwithalphonso.ui.practice.StpMicRing(
+                    recording = true, busy = false, size = androidx.compose.ui.unit.Dp(98f), reduceMotion = true,
+                    onPressBegan = { began++ }, onPressEnded = { ended++ },
+                )
+            }
+        }
+        rule.mainClock.advanceTimeBy(SayThePicture.MAX_RECORD_MS - 100L)
+        rule.runOnIdle { assertEquals(0, ended) }
+        rule.mainClock.advanceTimeBy(300L)
+        rule.runOnIdle { assertEquals(1, ended) }
+    }
 }

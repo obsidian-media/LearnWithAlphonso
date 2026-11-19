@@ -114,3 +114,6 @@ export function saveSentence(word: { term: string; example: string }): string {
     .includes(` ${fold(word.term)} `);
   return hit ? word.example.trim() : word.term;
 }
+
+/** The mic ring fills over this long; when it is full the recording stops and is sent. Same on iOS and Android. */
+export const MAX_RECORD_MS = 6000;

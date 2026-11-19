@@ -9,6 +9,7 @@ import { useOptionalAiConsent } from "@/lib/ai-consent-context";
 import { useSpeechCapture } from "@/lib/use-speech-capture";
 import { useModelSpeech } from "@/lib/use-model-speech";
 import {
+  MAX_RECORD_MS,
   MIN_POOL,
   comboCount,
   drawRounds,
@@ -145,6 +146,24 @@ export function SayThePicture({
     holding.current = false;
     stop();
   };
+  // The pointer left the ring (or was cancelled) while held: no click follows, so the next keyboard press must not be
+  // taken for the click that follows a hold.
+  const abandon = () => {
+    if (!holding.current) return;
+    pressedByPointer.current = false;
+    release();
+  };
+  // The ring fills over MAX_RECORD_MS; when it is full the recording stops and is sent.
+  const stopRef = useRef(stop);
+  stopRef.current = stop;
+  useEffect(() => {
+    if (!recording) return;
+    const t = setTimeout(() => {
+      holding.current = false;
+      stopRef.current();
+    }, MAX_RECORD_MS);
+    return () => clearTimeout(t);
+  }, [recording]);
   const toggle = () => {
     if (pressedByPointer.current) {
       pressedByPointer.current = false;
@@ -162,8 +181,8 @@ export function SayThePicture({
       disabled={transcribing}
       onPointerDown={press}
       onPointerUp={release}
-      onPointerCancel={release}
-      onPointerLeave={release}
+      onPointerCancel={abandon}
+      onPointerLeave={abandon}
       onClick={toggle}
     />
   );
@@ -666,7 +685,9 @@ function MicRing({
           strokeDasharray={c}
           strokeDashoffset={recording ? 0 : c}
           className={`transition-[stroke-dashoffset] ease-linear motion-reduce:transition-none ${
-            recording ? "stroke-ds-wrong duration-[6000ms]" : "stroke-ds-action duration-200"
+            recording
+              ? "stroke-ds-wrong duration-[6000ms]" /* = MAX_RECORD_MS */
+              : "stroke-ds-action duration-200"
           }`}
         />
       </svg>

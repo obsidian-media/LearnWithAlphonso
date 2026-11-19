@@ -544,7 +544,7 @@ struct SayThePictureView: View {
         var saved = 0
         for word in savable {
             do {
-                _ = try await client.defineWord(word: word.term, sentence: word.term, course: course.wireCode)
+                _ = try await client.defineWord(word: word.term, sentence: word.saveSentence, course: course.wireCode)
                 saved += 1
             } catch let error as SavedWordError {
                 saveState = .failed(error.userMessage)
@@ -695,12 +695,22 @@ private struct SayPictureMicRing: View {
                 .onChanged { _ in onPress() }
                 .onEnded { _ in onRelease() }
         )
+        .accessibilityAction {
+            // VoiceOver: a double-tap toggles, so recording never needs hold-and-drag.
+            if isRecording { onRelease() } else { onPress() }
+        }
+        .task(id: isRecording) {
+            // The ring is full: stop and send.
+            guard isRecording else { return }
+            try? await Task.sleep(for: .seconds(SayThePicture.maxRecordSeconds))
+            if !Task.isCancelled && isRecording { onRelease() }
+        }
         .onChange(of: isRecording) { _, recording in
             if reduceMotion {
                 fill = recording ? 1 : 0
             } else if recording {
                 fill = 0
-                withAnimation(.linear(duration: 6)) { fill = 1 }
+                withAnimation(.linear(duration: SayThePicture.maxRecordSeconds)) { fill = 1 }
             } else {
                 withAnimation(.easeOut(duration: 0.2)) { fill = 0 }
             }

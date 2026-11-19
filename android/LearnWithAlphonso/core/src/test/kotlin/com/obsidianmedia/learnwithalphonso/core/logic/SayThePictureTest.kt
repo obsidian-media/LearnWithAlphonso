@@ -231,6 +231,14 @@ class SayThePictureTest {
     }
 
     @Test
+    fun `save sentence uses the model sentence only when it holds the word`() {
+        assertEquals("The dog runs.", SayThePicture.PictureWord("dog", image("dog"), "The dog runs.").saveSentence)
+        assertEquals("he", SayThePicture.PictureWord("he", image("dog"), "The dog runs.").saveSentence)
+        assertEquals("dog", SayThePicture.PictureWord("dog", image("dog")).saveSentence)
+        assertEquals(6000, SayThePicture.MAX_RECORD_MS)
+    }
+
+    @Test
     fun `only single words are savable to the review deck`() {
         assertTrue(SayThePicture.isSavable("perro"))
         assertTrue(SayThePicture.isSavable("l'eau"))
