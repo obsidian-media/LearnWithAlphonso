@@ -4075,6 +4075,7 @@ export type Database = {
         Args: { _time_zone: string; _user_id: string };
         Returns: string;
       };
+      set_my_time_zone: { Args: { _time_zone: string }; Returns: string };
       settle_lesson_hearts: {
         Args: {
           _enforce: boolean;

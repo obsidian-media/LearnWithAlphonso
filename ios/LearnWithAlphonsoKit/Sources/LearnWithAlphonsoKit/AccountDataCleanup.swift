@@ -34,7 +34,9 @@ public enum AccountCacheKeys {
     public static let voicePrefs = VoicePrefsCache.key
     /// user_progress.day_basis beside the cached progress row (StreakRule's one-time UTC bridge).
     public static let streakDayBasis = "lastKnownStreakDayBasis"
-    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals, voicePrefs, streakDayBasis]
+    /// The last time zone sent to the server, as "userID|zone" (TimeZoneReporter).
+    public static let timeZoneSent = "lastSentTimeZone"
+    public static let all = [leaderboardSnapshot, recapLeagueTier, leagueTier, nudgeCooldowns, deadLetterDismissals, voicePrefs, streakDayBasis, timeZoneSent]
 }
 
 public struct AccountLocalCaches {
