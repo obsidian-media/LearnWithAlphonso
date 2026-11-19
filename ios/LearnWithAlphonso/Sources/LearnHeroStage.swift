@@ -4,9 +4,7 @@ import SwiftUI
 /// The hero's sizes. A generic type cannot hold stored statics, so they live here.
 enum LearnHeroMetrics {
     static let figureHeight: CGFloat = 190
-    /// Room above the text column for the greeting bubble.
-    static let bubbleReserve: CGFloat = 96
-    static let figureColumnWidth: CGFloat = 150
+    static let figureColumnWidth: CGFloat = 120
 }
 
 /// Learn's one hero, a single rounded card like the web's and Android's: the unit's painted room, Alphonso at full
@@ -16,7 +14,6 @@ enum LearnHeroMetrics {
 /// (decorative) steps aside and the text takes the full width.
 struct LearnHeroStage<Content: View>: View {
     static var figureHeight: CGFloat { LearnHeroMetrics.figureHeight }
-    private static var bubbleReserve: CGFloat { LearnHeroMetrics.bubbleReserve }
     private static var figureColumnWidth: CGFloat { LearnHeroMetrics.figureColumnWidth }
 
     let greeting: String
@@ -28,34 +25,37 @@ struct LearnHeroStage<Content: View>: View {
     private var showsAlphonso: Bool { !dynamicTypeSize.isAccessibilitySize }
 
     var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            ds.hero
-            if let art = LessonArt.room(roomID) {
-                Image(uiImage: art).resizable().scaledToFill()
-            }
-            // Behind the text column only: dark on the left, clear by the time it reaches Alphonso.
-            // A solid brand panel under the text column, fading out before it reaches Alphonso.
-            LinearGradient(stops: [.init(color: ds.hero.opacity(0.94), location: 0), .init(color: ds.hero.opacity(0.9), location: 0.45), .init(color: ds.hero.opacity(0), location: showsAlphonso ? 0.75 : 1)], startPoint: .leading, endPoint: .trailing)
-            LinearGradient(colors: [ds.hero.opacity(0), ds.hero.opacity(0.6)], startPoint: .top, endPoint: .bottom)
-            if showsAlphonso, let face = LessonArt.expression(.happy) {
-                Image(uiImage: face)
-                    .resizable().scaledToFit()
-                    .frame(height: Self.figureHeight)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                    .accessibilityHidden(true)
-            }
-            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
-                PathSpeechBubble(message: greeting)
-                    .frame(maxWidth: showsAlphonso ? 220 : .infinity, alignment: .leading)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("Alphonso: \(greeting)")
-                content
-                    .padding(.trailing, showsAlphonso ? Self.figureColumnWidth - AlphonsoDS.Space.s4 : 0)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, AlphonsoDS.Space.s3)
+        // The text column sets the card's height (about content, like Android's); the scene and Alphonso are a
+        // backdrop sized to it, so the card grows only with Dynamic Type.
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+            PathSpeechBubble(message: greeting)
+                .frame(maxWidth: showsAlphonso ? 220 : .infinity, alignment: .leading)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Alphonso: \(greeting)")
+            content
+                .padding(.trailing, showsAlphonso ? Self.figureColumnWidth - AlphonsoDS.Space.s4 : 0)
         }
-        .frame(maxWidth: .infinity, minHeight: Self.figureHeight + Self.bubbleReserve + 48)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, AlphonsoDS.Space.s3)
+        .background {
+            ZStack(alignment: .bottomTrailing) {
+                ds.hero
+                if let art = LessonArt.room(roomID) {
+                    Image(uiImage: art).resizable().scaledToFill()
+                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                        .clipped()
+                }
+                // A solid brand panel under the text column, fading out before it reaches Alphonso.
+                LinearGradient(stops: [.init(color: ds.hero.opacity(0.94), location: 0), .init(color: ds.hero.opacity(0.9), location: 0.45), .init(color: ds.hero.opacity(0), location: showsAlphonso ? 0.75 : 1)], startPoint: .leading, endPoint: .trailing)
+                if showsAlphonso, let face = LessonArt.expression(.happy) {
+                    Image(uiImage: face)
+                        .resizable().scaledToFit()
+                        .frame(height: Self.figureHeight * 0.75)
+                        .accessibilityHidden(true)
+                }
+            }
+            .accessibilityHidden(true)
+        }
         .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).strokeBorder(ds.line, lineWidth: 2))
         .padding(.horizontal, AlphonsoDS.Space.gutter)

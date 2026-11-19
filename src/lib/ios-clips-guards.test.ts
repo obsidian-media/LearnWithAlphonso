@@ -131,7 +131,6 @@ describe("Learn is one hero card: no full-screen clip, the greeting bubble sits 
     expect(map).toContain("Self.figureColumnWidth");
     // The stage still reserves the room for him and his bubble above the current-unit card.
     expect(map).toContain("Self.figureHeight");
-    expect(map).toContain("Self.bubbleReserve");
   });
 });
 
