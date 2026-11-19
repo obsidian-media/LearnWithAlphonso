@@ -207,13 +207,7 @@ fun LearnScreen(
     // Items before the unit rows: status, rail, units header, jump button, plus the ones that come and go.
     val fixedItems = 4 + (if (currentUnit != null) 1 else 0) + (if (forYouOpen.isNotEmpty()) 1 else 0) + (if (state.placementTaken == false) 1 else 0)
     val currentRowIndex = rows.indexOfFirst { it is FoldRow.UnitRow && it.current }.let { if (it < 0) -1 else fixedItems + it }
-    var scrolled by remember { mutableStateOf(false) }
-    LaunchedEffect(currentRowIndex) {
-        if (scrolled || currentRowIndex < 0) return@LaunchedEffect
-        scrolled = true
-        listState.animateScrollToItem(currentRowIndex)
-    }
-
+    // No scroll on first show: the status row and the hero are the top of the screen. "Jump to current" is the way down.
     Column(Modifier.fillMaxSize().background(ds.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             CoursePicker(state.course, onSelect = { picked -> container.activeCourse.set(picked); vm.selectCourse(picked) })
@@ -366,7 +360,7 @@ private fun FoldHeaderRow(label: String, open: Boolean, kind: String, onClick: (
  * Continue lesson button (the design-system primary button look: gold face, darker edge). Replaces the old pinned card.
  */
 @Composable
-private fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, lessonTitle: String?, greeting: String, onContinue: () -> kotlin.Unit) {
+internal fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, lessonTitle: String?, greeting: String, onContinue: () -> kotlin.Unit) {
     val ds = LocalAlphonsoTokens.current
     val art = LearnFold.roomArtFor(place.index - 1)
     val room = rememberFirstRunAsset("scenes/$art.webp") ?: rememberFirstRunAsset("scenes/${LessonStage.FALLBACK_ROOM}.webp")
@@ -407,7 +401,7 @@ private fun greeting(progress: LessonCompletionProgress?): String {
 }
 
 /** One card of the For you rail. [expanded] is null for a card that opens a screen, true or false for one that opens in place. */
-private class RailItem(
+internal class RailItem(
     val id: String,
     val icon: Int,
     val title: String,
@@ -420,7 +414,7 @@ private class RailItem(
 
 /** Learn's "For you" rail: Review, the goal path, the team mission and the weekly challenges as one row of small cards. */
 @Composable
-private fun ForYouRail(items: List<RailItem>) {
+internal fun ForYouRail(items: List<RailItem>) {
     val ds = LocalAlphonsoTokens.current
     Column(verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
         Text("For you", style = HeadlineType, color = ds.ink, modifier = Modifier.semantics { heading() })

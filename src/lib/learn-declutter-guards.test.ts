@@ -95,7 +95,7 @@ describe("Android Learn", () => {
       expect(screen).toContain(detail);
   });
   it("every rail card is a button with one spoken label and an expanded state", () => {
-    const card = screen.slice(screen.indexOf("private fun ForYouRail"));
+    const card = screen.slice(screen.indexOf("fun ForYouRail"));
     expect(card).toContain("clickable(role = Role.Button");
     expect(card).toContain("contentDescription = item.spoken");
     expect(card).toContain('"Expanded" else "Collapsed"');
@@ -113,7 +113,7 @@ describe("Android Learn", () => {
   });
   it("the hero is one piece: the lesson line and the CTA sit inside the same Box as the scene, not below it", () => {
     const hero = screen.slice(
-      screen.indexOf("private fun CurrentUnitCard"),
+      screen.indexOf("fun CurrentUnitCard"),
       screen.indexOf("private fun greeting("),
     );
     expect(hero.indexOf(`Text("Continue lesson"`)).toBeGreaterThan(hero.indexOf("alphonso?.let"));
@@ -151,5 +151,18 @@ describe("review follow-ups", () => {
   it("web: only the nested card suppresses retry-on-mount, so the rail retries a failed load on return", () => {
     expect(read("src/lib/use-team-mission.ts")).toContain("nested ? { retryOnMount: false }");
     expect(read("src/components/learn/ForYouRail.tsx")).toContain("<TeamMissionCard nested />");
+  });
+});
+
+describe("Learn does not scroll its own hero out of view", () => {
+  it("Android: the only animateScrollToItem is the Jump to current button", () => {
+    const screen = read(`${KT}/LearnScreen.kt`);
+    expect(screen.match(/animateScrollToItem/g)?.length).toBe(1);
+    expect(screen).not.toContain("var scrolled by remember");
+  });
+  it("iOS: no first-show scroll to the next lesson (the status row and hero are the top)", () => {
+    const browser = read(`${IOS}/LessonBrowserView.swift`);
+    expect(browser).not.toContain("hasScrolledToContinue");
+    expect(browser).not.toContain("scrollProxy.scrollTo(newValue");
   });
 });

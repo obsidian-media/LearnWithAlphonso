@@ -66,7 +66,6 @@ struct LessonBrowserView: View {
     /// should be a sign that a user can know which unit was she studying
     /// ... right now endless scrolling."
     @State private var mostRecentlyCompletedLessonID: String?
-    @State private var hasScrolledToContinue = false
     /// Round 6.1: which folded rows the learner opened, and whether the current unit is on screen (for Jump to current).
     @State private var expandedFolds: Set<String> = []
     @State private var showAllUnits = false
@@ -573,15 +572,8 @@ struct LessonBrowserView: View {
                     syncQueueStore: syncQueueStore
                 )
             }
-            // Fires once completion data has loaded and resolved a real
-            // target -- guarded so switching CEFR bands by hand afterward
-            // doesn't keep yanking the list back to "continue" underneath
-            // the user.
-            .onChange(of: continueLessonID) { _, newValue in
-                guard !hasScrolledToContinue, let newValue else { return }
-                hasScrolledToContinue = true
-                withAnimation { scrollProxy.scrollTo(newValue, anchor: .center) }
-            }
+            // No scroll to "continue" on first show: the status row and the hero are the top of the screen, and
+            // Jump to current is the way down.
             }
         }
         .tint(ds.choice)
