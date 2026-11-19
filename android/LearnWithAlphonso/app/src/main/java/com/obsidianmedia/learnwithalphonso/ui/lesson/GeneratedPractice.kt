@@ -1,6 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.ui.lesson
 
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonAnswerState
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
+import com.obsidianmedia.learnwithalphonso.ui.ai.ReportableAiMessage
+import com.obsidianmedia.learnwithalphonso.ui.ai.accessibilityActions
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
@@ -91,7 +95,13 @@ fun GeneratedPracticeSection(container: AppContainer, lessonId: String, course: 
                     Text("Nice work. That's all the extra practice for this lesson.", style = BodyType, color = ds.inkSoft)
                 } else {
                     Text("Extra practice · ${state.idx + 1}/${state.questions.size}", style = CaptionType, color = ds.inkSoft)
-                    Text(q.prompt, style = HeadlineType, color = ds.ink)
+                    // The question is the model's: long-press (or the TalkBack action) reports it, with its choices and explanation.
+                    ReportableAiMessage(
+                        enabled = true, sender = container.aiReports,
+                        makeReport = { reason -> AiReplyReports.practice(q.prompt, q.choices, q.explanation, course.code, reason) },
+                    ) { reportModifier, reportActions ->
+                        Text(q.prompt, style = HeadlineType, color = ds.ink, modifier = reportModifier.accessibilityActions(reportActions))
+                    }
                     val correct = q.choices.getOrNull(q.answerIndex)
                     q.choices.forEachIndexed { i, c -> LessonAnswerButton(i, c, LessonAnswerState.of(state.checked, state.picked == c, c == correct), onClick = { vm.pick(c) }, enabled = !state.checked) }
                     if (state.checked) Explanation(container, state.picked == correct, q.explanation, course)
@@ -104,4 +114,5 @@ fun GeneratedPracticeSection(container: AppContainer, lessonId: String, course: 
             }
         }
     }
+    AiReportStatusHost(container.aiReports)
 }

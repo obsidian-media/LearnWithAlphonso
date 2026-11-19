@@ -31,22 +31,29 @@ interface SyncQueueStore {
     suspend fun resolveOrphanedRows(restoredUserId: String?)
 
     /**
-     * The account [userId] ended (signed out, or switched away from). Removes what is its own: its queued work and lost
-     * lessons, and rows with no owner; and clears the single-account caches (due reviews, last-known progress). Rows another
-     * account queued are left alone: that account's own sync decides them.
+     * The account [userId] signed out (or was switched away from, or its refresh token was rejected). Its queued work and
+     * lost-lesson records are KEPT, tagged with it, for when it signs back in on this device (AccountQueueRetention); rows
+     * with no owner are removed, and the single-account caches (due reviews, last-known progress) are cleared, so the
+     * next account sees none of it.
+     */
+    suspend fun endSession(userId: String)
+
+    /**
+     * The account [userId] was deleted. Removes what is its own: its queued work and lost lessons, and rows with no
+     * owner; and clears the single-account caches. Rows another account queued are left alone.
      */
     suspend fun clearAccount(userId: String)
 
     /**
-     * Everything here belongs to the account that was signed in: queued work, dead letters, the due-review cache and
-     * the last-known progress. The next account on this device starts with none of it.
+     * Nobody is signed in at launch: the single-account caches (due reviews, last-known progress) are cleared. Queued
+     * rows stay with the accounts that played them.
      */
-    suspend fun clearAll()
+    suspend fun clearCaches()
 
     /**
      * Applies a whole sync pass: removes what synced, keeps what was rescheduled with its new attempt count and time,
-     * moves what the server permanently rejected to the dead-letter table (with its reason), and deletes what another
-     * account queued.
+     * and moves what the server permanently rejected to the dead-letter table (with its reason). Rows another account
+     * queued are in no list and stay.
      */
     suspend fun applySyncResult(result: SyncResult, nowMillis: Long)
 
@@ -109,29 +116,35 @@ class RoomSyncQueueStore(
         if (!state.orphansResolved) dao.upsertSyncState(state.copy(orphansResolved = true))
     }
 
+    override suspend fun endSession(userId: String) {
+        inTransaction {
+            dao.deleteOwnerlessLessonCompletions()
+            dao.deleteOwnerlessReviewGrades()
+            clearCachesLocked()
+        }
+        runCatching { onCleared() }
+    }
+
     override suspend fun clearAccount(userId: String) {
         inTransaction {
             dao.clearLessonCompletionsOf(userId)
             dao.clearReviewGradesOf(userId)
             dao.clearDeadLettersOf(userId)
-            dao.clearCachedDueReviews()
-            dao.clearSyncState()
-            dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
+            clearCachesLocked()
         }
         runCatching { onCleared() }
     }
 
-    override suspend fun clearAll() {
-        inTransaction {
-            dao.clearLessonCompletions()
-            dao.clearReviewGrades()
-            dao.clearCachedDueReviews()
-            dao.clearDeadLetters()
-            dao.clearSyncState()
-            // Nothing queued survives, so there is nothing left to adopt: the next account must never inherit an ownerless row.
-            dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
-        }
+    override suspend fun clearCaches() {
+        inTransaction { clearCachesLocked() }
         runCatching { onCleared() }
+    }
+
+    /** Inside a transaction. The next account must never inherit an ownerless row, so nothing is left to adopt. */
+    private suspend fun clearCachesLocked() {
+        dao.clearCachedDueReviews()
+        dao.clearSyncState()
+        dao.upsertSyncState(AppSyncStateRecord(orphansResolved = true))
     }
 
     override suspend fun applySyncResult(result: SyncResult, nowMillis: Long) = inTransaction {
@@ -147,8 +160,6 @@ class RoomSyncQueueStore(
             dao.insertDeadLetter(DeadLetterRecord(kind = "grade", identity = it.item.queueIdentity, reason = it.reason, deadAt = nowMillis, ownerUserId = it.item.ownerUserId))
             dao.deleteReviewGrade(it.item.itemKey, it.item.queuedAt)
         }
-        removeSyncedLessonCompletions(result.droppedForeignLessonCompletions)
-        removeSyncedReviewGrades(result.droppedForeignReviewGrades)
         dao.trimDeadLetters()
     }
 

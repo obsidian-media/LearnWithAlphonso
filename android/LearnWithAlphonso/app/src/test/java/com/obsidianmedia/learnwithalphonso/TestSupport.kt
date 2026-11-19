@@ -148,7 +148,7 @@ class MemorySyncStore : SyncQueueStore {
     val deadLetterRows get() = deadRows.map { com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo(it.identity, it.reason) }
 
     var orphansResolved = false
-    var clearedAll = 0
+    var clearedCaches = 0
     private val counts = MutableStateFlow(0 to 0)
     private val deadFlow = MutableStateFlow(0)
     private fun publish() { counts.value = completions.size to grades.size }
@@ -174,6 +174,17 @@ class MemorySyncStore : SyncQueueStore {
     }
 
     val clearedAccounts = ArrayList<String>()
+    val endedSessions = ArrayList<String>()
+
+    override suspend fun endSession(userId: String) {
+        yield()
+        completions.removeAll { it.ownerUserId == null }
+        grades.removeAll { it.ownerUserId == null }
+        due.value = emptyList(); progressFlow.value = null; syncedAt = null
+        orphansResolved = true
+        endedSessions.add(userId)
+        publish()
+    }
 
     override suspend fun clearAccount(userId: String) {
         yield()
@@ -186,22 +197,21 @@ class MemorySyncStore : SyncQueueStore {
         publish(); deadFlow.value++
     }
 
-    override suspend fun clearAll() {
+    override suspend fun clearCaches() {
         yield()
-        completions.clear(); grades.clear(); deadRows.clear(); due.value = emptyList(); progressFlow.value = null; syncedAt = null
+        due.value = emptyList(); progressFlow.value = null; syncedAt = null
         orphansResolved = true
-        clearedAll++
-        publish(); deadFlow.value++
+        clearedCaches++
     }
 
     override suspend fun applySyncResult(result: com.obsidianmedia.learnwithalphonso.core.sync.SyncResult, nowMillis: Long) {
         yield()
         fun lesson(p: PendingLessonCompletion) = p.lessonId to p.queuedAt
         fun grade(p: PendingReviewGrade) = p.itemKey to p.queuedAt
-        val gone = (result.syncedLessonCompletions + result.deadLetteredLessonCompletions.map { it.item } + result.droppedForeignLessonCompletions).map(::lesson).toSet()
+        val gone = (result.syncedLessonCompletions + result.deadLetteredLessonCompletions.map { it.item }).map(::lesson).toSet()
         completions.removeAll { lesson(it) in gone }
         result.rescheduledLessonCompletions.forEach { r -> completions.replaceAll { if (lesson(it) == lesson(r)) r else it } }
-        val goneGrades = (result.syncedReviewGrades + result.deadLetteredReviewGrades.map { it.item } + result.droppedForeignReviewGrades).map(::grade).toSet()
+        val goneGrades = (result.syncedReviewGrades + result.deadLetteredReviewGrades.map { it.item }).map(::grade).toSet()
         grades.removeAll { grade(it) in goneGrades }
         result.rescheduledReviewGrades.forEach { r -> grades.replaceAll { if (grade(it) == grade(r)) r else it } }
         result.deadLetteredLessonCompletions.forEach { deadRows.add(DeadRow("lesson", it.item.queueIdentity, it.reason, it.item.ownerUserId)) }

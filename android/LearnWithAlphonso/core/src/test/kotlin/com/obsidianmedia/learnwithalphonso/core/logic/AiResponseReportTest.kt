@@ -52,7 +52,26 @@ class AiResponseReportTest {
         assertEquals(8192, AiResponseReport.CONTEXT_BYTE_LIMIT)
         assertEquals(400, AiResponseReport.CONTEXT_STRUCTURE_BYTES)
         assertEquals(listOf("ai_inappropriate", "ai_harmful", "ai_incorrect", "ai_other"), AiResponseReportReason.entries.map { it.code })
-        assertEquals(listOf("hector", "conversation", "campaign", "explain"), AiResponseSurface.entries.map { it.wire })
+        assertEquals(listOf("hector", "conversation", "campaign", "explain", "support", "practice"), AiResponseSurface.entries.map { it.wire })
+    }
+
+    @Test
+    fun `a Miya reply is reported as the support surface with the web's course`() {
+        val context = AiReplyReports.support("Open Settings, then Restore.", AiResponseReportReason.INCORRECT).toRow()["context"]!!.jsonObject
+        assertEquals("support", context["surface"]!!.jsonPrimitive.content)
+        assertEquals("en", context["course"]!!.jsonPrimitive.content)
+        assertEquals("Open Settings, then Restore.", context["message"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun `a generated practice question is reported whole, as the practice surface, in its course`() {
+        val row = AiReplyReports.practice("Pick the greeting", listOf("Hola", "Adiós"), "Hola means hello.", "es", AiResponseReportReason.INCORRECT).toRow()
+        val context = row["context"]!!.jsonObject
+        assertEquals("ai_response", row["kind"]!!.jsonPrimitive.content)
+        assertEquals("practice", context["surface"]!!.jsonPrimitive.content)
+        assertEquals("es", context["course"]!!.jsonPrimitive.content)
+        assertEquals("Pick the greeting\nHola / Adiós\nHola means hello.", context["message"]!!.jsonPrimitive.content)
+        assertEquals("Pick the greeting", AiReplyReports.practice("Pick the greeting", emptyList(), " ", "es", AiResponseReportReason.OTHER).message)
     }
 
     @Test

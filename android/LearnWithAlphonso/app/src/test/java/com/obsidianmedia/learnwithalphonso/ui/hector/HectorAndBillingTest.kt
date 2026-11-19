@@ -21,6 +21,7 @@ import com.obsidianmedia.learnwithalphonso.ui.practice.InstantRecorder
 import com.obsidianmedia.learnwithalphonso.ui.practice.ReplyPlayer
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
@@ -159,6 +160,48 @@ class HectorAndBillingTest {
     }
 
     private object FakeActivity : Activity()
+
+    /** A store that remembers who it is logged in as, like RevenueCat: Pro belongs to the logged-in user. */
+    private class IdentityPort(private val proUsers: Set<String>, private val gate: kotlinx.coroutines.CompletableDeferred<Unit>? = null) : BillingPort {
+        var appUser: String? = null
+        var logOuts = 0
+        override suspend fun logIn(userId: String): Boolean { gate?.await(); appUser = userId; return userId in proUsers }
+        override suspend fun isPro() = appUser in proUsers
+        override suspend fun packages() = emptyList<BillingPackage>()
+        override suspend fun purchase(activity: Activity, pkg: BillingPackage) = false
+        override suspend fun restore() = isPro()
+        override suspend fun logOut() { logOuts++; appUser = null }
+        override fun isAnonymous() = appUser == null
+    }
+
+    @Test
+    fun `signing out logs the store out, so the next account does not inherit Pro`() = runBlocking {
+        val port = IdentityPort(proUsers = setOf("sub_pro"))
+        val store = EntitlementStore(port)
+        store.login("sub_pro")
+        assertTrue(store.isPro)
+        store.reset()
+        assertFalse("Pro is off the moment the account signs out", store.isPro)
+        assertEquals(1, port.logOuts)
+        assertNull("the store user is anonymous again", port.appUser)
+        store.refresh()
+        assertFalse("and a refresh before the next sign-in finds no Pro", store.isPro)
+        store.login("free_user")
+        assertFalse(store.isPro)
+    }
+
+    @Test
+    fun `a login still in flight at sign-out does not put that account's Pro back`() = runBlocking {
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val port = IdentityPort(proUsers = setOf("sub_pro"), gate = gate)
+        val store = EntitlementStore(port)
+        val login = launch(kotlinx.coroutines.Dispatchers.Default) { store.login("sub_pro") }
+        kotlinx.coroutines.delay(50)
+        store.reset()
+        gate.complete(Unit)
+        login.join()
+        assertFalse(store.isPro)
+    }
 
     @Test
     fun `generated practice walks questions, reports empty, and maps a timeout`() = runBlocking {

@@ -1,5 +1,10 @@
 package com.obsidianmedia.learnwithalphonso.ui.support
 
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReplyReports
+import com.obsidianmedia.learnwithalphonso.core.logic.AiReportSender
+import com.obsidianmedia.learnwithalphonso.ui.ai.AiReportStatusHost
+import com.obsidianmedia.learnwithalphonso.ui.ai.ReportableAiMessage
+import com.obsidianmedia.learnwithalphonso.ui.ai.accessibilityActions
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -104,12 +109,16 @@ fun HelpChatScreen(container: AppContainer, parent: String, onBack: () -> Unit, 
     val vm: HelpChatViewModel = viewModel { HelpChatViewModel(LiveHelpChatClient(container.supportClient)) }
     val online by container.connectivity.isConnected.collectAsState()
     val consent by container.aiConsent.state.collectAsState()
-    HelpChatContent(vm, online, aiDeclined = container.aiConsent.statusOf(consent) == AiConsentStatus.DENIED, parent, onBack, onOpenLink)
+    HelpChatContent(vm, online, aiDeclined = container.aiConsent.statusOf(consent) == AiConsentStatus.DENIED, parent, onBack, onOpenLink, reports = container.aiReports)
 }
 
 /** The screen over a view-model, so a seeded one can be drawn on its own (the screenshot harness). */
 @Composable
-fun HelpChatContent(vm: HelpChatViewModel, online: Boolean, aiDeclined: Boolean, parent: String, onBack: () -> Unit, onOpenLink: (SupportLinkId) -> Unit) {
+fun HelpChatContent(
+    vm: HelpChatViewModel, online: Boolean, aiDeclined: Boolean, parent: String, onBack: () -> Unit, onOpenLink: (SupportLinkId) -> Unit,
+    /** Where Miya's replies are reported (null in the screenshot harness: no report control). */
+    reports: AiReportSender? = null,
+) {
     val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     // Poll while the chat is open, online and a person (not the AI) has it.
@@ -167,7 +176,7 @@ fun HelpChatContent(vm: HelpChatViewModel, online: Boolean, aiDeclined: Boolean,
                     val when_ = SupportView.timeLabel(m.at, now, zone)
                     when (m.kind) {
                         SupportMessageKind.YOU -> YouBubble(m.body, when_, if (m.id in state.sentIds) SupportCopy.STATE_SENT else null)
-                        SupportMessageKind.AI -> AiBubble(m, when_, onOpenLink)
+                        SupportMessageKind.AI -> AiBubble(m, when_, onOpenLink, reports)
                         SupportMessageKind.SUPPORT -> PersonBubble(m, when_)
                         SupportMessageKind.SYSTEM -> if (SupportView.showsHandoffPose(state.messages, index)) HandoffPose(m.body) else SystemLine(m.body)
                     }
@@ -195,6 +204,7 @@ fun HelpChatContent(vm: HelpChatViewModel, online: Boolean, aiDeclined: Boolean,
             fieldEnabled = !composer.disabled && state.load == HelpLoad.READY, canSend = canSend, onSend = { vm.send(online) },
         )
     }
+    reports?.let { AiReportStatusHost(it) }
 }
 
 private fun bannerIcon(b: SupportBanner): ImageVector = when (b) {
@@ -318,7 +328,7 @@ private fun SpeakerTag(text: String, quiet: Boolean = false) {
 }
 
 @Composable
-private fun AiBubble(message: SupportMessage, whenLabel: String, onOpenLink: (SupportLinkId) -> Unit) {
+private fun AiBubble(message: SupportMessage, whenLabel: String, onOpenLink: (SupportLinkId) -> Unit, reports: AiReportSender?) {
     val ds = LocalAlphonsoTokens.current
     val face = rememberFirstRunAsset("support/miya-help-head.webp")
     // Defence in depth: the client already checked the id against the allow-list, and the screen comes from a fixed table.
@@ -339,7 +349,14 @@ private fun AiBubble(message: SupportMessage, whenLabel: String, onOpenLink: (Su
                 .padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3),
             verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
         ) {
-            Text(message.body, style = BodyType, color = ds.ink)
+            // Miya is an AI: long-press (or the TalkBack action) reports the reply into the same queue as Hector's.
+            if (reports != null) {
+                ReportableAiMessage(enabled = true, sender = reports, makeReport = { reason -> AiReplyReports.support(message.body, reason) }) { reportModifier, reportActions ->
+                    Text(message.body, style = BodyType, color = ds.ink, modifier = reportModifier.accessibilityActions(reportActions))
+                }
+            } else {
+                Text(message.body, style = BodyType, color = ds.ink)
+            }
             if (link != null) {
                 val shape = RoundedCornerShape(AlphonsoTokens.Radius.key + 4.dp)
                 Row(

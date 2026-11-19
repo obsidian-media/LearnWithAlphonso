@@ -10,6 +10,7 @@ import com.revenuecat.purchases.Purchases
 import com.revenuecat.purchases.PurchasesConfiguration
 import com.revenuecat.purchases.awaitCustomerInfo
 import com.revenuecat.purchases.awaitLogIn
+import com.revenuecat.purchases.awaitLogOut
 import com.revenuecat.purchases.awaitOfferings
 import com.revenuecat.purchases.awaitPurchase
 import com.revenuecat.purchases.awaitRestore
@@ -41,6 +42,10 @@ interface BillingPort {
     suspend fun restore(): Boolean
     /** True when the active Pro is a promotional entitlement (a gift from the team), not a purchase. */
     suspend fun isGift(): Boolean = false
+    /** Back to a fresh anonymous store user, so the next account on this device does not inherit this one's Pro. */
+    suspend fun logOut() {}
+    /** True while the store user is anonymous (nobody logged in to it). */
+    fun isAnonymous(): Boolean = true
 }
 
 data class EntitlementUiState(val isPro: Boolean = false, val isGift: Boolean = false, val packages: List<BillingPackage> = emptyList(), val isLoading: Boolean = false, val error: String? = null)
@@ -53,12 +58,31 @@ class EntitlementStore(private val port: BillingPort?) {
 
     private val unavailable = "Subscriptions aren't available in this build yet."
 
+    /** Bumped by [reset]: a login that started before a sign-out must not put that account's Pro back. */
+    @Volatile private var generation = 0
+
     suspend fun login(userId: String) {
         val p = port ?: return
+        val started = generation
         runCatching { p.logIn(userId) }.getOrNull()?.let { pro ->
             val gift = pro && runCatching { p.isGift() }.getOrDefault(false)
-            _state.update { it.copy(isPro = pro, isGift = gift) }
+            if (started == generation) _state.update { it.copy(isPro = pro, isGift = gift) }
         }
+    }
+
+    /**
+     * Sign-out and account deletion (EntitlementController.reset on iOS): Pro off at once, and the store logged out to
+     * a fresh anonymous user, so the next account to sign in on this device starts without this one's Pro. Offline or
+     * already anonymous: Pro stays off. A login that was still in flight may have identified the store again after the
+     * logout, so it is logged out once more.
+     */
+    suspend fun reset() {
+        generation++
+        val started = generation
+        _state.value = EntitlementUiState()
+        val p = port ?: return
+        runCatching { p.logOut() }
+        if (started == generation && !p.isAnonymous()) runCatching { p.logOut() }
     }
 
     suspend fun refresh() {
@@ -101,6 +125,13 @@ class RevenueCatBilling private constructor() : BillingPort {
     private val purchases get() = Purchases.sharedInstance
 
     override suspend fun logIn(userId: String): Boolean = purchases.awaitLogIn(userId).customerInfo.entitlements[PRO_ENTITLEMENT_ID]?.isActive == true
+
+    /** RevenueCat refuses to log out an anonymous user (there is nothing to log out), so that case is skipped. */
+    override suspend fun logOut() {
+        if (!purchases.isAnonymous) purchases.awaitLogOut()
+    }
+
+    override fun isAnonymous(): Boolean = purchases.isAnonymous
     override suspend fun isPro(): Boolean = purchases.awaitCustomerInfo().entitlements[PRO_ENTITLEMENT_ID]?.isActive == true
 
     override suspend fun packages(): List<BillingPackage> {

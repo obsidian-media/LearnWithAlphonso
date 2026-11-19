@@ -21,6 +21,7 @@ import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
 import com.obsidianmedia.learnwithalphonso.ui.lesson.LessonEdgeButton
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.core.logic.SupportCopy
+import com.obsidianmedia.learnwithalphonso.core.sync.SignOutGuard
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.HeadlineType
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.FootnoteType
@@ -95,6 +96,10 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var showDelete by remember { mutableStateOf(false) }
+    /** Set when sign-out found unsynced work still waiting after its drain attempt (SignOutGuard). */
+    var signOutConfirm by remember { mutableStateOf<SignOutGuard.Decision.Confirm?>(null) }
+    var signingOut by remember { mutableStateOf(false) }
+    fun signOutNow() { container.pushRegistrar.onSignOut(); container.session.signOut() }
     var confirmText by remember { mutableStateOf("") }
     var pickingAvatar by remember { mutableStateOf(false) }
 
@@ -181,7 +186,20 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -
                     RowButton("Manage subscription") { uriHandler.openUri("https://play.google.com/store/account/subscriptions") }
                 }
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    DsCompactButton("Sign out", { container.pushRegistrar.onSignOut(); container.session.signOut() }, danger = true)
+                    // Tries to send what is still queued first, and asks only when some is still waiting. Signing out keeps it
+                    // for this account either way (SyncCoordinator.endSession).
+                    DsCompactButton("Sign out", {
+                        val userId = container.session.userId
+                        if (userId == null) signOutNow()
+                        else scope.launch {
+                            signingOut = true
+                            val decision = try { container.syncCoordinator.prepareSignOut(userId) } finally { signingOut = false }
+                            when (decision) {
+                                SignOutGuard.Decision.SignOut -> signOutNow()
+                                is SignOutGuard.Decision.Confirm -> signOutConfirm = decision
+                            }
+                        }
+                    }, enabled = !signingOut, danger = true)
                 }
             }
         }
@@ -208,14 +226,29 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -
                 TextButton(enabled = confirmText == "DELETE" && !busy, onClick = {
                     scope.launch {
                         busy = true; error = null
+                        val deletedUserId = container.session.userId
                         val ok = runCatching { container.accountClient.deleteMyAccount() }.isSuccess
                         busy = false
                         showDelete = false
-                        if (ok) container.session.signOut() else error = "Couldn't delete your account. Try again."
+                        if (ok) {
+                            // A deleted account's queued work can never sync: it goes now, unlike a sign-out's.
+                            deletedUserId?.let { runCatching { container.syncCoordinator.clearAccount(it) } }
+                            container.session.signOut()
+                        } else error = "Couldn't delete your account. Try again."
                     }
                 }) { Text("Delete Forever", color = ds.wrongInk) }
             },
             dismissButton = { TextButton(onClick = { showDelete = false }) { Text("Cancel") } },
+        )
+    }
+
+    signOutConfirm?.let { confirm ->
+        AlertDialog(
+            onDismissRequest = { signOutConfirm = null },
+            title = { Text(confirm.title) },
+            text = { Text(confirm.message) },
+            confirmButton = { TextButton(onClick = { signOutConfirm = null; signOutNow() }) { Text(SignOutGuard.CONFIRM, color = ds.wrongInk) } },
+            dismissButton = { TextButton(onClick = { signOutConfirm = null }) { Text(SignOutGuard.CANCEL) } },
         )
     }
 }

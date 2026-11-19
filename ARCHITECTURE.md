@@ -1367,7 +1367,12 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   becomes a `DeadLetter`. Grades still stop at a transient failure to keep
   SM-2 order and carry `queueIdentity` as the server's `attemptId`; a rejected
   grade is dead-lettered and the next continues. Rows with another owner are
-  dropped unsent. Rows with no owner (queued before owners were recorded) are
+  never sent and stay queued for that account: sign-out keeps an account's
+  rows (`SyncQueueStore.endSession`; only account deletion's `clearAccount`
+  removes them), `ForeignOwnerClock` records when it left, and a pass of
+  another account deletes them 30 days after that (`AccountQueueRetention`,
+  as on iOS #627). Settings' Sign out first tries to sync and asks when work
+  is still waiting (`SignOutGuard`). Rows with no owner (queued before owners were recorded) are
   adopted once, by the account restored at the first launch after the upgrade
   (`AppContainer` restores the session and calls `resolveOrphanedRows` with the
   restored user, or null, before any pass: the coordinator's `startup` gate holds

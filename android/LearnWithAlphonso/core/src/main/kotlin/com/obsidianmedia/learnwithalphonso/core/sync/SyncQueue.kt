@@ -60,8 +60,8 @@ data class DeadLetterInfo(val identity: String, val reason: String)
 data class DeadLetter<T>(val item: T, val reason: String)
 
 /**
- * What one sync pass did. Items present in no list are untouched (still queued, waiting out a backoff, or unauthorized
- * this pass) and stay as they are.
+ * What one sync pass did. Items present in no list are untouched (still queued, waiting out a backoff, unauthorized
+ * this pass, or another account's) and stay as they are.
  */
 data class SyncResult(
     val syncedLessonCompletions: List<PendingLessonCompletion>,
@@ -72,9 +72,6 @@ data class SyncResult(
     val rescheduledLessonCompletions: List<PendingLessonCompletion> = emptyList(),
     /** Can never succeed (rejected by the server): move out of the queue. */
     val deadLetteredLessonCompletions: List<DeadLetter<PendingLessonCompletion>> = emptyList(),
-    /** Belong to another account: delete, never send. */
-    val droppedForeignLessonCompletions: List<PendingLessonCompletion> = emptyList(),
     val rescheduledReviewGrades: List<PendingReviewGrade> = emptyList(),
     val deadLetteredReviewGrades: List<DeadLetter<PendingReviewGrade>> = emptyList(),
-    val droppedForeignReviewGrades: List<PendingReviewGrade> = emptyList(),
 )

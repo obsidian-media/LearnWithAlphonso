@@ -144,6 +144,61 @@ class SessionManagerTest {
         assertEquals(AuthState.SignedOut, m.state.value)
     }
 
+    /** A store that also keeps the PKCE verifier, as EncryptedSessionStore does. */
+    private class PkceStore : SessionStore {
+        var session: SupabaseSession? = null
+        var pkce: PendingPkce? = null
+        override fun load() = session
+        override fun save(session: SupabaseSession) { this.session = session }
+        override fun clear() { session = null }
+        override fun savePendingPkce(pending: PendingPkce) { pkce = pending }
+        override fun loadPendingPkce() = pkce
+        override fun clearPendingPkce() { pkce = null }
+    }
+
+    private fun googleAuth(bodies: MutableList<String>) = SupabaseAuthClient(
+        "https://x.supabase.co", "pk",
+        MockEngine { req ->
+            bodies.add(req.body.toByteArray().decodeToString())
+            respond("""{"access_token":"g-at","refresh_token":"g-rt","expires_in":3600,"user":{"id":"u9"}}""", HttpStatusCode.OK)
+        },
+    ) { now }
+
+    @Test
+    fun `Google sign-in completes after the process was ended during the browser hop`() = runTest {
+        val bodies = ArrayList<String>()
+        val store = PkceStore()
+        SessionManager(googleAuth(bodies), store) { now }.beginGoogleSignIn("https://x.supabase.co", "cb://x")
+        val verifier = store.pkce!!.verifier
+        // A new process: a new manager, the same store.
+        val fresh = SessionManager(googleAuth(bodies), store) { now + 120 }
+        fresh.completeGoogleSignIn("cb://x?code=abc")
+        assertEquals("u9", fresh.userId)
+        assertTrue(bodies.single().contains(""""code_verifier":"$verifier""""))
+        assertNull(store.pkce, "the verifier is used once")
+    }
+
+    @Test
+    fun `a stored verifier older than its lifetime is not used`() = runTest {
+        val bodies = ArrayList<String>()
+        val store = PkceStore()
+        SessionManager(googleAuth(bodies), store) { now }.beginGoogleSignIn("https://x.supabase.co", "cb://x")
+        val late = SessionManager(googleAuth(bodies), store) { now + PendingPkce.LIFETIME_SECONDS + 1 }
+        late.completeGoogleSignIn("cb://x?code=abc")
+        assertEquals(AuthState.SignedOut, late.state.value)
+        assertTrue(bodies.isEmpty(), "no code exchange was attempted")
+        assertNull(store.pkce)
+    }
+
+    @Test
+    fun `a failed callback clears the stored verifier too`() = runTest {
+        val store = PkceStore()
+        val m = SessionManager(googleAuth(ArrayList()), store) { now }
+        m.beginGoogleSignIn("https://x", "cb://x")
+        m.completeGoogleSignIn("cb://x?error=access_denied")
+        assertNull(store.pkce)
+    }
+
     /** An engine with no network at all: every request throws before reaching a server. */
     private fun offlineAuth(): SupabaseAuthClient =
         SupabaseAuthClient("https://x.supabase.co", "pk", MockEngine { throw IOException("no network") }) { now }

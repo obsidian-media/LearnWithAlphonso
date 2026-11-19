@@ -39,9 +39,6 @@ interface SyncDao {
     @Query("DELETE FROM pending_lesson_completions WHERE ownerUserId IS NULL")
     suspend fun deleteOwnerlessLessonCompletions()
 
-    @Query("DELETE FROM pending_lesson_completions")
-    suspend fun clearLessonCompletions()
-
     @Query("DELETE FROM pending_lesson_completions WHERE ownerUserId = :userId OR ownerUserId IS NULL")
     suspend fun clearLessonCompletionsOf(userId: String)
 
@@ -69,9 +66,6 @@ interface SyncDao {
     @Query("DELETE FROM pending_review_grades WHERE ownerUserId IS NULL")
     suspend fun deleteOwnerlessReviewGrades()
 
-    @Query("DELETE FROM pending_review_grades")
-    suspend fun clearReviewGrades()
-
     @Query("DELETE FROM pending_review_grades WHERE ownerUserId = :userId OR ownerUserId IS NULL")
     suspend fun clearReviewGradesOf(userId: String)
 
@@ -85,9 +79,6 @@ interface SyncDao {
     /** Keeps the newest 50 for diagnosis. */
     @Query("DELETE FROM dead_letters WHERE id NOT IN (SELECT id FROM dead_letters ORDER BY deadAt DESC, id DESC LIMIT 50)")
     suspend fun trimDeadLetters()
-
-    @Query("DELETE FROM dead_letters")
-    suspend fun clearDeadLetters()
 
     @Query("DELETE FROM dead_letters WHERE ownerUserId = :userId OR ownerUserId IS NULL")
     suspend fun clearDeadLettersOf(userId: String)

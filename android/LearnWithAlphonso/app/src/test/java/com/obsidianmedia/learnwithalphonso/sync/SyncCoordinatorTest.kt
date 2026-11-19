@@ -8,7 +8,11 @@ import com.obsidianmedia.learnwithalphonso.awaitTrue
 import com.obsidianmedia.learnwithalphonso.core.auth.AccountChangedException
 import com.obsidianmedia.learnwithalphonso.core.net.ProgressSyncClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseHttp
+import com.obsidianmedia.learnwithalphonso.core.sync.AccountQueueRetention
+import com.obsidianmedia.learnwithalphonso.core.sync.ForeignOwnerClock
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingLessonCompletion
+import com.obsidianmedia.learnwithalphonso.core.sync.PendingReviewGrade
+import com.obsidianmedia.learnwithalphonso.core.sync.SignOutGuard
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -47,6 +51,13 @@ class SyncCoordinatorTest {
     private fun completes(s: FakeServer) = s.seen.count { it.path.endsWith("complete-lesson") }
 
     private fun scope() = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    private fun clock(): ForeignOwnerClock {
+        var raw: String? = null
+        return ForeignOwnerClock({ raw }, { raw = it })
+    }
+
+    private fun theirs(owner: String = "u2") = PendingLessonCompletion("theirs", 5, emptyList(), "en", now - 500, 50, ownerUserId = owner)
 
     @Test
     fun `a failed pass wakes itself when the item becomes due, and stops once it is synced`() = runBlocking {
@@ -139,16 +150,88 @@ class SyncCoordinatorTest {
     }
 
     @Test
-    fun `foreign rows are dropped unsent`() = runBlocking {
+    fun `another account's rows are kept, unsent, for that account`() = runBlocking {
         val s = server(failFirst = 0)
         val store = MemorySyncStore().apply {
             completions.add(row())
-            completions.add(PendingLessonCompletion("theirs", 5, emptyList(), "en", now - 500, 50, ownerUserId = "u2"))
+            completions.add(theirs())
         }
-        SyncCoordinator(store, { s.progressClient }, { "u1" }, { true }, null, { now }).triggerSync()
-        assertTrue(store.completions.isEmpty())
+        SyncCoordinator(store, { s.progressClient }, { "u1" }, { true }, null, { now }, ownerClock = clock()).triggerSync()
+        assertEquals(listOf("theirs"), store.completions.map { it.lessonId })
         assertEquals("only the signed-in account's row was sent", 1, completes(s))
         assertTrue(s.seen.none { it.body.contains("theirs") })
+    }
+
+    @Test
+    fun `another account's rows expire 30 days after it left, timed from its departure`() = runBlocking {
+        val s = server(failFirst = 0)
+        val day = 24L * 60 * 60 * 1000
+        val c = clock().apply {
+            markRetired("u2", now - 31 * day)
+            markRetired("u3", now - 29 * day)
+        }
+        val store = MemorySyncStore().apply {
+            completions.add(theirs("u2"))
+            // Queued long before u3 left: it still gets its 30 days from the departure.
+            completions.add(PendingLessonCompletion("recent", 5, emptyList(), "en", now - 300 * day, 50, ownerUserId = "u3"))
+            grades.add(PendingReviewGrade("k", "a", "en", now - 400, ownerUserId = "u2"))
+        }
+        SyncCoordinator(store, { s.progressClient }, { "u1" }, { true }, null, { now }, ownerClock = c).triggerSync()
+        assertEquals(listOf("recent"), store.completions.map { it.lessonId })
+        assertTrue("u2's answer expired with its lesson", store.grades.isEmpty())
+        assertEquals("expired rows are deleted, never sent", 0, completes(s))
+        assertTrue(AccountQueueRetention.FOREIGN_ROW_LIFETIME_MILLIS == 30 * day)
+    }
+
+    @Test
+    fun `a sign-out keeps the account's queued lesson, and it syncs when the same account signs back in`() = runBlocking {
+        val s = server(failFirst = 0)
+        val c = clock()
+        val store = MemorySyncStore().apply { completions.add(row(owner = "u1")) }
+        var user: String? = null
+        val coordinator = SyncCoordinator(store, { s.progressClient }, { user }, { true }, null, { now }, ownerClock = c)
+        coordinator.endSession("u1")
+        assertEquals("kept for u1", 1, store.completions.size)
+        assertEquals("its 30 days start at the sign-out", now, c.retiredAt("u1"))
+        user = "u2"
+        coordinator.triggerSync()
+        assertEquals("another account never sends it", 0, completes(s))
+        assertEquals(1, store.completions.size)
+        user = "u1"
+        coordinator.triggerSync()
+        assertTrue("u1 is back: the lesson synced", store.completions.isEmpty())
+        assertEquals(1, completes(s))
+        assertNull("and u1 is no longer an account that left", c.retiredAt("u1"))
+    }
+
+    @Test
+    fun `an account that signs out with nothing queued leaves no departure behind`() = runBlocking {
+        val c = clock().apply { markRetired("u1", 1L) }
+        val coordinator = SyncCoordinator(MemorySyncStore(), { null }, { null }, { true }, null, { now }, ownerClock = c)
+        coordinator.endSession("u1")
+        assertNull(c.retiredAt("u1"))
+    }
+
+    @Test
+    fun `sign-out first tries to send, and asks only when something is still waiting`() = runBlocking {
+        val up = server(failFirst = 0)
+        val synced = MemorySyncStore().apply { completions.add(row()); completions.add(theirs()) }
+        assertEquals(
+            "everything of u1's went: sign out at once (u2's row is not u1's to warn about)",
+            SignOutGuard.Decision.SignOut,
+            SyncCoordinator(synced, { up.progressClient }, { "u1" }, { true }, null, { now }).prepareSignOut("u1"),
+        )
+        assertEquals(1, completes(up))
+
+        // The server is down for everything: both stay queued.
+        val down = FakeServer { json("""{"error":"overloaded"}""", HttpStatusCode.ServiceUnavailable) }
+        val stuck = MemorySyncStore().apply {
+            completions.add(row())
+            grades.add(PendingReviewGrade("k", "a", "en", now - 400, ownerUserId = "u1"))
+        }
+        val decision = SyncCoordinator(stuck, { down.progressClient }, { "u1" }, { true }, null, { now }).prepareSignOut("u1")
+        assertEquals(SignOutGuard.Decision.Confirm("1 lesson and 1 review answer haven't synced yet. Sign out anyway?", SignOutGuard.MESSAGE), decision)
+        assertEquals("asking never deletes anything", 1, stuck.completions.size)
     }
 
     @Test
@@ -190,7 +273,7 @@ class SyncCoordinatorTest {
     }
 
     @Test
-    fun `a pass that ends after the account changed writes nothing back`() = runBlocking {
+    fun `a pass that ends after the account changed removes what it sent but writes nothing to the caches`() = runBlocking {
         val gate = CompletableDeferred<Unit>()
         val s = server(failFirst = 0, hold = gate)
         val store = MemorySyncStore().apply { completions.add(row()) }
@@ -201,7 +284,7 @@ class SyncCoordinatorTest {
         user = "u2" // signed out and in as someone else while the request was out
         gate.complete(Unit)
         pass.await()
-        assertEquals("the result belongs to the previous account: nothing is applied", 1, store.completions.size)
+        assertTrue("the row was sent for u1, so it leaves the queue rather than being sent again", store.completions.isEmpty())
         assertNull("and no progress is stored under the new account", store.syncedAt)
     }
 
@@ -300,7 +383,7 @@ class SyncCoordinatorTest {
     }
 
     @Test
-    fun `clearing an ended account removes its rows and the caches, not another account's queue`() = runBlocking {
+    fun `deleting an account removes its rows and the caches, not another account's queue`() = runBlocking {
         val s = server(failFirst = 0)
         val store = MemorySyncStore().apply {
             completions.add(row(owner = "u1"))
