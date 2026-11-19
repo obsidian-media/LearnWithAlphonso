@@ -128,7 +128,7 @@ describe("story campaigns", () => {
 
   it("the guard check can fail: a prompt missing the emergency clause is caught", () => {
     const cut = NO_MEDICAL.en.replace(/ If the learner describes chest pain.*$/, "");
-    expect(`You are Maya. ${cut}`).not.toContain(NO_MEDICAL.en);
+    expect(`You are Imani. ${cut}`).not.toContain(NO_MEDICAL.en);
   });
 
   it("never asks the booking caller for a surname, phone number or address (ai-safety rule)", () => {

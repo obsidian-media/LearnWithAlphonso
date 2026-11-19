@@ -200,6 +200,7 @@ describe("display and team name verdicts (real SQL)", () => {
     "Hana",
     "Kofi",
     "Dara",
+    "Imani",
     "Alex",
     "Sam Smith",
     "Learner-4F2A",
