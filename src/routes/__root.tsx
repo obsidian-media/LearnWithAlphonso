@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { CookieConsent } from "../components/CookieConsent";
 import { AttributionBridge } from "../components/AttributionBridge";
+import { TimeZoneBridge } from "../components/TimeZoneBridge";
 import { ReferralCapture } from "../components/ReferralBridge";
 import { SHARE_IMAGE, SHARE_IMAGE_ALT, THEME_COLOR_LIGHT, THEME_COLOR_NIGHT } from "../lib/seo";
 import { StatusPage } from "../components/StatusPage";
@@ -166,6 +167,7 @@ function RootComponent() {
       <MotionConfig reducedMotion="user">
         <AuthSync />
         <AttributionBridge />
+        <TimeZoneBridge />
         <ReferralCapture />
         <Outlet />
         <CookieConsent />
