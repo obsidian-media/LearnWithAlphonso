@@ -327,7 +327,7 @@ private fun StoryReader(container: AppContainer, story: Story) {
 
     fun start(from: Int) {
         narrator.begin(from, hasAiConsent) { segment ->
-            if (progressStopped) return@play
+            if (progressStopped) return@begin
             // Garnish, like the podcast position: a failed save never interrupts reading. A rejected token stops further saves.
             scope.launch {
                 try {
