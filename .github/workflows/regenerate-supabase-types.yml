@@ -11,8 +11,13 @@ name: Regenerate Supabase Types
 # place a real type error could pass silently. To run it by hand, use the Actions
 # tab (or `gh workflow run regenerate-supabase-types.yml`).
 #
+# Since ci.yml's `types-gen` / `types-push` jobs regenerate the file inside the migration's own PR, this normally finds
+# nothing to commit. It stays as the safety net: a stale PR that is merged anyway (types-gen is not a required check),
+# or production drifting from the migrations, still gets fixed on main.
+#
 # Required repo secrets:
 #   SUPABASE_ACCESS_TOKEN -- already configured (deploy-supabase uses it)
+#   SUPABASE_DB_PASSWORD -- already configured (deploy-supabase uses it); the generator reads production's database
 #   TYPES_REGEN_DEPLOY_KEY -- private half of the repository deploy key "types-regen workflow (push to main)";
 #     loaded only in the final push step, never during install, generate or format
 on:
@@ -77,15 +82,14 @@ jobs:
       - run: bun install --frozen-lockfile
         if: env.SKIP != '1'
 
+      # The CLI's own generator from production's database, formatted with the repo's Prettier config: the same
+      # script, generator and format as ci.yml's types-gen (on PRs) and types-fresh.
       - name: Generate types
         if: env.SKIP != '1'
-        run: supabase gen types typescript --project-id qhcjpfbxfcltjbiuknyt > src/integrations/supabase/types.ts
+        run: bash scripts/gen-supabase-types.sh --production
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Format to match the repo's Prettier config
-        if: env.SKIP != '1'
-        run: bunx prettier --write src/integrations/supabase/types.ts
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
 
       - name: Commit and push if the schema actually changed
         if: env.SKIP != '1'

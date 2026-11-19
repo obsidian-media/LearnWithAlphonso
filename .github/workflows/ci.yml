@@ -149,8 +149,9 @@ jobs:
 
       - name: Generated Supabase types are up to date
         run: |
-          supabase gen types typescript --project-id qhcjpfbxfcltjbiuknyt > src/integrations/supabase/types.ts
-          bunx prettier --write src/integrations/supabase/types.ts
+          # The CLI's own generator, read from production's database: the same generator (and format) as types-gen
+          # on pull requests, so a PR's committed file matches here (see scripts/gen-supabase-types.sh).
+          bash scripts/gen-supabase-types.sh --production
           if ! git diff --quiet -- src/integrations/supabase/types.ts; then
             echo "::error::src/integrations/supabase/types.ts is stale. Run the 'Regenerate Supabase Types' workflow (gh workflow run regenerate-supabase-types.yml) and let it commit the result -- never hand-edit this file. If this PR ALSO adds a new migration, this failure is expected until that migration is merged and deployed -- see this step's header comment; re-running this exact fix will not help yet."
             git diff --stat -- src/integrations/supabase/types.ts
@@ -159,6 +160,159 @@ jobs:
           fi
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+  # Regenerates src/integrations/supabase/types.ts in the PR, from the PR's own migrations, so a migration's types land
+  # in its own PR instead of as a bot commit on main after the deploy (which made every other open PR re-run CI).
+  # Production cannot be the reference here (it only gets a migration after merge), so this applies
+  # supabase/migrations to a throwaway local Postgres on the runner and generates from that, with the real CLI (never
+  # the Supabase MCP generator, which drops graphql_public). Every generator in CI is the CLI's bundled one
+  # (scripts/gen-supabase-types.sh), never Supabase's server-side `--project-id` one, whose format differs. No secrets: fork PRs run it too. When the file is stale it
+  # uploads the regenerated copy and fails; `types-push` below commits it to a same-repo PR branch, and the run on that
+  # commit is green. Production drift is still watched after the deploy by `types-fresh` above, and the
+  # "Regenerate Supabase Types" workflow on main stays as the safety net (it commits nothing when types already match).
+  #
+  # It always runs on pull requests (a path-filtered required check would stay pending forever), and exits green in
+  # seconds when the PR touches no migration, no generated types and not this workflow.
+  types-gen:
+    name: Supabase types match the migrations
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    outputs:
+      stale: ${{ steps.compare.outputs.stale }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # The merge commit and its first parent (the base), to see what the PR changes.
+          fetch-depth: 2
+          persist-credentials: false
+
+      # Everything that can change the generated file's content or format: the schema, the file itself, the generator
+      # script and the workflows that pin the CLI, the Prettier config, and the lockfile (Prettier's version).
+      - name: Only when the PR touches the schema or anything that shapes the generated types
+        run: |
+          changed=$(git diff --name-only HEAD^1 HEAD)
+          if printf '%s\n' "$changed" | grep -qE '^(supabase/migrations/|supabase/config\.toml$|src/integrations/supabase/types\.ts$|scripts/gen-supabase-types\.sh$|\.github/workflows/(ci|regenerate-supabase-types)\.yml$|\.prettierrc|\.prettierignore$|prettier\.config\.|bun\.lock$)'; then
+            echo "This PR touches the schema or something that shapes the generated types; regenerating."
+          else
+            echo "Nothing in this PR can change the generated types; nothing to regenerate."
+            echo "SKIP=1" >> "$GITHUB_ENV"
+          fi
+
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
+        if: env.SKIP != '1'
+        with:
+          version: 2.118.0
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        if: env.SKIP != '1'
+        with:
+          bun-version: "1.3.10"
+
+      - name: Install dependencies
+        if: env.SKIP != '1'
+        run: bun install --frozen-lockfile
+
+      - name: Apply the migrations to a local database
+        if: env.SKIP != '1'
+        run: supabase db start
+
+      - name: Generate types from the local database
+        if: env.SKIP != '1'
+        # The same script, generator and flags as types-fresh and the Regenerate workflow, only the source differs.
+        run: bash scripts/gen-supabase-types.sh --local
+
+      - name: Compare with the committed file
+        id: compare
+        if: env.SKIP != '1'
+        run: |
+          if git diff --quiet -- src/integrations/supabase/types.ts; then
+            echo "src/integrations/supabase/types.ts matches the migrations."
+            exit 0
+          fi
+          echo "stale=true" >> "$GITHUB_OUTPUT"
+          git diff --stat -- src/integrations/supabase/types.ts
+          git diff -- src/integrations/supabase/types.ts | head -100
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: steps.compare.outputs.stale == 'true'
+        with:
+          name: supabase-types
+          path: src/integrations/supabase/types.ts
+          retention-days: 3
+
+      - name: Fail while the committed types are stale
+        if: steps.compare.outputs.stale == 'true'
+        run: |
+          echo "::error::src/integrations/supabase/types.ts does not match this PR's migrations. On a branch of this repository the 'types-push' job commits the regenerated file to the PR and CI re-runs green; from a fork, download the supabase-types artifact of this run and commit it. Never hand-edit this file."
+          exit 1
+
+  # Commits the regenerated types from `types-gen` to the PR branch. It holds the deploy key, so it runs NO repository
+  # code: no install, no script, no build; only the official checkout and artifact actions and plain git. The file
+  # arrives as an artifact and must be exactly that one file. Only for PRs from this repository (a fork's run has no
+  # secrets and must not be pushed to). The key is a repo secret, which any same-repo PR author with write access can
+  # already read, so this adds no exposure. A deploy-key push re-runs CI on the new head (an Actions-token push would
+  # not), and that run matches, so there is no loop. src/lib/ci-types-push-guard.test.ts pins all of this.
+  types-push:
+    name: Commit regenerated Supabase types to the PR
+    runs-on: ubuntu-latest
+    needs: [types-gen]
+    if: >-
+      !cancelled() && github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.types-gen.outputs.stale == 'true'
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: supabase-types
+          path: ${{ runner.temp }}/supabase-types
+
+      - name: The artifact is exactly the generated types file
+        run: |
+          files=$(cd "$RUNNER_TEMP/supabase-types" && find . -mindepth 1 | sort)
+          if [ "$files" != "./types.ts" ]; then
+            echo "::error::Expected only types.ts in the artifact, got: $files"
+            exit 1
+          fi
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          ssh-key: ${{ secrets.TYPES_REGEN_DEPLOY_KEY }}
+
+      - name: Commit and push to the PR branch
+        run: |
+          # The deploy key bypasses main's ruleset: never push to a protected branch name, whatever the PR's head is.
+          case "$HEAD_REF" in
+            main | master | release*)
+              echo "::error::Refusing to push generated types to $HEAD_REF."
+              exit 1
+              ;;
+          esac
+          # A newer push to the PR has its own run; never overwrite it with this run's file.
+          if [ "$(git rev-parse HEAD)" != "$HEAD_SHA" ]; then
+            echo "The PR branch moved since this run started; the newer run regenerates."
+            exit 0
+          fi
+          # Loop breaker: the head is already this job's own commit and the file is still stale, so the generator is
+          # not deterministic; pushing again would loop forever.
+          if [ "$(git log -1 --format=%s)" = "chore: regenerate supabase types" ]; then
+            echo "::error::The PR head is already a regenerated-types commit and the types are still stale: the generator output is not stable. Not pushing again."
+            exit 1
+          fi
+          cp "$RUNNER_TEMP/supabase-types/types.ts" src/integrations/supabase/types.ts
+          git add src/integrations/supabase/types.ts
+          if git diff --cached --quiet; then
+            echo "Types already match -- nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: regenerate supabase types"
+          git push origin "HEAD:refs/heads/$HEAD_REF"
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
 
   admin-build:
     runs-on: ubuntu-latest
