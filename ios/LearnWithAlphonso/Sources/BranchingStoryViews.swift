@@ -165,7 +165,8 @@ private struct BranchingNodePage: View {
         self.onChoose = onChoose
         self.onContinue = onContinue
         _narrator = StateObject(wrappedValue: StoryNarrator(
-            segments: node.segments, course: Course(wireCode: story.course) ?? .english, session: session))
+            segments: node.segments, course: Course(wireCode: story.course) ?? .english, session: session,
+            storyID: story.id))
     }
 
     private var courseValue: Course { Course(wireCode: story.course) ?? .english }
@@ -253,8 +254,11 @@ private struct BranchingNodePage: View {
     }
 
     private func start() {
-        guard aiConsent.isGranted else { narrator.markUnavailable(); return }
-        Task { await narrator.play(from: 0) { _ in } }
+        Task {
+            // A fully recorded node needs no AI consent; otherwise the live fallback does.
+            guard await narrator.prepare(aiConsentGranted: aiConsent.isGranted) else { narrator.markUnavailable(); return }
+            await narrator.play(from: 0) { _ in }
+        }
     }
 }
 

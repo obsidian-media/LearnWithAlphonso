@@ -101,6 +101,21 @@ Every billable AI call is logged to `ai_cost_log` (migration `20261118200000_ai_
 
 **Speech cache.** The audit found three kinds of text sent to `/api/tts`: scene openers and name-less Hector greetings (fixed, the same for every learner: 248 lines across en/fr/es, about 75 to 87 characters each, so about $0.0024 per request), and model replies (written for one learner). Only an exact match against those fixed lines is kept: private `tts-cache` bucket, key = SHA-256 of voice + format + text, read and written by `/api/tts` with the service role after the learner is authenticated. Everything else, and every greeting with a name, is never stored. A hit still spends the learner's quota unit and no limit changed; it is logged with `cache_hit` true and cost 0. Estimated saving (not yet measured): every repeat opener or greeting after the first request per voice, about $2.40 per 1,000 call starts. Read the real rate on the Numbers page once it has run.
 
+## Story narration (pre-recorded)
+
+Graded and branching stories are narrated from pre-recorded files, not live speech: one Deepgram MP3 per sentence, recorded once with the course's Alphonso voice (`DEFAULT_VOICES.alphonso`: en `aura-2-saturn-en`, es `aura-2-javier-es`, fr `aura-2-hector-fr`). The files live in the public `podcast-audio` bucket under `stories/<storyId>/`, next to a `manifest.json` that lists each recorded sentence by its text. Readers on web, iOS and Android look a sentence up by its text, so an edited sentence has no recording until the script runs again and simply falls back to live `/api/tts` speech; a fully recorded story plays with no AI call, no AI quota and no AI consent. Files are named from a hash of voice + text and cached for a year; the manifest is cached for 5 minutes. No migration: the bucket already exists, is public, and only the service role writes to it. Like the podcast, a public bucket hides nothing: generate audio only for stories that are published.
+
+**Owner command** (Git Bash, from the repo root; keys come from the environment, or from `~/.alphonso-secrets/podcast.env`, which must hold `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `DEEPGRAM_API_KEY`). Without `--confirm` it is a dry run that prints what it would record and the Deepgram cost:
+
+```
+bun run scripts/story-audio.ts generate                 # dry run, all published stories
+bun run scripts/story-audio.ts generate --confirm       # record whatever is missing
+bun run scripts/story-audio.ts generate --story <uuid> --confirm
+bun run scripts/story-audio.ts generate --course es --confirm
+```
+
+It is idempotent: a sentence already recorded in the same voice is skipped, so run it again after publishing a story or editing a sentence. Cost: Aura-2 at $0.030 per 1,000 characters; the 11 stories seeded in the migrations (9 read-along, 2 branching; 6,585 characters of distinct sentences) cost about $0.20 once. Check the voice by playing one story in each course after the first run.
+
 ## Staff console and types regeneration
 
 - **Staff console.** A second factor is required by default: every staff member must enrol an authenticator (the sign-in page walks them through it) before they can use the console; only `ADMIN_REQUIRE_AAL2=false` turns it off (never in production). Add staff from the Staff page (they must have signed up first). An `admin_users` member with no `staff_roles` row is treated as owner; inserting the owner's row is recommended. The Edge Functions `complete-lesson`, `complete-podcast-quiz`, `grade-review`, `start-lesson-session`, `complete-story-check`, `finish-branching-story` and `get-season-status` must be deployed from `main` so a ban stops them at once.

@@ -64,6 +64,22 @@ describe("iOS graded stories: the check is graded on the server", () => {
     expect(text).toContain("state.finishedCurrent()");
   });
 
+  it("narration plays the recording first and the live voice only with consent; both readers prepare first", () => {
+    const text = views();
+    const audio = functionBody(text, "private func audioData(for index: Int)");
+    const recorded = audio.indexOf("StoryRecordings.audioURL(");
+    const gate = audio.indexOf("guard liveAllowed else");
+    const live = audio.indexOf("client.synthesizeSpeech(");
+    expect(recorded).toBeGreaterThan(-1);
+    expect(recorded).toBeLessThan(gate);
+    expect(gate).toBeLessThan(live);
+    expect(text).toContain("StoryRecordings.canNarrate(");
+    expect(text).toContain("narrator.prepare(aiConsentGranted: aiConsent.isGranted)");
+    const branching = code(read("ios/LearnWithAlphonso/Sources/BranchingStoryViews.swift"));
+    expect(branching).toContain("narrator.prepare(aiConsentGranted: aiConsent.isGranted)");
+    expect(branching).toContain("storyID: story.id");
+  });
+
   it("a tapped word opens the existing define-and-save sheet", () => {
     const text = views();
     expect(text).toContain("TappableText(text: segment");

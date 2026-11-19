@@ -182,7 +182,7 @@ private fun NodePage(container: AppContainer, story: BranchingStory, nodeId: Str
                 if (narration.playing) {
                     DsCompactButton("Pause narration", { narrator.stop() }, primary = true)
                 } else {
-                    DsCompactButton("Listen", { if (hasAiConsent) narrator.play(0) { } else narrator.markUnavailable() })
+                    DsCompactButton("Listen", { narrator.begin(0, hasAiConsent) { } })
                 }
             }
         }

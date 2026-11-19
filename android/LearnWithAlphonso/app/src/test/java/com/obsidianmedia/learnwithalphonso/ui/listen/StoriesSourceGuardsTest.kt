@@ -95,6 +95,19 @@ class StoriesSourceGuardsTest {
     }
 
     @Test
+    fun `narration plays the recording first, falls back to live speech only with consent, and both readers use begin`() {
+        val src = code(read(ui))
+        val audioFor = src.substring(src.indexOf("private fun audioFor("))
+        val recorded = audioFor.indexOf("container.storyRecordings.audio(")
+        val gate = audioFor.indexOf("check(liveSpeechAllowed)")
+        val live = audioFor.indexOf("container.aiClient.synthesizeSpeech(")
+        assertTrue("the recording is tried before the gate and the live voice", recorded in 0 until gate && gate < live)
+        assertTrue(src.contains("StoryRecordings.canNarrate(story.segments, recordings, aiConsentGranted)"))
+        assertTrue(src.contains("narrator.begin(from, hasAiConsent)"))
+        assertTrue(code(read(ui.replace("StoriesUi", "BranchingStoryUi"))).contains("narrator.begin(0, hasAiConsent)"))
+    }
+
+    @Test
     fun `the library is reachable from the Listen shelf`() {
         assertTrue(code(read(shelf)).contains("StoriesEntryRow { onOpenStories(course) }"))
     }
