@@ -858,6 +858,7 @@ describe("Hands-free across a campaign's scenes", () => {
 
   beforeEach(() => {
     localStorage.removeItem("showAlphonsoWhilePractising");
+    localStorage.removeItem("handsFree.preferred.v1");
     // The first-use note is covered with the single scenarios; here it has been read.
     localStorage.setItem(NOTE_KEY, "1");
     installFakeAudioContext();

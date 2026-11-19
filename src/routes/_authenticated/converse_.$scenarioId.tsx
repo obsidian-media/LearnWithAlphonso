@@ -310,7 +310,7 @@ function ConverseChatPage({
   // uses the same implementation rather than a second copy of it. The hook
   // only calls back on a real transcript; every failure path surfaces through
   // `captureError` instead.
-  // Hands-free is off on every call (this component mounts per call) and is never stored. It is free here: a hands-free
+  // Hands-free (this component mounts per call) starts as the learner last left it on this device. It is free here: a hands-free
   // turn costs the same as a held press, so the server's daily caps already bound it.
   const [handsFreeWanted, setHandsFreeWanted] = useState(false);
   const callView = mode ? mode === "call" : showAlphonso;

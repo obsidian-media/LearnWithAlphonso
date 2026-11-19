@@ -13,7 +13,7 @@ import type { HandsFreeStatus } from "@/lib/hands-free-loop";
 
 /** What a call hands to `PracticeCall` for hands-free. */
 export type HandsFreeCall = {
-  /** The learner's switch. It starts off on every call. */
+  /** The learner's switch. It starts as they last left it on this device (off the first time). */
   on: boolean;
   onChange: (on: boolean) => void;
   status: HandsFreeStatus;
@@ -42,8 +42,8 @@ function rememberNote(): void {
 /**
  * The "Hands-free" switch of a voice call, with its once-per-device safety note. It lives in the call's conversation
  * sheet, as on iOS. Turning it on is free in Practice (the same turn as a held press, so the server's daily caps
- * already apply) and stays Pro in Hector (the call itself is Pro). It is off every time a call starts: the switch is
- * the call screen's own state and is never stored.
+ * already apply) and stays Pro in Hector (the call itself is Pro). The learner's last choice is remembered per device
+ * (`hands-free-preference.ts`) and applied when the next call starts.
  */
 export function HandsFreeSwitch({ call }: { call: HandsFreeCall }) {
   const [showNote, setShowNote] = useState(false);

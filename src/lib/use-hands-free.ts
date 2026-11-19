@@ -7,6 +7,7 @@ import {
   type HandsFreeStatus,
   type HandsFreeTuning,
 } from "./hands-free-loop";
+import { readHandsFreePreference, writeHandsFreePreference } from "./hands-free-preference";
 import { useSpeechCapture } from "./use-speech-capture";
 import type { HandsFreeCall } from "@/components/HandsFreeSwitch";
 import type { Course } from "@/data/courses";
@@ -267,6 +268,13 @@ export function useHandsFreeCapture({
   // Read after mount, so the server and the first client render agree (no switch), then the browser decides.
   const [supported, setSupported] = useState(false);
   useEffect(() => setSupported(handsFreeSupported()), []);
+  // The learner's last choice carries into every new call on this device. Applied once, after mount (so the server
+  // and first client render agree); the once-per-device note was already confirmed before it could be stored.
+  const onWantedChangeRef = useRef(onWantedChange);
+  onWantedChangeRef.current = onWantedChange;
+  useEffect(() => {
+    if (handsFreeSupported() && readHandsFreePreference()) onWantedChangeRef.current(true);
+  }, []);
   const reportRef = useRef<{ noWords: () => void; failed: () => void } | null>(null);
   const capture = useSpeechCapture({
     course,
@@ -274,6 +282,8 @@ export function useHandsFreeCapture({
     handsFree: on,
     onNoWords: () => reportRef.current?.noWords(),
     onFailure: () => reportRef.current?.failed(),
+    // A refused microphone drops back to hold-to-talk for this call; the stored choice is kept for next time.
+    onMicDenied: () => onWantedChangeRef.current(false),
   });
   const phase: PhaseKind = capture.starting
     ? "requestingPermission"
@@ -307,6 +317,7 @@ export function useHandsFreeCapture({
         on: wanted,
         onChange: (next: boolean) => {
           if (next) handsFree.prime();
+          writeHandsFreePreference(next);
           onWantedChange(next);
         },
         status: handsFree.status,

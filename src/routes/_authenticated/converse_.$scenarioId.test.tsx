@@ -889,6 +889,7 @@ describe("Practice stars on a scenario call", () => {
 describe("Hands-free on a Practice call", () => {
   beforeEach(() => {
     localStorage.removeItem("showAlphonsoWhilePractising");
+    localStorage.removeItem("handsFree.preferred.v1");
     localStorage.removeItem("handsFree.safetyNoteSeen.v2");
     installFakeAudioContext();
   });
@@ -967,17 +968,16 @@ describe("Hands-free on a Practice call", () => {
     expect(localStorage.getItem("handsFree.safetyNoteSeen.v2")).toBe("1");
     first.unmount();
 
-    // A new call: off again, and the note does not return.
+    // A new call starts as the learner left it (on), without the note returning.
     await renderCall();
-    expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
-    const sw = await openSwitch(user);
-    expect(sw).toHaveAttribute("aria-checked", "false");
-    await user.click(sw);
+    expect(await screen.findByRole("button", { name: "Pause" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Hold to talk" })).toBeNull();
     expect(screen.queryByRole("dialog", { name: "Talk without holding the button" })).toBeNull();
-    expect(screen.getByRole("switch", { name: "Hands-free" })).toHaveAttribute(
-      "aria-checked",
-      "true",
-    );
+    const sw = await openSwitch(user);
+    expect(sw).toHaveAttribute("aria-checked", "true");
+    // Switching it off is remembered too: the next call is hold-to-talk again.
+    await user.click(sw);
+    expect(localStorage.getItem("handsFree.preferred.v1")).toBeNull();
   });
 
   it("half-duplex: the mic stays shut while Alphonso speaks and opens only after his voice ends", async () => {

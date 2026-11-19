@@ -410,7 +410,7 @@ function CampaignChatPage({
   }, [sceneAnchor, scene.opener, speak, freshCall]);
 
   // The shared capture flow (the same one Hector and the single scenarios use), with hands-free. The switch is the
-  // page's own state, off at the start of a campaign and carried from scene to scene: the mic closes while a scene's
+  // page's own state, as the learner last left it on this device, carried from scene to scene: the mic closes while a scene's
   // result is up and opens again for the next scene.
   const [handsFreeWanted, setHandsFreeWanted] = useState(false);
   const callView = mode ? mode === "call" : showAlphonso;
