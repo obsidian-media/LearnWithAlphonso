@@ -54,8 +54,8 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     return noStoreJson({ error: "unauthorized" }, { status: 401 });
   }
   const userId = userData.user.id;
-  // A banned learner's token is still valid: refuse before the switch, consent, entitlement and quota steps (the
-  // shared check makes the same decision verifyAuth makes later, through consumeQuota).
+  // A banned learner's token is still valid: refuse before the switch, consent, entitlement and quota steps. This is
+  // the route's only ban check: the quota step below takes this verified user and does not verify again.
   const { checkBan } = await import("@/lib/account-ban.server");
   const banned = await checkBan(userId);
   if (banned) return noStoreJson({ error: banned.message }, { status: banned.status });
@@ -90,8 +90,10 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   // Pro's own daily allowance, not the free `chat` quota Practice spends: practicing must never block the feature a
   // learner pays for. Reached only after the entitlement check above, so a learner without Pro spends nothing.
   const quota = await timer.time("quota", async () => {
-    const { consumeQuota } = await import("@/lib/ai-quota.server");
-    return consumeQuota(request, "hector");
+    const { consumeQuotaFor, userScopedClient } = await import("@/lib/ai-quota.server");
+    const learnerDb = userScopedClient(accessToken);
+    if (!learnerDb) return { ok: false as const, status: 500, message: "Server not configured." };
+    return consumeQuotaFor(learnerDb, "hector", undefined, userId);
   });
   if (!quota.ok) return quotaFailureResponse(quota);
 

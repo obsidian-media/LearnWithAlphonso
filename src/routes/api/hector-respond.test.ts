@@ -38,8 +38,12 @@ vi.mock("@/lib/revenuecat-entitlement", () => ({
   getProEntitlementStatus,
 }));
 
+// The route verifies the token and the ban itself, then spends quota through consumeQuotaFor with that user: the
+// re-verifying consumeQuota (a second getUser and ban check) is deliberately not part of the mock.
 const consumeQuota = vi.fn();
-vi.mock("@/lib/ai-quota.server", () => ({ consumeQuota }));
+const learnerDb = { learner: true };
+const userScopedClient = vi.fn((_token: string) => learnerDb);
+vi.mock("@/lib/ai-quota.server", () => ({ consumeQuotaFor: consumeQuota, userScopedClient }));
 
 const { Route } = await import("./hector-respond");
 const handler = (
@@ -132,6 +136,17 @@ describe("POST /api/hector-respond", () => {
     await handler({ request: req() });
     expect(consumeQuota).toHaveBeenCalledTimes(1);
     expect(consumeQuota.mock.calls[0][1]).toBe("hector");
+  });
+
+  it("spends quota for the user it already verified, with one token check and one ban check", async () => {
+    globalThis.fetch = vi.fn(async () => {
+      throw new DOMException("timed out", "TimeoutError");
+    }) as unknown as typeof fetch;
+    await handler({ request: req() });
+    expect(userScopedClient).toHaveBeenCalledWith("token-123");
+    expect(consumeQuota).toHaveBeenCalledWith(learnerDb, "hector", undefined, "user-1");
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(banResult).toHaveBeenCalledTimes(1);
   });
 
   it("a learner without Pro gets 403 and spends no quota of any kind", async () => {

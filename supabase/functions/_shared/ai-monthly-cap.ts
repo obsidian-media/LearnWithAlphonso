@@ -10,6 +10,11 @@
 // local verdict, so a refusal never blocks a lesson. Switched off (AI_MONTHLY_CAP_ENABLED=false) and "my_ai_cost_month
 // is not deployed yet" stay open.
 //
+// One deliberate difference in who counts as Pro: the web side gives the Pro ceiling when the entitlement lookup is
+// unavailable (a paying learner is not cut off during a RevenueCat outage), while this side treats "unsure" as not Pro
+// (heartsUnlimitedFor answers false), so here an outage means the free ceiling. On this side the cost of being wrong
+// is only "no AI opinion" on a translate answer, never a blocked lesson.
+//
 // This file imports nothing from the web app so it deploys with the functions.
 import type { SupabaseClient } from "@supabase/supabase-js";
 

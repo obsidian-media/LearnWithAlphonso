@@ -54,10 +54,12 @@ export function yesterdayUtc(now: Date): string {
 /** The alert only looks once a day is over and its late writes have landed. */
 export const ALERT_AFTER_UTC_HOUR = 1;
 
-const notDeployed = (e: { message: string; code?: string }) =>
-  e.code === "PGRST202" ||
-  e.code === "42883" ||
-  /could not find the function|does not exist/i.test(e.message);
+/**
+ * True only when `fn` itself is missing: PostgREST's "not in the schema cache" (PGRST202), or Postgres's 42883 naming
+ * `fn`. A 42883 or "does not exist" raised INSIDE the function (a helper it calls was renamed) is a real failure.
+ */
+const notDeployed = (e: { message: string; code?: string }, fn: string) =>
+  e.code === "PGRST202" || (e.code === "42883" && e.message.includes(fn));
 
 export function parseDayReport(raw: unknown): DayReport {
   const r = raw as Record<string, unknown> | null;
@@ -176,7 +178,7 @@ async function runBreaker(deps: AiCostSweepDeps, result: AiCostSweepResult): Pro
       p_limit_micro: Math.round(deps.cfg.breakerDailyUsd * MICRO),
     });
     if (error) {
-      if (!notDeployed(error)) {
+      if (!notDeployed(error, "trip_ai_spend_breaker")) {
         console.error("[ai-cost] breaker check failed:", error.message);
         result.breaker = "failed";
       }
@@ -215,7 +217,8 @@ export async function sweepAiCost(deps: AiCostSweepDeps): Promise<AiCostSweepRes
   try {
     const { data, error } = await deps.rpc("rollup_ai_cost_log", { p_keep_days: 90 });
     if (error) {
-      if (!notDeployed(error)) console.error("[ai-cost] rollup failed:", error.message);
+      if (!notDeployed(error, "rollup_ai_cost_log"))
+        console.error("[ai-cost] rollup failed:", error.message);
     } else if (typeof data === "number") {
       result.rolledUp = data;
     }
@@ -237,7 +240,7 @@ export async function sweepAiCost(deps: AiCostSweepDeps): Promise<AiCostSweepRes
     return result;
   }
   if (claim.error) {
-    if (!notDeployed(claim.error))
+    if (!notDeployed(claim.error, "claim_ai_cost_alert_day"))
       console.error("[ai-cost] alert claim failed:", claim.error.message);
     return result;
   }

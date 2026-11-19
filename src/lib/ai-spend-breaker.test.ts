@@ -227,6 +227,25 @@ describe("the maintenance pass runs the breaker and emails once per trip", () =>
     expect((await sweepAiCost(make(new Error("boom")).deps)).breaker).toBe("failed");
   });
 
+  it("the function itself missing (42883 naming it) skips quietly", async () => {
+    const own = Object.assign(
+      new Error("function public.trip_ai_spend_breaker(bigint) does not exist"),
+      { code: "42883" },
+    );
+    expect((await sweepAiCost(make(own).deps)).breaker).toBeUndefined();
+  });
+
+  it("a missing helper INSIDE the function is a failure, not 'not deployed'", async () => {
+    const inner = Object.assign(new Error("function public.ai_cost_union(date) does not exist"), {
+      code: "42883",
+    });
+    expect((await sweepAiCost(make(inner).deps)).breaker).toBe("failed");
+    const relation = Object.assign(new Error('relation "public.ai_cost_log" does not exist'), {
+      code: "42P01",
+    });
+    expect((await sweepAiCost(make(relation).deps)).breaker).toBe("failed");
+  });
+
   it("an unreadable answer is a failure, never a trip", async () => {
     const r = await sweepAiCost(make({ nope: 1 }).deps);
     expect(r.breaker).toBe("failed");
