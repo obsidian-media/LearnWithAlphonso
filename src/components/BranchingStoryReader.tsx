@@ -130,6 +130,7 @@ function BranchingBody({ story, finish, onFinished }: Props) {
               key={nodeId}
               segments={node.segments}
               course={story.course}
+              storyId={story.id}
               header={
                 <>
                   <span className="ds-type-caption text-ds-ink-soft">

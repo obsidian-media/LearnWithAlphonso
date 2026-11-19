@@ -8,6 +8,8 @@ import { TappableText } from "./TappableText";
 type Props = {
   segments: string[];
   course: string;
+  /** The story these sentences belong to, so its pre-recorded narration is found (a branching story passes one id for all its nodes). */
+  storyId?: string;
   /** Reported as each segment begins to play, for saved progress. */
   onSegment?: (segmentIndex: number) => void;
   /** Shown in the card's top row (a level label, a save-word hint). */
@@ -19,8 +21,8 @@ type Props = {
  * highlighted, and every word tappable (spoken and defined). Extracted from the v1 StoryReader so the branching
  * reader shows each node's passage with the exact same behaviour. Presentational; the caller owns the save calls.
  */
-export function ReadAlongPassage({ segments, course, onSegment, header }: Props) {
-  const narration = useStoryNarration(segments, course, onSegment);
+export function ReadAlongPassage({ segments, course, storyId, onSegment, header }: Props) {
+  const narration = useStoryNarration(segments, course, onSegment, storyId);
   const speak = useModelSpeech(course as Course);
   const activeRef = useRef<HTMLParagraphElement | null>(null);
 

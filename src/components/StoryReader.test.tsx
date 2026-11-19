@@ -41,16 +41,31 @@ const story: Story = {
 };
 
 const spoken: string[] = [];
+const played: string[] = [];
 let ended: (() => void)[] = [];
+/** The manifest the stubbed bucket serves for story s1; null is "no recordings yet" (a 404). */
+let manifest: unknown = null;
+/** Recorded files whose playback errors out (a missing or unreadable file). */
+let brokenFiles = new Set<string>();
+const SUPABASE = "https://proj.supabase.co";
 
 beforeEach(() => {
   spoken.length = 0;
+  played.length = 0;
+  manifest = null;
+  brokenFiles = new Set();
   ended = [];
   speakWord.mockReset();
+  vi.stubEnv("VITE_SUPABASE_URL", SUPABASE);
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (_url: string, init: { body: string }) => {
-      spoken.push(JSON.parse(init.body).text);
+    vi.fn(async (url: string, init?: { body: string }) => {
+      if (String(url).endsWith("/manifest.json")) {
+        return manifest
+          ? new Response(JSON.stringify(manifest), { status: 200 })
+          : new Response("no", { status: 404 });
+      }
+      spoken.push(JSON.parse(init!.body).text);
       return new Response(new Blob(["a"]), { status: 200 });
     }),
   );
@@ -60,7 +75,13 @@ beforeEach(() => {
     onended: (() => void) | null = null;
     onerror: (() => void) | null = null;
     pause = vi.fn();
+    constructor(public src: string) {}
     play() {
+      played.push(this.src);
+      if (brokenFiles.has(this.src)) {
+        queueMicrotask(() => this.onerror?.());
+        return Promise.resolve();
+      }
       ended.push(() => this.onended?.());
       return Promise.resolve();
     }
@@ -70,6 +91,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 const finishCurrent = async () => {
@@ -222,5 +244,69 @@ describe("StoriesLibraryView", () => {
   it("shows an empty state when nothing is published", () => {
     render(<StoriesLibraryView course="en" stories={[]} />);
     expect(screen.getByText("No stories yet")).toBeInTheDocument();
+  });
+});
+
+describe("StoryReader recorded narration", () => {
+  const recorded = (texts: string[]) => ({
+    v: 1,
+    voice: "aura-2-saturn-en",
+    entries: texts.map((text, i) => ({ text, file: `stories/s1/f${i}.mp3` })),
+  });
+  const fileUrl = (i: number) =>
+    `${SUPABASE}/storage/v1/object/public/podcast-audio/stories/s1/f${i}.mp3`;
+
+  it("plays the recorded files and never calls /api/tts", async () => {
+    manifest = recorded(story.segments);
+    render(<StoryReader story={story} submitCheck={vi.fn()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Listen" }));
+    await waitFor(() =>
+      expect(document.querySelector("[data-segment='0']")).toHaveAttribute("aria-current", "true"),
+    );
+    await finishCurrent();
+    await finishCurrent();
+    await finishCurrent();
+    await waitFor(() => expect(document.querySelector("[aria-current]")).toBeNull());
+    expect(played).toEqual([fileUrl(0), fileUrl(1), fileUrl(2)]);
+    expect(spoken).toEqual([]);
+  });
+
+  it("finds a recording by its text, ignoring stray whitespace", async () => {
+    manifest = recorded(["Mia   wakes up.", "She drinks tea.", "She goes to work."]);
+    render(<StoryReader story={story} submitCheck={vi.fn()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Listen" }));
+    await waitFor(() => expect(played[0]).toBe(fileUrl(0)));
+    expect(spoken).toEqual([]);
+  });
+
+  it("falls back to live speech only for the sentence with no recording", async () => {
+    manifest = recorded(["Mia wakes up.", "She goes to work."]);
+    render(<StoryReader story={story} submitCheck={vi.fn()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Listen" }));
+    await finishCurrent();
+    await finishCurrent();
+    await finishCurrent();
+    await waitFor(() => expect(document.querySelector("[aria-current]")).toBeNull());
+    expect(spoken).toEqual(["She drinks tea."]);
+    expect(played[0]).toBe(fileUrl(0));
+    expect(played[1]).toBe("blob:x");
+    expect(played[2]).toBe(fileUrl(1));
+  });
+
+  it("a recording that will not play falls back to live speech", async () => {
+    manifest = recorded(story.segments);
+    brokenFiles.add(fileUrl(0));
+    render(<StoryReader story={story} submitCheck={vi.fn()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Listen" }));
+    await waitFor(() => expect(spoken).toEqual(["Mia wakes up."]));
+    expect(played.slice(0, 2)).toEqual([fileUrl(0), "blob:x"]);
+  });
+
+  it("does not look for recordings when the project URL is unknown", async () => {
+    vi.stubEnv("VITE_SUPABASE_URL", "");
+    manifest = recorded(story.segments);
+    render(<StoryReader story={story} submitCheck={vi.fn()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Listen" }));
+    await waitFor(() => expect(spoken[0]).toBe("Mia wakes up."));
   });
 });

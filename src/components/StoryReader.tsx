@@ -33,7 +33,7 @@ export function StoryReader(props: Props) {
 }
 
 function ReaderBody({ story, onProgress, submitCheck, onChecked }: Props) {
-  const narration = useStoryNarration(story.segments, story.course, onProgress);
+  const narration = useStoryNarration(story.segments, story.course, onProgress, story.id);
   const speak = useModelSpeech(story.course as Course);
   const activeRef = useRef<HTMLParagraphElement | null>(null);
 
