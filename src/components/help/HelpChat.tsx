@@ -497,7 +497,12 @@ function AiBubble({ message, when }: { message: SupportMessage; when: string }) 
       <div className="ds-type-caption font-semibold text-ds-ink-faint">{when}</div>
       {/* Miya is an AI: every reply can be reported into the same moderation queue as the other AI surfaces. The
           support chat has no course, so the report carries "en". */}
-      <AiMessageReport message={message.body} surface="support" course="en" />
+      <AiMessageReport
+        message={message.body}
+        surface="support"
+        course="en"
+        className="inline-flex min-h-11 items-center justify-self-start"
+      />
     </div>
   );
 }
