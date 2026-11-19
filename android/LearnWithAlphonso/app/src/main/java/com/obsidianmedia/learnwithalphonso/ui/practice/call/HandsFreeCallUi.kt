@@ -51,6 +51,7 @@ import com.obsidianmedia.learnwithalphonso.AlphonsoApplication
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeInterruption
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop
+import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreePreference
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
 import com.obsidianmedia.learnwithalphonso.ui.components.DsDialog
 import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogBody
@@ -65,7 +66,8 @@ private fun HandsFreeLoop.Status.isPaused() = this is HandsFreeLoop.Status.Pause
 /**
  * The "Hands-free" switch of a voice call, with its once-per-device safety note (iOS `HandsFreeSwitch`). It lives in the
  * call's conversation sheet, above the transcript. Turning it on is free: it is the same turn as a held press, so the
- * server's daily caps already apply, and on Hector the call itself is Pro. It starts off with every call.
+ * server's daily caps already apply, and on Hector the call itself is Pro. A call starts as the learner last left it on this device (off the first time): the choice is
+ * remembered here and applied by [ApplyStoredHandsFree].
  */
 @Composable
 internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
@@ -76,8 +78,8 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
     val prefs = remember { (context.applicationContext as? AlphonsoApplication)?.container?.prefs }
     var showNote by remember { mutableStateOf(false) }
     val change: (Boolean) -> Unit = { wantsOn ->
-        if (!wantsOn) vm.handsFree.disable()
-        else if (prefs?.getBoolean(HandsFreeCopy.NOTE_SEEN_KEY, false) == true) vm.handsFree.enable()
+        if (!wantsOn) { prefs?.let { HandsFreePreference(SharedPrefsHandsFreeStore(it)).remember(false) }; vm.handsFree.disable() }
+        else if (prefs?.getBoolean(HandsFreeCopy.NOTE_SEEN_KEY, false) == true) { prefs.let { HandsFreePreference(SharedPrefsHandsFreeStore(it)).remember(true) }; vm.handsFree.enable() }
         else showNote = true
     }
     Row(
@@ -96,6 +98,7 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
                 DsCompactButton(HandsFreeCopy.CANCEL, { showNote = false })
                 DsCompactButton(HandsFreeCopy.FIRST_USE_CONFIRM, {
                     prefs?.edit()?.putBoolean(HandsFreeCopy.NOTE_SEEN_KEY, true)?.apply()
+                    prefs?.let { HandsFreePreference(SharedPrefsHandsFreeStore(it)).remember(true) }
                     showNote = false
                     vm.handsFree.enable()
                 }, primary = true)
@@ -201,4 +204,29 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null
+}
+
+/** SharedPreferences as the hands-free preference's store. */
+internal class SharedPrefsHandsFreeStore(private val prefs: android.content.SharedPreferences) : com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeStore {
+    override fun getBoolean(key: String, default: Boolean) = prefs.getBoolean(key, default)
+    override fun putBoolean(key: String, value: Boolean) { prefs.edit().putBoolean(key, value).apply() }
+}
+
+/**
+ * A new call starts with hands-free on when the learner last left it on and has already confirmed the safety note. It is
+ * skipped when the call is already hands-free (a campaign carrying it to the next scene), when the campaign is over,
+ * and when the microphone permission is not granted: that falls back to hold-to-talk, which asks on the first press,
+ * instead of a prompt appearing under the opening line. Pause and the limits are the loop's, unchanged.
+ */
+@Composable
+internal fun ApplyStoredHandsFree(vm: CallConversation) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        val prefs = (context.applicationContext as? AlphonsoApplication)?.container?.prefs ?: return@LaunchedEffect
+        val granted = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        if (HandsFreeBinding.shouldAutoStart(HandsFreePreference(SharedPrefsHandsFreeStore(prefs)).shouldStartOn, granted, vm.handsFree.isOn, vm.isCallOver)) {
+            vm.handsFree.enable()
+        }
+    }
 }

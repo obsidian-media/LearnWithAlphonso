@@ -17,6 +17,9 @@ interface CallConversation {
     fun pressBegan()
     fun pressEnded()
 
-    /** Hands-free turn-taking for this call: off when the call starts, driven by the call screen's switch. */
+    /** Hands-free turn-taking for this call: starts as the learner last left it on this device (ApplyStoredHandsFree), driven by the call screen's switch. */
     val handsFree: HandsFreeController
+
+    /** The call has nothing left to say (a finished campaign): hands-free must not start on it. */
+    val isCallOver: Boolean get() = false
 }

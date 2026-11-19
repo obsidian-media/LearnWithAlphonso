@@ -65,6 +65,10 @@ object HandsFreeBinding {
     }
 
     /** The message a turn event shows: hands-free has no button to hold, so its own status line says what happens next. */
+    /** Whether a new call starts hands-free from the stored choice (see [ApplyStoredHandsFree]). */
+    fun shouldAutoStart(preferred: Boolean, micGranted: Boolean, alreadyOn: Boolean, finished: Boolean): Boolean =
+        preferred && micGranted && !alreadyOn && !finished
+
     fun errorFor(handsFreeOn: Boolean, event: TurnEvent, message: String): String? = when {
         handsFreeOn && (event == TurnEvent.Empty || event == TurnEvent.TooShort) -> null
         else -> message

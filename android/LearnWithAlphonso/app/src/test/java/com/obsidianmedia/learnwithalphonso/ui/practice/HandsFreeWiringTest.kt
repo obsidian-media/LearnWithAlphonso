@@ -93,6 +93,18 @@ class HandsFreeWiringTest {
     }
 
     @Test
+    fun `a stored choice starts a new call on only when nothing else says no`() {
+        // preferred, mic granted, not already on, call not over: starts.
+        assertTrue(HandsFreeBinding.shouldAutoStart(preferred = true, micGranted = true, alreadyOn = false, finished = false))
+        assertFalse(HandsFreeBinding.shouldAutoStart(preferred = false, micGranted = true, alreadyOn = false, finished = false))
+        // a refused or not-yet-granted microphone falls back to hold-to-talk
+        assertFalse(HandsFreeBinding.shouldAutoStart(preferred = true, micGranted = false, alreadyOn = false, finished = false))
+        // a campaign that carried it to the next scene, or a finished campaign
+        assertFalse(HandsFreeBinding.shouldAutoStart(preferred = true, micGranted = true, alreadyOn = true, finished = false))
+        assertFalse(HandsFreeBinding.shouldAutoStart(preferred = true, micGranted = true, alreadyOn = false, finished = true))
+    }
+
+    @Test
     fun `hands-free is off when a call starts, on every screen, and Practice and Hector are tuned apart`() {
         val s = server()
         val scenario = scenarioVm(s, CountingRecorder())

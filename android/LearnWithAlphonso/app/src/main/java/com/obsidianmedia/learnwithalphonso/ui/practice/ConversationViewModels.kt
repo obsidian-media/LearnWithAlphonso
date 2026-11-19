@@ -180,6 +180,7 @@ abstract class BaseConversationViewModel(
 
     /** Campaign only: a finished campaign has no line left to say. */
     protected open val conversationFinished: Boolean get() = false
+    override val isCallOver: Boolean get() = conversationFinished
 
     /**
      * The opening line Alphonso still has to say: the latest turn when it is one of our own openers (the learner has
