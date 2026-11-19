@@ -125,7 +125,7 @@ object SignOutGuard {
     }
 
     const val MESSAGE =
-        "They stay on this phone and sync the next time you sign in here with this account. Signing in with a different account won't send them."
+        "They stay on this phone and sync the next time you sign in here with this account. If this account doesn't sign back in here within 30 days, they're removed. Signing in with a different account won't send them."
     const val CONFIRM = "Sign out anyway"
     const val CANCEL = "Stay signed in"
 }

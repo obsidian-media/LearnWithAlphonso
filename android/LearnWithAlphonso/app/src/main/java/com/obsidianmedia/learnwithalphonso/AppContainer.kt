@@ -257,14 +257,15 @@ class AppContainer(context: Context) {
      * (SyncCoordinator.endSession), and the store is logged out so its Pro does not carry to the next account.
      */
     private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { ended ->
+        // First, and on its own job: Pro is off at once, and nothing below (endSession waits for a running pass) can
+        // delay the store's logout until after the next account has signed in. It skips itself once someone is.
+        appScope.launch { entitlements.reset(isSignedOut = { session.userId == null }) }
         voicePrefs.clear()
         syncCoordinator.endSession(ended)
         // Sign-out or a deleted account: no first-run answers or "Not now for this launch" carry to the next account.
         // The under-13 block is never cleared.
         FirstRunDevice.store.clearDraft()
         com.obsidianmedia.learnwithalphonso.core.firstrun.CompleteProfileSkip.reset()
-        // Last: Pro is off at once, but the store's logout is a network call.
-        entitlements.reset()
     }
 
     // ---- Plan 4: podcasts, reminders, push ----

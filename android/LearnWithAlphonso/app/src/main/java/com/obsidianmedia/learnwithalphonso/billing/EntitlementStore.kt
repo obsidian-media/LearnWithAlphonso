@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 const val PRO_ENTITLEMENT_ID = "pro"
 
@@ -61,12 +63,17 @@ class EntitlementStore(private val port: BillingPort?) {
     /** Bumped by [reset]: a login that started before a sign-out must not put that account's Pro back. */
     @Volatile private var generation = 0
 
+    /** One store identity change at a time: a logout still on the network must not land after the next account's login. */
+    private val identityLock = Mutex()
+
     suspend fun login(userId: String) {
         val p = port ?: return
-        val started = generation
-        runCatching { p.logIn(userId) }.getOrNull()?.let { pro ->
-            val gift = pro && runCatching { p.isGift() }.getOrDefault(false)
-            if (started == generation) _state.update { it.copy(isPro = pro, isGift = gift) }
+        identityLock.withLock {
+            val started = generation
+            runCatching { p.logIn(userId) }.getOrNull()?.let { pro ->
+                val gift = pro && runCatching { p.isGift() }.getOrDefault(false)
+                if (started == generation) _state.update { it.copy(isPro = pro, isGift = gift) }
+            }
         }
     }
 
@@ -75,14 +82,22 @@ class EntitlementStore(private val port: BillingPort?) {
      * a fresh anonymous user, so the next account to sign in on this device starts without this one's Pro. Offline or
      * already anonymous: Pro stays off. A login that was still in flight may have identified the store again after the
      * logout, so it is logged out once more.
+     *
+     * [isSignedOut] is asked before anything is changed and again before each logout: once another account is signed in
+     * (a straight switch, or a quick sign-in while this ran), its own login sets the store user and Pro, and a logout
+     * here would take that account's Pro away.
      */
-    suspend fun reset() {
+    suspend fun reset(isSignedOut: () -> Boolean = { true }) {
+        if (!isSignedOut()) return
         generation++
         val started = generation
         _state.value = EntitlementUiState()
         val p = port ?: return
-        runCatching { p.logOut() }
-        if (started == generation && !p.isAnonymous()) runCatching { p.logOut() }
+        identityLock.withLock {
+            if (!isSignedOut()) return@withLock
+            runCatching { p.logOut() }
+            if (started == generation && isSignedOut() && !p.isAnonymous()) runCatching { p.logOut() }
+        }
     }
 
     suspend fun refresh() {

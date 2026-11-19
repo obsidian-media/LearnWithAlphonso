@@ -191,6 +191,18 @@ class SessionManagerTest {
     }
 
     @Test
+    fun `an in-memory verifier older than its lifetime is not used either`() = runTest {
+        val bodies = ArrayList<String>()
+        var clock = now
+        val m = SessionManager(googleAuth(bodies), MemoryStore()) { clock }
+        m.beginGoogleSignIn("https://x.supabase.co", "cb://x")
+        clock = now + PendingPkce.LIFETIME_SECONDS + 1
+        m.completeGoogleSignIn("cb://x?code=abc")
+        assertEquals(AuthState.SignedOut, m.state.value)
+        assertTrue(bodies.isEmpty(), "no code exchange was attempted")
+    }
+
+    @Test
     fun `a failed callback clears the stored verifier too`() = runTest {
         val store = PkceStore()
         val m = SessionManager(googleAuth(ArrayList()), store) { now }

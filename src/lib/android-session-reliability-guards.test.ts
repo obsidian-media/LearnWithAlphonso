@@ -23,7 +23,10 @@ describe("Android session and sync reliability wiring", () => {
     const cleanup = /SignOutCleanup\([\s\S]*?\n {4}\}/.exec(container)?.[0] ?? "";
     expect(cleanup).toMatch(/syncCoordinator\.endSession\(ended\)/);
     expect(cleanup).not.toMatch(/clearAccount/);
-    expect(cleanup).toMatch(/entitlements\.reset\(\)/);
+    // First in the cleanup, on its own job, and only while nobody else is signed in.
+    expect(cleanup).toMatch(
+      /\{ ended ->\s*appScope\.launch \{ entitlements\.reset\(isSignedOut = \{ session\.userId == null \}\) \}/,
+    );
   });
 
   it("the sync coordinator and the launch step share the departure clock", () => {

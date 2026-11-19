@@ -2,7 +2,6 @@ package com.obsidianmedia.learnwithalphonso.core.auth
 
 import com.obsidianmedia.learnwithalphonso.core.logic.AuthUserNames
 import com.obsidianmedia.learnwithalphonso.core.net.OAuthPkce
-import com.obsidianmedia.learnwithalphonso.core.net.PkceChallenge
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthError
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseSession
@@ -81,7 +80,7 @@ class SessionManager(
     val notice: StateFlow<String?> = _notice.asStateFlow()
 
     private val refreshLock = Mutex()
-    private var pendingPkce: PkceChallenge? = null
+    private var pendingPkce: PendingPkce? = null
 
     val userId: String? get() = (_state.value as? AuthState.SignedIn)?.session?.userId
 
@@ -227,14 +226,16 @@ class SessionManager(
     fun beginGoogleSignIn(supabaseUrl: String, redirectTo: String): String {
         _errorMessage.value = null
         val challenge = OAuthPkce.make()
-        pendingPkce = challenge
-        runCatching { store.savePendingPkce(PendingPkce(challenge.verifier, nowSeconds())) }
+        val pending = PendingPkce(challenge.verifier, nowSeconds())
+        pendingPkce = pending
+        runCatching { store.savePendingPkce(pending) }
         return OAuthPkce.authorizeUrl(supabaseUrl, redirectTo, challenge)
     }
 
     suspend fun completeGoogleSignIn(callbackUri: String) {
         val stored = runCatching { store.loadPendingPkce() }.getOrNull()
-        val verifier = pendingPkce?.verifier ?: stored?.takeIf { it.isUsable(nowSeconds()) }?.verifier
+        // The same 10 minutes whether it is still in memory or came back from the store.
+        val verifier = (pendingPkce ?: stored)?.takeIf { it.isUsable(nowSeconds()) }?.verifier
         // Used once, whatever happens next: the code it pairs with is single-use too.
         pendingPkce = null
         runCatching { store.clearPendingPkce() }
