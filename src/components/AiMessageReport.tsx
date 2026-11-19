@@ -8,7 +8,7 @@ type ReportInput = {
   reason: AiReportReason;
   context: {
     message: string;
-    surface: "hector" | "conversation" | "campaign" | "explain";
+    surface: "hector" | "conversation" | "campaign" | "explain" | "support";
     course: "en" | "fr" | "es";
     scenario_id?: string;
     campaign_id?: string;
@@ -25,6 +25,7 @@ export function AiMessageReport({
   campaignId,
   sceneIndex,
   label = "Report",
+  className = "",
   send = (input: ReportInput) => reportAiResponse({ data: input }),
 }: {
   message: string;
@@ -35,6 +36,8 @@ export function AiMessageReport({
   sceneIndex?: number;
   /** The button's words; the accessible name stays "Report this response". */
   label?: string;
+  /** Extra classes for the button (the Help chat makes it a full 44 px target). */
+  className?: string;
   send?: (input: ReportInput) => Promise<{ ok: boolean }>;
 }) {
   const [open, setOpen] = useState(false);
@@ -73,7 +76,7 @@ export function AiMessageReport({
         type="button"
         aria-label={AI_CONSENT_COPY.reportAction}
         onClick={() => setOpen(true)}
-        className="mt-1 rounded-full bg-ds-card/85 px-2 py-0.5 ds-type-caption text-ds-ink-soft underline backdrop-blur-md"
+        className={`mt-1 rounded-full bg-ds-card/85 px-2 py-0.5 ds-type-caption text-ds-ink-soft underline backdrop-blur-md ${className}`}
       >
         {label}
       </button>
