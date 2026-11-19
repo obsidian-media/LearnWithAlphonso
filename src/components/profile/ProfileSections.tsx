@@ -1,3 +1,4 @@
+import { STREAK_PROTECTED_CAPTION } from "@/lib/streak-display";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTutorMemory } from "@/lib/call-recap-api";
@@ -275,7 +276,11 @@ export function BigNumbers({ o }: { o: ProfileOverview }) {
         value={n.streak}
         label="day streak"
         note={
-          n.longestStreak > 0 ? `Longest: ${fmt(n.longestStreak)}` : "Finish a lesson to start one"
+          n.streakState === "protected"
+            ? `❄️ ${STREAK_PROTECTED_CAPTION}`
+            : n.longestStreak > 0
+              ? `Longest: ${fmt(n.longestStreak)}`
+              : "Finish a lesson to start one"
         }
         noteTone={n.longestStreak > 0 ? "right" : "soft"}
         className="border-ds-flame-tint bg-[linear-gradient(160deg,var(--c-flame-tint),var(--c-card))]"

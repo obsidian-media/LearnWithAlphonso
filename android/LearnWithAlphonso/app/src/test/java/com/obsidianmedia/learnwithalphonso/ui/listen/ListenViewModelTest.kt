@@ -101,13 +101,15 @@ class ListenViewModelTest {
 
     @Test
     fun `a successful read removes downloads of unpublished episodes but keeps the one playing`() = runBlocking {
-        val removed = ArrayList<String>()
+        // Written from the view model's coroutine, read here.
+        val removed: MutableList<String> = java.util.concurrent.CopyOnWriteArrayList()
         val vm = ListenViewModel(
             client(courseServer()), { listOf(entry("e1"), entry("old"), entry("playing")) }, { true }, { "en" },
             { ids -> removed.addAll(ids) }, { "playing" }, searchDebounceMillis = 0,
         )
-        awaitTrue("loaded") { !vm.state.value.isLoading }
-        assertEquals(listOf("old"), removed)
+        // load() ends the spinner first and removes downloads after, so wait for the removal itself.
+        awaitTrue("unpublished downloads removed") { removed.isNotEmpty() }
+        assertEquals(listOf("old"), removed.toList())
     }
 
     @Test

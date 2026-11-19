@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.profile
 
+import com.obsidianmedia.learnwithalphonso.core.logic.StreakDisplay
 import com.obsidianmedia.learnwithalphonso.core.content.Achievement
 import com.obsidianmedia.learnwithalphonso.core.net.FriendProgress
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -84,6 +85,17 @@ class ProfileOverviewTest {
         assertEquals(40, b.longestStreak)
         assertEquals(1, b.lessonsDone)
         assertEquals(80, b.accuracyPct)
+    }
+
+    @Test
+    fun `the big streak reads as it does today, the same as the Learn header`() {
+        fun at(last: String, freezes: Int) = m.bigNumbers(
+            ProfileOverviewData(today = today, localToday = today, course = "es", streak = 12, longestStreak = 21, streakFreezes = freezes, lastActiveDate = last, dayBasis = "local"),
+        ) { emptyList() }
+        assertEquals(12 to StreakDisplay.State.ACTIVE, at("2026-11-06", 0).let { it.streak to it.streakState })
+        assertEquals(12 to StreakDisplay.State.PROTECTED, at("2026-11-05", 1).let { it.streak to it.streakState })
+        assertEquals(0 to StreakDisplay.State.LAPSED, at("2026-11-05", 0).let { it.streak to it.streakState })
+        assertEquals(0 to StreakDisplay.State.LAPSED, at("2026-11-04", 3).let { it.streak to it.streakState })
     }
 
     @Test

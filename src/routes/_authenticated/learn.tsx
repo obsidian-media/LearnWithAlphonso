@@ -1,3 +1,5 @@
+import { useShownStreak } from "@/lib/use-shown-streak";
+import { streakAriaLabel } from "@/lib/streak-display";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -243,7 +245,9 @@ function LearnPage() {
   const hearts = useProgress((s) => s.hearts);
   const heartsRefillAt = useProgress((s) => s.heartsRefillAt);
   const xp = useProgress((s) => s.xp);
-  const streak = useProgress((s) => s.streak);
+  // The streak as it reads today (useShownStreak): the same number and protected mark as the top bar.
+  const shownStreakNow = useShownStreak();
+  const streak = shownStreakNow.streak;
   const refillHeartsLocal = useProgress((s) => s.refillHeartsLocal);
   const setHeartsLocal = useProgress((s) => s.setHeartsLocal);
   const spendXpForHeartLocal = useProgress((s) => s.spendXpForHeartLocal);
@@ -422,9 +426,10 @@ function LearnPage() {
             <div className="flex gap-1.5 text-sm font-bold">
               <span
                 className="rounded-full border border-ds-line bg-ds-card px-2.5 py-1 text-ds-flame"
-                aria-label={`${streak}-day streak`}
+                aria-label={streakAriaLabel(shownStreakNow)}
               >
                 🔥 {streak}
+                {shownStreakNow.state === "protected" ? " ❄️" : null}
               </span>
               <span
                 className="tnum rounded-full border border-ds-line bg-ds-card px-2.5 py-1 text-ds-ink"

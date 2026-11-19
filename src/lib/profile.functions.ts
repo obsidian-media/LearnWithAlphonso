@@ -82,7 +82,7 @@ export const getProfileOverview = createServerFn({ method: "GET" })
         .eq("user_id", userId),
       supabase
         .from("user_progress")
-        .select("streak,longest_streak,streak_freezes")
+        .select("streak,longest_streak,streak_freezes,last_active_date,day_basis")
         .eq("user_id", userId)
         .maybeSingle(),
       supabase
@@ -193,6 +193,8 @@ export const getProfileOverview = createServerFn({ method: "GET" })
         streak: prog.data?.streak ?? 0,
         longestStreak: prog.data?.longest_streak ?? 0,
         streakFreezes: prog.data?.streak_freezes ?? 0,
+        lastActiveDate: prog.data?.last_active_date ?? null,
+        dayBasis: prog.data?.day_basis ?? null,
       },
       completions: (comps.data ?? []).map((c) => ({
         lessonId: c.lesson_id,

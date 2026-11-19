@@ -109,8 +109,10 @@ class ProgressSyncClient(
             if (completedAt != null) put("completedAt", java.time.Instant.ofEpochMilli(completedAt).toString())
         }
         val text = http.requireSuccess(http.function("complete-lesson", body))
-        return runCatching { http.json.decodeFromString(LessonCompletionResult.serializer(), text) }
+        val result = runCatching { http.json.decodeFromString(LessonCompletionResult.serializer(), text) }
             .getOrElse { throw ProgressSyncError.InvalidPayload() }
+        // Every completion writes day_basis "local" (20261114100000_local_days.sql), and the reply does not carry it.
+        return result.copy(progress = result.progress.copy(dayBasis = result.progress.dayBasis ?: "local"))
     }
 
     /** Items due today or overdue, oldest first, plus the exact total of this course's review items. */
@@ -200,7 +202,7 @@ class ProgressSyncClient(
         val userRow = rowsOf(
             http.rest(
                 HttpMethod.Get, "user_progress",
-                mapOf("select" to "streak,longest_streak,last_active_date,hearts,hearts_refill_at,streak_freezes"),
+                mapOf("select" to "streak,longest_streak,last_active_date,hearts,hearts_refill_at,streak_freezes,day_basis"),
             ),
         ).firstOrNull() ?: JsonObject(emptyMap())
 
@@ -223,6 +225,7 @@ class ProgressSyncClient(
             heartsRefillAt = resolvedRefillAt,
             streakFreezes = userRow.int("streak_freezes") ?: 0,
             leagueTier = languageRow.string("league_tier") ?: "bronze",
+            dayBasis = userRow.string("day_basis"),
         )
     }
 

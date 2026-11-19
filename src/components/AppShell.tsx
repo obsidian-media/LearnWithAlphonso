@@ -1,3 +1,5 @@
+import { useShownStreak } from "@/lib/use-shown-streak";
+import { streakAriaLabel } from "@/lib/streak-display";
 import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -35,7 +37,10 @@ function StatPill({
 }
 
 export function TopBar() {
-  const { xp, streak, hearts, heartsRefillAt, hydrated, leagueTier } = useProgress();
+  const { xp, hearts, heartsRefillAt, hydrated, leagueTier } = useProgress();
+  // The streak as it reads today: 0 once the next lesson would restart it, marked while a freeze keeps it alive.
+  const shown = useShownStreak();
+  const streak = shown.streak;
   const refillHeartsLocal = useProgress((s) => s.refillHeartsLocal);
 
   // Below the cap a heart comes back every 30 minutes. Show the wait for the next one (the same clock the server
@@ -102,7 +107,8 @@ export function TopBar() {
             icon={<Icon3D emoji="🔥" size={20} />}
             value={hydrated ? streak : 0}
             color="text-ds-flame"
-            label="Streak"
+            label={hydrated ? streakAriaLabel(shown) : "Streak"}
+            hint={hydrated && shown.state === "protected" ? "❄️" : null}
           />
           <StatPill
             icon={<Icon3D emoji="⚡" size={20} />}

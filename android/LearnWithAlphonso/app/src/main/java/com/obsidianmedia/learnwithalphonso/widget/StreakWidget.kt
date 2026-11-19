@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.widget
 
+import com.obsidianmedia.learnwithalphonso.core.logic.StreakDisplay
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
@@ -59,7 +60,10 @@ object WidgetPublisher {
 
     /** Writes the snapshot; pure enough for a JVM test through MemoryPrefs. [theme] is the app's stored theme ("royal" or "meadow"). */
     fun write(prefs: SharedPreferences, progress: LessonCompletionProgress, nowMillis: Long = System.currentTimeMillis(), theme: String? = null): StreakWidgetSnapshot {
-        val snapshot = makeStreakWidgetSnapshot(progress.streak, progress.longestStreak, progress.lastActiveDate, nowMillis, theme = theme)
+        val snapshot = makeStreakWidgetSnapshot(
+            progress.streak, progress.longestStreak, progress.lastActiveDate, nowMillis, theme = theme,
+            streakFreezes = progress.streakFreezes, dayBasis = progress.dayBasis,
+        )
         prefs.edit().putString(STREAK_WIDGET_SNAPSHOT_KEY, ContentJson.json.encodeToString(StreakWidgetSnapshot.serializer(), snapshot)).apply()
         return snapshot
     }
@@ -137,7 +141,8 @@ class StreakWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val snapshot = WidgetPublisher.read(WidgetPublisher.prefs(context))
+        // Read as of now, not as written: the app may not have been opened since a day was missed.
+        val snapshot = WidgetPublisher.read(WidgetPublisher.prefs(context))?.asOf(System.currentTimeMillis())
         provideContent { Content(snapshot) }
     }
 
@@ -183,7 +188,11 @@ class StreakWidget : GlanceAppWidget() {
                     Spacer(GlanceModifier.width(AlphonsoTokens.Space.s2))
                     Text("${snapshot.streak}", maxLines = 1, style = textStyle(AlphonsoTokens.Type.displayXL, ink, scale = streakNumberScale(snapshot.streak)))
                 }
-                Text(StreakWidgetCopy.caption(snapshot.streak), style = textStyle(AlphonsoTokens.Type.footnote, soft))
+                // Missed days a freeze covers: the protected line in place of "days in a row", as on iOS.
+                Text(
+                    if (snapshot.isStreakProtected) "❄️ ${StreakDisplay.PROTECTED_CAPTION}" else StreakWidgetCopy.caption(snapshot.streak),
+                    style = textStyle(AlphonsoTokens.Type.footnote, soft),
+                )
                 if (layout.showsBest) {
                     Spacer(GlanceModifier.height(AlphonsoTokens.Space.s1))
                     Text(StreakWidgetCopy.best(snapshot.streak, snapshot.longestStreak), style = textStyle(AlphonsoTokens.Type.caption, soft))

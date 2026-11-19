@@ -1,9 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.logic
 
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.temporal.ChronoUnit
 import kotlin.math.max
 
 /** Port of src/lib/progress-math.ts. ProgressMathTest carries the same vectors. */
@@ -26,43 +24,22 @@ fun utcDateString(epochMillis: Long): String =
 fun localDateString(epochMillis: Long, zone: java.time.ZoneId): String =
     Instant.ofEpochMilli(epochMillis).atZone(zone).toLocalDate().toString()
 
-private fun daysDiff(from: String, to: String): Int =
-    ChronoUnit.DAYS.between(LocalDate.parse(from), LocalDate.parse(to)).toInt()
-
 data class StreakInput(
     val lastActiveDate: String?,
     val today: String,
     val streak: Int,
     val longestStreak: Int,
     val freezes: Int,
+    /** The account's day_basis is still "utc": one missed day is bridged without a freeze (StreakRule). */
+    val bridgeUtcDay: Boolean = false,
 )
 
 data class StreakResult(val streak: Int, val longestStreak: Int, val freezes: Int)
 
+/** The web's signature over the one shared step, [StreakRule.next]. */
 fun computeStreakUpdate(input: StreakInput): StreakResult {
-    var streak = input.streak
-    var freezes = input.freezes
-    val last = input.lastActiveDate
-
-    if (last == input.today) {
-        // same day, no change
-    } else if (last.isNullOrEmpty()) {
-        streak = 1
-    } else {
-        val diff = daysDiff(last, input.today)
-        streak = when {
-            diff == 1 -> input.streak + 1
-            diff == 2 && freezes > 0 -> {
-                freezes -= 1
-                input.streak + 1
-            }
-            else -> 1
-        }
-    }
-
-    if (streak > input.streak && streak % 10 == 0) freezes += 1
-
-    return StreakResult(streak, max(input.longestStreak, streak), freezes)
+    val o = StreakRule.next(input.streak, input.longestStreak, input.lastActiveDate, input.today, input.freezes, if (input.bridgeUtcDay) "utc" else "local")
+    return StreakResult(o.streak, o.longestStreak, o.freezes)
 }
 
 val LEAGUES: List<String> = listOf("bronze", "silver", "sapphire", "ruby", "diamond")

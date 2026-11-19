@@ -165,6 +165,25 @@ describe("the four big numbers match their sources", () => {
     expect(n.streak).toBe(12);
     expect(n.longestStreak).toBe(21);
   });
+  it("the streak reads as it does today, the same as the top bar: protected by a freeze, or 0 once over", () => {
+    const at = (lastActiveDate: string, streakFreezes: number) =>
+      bigNumbers(
+        overview({
+          progress: {
+            streak: 12,
+            longestStreak: 21,
+            streakFreezes,
+            lastActiveDate,
+            dayBasis: "local",
+          },
+        }),
+      );
+    // today is 2026-11-06 in the fixture.
+    expect(at("2026-11-05", 0)).toMatchObject({ streak: 12, streakState: "active" });
+    expect(at("2026-11-04", 1)).toMatchObject({ streak: 12, streakState: "protected" });
+    expect(at("2026-11-04", 0)).toMatchObject({ streak: 0, streakState: "lapsed" });
+    expect(at("2026-11-03", 3)).toMatchObject({ streak: 0, streakState: "lapsed" });
+  });
   it("XP is this course's language_progress XP; this week is activity_days since Monday", () => {
     expect(n.courseXp).toBe(4820);
     expect(n.xpThisWeek).toBe(60 + 120 + 40);
@@ -204,6 +223,7 @@ describe("the four big numbers match their sources", () => {
     );
     expect(empty).toEqual({
       streak: 0,
+      streakState: "active",
       longestStreak: 0,
       courseXp: 0,
       totalXp: 0,

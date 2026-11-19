@@ -50,6 +50,8 @@ export type ProgressState = {
   streak: number;
   longestStreak: number;
   lastActiveDate: string | null;
+  /** user_progress.day_basis ("utc" or "local"): what the shown streak needs for the one-time UTC bridge. */
+  dayBasis: string | null;
   hearts: number;
   heartsRefillAt: number | null;
   streakFreezes: number;
@@ -82,6 +84,8 @@ export type ProgressState = {
     streakFreezes: number;
     leagueTier: LeagueTier;
     lastActiveDate: string;
+    /** user_progress.day_basis when the reply carries it; otherwise "local", which every completion writes. */
+    dayBasis?: string | null;
     completedLessons: string[];
     activityDates: string[];
     answersByLesson: Record<string, { correct: number; total: number }>;
@@ -102,6 +106,7 @@ const initial = {
   streak: 0,
   longestStreak: 0,
   lastActiveDate: null as string | null,
+  dayBasis: null as string | null,
   hearts: 5,
   heartsRefillAt: null as number | null,
   streakFreezes: 0,
@@ -147,7 +152,8 @@ export const useProgress = create<ProgressState>()((set, get) => ({
       hydrated: true,
       loading: false,
     })),
-  applyCompletion: (patch) => set((s) => ({ ...s, ...patch })),
+  // Every completion writes day_basis "local" on the server (20261114100000_local_days.sql).
+  applyCompletion: (patch) => set((s) => ({ ...s, ...patch, dayBasis: patch.dayBasis ?? "local" })),
   loseHeartLocal: () => set((s) => loseHeart(s.hearts, s.heartsRefillAt, Date.now())),
   refillHeartsLocal: () => set((s) => resolveHeartsRefill(s.hearts, s.heartsRefillAt, Date.now())),
   setHeartsLocal: (hearts, heartsRefillAt) => set({ hearts, heartsRefillAt }),

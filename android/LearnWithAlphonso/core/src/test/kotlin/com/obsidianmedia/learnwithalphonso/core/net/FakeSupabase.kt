@@ -30,7 +30,8 @@ data class SeenRequest(
 class FakeSupabase(
     private val respond: suspend MockRequestHandleScope.(SeenRequest) -> HttpResponseData,
 ) {
-    val seen = ArrayList<SeenRequest>()
+    /** Thread-safe: some clients send several requests at once (ProfileOverviewClient's parallel reads). */
+    val seen: MutableList<SeenRequest> = java.util.concurrent.CopyOnWriteArrayList()
 
     val engine = MockEngine { request ->
         val seenRequest = request.toSeen()
