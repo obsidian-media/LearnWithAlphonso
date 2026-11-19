@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireStaff } from "./staff-middleware";
-import { createRateLimiter } from "./staff-rate-limit";
+import { consumeStaffLimit, STAFF_LIMITS } from "./staff-rate-limit";
 import type { TicketDetail } from "./staff-support.server";
 
 /**
@@ -13,8 +13,6 @@ import type { TicketDetail } from "./staff-support.server";
  */
 
 const idSchema = z.string().uuid();
-const readLimiter = createRateLimiter(120, 60_000);
-const writeLimiter = createRateLimiter(60, 60_000);
 
 export const TOO_MANY_READS = "Too many requests. Wait a minute and try again.";
 export const TOO_MANY_CHANGES = "Too many changes. Wait a minute and try again.";
@@ -76,7 +74,10 @@ export const staffListTickets = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }): Promise<InboxPage> => {
-    if (!readLimiter.allow(context.userId)) throw new Error(TOO_MANY_READS);
+    if (
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_read))
+    )
+      throw new Error(TOO_MANY_READS);
     const { stripSupportLink } = await import("./support-links");
     const { data: raw, error } = await context.supabaseAdmin.rpc("staff_support_inbox", {
       p_actor: context.userId,
@@ -107,7 +108,10 @@ export const staffGetTicket = createServerFn({ method: "POST" })
   .middleware([requireStaff("support.read")])
   .inputValidator((d: unknown) => z.object({ id: idSchema }).parse(d))
   .handler(async ({ data, context }): Promise<TicketDetail & { me: string }> => {
-    if (!readLimiter.allow(context.userId)) throw new Error(TOO_MANY_READS);
+    if (
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_read))
+    )
+      throw new Error(TOO_MANY_READS);
     const { recordUserView } = await import("./staff-audit.server");
     const { readTicketRow, loadTicketDetail } = await import("./staff-support.server");
     const { loadSupportFacts } = await import("./support-facts.server");
@@ -132,7 +136,10 @@ export const staffReplyTicket = createServerFn({ method: "POST" })
     z.object({ id: idSchema, body: z.string().trim().min(1).max(4000) }).parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true; messageId: number }> => {
-    if (!writeLimiter.allow(context.userId)) throw new Error(TOO_MANY_CHANGES);
+    if (
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_write))
+    )
+      throw new Error(TOO_MANY_CHANGES);
     const { data: messageId, error } = await context.supabaseAdmin.rpc("staff_support_reply", {
       p_actor: context.userId,
       p_role: context.staffRole,
@@ -158,7 +165,10 @@ export const staffAssignTicket = createServerFn({ method: "POST" })
     z.object({ id: idSchema, assignTo: idSchema.nullable() }).parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true; changed: boolean }> => {
-    if (!writeLimiter.allow(context.userId)) throw new Error(TOO_MANY_CHANGES);
+    if (
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_write))
+    )
+      throw new Error(TOO_MANY_CHANGES);
     if (data.assignTo !== context.userId && !context.staffScopes.includes("staff.manage")) {
       const { readTicketRow } = await import("./staff-support.server");
       const row = await readTicketRow(context.supabaseAdmin, data.id);
@@ -187,7 +197,10 @@ export const staffSetTicketStatus = createServerFn({ method: "POST" })
     z.object({ id: idSchema, status: z.enum(["open", "waiting_learner", "solved"]) }).parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true; changed: boolean }> => {
-    if (!writeLimiter.allow(context.userId)) throw new Error(TOO_MANY_CHANGES);
+    if (
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_write))
+    )
+      throw new Error(TOO_MANY_CHANGES);
     const { data: changed, error } = await context.supabaseAdmin.rpc("staff_support_set_status", {
       p_actor: context.userId,
       p_role: context.staffRole,
@@ -212,7 +225,10 @@ export const staffAddTicketNote = createServerFn({ method: "POST" })
     z.object({ id: idSchema, body: z.string().trim().min(1).max(2000) }).parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    if (!writeLimiter.allow(context.userId)) throw new Error(TOO_MANY_CHANGES);
+    if (
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_write))
+    )
+      throw new Error(TOO_MANY_CHANGES);
     const { error } = await context.supabaseAdmin.rpc("staff_support_add_note", {
       p_actor: context.userId,
       p_role: context.staffRole,

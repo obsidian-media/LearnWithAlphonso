@@ -20,7 +20,7 @@ issue.
 - **Captcha (web, optional).** With `VITE_TURNSTILE_SITE_KEY` set, the web email forms send a Cloudflare Turnstile
   token (`src/lib/turnstile.ts`). The auth server setting is switched on only once the native apps can pass a captcha
   too, because it applies to every client.
-- **Admin second factor.** With `ADMIN_REQUIRE_AAL2=true`, every staff server function requires a session verified
+- **Admin second factor.** By default (fail closed; only `ADMIN_REQUIRE_AAL2=false` opts out), every staff server function requires a session verified
   with an authenticator code (`requireStaff`, which replaced `requireAdmin` in #496; `src/lib/admin-auth.ts`). The
   admin sign-in page enrols and verifies the authenticator.
 - **Staff roles, scopes and the action record (#496).** Staff are `owner` or `support` with named scopes

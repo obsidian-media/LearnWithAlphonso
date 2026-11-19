@@ -54,8 +54,9 @@ describe("staffGetNumbers", () => {
     expect(fn).toMatch(/await import\("\.\/numbers-sources\.server"\)/);
   });
   it("is rate limited, with a lower ceiling for Refresh", () => {
-    expect(fn).toMatch(/limiter\.allow\(context\.userId\)/);
-    expect(fn).toMatch(/data\.refresh && !refreshLimiter\.allow/);
+    expect(fn).toMatch(/consumeStaffLimit\([^)]*STAFF_LIMITS\.numbers\)/);
+    expect(fn).toMatch(/data\.refresh &&[\s\S]*STAFF_LIMITS\.numbersRefresh/);
+    expect(fn).not.toMatch(/createRateLimiter/);
   });
 });
 

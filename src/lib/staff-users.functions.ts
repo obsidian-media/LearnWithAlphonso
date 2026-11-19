@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireStaff } from "./staff-middleware";
-import { createRateLimiter } from "./staff-rate-limit";
+import { consumeStaffLimit, STAFF_LIMITS } from "./staff-rate-limit";
 
 /**
  * Learner management for the staff console. Every function is gated by requireStaff(scope) and every write names its
@@ -10,7 +10,6 @@ import { createRateLimiter } from "./staff-rate-limit";
  */
 
 const idSchema = z.string().uuid();
-const searchLimiter = createRateLimiter(30, 60_000);
 
 export type StaffUserHit = {
   id: string;
@@ -24,7 +23,9 @@ export const staffSearchUsers = createServerFn({ method: "POST" })
   .middleware([requireStaff("users.read")])
   .inputValidator((d: unknown) => z.object({ q: z.string().trim().min(2).max(100) }).parse(d))
   .handler(async ({ data, context }): Promise<StaffUserHit[]> => {
-    if (!searchLimiter.allow(context.userId)) {
+    if (
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.user_search))
+    ) {
       throw new Error("Too many searches. Wait a minute and try again.");
     }
     const { data: rows, error } = await context.supabaseAdmin.rpc("staff_search_users", {
@@ -320,6 +321,24 @@ export const staffUnbanUser = createServerFn({ method: "POST" })
     return { ok: true, partial };
   });
 
+export const STAFF_TARGET_MESSAGE = "You cannot delete this account: it belongs to staff.";
+
+/** staff_assert_may_restrict raises 42501 for an owner target, or a staff target when the actor is not an owner. */
+async function assertMayDelete(
+  admin: import("@supabase/supabase-js").SupabaseClient,
+  actorRole: string,
+  target: string,
+): Promise<void> {
+  const { error } = await admin.rpc("staff_assert_may_restrict", {
+    p_actor_role: actorRole,
+    p_target: target,
+  });
+  if (!error) return;
+  if (error.code === "42501") throw new Error(STAFF_TARGET_MESSAGE);
+  // Any other failure leaves the check undecided, so nothing is deleted.
+  throw new Error("The account could not be checked. Nothing was done; try again.");
+}
+
 export const CONFIRM_EMAIL_MESSAGE = "Type the learner's email to confirm.";
 
 /** Destructive actions (ban, delete) need the learner's own email typed back, compared case-insensitively. */
@@ -362,6 +381,36 @@ export const staffDeleteUser = createServerFn({ method: "POST" })
     const reason = validateReason(data.reason);
     assertNotSelf(context.userId, data.id);
     const email = await assertEmailConfirmed(context.supabaseAdmin, data.id, data.confirmEmail);
+    // Same rule block and ban enforce in the database: an owner is never a target, and only an owner may act on
+    // another staff member. Checked before anything is written or any external service is called (the email check
+    // above only reads).
+    try {
+      await assertMayDelete(context.supabaseAdmin, context.staffRole, data.id);
+    } catch (e) {
+      if (e instanceof Error && e.message === STAFF_TARGET_MESSAGE) {
+        // A refused attempt on a staff account is itself worth a row. Nothing else has been written, and a record
+        // that cannot be written does not change the answer.
+        try {
+          await recordStaffAction(context.supabaseAdmin, {
+            actor: context.userId,
+            role: context.staffRole,
+            action: "user.delete.refused",
+            target: data.id,
+            reason,
+            after: { why: "protected_account" },
+          });
+        } catch {
+          console.error(
+            JSON.stringify({
+              event: "audit_write_failed",
+              action: "user.delete.refused",
+              target: data.id,
+            }),
+          );
+        }
+      }
+      throw e;
+    }
 
     const base = {
       actor: context.userId,
