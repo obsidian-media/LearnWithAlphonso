@@ -108,7 +108,7 @@ private fun length(seconds: Int) = "%d:%02d".format(seconds / 60, seconds % 60)
 
 /** Port of ListenView.swift: the root of the folder tree with search and the offline listing. */
 @Composable
-fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}, onOpenStories: (String) -> Unit = {}) {
+fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (String) -> Unit, onOpenPractice: (VideoPracticeTarget) -> Unit = {}, onOpenStory: (String) -> Unit = {}) {
     val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
     val isConnected by container.connectivity.isConnected.collectAsState()
@@ -155,7 +155,7 @@ fun ListenScreen(container: AppContainer, vm: ListenViewModel, onOpenFolder: (St
                 StateCard(PodcastLibrary.emptyTitle(state.courseCode), PodcastLibrary.EMPTY_MESSAGE, "Refresh") { scope.launch { vm.load() } }
             }
             // The Listen home is the rooms shelf (ListenShelfUi.kt); a folder opens its own episode list.
-            else -> ListenShelfRoot(container, vm, onOpenFolder, onOpenPractice, onOpenStories)
+            else -> ListenShelfRoot(container, vm, onOpenFolder, onOpenPractice, onOpenStory)
         }
       }
     }

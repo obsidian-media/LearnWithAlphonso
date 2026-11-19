@@ -122,7 +122,8 @@ class StoriesSourceGuardsTest {
     }
 
     @Test
-    fun `the library is reachable from the Listen shelf`() {
-        assertTrue(code(read(shelf)).contains("StoriesEntryRow { onOpenStories(course) }"))
+    fun `the Library reaches stories through its All peek and its Stories tab`() {
+        assertTrue(code(read(shelf)).contains("StoriesPeekSection(stories, course, onOpenStory)"))
+        assertTrue(code(read(shelf)).contains("LibraryTab.Stories -> storiesFullItems(stories, course, onOpenStory)"))
     }
 }

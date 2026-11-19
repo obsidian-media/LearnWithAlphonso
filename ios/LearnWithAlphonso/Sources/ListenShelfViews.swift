@@ -1,8 +1,21 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// The Listen home (round 6.1, option A): a continue-listening card, a course switch, level chips and one painted
-/// room per folder, each with its own episode count and percent heard. All logic is `ListenShelf` in the Kit;
+/// The Library sub-tab picked this session. It survives leaving the Library and coming back, and is forgotten when the app
+/// restarts: "at most per session", and a fresh launch starts on All.
+enum LibrarySession {
+    nonisolated(unsafe) static var tab: LibraryTab = .all
+}
+
+/// How the Watch videos are drawn: the All tab's `peek` row, the Watch tab's `full` grid, or `hidden` (the host stays
+/// mounted for its player sheet and the path deep link but draws nothing).
+enum WatchPresentation {
+    case peek, full, hidden
+}
+
+/// The Library home under four sub-tabs (All, Listen, Watch, Stories). All is a Continue card plus a one-row peek of Watch
+/// and of Stories, each with "See all"; Listen is the course switch, level chips and one painted room per folder, each
+/// with its own episode count and percent heard; Watch and Stories are the focused screens. All logic is `ListenShelf` in the Kit;
 /// this file only draws it. Compiles in CI's ios-app-build; look at it on a device.
 struct ListenShelfRoot: View {
     let session: Session
@@ -20,6 +33,8 @@ struct ListenShelfRoot: View {
     @State private var monthSeconds = 0
     @State private var course: String?
     @State private var level: String?
+    /// The sub-tab: All by default on a fresh launch, then the one picked this session (LibrarySession).
+    @State private var tab: LibraryTab = LibrarySession.tab
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var isLoading = true
     @State private var loadFailed = false
@@ -45,64 +60,93 @@ struct ListenShelfRoot: View {
                     selection: Binding(get: { activeCourse }, set: { course = $0; level = nil }),
                     accessibilityLabel: "Course")
 
-                if let chip = ListenShelf.monthChip(seconds: monthSeconds) {
-                    Label(chip, systemImage: "timer")
-                        .dsText(.footnote)
-                        .foregroundStyle(ds.inkSoft)
-                        .padding(.horizontal, AlphonsoDS.Space.s4)
-                        .frame(minHeight: AlphonsoDS.Space.minTouch)
-                        .background(Capsule().fill(ds.card))
-                        .accessibilityElement(children: .combine)
-                }
+                libraryTabs
 
-                if let target {
+                // All: the Continue card, then a one-row peek of Watch and of Stories, each with "See all".
+                if tab == .all, let target {
                     ContinueCard(target: target, player: player, downloads: downloads, networkMonitor: networkMonitor, queue: target.shelf.episodes)
                 }
 
-                WatchShelfHost(session: session, player: player, course: activeCourse)
+                // Everything under the Continue card sits on one solid surface (the studio scene stays behind the header
+                // only), so headings, "See all" and poster titles meet contrast.
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
+                // One Watch host at one fixed place in the stack, so its player sheet and the path deep link survive a tab
+                // switch. It draws the peek on All, the full shelf on Watch, and only its loader and sheet elsewhere.
+                WatchShelfHost(session: session, player: player, course: activeCourse, presentation: watchPresentation,
+                               onSeeAll: { select(.watch) })
 
-                StoriesEntryRow(session: session, player: player, course: activeCourse)
+                if tab == .all || tab == .stories {
+                    StoriesSection(session: session, player: player, course: activeCourse,
+                                   presentation: tab == .all ? .peek : .full, onSeeAll: { select(.stories) })
+                }
 
-                if !levels.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: AlphonsoDS.Space.s2) {
-                            ForEach([nil] + levels.map { Optional($0) }, id: \.self) { chip in
-                                DSChip(chip ?? "All", selected: level == chip,
-                                       accessibilityText: chip.map { "Level \($0)" } ?? "All levels") { level = chip }
+                if tab == .all {
+                    if loadFailed {
+                        DSEmptyState(
+                            art: "Alphonso-thinking",
+                            title: networkMonitor.isConnected ? "Couldn't load these episodes." : "You're offline.",
+                            actionTitle: "Try again") { Task { await load() } }
+                    }
+                }
+
+                if tab == .listen {
+                    if let chip = ListenShelf.monthChip(seconds: monthSeconds) {
+                        Label(chip, systemImage: "timer")
+                            .dsText(.footnote)
+                            .foregroundStyle(ds.inkSoft)
+                            .padding(.horizontal, AlphonsoDS.Space.s4)
+                            .frame(minHeight: AlphonsoDS.Space.minTouch)
+                            .background(Capsule().fill(ds.card))
+                            .accessibilityElement(children: .combine)
+                    }
+
+                    if !levels.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: AlphonsoDS.Space.s2) {
+                                ForEach([nil] + levels.map { Optional($0) }, id: \.self) { chip in
+                                    DSChip(chip ?? "All", selected: level == chip,
+                                           accessibilityText: chip.map { "Level \($0)" } ?? "All levels") { level = chip }
+                                }
+                            }
+                        }
+                    }
+
+                    if isLoading {
+                        ProgressView("Loading episodes…").tint(ds.choice).frame(maxWidth: .infinity)
+                    } else if loadFailed {
+                        DSEmptyState(
+                            art: "Alphonso-thinking",
+                            title: networkMonitor.isConnected ? "Couldn't load these episodes." : "You're offline.",
+                            actionTitle: "Try again") { Task { await load() } }
+                    } else if shown.isEmpty {
+                        DSEmptyState(
+                            art: "Alphonso-reading-book",
+                            title: episodes.isEmpty
+                                ? PodcastLibraryCopy.emptyTitle(courseCode: activeCourse)
+                                : "No \(courses.first { $0.code == activeCourse }?.label ?? "") episodes\(level.map { " at \($0)" } ?? "") yet.",
+                            message: episodes.isEmpty ? PodcastLibraryCopy.emptyMessage : nil)
+                    } else {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AlphonsoDS.Space.s2), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: AlphonsoDS.Space.s2) {
+                            ForEach(shown, id: \.folder.id) { shelf in
+                                NavigationLink {
+                                    ListenShelfDetail(
+                                        shelf: shelf, progress: progress, session: session, player: player,
+                                        downloads: downloads, networkMonitor: networkMonitor
+                                    )
+                                } label: {
+                                    RoomTile(shelf: shelf)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
                 }
-
-                if isLoading {
-                    ProgressView("Loading episodes…").tint(ds.choice).frame(maxWidth: .infinity)
-                } else if loadFailed {
-                    DSEmptyState(
-                        art: "Alphonso-thinking",
-                        title: networkMonitor.isConnected ? "Couldn't load these episodes." : "You're offline.",
-                        actionTitle: "Try again") { Task { await load() } }
-                } else if shown.isEmpty {
-                    DSEmptyState(
-                        art: "Alphonso-reading-book",
-                        title: episodes.isEmpty
-                            ? PodcastLibraryCopy.emptyTitle(courseCode: activeCourse)
-                            : "No \(courses.first { $0.code == activeCourse }?.label ?? "") episodes\(level.map { " at \($0)" } ?? "") yet.",
-                        message: episodes.isEmpty ? PodcastLibraryCopy.emptyMessage : nil)
-                } else {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AlphonsoDS.Space.s2), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: AlphonsoDS.Space.s2) {
-                        ForEach(shown, id: \.folder.id) { shelf in
-                            NavigationLink {
-                                ListenShelfDetail(
-                                    shelf: shelf, progress: progress, session: session, player: player,
-                                    downloads: downloads, networkMonitor: networkMonitor
-                                )
-                            } label: {
-                                RoomTile(shelf: shelf)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
                 }
+                .padding(AlphonsoDS.Space.s4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous).fill(ds.surface))
+                // Full width: the scene shows only behind the header, tabs and Continue card.
+                .padding(.horizontal, -AlphonsoDS.Space.s4)
             }
             .padding(AlphonsoDS.Space.s4)
         }
@@ -111,6 +155,33 @@ struct ListenShelfRoot: View {
         .task { await load() }
         // Back from a folder, or after an episode played, the shelf reflects what was just heard.
         .task(id: player.episode?.id) { await reloadProgress() }
+    }
+
+    private var watchPresentation: WatchPresentation {
+        switch tab {
+        case .all: return .peek
+        case .watch: return .full
+        case .listen, .stories: return .hidden
+        }
+    }
+
+    /// The tab chosen this session is remembered (LibrarySession); a fresh launch starts on All.
+    private func select(_ next: LibraryTab) {
+        tab = next
+        LibrarySession.tab = next
+    }
+
+    /// All, Listen, Watch, Stories: one row of chips, the selected one announced to VoiceOver.
+    private var libraryTabs: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AlphonsoDS.Space.s2) {
+                ForEach(LibraryTab.allCases, id: \.self) { item in
+                    DSChip(item.title, selected: tab == item, accessibilityText: "\(item.title) tab") { select(item) }
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Library sections")
     }
 
     private func load() async {
@@ -143,6 +214,8 @@ struct WatchShelfHost: View {
     let session: Session
     let player: PodcastAudioPlayer
     let course: String
+    var presentation: WatchPresentation = .full
+    var onSeeAll: (() -> Void)?
 
     /// Alphonso videos, read on their own so a failed read never hides the podcasts.
     @State private var videos: [LibraryVideo] = []
@@ -159,7 +232,9 @@ struct WatchShelfHost: View {
         // the conditional content: while `videos` is empty the shelf draws nothing, a view that draws nothing never
         // appears, and a `.task` on it never fires, so the shelf would never load (build 63).
         VStack(spacing: 0) {
-            if videosFailed {
+            if presentation == .hidden {
+                EmptyView()
+            } else if videosFailed {
                 HStack {
                     Text("We couldn't load the videos.").dsText(.footnote).foregroundStyle(ds.inkSoft)
                     Spacer(minLength: AlphonsoDS.Space.s2)
@@ -168,7 +243,7 @@ struct WatchShelfHost: View {
                 .padding(AlphonsoDS.Space.s4)
                 .alphonsoGlass()
             } else {
-                WatchShelfSection(videos: VideoShelf.shelf(videos, course: course)) { watching = $0 }
+                WatchShelfSection(videos: VideoShelf.shelf(videos, course: course), presentation: presentation, onSeeAll: onSeeAll) { watching = $0 }
             }
             loadAnchor
         }
@@ -229,21 +304,44 @@ struct WatchShelfHost: View {
     }
 }
 
-/// The Watch shelf: the course's Alphonso videos as a row of vertical posters. It draws NOTHING when there are none (no
-/// empty box). A finished video shows a tick, one part-way through shows a bar. Every title, length and state comes from
-/// the rows (`VideoShelf` in the Kit).
+/// The Watch videos as vertical posters. `peek` is the All tab's one row (the first few, with "See all"), `full` is the
+/// Watch tab (every video, wrapped). It draws NOTHING when there are none (no empty box). A poster shows its state (a New
+/// badge, a bar part-way through, a tick when watched) and its length; every title, length and state comes from the rows
+/// (`VideoShelf` in the Kit), which track all three states, so none is invented here.
 private struct WatchShelfSection: View {
     let videos: [LibraryVideo]
+    let presentation: WatchPresentation
+    var onSeeAll: (() -> Void)?
     let onOpen: (LibraryVideo) -> Void
     @Environment(\.alphonsoDS) private var ds
 
+    private let posterWidth: CGFloat = 104
+
     var body: some View {
-        if !videos.isEmpty {
+        if !videos.isEmpty && presentation != .hidden {
             VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-                Text("Watch").dsText(.title).foregroundStyle(ds.ink)
-                    .accessibilityAddTraits(.isHeader)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
+                HStack {
+                    Text("Watch").dsText(.title).foregroundStyle(ds.ink)
+                        .accessibilityAddTraits(.isHeader)
+                    Spacer(minLength: AlphonsoDS.Space.s2)
+                    if presentation == .peek, let onSeeAll {
+                        Button("See all") { onSeeAll() }
+                            .dsText(.footnote).foregroundStyle(ds.choice)
+                            .frame(minHeight: AlphonsoDS.Space.minTouch)
+                            .accessibilityLabel(LibraryTab.watch.seeAllLabel)
+                    }
+                }
+                if presentation == .peek {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
+                            ForEach(videos.prefix(LibraryTab.watchPeekCount)) { video in
+                                card(video).frame(width: posterWidth)
+                            }
+                        }
+                    }
+                } else {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: posterWidth), spacing: AlphonsoDS.Space.s3, alignment: .top)],
+                              alignment: .leading, spacing: AlphonsoDS.Space.s3) {
                         ForEach(videos) { video in card(video) }
                     }
                 }
@@ -254,46 +352,61 @@ private struct WatchShelfSection: View {
     private func card(_ video: LibraryVideo) -> some View {
         let state = VideoShelf.state(video)
         let stateWord = state == .done ? "watched" : state == .inProgress ? "in progress" : "new"
+        let length = VideoShelf.clock(Double(video.durationSeconds))
         return Button { onOpen(video) } label: {
             VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
-                ZStack(alignment: .bottomLeading) {
-                    ds.sunk
-                    if let poster = video.posterURL {
-                        AsyncImage(url: poster) { image in image.resizable().scaledToFill() } placeholder: { ds.sunk }
+                // The picture is an overlay on a sized clear base: a scaledToFill image would otherwise size its parent.
+                Color.clear
+                    .aspectRatio(2.0 / 3.0, contentMode: .fit)
+                    .background(ds.sunk)
+                    .overlay {
+                        if let poster = video.posterURL {
+                            AsyncImage(url: poster) { image in image.resizable().scaledToFill() } placeholder: { ds.sunk }
+                        }
                     }
-                    Image(systemName: "play.fill").foregroundStyle(ds.ink)
-                        .frame(width: AlphonsoDS.Space.s8, height: AlphonsoDS.Space.s8)
-                        .background(Circle().fill(ds.card.opacity(0.9)))
-                        .padding(AlphonsoDS.Space.s2)
-                    if state == .inProgress {
-                        ProgressView(value: VideoShelf.fraction(video)).tint(ds.xp)
-                            .frame(maxHeight: .infinity, alignment: .bottom)
+                    .overlay {
+                        Image(systemName: "play.fill").foregroundStyle(.white).shadow(radius: 2)
                     }
-                }
-                .frame(width: 120, height: 120 * 16 / 9)
-                .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
-                .overlay(alignment: .topLeading) {
-                    if let level = video.level {
-                        Text(level).dsText(.caption).foregroundStyle(ds.ink)
-                            .padding(.horizontal, AlphonsoDS.Space.s2)
-                            .background(Capsule().fill(ds.card)).padding(AlphonsoDS.Space.s2)
+                    .overlay(alignment: .topLeading) {
+                        if let level = video.level {
+                            Text(level).dsText(.caption).foregroundStyle(ds.choice)
+                                .padding(.horizontal, AlphonsoDS.Space.s2)
+                                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.choiceTint))
+                                .padding(AlphonsoDS.Space.s2)
+                        }
                     }
-                }
-                .overlay(alignment: .topTrailing) {
-                    if state == .done {
-                        Image(systemName: "checkmark.circle.fill").foregroundStyle(ds.right).padding(AlphonsoDS.Space.s2)
+                    .overlay(alignment: .topTrailing) {
+                        if state == .new {
+                            Text("NEW").dsText(.caption).foregroundStyle(.white)
+                                .padding(.horizontal, AlphonsoDS.Space.s2)
+                                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.heart))
+                                .padding(AlphonsoDS.Space.s2)
+                        }
                     }
-                }
+                    .overlay(alignment: .bottomTrailing) {
+                        if state == .done {
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(ds.right)
+                                .background(Circle().fill(ds.card)).padding(AlphonsoDS.Space.s2)
+                        } else {
+                            Text(length).dsText(.caption).foregroundStyle(.white)
+                                .padding(.horizontal, AlphonsoDS.Space.s2)
+                                .background(Capsule().fill(ds.hero.opacity(0.7)))
+                                .padding(AlphonsoDS.Space.s2)
+                        }
+                    }
+                    .overlay(alignment: .bottom) {
+                        if state == .inProgress {
+                            ProgressView(value: VideoShelf.fraction(video)).tint(ds.xp)
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
                 Text(video.title).dsText(.footnote).foregroundStyle(ds.ink)
                     .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
-                Text(VideoShelf.clock(Double(video.durationSeconds)) + (state == .new ? " \u{00B7} New" : ""))
-                    .dsText(.caption).foregroundStyle(ds.inkSoft)
             }
-            .frame(width: 120, alignment: .leading)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(video.title), \(VideoShelf.clock(Double(video.durationSeconds))), \(stateWord)")
+        .accessibilityLabel("\(video.title), \(length), \(stateWord)")
         .accessibilityAddTraits(.isButton)
     }
 }
@@ -346,6 +459,9 @@ private struct RoomTile: View {
     }
 }
 
+/// The All tab's Continue card: the podcast-studio art (one square picture, centre-cropped to fill), a gold play button and
+/// "Episode N of M". It resumes `ListenShelf.continueListening` (the most recently touched episode still in progress, else the
+/// next new one in that series). One button, one spoken label.
 private struct ContinueCard: View {
     let target: ListenShelf.ContinueTarget
     let player: PodcastAudioPlayer
@@ -357,37 +473,44 @@ private struct ContinueCard: View {
     var body: some View {
         let left = ListenShelf.secondsLeft(target.episode, target.progress)
         let number = (queue.firstIndex { $0.id == target.episode.id } ?? 0) + 1
+        let detail = target.progress == nil ? ListenShelf.clock(left) : "\(ListenShelf.clock(left)) left"
         Button {
             player.play(target.episode, localURL: downloads.localURL(episodeID: target.episode.id),
                         queue: queue, isOnline: networkMonitor.isConnected)
             downloads.markPlayed(episodeID: target.episode.id)
         } label: {
             ZStack(alignment: .bottomLeading) {
-                RoomBackdrop(room: target.shelf.room)
-                LinearGradient(colors: [ds.hero.opacity(0.4), ds.hero.opacity(0.9)], startPoint: .top, endPoint: .bottom)
-                HStack(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
-                        Text("CONTINUE LISTENING").dsText(.caption).foregroundStyle(ds.onHeroKick)
-                        Spacer(minLength: 0)
-                        Text(target.episode.title).dsText(.title)
-                            .foregroundStyle(ds.onHero).fixedSize(horizontal: false, vertical: true)
-                        Text(([target.shelf.level, "Episode \(number)", target.progress == nil ? ListenShelf.clock(left) : "\(ListenShelf.clock(left)) left"]
-                            .compactMap { $0 }).joined(separator: " \u{00B7} "))
-                            .dsText(.footnote).foregroundStyle(ds.onHeroSoft)
-                        DSProgressBar(fraction: ListenShelf.fraction(target.episode, target.progress), onHero: true)
-                    }
-                    Image(MascotArt.assetName(for: .learnGreeting)).resizable().scaledToFit().frame(width: 96)
-                        .accessibilityHidden(true)
+                RoomBackdrop(room: "continue-studio")
+                LinearGradient(colors: [.clear, ds.hero.opacity(0.95)], startPoint: .center, endPoint: .bottom)
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                    Spacer(minLength: 0)
+                    Text("CONTINUE LISTENING").dsText(.caption).foregroundStyle(ds.onHeroKick)
+                    Text(target.episode.title).dsText(.title)
+                        .foregroundStyle(ds.onHero).fixedSize(horizontal: false, vertical: true)
+                    Text(LibraryTab.continueSubtitle(number: number, count: queue.count, detail: detail))
+                        .dsText(.footnote).foregroundStyle(ds.onHeroSoft)
+                    DSProgressBar(fraction: ListenShelf.fraction(target.episode, target.progress), onHero: true)
                 }
                 .padding(AlphonsoDS.Space.s4)
+                .padding(.trailing, AlphonsoDS.Space.s12 + AlphonsoDS.Space.s4)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(minHeight: 176)
+            .frame(minHeight: 208)
+            .overlay(alignment: .bottomTrailing) {
+                Image(systemName: "play.fill")
+                    .foregroundStyle(ds.onAction)
+                    .frame(width: AlphonsoDS.Space.s12, height: AlphonsoDS.Space.s12)
+                    .background(Circle().fill(ds.action))
+                    .background(Circle().fill(ds.actionEdge).offset(y: 4))
+                    .padding(AlphonsoDS.Space.s4)
+                    .accessibilityHidden(true)
+            }
             .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous).stroke(ds.action, lineWidth: 2))
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Continue listening: \(target.episode.title), \(ListenShelf.clock(left)) left")
+        .accessibilityLabel(LibraryTab.continueLabel(series: target.shelf.folder.title, number: number, count: queue.count,
+                                                     title: target.episode.title, detail: detail))
         .accessibilityAddTraits(.isButton)
     }
 }
