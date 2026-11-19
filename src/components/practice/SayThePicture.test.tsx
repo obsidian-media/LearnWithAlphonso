@@ -3,7 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 import { SayThePicture } from "./SayThePicture";
-import { drawRounds, type PictureWord } from "@/lib/say-the-picture";
+import {
+  comboCount,
+  drawRounds,
+  missedWords,
+  poseFor,
+  saveSentence,
+  type PictureWord,
+} from "@/lib/say-the-picture";
 
 const h = vi.hoisted(() => ({
   words: [] as unknown[],
@@ -33,6 +40,21 @@ vi.mock("@/lib/use-speech-capture", () => ({
     h.capture.course = o.course;
     return h.capture;
   },
+}));
+// jsdom never loads an image (a not-loaded image counts as failed and collapses), so give the slot a stand-in.
+vi.mock("../VocabImage", () => ({
+  VocabImage: ({ url, alt, className }: { url: string; alt: string; className?: string }) => (
+    <div data-testid="vocab-image" className={className}>
+      <img src={url} alt={alt} />
+    </div>
+  ),
+}));
+vi.mock("./SayItRight", () => ({
+  SayItRight: ({ words, onExit }: { words?: { term: string }[]; onExit: () => void }) => (
+    <div data-testid="say-it-right" data-words={(words ?? []).map((w) => w.term).join(",")}>
+      <button onClick={onExit}>back from drill</button>
+    </div>
+  ),
 }));
 vi.mock("@/lib/use-model-speech", () => ({ useModelSpeech: () => h.model }));
 
@@ -148,5 +170,207 @@ describe("Say the picture", () => {
       "src/lib/use-model-speech.ts",
     ])
       expect(fs.readFileSync(f, "utf8")).not.toMatch(/authorizeAiRequest|AiKind/);
+  });
+
+  it("puts the photo full-bleed behind the controls, with a generic description until the word is revealed", () => {
+    view();
+    const photo = screen.getByTestId("vocab-image");
+    expect(photo.className).toContain("absolute inset-0");
+    expect(screen.getByRole("img", { name: "A picture of a word to say" })).toBeTruthy();
+    expect(screen.queryByRole("img", { name: "alt" })).toBeNull();
+    say("zzzz");
+    expect(screen.getByRole("img", { name: "alt" })).toBeTruthy();
+  });
+
+  it("Alphonso is explaining while asking, listening while recording, thinking after a miss and cheering on a win", () => {
+    const { rerender } = view();
+    const root = () => document.querySelector("[data-say-the-picture]") as HTMLElement;
+    const src = () =>
+      (screen.getByTestId("stp-tutor").querySelector("img") as HTMLImageElement).src;
+    const again = () =>
+      rerender(withAiConsent(<SayThePicture course="en" onExit={() => {}} />, fakeConsentApi()));
+    expect(root().dataset.pose).toBe("explaining-pointer");
+    expect(src()).toContain("/figures/alphonso-explaining-pointer.webp");
+    h.capture.state = "recording";
+    again();
+    expect(root().dataset.pose).toBe("listening-headphones");
+    const stop = screen.getByRole("button", { name: "Stop recording" });
+    expect(stop.getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByTestId("stp-mic").dataset.recording).toBe("true");
+    h.capture.state = "idle";
+    again();
+    say("zzzz");
+    expect(root().dataset.pose).toBe("thinking-temple");
+    expect(src()).toContain("alphonso-thinking-temple.webp");
+    fireEvent.click(screen.getByRole("button", { name: "Next word" }));
+    const hit = (drawRounds(h.words as PictureWord[], 8, () => 0)[1] as PictureWord).term;
+    say(hit);
+    expect(root().dataset.pose).toBe("levelup-cheer");
+  });
+
+  it("holding the ring records and letting go sends; a click still toggles for keyboards", () => {
+    view();
+    const mic = screen.getByRole("button", { name: "Record your answer" });
+    fireEvent.pointerDown(mic);
+    expect(h.capture.start).toHaveBeenCalledTimes(1);
+    fireEvent.pointerUp(mic);
+    expect(h.capture.stop).toHaveBeenCalledTimes(1);
+    fireEvent.click(mic); // the click that follows a hold must not start a second recording
+    expect(h.capture.start).toHaveBeenCalledTimes(1);
+    fireEvent.click(mic);
+    expect(h.capture.start).toHaveBeenCalledTimes(2);
+    expect(mic.getAttribute("aria-describedby")).toBe("stp-hint");
+    expect(document.getElementById("stp-hint")?.textContent).toMatch(/Hold and say it/);
+  });
+
+  it("a miss reveals the word on the photo (overline, big term, Hear it) and not in a separate card", () => {
+    view();
+    say("zzzz");
+    const panel = screen.getByTestId("stp-reveal");
+    expect(panel.textContent).toContain("It is");
+    expect(panel.textContent).toMatch(/word[a-z]/);
+    expect(panel.querySelector("button")?.textContent).toBe("Hear it");
+    fireEvent.click(screen.getByRole("button", { name: "Hear it" }));
+    expect(h.model).toHaveBeenCalledTimes(2);
+  });
+
+  it("a win shows the combo chip counting the run of first-time wins", () => {
+    view();
+    const hits = drawRounds(h.words as PictureWord[], 8, () => 0).map((w) => w.term);
+    say(hits[0]);
+    expect(screen.getByTestId("stp-combo").textContent).toBe("First try");
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    say(hits[1]);
+    expect(screen.getByTestId("stp-combo").textContent).toBe("2 in a row");
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    say("zzzz"); // a miss breaks the run
+    fireEvent.click(screen.getByRole("button", { name: "Next word" }));
+    say(hits[3]);
+    expect(screen.getByTestId("stp-combo").textContent).toBe("First try");
+  });
+
+  describe("summary", () => {
+    /** Plays 8 rounds: the words at `missAt` are missed, the rest said first time. */
+    const play = (missAt: number[]) => {
+      const hits = drawRounds(h.words as PictureWord[], 8, () => 0).map((w) => w.term);
+      for (let i = 0; i < 8; i++) {
+        if (missAt.includes(i)) {
+          say("zzzz");
+          fireEvent.click(screen.getByRole("button", { name: i === 7 ? "Finish" : "Next word" }));
+        } else {
+          say(hits[i]);
+          fireEvent.click(screen.getByRole("button", { name: i === 7 ? "Finish" : "Next" }));
+        }
+      }
+      return hits;
+    };
+
+    it("recaps the session's photos: first try carries the gold ring, a miss the retry mark", () => {
+      view();
+      const hits = play([1, 4]);
+      const items = Array.from(screen.getByTestId("stp-recap").querySelectorAll("li"));
+      expect(items).toHaveLength(8);
+      expect(items.map((li) => li.getAttribute("data-result"))).toEqual([
+        "first",
+        "missed",
+        "first",
+        "first",
+        "missed",
+        "first",
+        "first",
+        "first",
+      ]);
+      expect(items[0].querySelector("span")?.className).toContain("ring-ds-action");
+      expect(items[1].textContent).toContain("↺");
+      expect(items[0].textContent).not.toContain("↺");
+      expect(items[1].getAttribute("aria-label")).toBe(`${hits[1]}, missed`);
+      expect(items[0].getAttribute("aria-label")).toBe(`${hits[0]}, said first time`);
+    });
+
+    it("'Say it right the ones you missed' opens Say it right with exactly the missed words", () => {
+      view();
+      const hits = play([1, 4]);
+      fireEvent.click(screen.getByRole("button", { name: "Say it right the ones you missed" }));
+      expect(screen.getByTestId("say-it-right").dataset.words).toBe(`${hits[1]},${hits[4]}`);
+      fireEvent.click(screen.getByRole("button", { name: "back from drill" }));
+      expect(screen.getByText("Practised 8 words")).toBeTruthy();
+    });
+
+    it("'Add them to your review deck' saves each missed word through the save-word call", async () => {
+      const save = vi.fn(async (i: { word: string; sentence: string }) => ({
+        alreadySaved: false,
+        word: i.word,
+        sentence: i.sentence,
+        explanation: "",
+      }));
+      render(
+        withAiConsent(
+          <SayThePicture course="en" onExit={() => {}} save={save} />,
+          fakeConsentApi(),
+        ),
+      );
+      const hits = play([2, 5]);
+      fireEvent.click(screen.getByRole("button", { name: "Add them to your review deck" }));
+      await screen.findByText(/2 words added to your review deck/);
+      expect(save.mock.calls.map((c) => c[0].word)).toEqual([hits[2], hits[5]]);
+      expect(save.mock.calls[0][0]).toMatchObject({ course: "en", sentence: hits[2] });
+      expect(screen.getByRole("button", { name: "Added to your review deck" })).toHaveProperty(
+        "disabled",
+        true,
+      );
+    });
+
+    it("says so when saving fails, and keeps the button usable", async () => {
+      const { SavedWordError } = await import("@/lib/saved-word-client");
+      const save = vi.fn(async () => {
+        throw new SavedWordError("offline");
+      });
+      render(
+        withAiConsent(
+          <SayThePicture course="en" onExit={() => {}} save={save} />,
+          fakeConsentApi(),
+        ),
+      );
+      play([0]);
+      fireEvent.click(screen.getByRole("button", { name: "Add them to your review deck" }));
+      await screen.findByText("Saving a word needs a connection.");
+      expect(screen.getByRole("button", { name: "Add them to your review deck" })).toHaveProperty(
+        "disabled",
+        false,
+      );
+    });
+
+    it("offers no cross-links when every word was said first time", () => {
+      view();
+      play([]);
+      expect(screen.queryByRole("button", { name: /Say it right/ })).toBeNull();
+      expect(screen.queryByRole("button", { name: /review deck/ })).toBeNull();
+    });
+  });
+});
+
+describe("say-the-picture derived state", () => {
+  it("maps state to pose", () => {
+    expect(poseFor("ask", false)).toBe("explaining-pointer");
+    expect(poseFor("ask", true)).toBe("listening-headphones");
+    expect(poseFor("reveal", false)).toBe("thinking-temple");
+    expect(poseFor("reveal", true)).toBe("listening-headphones");
+    expect(poseFor("right", false)).toBe("levelup-cheer");
+  });
+  it("counts the trailing run of first-time wins", () => {
+    expect(comboCount([])).toBe(0);
+    expect(comboCount(["first", "missed", "first", "first"])).toBe(2);
+    expect(comboCount(["first", "first", "missed"])).toBe(0);
+  });
+  it("lists the missed words in session order", () => {
+    expect(missedWords(["a", "b", "c", "d"], ["first", "missed", "first", "missed"])).toEqual([
+      "b",
+      "d",
+    ]);
+  });
+  it("saves the model sentence only when it holds the word", () => {
+    expect(saveSentence({ term: "dog", example: "The dog runs." })).toBe("The dog runs.");
+    expect(saveSentence({ term: "he", example: "The dog runs." })).toBe("he");
+    expect(saveSentence({ term: "dog", example: "" })).toBe("dog");
   });
 });
