@@ -160,9 +160,10 @@ struct LearnWithAlphonsoApp: App {
                 .task(id: session.userID) {
                     await aiConsentStore.refresh()
                     await ReferralAutoClaim.run(session: session)
+                    await TimeZoneSync.run(session: session)
                 }
                 .onChange(of: scenePhase) { _, phase in
-                    if phase == .active { Task { await aiConsentStore.refresh() } }
+                    if phase == .active { Task { await aiConsentStore.refresh(); await TimeZoneSync.run(session: session) } }
                 }
             } else {
                 DSEmptyState(
