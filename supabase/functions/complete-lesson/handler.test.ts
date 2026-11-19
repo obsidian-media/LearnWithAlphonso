@@ -1385,23 +1385,41 @@ async function captureErrors(fn: () => Promise<void>): Promise<string[]> {
 }
 
 Deno.test(
-  "Pro unknown never fails a saved completion: the last stored answer is used at any age",
+  "Pro unknown never fails a saved completion: a stored 'not Pro' is used at any age",
   async () => {
-    for (const cached of [false, true]) {
-      const { db } = setup();
-      const handler = createCompleteLessonHandler(
-        depsOver(db, {
-          heartsUnlimited: () => Promise.resolve(null),
-          heartsProCached: () => Promise.resolve(cached),
-        }),
-      );
-      const res = await handler(post(body(["b", "c"])));
-      assertEquals(res.status, 200);
-      assertEquals(db.settleCalls.length, 1);
-      assertEquals(db.settleCalls[0]._pro, cached);
-      assertEquals(db.settleCalls[0]._enforce, true); // a known answer settles as usual
-      assertEquals(db.settleCalls[0]._misses, 2);
-    }
+    const { db } = setup();
+    const handler = createCompleteLessonHandler(
+      depsOver(db, {
+        heartsUnlimited: () => Promise.resolve(null),
+        heartsProCached: () => Promise.resolve(false),
+      }),
+    );
+    const res = await handler(post(body(["b", "c"])));
+    assertEquals(res.status, 200);
+    assertEquals(db.settleCalls.length, 1);
+    assertEquals(db.settleCalls[0]._pro, false);
+    assertEquals(db.settleCalls[0]._enforce, true); // a stored "not Pro" settles as usual
+    assertEquals(db.settleCalls[0]._misses, 2);
+  },
+);
+
+Deno.test(
+  "Pro unknown with a stale stored 'Pro' is a SHADOW settlement: a lapsed subscriber is not refilled",
+  async () => {
+    const { db } = setup();
+    const handler = createCompleteLessonHandler(
+      depsOver(db, {
+        heartsUnlimited: () => Promise.resolve(null),
+        heartsProCached: () => Promise.resolve(true),
+      }),
+    );
+    const lines = await captureErrors(async () => {
+      assertEquals((await handler(post(body(["b", "c"])))).status, 200);
+    });
+    assertEquals(db.settleCalls.length, 1);
+    assertEquals(db.settleCalls[0]._pro, false);
+    assertEquals(db.settleCalls[0]._enforce, false);
+    assert(lines.some((l) => l.includes("hearts_settlement_shadow_stale_pro")));
   },
 );
 

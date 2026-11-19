@@ -186,9 +186,10 @@ type HeartsSettlement = { hearts: number; heartsRefillAt: number | null };
  * is reported as ok:false so the caller answers 503: the apps retry, the retry finds the stored completion and settles
  * again with the ORIGINAL misses. Without that a failed settlement would quietly be free misses.
  *
- * Pro unknown (RevenueCat down) never fails a saved lesson: the last stored Pro answer is used at any age; with none
- * at all the settlement is a SHADOW one (_enforce=false, _pro=false: charges nothing, records the token). It is never
- * settled with _pro=true, which would refill hearts to 5.
+ * Pro unknown (RevenueCat down) never fails a saved lesson: a stored "not Pro" is used at any age and settles as usual;
+ * a stored "Pro" that is no longer fresh, or no stored answer at all, makes the settlement a SHADOW one (_enforce=false,
+ * _pro=false: charges nothing, records the token). It is never settled with _pro=true from an unconfirmed answer,
+ * which would refill a lapsed subscriber's hearts to 5.
  */
 async function settleLessonHearts(
   deps: CompleteLessonDeps,
@@ -211,8 +212,8 @@ async function settleLessonHearts(
     let enforce = mode === "on";
     if (pro === null) {
       const cached = deps.heartsProCached ? await deps.heartsProCached(admin, userId) : null;
-      if (cached !== null) {
-        pro = cached;
+      if (cached === false) {
+        pro = false;
         console.error(
           JSON.stringify({ event: "hearts_settlement_stale_pro", fn: "complete-lesson" }),
         );
@@ -221,7 +222,10 @@ async function settleLessonHearts(
         enforce = false;
         console.error(
           JSON.stringify({
-            event: "hearts_settlement_shadow_pro_unknown",
+            event:
+              cached === true
+                ? "hearts_settlement_shadow_stale_pro"
+                : "hearts_settlement_shadow_pro_unknown",
             fn: "complete-lesson",
           }),
         );

@@ -1670,7 +1670,7 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
     expect(res.progress.streak).toBe(STORED.progress.streak);
   });
 
-  it("Pro unknown at settlement never fails the saved lesson: the stored answer decides, at any age", async () => {
+  it("Pro unknown at settlement never fails the saved lesson: a stale 'Pro' is a shadow, a stale 'not Pro' charges", async () => {
     for (const cachedPro of [true, false]) {
       adminRpc.mockClear();
       supabaseAdminFrom.mockImplementation((t: string) =>
@@ -1685,7 +1685,8 @@ describe("completeLessonRemote: single-use sessions and retryable read errors", 
         const res = await run(supabase, token(), 2);
         expect(res.settlementPending).toBeUndefined();
       });
-      expect(settleArgs()[0]).toMatchObject({ _pro: cachedPro, _enforce: true });
+      // A stale "Pro" must not refill a subscriber who may have lapsed: record only.
+      expect(settleArgs()[0]).toMatchObject({ _pro: false, _enforce: !cachedPro });
     }
   });
 

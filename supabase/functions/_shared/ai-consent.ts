@@ -30,18 +30,31 @@ export async function isAiSwitchedOn(admin: ConsentReader): Promise<boolean> {
   }
 }
 
-export async function hasAiConsent(admin: ConsentReader, userId: string): Promise<boolean> {
-  if (!(await isAiSwitchedOn(admin))) return false;
+/** The one read of the consent row, shared by hasAiConsent and hasAiConsentOrThrow (they differ only on an error). */
+async function readConsentAt(
+  admin: ConsentReader,
+  userId: string,
+): Promise<{ consented: boolean; error: { message: string } | null }> {
   const { data, error } = await admin
     .from("profiles")
     .select("ai_consent_at")
     .eq("id", userId)
     .maybeSingle();
+  if (error) return { consented: false, error };
+  return {
+    consented: !!(data as { ai_consent_at?: string | null } | null)?.ai_consent_at,
+    error: null,
+  };
+}
+
+export async function hasAiConsent(admin: ConsentReader, userId: string): Promise<boolean> {
+  if (!(await isAiSwitchedOn(admin))) return false;
+  const { consented, error } = await readConsentAt(admin, userId);
   if (error) {
     console.error(JSON.stringify({ event: "ai_consent_read_failed", error: error.message }));
     return false;
   }
-  return !!(data as { ai_consent_at?: string | null } | null)?.ai_consent_at;
+  return consented;
 }
 
 /** The consent row could not be read. Distinct from "no consent": a caller that WRITES a verdict must not guess. */
@@ -60,14 +73,10 @@ export class AiConsentReadError extends Error {
  */
 export async function hasAiConsentOrThrow(admin: ConsentReader, userId: string): Promise<boolean> {
   if (!(await isAiSwitchedOn(admin))) return false;
-  const { data, error } = await admin
-    .from("profiles")
-    .select("ai_consent_at")
-    .eq("id", userId)
-    .maybeSingle();
+  const { consented, error } = await readConsentAt(admin, userId);
   if (error) {
     console.error(JSON.stringify({ event: "ai_consent_read_failed", error: error.message }));
     throw new AiConsentReadError(error.message);
   }
-  return !!(data as { ai_consent_at?: string | null } | null)?.ai_consent_at;
+  return consented;
 }

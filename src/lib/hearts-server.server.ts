@@ -152,9 +152,10 @@ export async function settleLessonHearts(
 /**
  * Like settleLessonHearts, but says whether the settlement could not run (the database call failed): ok:false means
  * the caller must not report a finished settlement; the retry is answered from the stored completion and settles with
- * the ORIGINAL misses. Pro unknown (RevenueCat down) never fails a saved lesson: the last stored answer is used at any
- * age, and with none the settlement is a shadow one (_enforce=false, _pro=false: charges nothing, records the token).
- * It is never settled as Pro, which would refill hearts.
+ * the ORIGINAL misses. Pro unknown (RevenueCat down) never fails a saved lesson: a stored "not Pro" is used at any
+ * age; a stored "Pro" that is no longer fresh, or none at all, makes it a shadow settlement (_enforce=false,
+ * _pro=false: charges nothing, records the token). It is never settled as Pro from an unconfirmed answer, which would
+ * refill a lapsed subscriber's hearts.
  */
 export async function settleLessonHeartsStrict(
   args: {
@@ -169,9 +170,15 @@ export async function settleLessonHeartsStrict(
   if (args.mode === "off") return { ok: true, settlement: null };
   try {
     const proAnswer = await heartsProWithFallback(args.userId, deps);
-    const pro = proAnswer.pro;
+    let pro = proAnswer.pro;
     let enforce = args.mode === "on";
-    if (proAnswer.source === "stale") {
+    if (proAnswer.source === "stale" && pro) {
+      pro = false;
+      enforce = false;
+      console.error(
+        JSON.stringify({ event: "hearts_settlement_shadow_stale_pro", fn: "completeLessonRemote" }),
+      );
+    } else if (proAnswer.source === "stale") {
       console.error(
         JSON.stringify({ event: "hearts_settlement_stale_pro", fn: "completeLessonRemote" }),
       );
