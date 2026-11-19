@@ -122,6 +122,8 @@ class AppContainer(context: Context) {
         refresh = { session.freshAccessToken(force = true) },
     )
     val progressClient = ProgressSyncClient(supabaseHttp)
+    /** Pre-recorded story narration: public bucket files, no credentials (StoryRecordings). */
+    val storyRecordings = com.obsidianmedia.learnwithalphonso.core.net.StoryRecordingsClient(BuildConfig.SUPABASE_URL, engine)
 
     /** Sends reports of AI replies on the app's scope, so a rotation or a scrolled-away bubble cannot lose or double one. */
     val aiReports = AiReportSender({ progressClient.reportAiResponse(it) }, appScope)

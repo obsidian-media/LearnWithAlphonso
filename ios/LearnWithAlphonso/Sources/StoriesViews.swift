@@ -9,9 +9,11 @@ import LearnWithAlphonsoKit
 
 // MARK: - Narration (the app side of StoryNarration)
 
-/// Reads a story one sentence at a time through the existing /api/tts voice (the learner's chosen Alphonso voice), handing
-/// the highlight from sentence to sentence as each one ends. The next sentence is fetched while the current one plays.
-/// Sentence-level highlight is v1, like the web.
+/// Reads a story one sentence at a time, handing the highlight from sentence to sentence as each one ends. A sentence
+/// with a pre-recorded file (StoryRecordings, made by scripts/story-audio.ts) just plays it: no /api/tts call, no AI
+/// quota, no AI consent. Only a sentence with no recording (or whose file will not download) falls back to the live
+/// /api/tts voice (the learner's chosen Alphonso voice), which keeps today's consent and quota. The next sentence is
+/// fetched while the current one plays. Sentence-level highlight is v1, like the web.
 @MainActor
 final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published private(set) var state: StoryNarration
@@ -19,16 +21,37 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private let segments: [String]
     private let course: Course
     private let session: Session
+    /// The story whose recordings to look up (a branching story passes its own id for every node); nil looks nothing up.
+    private let storyID: String?
+    private var recordings: StoryRecordings?
+    private var recordingsLoaded = false
+    /// Set by `prepare`: whether a sentence with no recording may use the live voice (AI speech is on).
+    private var liveSpeechAllowed = false
     private var player: AVAudioPlayer?
     private var finishContinuation: CheckedContinuation<Bool, Never>?
     private var runID = 0
     private var cache: [Int: Task<Data, Error>] = [:]
 
-    init(segments: [String], course: Course, session: Session) {
+    init(segments: [String], course: Course, session: Session, storyID: String? = nil) {
         self.segments = segments
         self.course = course
         self.session = session
+        self.storyID = storyID
         self.state = StoryNarration(count: segments.count)
+    }
+
+    /// Looks up the story's recordings (once) and says whether narration may start: every sentence recorded needs no AI
+    /// consent; otherwise the live fallback needs it, exactly as before.
+    func prepare(aiConsentGranted: Bool) async -> Bool {
+        if !recordingsLoaded, let storyID {
+            recordings = await StoryRecordings.load(
+                supabaseURL: AppConfig.supabaseURL, storyID: storyID,
+                requester: { request in try await URLSession.shared.data(for: request) })
+            // A failed load (offline, no manifest yet) is not kept, so a later tap looks again.
+            recordingsLoaded = recordings != nil
+        }
+        liveSpeechAllowed = aiConsentGranted
+        return StoryRecordings.canNarrate(segments: segments, recordings: recordings, aiConsentGranted: aiConsentGranted)
     }
 
     /// Plays from `index` to the end of the story. `onSegment` is told each sentence as it starts (the saved position).
@@ -72,7 +95,17 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     private func audioData(for index: Int) async throws -> Data {
         if let cached = cache[index] { return try await cached.value }
+        let recordedPath = recordings?.path(for: segments[index])
+        let liveAllowed = liveSpeechAllowed
         let task = Task { () -> Data in
+            // The recording first: a plain public file, nothing to authorise or pay for.
+            if let recordedPath,
+               let url = StoryRecordings.audioURL(supabaseURL: AppConfig.supabaseURL, path: recordedPath),
+               let (data, response) = try? await URLSession.shared.data(from: url),
+               (response as? HTTPURLResponse)?.statusCode == 200, !data.isEmpty {
+                return data
+            }
+            guard liveAllowed else { throw StoryNarrationError.unauthorized }
             guard let token = await self.session.freshAccessToken() else { throw StoryNarrationError.unauthorized }
             let client = AIConversationClient(
                 baseURL: AppConfig.apiBaseURL,
@@ -307,7 +340,8 @@ struct StoryReaderView: View {
         self.session = session
         self.player = player
         _narrator = StateObject(wrappedValue: StoryNarrator(
-            segments: story.segments, course: Course(wireCode: story.course) ?? .english, session: session))
+            segments: story.segments, course: Course(wireCode: story.course) ?? .english, session: session,
+            storyID: story.id))
     }
 
     private var courseValue: Course { Course(wireCode: story.course) ?? .english }
@@ -419,9 +453,10 @@ struct StoryReaderView: View {
     }
 
     private func start(from index: Int) {
-        guard aiConsent.isGranted else { narrator.markUnavailable(); return }
         let storyID = story.id
         Task {
+            // A fully recorded story needs no AI consent; otherwise the live fallback does (StoryRecordings.canNarrate).
+            guard await narrator.prepare(aiConsentGranted: aiConsent.isGranted) else { narrator.markUnavailable(); return }
             await narrator.play(from: index) { segment in saveProgress(storyID: storyID, segment: segment) }
         }
     }

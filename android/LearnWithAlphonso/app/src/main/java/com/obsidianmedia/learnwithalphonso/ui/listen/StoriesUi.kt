@@ -56,6 +56,7 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.Stories
 import com.obsidianmedia.learnwithalphonso.core.podcast.Story
 import com.obsidianmedia.learnwithalphonso.core.podcast.StoryCopy
 import com.obsidianmedia.learnwithalphonso.core.podcast.StoryNarration
+import com.obsidianmedia.learnwithalphonso.core.podcast.StoryRecordings
 import com.obsidianmedia.learnwithalphonso.core.podcast.StorySummary
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
@@ -211,9 +212,11 @@ fun StoryReaderScreen(container: AppContainer, storyId: String, onBack: () -> Un
 }
 
 /**
- * Reads a story one sentence at a time through the existing /api/tts voice (the learner's chosen Alphonso voice), handing the
- * highlight from sentence to sentence as each one ends. The next sentence is fetched while the current one plays.
- * Sentence-level highlight is v1, like the web. [scope] is the screen's, so leaving the story stops the narration.
+ * Reads a story one sentence at a time, handing the highlight from sentence to sentence as each one ends. A sentence with a
+ * pre-recorded file (StoryRecordings, made by scripts/story-audio.ts) just plays it: no /api/tts call, no AI quota, no AI
+ * consent. Only a sentence with no recording (or whose file will not download) falls back to the live /api/tts voice (the
+ * learner's chosen Alphonso voice), which keeps today's consent and quota. The next sentence is fetched while the current
+ * one plays. Sentence-level highlight is v1, like the web. [scope] is the screen's, so leaving the story stops the narration.
  */
 internal class StoryNarrator(
     private val container: AppContainer,
@@ -226,6 +229,26 @@ internal class StoryNarrator(
     private var job: Job? = null
     /** A failed fetch is a value, not an exception: a prefetch nobody awaits must not cancel the screen's scope. */
     private val cache = HashMap<Int, Deferred<Result<ByteArray>>>()
+    private var recordings: StoryRecordings? = null
+    private var recordingsLoaded = false
+    /** Set by [begin]: whether a sentence with no recording may use the live voice (AI speech is on). */
+    private var liveSpeechAllowed = false
+
+    /**
+     * Looks up the story's recordings (once), then plays from [index]. A fully recorded story needs no AI consent; otherwise
+     * the live fallback does, exactly as before ([StoryRecordings.canNarrate]).
+     */
+    fun begin(index: Int, aiConsentGranted: Boolean, onSegment: (Int) -> Unit) {
+        scope.launch {
+            if (!recordingsLoaded) {
+                recordings = container.storyRecordings.load(story.id)
+                // A failed load (offline, no manifest yet) is not kept, so a later tap looks again.
+                recordingsLoaded = recordings != null
+            }
+            liveSpeechAllowed = aiConsentGranted
+            if (StoryRecordings.canNarrate(story.segments, recordings, aiConsentGranted)) play(index, onSegment) else markUnavailable()
+        }
+    }
 
     /** Plays from [index] to the end. [onSegment] is told each sentence as it starts (the saved position). */
     fun play(index: Int, onSegment: (Int) -> Unit) {
@@ -268,6 +291,9 @@ internal class StoryNarrator(
     private fun audioFor(index: Int): Deferred<Result<ByteArray>> = cache.getOrPut(index) {
         scope.async {
             runCatching {
+                // The recording first: a plain public file, nothing to authorise or pay for.
+                recordings?.pathFor(story.segments[index])?.let { path -> container.storyRecordings.audio(path)?.let { return@runCatching it } }
+                check(liveSpeechAllowed) { "live narration needs AI consent" }
                 container.aiClient.synthesizeSpeech(
                     story.segments[index],
                     voice = container.voicePrefs.voice(VoiceCharacter.Alphonso, story.course),
@@ -301,9 +327,8 @@ private fun StoryReader(container: AppContainer, story: Story) {
     }
 
     fun start(from: Int) {
-        if (!hasAiConsent) { narrator.markUnavailable(); return }
-        narrator.play(from) { segment ->
-            if (progressStopped) return@play
+        narrator.begin(from, hasAiConsent) { segment ->
+            if (progressStopped) return@begin
             // Garnish, like the podcast position: a failed save never interrupts reading. A rejected token stops further saves.
             scope.launch {
                 try {
