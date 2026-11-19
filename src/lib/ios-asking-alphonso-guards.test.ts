@@ -238,7 +238,7 @@ describe("Android: Alphonso asks the question", () => {
 describe("Android: the streak-freeze row is a card", () => {
   const learn = droid("learn/LearnScreen.kt");
   const block = learn.slice(
-    learn.indexOf("if (onBuyStreakFreeze != null)"),
+    learn.indexOf("if (onBuyStreakFreeze != null && showFreezeShop)"),
     learn.indexOf("private fun StatPill"),
   );
 
