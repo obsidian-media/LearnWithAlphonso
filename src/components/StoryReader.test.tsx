@@ -263,7 +263,8 @@ describe("StoriesLibraryView", () => {
       "Live one, Continue · Scene 3, Resume",
     );
     const cards = within(screen.getByTestId("stories-grid")).getAllByTestId("story-card");
-    expect(cards).toHaveLength(2);
+    expect(cards).toHaveLength(1);
+    expect(within(screen.getByTestId("stories-grid")).queryByText("Live one")).toBeNull();
     expect(screen.queryByText("Secret draft")).toBeNull();
   });
   it("gives a linear story a designed fallback, never a broken image", () => {

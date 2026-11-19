@@ -134,7 +134,7 @@ export type StoriesLibrary = {
  * Splits the visible stories for the library. Featured is the newest branching story (the highest sort order: stories
  * are added at the end). Resume is a linear story the learner started and has not finished (its saved position is
  * stored; a branching path's position is not, so a branching story is never offered here). The grid is everything
- * except the featured story, in level then reading order.
+ * except the featured and the resume story (each is shown once), in level then reading order.
  */
 export function storiesLibrary(stories: StorySummary[], course: string): StoriesLibrary {
   const visible = visibleStories(stories, course);
@@ -146,7 +146,7 @@ export function storiesLibrary(stories: StorySummary[], course: string): Stories
         null,
       ) ?? null;
   const resume = visible.find((s) => !s.branching && s.segmentIndex > 0 && !s.completed) ?? null;
-  return { featured, resume, grid: visible.filter((s) => s !== featured) };
+  return { featured, resume, grid: visible.filter((s) => s !== featured && s !== resume) };
 }
 
 /** "3 of 5 endings" for a branching story, with the total never exceeded by the found count. */

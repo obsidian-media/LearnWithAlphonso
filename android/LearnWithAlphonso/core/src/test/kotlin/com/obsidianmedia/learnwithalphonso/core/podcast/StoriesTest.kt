@@ -120,6 +120,13 @@ class StoriesTest {
     }
 
     @Test
+    fun `the resume story is shown once, not also in the grid`() {
+        val layout = Stories.library(listOf(summary("a", index = 2), summary("b")), "en")
+        assertEquals("a", layout.resume?.title)
+        assertEquals(listOf("b"), layout.grid.map { it.title })
+    }
+
+    @Test
     fun `library labels carry the endings and the full card name`() {
         val b = branching("The Key", 1)
         assertEquals("1 of 4 endings", Stories.endingsLine(b))

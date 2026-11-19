@@ -147,7 +147,7 @@ public enum Stories {
             if featured == nil || story.sortOrder >= featured!.sortOrder { featured = story }
         }
         let resume = shown.first { !$0.branching && $0.segmentIndex > 0 && !$0.completed }
-        return StoriesLibraryLayout(featured: featured, resume: resume, grid: shown.filter { $0.id != featured?.id })
+        return StoriesLibraryLayout(featured: featured, resume: resume, grid: shown.filter { $0.id != featured?.id && $0.id != resume?.id })
     }
 
     /// "3 of 5 endings".

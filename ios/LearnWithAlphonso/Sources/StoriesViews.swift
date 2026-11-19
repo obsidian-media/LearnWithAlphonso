@@ -351,7 +351,7 @@ private struct StoryCoverCard: View {
                 }
                 .overlay(alignment: .topLeading) {
                     if story.branching {
-                        Text("⑂ Path").dsText(.caption).foregroundStyle(Color.white)
+                        Label("Path", systemImage: "arrow.triangle.branch").dsText(.caption).foregroundStyle(Color.white)
                             .padding(.horizontal, AlphonsoDS.Space.s2)
                             .background(Capsule().fill(ds.choice))
                             .padding(AlphonsoDS.Space.s2)
@@ -395,7 +395,7 @@ private struct StoryHeroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
             Spacer(minLength: AlphonsoDS.Space.s12 * 2)
-            Text("⑂ " + BranchingCopy.badge.uppercased()).dsText(.overline).foregroundStyle(Color.white)
+            Label(BranchingCopy.badge.uppercased(), systemImage: "arrow.triangle.branch").dsText(.overline).foregroundStyle(Color.white)
                 .padding(.horizontal, AlphonsoDS.Space.s3).padding(.vertical, AlphonsoDS.Space.s1)
                 .background(Capsule().fill(ds.choice))
             Text(story.title).dsText(.title).foregroundStyle(ds.onHero)

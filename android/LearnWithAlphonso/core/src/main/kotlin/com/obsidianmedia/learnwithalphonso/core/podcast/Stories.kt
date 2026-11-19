@@ -86,7 +86,7 @@ object Stories {
         val shown = visible(stories, course)
         val featured = shown.filter { it.branching }.fold<StorySummary, StorySummary?>(null) { best, s -> if (best == null || s.sortOrder >= best.sortOrder) s else best }
         val resume = shown.firstOrNull { !it.branching && it.segmentIndex > 0 && !it.completed }
-        return StoriesLibraryLayout(featured, resume, shown.filter { it.id != featured?.id })
+        return StoriesLibraryLayout(featured, resume, shown.filter { it.id != featured?.id && it.id != resume?.id })
     }
 
     /** "3 of 5 endings". */

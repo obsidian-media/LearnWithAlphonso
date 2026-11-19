@@ -106,8 +106,9 @@ function StoryCard({ story, small = false }: { story: StorySummary; small?: bool
           className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-ds-hero/70 to-transparent"
         />
         {story.branching ? (
-          <span className="absolute left-2 top-2 rounded-full bg-ds-choice px-2 py-0.5 text-xs font-extrabold text-white">
-            <span aria-hidden="true">⑂ </span>Path
+          <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-ds-choice px-2 py-0.5 text-xs font-extrabold text-white">
+            <Icon name="compass" size={12} />
+            Path
           </span>
         ) : null}
         {story.branching && story.endingsTotal > 0 ? (
@@ -145,8 +146,9 @@ function FeaturedHero({ story }: { story: StorySummary }) {
         className="absolute inset-0 bg-gradient-to-t from-ds-hero/90 via-ds-hero/55 via-[40%] to-transparent to-[75%]"
       />
       <span className="relative flex min-h-56 flex-col justify-end gap-1.5 p-4 text-white">
-        <span className="w-fit rounded-full bg-ds-choice px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide text-white">
-          <span aria-hidden="true">⑂ </span>Choose your path
+        <span className="flex w-fit items-center gap-1 rounded-full bg-ds-choice px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide text-white">
+          <Icon name="compass" size={14} />
+          Choose your path
         </span>
         <span className="font-display text-xl font-extrabold leading-tight">{story.title}</span>
         <span className="text-xs font-semibold text-white/80">{heroLine(story)}</span>

@@ -118,6 +118,11 @@ describe("storiesLibrary", () => {
     expect(lib.featured?.id).toBe("new");
     expect(lib.grid.map((x) => x.id).sort()).toEqual(["lin", "old"]);
   });
+  it("shows the resume story once: in the continue line, not also in the grid", () => {
+    const lib = storiesLibrary([s({ id: "a", segmentIndex: 2 }), s({ id: "b" })], "en");
+    expect(lib.resume?.id).toBe("a");
+    expect(lib.grid.map((x) => x.id)).toEqual(["b"]);
+  });
   it("has no featured story without a branching one", () => {
     expect(storiesLibrary([s({ id: "lin" })], "en").featured).toBeNull();
   });

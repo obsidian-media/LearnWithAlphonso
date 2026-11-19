@@ -51,7 +51,7 @@ class StoriesLibraryTest {
         rule.onNodeWithTag("stories-hero").assertContentDescriptionEquals("The Lost Key, A2, Choose your path, 1 of 4 endings, Continue")
         shown("stories-continue")
         rule.onNodeWithTag("stories-continue").assertContentDescriptionEquals("Tea Time, Continue · Scene 3, Resume")
-        for (id in listOf("b2", "l1", "l2")) shown("story-card-$id")
+        for (id in listOf("b2", "l2")) shown("story-card-$id")
         // The featured story is not repeated in the grid.
         rule.onNodeWithTag("story-card-b1").assertDoesNotExist()
         rule.onNodeWithTag("story-card-b2").assertContentDescriptionEquals("Older Path, A2, Choose your path, 0 of 4 endings")

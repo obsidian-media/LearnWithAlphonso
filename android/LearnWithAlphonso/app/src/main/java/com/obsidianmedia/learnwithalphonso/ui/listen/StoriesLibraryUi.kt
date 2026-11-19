@@ -26,6 +26,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CallSplit
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -148,10 +151,13 @@ internal fun StoryCoverCard(story: StorySummary, small: Boolean, onOpen: (String
             StoryCover(story, if (small) 36 else 52, Modifier.fillMaxSize())
             Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(0.5f).background(Brush.verticalGradient(listOf(Color.Transparent, ds.hero.copy(alpha = 0.7f)))))
             if (story.branching) {
-                Text(
-                    "⑂ Path", color = Color.White, fontWeight = FontWeight.Bold, style = CaptionType,
-                    modifier = Modifier.align(Alignment.TopStart).padding(AlphonsoTokens.Space.s2).background(ds.choice, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp).clearAndSetSemantics { },
-                )
+                Row(
+                    Modifier.align(Alignment.TopStart).padding(AlphonsoTokens.Space.s2).background(ds.choice, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp).clearAndSetSemantics { },
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Icon(Icons.Filled.CallSplit, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                    Text("Path", color = Color.White, fontWeight = FontWeight.Bold, style = CaptionType)
+                }
             }
             if (story.branching && story.endingsTotal > 0) {
                 Box(Modifier.align(Alignment.TopEnd).padding(AlphonsoTokens.Space.s2)) { EndingsRing(story, if (small) 30.dp else 36.dp) }
@@ -185,10 +191,13 @@ private fun StoryHeroCard(story: StorySummary, onOpen: (String) -> Unit) {
             Modifier.fillMaxWidth().heightIn(min = 224.dp).padding(AlphonsoTokens.Space.s4),
             verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2, Alignment.Bottom),
         ) {
-            Text(
-                "⑂ CHOOSE YOUR PATH", color = Color.White, fontWeight = FontWeight.Bold, style = CaptionType,
-                modifier = Modifier.background(ds.choice, CircleShape).padding(horizontal = 10.dp, vertical = 2.dp),
-            )
+            Row(
+                Modifier.background(ds.choice, CircleShape).padding(horizontal = 10.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Icon(Icons.Filled.CallSplit, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                Text("CHOOSE YOUR PATH", color = Color.White, fontWeight = FontWeight.Bold, style = CaptionType)
+            }
             Text(story.title, color = ds.onHero, style = TitleType)
             Text(Stories.heroLine(story), color = ds.onHero, style = FootnoteType)
             Row(

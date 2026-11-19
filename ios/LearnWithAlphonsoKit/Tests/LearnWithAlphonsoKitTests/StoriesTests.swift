@@ -102,6 +102,12 @@ final class StoriesTests: XCTestCase {
         XCTAssertNil(Stories.library([branchingSummary("b", order: 1, index: 3)], course: "en").resume)
     }
 
+    func testTheResumeStoryIsShownOnceNotAlsoInTheGrid() {
+        let layout = Stories.library([summary("a", index: 2), summary("b")], course: "en")
+        XCTAssertEqual(layout.resume?.title, "a")
+        XCTAssertEqual(layout.grid.map(\.title), ["b"])
+    }
+
     func testLibraryLabelsCarryEndingsAndTheFullCardName() {
         let b = branchingSummary("The Key", order: 1)
         XCTAssertEqual(Stories.endingsLine(b), "1 of 4 endings")
