@@ -234,3 +234,26 @@ describe("hands-free in Practice is free", () => {
     expect(hector).toContain("if !entitlementStore.isPro");
   });
 });
+
+describe("iOS call screen: hands-free is switchable on the call itself", () => {
+  const call = code(`${APP}/PracticeCallView.swift`);
+  it("has an on-call chip (Practice, campaign and Hector all use PracticeCallView) with the first-use note", () => {
+    expect(call).toContain("private var handsFreeChip: some View");
+    expect(call).toContain('accessibilityIdentifier("callHandsFreeChip")');
+    expect(call).toContain("voice.setHandsFree(true)");
+    expect(call).toContain("voice.setHandsFree(false)");
+    expect(call).toContain(".alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote)");
+    expect(call.indexOf("handsFreeChip\n")).toBeLessThan(call.indexOf("controls\n"));
+  });
+});
+
+describe("iOS call avatar rendering", () => {
+  it("draws the layers with high interpolation and flattens them before the sway/breath transforms", () => {
+    const v = code(`${APP}/AlphonsoAvatarView.swift`);
+    expect(v).toContain(".interpolation(.high)");
+    expect(v.indexOf(".compositingGroup()")).toBeGreaterThan(-1);
+    expect(v.indexOf(".compositingGroup()")).toBeLessThan(
+      v.indexOf(".scaleEffect(x: frame.breath.x"),
+    );
+  });
+});

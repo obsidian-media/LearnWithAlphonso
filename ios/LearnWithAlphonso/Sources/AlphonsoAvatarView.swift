@@ -158,6 +158,9 @@ private struct AvatarLayersView: View {
                 }
             }
             .frame(width: side, height: side, alignment: .topLeading)
+            // One flattened bitmap before the sway and breathing transforms: the layers are moved and antialiased
+            // together, not edge by edge (separate layers showed fringes and seams while he moved).
+            .compositingGroup()
             .scaleEffect(x: frame.breath.x, y: frame.breath.y, anchor: .bottom)
             .rotationEffect(.degrees(frame.swayDegrees), anchor: .bottom)
             .frame(width: proxy.size.width, height: proxy.size.height)
@@ -201,6 +204,8 @@ private struct AvatarLayersView: View {
         if let image = AvatarArt.image(file, folder: kit.folder) {
             Image(uiImage: image)
                 .resizable()
+                .interpolation(.high)
+                .antialiased(true)
                 .frame(width: canvas * rect.w, height: canvas * rect.h)
                 .offset(x: canvas * rect.x, y: canvas * rect.y)
         }
