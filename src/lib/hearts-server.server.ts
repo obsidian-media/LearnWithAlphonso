@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { ServerHeartsMode } from "./hearts-gate.server";
 import type { ProEntitlementStatus, RevenueCatConfig } from "./revenuecat-entitlement";
+import { recordOpsEvent } from "./ops-events.server";
 
 /**
  * The web's half of "hearts are settled on the server" (the Edge Functions have the Deno half:
@@ -178,6 +179,7 @@ export async function settleLessonHeartsStrict(
       console.error(
         JSON.stringify({ event: "hearts_settlement_shadow_stale_pro", fn: "completeLessonRemote" }),
       );
+      await recordOpsEvent("hearts_settlement_shadow_stale_pro", { fn: "completeLessonRemote" }, args.userId);
     } else if (proAnswer.source === "stale") {
       console.error(
         JSON.stringify({ event: "hearts_settlement_stale_pro", fn: "completeLessonRemote" }),
@@ -190,6 +192,7 @@ export async function settleLessonHeartsStrict(
           fn: "completeLessonRemote",
         }),
       );
+      await recordOpsEvent("hearts_settlement_shadow_pro_unknown", { fn: "completeLessonRemote" }, args.userId);
     }
     const db = await deps.db();
     const { data, error } = await db.rpc("settle_lesson_hearts", {
@@ -208,6 +211,7 @@ export async function settleLessonHeartsStrict(
       console.error(
         JSON.stringify({ event: "hearts_settlement_failed", fn: "completeLessonRemote" }),
       );
+      await recordOpsEvent("hearts_settlement_failed", { fn: "completeLessonRemote" }, args.userId);
       return { ok: false };
     }
     return {
@@ -222,6 +226,7 @@ export async function settleLessonHeartsStrict(
     console.error(
       JSON.stringify({ event: "hearts_settlement_failed", fn: "completeLessonRemote" }),
     );
+    await recordOpsEvent("hearts_settlement_failed", { fn: "completeLessonRemote" }, args.userId);
     return { ok: false };
   }
 }

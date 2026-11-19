@@ -17,6 +17,7 @@ import {
 import { makeBlockedTermCheck } from "./ai-safety";
 import { gradeLessonAnswer } from "./grade-lesson-answer.server";
 import { localDay, streakBridge } from "./local-day";
+import { recordOpsEvent } from "./ops-events.server";
 import {
   MAX_HEARTS,
   XP_HEART_COST,
@@ -1035,6 +1036,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
             message: finalizeError.message,
           }),
         );
+        await recordOpsEvent("lesson_result_finalize_failed", { fn: "completeLessonRemote" }, userId);
       }
     } catch {
       // Nothing to do: the earlier stored result stands.
