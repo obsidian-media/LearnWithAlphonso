@@ -27,7 +27,8 @@ describe("legacy English system prompts", () => {
   });
 
   it("are exactly what the en accessors return today", () => {
-    expect(scenarioPrompt("coffee", "en")).toBe(legacyPrompts[0]);
+    // The barista was renamed (Mia to Marco, to stop clashing with Miya), so the old prompt resolves through the alias map.
+    expect(canonicalSystemPrompt(legacyPrompts[0])).toBe(scenarioPrompt("coffee", "en"));
     expect(scenarioPrompt("debate", "en")).toBe(legacyPrompts[11]);
     // The city-day premise was reworded by the held-back review, so those three resolve through the alias map.
     expect(canonicalSystemPrompt(legacyPrompts[12])).toBe(

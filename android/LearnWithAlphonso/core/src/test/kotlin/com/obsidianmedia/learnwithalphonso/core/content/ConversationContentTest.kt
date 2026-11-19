@@ -89,7 +89,7 @@ class ConversationContentTest {
         assertEquals(raw, store.scenarios(Course.ENGLISH))
         assertEquals(raw, store.scenarios)
         // The server only accepts a system prompt it knows; the English prompts must stay byte-identical to the originals.
-        assertTrue(raw.first().systemPrompt.startsWith("You are Mia, a warm barista at a small café."))
+        assertTrue(raw.first().systemPrompt.startsWith("You are Marco, a warm barista at a small café."))
         assertEquals("Order coffee", raw.first().title)
     }
 
