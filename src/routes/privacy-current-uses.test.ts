@@ -53,6 +53,8 @@ describe("privacy page: current data uses", () => {
     course: /your course and level/,
     level: /your course and level/,
     streak: /your streak/,
+    streakProtected: /whether a streak freeze is protecting it/,
+    streakFreezes: /how many\s+streak freezes you hold/,
     daysActiveLast30: /how many days you were active in the last 30/,
     lastActiveDay: /the last day you were active/,
     lessonsLast7Days: /how many lessons you finished in the last 7/,

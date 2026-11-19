@@ -76,10 +76,12 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
     val on = status != HandsFreeLoop.Status.Off
     val context = LocalContext.current
     val prefs = remember { (context.applicationContext as? AlphonsoApplication)?.container?.prefs }
+    // The learner's own switch is remembered per device and applied when the next call starts (ApplyStoredHandsFree).
+    val preference = remember(prefs) { prefs?.let { HandsFreePreference(SharedPrefsHandsFreeStore(it)) } }
     var showNote by remember { mutableStateOf(false) }
     val change: (Boolean) -> Unit = { wantsOn ->
-        if (!wantsOn) { prefs?.let { HandsFreePreference(SharedPrefsHandsFreeStore(it)).remember(false) }; vm.handsFree.disable() }
-        else if (prefs?.getBoolean(HandsFreeCopy.NOTE_SEEN_KEY, false) == true) { prefs.let { HandsFreePreference(SharedPrefsHandsFreeStore(it)).remember(true) }; vm.handsFree.enable() }
+        if (!wantsOn) { preference?.remember(false); vm.handsFree.disable() }
+        else if (prefs?.getBoolean(HandsFreeCopy.NOTE_SEEN_KEY, false) == true) { preference?.remember(true); vm.handsFree.enable() }
         else showNote = true
     }
     Row(
@@ -98,7 +100,7 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
                 DsCompactButton(HandsFreeCopy.CANCEL, { showNote = false })
                 DsCompactButton(HandsFreeCopy.FIRST_USE_CONFIRM, {
                     prefs?.edit()?.putBoolean(HandsFreeCopy.NOTE_SEEN_KEY, true)?.apply()
-                    prefs?.let { HandsFreePreference(SharedPrefsHandsFreeStore(it)).remember(true) }
+                    preference?.remember(true)
                     showNote = false
                     vm.handsFree.enable()
                 }, primary = true)
@@ -204,29 +206,4 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null
-}
-
-/** SharedPreferences as the hands-free preference's store. */
-internal class SharedPrefsHandsFreeStore(private val prefs: android.content.SharedPreferences) : com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeStore {
-    override fun getBoolean(key: String, default: Boolean) = prefs.getBoolean(key, default)
-    override fun putBoolean(key: String, value: Boolean) { prefs.edit().putBoolean(key, value).apply() }
-}
-
-/**
- * A new call starts with hands-free on when the learner last left it on and has already confirmed the safety note. It is
- * skipped when the call is already hands-free (a campaign carrying it to the next scene), when the campaign is over,
- * and when the microphone permission is not granted: that falls back to hold-to-talk, which asks on the first press,
- * instead of a prompt appearing under the opening line. Pause and the limits are the loop's, unchanged.
- */
-@Composable
-internal fun ApplyStoredHandsFree(vm: CallConversation) {
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        val prefs = (context.applicationContext as? AlphonsoApplication)?.container?.prefs ?: return@LaunchedEffect
-        val granted = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) ==
-            android.content.pm.PackageManager.PERMISSION_GRANTED
-        if (HandsFreeBinding.shouldAutoStart(HandsFreePreference(SharedPrefsHandsFreeStore(prefs)).shouldStartOn, granted, vm.handsFree.isOn, vm.isCallOver)) {
-            vm.handsFree.enable()
-        }
-    }
 }

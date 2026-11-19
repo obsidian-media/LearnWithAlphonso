@@ -264,7 +264,10 @@ describe("the hands-free choice persists across calls (iOS)", () => {
     expect(voice).toMatch(
       /func learnerSetHandsFree\(_ on: Bool\) \{\s*HandsFreePreference\(\)\.remember\(on\)\s*setHandsFree\(on\)/,
     );
-    const setter = voice.slice(voice.indexOf("func setHandsFree("), voice.indexOf("func learnerSetHandsFree"));
+    const setter = voice.slice(
+      voice.indexOf("func setHandsFree("),
+      voice.indexOf("func learnerSetHandsFree"),
+    );
     expect(setter).not.toContain("remember(");
   });
 

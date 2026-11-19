@@ -277,12 +277,13 @@ function Privacy() {
           (Anthropic, through OpenRouter, as described above) together with a short list of facts
           about your own account: whether you have Pro, where it came from and, for free Pro we gave
           you, the day it ends (or that we could not check your Pro status), your course and level,
-          your streak, how many days you were active in the last 30 and the last day you were
-          active, how many lessons you finished in the last 7 and the day of your last lesson, which
-          platforms you use, whether social features are blocked on your account (yes or no, never
-          why), and the status, topic and day of up to three earlier Help conversations. She never
-          sees your email address, name, payment details, lesson answers, your chats with Alphonso
-          or Hector, or our staff notes.
+          your streak as the app shows it today, whether a streak freeze is protecting it, how many
+          streak freezes you hold, how many days you were active in the last 30 and the last day you
+          were active, how many lessons you finished in the last 7 and the day of your last lesson,
+          which platforms you use, whether social features are blocked on your account (yes or no,
+          never why), and the status, topic and day of up to three earlier Help conversations. She
+          never sees your email address, name, payment details, lesson answers, your chats with
+          Alphonso or Hector, or our staff notes.
         </p>
         <p>
           When a person replies, we send you an email and, if you have push notifications on, a push

@@ -113,18 +113,21 @@ describe("the switch and the call chrome", () => {
     expect(sheet.indexOf("HandsFreeSwitch(")).toBeLessThan(sheet.indexOf("transcript()"));
   });
 
-  it("is a switch with a note shown once, remembered on confirm, and never stores the on/off state", () => {
+  it("is a switch with a note shown once, remembered on confirm, and stores the choice only through HandsFreePreference", () => {
     const ui = code(UI);
     expect(ui).toContain("Role.Switch");
     expect(ui).toMatch(
-      /getBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, false\) == true\) vm\.handsFree\.enable\(\)\s*else showNote = true/,
+      /getBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, false\) == true\) \{ preference\?\.remember\(true\); vm\.handsFree\.enable\(\) \}\s*else showNote = true/,
     );
     expect(ui).toMatch(
       /putBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, true\)[\s\S]*?vm\.handsFree\.enable\(\)/,
     );
     expect(ui).toContain("HandsFreeCopy.firstUseBody(partner)");
-    // Only the note's flag is ever written; the switch itself is never persisted.
+    // The note's flag is the only direct write; the on/off choice goes through HandsFreePreference (core, unit-tested).
     expect((ui.match(/putBoolean/g) ?? []).length).toBe(1);
+    expect(ui).toContain("preference?.remember(false); vm.handsFree.disable()");
+    // A new call starts from the stored choice (HandsFreePreferenceBinding.kt).
+    expect(code(SCREEN)).toContain("ApplyStoredHandsFree(vm)");
   });
 
   it("replaces the hold button with a labelled Pause or Resume button, and names who is on the call", () => {
