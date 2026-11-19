@@ -139,7 +139,7 @@ public enum Stories {
     /// Splits the visible stories for the library. Featured is the newest branching story (the highest sort order: stories
     /// are added at the end). Resume is a linear story the learner started and has not finished: its saved position is
     /// stored, a branching path's position is not, so a branching story is never offered there. The grid is everything
-    /// except the featured story, in level then reading order.
+    /// except the featured and the resume story (each is shown once), in level then reading order.
     public static func library(_ stories: [StorySummary], course: String) -> StoriesLibraryLayout {
         let shown = Stories.visible(stories, course: course)
         var featured: StorySummary?

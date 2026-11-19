@@ -78,14 +78,24 @@ import java.net.URL
  * file only draws them. A card is one button with its full name ([Stories.cardLabel]); the endings ring is decorative.
  */
 
-private val coverCache = LruCache<String, ImageBitmap>(24)
+/** Decoded covers, sized in KB (about 20 MB in all), not by entry count: a decoded bitmap can be megabytes. */
+private val coverCache = object : LruCache<String, ImageBitmap>(20 * 1024) {
+    override fun sizeOf(key: String, value: ImageBitmap): Int = (value.width * value.height * 4 / 1024).coerceAtLeast(1)
+}
+
+/** URLs that failed this session, so a dead link is not re-fetched (10 s timeout) each time a lazy item scrolls back in. */
+private val failedCovers: MutableSet<String> = java.util.Collections.newSetFromMap(java.util.concurrent.ConcurrentHashMap())
+
+/** Longest side a cover is decoded at: cards are at most a phone width, so this is plenty and keeps memory small. */
+private const val COVER_MAX_PX = 800
 
 /** The first scene's art, fetched once per URL; null while loading, when there is none, or when it fails (the fallback shows). */
 @Composable
 private fun rememberCover(url: String?): ImageBitmap? {
     val bitmap by produceState<ImageBitmap?>(url?.let { coverCache.get(it) }, url) {
         if (url == null) { value = null; return@produceState }
-        value = coverCache.get(url) ?: withContext(Dispatchers.IO) { fetchCoverBitmap(url) }?.also { coverCache.put(url, it) }
+        value = coverCache.get(url) ?: if (url in failedCovers) null else withContext(Dispatchers.IO) { fetchCoverBitmap(url) }
+            ?.also { coverCache.put(url, it) } ?: run { failedCovers.add(url); null }
     }
     return bitmap
 }
@@ -95,7 +105,7 @@ private fun fetchCoverBitmap(url: String): ImageBitmap? = try {
     connection.connectTimeout = 10_000
     connection.readTimeout = 10_000
     try {
-        if (connection.responseCode in 200..299) connection.inputStream.use { BitmapFactory.decodeStream(it)?.asImageBitmap() } else null
+        if (connection.responseCode in 200..299) decodeDownsampled(connection.inputStream.use { it.readBytes() }) else null
     } finally {
         connection.disconnect()
     }
@@ -103,6 +113,16 @@ private fun fetchCoverBitmap(url: String): ImageBitmap? = try {
     throw e
 } catch (e: Exception) {
     null
+}
+
+/** Decodes at no more than [COVER_MAX_PX] on the long side: a bounds pass picks a power-of-two sample size. */
+private fun decodeDownsampled(bytes: ByteArray): ImageBitmap? {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    var sample = 1
+    while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= COVER_MAX_PX) sample *= 2
+    val options = BitmapFactory.Options().apply { inSampleSize = sample }
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)?.asImageBitmap()
 }
 
 /** A story's cover: its art, or a designed fallback (brand-to-scene gradient and an icon) so a card is never a broken image. Decorative. */
