@@ -176,7 +176,7 @@ export function renderCss({ tokens: t }: DesignSource): string {
     const w = spec.axes.wght;
     const lines = [
       `  font-family: "${spec.name}";`,
-      `  src: url("/fonts/${spec.web}") format("woff");`,
+      `  src: url("/fonts/${spec.web}") format("${spec.web.endsWith(".woff2") ? "woff2" : "woff"}");`,
       `  font-weight: ${w[0]} ${w[1]};`,
     ];
     if (spec.axes.wdth) lines.push(`  font-stretch: ${spec.axes.wdth[0]}% ${spec.axes.wdth[1]}%;`);

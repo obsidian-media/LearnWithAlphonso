@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { dsButtonClass } from "@/components/ds/Blocks";
-import { COURSES, type Course } from "@/data/courses";
+import { COURSES, type Course } from "@/data/course-meta";
 import { useProgress } from "@/lib/progress";
 import {
   DEFAULT_VOICES,

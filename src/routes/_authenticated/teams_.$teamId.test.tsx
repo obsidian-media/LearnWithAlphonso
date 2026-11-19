@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { doubleClick } from "../../lib/double-click.testutil";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const navigateMock = vi.fn();
@@ -39,11 +40,14 @@ const { Route } = await import("./teams_.$teamId");
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const Page = Route.options.component!;
-  return render(
-    <QueryClientProvider client={client}>
-      <Page />
-    </QueryClientProvider>,
-  );
+  return {
+    client,
+    ...render(
+      <QueryClientProvider client={client}>
+        <Page />
+      </QueryClientProvider>,
+    ),
+  };
 }
 
 beforeEach(() => {
@@ -281,6 +285,132 @@ describe("Team detail page", () => {
       expect(screen.getByText("312 XP this week")).toBeInTheDocument();
       expect(screen.getByLabelText("Rank 1")).toBeInTheDocument();
       expect(screen.getByLabelText("Rank 2")).toBeInTheDocument();
+    });
+  });
+
+  describe("in-flight guards, refreshes and failed reads", () => {
+    const owned = {
+      teamId: "t1",
+      name: "Night Owls",
+      joinCode: "K7MQ2X",
+      joinedAt: "2026-01-01T00:00:00Z",
+      switchLockedUntil: "2020-01-01T00:00:00Z",
+      thisWeekXp: 340,
+      isOwner: true,
+    };
+    const members = [
+      { userId: "me", displayName: "Sam", avatarSeed: "lion", isOwner: true, isBlocked: false },
+      { userId: "u2", displayName: "Mina", avatarSeed: "owl", isOwner: false, isBlocked: false },
+    ];
+
+    it("sends one leave for a double click", async () => {
+      getMyTeam.mockResolvedValue(owned);
+      let resolve: (v: { ok: boolean; reason: string | null }) => void = () => {};
+      leaveTeam.mockReturnValue(new Promise((r) => (resolve = r)));
+      renderPage();
+
+      const leave = await screen.findByRole("button", { name: "Leave team" });
+      doubleClick(leave);
+      expect(await screen.findByRole("button", { name: "Leaving…" })).toBeDisabled();
+      resolve({ ok: true, reason: null });
+      await waitFor(() => expect(navigateMock).toHaveBeenCalledWith({ to: "/teams" }));
+      expect(leaveTeam).toHaveBeenCalledTimes(1);
+    });
+
+    it("drops the old team's cached members and mission after leaving, and refreshes the board", async () => {
+      const mission = {
+        headline: "3 of 8 lessons done",
+        status: "in_progress",
+        percent: 37,
+        footer: "",
+      };
+      // The server's answers after the leave: no team, so no members and no mission.
+      getMyTeam.mockResolvedValueOnce(owned).mockResolvedValue(null);
+      getTeamMembers.mockResolvedValueOnce(members).mockResolvedValue([]);
+      getTeamMission.mockResolvedValueOnce(mission).mockResolvedValue(null);
+      leaveTeam.mockResolvedValue({ ok: true, reason: null });
+      const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+      const Page = Route.options.component!;
+      render(
+        <QueryClientProvider client={client}>
+          <Page />
+        </QueryClientProvider>,
+      );
+
+      expect(await screen.findByText("Mina")).toBeInTheDocument();
+      await waitFor(() => expect(client.getQueryData(["teamMission"])).toBeTruthy());
+      const boardCalls = getTeamLeaderboard.mock.calls.length;
+
+      fireEvent.click(screen.getByRole("button", { name: "Leave team" }));
+      await waitFor(() => expect(navigateMock).toHaveBeenCalledWith({ to: "/teams" }));
+
+      // A later join must not open on the old team's members or mission: the cache holds nothing, or the server's
+      // fresh answer, never the team just left.
+      await waitFor(() => expect(client.getQueryData(["teamMembers"])).not.toEqual(members));
+      expect(client.getQueryData(["teamMembers"]) ?? []).toEqual([]);
+      expect(client.getQueryData(["teamMission"]) ?? null).toBeNull();
+      expect(getMyTeam).toHaveBeenCalledTimes(2);
+      const board = client.getQueryState(["teamLeaderboard"]);
+      expect(board?.isInvalidated || getTeamLeaderboard.mock.calls.length > boardCalls).toBe(true);
+    });
+
+    it("sends one removal for a double click on Remove", async () => {
+      getMyTeam.mockResolvedValue(owned);
+      getTeamMembers.mockResolvedValue(members);
+      let resolve: (v: { ok: boolean; reason: string | null }) => void = () => {};
+      kickTeamMember.mockReturnValue(new Promise((r) => (resolve = r)));
+      renderPage();
+
+      fireEvent.click(await screen.findByRole("button", { name: "Remove Mina from the team" }));
+      const remove = screen.getByRole("button", { name: "Remove" });
+      doubleClick(remove);
+      expect(await screen.findByRole("button", { name: "Removing…" })).toBeDisabled();
+      resolve({ ok: true, reason: null });
+      await waitFor(() => expect(screen.queryByRole("button", { name: "Removing…" })).toBeNull());
+      expect(kickTeamMember).toHaveBeenCalledTimes(1);
+    });
+
+    it("says the members could not load, with Try again, instead of hiding the section", async () => {
+      getMyTeam.mockResolvedValue(owned);
+      getTeamMembers
+        .mockRejectedValueOnce(new Error("getTeamMembers: request-failed"))
+        .mockResolvedValue(members);
+      renderPage();
+
+      expect(await screen.findByText("Couldn't load the members.")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+      expect(await screen.findByText("Mina")).toBeInTheDocument();
+    });
+
+    it("says the top teams could not load instead of dropping the section", async () => {
+      getMyTeam.mockResolvedValue(owned);
+      getTeamLeaderboard.mockRejectedValue(new Error("getTeamLeaderboard: request-failed"));
+      renderPage();
+
+      expect(await screen.findByText("Couldn't load the top teams.")).toBeInTheDocument();
+      expect(screen.getByText("This week's top teams")).toBeInTheDocument();
+    });
+
+    it("keeps the team, members and top teams on screen when a background refresh fails", async () => {
+      getMyTeam.mockResolvedValue(owned);
+      getTeamMembers.mockResolvedValue(members);
+      getTeamLeaderboard.mockResolvedValue([{ teamId: "t9", name: "Early Birds", weeklyXp: 900 }]);
+      const { client } = renderPage();
+      expect(await screen.findByText("Mina")).toBeInTheDocument();
+      expect(await screen.findByText("Early Birds")).toBeInTheDocument();
+
+      getMyTeam.mockRejectedValue(new Error("getMyTeam: request-failed"));
+      getTeamMembers.mockRejectedValue(new Error("getTeamMembers: request-failed"));
+      getTeamLeaderboard.mockRejectedValue(new Error("getTeamLeaderboard: request-failed"));
+      await client.refetchQueries();
+
+      expect(await screen.findByText("Couldn't refresh the members.")).toBeInTheDocument();
+      expect(screen.getByText("Couldn't refresh the top teams.")).toBeInTheDocument();
+      expect(screen.getByText("Mina")).toBeInTheDocument();
+      expect(screen.getByText("Early Birds")).toBeInTheDocument();
+      expect(screen.queryByText("Couldn't load your team.")).not.toBeInTheDocument();
+      expect(screen.queryByText("Couldn't load the members.")).not.toBeInTheDocument();
+      expect(screen.queryByText("Couldn't load the top teams.")).not.toBeInTheDocument();
     });
   });
 });

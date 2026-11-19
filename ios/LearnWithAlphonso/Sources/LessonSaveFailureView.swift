@@ -5,6 +5,8 @@ import LearnWithAlphonsoKit
 /// cause (never "offline"), gives the support path for a rejection, and offers "Sign in" when signed out.
 struct LessonSaveFailureView: View {
     let error: LessonCompletionError
+    /// Replaces the error's own message, e.g. when a signed-out attempt was kept for the next sign-in.
+    var message: String? = nil
     let onSignIn: () -> Void
     let onDone: () -> Void
     @Environment(\.alphonsoDS) private var ds
@@ -20,7 +22,7 @@ struct LessonSaveFailureView: View {
                 DSCard(spacing: AlphonsoDS.Space.s2) {
                     Text("Couldn't save this lesson").dsText(.title).foregroundStyle(ds.ink)
                         .accessibilityAddTraits(.isHeader)
-                    Text(error.userMessage).dsText(.footnote).foregroundStyle(ds.inkSoft)
+                    Text(message ?? error.userMessage).dsText(.footnote).foregroundStyle(ds.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
                     if let support = error.supportLine(withHelp: helpSession != nil) {
                         Text(support).dsText(.caption).foregroundStyle(ds.inkSoft)
@@ -28,7 +30,8 @@ struct LessonSaveFailureView: View {
                     }
                 }
                 if error == .unauthorized {
-                    // Signing out routes RootView to AuthView; the session lifecycle clears this account's local data.
+                    // Signing out routes RootView to AuthView. The offline queue, this attempt included, is kept for
+                    // this account (AccountQueueRetention), so signing back in sends it.
                     Button("Sign in", action: onSignIn).buttonStyle(.dsButton(.primary))
                 }
                 // The approved Help mock: a rejection the learner cannot fix alone gets a primary "Get help".

@@ -43,7 +43,13 @@ struct ReviewQueueView: View {
     /// True once a word is placed in a sentence; QuestionCard's binding (Review has no Alphonso to react to it).
     @State private var reorderStarted = false
     @State private var isLoading = true
-    @State private var isSubmitting = false
+    /// "Next" is one submission at a time, claimed synchronously in the tap (SubmitGate): setting the flag inside the
+    /// Task let a quick second tap grade the same card twice and skip the next one.
+    @State private var submitGate = SubmitGate()
+    private var isSubmitting: Bool { submitGate.isBusy }
+    /// The account this review session opened for. Every attempt is stamped with it, never with whoever is signed
+    /// in by the time a request fails, so another account can never be credited with (or send) these answers.
+    @State private var reviewOwnerUserID: String?
     @State private var errorMessage: String?
     @State private var clearedBonusMessage: String?
     /// Set only when this queue is showing SyncQueueStore's cached
@@ -248,7 +254,13 @@ struct ReviewQueueView: View {
                 xp: nil,
                 correctAnswer: AnswerVerdict.correctAnswer(for: question),
                 continueTitle: "Next",
-                onContinue: { Task { await submitAndAdvance(question: question) } }
+                onContinue: {
+                    guard picked != nil, submitGate.begin() else { return }
+                    Task {
+                        await submitAndAdvance(question: question)
+                        submitGate.end()
+                    }
+                }
             ) {
                 ExplanationView(
                     question: question, picked: picked, explanation: question.explanationText,
@@ -264,6 +276,7 @@ struct ReviewQueueView: View {
     /// lesson completion's write-loss problem. See docs/v2-kickoffs/
     /// 01-offline-first.md's "Review queue: cache-then-optimistic-grade".
     private func loadQueue() async {
+        reviewOwnerUserID = session.userID
         isLoading = true
         errorMessage = nil
         clearedBonusMessage = nil
@@ -339,9 +352,9 @@ struct ReviewQueueView: View {
             anonKey: AppConfig.supabasePublishableKey,
             accessToken: accessToken)
         do {
-            let outcome = try await client.gradeReview(
-                itemKey: currentItem.itemKey, answer: submission, course: course.wireCode,
-                attemptID: attempt(for: currentItem, answer: submission).queueIdentity)
+            // The whole attempt, freshness snapshot included: this call grades AND schedules the card, so a stale
+            // one must be refused here exactly as it is for Next and for the offline queue.
+            let outcome = try await client.gradeReview(attempt(for: currentItem, answer: submission))
             dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
             guard let correct = outcome.correct else {
                 // Server predates the field: nothing was displayed wrongly, it
@@ -357,10 +370,9 @@ struct ReviewQueueView: View {
         }
     }
 
+    /// Called only with the submit gate held (the Next button claims it before starting this).
     private func submitAndAdvance(question: Question) async {
         guard let picked else { return }
-        isSubmitting = true
-        defer { isSubmitting = false }
 
         // Already graded and scheduled by the Check step (translate only).
         if alreadySubmitted {
@@ -379,11 +391,7 @@ struct ReviewQueueView: View {
         if networkMonitor.isConnected, let accessToken = session.accessToken {
             let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
             do {
-                let outcome = try await client.gradeReview(
-                    itemKey: currentItem.itemKey, answer: picked, course: course.wireCode,
-                    attemptID: attempt(for: currentItem, answer: picked).queueIdentity,
-                    expectedDueOn: currentItem.hasReviewSnapshot ? currentItem.dueOn : nil,
-                    expectedLastReviewedAt: currentItem.lastReviewedAt)
+                let outcome = try await client.gradeReview(attempt(for: currentItem, answer: picked))
                 // Before advance(): currentItem moves on with idx.
                 dropFromDueCacheIfNoLongerDue(outcome, itemKey: currentItem.itemKey)
                 advance()
@@ -435,7 +443,11 @@ struct ReviewQueueView: View {
         let outcome = computeReviewOutcome(input, today: today, addDays: { addDaysDateString($0) })
 
         // The same submission the online attempt used, so the queued retry carries the same attempt id.
-        syncQueueStore.appendReviewGrade(attempt(for: item, answer: answer))
+        // Refused when there is no owner (signed out before the review opened): nothing to queue then.
+        guard syncQueueStore.appendReviewGrade(attempt(for: item, answer: answer)).isStored else {
+            errorMessage = "You're signed out, so this answer couldn't be saved. Sign in and review again."
+            return
+        }
 
         switch outcome {
         case .retired:
@@ -476,7 +488,7 @@ struct ReviewQueueView: View {
             itemKey: item.itemKey, answer: answer, course: course.wireCode, queuedAt: Date(),
             expectedDueOn: item.hasReviewSnapshot ? item.dueOn : nil,
             expectedLastReviewedAt: item.hasReviewSnapshot ? item.lastReviewedAt : nil,
-            ownerUserID: session.userID)
+            ownerUserID: reviewOwnerUserID ?? session.userID)
         gradeAttempt = started
         return started
     }

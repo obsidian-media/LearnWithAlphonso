@@ -77,6 +77,63 @@ final class SyncEngineTests: XCTestCase {
         XCTAssertEqual(result.rescheduledLessonCompletions, [])
     }
 
+    /// complete-lesson books max(last_active_date, day): a newer lesson landing first loses the older day. So a
+    /// transient failure stops the lesson queue exactly as it stops the grade queue.
+    func testATransientLessonFailureStopsTheLessonQueue() async {
+        let older = pendingCompletion(lessonID: "monday", queuedAt: fixedNow.addingTimeInterval(-86_400))
+        let newer = pendingCompletion(lessonID: "tuesday", queuedAt: fixedNow)
+        let sent = TestCapture<[String]>([])
+        let client = makeClient { request in
+            if request.url!.absoluteString.hasSuffix("start-lesson-session") { return self.jsonResponse(for: request.url!, body: ["token": "tok"]) }
+            let body = try! JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
+            sent.value.append(body["lessonId"] as! String)
+            return self.jsonResponse(for: request.url!, body: ["error": "boom"], status: 503)
+        }
+        let result = await SyncEngine.sync(pendingLessonCompletions: [newer, older], pendingReviewGrades: [], client: client, now: fixedNow)
+        XCTAssertEqual(sent.value, ["monday"], "tuesday must not overtake monday")
+        XCTAssertEqual(result.rescheduledLessonCompletions.map(\.lessonID), ["monday"])
+        XCTAssertTrue(result.syncedLessonCompletions.isEmpty)
+    }
+
+    /// An older lesson still waiting out its backoff holds the newer ones too.
+    func testAnOlderLessonInBackoffHoldsTheNewerOnes() async {
+        let older = pendingCompletion(lessonID: "monday", queuedAt: fixedNow.addingTimeInterval(-60))
+            .rescheduled(attemptCount: 2, nextAttemptAt: fixedNow.addingTimeInterval(120))
+        let newer = pendingCompletion(lessonID: "tuesday", queuedAt: fixedNow)
+        let calls = TestCapture(0)
+        let client = makeClient { request in calls.value += 1; return self.jsonResponse(for: request.url!, body: [:], status: 500) }
+        _ = await SyncEngine.sync(pendingLessonCompletions: [older, newer], pendingReviewGrades: [], client: client, now: fixedNow)
+        XCTAssertEqual(calls.value, 0)
+    }
+
+    /// A retry time written by a clock set days ahead does not hold the item until that date.
+    func testARetryTimeFromAClockSetDaysAheadIsSentNow() async {
+        let item = pendingCompletion(lessonID: "u1l1", queuedAt: fixedNow)
+            .rescheduled(attemptCount: 1, nextAttemptAt: fixedNow.addingTimeInterval(30 * 24 * 60 * 60))
+        let grade = pendingGrade(itemKey: "u1l1:q1", queuedAt: fixedNow)
+            .rescheduled(attemptCount: 1, nextAttemptAt: fixedNow.addingTimeInterval(30 * 24 * 60 * 60))
+        let client = makeClient { request in
+            if request.url!.absoluteString.hasSuffix("start-lesson-session") { return self.jsonResponse(for: request.url!, body: ["token": "tok"]) }
+            if request.url!.absoluteString.hasSuffix("grade-review") { return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-10-09"]) }
+            return self.jsonResponse(for: request.url!, body: ["xpGain": 1, "newlyUnlocked": [] as [String], "heartsBonus": NSNull(), "progress": self.completionProgressJSON(xp: 1)])
+        }
+        let result = await SyncEngine.sync(pendingLessonCompletions: [item], pendingReviewGrades: [grade], client: client, now: fixedNow)
+        XCTAssertEqual(result.syncedLessonCompletions, [item])
+        XCTAssertEqual(result.syncedReviewGrades, [grade])
+    }
+
+    func testTheWakeupIsTheOldestRowOfEachQueueForThisAccount() {
+        let older = pendingCompletion(lessonID: "monday", queuedAt: fixedNow.addingTimeInterval(-60))
+            .rescheduled(attemptCount: 3, nextAttemptAt: fixedNow.addingTimeInterval(600))
+        let newer = pendingCompletion(lessonID: "tuesday", queuedAt: fixedNow)
+        let theirs = PendingLessonCompletion(lessonID: "x", total: 1, answers: [], course: "en", queuedAt: fixedNow.addingTimeInterval(-999), optimisticXpEstimate: 1, ownerUserID: "them")
+        let wake = SyncEngine.nextWakeup(lessons: [newer, older, theirs], grades: [], userID: "me", now: fixedNow)
+        XCTAssertEqual(wake, fixedNow.addingTimeInterval(600), "tuesday cannot go before monday, and their row is not ours")
+        let skewed = older.rescheduled(attemptCount: 3, nextAttemptAt: fixedNow.addingTimeInterval(30 * 24 * 3600))
+        XCTAssertEqual(SyncEngine.nextWakeup(lessons: [skewed], grades: [], userID: "me", now: fixedNow), fixedNow)
+        XCTAssertNil(SyncEngine.nextWakeup(lessons: [theirs], grades: [], userID: "me", now: fixedNow))
+    }
+
     func testA5xxLessonCompletionIsRescheduledWithBackoff() async {
         let item = pendingCompletion(lessonID: "u1l1", queuedAt: fixedNow)
         let client = makeClient { request in self.jsonResponse(for: request.url!, body: ["error": "boom"], status: 503) }
@@ -107,34 +164,81 @@ final class SyncEngineTests: XCTestCase {
         XCTAssertEqual(result.rescheduledReviewGrades, [first.rescheduled(attemptCount: 6, nextAttemptAt: fixedNow.addingTimeInterval(30))])
     }
 
-    /// A flaky network never loses a lesson: an item failing transiently 20 times is still queued, never
-    /// dead-lettered, and its wait stays capped.
-    func testALessonCompletionFailingTransientlyTwentyTimesIsStillQueued() async {
+    /// A flaky server never loses a lesson: 19 transient failures (days of capped backoff) keep it queued. The
+    /// 20th parks it: still queued, holding nothing up (the queue is strictly ordered), waiting for "Try again".
+    func testALessonCompletionIsKeptThroughNineteenTransientFailuresAndParkedOnTheTwentieth() async {
         var item = pendingCompletion(lessonID: "u1l1", queuedAt: fixedNow)
         var now = fixedNow
         let client = makeClient { request in self.jsonResponse(for: request.url!, body: [:], status: 503) }
-        for _ in 0..<20 {
+        for _ in 0..<19 {
             let result = await SyncEngine.sync(pendingLessonCompletions: [item], pendingReviewGrades: [], client: client, now: now)
             XCTAssertTrue(result.deadLetteredLessonCompletions.isEmpty)
             item = try! XCTUnwrap(result.rescheduledLessonCompletions.first)
             now = item.nextAttemptAt!
         }
-        XCTAssertEqual(item.attemptCount, 20)
+        XCTAssertEqual(item.attemptCount, 19)
+        XCTAssertLessThanOrEqual(item.nextAttemptAt!.timeIntervalSince(now), 6 * 60 * 60, "the wait stays capped")
         let last = await SyncEngine.sync(pendingLessonCompletions: [item], pendingReviewGrades: [], client: client, now: now)
-        XCTAssertEqual(last.rescheduledLessonCompletions.first?.nextAttemptAt, now.addingTimeInterval(6 * 60 * 60))
+        XCTAssertTrue(last.deadLetteredLessonCompletions.isEmpty, "a lesson is never dropped for being unlucky")
+        let parked = try! XCTUnwrap(last.rescheduledLessonCompletions.first)
+        XCTAssertTrue(SyncRetryPolicy.standard.isParked(parked))
+        XCTAssertEqual(parked.queueIdentity, item.queueIdentity)
     }
 
-    func testAReviewGradeFailingTransientlyTwentyTimesIsStillQueued() async {
+    func testAReviewGradeIsKeptThroughNineteenTransientFailuresAndDeadLetteredOnTheTwentieth() async {
         var grade = pendingGrade(itemKey: "u1l1:q1", queuedAt: fixedNow)
         var now = fixedNow
         let client = makeClient { request in self.jsonResponse(for: request.url!, body: [:], status: 429) }
-        for _ in 0..<20 {
+        for _ in 0..<19 {
             let result = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [grade], client: client, now: now)
             XCTAssertTrue(result.deadLetteredReviewGrades.isEmpty)
             grade = try! XCTUnwrap(result.rescheduledReviewGrades.first)
             now = grade.nextAttemptAt!
         }
-        XCTAssertEqual(grade.attemptCount, 20)
+        XCTAssertEqual(grade.attemptCount, 19)
+        let last = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [grade], client: client, now: now)
+        XCTAssertEqual(last.deadLetteredReviewGrades, [DeadLetter(item: grade, reason: SyncRetryPolicy.exhaustedReason)])
+    }
+
+    /// The poison grade no longer blocks the queue: once it runs out of retries, the grades behind it go in
+    /// the same pass.
+    func testAGradeThatRanOutOfRetriesLetsTheGradesBehindItThrough() async {
+        let poison = pendingGrade(itemKey: "u1l1:q1", queuedAt: fixedNow.addingTimeInterval(-60))
+            .rescheduled(attemptCount: 19, nextAttemptAt: fixedNow.addingTimeInterval(-1))
+        let next = pendingGrade(itemKey: "u1l1:q2", queuedAt: fixedNow)
+        let client = makeClient { request in
+            let body = try! JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
+            if (body["itemKey"] as! String) == "u1l1:q1" { return self.jsonResponse(for: request.url!, body: [:], status: 500) }
+            return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-10-09"])
+        }
+        let result = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [poison, next], client: client, now: fixedNow)
+        XCTAssertEqual(result.deadLetteredReviewGrades.map(\.item), [poison])
+        XCTAssertEqual(result.syncedReviewGrades, [next])
+    }
+
+    /// A week of real server failures ends it too; a week merely offline does not (offline never counts).
+    func testAGradeAWeekOldWithRealFailuresIsDeadLetteredButAWeekOfflineIsNot() async {
+        let aWeekLater = fixedNow.addingTimeInterval(7 * 24 * 60 * 60)
+        let failing = pendingGrade(itemKey: "u1l1:q1", queuedAt: fixedNow).rescheduled(attemptCount: 2, nextAttemptAt: aWeekLater)
+        let serverDown = makeClient { request in self.jsonResponse(for: request.url!, body: [:], status: 503) }
+        let aged = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [failing], client: serverDown, now: aWeekLater)
+        XCTAssertEqual(aged.deadLetteredReviewGrades.map(\.item), [failing])
+
+        // A week offline: every pass fails with no connection, which never counts, so the age rule never fires.
+        var offlineAllWeek = pendingGrade(itemKey: "u1l1:q2", queuedAt: fixedNow)
+        let offline = makeClient { _ in throw URLError(.notConnectedToInternet) }
+        var day = fixedNow
+        while day <= aWeekLater.addingTimeInterval(86_400) {
+            let pass = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [offlineAllWeek], client: offline, now: day)
+            XCTAssertTrue(pass.deadLetteredReviewGrades.isEmpty)
+            offlineAllWeek = try! XCTUnwrap(pass.rescheduledReviewGrades.first)
+            day = day.addingTimeInterval(86_400)
+        }
+        XCTAssertEqual(offlineAllWeek.attemptCount, 0, "offline never counts as a failure")
+        // Back online, the first real failure is one, not three: still queued.
+        let backOnline = await SyncEngine.sync(pendingLessonCompletions: [], pendingReviewGrades: [offlineAllWeek], client: serverDown, now: day)
+        XCTAssertTrue(backOnline.deadLetteredReviewGrades.isEmpty)
+        XCTAssertEqual(backOnline.rescheduledReviewGrades.first?.attemptCount, 1)
     }
 
     /// A permanent rejection dead-letters whatever its attempt count, and the queue keeps going.
@@ -169,8 +273,9 @@ final class SyncEngineTests: XCTestCase {
         XCTAssertTrue(result.deadLetteredLessonCompletions.isEmpty)
     }
 
-    /// Another account's queued rows are never sent with this account's token.
-    func testRowsOwnedByAnotherUserAreDroppedNotSent() async {
+    /// Another account's queued rows are never sent with this account's token, and never deleted either: they
+    /// sync when that account signs back in (AccountQueueRetention).
+    func testRowsOwnedByAnotherUserAreLeftInPlaceAndNeverSent() async {
         let mine = PendingLessonCompletion(lessonID: "u1l1", total: 5, answers: [], course: "en", queuedAt: fixedNow, optimisticXpEstimate: 1, ownerUserID: "me")
         let theirs = PendingLessonCompletion(lessonID: "u1l2", total: 5, answers: [], course: "en", queuedAt: fixedNow, optimisticXpEstimate: 1, ownerUserID: "them")
         let legacy = PendingLessonCompletion(lessonID: "u1l3", total: 5, answers: [], course: "en", queuedAt: fixedNow, optimisticXpEstimate: 1)
@@ -184,8 +289,11 @@ final class SyncEngineTests: XCTestCase {
         }
         let result = await SyncEngine.sync(pendingLessonCompletions: [mine, theirs, legacy], pendingReviewGrades: [theirGrade], client: client, currentUserID: "me", now: fixedNow)
         XCTAssertEqual(Set(sent.value), ["u1l1", "u1l3"])
-        XCTAssertEqual(result.droppedForeignLessonCompletions, [theirs])
-        XCTAssertEqual(result.droppedForeignReviewGrades, [theirGrade])
+        XCTAssertEqual(Set(result.syncedLessonCompletions.map(\.lessonID)), ["u1l1", "u1l3"])
+        // Not in any list: SyncQueueStore.apply leaves the row exactly as it is.
+        XCTAssertFalse(result.rescheduledLessonCompletions.contains(theirs))
+        XCTAssertFalse(result.deadLetteredLessonCompletions.map(\.item).contains(theirs))
+        XCTAssertTrue(result.syncedReviewGrades.isEmpty && result.rescheduledReviewGrades.isEmpty && result.deadLetteredReviewGrades.isEmpty)
     }
 
     func testA4xxReviewGradeIsDeadLetteredAndTheNextGradeStillSyncs() async {

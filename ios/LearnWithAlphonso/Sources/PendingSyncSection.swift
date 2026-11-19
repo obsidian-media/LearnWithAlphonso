@@ -40,6 +40,24 @@ struct PendingSyncSection: View {
             .accessibilityElement(children: .contain)
             .dsListRow(top: AlphonsoDS.Space.s2)
         }
+        // Lessons that ran out of automatic retries stay saved here and hold nothing up (SyncRetryPolicy.isParked);
+        // "Try again" gives each one more try now.
+        if let parked = QueuedLessonPolicy.parkedMessage(count: syncQueueStore.parkedLessonCount(for: session.userID)) {
+            DSCard(spacing: AlphonsoDS.Space.s2) {
+                Text(parked).dsText(.headline).foregroundStyle(ds.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                if isConnected, let userID = session.userID {
+                    Button(QueuedLessonPolicy.retryTitle) {
+                        syncQueueStore.retryParkedLessons(for: userID)
+                        Task { await syncNow() }
+                    }
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                    .disabled(isSyncing)
+                }
+            }
+            .accessibilityElement(children: .contain)
+            .dsListRow(top: AlphonsoDS.Space.s2)
+        }
     }
 
     /// The same pass RootView runs on foreground and reconnect, with the same same-account guard.
@@ -51,7 +69,7 @@ struct PendingSyncSection: View {
         await syncQueueStore.runSync(
             accessToken: accessToken,
             userID: userID,
-            refreshAccessToken: { [session] in await session.freshAccessToken(forceRefresh: true) },
+            refreshAccessToken: session.refresher(for: userID),
             isCurrentAccount: { session.userID == userID })
     }
 }

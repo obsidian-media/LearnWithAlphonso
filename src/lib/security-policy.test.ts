@@ -63,7 +63,9 @@ describe("security policy", () => {
     const response = new Response("ok");
     const https = addSecurityHeaders(response, new Request("https://app.example/"), "nonce");
     expect(https.headers.get("content-security-policy")).toContain("nonce-nonce");
-    expect(https.headers.get("strict-transport-security")).toBe("max-age=31536000");
+    expect(https.headers.get("strict-transport-security")).toBe(
+      "max-age=31536000; includeSubDomains",
+    );
     expect(https.headers.get("x-frame-options")).toBe("DENY");
 
     const http = addSecurityHeaders(response, new Request("http://localhost/"), "nonce");

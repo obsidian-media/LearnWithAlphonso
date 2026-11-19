@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { profileErrorCode } from "./profile-error";
+import { publicError } from "./public-error";
 import { isAllowedAvatarSeed } from "./profile-avatars";
 import { mondayDateString } from "./league-engagement";
 
@@ -24,10 +25,12 @@ export const getLeaderboard = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => schema.parse(d))
   .handler(async ({ data, context }): Promise<LeaderboardEntry[]> => {
     const { supabase, userId } = context;
-    const { data: rows } = await supabase.rpc("get_leaderboard", {
+    const { data: rows, error } = await supabase.rpc("get_leaderboard", {
       _scope: data.scope,
       _period: data.period,
     });
+    // A failed read must not look like an empty board ("Nothing here yet"), nor replace the saved overtake snapshot.
+    if (error) throw publicError("getLeaderboard", error);
 
     const entries: LeaderboardEntry[] = (rows ?? []).map((r) => ({
       user_id: r.user_id,
@@ -52,7 +55,8 @@ export type WeeklyRecap = {
  * caller's own `activity_days` between the two Mondays, and the rank is where they stand on today's global weekly
  * board (there is no snapshot of last week's exact standings, and the sheet says so). Both reads are the caller's
  * own and the board is the same `get_leaderboard` that already hides blocked learners, so nothing new about anyone
- * else is exposed. A part that cannot be read comes back as 0 / null: the recap is a nicety, never an error screen.
+ * else is exposed. A part that cannot be read makes the whole call fail: a made-up 0 would show a "quiet week" that
+ * never happened, and the page would spend the once-only promotion celebration on it. The sheet shows a calm error.
  */
 export const getWeeklyRecap = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -68,10 +72,10 @@ export const getWeeklyRecap = createServerFn({ method: "GET" })
         .lt("day", mondayDateString(0, now)),
       supabase.rpc("get_leaderboard", { _scope: "global", _period: "weekly" }),
     ]);
-    const lastWeekXp = days.error
-      ? 0
-      : (days.data ?? []).reduce((sum, r) => sum + (r.xp_earned ?? 0), 0);
-    const index = board.error ? -1 : (board.data ?? []).findIndex((r) => r.user_id === userId);
+    if (days.error) throw publicError("getWeeklyRecap", days.error);
+    if (board.error) throw publicError("getWeeklyRecap", board.error);
+    const lastWeekXp = (days.data ?? []).reduce((sum, r) => sum + (r.xp_earned ?? 0), 0);
+    const index = (board.data ?? []).findIndex((r) => r.user_id === userId);
     return { lastWeekXp, currentRank: index >= 0 ? index + 1 : null };
   });
 
@@ -125,10 +129,12 @@ export const updateProfile = createServerFn({ method: "POST" })
 export const getMyProfile = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase
+    const { data, error } = await context.supabase
       .from("profiles")
       .select("*")
       .eq("id", context.userId)
       .maybeSingle();
+    // A failed read is not "no profile": callers that need the id (nudges, duels) would stay disabled for good.
+    if (error) throw publicError("getMyProfile", error);
     return data;
   });

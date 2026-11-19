@@ -260,8 +260,15 @@ public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
     public let heartsRefillAt: Double?
     public let streakFreezes: Int
     public let leagueTier: String
+    /// user_progress.day_basis: "utc" until the account's first completion under local days, then "local". The
+    /// streak display needs it for the one-time UTC bridge (StreakRule). Nil when not read (complete-lesson's
+    /// response does not carry it; a completion always leaves it "local").
+    public let dayBasis: String?
 
-    public init(xp: Int, streak: Int, longestStreak: Int, lastActiveDate: String, hearts: Int, heartsRefillAt: Double?, streakFreezes: Int, leagueTier: String) {
+    public init(
+        xp: Int, streak: Int, longestStreak: Int, lastActiveDate: String, hearts: Int, heartsRefillAt: Double?,
+        streakFreezes: Int, leagueTier: String, dayBasis: String? = nil
+    ) {
         self.xp = xp
         self.streak = streak
         self.longestStreak = longestStreak
@@ -270,6 +277,14 @@ public struct LessonCompletionProgress: Sendable, Decodable, Equatable {
         self.heartsRefillAt = heartsRefillAt
         self.streakFreezes = streakFreezes
         self.leagueTier = leagueTier
+        self.dayBasis = dayBasis
+    }
+
+    /// The same values with a known day basis.
+    public func withDayBasis(_ dayBasis: String?) -> LessonCompletionProgress {
+        LessonCompletionProgress(
+            xp: xp, streak: streak, longestStreak: longestStreak, lastActiveDate: lastActiveDate, hearts: hearts,
+            heartsRefillAt: heartsRefillAt, streakFreezes: streakFreezes, leagueTier: leagueTier, dayBasis: dayBasis)
     }
 }
 
@@ -590,6 +605,16 @@ public final class ProgressSyncClient: Sendable {
     /// server-side against the real question, same trust-boundary
     /// reasoning as completeLesson. See
     /// supabase/functions/grade-review/index.ts.
+    /// Sends one review attempt with everything it carries: the attempt id that makes a retry idempotent, and the
+    /// freshness snapshot taken when the learner answered. Every caller (Review's Check and Next, and the offline
+    /// queue) goes through this, so none can drop the snapshot: Review's translate Check used to call the long
+    /// form without it, and a stale grade from it applied over a newer review on another device.
+    public func gradeReview(_ attempt: PendingReviewGrade) async throws -> ReviewGradeOutcome {
+        try await gradeReview(
+            itemKey: attempt.itemKey, answer: attempt.answer, course: attempt.course, attemptID: attempt.queueIdentity,
+            expectedDueOn: attempt.expectedDueOn, expectedLastReviewedAt: attempt.expectedLastReviewedAt)
+    }
+
     public func gradeReview(itemKey: String, answer: String, course: String, attemptID: String? = nil, expectedDueOn: String? = nil, expectedLastReviewedAt: String? = nil) async throws -> ReviewGradeOutcome {
         var request = URLRequest(url: supabaseURL.appendingPathComponent("functions/v1/grade-review"))
         request.httpMethod = "POST"
@@ -1109,24 +1134,26 @@ public final class ProgressSyncClient: Sendable {
     ///   anything -- reading it would show a months-stale number.
     /// - `user_progress` (per user) -> streak, hearts and friends.
     ///
-    /// Takes **no course argument on purpose.** `xp` and `league_tier` are
-    /// per-course, but the header this feeds shows a single figure, and
-    /// the cached value it replaces was always "whatever course the user
-    /// last completed a lesson in" -- `complete-lesson` returns that
-    /// course's row. Ordering by `updated_at desc` and taking the first
-    /// row reproduces exactly that meaning without the caller having to
-    /// know which course is on screen. Hardcoding a course here would
-    /// silently show a French-only learner their (empty) English numbers.
+    /// `xp` and `league_tier` are per-course. With `course` (what sync
+    /// passes: the learner's active course) this reads that course's row,
+    /// because the header shows the course on screen: "most recently
+    /// updated" showed a learner on French the XP of the English lesson
+    /// they last synced. Without it, the first row by `updated_at desc`,
+    /// i.e. whatever course the user last completed a lesson in. Never a
+    /// hardcoded course: that would show a French-only learner their
+    /// (empty) English numbers.
     ///
     /// Returns nil when the user has no `language_progress` row at all
-    /// (i.e. genuinely no progress yet), which the caller should treat as
-    /// "nothing to show", not as an error.
-    public func fetchProgress() async throws -> LessonCompletionProgress? {
-        var languageRequest = restRequest(path: "language_progress", query: [
+    /// (i.e. genuinely no progress yet, or none in `course`), which the
+    /// caller should treat as "nothing to show", not as an error.
+    public func fetchProgress(course: String? = nil) async throws -> LessonCompletionProgress? {
+        var languageQuery = [
             URLQueryItem(name: "select", value: "xp,league_tier"),
             URLQueryItem(name: "order", value: "updated_at.desc"),
             URLQueryItem(name: "limit", value: "1"),
-        ])
+        ]
+        if let course { languageQuery.append(URLQueryItem(name: "language", value: "eq.\(course)")) }
+        var languageRequest = restRequest(path: "language_progress", query: languageQuery)
         languageRequest.httpMethod = "GET"
         let (languageData, languageResponse) = try await requester(languageRequest)
         try Self.requireSuccess(data: languageData, response: languageResponse)
@@ -1140,7 +1167,7 @@ public final class ProgressSyncClient: Sendable {
         var userRequest = restRequest(path: "user_progress", query: [
             URLQueryItem(
                 name: "select",
-                value: "streak,longest_streak,last_active_date,hearts,hearts_refill_at,streak_freezes"
+                value: "streak,longest_streak,last_active_date,hearts,hearts_refill_at,streak_freezes,day_basis"
             ),
         ])
         userRequest.httpMethod = "GET"
@@ -1181,7 +1208,8 @@ public final class ProgressSyncClient: Sendable {
             hearts: resolvedHearts,
             heartsRefillAt: resolvedRefillAt,
             streakFreezes: userRow["streak_freezes"] as? Int ?? 0,
-            leagueTier: languageRow["league_tier"] as? String ?? "bronze"
+            leagueTier: languageRow["league_tier"] as? String ?? "bronze",
+            dayBasis: userRow["day_basis"] as? String
         )
     }
 

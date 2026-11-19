@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { LeagueTier } from "../data/achievements";
-import { isCourse, type Course } from "../data/courses";
+import { isCourse, type Course } from "../data/course-meta";
 import { publicError } from "./public-error";
 import { SKILL_WINDOW_DAYS, isValidTimeZone } from "./profile-data";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "./learner-profile";

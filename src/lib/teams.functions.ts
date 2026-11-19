@@ -44,7 +44,9 @@ export const joinTeamByCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ code: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }): Promise<TeamJoinResult> => {
-    const { data: rows } = await context.supabase.rpc("join_team", { _code: data.code });
+    const { data: rows, error } = await context.supabase.rpc("join_team", { _code: data.code });
+    // A failed call is not a refusal: throw so the screen says it could not reach the server, not "unknown-error".
+    if (error) throw publicError("joinTeamByCode", error);
     return toJoinResult(rows?.[0]);
   });
 
@@ -52,16 +54,18 @@ export const joinPublicTeam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ teamId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<TeamJoinResult> => {
-    const { data: rows } = await context.supabase.rpc("join_public_team", {
+    const { data: rows, error } = await context.supabase.rpc("join_public_team", {
       _team_id: data.teamId,
     });
+    if (error) throw publicError("joinPublicTeam", error);
     return toJoinResult(rows?.[0]);
   });
 
 export const autoJoinTeam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<TeamJoinResult> => {
-    const { data: rows } = await context.supabase.rpc("auto_join_team");
+    const { data: rows, error } = await context.supabase.rpc("auto_join_team");
+    if (error) throw publicError("autoJoinTeam", error);
     return toJoinResult(rows?.[0]);
   });
 
@@ -92,17 +96,19 @@ export const createTeam = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }): Promise<CreateTeamResult> => {
-    const { data: rows } = await context.supabase.rpc("create_team", {
+    const { data: rows, error } = await context.supabase.rpc("create_team", {
       _name: data.name,
       _visibility: data.visibility,
     });
+    if (error) throw publicError("createTeam", error);
     return toCreateResult(rows?.[0]);
   });
 
 export const leaveTeam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ ok: boolean; reason: string | null }> => {
-    const { data: rows } = await context.supabase.rpc("leave_team");
+    const { data: rows, error } = await context.supabase.rpc("leave_team");
+    if (error) throw publicError("leaveTeam", error);
     const row = rows?.[0];
     return { ok: row?.ok ?? false, reason: row?.reason ?? null };
   });
@@ -110,7 +116,9 @@ export const leaveTeam = createServerFn({ method: "POST" })
 export const getTeamLeaderboard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<TeamLeaderboardEntry[]> => {
-    const { data: rows } = await context.supabase.rpc("get_team_leaderboard");
+    const { data: rows, error } = await context.supabase.rpc("get_team_leaderboard");
+    // A failed read must not look like "no teams yet" (the section would just vanish).
+    if (error) throw publicError("getTeamLeaderboard", error);
     return (rows ?? []).map((r) => ({
       teamId: r.team_id,
       name: r.name,

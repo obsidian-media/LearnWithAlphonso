@@ -529,7 +529,7 @@ struct RootView: View {
         await syncQueueStore.runSync(
             accessToken: accessToken,
             userID: syncingUserID,
-            refreshAccessToken: { [session] in await session.freshAccessToken(forceRefresh: true) },
+            refreshAccessToken: session.refresher(for: syncingUserID),
             isCurrentAccount: { session.userID == syncingUserID })
     }
 

@@ -53,8 +53,8 @@ struct LearnWithAlphonsoApp: App {
 
         // Versioned schema and migration plan, with a logged fallback chain (SyncSchema.swift): migrate, else open
         // without the plan, else memory. The persistent store is never abandoned silently.
-        let container = SyncStoreFactory.makeContainer()
-        let queue = SyncQueueStore(modelContext: ModelContext(container))
+        let (container, isPersistent) = SyncStoreFactory.makeContainer()
+        let queue = SyncQueueStore(modelContext: ModelContext(container), isPersistent: isPersistent)
         syncQueueStore = queue
         // Same container, its own context: the download manager and the
         // sync queue touch different models and should not contend for
@@ -64,9 +64,13 @@ struct LearnWithAlphonsoApp: App {
 
         let lifecycle = SessionLifecycle()
         let entitlements = EntitlementStore(provider: purchasesKey == nil ? nil : RevenueCatPurchases())
+        // The Session is built below, after the core handlers; the queue handler reads the leaving account from it
+        // when it runs, which is always after this init.
+        let sessionRef = SessionRef()
         AccountDataCleanup.register(
             on: lifecycle,
             queue: queue,
+            retiringUserID: { sessionRef.session?.retiringUserID },
             caches: AccountLocalCaches(),
             clearWidget: { WidgetProgressPublisher.clear() },
             // RevenueCat's log-out is a call to RevenueCat: skipped once the device answered Under 13.
@@ -87,6 +91,7 @@ struct LearnWithAlphonsoApp: App {
         )
         sessionLifecycle = lifecycle
         let session = Session(lifecycle: lifecycle)
+        sessionRef.session = session
         let scheduler = NotificationScheduler()
         let pushRegistrar = RemotePushRegistrar()
         // After the handlers above, so the queue and caches are already gone when these run.
@@ -177,4 +182,10 @@ private final class BlockAwareEntitlements: EntitlementResetting {
         guard !FirstRunDevice.isBlocked else { return }
         await inner.reset()
     }
+}
+
+/// Lets a lifecycle handler registered before the Session exists read it once it does.
+@MainActor
+private final class SessionRef {
+    weak var session: Session?
 }

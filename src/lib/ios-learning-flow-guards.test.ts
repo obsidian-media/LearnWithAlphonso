@@ -49,7 +49,13 @@ describe("Review never blank", () => {
     expect(src).toMatch(/replaceLastKnownDueReviews\([^)]*course: course\.wireCode\)/);
   });
   it("queued grades carry the owning account", () => {
-    expect(src).toMatch(/PendingReviewGrade\([\s\S]{0,300}ownerUserID: session\.userID/);
+    // The account the review session opened for (stamped at load), not whoever is signed in when a request fails.
+    expect(src).toMatch(
+      /PendingReviewGrade\([\s\S]{0,300}ownerUserID: reviewOwnerUserID \?\? session\.userID/,
+    );
+    expect(src.slice(src.indexOf("private func loadQueue()")).slice(0, 120)).toContain(
+      "reviewOwnerUserID = session.userID",
+    );
   });
   it("opens on the learner's active course and keeps the picker usable", () => {
     expect(src).toContain("ActiveCoursePreference.load(for: session.userID)");
@@ -75,7 +81,9 @@ describe("Lesson completion", () => {
   });
   it("queued completions carry the owner and the held session token", () => {
     const queue = between(src, "private func queueOffline", /\n {4}\/\/\/ |\n {4}private func /);
-    expect(queue).toMatch(/ownerUserID: session\.userID/);
+    // The account that opened the lesson, not whoever is signed in when the request fails.
+    expect(queue).toMatch(/ownerUserID: lessonOwner\b/);
+    expect(queue).not.toMatch(/ownerUserID: session\.userID/);
     expect(queue).toMatch(/sessionToken: sessionToken/);
   });
   it("a finish refused at 0 hearts is queued through the Kit's disposition, not shown as a failure", () => {
@@ -281,35 +289,68 @@ describe("Sync store", () => {
     expect(factory).not.toMatch(/\bprint\(/);
   });
   it("runSync is account-isolated and never re-entered", () => {
+    // The orchestration lives in the Kit (SyncPass), where SyncPassTests exercise the account switch, the merge
+    // and "last synced"; here: the store delegates to it, never overlaps two passes, and binds the account.
     const run = between(store, "func runSync", /\n {4}\/\/\/ /);
-    expect(run.match(/guard isCurrentAccount\(\) else \{ return \}/g)?.length).toBe(3);
-    expect(run).toContain("currentUserID: userID");
-    expect(run).toContain("guard !isSyncing else { return }");
-    // Released in a defer (so every early return clears it), together with the retry-wakeup re-arm.
-    expect(run).toMatch(/defer \{\s*isSyncing = false\s*queueRevision \+= 1\s*\}/);
+    expect(run).toContain("if let currentPass {");
+    const start = between(store, "private func startPass(", /\n {4}}\n/);
+    expect(start).toContain("SyncPass.run(");
+    expect(start).toContain("userID: userID");
+    expect(start).toContain("isCurrentAccount: isCurrentAccount");
+    const pass = read("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/SyncPass.swift");
+    expect(pass.match(/guard isCurrentAccount\(\) else \{/g)?.length).toBeGreaterThanOrEqual(3);
+    expect(pass).toContain("currentUserID: userID");
+    expect(pass).toContain("isCurrentAccount: { await isCurrentAccount() }");
+    // Every sync call site binds its refresher to the pass's account.
+    for (const f of [
+      "RootView.swift",
+      "PendingSyncSection.swift",
+      "SettingsView.swift",
+      "LessonPlayerView.swift",
+    ]) {
+      const code = read(`${APP}/${f}`);
+      expect(code, f).toContain("refreshAccessToken: session.refresher(for:");
+      expect(code, f).not.toContain(
+        "refreshAccessToken: { [session] in await session.freshAccessToken(forceRefresh: true) }",
+      );
+    }
   });
   it("the review count shown is the resolved queue, not the server total", () => {
     const review = read(`${APP}/ReviewQueueView.swift`);
     expect(review).toContain("total = queue.count");
     expect(review).not.toContain("total = result.total");
   });
-  it("clearAll deletes every record type, including the ones added later", () => {
-    const clear = between(store, "func clearAll()", /\n {4}}\n/);
-    for (const t of [
-      "PendingLessonCompletionRecord",
-      "PendingReviewGradeRecord",
-      "CachedCourseDueReviewRecord",
-      "AppSyncStateRecord",
-      "SyncDeadLetterRecord",
-    ]) {
+  it("account cleanup covers every record type, including the ones added later", () => {
+    // Queued rows follow AccountQueueRetention, applied row by row through the Kit's own dispositions (the ones
+    // AccountDataCleanupTests and SyncPassTests apply to plain rows); every cached copy of the account's
+    // server state is deleted.
+    const retain = between(store, "func applyRetention(", /\n {4}}\n/);
+    expect(retain).toMatch(
+      /FetchDescriptor<PendingLessonCompletionRecord>[\s\S]*plan\.lessonDisposition\(record\.queueIdentity\)/,
+    );
+    expect(retain).toMatch(
+      /FetchDescriptor<PendingReviewGradeRecord>[\s\S]*plan\.gradeDisposition\(record\.queueIdentity\)/,
+    );
+    expect(retain.match(/case \.delete: modelContext\.delete\(record\)/g)?.length).toBe(2);
+    expect(retain.match(/case let \.stamp\(owner\): record\.ownerUserID = owner/g)?.length).toBe(2);
+    const apply = between(store, "func apply(_ result: SyncResult", /\n {4}}\n/);
+    expect(apply).toContain("result.lessonIdentitiesToRemove");
+    expect(apply).toContain("result.gradeIdentitiesToRemove");
+    const clear = between(store, "func clearCachedAccountState()", /\n {4}}\n/);
+    for (const t of ["CachedCourseDueReviewRecord", "AppSyncStateRecord", "SyncDeadLetterRecord"]) {
       expect(clear, t).toContain(`${t}.self`);
     }
+    expect(clear).not.toMatch(/Pending(LessonCompletion|ReviewGrade)Record/);
   });
   it("RootView's sync runs through the store and refreshes every course, not just en", () => {
     const root = read(`${APP}/RootView.swift`);
     expect(root).toContain("syncQueueStore.runSync(");
     expect(root).not.toContain('fetchDueReviews(course: "en")');
-    expect(store).toContain("SyncEngine.refreshDueReviews");
+    // The pass itself (with the per-course due refresh) is the Kit's SyncPass, exercised by SyncPassTests.
+    expect(store).toContain("SyncPass.run(");
+    expect(read("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/SyncPass.swift")).toContain(
+      "SyncEngine.refreshDueReviews",
+    );
   });
   it("keeps the same-account guard and the account cleanup registration", () => {
     expect(read(`${APP}/RootView.swift`)).toContain(
