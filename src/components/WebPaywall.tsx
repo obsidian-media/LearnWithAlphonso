@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { track } from "../lib/analytics";
 import { authHeaders } from "@/lib/auth-headers";
 import {
@@ -140,6 +140,10 @@ function ComingSoon() {
 
 function Plans({ plans, source }: { plans: PaywallPlan[]; source: PaywallSource }) {
   const [selected, setSelected] = useState(0);
+  // EU and UK right of withdrawal: checkout cannot start until the learner asks for Pro to start straight away. They
+  // keep the right to withdraw (refund minus the time Pro was available; Terms, "Your right to withdraw"). Unticked.
+  const [consented, setConsented] = useState(false);
+  const consentId = useId();
   const plan = plans[selected] ?? plans[0];
   const trialLine = planTrialLine(plan.trialDays);
   const when = whenLine(plan.trialDays, new Date());
@@ -160,9 +164,24 @@ function Plans({ plans, source }: { plans: PaywallPlan[]; source: PaywallSource 
         )}
       </div>
       <WhenRow lead={when.lead} rest={when.rest} />
+      <div className="ds-type-footnote flex items-start gap-2.5 text-left text-ds-ink">
+        <input
+          id={consentId}
+          type="checkbox"
+          required
+          checked={consented}
+          onChange={(e) => setConsented(e.target.checked)}
+          className="mt-0.5 size-5 shrink-0 accent-ds-choice"
+          data-withdrawal-consent=""
+        />
+        <label htmlFor={consentId}>{WEB_PAYWALL_COPY.withdrawalConsent}</label>
+      </div>
       <button
         type="button"
+        disabled={!consented}
+        aria-describedby={consented ? undefined : `${consentId}-needed`}
         onClick={() => {
+          if (!consented) return;
           void track("purchase_started", { source });
           window.location.assign(plan.purchaseUrl);
         }}
@@ -170,6 +189,11 @@ function Plans({ plans, source }: { plans: PaywallPlan[]; source: PaywallSource 
       >
         {trialLine ? PAYWALL_COPY.startFreeTrial : PAYWALL_COPY.subscribe}
       </button>
+      {!consented && (
+        <p id={`${consentId}-needed`} className="ds-type-footnote m-0 text-center text-ds-ink-soft">
+          {WEB_PAYWALL_COPY.withdrawalConsentNeeded}
+        </p>
+      )}
       <SmallPrint />
     </>
   );

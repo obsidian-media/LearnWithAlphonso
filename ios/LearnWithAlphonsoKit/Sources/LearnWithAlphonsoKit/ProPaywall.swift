@@ -95,7 +95,7 @@ public enum ProPaywallCopy {
     public static let factsSpoken = "Any topic, no script. Remembers your weak spots. A long conversation every day."
     public static let freeLabel = "Free for everyone"
     public static let freeItems = ["Lessons", "Alphonso calls", "Audio", "Review"]
-    public static let freeNote = "Everything else stays free, always."
+    public static let freeNote = "These stay free, always. Pro adds Hector, unlimited hearts and more AI practice each month."
     public static let plansLabel = "Choose a plan"
     public static let roomLabel = "Hector in his library"
     public static let welcomeEyebrow = "Welcome to Pro"

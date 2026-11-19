@@ -7,7 +7,7 @@
  * through a live OpenRouter/Deepgram call.
  */
 
-import { COURSES, isCourse, type Course } from "@/data/courses";
+import { COURSES, isCourse, type Course } from "@/data/course-meta";
 
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 export type TutorHistoryMessage = { role: string; content: string };

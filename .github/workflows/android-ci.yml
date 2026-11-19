@@ -5,7 +5,9 @@ name: Android CI
 
 on:
   push:
-    branches: [android]
+    # main too, so its runs fill the Gradle cache: setup-gradle only WRITES the cache on the default branch, and every
+    # PR run started cold while main never ran this workflow.
+    branches: [main, android]
     paths:
       - "android/**"
       - "scripts/export-android-content.ts"
@@ -29,9 +31,11 @@ on:
       - ".github/workflows/android-ci.yml"
   workflow_dispatch:
 
+# A new push to a PR cancels that PR's stale run; branch pushes (main included) are never cancelled and get a group
+# of their own, because a shared group still drops all but one pending run.
 concurrency:
-  group: android-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false

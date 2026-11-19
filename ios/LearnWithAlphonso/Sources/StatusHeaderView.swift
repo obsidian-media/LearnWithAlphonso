@@ -123,10 +123,34 @@ struct StatusHeaderView: View {
         }
     }
 
+    /// The streak as it reads today (StreakDisplay, the server's own rule): alive only by a freeze reads as
+    /// protected, a run the next lesson would restart reads 0. The profile tile uses the same function.
+    static func displayedStreak(_ progress: LessonCompletionProgress, now: Date = Date()) -> StreakDisplay.Shown {
+        StreakDisplay.shown(progress, now: now)
+    }
+
+    static func shownStreak(_ progress: LessonCompletionProgress?, now: Date = Date()) -> Int {
+        progress.map { displayedStreak($0, now: now).streak } ?? 0
+    }
+
     private func streakPill(progress: LessonCompletionProgress) -> some View {
-        hudPill(icon: { DSIconView(icon: .flameSolid, size: AlphonsoDS.Space.s5 + 2).foregroundStyle(ds.flame).pulsingGlow() }, value: "\(progress.streak)")
+        let shown = Self.displayedStreak(progress)
+        return hudPill(icon: {
+            DSIconView(icon: .flameSolid, size: AlphonsoDS.Space.s5 + 2).foregroundStyle(ds.flame).pulsingGlow()
+                .overlay(alignment: .bottomTrailing) {
+                    if shown.state == .protected {
+                        // Missed days a streak freeze covers: the same snowflake the freeze row uses.
+                        Image(systemName: "snowflake")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(ds.choice)
+                            .padding(1)
+                            .background(Circle().fill(ds.card))
+                            .offset(x: 4, y: 4)
+                    }
+                }
+        }, value: "\(shown.streak)")
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Streak: \(progress.streak) day\(progress.streak == 1 ? "" : "s")")
+            .accessibilityLabel(StreakDisplay.accessibilityLabel(shown))
     }
 
     private func leagueBadge(progress: LessonCompletionProgress) -> some View {

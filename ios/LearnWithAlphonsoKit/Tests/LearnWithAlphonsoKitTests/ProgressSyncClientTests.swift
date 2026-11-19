@@ -993,6 +993,43 @@ final class ProgressSyncClientTests: XCTestCase {
         XCTAssertEqual(paths.value.count, 2)
     }
 
+    /// The header shows the active course: its row, not whichever course was updated last.
+    func testFetchProgressForACourseReadsThatCoursesRow() async throws {
+        let languageQueries = TestCapture<[String]>([])
+        let client = makeClient { request in
+            let url = request.url!
+            if url.path.contains("language_progress") {
+                languageQueries.value.append(url.query ?? "")
+                return self.jsonResponse(for: url, body: [["xp": 80, "league_tier": "bronze"]])
+            }
+            return self.jsonResponse(for: url, body: [["streak": 1, "longest_streak": 1, "last_active_date": "2026-11-17", "hearts": 5, "streak_freezes": 0]])
+        }
+        let fetched = try await client.fetchProgress(course: "fr")
+        XCTAssertEqual(fetched?.xp, 80)
+        XCTAssertEqual(languageQueries.value.count, 1)
+        XCTAssertTrue(languageQueries.value[0].contains("language=eq.fr"), languageQueries.value[0])
+        _ = try await client.fetchProgress()
+        XCTAssertFalse(languageQueries.value[1].contains("language="), "no course keeps the most-recent-row meaning")
+    }
+
+    /// Every review attempt carries its freshness snapshot and attempt id, whichever screen sends it.
+    func testGradingAReviewAttemptSendsItsSnapshotAndAttemptID() async throws {
+        let bodies = TestCapture<[[String: Any]]>([])
+        let client = makeClient { request in
+            bodies.value.append(try! JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any])
+            return self.jsonResponse(for: request.url!, body: ["retired": false, "dueOn": "2026-11-20", "correct": true])
+        }
+        let attempt = PendingReviewGrade(
+            itemKey: "lesson:a1l1:q1", answer: "the cat", course: "en", queuedAt: Date(timeIntervalSince1970: 1_794_927_600),
+            expectedDueOn: "2026-11-17", expectedLastReviewedAt: "2026-11-10T09:00:00Z")
+        _ = try await client.gradeReview(attempt)
+        let body = try XCTUnwrap(bodies.value.first)
+        XCTAssertEqual(body["expectedDueOn"] as? String, "2026-11-17")
+        XCTAssertEqual(body["expectedLastReviewedAt"] as? String, "2026-11-10T09:00:00Z")
+        XCTAssertEqual(body["attemptId"] as? String, attempt.queueIdentity)
+        XCTAssertEqual(body["answer"] as? String, "the cat")
+    }
+
     // MARK: - fetchProgress resolves an elapsed refill (2026-09-29 audit)
 
     // A plain read of user_progress never re-resolved an elapsed refill

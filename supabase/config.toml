@@ -1,1 +1,33 @@
 project_id = "qhcjpfbxfcltjbiuknyt"
+
+# Gateway JWT check per Edge Function, pinned so a CLI default change or a forgotten deploy flag cannot open one up.
+# Every function requires a valid Supabase JWT at the gateway except send-push, which is called only by this
+# project's notify_nudge_push trigger and checks its own shared secret (send-push/auth.ts). Its deploy line in
+# .github/workflows/ci.yml keeps --no-verify-jwt to match. src/lib/supabase-function-auth-config.test.ts fails when a
+# function directory has no entry here or anything other than send-push is set to false.
+
+[functions.complete-lesson]
+verify_jwt = true
+
+[functions.start-lesson-session]
+verify_jwt = true
+
+[functions.grade-review]
+verify_jwt = true
+
+[functions.get-season-status]
+verify_jwt = true
+
+[functions.complete-podcast-quiz]
+verify_jwt = true
+
+[functions.complete-story-check]
+verify_jwt = true
+
+# Arrives with its own directory in a separate change. A named `supabase functions deploy <name>` ignores an entry
+# with no directory (checked with CLI 2.118.0); only a bare deploy-all would try it and warn.
+[functions.finish-branching-story]
+verify_jwt = true
+
+[functions.send-push]
+verify_jwt = false

@@ -35,7 +35,7 @@ MAKE PROGRESS VISIBLE
 Keep up a daily streak with a home-screen widget, revisit due reviews, and use progress tools that make the next useful practice step clear. Optional teams, friends, leagues, and challenges make it easier to stay motivated together.
 
 MEET HECTOR, YOUR AI VOICE TUTOR
-Alphonso Pro unlocks Hector, an AI voice tutor for guided conversation practice and language help tailored to your learning journey.
+Alphonso Pro, an optional monthly subscription, gives you Hector, an AI voice tutor for guided conversation practice, plus unlimited hearts in lessons, What Alphonso remembers (notes from your practice calls), and a larger monthly allowance for the AI features. Lessons, review, audio and practice calls with Alphonso stay free, within the limits of a free account.
 
 PRIVACY
 Learn with Alphonso does not use advertising or tracking. You can manage your account, export your data, or delete your account in the app.

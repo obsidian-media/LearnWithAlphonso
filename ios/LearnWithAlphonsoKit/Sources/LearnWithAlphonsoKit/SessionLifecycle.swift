@@ -42,8 +42,12 @@ public final class SessionLifecycle {
 /// A durable "account cleanup still owed" marker. `Session` marks it synchronously when a
 /// session ends and clears it once the handlers finished, so a process kill in between
 /// cannot leave the previous account's data for the next one: the next launch finishes it.
+///
+/// It also keeps the leaving account's id, so a resumed cleanup still knows whose queued rows to keep or remove
+/// (AccountQueueRetention): without it, a resumed account deletion removed every account's rows.
 public struct PendingCleanupStore {
     private static let key = "sessionCleanupPending"
+    private static let userKey = "sessionCleanupPendingUser"
     private let defaults: UserDefaults
 
     public init(defaults: UserDefaults = .standard) {
@@ -58,21 +62,31 @@ public struct PendingCleanupStore {
         }
     }
 
-    public func mark(_ event: SessionLifecycle.Event) {
+    /// The account whose cleanup is owed, when it was known at sign-out.
+    public var pendingUserID: String? {
+        defaults.string(forKey: Self.userKey)
+    }
+
+    public func mark(_ event: SessionLifecycle.Event, userID: String? = nil) {
         defaults.set(event == .signedOut ? "signedOut" : "accountDeleted", forKey: Self.key)
+        if let userID { defaults.set(userID, forKey: Self.userKey) } else { defaults.removeObject(forKey: Self.userKey) }
     }
 
     public func clear() {
         defaults.removeObject(forKey: Self.key)
+        defaults.removeObject(forKey: Self.userKey)
     }
 }
 
 extension SessionLifecycle {
     /// Launch-time recovery: if the last run never finished (the process was killed), run it
     /// now. Call only when no cleanup is in flight.
-    public func resumePending(_ store: PendingCleanupStore) async {
+    /// `setRetiringUserID` hands the stored account id to the handlers for the run (Session.retiringUserID).
+    public func resumePending(_ store: PendingCleanupStore, setRetiringUserID: (String?) -> Void = { _ in }) async {
         guard let event = store.pending else { return }
+        setRetiringUserID(store.pendingUserID)
         await run(event)
+        setRetiringUserID(nil)
         store.clear()
     }
 }

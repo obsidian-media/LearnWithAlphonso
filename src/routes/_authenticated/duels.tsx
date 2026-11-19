@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
 import {
   BackPill,
@@ -8,6 +8,7 @@ import {
   DsButton,
   DsCard,
   DsChip,
+  DsEmptyState,
   DsPill,
   DsRow,
   DsSegmented,
@@ -17,12 +18,18 @@ import {
   Overline,
 } from "@/components/ds/Blocks";
 import { DsScreen } from "@/components/ds/DsScreen";
+import { RefreshError } from "@/components/ds/RefreshError";
 import { SocialSafetyMenu } from "../../components/SocialSafetyMenu";
 import { getMyDuels, createDuel, respondToDuel, getFriends } from "../../lib/friends.functions";
 import { getMyProfile } from "../../lib/leaderboard.functions";
-import { joinOpenDuelQueue, leaveOpenDuelQueue } from "../../lib/challenges.functions";
+import {
+  getMyDuelQueue,
+  joinOpenDuelQueue,
+  leaveOpenDuelQueue,
+} from "../../lib/challenges.functions";
 import { socialFailureMessage, socialReasonMessage } from "../../lib/social-reason-copy";
 import { duelResult, duelShare, duelsSummary } from "../../lib/social-presentation";
+import { useInFlight } from "../../lib/use-in-flight";
 
 export const Route = createFileRoute("/_authenticated/duels")({
   component: DuelsPage,
@@ -43,11 +50,26 @@ const COURSE_OPTIONS = [
 function DuelsPage() {
   const queryClient = useQueryClient();
   const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => getMyProfile() });
-  const { data: duels, isLoading: loadingDuels } = useQuery({
+  const duelsQuery = useQuery({
     queryKey: ["myDuels"],
     queryFn: () => getMyDuels(),
+    retry: false,
   });
-  const { data: friends } = useQuery({ queryKey: ["friends"], queryFn: () => getFriends() });
+  const { data: duels, isLoading: loadingDuels } = duelsQuery;
+  const friendsQuery = useQuery({
+    queryKey: ["friends"],
+    queryFn: () => getFriends(),
+    retry: false,
+  });
+  const friends = friendsQuery.data;
+  // The server keeps the learner queued after they leave this page: on load, show what it says. A failed read falls
+  // back to "Find an open duel" on purpose: joining again is safe (the server updates the one queue row), while
+  // inventing a wait could leave the learner waiting on nothing. Until the read settles, the button is held back.
+  const queueQuery = useQuery({
+    queryKey: ["myDuelQueue"],
+    queryFn: () => getMyDuelQueue(),
+    retry: false,
+  });
 
   const [challengeFriendId, setChallengeFriendId] = useState("");
   const [challengeCourse, setChallengeCourse] = useState<"en" | "fr" | "es">("en");
@@ -55,7 +77,27 @@ function DuelsPage() {
   const [matchByLevel, setMatchByLevel] = useState(true);
   const [queueing, setQueueing] = useState(false);
   const [waitingInQueue, setWaitingInQueue] = useState(false);
+  const [leavingQueue, setLeavingQueue] = useState(false);
+  // The server let nobody in: open duels are switched off, or this account is kept out of contact with strangers.
+  const [openDuelsUnavailable, setOpenDuelsUnavailable] = useState(false);
+  const [respondingId, setRespondingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Synchronous guards: a second click can land before the state above re-renders the buttons disabled.
+  const respondFlight = useInFlight();
+  const challengeFlight = useInFlight();
+  const queueFlight = useInFlight();
+  // Once the learner has joined or left, their own action is the truth: a queue read that answers later describes
+  // the moment before it and must not flip the card back.
+  const actedOnQueue = useRef(false);
+
+  useEffect(() => {
+    const queue = queueQuery.data;
+    if (!queue || actedOnQueue.current) return;
+    setWaitingInQueue(queue.queued);
+    if (!queue.queued) return;
+    const course = COURSE_OPTIONS.find((c) => c.id === queue.course);
+    if (course) setOpenCourse(course.id);
+  }, [queueQuery.data]);
 
   const myId = me?.id;
   const pending = (duels ?? []).filter((d) => d.status === "pending" && d.opponentId === myId);
@@ -85,6 +127,9 @@ function DuelsPage() {
   }
 
   async function handleRespond(duelId: string, accept: boolean) {
+    // One answer per duel: a second click would answer an already-answered duel and read back as "not found".
+    if (!respondFlight.begin()) return;
+    setRespondingId(duelId);
     setError(null);
     try {
       const result = await respondToDuel({ data: { duelId, accept } });
@@ -95,11 +140,14 @@ function DuelsPage() {
       await refetchDuels();
     } catch (e) {
       setError(socialFailureMessage(e));
+    } finally {
+      respondFlight.end();
+      setRespondingId(null);
     }
   }
 
   async function handleChallengeFriend() {
-    if (!challengeFriendId) return;
+    if (!challengeFriendId || !challengeFlight.begin()) return;
     setError(null);
     try {
       const result = await createDuel({
@@ -113,25 +161,63 @@ function DuelsPage() {
       await refetchDuels();
     } catch (e) {
       setError(socialFailureMessage(e));
+    } finally {
+      challengeFlight.end();
     }
   }
 
+  /** Record what the learner's own join or leave did, so a slower load-time read cannot overwrite it. */
+  async function settleQueue(queued: boolean) {
+    actedOnQueue.current = true;
+    await queryClient.cancelQueries({ queryKey: ["myDuelQueue"] });
+    queryClient.setQueryData(
+      ["myDuelQueue"],
+      queued
+        ? { queued: true, course: openCourse, queuedAt: new Date().toISOString() }
+        : { queued: false },
+    );
+    setWaitingInQueue(queued);
+  }
+
   async function handleJoinOpenQueue() {
+    if (!queueFlight.begin()) return;
     setQueueing(true);
     setError(null);
-    const result = await joinOpenDuelQueue({ data: { course: openCourse, matchByLevel } });
-    setQueueing(false);
-    if (result.matched) {
-      setWaitingInQueue(false);
-      await refetchDuels();
-    } else {
-      setWaitingInQueue(true);
+    setOpenDuelsUnavailable(false);
+    try {
+      const result = await joinOpenDuelQueue({ data: { course: openCourse, matchByLevel } });
+      if (result.matched) {
+        await settleQueue(false);
+        await refetchDuels();
+      } else if (result.queued) {
+        await settleQueue(true);
+      } else {
+        // Not matched and not queued: the server did not let this learner in. Waiting would wait forever.
+        await settleQueue(false);
+        setOpenDuelsUnavailable(true);
+      }
+    } catch (e) {
+      setError(socialFailureMessage(e));
+    } finally {
+      queueFlight.end();
+      setQueueing(false);
     }
   }
 
   async function handleLeaveQueue() {
-    await leaveOpenDuelQueue();
-    setWaitingInQueue(false);
+    if (!queueFlight.begin()) return;
+    setLeavingQueue(true);
+    setError(null);
+    try {
+      await leaveOpenDuelQueue();
+      await settleQueue(false);
+    } catch (e) {
+      // Still queued on the server: keep showing the wait, with Leave queue to try again.
+      setError(socialFailureMessage(e));
+    } finally {
+      queueFlight.end();
+      setLeavingQueue(false);
+    }
   }
 
   const summary = duelsSummary({
@@ -174,7 +260,8 @@ function DuelsPage() {
                   small
                   className="flex-1"
                   aria-label={`Accept the ${d.course} challenge`}
-                  onClick={() => handleRespond(d.duelId, true)}
+                  onClick={() => void handleRespond(d.duelId, true)}
+                  disabled={respondingId !== null}
                 >
                   Accept
                 </DsButton>
@@ -183,7 +270,8 @@ function DuelsPage() {
                   variant="secondary"
                   className="flex-1"
                   aria-label={`Decline the ${d.course} challenge`}
-                  onClick={() => handleRespond(d.duelId, false)}
+                  onClick={() => void handleRespond(d.duelId, false)}
+                  disabled={respondingId !== null}
                 >
                   Decline
                 </DsButton>
@@ -194,10 +282,24 @@ function DuelsPage() {
       )}
 
       <Overline>Active duels</Overline>
+      {duelsQuery.isError && duels && (
+        <RefreshError what="your duels" onRetry={() => void duelsQuery.refetch()} />
+      )}
       {loadingDuels ? (
         <DsCard>
           <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
         </DsCard>
+      ) : duelsQuery.isError && !duels ? (
+        <DsEmptyState
+          tone="error"
+          art="/mascots/alphonso-encouraging.png"
+          title="Couldn't load your duels."
+          message="Check your connection and try again."
+        >
+          <DsButton small variant="secondary" onClick={() => void duelsQuery.refetch()}>
+            Try again
+          </DsButton>
+        </DsEmptyState>
       ) : active.length === 0 ? (
         <DsCard>
           <p className="ds-type-footnote text-ds-ink-soft">No active duels right now.</p>
@@ -251,7 +353,19 @@ function DuelsPage() {
         <p id="duel-friend-label" className="ds-type-caption text-ds-ink-soft">
           Friend
         </p>
-        {(friends ?? []).length === 0 ? (
+        {friendsQuery.isError && friends && (
+          <RefreshError what="your friends" onRetry={() => void friendsQuery.refetch()} />
+        )}
+        {friendsQuery.isError && !friends ? (
+          <div role="alert" className="grid gap-2">
+            <p className="ds-type-footnote text-ds-ink-soft">Couldn't load your friends.</p>
+            <DsButton small variant="secondary" onClick={() => void friendsQuery.refetch()}>
+              Try again
+            </DsButton>
+          </div>
+        ) : friendsQuery.isLoading ? (
+          <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
+        ) : (friends ?? []).length === 0 ? (
           <p className="ds-type-footnote text-ds-ink-soft">
             No friends yet. Share your invite link to get started.
           </p>
@@ -312,14 +426,34 @@ function DuelsPage() {
             <span className="ds-type-footnote min-w-0 flex-1 text-ds-ink-soft">
               Waiting for an opponent…
             </span>
-            <DsButton small variant="secondary" onClick={handleLeaveQueue}>
-              Cancel
+            <DsButton
+              small
+              variant="secondary"
+              onClick={() => void handleLeaveQueue()}
+              disabled={leavingQueue}
+            >
+              {leavingQueue ? "Leaving…" : "Leave queue"}
             </DsButton>
           </div>
         ) : (
-          <DsButton full onClick={handleJoinOpenQueue} disabled={queueing}>
-            {queueing ? "Finding a match…" : "Find an open duel"}
-          </DsButton>
+          <>
+            {openDuelsUnavailable && (
+              <p role="status" className="ds-type-footnote text-ds-ink-soft">
+                Open duels aren't available right now. You can still challenge a friend.
+              </p>
+            )}
+            <DsButton
+              full
+              onClick={() => void handleJoinOpenQueue()}
+              disabled={queueing || queueQuery.isLoading}
+            >
+              {queueQuery.isLoading
+                ? "Checking the queue…"
+                : queueing
+                  ? "Finding a match…"
+                  : "Find an open duel"}
+            </DsButton>
+          </>
         )}
       </DsCard>
 

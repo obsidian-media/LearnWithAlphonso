@@ -46,7 +46,7 @@ export const Route = createFileRoute("/support")({
 
 function Support() {
   return (
-    <LegalPage title="Support" updated="15 November 2026">
+    <LegalPage title="Support" updated="18 November 2026">
       <Section heading="Contact us">
         <p>
           Write to {CONTACT} and a person will reply. Tell us what you were doing, what you
@@ -69,11 +69,12 @@ function Support() {
       <Section heading="Subscriptions">
         <Bullets
           items={[
-            "Alphonso Pro is an auto-renewable monthly subscription that unlocks Hector, the AI voice tutor. Everything else is free.",
+            "Alphonso Pro is an auto-renewable subscription. The plans on offer (monthly, and yearly where offered) and their prices are shown before you confirm. It gives you Hector, the AI voice tutor, unlimited hearts, What Alphonso remembers, and a larger monthly AI allowance. Lessons, review, audio and practice calls with Alphonso stay free, within the hearts and AI limits that apply to free accounts. Our Terms of Use list exactly what Pro includes.",
             "If you start with a free trial, you are charged when it ends unless you cancel at least 24 hours before.",
             "Manage or cancel it in the Settings app on your iPhone: tap your name, then Subscriptions. Cancel at least 24 hours before the end of the current period to avoid the next charge. We cannot cancel it for you, because Apple handles billing.",
             "Refunds are handled by Apple at reportaproblem.apple.com.",
             "If you subscribed through Google Play on Android, manage or cancel it in Google Play under Payments & subscriptions. Refunds follow Google Play’s policies.",
+            "If you subscribed on our website, manage or cancel it from Manage Subscription on the Hector page. If you live in the EU or UK, you can withdraw within 14 days of subscribing on our website and get a refund, minus a proportionate amount for the time Pro was available: write to us or use the Help chat. Our Terms of Use explain this.",
             "Already subscribed on another device? Use Restore Purchases on the subscription screen.",
           ]}
         />

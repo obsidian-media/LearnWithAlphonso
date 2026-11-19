@@ -21,7 +21,8 @@ public struct PendingLessonCompletion: Sendable, Equatable {
     public let queuedAt: Date
     public let optimisticXpEstimate: Int
     /// The account that played this lesson. Nil only for rows written before the owner was recorded; the
-    /// first account to sync adopts those.
+    /// first account to sync adopts those, and a sign-out stamps them with the leaving account
+    /// (AccountQueueRetention).
     public let ownerUserID: String?
     /// The start-lesson-session token from when the lesson opened, if it was online then.
     public let sessionToken: String?
@@ -98,7 +99,8 @@ public struct PendingReviewGrade: Sendable, Equatable {
 
 /// What `SyncEngine.sync` actually managed to drain in one pass. Items not
 /// present in any list here are untouched (still queued, waiting out a
-/// backoff, or unauthorized this pass) and stay as they are.
+/// backoff, behind an item that must wait, unauthorized this pass, or owned
+/// by another account) and stay as they are.
 public struct SyncResult: Sendable, Equatable {
     public let syncedLessonCompletions: [PendingLessonCompletion]
     public let syncedReviewGrades: [PendingReviewGrade]
@@ -108,13 +110,14 @@ public struct SyncResult: Sendable, Equatable {
     public let lastKnownProgress: LessonCompletionProgress?
     /// Failed for a transient reason: keep the row, with its new attempt count and next attempt time.
     public let rescheduledLessonCompletions: [PendingLessonCompletion]
-    /// Can never succeed (rejected by the server, or out of attempts): move out of the queue.
+    /// Can never succeed (rejected by the server): move out of the queue. A lesson out of attempts is parked in
+    /// `rescheduledLessonCompletions` instead (SyncRetryPolicy.isParked).
     public let deadLetteredLessonCompletions: [DeadLetter<PendingLessonCompletion>]
-    /// Belong to another account: delete, never send.
-    public let droppedForeignLessonCompletions: [PendingLessonCompletion]
     public let rescheduledReviewGrades: [PendingReviewGrade]
     public let deadLetteredReviewGrades: [DeadLetter<PendingReviewGrade>]
-    public let droppedForeignReviewGrades: [PendingReviewGrade]
+    /// The pass stopped because another account was signed in before its next send. What it did send is still
+    /// listed above, so the caller clears those rows instead of sending them again.
+    public let stoppedForAccountChange: Bool
 
     public init(
         syncedLessonCompletions: [PendingLessonCompletion],
@@ -122,19 +125,49 @@ public struct SyncResult: Sendable, Equatable {
         lastKnownProgress: LessonCompletionProgress?,
         rescheduledLessonCompletions: [PendingLessonCompletion] = [],
         deadLetteredLessonCompletions: [DeadLetter<PendingLessonCompletion>] = [],
-        droppedForeignLessonCompletions: [PendingLessonCompletion] = [],
         rescheduledReviewGrades: [PendingReviewGrade] = [],
         deadLetteredReviewGrades: [DeadLetter<PendingReviewGrade>] = [],
-        droppedForeignReviewGrades: [PendingReviewGrade] = []
+        stoppedForAccountChange: Bool = false
     ) {
         self.syncedLessonCompletions = syncedLessonCompletions
         self.syncedReviewGrades = syncedReviewGrades
         self.lastKnownProgress = lastKnownProgress
         self.rescheduledLessonCompletions = rescheduledLessonCompletions
         self.deadLetteredLessonCompletions = deadLetteredLessonCompletions
-        self.droppedForeignLessonCompletions = droppedForeignLessonCompletions
         self.rescheduledReviewGrades = rescheduledReviewGrades
         self.deadLetteredReviewGrades = deadLetteredReviewGrades
-        self.droppedForeignReviewGrades = droppedForeignReviewGrades
+        self.stoppedForAccountChange = stoppedForAccountChange
+    }
+}
+
+extension SyncResult {
+    /// Rows this pass is done with: synced or dead-lettered. The store deletes them (dead letters move to their own
+    /// table first).
+    public var lessonIdentitiesToRemove: Set<String> {
+        Set(syncedLessonCompletions.map(\.queueIdentity) + deadLetteredLessonCompletions.map(\.item.queueIdentity))
+    }
+
+    public var gradeIdentitiesToRemove: Set<String> {
+        Set(syncedReviewGrades.map(\.queueIdentity) + deadLetteredReviewGrades.map(\.item.queueIdentity))
+    }
+
+    /// Rows that stay, with their new attempt count and retry time (a parked lesson among them).
+    public var lessonUpdates: [String: PendingLessonCompletion] {
+        Dictionary(rescheduledLessonCompletions.map { ($0.queueIdentity, $0) }, uniquingKeysWith: { a, _ in a })
+    }
+
+    public var gradeUpdates: [String: PendingReviewGrade] {
+        Dictionary(rescheduledReviewGrades.map { ($0.queueIdentity, $0) }, uniquingKeysWith: { a, _ in a })
+    }
+
+    /// The result applied to plain rows: what SyncQueueStore does to its records through the four sets above.
+    public func applied(
+        lessons: [PendingLessonCompletion], grades: [PendingReviewGrade]
+    ) -> (lessons: [PendingLessonCompletion], grades: [PendingReviewGrade]) {
+        let removeLessons = lessonIdentitiesToRemove, removeGrades = gradeIdentitiesToRemove
+        let lessonUpdates = lessonUpdates, gradeUpdates = gradeUpdates
+        return (
+            lessons.filter { !removeLessons.contains($0.queueIdentity) }.map { lessonUpdates[$0.queueIdentity] ?? $0 },
+            grades.filter { !removeGrades.contains($0.queueIdentity) }.map { gradeUpdates[$0.queueIdentity] ?? $0 })
     }
 }

@@ -178,7 +178,7 @@ function Landing() {
               className="absolute inset-0 size-full object-cover"
             />
             <img
-              src="/figures/alphonso-waving.png"
+              src="/figures/alphonso-waving.webp"
               alt="Alphonso, a llama in a navy and gold robe, waving"
               className="absolute bottom-0 right-4 h-[88%] w-auto"
             />

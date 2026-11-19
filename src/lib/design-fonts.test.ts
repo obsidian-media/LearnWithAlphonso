@@ -46,12 +46,12 @@ describe.each(FACES)("$spec.name ($role)", ({ spec, licence, copyright }) => {
     expect(sha(androidFont)).toBe(sha(iosFont));
   });
 
-  it("is self-hosted on the web as WOFF, declared by the generated @font-face", () => {
+  it("is self-hosted on the web as WOFF2, declared by the generated @font-face", () => {
     expect(exists(webFont), webFont).toBe(true);
-    expect(read(webFont).toString("latin1", 0, 4)).toBe("wOFF");
+    expect(read(webFont).toString("latin1", 0, 4)).toBe("wOF2");
     const css = read("src/styles/ds-tokens.generated.css").toString("utf8");
     expect(css).toContain(`font-family: "${spec.name}";`);
-    expect(css).toContain(`url("/fonts/${spec.web}")`);
+    expect(css).toContain(`url("/fonts/${spec.web}") format("woff2")`);
     // The @font-face only registers the face if the app's stylesheet actually loads the generated file.
     const app = read("src/styles.css").toString("utf8");
     expect(app).toMatch(/^@import "\.\/styles\/ds-tokens\.generated\.css";$/m);

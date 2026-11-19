@@ -261,7 +261,7 @@ struct LessonBrowserView: View {
                         onFreezesChanged: { freezes in
                             // Read the cache again now: the render-time copy may be older than a sync that landed since.
                             guard let latest = syncQueueStore.lastKnownProgress() else { return }
-                            syncQueueStore.updateLastKnownProgress(StreakFreezeShop.cachedProgress(freezes: freezes, from: latest))
+                            syncQueueStore.updateLastKnownProgress(StreakFreezeShop.cachedProgress(freezes: freezes, from: latest), synced: false)
                         }
                     )
                     .listRowInsets(EdgeInsets())
@@ -276,7 +276,7 @@ struct LessonBrowserView: View {
                         nodes: UnitPath.nodes(lessonIDs: next.unit.lessons.map(\.id), completed: completedLessonIDs).map { node in
                             PathMapNode(id: node.id, title: next.unit.lessons.first { $0.id == node.id }?.title ?? "", state: node.state)
                         },
-                        greeting: StatusHeaderView.greeting(streak: syncQueueStore.lastKnownProgress()?.streak ?? 0),
+                        greeting: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress())),
                         onOpen: { openedLesson = OpenedLesson(id: $0) }
                     )
                     .listRowInsets(EdgeInsets())
@@ -422,7 +422,7 @@ struct LessonBrowserView: View {
                 // Alphonso waves at 67% across with his head top 54% down in the clip: the greeting bubble is pinned just
                 // above it (its tail points down at him). Only when the map is on screen, since the map is what speaks it.
                 pin: nextLesson == nil ? nil : ClipPin(x: 64, y: 53) {
-                    PathSpeechBubble(message: StatusHeaderView.greeting(streak: syncQueueStore.lastKnownProgress()?.streak ?? 0))
+                    PathSpeechBubble(message: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress())))
                         .frame(width: 210)
                 }
             )
@@ -484,7 +484,7 @@ struct LessonBrowserView: View {
                 }
             }
             .sheet(isPresented: $showingSettings) {
-                SettingsView(session: session)
+                SettingsView(session: session, syncQueueStore: syncQueueStore)
             }
             .sheet(isPresented: $showingReview) {
                 ReviewQueueView(

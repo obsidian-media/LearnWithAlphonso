@@ -70,6 +70,13 @@ struct StreakWidgetView: View {
                 Text(StreakWidgetCopy.caption(streak: snapshot.streak))
                     .font(WidgetFont.font(AlphonsoDS.Typography.footnote))
                     .foregroundStyle(colors.inkSoft)
+                if snapshot.isStreakProtected {
+                    // Missed days a streak freeze covers: the same snowflake the freeze row uses.
+                    Label(StreakDisplay.protectedCaption, systemImage: "snowflake")
+                        .font(WidgetFont.font(AlphonsoDS.Typography.caption))
+                        .foregroundStyle(colors.choice)
+                        .lineLimit(2)
+                }
                 if layout.showsBest {
                     Text(StreakWidgetCopy.best(streak: snapshot.streak, longestStreak: snapshot.longestStreak))
                         .font(WidgetFont.font(AlphonsoDS.Typography.caption))

@@ -135,8 +135,12 @@ struct ProfileHeroSection: View {
     private var numbers: some View {
         let b = model.big
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), alignment: .leading, spacing: AlphonsoDS.Space.s4) {
-            statTile(String(b.streak), "day streak", "Longest \(b.longestStreak)",
-                 "\(b.streak) day streak, longest \(b.longestStreak)")
+            // The same displayed streak as the header (StreakDisplay), with the same protected wording.
+            statTile(String(b.streak), "day streak",
+                 b.streakState == .protected ? StreakDisplay.protectedCaption : "Longest \(b.longestStreak)",
+                 b.streakState == .protected
+                    ? "\(StreakDisplay.accessibilityLabel(StreakDisplay.Shown(streak: b.streak, state: b.streakState))), longest \(b.longestStreak)"
+                    : "\(b.streak) day streak, longest \(b.longestStreak)")
             statTile(String(b.courseXP), "XP in \(course.label)", "\(b.xpThisWeek) this week",
                  "\(b.courseXP) XP in \(course.label), \(b.xpThisWeek) this week")
             statTile(String(b.wordsLearned), plural(b.wordsLearned, "word learned", "words learned"),

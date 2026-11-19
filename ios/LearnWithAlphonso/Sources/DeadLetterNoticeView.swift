@@ -37,7 +37,36 @@ struct DeadLetterNoticeSection: View {
             }
             .accessibilityElement(children: .contain)
             .dsListRow(top: AlphonsoDS.Space.s2)
-            .onAppear { dismissals.prune(keeping: letters.map(\.identity)) }
+            .onAppear { dismissals.prune(keeping: letters.map(\.identity) + syncQueueStore.reviewDeadLetterIdentities) }
+        }
+        reviewNotice
+    }
+
+    /// Review answers that will not be retried (refused, or out of retries): one quiet line, no support path,
+    /// because the card simply comes back. Dismissed the same way, by identity.
+    @ViewBuilder
+    private var reviewNotice: some View {
+        let identities = syncQueueStore.reviewDeadLetterIdentities
+        let visible = DeadLetterNotice.visible(lessonIdentities: identities, dismissed: dismissals.dismissed)
+        if let message = DeadLetterNotice.reviewMessage(count: visible.count) {
+            DSCard(spacing: AlphonsoDS.Space.s2) {
+                HStack(alignment: .center, spacing: AlphonsoDS.Space.s3) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .dsText(.title)
+                        .foregroundStyle(ds.inkSoft)
+                        .accessibilityHidden(true)
+                    Text(message).dsText(.headline).foregroundStyle(ds.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                Button(DeadLetterNotice.dismissTitle) {
+                    dismissals.dismiss(visible)
+                    dismissRevision += 1
+                }
+                .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+            }
+            .accessibilityElement(children: .contain)
+            .dsListRow(top: AlphonsoDS.Space.s2)
         }
     }
 

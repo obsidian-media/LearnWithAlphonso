@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "@/lib/learner-profile";
 import { MobileFrame } from "@/components/AppShell";
 import { GoalCard } from "@/components/GoalCard";
-import { COURSES } from "@/data/courses";
+import { COURSES } from "@/data/course-meta";
 import { saveGoal } from "@/lib/learning-goal-client";
 import { usePath } from "@/lib/learning-path-client";
 import {

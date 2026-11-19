@@ -373,15 +373,43 @@ final class EntitlementControllerTests: XCTestCase {
         XCTAssertFalse(mock.calls.contains("customerInfo"))
     }
 
+    /// Offline or during a RevenueCat outage a paying learner keeps Pro: a failed read is not an answer, as long
+    /// as RevenueCat still holds the account the last value was read for.
     @MainActor
-    func testARefreshErrorFailsClosed() async {
+    func testARefreshErrorKeepsTheLastKnownProForTheSameIdentity() async {
         let mock = MockPurchases()
         let controller = await signedInController(mock)
         mock.emit(pro)
         await waitUntil { controller.state.isPro }
+        XCTAssertEqual(mock.currentAppUserID(), "user-a")
+        mock.customerInfoResult = .failure(MockPurchasesError())
+        await controller.refresh()
+        XCTAssertTrue(controller.state.isPro)
+    }
+
+    /// The same error while RevenueCat holds another identity (or none) still fails closed.
+    @MainActor
+    func testARefreshErrorForAnotherIdentityFailsClosed() async {
+        let mock = MockPurchases()
+        let controller = await signedInController(mock)
+        mock.emit(pro)
+        await waitUntil { controller.state.isPro }
+        mock.appUserID = "$RCAnonymousID:other"
         mock.customerInfoResult = .failure(MockPurchasesError())
         await controller.refresh()
         XCTAssertFalse(controller.state.isPro)
+    }
+
+    @MainActor
+    func testARefreshErrorBeforeAnyLoginFailsClosed() async {
+        let mock = MockPurchases()
+        mock.restoreResult = .success(pro)
+        let controller = EntitlementController(provider: mock)
+        await controller.restore()
+        XCTAssertTrue(controller.state.isPro)
+        mock.customerInfoResult = .failure(MockPurchasesError())
+        await controller.refresh()
+        XCTAssertFalse(controller.state.isPro, "no expected account: nothing to keep it for")
     }
 
     // MARK: - Reset on sign-out
@@ -533,7 +561,7 @@ final class EntitlementControllerTests: XCTestCase {
         XCTAssertTrue(controller.state.isPro)
         let lifecycle = SessionLifecycle()
         let suite = "EntitlementControllerTests-" + UUID().uuidString
-        AccountDataCleanup.register(on: lifecycle, queue: InMemoryAccountQueue(),
+        AccountDataCleanup.register(on: lifecycle, queue: InMemoryAccountQueue(), retiringUserID: { "user-a" },
                                     caches: AccountLocalCaches(defaults: UserDefaults(suiteName: suite)!),
                                     clearWidget: {}, entitlements: controller)
 

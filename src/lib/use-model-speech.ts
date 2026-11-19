@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { localeForCourse, type Course } from "@/data/courses";
+import { localeForCourse, type Course } from "@/data/course-meta";
 import { authHeaders } from "./auth-headers";
 import { canSpeak, speak } from "./speech";
 import { voiceFor } from "./voice-prefs";
