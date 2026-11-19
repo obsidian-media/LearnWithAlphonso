@@ -85,14 +85,14 @@ describe("iOS Library tabs", () => {
     expect(root).toContain("case .listen, .stories: return .hidden");
   });
 
-  it("Listen keeps the rooms, level chips and the month stat; the other tabs do not draw them", () => {
+  it("Listen keeps the rooms and level chips (no month stat on iOS); the other tabs do not draw them", () => {
     const text = shelf();
     const root = text.slice(
       text.indexOf("struct ListenShelfRoot"),
       text.indexOf("struct WatchShelfHost"),
     );
     const listen = root.slice(root.indexOf("if tab == .listen {"));
-    expect(listen).toContain("ListenShelf.monthChip(seconds: monthSeconds)");
+    expect(listen).not.toContain("monthChip");
     expect(listen).toContain("LazyVGrid(");
     expect(listen).toContain("ListenShelfDetail(");
     expect(root.slice(0, root.indexOf("if tab == .listen {"))).not.toContain("LazyVGrid(");

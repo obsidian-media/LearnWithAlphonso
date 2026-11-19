@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -175,8 +176,9 @@ fun WatchShelfSection(
             if (peek && onSeeAll != null) {
                 Text(
                     "See all", color = ds.choice, fontWeight = FontWeight.Bold, style = FootnoteType,
-                    modifier = Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = Role.Button, onClick = onSeeAll)
-                        .clearAndSetSemantics { contentDescription = "See all videos"; role = Role.Button }.padding(horizontal = AlphonsoTokens.Space.s1),
+                    modifier = Modifier.clickable(role = Role.Button, onClick = onSeeAll)
+                        .clearAndSetSemantics { contentDescription = "See all videos"; role = Role.Button }
+                        .heightIn(min = AlphonsoTokens.Space.minTouch).wrapContentHeight(Alignment.CenterVertically).padding(horizontal = AlphonsoTokens.Space.s1),
                 )
             }
         }

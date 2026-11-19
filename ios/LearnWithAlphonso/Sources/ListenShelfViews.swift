@@ -67,6 +67,9 @@ struct ListenShelfRoot: View {
                     ContinueCard(target: target, player: player, downloads: downloads, networkMonitor: networkMonitor, queue: target.shelf.episodes)
                 }
 
+                // Everything under the Continue card sits on one solid surface (the studio scene stays behind the header
+                // only), so headings, "See all" and poster titles meet contrast.
+                VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
                 // One Watch host at one fixed place in the stack, so its player sheet and the path deep link survive a tab
                 // switch. It draws the peek on All, the full shelf on Watch, and only its loader and sheet elsewhere.
                 WatchShelfHost(session: session, player: player, course: activeCourse, presentation: watchPresentation,
@@ -87,16 +90,6 @@ struct ListenShelfRoot: View {
                 }
 
                 if tab == .listen {
-                    if let chip = ListenShelf.monthChip(seconds: monthSeconds) {
-                        Label(chip, systemImage: "timer")
-                            .dsText(.footnote)
-                            .foregroundStyle(ds.inkSoft)
-                            .padding(.horizontal, AlphonsoDS.Space.s4)
-                            .frame(minHeight: AlphonsoDS.Space.minTouch)
-                            .background(Capsule().fill(ds.card))
-                            .accessibilityElement(children: .combine)
-                    }
-
                     if !levels.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: AlphonsoDS.Space.s2) {
@@ -138,6 +131,12 @@ struct ListenShelfRoot: View {
                         }
                     }
                 }
+                }
+                .padding(AlphonsoDS.Space.s4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous).fill(ds.surface))
+                // Full width: the scene shows only behind the header, tabs and Continue card.
+                .padding(.horizontal, -AlphonsoDS.Space.s4)
             }
             .padding(AlphonsoDS.Space.s4)
         }
