@@ -89,6 +89,29 @@ function typesPushProblems(text: string): string[] {
     problems.push("more than one types-push step holds a secret");
   }
 
+  // The push itself: the branch name and sha come in through env (never interpolated into the script), a protected
+  // branch name is refused, a moved branch is left alone, and the job's own commit is never followed by another.
+  const pushStep = steps.find((s) => s.run?.includes("git push"));
+  const pushRun = pushStep?.run ?? "";
+  const env = JSON.stringify(pushStep?.env ?? {});
+  if (!env.includes('"HEAD_REF":"${{ github.event.pull_request.head.ref }}"')) {
+    problems.push("the push step does not take HEAD_REF from env");
+  }
+  if (!pushRun.includes('"$(git rev-parse HEAD)" != "$HEAD_SHA"')) {
+    problems.push("the push step does not check the branch has not moved");
+  }
+  if (!/case "\$HEAD_REF" in\s+main \| master \| release\*\)\s+[^;]*exit 1/.test(pushRun)) {
+    problems.push("the push step does not refuse main, master and release branches");
+  }
+  if (!pushRun.includes('"$(git log -1 --format=%s)" = "chore: regenerate supabase types"')) {
+    problems.push("the push step has no loop breaker for its own commit");
+  }
+  for (const name of ["types-gen", "types-push"]) {
+    for (const s of jobs[name]?.steps ?? []) {
+      if (s.run?.includes("${{")) problems.push(`${name} interpolates an expression inside run:`);
+    }
+  }
+
   // Neither job may gate a deploy.
   for (const [name, job] of Object.entries(jobs)) {
     for (const gated of ["types-gen", "types-push"]) {
@@ -147,6 +170,61 @@ describe("types-gen / types-push in the CI job graph", () => {
     expect(typesPushProblems(gating)).toEqual([
       expect.stringContaining("deploy-supabase waits for types-gen"),
     ]);
+  });
+
+  it("the check itself catches an interpolated branch, no branch defence, no moved-branch check, or no loop breaker", () => {
+    const interpolated = text.replace(
+      'git push origin "HEAD:refs/heads/$HEAD_REF"',
+      'git push origin "HEAD:refs/heads/${{ github.event.pull_request.head.ref }}"',
+    );
+    expect(interpolated).not.toBe(text);
+    expect(typesPushProblems(interpolated)).toEqual([
+      expect.stringContaining("types-push interpolates an expression inside run:"),
+    ]);
+
+    const anyBranch = text.replace("main | master | release*)", "never-a-branch)");
+    expect(anyBranch).not.toBe(text);
+    expect(typesPushProblems(anyBranch)).toEqual([
+      expect.stringContaining("refuse main, master and release"),
+    ]);
+
+    const noMovedCheck = text.replace('"$(git rev-parse HEAD)" != "$HEAD_SHA"', "false");
+    expect(noMovedCheck).not.toBe(text);
+    expect(typesPushProblems(noMovedCheck)).toEqual([expect.stringContaining("has not moved")]);
+
+    const loops = text.replace(
+      'if [ "$(git log -1 --format=%s)" = "chore: regenerate supabase types" ]; then',
+      "if false; then",
+    );
+    expect(loops).not.toBe(text);
+    expect(typesPushProblems(loops)).toEqual([expect.stringContaining("loop breaker")]);
+  });
+
+  it("types-gen regenerates whenever anything that shapes the generated file changes", () => {
+    const filter = (jobsOf(text)["types-gen"].steps ?? [])[1]?.run ?? "";
+    const pattern = filter.match(/grep -qE '([^']+)'/)?.[1];
+    expect(pattern).toBeDefined();
+    const shapes = new RegExp(pattern!);
+    for (const file of [
+      "supabase/migrations/20990101000000_x.sql",
+      "supabase/config.toml",
+      "src/integrations/supabase/types.ts",
+      "scripts/gen-supabase-types.sh",
+      ".github/workflows/ci.yml",
+      ".github/workflows/regenerate-supabase-types.yml",
+      ".prettierrc",
+      ".prettierignore",
+      "bun.lock",
+    ]) {
+      expect(shapes.test(file), file).toBe(true);
+    }
+    for (const file of [
+      "src/components/StoryReader.tsx",
+      "docs/operations.md",
+      "package.json.bak",
+    ]) {
+      expect(shapes.test(file), file).toBe(false);
+    }
   });
 });
 

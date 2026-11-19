@@ -187,13 +187,15 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
-      - name: Only when the PR touches migrations or the generated types
+      # Everything that can change the generated file's content or format: the schema, the file itself, the generator
+      # script and the workflows that pin the CLI, the Prettier config, and the lockfile (Prettier's version).
+      - name: Only when the PR touches the schema or anything that shapes the generated types
         run: |
           changed=$(git diff --name-only HEAD^1 HEAD)
-          if printf '%s\n' "$changed" | grep -qE '^(supabase/migrations/|supabase/config\.toml$|src/integrations/supabase/types\.ts$|\.github/workflows/ci\.yml$)'; then
-            echo "This PR touches the schema, the generated types or this workflow; regenerating."
+          if printf '%s\n' "$changed" | grep -qE '^(supabase/migrations/|supabase/config\.toml$|src/integrations/supabase/types\.ts$|scripts/gen-supabase-types\.sh$|\.github/workflows/(ci|regenerate-supabase-types)\.yml$|\.prettierrc|\.prettierignore$|prettier\.config\.|bun\.lock$)'; then
+            echo "This PR touches the schema or something that shapes the generated types; regenerating."
           else
-            echo "No migration or generated-types change in this PR; nothing to regenerate."
+            echo "Nothing in this PR can change the generated types; nothing to regenerate."
             echo "SKIP=1" >> "$GITHUB_ENV"
           fi
 
@@ -280,10 +282,23 @@ jobs:
 
       - name: Commit and push to the PR branch
         run: |
+          # The deploy key bypasses main's ruleset: never push to a protected branch name, whatever the PR's head is.
+          case "$HEAD_REF" in
+            main | master | release*)
+              echo "::error::Refusing to push generated types to $HEAD_REF."
+              exit 1
+              ;;
+          esac
           # A newer push to the PR has its own run; never overwrite it with this run's file.
           if [ "$(git rev-parse HEAD)" != "$HEAD_SHA" ]; then
             echo "The PR branch moved since this run started; the newer run regenerates."
             exit 0
+          fi
+          # Loop breaker: the head is already this job's own commit and the file is still stale, so the generator is
+          # not deterministic; pushing again would loop forever.
+          if [ "$(git log -1 --format=%s)" = "chore: regenerate supabase types" ]; then
+            echo "::error::The PR head is already a regenerated-types commit and the types are still stale: the generator output is not stable. Not pushing again."
+            exit 1
           fi
           cp "$RUNNER_TEMP/supabase-types/types.ts" src/integrations/supabase/types.ts
           git add src/integrations/supabase/types.ts
