@@ -105,6 +105,44 @@ class HandsFreeWiringTest {
     }
 
     @Test
+    fun `the stored choice starts hands-free only after the opener finished, in either order`() {
+        fun controller() = HandsFreeBinding.newController(HandsFreeLoop.Tuning.PRACTICE, press = {}, release = {}, cancel = {})
+        // Armed first, opener finishes later: nothing happens until then.
+        val a = controller()
+        val armedFirst = HandsFreeBinding.StoredStart(a) { false }
+        armedFirst.arm { true }
+        assertFalse(a.isOn)
+        armedFirst.openerFinished()
+        assertTrue(a.isOn)
+        // Opener finished first, armed later.
+        val b = controller()
+        val finishedFirst = HandsFreeBinding.StoredStart(b) { false }
+        finishedFirst.openerFinished()
+        assertFalse(b.isOn)
+        finishedFirst.arm { true }
+        assertTrue(b.isOn)
+        // A no, or a finished campaign, never starts it; and it is asked only once.
+        val c = controller()
+        HandsFreeBinding.StoredStart(c) { false }.also { it.arm { false }; it.openerFinished() }
+        assertFalse(c.isOn)
+        val d = controller()
+        HandsFreeBinding.StoredStart(d) { true }.also { it.arm { true }; it.openerFinished() }
+        assertFalse(d.isOn)
+    }
+
+    @Test
+    fun `a call view model asks the stored choice only after its opener has been played`() {
+        val s = server()
+        val log = java.util.Collections.synchronizedList(ArrayList<String>())
+        val vm = scenarioVm(s, CountingRecorder(), player = ReplyPlayer { log.add("play"); true })
+        vm.armAutoStartHandsFree { log.add("check"); true }
+        assertTrue(log.isEmpty())
+        vm.speakOpener()
+        awaitTrue("hands-free started", 25_000) { vm.handsFree.isOn }
+        assertEquals(listOf("play", "check"), log.toList())
+    }
+
+    @Test
     fun `hands-free is off when a call starts, on every screen, and Practice and Hector are tuned apart`() {
         val s = server()
         val scenario = scenarioVm(s, CountingRecorder())

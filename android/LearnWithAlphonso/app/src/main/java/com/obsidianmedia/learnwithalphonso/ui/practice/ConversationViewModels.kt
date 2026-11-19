@@ -83,11 +83,15 @@ abstract class BaseConversationViewModel(
     private var analysed = false
     /** The after-call recap (CallRecapUi.kt): started when the result arrives, one attempt per call. */
     val recap = CallRecapController(ai, viewModelScope)
+    /** The stored hands-free choice starts a call only after the opener has finished (never under it). */
+    private val storedStart = HandsFreeBinding.StoredStart(handsFree) { isCallOver }
+    override fun armAutoStartHandsFree(check: () -> Boolean) = storedStart.arm(check)
+
     // The opener being fetched or spoken; a press cancels it, which stops its playback.
     private val opener by lazy {
         OpenerSpeaker(
             viewModelScope, _state, { engine.phase.value == com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE },
-            player, openerCache, course.code,
+            player, openerCache, course.code, onFinished = { storedStart.openerFinished() },
         ) { text, voice -> ai.synthesizeSpeech(text, voice = voice, course = course.code) }
     }
 

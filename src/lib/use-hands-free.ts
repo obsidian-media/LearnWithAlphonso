@@ -7,6 +7,7 @@ import {
   type HandsFreeStatus,
   type HandsFreeTuning,
 } from "./hands-free-loop";
+import { HANDS_FREE_NOTE_SEEN_KEY } from "./hands-free-copy";
 import { readHandsFreePreference, writeHandsFreePreference } from "./hands-free-preference";
 import { useSpeechCapture } from "./use-speech-capture";
 import type { HandsFreeCall } from "@/components/HandsFreeSwitch";
@@ -22,6 +23,14 @@ export function handsFreeSupported(): boolean {
   if (typeof window === "undefined") return false;
   const w = window as unknown as { AudioContext?: unknown; webkitAudioContext?: unknown };
   return typeof (w.AudioContext ?? w.webkitAudioContext) === "function";
+}
+
+function noteConfirmed(): boolean {
+  try {
+    return window.localStorage.getItem(HANDS_FREE_NOTE_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 function audioContextClass(): typeof AudioContext | undefined {
@@ -273,7 +282,11 @@ export function useHandsFreeCapture({
   const onWantedChangeRef = useRef(onWantedChange);
   onWantedChangeRef.current = onWantedChange;
   useEffect(() => {
-    if (handsFreeSupported() && readHandsFreePreference()) onWantedChangeRef.current(true);
+    // Like iOS and Android: only once the safety note was confirmed, and never in a background tab.
+    if (document.hidden) return;
+    if (handsFreeSupported() && readHandsFreePreference() && noteConfirmed()) {
+      onWantedChangeRef.current(true);
+    }
   }, []);
   const reportRef = useRef<{ noWords: () => void; failed: () => void } | null>(null);
   const capture = useSpeechCapture({

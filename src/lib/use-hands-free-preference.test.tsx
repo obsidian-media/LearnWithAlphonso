@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { HECTOR_TUNING } from "./hands-free-loop";
+import { HANDS_FREE_NOTE_SEEN_KEY } from "./hands-free-copy";
 import { HANDS_FREE_PREFERENCE_KEY } from "./hands-free-preference";
 
 let micDenied: (() => void) | undefined;
@@ -54,10 +55,26 @@ describe("hands-free preference on a new call", () => {
     expect(onWantedChange).not.toHaveBeenCalled();
   });
 
-  it("turns on when the learner last left it on", () => {
+  it("turns on when the learner last left it on and has confirmed the note", () => {
     window.localStorage.setItem(HANDS_FREE_PREFERENCE_KEY, "1");
+    window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
     const { onWantedChange } = mount();
     expect(onWantedChange).toHaveBeenCalledWith(true);
+  });
+
+  it("never starts on before the safety note was confirmed", () => {
+    window.localStorage.setItem(HANDS_FREE_PREFERENCE_KEY, "1");
+    const { onWantedChange } = mount();
+    expect(onWantedChange).not.toHaveBeenCalled();
+  });
+
+  it("does not start in a background tab", () => {
+    window.localStorage.setItem(HANDS_FREE_PREFERENCE_KEY, "1");
+    window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
+    const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+    const { onWantedChange } = mount();
+    hidden.mockRestore();
+    expect(onWantedChange).not.toHaveBeenCalled();
   });
 
   it("stores the learner's switch for the next call", () => {
@@ -70,6 +87,7 @@ describe("hands-free preference on a new call", () => {
 
   it("falls back to hold-to-talk when the microphone is refused, keeping the stored choice", () => {
     window.localStorage.setItem(HANDS_FREE_PREFERENCE_KEY, "1");
+    window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
     const { onWantedChange } = mount();
     act(() => micDenied!());
     expect(onWantedChange).toHaveBeenLastCalledWith(false);

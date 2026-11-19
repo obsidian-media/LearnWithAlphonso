@@ -96,7 +96,7 @@ describe("legal pages share one 'Last updated' date", () => {
   });
 
   // Dated with the Pro terms, processors and immediate-start request (Cloudflare Turnstile, yearly plan).
-  it("is 18 November 2026", () => {
-    expect(pageText("/privacy")).toMatch(/Last updated 18 November 2026/);
+  it("is 19 November 2026", () => {
+    expect(pageText("/privacy")).toMatch(/Last updated 19 November 2026/);
   });
 });

@@ -16,17 +16,21 @@ internal class SharedPrefsHandsFreeStore(private val prefs: android.content.Shar
  * A new call starts with hands-free on when the learner last left it on and has already confirmed the safety note. It is
  * skipped when the call is already hands-free (a campaign carrying it to the next scene), when the campaign is over,
  * and when the microphone permission is not granted: that falls back to hold-to-talk, which asks on the first press,
- * instead of a prompt appearing under the opening line. Pause and the limits are the loop's, unchanged.
+ * instead of a prompt appearing under the opening line. It is also skipped when the app is not in the foreground. Pause and the limits are the loop's, unchanged.
  */
 @Composable
 internal fun ApplyStoredHandsFree(vm: CallConversation) {
     val context = LocalContext.current
+    val owner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     LaunchedEffect(Unit) {
-        val prefs = (context.applicationContext as? AlphonsoApplication)?.container?.prefs ?: return@LaunchedEffect
-        val granted = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) ==
-            android.content.pm.PackageManager.PERMISSION_GRANTED
-        if (HandsFreeBinding.shouldAutoStart(HandsFreePreference(SharedPrefsHandsFreeStore(prefs)).shouldStartOn, granted, vm.handsFree.isOn, vm.isCallOver)) {
-            vm.handsFree.enable()
+        // Asked by the view model once the opener has finished, so the order never depends on composition timing.
+        vm.armAutoStartHandsFree {
+            val prefs = (context.applicationContext as? AlphonsoApplication)?.container?.prefs
+            val granted = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+            val visible = owner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)
+            prefs != null && visible &&
+                HandsFreeBinding.shouldAutoStart(HandsFreePreference(SharedPrefsHandsFreeStore(prefs)).shouldStartOn, granted, vm.handsFree.isOn, vm.isCallOver)
         }
     }
 }

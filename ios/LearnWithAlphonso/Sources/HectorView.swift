@@ -61,6 +61,7 @@ private struct HectorConversationView: View {
     let onClose: (() -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.alphonsoDS) private var ds
     /// The safety note is shown once per device, before the first time hands-free is turned on.
     @AppStorage(HandsFreeCopy.noteSeenKey) private var handsFreeNoteSeen = false
@@ -104,7 +105,7 @@ private struct HectorConversationView: View {
         .task(id: openerCue) {
             guard openerCue > 0 else { return }
             await voice.speakOpener(conversation.pendingOpener, session: session, course: course, speaker: .hector)
-            voice.applyStoredHandsFreePreference()
+            voice.applyStoredHandsFreePreference(sceneActive: scenePhase == .active)
         }
         .aiDisclosureGate()
         // .notEntitled opens the paywall. The server's RevenueCat check

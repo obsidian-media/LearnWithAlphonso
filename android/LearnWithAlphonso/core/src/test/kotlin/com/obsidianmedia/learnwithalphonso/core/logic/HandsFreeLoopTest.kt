@@ -133,10 +133,20 @@ class HandsFreeLoopTest {
     }
 
     @Test
-    fun `warm-up readings before any audio are still ignored`() {
+    fun `warm-up readings before any audio are ignored for the grace period`() {
         val loop = recordingLoop()
-        assertEquals(emptyList<Effect>(), feed(loop, -160.0, 0.0, 40.0))
+        assertEquals(emptyList<Effect>(), feed(loop, -160.0, 0.0, 0.95))
         assertEquals(Status.Listening, loop.status)
+        feed(loop, -30.0, 0.95, 1.9)
+        feed(loop, -22.0, 1.9, 2.5)
+        assertEquals(Status.Listening, loop.status)
+    }
+
+    @Test
+    fun `a turn that is silent from the first frame still hits the no-speech pause`() {
+        val loop = recordingLoop()
+        assertEquals(listOf(Effect.CANCEL_TURN), feed(loop, -160.0, 0.0, 9.0))
+        assertEquals(Status.Paused(PauseReason.NO_SPEECH), loop.status)
     }
 
     @Test

@@ -36,6 +36,9 @@ public struct HandsFreeLoop: Equatable, Sendable {
         public var maxTurn: TimeInterval = 30
         /// Readings below this are the recorder warming up (it reports -160 before any audio), not the room.
         public var ignoreBelow: Double = -100
+        /// A turn whose readings are all below `ignoreBelow` for this long (a muted or noise-gated input from the first frame)
+        /// stops being warm-up and counts as quiet, so the no-speech pause still fires.
+        public var silentGrace: TimeInterval = 1.0
         /// Turns in a row without a touch before hands-free pauses.
         public var maxTurnsWithoutTouch = 20
 
@@ -106,6 +109,8 @@ public struct HandsFreeLoop: Equatable, Sendable {
     private var heardSpeech = false
     /// True once a real (above `ignoreBelow`) reading has arrived this turn; before that, sub-floor readings are warm-up.
     private var warmedUp = false
+    /// When the first reading of the turn arrived (real or not): the grace period for an all-silent input counts from it.
+    private var firstLevelAt: TimeInterval?
     private var turnEnding = false
     private var turnsWithoutTouch = 0
 
@@ -195,7 +200,13 @@ public struct HandsFreeLoop: Equatable, Sendable {
             // Sub-floor readings are the recorder warming up only until the first real reading. After that they are
             // digital silence (a noise-gated headset, a muted route): quiet, so the time checks must still run.
             let silent = !(dBFS >= tuning.ignoreBelow)
-            if silent && !warmedUp { return [] }
+            if firstLevelAt == nil { firstLevelAt = at }
+            if silent && !warmedUp {
+                // Warm-up is ignored for the grace period; an input that is still silent after it is a quiet turn
+                // that started with the first frame.
+                guard at - (firstLevelAt ?? at) >= tuning.silentGrace else { return [] }
+                turnStartedAt = firstLevelAt
+            }
             warmedUp = true
             if turnStartedAt == nil { turnStartedAt = at }
             let started = turnStartedAt ?? at
@@ -269,6 +280,7 @@ public struct HandsFreeLoop: Equatable, Sendable {
         lastLoudAt = nil
         heardSpeech = false
         warmedUp = false
+        firstLevelAt = null
         turnEnding = false
     }
 }

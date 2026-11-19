@@ -25,6 +25,8 @@ class OpenerSpeaker(
     private val player: ReplyPlayer,
     private val cache: OpenerSpeechCache,
     private val course: String,
+    /** The line has been said (or there was nothing to say): not called when it was stopped by a press or leaving. */
+    private val onFinished: () -> Unit = {},
     private val synthesize: suspend (text: String, voice: String?) -> ByteArray,
 ) {
     // The line being fetched or spoken. While it holds the phase (thinking or speaking), stopping it hands it back.
@@ -35,10 +37,12 @@ class OpenerSpeaker(
 
     /** `pending` is read again once the session is idle: a line the learner has answered by then is not said. */
     fun speak(pending: () -> String?, voice: () -> String?) {
-        if (pending() == null || active) return
+        if (pending() == null) { onFinished(); return }
+        if (active) return
         active = true
         val mine = ++token
         job = scope.launch {
+            var cancelled = false
             try {
                 state.first { it.phase == ConversationPhase.IDLE }
                 val text = pending() ?: return@launch
@@ -52,6 +56,7 @@ class OpenerSpeaker(
                 state.update { it.copy(phase = ConversationPhase.SPEAKING) }
                 player.play(audio)
             } catch (e: CancellationException) {
+                cancelled = true
                 throw e
             } catch (_: Exception) {
                 // The line is already on screen: a missing voice is not an error to show.
@@ -62,6 +67,7 @@ class OpenerSpeaker(
                     active = false
                     if (holdsPhase) state.update { it.copy(phase = ConversationPhase.IDLE) }
                     holdsPhase = false
+                    if (!cancelled) onFinished()
                 }
             }
         }

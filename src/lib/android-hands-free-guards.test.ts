@@ -54,6 +54,7 @@ describe("the Kotlin loop is the iOS loop, number for number", () => {
     ["noSpeechTimeout", "noSpeechTimeout"],
     ["maxTurn", "maxTurn"],
     ["ignoreBelow", "ignoreBelow"],
+    ["silentGrace", "silentGrace"],
     ["maxTurnsWithoutTouch", "maxTurnsWithoutTouch"],
   ];
   for (const [ios, android] of numbers) {

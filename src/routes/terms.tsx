@@ -25,7 +25,7 @@ export const Route = createFileRoute("/terms")({
 const CONTACT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
 const STANDARD_EULA = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
-const UPDATED = "18 November 2026"; // same on all four legal pages
+const UPDATED = "19 November 2026"; // same on all four legal pages
 
 function Terms() {
   return (

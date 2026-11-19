@@ -78,7 +78,7 @@ describe("the Hands-free switch is in both Practice entry points", () => {
     );
     // It is re-armed for the next scene's call, after the opener has been spoken.
     expect(campaign).toMatch(
-      /await voice\.speakOpener\([^)]*\)\s*if rearmHandsFree \{\s*rearmHandsFree = false\s*if !conversation\.finished \{ voice\.setHandsFree\(true\) \}(?: else if !conversation\.finished \{\s*voice\.applyStoredHandsFreePreference\(\)\s*\})?/,
+      /await voice\.speakOpener\([^)]*\)\s*if rearmHandsFree \{\s*rearmHandsFree = false\s*if !conversation\.finished \{ voice\.setHandsFree\(true\) \}(?: else if !conversation\.finished \{\s*voice\.applyStoredHandsFreePreference\(sceneActive: scenePhase == \.active\)\s*\})?/,
     );
     // Not across a finished campaign or a restarted scene; the flag is per view, so a new run starts off.
     expect(fn("CampaignView.swift", "continueToNextScene")).toMatch(
@@ -277,9 +277,15 @@ describe("the hands-free choice persists across calls (iOS)", () => {
     );
     for (const file of ["ConversationView.swift", "CampaignView.swift", "HectorView.swift"]) {
       expect(code(`${APP}/${file}`), file).toMatch(
-        /await voice\.speakOpener\([^)]*\)[\s\S]{0,260}voice\.applyStoredHandsFreePreference\(\)/,
+        /await voice\.speakOpener\([^)]*\)[\s\S]{0,260}voice\.applyStoredHandsFreePreference\(sceneActive: scenePhase == \.active\)/,
       );
     }
+  });
+
+  it("does not auto-start while the app is backgrounded", () => {
+    expect(code(`${APP}/VoiceSession.swift`)).toMatch(
+      /func applyStoredHandsFreePreference\(sceneActive: Bool\) \{[\s\S]*?guard sceneActive else \{ return \}/,
+    );
   });
 
   it("a refused microphone falls back to hold-to-talk", () => {

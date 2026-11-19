@@ -27,7 +27,7 @@ export const Route = createFileRoute("/privacy")({
 
 const SUPPORT = "support@alphonsoecosystem.app";
 const OPERATOR = "Shayan Salimi";
-const UPDATED = "18 November 2026"; // same date on all four legal pages
+const UPDATED = "19 November 2026"; // same date on all four legal pages
 
 function Privacy() {
   return (

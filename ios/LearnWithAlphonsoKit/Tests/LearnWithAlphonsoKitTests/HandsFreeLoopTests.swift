@@ -112,10 +112,21 @@ final class HandsFreeLoopTests: XCTestCase {
         XCTAssertEqual(loop.status, .paused(.noSpeech))
     }
 
-    func testWarmUpReadingsBeforeAnyAudioAreStillIgnored() {
+    func testWarmUpReadingsBeforeAnyAudioAreIgnoredForTheGracePeriod() {
         var loop = recordingLoop()
-        XCTAssertEqual(feed(&loop, level: -160, from: 0, to: 40), [], "warm-up never ends or cancels a turn")
+        XCTAssertEqual(feed(&loop, level: -160, from: 0, to: 0.95), [], "warm-up frames inside the grace period do nothing")
         XCTAssertEqual(loop.status, .listening)
+        // Real audio right after the warm-up is still a normal turn (the -160 frames were not the room).
+        feed(&loop, level: -30, from: 0.95, to: 1.9)
+        feed(&loop, level: -22, from: 1.9, to: 2.5)
+        XCTAssertEqual(loop.status, .listening)
+    }
+
+    func testATurnThatIsSilentFromTheFirstFrameStillHitsTheNoSpeechPause() {
+        var loop = recordingLoop()
+        let effects = feed(&loop, level: -160, from: 0, to: 9)
+        XCTAssertEqual(effects, [.cancelTurn], "all-silent: counted as quiet after the grace, 8 s from the first frame")
+        XCTAssertEqual(loop.status, .paused(.noSpeech))
     }
 
     func testAnEmptyTranscriptPausesInsteadOfListeningAgain() {

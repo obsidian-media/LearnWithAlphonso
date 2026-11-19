@@ -116,9 +116,12 @@ final class VoiceSessionController {
     /// Starts hands-free on a new call when the learner last left it on (and has already read the safety note).
     /// Called once the opening line has been spoken, so the microphone does not open under it. If the microphone
     /// turns out to be refused, it falls back to hold-to-talk for this call and the stored choice is kept.
-    func applyStoredHandsFreePreference() {
+    /// `sceneActive` is false when the app is backgrounded (a locked phone, another app in front): the call then stays
+    /// hold-to-talk rather than opening a microphone nobody is looking at.
+    func applyStoredHandsFreePreference(sceneActive: Bool) {
         guard !storedPreferenceApplied, !isHandsFreeOn else { return }
         storedPreferenceApplied = true
+        guard sceneActive else { return }
         guard HandsFreePreference().shouldStartOn, !state.microphoneUnavailable else { return }
         autoStartedHandsFree = true
         setHandsFree(true)
