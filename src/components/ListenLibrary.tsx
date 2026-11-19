@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type KeyboardEvent } from "react";
 import { useProgress } from "../lib/progress";
 import { mascotArt } from "../lib/mascot-poses";
 import { AI_NARRATED_LABEL } from "../lib/podcast-label";
@@ -20,7 +20,10 @@ import type { PodcastLibrary } from "../lib/podcast.functions";
 import { slugPathFor } from "../lib/podcast-tree";
 import { PodcastQuizLauncher } from "./PodcastQuizLauncher";
 import { WatchShelf } from "./WatchShelf";
-import type { LibraryVideo } from "../lib/video-library";
+import { StoriesLibraryView, StoriesPeek } from "./StoriesLibrary";
+import { DsEmptyState } from "./ds/Blocks";
+import type { StorySummary } from "../lib/stories";
+import { watchShelf, type LibraryVideo } from "../lib/video-library";
 
 const COURSES: { id: Course; label: string }[] = [
   { id: "en", label: "English" },
@@ -65,9 +68,83 @@ function shelfLink(library: PodcastLibrary, shelf: Shelf) {
 
 const plural = (n: number) => `${n} ${n === 1 ? "episode" : "episodes"}`;
 
+export type LibraryTab = "all" | "listen" | "watch" | "stories";
+
+const LIBRARY_TABS: { id: LibraryTab; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "listen", label: "Listen" },
+  { id: "watch", label: "Watch" },
+  { id: "stories", label: "Stories" },
+];
+
+/** The studio art for the Continue card: one square picture, centre-cropped by `object-cover`. */
+export const CONTINUE_ART = "/library/continue-studio.webp";
+
 /**
- * The Library home: continue-listening card, course switch, the Watch shelf of Alphonso videos, level chips, and a painted
- * room per folder. `videos` is undefined while they load (nothing drawn); an empty or all-other-course list draws no shelf.
+ * The sub-tab picked this session. It survives leaving the Library and coming back (a podcast folder, the player),
+ * and is forgotten when the app reloads: "at most per session", and a fresh launch always starts on All.
+ */
+let sessionTab: LibraryTab = "all";
+
+/** Test seam: back to a fresh launch. */
+export function resetLibrarySessionTab() {
+  sessionTab = "all";
+}
+
+/** The sub-tab control: a real tablist (selected state announced), arrow keys move, Home/End jump. */
+function LibraryTabs({ tab, onChange }: { tab: LibraryTab; onChange: (tab: LibraryTab) => void }) {
+  const move = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const last = LIBRARY_TABS.length - 1;
+    const next =
+      event.key === "ArrowRight"
+        ? index === last
+          ? 0
+          : index + 1
+        : event.key === "ArrowLeft"
+          ? index === 0
+            ? last
+            : index - 1
+          : event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? last
+              : null;
+    if (next === null) return;
+    event.preventDefault();
+    onChange(LIBRARY_TABS[next]!.id);
+    document.getElementById(`library-tab-${LIBRARY_TABS[next]!.id}`)?.focus();
+  };
+  return (
+    <div role="tablist" aria-label="Library sections" className="flex flex-wrap gap-2">
+      {LIBRARY_TABS.map((t, i) => {
+        const on = tab === t.id;
+        return (
+          <button
+            key={t.id}
+            id={`library-tab-${t.id}`}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            aria-controls="library-panel"
+            tabIndex={on ? 0 : -1}
+            onClick={() => onChange(t.id)}
+            onKeyDown={(event) => move(event, i)}
+            className={`min-h-11 rounded-[14px] border-2 border-b-4 px-4 text-sm font-extrabold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice ${on ? "border-ds-choice bg-ds-choice-tint text-ds-choice" : "border-ds-line bg-ds-card text-ds-brand"}`}
+          >
+            {t.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * The Library home, under four sub-tabs. All: a Continue card plus a one-row peek of Watch and of Stories, each with
+ * "See all" (which switches tab). Listen: the course's painted rooms, level chips and the month stat. Watch and
+ * Stories: the focused screens. `videos` and `stories` are undefined while they load (nothing drawn / "Loading"); an
+ * empty or all-other-course list draws no shelf. The Continue card resumes `continueListening` (the most recently
+ * touched episode still in progress, else the next new one in that series).
  */
 export function ListenLibraryView({
   library,
@@ -75,16 +152,33 @@ export function ListenLibraryView({
   videosFailed = false,
   onRetryVideos,
   onOpenVideo,
+  stories,
+  storiesFailed = false,
+  onRetryStories,
+  onCourseChange,
+  initialTab,
 }: {
   library: PodcastLibrary;
   videos?: readonly LibraryVideo[];
   videosFailed?: boolean;
   onRetryVideos?: () => void;
   onOpenVideo?: (video: LibraryVideo) => void;
+  stories?: StorySummary[];
+  storiesFailed?: boolean;
+  onRetryStories?: () => void;
+  /** The learner switched course here; the stories read follows it. */
+  onCourseChange?: (course: Course) => void;
+  /** Overrides the remembered sub-tab (tests, deep links). */
+  initialTab?: LibraryTab;
 }) {
   const activeCourse = useProgress((s) => s.course);
   const [course, setCourse] = useState<Course>(activeCourse);
   const [level, setLevel] = useState<string | null>(null);
+  const [tab, setTabState] = useState<LibraryTab>(initialTab ?? sessionTab);
+  const setTab = (next: LibraryTab) => {
+    sessionTab = next;
+    setTabState(next);
+  };
   const play = usePodcastPlayer((s) => s.play);
 
   const shelves = useMemo(
@@ -96,17 +190,45 @@ export function ListenLibraryView({
     level && levels.includes(level) ? shelves.filter((s) => s.level === level) : shelves;
   const cont = continueListening(shelves, library.progress);
   const contFull = cont ? library.episodes.find((e) => e.id === cont.episode.id) : undefined;
-  const alphonso = mascotArt("learnGreeting").src;
+
+  const videosError = (
+    <div
+      data-surface
+      role="alert"
+      className="flex items-center justify-between gap-3 rounded-2xl border border-ds-line bg-ds-card px-4 py-3"
+    >
+      <p className="text-sm font-semibold text-ds-ink">We couldn&apos;t load the videos.</p>
+      <button
+        type="button"
+        onClick={onRetryVideos}
+        className="min-h-11 rounded-full border border-ds-line px-3 text-sm font-bold text-ds-ink"
+      >
+        Try again
+      </button>
+    </div>
+  );
+
+  const storiesError = (
+    <div
+      data-surface
+      role="alert"
+      className="flex items-center justify-between gap-3 rounded-2xl border border-ds-line bg-ds-card px-4 py-3"
+    >
+      <p className="text-sm font-semibold text-ds-ink">We couldn&apos;t load the stories.</p>
+      <button
+        type="button"
+        onClick={onRetryStories}
+        className="min-h-11 rounded-full border border-ds-line px-3 text-sm font-bold text-ds-ink"
+      >
+        Try again
+      </button>
+    </div>
+  );
 
   return (
     <div className="grid gap-3 px-5 pb-6 pt-4" data-testid="listen-library">
       <div className="flex items-center justify-between gap-2">
         <h1 className="font-display text-3xl font-extrabold text-ds-ink">Library</h1>
-        {library.monthSeconds >= 60 ? (
-          <span className="rounded-full border border-ds-line bg-ds-card px-3 py-1 text-xs font-bold text-ds-ink-soft">
-            ⏱ {hoursMinutes(library.monthSeconds)} this month
-          </span>
-        ) : null}
       </div>
 
       <div
@@ -122,6 +244,7 @@ export function ListenLibraryView({
             onClick={() => {
               setCourse(c.id);
               setLevel(null);
+              onCourseChange?.(c.id);
             }}
             className={`min-h-11 rounded-xl px-2 text-sm font-bold ${course === c.id ? "bg-ds-card text-ds-ink shadow-sm" : "text-ds-ink-soft"}`}
           >
@@ -130,124 +253,205 @@ export function ListenLibraryView({
         ))}
       </div>
 
-      {cont && contFull ? (
-        <button
-          type="button"
-          onClick={() => play(contFull)}
-          aria-label={`Continue listening: ${cont.episode.title}, ${clock(secondsLeft(cont.episode, cont.progress))} left`}
-          className="relative h-44 w-full overflow-hidden rounded-3xl border-2 border-ds-xp bg-cover bg-center text-left"
-          style={{ backgroundImage: `url(${roomArt(cont.shelf.room)})` }}
-        >
-          <span className="absolute inset-0 bg-gradient-to-t from-ds-hero/90 via-ds-hero/35 to-ds-hero/40" />
-          <img src={alphonso} alt="" className="absolute -right-3 bottom-0 w-32" />
-          <span className="absolute left-4 top-3.5 text-xs font-extrabold tracking-wider text-ds-on-hero-kick">
-            CONTINUE LISTENING
-          </span>
-          <span className="absolute bottom-3.5 left-4 right-32 text-ds-on-hero">
-            <span className="block font-display text-xl font-extrabold leading-tight">
-              {cont.episode.title}
-            </span>
-            <span className="mb-2 mt-1 block text-xs font-semibold text-ds-on-hero-soft">
-              {[
-                cont.shelf.level,
-                `Episode ${cont.shelf.episodes.indexOf(cont.episode) + 1}`,
-                cont.progress
-                  ? `${clock(secondsLeft(cont.episode, cont.progress))} left`
-                  : clock(cont.episode.durationSeconds),
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </span>
-            <Bar
-              fraction={episodeFraction(cont.episode, cont.progress)}
-              onHero
-              label="Episode progress"
-            />
-          </span>
-        </button>
-      ) : null}
+      <LibraryTabs tab={tab} onChange={setTab} />
 
-      {videosFailed ? (
-        <div
-          data-surface
-          role="alert"
-          className="flex items-center justify-between gap-3 rounded-2xl border border-ds-line bg-ds-card px-4 py-3"
-        >
-          <p className="text-sm font-semibold text-ds-ink">We couldn&apos;t load the videos.</p>
-          <button
-            type="button"
-            onClick={onRetryVideos}
-            className="min-h-11 rounded-full border border-ds-line px-3 text-sm font-bold text-ds-ink"
-          >
-            Try again
-          </button>
-        </div>
-      ) : videos ? (
-        <WatchShelf videos={videos} course={course} onOpen={(v) => onOpenVideo?.(v)} />
-      ) : null}
-
-      {levels.length > 0 ? (
-        <div role="group" aria-label="Level" className="flex flex-wrap gap-2">
-          {[null, ...levels].map((l) => (
-            <button
-              key={l ?? "all"}
-              type="button"
-              aria-pressed={level === l}
-              onClick={() => setLevel(l)}
-              className={`min-h-9 rounded-full border px-3 text-xs font-extrabold ${level === l ? "border-ds-action bg-ds-action text-ds-on-action" : "border-ds-line bg-ds-card text-ds-ink-soft"}`}
-            >
-              {l ?? "All"}
-            </button>
-          ))}
-        </div>
-      ) : null}
-
-      {shown.length === 0 ? (
-        <div
-          data-surface
-          className="flex flex-col items-center gap-3 rounded-3xl border border-ds-line bg-ds-card p-6 text-center"
-        >
-          <img
-            src={mascotArt("emptyState").src}
-            alt="Alphonso"
-            className="size-28 object-contain"
-          />
-          <p className="text-sm font-semibold text-ds-ink">
-            {library.episodes.length === 0
-              ? "Nothing here yet. New episodes appear as they are published."
-              : `No ${COURSES.find((c) => c.id === course)!.label} episodes${level ? ` at ${level}` : ""} yet.`}
-          </p>
-        </div>
-      ) : (
-        <ul className="grid grid-cols-2 gap-2.5">
-          {shown.map((shelf) => (
-            <li key={shelf.folder.id}>
-              <Link
-                {...shelfLink(library, shelf)}
-                aria-label={`${shelf.folder.title}, ${shelf.level ?? "all levels"}, ${plural(shelf.episodes.length)}, ${shelf.percent === 100 ? "finished" : `${shelf.percent} percent done`}`}
-                className="relative block h-32 overflow-hidden rounded-[20px] border-2 border-ds-line bg-cover bg-center"
-                style={{ backgroundImage: `url(${roomArt(shelf.room)})` }}
+      <div
+        role="tabpanel"
+        id="library-panel"
+        aria-labelledby={`library-tab-${tab}`}
+        className="grid gap-3"
+      >
+        {tab === "all" ? (
+          <>
+            {cont && contFull ? (
+              <button
+                type="button"
+                onClick={() => play(contFull)}
+                aria-label={`Continue ${cont.shelf.folder.title}, episode ${cont.shelf.episodes.indexOf(cont.episode) + 1} of ${cont.shelf.episodes.length}: ${cont.episode.title}, ${cont.progress ? `${clock(secondsLeft(cont.episode, cont.progress))} left` : clock(cont.episode.durationSeconds)}`}
+                data-testid="continue-card"
+                className="relative block min-h-52 w-full overflow-hidden rounded-[22px] bg-ds-hero text-left shadow-lg"
               >
-                <span className="absolute inset-0 bg-gradient-to-t from-ds-hero/85 via-ds-hero/20 to-transparent" />
-                {shelf.level ? (
-                  <span className="absolute left-2 top-2 rounded-full bg-ds-card px-2 py-0.5 text-xs font-extrabold text-ds-ink">
-                    {shelf.level}
-                  </span>
-                ) : null}
-                <span className="absolute inset-x-3 bottom-2 text-ds-on-hero">
-                  <span className="block truncate font-display text-base font-extrabold">
-                    {shelf.folder.title}
-                  </span>
-                  <span className="block text-xs font-bold text-ds-on-hero-soft">
-                    {plural(shelf.episodes.length)} ·{" "}
-                    {shelf.percent === 100 ? "finished ✓" : `${shelf.percent}%`}
-                  </span>
+                <img
+                  src={CONTINUE_ART}
+                  alt=""
+                  className="absolute inset-0 size-full object-cover object-center"
+                />
+                <span className="absolute inset-0 bg-gradient-to-t from-ds-hero/95 via-ds-hero/40 to-transparent" />
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-3.5 right-3.5 grid size-12 place-items-center rounded-full bg-ds-action text-ds-on-action shadow-[0_4px_0_#B07A12]"
+                >
+                  <svg viewBox="0 0 24 24" className="ml-0.5 size-5">
+                    <path
+                      d="M8 5.6v12.8a1 1 0 0 0 1.5.86l10.2-6.4a1 1 0 0 0 0-1.72L9.5 4.74A1 1 0 0 0 8 5.6Z"
+                      fill="currentColor"
+                    />
+                  </svg>
                 </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+                <span className="absolute bottom-0 left-0 right-20 block px-4 pb-3.5 text-ds-on-hero">
+                  <span className="block text-xs font-extrabold uppercase tracking-wider text-ds-on-hero-kick">
+                    Continue listening
+                  </span>
+                  <span className="mt-1 block font-display text-xl font-extrabold leading-tight">
+                    {cont.episode.title}
+                  </span>
+                  <span className="mb-2 mt-1 block text-xs font-semibold text-ds-on-hero-soft">
+                    {[
+                      `Episode ${cont.shelf.episodes.indexOf(cont.episode) + 1} of ${cont.shelf.episodes.length}`,
+                      cont.progress
+                        ? `${clock(secondsLeft(cont.episode, cont.progress))} left`
+                        : clock(cont.episode.durationSeconds),
+                    ].join(" · ")}
+                  </span>
+                  <Bar
+                    fraction={episodeFraction(cont.episode, cont.progress)}
+                    onHero
+                    label="Episode progress"
+                  />
+                </span>
+              </button>
+            ) : null}
+
+            {videosFailed ? (
+              videosError
+            ) : videos ? (
+              <WatchShelf
+                videos={videos}
+                course={course}
+                variant="peek"
+                onOpen={(v) => onOpenVideo?.(v)}
+                onSeeAll={() => setTab("watch")}
+              />
+            ) : null}
+
+            {storiesFailed ? (
+              storiesError
+            ) : stories ? (
+              <StoriesPeek stories={stories} course={course} onSeeAll={() => setTab("stories")} />
+            ) : null}
+
+            {!cont &&
+            !videosFailed &&
+            !storiesFailed &&
+            library.episodes.length === 0 &&
+            (videos?.length ?? 0) === 0 &&
+            (stories?.length ?? 0) === 0 ? (
+              <DsEmptyState
+                art={mascotArt("emptyState").src}
+                title="Nothing here yet"
+                message="New episodes, videos and stories appear as they are published."
+              />
+            ) : null}
+          </>
+        ) : null}
+
+        {tab === "listen" ? (
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              {levels.length > 0 ? (
+                <div role="group" aria-label="Level" className="flex flex-wrap gap-2">
+                  {[null, ...levels].map((l) => (
+                    <button
+                      key={l ?? "all"}
+                      type="button"
+                      aria-pressed={level === l}
+                      onClick={() => setLevel(l)}
+                      className={`min-h-11 rounded-[14px] border-2 border-b-4 px-3 text-xs font-extrabold ${level === l ? "border-ds-choice bg-ds-choice-tint text-ds-choice" : "border-ds-line bg-ds-card text-ds-brand"}`}
+                    >
+                      {l ?? "All"}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              {library.monthSeconds >= 60 ? (
+                <span className="rounded-full border border-ds-line bg-ds-card px-3 py-1 text-xs font-bold text-ds-ink-soft">
+                  ⏱ {hoursMinutes(library.monthSeconds)} this month
+                </span>
+              ) : null}
+            </div>
+
+            {shown.length === 0 ? (
+              <div
+                data-surface
+                className="flex flex-col items-center gap-3 rounded-3xl border border-ds-line bg-ds-card p-6 text-center"
+              >
+                <img
+                  src={mascotArt("emptyState").src}
+                  alt="Alphonso"
+                  className="size-28 object-contain"
+                />
+                <p className="text-sm font-semibold text-ds-ink">
+                  {library.episodes.length === 0
+                    ? "Nothing here yet. New episodes appear as they are published."
+                    : `No ${COURSES.find((c) => c.id === course)!.label} episodes${level ? ` at ${level}` : ""} yet.`}
+                </p>
+              </div>
+            ) : (
+              <ul className="grid grid-cols-2 gap-2.5">
+                {shown.map((shelf) => (
+                  <li key={shelf.folder.id}>
+                    <Link
+                      {...shelfLink(library, shelf)}
+                      aria-label={`${shelf.folder.title}, ${shelf.level ?? "all levels"}, ${plural(shelf.episodes.length)}, ${shelf.percent === 100 ? "finished" : `${shelf.percent} percent done`}`}
+                      className="relative block h-32 overflow-hidden rounded-[20px] border-2 border-ds-line bg-cover bg-center"
+                      style={{ backgroundImage: `url(${roomArt(shelf.room)})` }}
+                    >
+                      <span className="absolute inset-0 bg-gradient-to-t from-ds-hero/85 via-ds-hero/20 to-transparent" />
+                      {shelf.level ? (
+                        <span className="absolute left-2 top-2 rounded-full bg-ds-card px-2 py-0.5 text-xs font-extrabold text-ds-ink">
+                          {shelf.level}
+                        </span>
+                      ) : null}
+                      <span className="absolute inset-x-3 bottom-2 text-ds-on-hero">
+                        <span className="block truncate font-display text-base font-extrabold">
+                          {shelf.folder.title}
+                        </span>
+                        <span className="block text-xs font-bold text-ds-on-hero-soft">
+                          {plural(shelf.episodes.length)} ·{" "}
+                          {shelf.percent === 100 ? "finished ✓" : `${shelf.percent}%`}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : null}
+
+        {tab === "watch" ? (
+          videosFailed ? (
+            videosError
+          ) : videos ? (
+            watchShelf(videos, course).length === 0 ? (
+              <DsEmptyState
+                art={mascotArt("emptyState").src}
+                title="No videos yet"
+                message="Alphonso videos appear here as they are published."
+              />
+            ) : (
+              <WatchShelf
+                videos={videos}
+                course={course}
+                variant="full"
+                onOpen={(v) => onOpenVideo?.(v)}
+              />
+            )
+          ) : (
+            <p className="text-sm text-ds-ink-soft">Loading…</p>
+          )
+        ) : null}
+
+        {tab === "stories" ? (
+          storiesFailed ? (
+            storiesError
+          ) : stories ? (
+            <StoriesLibraryView stories={stories} course={course} />
+          ) : (
+            <p className="text-sm text-ds-ink-soft">Loading…</p>
+          )
+        ) : null}
+      </div>
     </div>
   );
 }

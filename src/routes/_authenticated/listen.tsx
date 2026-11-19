@@ -13,6 +13,8 @@ import { ListenLibraryView, ListenShelfView } from "../../components/ListenLibra
 import { VideoPlayerSheet } from "../../components/VideoPlayerSheet";
 import { listVideos, saveVideoProgress } from "../../lib/video.functions";
 import type { LibraryVideo } from "../../lib/video-library";
+import { listStories } from "../../lib/stories.functions";
+import { useProgress } from "../../lib/progress";
 import { Icon3D } from "../../components/Icon3D";
 import { PodcastQuizLauncher } from "../../components/PodcastQuizLauncher";
 import { fetchQuizEpisodeIds } from "../../lib/podcast-quiz.functions";
@@ -277,6 +279,16 @@ export function ListenBrowser({
   // Videos are their own read: a failure shows the shelf's own error line and never blocks the podcasts.
   const videosQuery = useQuery({ queryKey: ["videos"], queryFn: () => listVideos() });
   const videos = videosQuery.data;
+  // Stories follow the course on screen (the Library course switch), like the videos shelf. A failed read shows the
+  // Stories sections' own error line and never blocks the podcasts.
+  const activeCourse = useProgress((state) => state.course);
+  const [storiesCourse, setStoriesCourse] = useState<string>(activeCourse);
+  const storiesQuery = useQuery({
+    queryKey: ["stories", storiesCourse],
+    queryFn: () => listStories({ data: { course: storiesCourse } }),
+    enabled: segments.length === 0,
+    retry: false,
+  });
   const [watching, setWatching] = useState<string | null>(openVideoId ?? null);
   // A deep link followed while this page is mounted (/listen?video=x) reopens the player.
   useEffect(() => {
@@ -356,27 +368,16 @@ export function ListenBrowser({
         <PodcastSearchResults query={query} results={searchResults ?? []} isLoading={isSearching} />
       ) : segments.length === 0 ? (
         <>
-          <div className="relative z-10 px-5 pt-3">
-            <Link
-              to="/stories"
-              className="card-lift flex items-center gap-3 rounded-3xl bg-ds-card/95 px-4 py-3 backdrop-blur-md"
-            >
-              <Icon3D emoji="📚" size={30} />
-              <span className="min-w-0 flex-1">
-                <span className="block font-display text-base font-bold text-ds-ink">Stories</span>
-                <span className="block text-xs text-ds-ink-soft">Read along, level by level</span>
-              </span>
-              <span aria-hidden="true" className="text-ds-ink-soft/50">
-                →
-              </span>
-            </Link>
-          </div>
           <ListenLibraryView
             library={library}
             videos={videos}
             videosFailed={videosQuery.isError}
             onRetryVideos={() => void videosQuery.refetch()}
             onOpenVideo={(v) => setWatching(v.id)}
+            stories={storiesQuery.data}
+            storiesFailed={storiesQuery.isError}
+            onRetryStories={() => void storiesQuery.refetch()}
+            onCourseChange={setStoriesCourse}
           />
         </>
       ) : shelf ? (
