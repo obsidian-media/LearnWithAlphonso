@@ -214,8 +214,8 @@ fun StoryReaderScreen(container: AppContainer, storyId: String, onBack: () -> Un
 /**
  * Reads a story one sentence at a time, handing the highlight from sentence to sentence as each one ends. A sentence with a
  * pre-recorded file (StoryRecordings, made by scripts/story-audio.ts) just plays it: no /api/tts call, no AI quota, no AI
- * consent. Only a sentence with no recording (or whose file will not download) falls back to the live /api/tts voice (the
- * learner's chosen Alphonso voice), which keeps today's consent and quota. The next sentence is fetched while the current
+ * consent. Only a sentence with no recording (or whose file will not download or play) falls back to the live /api/tts voice
+ * (the learner's chosen Alphonso voice), which keeps today's consent and quota. The next sentence is fetched while the current
  * one plays. Sentence-level highlight is v1, like the web. [scope] is the screen's, so leaving the story stops the narration.
  */
 internal class StoryNarrator(
@@ -228,7 +228,7 @@ internal class StoryNarrator(
     val state: StateFlow<StoryNarration> = _state.asStateFlow()
     private var job: Job? = null
     /** A failed fetch is a value, not an exception: a prefetch nobody awaits must not cancel the screen's scope. */
-    private val cache = HashMap<Int, Deferred<Result<ByteArray>>>()
+    private val cache = HashMap<Int, Deferred<Result<NarrationAudio>>>()
     private var recordings: StoryRecordings? = null
     private var recordingsLoaded = false
     /** Set by [begin]: whether a sentence with no recording may use the live voice (AI speech is on). */
@@ -262,7 +262,10 @@ internal class StoryNarrator(
                 val played = try {
                     val audio = audioFor(current).await().getOrThrow()
                     if (ahead != null) audioFor(ahead)
-                    playback.play(audio)
+                    playback.play(audio.bytes) ||
+                        // A recording that will not play (an unreadable file) falls back to live speech for this sentence.
+                        (StoryRecordings.speakLiveAfterPlayFailure(audio.recorded, liveSpeechAllowed) &&
+                            playback.play(audioFor(current, live = true).await().getOrThrow().bytes))
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
@@ -288,20 +291,32 @@ internal class StoryNarrator(
     /** Narration cannot start without AI speech turned on; the text stays readable. */
     fun markUnavailable() { _state.value = _state.value.fail() }
 
-    private fun audioFor(index: Int): Deferred<Result<ByteArray>> = cache.getOrPut(index) {
-        scope.async {
+    /** [live] skips the recording (its file would not play) and asks the live voice, replacing the cached audio. */
+    private fun audioFor(index: Int, live: Boolean = false): Deferred<Result<NarrationAudio>> {
+        if (!live) cache[index]?.let { return it }
+        return scope.async {
             runCatching {
                 // The recording first: a plain public file, nothing to authorise or pay for.
-                recordings?.pathFor(story.segments[index])?.let { path -> container.storyRecordings.audio(path)?.let { return@runCatching it } }
+                if (!live) {
+                    recordings?.pathFor(story.segments[index])?.let { path ->
+                        container.storyRecordings.audio(path)?.let { return@runCatching NarrationAudio(it, recorded = true) }
+                    }
+                }
                 check(liveSpeechAllowed) { "live narration needs AI consent" }
-                container.aiClient.synthesizeSpeech(
-                    story.segments[index],
-                    voice = container.voicePrefs.voice(VoiceCharacter.Alphonso, story.course),
-                    course = story.course,
+                NarrationAudio(
+                    container.aiClient.synthesizeSpeech(
+                        story.segments[index],
+                        voice = container.voicePrefs.voice(VoiceCharacter.Alphonso, story.course),
+                        course = story.course,
+                    ),
+                    recorded = false,
                 )
             }
-        }
+        }.also { cache[index] = it }
     }
+
+    /** A sentence's audio and whether it is the recording (so a file that will not play can fall back to live speech). */
+    private class NarrationAudio(val bytes: ByteArray, val recorded: Boolean)
 }
 
 @Composable

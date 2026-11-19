@@ -247,13 +247,13 @@ export const MORE_CAMPAIGNS: Campaign[] = [
           es: "Pedir una cita por teléfono",
         },
         persona: {
-          en: "Maya, the clinic receptionist",
+          en: "Imani, the clinic receptionist",
           fr: "Nadia, la secrétaire du cabinet",
           es: "Rosa, la recepcionista del consultorio",
         },
         systemPrompt: {
           en: en(
-            `You are Maya, the receptionist at a small family clinic, answering the phone. ${NO_MEDICAL_EN} You only handle the booking: offer two possible days and times, then ask only for a first name (the learner may invent one) and repeat the appointment back. Never ask for a surname, a phone number, an address or any other contact details; say you already have the number the call came from. Speak clearly and a little slowly.`,
+            `You are Imani, the receptionist at a small family clinic, answering the phone. ${NO_MEDICAL_EN} You only handle the booking: offer two possible days and times, then ask only for a first name (the learner may invent one) and repeat the appointment back. Never ask for a surname, a phone number, an address or any other contact details; say you already have the number the call came from. Speak clearly and a little slowly.`,
             "ask for an appointment, choose one of the offered days and times, give a first name, and confirm the appointment.",
           ),
           fr: fr(
@@ -268,7 +268,7 @@ export const MORE_CAMPAIGNS: Campaign[] = [
           ),
         },
         opener: {
-          en: "Good morning, Riverside Family Clinic, this is Maya. How can I help you?",
+          en: "Good morning, Riverside Family Clinic, this is Imani. How can I help you?",
           fr: "Cabinet médical des Quinconces, bonjour. Que puis-je faire pour vous ?",
           es: "Consultorio Familiar Miraflores, buenos días. ¿En qué le puedo ayudar?",
         },
