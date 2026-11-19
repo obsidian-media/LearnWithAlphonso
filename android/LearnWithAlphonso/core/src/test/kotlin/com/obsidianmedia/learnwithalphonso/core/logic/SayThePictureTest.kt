@@ -189,4 +189,54 @@ class SayThePictureTest {
         assertTrue(bodies[0].contains("es"))
         assertEquals("""{"text":"perro","course":"es"}""", bodies[1])
     }
+
+    // ---- Tier 1 derived state ----
+
+    @Test
+    fun `results combo and missed words follow the session`() {
+        var s = SayPictureSession(words(5))
+        s = s.submit("word0", Course.ENGLISH).first.next()
+        s = s.submit("word1", Course.ENGLISH).first
+        assertEquals(2, s.combo)
+        s = s.next().submit("zzz", Course.ENGLISH).first
+        assertEquals(0, s.combo)
+        s = s.next().showWord()
+        s = s.next().submit("word4", Course.ENGLISH).first
+        assertEquals(1, s.combo)
+        assertEquals(listOf(SayPictureResult.FIRST, SayPictureResult.FIRST, SayPictureResult.MISSED, SayPictureResult.MISSED, SayPictureResult.FIRST), s.results)
+        assertEquals(listOf("word2", "word3"), s.missedWords.map { it.term })
+        assertEquals(s.results, s.recap.map { it.second })
+        assertEquals(listOf("word0", "word1", "word2", "word3", "word4"), s.recap.map { it.first.term })
+    }
+
+    @Test
+    fun `silence and the repeat after a reveal add no result`() {
+        var s = SayPictureSession(words(4))
+        s = s.submit("  ", Course.ENGLISH).first
+        assertTrue(s.results.isEmpty())
+        s = s.submit("zzz", Course.ENGLISH).first.submit("word0", Course.ENGLISH).first
+        assertEquals(listOf(SayPictureResult.MISSED), s.results)
+    }
+
+    @Test
+    fun `pose follows state`() {
+        assertEquals(SayPicturePose.EXPLAINING, SayPicturePose.of(SayPicturePhase.ASK, false))
+        assertEquals(SayPicturePose.LISTENING, SayPicturePose.of(SayPicturePhase.ASK, true))
+        assertEquals(SayPicturePose.THINKING, SayPicturePose.of(SayPicturePhase.REVEAL, false))
+        assertEquals(SayPicturePose.CHEER, SayPicturePose.of(SayPicturePhase.RIGHT, false))
+        assertEquals(
+            listOf("poses/alphonso-explaining-pointer.webp", "poses/alphonso-levelup-cheer.webp", "poses/alphonso-listening-headphones.webp", "poses/alphonso-thinking-temple.webp"),
+            SayPicturePose.values().map { it.asset }.sorted(),
+        )
+    }
+
+    @Test
+    fun `only single words are savable to the review deck`() {
+        assertTrue(SayThePicture.isSavable("perro"))
+        assertTrue(SayThePicture.isSavable("l'eau"))
+        assertTrue(SayThePicture.isSavable("a\u00f1o"))
+        assertFalse(SayThePicture.isSavable("ice cream"))
+        assertFalse(SayThePicture.isSavable(""))
+        assertEquals("dog", SayThePicture.PictureWord("dog", image("dog")).toVocabItem().term)
+    }
 }
