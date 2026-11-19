@@ -94,6 +94,30 @@ final class HandsFreeLoopTests: XCTestCase {
         XCTAssertEqual(loop.status, .listening)
     }
 
+    func testSpeechThenDigitalSilenceStillEndsTheTurn() {
+        var loop = recordingLoop()
+        feed(&loop, level: quiet, from: 0, to: 0.5)
+        feed(&loop, level: speech, from: 0.5, to: 2.0)
+        XCTAssertEqual(loop.status, .hearing)
+        // Noise-gated headset: the recorder reports -160 (below ignoreBelow) from here on.
+        XCTAssertEqual(feed(&loop, level: -160, from: 2.0, to: 3.0), [], "1.1 s of silence: not yet")
+        XCTAssertEqual(feed(&loop, level: -160, from: 3.0, to: 4.0), [.endTurn], "one end, at 1.2 s of digital silence")
+    }
+
+    func testNoSpeechThenDigitalSilenceHitsTheNoSpeechTimeout() {
+        var loop = recordingLoop()
+        feed(&loop, level: quiet, from: 0, to: 0.5)
+        let effects = feed(&loop, level: -160, from: 0.5, to: 9.0)
+        XCTAssertEqual(effects, [.cancelTurn])
+        XCTAssertEqual(loop.status, .paused(.noSpeech))
+    }
+
+    func testWarmUpReadingsBeforeAnyAudioAreStillIgnored() {
+        var loop = recordingLoop()
+        XCTAssertEqual(feed(&loop, level: -160, from: 0, to: 40), [], "warm-up never ends or cancels a turn")
+        XCTAssertEqual(loop.status, .listening)
+    }
+
     func testAnEmptyTranscriptPausesInsteadOfListeningAgain() {
         var loop = recordingLoop()
         feed(&loop, level: speech, from: 0, to: 1.0)

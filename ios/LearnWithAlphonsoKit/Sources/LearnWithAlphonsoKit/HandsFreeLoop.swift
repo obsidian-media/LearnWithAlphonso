@@ -104,6 +104,8 @@ public struct HandsFreeLoop: Equatable, Sendable {
     private var loudSince: TimeInterval?
     private var lastLoudAt: TimeInterval?
     private var heardSpeech = false
+    /// True once a real (above `ignoreBelow`) reading has arrived this turn; before that, sub-floor readings are warm-up.
+    private var warmedUp = false
     private var turnEnding = false
     private var turnsWithoutTouch = 0
 
@@ -190,20 +192,24 @@ public struct HandsFreeLoop: Equatable, Sendable {
 
         case let .level(dBFS, at):
             guard isRecording, status == .listening || status == .hearing, !turnEnding else { return [] }
-            guard dBFS >= tuning.ignoreBelow else { return [] }
+            // Sub-floor readings are the recorder warming up only until the first real reading. After that they are
+            // digital silence (a noise-gated headset, a muted route): quiet, so the time checks must still run.
+            let silent = !(dBFS >= tuning.ignoreBelow)
+            if silent && !warmedUp { return [] }
+            warmedUp = true
             if turnStartedAt == nil { turnStartedAt = at }
             let started = turnStartedAt ?? at
 
             // The background is the quietest level heard: during calibration, and afterwards only while nobody has
             // spoken. It can fall but never rise, and is capped, so the learner's own voice never becomes the floor.
-            if at - started < tuning.calibration || !heardSpeech {
+            if !silent, at - started < tuning.calibration || !heardSpeech {
                 backgroundLevel = min(backgroundLevel ?? dBFS, dBFS, tuning.maximumBackground)
             }
             let threshold = max(tuning.minimumSpeechLevel, (backgroundLevel ?? tuning.maximumBackground) + tuning.speechAboveFloor)
             if at - started < tuning.calibration {
                 // Still measuring the room: nothing counts as speech yet.
                 loudSince = nil
-            } else if dBFS >= threshold {
+            } else if !silent, dBFS >= threshold {
                 if loudSince == nil { loudSince = at }
                 lastLoudAt = at
                 if let since = loudSince, at - since >= tuning.speechOnset {
@@ -262,6 +268,7 @@ public struct HandsFreeLoop: Equatable, Sendable {
         loudSince = nil
         lastLoudAt = nil
         heardSpeech = false
+        warmedUp = false
         turnEnding = false
     }
 }

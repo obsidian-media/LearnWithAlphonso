@@ -111,6 +111,8 @@ export class HandsFreeLoop {
   private loudSince: number | null = null;
   private lastLoudAt: number | null = null;
   private heardSpeech = false;
+  /** True once a real (above ignoreBelow) reading has arrived this turn; before that, sub-floor readings are warm-up. */
+  private warmedUp = false;
   private turnEnding = false;
   private turnsWithoutTouch = 0;
 
@@ -218,13 +220,17 @@ export class HandsFreeLoop {
         if (!this.isRecording) return [];
         if (this.status.kind !== "listening" && this.status.kind !== "hearing") return [];
         if (this.turnEnding) return [];
-        if (!(dBFS >= t.ignoreBelow)) return [];
+        // Sub-floor readings are warm-up only until the first real reading; after that they are digital silence
+        // (noise-gated headset, muted route): quiet, and the time checks must still run.
+        const silent = !(dBFS >= t.ignoreBelow);
+        if (silent && !this.warmedUp) return [];
+        this.warmedUp = true;
         if (this.turnStartedAt === null) this.turnStartedAt = at;
         const started = this.turnStartedAt;
 
         // The background is the quietest level heard: during calibration, and afterwards only while nobody has
         // spoken. It can fall but never rise, and is capped, so the learner's own voice never becomes the floor.
-        if (at - started < t.calibration || !this.heardSpeech) {
+        if (!silent && (at - started < t.calibration || !this.heardSpeech)) {
           this.backgroundLevel = Math.min(this.backgroundLevel ?? dBFS, dBFS, t.maximumBackground);
         }
         const threshold = Math.max(
@@ -234,7 +240,7 @@ export class HandsFreeLoop {
         if (at - started < t.calibration) {
           // Still measuring the room: nothing counts as speech yet.
           this.loudSince = null;
-        } else if (dBFS >= threshold) {
+        } else if (!silent && dBFS >= threshold) {
           if (this.loudSince === null) this.loudSince = at;
           this.lastLoudAt = at;
           if (at - this.loudSince >= t.speechOnset) {
@@ -290,6 +296,7 @@ export class HandsFreeLoop {
     this.loudSince = null;
     this.lastLoudAt = null;
     this.heardSpeech = false;
+    this.warmedUp = false;
     this.turnEnding = false;
   }
 }

@@ -108,6 +108,28 @@ describe("HandsFreeLoop", () => {
     expect(loop.status).toEqual({ kind: "listening" });
   });
 
+  it("speech then digital silence still ends the turn", () => {
+    const loop = recordingLoop();
+    feed(loop, quiet, 0, 0.5);
+    feed(loop, speech, 0.5, 2.0);
+    expect(loop.status).toEqual({ kind: "hearing" });
+    expect(feed(loop, -160, 2.0, 3.0)).toEqual([]);
+    expect(feed(loop, -160, 3.0, 4.0)).toEqual(["endTurn"]);
+  });
+
+  it("no speech then digital silence hits the no-speech timeout", () => {
+    const loop = recordingLoop();
+    feed(loop, quiet, 0, 0.5);
+    expect(feed(loop, -160, 0.5, 9.0)).toEqual(["cancelTurn"]);
+    expect(loop.status).toEqual({ kind: "paused", reason: "noSpeech" });
+  });
+
+  it("warm-up readings before any audio are still ignored", () => {
+    const loop = recordingLoop();
+    expect(feed(loop, -160, 0, 40)).toEqual([]);
+    expect(loop.status).toEqual({ kind: "listening" });
+  });
+
   it("an empty transcript pauses instead of listening again", () => {
     const loop = recordingLoop();
     feed(loop, speech, 0, 1.0);

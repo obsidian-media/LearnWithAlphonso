@@ -116,6 +116,8 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
     private var loudSince: Double? = null
     private var lastLoudAt: Double? = null
     private var heardSpeech = false
+    /** True once a real (above ignoreBelow) reading has arrived this turn; before that, sub-floor readings are warm-up. */
+    private var warmedUp = false
     private var turnEnding = false
     private var wallStartedAt: Double? = null
     private var turnsWithoutTouch = 0
@@ -230,20 +232,24 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
 
     private fun onLevel(dBFS: Double, at: Double): List<Effect> {
         if (!isRecording || !(status == Status.Listening || status == Status.Hearing) || turnEnding) return emptyList()
-        if (dBFS < tuning.ignoreBelow) return emptyList()
+        // Sub-floor readings are warm-up only until the first real reading; after that they are digital silence
+        // (noise-gated headset, muted route): quiet, and the time checks must still run.
+        val silent = dBFS < tuning.ignoreBelow
+        if (silent && !warmedUp) return emptyList()
+        warmedUp = true
         if (turnStartedAt == null) turnStartedAt = at
         val started = turnStartedAt ?: at
 
         // The background is the quietest level heard: during calibration, and afterwards only while nobody has
         // spoken. It can fall but never rise, and is capped, so the learner's own voice never becomes the floor.
-        if (at - started < tuning.calibration || !heardSpeech) {
+        if (!silent && (at - started < tuning.calibration || !heardSpeech)) {
             backgroundLevel = minOf(backgroundLevel ?: dBFS, dBFS, tuning.maximumBackground)
         }
         val threshold = maxOf(tuning.minimumSpeechLevel, (backgroundLevel ?: tuning.maximumBackground) + tuning.speechAboveFloor)
         if (at - started < tuning.calibration) {
             // Still measuring the room: nothing counts as speech yet.
             loudSince = null
-        } else if (dBFS >= threshold) {
+        } else if (!silent && dBFS >= threshold) {
             if (loudSince == null) loudSince = at
             lastLoudAt = at
             val since = loudSince
@@ -291,6 +297,7 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
         loudSince = null
         lastLoudAt = null
         heardSpeech = false
+        warmedUp = false
         turnEnding = false
         wallStartedAt = null
     }
