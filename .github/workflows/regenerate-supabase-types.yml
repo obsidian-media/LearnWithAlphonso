@@ -11,6 +11,10 @@ name: Regenerate Supabase Types
 # place a real type error could pass silently. To run it by hand, use the Actions
 # tab (or `gh workflow run regenerate-supabase-types.yml`).
 #
+# Since ci.yml's `types-gen` / `types-push` jobs regenerate the file inside the migration's own PR, this normally finds
+# nothing to commit. It stays as the safety net: a stale PR that is merged anyway (types-gen is not a required check),
+# or production drifting from the migrations, still gets fixed on main.
+#
 # Required repo secrets:
 #   SUPABASE_ACCESS_TOKEN -- already configured (deploy-supabase uses it)
 #   TYPES_REGEN_DEPLOY_KEY -- private half of the repository deploy key "types-regen workflow (push to main)";
