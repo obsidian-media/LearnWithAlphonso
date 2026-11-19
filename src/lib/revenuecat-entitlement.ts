@@ -279,13 +279,41 @@ export async function getAccountSubscriberSummary(
   };
 }
 
+/**
+ * How long a confirmed "active" answer is reused (per server instance). A brief RevenueCat outage then does not turn
+ * a paying learner's Hector turn into a 503. Only a POSITIVE answer is ever kept: "inactive" must take effect at once
+ * (a purchase is seen on the next call) and "unavailable" is never remembered. The price is that an ended or
+ * withdrawn subscription can keep working here for up to this long.
+ */
+export const ACTIVE_ENTITLEMENT_CACHE_MS = 60_000;
+const MAX_CACHED_ENTITLEMENTS = 5_000;
+const activeUntil = new Map<string, number>();
+
+/** Tests only. */
+export function resetEntitlementCache(): void {
+  activeUntil.clear();
+}
+
 /** Keep an upstream outage distinct from a confirmed lack of entitlement. Checks every id of the account. */
 export async function getProEntitlementStatus(
   config: RevenueCatConfig,
   userId: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<ProEntitlementStatus> {
-  return (await getAccountSubscriberSummary(config, userId, fetchImpl)).status;
+  const now = Date.now();
+  const until = activeUntil.get(userId);
+  if (until !== undefined && until > now) return "active";
+  const status = (await getAccountSubscriberSummary(config, userId, fetchImpl)).status;
+  if (status === "active") {
+    if (activeUntil.size >= MAX_CACHED_ENTITLEMENTS) {
+      for (const [k, v] of activeUntil) if (v <= now) activeUntil.delete(k);
+      if (activeUntil.size >= MAX_CACHED_ENTITLEMENTS) activeUntil.clear();
+    }
+    activeUntil.set(userId, now + ACTIVE_ENTITLEMENT_CACHE_MS);
+  } else {
+    activeUntil.delete(userId);
+  }
+  return status;
 }
 
 /** Boolean compatibility helper for authorization-only callers. */

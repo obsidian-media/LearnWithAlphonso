@@ -37,6 +37,7 @@ describe("monthlyCapRefusal: what is blocked", () => {
       // hector is Pro by construction (the route checked), so it needs the Pro ceiling
       const spent = kind === "hector" ? 8 * USD : 2 * USD;
       expect(await monthlyCapRefusal(client(spent), kind, NOW, { entitlement: free() })).toEqual({
+        kind: "capped",
         resetsAt: RESET,
       });
     }
@@ -111,31 +112,110 @@ describe("month reset", () => {
   });
 });
 
-describe("fail-safe: a failed read ALLOWS the call and logs", () => {
-  it("rpc error", async () => {
-    expect(await monthlyCapRefusal(failing({ message: "boom" }), "chat", NOW)).toBeNull();
-    expect(console.error).toHaveBeenCalled();
+const UNVERIFIED = { kind: "unverified" };
+const ent = (v: "active" | "inactive" | "unavailable") => vi.fn().mockResolvedValue(v);
+
+describe("a failed cost read: free fails closed, Pro stays open", () => {
+  const readErrors: [string, () => unknown][] = [
+    ["rpc error", () => failing({ message: "boom" })],
+    ["rpc throws", () => ({ rpc: vi.fn().mockRejectedValue(new Error("network")) })],
+    ["empty answer", () => ({ rpc: vi.fn().mockResolvedValue({ data: [], error: null }) })],
+    ["negative answer", () => client(-5)],
+  ];
+  for (const [name, make] of readErrors) {
+    it(`${name}: a free learner is refused (503 path), logged`, async () => {
+      expect(
+        await monthlyCapRefusal(make(), "chat", NOW, { entitlement: ent("inactive") }, "u1"),
+      ).toEqual(UNVERIFIED);
+      expect(console.error).toHaveBeenCalled();
+    });
+    it(`${name}: a Pro learner is let through`, async () => {
+      expect(
+        await monthlyCapRefusal(make(), "chat", NOW, { entitlement: ent("active") }, "u1"),
+      ).toBeNull();
+    });
+  }
+  it("entitlement also unavailable: refused, the learner cannot be shown to be Pro", async () => {
+    expect(
+      await monthlyCapRefusal(
+        failing({ message: "boom" }),
+        "chat",
+        NOW,
+        { entitlement: ent("unavailable") },
+        "u1",
+      ),
+    ).toEqual(UNVERIFIED);
+    const boom = vi.fn().mockRejectedValue(new Error("rc down"));
+    expect(
+      await monthlyCapRefusal(
+        failing({ message: "boom" }),
+        "chat",
+        NOW,
+        { entitlement: boom },
+        "u1",
+      ),
+    ).toEqual(UNVERIFIED);
   });
-  it("rpc throws", async () => {
-    const c = { rpc: vi.fn().mockRejectedValue(new Error("network")) };
-    expect(await monthlyCapRefusal(c, "chat", NOW)).toBeNull();
+  it("looks the tier up for the id it was given, and from the session when none is given", async () => {
+    const entitlement = ent("active");
+    await monthlyCapRefusal(failing({ message: "boom" }), "chat", NOW, { entitlement }, "u9");
+    expect(entitlement).toHaveBeenCalledWith("u9");
+    const c = {
+      ...failing({ message: "boom" }),
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u7" } } }) },
+    };
+    const e2 = ent("active");
+    expect(await monthlyCapRefusal(c, "chat", NOW, { entitlement: e2 })).toBeNull();
+    expect(e2).toHaveBeenCalledWith("u7");
+    // no id anywhere: the tier cannot be shown, so refused
+    expect(
+      await monthlyCapRefusal(failing({ message: "boom" }), "chat", NOW, { entitlement: e2 }),
+    ).toEqual(UNVERIFIED);
+  });
+  it("hector (Pro only, verified by the route) stays open", async () => {
+    expect(
+      await monthlyCapRefusal(failing({ message: "boom" }), "hector", NOW, {
+        entitlement: ent("inactive"),
+      }),
+    ).toBeNull();
+  });
+  it("kinds the cap never blocks are never refused on a failure either", async () => {
+    expect(await monthlyCapRefusal(failing({ message: "boom" }), "support", NOW)).toBeNull();
+  });
+  it("only the two 'function missing' codes count as not deployed: wording alone is a failed read", async () => {
+    const wording = failing({ message: 'relation "ai_cost_log" does not exist' });
+    expect(
+      await monthlyCapRefusal(wording, "chat", NOW, { entitlement: ent("inactive") }, "u1"),
+    ).toEqual(UNVERIFIED);
+    const schemaCache = failing({ message: "Could not find the function in the schema cache" });
+    expect(
+      await monthlyCapRefusal(schemaCache, "chat", NOW, { entitlement: ent("inactive") }, "u1"),
+    ).toEqual(UNVERIFIED);
+    for (const code of ["42883", "PGRST202"]) {
+      expect(
+        await monthlyCapRefusal(
+          failing({ message: "x", code }),
+          "chat",
+          NOW,
+          { entitlement: ent("inactive") },
+          "u1",
+        ),
+      ).toBeNull();
+    }
   });
   it("migration not applied yet: allowed, warned once", async () => {
     const c = failing({
       message: "Could not find the function in the schema cache",
       code: "PGRST202",
     });
-    expect(await monthlyCapRefusal(c, "chat", NOW)).toBeNull();
+    expect(
+      await monthlyCapRefusal(c, "chat", NOW, { entitlement: ent("inactive") }, "u1"),
+    ).toBeNull();
     await monthlyCapRefusal(c, "chat", NOW);
     const warned = vi
       .mocked(console.error)
       .mock.calls.filter((a) => String(a[0]).includes("not deployed"));
     expect(warned).toHaveLength(1);
-  });
-  it("a malformed or negative answer", async () => {
-    const empty = { rpc: vi.fn().mockResolvedValue({ data: [], error: null }) };
-    expect(await monthlyCapRefusal(empty, "chat", NOW)).toBeNull();
-    expect(await monthlyCapRefusal(client(-5), "chat", NOW)).toBeNull();
   });
   it("switched off: nothing is read, nothing blocked", async () => {
     const c = client(100 * USD);

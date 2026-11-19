@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ProEntitlementStatus } from "./revenuecat-entitlement";
 import { heartsUnlimited, type HeartsServerDeps, settleLessonHearts } from "./hearts-server.server";
+
+const recordOpsEvent = vi.hoisted(() => vi.fn(async () => {}));
+vi.mock("./ops-events.server", () => ({ recordOpsEvent, OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS: 500 }));
+beforeEach(() => recordOpsEvent.mockClear());
 
 const NOW = Date.parse("2026-11-05T12:00:00Z");
 
@@ -109,6 +113,58 @@ describe("settleLessonHearts", () => {
     const t = deps({ settle: { data: null, error: { message: "boom" } } });
     const err = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await settleLessonHearts({ ...base, mode: "on" }, t.d)).toBeNull();
+    err.mockRestore();
+  });
+
+  it("records hearts_settlement_failed (user id, no free text) when the settlement fails or throws", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const t = deps({ settle: { data: null, error: { message: "secret db text" } } });
+    await settleLessonHearts({ ...base, mode: "on" }, t.d);
+    expect(recordOpsEvent).toHaveBeenCalledWith(
+      "hearts_settlement_failed",
+      { fn: "completeLessonRemote" },
+      "u",
+    );
+    recordOpsEvent.mockClear();
+    const boom = deps();
+    boom.d.db = async () => {
+      throw new Error("db unreachable");
+    };
+    await settleLessonHearts({ ...base, mode: "on" }, boom.d);
+    expect(recordOpsEvent).toHaveBeenCalledWith(
+      "hearts_settlement_failed",
+      { fn: "completeLessonRemote" },
+      "u",
+    );
+    expect(JSON.stringify(recordOpsEvent.mock.calls)).not.toContain("secret db text");
+    err.mockRestore();
+  });
+
+  it("records the shadow events when Pro is unknown or only stale-known, and nothing on a clean settlement", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    await settleLessonHearts({ ...base, mode: "on" }, deps().d);
+    expect(recordOpsEvent).not.toHaveBeenCalled();
+    await settleLessonHearts({ ...base, mode: "on" }, deps({ status: "unavailable" }).d);
+    expect(recordOpsEvent).toHaveBeenCalledWith(
+      "hearts_settlement_shadow_pro_unknown",
+      { fn: "completeLessonRemote" },
+      "u",
+      500,
+    );
+    recordOpsEvent.mockClear();
+    await settleLessonHearts(
+      { ...base, mode: "on" },
+      deps({
+        status: "unavailable",
+        cached: { pro: true, checked_at: new Date(NOW - 5 * 3_600_000).toISOString() },
+      }).d,
+    );
+    expect(recordOpsEvent).toHaveBeenCalledWith(
+      "hearts_settlement_shadow_stale_pro",
+      { fn: "completeLessonRemote" },
+      "u",
+      500,
+    );
     err.mockRestore();
   });
 });

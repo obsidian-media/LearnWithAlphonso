@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/api/support/message")({
         try {
           raw = await request.json();
         } catch {
-          return Response.json({ error: "Invalid JSON" }, { status: 400 });
+          return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
         }
         const { channelOf, handlePostMessage } = await import("@/lib/support-chat.server");
         return toResponse(

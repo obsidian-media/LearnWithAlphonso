@@ -17,6 +17,10 @@ class FakeDb {
   profileCalls: { name: string; args: Record<string, unknown> }[] = [];
   recordCompletions = true;
   upserts: { table: string; rows: Row[] }[] = [];
+  /** Rows the handler wrote to ops_events (the operational-event recorder). */
+  opsEvents: Row[] = [];
+  /** Make the ops_events write fail or hang, to prove a recording failure never touches the lesson. */
+  opsEventsMode: "ok" | "error" | "throw" | "hang" = "ok";
   rpcResult: { data: unknown; error: unknown } = {
     data: { status: "applied" },
     error: null,
@@ -27,16 +31,41 @@ class FakeDb {
     return new Query(this, table);
   }
   settleCalls: Record<string, unknown>[] = [];
-  /** What settle_lesson_hearts answers. Default: not modelled (an error), so the completion's own hearts stand. */
-  settleResult: { data: unknown; error: unknown } = {
-    data: null,
-    error: { message: "not modelled" },
-  };
+  /** What settle_lesson_hearts answers. null (default): a settlement that charges nothing, echoing the saved hearts. */
+  settleResult: { data: unknown; error: unknown } | null = null;
+  lastNext: Row | null = null;
+  finalizeCalls: Record<string, unknown>[] = [];
+  /** The migration is not applied yet: the new function answers PGRST202, the new table 42P01. */
+  onceMissing = false;
+  missingTables = new Set<string>();
+  finalizeError: unknown = null;
   rpc(name: string, args: Record<string, unknown>) {
     // The hearts settlement is recorded on its own, so the completion's rpcCalls stay exactly the save.
     if (name === "settle_lesson_hearts") {
       this.settleCalls.push(args);
-      return Promise.resolve(this.settleResult);
+      if (this.settleResult) return Promise.resolve(this.settleResult);
+      const n = this.lastNext;
+      return Promise.resolve({
+        data: [
+          {
+            hearts: n?.hearts ?? 5,
+            hearts_refill_at: n?.hearts_refill_at ?? null,
+            charged: 0,
+            settled_now: true,
+          },
+        ],
+        error: null,
+      });
+    }
+    // Stored on its own as well, so rpcCalls stays exactly the save.
+    if (name === "finalize_lesson_session_result") {
+      this.finalizeCalls.push(args);
+      if (this.finalizeError) return Promise.resolve({ data: null, error: this.finalizeError });
+      const row = (this.tables.lesson_session_redemptions ?? []).find(
+        (r) => r.token_hash === args._token_hash,
+      );
+      if (row) row.result = args._result;
+      return Promise.resolve({ data: null, error: null });
     }
     // Profile data (20261107120000) is recorded on its own too, so rpcCalls stays exactly the save.
     if (name === "add_learning_seconds" || name === "add_skill_results") {
@@ -44,13 +73,48 @@ class FakeDb {
       return Promise.resolve({ data: null, error: null });
     }
     this.rpcCalls.push({ name, args });
-    // Like the real apply_lesson_completion: an applied save writes the completion row the later reads see.
+    if (name === "apply_lesson_completion_once" && this.onceMissing) {
+      return Promise.resolve({ data: null, error: { code: "PGRST202", message: "not found" } });
+    }
+    // Like the real apply_lesson_completion_once: a token already redeemed answers with what it stored and saves nothing.
+    if (name === "apply_lesson_completion_once") {
+      const prior = (this.tables.lesson_session_redemptions ?? []).find(
+        (r) => r.token_hash === args._token_hash,
+      );
+      if (prior) {
+        return Promise.resolve({
+          data: {
+            status: "redeemed",
+            result: prior.result,
+            misses: prior.misses,
+            settle_since: prior.settle_since,
+          },
+          error: null,
+        });
+      }
+    }
+    // Like the real apply_lesson_completion_once: an applied save writes the completion row the later reads see.
     if (
-      name === "apply_lesson_completion" &&
+      (name === "apply_lesson_completion_once" || name === "apply_lesson_completion") &&
       this.recordCompletions &&
       (this.rpcResult.data as Row | null)?.status === "applied"
     ) {
       const next = args._next as Row;
+      this.lastNext = next;
+      if (name === "apply_lesson_completion_once") {
+        this.tables.lesson_session_redemptions = [
+          ...(this.tables.lesson_session_redemptions ?? []),
+          {
+            token_hash: args._token_hash,
+            user_id: args._user_id,
+            lesson_id: args._lesson_id,
+            course: args._course,
+            result: args._result,
+            misses: args._misses,
+            settle_since: args._settle_since,
+          },
+        ];
+      }
       const rows = (this.tables.lesson_completions ?? []).filter(
         (r) => r.lesson_id !== args._lesson_id,
       );
@@ -98,6 +162,15 @@ class Query {
     this.filters.push({ op: "lte", col, val });
     return this;
   }
+  insert(row: Row) {
+    if (this.table !== "ops_events") return Promise.resolve({ data: null, error: null });
+    const mode = this.db.opsEventsMode;
+    if (mode === "throw") throw new Error("insert exploded");
+    if (mode === "hang") return new Promise<never>(() => {});
+    if (mode === "error") return Promise.resolve({ data: null, error: { message: "denied" } });
+    this.db.opsEvents.push(row);
+    return Promise.resolve({ data: null, error: null });
+  }
   upsert(rows: Row[], _opts?: unknown) {
     this.db.upserts.push({ table: this.table, rows });
     return Promise.resolve({ data: null, error: null });
@@ -114,6 +187,9 @@ class Query {
     );
   }
   private result() {
+    if (this.db.missingTables.has(this.table)) {
+      return { data: null, error: { code: "42P01", message: "no such table" }, count: null };
+    }
     if (this.db.failReads.has(this.table)) {
       return { data: null, error: { message: "read failed" }, count: null };
     }
@@ -311,22 +387,28 @@ const progressRow = (over: Row = {}): Row => ({
   ...over,
 });
 
-Deno.test("the day is the learner's local day: 23:30 UTC is already tomorrow in Sydney", async () => {
-  const now = new Date("2026-10-17T23:30:00Z");
-  const { db, handler } = setup({ now });
-  db.tables.learner_time_zones = [{ user_id: USER, time_zone: "Australia/Sydney" }];
-  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
-  assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
-  assertEquals((db.rpcCalls[0].args._next as Row).last_active_date, "2026-10-18");
-});
+Deno.test(
+  "the day is the learner's local day: 23:30 UTC is already tomorrow in Sydney",
+  async () => {
+    const now = new Date("2026-10-17T23:30:00Z");
+    const { db, handler } = setup({ now });
+    db.tables.learner_time_zones = [{ user_id: USER, time_zone: "Australia/Sydney" }];
+    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
+    assertEquals((db.rpcCalls[0].args._next as Row).last_active_date, "2026-10-18");
+  },
+);
 
-Deno.test("west of UTC the day is still yesterday's: 02:00 UTC is the 16th in Los Angeles", async () => {
-  const now = new Date("2026-10-17T02:00:00Z");
-  const { db, handler } = setup({ now });
-  db.tables.learner_time_zones = [{ user_id: USER, time_zone: "America/Los_Angeles" }];
-  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
-  assertEquals(db.rpcCalls[0].args._today, "2026-10-16");
-});
+Deno.test(
+  "west of UTC the day is still yesterday's: 02:00 UTC is the 16th in Los Angeles",
+  async () => {
+    const now = new Date("2026-10-17T02:00:00Z");
+    const { db, handler } = setup({ now });
+    db.tables.learner_time_zones = [{ user_id: USER, time_zone: "America/Los_Angeles" }];
+    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    assertEquals(db.rpcCalls[0].args._today, "2026-10-16");
+  },
+);
 
 Deno.test("no stored zone, or one that does not exist, is UTC", async () => {
   for (const rows of [[], [{ user_id: USER, time_zone: "Not/AZone" }]]) {
@@ -337,12 +419,15 @@ Deno.test("no stored zone, or one that does not exist, is UTC", async () => {
   }
 });
 
-Deno.test("an unreadable zone never fails the lesson: UTC is used", async () => {
-  const { db, handler } = setup({ now: new Date("2026-10-17T23:30:00Z") });
-  db.failReads.add("learner_time_zones");
-  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
-  assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
-});
+Deno.test(
+  "an unreadable zone is a retryable 503 and nothing is written (no day booked from unread data)",
+  async () => {
+    const { db, handler } = setup({ now: new Date("2026-10-17T23:30:00Z") });
+    db.failReads.add("learner_time_zones");
+    assertEquals((await handler(post(body(["a", "d"])))).status, 503);
+    assertEquals(db.rpcCalls.length, 0);
+  },
+);
 
 Deno.test("an offline completion's original day is the learner's local day too", async () => {
   const now = new Date("2026-10-18T05:00:00Z");
@@ -354,17 +439,20 @@ Deno.test("an offline completion's original day is the learner's local day too",
   assertEquals(db.rpcCalls[0].args._today, "2026-10-18");
 });
 
-Deno.test("the switch cannot drop a streak: a UTC-basis streak bridges a two-date gap once, then goes local", async () => {
-  // Last active 2026-10-16 (a UTC date); this lesson is on the learner's 18th: two dates later, no freeze.
-  const now = new Date("2026-10-18T01:00:00Z");
-  const { db, handler } = setup({ now });
-  db.tables.user_progress = [progressRow({ day_basis: "utc" })];
-  assertEquals((await handler(post(body(["a", "d"])))).status, 200);
-  const next = db.rpcCalls[0].args._next as Row;
-  assertEquals(next.streak, 5);
-  assertEquals(next.streak_freezes, 0);
-  assertEquals(next.day_basis, "local");
-});
+Deno.test(
+  "the switch cannot drop a streak: a UTC-basis streak bridges a two-date gap once, then goes local",
+  async () => {
+    // Last active 2026-10-16 (a UTC date); this lesson is on the learner's 18th: two dates later, no freeze.
+    const now = new Date("2026-10-18T01:00:00Z");
+    const { db, handler } = setup({ now });
+    db.tables.user_progress = [progressRow({ day_basis: "utc" })];
+    assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    const next = db.rpcCalls[0].args._next as Row;
+    assertEquals(next.streak, 5);
+    assertEquals(next.streak_freezes, 0);
+    assertEquals(next.day_basis, "local");
+  },
+);
 
 Deno.test("a row with no day basis counts as the old UTC basis", async () => {
   const now = new Date("2026-10-18T01:00:00Z");
@@ -374,13 +462,16 @@ Deno.test("a row with no day basis counts as the old UTC basis", async () => {
   assertEquals((db.rpcCalls[0].args._next as Row).streak, 5);
 });
 
-Deno.test("once on the local basis, a two-date gap is a real missed day and resets the streak", async () => {
-  const now = new Date("2026-10-18T01:00:00Z");
-  const { db, handler } = setup({ now });
-  db.tables.user_progress = [progressRow({ day_basis: "local" })];
-  await handler(post(body(["a", "d"])));
-  assertEquals((db.rpcCalls[0].args._next as Row).streak, 1);
-});
+Deno.test(
+  "once on the local basis, a two-date gap is a real missed day and resets the streak",
+  async () => {
+    const now = new Date("2026-10-18T01:00:00Z");
+    const { db, handler } = setup({ now });
+    db.tables.user_progress = [progressRow({ day_basis: "local" })];
+    await handler(post(body(["a", "d"])));
+    assertEquals((db.rpcCalls[0].args._next as Row).streak, 1);
+  },
+);
 
 Deno.test("the bridge never lets a gap of three dates continue a streak", async () => {
   const now = new Date("2026-10-19T01:00:00Z");
@@ -534,54 +625,70 @@ Deno.test(
   },
 );
 
-Deno.test("a hoarded session is counted at receipt, so it cannot dodge the hourly ceiling", async () => {
-  const now = new Date("2026-10-18T12:00:00Z");
-  const { handler, slots } = setup({
-    now,
-    slotLimit: 2,
-    sessionAgeMs: 30 * 3_600_000,
-    fresh: true,
-  });
-  // Three completions each claiming a different old hour: receipt time puts all three in the same hour.
-  for (const hoursAgo of [20, 18, 16]) {
-    const completedAt = new Date(now.getTime() - hoursAgo * 3_600_000).toISOString();
-    await handler(post({ ...body(["a", "d"]), completedAt }));
-  }
-  assertEquals(slots, [now.getTime(), now.getTime()]);
-});
+Deno.test(
+  "a hoarded session is counted at receipt, so it cannot dodge the hourly ceiling",
+  async () => {
+    const now = new Date("2026-10-18T12:00:00Z");
+    const { handler, slots } = setup({
+      now,
+      slotLimit: 2,
+      sessionAgeMs: 30 * 3_600_000,
+      fresh: true,
+    });
+    // Three completions each claiming a different old hour: receipt time puts all three in the same hour.
+    for (const hoursAgo of [20, 18, 16]) {
+      const completedAt = new Date(now.getTime() - hoursAgo * 3_600_000).toISOString();
+      await handler(post({ ...body(["a", "d"]), completedAt }));
+    }
+    assertEquals(slots, [now.getTime(), now.getTime()]);
+  },
+);
 
-Deno.test("the abuse: a replay of a finished lesson cannot fill a skipped day with an old session", async () => {
-  // Session minted 23:59 on the 15th, lesson already finished, replayed on the 17th claiming the 15th.
-  const now = new Date("2026-10-17T12:00:00Z");
-  const issued = Date.parse("2026-10-15T23:59:00Z");
-  const { db, handler } = setup({ now, sessionAgeMs: now.getTime() - issued });
-  db.tables.lesson_completions = [
-    { user_id: USER, lesson_id: "u1l1", language: "fr", correct: 2, total: 2, xp_earned: 100 },
-  ];
-  db.tables.user_progress = [progressRow({ streak: 5, last_active_date: "2026-10-14" })];
-  const res = await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-15T23:59:40.000Z" }));
-  assertEquals(res.status, 200);
-  // Credited to the receipt day: the 15th and 16th stay empty, so the streak is not carried through them.
-  assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
-  assertEquals((db.rpcCalls[0].args._next as Row).last_active_date, "2026-10-17");
-});
+Deno.test(
+  "the abuse: a replay of a finished lesson cannot fill a skipped day with an old session",
+  async () => {
+    // Session minted 23:59 on the 15th, lesson already finished, replayed on the 17th claiming the 15th.
+    const now = new Date("2026-10-17T12:00:00Z");
+    const issued = Date.parse("2026-10-15T23:59:00Z");
+    const { db, handler } = setup({ now, sessionAgeMs: now.getTime() - issued });
+    db.tables.lesson_completions = [
+      { user_id: USER, lesson_id: "u1l1", language: "fr", correct: 2, total: 2, xp_earned: 100 },
+    ];
+    db.tables.user_progress = [progressRow({ streak: 5, last_active_date: "2026-10-14" })];
+    const res = await handler(
+      post({ ...body(["a", "d"]), completedAt: "2026-10-15T23:59:40.000Z" }),
+    );
+    assertEquals(res.status, 200);
+    // Credited to the receipt day: the 15th and 16th stay empty, so the streak is not carried through them.
+    assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
+    assertEquals((db.rpcCalls[0].args._next as Row).last_active_date, "2026-10-17");
+  },
+);
 
-Deno.test("a long-window claim made before the lesson could have been played is refused", async () => {
-  const now = new Date("2026-10-17T12:00:00Z");
-  const issued = Date.parse("2026-10-16T12:00:00Z");
-  const { db, handler } = setup({ now, sessionAgeMs: now.getTime() - issued });
-  // Claimed 5 seconds after the session opened: no lesson is that quick.
-  const res = await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-16T12:00:05.000Z" }));
-  assertEquals(res.status, 403);
-  assertEquals(db.rpcCalls.length, 0);
-});
+Deno.test(
+  "a long-window claim made before the lesson could have been played is refused",
+  async () => {
+    const now = new Date("2026-10-17T12:00:00Z");
+    const issued = Date.parse("2026-10-16T12:00:00Z");
+    const { db, handler } = setup({ now, sessionAgeMs: now.getTime() - issued });
+    // Claimed 5 seconds after the session opened: no lesson is that quick.
+    const res = await handler(
+      post({ ...body(["a", "d"]), completedAt: "2026-10-16T12:00:05.000Z" }),
+    );
+    assertEquals(res.status, 403);
+    assertEquals(db.rpcCalls.length, 0);
+  },
+);
 
-Deno.test("the long window applies only to a completion claimed more than 5 minutes ago", async () => {
-  const { handler, ageLimits } = setup({});
-  // Claimed 2 minutes before receipt: a live completion, 3 hour window.
-  await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-17T11:58:00.000Z" }));
-  assertEquals(ageLimits, [3 * 3_600_000]);
-});
+Deno.test(
+  "the long window applies only to a completion claimed more than 5 minutes ago",
+  async () => {
+    const { handler, ageLimits } = setup({});
+    // Claimed 2 minutes before receipt: a live completion, 3 hour window.
+    await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-17T11:58:00.000Z" }));
+    assertEquals(ageLimits, [3 * 3_600_000]);
+  },
+);
 
 Deno.test(
   "claiming a past completedAt cannot dodge the ceiling: the claim is clamped into the session window",
@@ -655,7 +762,7 @@ Deno.test(
 
     assertEquals(db.rpcCalls.length, 1);
     const { name, args } = db.rpcCalls[0];
-    assertEquals(name, "apply_lesson_completion");
+    assertEquals(name, "apply_lesson_completion_once");
     assertEquals(args._user_id, USER);
     assertEquals(args._course, "fr");
     assertEquals(args._level, "A2");
@@ -1003,24 +1110,34 @@ Deno.test("a completion that was not saved settles nothing", async () => {
   assertEquals(db.settleCalls.length, 0);
 });
 
-Deno.test("a failed settlement never fails the saved lesson", async () => {
-  const { handler, db } = setup({ heartsMode: "on" });
-  db.tables.user_progress = [
-    {
-      user_id: USER,
-      streak: 0,
-      longest_streak: 0,
-      last_active_date: null,
-      hearts: 3,
-      hearts_refill_at: null,
-      streak_freezes: 0,
-      updated_at: "t0",
-    },
-  ];
-  const res = await handler(post(body(["b", "c"])));
-  assertEquals(res.status, 200);
-  assertEquals((await res.json()).progress.hearts, 3);
-});
+Deno.test(
+  "a failed settlement after the save is a 503 so the retry settles (never free misses)",
+  async () => {
+    const { handler, db } = setup({ heartsMode: "on" });
+    db.settleResult = { data: null, error: { message: "down" } };
+    db.tables.user_progress = [
+      {
+        user_id: USER,
+        streak: 0,
+        longest_streak: 0,
+        last_active_date: null,
+        hearts: 3,
+        hearts_refill_at: null,
+        streak_freezes: 0,
+        updated_at: "t0",
+      },
+    ];
+    const res = await handler(post(body(["b", "c"])));
+    assertEquals(res.status, 503);
+    // The lesson itself is saved and redeemed; the retry settles with the original misses (2), whatever it carries.
+    assertEquals(db.rpcCalls.length, 1);
+    db.settleResult = null;
+    const retry = await handler(post(body(["a", "d"]))); // would be 0 misses if it were graded again
+    assertEquals(retry.status, 200);
+    assertEquals(db.rpcCalls.length, 1); // nothing saved again
+    assertEquals(db.settleCalls.at(-1)!._misses, 2);
+  },
+);
 
 Deno.test(
   "a saved lesson records its time and each answer's result by the server's own grading",
@@ -1049,24 +1166,475 @@ Deno.test("a rejected completion records no profile data", async () => {
   assertEquals(db.profileCalls.length, 0);
 });
 
-Deno.test("a live completion is checked against the 3 hour session window, a queued one against the offline window", async () => {
-  const live = setup({});
-  assertEquals((await live.handler(post(body(["a", "d"])))).status, 200);
-  assertEquals(live.ageLimits, [3 * 60 * 60 * 1000]);
+Deno.test(
+  "a live completion is checked against the 3 hour session window, a queued one against the offline window",
+  async () => {
+    const live = setup({});
+    assertEquals((await live.handler(post(body(["a", "d"])))).status, 200);
+    assertEquals(live.ageLimits, [3 * 60 * 60 * 1000]);
 
-  const queued = setup({});
-  const res = await queued.handler(
-    post({ ...body(["a", "d"]), completedAt: "2026-10-17T10:00:00.000Z" }),
+    const queued = setup({});
+    const res = await queued.handler(
+      post({ ...body(["a", "d"]), completedAt: "2026-10-17T10:00:00.000Z" }),
+    );
+    assertEquals(res.status, 200);
+    assertEquals(queued.ageLimits, [48 * 60 * 60 * 1000]);
+  },
+);
+
+Deno.test(
+  "a lesson finished offline the evening before and synced the next morning keeps its own day",
+  async () => {
+    // Session opened 19:50 on the 17th, finished 20:05, synced 09:00 on the 18th: 13 hours later, past the live window.
+    const now = new Date("2026-10-18T09:00:00Z");
+    const { db, handler } = setup({ now, sessionAgeMs: 13 * 60 * 60 * 1000 + 10 * 60_000 });
+    const res = await handler(
+      post({ ...body(["a", "d"]), completedAt: "2026-10-17T20:05:00.000Z" }),
+    );
+    assertEquals(res.status, 200);
+    assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
+  },
+);
+
+// ---- Single-use lesson sessions (lesson_session_redemptions) and retryable read errors ----
+
+const HASH_TOK = "1a7674eb4ee78df7e1ac439a93c3fa8e3c945784d4dec9fd8e3011738b2f1d62"; // sha256("tok")
+
+/** A deps set whose pieces a test can override, over a given fake database. */
+function depsOver(db: FakeDb, over: Partial<CompleteLessonDeps>): CompleteLessonDeps {
+  return {
+    authenticate: () => Promise.resolve({ userId: USER, userClient: db.client() }),
+    admin: () => db.client(),
+    translateQuotaCheck: () => () => Promise.resolve(true),
+    hasAiConsent: () => Promise.resolve(true),
+    verifySessionToken: () => true,
+    sessionIssuedAt: () => NOW.getTime() - 3_600_000,
+    sendPush: () => Promise.resolve({ sent: 0, skipped: null }),
+    consumeCompletionSlot: () => Promise.resolve(true),
+    releaseCompletionSlot: () => Promise.resolve(),
+    heartsMode: () => "on",
+    heartsUnlimited: () => Promise.resolve(false),
+    now: () => NOW,
+    ...over,
+  };
+}
+
+Deno.test("a reused token returns the stored result and grants nothing new", async () => {
+  const { db, handler } = setup();
+  const first = await (await handler(post(body(["a", "d"])))).json();
+  assert(first.xpGain > 0);
+  assertEquals(db.rpcCalls.length, 1);
+  const completionsBefore = JSON.stringify(db.tables.lesson_completions);
+  const res = await handler(post(body(["b", "c"]))); // different (worse) answers: never re-graded
+  assertEquals(res.status, 200);
+  assertEquals(await res.json(), first);
+  assertEquals(db.rpcCalls.length, 1); // no second save: no XP, streak, quest or completion effect
+  assertEquals(JSON.stringify(db.tables.lesson_completions), completionsBefore);
+  assertEquals(db.tables.lesson_session_redemptions!.length, 1);
+  assertEquals(db.tables.lesson_session_redemptions![0].token_hash, HASH_TOK);
+});
+
+Deno.test("a repeat past the token window still gets the stored result", async () => {
+  const live = setup();
+  await live.handler(post(body(["a", "d"])));
+  const late = setup({ tokenOk: false });
+  late.db.tables.lesson_session_redemptions = live.db.tables.lesson_session_redemptions;
+  assertEquals((await late.handler(post(body(["a", "d"])))).status, 200);
+});
+
+Deno.test("a token redeemed by another account is not an answer to this request", async () => {
+  const { db, handler } = setup({ tokenOk: false });
+  db.tables.lesson_session_redemptions = [
+    {
+      token_hash: HASH_TOK,
+      user_id: "someone-else",
+      lesson_id: "u1l1",
+      course: "fr",
+      result: {},
+      misses: 0,
+      settle_since: "x",
+    },
+  ];
+  assertEquals((await handler(post(body(["a", "d"])))).status, 403);
+});
+
+Deno.test("a retry with fewer misses still settles the ORIGINAL misses", async () => {
+  const { db, handler } = setup({ heartsMode: "on" });
+  db.settleResult = { data: null, error: { message: "down" } }; // first attempt: saved, settlement failed
+  assertEquals((await handler(post(body(["b", "c"])))).status, 503); // 2 misses
+  db.settleResult = null;
+  const retry = await handler(post(body(["a", "d"]))); // the retry claims 0 misses
+  assertEquals(retry.status, 200);
+  assertEquals(db.settleCalls.at(-1)!._misses, 2);
+  assertEquals(
+    db.settleCalls.at(-1)!._since,
+    db.tables.lesson_session_redemptions![0].settle_since,
   );
-  assertEquals(res.status, 200);
-  assertEquals(queued.ageLimits, [48 * 60 * 60 * 1000]);
+  assertEquals(db.rpcCalls.length, 1); // never saved twice
 });
 
-Deno.test("a lesson finished offline the evening before and synced the next morning keeps its own day", async () => {
-  // Session opened 19:50 on the 17th, finished 20:05, synced 09:00 on the 18th: 13 hours later, past the live window.
-  const now = new Date("2026-10-18T09:00:00Z");
-  const { db, handler } = setup({ now, sessionAgeMs: 13 * 60 * 60 * 1000 + 10 * 60_000 });
-  const res = await handler(post({ ...body(["a", "d"]), completedAt: "2026-10-17T20:05:00.000Z" }));
-  assertEquals(res.status, 200);
-  assertEquals(db.rpcCalls[0].args._today, "2026-10-17");
+Deno.test(
+  "a retry after a completed settlement settles the same token with the same misses (idempotent, no second charge)",
+  async () => {
+    const { db, handler } = setup({ heartsMode: "on" });
+    await handler(post(body(["b", "c"])));
+    await handler(post(body(["a", "d"])));
+    assertEquals(db.settleCalls.length, 2);
+    assertEquals(db.settleCalls[0]._token_hash, db.settleCalls[1]._token_hash);
+    assertEquals(db.settleCalls[1]._misses, 2);
+  },
+);
+
+Deno.test("a retry returns the settled hearts, not the stale ones", async () => {
+  const { db, handler } = setup({ heartsMode: "on" });
+  await handler(post(body(["b", "c"])));
+  db.settleResult = {
+    data: [{ hearts: 2, hearts_refill_at: null, charged: 0, settled_now: false }],
+    error: null,
+  };
+  const json = await (await handler(post(body(["b", "c"])))).json();
+  assertEquals(json.progress.hearts, 2);
 });
+
+Deno.test(
+  "a second claim for the same token (the winner already stored it) gives the slot back and answers the winner's result",
+  async () => {
+    const { db, handler, slots } = setup();
+    // The early lookup misses, the transaction then finds the winner's row.
+    db.rpcResult = {
+      data: {
+        status: "redeemed",
+        result: {
+          xpGain: 7,
+          correct: 2,
+          newlyUnlocked: [],
+          heartsBonus: null,
+          progress: { hearts: 5, heartsRefillAt: null },
+        },
+        misses: 0,
+        settle_since: NOW.toISOString(),
+      },
+      error: null,
+    };
+    const res = await handler(post(body(["a", "d"])));
+    assertEquals(res.status, 200);
+    assertEquals((await res.json()).xpGain, 7);
+    assertEquals(slots.length, 0);
+  },
+);
+
+Deno.test(
+  "the final result (achievements, settled hearts) replaces the stored first copy",
+  async () => {
+    const { db, handler } = setup();
+    const json = await (await handler(post(body(["a", "d"])))).json();
+    assertEquals(db.finalizeCalls.length, 1);
+    assertEquals(db.finalizeCalls[0]._result, json);
+    assertEquals(db.finalizeCalls[0]._token_hash, HASH_TOK);
+  },
+);
+
+Deno.test("each read error is a retryable 503, never a 4xx, and nothing is written", async () => {
+  const reads: [string, string][] = [
+    ["lessons", "findLesson (was a permanent 409 lesson-version-mismatch)"],
+    ["user_progress", "progress"],
+    ["language_progress", "language progress"],
+    ["lesson_completions", "existing completion"],
+    ["learner_time_zones", "time zone"],
+    ["activity_days", "activity day"],
+    ["lesson_session_redemptions", "redemption lookup"],
+  ];
+  for (const [table, what] of reads) {
+    const { db, handler } = setup();
+    db.failReads.add(table);
+    const res = await handler(post(body(["a", "d"])));
+    assertEquals(res.status, 503, what);
+    assertEquals(db.rpcCalls.length, 0, what);
+  }
+});
+
+Deno.test(
+  "an unreadable AI consent is a 503, not a guessed 'no consent' that saves a wrong verdict",
+  async () => {
+    const { db } = setup();
+    db.lesson = {
+      ...db.lesson!,
+      questions: [
+        {
+          id: "q1",
+          type: "translate",
+          prompt: "p",
+          choices: null,
+          bank: ["bonjour"],
+          answer_index: null,
+          answer_text: null,
+        },
+        QUESTIONS[1],
+      ],
+    };
+    const { AiConsentReadError } = await import("../_shared/ai-consent.ts");
+    const handler = createCompleteLessonHandler(
+      depsOver(db, { hasAiConsent: () => Promise.reject(new AiConsentReadError("down")) }),
+    );
+    const res = await handler(post(body(["salut", "d"])));
+    assertEquals(res.status, 503);
+    assertEquals(db.rpcCalls.length, 0);
+  },
+);
+
+/** Captures console.error JSON lines for the duration of fn. */
+async function captureErrors(fn: () => Promise<void>): Promise<string[]> {
+  const lines: string[] = [];
+  const original = console.error;
+  console.error = (...a: unknown[]) => {
+    lines.push(String(a[0]));
+  };
+  try {
+    await fn();
+  } finally {
+    console.error = original;
+  }
+  return lines;
+}
+
+Deno.test(
+  "Pro unknown never fails a saved completion: a stored 'not Pro' is used at any age",
+  async () => {
+    const { db } = setup();
+    const handler = createCompleteLessonHandler(
+      depsOver(db, {
+        heartsUnlimited: () => Promise.resolve(null),
+        heartsProCached: () => Promise.resolve(false),
+      }),
+    );
+    const res = await handler(post(body(["b", "c"])));
+    assertEquals(res.status, 200);
+    assertEquals(db.settleCalls.length, 1);
+    assertEquals(db.settleCalls[0]._pro, false);
+    assertEquals(db.settleCalls[0]._enforce, true); // a stored "not Pro" settles as usual
+    assertEquals(db.settleCalls[0]._misses, 2);
+  },
+);
+
+Deno.test(
+  "Pro unknown with a stale stored 'Pro' is a SHADOW settlement: a lapsed subscriber is not refilled",
+  async () => {
+    const { db } = setup();
+    const handler = createCompleteLessonHandler(
+      depsOver(db, {
+        heartsUnlimited: () => Promise.resolve(null),
+        heartsProCached: () => Promise.resolve(true),
+      }),
+    );
+    const lines = await captureErrors(async () => {
+      assertEquals((await handler(post(body(["b", "c"])))).status, 200);
+    });
+    assertEquals(db.settleCalls.length, 1);
+    assertEquals(db.settleCalls[0]._pro, false);
+    assertEquals(db.settleCalls[0]._enforce, false);
+    assert(lines.some((l) => l.includes("hearts_settlement_shadow_stale_pro")));
+    assertEquals(
+      db.opsEvents.map((e) => e.event),
+      ["hearts_settlement_shadow_stale_pro"],
+    );
+    assertEquals(db.opsEvents[0].source, "edge:complete-lesson");
+    assertEquals(db.opsEvents[0].user_id, USER);
+  },
+);
+
+Deno.test(
+  "Pro unknown with no stored answer at all is a SHADOW settlement: charges nothing, never _pro=true",
+  async () => {
+    const { db } = setup();
+    const handler = createCompleteLessonHandler(
+      depsOver(db, {
+        heartsUnlimited: () => Promise.resolve(null),
+        heartsProCached: () => Promise.resolve(null),
+      }),
+    );
+    const lines = await captureErrors(async () => {
+      const res = await handler(post(body(["b", "c"])));
+      assertEquals(res.status, 200);
+    });
+    assertEquals(db.settleCalls.length, 1);
+    assertEquals(db.settleCalls[0]._pro, false);
+    assertEquals(db.settleCalls[0]._enforce, false);
+    assert(lines.some((l) => l.includes("hearts_settlement_shadow_pro_unknown")));
+    assertEquals(
+      db.opsEvents.map((e) => e.event),
+      ["hearts_settlement_shadow_pro_unknown"],
+    );
+  },
+);
+
+Deno.test(
+  "a failed settlement is recorded as an ops event with a code, not free text",
+  async () => {
+    const { handler, db } = setup({ heartsMode: "on" });
+    db.settleResult = { data: null, error: { message: "secret detail from the database" } };
+    await captureErrors(async () => {
+      assertEquals((await handler(post(body(["b", "c"])))).status, 503);
+    });
+    assertEquals(db.opsEvents.length, 1);
+    assertEquals(db.opsEvents[0].event, "hearts_settlement_failed");
+    assertEquals(db.opsEvents[0].detail, { reason: "rpc" });
+    assert(!JSON.stringify(db.opsEvents).includes("secret detail"));
+  },
+);
+
+for (const mode of ["error", "throw", "hang"] as const) {
+  Deno.test(
+    `a recording failure (${mode}) never changes the failed-settlement answer`,
+    async () => {
+      const { handler, db } = setup({ heartsMode: "on" });
+      db.settleResult = { data: null, error: { message: "down" } };
+      db.opsEventsMode = mode;
+      await captureErrors(async () => {
+        assertEquals((await handler(post(body(["b", "c"])))).status, 503);
+      });
+    },
+  );
+}
+
+Deno.test(
+  "Pro unknown with no cache dependency at all is also a shadow settlement, never a 503",
+  async () => {
+    const { db } = setup();
+    const handler = createCompleteLessonHandler(
+      depsOver(db, { heartsUnlimited: () => Promise.resolve(null) }),
+    );
+    assertEquals((await handler(post(body(["b", "c"])))).status, 200);
+    assertEquals(db.settleCalls[0]._pro, false);
+    assertEquals(db.settleCalls[0]._enforce, false);
+  },
+);
+
+Deno.test(
+  "a settlement whose database call fails is still a retryable 503 on the native path",
+  async () => {
+    const { db, handler } = setup();
+    db.settleResult = { data: null, error: { message: "down" } };
+    assertEquals((await handler(post(body(["b", "c"])))).status, 503);
+  },
+);
+
+Deno.test(
+  "a replay returns the CURRENT progress, not the first completion's snapshot",
+  async () => {
+    const { db, handler } = setup();
+    const first = await (await handler(post(body(["a", "d"])))).json();
+    // Later the learner earned more XP and lost a heart elsewhere.
+    db.tables.user_progress = [
+      {
+        user_id: USER,
+        streak: 9,
+        longest_streak: 12,
+        last_active_date: "2026-10-20",
+        hearts: 2,
+        hearts_refill_at: "2026-10-20T10:00:00.000Z",
+        streak_freezes: 1,
+      },
+    ];
+    db.tables.language_progress = [
+      { user_id: USER, language: "fr", xp: 4321, league_tier: "gold" },
+    ];
+    const again = await (await handler(post(body(["b", "c"])))).json();
+    assertEquals(again.xpGain, first.xpGain); // the reward itself is the original's
+    assertEquals(again.progress.xp, 4321);
+    assertEquals(again.progress.leagueTier, "gold");
+    assertEquals(again.progress.streak, 9);
+    assertEquals(again.progress.longestStreak, 12);
+    assertEquals(again.progress.lastActiveDate, "2026-10-20");
+    assertEquals(again.progress.hearts, 2);
+    assertEquals(again.progress.heartsRefillAt, Date.parse("2026-10-20T10:00:00.000Z"));
+    assertEquals(again.progress.streakFreezes, 1);
+  },
+);
+
+Deno.test("a replay whose progress read fails keeps the stored copy", async () => {
+  const { db, handler } = setup();
+  const first = await (await handler(post(body(["a", "d"])))).json();
+  db.failReads.add("user_progress");
+  db.failReads.add("language_progress");
+  const again = await (await handler(post(body(["a", "d"])))).json();
+  assertEquals(again.progress.xp, first.progress.xp);
+  assertEquals(again.progress.streak, first.progress.streak);
+});
+
+Deno.test(
+  "a missing apply_lesson_completion_once is a retryable 503, never a save through apply_lesson_completion",
+  async () => {
+    // The older transaction claims no token, so saving through it would let the token be spent again.
+    const { db, handler } = setup();
+    db.onceMissing = true;
+    assertEquals((await handler(post(body(["a", "d"])))).status, 503);
+    assertEquals(
+      db.rpcCalls.map((c) => c.name),
+      ["apply_lesson_completion_once"],
+    );
+  },
+);
+
+Deno.test("any other save error is a retryable 503 too", async () => {
+  const { db, handler } = setup();
+  db.rpcResult = { data: null, error: { code: "40001", message: "serialization" } };
+  assertEquals((await handler(post(body(["a", "d"])))).status, 503);
+  assertEquals(
+    db.rpcCalls.map((c) => c.name),
+    ["apply_lesson_completion_once"],
+  );
+});
+
+Deno.test(
+  "a missing redemption table on the early lookup is a 503 and nothing is saved, never 'not redeemed'",
+  async () => {
+    const { db, handler } = setup();
+    db.missingTables.add("lesson_session_redemptions");
+    assertEquals((await handler(post(body(["a", "d"])))).status, 503);
+    assertEquals(db.rpcCalls.length, 0);
+  },
+);
+
+Deno.test(
+  "a token that belongs to another completion is a non-retryable 403, and the slot goes back",
+  async () => {
+    const { db, handler, slots } = setup();
+    db.rpcResult = {
+      data: null,
+      error: { message: "lesson session token belongs to a different completion" },
+    };
+    const res = await handler(post(body(["a", "d"])));
+    assertEquals(res.status, 403);
+    assertEquals((await res.json()).error, "Invalid or expired lesson session");
+    assertEquals(slots.length, 0);
+  },
+);
+
+Deno.test(
+  "a finalize that returns an error is logged (the stored first copy stands) and the lesson still succeeds",
+  async () => {
+    const { db, handler } = setup();
+    db.finalizeError = { message: "boom" };
+    const lines = await captureErrors(async () => {
+      assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    });
+    assert(lines.some((l) => l.includes("lesson_result_finalize_failed")));
+    assertEquals(
+      db.opsEvents.map((e) => e.event),
+      ["lesson_result_finalize_failed"],
+    );
+  },
+);
+
+Deno.test(
+  "a finalize against a missing function is logged like any other finalize error",
+  async () => {
+    const { db, handler } = setup();
+    db.finalizeError = { code: "PGRST202", message: "not found" };
+    const lines = await captureErrors(async () => {
+      assertEquals((await handler(post(body(["a", "d"])))).status, 200);
+    });
+    assert(lines.some((l) => l.includes("lesson_result_finalize_failed")));
+    assertEquals(db.opsEvents.length, 1);
+  },
+);

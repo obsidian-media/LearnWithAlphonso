@@ -3,7 +3,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-public enum AIResponseSurface: String, CaseIterable, Sendable { case hector, conversation, campaign, explain }
+public enum AIResponseSurface: String, CaseIterable, Sendable { case hector, conversation, campaign, explain, support }
 
 public enum AIResponseReportReason: String, CaseIterable, Sendable {
     case inappropriate = "ai_inappropriate"

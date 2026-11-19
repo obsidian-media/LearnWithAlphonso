@@ -124,7 +124,7 @@ describe("POST /api/grade-translation", () => {
       source: "ai",
       reason: "Same meaning.",
     });
-    expect(consumeQuota).toHaveBeenCalledWith(expect.anything(), "translate");
+    expect(consumeQuota).toHaveBeenCalledWith(expect.anything(), "translate", undefined, "user-1");
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 

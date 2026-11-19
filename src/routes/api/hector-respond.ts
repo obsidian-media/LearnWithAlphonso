@@ -1,9 +1,11 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { llmChatCompletion } from "@/lib/llm-chat.server";
 import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
+import { boundTranscript } from "@/lib/chat-transcript-limits";
 import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
 import {
   buildHectorMessages,
@@ -35,23 +37,28 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const llmKey = resolveLlmApiKey();
   const deepgramKey = process.env.DEEPGRAM_API_KEY;
   if (!llmKey || !deepgramKey) {
-    return Response.json({ error: "Hector is not configured" }, { status: 500 });
+    return noStoreJson({ error: "Hector is not configured" }, { status: 500 });
   }
 
   // Auth: the MAIN app's Supabase token. This is the decoupling --
   // Hector no longer has its own account.
   const accessToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
   if (!accessToken) {
-    return Response.json({ error: "unauthorized" }, { status: 401 });
+    return noStoreJson({ error: "unauthorized" }, { status: 401 });
   }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: userData, error: userError } = await timer.time("auth", async () =>
     supabaseAdmin.auth.getUser(accessToken),
   );
   if (userError || !userData?.user) {
-    return Response.json({ error: "unauthorized" }, { status: 401 });
+    return noStoreJson({ error: "unauthorized" }, { status: 401 });
   }
   const userId = userData.user.id;
+  // A banned learner's token is still valid: refuse before the switch, consent, entitlement and quota steps. This is
+  // the route's only ban check: the quota step below takes this verified user and does not verify again.
+  const { checkBan } = await import("@/lib/account-ban.server");
+  const banned = await checkBan(userId);
+  if (banned) return noStoreJson({ error: banned.message }, { status: banned.status });
 
   // Account consent comes before entitlement and quota: a learner who has not allowed AI sees the consent sheet,
   // not the paywall, and a refused request spends nothing.
@@ -61,7 +68,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   if (off) return off;
   if (!(await isSwitchOn("tutor"))) {
     console.info(JSON.stringify({ event: "tutor_switched_off" }));
-    return Response.json({ error: "tutor-unavailable" }, { status: 503 });
+    return noStoreJson({ error: "tutor-unavailable" }, { status: 503 });
   }
   const denied = await requireAiConsent(userId, { db: supabaseAdmin, route: "hector-respond" });
   if (denied) return denied;
@@ -74,17 +81,19 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     return rcConfig ? getProEntitlementStatus(rcConfig, userId) : "unavailable";
   });
   if (entitlement === "unavailable") {
-    return Response.json({ error: "entitlement-unavailable" }, { status: 503 });
+    return noStoreJson({ error: "entitlement-unavailable" }, { status: 503 });
   }
   if (entitlement === "inactive") {
-    return Response.json({ error: "not-entitled" }, { status: 403 });
+    return noStoreJson({ error: "not-entitled" }, { status: 403 });
   }
 
   // Pro's own daily allowance, not the free `chat` quota Practice spends: practicing must never block the feature a
   // learner pays for. Reached only after the entitlement check above, so a learner without Pro spends nothing.
   const quota = await timer.time("quota", async () => {
-    const { consumeQuota } = await import("@/lib/ai-quota.server");
-    return consumeQuota(request, "hector");
+    const { consumeQuotaFor, userScopedClient } = await import("@/lib/ai-quota.server");
+    const learnerDb = userScopedClient(accessToken);
+    if (!learnerDb) return { ok: false as const, status: 500, message: "Server not configured." };
+    return consumeQuotaFor(learnerDb, "hector", undefined, userId);
   });
   if (!quota.ok) return quotaFailureResponse(quota);
 
@@ -101,10 +110,10 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+    return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
   }
   const text = (body.text ?? "").trim();
-  if (!text) return Response.json({ error: "text required" }, { status: 400 });
+  if (!text) return noStoreJson({ error: "text required" }, { status: 400 });
   // `course` and `cefr_level` come from current clients; `language` is what every earlier build sends ("en").
   // The resolved course drives the prompt, the voice, the output filter's fallback and the reply's `language`.
   const course = resolveTutorCourse(body.course, body.language);
@@ -125,7 +134,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
         signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
         body: {
           model: resolveLlmChatModel(),
-          messages: buildHectorMessages(body.history ?? [], text, systemPrompt, memory),
+          messages: buildHectorMessages(boundTranscript(body.history), text, systemPrompt, memory),
           max_tokens: 512,
         },
         track: { userId, kind: "hector" },
@@ -147,7 +156,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     } catch {
       return {
         ok: false as const,
-        failure: Response.json({ error: "Hector reply unavailable" }, { status: 504 }),
+        failure: noStoreJson({ error: "Hector reply unavailable" }, { status: 504 }),
       };
     }
   });
@@ -155,10 +164,10 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const reply = llm.reply;
   const llmMs = performance.now() - llmStart;
   if (!reply) {
-    return Response.json({ error: "empty reply from model" }, { status: 502 });
+    return noStoreJson({ error: "empty reply from model" }, { status: 502 });
   }
   if (reply.length > 2_000) {
-    return Response.json({ error: "Hector reply too long" }, { status: 502 });
+    return noStoreJson({ error: "Hector reply too long" }, { status: 502 });
   }
 
   // What the learner hears is what they read: a blocked reply is replaced before it is spoken.
@@ -209,7 +218,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
       if (!audio) {
         return {
           ok: false as const,
-          failure: Response.json({ error: "Hector audio too large" }, { status: 502 }),
+          failure: noStoreJson({ error: "Hector audio too large" }, { status: 502 }),
         };
       }
       return {
@@ -219,7 +228,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     } catch {
       return {
         ok: false as const,
-        failure: Response.json({ error: "Hector voice unavailable" }, { status: 504 }),
+        failure: noStoreJson({ error: "Hector voice unavailable" }, { status: 504 }),
       };
     }
   });
@@ -227,7 +236,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const audioBase64 = tts.audioBase64;
   const ttsMs = performance.now() - ttsStart;
 
-  return Response.json(
+  return noStoreJson(
     shapeTutorReply({
       requestId: crypto.randomUUID(),
       sessionId,

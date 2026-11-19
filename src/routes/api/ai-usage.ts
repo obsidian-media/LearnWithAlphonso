@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
@@ -13,10 +14,10 @@ import { createFileRoute } from "@tanstack/react-router";
 async function handle(request: Request): Promise<Response> {
   const { verifyAuth } = await import("@/lib/ai-quota.server");
   const auth = await verifyAuth(request);
-  if (!auth.ok) return Response.json({ error: auth.message }, { status: auth.status });
+  if (!auth.ok) return noStoreJson({ error: auth.message }, { status: auth.status });
   const { readMonthlyCap } = await import("@/lib/ai-monthly-cap.server");
   const reading = await readMonthlyCap(auth.supabase, null);
-  return Response.json(
+  return noStoreJson(
     {
       state: reading.status?.state ?? "unknown",
       percentUsed: reading.status?.percentUsed ?? 0,

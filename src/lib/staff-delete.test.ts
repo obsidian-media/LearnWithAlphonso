@@ -34,9 +34,21 @@ const { staffDeleteUser } = asTestFns({ staffDeleteUser: mod.staffDeleteUser });
 
 const OWNER = "00000000-0000-4000-8000-0000000000a1";
 const SUPPORT = "00000000-0000-4000-8000-0000000000b1";
+const SUPPORT_NO_DELETE = "00000000-0000-4000-8000-0000000000b2";
+const OTHER_OWNER = "00000000-0000-4000-8000-0000000000a2";
 const LEARNER = "00000000-0000-4000-8000-000000000001";
 const EMAIL = "Ada@Example.com";
 const HASH = createHash("sha256").update(EMAIL.toLowerCase()).digest("hex");
+
+/** Mirrors public.staff_assert_may_restrict: 42501 for an owner target, or a staff target when the actor is not an owner. */
+const staffTargets: Record<string, "owner" | "support"> = {};
+function assertMayRestrict(args: { p_actor_role: string; p_target: string }) {
+  const targetRole = staffTargets[args.p_target];
+  if (targetRole === "owner" || (targetRole && args.p_actor_role !== "owner")) {
+    return { data: null, error: { code: "42501", message: "not allowed" } };
+  }
+  return { data: null, error: null };
+}
 
 function adminClient(deleteError: { message: string } | null = null) {
   const admin = createSupabaseMock() as ReturnType<typeof createSupabaseMock> & {
@@ -57,6 +69,7 @@ function adminClient(deleteError: { message: string } | null = null) {
     },
   };
   admin.rpc.mockImplementation(async (name: string, args: { p_action?: string }) => {
+    if (name === "staff_assert_may_restrict") return assertMayRestrict(args as never);
     order.push(name === "staff_record" ? `record:${args.p_action}` : name);
     return { data: 1, error: null };
   });
@@ -80,6 +93,7 @@ const recorded = (admin: ReturnType<typeof adminClient>, action: string) =>
 
 beforeEach(() => {
   order.length = 0;
+  for (const k of Object.keys(staffTargets)) delete staffTargets[k];
   revokeApple.mockReset().mockImplementation(async () => {
     order.push("apple");
     return "revoked";
@@ -93,7 +107,12 @@ beforeEach(() => {
   });
   setStaff({
     [OWNER]: { role: "owner", scopes: [] },
-    [SUPPORT]: { role: "support", scopes: ["users.read", "user.block", "reports.manage"] },
+    [SUPPORT_NO_DELETE]: { role: "support", scopes: ["users.read"] },
+    [OTHER_OWNER]: { role: "owner", scopes: [] },
+    [SUPPORT]: {
+      role: "support",
+      scopes: ["users.read", "user.block", "reports.manage", "user.delete"],
+    },
   });
 });
 
@@ -207,7 +226,9 @@ describe("staffDeleteUser", () => {
 
   it("support is Forbidden (user.delete is owner-only), and nobody deletes themselves", async () => {
     const admin = adminClient();
-    await expect(del(admin, {}, SUPPORT)).rejects.toThrow("Forbidden: missing scope user.delete");
+    await expect(del(admin, {}, SUPPORT_NO_DELETE)).rejects.toThrow(
+      "Forbidden: missing scope user.delete",
+    );
     await expect(del(admin, { id: OWNER })).rejects.toThrow(/own account/i);
     expect(admin.rpc).not.toHaveBeenCalled();
     expect(admin.auth.admin.deleteUser).not.toHaveBeenCalled();
@@ -215,11 +236,99 @@ describe("staffDeleteUser", () => {
 
   it("a requested row that cannot be written stops everything before any external call", async () => {
     const admin = adminClient();
-    admin.rpc.mockResolvedValue({ data: null, error: { message: "down" } });
+    admin.rpc.mockImplementation(async (name: string) =>
+      name === "staff_assert_may_restrict"
+        ? { data: null, error: null }
+        : { data: null, error: { message: "down" } },
+    );
     await expect(del(admin)).rejects.toThrow(/action record/i);
     expect(cancelWeb).not.toHaveBeenCalled();
     expect(revokeApple).not.toHaveBeenCalled();
     expect(admin.auth.admin.deleteUser).not.toHaveBeenCalled();
+  });
+});
+
+describe("staffDeleteUser and staff targets", () => {
+  const nothingHappened = (admin: ReturnType<typeof adminClient>) => {
+    expect(recorded(admin, "user.delete.requested")).toHaveLength(0);
+    // The only row is the refusal itself (reason and target, no email or hash).
+    const rows = admin.rpc.mock.calls.filter((c) => c[0] === "staff_record");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]![1]).toMatchObject({
+      p_action: "user.delete.refused",
+      p_target: LEARNER,
+      p_after: { why: "protected_account" },
+    });
+    expect(JSON.stringify(rows[0]![1])).not.toContain("example.com");
+    expect(cancelWeb).not.toHaveBeenCalled();
+    expect(revokeApple).not.toHaveBeenCalled();
+    expect(admin.auth.admin.deleteUser).not.toHaveBeenCalled();
+    expect(eraseRecord).not.toHaveBeenCalled();
+  };
+
+  it("a support actor holding user.delete cannot delete an owner: refused, nothing written", async () => {
+    staffTargets[LEARNER] = "owner";
+    const admin = adminClient();
+    await expect(del(admin, {}, SUPPORT)).rejects.toThrow(/belongs to staff/i);
+    nothingHappened(admin);
+  });
+
+  it("a support actor cannot delete another staff member: refused, nothing written", async () => {
+    staffTargets[LEARNER] = "support";
+    const admin = adminClient();
+    await expect(del(admin, {}, SUPPORT)).rejects.toThrow(/belongs to staff/i);
+    nothingHappened(admin);
+  });
+
+  it("an owner cannot delete another owner", async () => {
+    staffTargets[LEARNER] = "owner";
+    const admin = adminClient();
+    await expect(del(admin, { id: LEARNER }, OTHER_OWNER)).rejects.toThrow(/belongs to staff/i);
+    nothingHappened(admin);
+  });
+
+  it("a refusal whose record cannot be written is still a refusal, and is logged", async () => {
+    staffTargets[LEARNER] = "owner";
+    const admin = adminClient();
+    admin.rpc.mockImplementation(async (name: string, args: { p_action?: string }) =>
+      name === "staff_assert_may_restrict"
+        ? assertMayRestrict(args as never)
+        : { data: null, error: { message: "audit down" } },
+    );
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(del(admin, {}, SUPPORT)).rejects.toThrow(/belongs to staff/i);
+    expect(admin.auth.admin.deleteUser).not.toHaveBeenCalled();
+    expect(JSON.stringify(logged.mock.calls)).toContain("audit_write_failed");
+    logged.mockRestore();
+  });
+
+  it("an owner may delete a support member", async () => {
+    staffTargets[LEARNER] = "support";
+    const admin = adminClient();
+    const result = await del(admin);
+    expect(result).toEqual({ ok: true, failedSteps: [] });
+    expect(admin.auth.admin.deleteUser).toHaveBeenCalledWith(LEARNER);
+    expect(admin.rpc).toHaveBeenCalledWith("staff_assert_may_restrict", {
+      p_actor_role: "owner",
+      p_target: LEARNER,
+    });
+  });
+
+  it("a learner is deleted by a support actor holding the scope, as before", async () => {
+    const admin = adminClient();
+    const result = await del(admin, {}, SUPPORT);
+    expect(result).toEqual({ ok: true, failedSteps: [] });
+  });
+
+  it("an undecided check (database error) deletes nothing", async () => {
+    const admin = adminClient();
+    admin.rpc.mockImplementation(async () => ({
+      data: null,
+      error: { code: "XX000", message: "x" },
+    }));
+    await expect(del(admin)).rejects.toThrow(/could not be checked/i);
+    expect(admin.auth.admin.deleteUser).not.toHaveBeenCalled();
+    expect(cancelWeb).not.toHaveBeenCalled();
   });
 });
 

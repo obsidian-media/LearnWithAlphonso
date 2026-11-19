@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { isCallId } from "@/lib/practice-calls.server";
 
@@ -7,7 +8,7 @@ import { isCallId } from "@/lib/practice-calls.server";
  * client cannot add text of its own. Keys are per call and item, so a second tap adds nothing. For a Pro learner the
  * phrase is also kept in What Alphonso remembers.
  */
-const json = (body: unknown, status = 200) => Response.json(body, { status });
+const json = (body: unknown, status = 200) => noStoreJson(body, { status });
 
 export const Route = createFileRoute("/api/call-recap-review")({
   server: {

@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 const SRC = path.resolve(import.meta.dirname, "..");
 const ALLOWED = new Set(["lib/sync.functions.ts"]);
 const WRITE = /\.from\(\s*["']lesson_completions["']\s*\)\s*\.(insert|update|upsert|delete)\b/g;
-const RPC_WRITE = /\.rpc\(\s*["']apply_lesson_completion["']/g;
+const RPC_WRITE = /\.rpc\(\s*["']apply_lesson_completion(?:_once)?["']/g;
 
 function sourceFiles(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -40,6 +40,10 @@ describe("only completeLessonRemote writes lesson_completions", () => {
   it("completeLessonRemote is the only write in its file", () => {
     const source = fs.readFileSync(path.join(SRC, "lib/sync.functions.ts"), "utf8");
     expect([...source.matchAll(WRITE)]).toHaveLength(0);
-    expect([...source.matchAll(RPC_WRITE)]).toHaveLength(1);
+    // One transaction, apply_lesson_completion_once. The older apply_lesson_completion claims no token, so a second
+    // call to it here would bring back a save path that lets a lesson session be spent twice.
+    const calls = [...source.matchAll(RPC_WRITE)].map((m) => m[0]);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toContain("apply_lesson_completion_once");
   });
 });

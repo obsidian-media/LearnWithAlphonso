@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { isCourse, type Course } from "@/data/courses";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
@@ -22,7 +23,7 @@ import { isCallId } from "@/lib/practice-calls.server";
  * The call's course and ownership come from the server's own practice_calls row, never from the request. The recap is
  * saved to the learner's memory (tutor_memory) only when they are Pro, decided here from RevenueCat.
  */
-const NONE = () => Response.json({ recap: null });
+const NONE = () => noStoreJson({ recap: null });
 
 export const Route = createFileRoute("/api/call-recap")({
   server: {
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/api/call-recap")({
         try {
           body = await request.json();
         } catch {
-          return Response.json({ error: "Invalid JSON" }, { status: 400 });
+          return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
         }
         const turns = boundTranscript(body.messages);
         // Short calls cost nothing: no AI call and no quota spent.
@@ -118,7 +119,7 @@ export const Route = createFileRoute("/api/call-recap")({
         } catch {
           // No signing secret: the recap still shows, "Review these" does not.
         }
-        return Response.json({
+        return noStoreJson({
           recap: {
             corrections: kept.corrections.map((c) => ({
               said: c.said,

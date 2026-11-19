@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { nextUtcMidnight, quotaFailureResponse } from "./ai-quota-response";
 
 /**
@@ -68,7 +69,7 @@ export async function reserveAudioSeconds(
     }
     return {
       ok: false,
-      response: Response.json({ error: "Could not verify your usage." }, { status: 500 }),
+      response: noStoreJson({ error: "Could not verify your usage." }, { status: 500 }),
     };
   }
   if (typeof data !== "string") {

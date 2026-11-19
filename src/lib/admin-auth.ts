@@ -59,15 +59,15 @@ export async function isAdminUser(client: SupabaseClient, userId: string): Promi
 export const SECOND_FACTOR_REQUIRED_MESSAGE = "Unauthorized: Second factor required";
 
 /**
- * True when the session's assurance level is enough for the admin tool. With ADMIN_REQUIRE_AAL2="true" only a session
- * verified with a second factor (aal2 in the access token) passes; otherwise any signed-in session does, so the
- * operator can enrol an authenticator before switching the requirement on.
+ * True when the session's assurance level is enough for the admin tool. Fails closed: only a session verified with a
+ * second factor (aal2 in the access token) passes, unless ADMIN_REQUIRE_AAL2 is exactly "false" (an explicit opt-out,
+ * for a local or staging console with no authenticator). Unset, empty, "true" or any other value all require aal2.
  */
 export function meetsAdminAssurance(
   claims: { aal?: unknown } | undefined,
   requireAal2: string | undefined,
 ): boolean {
-  if (requireAal2 !== "true") return true;
+  if (requireAal2 === "false") return true;
   return claims?.aal === "aal2";
 }
 

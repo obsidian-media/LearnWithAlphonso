@@ -377,3 +377,127 @@ describe("Review page", () => {
     expect(await screen.findByText("Back in the queue.")).toBeInTheDocument();
   });
 });
+
+describe("Review page -- failures are said, never mistaken for an empty or finished queue", () => {
+  it("a queue that fails to load says so with Try again, not 'Nothing due today'", async () => {
+    fetchDueReviews
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValue({ due: [{ itemKey: "u1l1:q1" }], total: 1 });
+    const user = userEvent.setup();
+    renderPage();
+    expect(await screen.findByText("Your review didn't load")).toBeInTheDocument();
+    expect(screen.queryByText("Nothing due today")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText("Which is a formal greeting?")).toBeInTheDocument();
+    expect(fetchDueReviews).toHaveBeenCalledTimes(2);
+  });
+
+  it("an answer that fails to save offers Try again and does not move on as if it counted", async () => {
+    fetchDueReviews.mockResolvedValue({
+      due: [{ itemKey: "u1l1:q1" }, { itemKey: "u1l1:q2" }],
+      total: 2,
+    });
+    gradeReview
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValue({ retired: false, dueOn: "2026-09-20" });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: "Good morning." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("This answer didn't save");
+    // The sheet's main button retries; it does not advance.
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    expect(gradeReview).toHaveBeenCalledTimes(2);
+    expect(screen.getByText("Which is a formal greeting?")).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: "Continue" }));
+    expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
+  });
+
+  it("Continue tapped while the save is still on its way waits for it, and stays put if it fails", async () => {
+    fetchDueReviews.mockResolvedValue({
+      due: [{ itemKey: "u1l1:q1" }, { itemKey: "u1l1:q2" }],
+      total: 2,
+    });
+    let fail!: (e: unknown) => void;
+    gradeReview.mockReturnValueOnce(new Promise((_r, reject) => (fail = reject)));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Good morning." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    // The tap lands while the save is still pending: the screen waits instead of moving on.
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    expect(screen.queryByText("Nice to ___ you.")).not.toBeInTheDocument();
+    fail(new Error("offline"));
+    expect(await screen.findByRole("alert")).toHaveTextContent("This answer didn't save");
+    expect(screen.queryByText("Nice to ___ you.")).not.toBeInTheDocument();
+  });
+
+  it("two taps on Continue while the save is on its way move on one card, not two", async () => {
+    fetchDueReviews.mockResolvedValue({
+      due: [{ itemKey: "u1l1:q1" }, { itemKey: "u1l1:q2" }],
+      total: 2,
+    });
+    let land!: (v: unknown) => void;
+    gradeReview.mockReturnValueOnce(new Promise((resolve) => (land = resolve)));
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Good morning." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    const continueButton = screen.getByRole("button", { name: "Continue" });
+    await user.click(continueButton);
+    await user.click(continueButton);
+    land({ retired: false, dueOn: "2026-09-20" });
+    // The second card, not the end of the queue that a double advance would reach.
+    expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
+    expect(screen.queryByText("Review complete")).not.toBeInTheDocument();
+  });
+
+  it("a Try again whose first attempt did land is counted as this learner's own, not another tab's", async () => {
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l1:q1" }], total: 1 });
+    gradeReview
+      .mockRejectedValueOnce(new Error("reply lost"))
+      .mockResolvedValue({ retired: false, dueOn: "2026-09-21", superseded: true });
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Good morning." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("This answer didn't save");
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    await user.click(await screen.findByRole("button", { name: "Finish" }));
+    expect(screen.queryByText(/another tab/)).not.toBeInTheDocument();
+    expect(await screen.findByText(/1 correct · 0 to revisit/)).toBeInTheDocument();
+  });
+
+  it("an answer another tab already graded is said to be superseded and is not counted", async () => {
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l1:q1" }], total: 1 });
+    gradeReview.mockResolvedValue({ retired: false, dueOn: "2026-09-21", superseded: true });
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Good morning." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    expect(await screen.findByText(/wasn't counted/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Finish" }));
+    expect(await screen.findByText(/0 correct · 0 to revisit/)).toBeInTheDocument();
+  });
+
+  it("with more due than one batch, the end of the batch says how many remain and loads the next", async () => {
+    fetchDueReviews
+      .mockResolvedValueOnce({ due: [{ itemKey: "u1l1:q1" }], total: 30, dueTotal: 25 })
+      .mockResolvedValue({ due: [{ itemKey: "u1l1:q2" }], total: 30, dueTotal: 24 });
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Good morning." }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await user.click(await screen.findByRole("button", { name: "Finish" }));
+
+    expect(await screen.findByText("That's this round done")).toBeInTheDocument();
+    expect(screen.getByText(/24 more are due/)).toBeInTheDocument();
+    expect(screen.queryByText("Review complete")).not.toBeInTheDocument();
+    // Not cleared yet, so no queue-cleared bonus is claimed.
+    expect(claimReviewClearBonusRemote).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: /Keep going/ }));
+    expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
+  });
+});

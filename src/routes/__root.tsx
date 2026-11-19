@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { CookieConsent } from "../components/CookieConsent";
 import { AttributionBridge } from "../components/AttributionBridge";
+import { TimeZoneBridge } from "../components/TimeZoneBridge";
 import { ReferralCapture } from "../components/ReferralBridge";
 import { SHARE_IMAGE, SHARE_IMAGE_ALT, THEME_COLOR_LIGHT, THEME_COLOR_NIGHT } from "../lib/seo";
 import { StatusPage } from "../components/StatusPage";
@@ -27,6 +28,9 @@ import { THEME_BOOT_SCRIPT, useTheme } from "../lib/theme";
 import { fetchProgress } from "../lib/sync.functions";
 import { getMyProfile } from "../lib/leaderboard.functions";
 import { clearCachedVoicePrefs } from "../lib/voice-prefs";
+import { browserFirstRunStore, resetCompleteProfileSkip } from "../lib/first-run";
+import { takeStaleSessionDrop } from "../lib/auth-offline";
+import { LEARNER_PROFILE_KEY, parseLearnerProfile } from "../lib/learner-profile";
 
 function NotFoundComponent() {
   return (
@@ -163,6 +167,7 @@ function RootComponent() {
       <MotionConfig reducedMotion="user">
         <AuthSync />
         <AttributionBridge />
+        <TimeZoneBridge />
         <ReferralCapture />
         <Outlet />
         <CookieConsent />
@@ -174,21 +179,40 @@ function RootComponent() {
 function AuthSync() {
   const hydrate = useProgress((s) => s.hydrate);
   const reset = useProgress((s) => s.reset);
+  const adoptUser = useProgress((s) => s.adoptUser);
   const hydrateTheme = useTheme((s) => s.hydrateFromServer);
   const router = useRouter();
   const qc = useQueryClient();
   useEffect(() => {
     let cancelled = false;
+    // The account the app last loaded for. supabase-js emits SIGNED_IN again whenever a hidden tab becomes visible;
+    // for the same account that is not a sign-in, and reloading on it threw away whatever the learner was doing.
+    let currentUserId: string | null | undefined;
     async function load() {
-      const { data } = await supabase.auth.getSession();
+      let data;
+      try {
+        ({ data } = await supabase.auth.getSession());
+      } catch {
+        // Storage or the network failed: nothing to adopt. Pages waiting on the account give up on their own timer.
+        return;
+      }
       if (cancelled) return;
-      if (!data.session) {
+      const user = data.session?.user;
+      if (!user) {
+        currentUserId = null;
         reset();
         return;
       }
+      currentUserId = user.id;
+      // The account's own course (remembered in this browser), not the server's default of English.
+      const course = adoptUser(
+        user.id,
+        parseLearnerProfile(user.user_metadata?.[LEARNER_PROFILE_KEY]).course ?? null,
+      );
       try {
-        const snap = await fetchProgress();
-        if (!cancelled) hydrate(snap);
+        const snap = await fetchProgress({ data: { course } });
+        // A course switch while this was in flight has already loaded its own numbers.
+        if (!cancelled && useProgress.getState().course === course) hydrate(snap);
         const profile = await getMyProfile();
         if (!cancelled) hydrateTheme(profile?.theme ?? null);
       } catch {
@@ -196,11 +220,24 @@ function AuthSync() {
       }
     }
     void load();
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      if (event === "SIGNED_IN") {
+        const id = session?.user?.id;
+        if (id && id === currentUserId) return;
+        // Another account than the one loaded: a Complete your profile skip was the last account's.
+        if (id && currentUserId && id !== currentUserId) resetCompleteProfileSkip();
+        if (id) currentUserId = id;
+      }
       router.invalidate();
       if (event === "SIGNED_OUT") {
+        currentUserId = null;
         reset();
+        resetCompleteProfileSkip();
+        // Nothing the last account loaded may show to the next one on this browser (a shared computer).
+        qc.clear();
+        // A stale session dropped on the sign-in page keeps the draft: it belongs to the person signing up now.
+        if (!takeStaleSessionDrop()) browserFirstRunStore().clearDraft();
         // Voice choices are the account's; the next account on this browser starts from its own.
         clearCachedVoicePrefs();
       } else {
@@ -212,6 +249,6 @@ function AuthSync() {
       cancelled = true;
       sub.subscription.unsubscribe();
     };
-  }, [hydrate, reset, hydrateTheme, router, qc]);
+  }, [hydrate, reset, adoptUser, hydrateTheme, router, qc]);
   return null;
 }

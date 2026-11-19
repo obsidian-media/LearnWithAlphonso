@@ -14,12 +14,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.obsidianmedia.learnwithalphonso.core.logic.InviteLink
 import com.obsidianmedia.learnwithalphonso.core.logic.PushTap
 import com.obsidianmedia.learnwithalphonso.core.logic.PushTapDestination
 import com.obsidianmedia.learnwithalphonso.core.logic.ReferralLink
+import com.obsidianmedia.learnwithalphonso.core.auth.AuthState
 import com.obsidianmedia.learnwithalphonso.core.logic.ReferralPending
+import com.obsidianmedia.learnwithalphonso.core.net.TimeZoneReporter
+import com.obsidianmedia.learnwithalphonso.core.net.setMyTimeZone
 import com.obsidianmedia.learnwithalphonso.ui.RootScreen
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoPalettes
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTheme
@@ -41,6 +46,7 @@ class MainActivity : ComponentActivity() {
         handleInviteLink(intent)
         handleReferralLink(intent)
         handlePushTap(intent)
+        startTimeZoneSync()
         setContent {
             val themeId by container.themeManager.theme.collectAsState()
             val paletteId by container.themeManager.palette.collectAsState()
@@ -106,6 +112,37 @@ class MainActivity : ComponentActivity() {
         val code = ReferralLink.codeFromUrl(uri.toString()) ?: return
         ReferralPending.capture(code, container.referralStore, System.currentTimeMillis())
         intent.action = null
+    }
+
+    /**
+     * Tells the server the device's time zone (so streaks and daily goals follow the learner's local day): on every
+     * foreground and whenever a sign-in lands while the app is open, but only when it differs from the last zone sent
+     * for this account (TimeZoneReporter). Forgotten on sign-out. Silent on any failure.
+     */
+    private fun startTimeZoneSync() {
+        val prefs = container.prefs
+        val reporter = TimeZoneReporter(
+            read = { prefs.getString(TimeZoneReporter.KEY, null) },
+            write = { v -> prefs.edit().apply { if (v == null) remove(TimeZoneReporter.KEY) else putString(TimeZoneReporter.KEY, v) }.apply() },
+        )
+        lifecycleScope.launch {
+            // The state starts SignedOut until the stored session is restored; only a real sign-out forgets.
+            var wasSignedIn = false
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                container.session.state.collect { state ->
+                    if (FirstRunDevice.isBlocked) return@collect
+                    if (state is AuthState.SignedIn) {
+                        wasSignedIn = true
+                        reporter.syncIfChanged(state.session.userId, java.time.ZoneId.systemDefault().id) {
+                            container.progressClient.setMyTimeZone(it)
+                        }
+                    } else if (state is AuthState.SignedOut && wasSignedIn) {
+                        wasSignedIn = false
+                        reporter.forget()
+                    }
+                }
+            }
+        }
     }
 
     override fun onResume() {

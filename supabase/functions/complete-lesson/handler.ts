@@ -43,7 +43,7 @@ import {
   serverHeartsMode,
   streakHeartMilestoneReached,
 } from "../_shared/hearts.ts";
-import { heartsUnlimitedFor } from "../_shared/hearts-pro.ts";
+import { heartsProCachedAnyAge, heartsUnlimitedOrUnknown } from "../_shared/hearts-pro.ts";
 import { settleReferralReward } from "../_shared/referral.ts";
 import { localDay, streakBridge } from "../_shared/local-day.ts";
 import { createHash } from "node:crypto";
@@ -51,11 +51,14 @@ import { sendPushToUser } from "../_shared/apns.ts";
 // §0.1-d #6: re-grades each submitted answer against the real question
 // instead of trusting a client-claimed missedQuestionIds list. The same
 // function grade-review already used to re-derive review-item correctness.
-import { hasAiConsent } from "../_shared/ai-consent.ts";
+import { AiConsentReadError, hasAiConsentOrThrow } from "../_shared/ai-consent.ts";
 import { deriveAnswerCorrectness, type QuestionRow } from "../_shared/answer-correctness.ts";
 import { makeTranslateCostLogger } from "../_shared/ai-cost-log.ts";
+import { OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS, recordOpsEvent } from "../_shared/ops-events.ts";
 import { recordLessonProfileData } from "../_shared/profile-data.ts";
-import { makeTranslateQuotaCheck } from "../_shared/ai-quota.ts";
+import { makeTranslateQuotaCheck, proLookupWith } from "../_shared/ai-quota.ts";
+
+const SRC = "edge:complete-lesson";
 
 // Was missing "es" -- predates Spanish's 2026-09-21 launch and was never
 // updated, unlike grade-review's identical schema. Silently rejected every
@@ -97,7 +100,12 @@ export type CompleteLessonDeps = {
     req: Request,
   ) => Promise<{ userId: string; userClient: SupabaseClient } | Response>;
   admin: () => SupabaseClient;
-  translateQuotaCheck: (userClient: SupabaseClient) => () => Promise<boolean>;
+  /** The translate quota check; `admin` is the handler's own service-role client, reused for the cap's Pro lookup. */
+  translateQuotaCheck: (
+    userClient: SupabaseClient,
+    admin: SupabaseClient,
+  ) => () => Promise<boolean>;
+  /** Whether the account allows AI grading. Throws AiConsentReadError when the row cannot be read (a 503, never a guess). */
   hasAiConsent: (admin: SupabaseClient, userId: string) => Promise<boolean>;
   verifySessionToken: typeof verifyLessonSessionToken;
   sessionIssuedAt: typeof lessonSessionIssuedAt;
@@ -108,8 +116,13 @@ export type CompleteLessonDeps = {
   releaseCompletionSlot: (admin: SupabaseClient, userId: string, atIso: string) => Promise<void>;
   /** SERVER_HEARTS: whether the lesson's hearts are settled here ("on" charges, the default; "shadow" records only). */
   heartsMode: () => ServerHeartsMode;
-  /** Alphonso Pro: unlimited hearts. Fails closed (false). */
-  heartsUnlimited: (admin: SupabaseClient, userId: string) => Promise<boolean>;
+  /** Alphonso Pro: unlimited hearts. null = could not be established (never treated as "not Pro" by a writer). */
+  heartsUnlimited: (admin: SupabaseClient, userId: string) => Promise<boolean | null>;
+  /**
+   * The last stored Pro answer at any age, null when there is none. Used only when heartsUnlimited is null AFTER a
+   * lesson was saved: Pro unknown must never fail a saved completion. Absent = no cache.
+   */
+  heartsProCached?: (admin: SupabaseClient, userId: string) => Promise<boolean | null>;
   now: () => Date;
 };
 
@@ -156,15 +169,17 @@ export function liveDeps(): CompleteLessonDeps {
       createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
         auth: { persistSession: false },
       }),
-    translateQuotaCheck: makeTranslateQuotaCheck,
-    hasAiConsent,
+    translateQuotaCheck: (userClient, admin) =>
+      makeTranslateQuotaCheck(userClient, proLookupWith(admin)),
+    hasAiConsent: hasAiConsentOrThrow,
     verifySessionToken: verifyLessonSessionToken,
     sessionIssuedAt: lessonSessionIssuedAt,
     sendPush: sendPushToUser,
     consumeCompletionSlot,
     releaseCompletionSlot,
     heartsMode: () => serverHeartsMode(),
-    heartsUnlimited: (admin, userId) => heartsUnlimitedFor(admin, userId),
+    heartsUnlimited: (admin, userId) => heartsUnlimitedOrUnknown(admin, userId),
+    heartsProCached: (admin, userId) => heartsProCachedAnyAge(admin, userId),
     now: () => new Date(),
   };
 }
@@ -173,8 +188,16 @@ type HeartsSettlement = { hearts: number; heartsRefillAt: number | null };
 
 /**
  * Settles this lesson session's hearts from the server's own grading (settle_lesson_hearts): misses the app already
- * reported through lose_heart are not charged again, and the rest are charged only when SERVER_HEARTS=on. Runs after
- * the completion is saved and never fails it: on any error the hearts stay as the completion left them.
+ * reported through lose_heart are not charged again, and the rest are charged only when SERVER_HEARTS=on.
+ *
+ * It runs after the completion is saved, and the save does not depend on it. A settlement whose database call failed
+ * is reported as ok:false so the caller answers 503: the apps retry, the retry finds the stored completion and settles
+ * again with the ORIGINAL misses. Without that a failed settlement would quietly be free misses.
+ *
+ * Pro unknown (RevenueCat down) never fails a saved lesson: a stored "not Pro" is used at any age and settles as usual;
+ * a stored "Pro" that is no longer fresh, or no stored answer at all, makes the settlement a SHADOW one (_enforce=false,
+ * _pro=false: charges nothing, records the token). It is never settled with _pro=true from an unconfirmed answer,
+ * which would refill a lapsed subscriber's hearts to 5.
  */
 async function settleLessonHearts(
   deps: CompleteLessonDeps,
@@ -183,46 +206,73 @@ async function settleLessonHearts(
   sessionToken: string,
   misses: number,
   sinceMs: number,
-): Promise<HeartsSettlement | null> {
+): Promise<{ ok: true; settlement: HeartsSettlement | null } | { ok: false }> {
   const mode = deps.heartsMode();
-  if (mode === "off") return null;
+  if (mode === "off") return { ok: true, settlement: null };
+  const failed = async (reason: string) => {
+    console.error(
+      JSON.stringify({ event: "hearts_settlement_failed", fn: "complete-lesson", reason }),
+    );
+    await recordOpsEvent(admin, SRC, "hearts_settlement_failed", { reason }, userId);
+    return { ok: false } as const;
+  };
   try {
-    const pro = await deps.heartsUnlimited(admin, userId);
+    let pro = await deps.heartsUnlimited(admin, userId);
+    let enforce = mode === "on";
+    if (pro === null) {
+      const cached = deps.heartsProCached ? await deps.heartsProCached(admin, userId) : null;
+      if (cached === false) {
+        pro = false;
+        console.error(
+          JSON.stringify({ event: "hearts_settlement_stale_pro", fn: "complete-lesson" }),
+        );
+      } else {
+        pro = false;
+        enforce = false;
+        const shadowEvent =
+          cached === true
+            ? "hearts_settlement_shadow_stale_pro"
+            : "hearts_settlement_shadow_pro_unknown";
+        console.error(JSON.stringify({ event: shadowEvent, fn: "complete-lesson" }));
+        await recordOpsEvent(
+          admin,
+          SRC,
+          shadowEvent,
+          {},
+          userId,
+          OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS,
+        );
+      }
+    }
     const { data, error } = await admin.rpc("settle_lesson_hearts", {
       _user_id: userId,
-      _token_hash: createHash("sha256").update(sessionToken).digest("hex"),
+      _token_hash: tokenHash(sessionToken),
       _misses: misses,
       _since: new Date(sinceMs).toISOString(),
-      _enforce: mode === "on",
+      _enforce: enforce,
       _pro: pro,
     });
     const row = (Array.isArray(data) ? data[0] : data) as {
       hearts?: unknown;
       hearts_refill_at?: unknown;
     } | null;
-    if (error || !row || typeof row.hearts !== "number") {
-      console.error(
-        JSON.stringify({
-          event: "hearts_settlement_failed",
-          fn: "complete-lesson",
-        }),
-      );
-      return null;
-    }
+    if (error || !row || typeof row.hearts !== "number") return failed("rpc");
     return {
-      hearts: row.hearts,
-      heartsRefillAt:
-        typeof row.hearts_refill_at === "string" ? Date.parse(row.hearts_refill_at) : null,
+      ok: true,
+      settlement: {
+        hearts: row.hearts,
+        heartsRefillAt:
+          typeof row.hearts_refill_at === "string" ? Date.parse(row.hearts_refill_at) : null,
+      },
     };
   } catch {
-    console.error(
-      JSON.stringify({
-        event: "hearts_settlement_failed",
-        fn: "complete-lesson",
-      }),
-    );
-    return null;
+    return failed("exception");
   }
+}
+
+/** The key a token is recorded under (settle_lesson_hearts and lesson_session_redemptions): never the token itself. */
+function tokenHash(sessionToken: string): string {
+  return createHash("sha256").update(sessionToken).digest("hex");
 }
 
 export function createCompleteLessonHandler(
@@ -286,7 +336,7 @@ async function findLesson(
   admin: SupabaseClient,
   course: string,
   lessonId: string,
-): Promise<{ questions: (QuestionRow & { id: string })[]; level: string } | null> {
+): Promise<{ questions: (QuestionRow & { id: string })[]; level: string } | null | "read-failed"> {
   const { data, error } = await admin
     .from("lessons")
     .select(
@@ -295,7 +345,9 @@ async function findLesson(
     .eq("id", lessonId)
     .eq("units.course", course)
     .maybeSingle();
-  if (error || !data) return null;
+  // A failed read is not "no such lesson": that would answer 409 lesson-version-mismatch, which the apps never retry.
+  if (error) return "read-failed";
+  if (!data) return null;
   const units = data.units as unknown as
     | { level_id: string }
     | {
@@ -308,6 +360,94 @@ async function findLesson(
   };
 }
 
+/** What a redeemed token stored: the original response, the misses the original grading found, and the settle anchor. */
+type Redemption = { result: Record<string, unknown>; misses: number; settleSince: string };
+
+/** A token this account already redeemed for this exact lesson, null when it has not, "read-failed" when unknown. */
+async function readRedemption(
+  admin: SupabaseClient,
+  userId: string,
+  hash: string,
+  lessonId: string,
+  course: string,
+): Promise<Redemption | null | "read-failed"> {
+  const { data, error } = await admin
+    .from("lesson_session_redemptions")
+    .select("result, misses, settle_since, lesson_id, course")
+    .eq("token_hash", hash)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) return "read-failed";
+  if (!data) return null;
+  // A token for another lesson never verifies below, so a mismatch is simply "not redeemed for this request".
+  if (data.lesson_id !== lessonId || data.course !== course) return null;
+  return {
+    result: data.result as Record<string, unknown>,
+    misses: data.misses as number,
+    settleSince: data.settle_since as string,
+  };
+}
+
+const RETRY_SETTLE_BODY = { error: "Could not settle lesson hearts; retry" };
+
+/**
+ * A repeat of a completion already saved under this token: answers the stored original (never re-graded, nothing new
+ * granted) and settles hearts from the ORIGINAL misses. Settlement is idempotent per token, so a retry after a
+ * successful settlement charges nothing more, and a first attempt that saved but never settled is settled now.
+ */
+async function replayRedeemed(
+  deps: CompleteLessonDeps,
+  admin: SupabaseClient,
+  userId: string,
+  sessionToken: string,
+  prior: Redemption,
+  course: string,
+): Promise<Response> {
+  const settled = await settleLessonHearts(
+    deps,
+    admin,
+    userId,
+    sessionToken,
+    prior.misses,
+    Date.parse(prior.settleSince),
+  );
+  if (!settled.ok) return jsonResponse(RETRY_SETTLE_BODY, 503);
+  const progress = { ...(prior.result.progress as Record<string, unknown>) };
+  if (settled.settlement) {
+    progress.hearts = settled.settlement.hearts;
+    progress.heartsRefillAt = settled.settlement.heartsRefillAt;
+  }
+  // The stored copy is a snapshot from the first completion and the apps overwrite their cache with this reply, so the
+  // progress is the CURRENT one (read only). A failed read keeps the stored values for that part.
+  const [pr, lpr] = await Promise.all([
+    admin
+      .from("user_progress")
+      .select("streak, longest_streak, last_active_date, hearts, hearts_refill_at, streak_freezes")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    admin
+      .from("language_progress")
+      .select("xp, league_tier")
+      .eq("user_id", userId)
+      .eq("language", course)
+      .maybeSingle(),
+  ]);
+  if (!pr.error && pr.data) {
+    const p = pr.data;
+    progress.streak = p.streak;
+    progress.longestStreak = p.longest_streak;
+    progress.lastActiveDate = p.last_active_date;
+    progress.hearts = p.hearts;
+    progress.heartsRefillAt = p.hearts_refill_at ? Date.parse(p.hearts_refill_at as string) : null;
+    progress.streakFreezes = p.streak_freezes;
+  }
+  if (!lpr.error && lpr.data) {
+    progress.xp = lpr.data.xp;
+    progress.leagueTier = lpr.data.league_tier;
+  }
+  return jsonResponse({ ...prior.result, progress }, 200);
+}
+
 async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Response> {
   if (req.method !== "POST") {
     return jsonResponse({ error: "Method not allowed" }, 405);
@@ -316,7 +456,6 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const auth = await deps.authenticate(req);
   if (auth instanceof Response) return auth;
   const { userId, userClient } = auth;
-  const checkQuota = deps.translateQuotaCheck(userClient);
 
   let parsed: z.infer<typeof completeLessonSchema>;
   try {
@@ -327,8 +466,23 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const { lessonId, total, answers, course, sessionToken, completedAt } = parsed;
 
   const admin = deps.admin();
+  const checkQuota = deps.translateQuotaCheck(userClient, admin);
+
+  // A token redeems once. A repeat (a retry after a lost response, a queued duplicate) is answered from what the first
+  // completion stored, before anything is re-read or re-graded. Checked first so even a token past its window
+  // (a slow retry) still gets its answer, and so no later read can turn a retry into a rejection.
+  const hash = tokenHash(sessionToken);
+  const prior = await readRedemption(admin, userId, hash, lessonId, course);
+  if (prior === "read-failed") {
+    return jsonResponse({ error: "Could not load lesson progress" }, 503);
+  }
+  if (prior) return await replayRedeemed(deps, admin, userId, sessionToken, prior, course);
 
   const found = await findLesson(admin, course, lessonId);
+  // An unreadable lesson is a retryable 503, never the permanent 409 below (the apps dead-letter that one).
+  if (found === "read-failed") {
+    return jsonResponse({ error: "Could not load lesson" }, 503);
+  }
   if (!lessonPayloadMatches(found, total, answers)) {
     console.log(
       JSON.stringify({
@@ -387,13 +541,21 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const questionById = new Map(lesson.questions.map((q) => [q.id, q]));
   const missedQuestionIds: string[] = [];
   const graded: { type: string; correct: boolean }[] = [];
-  for (const { questionId, answer } of answers) {
-    // Safe: validateLessonAnswerCoverage already proved questionId is a
-    // real id in this lesson.
-    const question = questionById.get(questionId)!;
-    const isCorrect = await deriveAnswerCorrectness(question, answer, course, ai);
-    if (!isCorrect) missedQuestionIds.push(questionId);
-    graded.push({ type: question.type, correct: isCorrect });
+  try {
+    for (const { questionId, answer } of answers) {
+      // Safe: validateLessonAnswerCoverage already proved questionId is a
+      // real id in this lesson.
+      const question = questionById.get(questionId)!;
+      const isCorrect = await deriveAnswerCorrectness(question, answer, course, ai);
+      if (!isCorrect) missedQuestionIds.push(questionId);
+      graded.push({ type: question.type, correct: isCorrect });
+    }
+  } catch (e) {
+    // Consent unreadable: grading would have guessed "no AI" and may have saved a wrong verdict. Retry instead.
+    if (e instanceof AiConsentReadError) {
+      return jsonResponse({ error: "Could not load lesson progress" }, 503);
+    }
+    throw e;
   }
   if (consent && !(await consent)) {
     console.log(
@@ -426,7 +588,8 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
       .maybeSingle(),
     admin.from("learner_time_zones").select("time_zone").eq("user_id", userId).maybeSingle(),
   ]);
-  const readError = [pResult, lpResult, compResult].find((r) => r.error);
+  // The time zone is read like the rest: an unreadable zone must not silently book the day as UTC.
+  const readError = [pResult, lpResult, compResult, tzResult].find((r) => r.error);
   if (readError) {
     return jsonResponse({ error: "Could not load lesson progress" }, 503);
   }
@@ -434,10 +597,8 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const lpRow = lpResult.data;
   const existingComp = compResult.data;
   // Days are the learner's own calendar days (owner decision 2026-11-12): their stored zone, UTC when none is known.
-  // An unreadable zone is UTC too: it must never fail a lesson.
-  const timeZone = tzResult.error
-    ? null
-    : ((tzResult.data?.time_zone as string | undefined) ?? null);
+  // No stored zone is UTC; a zone that could not be READ is a 503 above (it would book the wrong day).
+  const timeZone = (tzResult.data?.time_zone as string | undefined) ?? null;
   const serverToday = localDay(now.getTime(), timeZone);
   const trustedCompletionDay =
     completedAt && sessionIssuedAt !== null
@@ -572,7 +733,22 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     return jsonResponse({ error: "rate-limited" }, 429);
   }
 
-  const { data: transition, error: transitionError } = await admin.rpc("apply_lesson_completion", {
+  // The response this completion stands for, stored with the redemption in the same transaction as the save. A repeat
+  // of the token is answered from it. Achievements and settled hearts are known only after the save; the stored copy
+  // is replaced with the final one below (finalize_lesson_session_result).
+  const progressBody = (hearts: number, heartsRefillAt: number | null) => ({
+    xp,
+    streak,
+    longestStreak: longest,
+    lastActiveDate: today,
+    hearts,
+    heartsRefillAt,
+    streakFreezes: freezes,
+    leagueTier,
+  });
+  const settleSinceMs = sessionIssuedAt ?? now.getTime();
+
+  const onceArgs = {
     _user_id: userId,
     _course: course,
     _lesson_id: lessonId,
@@ -603,7 +779,46 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     },
     _missed_question_ids: missedQuestionIds,
     _activity_events: activityEvents,
-  });
+    _token_hash: hash,
+    _result: {
+      xpGain,
+      correct,
+      newlyUnlocked: [],
+      heartsBonus,
+      progress: progressBody(heartsResult.hearts, heartsResult.heartsRefillAt),
+    },
+    _misses: missedQuestionIds.length,
+    _settle_since: new Date(settleSinceMs).toISOString(),
+  };
+  // The only save path: the token is claimed in the same transaction (20261125110000). There is deliberately no
+  // fallback to the older apply_lesson_completion, which claims nothing and so would let a token be reused.
+  const { data: transition, error: transitionError } = await admin.rpc(
+    "apply_lesson_completion_once",
+    onceArgs,
+  );
+  // A token that belongs to another completion (a database exception): not retryable, the same answer as any other
+  // session the server will not accept (the apps re-mint once, then reject).
+  if (transitionError && /different completion/i.test(transitionError.message ?? "")) {
+    if (slotTaken) await deps.releaseCompletionSlot(admin, userId, slotAtIso);
+    return jsonResponse({ error: "Invalid or expired lesson session" }, 403);
+  }
+  // Lost a race with a request carrying the same token: nothing was saved here, so the slot goes back and the winner's
+  // stored result is the answer.
+  if (!transitionError && transition?.status === "redeemed") {
+    if (slotTaken) await deps.releaseCompletionSlot(admin, userId, slotAtIso);
+    return await replayRedeemed(
+      deps,
+      admin,
+      userId,
+      sessionToken,
+      {
+        result: transition.result as Record<string, unknown>,
+        misses: transition.misses as number,
+        settleSince: transition.settle_since as string,
+      },
+      course,
+    );
+  }
   if (transitionError || !transition || transition.status !== "applied") {
     if (slotTaken) await deps.releaseCompletionSlot(admin, userId, slotAtIso);
     return jsonResponse({ error: "Could not save lesson completion; retry" }, 503);
@@ -622,9 +837,9 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     userId,
     sessionToken,
     missedQuestionIds.length,
-    sessionIssuedAt ?? now.getTime(),
+    settleSinceMs,
   );
-  if (settled) heartsResult = settled;
+  if (settled.ok && settled.settlement) heartsResult = settled.settlement;
 
   // Referral reward: the first saved lesson of a referred learner pays both sides. Best effort, never fails the lesson;
   // a no-op (one cheap read) for everyone without a pending referral. Runs after hearts are settled so the grant is
@@ -755,25 +970,40 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     }
   }
 
-  return jsonResponse(
-    {
-      xpGain,
-      // Right answers by this server's own grading: the count xpGain was computed from. The apps' complete screens
-      // explain the award with it (right answers, perfect bonus, already earned), as the web does.
-      correct,
-      newlyUnlocked,
-      heartsBonus,
-      progress: {
-        xp,
-        streak,
-        longestStreak: longest,
-        lastActiveDate: today,
-        hearts: heartsResult.hearts,
-        heartsRefillAt: heartsResult.heartsRefillAt,
-        streakFreezes: freezes,
-        leagueTier,
-      },
-    },
-    200,
-  );
+  const finalResult = {
+    xpGain,
+    // Right answers by this server's own grading: the count xpGain was computed from. The apps' complete screens
+    // explain the award with it (right answers, perfect bonus, already earned), as the web does.
+    correct,
+    newlyUnlocked,
+    heartsBonus,
+    progress: progressBody(heartsResult.hearts, heartsResult.heartsRefillAt),
+  };
+  // So a retry of this token returns what this reply says (the achievements it announced, the settled hearts).
+  // Best effort: the stored first copy is already a complete answer.
+  try {
+    // supabase-js returns the error rather than throwing it, so it is checked here.
+    const { error: finalizeError } = await admin.rpc("finalize_lesson_session_result", {
+      _user_id: userId,
+      _token_hash: hash,
+      _result: finalResult,
+    });
+    if (finalizeError) {
+      console.error(
+        JSON.stringify({
+          event: "lesson_result_finalize_failed",
+          fn: "complete-lesson",
+          message: finalizeError.message,
+        }),
+      );
+      await recordOpsEvent(admin, SRC, "lesson_result_finalize_failed", {}, userId);
+    }
+  } catch {
+    // Nothing to do: the earlier stored result stands.
+  }
+
+  // Saved, but the hearts could not be settled: ask the app to retry. The retry is answered from the stored
+  // completion and settles with the original misses; a 200 here would make those misses free.
+  if (!settled.ok) return jsonResponse(RETRY_SETTLE_BODY, 503);
+  return jsonResponse(finalResult, 200);
 }

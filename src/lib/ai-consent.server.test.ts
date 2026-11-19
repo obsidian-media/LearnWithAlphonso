@@ -4,13 +4,27 @@ const getUser = vi.fn();
 const rpc = vi.fn();
 const maybeSingle = vi.fn();
 const from = vi.fn(() => ({ select: () => ({ eq: () => ({ maybeSingle }) }) }));
-const createClient = vi.fn(() => ({ auth: { getUser }, rpc, from }));
+// is_restricted (the ban check verifyAuth makes) is answered separately, so `rpc` stays the quota functions only.
+const banRpc = vi.fn(async (..._args: unknown[]) => ({ data: false, error: null as unknown }));
+const createClient = vi.fn(() => ({
+  auth: { getUser },
+  rpc: (fn: string, args: unknown) => {
+    if (fn === "is_restricted") throw new Error("is_restricted must not use the learner's client");
+    return rpc(fn, args);
+  },
+  from,
+}));
 vi.mock("@supabase/supabase-js", () => ({ createClient }));
 const adminMaybeSingle = vi.fn();
 const adminFrom = vi.fn(() => ({
   select: () => ({ eq: () => ({ maybeSingle: adminMaybeSingle }) }),
 }));
-vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: adminFrom } }));
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: {
+    from: adminFrom,
+    rpc: (fn: string, args: unknown) => banRpc(fn, args),
+  },
+}));
 
 const isSwitchOn = vi.fn(async (_key: string) => true);
 vi.mock("./app-switches.server", () => ({ isSwitchOn }));
@@ -32,6 +46,7 @@ beforeEach(() => {
   process.env.SUPABASE_URL = "https://example.supabase.co";
   process.env.SUPABASE_PUBLISHABLE_KEY = "pk";
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } }, error: null });
+  banRpc.mockResolvedValue({ data: false, error: null });
   rpc.mockResolvedValue({ data: [{ allowed: true, used: 1 }], error: null });
   vi.spyOn(console, "info").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});

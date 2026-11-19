@@ -13,6 +13,10 @@ vi.mock(
 );
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: {} }));
+vi.mock("./staff-rate-limit", async (orig) => ({
+  ...(await orig<typeof import("./staff-rate-limit")>()),
+  consumeStaffLimit: (await import("./__testutils__/staff-rate-limit-mock")).fakeConsumeStaffLimit,
+}));
 const rebuild = vi.fn();
 vi.mock("./support-facts.server", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./support-facts.server")>()),

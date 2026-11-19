@@ -11,6 +11,7 @@ import {
 import { MIN_SHARED_SECRET_LENGTH, secretMatches } from "./shared-secret.server";
 import { defaultSupportDeps, sweepSupport, type SupportNotifyDeps } from "./support-notify.server";
 import { defaultAiCostDeps, sweepAiCost, type AiCostSweepDeps } from "./ai-cost-sweep.server";
+import { defaultOpsAlertDeps, sweepOpsAlerts, type OpsAlertDeps } from "./ops-alert-sweep.server";
 
 /**
  * The scheduled maintenance pass. Called every 15 minutes by the database (run_maintenance_sweep in
@@ -25,6 +26,8 @@ import { defaultAiCostDeps, sweepAiCost, type AiCostSweepDeps } from "./ai-cost-
  *   5. Retries "a person replied" notices that did not go out and tells the owner about new support tickets.
  *   6. The AI cost log: rolls raw rows older than 90 days into the daily summary, and once a day emails the owner when
  *      yesterday's estimated spend crossed a threshold (src/lib/ai-cost-sweep.server.ts).
+ *   7. Operational events: emails the owner when a server-side failure event crosses its hourly threshold, once per
+ *      event per 24 hours (src/lib/ops-alert-sweep.server.ts).
  * (The support chat retention, 12 months after a chat was solved, runs inside run_maintenance_sweep in the database.)
  */
 type Admin = SupabaseClient<Database>;
@@ -60,6 +63,8 @@ export type MaintenanceDeps = {
   support?: SupportNotifyDeps;
   /** The AI cost rollup and daily spend alert; absent, that step is skipped. */
   aiCost?: AiCostSweepDeps;
+  /** The operational-event alert (src/lib/ops-alert-sweep.server.ts); absent, that step is skipped. */
+  opsAlerts?: OpsAlertDeps;
 };
 
 export type RevocationResult = { revoked: number; stillPending: number; expired: number };
@@ -388,6 +393,7 @@ async function defaultDeps(): Promise<MaintenanceDeps> {
     alertTo: process.env.REPORT_NOTIFY_TO ?? "",
     support: await defaultSupportDeps(),
     aiCost: await defaultAiCostDeps(),
+    opsAlerts: await defaultOpsAlertDeps(),
   };
 }
 
@@ -423,6 +429,15 @@ export async function handleMaintenance(
     : null;
   const aiCostDeps = deps.aiCost;
   const aiCost = aiCostDeps ? await run("ai-cost", () => sweepAiCost(aiCostDeps)) : null;
+  // The spend breaker must not fail silently. "failed": it could not be asked, so a spend spike would go unnoticed.
+  // "tripped": AI was switched off but the owner could not be told. Either makes the pass report a failure (500 and
+  // ok:false in the database's request log, "ai-spend-breaker" in failures), on top of the log line.
+  if (aiCost && (aiCost.breaker === "failed" || aiCost.breaker === "tripped")) {
+    failures.push("ai-spend-breaker");
+    console.error(`[maintenance] ai-spend-breaker ${aiCost.breaker}`);
+  }
+  const opsDeps = deps.opsAlerts;
+  const opsAlerts = opsDeps ? await run("ops-alerts", () => sweepOpsAlerts(opsDeps)) : null;
   // Counts only: this response is stored in the database's request log.
   return json(
     {
@@ -433,6 +448,7 @@ export async function handleMaintenance(
       erasures,
       ...(supportDeps ? { support } : {}),
       ...(aiCostDeps ? { aiCost } : {}),
+      ...(opsDeps ? { opsAlerts } : {}),
     },
     failures.length ? 500 : 200,
   );

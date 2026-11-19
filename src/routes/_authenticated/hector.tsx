@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { track } from "../../lib/analytics";
+import { RouteError } from "../../components/RouteError";
 import { DsIcon } from "../../components/ds/DsIcon";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
@@ -38,6 +39,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/hector")({
   component: HectorPage,
+  errorComponent: ({ error, reset }) => (
+    <RouteError error={error} reset={reset} boundary="hector_route" />
+  ),
   head: () => ({
     meta: [
       { title: "Hector — Alphonso" },

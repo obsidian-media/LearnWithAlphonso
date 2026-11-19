@@ -5,6 +5,8 @@ const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
   error: null,
 }));
 const authorizeAiRequest = vi.fn();
+// The quota is spent by the route AFTER its own size and type checks (authorizeAiRequest's deferQuota).
+const chargeQuota = vi.fn(async (): Promise<Response | null> => null);
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
 // Voice time budget (20261105100900), with the service role: reserve the per-call maximum before the provider call
 // (atomically, as the database function does), then settle to the provider's length. `secondsUsed` is the day's total.
@@ -64,6 +66,8 @@ const originalFetch = global.fetch;
 
 beforeEach(() => {
   authorizeAiRequest.mockReset();
+  chargeQuota.mockReset();
+  chargeQuota.mockResolvedValue(null);
   adminRpc.mockReset();
   adminRpc.mockImplementation(realRpc);
   secondsUsed = 0;
@@ -75,6 +79,7 @@ beforeEach(() => {
     ok: true,
     userId: "user-1",
     supabase: { rpc: blockedRpc, from: vi.fn() },
+    chargeQuota,
   });
   process.env.DEEPGRAM_API_KEY = "test-key";
   global.fetch = vi.fn();
@@ -92,14 +97,85 @@ describe("POST /api/stt", () => {
     expect(await res.json()).toEqual({ error: "STT is not configured" });
   });
 
-  it("returns the quota error when quota is exceeded", async () => {
-    authorizeAiRequest.mockResolvedValue({
-      ok: false,
-      response: Response.json({ error: "Daily STT limit reached" }, { status: 429 }),
-    });
+  it("asks for the quota to be deferred, and returns the quota error when it is exceeded", async () => {
+    chargeQuota.mockResolvedValue(
+      Response.json({ error: "Daily STT limit reached" }, { status: 429 }),
+    );
     const res = await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: "Daily STT limit reached" });
+    expect(authorizeAiRequest.mock.calls[0]![2]).toMatchObject({ route: "stt", deferQuota: true });
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("an auth, switch or consent refusal is returned as it was", async () => {
+    authorizeAiRequest.mockResolvedValue({
+      ok: false,
+      response: Response.json({ error: "ai-consent-required" }, { status: 403 }),
+    });
+    const res = await handler({ request: reqWithFile(new Blob(["x".repeat(600)])) });
+    expect(res.status).toBe(403);
+    expect(chargeQuota).not.toHaveBeenCalled();
+  });
+
+  describe("a refused upload spends no quota", () => {
+    it("missing file", async () => {
+      expect((await handler({ request: reqWithFile(null) })).status).toBe(400);
+      expect(chargeQuota).not.toHaveBeenCalled();
+    });
+    it("under the minimum size", async () => {
+      expect((await handler({ request: reqWithFile(new Blob(["short"])) })).status).toBe(400);
+      expect(chargeQuota).not.toHaveBeenCalled();
+    });
+    it("over 1 MB", async () => {
+      const res = await handler({ request: reqWithFile(new Blob([new Uint8Array(1_000_001)])) });
+      expect(res.status).toBe(413);
+      expect(chargeQuota).not.toHaveBeenCalled();
+    });
+    it("a type that is not audio", async () => {
+      for (const type of ["image/png", "application/json", "text/html"]) {
+        const res = await handler({
+          request: reqWithFile(new Blob(["x".repeat(600)], { type })),
+        });
+        expect(res.status, type).toBe(415);
+        expect(await res.json()).toEqual({ error: "unsupported-audio-type" });
+      }
+      expect(chargeQuota).not.toHaveBeenCalled();
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+  });
+
+  it("an accepted upload is charged exactly once, after the checks", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(
+        JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "ok" }] }] } }),
+        { status: 200 },
+      ),
+    );
+    const res = await handler({
+      request: reqWithFile(new Blob(["x".repeat(600)], { type: "audio/webm;codecs=opus" })),
+    });
+    expect(res.status).toBe(200);
+    expect(chargeQuota).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts the types the apps and the browser send, or none", async () => {
+    const { isAcceptedAudioType } = await import("./stt");
+    for (const t of [
+      "",
+      "audio/webm",
+      "audio/mp4",
+      "audio/x-m4a",
+      "audio/wav",
+      "video/webm",
+      "video/mp4",
+      "application/octet-stream",
+    ]) {
+      expect(isAcceptedAudioType(t), t).toBe(true);
+    }
+    for (const t of ["image/png", "application/pdf", "application/json", "text/plain"]) {
+      expect(isAcceptedAudioType(t), t).toBe(false);
+    }
   });
 
   it("rejects a request with no file field", async () => {
@@ -289,7 +365,10 @@ describe("POST /api/stt", () => {
     expect(res.status).toBe(403);
     expect(await res.json()).toEqual({ error: "ai-consent-required" });
     expect(global.fetch).not.toHaveBeenCalled();
-    expect(authorizeAiRequest).toHaveBeenCalledWith(expect.any(Request), "stt", { route: "stt" });
+    expect(authorizeAiRequest).toHaveBeenCalledWith(expect.any(Request), "stt", {
+      route: "stt",
+      deferQuota: true,
+    });
   });
 
   it("gives up with a retryable 504 when the transcription provider does not answer in time", async () => {

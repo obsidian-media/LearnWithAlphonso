@@ -1150,6 +1150,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      lesson_session_redemptions: {
+        Row: {
+          course: string;
+          created_at: string;
+          lesson_id: string;
+          misses: number;
+          result: Json;
+          settle_since: string;
+          token_hash: string;
+          user_id: string;
+        };
+        Insert: {
+          course: string;
+          created_at?: string;
+          lesson_id: string;
+          misses: number;
+          result: Json;
+          settle_since: string;
+          token_hash: string;
+          user_id: string;
+        };
+        Update: {
+          course?: string;
+          created_at?: string;
+          lesson_id?: string;
+          misses?: number;
+          result?: Json;
+          settle_since?: string;
+          token_hash?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       lessons: {
         Row: {
           id: string;
@@ -1277,6 +1310,48 @@ export type Database = {
           read_at?: string | null;
           recipient_id?: string;
           sender_id?: string;
+        };
+        Relationships: [];
+      };
+      ops_event_alerts: {
+        Row: {
+          event: string;
+          last_alert_at: string;
+        };
+        Insert: {
+          event: string;
+          last_alert_at: string;
+        };
+        Update: {
+          event?: string;
+          last_alert_at?: string;
+        };
+        Relationships: [];
+      };
+      ops_events: {
+        Row: {
+          created_at: string;
+          detail: Json;
+          event: string;
+          id: number;
+          source: string;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          detail?: Json;
+          event: string;
+          id?: number;
+          source: string;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          detail?: Json;
+          event?: string;
+          id?: number;
+          source?: string;
+          user_id?: string | null;
         };
         Relationships: [];
       };
@@ -2214,6 +2289,27 @@ export type Database = {
           created_at?: string;
           id?: string;
           user_id?: string;
+        };
+        Relationships: [];
+      };
+      staff_rate_limits: {
+        Row: {
+          actor_user_id: string;
+          bucket: string;
+          count: number;
+          window_start: string;
+        };
+        Insert: {
+          actor_user_id: string;
+          bucket: string;
+          count?: number;
+          window_start: string;
+        };
+        Update: {
+          actor_user_id?: string;
+          bucket?: string;
+          count?: number;
+          window_start?: string;
         };
         Relationships: [];
       };
@@ -3352,6 +3448,24 @@ export type Database = {
         };
         Returns: Json;
       };
+      apply_lesson_completion_once: {
+        Args: {
+          _activity_events: Json;
+          _course: string;
+          _expected: Json;
+          _lesson_id: string;
+          _level: string;
+          _missed_question_ids: Json;
+          _misses: number;
+          _next: Json;
+          _result: Json;
+          _settle_since: string;
+          _today: string;
+          _token_hash: string;
+          _user_id: string;
+        };
+        Returns: Json;
+      };
       apply_review_grade: {
         Args: {
           _attempt_id: string;
@@ -3462,6 +3576,15 @@ export type Database = {
         Args: { _at: string; _limit?: number; _user_id: string };
         Returns: boolean;
       };
+      consume_staff_rate_limit: {
+        Args: {
+          p_actor: string;
+          p_bucket: string;
+          p_max: number;
+          p_window_seconds: number;
+        };
+        Returns: boolean;
+      };
       contains_blocked_term: { Args: { input: string }; Returns: boolean };
       create_duel: {
         Args: { _course?: string; _opponent_id: string };
@@ -3490,6 +3613,10 @@ export type Database = {
         Returns: {
           status: string;
         }[];
+      };
+      finalize_lesson_session_result: {
+        Args: { _result: Json; _token_hash: string; _user_id: string };
+        Returns: undefined;
       };
       finish_branching_story: {
         Args: { _path: Json; _story_id: string; _user_id: string };
@@ -3805,6 +3932,16 @@ export type Database = {
       name_policy_staff_terms: { Args: never; Returns: string[] };
       name_policy_terms: { Args: never; Returns: string[] };
       normalize_for_moderation: { Args: { input: string }; Returns: string };
+      ops_events_summary: {
+        Args: never;
+        Returns: {
+          count_1h: number;
+          count_24h: number;
+          count_7d: number;
+          event: string;
+          last_at: string;
+        }[];
+      };
       policy_social_restricted: { Args: { p_user: string }; Returns: boolean };
       record_podcast_play_event: {
         Args: { _episode_id: string; _seconds_listened: number };
@@ -3938,6 +4075,7 @@ export type Database = {
         Args: { _time_zone: string; _user_id: string };
         Returns: string;
       };
+      set_my_time_zone: { Args: { _time_zone: string }; Returns: string };
       settle_lesson_hearts: {
         Args: {
           _enforce: boolean;
@@ -4200,6 +4338,7 @@ export type Database = {
       };
       support_purge_old: { Args: never; Returns: number };
       team_name_problem: { Args: { _name: string }; Returns: string };
+      trip_ai_spend_breaker: { Args: { p_limit_micro: number }; Returns: Json };
       weekly_xp: {
         Args: { _user_id: string; _week_start: string };
         Returns: number;

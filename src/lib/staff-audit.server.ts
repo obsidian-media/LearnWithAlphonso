@@ -33,6 +33,22 @@ export const REPORT_WRITE_FUNCTIONS = [
   "adminDisbandTeam",
 ] as const;
 
+/**
+ * The podcast and folder write actions (admin.functions.ts, scope podcasts.manage). Each writes its action-record row
+ * through recordStaffAction after the change; staff-registry.test.ts checks it.
+ */
+export const PODCAST_WRITE_FUNCTIONS = [
+  "adminCreateFolder",
+  "adminRenameFolder",
+  "adminMoveFolder",
+  "adminDeleteFolder",
+  "adminUpdateEpisode",
+  "adminSetPublished",
+  "adminCreateEpisode",
+  "adminVerifyUploadedAudio",
+  "adminSaveTranscript",
+] as const;
+
 export const REASON_MESSAGE = "A reason (3-500 characters) is required.";
 
 /** The reason every write action must carry: trimmed, 3 to 500 characters. */

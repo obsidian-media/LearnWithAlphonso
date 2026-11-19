@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
@@ -27,17 +28,16 @@ import { createStageTimer, type StageTimer } from "@/lib/stage-timer.server";
  */
 async function handleExplain(request: Request, timer: StageTimer): Promise<Response> {
   const llmKey = resolveLlmApiKey();
-  if (!llmKey) return Response.json({ error: "Explanations are not configured" }, { status: 500 });
+  if (!llmKey) return noStoreJson({ error: "Explanations are not configured" }, { status: 500 });
 
   const accessToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
-  if (!accessToken) return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (!accessToken) return noStoreJson({ error: "unauthorized" }, { status: 401 });
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: userData, error: userError } = await timer.time("auth", () =>
     supabaseAdmin.auth.getUser(accessToken),
   );
-  if (userError || !userData?.user)
-    return Response.json({ error: "unauthorized" }, { status: 401 });
+  if (userError || !userData?.user) return noStoreJson({ error: "unauthorized" }, { status: 401 });
   const userId = userData.user.id;
 
   const { requireAiConsent, requireAiSwitchedOn } = await import("@/lib/ai-consent.server");
@@ -50,10 +50,10 @@ async function handleExplain(request: Request, timer: StageTimer): Promise<Respo
   try {
     raw = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+    return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
   }
   const parsed = explainRequestSchema.safeParse(raw);
-  if (!parsed.success) return Response.json({ error: "invalid-request" }, { status: 400 });
+  if (!parsed.success) return noStoreJson({ error: "invalid-request" }, { status: 400 });
   const input: ExplainRequest = parsed.data;
 
   // The language the learner told us in first run (or changed in Settings). A value the account cannot hold, or none,
@@ -62,19 +62,19 @@ async function handleExplain(request: Request, timer: StageTimer): Promise<Respo
     supabaseAdmin.auth.admin.getUserById(userId),
   );
   if (accountError || !account?.user) {
-    return Response.json({ error: "Could not read your account." }, { status: 500 });
+    return noStoreJson({ error: "Could not read your account." }, { status: 500 });
   }
   const native = parseLearnerProfile(
     account.user.user_metadata?.[LEARNER_PROFILE_KEY],
   ).nativeLanguage;
-  if (!native) return Response.json({ error: "unsupported-language" }, { status: 422 });
-  if (native === input.course) return Response.json({ error: "same-language" }, { status: 400 });
+  if (!native) return noStoreJson({ error: "unsupported-language" }, { status: 422 });
+  if (native === input.course) return noStoreJson({ error: "same-language" }, { status: 400 });
 
   const fromHector = input.surface === "hector";
   if (fromHector) {
     const { isSwitchOn } = await import("@/lib/app-switches.server");
     if (!(await isSwitchOn("tutor"))) {
-      return Response.json({ error: "tutor-unavailable" }, { status: 503 });
+      return noStoreJson({ error: "tutor-unavailable" }, { status: 503 });
     }
     // A failed entitlement lookup must not masquerade as a lapsed subscription.
     const entitlement = await timer.time("entitlement", async () => {
@@ -84,16 +84,15 @@ async function handleExplain(request: Request, timer: StageTimer): Promise<Respo
       return rcConfig ? getProEntitlementStatus(rcConfig, userId) : "unavailable";
     });
     if (entitlement === "unavailable") {
-      return Response.json({ error: "entitlement-unavailable" }, { status: 503 });
+      return noStoreJson({ error: "entitlement-unavailable" }, { status: 503 });
     }
-    if (entitlement === "inactive")
-      return Response.json({ error: "not-entitled" }, { status: 403 });
+    if (entitlement === "inactive") return noStoreJson({ error: "not-entitled" }, { status: 403 });
   }
 
   const direction = languageDirection(native);
   const cacheKey = explainCacheKey(input, native);
   const shown = (explanation: string, cached: boolean) =>
-    Response.json({ explanation, language: native, direction, cached });
+    noStoreJson({ explanation, language: native, direction, cached });
 
   // A failed cache read is a miss, not an error: it only means one more generation.
   const { data: hit, error: cacheReadError } = await timer.time("cache", async () =>
@@ -114,7 +113,7 @@ async function handleExplain(request: Request, timer: StageTimer): Promise<Respo
   if (!quota.ok) return quotaFailureResponse(quota);
 
   const unavailable = () =>
-    Response.json({ error: "Could not explain that. Try again." }, { status: 502 });
+    noStoreJson({ error: "Could not explain that. Try again." }, { status: 502 });
   const explanation = await timer.time("llm", async () => {
     try {
       const resp = await llmChatCompletion({

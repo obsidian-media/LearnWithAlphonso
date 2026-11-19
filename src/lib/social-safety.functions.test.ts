@@ -125,6 +125,16 @@ describe("reportAiResponse", () => {
     expect("reported" in row).toBe(false);
   });
 
+  it("accepts the support (Miya Help chat) surface", async () => {
+    const supabase = createSupabaseMock();
+    supabase.from.mockReturnValueOnce(chainable({ error: null }));
+    const data = {
+      ...base,
+      context: { message: "Tap Restore.", surface: "support", course: "en" },
+    };
+    expect(await reportAiResponse({ context: ctx(supabase), data })).toEqual({ ok: true });
+  });
+
   it("returns ok: false when the insert fails", async () => {
     const supabase = createSupabaseMock();
     supabase.from.mockReturnValueOnce(chainable({ error: { message: "nope" } }));

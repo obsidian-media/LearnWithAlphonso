@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const navigate = vi.fn();
@@ -19,6 +19,8 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 });
 
 const getSession = vi.fn();
+const getUser = vi.fn();
+const signOut = vi.fn();
 const signInWithPassword = vi.fn();
 const signUp = vi.fn();
 const resetPasswordForEmail = vi.fn();
@@ -29,6 +31,8 @@ vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     auth: {
       getSession,
+      getUser,
+      signOut,
       signInWithPassword,
       signUp,
       resetPasswordForEmail,
@@ -56,6 +60,11 @@ beforeEach(() => {
   searchParams = {};
   getSession.mockReset();
   getSession.mockResolvedValue({ data: { session: null } });
+  getUser.mockReset();
+  getUser.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
+  signOut.mockReset();
+  signOut.mockResolvedValue({ error: null });
+  sessionStorage.clear();
   signInWithPassword.mockReset();
   signUp.mockReset();
   resetPasswordForEmail.mockReset();
@@ -134,6 +143,64 @@ describe("Auth page", () => {
     await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true }));
   });
 
+  it("does not loop back to `next` on a session the server refuses: it is dropped and the form stays", async () => {
+    searchParams = { next: "/profile" };
+    getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
+    getUser.mockResolvedValue({
+      data: { user: null },
+      error: Object.assign(new Error("invalid JWT"), { name: "AuthApiError", status: 403 }),
+    });
+    renderPage();
+    await waitFor(() => expect(signOut).toHaveBeenCalledWith({ scope: "local" }));
+    expect(window.location.href).toBe("");
+    expect(navigate).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
+  });
+
+  it("still goes on when the session cannot be checked because the network is down", async () => {
+    getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
+    getUser.mockResolvedValue({
+      data: { user: null },
+      error: Object.assign(new Error("Failed to fetch"), { name: "AuthRetryableFetchError" }),
+    });
+    renderPage();
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true }));
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["a 500", { name: "AuthApiError", status: 500 }],
+    ["a 429", { name: "AuthApiError", status: 429 }],
+  ])(
+    "does not sign the learner out when the auth server answers %s (an outage)",
+    async (_, err) => {
+      getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
+      getUser.mockResolvedValue({
+        data: { user: null },
+        error: Object.assign(new Error("server trouble"), err),
+      });
+      renderPage();
+      await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true }));
+      expect(signOut).not.toHaveBeenCalled();
+    },
+  );
+
+  it("drops a session whose user is gone (user_not_found), marked so the sign-up draft is kept", async () => {
+    getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
+    getUser.mockResolvedValue({
+      data: { user: null },
+      error: Object.assign(new Error("User not found"), {
+        name: "AuthApiError",
+        code: "user_not_found",
+      }),
+    });
+    renderPage();
+    await waitFor(() => expect(signOut).toHaveBeenCalledWith({ scope: "local" }));
+    const { takeStaleSessionDrop } = await import("@/lib/auth-offline");
+    expect(takeStaleSessionDrop()).toBe(true);
+    expect(takeStaleSessionDrop()).toBe(false);
+  });
+
   it("redirects to the 'next' path via a full navigation if already signed in", async () => {
     searchParams = { next: "/profile" };
     getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
@@ -160,8 +227,10 @@ describe("Auth page", () => {
     expect(navigate).toHaveBeenCalledWith({ to: "/learn", replace: true });
   });
 
-  it("shows the error message when sign-in fails", async () => {
-    signInWithPassword.mockResolvedValue({ error: new Error("Invalid login credentials") });
+  it("says in plain words why sign-in failed, never the raw server text", async () => {
+    signInWithPassword.mockResolvedValue({
+      error: Object.assign(new Error("Invalid login credentials"), { code: "invalid_credentials" }),
+    });
     const user = userEvent.setup();
     renderPage();
 
@@ -169,8 +238,40 @@ describe("Auth page", () => {
     await user.type(screen.getByLabelText("Password"), "wrongpass");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
-    expect(await screen.findByText("Invalid login credentials")).toBeInTheDocument();
+    expect(
+      await screen.findByText("That email and password don't match. Check them and try again."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Invalid login credentials")).not.toBeInTheDocument();
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("an unknown failure gets a calm generic line, not the server's text", async () => {
+    signInWithPassword.mockResolvedValue({ error: new Error("unexpected_failure: pg 500") });
+    const user = userEvent.setup();
+    renderPage();
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "wrongpass");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    expect(await screen.findByText("Something went wrong. Please try again.")).toBeInTheDocument();
+    expect(screen.queryByText(/pg 500/)).not.toBeInTheDocument();
+  });
+
+  it("an unconfirmed account's sign-in goes to the code screen for that address", async () => {
+    signInWithPassword.mockResolvedValue({
+      error: Object.assign(new Error("Email not confirmed"), { code: "email_not_confirmed" }),
+    });
+    const user = userEvent.setup();
+    renderPage();
+    await user.type(screen.getByLabelText("Email"), "ada@example.com");
+    await user.type(screen.getByLabelText("Password"), "hunter22-river");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    expect(await screen.findByLabelText("6-digit code")).toBeInTheDocument();
+    // This sign-in sent nothing: the screen asks for a new code rather than pointing at one that never came.
+    expect(
+      screen.getByText(/ada@example.com isn't confirmed yet. Tap Send a new code/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/We sent a 6-digit code/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send a new code" })).toBeInTheDocument();
   });
 
   it("signs up without inventing a display name from the email, and confirms to /placement", async () => {
@@ -250,7 +351,9 @@ describe("Auth page", () => {
     await user.type(await signUpWithoutSession(user), "111111");
     await user.click(screen.getByRole("button", { name: "Confirm" }));
 
-    expect(await screen.findByText("Token has expired or is invalid")).toBeInTheDocument();
+    expect(
+      await screen.findByText("That code is wrong or has expired. Check it, or send a new code."),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("6-digit code")).toBeInTheDocument();
     expect(navigate).not.toHaveBeenCalled();
   });
@@ -278,6 +381,36 @@ describe("Auth page", () => {
       }),
     );
     expect(await screen.findByText(/sent a new code/)).toBeInTheDocument();
+  });
+
+  it("a refresh on the code screen keeps the address, so the code can still be entered", async () => {
+    verifyOtp.mockResolvedValue({ data: { session: { access_token: "tok" } }, error: null });
+    const user = userEvent.setup();
+    const first = await signUpWithoutSession(user);
+    expect(first).toBeInTheDocument();
+    cleanup(); // the reload
+
+    renderPage();
+    expect(screen.getByLabelText("6-digit code")).toBeInTheDocument();
+    expect(screen.getByText(/sent a 6-digit code to ada@example.com/)).toBeInTheDocument();
+    await user.type(screen.getByLabelText("6-digit code"), "637360");
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+    await waitFor(() =>
+      expect(verifyOtp).toHaveBeenCalledWith({
+        email: "ada@example.com",
+        token: "637360",
+        type: "signup",
+      }),
+    );
+    // Used: a later visit starts on the ordinary form again.
+    expect(sessionStorage.getItem("lwa.auth.verifyEmail.v1")).toBeNull();
+  });
+
+  it("Use a different email forgets the remembered address", async () => {
+    const user = userEvent.setup();
+    await signUpWithoutSession(user);
+    await user.click(screen.getByRole("button", { name: "Use a different email" }));
+    expect(sessionStorage.getItem("lwa.auth.verifyEmail.v1")).toBeNull();
   });
 
   it("shows the Terms of Use and Privacy Policy footer with links", () => {
@@ -368,7 +501,9 @@ describe("Auth page", () => {
 
     await user.click(screen.getByRole("button", { name: "Continue with Google" }));
 
-    expect(await screen.findByText("OAuth unavailable")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Google sign-in didn't work. Please try again."),
+    ).toBeInTheDocument();
   });
 
   it("passes the 'next' param through to the Google redirect URL", async () => {

@@ -14,7 +14,8 @@ const AI_MARKERS =
 
 const GATED_ROUTES: Record<string, RegExp> = {
   "src/routes/api/chat.ts": /authorizeAiRequest\(request,\s*"chat",\s*\{\s*route:\s*"chat"\s*\}\)/,
-  "src/routes/api/stt.ts": /authorizeAiRequest\(request,\s*"stt",\s*\{\s*route:\s*"stt"\s*\}\)/,
+  "src/routes/api/stt.ts":
+    /authorizeAiRequest\(request,\s*"stt",\s*\{\s*route:\s*"stt",\s*deferQuota:\s*true\s*\}\)/,
   "src/routes/api/tts.ts": /authorizeAiRequest\(request,\s*"tts",\s*\{\s*route:\s*"tts"\s*\}\)/,
   "src/routes/api/analyze-weaknesses.ts":
     /authorizeAiRequest\(request,\s*"chat",\s*\{\s*route:\s*"analyze-weaknesses"\s*\}\)/,
@@ -33,7 +34,7 @@ const EXEMPT_ROUTES: Record<string, string> = {
   "src/routes/api/generate-practice.ts": "sends only the lesson's own wording, no learner data",
 };
 const GATED_SERVER_FNS: Record<string, RegExp> = {
-  "src/lib/sync.functions.ts": /hasAiConsent\(supabase,\s*userId\)/,
+  "src/lib/sync.functions.ts": /hasAiConsent\(supabase,\s*userId[,)]/,
   "src/lib/review.functions.ts": /hasAiConsent\(supabase,\s*userId\)/,
 };
 

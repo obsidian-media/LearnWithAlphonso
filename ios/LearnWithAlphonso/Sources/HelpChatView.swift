@@ -176,7 +176,7 @@ struct HelpChatView: View {
                 case .you:
                     YouBubble(text: message.body, when: when, stateWord: state.sentIDs.contains(message.id) ? SupportCopy.stateSent : nil)
                 case .ai:
-                    AiBubble(message: message, when: when, openLink: message.link.flatMap { linkAction?($0, onClose ?? { dismiss() }) })
+                    AiBubble(message: message, when: when, openLink: message.link.flatMap { linkAction?($0, onClose ?? { dismiss() }) }, session: session)
                 case .support:
                     PersonBubble(message: message, when: when)
                 case .system:
@@ -500,6 +500,7 @@ private struct AiBubble: View {
     let message: SupportMessage
     let when: String
     let openLink: (() -> Void)?
+    let session: Session
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
@@ -532,6 +533,9 @@ private struct AiBubble: View {
             .padding(.horizontal, AlphonsoDS.Space.s4 - 2).padding(.vertical, AlphonsoDS.Space.s3)
             .background(BubbleShape(tightCorner: .bottomLeft).fill(ds.card))
             .overlay(BubbleShape(tightCorner: .bottomLeft).stroke(ds.line, lineWidth: 2))
+            // Miya is an AI: long-press (or the VoiceOver action) reports the reply into the same queue as Hector.
+            // The support chat has no course, so the report carries "en" (as on the web).
+            .reportableAIMessage(message.body, enabled: true, surface: .support, course: "en", session: session)
             Text(when).dsText(.caption).foregroundStyle(ds.inkFaint)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

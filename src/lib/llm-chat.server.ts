@@ -1,6 +1,7 @@
 import { applySafety, type LlmMessage } from "./ai-safety";
 import { resolveLlmChatModels, resolveLlmProviders } from "./llm-chat-model.server";
 import { recordLlmCost, scheduleBackground, type LlmTrack } from "./ai-cost-log.server";
+import { upstreamErrorCode, upstreamRequestId } from "./api-response.server";
 
 /**
  * The only place the web server talks to the AI text provider, OpenRouter (ai-call-sites.test.ts enforces it).
@@ -42,7 +43,10 @@ const jsonHeaders = { "content-type": "application/json" };
 export async function normalizeLlmResponse(res: Response): Promise<Response> {
   if (res.status === 401 || res.status === 402 || res.status === 403) {
     const text = await res.text();
-    console.error(`[llm] provider unavailable (${res.status}): ${text.slice(0, 500)}`);
+    // Status, the provider's error code and request id only: the body can echo the learner's own text.
+    console.error(
+      `[llm] provider unavailable status=${res.status} code=${upstreamErrorCode(text)} request=${upstreamRequestId(res)}`,
+    );
     return new Response(text, { status: 503, headers: jsonHeaders });
   }
   if (res.status === 200 && (res.headers.get("content-type") ?? "").includes("application/json")) {
@@ -55,7 +59,9 @@ export async function normalizeLlmResponse(res: Response): Promise<Response> {
     }
     const obj = parsed as { error?: unknown; choices?: unknown } | null;
     if (obj && typeof obj === "object" && obj.error && !Array.isArray(obj.choices)) {
-      console.error(`[llm] provider error inside a 200: ${text.slice(0, 500)}`);
+      console.error(
+        `[llm] provider error inside a 200 status=200 code=${upstreamErrorCode(text)} request=${upstreamRequestId(res)}`,
+      );
       return new Response(text, { status: 502, headers: jsonHeaders });
     }
     return new Response(text, { status: 200, headers: jsonHeaders });

@@ -1,3 +1,4 @@
+import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { filterModelOutputs, makeBlockedTermCheck } from "@/lib/ai-safety";
 import { getCourse, isCourse, type Course } from "@/data/courses";
@@ -49,7 +50,7 @@ export const Route = createFileRoute("/api/grade-translation")({
         // request still costs nothing.
         const { verifyAuth, consumeQuotaFor } = await import("@/lib/ai-quota.server");
         const auth = await verifyAuth(request);
-        if (!auth.ok) return Response.json({ error: auth.message }, { status: auth.status });
+        if (!auth.ok) return noStoreJson({ error: auth.message }, { status: auth.status });
         const { requireAiConsent, requireAiSwitchedOn } = await import("@/lib/ai-consent.server");
         const denied = await requireAiConsent(auth.userId, {
           db: auth.supabase,
@@ -69,7 +70,7 @@ export const Route = createFileRoute("/api/grade-translation")({
         try {
           body = await request.json();
         } catch {
-          return Response.json({ error: "Invalid JSON" }, { status: 400 });
+          return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
         }
 
         const lessonId = typeof body.lessonId === "string" ? body.lessonId : "";
@@ -80,19 +81,19 @@ export const Route = createFileRoute("/api/grade-translation")({
         const course: Course = isCourse(rawCourse) ? rawCourse : "en";
 
         if (!placementId && (!lessonId || !questionId)) {
-          return Response.json(
+          return noStoreJson(
             { error: "Missing placementId, or lessonId and questionId" },
             { status: 400 },
           );
         }
         // An empty submission is not an answer. Returning 400 rather than
         // "incorrect" keeps it out of the learner's score and spends nothing.
-        if (!submission) return Response.json({ error: "Empty submission" }, { status: 400 });
+        if (!submission) return noStoreJson({ error: "Empty submission" }, { status: 400 });
         // Quota counts calls, not tokens, so without a cap one call can carry
         // an arbitrarily large body to the vendor. 500 is far beyond any real
         // answer to a one-sentence prompt.
         if (submission.length > 500) {
-          return Response.json({ error: "Submission too long" }, { status: 400 });
+          return noStoreJson({ error: "Submission too long" }, { status: 400 });
         }
 
         // Resolved from server-side content either way, so a client still
@@ -101,14 +102,14 @@ export const Route = createFileRoute("/api/grade-translation")({
         const question = placementId
           ? bundle.placementPool.find((q) => q.id === placementId)
           : bundle.findLesson(lessonId)?.lesson.questions.find((q) => q.id === questionId);
-        if (!question) return Response.json({ error: "Unknown question" }, { status: 400 });
+        if (!question) return noStoreJson({ error: "Unknown question" }, { status: 400 });
         if (question.type !== "translate") {
-          return Response.json({ error: "Not a translation question" }, { status: 400 });
+          return noStoreJson({ error: "Not a translation question" }, { status: 400 });
         }
 
         // Free, offline-capable, and final when it says yes.
         if (matchesAcceptableAnswer(submission, question.acceptableAnswers)) {
-          return Response.json({
+          return noStoreJson({
             correct: true,
             reason: null,
             source: "local",
@@ -118,15 +119,15 @@ export const Route = createFileRoute("/api/grade-translation")({
         const localVerdict: TranslationVerdict = { correct: false, reason: null, source: "local" };
 
         const key = resolveLlmApiKey();
-        if (!key) return Response.json(localVerdict);
+        if (!key) return noStoreJson(localVerdict);
         // The owner's AI switch: off means local grading only, never a model call.
-        if (await requireAiSwitchedOn("grade-translation")) return Response.json(localVerdict);
+        if (await requireAiSwitchedOn("grade-translation")) return noStoreJson(localVerdict);
 
         // Quota is spent only now -- after the local list has already failed to
         // settle it, so the budget tracks real vendor calls rather than
         // answers.
-        const quota = await consumeQuotaFor(auth.supabase, "translate");
-        if (!quota.ok) return Response.json(localVerdict);
+        const quota = await consumeQuotaFor(auth.supabase, "translate", undefined, auth.userId);
+        if (!quota.ok) return noStoreJson(localVerdict);
 
         const verdict = await gradeTranslationWithAi({
           prompt: question.prompt,
@@ -136,7 +137,7 @@ export const Route = createFileRoute("/api/grade-translation")({
           model: resolveLlmChatModel(),
           userId: auth.userId,
         });
-        if (!verdict) return Response.json(localVerdict);
+        if (!verdict) return noStoreJson(localVerdict);
 
         // The reason is model-written text the learner reads: drop it if the blocked-term check rejects it.
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -149,7 +150,7 @@ export const Route = createFileRoute("/api/grade-translation")({
               })
             )[0]
           : false;
-        return Response.json({
+        return noStoreJson({
           correct: verdict.correct,
           reason: reasonBlocked ? null : verdict.reason,
           source: "ai",

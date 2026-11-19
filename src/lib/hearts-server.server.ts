@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { ServerHeartsMode } from "./hearts-gate.server";
 import type { ProEntitlementStatus, RevenueCatConfig } from "./revenuecat-entitlement";
+import { OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS, recordOpsEvent } from "./ops-events.server";
 
 /**
  * The web's half of "hearts are settled on the server" (the Edge Functions have the Deno half:
@@ -57,8 +58,15 @@ export async function liveHeartsServerDeps(): Promise<HeartsServerDeps> {
   };
 }
 
-/** Whether this learner has unlimited hearts right now. Never throws; fails closed (false). */
-export async function heartsUnlimited(userId: string, deps: HeartsServerDeps): Promise<boolean> {
+/**
+ * Whether this learner has unlimited hearts right now, or null when that could not be established (RevenueCat could
+ * not be asked and no fresh cached answer exists). A caller that WRITES from the answer (a hearts charge, a referral
+ * reward) treats null as "retry later", never as "not Pro". Never throws.
+ */
+export async function heartsUnlimitedOrUnknown(
+  userId: string,
+  deps: HeartsServerDeps,
+): Promise<boolean | null> {
   try {
     const db = await deps.db();
     const now = deps.now();
@@ -76,7 +84,7 @@ export async function heartsUnlimited(userId: string, deps: HeartsServerDeps): P
     const config = deps.rcConfig();
     if (!config) return false;
     const status = await deps.proStatus(config, userId);
-    if (status === "unavailable") return false;
+    if (status === "unavailable") return null;
     const pro = status === "active";
     await db
       .from("hearts_pro_status")
@@ -86,8 +94,39 @@ export async function heartsUnlimited(userId: string, deps: HeartsServerDeps): P
       );
     return pro;
   } catch {
-    return false;
+    return null;
   }
+}
+
+/**
+ * Pro for a decision that must still be made when RevenueCat cannot be asked (a lesson already saved, the start gate):
+ * the live or fresh answer; else the last stored answer at ANY age ("stale"); else "unknown". Never throws. A caller
+ * treats "unknown" as not Pro WITHOUT charging (a shadow settlement), and never as Pro (that refills hearts).
+ */
+export async function heartsProWithFallback(
+  userId: string,
+  deps: HeartsServerDeps,
+): Promise<{ pro: boolean; source: "live" | "stale" | "unknown" }> {
+  const live = await heartsUnlimitedOrUnknown(userId, deps);
+  if (live !== null) return { pro: live, source: "live" };
+  try {
+    const db = await deps.db();
+    const { data } = await db
+      .from("hearts_pro_status")
+      .select("pro")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const pro = (data as { pro?: unknown } | null)?.pro;
+    if (typeof pro === "boolean") return { pro, source: "stale" };
+  } catch {
+    // no cache readable: unknown
+  }
+  return { pro: false, source: "unknown" };
+}
+
+/** Whether this learner has unlimited hearts right now. Never throws; fails closed (false). Read-only uses only. */
+export async function heartsUnlimited(userId: string, deps: HeartsServerDeps): Promise<boolean> {
+  return (await heartsUnlimitedOrUnknown(userId, deps)) === true;
 }
 
 export type HeartsSettlement = { hearts: number; heartsRefillAt: number | null };
@@ -107,16 +146,71 @@ export async function settleLessonHearts(
   },
   deps: HeartsServerDeps,
 ): Promise<HeartsSettlement | null> {
-  if (args.mode === "off") return null;
+  const r = await settleLessonHeartsStrict(args, deps);
+  return r.ok ? r.settlement : null;
+}
+
+/**
+ * Like settleLessonHearts, but says whether the settlement could not run (the database call failed): ok:false means
+ * the caller must not report a finished settlement; the retry is answered from the stored completion and settles with
+ * the ORIGINAL misses. Pro unknown (RevenueCat down) never fails a saved lesson: a stored "not Pro" is used at any
+ * age; a stored "Pro" that is no longer fresh, or none at all, makes it a shadow settlement (_enforce=false,
+ * _pro=false: charges nothing, records the token). It is never settled as Pro from an unconfirmed answer, which would
+ * refill a lapsed subscriber's hearts.
+ */
+export async function settleLessonHeartsStrict(
+  args: {
+    userId: string;
+    sessionToken: string;
+    misses: number;
+    sinceMs: number;
+    mode: ServerHeartsMode;
+  },
+  deps: HeartsServerDeps,
+): Promise<{ ok: true; settlement: HeartsSettlement | null } | { ok: false }> {
+  if (args.mode === "off") return { ok: true, settlement: null };
   try {
-    const pro = await heartsUnlimited(args.userId, deps);
+    const proAnswer = await heartsProWithFallback(args.userId, deps);
+    let pro = proAnswer.pro;
+    let enforce = args.mode === "on";
+    if (proAnswer.source === "stale" && pro) {
+      pro = false;
+      enforce = false;
+      console.error(
+        JSON.stringify({ event: "hearts_settlement_shadow_stale_pro", fn: "completeLessonRemote" }),
+      );
+      await recordOpsEvent(
+        "hearts_settlement_shadow_stale_pro",
+        { fn: "completeLessonRemote" },
+        args.userId,
+        OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS,
+      );
+    } else if (proAnswer.source === "stale") {
+      console.error(
+        JSON.stringify({ event: "hearts_settlement_stale_pro", fn: "completeLessonRemote" }),
+      );
+    } else if (proAnswer.source === "unknown") {
+      enforce = false;
+      console.error(
+        JSON.stringify({
+          event: "hearts_settlement_shadow_pro_unknown",
+          fn: "completeLessonRemote",
+        }),
+      );
+      await recordOpsEvent(
+        "hearts_settlement_shadow_pro_unknown",
+        { fn: "completeLessonRemote" },
+        args.userId,
+        OPS_EVENT_SUCCESS_PATH_TIMEOUT_MS,
+      );
+    }
     const db = await deps.db();
     const { data, error } = await db.rpc("settle_lesson_hearts", {
       _user_id: args.userId,
       _token_hash: createHash("sha256").update(args.sessionToken).digest("hex"),
       _misses: args.misses,
       _since: new Date(args.sinceMs).toISOString(),
-      _enforce: args.mode === "on",
+      _enforce: enforce,
       _pro: pro,
     });
     const row = (Array.isArray(data) ? data[0] : data) as {
@@ -127,17 +221,22 @@ export async function settleLessonHearts(
       console.error(
         JSON.stringify({ event: "hearts_settlement_failed", fn: "completeLessonRemote" }),
       );
-      return null;
+      await recordOpsEvent("hearts_settlement_failed", { fn: "completeLessonRemote" }, args.userId);
+      return { ok: false };
     }
     return {
-      hearts: row.hearts,
-      heartsRefillAt:
-        typeof row.hearts_refill_at === "string" ? Date.parse(row.hearts_refill_at) : null,
+      ok: true,
+      settlement: {
+        hearts: row.hearts,
+        heartsRefillAt:
+          typeof row.hearts_refill_at === "string" ? Date.parse(row.hearts_refill_at) : null,
+      },
     };
   } catch {
     console.error(
       JSON.stringify({ event: "hearts_settlement_failed", fn: "completeLessonRemote" }),
     );
-    return null;
+    await recordOpsEvent("hearts_settlement_failed", { fn: "completeLessonRemote" }, args.userId);
+    return { ok: false };
   }
 }
