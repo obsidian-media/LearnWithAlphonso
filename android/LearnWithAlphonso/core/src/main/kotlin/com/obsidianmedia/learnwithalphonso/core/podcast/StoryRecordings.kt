@@ -70,5 +70,12 @@ class StoryRecordings(private val files: Map<String, String>) {
          */
         fun canNarrate(segments: List<String>, recordings: StoryRecordings?, aiConsentGranted: Boolean): Boolean =
             recordings?.allRecorded(segments) == true || aiConsentGranted
+
+        /**
+         * A sentence whose audio downloaded but would not play: a recording falls back to the live voice for that sentence
+         * when AI speech is on (like the web). Without consent, or when the live audio itself would not play, narration
+         * stops as unavailable, so a broken file never spends AI quota without consent.
+         */
+        fun speakLiveAfterPlayFailure(wasRecorded: Boolean, aiConsentGranted: Boolean): Boolean = wasRecorded && aiConsentGranted
     }
 }
