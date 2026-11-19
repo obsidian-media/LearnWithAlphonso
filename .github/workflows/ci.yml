@@ -149,8 +149,9 @@ jobs:
 
       - name: Generated Supabase types are up to date
         run: |
-          supabase gen types typescript --project-id qhcjpfbxfcltjbiuknyt > src/integrations/supabase/types.ts
-          bunx prettier --write src/integrations/supabase/types.ts
+          # The CLI's own generator, read from production's database: the same generator (and format) as types-gen
+          # on pull requests, so a PR's committed file matches here (see scripts/gen-supabase-types.sh).
+          bash scripts/gen-supabase-types.sh --production
           if ! git diff --quiet -- src/integrations/supabase/types.ts; then
             echo "::error::src/integrations/supabase/types.ts is stale. Run the 'Regenerate Supabase Types' workflow (gh workflow run regenerate-supabase-types.yml) and let it commit the result -- never hand-edit this file. If this PR ALSO adds a new migration, this failure is expected until that migration is merged and deployed -- see this step's header comment; re-running this exact fix will not help yet."
             git diff --stat -- src/integrations/supabase/types.ts
@@ -159,12 +160,14 @@ jobs:
           fi
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
 
   # Regenerates src/integrations/supabase/types.ts in the PR, from the PR's own migrations, so a migration's types land
   # in its own PR instead of as a bot commit on main after the deploy (which made every other open PR re-run CI).
   # Production cannot be the reference here (it only gets a migration after merge), so this applies
   # supabase/migrations to a throwaway local Postgres on the runner and generates from that, with the real CLI (never
-  # the Supabase MCP generator, which drops graphql_public). No secrets: fork PRs run it too. When the file is stale it
+  # the Supabase MCP generator, which drops graphql_public). Every generator in CI is the CLI's bundled one
+  # (scripts/gen-supabase-types.sh), never Supabase's server-side `--project-id` one, whose format differs. No secrets: fork PRs run it too. When the file is stale it
   # uploads the regenerated copy and fails; `types-push` below commits it to a same-repo PR branch, and the run on that
   # commit is green. Production drift is still watched after the deploy by `types-fresh` above, and the
   # "Regenerate Supabase Types" workflow on main stays as the safety net (it commits nothing when types already match).
@@ -214,16 +217,8 @@ jobs:
 
       - name: Generate types from the local database
         if: env.SKIP != '1'
-        run: |
-          committed_version=$(grep -oE 'PostgrestVersion: "[^"]*"' src/integrations/supabase/types.ts | head -n1 || true)
-          # In place, so Prettier finds the repo's config, exactly as the regenerate workflow formats it.
-          supabase gen types typescript --local > src/integrations/supabase/types.ts
-          bunx prettier --write src/integrations/supabase/types.ts
-          # The PostgREST version in the header is production's; the local stack reports its own. Keep the committed
-          # one (types-fresh, after the deploy, still catches a real production change).
-          if [ -n "$committed_version" ]; then
-            sed -i -E "s/PostgrestVersion: \"[^\"]*\"/${committed_version}/" src/integrations/supabase/types.ts
-          fi
+        # The same script, generator and flags as types-fresh and the Regenerate workflow, only the source differs.
+        run: bash scripts/gen-supabase-types.sh --local
 
       - name: Compare with the committed file
         id: compare
