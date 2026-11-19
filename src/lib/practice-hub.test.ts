@@ -19,6 +19,7 @@ import {
   nextSceneIndex,
   starTally,
   todaysPick,
+  todaysPicks,
   WRITTEN_ONLY_WEAK_SPOTS,
   topWeakSpots,
   type StarRow,
@@ -262,5 +263,55 @@ describe("continuePoint: Continue resumes the right scene", () => {
     const rows = [scene("train-trip", "train-buy-ticket", 2, "x")];
     expect(nextSceneIndex("train-trip", rows)).toBe(1);
     expect(nextSceneIndex("market-day", rows)).toBe(0);
+  });
+});
+
+describe("todaysPicks: the call cards the hub offers", () => {
+  it("the first card is exactly Today's pick, for any learner", () => {
+    const cases = [
+      { stars: [], cefrLevel: "A2", weaknessEvents: [] },
+      { stars: [], cefrLevel: "B1", weaknessEvents: [detected("past-tense")] },
+      { stars: [scenario("coffee", 2)], cefrLevel: "A1", weaknessEvents: [detected("articles")] },
+    ];
+    for (const data of cases) expect(todaysPicks(data)[0]).toEqual(todaysPick(data));
+  });
+  it("offers up to three different scenarios at the learner's level", () => {
+    const picks = todaysPicks({ stars: [], cefrLevel: "A1", weaknessEvents: [] });
+    expect(picks).toHaveLength(3);
+    expect(new Set(picks.map((p) => p.scenarioId)).size).toBe(3);
+    for (const p of picks)
+      expect(SCENARIOS.find((s) => s.id === p.scenarioId)!.level).toBe("Beginner");
+  });
+  it("gives each weak spot its own card, worst first, then fills with level picks that claim none", () => {
+    const picks = todaysPicks({
+      stars: [],
+      cefrLevel: "A2",
+      weaknessEvents: [detected("articles"), detected("articles"), detected("past-tense")],
+    });
+    expect(picks.map((p) => p.weakSpot)).toEqual(["articles", "past-tense", null]);
+    expect(SCENARIO_FOCUS[picks[0].scenarioId]).toContain("articles");
+    expect(SCENARIO_FOCUS[picks[1].scenarioId]).toContain("past-tense");
+  });
+  it("never offers the same scenario twice, even when two weak spots share one", () => {
+    const picks = todaysPicks({
+      stars: [],
+      cefrLevel: "A2",
+      weaknessEvents: [detected("articles"), detected("plurals")],
+    });
+    expect(new Set(picks.map((p) => p.scenarioId)).size).toBe(picks.length);
+  });
+  it("skips written-only weak spots and respects the limit", () => {
+    const picks = todaysPicks(
+      { stars: [], cefrLevel: "A2", weaknessEvents: [detected("spelling")] },
+      2,
+    );
+    expect(picks).toHaveLength(2);
+    expect(picks.every((p) => p.weakSpot === null)).toBe(true);
+  });
+  it("prefers unplayed scenarios over starred ones", () => {
+    const beginner = SCENARIOS.filter((s) => s.level === "Beginner");
+    const starred = beginner.slice(0, beginner.length - 2).map((s) => scenario(s.id, 3));
+    const picks = todaysPicks({ stars: starred, cefrLevel: "A1", weaknessEvents: [] }, 2);
+    expect(picks.map((p) => p.scenarioId)).toEqual(beginner.slice(-2).map((s) => s.id));
   });
 });

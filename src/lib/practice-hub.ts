@@ -82,26 +82,46 @@ export type TodaysPick = {
 };
 
 /**
- * A scenario at the learner's level that exercises their top weak spot. Weak spots are tried worst first, skipping written-only ones (spelling); among the
- * scenarios that fit, the one with the fewest stars wins (unplayed first), then catalog order. With no weak spot a
- * scenario at the level fits, the level's least-starred scenario is picked and no weak spot is claimed.
+ * The scenarios the hub's call cards offer, best first (at most `limit`). The rule is Today's pick's, repeated: weak
+ * spots are tried worst first, skipping written-only ones (spelling); each yields the least-starred scenario at the
+ * learner's level that practices it and is not already offered (unplayed first, then catalog order). Once the weak
+ * spots are used up the level's least-starred scenarios fill the rest, claiming no weak spot. The first card is
+ * exactly what `todaysPick` returns.
  */
-export function todaysPick(data: PracticeHubData): TodaysPick | null {
+export function todaysPicks(data: PracticeHubData, limit = 3): TodaysPick[] {
   const level = scenarioLevelForCefr(data.cefrLevel);
   const stars = starLookup(data.stars);
   const atLevel = SCENARIOS.filter((s) => s.level === level);
+  const taken = new Set<string>();
   const leastStarred = (list: typeof SCENARIOS) =>
-    list.reduce<(typeof SCENARIOS)[number] | null>(
-      (best, s) => (!best || stars("scenario", s.id) < stars("scenario", best.id) ? s : best),
-      null,
-    );
+    list
+      .filter((s) => !taken.has(s.id))
+      .reduce<(typeof SCENARIOS)[number] | null>(
+        (best, s) => (!best || stars("scenario", s.id) < stars("scenario", best.id) ? s : best),
+        null,
+      );
+  const picks: TodaysPick[] = [];
+  const add = (id: string, weakSpot: string | null) => {
+    taken.add(id);
+    picks.push({ scenarioId: id, level, weakSpot });
+  };
   for (const weak of topWeakSpots(data.weaknessEvents)) {
+    if (picks.length >= limit) break;
     if (WRITTEN_ONLY_WEAK_SPOTS.has(weak)) continue;
     const pick = leastStarred(atLevel.filter((s) => SCENARIO_FOCUS[s.id]?.includes(weak)));
-    if (pick) return { scenarioId: pick.id, level, weakSpot: weak };
+    if (pick) add(pick.id, weak);
   }
-  const pick = leastStarred(atLevel);
-  return pick ? { scenarioId: pick.id, level, weakSpot: null } : null;
+  while (picks.length < limit) {
+    const pick = leastStarred(atLevel);
+    if (!pick) break;
+    add(pick.id, null);
+  }
+  return picks;
+}
+
+/** A scenario at the learner's level that exercises their top weak spot: the first of `todaysPicks`. */
+export function todaysPick(data: PracticeHubData): TodaysPick | null {
+  return todaysPicks(data, 1)[0] ?? null;
 }
 
 export type ContinuePoint = { campaignId: string; sceneIndex: number };
@@ -139,4 +159,17 @@ export function nextSceneIndex(campaignId: string, rows: readonly StarRow[]): nu
   if (!campaign) return 0;
   const i = campaign.scenes.findIndex((s) => stars("scene", sceneKey(campaign.id, s.id)) === 0);
   return i < 0 ? 0 : i;
+}
+
+/** A campaign's progress for its rail card: scenes that hold at least one star, out of all its scenes. */
+export function campaignProgress(
+  campaignId: string,
+  rows: readonly StarRow[],
+): { done: number; total: number; scenes: boolean[] } {
+  const stars = starLookup(rows);
+  const campaign = CAMPAIGNS.find((c) => c.id === campaignId);
+  const scenes = (campaign?.scenes ?? []).map(
+    (s) => stars("scene", sceneKey(campaignId, s.id)) > 0,
+  );
+  return { done: scenes.filter(Boolean).length, total: scenes.length, scenes };
 }

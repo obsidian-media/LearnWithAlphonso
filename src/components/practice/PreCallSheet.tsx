@@ -18,6 +18,8 @@ export type PreCallTarget = {
   opener: string;
   /** For a campaign scene: "Scene 2 of 3". */
   step?: string;
+  /** For a campaign scene: every scene of the campaign with the stars it holds (the campaign's detail). */
+  scenes?: { title: string; stars: number; current: boolean }[];
   /** The course language, for the title and the opener ("es"). */
   lang: string;
 };
@@ -84,6 +86,28 @@ export function PreCallSheet({
             {target.opener}
           </p>
         </div>
+
+        {target.scenes && (
+          <ol
+            aria-label="Scenes in this campaign"
+            data-campaign-scenes=""
+            className="grid gap-1 rounded-[14px] border-2 border-ds-line bg-ds-card px-3 py-2"
+          >
+            {target.scenes.map((sc, i) => (
+              <li
+                key={i}
+                aria-current={sc.current ? "step" : undefined}
+                className={`flex items-center gap-2 ds-type-caption ${sc.current ? "font-extrabold text-ds-ink" : "font-semibold text-ds-ink-soft"}`}
+              >
+                <span className="tabular-nums">{i + 1}.</span>
+                <span lang={target.lang} className="min-w-0 flex-1">
+                  {sc.title}
+                </span>
+                <PracticeStars n={sc.stars} size="xs" />
+              </li>
+            ))}
+          </ol>
+        )}
 
         <div className="grid gap-1.5 rounded-[14px] bg-ds-choice-tint px-3 py-2.5">
           <h3 className="ds-type-overline text-ds-brand">How to earn stars</h3>
