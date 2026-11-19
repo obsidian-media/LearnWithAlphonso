@@ -76,13 +76,31 @@ class RoomSyncQueueStoreTest {
     }
 
     @Test
-    fun `clearing an ended account removes its rows and dead letters and the caches, and records that nothing is left to adopt`() = runBlocking {
+    fun `clearing a deleted account removes its rows and dead letters and the caches, and records that nothing is left to adopt`() = runBlocking {
         val r = Recorder().apply { state = AppSyncStateRecord(lastSyncedAt = 1, orphansResolved = false) }
         store(r).clearAccount("u1")
         assertTrue(r.calls.containsAll(listOf("clearLessonCompletionsOf", "clearReviewGradesOf", "clearDeadLettersOf", "clearCachedDueReviews", "clearSyncState")))
         assertTrue("only that account's rows, not the whole queue", r.calls.none { it == "clearLessonCompletions" || it == "clearReviewGrades" || it == "clearDeadLetters" })
         assertTrue(r.state!!.orphansResolved)
         assertEquals(1, r.transactions)
+    }
+
+    @Test
+    fun `a sign-out keeps the account's queued rows and lost lessons, and clears ownerless rows and the caches`() = runBlocking {
+        val r = Recorder().apply { state = AppSyncStateRecord(lastSyncedAt = 1, orphansResolved = false) }
+        store(r).endSession("u1")
+        assertTrue(r.calls.containsAll(listOf("deleteOwnerlessLessonCompletions", "deleteOwnerlessReviewGrades", "clearCachedDueReviews", "clearSyncState")))
+        assertTrue("the account's own rows stay for its next sign-in", r.calls.none { it == "clearLessonCompletionsOf" || it == "clearReviewGradesOf" || it == "clearDeadLettersOf" })
+        assertTrue(r.state!!.orphansResolved)
+        assertEquals(1, r.transactions)
+    }
+
+    @Test
+    fun `a launch with nobody signed in clears only the caches`() = runBlocking {
+        val r = Recorder()
+        store(r).clearCaches()
+        assertEquals(listOf("clearCachedDueReviews", "clearSyncState"), r.calls.filter { !it.startsWith("read:") && !it.startsWith("write:") })
+        assertTrue(r.state!!.orphansResolved)
     }
 
     @Test
@@ -113,7 +131,7 @@ class RoomSyncQueueStoreTest {
 
     @Test
     fun `whatever else shows an account's data is told to forget it once the clear has finished`() = runBlocking {
-        for (clear in listOf<suspend (RoomSyncQueueStore) -> Unit>({ it.clearAccount("u1") }, { it.clearAll() })) {
+        for (clear in listOf<suspend (RoomSyncQueueStore) -> Unit>({ it.clearAccount("u1") }, { it.endSession("u1") }, { it.clearCaches() })) {
             val r = Recorder()
             var told: Boolean? = null
             clear(store(r) { told = r.inTransaction })

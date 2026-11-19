@@ -194,12 +194,13 @@ class SyncReliabilityTest {
     }
 
     @Test
-    fun `a row another account queued is dropped and never sent`() = runTest {
+    fun `a row another account queued is never sent and is left in the queue for that account`() = runTest {
         val fake = lessonServer()
         val result = sync(fake, listOf(completion("theirs", owner = "u2"), completion("mine", owner = "u1"), completion("legacy", owner = null)), user = "u1")
-        assertEquals(listOf("theirs"), result.droppedForeignLessonCompletions.map { it.lessonId })
         assertEquals(setOf("mine", "legacy"), result.syncedLessonCompletions.map { it.lessonId }.toSet())
         assertTrue(fake.seen.none { it.body.contains("theirs") })
+        val touched = result.syncedLessonCompletions + result.rescheduledLessonCompletions + result.deadLetteredLessonCompletions.map { it.item }
+        assertTrue(touched.none { it.lessonId == "theirs" }, "in no list, so the store keeps it as it is")
     }
 
     @Test
@@ -274,11 +275,12 @@ class SyncReliabilityTest {
     }
 
     @Test
-    fun `a foreign grade is dropped, never sent, and does not hold back mine`() = runTest {
+    fun `a foreign grade is never sent, is kept, and does not hold back mine`() = runTest {
         val fake = FakeSupabase { json("""{"retired":false,"dueOn":"2026-09-19"}""") }
         val result = sync(fake, grades = listOf(grade("theirs", now - 2000, owner = "u2"), grade("mine", now - 1000, owner = "u1")))
-        assertEquals(listOf("theirs"), result.droppedForeignReviewGrades.map { it.itemKey })
         assertEquals(listOf("mine"), result.syncedReviewGrades.map { it.itemKey })
+        val touched = result.syncedReviewGrades + result.rescheduledReviewGrades + result.deadLetteredReviewGrades.map { it.item }
+        assertTrue(touched.none { it.itemKey == "theirs" }, "in no list, so the store keeps it as it is")
         assertEquals(listOf("mine"), fake.seen.map { gradeKey(it.body) })
     }
 

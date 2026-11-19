@@ -127,19 +127,19 @@ class SyncQueueStoreTest {
     }
 
     @Test
-    fun clearAllEmptiesEverythingTheNextAccountMustNotInherit() = runBlocking {
+    fun signOutKeepsTheAccountsQueueAndClearsWhatTheNextAccountMustNotInherit() = runBlocking {
         store.appendLessonCompletion(lesson("a", "u1"))
         store.appendReviewGrade(PendingReviewGrade("k", "a", "en", 5, ownerUserId = "u1"))
         store.replaceLastKnownDueReviews(listOf(ReviewItem("k1", "u1l1", "A1", 2.5, 1, 0, "2026-09-14")))
         store.updateLastKnownProgress(LessonCompletionProgress(120, 3, 5, "2026-09-14", 4, null, 1, "silver"))
-        store.clearAll()
-        assertEquals(emptyList<PendingLessonCompletion>(), store.pendingLessonCompletions())
-        assertEquals(emptyList<PendingReviewGrade>(), store.pendingReviewGrades())
+        store.endSession("u1")
+        assertEquals(listOf("a"), store.pendingLessonCompletions().map { it.lessonId })
+        assertEquals(listOf("k"), store.pendingReviewGrades().map { it.itemKey })
         assertEquals(0, store.dueCount.first())
         assertNull(store.lastKnownProgress())
         // Nothing is left to adopt, so a row appended without an owner is dropped by the next account, not inherited.
         store.appendLessonCompletion(lesson("stray", null))
         store.resolveOrphanedRows("u2")
-        assertEquals(emptyList<PendingLessonCompletion>(), store.pendingLessonCompletions())
+        assertEquals(listOf("a"), store.pendingLessonCompletions().map { it.lessonId })
     }
 }

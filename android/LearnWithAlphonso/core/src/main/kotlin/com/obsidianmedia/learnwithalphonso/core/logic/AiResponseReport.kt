@@ -4,7 +4,13 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-enum class AiResponseSurface(val wire: String) { HECTOR("hector"), CONVERSATION("conversation"), CAMPAIGN("campaign"), EXPLAIN("explain") }
+/**
+ * Where the reported reply was shown. SUPPORT is Miya in the Help chat (the web's and iOS's "support"); PRACTICE is a
+ * generated practice question after a lesson, which only the apps offer.
+ */
+enum class AiResponseSurface(val wire: String) {
+    HECTOR("hector"), CONVERSATION("conversation"), CAMPAIGN("campaign"), EXPLAIN("explain"), SUPPORT("support"), PRACTICE("practice"),
+}
 
 /** The codes and labels are the web's AI_REPORT_REASONS, in the same order. */
 enum class AiResponseReportReason(val code: String, val label: String) {
@@ -123,6 +129,17 @@ object AiReplyReports {
     /** An "Explain in my language" text (BACKLOG 0.0-bc), reported from the "Not clear?" link. */
     fun explain(message: String, course: String, reason: AiResponseReportReason) =
         AiResponseReport(message, AiResponseSurface.EXPLAIN, course, reason)
+
+    /** A reply from Miya, the Help chat's AI. The chat has no course, so the report carries "en", as on the web and iOS. */
+    fun support(message: String, reason: AiResponseReportReason) =
+        AiResponseReport(message, AiResponseSurface.SUPPORT, "en", reason)
+
+    /** A generated practice question: what the learner saw, the question, its choices and its explanation. */
+    fun practice(prompt: String, choices: List<String>, explanation: String?, course: String, reason: AiResponseReportReason) =
+        AiResponseReport(
+            listOfNotNull(prompt, choices.joinToString(" / ").ifEmpty { null }, explanation?.ifBlank { null }).joinToString("\n"),
+            AiResponseSurface.PRACTICE, course, reason,
+        )
 
     fun campaign(message: String, course: String, campaignId: String, sceneIndex: Int, reason: AiResponseReportReason) =
         AiResponseReport(message, AiResponseSurface.CAMPAIGN, course, reason, campaignId = campaignId, sceneIndex = sceneIndex)

@@ -39,7 +39,8 @@ interface SyncApi : LessonCompletionApi {
  *
  * Failures are classified ([LessonCompletionError]): transient ones back off and retry forever, only permanent ones are
  * dead-lettered, so one bad item never blocks the queue and a flaky network never loses one. Rows that belong to
- * another account are dropped, never sent.
+ * another account are never sent and are left exactly as they are: they wait on this device for that account to sign
+ * back in (AccountQueueRetention decides when they expire).
  *
  * Lesson completions drain oldest-first but independently: complete-lesson is replay-safe, so a failure does not block
  * later ones. Review grades drain strictly oldest-first and stop at the first transient failure, because grade-review
@@ -66,11 +67,10 @@ object SyncEngine {
         val synced = ArrayList<PendingLessonCompletion>()
         val rescheduled = ArrayList<PendingLessonCompletion>()
         val dead = ArrayList<DeadLetter<PendingLessonCompletion>>()
-        val foreign = ArrayList<PendingLessonCompletion>()
         var lastKnownProgress: LessonCompletionProgress? = null
 
         for (completion in pendingLessonCompletions.sortedBy { it.queuedAt }) {
-            if (isForeign(completion.ownerUserId)) { foreign.add(completion); continue }
+            if (isForeign(completion.ownerUserId)) continue
             if (completion.nextAttemptAt?.let { it > nowMillis } == true) continue
             if (!isCurrentAccount()) break
             val result = service.complete(LessonCompletionRequest(completion))
@@ -101,10 +101,9 @@ object SyncEngine {
         val syncedGrades = ArrayList<PendingReviewGrade>()
         val rescheduledGrades = ArrayList<PendingReviewGrade>()
         val deadGrades = ArrayList<DeadLetter<PendingReviewGrade>>()
-        val foreignGrades = ArrayList<PendingReviewGrade>()
 
         for (grade in pendingReviewGrades.sortedBy { it.queuedAt }) {
-            if (isForeign(grade.ownerUserId)) { foreignGrades.add(grade); continue }
+            if (isForeign(grade.ownerUserId)) continue
             if (grade.nextAttemptAt?.let { it > nowMillis } == true) break
             if (!isCurrentAccount()) break
             try {
@@ -132,8 +131,7 @@ object SyncEngine {
         return SyncResult(
             syncedLessonCompletions = synced, syncedReviewGrades = syncedGrades, lastKnownProgress = lastKnownProgress,
             rescheduledLessonCompletions = rescheduled, deadLetteredLessonCompletions = dead,
-            droppedForeignLessonCompletions = foreign, rescheduledReviewGrades = rescheduledGrades,
-            deadLetteredReviewGrades = deadGrades, droppedForeignReviewGrades = foreignGrades,
+            rescheduledReviewGrades = rescheduledGrades, deadLetteredReviewGrades = deadGrades,
         )
     }
 }

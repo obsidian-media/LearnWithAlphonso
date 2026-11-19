@@ -2,7 +2,6 @@ package com.obsidianmedia.learnwithalphonso.core.auth
 
 import com.obsidianmedia.learnwithalphonso.core.logic.AuthUserNames
 import com.obsidianmedia.learnwithalphonso.core.net.OAuthPkce
-import com.obsidianmedia.learnwithalphonso.core.net.PkceChallenge
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthClient
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthError
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseSession
@@ -22,6 +21,26 @@ interface SessionStore {
     fun load(): SupabaseSession?
     fun save(session: SupabaseSession)
     fun clear()
+
+    /**
+     * The PKCE verifier of a Google sign-in in progress, kept beside the session (it is a credential for the code the
+     * browser returns) so the sign-in survives Android ending the process while the learner is in the browser. The
+     * defaults keep nothing: a store without them behaves as before, in memory only.
+     */
+    fun savePendingPkce(pending: PendingPkce) {}
+    fun loadPendingPkce(): PendingPkce? = null
+    fun clearPendingPkce() {}
+}
+
+/** A Google sign-in that went to the browser at [createdAtEpochSeconds]; usable for [PendingPkce.LIFETIME_SECONDS]. */
+@kotlinx.serialization.Serializable
+data class PendingPkce(val verifier: String, val createdAtEpochSeconds: Long) {
+    fun isUsable(nowSeconds: Long): Boolean = nowSeconds - createdAtEpochSeconds in 0..LIFETIME_SECONDS
+
+    companion object {
+        /** Long enough to pick an account and pass a second factor; a code that old is refused by the server anyway. */
+        const val LIFETIME_SECONDS = 10L * 60
+    }
 }
 
 sealed interface AuthState {
@@ -61,7 +80,7 @@ class SessionManager(
     val notice: StateFlow<String?> = _notice.asStateFlow()
 
     private val refreshLock = Mutex()
-    private var pendingPkce: PkceChallenge? = null
+    private var pendingPkce: PendingPkce? = null
 
     val userId: String? get() = (_state.value as? AuthState.SignedIn)?.session?.userId
 
@@ -199,25 +218,36 @@ class SessionManager(
         _notice.value = "If an account exists for that address, we've sent a link to reset your password. Check your inbox."
     }
 
-    /** Builds the Supabase PKCE authorize URL for the Custom Tab and remembers the verifier for the callback. */
+    /**
+     * Builds the Supabase PKCE authorize URL for the Custom Tab and remembers the verifier for the callback, in memory
+     * and in the store: Android may end the process while the browser is in front, and the callback then starts a new
+     * one that has only the store.
+     */
     fun beginGoogleSignIn(supabaseUrl: String, redirectTo: String): String {
         _errorMessage.value = null
         val challenge = OAuthPkce.make()
-        pendingPkce = challenge
+        val pending = PendingPkce(challenge.verifier, nowSeconds())
+        pendingPkce = pending
+        runCatching { store.savePendingPkce(pending) }
         return OAuthPkce.authorizeUrl(supabaseUrl, redirectTo, challenge)
     }
 
     suspend fun completeGoogleSignIn(callbackUri: String) {
-        val challenge = pendingPkce ?: return
+        val stored = runCatching { store.loadPendingPkce() }.getOrNull()
+        // The same 10 minutes whether it is still in memory or came back from the store.
+        val verifier = (pendingPkce ?: stored)?.takeIf { it.isUsable(nowSeconds()) }?.verifier
+        // Used once, whatever happens next: the code it pairs with is single-use too.
+        pendingPkce = null
+        runCatching { store.clearPendingPkce() }
+        if (verifier == null) return
         val code = OAuthPkce.authorizationCode(callbackUri)
         if (code == null) {
             _errorMessage.value = "Google sign-in didn't complete. Please try again."
             return
         }
         busy {
-            establish(auth.exchangeOAuthCode(code, challenge.verifier))
+            establish(auth.exchangeOAuthCode(code, verifier))
             onSignIn?.invoke("google")
-            pendingPkce = null
         }
     }
 

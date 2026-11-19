@@ -79,6 +79,8 @@ class AppContainer(context: Context) {
     private val app = context.applicationContext
     private val okHttp = OkHttpClient()
     private val engine = OkHttp.create { preconfigured = okHttp }
+    /** Hector, chat, speech and the other model calls wait longer than a normal API call (AiHttpClient). */
+    private val aiEngine = OkHttp.create { preconfigured = com.obsidianmedia.learnwithalphonso.net.AiHttpClient.from(okHttp) }
 
     /** The daily Hector limit as the server tells it (GET /api/app-config); null when unknown (fail open). */
     suspend fun hectorDailyLimit(): Int? = com.obsidianmedia.learnwithalphonso.core.logic.HectorAllowance.fetchLimit(BuildConfig.API_BASE_URL, engine)
@@ -151,6 +153,12 @@ class AppContainer(context: Context) {
         refresh = { session.freshAccessToken(force = true) },
         onAiConsentRequired = aiConsent.consentRefusalHook(appScope),
     )
+    /** The same API, for the AI and audio routes: same token, refresh and consent hook, longer timeouts. */
+    private val aiApiHttp = ApiHttp(
+        BuildConfig.API_BASE_URL, { session.freshAccessToken() }, aiEngine,
+        refresh = { session.freshAccessToken(force = true) },
+        onAiConsentRequired = aiConsent.consentRefusalHook(appScope),
+    )
     val accountClient = AccountClient(apiHttp)
     /** Where the learner stands against this month's AI limit (/api/ai-usage): a percent and a state, never a price. */
     val aiUsageClient = com.obsidianmedia.learnwithalphonso.core.net.AiUsageClient(apiHttp)
@@ -168,17 +176,17 @@ class AppContainer(context: Context) {
             progressClient.claimReferral(it)
         }
     }
-    val translationGrading = TranslationGradingClient(apiHttp)
-    val aiClient = AiConversationClient(apiHttp)
+    val translationGrading = TranslationGradingClient(aiApiHttp)
+    val aiClient = AiConversationClient(aiApiHttp)
     val goalClient = LearningGoalClient(apiHttp)
     /** The personalised learning path (/api/learning-path): one server-computed plan for web, iOS and Android. */
     val pathClient = com.obsidianmedia.learnwithalphonso.core.net.LearningPathClient(apiHttp)
     /** The first-run answers on the account (/api/learner-profile), the same checked save as the web. */
     val learnerProfileClient = LearnerProfileClient(apiHttp)
     /** "Explain in my language" (BACKLOG 0.0-bc): the explain call, and the account's native language and mode. */
-    val explainClient = com.obsidianmedia.learnwithalphonso.core.net.ExplainClient(apiHttp)
+    val explainClient = com.obsidianmedia.learnwithalphonso.core.net.ExplainClient(aiApiHttp)
     /** The Help chat routes (the api/support routes); works whether or not the server has the support AI switched on. */
-    val supportClient = com.obsidianmedia.learnwithalphonso.core.net.SupportClient(apiHttp)
+    val supportClient = com.obsidianmedia.learnwithalphonso.core.net.SupportClient(aiApiHttp)
     val explainSettings = com.obsidianmedia.learnwithalphonso.ui.explain.ExplainSettingsStore(
         fetch = { learnerProfileClient.fetch() },
         save = { learnerProfileClient.save(it) },
@@ -186,7 +194,7 @@ class AppContainer(context: Context) {
     )
     /** The last learning goal and plan per user and course, shown only when the network is down. */
     val goalCache = GoalCache(GoalPrefsStore(prefs))
-    val tutorClient = TutorConversationClient(apiHttp, deviceId())
+    val tutorClient = TutorConversationClient(aiApiHttp, deviceId())
     val micPermission = MicPermission(app)
     val notificationPermission = NotificationPermission(app, prefs)
     val reminderPromptStore = com.obsidianmedia.learnwithalphonso.core.logic.ReminderPromptStore(
@@ -214,6 +222,12 @@ class AppContainer(context: Context) {
     /** The home-screen streak widget draws in the app's theme: a theme change (the first value, at launch, covers a snapshot an older build wrote without one) rewrites its snapshot and redraws it. */
     private val widgetThemeSync = appScope.launch { themeManager.theme.collect { WidgetPublisher.republishTheme(app, it.raw) } }
 
+    /** When each account that left queued work on this device signed out; its rows expire 30 days after (AccountQueueRetention). */
+    private val ownerClock = com.obsidianmedia.learnwithalphonso.core.sync.ForeignOwnerClock(
+        read = { prefs.getString(com.obsidianmedia.learnwithalphonso.core.sync.ForeignOwnerClock.KEY, null) },
+        write = { v -> prefs.edit().apply { if (v == null) remove(com.obsidianmedia.learnwithalphonso.core.sync.ForeignOwnerClock.KEY) else putString(com.obsidianmedia.learnwithalphonso.core.sync.ForeignOwnerClock.KEY, v) }.apply() },
+    )
+
     /** Completed once the session is restored and the ownerless queue rows are resolved; no sync pass runs before. */
     private val startup = CompletableDeferred<Unit>()
 
@@ -226,6 +240,7 @@ class AppContainer(context: Context) {
         isConnected = { connectivity.isConnected.value },
         scope = appScope,
         startup = startup,
+        ownerClock = ownerClock,
     ).also { it.start(connectivity.isConnected) }
 
     init {
@@ -233,14 +248,20 @@ class AppContainer(context: Context) {
         // A device that answered Under 13 restores nothing: a stored session is dropped here, never refreshed.
         appScope.launch {
             val restore: suspend () -> Unit = { if (FirstRunDevice.isBlocked) session.endLocally() else session.restore() }
-            SessionStartup(restore, { session.userId }, syncStore, startup).run()
+            SessionStartup(restore, { session.userId }, syncStore, startup, ownerClock).run()
         }
     }
 
-    /** Queued work, lost-lesson records and cached progress belong to the account that was signed in. */
+    /**
+     * Cached progress belongs to the account that was signed in; its queued work is kept for its next sign-in here
+     * (SyncCoordinator.endSession), and the store is logged out so its Pro does not carry to the next account.
+     */
     private val signOutCleanup = SignOutCleanup(appScope, session.state.map { (it as? AuthState.SignedIn)?.session?.userId }.distinctUntilChanged()) { ended ->
+        // First, and on its own job: Pro is off at once, and nothing below (endSession waits for a running pass) can
+        // delay the store's logout until after the next account has signed in. It skips itself once someone is.
+        appScope.launch { entitlements.reset(isSignedOut = { session.userId == null }) }
         voicePrefs.clear()
-        syncCoordinator.clearAccount(ended)
+        syncCoordinator.endSession(ended)
         // Sign-out or a deleted account: no first-run answers or "Not now for this launch" carry to the next account.
         // The under-13 block is never cleared.
         FirstRunDevice.store.clearDraft()

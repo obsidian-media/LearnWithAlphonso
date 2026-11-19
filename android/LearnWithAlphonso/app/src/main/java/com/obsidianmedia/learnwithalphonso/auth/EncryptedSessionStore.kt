@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.obsidianmedia.learnwithalphonso.core.auth.PendingPkce
 import com.obsidianmedia.learnwithalphonso.core.auth.SessionStore
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseSession
@@ -46,8 +47,23 @@ class EncryptedSessionStore(context: Context) : SessionStore {
         prefs.edit().remove(KEY).apply()
     }
 
+    // commit, not apply: the browser opens right after this, and the process may be ended before an apply reaches disk.
+    override fun savePendingPkce(pending: PendingPkce) {
+        prefs.edit().putString(PKCE_KEY, ContentJson.json.encodeToString(PendingPkce.serializer(), pending)).commit()
+    }
+
+    override fun loadPendingPkce(): PendingPkce? {
+        val raw = prefs.getString(PKCE_KEY, null) ?: return null
+        return runCatching { ContentJson.json.decodeFromString(PendingPkce.serializer(), raw) }.getOrNull()
+    }
+
+    override fun clearPendingPkce() {
+        prefs.edit().remove(PKCE_KEY).apply()
+    }
+
     private companion object {
         const val FILE = "alphonso.session"
         const val KEY = "session"
+        const val PKCE_KEY = "pendingPkce"
     }
 }
