@@ -81,7 +81,7 @@ export function WatchShelf({
                     </span>
                   ) : null}
                   {state === "new" ? (
-                    <span className="absolute right-1.5 top-1.5 rounded-lg bg-ds-heart px-1.5 text-[10px] font-extrabold tracking-wide text-white">
+                    <span className="absolute right-1.5 top-1.5 rounded-lg bg-ds-heart px-1.5 text-xs font-extrabold tracking-wide text-white">
                       NEW
                     </span>
                   ) : null}
@@ -98,7 +98,7 @@ export function WatchShelf({
                       ✓
                     </span>
                   ) : (
-                    <span className="tnum absolute bottom-1.5 right-1.5 rounded-lg bg-ds-hero/70 px-1.5 text-[10px] font-extrabold text-white">
+                    <span className="tnum absolute bottom-1.5 right-1.5 rounded-lg bg-ds-hero/70 px-1.5 text-xs font-extrabold text-white">
                       {clock(video.durationSeconds)}
                     </span>
                   )}
