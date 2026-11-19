@@ -317,17 +317,17 @@ struct PracticeCallView<Sheet: View>: View {
     // MARK: - Hands-free
 
     /// The hands-free switch on the call itself, where the learner is looking (it used to live only in the
-    /// conversation sheet, so a call looked push-to-talk only). Off at the start of every call; the first turn on
+    /// conversation sheet, so a call looked push-to-talk only). A call starts as the learner last left it on this device; the first turn on
     /// shows the once-per-device safety note.
     private var handsFreeChip: some View {
         let on = voice.isHandsFreeOn
         return Button {
             if on {
-                voice.setHandsFree(false)
+                voice.learnerSetHandsFree(false)
             } else if !handsFreeNoteSeen {
                 showHandsFreeNote = true
             } else {
-                voice.setHandsFree(true)
+                voice.learnerSetHandsFree(true)
             }
         } label: {
             HStack(spacing: AlphonsoDS.Space.s2) {
@@ -346,7 +346,7 @@ struct PracticeCallView<Sheet: View>: View {
         .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
             Button(HandsFreeCopy.firstUseConfirm) {
                 handsFreeNoteSeen = true
-                voice.setHandsFree(true)
+                voice.learnerSetHandsFree(true)
             }
             Button("Cancel", role: .cancel) {}
         } message: {

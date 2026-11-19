@@ -38,6 +38,8 @@ export type HandsFreeTuning = {
   maxTurn: number;
   /** Readings below this are the recorder warming up (it reports -160 before any audio), not the room. */
   ignoreBelow: number;
+  /** All-silent readings for this long (seconds; muted or noise-gated from the first frame) stop being warm-up and count as quiet. */
+  silentGrace: number;
   /** Turns in a row without a touch before hands-free pauses. */
   maxTurnsWithoutTouch: number;
 };
@@ -52,6 +54,7 @@ const BASE_TUNING: HandsFreeTuning = {
   noSpeechTimeout: 8,
   maxTurn: 30,
   ignoreBelow: -100,
+  silentGrace: 1,
   maxTurnsWithoutTouch: 20,
 };
 
@@ -111,6 +114,10 @@ export class HandsFreeLoop {
   private loudSince: number | null = null;
   private lastLoudAt: number | null = null;
   private heardSpeech = false;
+  /** True once a real (above ignoreBelow) reading has arrived this turn; before that, sub-floor readings are warm-up. */
+  private warmedUp = false;
+  /** When the first reading of the turn arrived (real or not): the silent grace counts from it. */
+  private firstLevelAt: number | null = null;
   private turnEnding = false;
   private turnsWithoutTouch = 0;
 
@@ -218,13 +225,22 @@ export class HandsFreeLoop {
         if (!this.isRecording) return [];
         if (this.status.kind !== "listening" && this.status.kind !== "hearing") return [];
         if (this.turnEnding) return [];
-        if (!(dBFS >= t.ignoreBelow)) return [];
+        // Sub-floor readings are warm-up only until the first real reading; after that they are digital silence
+        // (noise-gated headset, muted route): quiet, and the time checks must still run.
+        const silent = !(dBFS >= t.ignoreBelow);
+        if (this.firstLevelAt === null) this.firstLevelAt = at;
+        if (silent && !this.warmedUp) {
+          // Warm-up is ignored for the grace period; still silent after it is a quiet turn that began at the first frame.
+          if (at - this.firstLevelAt < t.silentGrace) return [];
+          this.turnStartedAt = this.firstLevelAt;
+        }
+        this.warmedUp = true;
         if (this.turnStartedAt === null) this.turnStartedAt = at;
         const started = this.turnStartedAt;
 
         // The background is the quietest level heard: during calibration, and afterwards only while nobody has
         // spoken. It can fall but never rise, and is capped, so the learner's own voice never becomes the floor.
-        if (at - started < t.calibration || !this.heardSpeech) {
+        if (!silent && (at - started < t.calibration || !this.heardSpeech)) {
           this.backgroundLevel = Math.min(this.backgroundLevel ?? dBFS, dBFS, t.maximumBackground);
         }
         const threshold = Math.max(
@@ -234,7 +250,7 @@ export class HandsFreeLoop {
         if (at - started < t.calibration) {
           // Still measuring the room: nothing counts as speech yet.
           this.loudSince = null;
-        } else if (dBFS >= threshold) {
+        } else if (!silent && dBFS >= threshold) {
           if (this.loudSince === null) this.loudSince = at;
           this.lastLoudAt = at;
           if (at - this.loudSince >= t.speechOnset) {
@@ -290,6 +306,8 @@ export class HandsFreeLoop {
     this.loudSince = null;
     this.lastLoudAt = null;
     this.heardSpeech = false;
+    this.warmedUp = false;
+    this.firstLevelAt = null;
     this.turnEnding = false;
   }
 }

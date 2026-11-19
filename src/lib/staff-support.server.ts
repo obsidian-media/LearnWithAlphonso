@@ -69,6 +69,8 @@ export function pickSupportFacts(raw: unknown): SupportFacts | null {
     course: str(src.course),
     level: str(src.level),
     streak: num(src.streak),
+    streakProtected: src.streakProtected === true,
+    streakFreezes: num(src.streakFreezes),
     daysActiveLast30: num(src.daysActiveLast30),
     lastActiveDay: str(src.lastActiveDay),
     lessonsLast7Days: num(src.lessonsLast7Days),

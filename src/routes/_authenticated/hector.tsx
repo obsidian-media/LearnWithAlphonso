@@ -392,7 +392,7 @@ function HectorConversation({
     [messages, sending, course, cefrLevel, consent, onNotEntitled, play],
   );
 
-  // Hands-free is off on every call and carried only by this screen's state, never stored. It runs on the call screen
+  // Hands-free starts as the learner last left it on this device (see useHandsFreeCapture) and is carried by this screen's state. It runs on the call screen
   // only (the classic screen has no Pause button), and Hector is Pro already: this screen mounts only for Pro.
   const [handsFreeWanted, setHandsFreeWanted] = useState(false);
   const {

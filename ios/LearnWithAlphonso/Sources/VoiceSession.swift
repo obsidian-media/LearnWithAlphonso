@@ -57,6 +57,10 @@ final class VoiceSessionController {
     private(set) var handsFreeStatus: HandsFreeLoop.Status = .off
     var isHandsFreeOn: Bool { handsFreeStatus != .off }
     @ObservationIgnored private var levelTask: Task<Void, Never>?
+    /// The stored hands-free choice is applied once per appearance of the screen.
+    @ObservationIgnored private var storedPreferenceApplied = false
+    /// Hands-free was started by the stored choice (not by a tap): a refused microphone then falls back to hold-to-talk.
+    @ObservationIgnored private var autoStartedHandsFree = false
     /// Identifies the recording the current press started, so a finish that outlives its recording cannot stop a newer one.
     @ObservationIgnored private var activeRecordingToken: Int?
 
@@ -84,6 +88,7 @@ final class VoiceSessionController {
     }
 
     func disappeared() {
+        storedPreferenceApplied = false
         // Leaving the screen (not locking the phone: SwiftUI does not disappear on lock) ends hands-free.
         setHandsFree(false)
         send(.disappeared)
@@ -93,11 +98,33 @@ final class VoiceSessionController {
     /// Turns hands-free on or off. On: the microphone opens now if nothing else is happening, and again after each
     /// reply. Off: an open microphone is cancelled and the audio session is handed back when idle.
     func setHandsFree(_ on: Bool) {
+        if !on { autoStartedHandsFree = false }
         let wasOn = handsFree.isOn
         runHandsFree(handsFree.handle(on ? .enable : .disable))
         // Only a session hands-free was holding is handed back: leaving any other voice screen must not stop a
         // podcast or a lesson's speech that is still playing.
         if !on, wasOn, state.phase.isQuiet { deactivateSession() }
+    }
+
+    /// The learner's own switch: turns hands-free on or off and remembers the choice for the next call on this device.
+    /// Leaving the screen, ending the call and a campaign's last scene use `setHandsFree` and never change the choice.
+    func learnerSetHandsFree(_ on: Bool) {
+        HandsFreePreference().remember(on)
+        setHandsFree(on)
+    }
+
+    /// Starts hands-free on a new call when the learner last left it on (and has already read the safety note).
+    /// Called once the opening line has been spoken, so the microphone does not open under it. If the microphone
+    /// turns out to be refused, it falls back to hold-to-talk for this call and the stored choice is kept.
+    /// `sceneActive` is false when the app is backgrounded (a locked phone, another app in front): the call then stays
+    /// hold-to-talk rather than opening a microphone nobody is looking at.
+    func applyStoredHandsFreePreference(sceneActive: Bool) {
+        guard !storedPreferenceApplied, !isHandsFreeOn else { return }
+        storedPreferenceApplied = true
+        guard sceneActive else { return }
+        guard HandsFreePreference().shouldStartOn, !state.microphoneUnavailable else { return }
+        autoStartedHandsFree = true
+        setHandsFree(true)
     }
 
     /// The finished turn's transcript was empty (noise, not speech): hands-free pauses instead of listening again.
@@ -231,6 +258,9 @@ final class VoiceSessionController {
             if case .paused = status, state.phase.isQuiet { deactivateSession() }
         }
         updateLevelSampling()
+        if autoStartedHandsFree, case .paused(.failure) = handsFree.status, state.microphoneUnavailable {
+            setHandsFree(false)
+        }
     }
 
     private var holdsSessionForHandsFree: Bool {

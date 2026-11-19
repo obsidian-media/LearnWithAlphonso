@@ -47,6 +47,8 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
         val maxTurn: Double = 30.0,
         /** Readings below this are the recorder warming up (it reports -160 before any audio), not the room. */
         val ignoreBelow: Double = -100.0,
+        /** All-silent readings for this long (muted or noise-gated from the first frame) stop being warm-up and count as quiet. */
+        val silentGrace: Double = 1.0,
         /** Turns in a row without a touch before hands-free pauses. */
         val maxTurnsWithoutTouch: Int = 20,
     ) {
@@ -116,6 +118,10 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
     private var loudSince: Double? = null
     private var lastLoudAt: Double? = null
     private var heardSpeech = false
+    /** True once a real (above ignoreBelow) reading has arrived this turn; before that, sub-floor readings are warm-up. */
+    private var warmedUp = false
+    /** When the first reading of the turn arrived (real or not): the silent grace counts from it. */
+    private var firstLevelAt: Double? = null
     private var turnEnding = false
     private var wallStartedAt: Double? = null
     private var turnsWithoutTouch = 0
@@ -230,20 +236,29 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
 
     private fun onLevel(dBFS: Double, at: Double): List<Effect> {
         if (!isRecording || !(status == Status.Listening || status == Status.Hearing) || turnEnding) return emptyList()
-        if (dBFS < tuning.ignoreBelow) return emptyList()
+        // Sub-floor readings are warm-up only until the first real reading; after that they are digital silence
+        // (noise-gated headset, muted route): quiet, and the time checks must still run.
+        val silent = dBFS < tuning.ignoreBelow
+        if (firstLevelAt == null) firstLevelAt = at
+        if (silent && !warmedUp) {
+            // Warm-up is ignored for the grace period; still silent after it is a quiet turn that began at the first frame.
+            if (at - (firstLevelAt ?: at) < tuning.silentGrace) return emptyList()
+            turnStartedAt = firstLevelAt
+        }
+        warmedUp = true
         if (turnStartedAt == null) turnStartedAt = at
         val started = turnStartedAt ?: at
 
         // The background is the quietest level heard: during calibration, and afterwards only while nobody has
         // spoken. It can fall but never rise, and is capped, so the learner's own voice never becomes the floor.
-        if (at - started < tuning.calibration || !heardSpeech) {
+        if (!silent && (at - started < tuning.calibration || !heardSpeech)) {
             backgroundLevel = minOf(backgroundLevel ?: dBFS, dBFS, tuning.maximumBackground)
         }
         val threshold = maxOf(tuning.minimumSpeechLevel, (backgroundLevel ?: tuning.maximumBackground) + tuning.speechAboveFloor)
         if (at - started < tuning.calibration) {
             // Still measuring the room: nothing counts as speech yet.
             loudSince = null
-        } else if (dBFS >= threshold) {
+        } else if (!silent && dBFS >= threshold) {
             if (loudSince == null) loudSince = at
             lastLoudAt = at
             val since = loudSince
@@ -291,6 +306,8 @@ class HandsFreeLoop(val tuning: Tuning = Tuning.HECTOR) {
         loudSince = null
         lastLoudAt = null
         heardSpeech = false
+        warmedUp = false
+        firstLevelAt = null
         turnEnding = false
         wallStartedAt = null
     }

@@ -51,6 +51,7 @@ import com.obsidianmedia.learnwithalphonso.AlphonsoApplication
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeInterruption
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop
+import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreePreference
 import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
 import com.obsidianmedia.learnwithalphonso.ui.components.DsDialog
 import com.obsidianmedia.learnwithalphonso.ui.components.DsDialogBody
@@ -65,7 +66,8 @@ private fun HandsFreeLoop.Status.isPaused() = this is HandsFreeLoop.Status.Pause
 /**
  * The "Hands-free" switch of a voice call, with its once-per-device safety note (iOS `HandsFreeSwitch`). It lives in the
  * call's conversation sheet, above the transcript. Turning it on is free: it is the same turn as a held press, so the
- * server's daily caps already apply, and on Hector the call itself is Pro. It starts off with every call.
+ * server's daily caps already apply, and on Hector the call itself is Pro. A call starts as the learner last left it on this device (off the first time): the choice is
+ * remembered here and applied by [ApplyStoredHandsFree].
  */
 @Composable
 internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
@@ -74,10 +76,12 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
     val on = status != HandsFreeLoop.Status.Off
     val context = LocalContext.current
     val prefs = remember { (context.applicationContext as? AlphonsoApplication)?.container?.prefs }
+    // The learner's own switch is remembered per device and applied when the next call starts (ApplyStoredHandsFree).
+    val preference = remember(prefs) { prefs?.let { HandsFreePreference(SharedPrefsHandsFreeStore(it)) } }
     var showNote by remember { mutableStateOf(false) }
     val change: (Boolean) -> Unit = { wantsOn ->
-        if (!wantsOn) vm.handsFree.disable()
-        else if (prefs?.getBoolean(HandsFreeCopy.NOTE_SEEN_KEY, false) == true) vm.handsFree.enable()
+        if (!wantsOn) { preference?.remember(false); vm.handsFree.disable() }
+        else if (prefs?.getBoolean(HandsFreeCopy.NOTE_SEEN_KEY, false) == true) { preference?.remember(true); vm.handsFree.enable() }
         else showNote = true
     }
     Row(
@@ -96,6 +100,7 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
                 DsCompactButton(HandsFreeCopy.CANCEL, { showNote = false })
                 DsCompactButton(HandsFreeCopy.FIRST_USE_CONFIRM, {
                     prefs?.edit()?.putBoolean(HandsFreeCopy.NOTE_SEEN_KEY, true)?.apply()
+                    preference?.remember(true)
                     showNote = false
                     vm.handsFree.enable()
                 }, primary = true)

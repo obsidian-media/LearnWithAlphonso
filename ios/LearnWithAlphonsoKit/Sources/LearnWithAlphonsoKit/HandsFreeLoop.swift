@@ -36,6 +36,9 @@ public struct HandsFreeLoop: Equatable, Sendable {
         public var maxTurn: TimeInterval = 30
         /// Readings below this are the recorder warming up (it reports -160 before any audio), not the room.
         public var ignoreBelow: Double = -100
+        /// A turn whose readings are all below `ignoreBelow` for this long (a muted or noise-gated input from the first frame)
+        /// stops being warm-up and counts as quiet, so the no-speech pause still fires.
+        public var silentGrace: TimeInterval = 1.0
         /// Turns in a row without a touch before hands-free pauses.
         public var maxTurnsWithoutTouch = 20
 
@@ -104,6 +107,10 @@ public struct HandsFreeLoop: Equatable, Sendable {
     private var loudSince: TimeInterval?
     private var lastLoudAt: TimeInterval?
     private var heardSpeech = false
+    /// True once a real (above `ignoreBelow`) reading has arrived this turn; before that, sub-floor readings are warm-up.
+    private var warmedUp = false
+    /// When the first reading of the turn arrived (real or not): the grace period for an all-silent input counts from it.
+    private var firstLevelAt: TimeInterval?
     private var turnEnding = false
     private var turnsWithoutTouch = 0
 
@@ -190,20 +197,30 @@ public struct HandsFreeLoop: Equatable, Sendable {
 
         case let .level(dBFS, at):
             guard isRecording, status == .listening || status == .hearing, !turnEnding else { return [] }
-            guard dBFS >= tuning.ignoreBelow else { return [] }
+            // Sub-floor readings are the recorder warming up only until the first real reading. After that they are
+            // digital silence (a noise-gated headset, a muted route): quiet, so the time checks must still run.
+            let silent = !(dBFS >= tuning.ignoreBelow)
+            if firstLevelAt == nil { firstLevelAt = at }
+            if silent && !warmedUp {
+                // Warm-up is ignored for the grace period; an input that is still silent after it is a quiet turn
+                // that started with the first frame.
+                guard at - (firstLevelAt ?? at) >= tuning.silentGrace else { return [] }
+                turnStartedAt = firstLevelAt
+            }
+            warmedUp = true
             if turnStartedAt == nil { turnStartedAt = at }
             let started = turnStartedAt ?? at
 
             // The background is the quietest level heard: during calibration, and afterwards only while nobody has
             // spoken. It can fall but never rise, and is capped, so the learner's own voice never becomes the floor.
-            if at - started < tuning.calibration || !heardSpeech {
+            if !silent, at - started < tuning.calibration || !heardSpeech {
                 backgroundLevel = min(backgroundLevel ?? dBFS, dBFS, tuning.maximumBackground)
             }
             let threshold = max(tuning.minimumSpeechLevel, (backgroundLevel ?? tuning.maximumBackground) + tuning.speechAboveFloor)
             if at - started < tuning.calibration {
                 // Still measuring the room: nothing counts as speech yet.
                 loudSince = nil
-            } else if dBFS >= threshold {
+            } else if !silent, dBFS >= threshold {
                 if loudSince == nil { loudSince = at }
                 lastLoudAt = at
                 if let since = loudSince, at - since >= tuning.speechOnset {
@@ -262,6 +279,8 @@ public struct HandsFreeLoop: Equatable, Sendable {
         loudSince = nil
         lastLoudAt = nil
         heardSpeech = false
+        warmedUp = false
+        firstLevelAt = nil
         turnEnding = false
     }
 }
@@ -306,4 +325,26 @@ public enum HandsFreeCopy {
         case .paused(.interrupted): return pausedInterrupted
         }
     }
+}
+
+/// The learner's last hands-free choice, remembered per device so every new call (Practice, campaigns, Hector)
+/// starts the way they left it. It is applied only when the once-per-device safety note has been confirmed, so
+/// the note can never be skipped by it. The stored value is separate from the note's own key.
+public struct HandsFreePreference {
+    public static let preferredKey = "handsFree.preferred.v1"
+
+    private let defaults: UserDefaults
+
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    /// The learner last left hands-free on.
+    public var isPreferred: Bool { defaults.bool(forKey: Self.preferredKey) }
+
+    /// The learner switched it on or off on a call.
+    public func remember(_ on: Bool) { defaults.set(on, forKey: Self.preferredKey) }
+
+    /// Whether a new call should start with hands-free on: preferred, and the safety note was already confirmed.
+    public var shouldStartOn: Bool { isPreferred && defaults.bool(forKey: HandsFreeCopy.noteSeenKey) }
 }

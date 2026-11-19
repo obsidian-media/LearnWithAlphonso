@@ -153,9 +153,13 @@ class HectorViewModel(
     private val greeting = CompletableDeferred<String>()
     /** Today's Hector allowance is used up (BACKLOG 0.0-bq #5): no greeting, no speech, the out-for-today message. */
     private var allowanceUsedUp = false
+    /** The stored hands-free choice starts a call only after the greeting has finished (never under it). */
+    private val storedStart = HandsFreeBinding.StoredStart(handsFree) { false }
+    override fun armAutoStartHandsFree(check: () -> Boolean) = storedStart.arm(check)
+
     // Hector's greeting goes through the same player as Alphonso's openers, in Hector's own voice.
     private val opener by lazy {
-        OpenerSpeaker(viewModelScope, _state, { engine.phase.value == TurnPhase.IDLE }, player, openerCache, course.code) { text, voice ->
+        OpenerSpeaker(viewModelScope, _state, { engine.phase.value == TurnPhase.IDLE }, player, openerCache, course.code, onFinished = { storedStart.openerFinished() }) { text, voice ->
             ai.synthesizeSpeech(text, voice = voice, course = course.code, character = VoiceCharacter.Hector)
         }
     }

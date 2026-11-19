@@ -101,7 +101,7 @@ PRs 2, 4 and 5 have no migration and need no owner step, but PR 2 will not work 
 **Facts it may see** (`SupportFacts`, built in `src/lib/support-facts.server.ts` by `loadSupportFacts(admin, userId)` and a pure `buildSupportFacts(raw)`):
 - Pro: `active`, `source` (`store`, `gift`, `none`), `until` (gift only), `unavailable` (true when RevenueCat could not be read; "unknown" is not "no Pro").
 - `course`, `level`.
-- `streak` (current), `daysActiveLast30` (a count), `lastActiveDay`.
+- `streak` (as the apps show it today, via `shownStreak`; never the raw column), `streakProtected`, `streakFreezes`, `daysActiveLast30` (a count), `lastActiveDay`.
 - `lessonsLast7Days` (a count) and `lastLessonDay`.
 - `platforms` (from `device_tokens`; may be empty).
 - `socialBlocked` (true or false only; no reason text).

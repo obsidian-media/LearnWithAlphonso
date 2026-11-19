@@ -116,6 +116,8 @@ export const SAMPLE_FACTS: SupportFacts = {
   course: "en",
   level: "A1",
   streak: 2,
+  streakProtected: false,
+  streakFreezes: 0,
   daysActiveLast30: 5,
   lastActiveDay: "2026-11-13",
   lessonsLast7Days: 2,

@@ -43,6 +43,7 @@ struct ConversationSessionView: View {
     @State private var elapsed = 0
     @State private var initialized = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dismiss) private var dismiss
 
     @State private var conversation = ConversationSnapshot()
@@ -76,6 +77,7 @@ struct ConversationSessionView: View {
         .task(id: openerCue) {
             guard openerCue > 0, !chatMode, result == nil else { return }
             await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
+            voice.applyStoredHandsFreePreference(sceneActive: scenePhase == .active)
         }
         .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $showMemory) {

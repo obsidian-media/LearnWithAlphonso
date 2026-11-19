@@ -94,6 +94,41 @@ final class HandsFreeLoopTests: XCTestCase {
         XCTAssertEqual(loop.status, .listening)
     }
 
+    func testSpeechThenDigitalSilenceStillEndsTheTurn() {
+        var loop = recordingLoop()
+        feed(&loop, level: quiet, from: 0, to: 0.5)
+        feed(&loop, level: speech, from: 0.5, to: 2.0)
+        XCTAssertEqual(loop.status, .hearing)
+        // Noise-gated headset: the recorder reports -160 (below ignoreBelow) from here on.
+        XCTAssertEqual(feed(&loop, level: -160, from: 2.0, to: 3.0), [], "1.1 s of silence: not yet")
+        XCTAssertEqual(feed(&loop, level: -160, from: 3.0, to: 4.0), [.endTurn], "one end, at 1.2 s of digital silence")
+    }
+
+    func testNoSpeechThenDigitalSilenceHitsTheNoSpeechTimeout() {
+        var loop = recordingLoop()
+        feed(&loop, level: quiet, from: 0, to: 0.5)
+        let effects = feed(&loop, level: -160, from: 0.5, to: 9.0)
+        XCTAssertEqual(effects, [.cancelTurn])
+        XCTAssertEqual(loop.status, .paused(.noSpeech))
+    }
+
+    func testWarmUpReadingsBeforeAnyAudioAreIgnoredForTheGracePeriod() {
+        var loop = recordingLoop()
+        XCTAssertEqual(feed(&loop, level: -160, from: 0, to: 0.95), [], "warm-up frames inside the grace period do nothing")
+        XCTAssertEqual(loop.status, .listening)
+        // Real audio right after the warm-up is still a normal turn (the -160 frames were not the room).
+        feed(&loop, level: -30, from: 0.95, to: 1.9)
+        feed(&loop, level: -22, from: 1.9, to: 2.5)
+        XCTAssertEqual(loop.status, .listening)
+    }
+
+    func testATurnThatIsSilentFromTheFirstFrameStillHitsTheNoSpeechPause() {
+        var loop = recordingLoop()
+        let effects = feed(&loop, level: -160, from: 0, to: 9)
+        XCTAssertEqual(effects, [.cancelTurn], "all-silent: counted as quiet after the grace, 8 s from the first frame")
+        XCTAssertEqual(loop.status, .paused(.noSpeech))
+    }
+
     func testAnEmptyTranscriptPausesInsteadOfListeningAgain() {
         var loop = recordingLoop()
         feed(&loop, level: speech, from: 0, to: 1.0)
@@ -246,5 +281,36 @@ final class HandsFreeLoopTests: XCTestCase {
         let effects = feed(&loop, level: quiet, from: 0, to: 8.2)
         XCTAssertEqual(effects, [.cancelTurn])
         XCTAssertEqual(loop.status, .paused(.noSpeech))
+    }
+}
+
+final class HandsFreePreferenceTests: XCTestCase {
+    private func freshDefaults() -> UserDefaults {
+        let name = "HandsFreePreferenceTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: name)!
+        addTeardownBlock { defaults.removePersistentDomain(forName: name) }
+        return defaults
+    }
+
+    func testStartsOffUntilTheLearnerTurnsItOn() {
+        let defaults = freshDefaults()
+        XCTAssertFalse(HandsFreePreference(defaults: defaults).isPreferred)
+        XCTAssertFalse(HandsFreePreference(defaults: defaults).shouldStartOn)
+    }
+
+    func testRemembersOnAndOffAcrossInstances() {
+        let defaults = freshDefaults()
+        HandsFreePreference(defaults: defaults).remember(true)
+        XCTAssertTrue(HandsFreePreference(defaults: defaults).isPreferred)
+        HandsFreePreference(defaults: defaults).remember(false)
+        XCTAssertFalse(HandsFreePreference(defaults: defaults).isPreferred)
+    }
+
+    func testNeverStartsOnBeforeTheSafetyNoteWasConfirmed() {
+        let defaults = freshDefaults()
+        HandsFreePreference(defaults: defaults).remember(true)
+        XCTAssertFalse(HandsFreePreference(defaults: defaults).shouldStartOn, "the once-per-device note comes first")
+        defaults.set(true, forKey: HandsFreeCopy.noteSeenKey)
+        XCTAssertTrue(HandsFreePreference(defaults: defaults).shouldStartOn)
     }
 }

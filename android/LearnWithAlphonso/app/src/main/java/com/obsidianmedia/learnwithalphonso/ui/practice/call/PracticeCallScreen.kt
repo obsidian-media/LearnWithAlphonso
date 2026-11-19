@@ -170,6 +170,7 @@ internal fun PracticeCallScreen(
     val handsFreeStatus by vm.handsFree.status.collectAsState()
     val handsFreeOn = handsFreeStatus != HandsFreeLoop.Status.Off
     HandsFreeCallEffects(vm)
+    ApplyStoredHandsFree(vm)
     val recording = turnPhase == TurnPhase.RECORDING || turnPhase == TurnPhase.REQUESTING_MIC
     val busy = state.phase != ConversationPhase.IDLE || turnPhase == TurnPhase.TRANSCRIBING
     var mode by remember { mutableStateOf(AvatarMode.IDLE) }
