@@ -1313,6 +1313,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      ops_event_alerts: {
+        Row: {
+          event: string;
+          last_alert_at: string;
+        };
+        Insert: {
+          event: string;
+          last_alert_at: string;
+        };
+        Update: {
+          event?: string;
+          last_alert_at?: string;
+        };
+        Relationships: [];
+      };
+      ops_events: {
+        Row: {
+          created_at: string;
+          detail: Json;
+          event: string;
+          id: number;
+          source: string;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          detail?: Json;
+          event: string;
+          id?: number;
+          source: string;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          detail?: Json;
+          event?: string;
+          id?: number;
+          source?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       placement_questions: {
         Row: {
           answer_index: number | null;
@@ -3890,6 +3932,16 @@ export type Database = {
       name_policy_staff_terms: { Args: never; Returns: string[] };
       name_policy_terms: { Args: never; Returns: string[] };
       normalize_for_moderation: { Args: { input: string }; Returns: string };
+      ops_events_summary: {
+        Args: never;
+        Returns: {
+          count_1h: number;
+          count_24h: number;
+          count_7d: number;
+          event: string;
+          last_at: string;
+        }[];
+      };
       policy_social_restricted: { Args: { p_user: string }; Returns: boolean };
       record_podcast_play_event: {
         Args: { _episode_id: string; _seconds_listened: number };
