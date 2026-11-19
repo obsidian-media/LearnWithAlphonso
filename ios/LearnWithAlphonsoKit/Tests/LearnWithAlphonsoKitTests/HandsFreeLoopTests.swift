@@ -272,3 +272,34 @@ final class HandsFreeLoopTests: XCTestCase {
         XCTAssertEqual(loop.status, .paused(.noSpeech))
     }
 }
+
+final class HandsFreePreferenceTests: XCTestCase {
+    private func freshDefaults() -> UserDefaults {
+        let name = "HandsFreePreferenceTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: name)!
+        addTeardownBlock { defaults.removePersistentDomain(forName: name) }
+        return defaults
+    }
+
+    func testStartsOffUntilTheLearnerTurnsItOn() {
+        let defaults = freshDefaults()
+        XCTAssertFalse(HandsFreePreference(defaults: defaults).isPreferred)
+        XCTAssertFalse(HandsFreePreference(defaults: defaults).shouldStartOn)
+    }
+
+    func testRemembersOnAndOffAcrossInstances() {
+        let defaults = freshDefaults()
+        HandsFreePreference(defaults: defaults).remember(true)
+        XCTAssertTrue(HandsFreePreference(defaults: defaults).isPreferred)
+        HandsFreePreference(defaults: defaults).remember(false)
+        XCTAssertFalse(HandsFreePreference(defaults: defaults).isPreferred)
+    }
+
+    func testNeverStartsOnBeforeTheSafetyNoteWasConfirmed() {
+        let defaults = freshDefaults()
+        HandsFreePreference(defaults: defaults).remember(true)
+        XCTAssertFalse(HandsFreePreference(defaults: defaults).shouldStartOn, "the once-per-device note comes first")
+        defaults.set(true, forKey: HandsFreeCopy.noteSeenKey)
+        XCTAssertTrue(HandsFreePreference(defaults: defaults).shouldStartOn)
+    }
+}

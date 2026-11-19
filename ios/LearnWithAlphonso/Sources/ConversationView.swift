@@ -76,6 +76,7 @@ struct ConversationSessionView: View {
         .task(id: openerCue) {
             guard openerCue > 0, !chatMode, result == nil else { return }
             await voice.speakOpener(conversation.pendingOpener, session: session, course: course)
+            voice.applyStoredHandsFreePreference()
         }
         .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $showMemory) {

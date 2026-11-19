@@ -104,6 +104,7 @@ private struct HectorConversationView: View {
         .task(id: openerCue) {
             guard openerCue > 0 else { return }
             await voice.speakOpener(conversation.pendingOpener, session: session, course: course, speaker: .hector)
+            voice.applyStoredHandsFreePreference()
         }
         .aiDisclosureGate()
         // .notEntitled opens the paywall. The server's RevenueCat check
@@ -213,7 +214,7 @@ private struct HectorConversationView: View {
                         .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
                             Button(HandsFreeCopy.firstUseConfirm) {
                                 handsFreeNoteSeen = true
-                                voice.setHandsFree(true)
+                                voice.learnerSetHandsFree(true)
                             }
                             Button("Cancel", role: .cancel) {}
                         } message: {
@@ -260,7 +261,7 @@ private struct HectorConversationView: View {
                 if on, !handsFreeNoteSeen {
                     showHandsFreeNote = true
                 } else {
-                    voice.setHandsFree(on)
+                    voice.learnerSetHandsFree(on)
                 }
             }
         ))
@@ -453,7 +454,7 @@ private struct HectorConversationView: View {
                     if on, !handsFreeNoteSeen {
                         showHandsFreeNote = true
                     } else {
-                        voice.setHandsFree(on)
+                        voice.learnerSetHandsFree(on)
                     }
                 }
             ))
@@ -500,7 +501,7 @@ private struct HectorConversationView: View {
         .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
             Button(HandsFreeCopy.firstUseConfirm) {
                 handsFreeNoteSeen = true
-                voice.setHandsFree(true)
+                voice.learnerSetHandsFree(true)
             }
             Button("Cancel", role: .cancel) {}
         } message: {

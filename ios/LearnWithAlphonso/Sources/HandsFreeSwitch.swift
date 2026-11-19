@@ -24,7 +24,7 @@ struct HandsFreeSwitch: View {
                 if on, !noteSeen {
                     showNote = true
                 } else {
-                    voice.setHandsFree(on)
+                    voice.learnerSetHandsFree(on)
                 }
             }
         ))
@@ -36,7 +36,7 @@ struct HandsFreeSwitch: View {
         .alert(HandsFreeCopy.firstUseTitle, isPresented: $showNote) {
             Button(HandsFreeCopy.firstUseConfirm) {
                 noteSeen = true
-                voice.setHandsFree(true)
+                voice.learnerSetHandsFree(true)
             }
             Button("Cancel", role: .cancel) {}
         } message: {

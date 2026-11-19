@@ -314,3 +314,25 @@ public enum HandsFreeCopy {
         }
     }
 }
+
+/// The learner's last hands-free choice, remembered per device so every new call (Practice, campaigns, Hector)
+/// starts the way they left it. It is applied only when the once-per-device safety note has been confirmed, so
+/// the note can never be skipped by it. The stored value is separate from the note's own key.
+public struct HandsFreePreference {
+    public static let preferredKey = "handsFree.preferred.v1"
+
+    private let defaults: UserDefaults
+
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    /// The learner last left hands-free on.
+    public var isPreferred: Bool { defaults.bool(forKey: Self.preferredKey) }
+
+    /// The learner switched it on or off on a call.
+    public func remember(_ on: Bool) { defaults.set(on, forKey: Self.preferredKey) }
+
+    /// Whether a new call should start with hands-free on: preferred, and the safety note was already confirmed.
+    public var shouldStartOn: Bool { isPreferred && defaults.bool(forKey: HandsFreeCopy.noteSeenKey) }
+}

@@ -177,7 +177,7 @@ describe("Hector's call", () => {
     const sheet = callScreen.slice(callScreen.indexOf("sheet: {"), callScreen.indexOf(".toolbar("));
     expect(sheet).toMatch(/VStack\(spacing: 0\) \{\s*handsFreeToggle\s*transcript/);
     expect(sheet).toContain(".alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote)");
-    expect(sheet).toContain("voice.setHandsFree(true)");
+    expect(sheet).toContain("voice.learnerSetHandsFree(true)");
     expect(call).toMatch(
       /if voice\.isHandsFreeOn \{\s*handsFreeButton\s*\} else \{\s*HoldToTalkButton\(/,
     );

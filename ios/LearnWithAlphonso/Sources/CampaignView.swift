@@ -76,6 +76,8 @@ struct CampaignSessionView: View {
             if rearmHandsFree {
                 rearmHandsFree = false
                 if !conversation.finished { voice.setHandsFree(true) }
+            } else if !conversation.finished {
+                voice.applyStoredHandsFreePreference()
             }
         }
         .navigationBarBackButtonHidden(true)
