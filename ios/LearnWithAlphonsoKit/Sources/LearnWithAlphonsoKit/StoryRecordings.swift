@@ -62,6 +62,13 @@ public struct StoryRecordings: Equatable, Sendable {
         return aiConsentGranted
     }
 
+    /// A sentence whose audio downloaded but would not play: a recording falls back to the live voice for that sentence
+    /// when AI speech is on (like the web). Without consent, or when the live audio itself would not play, narration
+    /// stops as unavailable, so a broken file never spends AI quota without consent.
+    public static func speakLiveAfterPlayFailure(wasRecorded: Bool, aiConsentGranted: Bool) -> Bool {
+        wasRecorded && aiConsentGranted
+    }
+
     public static func manifestURL(supabaseURL: URL, storyID: String) -> URL? {
         PodcastPlayback.audioURL(supabaseURL: supabaseURL, audioPath: "stories/\(storyID)/manifest.json")
     }

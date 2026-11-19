@@ -63,6 +63,15 @@ class StoryRecordingsClientTest {
     }
 
     @Test
+    fun `a recording that will not play falls back to live speech only with consent`() {
+        assertTrue(StoryRecordings.speakLiveAfterPlayFailure(wasRecorded = true, aiConsentGranted = true))
+        assertFalse(StoryRecordings.speakLiveAfterPlayFailure(wasRecorded = true, aiConsentGranted = false))
+        // Live audio that will not play is not retried live: that would only spend quota again.
+        assertFalse(StoryRecordings.speakLiveAfterPlayFailure(wasRecorded = false, aiConsentGranted = true))
+        assertFalse(StoryRecordings.speakLiveAfterPlayFailure(wasRecorded = false, aiConsentGranted = false))
+    }
+
+    @Test
     fun `the manifest and the audio come from the public bucket without credentials`() = runTest {
         val seen = mutableListOf<Pair<String, String?>>()
         val engine = MockEngine { request ->
