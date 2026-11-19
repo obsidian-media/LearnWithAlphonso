@@ -102,6 +102,13 @@ describe("iOS AI consent wiring", () => {
   const replyCalls = (f: string) =>
     [...code(f).matchAll(/AssistantReply\(([\s\S]*?)savingWord:/g)].map((m) => m[1]);
 
+  it("Miya's help-chat replies are reportable with the support surface", () => {
+    const help = code("HelpChatView.swift");
+    expect(help).toMatch(
+      /\.reportableAIMessage\(\s*message\.body,\s*enabled: true,\s*surface: \.support,/,
+    );
+  });
+
   it("every AI reply bubble is reportable, from the one place all three screens draw replies", () => {
     const reply = code("AssistantReply.swift");
     expect(reply).toMatch(/\.reportableAIMessage\(\s*turn\.content,\s*enabled: !isOpener,/);

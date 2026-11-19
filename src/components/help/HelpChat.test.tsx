@@ -10,6 +10,9 @@ import {
 } from "@/lib/support-client";
 import type { HelpClient } from "./useHelpChat";
 
+const reportAiResponse = vi.hoisted(() => vi.fn(async () => ({ ok: true })));
+vi.mock("@/lib/social-safety.functions", () => ({ reportAiResponse }));
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children, ...rest }: { to: string; children: React.ReactNode }) => (
     <a href={to} {...rest}>
@@ -115,6 +118,32 @@ describe("Miya", () => {
     expect(ai.querySelector("img")?.getAttribute("src")).toBe("/mascots/miya-help-head.webp");
     expect(within(ai).getByText("Miya (AI helper)")).toBeInTheDocument();
     expect(within(ai).getByText("AI")).toBeInTheDocument();
+  });
+
+  it("her replies can be reported as an AI response; a person's replies cannot", async () => {
+    await open(
+      conv({
+        status: "ai",
+        messages: [
+          m(1, "you", "hi"),
+          m(2, "ai", "Tap Restore."),
+          m(3, "support", "Hello", null, "Dana"),
+        ],
+      }),
+    );
+    const ai = document.querySelector('[data-kind="ai"]') as HTMLElement;
+    const person = document.querySelector('[data-kind="support"]') as HTMLElement;
+    expect(within(person).queryByRole("button", { name: "Report this response" })).toBeNull();
+    const user = userEvent.setup();
+    await user.click(within(ai).getByRole("button", { name: "Report this response" }));
+    await user.click(screen.getByRole("button", { name: "Send report" }));
+    await waitFor(() => expect(reportAiResponse).toHaveBeenCalledTimes(1));
+    expect(reportAiResponse).toHaveBeenCalledWith({
+      data: {
+        reason: "ai_inappropriate",
+        context: { message: "Tap Restore.", surface: "support", course: "en" },
+      },
+    });
   });
 
   it("a staff reply shows '<first name> \u00B7 Support team', the person icon and the Person tag, never Miya", async () => {

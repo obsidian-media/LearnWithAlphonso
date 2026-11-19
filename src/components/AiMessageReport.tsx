@@ -8,7 +8,7 @@ type ReportInput = {
   reason: AiReportReason;
   context: {
     message: string;
-    surface: "hector" | "conversation" | "campaign" | "explain";
+    surface: "hector" | "conversation" | "campaign" | "explain" | "support";
     course: "en" | "fr" | "es";
     scenario_id?: string;
     campaign_id?: string;

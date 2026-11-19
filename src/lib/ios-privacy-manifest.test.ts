@@ -104,6 +104,7 @@ const EXPECTED_COLLECTED: Record<string, RegExp> = {
   NSPrivacyCollectedDataTypeEmailAddress: /"email"/, // sign-in identifier
   NSPrivacyCollectedDataTypeAudioData: /api\/stt/, // speaking audio to the transcription service
   NSPrivacyCollectedDataTypeOtherUserContent: /content_reports/, // AI turns, answers, saved words, reports
+  NSPrivacyCollectedDataTypeCustomerSupport: /api\/support\/message/, // the Help chat (Miya and staff replies)
   NSPrivacyCollectedDataTypeUserID: /user_id/, // Supabase user id, RevenueCat app user id
   NSPrivacyCollectedDataTypeDeviceID: /device_tokens/, // APNs token
   NSPrivacyCollectedDataTypeProductInteraction: /complete-lesson/, // the learning record

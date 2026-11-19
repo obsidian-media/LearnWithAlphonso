@@ -18,6 +18,7 @@ import {
   speakerLabel,
   timeLabel,
 } from "@/lib/support-view";
+import { AiMessageReport } from "../AiMessageReport";
 import { HelpIcon, type HelpIconName } from "./HelpIcons";
 import { liveHelpClient, useHelpChat, type HelpClient, type PendingMessage } from "./useHelpChat";
 
@@ -494,6 +495,9 @@ function AiBubble({ message, when }: { message: SupportMessage; when: string }) 
         )}
       </div>
       <div className="ds-type-caption font-semibold text-ds-ink-faint">{when}</div>
+      {/* Miya is an AI: every reply can be reported into the same moderation queue as the other AI surfaces. The
+          support chat has no course, so the report carries "en". */}
+      <AiMessageReport message={message.body} surface="support" course="en" />
     </div>
   );
 }

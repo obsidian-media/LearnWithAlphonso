@@ -371,6 +371,14 @@ final class ExplainProfileTests: XCTestCase {
         XCTAssertEqual(LearnerAnswers(nativeLanguage: "fa", explainMode: .off).jsonPatch["explainMode"] as? String, "off")
     }
 
+    /// Red if the support (Miya) report surface is removed (the web posts surface "support").
+    func testTheReportSurfaceForSupportExists() {
+        XCTAssertEqual(AIResponseSurface.support.rawValue, "support")
+        let report = AIResponseReport(message: "m", surface: .support, course: "en", reason: .incorrect)
+        let context = report.jsonObject()["context"] as? [String: Any]
+        XCTAssertEqual(context?["surface"] as? String, "support")
+    }
+
     /// Red if the report surface for explanations is removed (the web posts surface "explain").
     func testTheReportSurfaceForExplanationsExists() {
         XCTAssertEqual(AIResponseSurface.explain.rawValue, "explain")
