@@ -53,6 +53,8 @@ struct PracticeCallView<Sheet: View>: View {
     @State private var mode: AvatarMode = .idle
     @State private var startedAt = Date()
     @State private var callID = UUID()
+    @AppStorage(HandsFreeCopy.noteSeenKey) private var handsFreeNoteSeen = false
+    @State private var showHandsFreeNote = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -115,8 +117,10 @@ struct PracticeCallView<Sheet: View>: View {
                         .padding(.top, 8)
                         .accessibilityAddTraits(.updatesFrequently)
                     }
+                    handsFreeChip
+                        .padding(.top, 10)
                     controls
-                        .padding(.top, 14)
+                        .padding(.top, 10)
                         .padding(.bottom, 8)
                 }
                 .padding(.horizontal, 18)
@@ -308,6 +312,46 @@ struct PracticeCallView<Sheet: View>: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(ds.card, in: Capsule())
+    }
+
+    // MARK: - Hands-free
+
+    /// The hands-free switch on the call itself, where the learner is looking (it used to live only in the
+    /// conversation sheet, so a call looked push-to-talk only). Off at the start of every call; the first turn on
+    /// shows the once-per-device safety note.
+    private var handsFreeChip: some View {
+        let on = voice.isHandsFreeOn
+        return Button {
+            if on {
+                voice.setHandsFree(false)
+            } else if !handsFreeNoteSeen {
+                showHandsFreeNote = true
+            } else {
+                voice.setHandsFree(true)
+            }
+        } label: {
+            HStack(spacing: AlphonsoDS.Space.s2) {
+                Image(systemName: on ? "waveform.circle.fill" : "waveform.circle").accessibilityHidden(true)
+                Text(on ? "Hands-free on: tap to turn off" : HandsFreeCopy.toggle)
+            }
+            .dsText(.footnote)
+            .foregroundStyle(ds.onHero)
+            .padding(.horizontal, AlphonsoDS.Space.s3)
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .background(on ? glassStrong : glass, in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityValue(on ? "On" : "Off")
+        .accessibilityIdentifier("callHandsFreeChip")
+        .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
+            Button(HandsFreeCopy.firstUseConfirm) {
+                handsFreeNoteSeen = true
+                voice.setHandsFree(true)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(HandsFreeCopy.firstUseBody(partner: kit.displayName))
+        }
     }
 
     // MARK: - Controls

@@ -91,6 +91,11 @@ describe("where a learner finds Help", () => {
     expect(chat).toContain("aiAnswering ? SupportCopy.welcomeAiTitle : SupportCopy.welcomeTitle");
     expect(chat).toContain("if aiAnswering {");
   });
+
+  it("shows Miya (never Alphonso) on the welcome whether or not the AI answers", () => {
+    expect(chat).toContain('Image("Miya-hello")');
+    expect(chat).not.toContain('Image(aiAnswering ? "Miya-hello" : "Alphonso-explaining-pointer")');
+  });
 });
 
 describe("the chat is usable without colour or sight", () => {

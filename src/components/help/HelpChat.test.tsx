@@ -102,14 +102,16 @@ describe("first open", () => {
 });
 
 describe("Miya", () => {
-  it("the AI welcome shows Miya's hello pose and her name; the person welcome does not", async () => {
+  it("the welcome always shows Miya's hello pose; her AI name line shows only while the AI answers", async () => {
     await open(conv({ aiAvailable: true }));
     expect(document.querySelector('[data-miya="hello"]')).not.toBeNull();
     expect(document.querySelector("[data-miya-name]")).toHaveTextContent("Miya (AI helper)");
     cleanup();
     await open(conv({ aiAvailable: false }));
-    expect(document.querySelector('[data-miya="hello"]')).toBeNull();
-    expect(document.body.textContent).not.toContain("Miya");
+    expect(document.querySelector('[data-miya="hello"]')).not.toBeNull();
+    expect(document.querySelector("[data-miya-name]")).toBeNull();
+    expect(document.body.textContent).not.toContain("Miya (AI helper)");
+    expect(document.querySelector('img[src*="alphonso"]')).toBeNull();
   });
 
   it("her bubbles carry her face, her label and the AI tag", async () => {
