@@ -89,6 +89,8 @@ class PronunciationViewModel(
     private val course: Course,
     /** The learned words, read from the live completed-lesson ids; null when they could not be read. Every session start. */
     private val loadPool: suspend () -> List<VocabItem>?,
+    /** Hand-picked words to drill (Say the picture's missed words). Null draws from the learned pool as usual. */
+    private val seedWords: List<VocabItem>? = null,
     private val voice: () -> String?,
     /** Plays the fetched model audio; false when it could not play. */
     private val play: suspend (ByteArray) -> Boolean,
@@ -123,9 +125,10 @@ class PronunciationViewModel(
     fun startSession() {
         _state.update { it.copy(loading = true, loadFailed = false, error = null) }
         viewModelScope.launch {
-            val pool = runCatching { loadPool() }.getOrNull()
+            val pool = seedWords?.takeIf { it.isNotEmpty() } ?: runCatching { loadPool() }.getOrNull()
             _state.update {
                 when {
+                    seedWords != null && seedWords.isNotEmpty() -> it.copy(session = PronunciationSession(seedWords), loading = false, loadFailed = false)
                     pool == null -> it.copy(loading = false, loadFailed = true)
                     pool.size < Pronunciation.MIN_POOL -> it.copy(session = PronunciationSession(pool), loading = false, loadFailed = false)
                     else -> it.copy(session = PronunciationSession(Pronunciation.draw(pool)), loading = false, loadFailed = false)
@@ -157,15 +160,16 @@ class PronunciationViewModel(
 }
 
 @Composable
-fun PronunciationScreen(container: AppContainer, course: Course, onExit: () -> Unit) {
+fun PronunciationScreen(container: AppContainer, course: Course, seedWords: List<VocabItem>? = null, onExit: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
     val playback = remember { container.newPlayback() }
-    val vm: PronunciationViewModel = viewModel(key = "say-it-right-${course.code}") {
+    val vm: PronunciationViewModel = viewModel(key = if (seedWords == null) "say-it-right-${course.code}" else "say-it-right-${course.code}-picked-${seedWords.joinToString { it.term }}") {
         PronunciationViewModel(
             container.newRecorder(), { container.micPermission.request() }, container.aiClient, course,
             // The live pool: the bundle's units and the account's completed lessons, read now, so a lesson finished since
             // the last session is in this one. A failed read is null, not an empty pool.
+            seedWords = seedWords,
             loadPool = {
                 val ids = runCatching { container.progressClient.fetchCompletedLessonIds(course.code) }.getOrNull()
                 ids?.let { Pronunciation.learnedPool(container.content.bundle(course).units, it.toSet(), course) }
@@ -200,7 +204,7 @@ fun PronunciationScreen(container: AppContainer, course: Course, onExit: () -> U
                 SirNote("Couldn't read the words you have learned just now. Check your connection and try again.")
                 HubButton("Try again") { vm.startSession() }
             }
-            session.words.size < Pronunciation.MIN_POOL ->
+            seedWords == null && session.words.size < Pronunciation.MIN_POOL ->
                 SirNote("Learn a few words first. Say it right practises the words you have already met in lessons.")
             session.phase == PronunciationPhase.DONE -> {
                 Column(Modifier.fillMaxWidth().background(ds.card, RoundedCornerShape(AlphonsoTokens.Radius.bubble)).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s3), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -265,7 +269,7 @@ fun PronunciationScreen(container: AppContainer, course: Course, onExit: () -> U
                 }
             }
         }
-        if (session.phase != PronunciationPhase.DONE || ui.loading || ui.loadFailed || session.words.size < Pronunciation.MIN_POOL) HubSecondaryButton("Back to Practice", onExit)
+        if (session.phase != PronunciationPhase.DONE || ui.loading || ui.loadFailed || (seedWords == null && session.words.size < Pronunciation.MIN_POOL)) HubSecondaryButton("Back to Practice", onExit)
         if (showConsent) AiConsentDialog(container.aiConsent, onNotNow = { showConsent = false }, onAllowed = { showConsent = false })
     }
 }

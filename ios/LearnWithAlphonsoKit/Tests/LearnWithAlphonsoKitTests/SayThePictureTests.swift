@@ -145,6 +145,63 @@ final class SayThePictureTests: XCTestCase {
         XCTAssertEqual(s.firstTry, 1)
     }
 
+    // MARK: Tier 1 derived state (combo, recap, missed words, pose)
+
+    func testResultsComboAndMissedWordsFollowTheSession() {
+        var s = SayThePictureSession(words: words(5))
+        s.submit(transcript: "word0", course: .english); s.next()      // first
+        s.submit(transcript: "word1", course: .english)                // first, combo 2
+        XCTAssertEqual(s.combo, 2)
+        s.next()
+        s.submit(transcript: "zzz", course: .english)                   // miss resets the run
+        XCTAssertEqual(s.combo, 0)
+        s.next()
+        XCTAssertTrue(s.showWord())                                    // "Show me the word" is a miss too
+        s.next()
+        s.submit(transcript: "word4", course: .english)
+        XCTAssertEqual(s.combo, 1)
+        XCTAssertEqual(s.results, [.first, .first, .missed, .missed, .first])
+        XCTAssertEqual(s.missedWords.map(\.term), ["word2", "word3"])
+        XCTAssertEqual(s.recap.map { $0.result }, s.results)
+        XCTAssertEqual(s.recap.map { $0.word.term }, ["word0", "word1", "word2", "word3", "word4"])
+    }
+
+    func testSilenceAndTheRepeatAfterARevealAddNoResult() {
+        var s = SayThePictureSession(words: words(4))
+        XCTAssertEqual(s.submit(transcript: "  ", course: .english), .unheard)
+        XCTAssertTrue(s.results.isEmpty)
+        s.submit(transcript: "zzz", course: .english)
+        s.submit(transcript: "word0", course: .english)  // the repeat
+        XCTAssertEqual(s.results, [.missed])
+    }
+
+    func testPoseFollowsStateAndEveryPoseIsAnAssetName() {
+        XCTAssertEqual(SayPicturePose.pose(phase: .ask, listening: false), .explainingPointer)
+        XCTAssertEqual(SayPicturePose.pose(phase: .ask, listening: true), .listeningHeadphones)
+        XCTAssertEqual(SayPicturePose.pose(phase: .reveal, listening: false), .thinkingTemple)
+        XCTAssertEqual(SayPicturePose.pose(phase: .right, listening: false), .levelupCheer)
+        XCTAssertEqual(SayPicturePose.allCases.map(\.rawValue).sorted(), [
+            "Alphonso-explaining-pointer", "Alphonso-levelup-cheer", "Alphonso-listening-headphones", "Alphonso-thinking-temple",
+        ])
+    }
+
+    func testSaveSentenceUsesTheModelSentenceOnlyWhenItHoldsTheWord() {
+        let img = image("dog")
+        XCTAssertEqual(SayThePicture.PictureWord(term: "dog", image: img, example: "The dog runs.").saveSentence, "The dog runs.")
+        XCTAssertEqual(SayThePicture.PictureWord(term: "he", image: img, example: "The dog runs.").saveSentence, "he")
+        XCTAssertEqual(SayThePicture.PictureWord(term: "dog", image: img).saveSentence, "dog")
+        XCTAssertEqual(SayThePicture.maxRecordSeconds, 6)
+    }
+
+    func testOnlySingleWordsAreSavableToTheReviewDeck() {
+        XCTAssertTrue(SayThePicture.isSavable("perro"))
+        XCTAssertTrue(SayThePicture.isSavable("l'eau"))
+        XCTAssertTrue(SayThePicture.isSavable("año"))
+        XCTAssertFalse(SayThePicture.isSavable("ice cream"))
+        XCTAssertFalse(SayThePicture.isSavable(""))
+        XCTAssertEqual(SayThePicture.PictureWord(term: "dog", image: image("dog")).vocabItem.term, "dog")
+    }
+
     // MARK: same endpoints (the speaking quota, not a new kind)
 
     func testSpeechGoesToTheExistingSttRouteWithTheCourseAndModelAudioToTts() async throws {

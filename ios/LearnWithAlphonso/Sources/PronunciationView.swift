@@ -32,6 +32,8 @@ struct PronunciationView: View {
     let session: Session
     let course: Course
     let onExit: () -> Void
+    /// Hand-picked words to drill (Say the picture's missed words). Nil draws from the learned pool as usual.
+    var seedWords: [VocabItem]? = nil
 
     @State private var run = PronunciationSession(words: [])
     /// The completed-lesson list is being read: the session cannot start until it is known.
@@ -58,7 +60,7 @@ struct PronunciationView: View {
                     ProgressView("Getting your words...").tint(ds.choice).dsText(.footnote).foregroundStyle(ds.inkSoft)
                 } else if loadFailed {
                     loadFailedNote
-                } else if run.words.count < Pronunciation.minPool {
+                } else if seedWords == nil && run.words.count < Pronunciation.minPool {
                     note("Learn a few words first. Say it right practises the words you have already met in lessons.")
                     Button("Back to Practice", action: onExit).buttonStyle(.dsButton(.secondary))
                 } else if run.phase == .done {
@@ -253,6 +255,11 @@ struct PronunciationView: View {
         loadFailed = false
         errorMessage = nil
         captureFailed = false
+        if let seedWords, !seedWords.isEmpty {
+            run = PronunciationSession(words: seedWords)
+            loading = false
+            return
+        }
         guard let accessToken = await session.freshAccessToken() else { loading = false; loadFailed = true; return }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         guard let ids = try? await client.fetchCompletedLessonIds(course: course.wireCode) else { loading = false; loadFailed = true; return }
