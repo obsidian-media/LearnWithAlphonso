@@ -563,6 +563,7 @@ describe("exportMyData, rows the caller cannot read itself", () => {
       ["weekly_xp_totals", "user_id"],
       ["heart_loss_reports", "user_id"],
       ["lesson_heart_settlements", "user_id"],
+      ["lesson_session_redemptions", "user_id"],
       ["hearts_pro_status", "user_id"],
     ]) {
       expect(tables[table], table).toEqual([{ from: table }]);
