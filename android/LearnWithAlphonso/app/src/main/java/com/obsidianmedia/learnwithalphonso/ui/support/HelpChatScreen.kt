@@ -248,10 +248,10 @@ private fun StatusBanner(banner: SupportBanner) {
 @Composable
 private fun Welcome(aiAnswering: Boolean, onStarter: (String) -> Unit) {
     val ds = LocalAlphonsoTokens.current
-    // Miya is the Help persona and greets here whether the AI or a person answers; her "(AI helper)" label shows only while the AI answers.
-    val pose = rememberFirstRunAsset("support/miya-hello.webp")
+    // Miya says hello when the AI answers; with AI off she is not in the chat, so Alphonso keeps the first-open screen.
+    val pose = rememberFirstRunAsset(if (aiAnswering) "support/miya-hello.webp" else "support/alphonso-explaining-pointer.webp")
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-        pose?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * if (aiAnswering) 4f else 3.2f)) }
+        pose?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.height(AlphonsoTokens.Space.s12 * if (aiAnswering) 4 else 3)) }
         if (aiAnswering) Text(SupportCopy.AI, style = FootnoteType, color = ds.ink, textAlign = TextAlign.Center)
         Text(if (aiAnswering) SupportCopy.WELCOME_AI_TITLE else SupportCopy.WELCOME_TITLE, style = TitleType, color = ds.ink, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
         Text(if (aiAnswering) SupportCopy.WELCOME_AI_BODY else SupportCopy.WELCOME_BODY, style = FootnoteType, color = ds.inkSoft, textAlign = TextAlign.Center)

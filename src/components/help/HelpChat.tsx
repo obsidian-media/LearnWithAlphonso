@@ -259,18 +259,28 @@ function Welcome({
         className={`grid justify-items-center gap-2 px-1.5 text-center ${aiAnswering ? "pt-3" : "pt-0.5"}`}
         data-welcome=""
       >
-        <img
-          src="/mascots/miya-hello.webp"
-          alt=""
-          height={aiAnswering ? 190 : 150}
-          className={aiAnswering ? "h-[190px] w-auto" : "h-[150px] w-auto"}
-          draggable={false}
-          data-miya="hello"
-        />
-        {aiAnswering && (
-          <div className="ds-type-footnote font-extrabold text-ds-ink" data-miya-name="">
-            {SUPPORT_COPY.ai}
-          </div>
+        {aiAnswering ? (
+          <>
+            <img
+              src="/mascots/miya-hello.webp"
+              alt=""
+              height={190}
+              className="h-[190px] w-auto"
+              draggable={false}
+              data-miya="hello"
+            />
+            <div className="ds-type-footnote font-extrabold text-ds-ink" data-miya-name="">
+              {SUPPORT_COPY.ai}
+            </div>
+          </>
+        ) : (
+          <img
+            src="/mascots/alphonso-explaining-pointer.webp"
+            alt=""
+            height={135}
+            className="h-[135px] w-auto"
+            draggable={false}
+          />
         )}
         <h2 className="m-0 font-display ds-type-title text-ds-ink">
           {aiAnswering ? SUPPORT_COPY.welcomeAiTitle : SUPPORT_COPY.welcomeTitle}

@@ -361,10 +361,9 @@ private struct WelcomeView: View {
     var body: some View {
         VStack(spacing: AlphonsoDS.Space.s3) {
             VStack(spacing: AlphonsoDS.Space.s2) {
-                // Miya is the Help persona: she greets here whether the AI or a person answers. Her "(AI helper)" label and
-                // name line show only while the AI is answering; with AI off the copy says a person reads every message.
-                Image("Miya-hello").resizable().scaledToFit()
-                    .frame(height: AlphonsoDS.Space.s12 * (aiAnswering ? 4 : 3.2))
+                // Miya says hello when the AI answers; with AI off she is not in the chat, so Alphonso keeps the first-open screen.
+                Image(aiAnswering ? "Miya-hello" : "Alphonso-explaining-pointer").resizable().scaledToFit()
+                    .frame(height: AlphonsoDS.Space.s12 * (aiAnswering ? 4 : 2.8))
                     .accessibilityHidden(true)
                 if aiAnswering {
                     Text(SupportCopy.ai).dsText(.footnote).foregroundStyle(ds.ink)
