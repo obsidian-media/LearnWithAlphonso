@@ -290,10 +290,10 @@ export function PracticeHub({
                   </div>
                   <div className="relative z-[3]" />
                   <div className="relative z-[3] grid justify-items-center gap-2 pb-3.5">
-                    <p className="ds-type-caption font-extrabold text-[#CFF3DF]">
+                    <p className="ds-type-caption font-extrabold text-ds-call-mint">
                       <i
                         aria-hidden="true"
-                        className="mr-1.5 inline-block size-1.5 rounded-full bg-[#6FE0A5] shadow-[0_0_0_3px_rgba(111,224,165,.25)]"
+                        className="mr-1.5 inline-block size-1.5 rounded-full bg-ds-call-mint shadow-[0_0_0_3px_color-mix(in_srgb,var(--c-call-mint)_30%,transparent)]"
                       />
                       Alphonso is ready
                     </p>
