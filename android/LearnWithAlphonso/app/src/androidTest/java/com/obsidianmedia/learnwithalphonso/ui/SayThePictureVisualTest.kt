@@ -57,8 +57,10 @@ class SayThePictureVisualTest {
         rule.waitForIdle()
     }
 
+    // The pose and the recap cells sit under clearAndSetSemantics (decorative or read as one phrase for TalkBack), so
+    // they exist only in the unmerged tree; that is where the test looks for them.
     private fun awaitPose() {
-        rule.waitUntil(10_000) { rule.onAllNodesWithTag("stp-pose-image").fetchSemanticsNodes().isNotEmpty() }
+        rule.waitUntil(10_000) { rule.onAllNodesWithTag("stp-pose-image", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
     }
 
     @Test fun askShowsTheFullBleedPhotoTheMicRingAndTheExplainingPose() {
@@ -69,8 +71,8 @@ class SayThePictureVisualTest {
         assertEquals(screen.fetchSemanticsNode().size, hero.fetchSemanticsNode().size)
         rule.onNodeWithTag("stp-mic").assertIsDisplayed().assertHasSize()
         awaitPose()
-        rule.onNodeWithTag("stp-pose").assertIsDisplayed().assertHasSize()
-        rule.onNodeWithTag("stp-pose-image").assertIsDisplayed().assertHasSize()
+        rule.onNodeWithTag("stp-pose", useUnmergedTree = true).assertIsDisplayed().assertHasSize()
+        rule.onNodeWithTag("stp-pose-image", useUnmergedTree = true).assertIsDisplayed().assertHasSize()
         rule.onNodeWithTag("stp-stage").assertIsDisplayed().assertHasSize()
         rule.onNodeWithText("Show me the word").assertIsDisplayed()
         // The word is not given away while asking.
@@ -85,7 +87,7 @@ class SayThePictureVisualTest {
         rule.onNodeWithText("word0").assertIsDisplayed()
         rule.onNodeWithText("Hear it").assertIsDisplayed()
         awaitPose()
-        rule.onNodeWithTag("stp-pose-image").assertHasSize()
+        rule.onNodeWithTag("stp-pose-image", useUnmergedTree = true).assertHasSize()
     }
 
     @Test fun aWinStampsTheWordAndShowsTheComboChip() {
@@ -96,7 +98,7 @@ class SayThePictureVisualTest {
         rule.onNodeWithTag("stp-combo").assertIsDisplayed()
         rule.onNodeWithText("word0").assertIsDisplayed()
         awaitPose()
-        rule.onNodeWithTag("stp-pose-image").assertHasSize()
+        rule.onNodeWithTag("stp-pose-image", useUnmergedTree = true).assertHasSize()
     }
 
     @Test fun theSummaryShowsTheRecapAndBothCrossLinks() {
@@ -110,8 +112,8 @@ class SayThePictureVisualTest {
         var saved = false
         show(s, onSayItRight = { drilled = it.map { w -> w.term } }, onSave = { saved = true })
         rule.onNodeWithTag("stp-recap").assertIsDisplayed().assertHasSize()
-        assertEquals(2, rule.onAllNodesWithTag("stp-recap-first").fetchSemanticsNodes().size)
-        assertEquals(2, rule.onAllNodesWithTag("stp-recap-missed").fetchSemanticsNodes().size)
+        assertEquals(2, rule.onAllNodesWithTag("stp-recap-first", useUnmergedTree = true).fetchSemanticsNodes().size)
+        assertEquals(2, rule.onAllNodesWithTag("stp-recap-missed", useUnmergedTree = true).fetchSemanticsNodes().size)
         rule.onNodeWithText("Say it right the ones you missed").performScrollTo().performClick()
         rule.onNodeWithText("Add them to your review deck").performScrollTo().performClick()
         rule.runOnIdle {
