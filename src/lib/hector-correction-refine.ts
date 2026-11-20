@@ -18,7 +18,7 @@ const SUBJECT_PRONOUNS: Partial<Record<Course, ReadonlySet<string>>> = {
   es: new Set([
     "yo",
     "tú",
-    "tu",
+    // No bare "tu": it is also the possessive ("tu libro"), and dropping a stray one is a real fix.
     "él",
     "ella",
     "usted",
@@ -75,9 +75,20 @@ export function refineCorrection(c: HectorCorrection, course: Course): HectorCor
   let sEnd = s.length - t;
   let fEnd = f.length - t;
 
-  // Subject-pronoun omission is style. Before any extension, so the removed words are the pure diff.
+  // Subject-pronoun omission is style. Before any extension, so the removed words are the pure diff. Only the
+  // "pronoun + verb" shape: exactly one pronoun dropped, a word still follows it, and it is not a doubled pronoun
+  // ("Yo yo quiero" is a real fix). Anything else keeps the card.
   const pronouns = SUBJECT_PRONOUNS[course];
-  if (pronouns && fStart === fEnd && s.slice(sStart, sEnd).every((w) => pronouns.has(norm(w)))) {
+  const dropped = norm(s[sStart] ?? "");
+  if (
+    pronouns &&
+    fStart === fEnd &&
+    sEnd - sStart === 1 &&
+    t > 0 &&
+    pronouns.has(dropped) &&
+    norm(s[sStart - 1] ?? "") !== dropped &&
+    norm(s[sEnd] ?? "") !== dropped
+  ) {
     return null;
   }
 

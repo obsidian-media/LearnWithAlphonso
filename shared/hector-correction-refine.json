@@ -2,6 +2,34 @@
   "_comment": "Replayed by src/lib/hector-correction-refine.test.ts. expect null = no card. The real live cases are from renders-2026-11-19 HECTOR-T2-LIVE-CHECK and ROUND2.",
   "cases": [
     {
+      "name": "es doubled pronoun is a real fix, kept",
+      "course": "es",
+      "slip": "Yo yo quiero",
+      "fix": "Yo quiero",
+      "expect": { "slip": "yo quiero", "fix": "quiero" }
+    },
+    {
+      "name": "es stray possessive tu is a real fix, kept",
+      "course": "es",
+      "slip": "quiero tu el libro",
+      "fix": "quiero el libro",
+      "expect": { "slip": "tu el", "fix": "el" }
+    },
+    {
+      "name": "es pronoun as the last word is not the pronoun + verb shape, kept",
+      "course": "es",
+      "slip": "Ella es él",
+      "fix": "Ella es",
+      "expect": { "slip": "es él", "fix": "es" }
+    },
+    {
+      "name": "es two pronouns dropped at once is not a plain omission, kept",
+      "course": "es",
+      "slip": "yo él vamos",
+      "fix": "vamos",
+      "expect": { "slip": "yo él vamos", "fix": "vamos" }
+    },
+    {
       "name": "live: en tense and preposition, trailing words dropped",
       "course": "en",
       "slip": "I am living here since five years",
