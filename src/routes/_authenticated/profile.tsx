@@ -58,6 +58,7 @@ import {
   progressFoldSummaries,
   Records,
   ShareWeek,
+  SocialLinks,
   ThisWeek,
   WeakSpots,
 } from "../../components/profile/ProfileSections";
@@ -186,6 +187,7 @@ function ProfilePage() {
                 {tab === "progress" && <ProgressTab o={o} />}
                 {tab === "social" && (
                   <>
+                    <SocialLinks />
                     <LeagueCard o={o} />
                     <FriendsWeek o={o} />
                     <ShareWeek o={o} />

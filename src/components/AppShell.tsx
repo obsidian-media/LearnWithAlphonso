@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCountdown } from "../hooks/use-countdown";
 import { MAX_HEARTS } from "../lib/hearts";
 import { useProgress } from "../lib/progress";
+import { DsIcon } from "./ds/DsIcon";
 import { Icon3D } from "./Icon3D";
 import { PodcastPlayer } from "./PodcastPlayer";
 import { LeagueTierBadge } from "./LeagueTierBadge";
@@ -145,6 +146,8 @@ function TabItem({
       to={to}
       className="group flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 py-1"
       aria-label={label}
+      // Link marks only an exact match; a tab stays lit across its area (/league under Profile), so say so too.
+      aria-current={active ? "page" : undefined}
     >
       <span className={`transition-colors ${active ? "text-ds-choice" : "text-ds-ink-faint"}`}>
         {children}
@@ -156,6 +159,14 @@ function TabItem({
       </span>
     </Link>
   );
+}
+
+/**
+ * Profile lights for its own pages and for League, which lives behind Profile (as on iOS and Android) and has no tab
+ * of its own, so no other tab lights up there.
+ */
+function profileTabActive(pathname: string): boolean {
+  return pathname.startsWith("/profile") || pathname.startsWith("/league");
 }
 
 export function BottomTabs() {
@@ -189,16 +200,8 @@ export function BottomTabs() {
             />
           </svg>
         </TabItem>
-        <TabItem to="/converse" label="Chat" active={pathname.startsWith("/converse")}>
-          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
-            <path
-              d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5l-4 4v-4H6a2 2 0 0 1-2-2V6z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
-            />
-            <path d="M8 9h8M8 12h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
+        <TabItem to="/converse" label="Practice" active={pathname.startsWith("/converse")}>
+          <DsIcon name="mic" className="size-5" />
         </TabItem>
         <TabItem to="/hector" label="Hector" active={pathname.startsWith("/hector")}>
           <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
@@ -210,23 +213,7 @@ export function BottomTabs() {
             />
           </svg>
         </TabItem>
-        <TabItem to="/league" label="League" active={pathname.startsWith("/league")}>
-          <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
-            <path
-              d="M8 4h8v3a4 4 0 0 1-8 0V4z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3M10 15h4M9 20h6M12 15v5"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
-        </TabItem>
-        <TabItem to="/profile" label="Profile" active={pathname.startsWith("/profile")}>
+        <TabItem to="/profile" label="Profile" active={profileTabActive(pathname)}>
           <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">
             <circle cx="12" cy="9" r="3.5" stroke="currentColor" strokeWidth="1.6" />
             <path
