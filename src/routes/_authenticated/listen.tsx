@@ -9,7 +9,7 @@ import { listLibrary, searchEpisodes, type PodcastEpisode } from "../../lib/podc
 import { normalizeQuery } from "../../lib/podcast-search";
 import { resolveFolderPath, type PodcastFolder } from "../../lib/podcast-tree";
 import { buildShelves } from "../../lib/listen-library";
-import { ListenLibraryView, ListenShelfView } from "../../components/ListenLibrary";
+import { LibraryTitle, ListenLibraryView, ListenShelfView } from "../../components/ListenLibrary";
 import { VideoPlayerSheet } from "../../components/VideoPlayerSheet";
 import { listVideos, saveVideoProgress } from "../../lib/video.functions";
 import type { LibraryVideo } from "../../lib/video-library";
@@ -87,23 +87,31 @@ export function PodcastSearchResults({
     <>
       <SceneBackdrop scene="listen" />
       <ul className="relative z-10 space-y-2 px-5 py-4">
-        {results.map((episode) => (
+        {results.map((episode, i) => (
           <li key={episode.id}>
             <button
               type="button"
               onClick={() => play(episode)}
-              className="flex w-full items-center justify-between rounded-2xl border border-ds-line bg-ds-card px-4 py-3 text-left"
+              className="flex w-full items-center gap-3 rounded-[var(--ds-radius-control)] border border-ds-line bg-ds-card px-3 py-3 text-left"
             >
+              <span
+                data-tone={tileTone(i)}
+                className={`grid size-12 shrink-0 place-items-center rounded-2xl ${TILE_TONE_CLASSES[tileTone(i)]}`}
+              >
+                <Icon3D emoji="🎧" size={36} />
+              </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold text-ds-ink">
+                <span className="block truncate font-display ds-type-headline text-ds-ink">
                   {episode.title}
                 </span>
-                {episode.aiNarrated ? (
-                  <span className="text-xs text-ds-ink-soft/70">{AI_NARRATED_LABEL}</span>
-                ) : null}
-              </span>
-              <span className="tnum ml-3 text-xs text-ds-ink-soft/70">
-                {formatDuration(episode.durationSeconds)}
+                <span className="tnum block ds-type-footnote text-ds-ink-soft">
+                  {[
+                    formatDuration(episode.durationSeconds),
+                    episode.aiNarrated ? AI_NARRATED_LABEL : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
               </span>
             </button>
           </li>
@@ -342,23 +350,31 @@ export function ListenBrowser({
           data-surface
           className="relative z-10 rounded-2xl bg-ds-card/90 px-4 py-3 text-sm text-ds-ink-soft backdrop-blur-md"
         >
-          Loading…
+          Loading episodes…
         </p>
       </div>
     );
   }
 
+  const searchField = (
+    <input
+      type="search"
+      value={query}
+      onChange={(event) => setQuery(event.target.value)}
+      placeholder="Search episodes"
+      aria-label="Search episodes"
+      className="w-full rounded-2xl border border-ds-line bg-ds-card/90 px-4 py-2.5 text-sm text-ds-ink backdrop-blur-md placeholder:text-ds-ink-soft/60"
+    />
+  );
+  const atRoot = segments.length === 0;
+
   return (
     <div>
-      <div className="relative z-10 px-5 pt-4">
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search episodes"
-          aria-label="Search episodes"
-          className="w-full rounded-2xl border border-ds-line bg-ds-card/90 px-4 py-2.5 text-sm text-ds-ink backdrop-blur-md placeholder:text-ds-ink-soft/60"
-        />
+      {/* The title, then the search field, then (in ListenLibraryView) the course switch: the iPhone order. The field
+          stays in this one place for every state, so typing never remounts it and loses focus. */}
+      <div className="relative z-10 grid gap-3 px-5 pt-4">
+        {atRoot ? <LibraryTitle /> : null}
+        {searchField}
       </div>
       {/* Search replaces the tree rather than filtering it: results are flat
           across every folder, because the reason to search is not knowing
@@ -378,6 +394,7 @@ export function ListenBrowser({
             storiesFailed={storiesQuery.isError}
             onRetryStories={() => void storiesQuery.refetch()}
             onCourseChange={setStoriesCourse}
+            hideTitle
           />
         </>
       ) : shelf ? (

@@ -120,7 +120,21 @@ describe("PodcastSearchResults", () => {
       />,
     );
     expect(screen.getByText("Ordering Coffee")).toBeInTheDocument();
-    expect(screen.getByText("AI-narrated")).toBeInTheDocument();
+    expect(screen.getByText(/AI-narrated/)).toBeInTheDocument();
+  });
+
+  it("a result row is a headphone tile, the title, and the length under it (the iPhone row card)", () => {
+    const { container } = render(
+      <PodcastSearchResults
+        query="coffee"
+        results={[{ ...episode, aiNarrated: true }]}
+        isLoading={false}
+      />,
+    );
+    expect(container.querySelector("img[src='/icons3d/headphone.png']")).not.toBeNull();
+    expect(container.querySelector("[data-tone]")).not.toBeNull();
+    expect(screen.getByRole("button").textContent).toContain("Ordering Coffee");
+    expect(screen.getByText("5:05 · AI-narrated")).toBeInTheDocument();
   });
 
   it("says nothing matched rather than showing an empty list", () => {
@@ -206,7 +220,7 @@ describe("Listen while loading", () => {
         <ListenBrowser segments={[]} />
       </QueryClientProvider>,
     );
-    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    expect(screen.getByText("Loading episodes…")).toBeInTheDocument();
     expect(container.querySelector('[data-scene="listen"]')).not.toBeNull();
   });
 });
