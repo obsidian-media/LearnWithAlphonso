@@ -1,23 +1,5 @@
-import AVFoundation
 import SwiftUI
 import LearnWithAlphonsoKit
-
-/// Plays the model pronunciation of a word. Its own small player (not the call's VoiceSessionController): a miss replays
-/// the model while the capture that caused it is still finishing, and the controller would refuse a second claim.
-@MainActor
-final class PronunciationModelPlayer {
-    private var player: AVAudioPlayer?
-
-    func play(_ audio: Data) -> Bool {
-        VoiceAudioHooks.pauseOtherAudio?()
-        try? VoiceSessionController.configureForVoice()
-        guard let newPlayer = try? AVAudioPlayer(data: audio) else { return false }
-        player = newPlayer
-        return newPlayer.play()
-    }
-
-    func stop() { player?.stop(); player = nil }
-}
 
 /// Say it right ("Talk with Alphonso"): a warm 1:1 lesson. The word is the hero, shown in Alphonso's speech bubble with a
 /// "Hear it" model button; he reacts in pose to each state with a short, varied line, and the learner's mic sits opposite
@@ -45,7 +27,8 @@ struct PronunciationView: View {
     /// A capture or transcription failed: the mic is not useful right now, "Hear it" and the skip are.
     @State private var captureFailed = false
     @State private var showDisclosure = false
-    @State private var modelPlayer = PronunciationModelPlayer()
+    /// The last attempt's audio and Alphonso's model for the shown word, in memory only (see PronunciationClips).
+    @State private var clips = PronunciationClips()
     @EnvironmentObject private var aiConsent: AIConsentStore
     @Environment(\.alphonsoDS) private var ds
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -89,8 +72,11 @@ struct PronunciationView: View {
         .onDisappear {
             voice.disappeared()
             voice.onCapture = nil
-            modelPlayer.stop()
+            clips.release()
         }
+        // The word moved on (or the round ended): free the attempt and the model audio.
+        .onChange(of: run.index) { _, _ in clips.release() }
+        .onChange(of: run.phase) { _, phase in if phase == .done { clips.release() } }
     }
 
     // MARK: Pieces
@@ -145,6 +131,7 @@ struct PronunciationView: View {
         if let word = run.current {
             Text("Word \(run.index + 1) of \(run.words.count)").dsText(.caption).foregroundStyle(ds.inkSoft)
             tutor(word)
+            if run.phase != .ask && clips.hasYou { compare(word) }
             if run.phase == .result {
                 result
             } else {
@@ -189,14 +176,40 @@ struct PronunciationView: View {
                 Text(word.meaning).dsText(.caption).foregroundStyle(ds.inkSoft).multilineTextAlignment(.center)
             }
             // Always available, in every state: a microphone, consent or STT failure is never a dead end.
-            Button { Task { await playModel(word.term) } } label: { Label("Hear it", systemImage: "speaker.wave.2.fill") }
-                .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+            // Both replay the SAME audio (fetched once per word); the slower one just plays it at a slower rate.
+            HStack(spacing: AlphonsoDS.Space.s2) {
+                Button { Task { await playModel(word.term) } } label: { Label("Hear it", systemImage: "speaker.wave.2.fill") }
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                Button { Task { await playModel(word.term, slow: true) } } label: { Label("Say it slower", systemImage: "tortoise.fill") }
+                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+                    .accessibilityValue(clips.playing == .model(slow: true) ? "Playing" : "")
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(AlphonsoDS.Space.s4)
         .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
         .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble).stroke(ds.line, lineWidth: 1.5))
         .accessibilityElement(children: .contain)
+    }
+
+    /// "Hear you vs Alphonso": the learner's last attempt next to the model, each one a tappable waveform. They stack
+    /// at accessibility text sizes.
+    private func compare(_ word: VocabItem) -> some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: AlphonsoDS.Space.s3))
+            : AnyLayout(HStackLayout(spacing: AlphonsoDS.Space.s3))
+        return layout {
+            ClipWaveButton(
+                who: "You", spokenLabel: "Play your recording", peaks: clips.youPeaks,
+                isPlaying: clips.playing == .you, progress: clips.progress, reduceMotion: reduceMotion, tint: ds.choice
+            ) { voice.cancelRecording(); clips.toggle(.you) }
+            ClipWaveButton(
+                who: "Alphonso", spokenLabel: "Play Alphonso's version", peaks: clips.modelPeaks,
+                isPlaying: clips.playing == .model(slow: false), progress: clips.progress, reduceMotion: reduceMotion, tint: ds.brand
+            ) {
+                if clips.playing == .model(slow: false) { clips.stop() } else { Task { await playModel(word.term) } }
+            }
+        }
     }
 
     private var attempt: some View {
@@ -237,7 +250,7 @@ struct PronunciationView: View {
         SayItRightMic(
             isRecording: voice.isRecording,
             reduceMotion: reduceMotion,
-            onPress: { if voice.pressBegan() { errorMessage = nil } },
+            onPress: { clips.stop(); if voice.pressBegan() { errorMessage = nil } },
             onRelease: { voice.pressEnded() }
         )
     }
@@ -269,6 +282,7 @@ struct PronunciationView: View {
         loadFailed = false
         errorMessage = nil
         captureFailed = false
+        clips.release()
         if let seedWords, !seedWords.isEmpty {
             run = PronunciationSession(words: seedWords)
             loading = false
@@ -289,6 +303,9 @@ struct PronunciationView: View {
             // Nothing captured is not a miss.
             errorMessage = "Didn't catch that. Try again."
         case let .audio(audio, generation, debugTiming):
+            // Keep this attempt in memory so the learner can hear it next to Alphonso. It leaves the device only as the
+            // /api/stt upload below, which already happened before.
+            clips.setYou(audio)
             await transcribe(audio: audio, generation: generation, debugTiming: debugTiming)
         }
     }
@@ -325,18 +342,26 @@ struct PronunciationView: View {
         }
     }
 
-    /// The model pronunciation from /api/tts, with the on-device voice when it cannot be fetched or played.
-    private func playModel(_ term: String) async {
+    /// The model pronunciation: the audio already held for this word when there is one (so Say it slower and the
+    /// waveform never cost a second /api/tts call), else from /api/tts once, with the on-device voice when it cannot be
+    /// fetched or played. `slow` plays it at a slower rate.
+    private func playModel(_ term: String, slow: Bool = false) async {
+        voice.cancelRecording()
+        if clips.hasModel(for: term), clips.play(.model(slow: slow)) { return }
         let voiceID = VoicePrefsCache().voice(.alphonso, course: course.wireCode)
         if hasAIConsent, let accessToken = await session.freshAccessToken() {
             let client = AIConversationClient(
                 baseURL: AppConfig.apiBaseURL,
                 accessToken: { accessToken },
                 refreshAccessToken: { await session.freshAccessToken(forceRefresh: true) })
-            if let audio = try? await Pronunciation.modelAudio(client, term: term, voice: voiceID, course: course),
-               modelPlayer.play(audio) { return }
+            if let audio = try? await Pronunciation.modelAudio(client, term: term, voice: voiceID, course: course) {
+                // The word may have moved on while the audio was coming.
+                guard run.current?.term == term else { return }
+                clips.setModel(audio, term: term)
+                if clips.play(.model(slow: slow)) { return }
+            }
         }
-        FirstRunVoice.speak(term, course: course)
+        FirstRunVoice.speak(term, course: course, slow: slow)
     }
 }
 

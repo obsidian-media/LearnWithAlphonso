@@ -5,7 +5,9 @@ import { PracticeStars } from "./PracticeStars";
 import { AI_CONSENT_COPY } from "@/lib/ai-consent-copy";
 import { useOptionalAiConsent } from "@/lib/ai-consent-context";
 import { useSpeechCapture } from "@/lib/use-speech-capture";
-import { useModelSpeech } from "@/lib/use-model-speech";
+import { useSayItRightAudio } from "@/lib/use-say-it-right-audio";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
+import { WAVE_BARS } from "@/lib/waveform";
 import { useProgress } from "@/lib/progress";
 import {
   MIN_POOL,
@@ -42,6 +44,7 @@ export function SayItRight({
   onExit,
   words,
   pick = Math.random,
+  audioDeps,
 }: {
   course: Course;
   onExit: () => void;
@@ -49,6 +52,11 @@ export function SayItRight({
   words?: VocabItem[];
   /** Random roll in [0, 1) for the varied praise lines; injectable so tests are deterministic. */
   pick?: () => number;
+  /** Test seams for the audio side: the sample decoder, the TTS fetch and the Audio element factory. */
+  audioDeps?: Pick<
+    Parameters<typeof useSayItRightAudio>[0],
+    "decode" | "fetchModel" | "createAudio"
+  >;
 }) {
   // The live pool is read when a session starts: a word learned since the last session is in this one.
   const [session, setSession] = useState(0);
@@ -79,7 +87,20 @@ export function SayItRight({
   phaseRef.current = phase;
   const pickRef = useRef(pick);
   pickRef.current = pick;
-  const playModel = useModelSpeech(course);
+  const recordingRef = useRef(false);
+  const cancelRef = useRef<() => void>(() => {});
+  // The last attempt's audio and Alphonso's model, in memory only; freed when the word changes and on exit.
+  const audio = useSayItRightAudio({
+    course,
+    resetKey: `${session}:${index}`,
+    onPlayStart: () => {
+      // Playing a clip stops any recording (and throws that recording away rather than judging it).
+      if (recordingRef.current) cancelRef.current();
+    },
+    ...audioDeps,
+  });
+  const playModel = audio.playModel;
+  const reduceMotion = usePrefersReducedMotion();
 
   const say = (v: Verdict) => {
     const bank = PRAISE[v];
@@ -98,8 +119,9 @@ export function SayItRight({
     }
   };
 
-  const { state, error, canRecord, start, stop } = useSpeechCapture({
+  const { state, error, canRecord, start, stop, cancel } = useSpeechCapture({
     course,
+    onClip: (clip) => audio.setYouClip(clip),
     onTranscript: (text, confidence) => {
       const w = wordRef.current;
       if (!w) return;
@@ -124,6 +146,8 @@ export function SayItRight({
     },
   });
   const recording = state === "recording";
+  recordingRef.current = recording;
+  cancelRef.current = cancel;
   const transcribing = state === "transcribing";
   const recordingOff = needsConsent || !canRecord;
 
@@ -147,6 +171,7 @@ export function SayItRight({
     }
     holding.current = true;
     pressedAt.current = Date.now();
+    audio.stop();
     void start();
   };
   const release = () => {
@@ -179,7 +204,10 @@ export function SayItRight({
       return;
     }
     if (recording) stop();
-    else void start();
+    else {
+      audio.stop();
+      void start();
+    }
   };
 
   const shell =
@@ -311,16 +339,56 @@ export function SayItRight({
             {word.meaning && (
               <p className="ds-type-caption font-semibold text-ds-ink-soft">{word.meaning}</p>
             )}
-            <button
-              type="button"
-              onClick={() => void playModel(word.term)}
-              className="mt-1 flex items-center gap-1.5 rounded-full bg-ds-choice-tint px-4 py-2 ds-type-footnote font-bold text-ds-choice"
-            >
-              <DsIcon name="speaker" className="size-4" />
-              Hear it
-            </button>
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => void playModel(word.term)}
+                className="flex items-center gap-1.5 rounded-full bg-ds-choice-tint px-4 py-2 ds-type-footnote font-bold text-ds-choice"
+              >
+                <DsIcon name="speaker" className="size-4" />
+                Hear it
+              </button>
+              {/* Replays the same audio at a slower rate in the browser: no second text-to-speech call. */}
+              <button
+                type="button"
+                onClick={() => audio.toggleModel(word.term, true)}
+                aria-pressed={audio.playing?.kind === "model" && audio.playing.slow}
+                data-testid="sir-slower"
+                className="flex items-center gap-1.5 rounded-full bg-ds-choice-tint px-4 py-2 ds-type-footnote font-bold text-ds-choice aria-pressed:bg-ds-choice aria-pressed:text-ds-on-choice"
+              >
+                <DsIcon name="clock" className="size-4" />
+                Say it slower
+              </button>
+            </div>
           </div>
         </div>
+
+        {phase !== "ask" && audio.hasYou && (
+          <div data-testid="sir-compare" className="grid grid-cols-1 gap-3 min-[24rem]:grid-cols-2">
+            <SirWave
+              who="You"
+              label="Play your recording"
+              peaks={audio.youPeaks}
+              playing={audio.playing?.kind === "you"}
+              progress={audio.progress}
+              reduceMotion={reduceMotion}
+              tone="you"
+              testId="sir-wave-you"
+              onClick={audio.toggleYou}
+            />
+            <SirWave
+              who="Alphonso"
+              label="Play Alphonso's version"
+              peaks={audio.modelPeaks}
+              playing={audio.playing?.kind === "model" && !audio.playing.slow}
+              progress={audio.progress}
+              reduceMotion={reduceMotion}
+              tone="model"
+              testId="sir-wave-model"
+              onClick={() => audio.toggleModel(word.term)}
+            />
+          </div>
+        )}
 
         {phase !== "result" && (
           <div className="grid justify-items-end gap-3">
@@ -462,6 +530,70 @@ function SirMic({
         }`}
       >
         <DsIcon name="mic" className="size-8" />
+      </span>
+    </button>
+  );
+}
+
+/** Height of a bar that has no sound in it (and of every bar while the clip cannot be drawn). */
+const MIN_BAR = 0.12;
+
+/**
+ * One side of "Hear you vs Alphonso": a single button holding a bar waveform. Its name is fixed ("Play your
+ * recording" / "Play Alphonso's version") and `aria-pressed` carries the playing state. While it plays the bars sweep
+ * from left to right; under Reduce Motion the whole row is simply highlighted (no sweep). A clip that could not be
+ * decoded (peaks null) shows a flat row and still plays.
+ */
+function SirWave({
+  who,
+  label,
+  peaks,
+  playing,
+  progress,
+  reduceMotion,
+  tone,
+  testId,
+  onClick,
+}: {
+  who: string;
+  label: string;
+  peaks: number[] | null;
+  playing: boolean;
+  progress: number;
+  reduceMotion: boolean;
+  tone: "you" | "model";
+  testId: string;
+  onClick: () => void;
+}): ReactNode {
+  const bars = peaks ?? new Array<number>(WAVE_BARS).fill(0);
+  const lit = tone === "you" ? "bg-ds-choice" : "bg-ds-brand";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={playing}
+      data-testid={testId}
+      data-playing={playing ? "true" : "false"}
+      data-flat={peaks ? "false" : "true"}
+      className="grid min-h-[4.5rem] gap-1.5 rounded-[18px] bg-ds-card p-3 text-left shadow-[inset_0_0_0_1.5px_var(--c-line)] aria-pressed:shadow-[inset_0_0_0_2px_var(--c-brand)]"
+    >
+      <span aria-hidden="true" className="ds-type-caption font-extrabold text-ds-ink-soft">
+        {who}
+      </span>
+      <span aria-hidden="true" className="flex h-10 items-center gap-[2px]">
+        {bars.map((p, i) => {
+          const on = playing && (reduceMotion || (i + 1) / bars.length <= progress);
+          return (
+            <span
+              key={i}
+              data-bar=""
+              data-lit={on ? "true" : "false"}
+              style={{ height: `${Math.max(MIN_BAR, p) * 100}%` }}
+              className={`min-w-0 flex-1 rounded-full ${on ? lit : "bg-ds-line"}`}
+            />
+          );
+        })}
       </span>
     </button>
   );
