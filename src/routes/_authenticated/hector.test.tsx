@@ -346,11 +346,14 @@ describe("web Hector", () => {
   });
 
   it("App Store Pro is told to manage it on the iPhone; web Pro gets a Manage Subscription link", async () => {
+    // The old header bar's subscription line now lives in the overflow menu.
     const first = await renderPage();
+    await userEvent.click(await screen.findByRole("button", { name: "More about Hector" }));
     expect(await screen.findByText("Manage it in your iPhone's Settings.")).toBeInTheDocument();
     first.unmount();
     routes["/api/pro-status"] = status(PRO_WEB);
     await renderPage();
+    await userEvent.click(await screen.findByRole("button", { name: "More about Hector" }));
     expect(await screen.findByRole("link", { name: "Manage Subscription" })).toHaveAttribute(
       "href",
       "https://billing.example/portal",
@@ -359,8 +362,7 @@ describe("web Hector", () => {
 });
 
 describe("web Hector in the new look", () => {
-  it("hector page shows the mascot art and status pill", async () => {
-    const { mascotArt } = await import("../../lib/mascot-poses");
+  it("the header shows his real cut-out, the course tutor line and a status pill that follows him", async () => {
     const players: FakeAudio[] = [];
     vi.stubGlobal(
       "Audio",
@@ -376,24 +378,44 @@ describe("web Hector in the new look", () => {
       new Promise<Response>((r) => (answer = r))) as unknown as Handler;
     await renderPage();
 
-    const art = () => screen.getByRole("img", { name: "Hector" });
-    expect((await screen.findByRole("img", { name: "Hector" })).getAttribute("src")).toBe(
-      mascotArt("hectorIdle").src,
-    );
-    expect(screen.queryByText("Thinking", { exact: true })).toBeNull();
+    const header = await screen.findByTestId("hector-header");
+    expect(within(header).getByRole("heading", { name: "Hector" })).toBeInTheDocument();
+    expect(within(header).getByText("Your French tutor")).toBeInTheDocument();
+    // Uncropped: the whole cut-out (contain, bottom edge), not a cover crop.
+    const figure = within(header).getByTestId("hector-figure");
+    expect(figure.getAttribute("src")).toBe("/hector/base.webp");
+    expect(figure.className).toContain("object-contain");
+    expect(figure.className).toContain("object-bottom");
+    const pill = () => screen.getByTestId("hector-status");
+    // Idle: green "Ready", announced.
+    await waitFor(() => expect(pill()).toHaveTextContent("Ready"));
+    expect(pill()).toHaveAttribute("aria-label", "Hector is ready");
 
     await userEvent.type(screen.getByLabelText("Message Hector"), "Bonjour");
     await userEvent.click(screen.getByRole("button", { name: "Send" }));
-    expect(await screen.findByText("Thinking", { exact: true })).toBeInTheDocument();
-    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorThinking").src));
+    await waitFor(() => expect(pill()).toHaveTextContent("Thinking…"));
+    expect(pill()).toHaveAttribute("aria-label", "Hector is thinking");
 
     answer(Response.json({ reply: "Salut !", audioBase64: btoa("mp3") }));
-    expect(await screen.findByText("Speaking", { exact: true })).toBeInTheDocument();
-    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorSpeaking").src));
+    await waitFor(() => expect(pill()).toHaveTextContent("Speaking…"));
 
     players[players.length - 1].onended?.();
-    await waitFor(() => expect(screen.queryByText("Speaking", { exact: true })).toBeNull());
-    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorIdle").src));
+    await waitFor(() => expect(pill()).toHaveTextContent("Ready"));
+  });
+
+  it("the overflow button holds the old header bar's actions and closes on Escape", async () => {
+    await renderPage();
+    const button = await screen.findByRole("button", { name: "More about Hector" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(button);
+    expect(button).toHaveAttribute("aria-expanded", "true");
+    const menu = screen.getByRole("menu", { name: "Hector options" });
+    expect(within(menu).getByRole("menuitem", { name: "Settings and voices" })).toHaveAttribute(
+      "href",
+      "/profile",
+    );
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 });
 
@@ -410,10 +432,10 @@ describe("web Hector in his library", () => {
     expect(container.querySelector("[data-pro-tag]")).not.toBeNull();
   });
 
-  it("a Pro learner talks to Hector in front of the library", async () => {
-    const { container } = await renderPage();
+  it("a Pro learner talks to Hector under his navy header", async () => {
+    await renderPage();
     await screen.findByLabelText("Message Hector");
-    expect(container.querySelector('[data-scene="hector"]')).not.toBeNull();
+    expect(screen.getByTestId("hector-header")).toBeInTheDocument();
   });
 });
 
@@ -487,13 +509,13 @@ describe("web Hector as a full-screen call (the setting on, the default)", () =>
     expect(screen.queryByTestId("call-caption")).toBeNull();
   });
 
-  it("with the setting off it is the classic screen, mascot and status pill included", async () => {
+  it("with the setting off it is the classic screen, header and status pill included", async () => {
     localStorage.setItem("showAlphonsoWhilePractising", "false");
     await renderPage();
     // Wait for something only the classic screen has: the call screen also mounts "Message Hector" (in its closed
     // sheet), so waiting for that box would resolve on either screen.
-    expect(await screen.findByText("Your tutor")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Hector" })).toBeInTheDocument();
+    expect(await screen.findByText("Your French tutor")).toBeInTheDocument();
+    expect(screen.getByTestId("hector-header")).toBeInTheDocument();
     expect(screen.queryByTestId("alphonso-stage")).toBeNull();
     expect(screen.queryByTestId("call-sheet")).toBeNull();
   });
@@ -518,7 +540,7 @@ describe("web Hector as a full-screen call (the setting on, the default)", () =>
     observer.observe(document.body, { childList: true, subtree: true });
     try {
       await renderPage();
-      await screen.findByText("Your tutor");
+      await screen.findByText("Your French tutor");
       scan(observer.takeRecords());
     } finally {
       observer.disconnect();

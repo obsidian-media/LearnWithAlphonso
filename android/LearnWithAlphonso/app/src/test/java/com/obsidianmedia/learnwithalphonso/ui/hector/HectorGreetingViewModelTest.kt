@@ -129,6 +129,24 @@ class HectorGreetingViewModelTest {
     }
 
     @Test
+    fun `chips come from the weak spot, and a typed message takes the voice turn's path`() = runBlocking {
+        val s = server()
+        val v = vm(s)
+        v.greet()
+        awaitTrue("greeted") { tts(s).isNotEmpty() && v.state.value.phase == ConversationPhase.IDLE }
+        // past-tense is the open weak spot in the fixture; no streak row, so no streak chip.
+        assertEquals(listOf("weakWords", "roleplay-weekend", "coffee", "explain"), v.chips.value.map { it.id })
+        v.sendTyped("  ")
+        assertEquals(1, v.state.value.turns.size)
+        v.sendTyped(v.chips.value.first().message)
+        awaitTrue("reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        assertEquals(listOf("assistant", "user", "assistant"), v.state.value.turns.map { it.role })
+        val body = Json.parseToJsonElement(s.seen.first { it.path.endsWith("/api/hector-respond") }.body).jsonObject
+        assertEquals("Let's practice the past tense.", body["text"]!!.jsonPrimitive.content)
+        assertTrue(s.seen.none { it.path.endsWith("/api/stt") })
+    }
+
+    @Test
     fun `a conversation already underway is not greeted`() = runBlocking {
         val s = server()
         val v = vm(s)
