@@ -74,6 +74,12 @@ import com.obsidianmedia.learnwithalphonso.ui.explain.ExplainInMyLanguage
 import com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine
 import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop
 import com.obsidianmedia.learnwithalphonso.ui.practice.call.HandsFreeBinding
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.HandsFreeCallEffects
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.ApplyStoredHandsFree
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.HandsFreeSwitch
+import com.obsidianmedia.learnwithalphonso.ui.practice.call.HandsFreeNoteDialog
+import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
+import androidx.compose.ui.platform.testTag
 import com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort
 import com.obsidianmedia.learnwithalphonso.core.logic.SaveWordMode
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordCopy
@@ -82,6 +88,11 @@ import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.logic.TutorMemoryContext
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorAllowance
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorGreeting
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorChip
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorChips
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorRecordingCap
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import com.obsidianmedia.learnwithalphonso.core.net.fetchNameStatus
 import com.obsidianmedia.learnwithalphonso.ui.practice.OpenerSpeaker
 import com.obsidianmedia.learnwithalphonso.ui.practice.OpenerSpeechCache
@@ -139,6 +150,8 @@ class HectorViewModel(
     private val openerCache: OpenerSpeechCache = OpenerSpeechCache.shared,
     /** The daily Hector limit as the server tells it (GET /api/app-config); null (unknown) fails open. */
     private val hectorLimit: suspend () -> Int? = { null },
+    /** A tapped recording is stopped and sent after this long (a held button was bounded by the finger). */
+    private val recordingCapMs: Long = HectorRecordingCap.MILLIS,
 ) : ViewModel(), CallConversation {
     // Hector's endpoint returns no verdict on the learner's turn, so verdictSerial never changes and he does not react.
     private val _state = MutableStateFlow(ConversationUiState(openerIndices = emptySet()))
@@ -146,6 +159,9 @@ class HectorViewModel(
     override val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> ai.transcribe(audio, "audio/m4a", course.code, timing) }, viewModelScope)
     /** Hands-free (Hector tuning: 1.2 s of quiet ends a turn). Off whenever a call starts; the call sheet's switch turns it on. Pro by location: Hector is. */
     override val handsFree = HandsFreeBinding.newController(HandsFreeLoop.Tuning.HECTOR, press = { pressBegan() }, release = { pressEnded() }, cancel = { HandsFreeBinding.releaseMic(engine) })
+    /** Suggestion chips under the greeting, built from the same context (weak spot, streak); the fixed set until it has loaded. */
+    private val _chips = MutableStateFlow(HectorChips.FALLBACK)
+    val chips: StateFlow<List<HectorChip>> = _chips.asStateFlow()
     private var memoryContext: ChatMessage? = null
     private var cefrLevel: String? = null
     private var analysed = false
@@ -174,7 +190,12 @@ class HectorViewModel(
             cefrLevel = level
             memoryContext = TutorMemoryContext.buildPrimingMessage(level, open)
             allowanceUsedUp = progress.fetchHectorAllowanceUsedUp(hectorLimit())
-            greeting.complete(HectorGreeting.build(course, level, name, HectorGreeting.recentWeakSpot(trend)))
+            val weakSpot = HectorGreeting.recentWeakSpot(trend)
+            _chips.value = HectorChips.build(course, weakSpot, 0)
+            greeting.complete(HectorGreeting.build(course, level, name, weakSpot))
+            // The streak is best effort and never holds the greeting: its chip joins when it arrives.
+            val streak = runCatching { progress.fetchProgress() }.getOrNull()?.streak ?: 0
+            if (streak > 0) _chips.value = HectorChips.build(course, weakSpot, streak)
         }
         viewModelScope.launch {
             engine.events.collect { event ->
@@ -222,11 +243,42 @@ class HectorViewModel(
             opener.speak({ pendingGreeting }, { hectorVoice(course.code) })
         }
     }
+    private var capJob: Job? = null
+
+    /**
+     * The mic button: starts a turn by voice, and stops and sends it after [recordingCapMs] if the learner has not
+     * (the stop button, or hands-free's own limits, normally end it first).
+     */
+    fun tapMicBegan() {
+        pressBegan()
+        capJob?.cancel()
+        capJob = viewModelScope.launch {
+            delay(recordingCapMs)
+            if (engine.phase.value == TurnPhase.RECORDING) pressEnded()
+        }
+    }
+
     override fun pressEnded() {
+        capJob?.cancel()
         // Marked before the engine is told: the conversation must already be busy when the engine returns to idle, or
         // hands-free would see a gap between "heard" and "thinking" and open the mic during the reply.
         if (engine.phase.value == TurnPhase.RECORDING) _state.update { it.copy(phase = ConversationPhase.TRANSCRIBING) }
         engine.pressEnded()
+    }
+
+    /** Free to take a typed turn: idle, or only his greeting is still being fetched or spoken (it is cut off). */
+    fun canSend(): Boolean = canSend(_state.value, engine.phase.value)
+
+    /**
+     * A typed message (or a tapped chip) as the learner's turn: the same path a transcribed voice turn takes. Ignored
+     * when blank or while a turn is already under way; it cuts the greeting off, like holding to talk does.
+     */
+    fun sendTyped(text: String) {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty() || !canSend()) return
+        opener.stop()
+        _state.update { it.copy(error = null) }
+        viewModelScope.launch { sendTurn(trimmed) }
     }
 
     /** Exposed for tests: the history the tutor receives for the next turn. */
@@ -250,17 +302,28 @@ class HectorViewModel(
     }
 
     /** The composable left (rotation, tab switch): cancel any recording; the view model survives. */
-    fun onLeave() { handsFree.disable(); opener.stop(); engine.cancel() }
+    fun onLeave() { handsFree.disable(); capJob?.cancel(); opener.stop(); engine.cancel() }
 
     /** Bumped on hang-up: a turn that started before it may still get its reply, but never plays the audio. */
     @Volatile private var callGeneration = 0
 
     /** The red button: cancel any recording, and silence a reply that is still on its way. */
     fun hangUp() {
+        capJob?.cancel()
         callGeneration++
         handsFree.disable()
         opener.stop()
         engine.cancel()
+    }
+
+    companion object {
+        /** True when nothing but his own greeting (which the learner's first turn cuts off) is under way. */
+        fun canSend(state: ConversationUiState, engine: TurnPhase): Boolean {
+            if (engine != TurnPhase.IDLE) return false
+            if (state.phase == ConversationPhase.IDLE) return true
+            val last = state.turns.lastIndex
+            return last >= 0 && last in state.openerIndices
+        }
     }
 
     public override fun onCleared() {
@@ -285,44 +348,51 @@ fun HectorTab(container: AppContainer) {
     }
 }
 
-/** Hector's bubbles and the "tap a word" hint: the middle of the classic screen, and the body of the call's sheet. */
+/** Hector's bubbles, the greeting's suggestion chips and the "tap a word" hint: the middle of the classic screen, and the body of the call's sheet. */
 @Composable
 private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modifier: Modifier) {
     val ds = LocalAlphonsoTokens.current
     val state by vm.state.collectAsState()
+    val chips by vm.chips.collectAsState()
+    val enginePhase by vm.engine.phase.collectAsState()
     val listState = rememberLazyListState()
     LaunchedEffect(state.turns.size) { if (state.turns.isNotEmpty()) listState.animateScrollToItem(state.turns.size - 1) }
     val saveWord = LocalSaveWordHandler.current
+    // Chips are Hector's offer after his greeting; the first message of the learner's own ends them.
+    val showChips = state.turns.isNotEmpty() && state.turns.none { it.role == "user" }
     Column(modifier) {
         // Words are plain-looking links, so say they are tappable.
-            SaveWordHintLine(container, SavedWordCopy.HECTOR_HINT, limited = false)
-            LazyColumn(state = listState, modifier = Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                itemsIndexed(state.turns) { index, turn ->
-                    val isUser = turn.role == "user"
-                    Column(Modifier.fillMaxWidth()) {
+        SaveWordHintLine(container, SavedWordCopy.HECTOR_HINT, limited = false)
+        LazyColumn(state = listState, modifier = Modifier.weight(1f).testTag("hector-transcript"), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            itemsIndexed(state.turns) { index, turn ->
+                val isUser = turn.role == "user"
+                Column(Modifier.fillMaxWidth()) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start, verticalAlignment = Alignment.Bottom) {
-                        if (!isUser) Image(painterResource(R.drawable.mascot_hector), contentDescription = "Hector", contentScale = ContentScale.Crop, modifier = Modifier.size(26.dp).clip(CircleShape))
-                        else Spacer(Modifier.width(40.dp))
-                        Spacer(Modifier.width(6.dp))
+                        if (!isUser) HectorMiniAvatar() else Spacer(Modifier.width(40.dp))
+                        Spacer(Modifier.width(9.dp))
                         // Every Hector reply is the model's, so reportable; his greeting is our own fixed text.
                         ReportableAiMessage(
                             enabled = !isUser && index !in state.openerIndices, sender = container.aiReports,
                             makeReport = { reason -> AiReplyReports.hector(turn.content, vm.course.code, reason) },
                         ) { reportModifier, reportActions ->
-                            val bubble = Modifier.widthIn(max = 300.dp).clip(RoundedCornerShape(AlphonsoRadius.xl)).then(reportModifier).background(if (isUser) ds.choiceTint else ds.card).border(2.dp, if (isUser) ds.choice else ds.line, RoundedCornerShape(AlphonsoRadius.xl)).padding(horizontal = 14.dp, vertical = 10.dp)
+                            val shape = if (isUser) LearnerBubbleShape else HectorBubbleShape
+                            val bubble = Modifier.widthIn(max = 300.dp).clip(shape).then(reportModifier).background(if (isUser) ds.choice else ds.card).padding(horizontal = 14.dp, vertical = 10.dp)
                             // Hector's replies are in the language being practiced, so every word is a word of the course.
                             if (!isUser && saveWord != null) {
-                                TappableText(turn.content, vm.course.code, SaveWordMode.AllWords, saveWord, modifier = bubble, style = HeadlineType, color = ds.ink, extraActions = reportActions)
+                                TappableText(turn.content, vm.course.code, SaveWordMode.AllWords, saveWord, modifier = bubble, style = BodyType, color = ds.ink, extraActions = reportActions)
                             } else {
-                                Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = HeadlineType, color = ds.ink)
+                                Text(turn.content, modifier = bubble.accessibilityActions(reportActions), style = BodyType, color = if (isUser) ds.onChoice else ds.ink)
                             }
                         }
                     }
                     // "Say that in <language>" under each of Hector's bubbles; his calls spend Hector's own Pro allowance.
-                    if (!isUser) ExplainInMyLanguage(container, remember(turn.content, vm.course.code) { ExplainRules.message(turn.content, vm.course.code, hector = true) }, Modifier.padding(start = 32.dp, top = 4.dp))
-                    }
+                    if (!isUser) ExplainInMyLanguage(container, remember(turn.content, vm.course.code) { ExplainRules.message(turn.content, vm.course.code, hector = true) }, Modifier.padding(start = 39.dp, top = 4.dp))
                 }
             }
+            if (showChips) item(key = "hector-chips") {
+                HectorChipRow(chips, enabled = HectorViewModel.canSend(state, enginePhase), onChip = { vm.sendTyped(it.message) })
+            }
+        }
     }
 }
 
@@ -368,19 +438,34 @@ private fun HectorConversation(container: AppContainer) {
             }
             return@SaveWordHost
         }
+        val reduced = systemMotionReduced(context)
+        var draft by rememberSaveable { mutableStateOf("") }
+        // Hands-free is kept on this screen too: its switch is in the header's menu, and a remembered choice starts it.
+        HandsFreeCallEffects(vm)
+        ApplyStoredHandsFree(vm)
+        val listening = phase == TurnPhase.RECORDING
+        val busy = !listening && !HectorViewModel.canSend(state, phase)
+        val handsFreeStatus by vm.handsFree.status.collectAsState()
+        var showNote by remember { mutableStateOf(false) }
         Column(Modifier.fillMaxSize().background(ds.surface)) {
             AiReportStatusHost(container.aiReports)
-            Text("Hector", style = TitleType, color = ds.ink, modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp))
+            HectorHeader(
+                courseName = hectorCourseName(course), status = HectorStatusUi.from(phase, state.phase), reducedMotion = reduced,
+                onBack = null,
+                // The switch's first-use note is shown from here: a dialog composed inside the menu goes with the menu.
+                menu = { dismiss -> HandsFreeSwitch(vm, "Hector", onNeedNote = { dismiss(); showNote = true }) },
+            )
+            if (showNote) HandsFreeNoteDialog(vm, "Hector") { showNote = false }
             HectorTranscript(container, vm, Modifier.weight(1f))
-            state.error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, modifier = Modifier.padding(horizontal = 16.dp)) }
-            val busy = when (state.phase) { ConversationPhase.IDLE -> if (phase == TurnPhase.TRANSCRIBING) "Listening..." else null; ConversationPhase.TRANSCRIBING -> "Listening..."; ConversationPhase.THINKING -> "Thinking..."; ConversationPhase.SPEAKING -> "..." }
-            Column(Modifier.padding(16.dp)) {
-                HoldToTalkButton(
-                    phase = phase, busyLabel = busy, tint = ds.choice,
-                    hint = if (phase == TurnPhase.RECORDING) "Listening. Release to send" else "Hold to talk",
-                    accessibilityLabel = "Hold to talk to Hector", onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded,
-                )
-            }
+            state.error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) }
+            // Hands-free can be on from the stored choice with the switch still in the menu: the mic is never live unseen.
+            if (handsFreeStatus != HandsFreeLoop.Status.Off) HectorHandsFreeBar(handsFreeStatus, onToggle = vm.handsFree::togglePause)
+            HectorComposer(
+                listening = listening, busy = busy, text = draft, onText = { draft = it },
+                onSend = { val t = draft; draft = ""; vm.sendTyped(t) },
+                onMic = { vm.tapMicBegan() }, onStop = { vm.pressEnded() },
+                level = { vm.micLevelDBFS() }, reducedMotion = reduced,
+            )
         }
       }
     }

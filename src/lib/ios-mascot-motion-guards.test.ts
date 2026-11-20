@@ -51,9 +51,11 @@ describe("iPhone mascot motion", () => {
   });
 
   it("Hector's header breathes and cross-fades between listening, thinking and talking", () => {
-    const s = read("HectorView.swift");
-    const hero = s.slice(s.indexOf("private var hero: some View"));
-    expect(hero).toMatch(/Image\(art\)[\s\S]{0,400}\.mascotBreathe\(\)/);
+    // The converged header (HectorParts.swift): the cut-out stands on the header's bottom edge, so it does not
+    // breathe (the rise would open a gap there); it still cross-fades between poses.
+    const s = read("HectorParts.swift");
+    const hero = s.slice(s.indexOf("struct HectorHeader"));
+    expect(hero).toMatch(/Image\(art\)[\s\S]{0,400}\.scaledToFit\(\)/);
     expect(hero).toMatch(/\.id\(art\)\s*\n\s*\.transition\(\.opacity\)/);
     expect(hero).toContain("value: art)");
   });

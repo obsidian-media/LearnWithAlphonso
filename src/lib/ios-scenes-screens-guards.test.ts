@@ -44,17 +44,16 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
     expect(from(convo, 'Text("Tap any word').slice(0, 400)).toContain(".alphonsoGlass(");
   });
 
-  it("the hero keeps its poses, breathing and cross-fade, drops the flat tile, and puts its title on glass", () => {
-    const hero = between(hector, "private var hero: some View", "private func heroPill");
-    expect(hero).toContain("MascotArt.assetName(for: HectorStatus.moment(for: status))");
-    expect(hero).toContain(".mascotBreathe()");
-    expect(hero).not.toContain("AlphonsoTileTone.sky.background");
-    expect(hero).not.toContain("AlphonsoColor.surface.opacity(0)");
-    const title = from(hero, 'Text("Hector")');
-    expect(title.slice(0, 700)).toContain(".alphonsoGlass(");
-    expect(hero).toContain(
-      'Text(voice.isHandsFreeOn ? "Your tutor · hands-free on" : "Your tutor")',
-    );
+  it("the header keeps its poses, on the navy hero gradient with the uncropped cut-out and a status pill", () => {
+    const classic = between(hector, "private var classicScreen", "private var callScreen");
+    expect(classic).toContain("MascotArt.assetName(for: HectorStatus.moment(for: status))");
+    const parts = read("HectorParts.swift");
+    const hero = from(parts, "struct HectorHeader");
+    expect(hero).toContain("LinearGradient(colors: [ds.heroA, ds.heroB]");
+    expect(hero).toContain(".scaledToFit()");
+    expect(hero).toContain('"Hector"');
+    expect(hero).toContain(String.raw`"Your \(courseName) tutor`);
+    expect(hero).toContain(String.raw`Hector is \(`);
   });
 
   it("the paywall opens on Hector's room, above the headline and the offer", () => {
