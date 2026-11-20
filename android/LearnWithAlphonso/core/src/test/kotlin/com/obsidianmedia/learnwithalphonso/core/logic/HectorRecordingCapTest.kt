@@ -1,7 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.logic
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class HectorRecordingCapTest {
     @Test fun `a tapped recording is capped at a minute, the same on every platform`() {
