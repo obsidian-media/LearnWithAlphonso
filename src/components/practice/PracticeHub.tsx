@@ -1,37 +1,33 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { DsIcon } from "../ds/DsIcon";
-import { edgeButtonClass } from "../lesson/LessonParts";
+import { DsButton } from "../ds/Blocks";
 import { HectorInvite } from "../HectorInvite";
 import { PracticeStars, StarTally } from "./PracticeStars";
+import { BubbleGlyph, WaveformGlyph } from "./PracticeGlyphs";
 import { SayThePicture } from "./SayThePicture";
 import { SayItRight } from "./SayItRight";
 import { PreCallSheet, type CallMode, type PreCallTarget } from "./PreCallSheet";
 import type { Course } from "@/data/courses";
 import { CAMPAIGNS, localizeCampaign } from "@/data/campaigns";
 import { SCENARIOS, localizeScenario, type ScenarioLevel } from "@/data/scenarios";
+import { WEAK_SPOT_NAMES, personaOf, roomUrl, sceneKey, sceneRoom } from "@/lib/practice-catalog";
 import {
-  WEAK_SPOT_NAMES,
-  campaignCover,
-  personaOf,
-  roomUrl,
-  sceneKey,
-  sceneRoom,
-} from "@/lib/practice-catalog";
-import {
+  campaignProgress,
   continuePoint,
   nextSceneIndex,
   starLookup,
   starTally,
-  todaysPick,
+  todaysPicks,
   type PracticeHubData,
 } from "@/lib/practice-hub";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 
 /**
- * The Practice hub (visual round 6, part 5), drawn after the approved mock-up 09-practice-hub-mockup v3: Alphonso in
- * his café with a greeting, "Today's pick", "Continue", the campaigns as picture stories, Hector, and the scenarios
- * in their painted rooms with level chips. Every count and star comes from the catalog and the learner's rows.
+ * The Practice hub ("Practice A", approved mock v6): a swipeable carousel of call cards (Alphonso ready to call, each
+ * with a tailored reason and round Call / Chat buttons), the conversations in their painted rooms with level chips
+ * and a Mastered badge, the campaigns as a rail, the two drills as featured cards, and Hector's quiet Pro nudge.
+ * Every count and star comes from the catalog and the learner's rows. The pre-call sheet still carries the star rules.
  */
 export type StartTarget =
   | { kind: "scenario"; scenarioId: string; mode: CallMode }
@@ -45,34 +41,53 @@ const GREETING: Record<Course, { line: string; gloss?: string }> = {
 
 const LEVELS: readonly ScenarioLevel[] = ["Beginner", "Intermediate", "Advanced"];
 
-const HEAD_SCRIM =
-  "linear-gradient(180deg, color-mix(in srgb, var(--c-hero-b) 42%, transparent) 0%, transparent 32%, transparent 55%, var(--c-surface) 98%)";
-// The rooms are light paintings: the text sits on a shade that reaches near-solid navy behind it (mock: 86% at the
-// foot), starting high enough that the gold overline stays readable.
-const CARD_SHADE =
-  "linear-gradient(180deg, transparent 8%, color-mix(in srgb, var(--c-hero-b) 72%, transparent) 48%, color-mix(in srgb, var(--c-hero-b) 92%, transparent) 100%)";
+const CARD_VIGNETTE =
+  "linear-gradient(180deg, color-mix(in srgb, var(--c-hero-b) 62%, transparent) 0%, color-mix(in srgb, var(--c-hero-b) 12%, transparent) 22%, color-mix(in srgb, var(--c-hero-b) 10%, transparent) 44%, color-mix(in srgb, var(--c-hero-b) 82%, transparent) 78%, var(--c-hero-b) 100%)";
 const TILE_SHADE =
   "linear-gradient(180deg, transparent 30%, color-mix(in srgb, var(--c-hero-b) 78%, transparent) 62%, color-mix(in srgb, var(--c-hero-b) 92%, transparent) 100%)";
+const RAIL_SHADE =
+  "linear-gradient(180deg, transparent 28%, color-mix(in srgb, var(--c-hero-b) 94%, transparent))";
 
-type Sheet = { target: PreCallTarget; start: (mode: CallMode) => StartTarget };
+type Sheet = { target: PreCallTarget; start: (mode: CallMode) => StartTarget; mode: CallMode };
+
+/** One call card: a scenario picked for the learner, or the campaign scene they were in the middle of. */
+type HeroCard = {
+  key: string;
+  kicker: string;
+  title: string;
+  subtitle: string;
+  reason: string;
+  room: string;
+  stars: number;
+  /** Set on the resume card, for "Continue". */
+  continueKey?: string;
+  /** Set on a scenario pick. */
+  pickId?: string;
+  open: (mode: CallMode) => void;
+};
 
 export function PracticeHub({
   course,
   data,
   initialMode,
   onStart,
+  error = false,
+  onRetry,
 }: {
   course: Course;
   /** The learner's rows, or null while they load (or when they could not be loaded). */
   data: PracticeHubData | null;
   initialMode: CallMode;
   onStart: (target: StartTarget) => void;
+  /** The learner's rows could not be loaded: show "Could not load Practice." with Try again instead of loading forever. */
+  error?: boolean;
+  onRetry?: () => void;
 }) {
   const reduce = usePrefersReducedMotion();
   const rows = useMemo(() => data?.stars ?? [], [data]);
   const stars = useMemo(() => starLookup(rows), [rows]);
   const tally = useMemo(() => starTally(rows), [rows]);
-  const pick = useMemo(() => (data ? todaysPick(data) : null), [data]);
+  const picks = useMemo(() => (data ? todaysPicks(data) : []), [data]);
   const resume = useMemo(() => continuePoint(rows), [rows]);
   const scenarios = useMemo(() => SCENARIOS.map((s) => localizeScenario(s, course)), [course]);
   const campaigns = useMemo(() => CAMPAIGNS.map((c) => localizeCampaign(c, course)), [course]);
@@ -80,9 +95,11 @@ export function PracticeHub({
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const [sayPicture, setSayPicture] = useState(false);
   const [sayItRight, setSayItRight] = useState(false);
+  const [active, setActive] = useState(0);
+  const track = useRef<HTMLDivElement>(null);
   const greeting = GREETING[course];
 
-  const openScenario = (id: string) => {
+  const openScenario = (id: string, mode: CallMode = initialMode) => {
     const s = scenarios.find((x) => x.id === id)!;
     setSheet({
       target: {
@@ -92,10 +109,11 @@ export function PracticeHub({
         opener: s.opener,
         lang: course,
       },
-      start: (mode) => ({ kind: "scenario", scenarioId: s.id, mode }),
+      start: (m) => ({ kind: "scenario", scenarioId: s.id, mode: m }),
+      mode,
     });
   };
-  const openScene = (campaignId: string, sceneIndex: number) => {
+  const openScene = (campaignId: string, sceneIndex: number, mode: CallMode = initialMode) => {
     const c = campaigns.find((x) => x.id === campaignId)!;
     const scene = c.scenes[sceneIndex];
     setSheet({
@@ -106,9 +124,71 @@ export function PracticeHub({
         persona: personaOf("scene", sceneKey(c.id, scene.id), course) ?? "",
         opener: scene.opener,
         lang: course,
+        // The campaign's detail: every scene with the stars it holds, the current one marked.
+        scenes: c.scenes.map((s, i) => ({
+          title: s.title,
+          stars: stars("scene", sceneKey(c.id, s.id)),
+          current: i === sceneIndex,
+        })),
       },
-      start: (mode) => ({ kind: "scene", campaignId: c.id, sceneIndex, mode }),
+      start: (m) => ({ kind: "scene", campaignId: c.id, sceneIndex, mode: m }),
+      mode,
     });
+  };
+
+  const resumeCampaign = resume ? campaigns.find((c) => c.id === resume.campaignId) : undefined;
+  // The cards: where the learner left off (if anywhere), then Today's picks, three in all.
+  const cards: HeroCard[] = [];
+  if (data) {
+    if (resume && resumeCampaign) {
+      const scene = resumeCampaign.scenes[resume.sceneIndex];
+      cards.push({
+        key: `continue:${resume.campaignId}:${resume.sceneIndex}`,
+        kicker: "Continue",
+        title: scene.title,
+        subtitle: `${resumeCampaign.title} · Scene ${resume.sceneIndex + 1} of ${resumeCampaign.scenes.length}`,
+        reason: "Pick up where you left off",
+        room: sceneRoom(resumeCampaign.id, scene.id),
+        stars: stars("scene", sceneKey(resumeCampaign.id, scene.id)),
+        continueKey: `${resume.campaignId}:${resume.sceneIndex}`,
+        open: (mode) => openScene(resume.campaignId, resume.sceneIndex, mode),
+      });
+    }
+    for (const p of picks.slice(0, Math.max(0, 3 - cards.length))) {
+      const s = scenarios.find((x) => x.id === p.scenarioId);
+      if (!s) continue;
+      const first = !cards.some((c) => c.pickId);
+      cards.push({
+        key: `pick:${p.scenarioId}`,
+        kicker: first ? "Today's pick" : "Also for you",
+        title: s.title,
+        subtitle: p.level,
+        reason: p.weakSpot
+          ? `Makes you use ${WEAK_SPOT_NAMES[p.weakSpot] ?? p.weakSpot}${first ? ", your top weak spot" : ""}`
+          : `${p.level} scene at your level`,
+        room: s.id,
+        stars: stars("scenario", s.id),
+        pickId: p.scenarioId,
+        open: (mode) => openScenario(p.scenarioId, mode),
+      });
+    }
+  }
+
+  const goTo = (i: number) => {
+    setActive(i);
+    const card = track.current?.children[i] as HTMLElement | undefined;
+    card?.scrollIntoView?.({
+      behavior: reduce ? "auto" : "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  };
+  const onTrackScroll = () => {
+    const el = track.current;
+    const first = el?.children[0] as HTMLElement | undefined;
+    if (!el || !first || !first.offsetWidth) return;
+    const next = Math.round(el.scrollLeft / (first.offsetWidth + 12));
+    setActive(Math.min(Math.max(next, 0), Math.max(cards.length - 1, 0)));
   };
 
   const enter = (i: number) =>
@@ -124,8 +204,6 @@ export function PracticeHub({
           },
         };
 
-  const pickScenario = pick ? scenarios.find((s) => s.id === pick.scenarioId) : undefined;
-  const resumeCampaign = resume ? campaigns.find((c) => c.id === resume.campaignId) : undefined;
   const shownScenarios = level === "All" ? scenarios : scenarios.filter((s) => s.level === level);
 
   if (sayItRight) return <SayItRight course={course} onExit={() => setSayItRight(false)} />;
@@ -134,280 +212,205 @@ export function PracticeHub({
   return (
     <div
       data-practice-hub=""
-      className="bg-ds-surface pb-8 font-[family-name:var(--ds-font-body)] text-ds-ink"
+      className="grid gap-3.5 bg-ds-surface px-4 pb-8 pt-4 font-[family-name:var(--ds-font-body)] text-ds-ink"
     >
-      {/* Alphonso in his café. */}
-      <div className="relative h-[300px] overflow-hidden">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-cover"
-          style={{ backgroundImage: `url(${roomUrl("coffee")})`, backgroundPosition: "center 30%" }}
-        />
-        <div aria-hidden="true" className="absolute inset-0" style={{ background: HEAD_SCRIM }} />
-        <img
-          src="/alphonso/lesson/talk.webp"
-          alt=""
-          draggable={false}
-          className="absolute bottom-2 left-1/2 z-[1] w-[250px] max-w-none -translate-x-1/2 select-none drop-shadow-[0_10px_14px_color-mix(in_srgb,var(--c-ink)_18%,transparent)]"
-        />
-        <h1 className="absolute left-4 top-5 z-[2] ds-type-display text-ds-on-hero drop-shadow-[0_2px_8px_color-mix(in_srgb,var(--c-hero-b)_45%,transparent)]">
-          Practice
-        </h1>
-        {data && (
-          <StarTally
-            earned={tally.earned}
-            total={tally.total}
-            className="absolute right-3.5 top-6 z-[2] border-transparent bg-ds-card/95"
-          />
-        )}
-        <p className="absolute right-3 top-[76px] z-[2] max-w-[150px] rounded-[16px_16px_4px_16px] bg-ds-card px-3 py-2 shadow-[var(--ds-shadow-floating)]">
-          <span lang={course} className="block ds-type-caption text-ds-ink">
-            {greeting.line}
-          </span>
-          {greeting.gloss && (
-            <span className="mt-0.5 block ds-type-caption font-semibold text-ds-ink-soft">
-              {greeting.gloss}
-            </span>
-          )}
+      <header className="grid gap-1">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="ds-type-display text-ds-ink">Practice</h1>
+          {data && <StarTally earned={tally.earned} total={tally.total} />}
+        </div>
+        <p lang={course} className="ds-type-caption font-semibold text-ds-ink-soft">
+          {greeting.line}
         </p>
-      </div>
-
-      <div className="relative z-[3] -mt-8 grid gap-3.5 px-4">
-        {/* Today's pick. */}
-        {pick && pickScenario && (
-          <motion.section
-            {...enter(0)}
-            data-todays-pick={pick.scenarioId}
-            aria-labelledby="todays-pick"
-            className="grid gap-2 rounded-[22px] p-3.5 text-ds-on-hero shadow-[var(--ds-shadow-floating),inset_0_0_0_1px_color-mix(in_srgb,var(--c-action)_35%,transparent)]"
-            style={{
-              background:
-                "radial-gradient(120% 90% at 100% 0%, var(--c-hero-a) 0%, var(--c-hero) 55%)",
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <h2 id="todays-pick" className="ds-type-overline text-ds-on-hero-kick">
-                Today's pick
-              </h2>
-              <PracticeStars n={stars("scenario", pick.scenarioId)} onDark />
-            </div>
-            <p lang={course} className="ds-type-question-small">
-              {pickScenario.title}
-            </p>
-            <p className="ds-type-caption font-semibold text-ds-on-hero-soft">
-              {pick.weakSpot ? (
-                <>
-                  A {pick.level.toLowerCase()} scene that makes you use{" "}
-                  <em className="border-b-2 border-ds-action font-extrabold not-italic text-ds-on-hero">
-                    {WEAK_SPOT_NAMES[pick.weakSpot] ?? pick.weakSpot}
-                  </em>
-                  , your top weak spot.
-                </>
-              ) : (
-                <>
-                  A {pick.level.toLowerCase()} scene at your level. Your weak spots will steer this
-                  pick as you practice.
-                </>
-              )}
-            </p>
-            <button
-              type="button"
-              onClick={() => openScenario(pick.scenarioId)}
-              className={edgeButtonClass("primary")}
-            >
-              <DsIcon name="mic" className="size-5" />
-              Call Alphonso
-            </button>
-          </motion.section>
+        {greeting.gloss && (
+          <p data-greeting-gloss="" className="ds-type-caption text-ds-ink-soft opacity-80">
+            {greeting.gloss}
+          </p>
         )}
+      </header>
 
-        {/* Continue. */}
-        {resume && resumeCampaign && (
-          <section aria-labelledby="continue" className="grid gap-2">
-            <h2 id="continue" className="ds-type-headline font-extrabold text-ds-ink">
-              Continue
-            </h2>
-            <button
-              type="button"
-              data-continue={`${resume.campaignId}:${resume.sceneIndex}`}
-              onClick={() => openScene(resume.campaignId, resume.sceneIndex)}
-              className="flex items-center gap-2.5 rounded-[18px] border-2 border-b-4 border-ds-line bg-ds-card p-2.5 text-left"
+      {/* The call cards: swipe, or use the dots. Never auto-advances. */}
+      <section
+        aria-roledescription="carousel"
+        aria-label="Calls picked for you"
+        className="grid gap-2"
+      >
+        {data ? (
+          <>
+            <div
+              ref={track}
+              onScroll={onTrackScroll}
+              data-hero-track=""
+              className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
-              <span
-                aria-hidden="true"
-                className="size-14 shrink-0 rounded-[14px] bg-cover bg-center shadow-[inset_0_0_0_2px_color-mix(in_srgb,var(--c-card)_60%,transparent)]"
-                style={{
-                  backgroundImage: `url(${sceneRoom(resumeCampaign.id, resumeCampaign.scenes[resume.sceneIndex].id)})`,
-                }}
-              />
-              <span className="min-w-0 flex-1">
-                <span lang={course} className="block ds-type-headline font-extrabold text-ds-ink">
-                  {resumeCampaign.title}
-                </span>
-                <span className="block ds-type-caption font-semibold text-ds-ink-soft">
-                  Scene {resume.sceneIndex + 1} of {resumeCampaign.scenes.length} ·{" "}
-                  <span lang={course}>{resumeCampaign.scenes[resume.sceneIndex].title}</span>
-                </span>
-                <span className="mt-1.5 flex items-center gap-1" aria-hidden="true">
-                  {resumeCampaign.scenes.map((s, i) => {
-                    const n = stars("scene", sceneKey(resumeCampaign.id, s.id));
-                    if (n > 0) return <PracticeStars key={s.id} n={n} size="xs" />;
-                    return (
+              {cards.map((card, i) => (
+                <div
+                  key={card.key}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${i + 1} of ${cards.length}: ${card.title}`}
+                  data-hero-card={card.pickId ?? card.continueKey}
+                  {...(card.pickId && card.kicker === "Today's pick"
+                    ? { "data-todays-pick": card.pickId }
+                    : {})}
+                  {...(card.continueKey ? { "data-continue": card.continueKey } : {})}
+                  className="relative grid min-h-[340px] shrink-0 basis-[86%] snap-center grid-rows-[auto_1fr_auto] overflow-hidden rounded-[var(--ds-radius-sheet)] bg-ds-hero text-ds-on-hero shadow-[var(--ds-shadow-floating)]"
+                >
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${roomUrl(card.room)})` }}
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 z-[2]"
+                    style={{ background: CARD_VIGNETTE }}
+                  />
+                  <div className="relative z-[3] grid justify-items-center gap-1 px-3.5 pt-3 text-center">
+                    <p className="ds-type-overline text-ds-on-hero-kick">
+                      {card.kicker} · {i + 1} of {cards.length}
+                    </p>
+                    <p lang={course} className="ds-type-question-small">
+                      {card.title}
+                    </p>
+                    <p className="flex items-center gap-1.5 ds-type-caption font-semibold text-ds-on-hero-soft">
+                      <span lang={course}>{card.subtitle}</span>
+                      <PracticeStars n={card.stars} onDark />
+                    </p>
+                    <p className="mt-1 rounded-full bg-ds-on-hero/15 px-2.5 py-0.5 ds-type-caption text-ds-on-hero">
+                      {card.reason}
+                    </p>
+                  </div>
+                  {/* In the grid flow (never absolute) so the title and reason pill can't sit under Alphonso. Shown on
+                      every phone (20rem is 320 px at the default size) and hidden only at large text sizes, because the
+                      query is in rem, like iOS/Android. */}
+                  <div
+                    data-hero-figure=""
+                    className="relative z-[1] hidden self-end min-[20rem]:block"
+                  >
+                    <img
+                      src="/figures/alphonso-waving.webp"
+                      alt=""
+                      draggable={false}
+                      className="mx-auto block h-[144px] w-auto max-w-none select-none drop-shadow-[0_9px_15px_rgba(0,0,0,.5)]"
+                    />
+                  </div>
+                  {/* self-end: with the figure hidden (large text), Call/Chat still sit at the card's foot. */}
+                  <div className="relative z-[3] grid self-end justify-items-center gap-2 pb-3.5">
+                    <p className="ds-type-caption font-extrabold text-ds-call-mint">
                       <i
-                        key={s.id}
-                        className={
-                          i === resume.sceneIndex
-                            ? "mx-1 size-1.5 rounded-full bg-ds-action shadow-[0_0_0_3px_var(--c-action-tint)]"
-                            : "ml-1 size-1.5 rounded-full bg-ds-line"
-                        }
+                        aria-hidden="true"
+                        className="mr-1.5 inline-block size-1.5 rounded-full bg-ds-call-mint shadow-[0_0_0_3px_color-mix(in_srgb,var(--c-call-mint)_30%,transparent)]"
                       />
-                    );
-                  })}
-                </span>
-              </span>
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-ds-action text-ds-on-action shadow-[0_3px_0_var(--c-action-edge)]">
-                <DsIcon name="play" className="size-4" />
-              </span>
-            </button>
-          </section>
+                      Alphonso is ready
+                    </p>
+                    <div className="flex items-start justify-center gap-8">
+                      <button
+                        type="button"
+                        data-hero-call=""
+                        onClick={() => card.open("call")}
+                        aria-label={`Call Alphonso: ${card.title}`}
+                        className="grid justify-items-center gap-1 text-ds-on-hero"
+                      >
+                        <span className="grid size-[60px] place-items-center rounded-full bg-ds-action text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)]">
+                          <DsIcon name="mic" className="size-6" />
+                        </span>
+                        <span aria-hidden="true" className="ds-type-caption font-extrabold">
+                          Call
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        data-hero-chat=""
+                        onClick={() => card.open("chat")}
+                        aria-label={`Chat with Alphonso: ${card.title}`}
+                        className="grid justify-items-center gap-1 text-ds-on-hero"
+                      >
+                        <span className="grid size-[52px] place-items-center rounded-full bg-ds-on-hero/20">
+                          <BubbleGlyph className="size-5" />
+                        </span>
+                        <span aria-hidden="true" className="ds-type-caption font-extrabold">
+                          Chat
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {cards.length > 1 && (
+              <div role="group" aria-label="Choose a call" className="flex justify-center">
+                {cards.map((card, i) => (
+                  <button
+                    key={card.key}
+                    type="button"
+                    data-hero-dot={i}
+                    aria-label={`Show call ${i + 1} of ${cards.length}`}
+                    aria-current={active === i ? "true" : undefined}
+                    onClick={() => goTo(i)}
+                    className="grid h-6 min-w-6 place-items-center"
+                  >
+                    <i
+                      aria-hidden="true"
+                      className={`block h-1.5 rounded-full ${active === i ? "w-5 bg-ds-choice" : "w-1.5 bg-ds-line"}`}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        ) : error ? (
+          <div role="alert" data-hero-error="" className="grid justify-items-start gap-2">
+            <p className="ds-type-body text-ds-ink">Could not load Practice.</p>
+            <DsButton small variant="secondary" onClick={() => onRetry?.()}>
+              Try again
+            </DsButton>
+          </div>
+        ) : (
+          <div
+            data-hero-loading=""
+            aria-busy="true"
+            className="grid min-h-[340px] place-items-center rounded-[var(--ds-radius-sheet)] bg-ds-hero ds-type-caption font-semibold text-ds-on-hero-soft"
+          >
+            Loading Practice…
+          </div>
         )}
+      </section>
 
-        {/* Campaigns. */}
-        <section aria-labelledby="campaigns" className="mt-1 grid gap-3">
-          <div className="flex items-center justify-between">
-            <h2 id="campaigns" className="ds-type-headline font-extrabold text-ds-ink">
-              Campaigns
-            </h2>
-            <span className="ds-type-caption text-ds-choice">{campaigns.length} stories</span>
-          </div>
-          {campaigns.map((c, i) => {
-            const raw = CAMPAIGNS.find((x) => x.id === c.id)!;
+      {/* Conversations. */}
+      <section aria-labelledby="conversations" className="grid gap-2.5">
+        <h2 id="conversations" className="ds-type-title text-ds-ink">
+          Conversations
+        </h2>
+        <div
+          role="group"
+          aria-label="Level"
+          data-level-row=""
+          className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {(["All", ...LEVELS] as const).map((l) => (
+            <button
+              key={l}
+              type="button"
+              aria-pressed={level === l}
+              onClick={() => setLevel(l)}
+              className={`min-h-9 shrink-0 whitespace-nowrap rounded-full px-3 ds-type-caption font-extrabold ${level === l ? "bg-ds-choice-tint text-ds-ink" : "bg-ds-card text-ds-ink-soft"}`}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          {shownScenarios.map((s, i) => {
+            const n = stars("scenario", s.id);
             return (
-              <motion.button
-                {...enter(i + 1)}
-                key={c.id}
-                type="button"
-                data-campaign-card={c.id}
-                onClick={() => openScene(c.id, nextSceneIndex(c.id, rows))}
-                className="relative h-[156px] overflow-hidden rounded-[22px] bg-ds-hero bg-cover bg-center text-left text-ds-on-hero shadow-[var(--ds-shadow-floating)]"
-                style={{ backgroundImage: `url(${campaignCover(raw)})` }}
-              >
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0"
-                  style={{ background: CARD_SHADE }}
-                />
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 z-[2] rounded-[inherit] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--c-on-hero-kick)_50%,transparent)]"
-                />
-                <span className="absolute right-2.5 top-2.5 z-[1] rounded-[8px] bg-ds-card/95 px-2 py-0.5 ds-type-caption font-extrabold text-ds-brand">
-                  {c.level}
-                </span>
-                <span className="absolute inset-x-3 bottom-2.5 z-[1] grid gap-1">
-                  <span className="ds-type-overline text-ds-on-hero-kick">
-                    Campaign · {c.scenes.length} scenes
-                  </span>
-                  <span lang={course} className="ds-type-question-small">
-                    {c.title}
-                  </span>
-                  <span className="flex items-end gap-2">
-                    {c.scenes.map((s) => (
-                      <span key={s.id} className="grid justify-items-center gap-0.5">
-                        <i
-                          aria-hidden="true"
-                          className="block size-[30px] rounded-[9px] bg-cover bg-center shadow-[0_0_0_1.5px_var(--c-on-hero)]"
-                          style={{ backgroundImage: `url(${sceneRoom(c.id, s.id)})` }}
-                        />
-                        <PracticeStars n={stars("scene", sceneKey(c.id, s.id))} size="xs" onDark />
-                      </span>
-                    ))}
-                  </span>
-                </span>
-              </motion.button>
-            );
-          })}
-        </section>
-
-        {/* Hector: Pro's one feature, offered where the learner already practices speaking (hidden for Pro). */}
-        <HectorInvite source="practice_hector_card" look="hub" />
-
-        {/* Say the picture: a quick word-by-picture speaking drill. */}
-        <button
-          type="button"
-          data-say-the-picture-card=""
-          onClick={() => setSayPicture(true)}
-          className="flex items-center gap-3 rounded-[18px] border-2 border-b-4 border-ds-line bg-ds-card p-3 text-left"
-        >
-          <span
-            aria-hidden="true"
-            className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-ds-choice-tint text-ds-choice"
-          >
-            <DsIcon name="mic" className="size-6" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block ds-type-headline font-extrabold text-ds-ink">
-              Say the picture
-            </span>
-            <span className="block ds-type-caption font-semibold text-ds-ink-soft">
-              See a picture, say the word. 8 quick words.
-            </span>
-          </span>
-          <DsIcon name="chevron" className="size-5 shrink-0 text-ds-ink-soft" />
-        </button>
-
-        {/* Say it right: hear a learned word, say it, find out if you were clearly understood. */}
-        <button
-          type="button"
-          data-say-it-right-card=""
-          onClick={() => setSayItRight(true)}
-          className="flex items-center gap-3 rounded-[18px] border-2 border-b-4 border-ds-line bg-ds-card p-3 text-left"
-        >
-          <span
-            aria-hidden="true"
-            className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-ds-choice-tint text-ds-choice"
-          >
-            <DsIcon name="speaker" className="size-6" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block ds-type-headline font-extrabold text-ds-ink">Say it right</span>
-            <span className="block ds-type-caption font-semibold text-ds-ink-soft">
-              Hear a word you learned, say it back. 8 quick words.
-            </span>
-          </span>
-          <DsIcon name="chevron" className="size-5 shrink-0 text-ds-ink-soft" />
-        </button>
-
-        {/* Scenarios. */}
-        <section aria-labelledby="scenarios" className="mt-1 grid gap-3">
-          <div className="flex items-center justify-between">
-            <h2 id="scenarios" className="ds-type-headline font-extrabold text-ds-ink">
-              Scenarios
-            </h2>
-            {data && <StarTally earned={tally.earned} total={tally.total} />}
-          </div>
-          <div role="group" aria-label="Level" className="flex flex-wrap gap-1.5">
-            {(["All", ...LEVELS] as const).map((l) => (
-              <button
-                key={l}
-                type="button"
-                aria-pressed={level === l}
-                onClick={() => setLevel(l)}
-                className={`min-h-9 rounded-full border-2 px-3 ds-type-caption font-extrabold ${level === l ? "border-ds-brand bg-ds-brand text-ds-on-hero" : "border-ds-line bg-ds-card text-ds-ink-soft"}`}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            {shownScenarios.map((s, i) => (
               <motion.button
                 {...enter(i)}
                 key={s.id}
                 type="button"
                 data-scenario-tile={s.id}
                 onClick={() => openScenario(s.id)}
-                className="relative h-[140px] overflow-hidden rounded-[18px] bg-ds-hero bg-cover text-left shadow-[var(--ds-shadow-resting)]"
+                className="relative min-h-[144px] overflow-hidden rounded-[var(--ds-radius-control)] bg-ds-hero bg-cover text-left shadow-[var(--ds-shadow-resting)]"
                 style={{
                   backgroundImage: `url(${roomUrl(s.id)})`,
                   backgroundPosition: "center 30%",
@@ -422,27 +425,160 @@ export function PracticeHub({
                   aria-hidden="true"
                   className="absolute inset-0 z-[2] rounded-[inherit] shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--c-card)_55%,transparent)]"
                 />
-                <span
-                  className={`absolute left-2 top-2 z-[1] rounded-[6px] px-1.5 ds-type-caption font-extrabold ${s.level === "Advanced" ? "bg-ds-brand text-ds-on-hero-kick" : "bg-ds-card/95 text-ds-brand"}`}
-                >
-                  {s.level}
-                </span>
+                {n >= 3 && (
+                  <span
+                    data-mastered=""
+                    className="absolute right-2 top-2 z-[1] inline-flex items-center gap-0.5 rounded-full bg-ds-action py-0.5 pl-1.5 pr-2 ds-type-overline text-ds-on-action shadow-[0_2px_5px_-1px_rgba(176,122,18,.6)]"
+                  >
+                    <DsIcon name="check" className="size-3" />
+                    Mastered
+                  </span>
+                )}
                 <span className="absolute inset-x-2.5 bottom-2 z-[1] grid gap-0.5 text-ds-on-hero">
+                  <span data-tile-level="" className="ds-type-overline text-ds-on-hero-kick">
+                    {s.level}
+                  </span>
                   <span lang={course} className="ds-type-footnote font-extrabold leading-tight">
                     {s.title}
                   </span>
-                  <PracticeStars n={stars("scenario", s.id)} onDark />
+                  <PracticeStars n={n} onDark />
                 </span>
               </motion.button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Campaigns: a rail, each with its own room, how far in, and a dot per scene. */}
+      <section aria-labelledby="campaigns" className="grid gap-2.5">
+        <h2 id="campaigns" className="ds-type-title text-ds-ink">
+          Campaigns · {campaigns.length} stories
+        </h2>
+        <div
+          data-campaign-rail=""
+          className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {campaigns.map((c, i) => {
+            const progress = campaignProgress(c.id, rows);
+            const label = !data
+              ? ""
+              : progress.done === 0
+                ? "New"
+                : `${progress.done}/${progress.total}`;
+            return (
+              <motion.button
+                {...enter(i + 1)}
+                key={c.id}
+                type="button"
+                data-campaign-card={c.id}
+                aria-label={
+                  data
+                    ? `${c.title}, ${c.level}, ${progress.done} of ${progress.total} scenes done`
+                    : undefined
+                }
+                onClick={() => openScene(c.id, nextSceneIndex(c.id, rows))}
+                className="relative h-[144px] w-[160px] shrink-0 snap-start overflow-hidden rounded-[var(--ds-radius-control)] bg-ds-hero bg-cover bg-center text-left text-ds-on-hero shadow-[var(--ds-shadow-resting)]"
+                style={{ backgroundImage: `url(${sceneRoom(c.id, c.scenes[0].id)})` }}
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0"
+                  style={{ background: RAIL_SHADE }}
+                />
+                <span className="absolute inset-x-2.5 bottom-2 z-[1] grid gap-0.5">
+                  <span className="ds-type-overline text-ds-on-hero-kick">
+                    {c.level} · {c.scenes.length} scenes
+                  </span>
+                  <span lang={course} className="ds-type-footnote font-extrabold leading-tight">
+                    {c.title}
+                  </span>
+                  <span className="flex items-center gap-1.5" aria-hidden="true">
+                    <span className="flex gap-[3px]">
+                      {c.scenes.map((s, k) => (
+                        <i
+                          key={s.id}
+                          data-scene-dot={progress.scenes[k] ? "done" : "todo"}
+                          className={`block h-1 w-3 rounded-full ${progress.scenes[k] ? "bg-ds-action" : "bg-white/35"}`}
+                        />
+                      ))}
+                    </span>
+                    <span
+                      data-campaign-progress=""
+                      className="ds-type-overline text-ds-on-hero-soft"
+                    >
+                      {label}
+                    </span>
+                  </span>
+                </span>
+              </motion.button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Drills: two separate features, each with its own picture and a Start button. */}
+      <section aria-labelledby="quick-practice" className="grid gap-2.5">
+        <h2 id="quick-practice" className="ds-type-title text-ds-ink">
+          Quick practice
+        </h2>
+        <button
+          type="button"
+          data-say-the-picture-card=""
+          onClick={() => setSayPicture(true)}
+          className="flex items-stretch overflow-hidden rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card text-left"
+        >
+          <span
+            aria-hidden="true"
+            className="grid w-24 shrink-0 grid-cols-2 grid-rows-2 gap-1 bg-ds-choice-tint p-2"
+          >
+            {["hot_beverage", "airplane", "stethoscope", "spaghetti"].map((icon) => (
+              <span key={icon} className="grid place-items-center rounded-lg bg-ds-card shadow-sm">
+                <img src={`/icons3d/${icon}.png`} alt="" draggable={false} className="size-6" />
+              </span>
             ))}
-          </div>
-        </section>
-      </div>
+          </span>
+          <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-3">
+            <span className="ds-type-headline font-extrabold text-ds-ink">Say the picture</span>
+            <span className="ds-type-caption font-semibold text-ds-ink-soft">
+              See a picture and say the word. A miss shows you the word and how it sounds.
+            </span>
+            <span className="mt-1 inline-flex items-center self-start rounded-full bg-ds-choice px-3.5 py-1.5 ds-type-caption font-extrabold text-ds-on-choice">
+              Start
+            </span>
+          </span>
+        </button>
+        <button
+          type="button"
+          data-say-it-right-card=""
+          onClick={() => setSayItRight(true)}
+          className="flex items-stretch overflow-hidden rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card text-left"
+        >
+          <span
+            aria-hidden="true"
+            className="grid w-24 shrink-0 place-items-center bg-ds-right-tint text-ds-right-edge"
+          >
+            <WaveformGlyph className="size-9" />
+          </span>
+          <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-3">
+            <span className="ds-type-headline font-extrabold text-ds-ink">Say it right</span>
+            <span className="ds-type-caption font-semibold text-ds-ink-soft">
+              Hear a word you have learned, say it, and find out how clearly you were understood. A
+              miss teaches, it never punishes.
+            </span>
+            <span className="mt-1 inline-flex items-center self-start rounded-full bg-ds-choice px-3.5 py-1.5 ds-type-caption font-extrabold text-ds-on-choice">
+              Start
+            </span>
+          </span>
+        </button>
+      </section>
+
+      {/* Hector: Pro's one feature, quiet and last (hidden for Pro). */}
+      <HectorInvite source="practice_hector_card" look="hub" />
 
       {sheet && (
         <PreCallSheet
           target={sheet.target}
-          initialMode={initialMode}
+          initialMode={sheet.mode}
           onClose={() => setSheet(null)}
           onStart={(mode) => {
             const target = sheet.start(mode);

@@ -328,6 +328,113 @@ describe("POST /api/hector-respond", () => {
     expect(typeof body.audio_base64).toBe("string");
   });
 
+  describe("the correction card", () => {
+    const BLOCK = `<correction>{"slip":"I will like","fix":"I'd like","note":"Polite orders use I'd like."}</correction>`;
+    function mockReply(content: string) {
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 }),
+        )
+        .mockResolvedValueOnce(new Response(new Uint8Array([1, 2, 3]), { status: 200 })) as never;
+    }
+
+    it("asks the model for at most one correction, and keeps the safety preamble", async () => {
+      mockReply("Hello!");
+      await handler({ request: req({ text: "hi", language: "en" }) });
+      const sent = JSON.parse(
+        String((vi.mocked(globalThis.fetch).mock.calls[0][1] as RequestInit).body),
+      );
+      const system = sent.messages[0].content as string;
+      expect(system).toContain("CORRECTION CARD");
+      expect(system).toContain("At most one block");
+      expect(system).toContain("misspelling of a word the learner clearly knows");
+      expect(system).toContain("SHORTEST span of the learner's exact words");
+      expect(system).toContain(
+        "never explain the rule, point out the mistake, or quiz the learner",
+      );
+      expect(system).toContain(SAFETY_PREAMBLE.slice(0, 40));
+    });
+
+    it("returns the correction as its own field and never speaks or shows the tag", async () => {
+      mockReply(`Nice order! What size?
+${BLOCK}`);
+      const res = await handler({ request: req({ text: "I will like a coffee", language: "en" }) });
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Nice order! What size?");
+      expect(body.correction).toEqual({
+        slip: "I will",
+        fix: "I'd",
+        note: "Polite orders use I'd like.",
+      });
+      const spoken = JSON.parse(
+        String((vi.mocked(globalThis.fetch).mock.calls[1][1] as RequestInit).body),
+      );
+      expect(spoken.text).toBe("Nice order! What size?");
+    });
+
+    it("a reply that is only a correction block gets a short kind line, not a 502", async () => {
+      mockReply(BLOCK);
+      const res = await handler({ request: req({ text: "I will like a coffee", language: "en" }) });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Good try! Keep going, I'm listening.");
+      expect(body.correction).toEqual(expect.objectContaining({ fix: "I'd" }));
+    });
+
+    it("has no correction field on a clean turn", async () => {
+      mockReply("Great, tell me more.");
+      const body = (await (await handler({ request: req() })).json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Great, tell me more.");
+      expect("correction" in body).toBe(false);
+    });
+
+    it("drops a malformed or cut-off block silently and still answers", async () => {
+      mockReply(`Nice! What size?
+<correction>{"slip":"I will like","fi`);
+      const res = await handler({ request: req() });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Nice! What size?");
+      expect("correction" in body).toBe(false);
+    });
+
+    it("refines the card BEFORE the blocked-term filter, so the filter sees the final strings", async () => {
+      mockReply(`Oh no! What does she drink instead?
+<correction>{"slip":"She don't like coffee very much.","fix":"She doesn't like coffee very much.","note":"Use doesn't."}</correction>`);
+      blockedRpc.mockClear();
+      const body = (await (await handler({ request: req() })).json()) as Record<string, unknown>;
+      expect(body.correction).toEqual({ slip: "don't", fix: "doesn't", note: "Use doesn't." });
+      expect(blockedRpc.mock.calls[0][1]._texts).toEqual([
+        "Oh no! What does she drink instead?",
+        "don't",
+        "doesn't",
+        "Use doesn't.",
+      ]);
+    });
+
+    it("a Spanish dropped pronoun refines to nothing: no correction field, the reply still returns", async () => {
+      mockReply(`¡Qué bien! ¿Qué comiste?
+<correction>{"slip":"Ayer yo comí","fix":"Ayer comí","note":"Puedes omitir yo."}</correction>`);
+      blockedRpc.mockClear();
+      const res = await handler({ request: req({ text: "Ayer yo comí", course: "es" }) });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(body.reply).toBe("¡Qué bien! ¿Qué comiste?");
+      expect("correction" in body).toBe(false);
+      expect(blockedRpc.mock.calls[0][1]._texts).toEqual(["¡Qué bien! ¿Qué comiste?"]);
+    });
+
+    it("drops a correction whose words the output filter blocks, keeping the reply", async () => {
+      mockReply(`Nice order!
+${BLOCK}`);
+      blockedRpc.mockResolvedValueOnce({ data: [false, true, false, false], error: null });
+      const body = (await (await handler({ request: req() })).json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Nice order!");
+      expect("correction" in body).toBe(false);
+    });
+  });
+
   describe("stage timing (BACKLOG 0.0-z #3: slow replies must be attributable)", () => {
     function mockProviders() {
       globalThis.fetch = vi

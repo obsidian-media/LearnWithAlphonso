@@ -224,7 +224,10 @@ jobs:
           api-level: 34
           arch: x86_64
           target: google_apis
-          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          # swangle_indirect (ANGLE on SwiftShader Vulkan), not swiftshader_indirect: the older software GL renderer hung the
+          # whole emulator (adb: device offline) while drawing the Practice hub's call cards, on every run; swangle and guest
+          # rendering both ran the full suite green.
+          emulator-options: -no-snapshot -no-window -gpu swangle_indirect -noaudio -no-boot-anim
           disable-animations: true
           working-directory: android/LearnWithAlphonso
           script: ./gradlew connectedDebugAndroidTest

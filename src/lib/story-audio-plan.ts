@@ -88,3 +88,37 @@ export async function planStoryAudio(
     chars: toGenerate.reduce((n, g) => n + g.text.length, 0),
   };
 }
+
+/** How the script narrows its story query. Pure so the safety rules are unit-tested. */
+export type StoryFilterPlan = {
+  publishedOnly: boolean;
+  story?: string;
+  slugs?: string[];
+  course?: string;
+};
+
+/**
+ * Turns the CLI flags into a filter plan. Stories must be published unless --include-unpublished is given, and that
+ * flag is refused without --slugs or --story, so nobody narrates every draft by accident.
+ */
+export function planStoryFilter(flags: Record<string, string | true | undefined>): StoryFilterPlan {
+  const story = typeof flags.story === "string" ? flags.story : undefined;
+  const course = typeof flags.course === "string" ? flags.course : undefined;
+  const slugs =
+    typeof flags.slugs === "string"
+      ? flags.slugs
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : undefined;
+  if (typeof flags.slugs === "string" && !slugs?.length) {
+    throw new Error("--slugs needs at least one slug, e.g. --slugs a,b,c.");
+  }
+  const includeUnpublished = flags["include-unpublished"] === true;
+  if (includeUnpublished && !story && !slugs) {
+    throw new Error(
+      "--include-unpublished requires --slugs or --story, so a run never narrates every draft by accident.",
+    );
+  }
+  return { publishedOnly: !includeUnpublished, story, slugs, course };
+}

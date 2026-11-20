@@ -31,6 +31,47 @@ final class PracticeHubTests: XCTestCase {
         let closed = events + [PracticeWeaknessEvent(category: "prepositions", eventType: "resolved", createdAt: "2")]
         XCTAssertEqual(PracticeHub.today(.init(weaknessEvents: closed), scenarios: scenarios)?.scenarioID, "coffee")
     }
+    func testThePicksStartWithTodaysPickAndAreDistinctScenarios() {
+        let scenarios = [scenario("coffee"), scenario("airport"), scenario("smalltalk"), scenario("hotel")]
+        let events: [PracticeWeaknessEvent] = [.init(category: "articles", eventType: "detected", createdAt: "1")]
+        let data = PracticeHubData(weaknessEvents: events)
+        let picks = PracticeHub.picks(data, scenarios: scenarios)
+        XCTAssertEqual(picks.count, 3)
+        XCTAssertEqual(picks.first, PracticeHub.today(data, scenarios: scenarios))
+        XCTAssertEqual(Set(picks.map(\.scenarioID)).count, 3)
+        XCTAssertEqual(PracticeHub.picks(PracticeHubData(), scenarios: scenarios, limit: 2).count, 2)
+        XCTAssertEqual(PracticeHub.picks(PracticeHubData(), scenarios: [scenario("coffee")]).count, 1)
+    }
+    func testEachWeakSpotGetsItsOwnCardThenTheLevelFillsWithoutClaimingOne() {
+        let scenarios = [scenario("coffee"), scenario("airport"), scenario("smalltalk")]
+        let events: [PracticeWeaknessEvent] = [
+            .init(category: "articles", eventType: "detected", createdAt: "1"), .init(category: "articles", eventType: "detected", createdAt: "2"),
+            .init(category: "pronouns", eventType: "detected", createdAt: "3"), .init(category: "spelling", eventType: "detected", createdAt: "4"), .init(category: "spelling", eventType: "detected", createdAt: "5"), .init(category: "spelling", eventType: "detected", createdAt: "6")]
+        XCTAssertEqual(PracticeHub.picks(.init(weaknessEvents: events), scenarios: scenarios), [
+            PracticePick(scenarioID: "coffee", weakSpot: "articles"),
+            PracticePick(scenarioID: "airport", weakSpot: "pronouns"),
+            PracticePick(scenarioID: "smalltalk", weakSpot: nil)])
+    }
+    func testThePicksPreferUnplayedScenarios() {
+        let scenarios = [scenario("coffee"), scenario("airport"), scenario("smalltalk")]
+        let rows: [PracticeStarRow] = [.init(kind: "scenario", itemKey: "coffee", bestStars: 3, lastPlayedAt: "1")]
+        XCTAssertEqual(PracticeHub.picks(.init(stars: rows), scenarios: scenarios, limit: 2).map(\.scenarioID), ["airport", "smalltalk"])
+    }
+    func testACardsReasonNamesTheWeakSpotOrTheLevel() {
+        XCTAssertEqual(PracticeHub.reason(.init(scenarioID: "coffee", weakSpot: "past-tense"), level: "Beginner", first: true), "Makes you use the past tense, your top weak spot")
+        XCTAssertEqual(PracticeHub.reason(.init(scenarioID: "coffee", weakSpot: "past-tense"), level: "Beginner", first: false), "Makes you use the past tense")
+        XCTAssertEqual(PracticeHub.reason(.init(scenarioID: "coffee", weakSpot: nil), level: "Beginner", first: true), "Beginner scene at your level")
+    }
+    func testACampaignsProgressCountsScenesWithAStar() {
+        let c = campaign("new")
+        let none = PracticeHub.progress(c, rows: [])
+        XCTAssertEqual(none, PracticeCampaignProgress(done: 0, total: 3, scenes: [false, false, false]))
+        XCTAssertEqual(PracticeHub.progressLabel(none), "New")
+        let rows: [PracticeStarRow] = [.init(kind: "scene", itemKey: "new/a", bestStars: 1, lastPlayedAt: "1"), .init(kind: "scene", itemKey: "new/c", bestStars: 3, lastPlayedAt: "2"), .init(kind: "scene", itemKey: "new/b", bestStars: 0, lastPlayedAt: "3")]
+        let some = PracticeHub.progress(c, rows: rows)
+        XCTAssertEqual(some.scenes, [true, false, true])
+        XCTAssertEqual(PracticeHub.progressLabel(some), "2/3")
+    }
     func testStarsDisplayedAreServerAwardEvenWhenCountsAndBestSuggestThree() throws {
         let r = try JSONDecoder().decode(PracticeResult.self, from: Data(Self.resultJSON.utf8))
         XCTAssertEqual(r.displayedStars, 1)

@@ -110,6 +110,8 @@ data class PracticeResultButtons(val retry: PracticeResultButton?, val forward: 
 
 data class PracticePick(val scenarioId: String, val weakSpot: String?)
 
+data class PracticeCampaignProgress(val done: Int, val total: Int, val scenes: List<Boolean>)
+
 data class PracticeContinue(val campaignId: String, val sceneIndex: Int)
 
 object PracticeHub {
@@ -139,29 +141,50 @@ object PracticeHub {
 
     fun filtered(scenarios: List<Scenario>, level: String) = scenarios.filter { level == "All" || it.level == level }
 
-    fun today(data: PracticeHubData, scenarios: List<Scenario>): PracticePick? {
-
+    /**
+     * The scenarios the hub's call cards offer, best first (at most [limit]). Today's pick's rule, repeated: weak spots
+     * worst first (spelling skipped, it only exists in writing); each gives the least-starred scenario at the learner's
+     * level that practices it and is not already offered. The level's least-starred scenarios fill the rest and claim no
+     * weak spot. The first card is exactly [today].
+     */
+    fun picks(data: PracticeHubData, scenarios: List<Scenario>, limit: Int = HERO_CARDS): List<PracticePick> {
         val candidates = filtered(scenarios, level(data.cefrLevel))
-
-        fun least(list: List<Scenario>) = list.minByOrNull { stars(data.stars, "scenario", it.id) }
-
-        val groups = data.weaknessEvents.groupBy { it.category }
-
-        val weak = groups.entries.filter { (_, es) -> es.sumOf { if (it.eventType == "detected") 1 else -1 } > 0 }
-
+        val taken = mutableSetOf<String>()
+        fun least(list: List<Scenario>) = list.filter { it.id !in taken }.minByOrNull { stars(data.stars, "scenario", it.id) }
+        val weak = data.weaknessEvents.groupBy { it.category }.entries
+            .filter { (_, es) -> es.sumOf { if (it.eventType == "detected") 1 else -1 } > 0 }
             .sortedWith(compareByDescending<Map.Entry<String, List<PracticeWeaknessEvent>>> { it.value.sumOf { e -> if (e.eventType == "detected") 1 else -1 } }.thenByDescending { it.value.maxOf { e -> e.createdAt } })
-
+        val out = mutableListOf<PracticePick>()
         for ((w, _) in weak) {
-
+            if (out.size >= limit) break
             if (w == "spelling") continue
-
-            least(candidates.filter { w in focus[it.id].orEmpty() })?.let { return PracticePick(it.id, w) }
-
+            least(candidates.filter { w in focus[it.id].orEmpty() })?.let { taken += it.id; out += PracticePick(it.id, w) }
         }
-
-        return least(candidates)?.let { PracticePick(it.id, null) }
-
+        while (out.size < limit) {
+            val s = least(candidates) ?: break
+            taken += s.id
+            out += PracticePick(s.id, null)
+        }
+        return out
     }
+
+    fun today(data: PracticeHubData, scenarios: List<Scenario>): PracticePick? = picks(data, scenarios, 1).firstOrNull()
+
+    /** How many cards the carousel shows: where the learner left off (if anywhere), then picks, three in all. */
+    const val HERO_CARDS = 3
+
+    /** What a card says it is for: the weak spot it practices, or the learner's level. */
+    fun reason(pick: PracticePick, level: String, first: Boolean): String =
+        pick.weakSpot?.let { "Makes you use ${weakSpotName(it)}" + if (first) ", your top weak spot" else "" } ?: "$level scene at your level"
+
+    /** A campaign's progress for its rail card: scenes holding at least one star, out of all its scenes. */
+    fun progress(c: Campaign, rows: List<PracticeStarRow>): PracticeCampaignProgress {
+        val scenes = c.scenes.map { stars(rows, "scene", "${c.id}/${it.id}") > 0 }
+        return PracticeCampaignProgress(scenes.count { it }, scenes.size, scenes)
+    }
+
+    /** The label under a rail card: "New" before any scene has a star, else "done/total". */
+    fun progressLabel(p: PracticeCampaignProgress): String = if (p.done == 0) "New" else "${p.done}/${p.total}"
 
     fun nextScene(c: Campaign, rows: List<PracticeStarRow>): Int = c.scenes.indexOfFirst { stars(rows, "scene", "${c.id}/${it.id}") == 0 }.coerceAtLeast(0)
 

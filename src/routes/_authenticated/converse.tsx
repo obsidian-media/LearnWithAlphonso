@@ -61,6 +61,8 @@ function ConversePage() {
       <PracticeHub
         course={course}
         data={hub.data ?? null}
+        error={hub.isError && !hub.data}
+        onRetry={() => void hub.refetch()}
         initialMode={callByDefault ? "call" : "chat"}
         onStart={start}
       />

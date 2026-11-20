@@ -113,6 +113,11 @@ public struct PracticePick: Equatable, Sendable {
     public let scenarioID: String
     public let weakSpot: String?
 }
+public struct PracticeCampaignProgress: Equatable, Sendable {
+    public let done: Int
+    public let total: Int
+    public let scenes: [Bool]
+}
 public struct PracticeContinue: Equatable, Sendable {
     public let campaignID: String
     public let sceneIndex: Int
@@ -156,10 +161,15 @@ public enum PracticeHub {
     public static func filtered(_ scenarios: [Scenario], level: String) -> [Scenario] {
         scenarios.filter { level == "All" || $0.level == level }
     }
-    public static func today(_ data: PracticeHubData, scenarios: [Scenario]) -> PracticePick? {
+    /// The scenarios the hub's call cards offer, best first (at most `limit`). Today's pick's rule, repeated: weak spots
+    /// worst first (spelling skipped, it only exists in writing); each gives the least-starred scenario at the learner's
+    /// level that practices it and is not already offered. The level's least-starred scenarios fill the rest and claim
+    /// no weak spot. The first card is exactly `today`.
+    public static func picks(_ data: PracticeHubData, scenarios: [Scenario], limit: Int = 3) -> [PracticePick] {
         let candidates = filtered(scenarios, level: level(data.cefrLevel))
+        var taken: Set<String> = []
         func least(_ list: [Scenario]) -> Scenario? {
-            list.enumerated().min { a, b in
+            list.enumerated().filter { !taken.contains($0.element.id) }.min { a, b in
                 let x = stars(data.stars, kind: "scenario", key: a.element.id)
                 let y = stars(data.stars, kind: "scenario", key: b.element.id)
                 return x == y ? a.offset < b.offset : x < y
@@ -176,14 +186,39 @@ public enum PracticeHub {
             let a = counts[$0, default: 0], b = counts[$1, default: 0]
             return a == b ? last[$0, default: ""] > last[$1, default: ""] : a > b
         }
-        for w in weak {
+        var out: [PracticePick] = []
+        for w in weak where out.count < limit {
             if w == "spelling" { continue }
             if let s = least(candidates.filter { focus[$0.id, default: []].contains(w) }) {
-                return PracticePick(scenarioID: s.id, weakSpot: w)
+                taken.insert(s.id)
+                out.append(PracticePick(scenarioID: s.id, weakSpot: w))
             }
         }
-        return least(candidates).map { PracticePick(scenarioID: $0.id, weakSpot: nil) }
+        while out.count < limit, let s = least(candidates) {
+            taken.insert(s.id)
+            out.append(PracticePick(scenarioID: s.id, weakSpot: nil))
+        }
+        return out
     }
+    public static func today(_ data: PracticeHubData, scenarios: [Scenario]) -> PracticePick? {
+        picks(data, scenarios: scenarios, limit: 1).first
+    }
+    /// A campaign's progress for its rail card: scenes holding at least one star, out of all its scenes.
+    public static func progress(_ campaign: Campaign, rows: [PracticeStarRow]) -> PracticeCampaignProgress {
+        let scenes = campaign.scenes.map { stars(rows, kind: "scene", key: campaign.id + "/" + $0.id) > 0 }
+        return PracticeCampaignProgress(done: scenes.filter { $0 }.count, total: scenes.count, scenes: scenes)
+    }
+    /// What a card says it is for: the weak spot it practices, or the learner's level.
+    public static func reason(_ pick: PracticePick, level: String, first: Bool) -> String {
+        guard let weak = pick.weakSpot else { return "\(level) scene at your level" }
+        return "Makes you use \(weakSpotName(weak))" + (first ? ", your top weak spot" : "")
+    }
+    /// The label under a rail card: "New" before any scene has a star, else "done/total".
+    public static func progressLabel(_ progress: PracticeCampaignProgress) -> String {
+        progress.done == 0 ? "New" : "\(progress.done)/\(progress.total)"
+    }
+    /// How many cards the carousel shows: where the learner left off (if anywhere), then picks, three in all.
+    public static let heroCards = 3
     public static func start(_ campaign: Campaign, sceneIndex: Int) -> ConversationSnapshot {
         let index = min(max(0, sceneIndex), campaign.scenes.count - 1)
         var snapshot = ConversationSnapshot(turns: [.init(role: "assistant", content: campaign.scenes[index].opener)], openerIndices: [0])

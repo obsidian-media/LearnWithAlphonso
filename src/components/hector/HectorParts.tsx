@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
 import { DsIcon } from "@/components/ds/DsIcon";
 import { LEVEL_BARS, useMicLevel } from "@/lib/avatar/use-mic-level";
 import { COURSES, type Course } from "@/data/course-meta";
@@ -324,6 +324,7 @@ export function HectorComposer({
   disabled,
   reducedMotion,
   getStream,
+  inputRef,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -337,6 +338,8 @@ export function HectorComposer({
   disabled: boolean;
   reducedMotion: boolean;
   getStream: () => MediaStream | null;
+  /** The text field, so "Try again" can put the cursor there when there is no microphone. */
+  inputRef?: Ref<HTMLTextAreaElement>;
 }) {
   const typed = value.trim().length > 0;
   return (
@@ -358,6 +361,7 @@ export function HectorComposer({
       ) : (
         <div className="flex min-h-11 flex-1 items-end rounded-[22px] border-[1.5px] border-ds-line bg-ds-surface px-4 py-2.5">
           <textarea
+            ref={inputRef}
             aria-label="Message Hector"
             value={value}
             onChange={(e) => onChange(e.target.value)}

@@ -8,6 +8,7 @@
  */
 
 import { COURSES, isCourse, type Course } from "@/data/course-meta";
+import { correctionInstruction, type HectorCorrection } from "@/lib/hector-correction";
 
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 export type TutorHistoryMessage = { role: string; content: string };
@@ -83,7 +84,10 @@ export function buildHectorSystemPrompt(course: Course, cefr: string): string {
     `${levelLine} Speak only ${language}.${VARIETY[course] ?? ""} ` +
     "Hold a natural spoken conversation. Keep replies short enough to say aloud, a sentence or two, " +
     "and end with a question or prompt that keeps the learner talking. Gently correct mistakes by " +
-    `modelling the right form rather than lecturing. ${explanationLine}`
+    `modelling the right form rather than lecturing. ${explanationLine}
+
+` +
+    correctionInstruction(language)
   );
 }
 
@@ -136,6 +140,8 @@ export type TutorReplyPayload = {
   language: string;
   state: string;
   timings_ms: { llm: number; tts: number; total: number };
+  /** A gentle fix for the learner's last message, present only when there is one (the correction card). */
+  correction?: HectorCorrection;
 };
 
 export function shapeTutorReply(args: {
@@ -148,6 +154,7 @@ export function shapeTutorReply(args: {
   language: string;
   llmMs: number;
   ttsMs: number;
+  correction?: HectorCorrection | null;
 }): TutorReplyPayload {
   return {
     request_id: args.requestId,
@@ -164,5 +171,6 @@ export function shapeTutorReply(args: {
       tts: Math.round(args.ttsMs),
       total: Math.round(args.llmMs + args.ttsMs),
     },
+    ...(args.correction ? { correction: args.correction } : {}),
   };
 }

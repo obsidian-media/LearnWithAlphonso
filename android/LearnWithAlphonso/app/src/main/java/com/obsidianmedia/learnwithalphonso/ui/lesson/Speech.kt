@@ -20,6 +20,11 @@ class Speech(context: Context) {
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "alphonso-${text.hashCode()}")
     }
 
+    /** Whether the device has a voice for the course. Unknown (the engine is still starting) counts as yes, so a button is not hidden early. */
+    fun canSpeak(course: Course): Boolean = !ready || runCatching { tts.isLanguageAvailable(course.speechLocale) >= TextToSpeech.LANG_AVAILABLE }.getOrDefault(true)
+
+    fun stop() { if (ready) runCatching { tts.stop() } }
+
     /** True while a line is being spoken; the sound effects wait for it to finish. */
     val isSpeaking: Boolean get() = ready && runCatching { tts.isSpeaking }.getOrDefault(false)
 

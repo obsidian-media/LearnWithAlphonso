@@ -39,25 +39,18 @@ export function HectorInvite({
           data-hector-card=""
           onClick={() => setOpen(true)}
           aria-expanded={open}
-          className="flex w-full items-center gap-2.5 rounded-[20px] bg-ds-hero px-3 py-2.5 text-left text-ds-on-hero shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--c-action)_35%,transparent)]"
+          className="flex w-full items-center gap-2.5 rounded-[var(--ds-radius-control)] bg-ds-hero px-3 py-2.5 text-left text-ds-on-hero"
         >
-          <span
-            aria-hidden="true"
-            className="size-12 shrink-0 overflow-hidden rounded-full bg-ds-sunk shadow-[0_0_0_2px_var(--c-action)]"
-          >
-            <img
-              src="/firstrun/hector-happy.webp"
-              alt=""
-              draggable={false}
-              className="size-full origin-top scale-[1.75] object-cover object-top"
-            />
-          </span>
+          <img
+            src="/figures/hector-waving.webp"
+            alt=""
+            draggable={false}
+            className="h-[58px] w-auto shrink-0 select-none drop-shadow-[0_5px_8px_rgba(0,0,0,.35)]"
+          />
           <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-1.5 ds-type-headline font-extrabold">
+            <span className="block ds-type-headline font-extrabold">
               {copy.title}
-              <span className="rounded-[5px] bg-ds-action px-1.5 ds-type-overline text-ds-on-action">
-                Pro
-              </span>
+              {" · Pro"}
             </span>
             <span className="mt-0.5 block ds-type-caption font-semibold text-ds-on-hero-soft">
               {copy.subtitle}
