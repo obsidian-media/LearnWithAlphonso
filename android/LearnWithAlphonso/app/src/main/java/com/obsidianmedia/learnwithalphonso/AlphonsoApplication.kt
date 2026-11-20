@@ -17,6 +17,8 @@ class AlphonsoApplication : Application() {
         // Usage analytics start only if the learner already opted in (see Analytics).
         Analytics.init(this)
         Analytics.track(AnalyticsEvent.APP_OPEN)
+        // A voice clip left in the cache by a process killed mid-decode (Say it right) is removed at launch.
+        com.obsidianmedia.learnwithalphonso.audio.PronunciationClips.sweepLeftovers(this)
         NotificationChannels.ensure(this)
         container = AppContainer(this)
         container.session.onSignIn = { method ->
