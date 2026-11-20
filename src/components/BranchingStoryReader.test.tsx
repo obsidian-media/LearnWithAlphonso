@@ -268,4 +268,73 @@ describe("BranchingStoryReader", () => {
     expect(await screen.findByText("What does Sam do?")).toBeInTheDocument();
     expect(document.querySelector("[data-segment='0']")).toHaveTextContent("Sam wakes up late.");
   });
+
+  const lateResult = (): Promise<FinishBranchingResult> =>
+    Promise.resolve({
+      endingId: "late",
+      quality: "lesser",
+      endingsFound: ["late"],
+      endingsTotal: 3,
+      credited: false,
+    });
+
+  it("submits the path exactly once per ending reached, and again after Read it again", async () => {
+    const finish = vi.fn(lateResult);
+    render(<BranchingStoryReader story={story} finish={finish} />);
+    await userEvent.click(screen.getByRole("button", { name: "Make breakfast" }));
+    await waitFor(() => expect(finish).toHaveBeenCalledTimes(1));
+    await userEvent.click(screen.getByRole("button", { name: "See your ending" }));
+    expect(await screen.findByText("Your ending")).toBeInTheDocument();
+    // Opening the celebration is not a second submission.
+    expect(finish).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(screen.getByRole("button", { name: "Read it again" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Make breakfast" }));
+    await waitFor(() => expect(finish).toHaveBeenCalledTimes(2));
+    expect(finish).toHaveBeenLastCalledWith([1]);
+  });
+
+  it("shows a failed save on the ending scene with Retry, which sends the path again", async () => {
+    const finish = vi
+      .fn<(path: number[]) => Promise<FinishBranchingResult>>()
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockImplementation(lateResult);
+    render(<BranchingStoryReader story={story} finish={finish} />);
+    await userEvent.click(screen.getByRole("button", { name: "Make breakfast" }));
+    // Surfaced on the scene itself, before the learner ever opens the celebration.
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(/couldn.t save your path/);
+    await userEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(finish).toHaveBeenCalledTimes(2));
+    expect(finish).toHaveBeenLastCalledWith([1]);
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+    await userEvent.click(screen.getByRole("button", { name: "See your ending" }));
+    expect(await screen.findByLabelText("Endings found: 1 of 3")).toBeInTheDocument();
+  });
+
+  it("shows a saving state, not guessed stars or counts, until the server answers", async () => {
+    let answer: (r: FinishBranchingResult) => void = () => undefined;
+    const finish = vi.fn(
+      () =>
+        new Promise<FinishBranchingResult>((resolve) => {
+          answer = resolve;
+        }),
+    );
+    render(<BranchingStoryReader story={story} finish={finish} />);
+    await userEvent.click(screen.getByRole("button", { name: "Make breakfast" }));
+    await userEvent.click(screen.getByRole("button", { name: "See your ending" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("Saving your ending…");
+    expect(document.querySelector("[data-star]")).toBeNull();
+    expect(document.querySelector("[data-branch-map]")).toBeNull();
+    answer(await lateResult());
+    expect(await screen.findByLabelText("Endings found: 1 of 3")).toBeInTheDocument();
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it("moves focus to the new scene's heading after a choice", async () => {
+    render(<BranchingStoryReader story={story} finish={vi.fn(lateResult)} />);
+    await userEvent.click(screen.getByRole("button", { name: "Run to the bus" }));
+    const heading = await screen.findByRole("heading", { name: "Scene 2" });
+    await waitFor(() => expect(heading).toHaveFocus());
+  });
 });

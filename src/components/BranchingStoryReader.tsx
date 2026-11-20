@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
@@ -114,13 +114,24 @@ function BranchingBody({ story, finish, onFinished }: Props) {
   const [nodeId, setNodeId] = useState(graph.start);
   const [result, setResult] = useState<FinishBranchingResult | null>(null);
   const [failed, setFailed] = useState(false);
+  // Bumped by Retry so a failed save is sent again for the same ending.
+  const [attempt, setAttempt] = useState(0);
   const [celebrating, setCelebrating] = useState(false);
+
+  // After Continue or a choice the old buttons are gone; focus moves to the new scene's heading so a screen reader
+  // (and the keyboard) carries on from the new scene instead of falling back to the page body.
+  const sceneHeading = useRef<HTMLHeadingElement>(null);
+  const moved = useRef(false);
+  useEffect(() => {
+    if (!moved.current) return;
+    sceneHeading.current?.focus();
+  }, [nodeId]);
 
   const node = graph.map[nodeId];
   const kind = nodeKind(node);
   const endingsTotal = allEndings(graph).length;
 
-  // On reaching an ending, record the path once; the server decides the ending and the credit.
+  // On reaching an ending (or on Retry), record the path; the server decides the ending and the credit.
   useEffect(() => {
     if (kind !== "ending") return;
     let live = true;
@@ -138,9 +149,11 @@ function BranchingBody({ story, finish, onFinished }: Props) {
     return () => {
       live = false;
     };
-    // The path is fixed once an ending is shown; only entering an ending submits.
+    // The path is fixed once an ending is shown; only entering an ending (or Retry) submits.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeId]);
+  }, [nodeId, attempt]);
+
+  const retrySave = () => setAttempt((a) => a + 1);
 
   const restart = () => {
     setResult(null);
@@ -152,6 +165,7 @@ function BranchingBody({ story, finish, onFinished }: Props) {
   };
 
   const goTo = (id: string) => {
+    moved.current = true;
     setVisited((v) => [...v, id]);
     setNodeId(id);
   };
@@ -188,6 +202,7 @@ function BranchingBody({ story, finish, onFinished }: Props) {
             failed={failed}
             reduce={reduce}
             map={(found, current) => branchMap(graph, path, found, current)}
+            onRetrySave={retrySave}
             onRetry={restart}
           />
         </motion.div>
@@ -250,9 +265,14 @@ function BranchingBody({ story, finish, onFinished }: Props) {
           transition={{ duration: 0.28 }}
           className="mt-auto grid max-h-[68dvh] gap-3 overflow-y-auto px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4"
         >
-          <p className="ds-type-overline !tracking-[0.1em] text-ds-on-hero-kick">
+          <h2
+            ref={sceneHeading}
+            tabIndex={-1}
+            data-scene-heading=""
+            className="ds-type-overline !tracking-[0.1em] text-ds-on-hero-kick outline-none"
+          >
             Scene {visited.length}
-          </p>
+          </h2>
 
           {node && node.segments.length > 0 ? (
             <div className={PASSAGE_ON_DARK}>
@@ -274,6 +294,8 @@ function BranchingBody({ story, finish, onFinished }: Props) {
           ) : null}
 
           {kind === "link" ? <DsButton onClick={advance}>Continue</DsButton> : null}
+
+          {kind === "ending" && failed ? <SaveFailed onRetry={retrySave} onDark /> : null}
 
           {kind === "ending" ? (
             <DsButton onClick={() => setCelebrating(true)}>See your ending</DsButton>
@@ -325,6 +347,7 @@ function EndingScreen({
   failed,
   reduce,
   map,
+  onRetrySave,
   onRetry,
 }: {
   node: StoryNode;
@@ -335,6 +358,7 @@ function EndingScreen({
   failed: boolean;
   reduce: boolean;
   map: (found: string[], current: string) => BranchMap;
+  onRetrySave: () => void;
   onRetry: () => void;
 }) {
   const currentId = result?.endingId ?? ending.id;
@@ -346,6 +370,11 @@ function EndingScreen({
     : ending.quality === "good";
   const stars = storyStars({ endingsFound: found, endingsTotal: total, reachedGood });
   const treeMap = map(foundIds, currentId);
+  // Opening the celebration replaces the whole screen: start a screen reader on its title.
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, []);
 
   return (
     <div
@@ -375,34 +404,44 @@ function EndingScreen({
 
       <div className="relative -mt-[50px] grid justify-items-center gap-2 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-center">
         <p className="ds-type-overline !tracking-[0.12em] text-ds-action-text">Your ending</p>
-        <h1 className="ds-type-question !leading-[1.04] text-ds-ink">{ending.title}</h1>
-        <div role="img" aria-label={`${stars} of 3 stars`} className="flex gap-1">
-          {[0, 1, 2].map((i) => (
-            <motion.span
-              key={i}
-              data-star={i < stars ? "earned" : "empty"}
-              initial={reduce || i >= stars ? false : { scale: 0.4, rotate: -12, opacity: 0 }}
-              animate={{ scale: 1, rotate: 0, opacity: i < stars ? 1 : 0.3 }}
-              transition={{ duration: 0.5, delay: i * 0.12 }}
-              className="drop-shadow-[0_3px_4px_color-mix(in_srgb,var(--c-xp-edge)_45%,transparent)]"
-            >
-              <Icon name="star" size={30} />
-            </motion.span>
-          ))}
-        </div>
+        <h1
+          ref={titleRef}
+          tabIndex={-1}
+          className="ds-type-question !leading-[1.04] text-ds-ink outline-none"
+        >
+          {ending.title}
+        </h1>
+        {result ? (
+          <div role="img" aria-label={`${stars} of 3 stars`} className="flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                data-star={i < stars ? "earned" : "empty"}
+                initial={reduce || i >= stars ? false : { scale: 0.4, rotate: -12, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: i < stars ? 1 : 0.3 }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                className="drop-shadow-[0_3px_4px_color-mix(in_srgb,var(--c-xp-edge)_45%,transparent)]"
+              >
+                <Icon name="star" size={30} />
+              </motion.span>
+            ))}
+          </div>
+        ) : null}
         <p className="max-w-[30ch] ds-type-footnote !font-medium text-ds-ink">{ending.wrap}</p>
 
-        <BranchMapCard map={treeMap} />
+        {/* Stars and the map wait for the server's answer, so nothing guessed is shown first. */}
+        {result ? (
+          <BranchMapCard map={treeMap} />
+        ) : failed ? null : (
+          <p role="status" data-ending-saving="" className="ds-type-footnote text-ds-ink-soft">
+            Saving your ending…
+          </p>
+        )}
 
         {result?.credited ? (
           <DsPill tone="xp">This counts toward your reading practice</DsPill>
         ) : null}
-        {failed ? (
-          <p role="alert" className="ds-type-footnote text-ds-ink-soft">
-            We couldn&apos;t save your path. Check your connection — your reading still counts once
-            it saves.
-          </p>
-        ) : null}
+        {failed ? <SaveFailed onRetry={onRetrySave} /> : null}
 
         <div className="mt-1 flex w-full gap-2.5">
           <button
@@ -585,5 +624,20 @@ function MapNode({ n }: { n: BranchMap["nodes"][number] }) {
         {state === "locked" ? "Hidden ending" : clip(n.ending?.title ?? "")}
       </text>
     </g>
+  );
+}
+
+/** A save that failed, with a way to send it again (the reading only counts once the server has it). */
+function SaveFailed({ onRetry, onDark = false }: { onRetry: () => void; onDark?: boolean }) {
+  return (
+    <div role="alert" data-save-failed="" className="grid justify-items-center gap-2 text-center">
+      <p className={`ds-type-footnote ${onDark ? "text-ds-on-hero/85" : "text-ds-ink-soft"}`}>
+        We couldn&apos;t save your path. Check your connection and try again — your reading counts
+        once it saves.
+      </p>
+      <DsButton small variant="secondary" onClick={onRetry}>
+        Retry
+      </DsButton>
+    </div>
   );
 }
