@@ -44,7 +44,9 @@ import java.io.IOException
 class StoriesClient(private val http: SupabaseHttp) {
     internal companion object {
         const val STORY_COLUMNS = "id,course,level_id,slug,title,segments,sort_order,published,branching"
-        const val PROGRESS_COLUMNS = "story_id,segment_index,best_correct,check_total,completed_at"
+        const val PROGRESS_COLUMNS = "story_id,segment_index,best_correct,check_total,completed_at,endings_found"
+        /** The library also reads `nodes`, for each branching story's cover art and endings count. */
+        const val LIST_COLUMNS = "$STORY_COLUMNS,nodes"
         const val CHECK_FUNCTION = "complete-story-check"
         const val BRANCHING_FUNCTION = "finish-branching-story"
         const val BRANCHING_COLUMNS = "id,course,level_id,title,nodes,branching,published"
@@ -59,7 +61,7 @@ class StoriesClient(private val http: SupabaseHttp) {
         val storyRows = rows(
             http.rest(
                 HttpMethod.Get, "stories",
-                mapOf("select" to STORY_COLUMNS, "course" to "eq.$course", "published" to "eq.true", "order" to "sort_order.asc"),
+                mapOf("select" to LIST_COLUMNS, "course" to "eq.$course", "published" to "eq.true", "order" to "sort_order.asc"),
             ),
         )
         if (storyRows.isEmpty()) return emptyList()
@@ -76,6 +78,11 @@ class StoriesClient(private val http: SupabaseHttp) {
         return storyRows.mapNotNull { row ->
             val id = row.str("id") ?: return@mapNotNull null
             val saved = progress[id]
+            val isBranching = row.bool("branching") ?: false
+            val graph = if (isBranching) Branching.parseGraph(row["nodes"], http.baseUrl) else null
+            val endingIds = graph?.let { g -> Branching.allEndings(g).map { it.id }.toSet() }.orEmpty()
+            val savedEndings = (saved?.get("endings_found") as? JsonArray).orEmpty()
+                .mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content }.toSet()
             StorySummary(
                 id = id,
                 course = row.str("course") ?: course,
@@ -89,7 +96,10 @@ class StoriesClient(private val http: SupabaseHttp) {
                 bestCorrect = saved?.int("best_correct"),
                 checkTotal = saved?.int("check_total"),
                 completed = saved?.str("completed_at") != null,
-                branching = row.bool("branching") ?: false,
+                branching = isBranching,
+                coverUrl = graph?.map?.get(graph.start)?.artUrl,
+                endingsTotal = endingIds.size,
+                endingsFound = savedEndings.count { it in endingIds },
             )
         }
     }

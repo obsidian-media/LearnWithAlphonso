@@ -75,7 +75,16 @@ const lib = (over: Partial<PodcastLibrary> = {}): PodcastLibrary => ({
 describe("Listen library", () => {
   it("shows a designed empty state, and no continue card, when nothing is published", () => {
     render(<ListenLibraryView library={lib({ episodes: [] })} initialTab="listen" />);
-    expect(screen.getByText(/nothing here yet/i)).toBeInTheDocument();
+    // The iPhone copy (PodcastLibraryCopy) and its reading-book pose.
+    expect(screen.getByText("No English episodes yet")).toBeInTheDocument();
+    expect(
+      screen.getByText("New episodes appear here as they\u2019re published."),
+    ).toBeInTheDocument();
+    expect(
+      screen
+        .getByTestId("listen-library")
+        .querySelector('img[src="/figures/alphonso-reading-book.webp"]'),
+    ).not.toBeNull();
     expect(screen.queryByText("CONTINUE LISTENING")).not.toBeInTheDocument();
   });
 
@@ -295,6 +304,9 @@ describe("Library: the All, Listen, Watch and Stories tabs", () => {
     segmentCount: 5,
     bestCorrect: null,
     checkTotal: null,
+    coverUrl: null,
+    endingsTotal: 0,
+    endingsFound: 0,
     completed: false,
     ...over,
   });
@@ -437,5 +449,117 @@ describe("Library: the All, Listen, Watch and Stories tabs", () => {
     expect(retry).toHaveBeenCalled();
     rerender(<ListenLibraryView library={lib()} initialTab="stories" stories={stories} />);
     expect(screen.getAllByRole("link", { name: /Story \d/ })).toHaveLength(4);
+  });
+});
+
+describe("Library: the iPhone layout", () => {
+  const withEp = (over: Partial<PodcastLibrary> = {}) =>
+    lib({
+      progress: [{ episodeId: "e2", positionS: 230, completedAt: null, updatedAt: "2026-01-01" }],
+      ...over,
+    });
+  const before = (a: Element, b: Element) =>
+    Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+  it("the title comes first, then the course switch, then the tabs", () => {
+    render(<ListenLibraryView library={lib()} />);
+    const h1 = screen.getByRole("heading", { level: 1, name: "Library" });
+    const course = screen.getByRole("group", { name: "Course" });
+    const tabs = screen.getByRole("tablist");
+    expect(before(h1, course)).toBe(true);
+    expect(before(course, tabs)).toBe(true);
+  });
+
+  it("everything after the Continue card sits on one solid sheet panel; the Continue card is outside it", () => {
+    render(<ListenLibraryView library={withEp()} videos={[]} stories={[]} />);
+    const panel = screen.getByTestId("library-panel");
+    expect(panel.className).toContain("bg-ds-surface");
+    expect(panel.className).toContain("-mx-5");
+    expect(panel.className).toContain("rounded-[var(--ds-radius-sheet)]");
+    expect(panel.contains(screen.getByTestId("continue-card"))).toBe(false);
+    expect(screen.getAllByTestId("library-panel")).toHaveLength(1);
+  });
+
+  it("the tabs stay on one row and scroll sideways instead of wrapping", () => {
+    render(<ListenLibraryView library={lib()} />);
+    const tabs = screen.getByRole("tablist");
+    expect(tabs.className).toContain("flex-nowrap");
+    expect(tabs.className).toContain("overflow-x-auto");
+    expect(tabs.className).not.toContain("flex-wrap");
+    for (const tab of screen.getAllByRole("tab")) {
+      expect(tab.className).toContain("shrink-0");
+      expect(tab.className).toContain("whitespace-nowrap");
+    }
+  });
+
+  it("the Continue card uses the sheet radius, the action edge token and a centre-down fade", () => {
+    render(<ListenLibraryView library={withEp()} />);
+    const card = screen.getByTestId("continue-card");
+    expect(card.className).toContain("rounded-[var(--ds-radius-sheet)]");
+    expect(card.className).not.toContain("22px");
+    expect(card.innerHTML).toContain("var(--c-action-edge)");
+    expect(card.innerHTML).not.toMatch(/#[0-9a-f]{6}/i);
+    expect(card.innerHTML).toContain("from-50%");
+    expect(card.innerHTML).toContain("to-ds-hero/95");
+  });
+
+  it("Listen: the month chip has its own row above a scrolling level-chip row; rooms are 150 tall with the bubble radius", () => {
+    render(<ListenLibraryView library={lib({ monthSeconds: 12000 })} initialTab="listen" />);
+    const chip = screen.getByText(/this month/);
+    expect(chip.className).toContain("min-h-11");
+    expect(chip.className).toContain("bg-ds-card");
+    expect(chip.className).not.toContain("border");
+    const levels = screen.getByRole("group", { name: "Level" });
+    expect(levels.className).toContain("overflow-x-auto");
+    expect(levels.className).toContain("flex-nowrap");
+    expect(chip.parentElement).toBe(levels.parentElement);
+    expect(levels.contains(chip)).toBe(false);
+    expect(before(chip, levels)).toBe(true);
+    const all = within(levels).getByRole("button", { name: "All" });
+    expect(all).toHaveAttribute("aria-pressed", "true");
+    expect(all.className).toContain("whitespace-nowrap");
+    const room = screen.getByRole("link", { name: /Bookshop/ });
+    expect(room.className).toContain("min-h-[150px]");
+    expect(room.className).toContain("rounded-[var(--ds-radius-bubble)]");
+  });
+
+  it("Watch peek: no chevron on See all, no poster gradient, 104 wide with a 12 gap", () => {
+    const v: LibraryVideo = {
+      id: "v1",
+      slug: "en-1",
+      course: "en",
+      title: "Video 1",
+      description: null,
+      level: "A1",
+      durationSeconds: 49,
+      videoUrl: "https://x.test/a.mp4",
+      posterUrl: "https://x.test/p.jpg",
+      captionsUrl: "https://x.test/a.vtt",
+      tags: [],
+      practice: null,
+      sortOrder: 1,
+      progressSeconds: 0,
+      completedAt: null,
+    };
+    render(<ListenLibraryView library={lib()} videos={[v]} />);
+    expect(screen.getByRole("button", { name: "See all videos" }).textContent).toBe("See all");
+    const shelf = screen.getByTestId("watch-shelf");
+    expect(shelf.innerHTML).not.toContain("bg-gradient");
+    expect(shelf.querySelector("li")!.className).toContain("w-26");
+    expect(shelf.querySelector("ul")!.className).toContain("gap-3");
+  });
+
+  it("folder detail: 240 hero, a 110 wide mascot, the action tint on the in-progress number, the shared gold button", () => {
+    const l = withEp();
+    const shelf = buildShelves(l.folders, l.episodes, l.progress, "en")[0]!;
+    const { container } = render(<ListenShelfView library={l} shelf={shelf} />);
+    const hero = container.querySelector("[data-testid=listen-shelf] > div")!;
+    expect(hero.className).toContain("h-60");
+    expect(container.querySelector("img")!.className).toContain("w-[110px]");
+    const start = screen.getByRole("button", { name: /Continue Episode 2/ });
+    expect(start.className).toContain("shadow-[0_4px_0_var(--c-action-edge)]");
+    expect(start.className).not.toContain("rounded-2xl");
+    const row = screen.getByRole("button", { name: /Episode title 2,/ });
+    expect(row.querySelector("span")!.className).toContain("bg-ds-action-tint");
   });
 });

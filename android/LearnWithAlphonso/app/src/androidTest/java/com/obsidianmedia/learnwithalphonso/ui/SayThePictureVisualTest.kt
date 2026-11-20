@@ -36,7 +36,9 @@ class SayThePictureVisualTest {
     @get:Rule val rule = createComposeRule()
 
     private val url = "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/en/x.jpg"
-    private fun words(n: Int) = (0 until n).map { SayThePicture.PictureWord("word$it", VocabImageRef(url = url, alt = "alt$it", credit = "c")) }
+    // Letters only: a term with a digit is not savable, and the summary then (rightly) offers no review-deck link.
+    private val names = listOf("alfa", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel")
+    private fun words(n: Int) = (0 until n).map { SayThePicture.PictureWord(names[it], VocabImageRef(url = url, alt = "alt$it", credit = "c")) }
 
     private fun SemanticsNodeInteraction.assertHasSize(): SemanticsNodeInteraction {
         val size = fetchSemanticsNode().size
@@ -57,8 +59,10 @@ class SayThePictureVisualTest {
         rule.waitForIdle()
     }
 
+    // The pose and the recap cells sit under clearAndSetSemantics (decorative or read as one phrase for TalkBack), so
+    // they exist only in the unmerged tree; that is where the test looks for them.
     private fun awaitPose() {
-        rule.waitUntil(10_000) { rule.onAllNodesWithTag("stp-pose-image").fetchSemanticsNodes().isNotEmpty() }
+        rule.waitUntil(10_000) { rule.onAllNodesWithTag("stp-pose-image", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
     }
 
     @Test fun askShowsTheFullBleedPhotoTheMicRingAndTheExplainingPose() {
@@ -69,8 +73,8 @@ class SayThePictureVisualTest {
         assertEquals(screen.fetchSemanticsNode().size, hero.fetchSemanticsNode().size)
         rule.onNodeWithTag("stp-mic").assertIsDisplayed().assertHasSize()
         awaitPose()
-        rule.onNodeWithTag("stp-pose").assertIsDisplayed().assertHasSize()
-        rule.onNodeWithTag("stp-pose-image").assertIsDisplayed().assertHasSize()
+        rule.onNodeWithTag("stp-pose", useUnmergedTree = true).assertIsDisplayed().assertHasSize()
+        rule.onNodeWithTag("stp-pose-image", useUnmergedTree = true).assertIsDisplayed().assertHasSize()
         rule.onNodeWithTag("stp-stage").assertIsDisplayed().assertHasSize()
         rule.onNodeWithText("Show me the word").assertIsDisplayed()
         // The word is not given away while asking.
@@ -82,40 +86,40 @@ class SayThePictureVisualTest {
         assertEquals(SayPicturePhase.REVEAL, s.phase)
         show(s)
         rule.onNodeWithTag("stp-reveal").assertIsDisplayed().assertHasSize()
-        rule.onNodeWithText("word0").assertIsDisplayed()
+        rule.onNodeWithText("alfa").assertIsDisplayed()
         rule.onNodeWithText("Hear it").assertIsDisplayed()
         awaitPose()
-        rule.onNodeWithTag("stp-pose-image").assertHasSize()
+        rule.onNodeWithTag("stp-pose-image", useUnmergedTree = true).assertHasSize()
     }
 
     @Test fun aWinStampsTheWordAndShowsTheComboChip() {
-        val s = SayPictureSession(words(8)).submit("word0", Course.ENGLISH).first
+        val s = SayPictureSession(words(8)).submit("alfa", Course.ENGLISH).first
         assertEquals(SayPicturePhase.RIGHT, s.phase)
         show(s)
         rule.onNodeWithTag("stp-win").assertIsDisplayed().assertHasSize()
         rule.onNodeWithTag("stp-combo").assertIsDisplayed()
-        rule.onNodeWithText("word0").assertIsDisplayed()
+        rule.onNodeWithText("alfa").assertIsDisplayed()
         awaitPose()
-        rule.onNodeWithTag("stp-pose-image").assertHasSize()
+        rule.onNodeWithTag("stp-pose-image", useUnmergedTree = true).assertHasSize()
     }
 
     @Test fun theSummaryShowsTheRecapAndBothCrossLinks() {
         var s = SayPictureSession(words(4))
-        s = s.submit("word0", Course.ENGLISH).first.next()
+        s = s.submit("alfa", Course.ENGLISH).first.next()
         s = s.showWord().next()
-        s = s.submit("word2", Course.ENGLISH).first.next()
+        s = s.submit("charlie", Course.ENGLISH).first.next()
         s = s.showWord().next()
         assertEquals(SayPicturePhase.DONE, s.phase)
         var drilled: List<String>? = null
         var saved = false
         show(s, onSayItRight = { drilled = it.map { w -> w.term } }, onSave = { saved = true })
         rule.onNodeWithTag("stp-recap").assertIsDisplayed().assertHasSize()
-        assertEquals(2, rule.onAllNodesWithTag("stp-recap-first").fetchSemanticsNodes().size)
-        assertEquals(2, rule.onAllNodesWithTag("stp-recap-missed").fetchSemanticsNodes().size)
+        assertEquals(2, rule.onAllNodesWithTag("stp-recap-first", useUnmergedTree = true).fetchSemanticsNodes().size)
+        assertEquals(2, rule.onAllNodesWithTag("stp-recap-missed", useUnmergedTree = true).fetchSemanticsNodes().size)
         rule.onNodeWithText("Say it right the ones you missed").performScrollTo().performClick()
         rule.onNodeWithText("Add them to your review deck").performScrollTo().performClick()
         rule.runOnIdle {
-            assertEquals(listOf("word1", "word3"), drilled)
+            assertEquals(listOf("bravo", "delta"), drilled)
             assertTrue(saved)
         }
     }

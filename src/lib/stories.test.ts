@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  cardLabel,
   clampSegment,
+  endingsFraction,
+  endingsLine,
+  heroLine,
+  resumeLine,
+  storiesLibrary,
   groupByLevel,
   nextSegment,
   storyStatus,
@@ -21,6 +27,9 @@ const s = (over: Partial<StorySummary>): StorySummary => ({
   segmentCount: 5,
   bestCorrect: null,
   checkTotal: null,
+  coverUrl: null,
+  endingsTotal: 0,
+  endingsFound: 0,
   completed: false,
   ...over,
 });
@@ -89,5 +98,64 @@ describe("nextSegment / clampSegment", () => {
     expect(clampSegment(99, 5)).toBe(4);
     expect(clampSegment(-3, 5)).toBe(0);
     expect(clampSegment(2, 0)).toBe(0);
+  });
+});
+
+describe("storiesLibrary", () => {
+  const b = (id: string, sortOrder: number, over: Partial<StorySummary> = {}) =>
+    s({ id, sortOrder, branching: true, segmentCount: 0, endingsTotal: 4, ...over });
+
+  it("features the newest branching story and leaves it out of the grid", () => {
+    const lib = storiesLibrary(
+      [
+        b("old", 1),
+        b("new", 9),
+        s({ id: "lin", sortOrder: 20 }),
+        b("draft", 99, { published: false }),
+      ],
+      "en",
+    );
+    expect(lib.featured?.id).toBe("new");
+    expect(lib.grid.map((x) => x.id).sort()).toEqual(["lin", "old"]);
+  });
+  it("shows the resume story once: in the continue line, not also in the grid", () => {
+    const lib = storiesLibrary([s({ id: "a", segmentIndex: 2 }), s({ id: "b" })], "en");
+    expect(lib.resume?.id).toBe("a");
+    expect(lib.grid.map((x) => x.id)).toEqual(["b"]);
+  });
+  it("has no featured story without a branching one", () => {
+    expect(storiesLibrary([s({ id: "lin" })], "en").featured).toBeNull();
+  });
+  it("offers a started, unfinished linear story to resume, never a finished or unopened one", () => {
+    expect(storiesLibrary([s({ id: "a", segmentIndex: 2 })], "en").resume?.id).toBe("a");
+    expect(
+      storiesLibrary([s({ id: "a", segmentIndex: 2, completed: true })], "en").resume,
+    ).toBeNull();
+    expect(storiesLibrary([s({ id: "a" })], "en").resume).toBeNull();
+    expect(storiesLibrary([b("a", 1, { segmentIndex: 3 })], "en").resume).toBeNull();
+  });
+});
+
+describe("library labels", () => {
+  const br = s({
+    title: "The Key",
+    level: "A2",
+    branching: true,
+    endingsTotal: 4,
+    endingsFound: 1,
+  });
+  it("says endings found, never more than the total", () => {
+    expect(endingsLine(br)).toBe("1 of 4 endings");
+    expect(endingsLine({ endingsTotal: 2, endingsFound: 5 })).toBe("2 of 2 endings");
+    expect(endingsFraction({ endingsTotal: 4, endingsFound: 1 })).toBe(0.25);
+    expect(endingsFraction({ endingsTotal: 0, endingsFound: 0 })).toBe(0);
+  });
+  it("writes the hero line and the one full card label", () => {
+    expect(heroLine(br)).toBe("A2 · 4 endings · 1 found");
+    expect(cardLabel(br)).toBe("The Key, A2, Choose your path, 1 of 4 endings");
+    expect(cardLabel(s({ title: "Tea", level: "A1" }))).toBe("Tea, A1, New");
+  });
+  it("counts the resume scene from 1", () => {
+    expect(resumeLine(s({ segmentIndex: 2 }))).toBe("Continue · Scene 3");
   });
 });
