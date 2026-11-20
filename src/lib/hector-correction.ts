@@ -16,6 +16,7 @@
 export type HectorCorrection = { slip: string; fix: string; note?: string };
 
 const OPEN = "<correction>";
+const CLOSE = "</correction>";
 const BLOCK = /<correction>([\s\S]*?)<\/correction>/gi;
 /** Everything from an opening tag that never closed, to the end. */
 const UNTERMINATED = /<correction\b[\s\S]*$/i;
@@ -26,8 +27,10 @@ const NOTE_MAX = 300;
 /** The longest tail of `text` that is a proper prefix of "<correction>" (at least `min` characters), or 0. */
 function partialOpenLength(text: string, min: number): number {
   const lower = text.toLowerCase();
-  for (let n = Math.min(OPEN.length - 1, lower.length); n >= min; n--) {
-    if (OPEN.startsWith(lower.slice(lower.length - n))) return n;
+  for (const tag of [OPEN, CLOSE]) {
+    for (let n = Math.min(tag.length - 1, lower.length); n >= min; n--) {
+      if (tag.startsWith(lower.slice(lower.length - n))) return n;
+    }
   }
   return 0;
 }
@@ -55,7 +58,8 @@ function parseBlock(inner: string): HectorCorrection | null {
 }
 
 function strip(raw: string, minPartial: number): string {
-  const withoutBlocks = raw.replace(BLOCK, "");
+  // An orphan closing tag (one left by a "</correction>" inside a JSON string) goes too.
+  const withoutBlocks = raw.replace(BLOCK, "").replace(/<\/correction>/gi, "");
   const withoutOpen = withoutBlocks.replace(UNTERMINATED, "");
   const cut = partialOpenLength(withoutOpen, minPartial);
   return (cut > 0 ? withoutOpen.slice(0, withoutOpen.length - cut) : withoutOpen).trim();

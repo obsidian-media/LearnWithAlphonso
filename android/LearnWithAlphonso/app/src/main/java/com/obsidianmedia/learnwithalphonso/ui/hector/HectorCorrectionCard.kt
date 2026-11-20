@@ -54,6 +54,8 @@ internal fun HectorCorrectionCard(
     correction: HectorCorrection,
     canHear: Boolean,
     tryAgainEnabled: Boolean,
+    /** False while the mic is open (hands-free listening or a recording): the fix must not be spoken into it. */
+    hearEnabled: Boolean,
     onHear: () -> Unit,
     onTryAgain: () -> Unit,
     modifier: Modifier = Modifier,
@@ -88,7 +90,7 @@ internal fun HectorCorrectionCard(
         correction.note?.let { Text(it, style = CaptionType, color = ds.inkSoft, modifier = Modifier.testTag("hector-correction-note")) }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (canHear) {
-                CorrectionAction("Hear it: ${correction.fix}", "Hear it", "hector-hear-it", R.drawable.ds_play, ds.action, ds.onAction, true, onHear)
+                CorrectionAction("Hear it: ${correction.fix}", "Hear it", "hector-hear-it", R.drawable.ds_play, ds.action, ds.onAction, hearEnabled, onHear)
             }
             CorrectionAction("Try again: say it once more", "Try again", "hector-try-again", R.drawable.ds_mic, ds.sunk, ds.brand, tryAgainEnabled, onTryAgain)
         }

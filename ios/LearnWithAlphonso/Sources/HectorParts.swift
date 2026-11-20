@@ -342,6 +342,8 @@ struct HectorCorrectionCard: View {
     /// False when the device has no voice for the course: the card still shows the written fix.
     let canHear: Bool
     let tryAgainDisabled: Bool
+    /// The mic is open (hands-free listening or a recording): the fix must not be spoken into it.
+    let hearDisabled: Bool
     let onHear: () -> Void
     let onTryAgain: () -> Void
 
@@ -384,6 +386,8 @@ struct HectorCorrectionCard: View {
                             .background(ds.action, in: Capsule())
                     }
                     .buttonStyle(.plain)
+                    .disabled(hearDisabled)
+                    .opacity(hearDisabled ? 0.5 : 1)
                     .accessibilityLabel("Hear it: \(correction.fix)")
                     .accessibilityIdentifier("hectorHearIt")
                 }

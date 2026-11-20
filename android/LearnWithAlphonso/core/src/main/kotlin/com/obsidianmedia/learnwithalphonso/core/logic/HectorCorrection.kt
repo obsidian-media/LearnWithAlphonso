@@ -25,10 +25,13 @@ data class HectorCorrection(val slip: String, val fix: String, val note: String?
  */
 object HectorCorrections {
     private const val OPEN = "<correction>"
+    private const val CLOSE = "</correction>"
     private const val SLIP_MAX = 200
     private const val FIX_MAX = 200
     private const val NOTE_MAX = 300
     private val BLOCK = Regex("<correction>([\\s\\S]*?)</correction>", RegexOption.IGNORE_CASE)
+    /** An orphan closing tag, left when a "</correction>" sits inside a JSON string. */
+    private val ORPHAN_CLOSE = Regex("</correction>", RegexOption.IGNORE_CASE)
     private val UNTERMINATED = Regex("<correction\\b[\\s\\S]*$", RegexOption.IGNORE_CASE)
     private val json = Json
 
@@ -64,15 +67,17 @@ object HectorCorrections {
         runCatching { validate(json.parseToJsonElement(inner.trim())) }.getOrNull()
 
     private fun strip(raw: String, minPartial: Int): String {
-        val withoutOpen = UNTERMINATED.replace(BLOCK.replace(raw, ""), "")
+        val withoutOpen = UNTERMINATED.replace(ORPHAN_CLOSE.replace(BLOCK.replace(raw, ""), ""), "")
         val cut = partialOpenLength(withoutOpen, minPartial)
         return (if (cut > 0) withoutOpen.dropLast(cut) else withoutOpen).trim()
     }
 
     /** The longest tail of [text] that is a proper prefix of "<correction>" (at least [min] characters), or 0. */
     private fun partialOpenLength(text: String, min: Int): Int {
-        for (n in minOf(OPEN.length - 1, text.length) downTo min) {
-            if (OPEN.startsWith(text.takeLast(n).lowercase())) return n
+        for (tag in listOf(OPEN, CLOSE)) {
+            for (n in minOf(tag.length - 1, text.length) downTo min) {
+                if (tag.startsWith(text.takeLast(n).lowercase())) return n
+            }
         }
         return 0
     }

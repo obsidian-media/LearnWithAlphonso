@@ -179,6 +179,12 @@
         "fix": "estoy cansado",
         "note": "Con \"cansado\" usamos estar."
       }
+    },
+    {
+      "name": "an orphan closing tag left by one inside a JSON string is stripped",
+      "raw": "Nice!\n<correction>{\"slip\":\"a</correction>b\",\"fix\":\"c\"}</correction>",
+      "text": "Nice!\nb\",\"fix\":\"c\"}",
+      "correction": null
     }
   ],
   "streams": [

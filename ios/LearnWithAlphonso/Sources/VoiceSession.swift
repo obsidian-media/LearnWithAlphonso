@@ -156,6 +156,16 @@ final class VoiceSessionController {
     /// turn already moved on (the reply is playing, or a newer turn began).
     func turnFinished(_ generation: Int) { send(.turnFinished(generation: generation)) }
 
+    /// Stops Hector's reply audio now, so a correction's "Hear it" is the only voice (one voice at a time). The turn
+    /// moves on as if the reply had finished.
+    func stopReplyPlayback() {
+        guard case let .speaking(generation) = state.phase else { return }
+        player?.stop()
+        player = nil
+        playbackDelegate = nil
+        send(.playbackFinished(generation: generation))
+    }
+
     /// Claims the session for the scene's opening line (OpenerPlayback.speak). Returns the generation to play it
     /// under with `play(_:generation:)`, or nil when a recording or turn is in progress or the screen is hidden.
     func beginOpener() -> Int? {

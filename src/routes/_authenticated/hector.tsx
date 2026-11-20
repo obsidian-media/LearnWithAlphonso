@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { track } from "../../lib/analytics";
 import { RouteError } from "../../components/RouteError";
 import { DsIcon } from "../../components/ds/DsIcon";
+import { cancelSpeech } from "@/lib/speech";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
@@ -359,6 +360,9 @@ function HectorConversation({
     };
   }, [course, greet]);
 
+  // Leaving the screen stops the fix being spoken.
+  useEffect(() => () => cancelSpeech(), []);
+
   const send = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
@@ -486,6 +490,8 @@ function HectorConversation({
   const composerInput = useRef<HTMLTextAreaElement | null>(null);
   const tryAgain = useCallback(() => {
     setError(null);
+    // The mic must not record the fix being spoken, nor Hector.
+    cancelSpeech();
     interrupt();
     if (handsFreeWanted && showCall) return;
     const canRecord =
@@ -540,6 +546,8 @@ function HectorConversation({
                   course={course}
                   onTryAgain={tryAgain}
                   tryAgainDisabled={sending || transcribing || greetingLoading || recording}
+                  hearDisabled={recording}
+                  onBeforeHear={interrupt}
                 />
               )}
             </Fragment>

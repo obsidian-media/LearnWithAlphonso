@@ -379,10 +379,11 @@ fun HectorTab(container: AppContainer) {
 
 /** Hector's bubbles, the greeting's suggestion chips and the "tap a word" hint: the middle of the classic screen, and the body of the call's sheet. */
 @Composable
-private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modifier: Modifier, focusComposer: () -> Unit = {}) {
+private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modifier: Modifier, focusComposer: () -> Unit = {}, stopReply: () -> Unit = {}) {
     val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
     val corrections by vm.corrections.collectAsState()
+    val handsFreeStatus by vm.handsFree.status.collectAsState()
     val state by vm.state.collectAsState()
     val chips by vm.chips.collectAsState()
     val enginePhase by vm.engine.phase.collectAsState()
@@ -422,7 +423,9 @@ private fun HectorTranscript(container: AppContainer, vm: HectorViewModel, modif
                         HectorCorrectionCard(
                             correction, canHear = remember(vm.course) { Speech.get(context).canSpeak(vm.course) },
                             tryAgainEnabled = enginePhase != TurnPhase.RECORDING && HectorViewModel.canSend(state, enginePhase),
-                            onHear = { Speech.get(context).speak(correction.fix, vm.course) },
+                            // One voice at a time: Hector's own reply stops first, and the open mic is never spoken into.
+                            hearEnabled = enginePhase != TurnPhase.RECORDING && handsFreeStatus != HandsFreeLoop.Status.Listening && handsFreeStatus != HandsFreeLoop.Status.Hearing,
+                            onHear = { stopReply(); Speech.get(context).speak(correction.fix, vm.course) },
                             onTryAgain = { Speech.get(context).stop(); vm.tryAgain(focusComposer) },
                         )
                     }
@@ -453,7 +456,7 @@ private fun HectorConversation(container: AppContainer) {
     val showCall = remember { container.prefs.getBoolean(AvatarPreference.KEY, AvatarPreference.DEFAULT) }
     // Hanging up stops the session; "Call again" starts it again. Hector is a tab, so there is no screen to leave.
     var callEnded by rememberSaveable { mutableStateOf(false) }
-    DisposableEffect(Unit) { onDispose { vm.onLeave() } }
+    DisposableEffect(Unit) { onDispose { Speech.get(context).stop(); vm.onLeave() } }
 
     AiConsentGate(container) {
       // Hector speaks first: his greeting, inside the gate so nothing is fetched before consent; again on each
@@ -474,7 +477,7 @@ private fun HectorConversation(container: AppContainer) {
                     onEnd = { vm.hangUp(); playback.stop(); callEnded = true },
                     talkLabel = "Hold to talk to Hector",
                     statusHost = { AiReportStatusHost(container.aiReports) },
-                    transcript = { HectorTranscript(container, vm, Modifier) },
+                    transcript = { HectorTranscript(container, vm, Modifier, stopReply = { playback.stop() }) },
                 )
             }
             return@SaveWordHost
@@ -498,7 +501,7 @@ private fun HectorConversation(container: AppContainer) {
                 menu = { dismiss -> HandsFreeSwitch(vm, "Hector", onNeedNote = { dismiss(); showNote = true }) },
             )
             if (showNote) HandsFreeNoteDialog(vm, "Hector") { showNote = false }
-            HectorTranscript(container, vm, Modifier.weight(1f), focusComposer = { composerFocus.requestFocus() })
+            HectorTranscript(container, vm, Modifier.weight(1f), focusComposer = { composerFocus.requestFocus() }, stopReply = { playback.stop() })
             state.error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) }
             // Hands-free can be on from the stored choice with the switch still in the menu: the mic is never live unseen.
             if (handsFreeStatus != HandsFreeLoop.Status.Off) HectorHandsFreeBar(handsFreeStatus, onToggle = vm.handsFree::togglePause)

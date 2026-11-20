@@ -368,6 +368,15 @@ ${BLOCK}`);
       expect(spoken.text).toBe("Nice order! What size?");
     });
 
+    it("a reply that is only a correction block gets a short kind line, not a 502", async () => {
+      mockReply(BLOCK);
+      const res = await handler({ request: req({ text: "I will like a coffee", language: "en" }) });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Good try! Keep going, I'm listening.");
+      expect(body.correction).toEqual(expect.objectContaining({ fix: "I'd like" }));
+    });
+
     it("has no correction field on a clean turn", async () => {
       mockReply("Great, tell me more.");
       const body = (await (await handler({ request: req() })).json()) as Record<string, unknown>;

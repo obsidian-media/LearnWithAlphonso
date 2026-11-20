@@ -46,3 +46,8 @@ export function hasVoiceFor(lang: string): boolean {
   const primary = lang.toLowerCase().split("-")[0];
   return voices.some((v) => v.lang.toLowerCase().split(/[-_]/)[0] === primary);
 }
+
+/** Stops any device speech now (the correction card's fix, or any other line). */
+export function cancelSpeech(): void {
+  if (canSpeak()) window.speechSynthesis.cancel();
+}

@@ -134,6 +134,7 @@ private struct HectorConversationView: View {
         }
         .task(id: course) { await loadLearnerContext() }
         .onDisappear {
+            HectorFixSpeaker.shared.stop()
             recordingCap?.cancel()
             voice.disappeared()
             voice.onCapture = nil
@@ -282,7 +283,11 @@ private struct HectorConversationView: View {
             correction: correction,
             canHear: HectorFixSpeaker.canSpeak(course),
             tryAgainDisabled: voice.isBusy || voice.isRecording,
-            onHear: { HectorFixSpeaker.shared.speak(correction.fix, course: course) },
+            hearDisabled: voice.isRecording || voice.handsFreeStatus == .listening || voice.handsFreeStatus == .hearing,
+            onHear: {
+                voice.stopReplyPlayback()
+                HectorFixSpeaker.shared.speak(correction.fix, course: course)
+            },
             onTryAgain: { tryAgain() })
     }
 

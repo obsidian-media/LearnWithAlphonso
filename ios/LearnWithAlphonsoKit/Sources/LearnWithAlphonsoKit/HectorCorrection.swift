@@ -101,7 +101,8 @@ public enum HectorCorrections {
             result += rest[..<o.lowerBound]
             rest = String(rest[c.upperBound...])
         }
-        return result + rest
+        // An orphan closing tag (one left by a "</correction>" inside a JSON string) goes too.
+        return (result + rest).replacingOccurrences(of: close, with: "", options: .caseInsensitive)
     }
 
     private static func isWordCharacter(_ ch: Character) -> Bool {
@@ -121,12 +122,14 @@ public enum HectorCorrections {
         return text
     }
 
-    /// A trailing fragment of "<correction>" (a proper prefix, at least `minimum` characters).
+    /// A trailing fragment of "<correction>" or "</correction>" (a proper prefix, at least `minimum` characters).
     private static func removePartialOpen(_ text: String, minimum: Int) -> String {
-        let maxLen = min(open.count - 1, text.count)
-        guard maxLen >= minimum else { return text }
-        for n in stride(from: maxLen, through: minimum, by: -1) {
-            if open.hasPrefix(text.suffix(n).lowercased()) { return String(text.dropLast(n)) }
+        for tag in [open, close] {
+            let maxLen = min(tag.count - 1, text.count)
+            guard maxLen >= minimum else { continue }
+            for n in stride(from: maxLen, through: minimum, by: -1) {
+                if tag.hasPrefix(text.suffix(n).lowercased()) { return String(text.dropLast(n)) }
+            }
         }
         return text
     }

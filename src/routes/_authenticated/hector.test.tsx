@@ -74,7 +74,10 @@ class FakeAudio {
   play = vi.fn().mockResolvedValue(undefined);
   pause = vi.fn();
   onended: (() => void) | null = null;
-  constructor(public src: string) {}
+  static instances: FakeAudio[] = [];
+  constructor(public src: string) {
+    FakeAudio.instances.push(this);
+  }
 }
 
 beforeEach(() => {
@@ -707,6 +710,7 @@ describe("web Hector hands-free", () => {
 describe("web Hector correction card", () => {
   const getUserMedia = vi.fn();
   const recorders: { state: string }[] = [];
+  const cancel = vi.fn();
   const speakCalls: { text: string; lang: string }[] = [];
   const voices: { lang: string }[] = [{ lang: "fr-FR" }];
   const FIX = "Je suis fatigué";
@@ -715,6 +719,8 @@ describe("web Hector correction card", () => {
     installFakeAudioContext();
     recorders.length = 0;
     speakCalls.length = 0;
+    cancel.mockClear();
+    FakeAudio.instances.length = 0;
     voices.splice(0, voices.length, { lang: "fr-FR" });
     getUserMedia.mockReset();
     getUserMedia.mockResolvedValue({ getTracks: () => [{ stop: vi.fn() }] });
@@ -751,7 +757,7 @@ describe("web Hector correction card", () => {
       },
     );
     vi.stubGlobal("speechSynthesis", {
-      cancel: vi.fn(),
+      cancel,
       getVoices: () => voices,
       speak: (u: { text: string; lang: string }) => speakCalls.push({ text: u.text, lang: u.lang }),
       addEventListener: vi.fn(),
@@ -858,5 +864,47 @@ describe("web Hector correction card", () => {
     await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
     await userEvent.click(await screen.findByRole("button", { name: /Try again/ }));
     expect(screen.getByRole("textbox", { name: "Message Hector" })).toHaveFocus();
+  });
+  it("Hear it first stops Hector's own reply audio, and is disabled while the mic is open", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction, audio_base64: btoa("mp3") });
+    await waitFor(() => expect(FakeAudio.instances.length).toBeGreaterThan(0));
+    const reply = FakeAudio.instances[FakeAudio.instances.length - 1]!;
+    reply.pause.mockClear();
+    await userEvent.click(await screen.findByRole("button", { name: /Hear it/ }));
+    expect(reply.pause).toHaveBeenCalled();
+    expect(speakCalls).toHaveLength(1);
+  });
+
+  it("Try again cancels the device speech before the mic opens, and Hear it is then disabled", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    cancel.mockClear();
+    await userEvent.click(await screen.findByRole("button", { name: /Try again/ }));
+    expect(cancel).toHaveBeenCalled();
+    await waitFor(() => expect(recorders.some((r) => r.state === "recording")).toBe(true));
+    expect(await screen.findByRole("button", { name: /Hear it/ })).toBeDisabled();
+  });
+
+  it("leaving the screen cancels the fix being spoken", async () => {
+    const view = await (async () => {
+      routes["/api/hector-respond"] = status(
+        shapeTutorReply({
+          requestId: "r",
+          sessionId: "s",
+          agent: "tutor",
+          reply: "Bonjour ! Pourquoi ?",
+          audioBase64: "",
+          ttsModel: "m",
+          language: "fr",
+          llmMs: 1,
+          ttsMs: 1,
+          correction,
+        }),
+      );
+      return renderPage();
+    })();
+    await screen.findByRole("textbox", { name: "Message Hector" });
+    cancel.mockClear();
+    view.unmount();
+    expect(cancel).toHaveBeenCalled();
   });
 });

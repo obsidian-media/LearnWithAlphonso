@@ -32,11 +32,17 @@ export function CorrectionCard({
   course,
   onTryAgain,
   tryAgainDisabled = false,
+  hearDisabled = false,
+  onBeforeHear,
 }: {
   correction: HectorCorrection;
   course: Course;
   onTryAgain: () => void;
   tryAgainDisabled?: boolean;
+  /** The mic is open (hands-free listening or a recording): the fix must not be spoken into it. */
+  hearDisabled?: boolean;
+  /** Called first, so Hector's own reply stops before the fix is spoken (one voice at a time). */
+  onBeforeHear?: () => void;
 }) {
   const lang = localeForCourse(course);
   const canHear = useDeviceVoice(lang);
@@ -66,7 +72,11 @@ export function CorrectionCard({
           <button
             type="button"
             aria-label={`Hear it: ${correction.fix}`}
-            onClick={() => speak(correction.fix, lang)}
+            disabled={hearDisabled}
+            onClick={() => {
+              onBeforeHear?.();
+              speak(correction.fix, lang);
+            }}
             className={`${MINI} bg-ds-action text-ds-on-action shadow-[inset_0_-2px_0_var(--c-action-edge)]`}
           >
             <DsIcon name="play" className="size-3.5" />

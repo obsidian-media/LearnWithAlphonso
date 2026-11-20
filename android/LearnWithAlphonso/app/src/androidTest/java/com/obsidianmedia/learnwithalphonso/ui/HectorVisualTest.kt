@@ -178,11 +178,12 @@ class HectorVisualTest {
         var heard = 0
         var again = 0
         var canHear by mutableStateOf(true)
+        var hearEnabled by mutableStateOf(true)
         val correction = HectorCorrection("I will like", "I'd like", "We use I'd like to order politely.")
         rule.setContent {
             AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
                 LazyColumn(Modifier.fillMaxSize().testTag("scroll")) {
-                    items(listOf(0)) { HectorCorrectionCard(correction, canHear, true, { heard++ }, { again++ }) }
+                    items(listOf(0)) { HectorCorrectionCard(correction, canHear, true, hearEnabled, { heard++ }, { again++ }) }
                 }
             }
         }
@@ -200,6 +201,10 @@ class HectorVisualTest {
         rule.onNodeWithTag("hector-hear-it").assertHasClickAction().assertContentDescriptionEquals("Hear it: I'd like").performClick()
         rule.onNodeWithTag("hector-try-again").assertHasClickAction().assertContentDescriptionEquals("Try again: say it once more").performClick()
         rule.runOnIdle { assertEquals(1, heard); assertEquals(1, again) }
+        // The mic is open (hands-free listening): Hear it cannot be tapped, Try again still can.
+        rule.runOnIdle { hearEnabled = false }
+        rule.onNodeWithTag("hector-hear-it").assertIsNotEnabled()
+        rule.runOnIdle { hearEnabled = true }
         // No device voice for the course: Hear it is left out, the written fix and Try again stay.
         rule.runOnIdle { canHear = false }
         rule.onNodeWithTag("hector-hear-it").assertDoesNotExist()

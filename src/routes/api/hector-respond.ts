@@ -34,6 +34,13 @@ async function boundedAudio(response: Response, maxBytes: number): Promise<Buffe
   }
 }
 
+/** Said when the model sent a correction and nothing else. */
+const CORRECTION_ONLY_REPLY = {
+  en: "Good try! Keep going, I'm listening.",
+  fr: "Bien essayé ! Continue, je t'écoute.",
+  es: "¡Buen intento! Sigue, te escucho.",
+} as const;
+
 async function handleTurn(request: Request, timer: StageTimer): Promise<Response> {
   const llmKey = resolveLlmApiKey();
   const deepgramKey = process.env.DEEPGRAM_API_KEY;
@@ -164,7 +171,10 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   if (!llm.ok) return llm.failure;
   // The correction block is the model's, not the learner's: it is taken out BEFORE the length check, the output filter
   // and the speech, so the learner never hears or reads the tag.
-  const { text: reply, correction: rawCorrection } = extractCorrection(llm.reply);
+  const extracted = extractCorrection(llm.reply);
+  const rawCorrection = extracted.correction;
+  // A reply that was only the block still gets a short, kind line (the card shows the fix), never an error.
+  const reply = extracted.text || (llm.reply.trim() ? CORRECTION_ONLY_REPLY[course] : "");
   const llmMs = performance.now() - llmStart;
   if (!reply) {
     return noStoreJson({ error: "empty reply from model" }, { status: 502 });
