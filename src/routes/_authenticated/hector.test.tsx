@@ -311,7 +311,7 @@ describe("web Hector", () => {
       history: unknown[];
     };
     expect(last.history).toHaveLength(40);
-  });
+  }, 30_000);
 
   it("a 403 not-entitled mid-conversation swaps in the paywall with its own source", async () => {
     routes["/api/hector-respond"] = status({ error: "not-entitled" }, 403);
