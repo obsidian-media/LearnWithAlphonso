@@ -33,3 +33,16 @@ export function speak(text: string, lang: string, rate = 1): void {
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(utterance);
 }
+
+/**
+ * Whether the device has a voice for `lang` ("fr-FR"): the same primary language is enough. The browser may not have
+ * loaded its voices yet (an empty list, then a `voiceschanged` event); that reads as "maybe", so a button is not
+ * hidden before the answer is known. False only when speech is missing or the loaded voices have none for the language.
+ */
+export function hasVoiceFor(lang: string): boolean {
+  if (!canSpeak()) return false;
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) return true;
+  const primary = lang.toLowerCase().split("-")[0];
+  return voices.some((v) => v.lang.toLowerCase().split(/[-_]/)[0] === primary);
+}

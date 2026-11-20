@@ -1,0 +1,268 @@
+{
+  "_comment": "Hector correction card: reference outputs replayed by the TypeScript, Swift and Kotlin tests. extract = a finished assistant reply -> shown text + correction (null when none/invalid). streams = visible text after each cumulative chunk (never a half tag) and the final text. learner = text a learner typed: shown exactly as typed, never parsed.",
+  "extract": [
+    {
+      "name": "valid block with a note",
+      "raw": "Nice order! What size?\n<correction>{\"slip\":\"I will like\",\"fix\":\"I'd like\",\"note\":\"We use I'd like to order politely.\"}</correction>",
+      "text": "Nice order! What size?",
+      "correction": {
+        "slip": "I will like",
+        "fix": "I'd like",
+        "note": "We use I'd like to order politely."
+      }
+    },
+    {
+      "name": "valid block without a note",
+      "raw": "Good try, what next?\n<correction>{\"slip\":\"I go yesterday\",\"fix\":\"I went yesterday\"}</correction>",
+      "text": "Good try, what next?",
+      "correction": {
+        "slip": "I go yesterday",
+        "fix": "I went yesterday"
+      }
+    },
+    {
+      "name": "no block: a clean message",
+      "raw": "Great, tell me more about your day.",
+      "text": "Great, tell me more about your day.",
+      "correction": null
+    },
+    {
+      "name": "malformed JSON is dropped, the reply stays",
+      "raw": "Nice! What size?\n<correction>{\"slip\":\"I will like\",\"fix\":</correction>",
+      "text": "Nice! What size?",
+      "correction": null
+    },
+    {
+      "name": "a block that is not JSON at all",
+      "raw": "Nice! <correction>slip: I will like</correction> What size?",
+      "text": "Nice!  What size?",
+      "correction": null
+    },
+    {
+      "name": "missing fix",
+      "raw": "Nice!\n<correction>{\"slip\":\"I will like\"}</correction>",
+      "text": "Nice!",
+      "correction": null
+    },
+    {
+      "name": "missing slip",
+      "raw": "Nice!\n<correction>{\"fix\":\"I'd like\"}</correction>",
+      "text": "Nice!",
+      "correction": null
+    },
+    {
+      "name": "empty fix",
+      "raw": "Nice!\n<correction>{\"slip\":\"I will like\",\"fix\":\"   \"}</correction>",
+      "text": "Nice!",
+      "correction": null
+    },
+    {
+      "name": "non-string fix",
+      "raw": "Nice!\n<correction>{\"slip\":\"I will like\",\"fix\":42}</correction>",
+      "text": "Nice!",
+      "correction": null
+    },
+    {
+      "name": "slip equal to fix is no correction",
+      "raw": "Nice!\n<correction>{\"slip\":\"I'd like\",\"fix\":\"i'd like\"}</correction>",
+      "text": "Nice!",
+      "correction": null
+    },
+    {
+      "name": "a JSON array is not a correction",
+      "raw": "Nice!\n<correction>[\"a\",\"b\"]</correction>",
+      "text": "Nice!",
+      "correction": null
+    },
+    {
+      "name": "a non-string note is ignored, the card stays",
+      "raw": "Nice!\n<correction>{\"slip\":\"a\",\"fix\":\"b\",\"note\":7}</correction>",
+      "text": "Nice!",
+      "correction": {
+        "slip": "a",
+        "fix": "b"
+      }
+    },
+    {
+      "name": "extra keys are ignored",
+      "raw": "Nice!\n<correction>{\"slip\":\"a\",\"fix\":\"b\",\"level\":\"A2\"}</correction>",
+      "text": "Nice!",
+      "correction": {
+        "slip": "a",
+        "fix": "b"
+      }
+    },
+    {
+      "name": "unterminated block is discarded",
+      "raw": "Nice! What size?\n<correction>{\"slip\":\"I will like\",\"fix\":\"I'd li",
+      "text": "Nice! What size?",
+      "correction": null
+    },
+    {
+      "name": "a dangling opening tag is discarded",
+      "raw": "Nice! What size?\n<correction",
+      "text": "Nice! What size?",
+      "correction": null
+    },
+    {
+      "name": "a dangling opening tag with its bracket",
+      "raw": "Nice! What size?\n<correction>",
+      "text": "Nice! What size?",
+      "correction": null
+    },
+    {
+      "name": "a cut-off opening fragment is discarded",
+      "raw": "Nice! What size?\n<corre",
+      "text": "Nice! What size?",
+      "correction": null
+    },
+    {
+      "name": "two blocks: only the first counts, both are stripped",
+      "raw": "Nice!\n<correction>{\"slip\":\"a\",\"fix\":\"b\"}</correction>\n<correction>{\"slip\":\"c\",\"fix\":\"d\"}</correction>",
+      "text": "Nice!",
+      "correction": {
+        "slip": "a",
+        "fix": "b"
+      }
+    },
+    {
+      "name": "two blocks: a bad first block means no correction",
+      "raw": "Nice!\n<correction>{\"slip\":\"a\"}</correction>\n<correction>{\"slip\":\"c\",\"fix\":\"d\"}</correction>",
+      "text": "Nice!",
+      "correction": null
+    },
+    {
+      "name": "a complete block then an unterminated one",
+      "raw": "Nice!\n<correction>{\"slip\":\"a\",\"fix\":\"b\"}</correction>\n<correction>{\"slip\":\"c\"",
+      "text": "Nice!",
+      "correction": {
+        "slip": "a",
+        "fix": "b"
+      }
+    },
+    {
+      "name": "the tag in upper case",
+      "raw": "Nice!\n<CORRECTION>{\"slip\":\"a\",\"fix\":\"b\"}</CORRECTION>",
+      "text": "Nice!",
+      "correction": {
+        "slip": "a",
+        "fix": "b"
+      }
+    },
+    {
+      "name": "the block in the middle of the reply",
+      "raw": "Nice! <correction>{\"slip\":\"a\",\"fix\":\"b\"}</correction> What size?",
+      "text": "Nice!  What size?",
+      "correction": {
+        "slip": "a",
+        "fix": "b"
+      }
+    },
+    {
+      "name": "a less-than sign that is not a tag stays",
+      "raw": "Use < to compare, and > too.",
+      "text": "Use < to compare, and > too.",
+      "correction": null
+    },
+    {
+      "name": "a similar tag is left alone",
+      "raw": "Say <correctional> never.",
+      "text": "Say <correctional> never.",
+      "correction": null
+    },
+    {
+      "name": "accents and quotes survive",
+      "raw": "Muy bien!\n<correction>{\"slip\":\"yo soy cansado\",\"fix\":\"estoy cansado\",\"note\":\"Con \\\"cansado\\\" usamos estar.\"}</correction>",
+      "text": "Muy bien!",
+      "correction": {
+        "slip": "yo soy cansado",
+        "fix": "estoy cansado",
+        "note": "Con \"cansado\" usamos estar."
+      }
+    }
+  ],
+  "streams": [
+    {
+      "name": "a block split across chunks",
+      "chunks": [
+        "Nice or",
+        "der! What size?\n<corr",
+        "ection>{\"slip\":\"a\",",
+        "\"fix\":\"b\"}</corr",
+        "ection>"
+      ],
+      "visible": [
+        "Nice or",
+        "Nice order! What size?",
+        "Nice order! What size?",
+        "Nice order! What size?",
+        "Nice order! What size?"
+      ],
+      "final": "Nice order! What size?"
+    },
+    {
+      "name": "a bare less-than at a chunk end is held back",
+      "chunks": [
+        "Nice! <",
+        "correction>{\"slip\":\"a\",\"fix\":\"b\"}</correction>"
+      ],
+      "visible": [
+        "Nice!",
+        "Nice!"
+      ],
+      "final": "Nice!"
+    },
+    {
+      "name": "a less-than that is not a tag is released",
+      "chunks": [
+        "Use <",
+        " to compare"
+      ],
+      "visible": [
+        "Use",
+        "Use < to compare"
+      ],
+      "final": "Use < to compare"
+    },
+    {
+      "name": "an unterminated block never shows",
+      "chunks": [
+        "Nice!\n<correction>{\"slip\":\"a\",",
+        "\"fix\":\"b"
+      ],
+      "visible": [
+        "Nice!",
+        "Nice!"
+      ],
+      "final": "Nice!"
+    },
+    {
+      "name": "a clean stream is shown as it comes",
+      "chunks": [
+        "Great, ",
+        "tell me ",
+        "more."
+      ],
+      "visible": [
+        "Great,",
+        "Great, tell me",
+        "Great, tell me more."
+      ],
+      "final": "Great, tell me more."
+    }
+  ],
+  "learner": [
+    {
+      "text": "I typed <correction>{\"slip\":\"a\",\"fix\":\"b\"}</correction> myself",
+      "shown": "I typed <correction>{\"slip\":\"a\",\"fix\":\"b\"}</correction> myself"
+    },
+    {
+      "text": "<corre",
+      "shown": "<corre"
+    },
+    {
+      "text": "a < b",
+      "shown": "a < b"
+    }
+  ]
+}

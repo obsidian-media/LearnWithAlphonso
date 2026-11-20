@@ -2,7 +2,8 @@ import { noStoreJson } from "@/lib/api-json";
 import { createFileRoute } from "@tanstack/react-router";
 import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
-import { filterModelOutput, makeBlockedTermCheck } from "@/lib/ai-safety";
+import { filterModelOutputs, makeBlockedTermCheck, AI_OUTPUT_FALLBACK } from "@/lib/ai-safety";
+import { extractCorrection } from "@/lib/hector-correction";
 import { llmChatCompletion } from "@/lib/llm-chat.server";
 import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { boundTranscript } from "@/lib/chat-transcript-limits";
@@ -161,7 +162,9 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     }
   });
   if (!llm.ok) return llm.failure;
-  const reply = llm.reply;
+  // The correction block is the model's, not the learner's: it is taken out BEFORE the length check, the output filter
+  // and the speech, so the learner never hears or reads the tag.
+  const { text: reply, correction: rawCorrection } = extractCorrection(llm.reply);
   const llmMs = performance.now() - llmStart;
   if (!reply) {
     return noStoreJson({ error: "empty reply from model" }, { status: 502 });
@@ -170,14 +173,18 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     return noStoreJson({ error: "Hector reply too long" }, { status: 502 });
   }
 
-  // What the learner hears is what they read: a blocked reply is replaced before it is spoken.
-  const safeReply = (
-    await filterModelOutput(reply, {
-      check: makeBlockedTermCheck(supabaseAdmin),
-      course,
-      route: "hector-respond",
-    })
-  ).text;
+  // What the learner hears is what they read: a blocked reply is replaced before it is spoken. The correction card is
+  // model output too: its words go through the same filter, and a blocked one is dropped (the reply still shows).
+  const cardTexts = rawCorrection
+    ? [rawCorrection.slip, rawCorrection.fix, ...(rawCorrection.note ? [rawCorrection.note] : [])]
+    : [];
+  const verdicts = await filterModelOutputs([reply, ...cardTexts], {
+    check: makeBlockedTermCheck(supabaseAdmin),
+    course,
+    route: "hector-respond",
+  });
+  const safeReply = verdicts[0] ? AI_OUTPUT_FALLBACK[course] : reply;
+  const correction = rawCorrection && !verdicts.some(Boolean) ? rawCorrection : null;
 
   // --- TTS (Deepgram, same as /api/tts) → base64 for the client ---
   // Hector's own voice: the client's cached choice when it is on this course's allow-list, else the choice saved on
@@ -247,6 +254,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
       language: course,
       llmMs,
       ttsMs,
+      correction,
     }),
   );
 }

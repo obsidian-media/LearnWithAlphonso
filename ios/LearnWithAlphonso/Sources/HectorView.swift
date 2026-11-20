@@ -73,6 +73,10 @@ private struct HectorConversationView: View {
     /// The composer's text, and the open weak spot the suggestion chips are built from.
     @State private var draft = ""
     @State private var weakSpot: String?
+    /// Hector's corrections, by the index of the learner's turn each answers (shown as a card under that bubble).
+    @State private var corrections: [Int: HectorCorrection] = [:]
+    /// Bumped by "Try again" where there is no microphone, to put the cursor in the composer.
+    @State private var composerFocusCue = 0
 
     @State private var conversation = ConversationSnapshot()
     @State private var voice = VoiceSessionController()
@@ -144,6 +148,9 @@ private struct HectorConversationView: View {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(Array(conversation.turns.enumerated()), id: \.offset) { index, turn in
                             bubble(for: turn, isOpener: conversation.openerIndices.contains(index)).id(index)
+                            if turn.role == "user", let correction = corrections[index] {
+                                correctionCard(correction)
+                            }
                         }
                         if !suggestionChips.isEmpty {
                             HectorChipsRow(chips: suggestionChips, onTap: { sendTyped($0.message) })
@@ -265,7 +272,30 @@ private struct HectorConversationView: View {
             level: { voice.inputLevelDBFS() }, reduceMotion: reduceMotion,
             onSend: { sendTyped(draft) },
             onMic: { startTappedRecording() },
-            onStop: { stopTappedRecording() })
+            onStop: { stopTappedRecording() },
+            focusCue: composerFocusCue)
+    }
+
+    /// The correction under the learner's bubble. "Hear it" is the device's own voice; "Try again" re-arms the mic.
+    private func correctionCard(_ correction: HectorCorrection) -> some View {
+        HectorCorrectionCard(
+            correction: correction,
+            canHear: HectorFixSpeaker.canSpeak(course),
+            tryAgainDisabled: voice.isBusy || voice.isRecording,
+            onHear: { HectorFixSpeaker.shared.speak(correction.fix, course: course) },
+            onTryAgain: { tryAgain() })
+    }
+
+    /// "Try again": the phrase, said once more. The tap-to-talk path (so its cap applies); in hands-free the loop opens
+    /// the mic itself once nothing is playing; with no microphone it puts the cursor in the composer.
+    private func tryAgain() {
+        HectorFixSpeaker.shared.stop()
+        if voice.isHandsFreeOn { return }
+        if voice.microphoneUnavailable || voice.recorderStartFailed {
+            composerFocusCue += 1
+        } else {
+            startTappedRecording()
+        }
     }
 
     /// Chips show under the greeting until the learner has said something.
@@ -590,8 +620,15 @@ private struct HectorConversationView: View {
                 // Hector's own voice for this course (Settings > Voices), never Alphonso's.
                 voice: VoicePrefsCache().voice(.hector, course: courseCode)
             )
-            snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply.reply), to: key)
+            // The server already took the block out; parsing the reply here too means a tag can never be shown.
+            let parsed = HectorCorrections.extract(reply.reply)
+            snapshot = conversationStore.append(
+                ChatMessage(role: "assistant", content: parsed.text.isEmpty ? "…" : parsed.text), to: key)
             conversation = snapshot
+            // The card belongs under the learner's turn this reply answers: the one just before it.
+            if let correction = reply.correction ?? parsed.correction, snapshot.turns.count >= 2 {
+                corrections[snapshot.turns.count - 2] = correction
+            }
 
             if let audioData = reply.audioData {
                 if !voice.play(audioData, generation: generation) {

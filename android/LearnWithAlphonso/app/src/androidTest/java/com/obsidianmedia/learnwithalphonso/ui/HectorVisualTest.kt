@@ -22,7 +22,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.HectorChips
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorCorrection
 import com.obsidianmedia.learnwithalphonso.ui.hector.HectorChipRow
+import com.obsidianmedia.learnwithalphonso.ui.hector.HectorCorrectionCard
 import com.obsidianmedia.learnwithalphonso.ui.hector.HectorComposer
 import com.obsidianmedia.learnwithalphonso.ui.hector.HectorHeader
 import com.obsidianmedia.learnwithalphonso.ui.hector.HectorStatusUi
@@ -170,6 +172,39 @@ class HectorVisualTest {
         assertRealSize("hector-handsfree", 100, 24)
         assertRealSize("hector-handsfree-toggle", 44, 44)
         rule.onNodeWithContentDescription("Pause").assertHasClickAction()
+    }
+
+    @Test fun correctionCardHasRealSizeAndBothButtonsWork() {
+        var heard = 0
+        var again = 0
+        var canHear by mutableStateOf(true)
+        val correction = HectorCorrection("I will like", "I'd like", "We use I'd like to order politely.")
+        rule.setContent {
+            AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                LazyColumn(Modifier.fillMaxSize().testTag("scroll")) {
+                    items(listOf(0)) { HectorCorrectionCard(correction, canHear, true, { heard++ }, { again++ }) }
+                }
+            }
+        }
+        rule.waitForIdle()
+        // Scroll to the card first, then measure it: the tag, the struck-through line, the note and the buttons.
+        rule.onNodeWithTag("scroll").performScrollToNode(hasTestTag("hector-correction"))
+        assertRealSize("hector-correction", 200, 80)
+        assertRealSize("hector-correction-tag", 60, 14, unmerged = true)
+        // The line is one element for a screen reader; its drawn text is only in the unmerged tree.
+        assertRealSize("hector-correction-line", 100, 12, unmerged = true)
+        rule.onNodeWithTag("hector-correction-line", useUnmergedTree = true).assertContentDescriptionEquals("You said I will like; better: I'd like")
+        assertRealSize("hector-correction-note", 60, 10, unmerged = true)
+        assertRealSize("hector-hear-it", 44, 44)
+        assertRealSize("hector-try-again", 44, 44)
+        rule.onNodeWithTag("hector-hear-it").assertHasClickAction().assertContentDescriptionEquals("Hear it: I'd like").performClick()
+        rule.onNodeWithTag("hector-try-again").assertHasClickAction().assertContentDescriptionEquals("Try again: say it once more").performClick()
+        rule.runOnIdle { assertEquals(1, heard); assertEquals(1, again) }
+        // No device voice for the course: Hear it is left out, the written fix and Try again stay.
+        rule.runOnIdle { canHear = false }
+        rule.onNodeWithTag("hector-hear-it").assertDoesNotExist()
+        rule.onNodeWithTag("hector-try-again").assertExists()
+        assertRealSize("hector-correction-line", 100, 12, unmerged = true)
     }
 
     @Test fun statusMapsFromThePhases() {

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { track } from "../../lib/analytics";
 import { RouteError } from "../../components/RouteError";
 import { DsIcon } from "../../components/ds/DsIcon";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
 import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
@@ -20,6 +20,9 @@ import { hectorStatus } from "../../lib/hector-status";
 import { hectorChips, type HectorChip } from "@/lib/hector-chips";
 import { HECTOR_RECORDING_CAP_MS } from "@/lib/hector-recording-cap";
 import { bubbleClass } from "@/components/hector/hector-style";
+import { CorrectionCard } from "@/components/hector/CorrectionCard";
+import { displayText, extractCorrection, validateCorrection } from "@/lib/hector-correction";
+import type { HectorCorrection } from "@/lib/hector-correction";
 import {
   HectorAvatar,
   HectorChips,
@@ -60,7 +63,8 @@ export const Route = createFileRoute("/_authenticated/hector")({
 /** Same cap the server applies (MAX_HISTORY_MESSAGES in src/lib/hector-conversation.ts). */
 const MAX_HISTORY = 40;
 
-type Msg = { role: "user" | "assistant"; content: string };
+/** A learner message may carry Hector's correction card; it is shown, never sent back as history. */
+type Msg = { role: "user" | "assistant"; content: string; correction?: HectorCorrection };
 
 function HectorPage() {
   const course = useProgress((s) => s.course);
@@ -359,7 +363,7 @@ function HectorConversation({
       const trimmed = text.trim();
       if (!trimmed || sending) return;
       setError(null);
-      const history = messages.slice(-MAX_HISTORY);
+      const history = messages.slice(-MAX_HISTORY).map(({ role, content }) => ({ role, content }));
       setMessages([...messages, { role: "user", content: trimmed }]);
       setInput("");
       setSending(true);
@@ -400,9 +404,21 @@ function HectorConversation({
               : "Hector didn't answer. Try saying it again.",
           );
         }
-        const data = (await resp.json()) as { reply?: string; audioBase64?: string };
-        const reply = (data.reply ?? "").trim() || "…";
-        setMessages((m) => [...m, { role: "assistant", content: reply }]);
+        const data = (await resp.json()) as {
+          reply?: string;
+          audioBase64?: string;
+          correction?: unknown;
+        };
+        // The server already took the block out; parsing the reply here too means a tag can never be shown.
+        const parsed = extractCorrection(data.reply ?? "");
+        const reply = parsed.text || "…";
+        const correction = validateCorrection(data.correction) ?? parsed.correction;
+        setMessages((m) => {
+          // The card belongs under the learner's message this reply answers: the last one.
+          const at = m.map((x) => x.role).lastIndexOf("user");
+          const withCard = correction ? m.map((x, i) => (i === at ? { ...x, correction } : x)) : m;
+          return [...withCard, { role: "assistant", content: reply }];
+        });
         play(data.audioBase64);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -463,6 +479,21 @@ function HectorConversation({
   const busy = sending || transcribing || greetingLoading;
   const shownError = error ?? captureError;
 
+  // "Try again" on a correction card: the corrected phrase, said once more. Where there is a microphone it is the
+  // composer's own tap-to-talk path (so the same 60 s cap applies); in hands-free the loop re-opens the mic itself once
+  // Hector stops talking; with no microphone it puts the cursor in the composer.
+  const composerInput = useRef<HTMLTextAreaElement | null>(null);
+  const tryAgain = useCallback(() => {
+    setError(null);
+    interrupt();
+    if (handsFreeWanted && showCall) return;
+    const canRecord =
+      typeof navigator !== "undefined" &&
+      typeof navigator.mediaDevices?.getUserMedia === "function";
+    if (canRecord) void beginCapture();
+    else composerInput.current?.focus();
+  }, [interrupt, handsFreeWanted, showCall, beginCapture]);
+
   const hintAndLog = (
     <>
       <div className="relative z-10 mx-4 mt-3 rounded-2xl bg-ds-card/85 px-3 backdrop-blur-md">
@@ -476,32 +507,41 @@ function HectorConversation({
       >
         <div className="flex flex-col gap-3">
           {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              {m.role === "assistant" ? (
-                <>
-                  <HectorAvatar />
-                  <div className="flex max-w-[85%] flex-col items-start">
-                    <div className={bubbleClass("assistant")}>
-                      <TappableText text={m.content} course={course} />
+            <Fragment key={i}>
+              <div
+                className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                {m.role === "assistant" ? (
+                  <>
+                    <HectorAvatar />
+                    <div className="flex max-w-[85%] flex-col items-start">
+                      <div className={bubbleClass("assistant")}>
+                        <TappableText text={displayText("assistant", m.content)} course={course} />
+                      </div>
+                      {/* The greeting is our own fixed text, not the model's: nothing to report. */}
+                      {!(greeted && i === 0) && (
+                        <AiMessageReport message={m.content} surface="hector" course={course} />
+                      )}
+                      <ExplainInMyLanguage
+                        className="mt-1"
+                        surface="hector"
+                        request={{ kind: "message", course, text: m.content.slice(0, 1000) }}
+                      />
                     </div>
-                    {/* The greeting is our own fixed text, not the model's: nothing to report. */}
-                    {!(greeted && i === 0) && (
-                      <AiMessageReport message={m.content} surface="hector" course={course} />
-                    )}
-                    <ExplainInMyLanguage
-                      className="mt-1"
-                      surface="hector"
-                      request={{ kind: "message", course, text: m.content.slice(0, 1000) }}
-                    />
-                  </div>
-                </>
-              ) : (
-                <div className={`max-w-[85%] ${bubbleClass("user")}`}>{m.content}</div>
+                  </>
+                ) : (
+                  <div className={`max-w-[85%] ${bubbleClass("user")}`}>{m.content}</div>
+                )}
+              </div>
+              {m.correction && (
+                <CorrectionCard
+                  correction={m.correction}
+                  course={course}
+                  onTryAgain={tryAgain}
+                  tryAgainDisabled={sending || transcribing || greetingLoading || recording}
+                />
               )}
-            </div>
+            </Fragment>
           ))}
           {/* Gone as soon as the learner says anything, by chip, keyboard or voice. */}
           {greeted && chips.length > 0 && !learnerHasSpoken && (
@@ -546,6 +586,7 @@ function HectorConversation({
       disabled={sending || transcribing}
       reducedMotion={reducedMotion}
       getStream={getStream}
+      inputRef={composerInput}
     />
   );
   const composer = (

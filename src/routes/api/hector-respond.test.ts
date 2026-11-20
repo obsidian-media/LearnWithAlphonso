@@ -328,6 +328,73 @@ describe("POST /api/hector-respond", () => {
     expect(typeof body.audio_base64).toBe("string");
   });
 
+  describe("the correction card", () => {
+    const BLOCK = `<correction>{"slip":"I will like","fix":"I'd like","note":"Polite orders use I'd like."}</correction>`;
+    function mockReply(content: string) {
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 }),
+        )
+        .mockResolvedValueOnce(new Response(new Uint8Array([1, 2, 3]), { status: 200 })) as never;
+    }
+
+    it("asks the model for at most one correction, and keeps the safety preamble", async () => {
+      mockReply("Hello!");
+      await handler({ request: req({ text: "hi", language: "en" }) });
+      const sent = JSON.parse(
+        String((vi.mocked(globalThis.fetch).mock.calls[0][1] as RequestInit).body),
+      );
+      const system = sent.messages[0].content as string;
+      expect(system).toContain("CORRECTION CARD");
+      expect(system).toContain("At most one block");
+      expect(system).toContain(SAFETY_PREAMBLE.slice(0, 40));
+    });
+
+    it("returns the correction as its own field and never speaks or shows the tag", async () => {
+      mockReply(`Nice order! What size?
+${BLOCK}`);
+      const res = await handler({ request: req({ text: "I will like a coffee", language: "en" }) });
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Nice order! What size?");
+      expect(body.correction).toEqual({
+        slip: "I will like",
+        fix: "I'd like",
+        note: "Polite orders use I'd like.",
+      });
+      const spoken = JSON.parse(
+        String((vi.mocked(globalThis.fetch).mock.calls[1][1] as RequestInit).body),
+      );
+      expect(spoken.text).toBe("Nice order! What size?");
+    });
+
+    it("has no correction field on a clean turn", async () => {
+      mockReply("Great, tell me more.");
+      const body = (await (await handler({ request: req() })).json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Great, tell me more.");
+      expect("correction" in body).toBe(false);
+    });
+
+    it("drops a malformed or cut-off block silently and still answers", async () => {
+      mockReply(`Nice! What size?
+<correction>{"slip":"I will like","fi`);
+      const res = await handler({ request: req() });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Nice! What size?");
+      expect("correction" in body).toBe(false);
+    });
+
+    it("drops a correction whose words the output filter blocks, keeping the reply", async () => {
+      mockReply(`Nice order!
+${BLOCK}`);
+      blockedRpc.mockResolvedValueOnce({ data: [false, true, false, false], error: null });
+      const body = (await (await handler({ request: req() })).json()) as Record<string, unknown>;
+      expect(body.reply).toBe("Nice order!");
+      expect("correction" in body).toBe(false);
+    });
+  });
+
   describe("stage timing (BACKLOG 0.0-z #3: slow replies must be attributable)", () => {
     function mockProviders() {
       globalThis.fetch = vi

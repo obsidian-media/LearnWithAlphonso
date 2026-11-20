@@ -1,5 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorCorrection
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorCorrections
 import com.obsidianmedia.learnwithalphonso.core.voice.VoiceCharacter
 import com.obsidianmedia.learnwithalphonso.core.avatar.ReplyVerdict
 import com.obsidianmedia.learnwithalphonso.core.content.ContentJson
@@ -267,6 +269,8 @@ data class TutorReply(
     val language: String,
     val state: String,
     val timingsMs: TutorTimings?,
+    /** A gentle fix for the learner's last message, when Hector found one worth making; null when absent or invalid. */
+    val correction: HectorCorrection? = null,
 ) {
     /** Decoded reply audio, or null when the server sent none. */
     fun audioBytes(): ByteArray? = audioBase64.takeIf { it.isNotEmpty() }?.let { runCatching { Base64.getDecoder().decode(it) }.getOrNull() }
@@ -332,6 +336,7 @@ class TutorConversationClient(private val http: ApiHttp, private val deviceId: S
             language = s("language") ?: language,
             state = s("state") ?: "",
             timingsMs = timings,
+            correction = HectorCorrections.validate(o["correction"]),
         )
     }
 }
