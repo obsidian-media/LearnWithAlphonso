@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { learnMap, mapPoint, type MapUnit } from "@/lib/learn-map";
 import { LearnMap } from "./LearnMap";
 
@@ -239,6 +239,41 @@ describe("LearnMap: the climbing map", () => {
       "Finish About Me first, then this one opens.",
     );
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("the hint clears itself after a few seconds, so the live region never keeps a stale instruction", () => {
+    vi.useFakeTimers();
+    try {
+      show(["u1l1"]);
+      fireEvent.click(screen.getByRole("button", { name: /Numbers, locked/ }));
+      expect(screen.getByRole("status").textContent).not.toBe("");
+      act(() => {
+        vi.advanceTimersByTime(5900);
+      });
+      expect(screen.getByRole("status").textContent).not.toBe("");
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(screen.getByRole("status").textContent).toBe("");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("the hint clears at once when the next lesson changes", () => {
+    const props = { greeting: "Hi", continueLessonId: null, blocked: false, onBlocked: () => {} };
+    const { rerender } = render(<LearnMap map={learnMap(units, new Set(["u1l1"]))!} {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: /Numbers, locked/ }));
+    expect(screen.getByRole("status").textContent).toContain("Finish About Me first");
+    rerender(<LearnMap map={learnMap(units, new Set(["u1l1", "u1l2"]))!} {...props} />);
+    expect(screen.getByRole("status").textContent).toBe("");
+  });
+
+  it("the climb list fills the climb box (its items are absolute, so an unsized list would be hidden)", () => {
+    // jsdom has no layout; e2e/signed-in.spec.ts measures the real boxes at 320 px.
+    show([]);
+    expect(climb().className).toMatch(/absolute/);
+    expect(climb().className).toMatch(/inset-0/);
   });
 
   it("a done lesson can be played again; out of hearts it opens the hearts modal instead", () => {

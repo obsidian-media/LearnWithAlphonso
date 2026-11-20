@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { DsIcon } from "@/components/ds/DsIcon";
 import { dsButtonClass } from "@/components/ds/buttons";
 import { Modal } from "@/components/Modal";
@@ -21,6 +21,8 @@ const TOP_ROOM = 44;
 const FOOT_ROOM = 52;
 /** Where a finished unit's chest sits at the foot of the next climb: left of the first lesson, at the very bottom. */
 const TRAILHEAD: MapPoint = { x: 0.15, y: 1 };
+/** How long the "finish X first" hint stays. */
+const HINT_MS = 6000;
 
 /** Tall enough per slot that nodes never touch, and never shorter than a phone's first screen of map. */
 function climbHeight(slots: number): number {
@@ -67,6 +69,15 @@ export function LearnMap({
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
+  // The "finish X first" hint is about this moment: it clears after a few seconds, and at once when the next lesson
+  // changes, so the live region never holds a stale instruction.
+  const nextId = map.next?.lessonId ?? null;
+  useEffect(() => setHint(null), [nextId]);
+  useEffect(() => {
+    if (!hint) return;
+    const t = setTimeout(() => setHint(null), HINT_MS);
+    return () => clearTimeout(t);
+  }, [hint]);
   const stripId = useId();
   const total = map.nodes.length;
   const nextNode = map.nodes.find((n) => n.state === "next") ?? null;
@@ -151,7 +162,11 @@ export function LearnMap({
               />
             </svg>
 
-            <ol aria-label={`Unit ${map.strip.number} climb, from the foot to the summit`}>
+            {/* Fills the climb box: its items are all absolute, so without a size the list would be 0 by 0 (hidden). */}
+            <ol
+              aria-label={`Unit ${map.strip.number} climb, from the foot to the summit`}
+              className="absolute inset-0"
+            >
               {map.trailhead.kind === "chest" && (
                 <li
                   className="absolute -translate-x-1/2 -translate-y-1/2"
