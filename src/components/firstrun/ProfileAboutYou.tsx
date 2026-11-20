@@ -35,7 +35,7 @@ export function ProfileAvatarEditor({
         onClick={() => setOpen(true)}
         className="min-h-6 ds-type-caption text-ds-choice underline underline-offset-4"
       >
-        Change picture
+        Change profile picture
       </button>
       {open && (
         <AvatarDialog
@@ -52,7 +52,7 @@ export function ProfileAvatarEditor({
   );
 }
 
-function AvatarDialog({
+export function AvatarDialog({
   seed,
   name,
   onClose,

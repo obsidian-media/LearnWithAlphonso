@@ -8,8 +8,9 @@ import { AchievementBadge, Medallion } from "@/components/AchievementBadge";
 import { AchievementDetail } from "@/components/AchievementDetail";
 import { badgeStates } from "@/lib/badge-state";
 import { DsIcon } from "@/components/ds/DsIcon";
+import { drawnFlagCode } from "@/lib/drawn-flags";
 import { ProfileAvatar } from "@/components/ds/ProfileAvatar";
-import { CountryFlag, CourseFlag } from "@/components/firstrun/FirstRunParts";
+import { CourseFlag } from "@/components/firstrun/FirstRunParts";
 import { countryName } from "@/components/firstrun/FirstRunFlow";
 import {
   ACHIEVEMENTS,
@@ -35,11 +36,10 @@ import {
   rollingWeekXp,
   weakSpots,
   weekRings,
-  goalRings,
-  type GoalRingDay,
+  heroLevel,
+  weekStrip,
   type HeatCell,
   type ProfileOverview,
-  type RingDay,
   type WeakItem,
 } from "@/lib/profile-overview";
 import { isValidTimeZone, skillScores } from "@/lib/profile-data";
@@ -77,7 +77,7 @@ import {
 const fmt = (n: number) => n.toLocaleString("en-US");
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
-const CARD = "rounded-[18px] border-2 border-ds-line bg-ds-card";
+const CARD = "rounded-[20px] bg-ds-card shadow-[var(--ds-shadow-resting)]";
 
 /** Inside a Progress fold the card header is the fold button, so the section only keeps its aside link. */
 const FoldedContext = createContext(false);
@@ -99,67 +99,261 @@ function SectionHead({ id, title, aside }: { id: string; title: string; aside?: 
   );
 }
 
-// ---------------------------------------------------------------- hero
+// ---------------------------------------------------------------- identity hero
 
-export function ProfileHero({ o, onSettings }: { o: ProfileOverview; onSettings: () => void }) {
-  const name = o.profile.displayName || "Learner";
-  const since = o.profile.createdAt
-    ? new Date(o.profile.createdAt).toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-        timeZone: "UTC",
-      })
-    : null;
+/** A country's flag, drawn (public/flags/<cc>.svg); a country with no drawing shows its code in a chip instead. */
+export function DrawnFlag({ code }: { code: string }) {
+  const drawn = drawnFlagCode(code);
+  const name = countryName(code);
+  return drawn ? (
+    <img
+      src={`/flags/${drawn.toLowerCase()}.svg`}
+      alt={name}
+      width={22}
+      height={15}
+      data-flag-drawn={drawn}
+      className="h-[15px] w-[22px] shrink-0 rounded-[3px] object-cover shadow-[0_0_0_1px_color-mix(in_srgb,var(--c-on-hero)_40%,transparent)]"
+    />
+  ) : (
+    <span
+      role="img"
+      aria-label={name}
+      data-flag-chip={code.toUpperCase()}
+      className="grid h-[15px] shrink-0 place-items-center rounded-[3px] border border-ds-line bg-ds-card px-1 ds-type-caption font-bold uppercase leading-none text-ds-ink"
+    >
+      {code.toUpperCase()}
+    </span>
+  );
+}
+
+const HERO_RING = "stroke-ds-on-hero/20";
+
+/** Purely visual: the level is spoken through the picture button's description (children of a button are presentational). */
+function LevelRing({ pct }: { pct: number }) {
+  const gradient = useId();
   return (
-    <div className="relative h-[236px] shrink-0 overflow-hidden" data-profile-hero="">
-      <img
-        src="/avatar/scenes/room-light.webp"
-        alt=""
-        className="absolute inset-0 size-full object-cover object-[center_32%]"
+    <svg
+      viewBox="0 0 76 76"
+      aria-hidden="true"
+      data-level-ring={pct}
+      className="absolute inset-0 size-full -rotate-90"
+    >
+      <defs>
+        <linearGradient id={gradient} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="var(--c-action-hi)" />
+          <stop offset="1" stopColor="var(--c-action)" />
+        </linearGradient>
+      </defs>
+      <circle cx="38" cy="38" r="35" fill="none" strokeWidth="4" className={HERO_RING} />
+      <circle
+        cx="38"
+        cy="38"
+        r="35"
+        fill="none"
+        strokeWidth="4"
+        strokeLinecap="round"
+        pathLength={100}
+        strokeDasharray={`${pct} 100`}
+        stroke={`url(#${gradient})`}
       />
-      <div
+    </svg>
+  );
+}
+
+function HeroStat({
+  name,
+  icon,
+  solid,
+  tone,
+  value,
+  label,
+  spoken,
+}: {
+  name: string;
+  icon: DsIconName;
+  solid?: boolean;
+  tone: string;
+  value: string;
+  label: string;
+  spoken: string;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={spoken}
+      data-big-stat={name}
+      className="flex items-center gap-2.5"
+    >
+      <span
         aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, color-mix(in srgb, var(--c-hero-b) 30%, transparent), transparent 35%, transparent 62%, var(--c-surface))",
-        }}
-      />
-      <img
-        src="/alphonso/lesson/happy.webp"
-        alt=""
-        className="pointer-events-none absolute -right-5 bottom-0 z-[1] w-[200px]"
-      />
-      <button
-        type="button"
-        onClick={onSettings}
-        aria-label="Settings"
-        className="absolute right-3.5 top-4 z-[2] grid size-11 place-items-center rounded-full bg-ds-card/90 text-ds-brand shadow-[var(--ds-shadow-resting)]"
+        className={`grid size-[30px] shrink-0 place-items-center rounded-[10px] border border-ds-on-hero/10 bg-ds-on-hero/10 ${tone}`}
       >
-        <DsIcon name="settings" className="size-5" />
-      </button>
-      <div className="absolute bottom-7 left-4 z-[2] grid max-w-[190px] gap-1.5">
-        <ProfileAvatar
-          seed={o.profile.avatarSeed}
-          name={name}
-          className="size-[58px] shadow-[0_0_0_3px_var(--c-card),var(--ds-shadow-floating)]"
-          textClass="ds-type-title"
-        />
-        <h1 className="ds-type-display-x-l break-words text-ds-ink">{name}</h1>
-        <p className="flex flex-wrap items-center gap-1.5 ds-type-caption text-ds-ink-soft">
-          {o.profile.country && (
-            <span data-profile-flag={o.profile.country} className="flex items-center gap-1.5">
-              <span className="scale-75 origin-left -mr-2">
-                <CountryFlag code={o.profile.country} />
-              </span>
-              {countryName(o.profile.country)}
-              {since && <span aria-hidden="true">·</span>}
-            </span>
-          )}
-          {since && <span>since {since}</span>}
-        </p>
-      </div>
+        {solid ? (
+          <DsIcon name={icon as "flame"} solid className="size-[18px]" />
+        ) : (
+          <DsIcon name={icon as "check"} className="size-[18px]" />
+        )}
+      </span>
+      <span aria-hidden="true" className="min-w-0">
+        <b className="block ds-type-question-small tabular-nums" data-value="">
+          {value}
+        </b>
+        <span className="block ds-type-overline text-ds-on-hero-soft">{label}</span>
+      </span>
     </div>
+  );
+}
+
+/**
+ * The identity hero (BACKLOG profile, converged mock): the learner's picture in a level ring, their name and drawn
+ * flag, a league chip, the level bar and the four numbers. It stays on every tab; Progress and Social show it without
+ * the level bar and numbers. Every value comes from the overview through the pure rules in profile-overview.ts.
+ */
+export function ProfileIdentityHero({
+  o,
+  compact,
+  onPicture,
+}: {
+  o: ProfileOverview;
+  compact: boolean;
+  onPicture: () => void;
+}) {
+  const name = o.profile.displayName || "Learner";
+  const n = bigNumbers(o);
+  const lvl = heroLevel(o);
+  const c = o.courses.find((x) => x.course === o.course);
+  const lg = leagueStatus(c?.leagueTier ?? "bronze", c?.xp ?? 0);
+  const course = COURSES.find((x) => x.id === o.course)!;
+  const streakSpoken =
+    n.streakState === "protected"
+      ? `${fmt(n.streak)} day streak, ${STREAK_PROTECTED_CAPTION}`
+      : `${fmt(n.streak)} day streak`;
+  const levelLine =
+    lvl.lessonsLeft > 0
+      ? `${fmt(lvl.lessonsLeft)} ${plural(lvl.lessonsLeft, "lesson", "lessons")} left in ${lvl.level}`
+      : lvl.next
+        ? `${lvl.level} done. Ready for ${lvl.next}`
+        : `The top level in ${course.label}`;
+  const levelDescId = useId();
+  return (
+    <section
+      aria-label="Your profile"
+      data-profile-hero=""
+      className="relative overflow-hidden rounded-[28px] bg-[linear-gradient(155deg,var(--c-hero-a),var(--c-hero-b))] p-4 text-ds-on-hero shadow-[var(--ds-shadow-floating)]"
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-8 -top-10 size-[180px] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--c-on-hero-kick)_35%,transparent),transparent_62%)]"
+      />
+      <div className="relative flex items-center gap-3.5">
+        <button
+          type="button"
+          onClick={onPicture}
+          aria-label="Change picture"
+          aria-describedby={levelDescId}
+          className="relative size-[76px] shrink-0 rounded-full"
+        >
+          <LevelRing pct={lvl.pct} />
+          <span id={levelDescId} hidden>
+            {`Level ${lvl.level}, ${levelLine}`}
+          </span>
+          <span className="absolute inset-1.5 overflow-hidden rounded-full bg-ds-sunk">
+            <ProfileAvatar
+              seed={o.profile.avatarSeed}
+              name={name}
+              className="size-full"
+              textClass="ds-type-title"
+            />
+          </span>
+          <span
+            aria-hidden="true"
+            data-level-badge={lvl.level}
+            className="absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-ds-hero-b bg-[linear-gradient(180deg,var(--c-action-hi),var(--c-action))] px-1.5 ds-type-overline text-ds-on-action"
+          >
+            {lvl.level}
+          </span>
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2">
+            <h1 className="ds-type-display-x-l break-words">{name}</h1>
+            {o.profile.country && (
+              <span data-profile-flag={o.profile.country} className="inline-flex">
+                <DrawnFlag code={o.profile.country} />
+              </span>
+            )}
+          </div>
+          <span
+            data-league-chip={lg.tier}
+            className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-ds-on-hero-kick/50 bg-ds-on-hero-kick/25 px-2.5 py-0.5 ds-type-caption font-extrabold text-ds-on-hero-kick"
+          >
+            <DsIcon name="trophy" className="size-3.5" />
+            {LEAGUE_TIER_META[lg.tier].label} league
+            {o.league ? ` · Rank ${fmt(o.league.rank)}` : ""}
+          </span>
+        </div>
+      </div>
+      {!compact && (
+        <>
+          <div className="relative mt-3.5">
+            <div className="mb-1 flex items-baseline justify-between gap-2 ds-type-caption text-ds-on-hero-soft">
+              <b className="ds-type-footnote text-ds-on-hero">Level {lvl.level}</b>
+              <span data-level-line="">{levelLine}</span>
+            </div>
+            <div
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={lvl.pct}
+              aria-label={`${lvl.level} progress: ${levelLine}`}
+              className="h-2 overflow-hidden rounded-full bg-ds-hero-b/40"
+            >
+              <i
+                className="block h-full rounded-full bg-[linear-gradient(90deg,var(--c-action-hi),var(--c-action))]"
+                style={{ width: `${lvl.pct}%` }}
+              />
+            </div>
+          </div>
+          <div className="relative mt-3.5 grid grid-cols-1 gap-3 rounded-[18px] border border-ds-on-hero/10 bg-ds-hero-b/30 p-3 min-[380px]:grid-cols-2">
+            <HeroStat
+              name="streak"
+              icon="flame"
+              solid
+              tone="text-ds-on-hero-kick"
+              value={fmt(n.streak)}
+              label="day streak"
+              spoken={streakSpoken}
+            />
+            <HeroStat
+              name="xp"
+              icon="bolt"
+              solid
+              tone="text-ds-on-hero-kick"
+              value={fmt(n.courseXp)}
+              label={`XP in ${course.label}`}
+              spoken={`${fmt(n.courseXp)} XP in ${course.label}`}
+            />
+            <HeroStat
+              name="words"
+              icon="words"
+              tone="text-ds-on-hero-soft"
+              value={fmt(n.wordsLearned)}
+              label={plural(n.wordsLearned, "word learned", "words learned")}
+              spoken={`${fmt(n.wordsLearned)} ${plural(n.wordsLearned, "word", "words")} learned`}
+            />
+            <HeroStat
+              name="accuracy"
+              icon="target"
+              tone="text-ds-on-hero-soft"
+              value={n.accuracyPct === null ? "–" : `${n.accuracyPct}%`}
+              label="accuracy"
+              spoken={
+                n.accuracyPct === null ? "No accuracy yet" : `${n.accuracyPct} percent accuracy`
+              }
+            />
+          </div>
+        </>
+      )}
+    </section>
   );
 }
 
@@ -175,12 +369,7 @@ export function CourseSwitcher({
   onSwitch: (c: Course) => void;
 }) {
   return (
-    <div
-      role="group"
-      aria-label="Your courses"
-      className="relative z-[3] -mt-3.5 flex gap-1.5"
-      data-course-switcher=""
-    >
+    <div role="group" aria-label="Your courses" className="flex gap-1.5" data-course-switcher="">
       {COURSES.map((c) => {
         const on = c.id === o.course;
         const level = o.courses.find((x) => x.course === c.id)?.cefrLevel;
@@ -213,251 +402,185 @@ export function CourseSwitcher({
   );
 }
 
-// ---------------------------------------------------------------- the four big numbers
-
-function Stat({
-  icon,
-  iconClass,
-  value,
-  label,
-  note,
-  noteTone = "right",
-  className = "",
-  name,
-}: {
-  icon: DsIconName;
-  iconClass: string;
-  value: number;
-  label: string;
-  note: string;
-  noteTone?: "right" | "soft";
-  className?: string;
-  name: string;
-}) {
-  const solid = icon === "flame" || icon === "bolt";
-  return (
-    <div
-      data-big-stat={name}
-      className={`relative grid overflow-hidden rounded-[18px] border-2 px-3 py-2.5 ${className}`}
-    >
-      {solid ? (
-        <DsIcon
-          name={icon as "flame"}
-          solid
-          className={`absolute right-2.5 top-2.5 size-[26px] ${iconClass}`}
-        />
-      ) : (
-        <DsIcon
-          name={icon as "check"}
-          className={`absolute right-2.5 top-2.5 size-[26px] ${iconClass}`}
-        />
-      )}
-      <b className="ds-type-display-x-l text-ds-ink tabular-nums" data-value="">
-        {fmt(value)}
-      </b>
-      <span className="ds-type-caption text-ds-ink-soft">{label}</span>
-      <small
-        className={`ds-type-caption ${noteTone === "right" ? "text-ds-right" : "text-ds-ink-faint"}`}
-      >
-        {note}
-      </small>
-    </div>
-  );
-}
-
-export function BigNumbers({ o }: { o: ProfileOverview }) {
-  const n = bigNumbers(o);
-  return (
-    <section aria-label="Your numbers" className="grid grid-cols-2 gap-2">
-      <Stat
-        name="streak"
-        icon="flame"
-        iconClass="text-ds-flame"
-        value={n.streak}
-        label="day streak"
-        note={
-          n.streakState === "protected"
-            ? `❄️ ${STREAK_PROTECTED_CAPTION}`
-            : n.longestStreak > 0
-              ? `Longest: ${fmt(n.longestStreak)}`
-              : "Finish a lesson to start one"
-        }
-        noteTone={n.longestStreak > 0 ? "right" : "soft"}
-        className="border-ds-flame-tint bg-[linear-gradient(160deg,var(--c-flame-tint),var(--c-card))]"
-      />
-      <Stat
-        name="xp"
-        icon="bolt"
-        iconClass="text-ds-xp"
-        value={n.totalXp}
-        label="total XP"
-        note={n.xpThisWeek > 0 ? `+${fmt(n.xpThisWeek)} this week` : "None yet this week"}
-        noteTone={n.xpThisWeek > 0 ? "right" : "soft"}
-        className="border-ds-line bg-ds-card"
-      />
-      <Stat
-        name="words"
-        icon="words"
-        iconClass="text-ds-choice"
-        value={n.wordsLearned}
-        label={plural(n.wordsLearned, "word learned", "words learned")}
-        note={n.savedWords > 0 ? `${fmt(n.savedWords)} saved to review` : "Tap a word to save it"}
-        noteTone={n.savedWords > 0 ? "right" : "soft"}
-        className="border-ds-line bg-ds-card"
-      />
-      <Stat
-        name="lessons"
-        icon="check"
-        iconClass="text-ds-right"
-        value={n.lessonsDone}
-        label={plural(n.lessonsDone, "lesson done", "lessons done")}
-        note={n.accuracyPct === null ? "Your first one is waiting" : `${n.accuracyPct}% accuracy`}
-        noteTone={n.accuracyPct === null ? "soft" : "right"}
-        className="border-ds-line bg-ds-card"
-      />
-    </section>
-  );
-}
-
 // ---------------------------------------------------------------- this week
 
 const WEEKDAY = (day: string, style: "narrow" | "long") =>
   new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", { weekday: style, timeZone: "UTC" });
 
-function Ring({
-  d,
-  today,
-  doneText,
-}: {
-  d: { day: string; state: RingDay["state"] };
-  today: string;
-  doneText: string;
-}) {
-  const done = d.state === "done";
-  const label = `${WEEKDAY(d.day, "long")}: ${
-    d.state === "future"
-      ? "still to come"
-      : done
-        ? doneText
-        : d.state === "today"
-          ? "not yet today"
-          : "goal not met"
-  }`;
-  return (
-    <li
-      className="grid justify-items-center gap-1 ds-type-caption text-ds-ink-soft"
-      aria-label={label}
-    >
-      <span aria-hidden="true">{WEEKDAY(d.day, "narrow")}</span>
-      <span
-        aria-hidden="true"
-        data-ring={d.state}
-        className={`grid size-[30px] place-items-center rounded-full ${done ? "bg-ds-action" : "bg-ds-line"} ${
-          d.day === today ? "shadow-[0_0_0_2px_var(--c-choice)]" : ""
-        } ${d.state === "future" ? "opacity-50" : ""}`}
-      >
-        <span
-          className={`grid size-[22px] place-items-center rounded-full ${done ? "bg-ds-action text-ds-on-action" : "bg-ds-card"}`}
-        >
-          {done && <DsIcon name="check" className="size-3.5" />}
-        </span>
-      </span>
-    </li>
-  );
-}
-
-function Sparkline({ days }: { days: RingDay[] }) {
-  const pts = days.filter((d) => d.state !== "future");
-  const max = Math.max(1, ...pts.map((d) => d.seconds));
-  const x = (i: number) => 2 + (i * 116) / 6;
-  const y = (s: number) => 34 - (s / max) * 28;
-  const line = pts
-    .map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(d.seconds).toFixed(1)}`)
-    .join(" ");
-  const last = pts.at(-1);
-  return (
-    <svg
-      viewBox="0 0 120 38"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      className="h-[38px] flex-1"
-    >
-      {pts.length > 1 && (
-        <>
-          <path
-            d={`${line} L${x(pts.length - 1).toFixed(1)} 38 L2 38z`}
-            className="fill-ds-choice opacity-10"
-          />
-          <path
-            d={line}
-            fill="none"
-            className="stroke-ds-choice"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </>
-      )}
-      {last && (
-        <circle
-          cx={x(pts.length - 1)}
-          cy={y(last.seconds)}
-          r="3.5"
-          className="fill-ds-action stroke-ds-card"
-          strokeWidth="1.5"
-        />
-      )}
-    </svg>
-  );
-}
-
+/** This week as a strip: done days stamped gold with a check, today ringed in the choice colour, the rest plain. */
 export function ThisWeek({ o }: { o: ProfileOverview }) {
-  const w = weekRings(o.today, o.activity, o.speech);
-  // The rings measure the learner's own daily goal in learning minutes. Without a chosen goal they keep the XP rule
-  // (the one the streak uses) and say how to set one.
-  const goal = o.dailyGoalMinutes ? goalRings(o.today, o.learning, o.dailyGoalMinutes) : null;
-  const ringDays: { day: string; state: RingDay["state"]; doneText: string }[] = goal
-    ? goal.days.map((d: GoalRingDay) => ({
-        day: d.day,
-        state: d.state,
-        doneText: `${fmt(d.minutes)} ${plural(d.minutes, "minute", "minutes")}, goal met`,
-      }))
-    : w.days.map((d) => ({ day: d.day, state: d.state, doneText: `${fmt(d.xp)} XP` }));
+  const week = weekStrip(o);
+  const n = bigNumbers(o);
   return (
-    <section aria-labelledby="week-heading" className="grid gap-2.5">
-      <SectionHead
-        id="week-heading"
-        title="This week"
-        aside={`${goal ? goal.metDays : w.activeDays} of ${w.days.length} days`}
-      />
-      <div className={`${CARD} p-3`} data-ring-measure={goal ? "minutes" : "xp"}>
-        <ol className="grid grid-cols-7 gap-1 text-center">
-          {ringDays.map((d) => (
-            <Ring key={d.day} d={d} today={o.today} doneText={d.doneText} />
+    <section aria-labelledby="week-heading" className={`${CARD} grid gap-2.5 p-3.5`}>
+      <div className="flex items-center justify-between gap-2">
+        <h2 id="week-heading" className="ds-type-headline font-extrabold text-ds-ink">
+          This week
+        </h2>
+        <span
+          data-streak-chip=""
+          className="inline-flex items-center gap-1 rounded-full bg-ds-flame-tint px-2.5 py-0.5 ds-type-caption font-extrabold text-ds-flame"
+        >
+          <DsIcon name="flame" solid className="size-3.5" />
+          {n.streakState === "protected" ? STREAK_PROTECTED_CAPTION : `${fmt(n.streak)}-day streak`}
+        </span>
+      </div>
+      <div data-ring-measure={week.measure}>
+        <ol className="grid grid-cols-7 gap-1.5 text-center">
+          {week.days.map((d) => (
+            <li
+              key={d.day}
+              aria-label={`${WEEKDAY(d.day, "long")}: ${d.spoken}`}
+              className="grid justify-items-center gap-1"
+            >
+              <span
+                aria-hidden="true"
+                data-ring={d.state}
+                className={`grid h-[30px] w-full place-items-center rounded-[9px] ${
+                  d.state === "done"
+                    ? "bg-[linear-gradient(180deg,var(--c-action-hi),var(--c-action))] text-ds-on-action shadow-[inset_0_-2px_0_var(--c-action-edge)]"
+                    : d.state === "today"
+                      ? "bg-ds-choice-tint shadow-[inset_0_0_0_2px_var(--c-choice)]"
+                      : "bg-ds-sunk"
+                }`}
+              >
+                {d.state === "done" && <DsIcon name="check" className="size-3.5" />}
+              </span>
+              <span
+                aria-hidden="true"
+                className={`ds-type-overline ${d.state === "done" ? "text-ds-action-text" : "text-ds-ink-faint"}`}
+              >
+                {WEEKDAY(d.day, "narrow")}
+              </span>
+            </li>
           ))}
         </ol>
         <p className="mt-2 text-center ds-type-caption text-ds-ink-faint" data-goal-note="">
-          {goal
+          {week.measure === "minutes"
             ? `Goal: ${fmt(o.dailyGoalMinutes as number)} learning minutes a day`
             : "Pick a daily time in Edit your answers to measure your days in minutes."}
         </p>
       </div>
-      <div className={`${CARD} flex items-center gap-3 p-3`} data-minutes-spoken={w.minutesSpoken}>
-        <div className="shrink-0">
-          <b className="ds-type-numeral text-ds-ink">{fmt(w.minutesSpoken)}</b>
-          <small className="block ds-type-caption text-ds-ink-soft">
-            {plural(w.minutesSpoken, "minute", "minutes")} spoken this week
-          </small>
-        </div>
-        {w.minutesSpoken > 0 ? (
-          <Sparkline days={w.days} />
-        ) : (
-          <p className="flex-1 ds-type-caption text-ds-ink-faint">
-            Talk in Practice or with Hector and your minutes show here.
-          </p>
-        )}
-      </div>
+      {week.minutesSpoken > 0 && (
+        <p className="ds-type-caption text-ds-ink-soft" data-minutes-spoken={week.minutesSpoken}>
+          {fmt(week.minutesSpoken)} {plural(week.minutesSpoken, "minute", "minutes")} spoken this
+          week
+        </p>
+      )}
     </section>
+  );
+}
+
+/** A tappable row card with a drawn icon in a tinted tile (Edit your answers, Settings, League, Friends, Invite). */
+function RowCard({
+  icon,
+  tint,
+  title,
+  sub,
+  ...action
+}: {
+  icon: "target" | "settings" | "league" | "friends" | "gift";
+  tint: string;
+  title: string;
+  sub: string;
+} & (
+  | {
+      to: "/league" | "/profile/friends" | "/profile/invite" | "/complete-profile";
+      search?: { edit: true };
+    }
+  | { onClick: () => void }
+)) {
+  const body = (
+    <>
+      <span
+        aria-hidden="true"
+        className={`grid size-[38px] shrink-0 place-items-center rounded-[12px] ${tint}`}
+      >
+        <DsIcon name={icon} className="size-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <b className="block ds-type-footnote font-extrabold text-ds-ink">{title}</b>{" "}
+        <span className="block ds-type-caption font-normal text-ds-ink-soft">{sub}</span>
+      </span>
+      <DsIcon name="chevron" className="size-[17px] shrink-0 text-ds-ink-faint" />
+    </>
+  );
+  const cls = `${CARD} flex min-h-11 w-full items-center gap-3 p-3 text-left`;
+  return "onClick" in action ? (
+    <button type="button" onClick={action.onClick} className={cls}>
+      {body}
+    </button>
+  ) : (
+    <Link to={action.to} search={action.search} className={cls}>
+      {body}
+    </Link>
+  );
+}
+
+export function OverviewRows({ onSettings }: { onSettings: () => void }) {
+  return (
+    <>
+      <RowCard
+        to="/complete-profile"
+        search={{ edit: true }}
+        icon="target"
+        tint="bg-ds-choice-tint text-ds-choice"
+        title="Edit your answers"
+        sub="Goal, level, daily time, interests"
+      />
+      <RowCard
+        onClick={onSettings}
+        icon="settings"
+        tint="bg-ds-right-tint text-ds-right"
+        title="Settings"
+        sub="Theme and account"
+      />
+    </>
+  );
+}
+
+/** The achievements preview: the latest medallions overlapping on navy, how many are unlocked, a chevron to the wall. */
+export function AchievementsPreview({ o, onOpen }: { o: ProfileOverview; onOpen: () => void }) {
+  const unlocked = o.achievements.filter((a) => ACHIEVEMENTS.some((x) => x.id === a.id));
+  const shown = [...unlocked]
+    .sort((a, b) => (b.unlockedAt ?? "").localeCompare(a.unlockedAt ?? ""))
+    .slice(0, 3)
+    .map((a) => ACHIEVEMENTS.find((x) => x.id === a.id)!);
+  const next = nextAchievement(
+    achievementStats(o),
+    unlocked.map((a) => a.id),
+  );
+  const more = unlocked.length - shown.length;
+  const count = `${fmt(unlocked.length)} of ${fmt(ACHIEVEMENTS.length)} unlocked`;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`Achievements, ${count}`}
+      data-achievements-preview=""
+      className="flex w-full items-center gap-3 rounded-[18px] bg-[linear-gradient(155deg,var(--c-hero-a),var(--c-hero-b))] px-3.5 py-3 text-left text-ds-on-hero shadow-[var(--ds-shadow-floating)]"
+    >
+      <span aria-hidden="true" className="flex items-center pl-1">
+        {shown.map((a, i) => (
+          <span key={a.id} className={i ? "-ml-4" : ""}>
+            <Medallion achievement={a} state="earned" size={50} />
+          </span>
+        ))}
+        {shown.length === 0 && next && (
+          <Medallion achievement={next.achievement} state="locked" size={50} />
+        )}
+        {more > 0 && (
+          <span className="-ml-4 grid size-[38px] place-items-center rounded-full bg-ds-on-hero/15 ds-type-caption font-extrabold">
+            +{fmt(more)}
+          </span>
+        )}
+      </span>
+      <span aria-hidden="true" className="min-w-0 flex-1">
+        <b className="block ds-type-footnote font-extrabold">Achievements</b>
+        <span className="block ds-type-caption text-ds-on-hero-soft">{count}</span>
+      </span>
+      <DsIcon name="chevron" className="size-[17px] shrink-0 text-ds-on-hero-soft" />
+    </button>
   );
 }
 
@@ -876,90 +999,107 @@ export function leagueWeekEnds(weekEnd: string, timeZone: string | null): string
 }
 
 /**
- * The rows that open the social screens, in iOS's order and wording (ProfileHubView, Social tab): League first, then
- * Friends. League has no tab of its own; this is the way to it besides the badge in the top bar.
+ * The rows that open the social screens, in iOS's order and wording (ProfileHubView, Social tab): League, Friends, then
+ * Invite friends. League has no tab of its own; this is the way to it besides the badge in the top bar.
  */
 export function SocialLinks() {
-  const rows = [
-    {
-      to: "/league",
-      icon: "league",
-      title: "League",
-      sub: "Leaderboards, teams, and the season ladder",
-    },
-    {
-      to: "/profile/friends",
-      icon: "friends",
-      title: "Friends",
-      sub: "Your friends, their activity, and duels",
-    },
-  ] as const;
   return (
     <nav aria-label="Social" className="grid gap-2.5">
-      {rows.map((r) => (
-        <Link
-          key={r.to}
-          to={r.to}
-          data-social-link={r.title.toLowerCase()}
-          className={`${CARD} flex items-center gap-3 p-3 ds-type-footnote font-bold text-ds-ink`}
-        >
-          <DsIcon name={r.icon} className="size-8 shrink-0 text-ds-choice" />
-          <span className="min-w-0 flex-1">
-            {r.title}
-            <span className="block ds-type-caption font-normal text-ds-ink-soft">{r.sub}</span>
-          </span>
-          <DsIcon name="chevron" className="size-5 shrink-0 text-ds-ink-faint" />
-        </Link>
-      ))}
+      <RowCard
+        to="/league"
+        icon="league"
+        tint="bg-ds-xp-tint text-ds-xp-text"
+        title="League"
+        sub="Leaderboards, teams, and the season ladder"
+      />
+      <RowCard
+        to="/profile/friends"
+        icon="friends"
+        tint="bg-ds-choice-tint text-ds-choice"
+        title="Friends"
+        sub="Your friends, their activity, and duels"
+      />
+      <RowCard
+        to="/profile/invite"
+        icon="gift"
+        tint="bg-ds-right-tint text-ds-right"
+        title="Invite friends"
+        sub="You both get a reward when they finish a first lesson"
+      />
     </nav>
   );
 }
 
+/** The league tier's shield, in its own tier colour (the same emblem the league screens use). */
+function LeagueShield({ tier, className }: { tier: LeagueTier; className?: string }) {
+  return (
+    <svg viewBox="0 0 52 58" aria-hidden="true" className={className}>
+      <path
+        d="M26 2l22 8v18c0 14-10 23-22 28C14 51 4 42 4 28V10z"
+        className={`${LEAGUE_FILL[tier]} stroke-ds-ink/20`}
+        strokeWidth="2"
+      />
+      <path
+        d="M26 10l14 5v13c0 9-6 15-14 18-8-3-14-9-14-18V15z"
+        className="fill-ds-card opacity-80"
+      />
+      <path
+        d="M26 18l3 6 6 .7-4.5 4 1.2 6-5.7-3.2-5.7 3.2 1.2-6-4.5-4 6-.7z"
+        className={LEAGUE_FILL[tier]}
+      />
+    </svg>
+  );
+}
+
+/** Your league, on navy: the tier, how far to the next, and where you stand this week. */
 export function LeagueCard({ o }: { o: ProfileOverview }) {
   const c = o.courses.find((x) => x.course === o.course);
   const s = leagueStatus(c?.leagueTier ?? "bronze", c?.xp ?? 0);
   const meta = LEAGUE_TIER_META[s.tier];
+  const toNext = s.next
+    ? `${fmt(s.xpToNext)} XP to ${LEAGUE_TIER_META[s.next].label}`
+    : "The top league. Well done.";
   return (
-    <section aria-labelledby="league-heading" className="grid gap-2.5">
-      <SectionHead
-        id="league-heading"
-        title="League"
-        aside={<Link to="/league">Leaderboard</Link>}
+    <section
+      aria-labelledby="league-heading"
+      data-league={s.tier}
+      className="relative overflow-hidden rounded-[22px] bg-[linear-gradient(155deg,var(--c-hero-a),var(--c-hero-b))] p-4 text-ds-on-hero shadow-[var(--ds-shadow-floating)]"
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-6 -top-9 size-[170px] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--c-on-hero-kick)_28%,transparent),transparent_62%)]"
       />
-      <div className={`${CARD} flex items-center gap-3 p-3`} data-league={s.tier}>
-        <svg viewBox="0 0 52 58" aria-hidden="true" className="h-[58px] w-[52px] shrink-0">
-          <path
-            d="M26 2l22 8v18c0 14-10 23-22 28C14 51 4 42 4 28V10z"
-            className={`${LEAGUE_FILL[s.tier]} stroke-ds-ink/20`}
-            strokeWidth="2"
-          />
-          <path
-            d="M26 10l14 5v13c0 9-6 15-14 18-8-3-14-9-14-18V15z"
-            className="fill-ds-card opacity-80"
-          />
-          <path
-            d="M26 18l3 6 6 .7-4.5 4 1.2 6-5.7-3.2-5.7 3.2 1.2-6-4.5-4 6-.7z"
-            className={LEAGUE_FILL[s.tier]}
-          />
-        </svg>
-        <div className="min-w-0">
-          <b className="block ds-type-headline font-extrabold text-ds-ink">{meta.label} league</b>
-          <small className="block ds-type-caption text-ds-ink-soft">
-            {s.next
-              ? `${fmt(s.xpToNext)} XP to ${LEAGUE_TIER_META[s.next].label}`
-              : "The top league. Well done."}
-          </small>
-          {o.league && (
-            <small className="block ds-type-caption font-bold text-ds-ink" data-league-standing="">
-              {`Rank ${fmt(o.league.rank)} of ${fmt(o.league.size)} · ${leagueWeekEnds(o.league.weekEnd, o.timeZone)}`}
-            </small>
-          )}
-        </div>
-        <div className="ml-auto text-right">
-          <b className="block ds-type-question-small text-ds-ink tabular-nums">{fmt(c?.xp ?? 0)}</b>
-          <small className="ds-type-caption text-ds-ink-soft">XP</small>
-        </div>
+      <h2
+        id="league-heading"
+        className="relative ds-type-overline uppercase tracking-[0.14em] text-ds-on-hero-soft"
+      >
+        Your league
+      </h2>
+      <div className="relative mt-1 flex items-center gap-3">
+        <LeagueShield tier={s.tier} className="h-[58px] w-[52px] shrink-0" />
+        <b className="ds-type-display-x-l text-ds-on-hero-kick">{meta.label}</b>
       </div>
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={s.pct}
+        aria-label={toNext}
+        className="relative mt-2.5 h-2 overflow-hidden rounded-full bg-ds-hero-b/40"
+      >
+        <i
+          className="block h-full rounded-full bg-[linear-gradient(90deg,var(--c-action-hi),var(--c-action))]"
+          style={{ width: `${s.pct}%` }}
+        />
+      </div>
+      <p className="relative mt-1.5 ds-type-footnote font-extrabold text-ds-on-hero-kick">
+        {toNext}
+      </p>
+      {o.league && (
+        <p className="relative ds-type-caption text-ds-on-hero-soft" data-league-standing="">
+          {`Rank ${fmt(o.league.rank)} of ${fmt(o.league.size)} · ${leagueWeekEnds(o.league.weekEnd, o.timeZone)}`}
+        </p>
+      )}
     </section>
   );
 }
@@ -972,23 +1112,13 @@ export function FriendsWeek({ o }: { o: ProfileOverview }) {
   });
   return (
     <section aria-labelledby="friends-heading" className="grid gap-2.5">
-      <SectionHead
-        id="friends-heading"
-        title="Friends this week"
-        aside={<Link to="/profile/friends">{o.friends.length ? "See all" : "Invite"}</Link>}
-      />
+      <SectionHead id="friends-heading" title="Friends this week" />
       <div className={`${CARD} grid gap-[7px] p-3`}>
         {o.friends.length === 0 ? (
           <div className="flex items-center gap-3">
             <DsIcon name="friends" className="size-8 shrink-0 text-ds-choice" />
             <p className="ds-type-footnote text-ds-ink-soft">
-              Learning sticks better with a friend.{" "}
-              <Link
-                to="/profile/friends"
-                className="font-bold text-ds-choice underline underline-offset-2"
-              >
-                Invite one
-              </Link>
+              Learning sticks better with a friend. Invite one from the rows above.
             </p>
           </div>
         ) : (
@@ -1015,19 +1145,6 @@ export function FriendsWeek({ o }: { o: ProfileOverview }) {
           XP over the last {FRIENDS_WEEK_DAYS} days
         </p>
       </div>
-      <Link
-        to="/profile/invite"
-        data-invite-friends=""
-        className={`${CARD} flex items-center gap-3 p-3 ds-type-footnote font-bold text-ds-ink`}
-      >
-        <DsIcon name="friends" className="size-8 shrink-0 text-ds-choice" />
-        <span className="min-w-0 flex-1">
-          Invite friends
-          <span className="block ds-type-caption font-normal text-ds-ink-soft">
-            You both get a reward when they finish a first lesson.
-          </span>
-        </span>
-      </Link>
     </section>
   );
 }
@@ -1132,16 +1249,8 @@ export function ShareWeek({ o }: { o: ProfileOverview }) {
 /** While the overview loads: the page's shape, so nothing jumps. */
 export function ProfileSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading your profile" className="grid gap-3 px-3.5">
-      <div className="-mx-3.5 h-[236px] animate-pulse bg-ds-sunk motion-reduce:animate-none" />
-      <div className="grid grid-cols-2 gap-2">
-        {COURSES.concat(COURSES[0]!).map((c, i) => (
-          <div
-            key={`${c.id}${i}`}
-            className="h-[88px] animate-pulse rounded-[18px] bg-ds-sunk motion-reduce:animate-none"
-          />
-        ))}
-      </div>
+    <div aria-busy="true" aria-label="Loading your profile" className="grid gap-3 px-3.5 pt-4">
+      <div className="h-[330px] animate-pulse rounded-[28px] bg-ds-sunk motion-reduce:animate-none" />
       <div className="h-24 animate-pulse rounded-[18px] bg-ds-sunk motion-reduce:animate-none" />
     </div>
   );
@@ -1160,7 +1269,7 @@ export function ProfileTabBar({
     <div
       role="tablist"
       aria-label="Profile sections"
-      className="sticky top-0 z-10 grid grid-cols-3 gap-1 rounded-full bg-ds-line p-1"
+      className="sticky top-0 z-10 grid grid-cols-3 gap-[3px] rounded-[14px] border-2 border-ds-line bg-ds-card p-[3px] shadow-[var(--ds-shadow-resting)]"
     >
       {PROFILE_TABS.map((t) => (
         <button
@@ -1176,10 +1285,8 @@ export function ProfileTabBar({
             if (e.key === "ArrowRight") onChange(stepTab(tab, 1));
             if (e.key === "ArrowLeft") onChange(stepTab(tab, -1));
           }}
-          className={`min-h-11 rounded-full px-2 ds-type-footnote font-extrabold ${
-            t.id === tab
-              ? "bg-ds-card text-ds-ink shadow-[var(--ds-shadow-resting)]"
-              : "text-ds-ink-soft"
+          className={`min-h-11 rounded-[11px] px-2 ds-type-footnote font-extrabold ${
+            t.id === tab ? "bg-ds-choice text-ds-on-choice" : "text-ds-ink-soft"
           }`}
         >
           {t.label}
@@ -1189,35 +1296,21 @@ export function ProfileTabBar({
   );
 }
 
-/** Avatar and name on the Progress and Social tabs, where the full hero would push the content off screen. */
-export function CompactProfileHeader({ o }: { o: ProfileOverview }) {
-  const name = o.profile.displayName || "Learner";
-  return (
-    <div className="flex items-center gap-2.5" data-profile-compact="">
-      <ProfileAvatar
-        seed={o.profile.avatarSeed}
-        name={name}
-        className="size-[38px]"
-        textClass="ds-type-footnote"
-      />
-      <h1 className="ds-type-title break-words text-ds-ink">{name}</h1>
-    </div>
-  );
-}
-
 /** A Progress card that shows a one-line summary and opens in place. Closed by default. */
 export function ProgressFold({
   headingId,
   title,
   summary,
+  defaultOpen = false,
   children,
 }: {
   headingId: string;
   title: string;
   summary: string;
+  defaultOpen?: boolean;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const bodyId = useId();
   return (
     <section aria-labelledby={headingId} className={`${CARD} overflow-hidden`}>

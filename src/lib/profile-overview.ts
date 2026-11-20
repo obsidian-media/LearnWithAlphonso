@@ -387,10 +387,71 @@ export function nextAchievement(
 export function leagueStatus(tier: LeagueTier, courseXp: number) {
   const idx = LEAGUE_TIERS.indexOf(tier);
   const next = LEAGUE_TIERS[idx + 1] ?? null;
+  const floor = LEAGUE_THRESHOLDS[idx] ?? 0;
+  const ceiling = next ? LEAGUE_THRESHOLDS[idx + 1]! : floor;
   return {
     tier,
     next,
-    xpToNext: next ? Math.max(0, LEAGUE_THRESHOLDS[idx + 1]! - courseXp) : 0,
+    xpToNext: next ? Math.max(0, ceiling - courseXp) : 0,
+    /** How far through this tier's XP span the learner is, 0 to 100; 100 at the top tier. */
+    pct: next
+      ? Math.max(
+          0,
+          Math.min(100, Math.round((100 * (courseXp - floor)) / Math.max(1, ceiling - floor))),
+        )
+      : 100,
+  };
+}
+
+/**
+ * The identity hero's level line. Alphonso has no numbered XP level; the level a learner holds is their CEFR level in
+ * the course, and what fills it is the lessons they have finished in it (levelProgress). The ring and the bar both
+ * show this share, so the hero never states an "XP to next level" the app does not track.
+ */
+export function heroLevel(o: ProfileOverview) {
+  const cefr = o.courses.find((c) => c.course === o.course)?.cefrLevel ?? "A1";
+  const done = o.completions.filter((c) => c.language === o.course).map((c) => c.lessonId);
+  const p = levelProgress(o.course, cefr, done);
+  return { ...p, lessonsLeft: Math.max(0, p.total - p.done) };
+}
+
+export type StripDay = {
+  day: string;
+  state: RingDay["state"];
+  /** What a screen reader says after the weekday: "goal met", "not yet today", "still to come"... */
+  spoken: string;
+};
+
+/**
+ * The seven days of this week as the Overview strip shows them. Measured against the learner's own daily goal in
+ * learning minutes when they chose one, otherwise by the XP rule the streak uses (weekRings).
+ */
+export function weekStrip(o: ProfileOverview): {
+  days: StripDay[];
+  doneDays: number;
+  measure: "minutes" | "xp";
+  minutesSpoken: number;
+} {
+  const w = weekRings(o.today, o.activity, o.speech);
+  const goal = o.dailyGoalMinutes ? goalRings(o.today, o.learning, o.dailyGoalMinutes) : null;
+  const word = (s: RingDay["state"]) =>
+    s === "future" ? "still to come" : s === "today" ? "not yet today" : "goal not met";
+  const days: StripDay[] = goal
+    ? goal.days.map((d) => ({
+        day: d.day,
+        state: d.state,
+        spoken: d.state === "done" ? `${d.minutes} min, goal met` : word(d.state),
+      }))
+    : w.days.map((d) => ({
+        day: d.day,
+        state: d.state,
+        spoken: d.state === "done" ? `${d.xp} XP` : word(d.state),
+      }));
+  return {
+    days,
+    doneDays: days.filter((d) => d.state === "done").length,
+    measure: goal ? "minutes" : "xp",
+    minutesSpoken: w.minutesSpoken,
   };
 }
 
