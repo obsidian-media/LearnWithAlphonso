@@ -47,6 +47,24 @@ class StoriesClientTest {
     }
 
     @Test
+    fun `a branching card takes the first scene art and counts only real endings found`() = runTest {
+        val nodes = """{"start":"n1","map":{
+            "n1":{"segments":["a"],"art":"en/key/n1.jpg","next":"e1"},
+            "e1":{"segments":["b"],"ending":{"id":"good","title":"G","wrap":"w","quality":"good"}},
+            "e2":{"segments":["c"],"ending":{"id":"bad","title":"B","wrap":"w","quality":"lesser"}}}}"""
+        val row = """{"id":"$storyId","course":"en","level_id":"A2","slug":"key","title":"The Key","sort_order":3,"published":true,"branching":true,"segments":[],"nodes":$nodes}"""
+        val fake = FakeSupabase { req ->
+            if (req.path.endsWith("/stories")) json("[$row]")
+            else json("""[{"story_id":"$storyId","segment_index":0,"endings_found":["good","ghost"]}]""")
+        }
+        val story = client(fake).fetchStories("en").single()
+        assertEquals(2, story.endingsTotal)
+        assertEquals(1, story.endingsFound)
+        assertTrue(story.coverUrl!!.endsWith("/storage/v1/object/public/story-art/en/key/n1.jpg"))
+        assertTrue(fake.seen[0].query["select"]!!.contains("nodes"))
+    }
+
+    @Test
     fun `a failed progress read never fails the library`() = runTest {
         val fake = FakeSupabase { req -> if (req.path.endsWith("/stories")) json("[${storyRow()}]") else json("{}", HttpStatusCode.InternalServerError) }
         val stories = client(fake).fetchStories("en")

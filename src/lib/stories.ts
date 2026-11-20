@@ -25,6 +25,12 @@ export type StorySummary = {
   bestCorrect: number | null;
   checkTotal: number | null;
   completed: boolean;
+  /** The first scene's art as a public URL, or null (a linear story, or a branching one without art): a designed fallback is drawn. */
+  coverUrl: string | null;
+  /** Endings in a branching story's node graph (0 for a linear story). */
+  endingsTotal: number;
+  /** Distinct endings this learner has reached (story_progress.endings_found), never more than endingsTotal. */
+  endingsFound: number;
 };
 
 export type Story = {
@@ -115,4 +121,66 @@ export function nextSegment(index: number, count: number): number | null {
 export function clampSegment(index: number, count: number): number {
   if (!Number.isFinite(index) || index <= 0 || count <= 0) return 0;
   return Math.min(Math.floor(index), count - 1);
+}
+
+/** The library's three parts: the featured story, the continue line and the cover grid. */
+export type StoriesLibrary = {
+  featured: StorySummary | null;
+  resume: StorySummary | null;
+  grid: StorySummary[];
+};
+
+/**
+ * Splits the visible stories for the library. Featured is the newest branching story (the highest sort order: stories
+ * are added at the end). Resume is a linear story the learner started and has not finished (its saved position is
+ * stored; a branching path's position is not, so a branching story is never offered here). The grid is everything
+ * except the featured and the resume story (each is shown once), in level then reading order.
+ */
+export function storiesLibrary(stories: StorySummary[], course: string): StoriesLibrary {
+  const visible = visibleStories(stories, course);
+  const featured =
+    visible
+      .filter((s) => s.branching)
+      .reduce<StorySummary | null>(
+        (best, s) => (best === null || s.sortOrder >= best.sortOrder ? s : best),
+        null,
+      ) ?? null;
+  const resume = visible.find((s) => !s.branching && s.segmentIndex > 0 && !s.completed) ?? null;
+  return { featured, resume, grid: visible.filter((s) => s !== featured && s !== resume) };
+}
+
+/** "3 of 5 endings" for a branching story, with the total never exceeded by the found count. */
+export function endingsLine(s: Pick<StorySummary, "endingsFound" | "endingsTotal">): string {
+  const found = Math.min(s.endingsFound, s.endingsTotal);
+  return `${found} of ${s.endingsTotal} endings`;
+}
+
+/** The hero's line: "A2 · 4 endings · 1 found". */
+export function heroLine(s: StorySummary): string {
+  const n = s.endingsTotal;
+  const found = Math.min(s.endingsFound, n);
+  return `${s.level} · ${n} ${n === 1 ? "ending" : "endings"} · ${found} found`;
+}
+
+/** What a grid card says under its title: the endings progress (branching) or the read state (linear). */
+export function cardCaption(s: StorySummary): string {
+  return s.branching && s.endingsTotal > 0 ? endingsLine(s) : storyStatus(s);
+}
+
+/** The one full accessible name of a card or hero button. */
+export function cardLabel(s: StorySummary): string {
+  const parts = [s.title, s.level];
+  if (s.branching) parts.push("Choose your path");
+  parts.push(cardCaption(s));
+  return parts.join(", ");
+}
+
+/** The scene a resume line reads: the saved segment, counted from 1. */
+export function resumeLine(s: StorySummary): string {
+  return `Continue · Scene ${s.segmentIndex + 1}`;
+}
+
+/** Fraction of endings found, 0..1, for the progress ring. */
+export function endingsFraction(s: Pick<StorySummary, "endingsFound" | "endingsTotal">): number {
+  return s.endingsTotal <= 0 ? 0 : Math.min(1, s.endingsFound / s.endingsTotal);
 }

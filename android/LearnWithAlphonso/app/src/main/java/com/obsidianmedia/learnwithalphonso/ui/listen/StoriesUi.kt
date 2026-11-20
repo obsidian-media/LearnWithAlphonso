@@ -128,21 +128,9 @@ fun rememberStories(container: AppContainer, courseCode: String): StoriesFeed {
     return StoriesFeed(stories, loading, failed) { reload++ }
 }
 
-/** One story row of the Stories tab: title and status ("Choose your path" for a branching story), one button. */
-@Composable
-private fun StoryRow(story: StorySummary, onOpen: (String) -> Unit) {
-    val status = Stories.status(story)
-    Box(
-        Modifier.fillMaxWidth().clickable(role = Role.Button) { onOpen(story.id) }
-            .clearAndSetSemantics { contentDescription = "${story.title}, $status"; role = Role.Button },
-    ) {
-        AlphonsoRowCard(story.title, status, leadingEmoji = if (story.branching) "🧭" else "📚")
-    }
-}
-
-/** The Library's Stories tab: published stories grouped by level. A failed load is never shown as an empty library. */
+/** The Library's Stories tab: the featured story, the continue line and cover cards. A failed load is never shown as an empty library. */
 fun LazyListScope.storiesFullItems(feed: StoriesFeed, courseCode: String, onOpen: (String) -> Unit) {
-    val groups = Stories.groupByLevel(Stories.visible(feed.stories, courseCode))
+    val layout = Stories.library(feed.stories, courseCode)
     when {
         feed.loading -> item(key = "stories-loading") { Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
         feed.failed -> item(key = "stories-failed") {
@@ -151,11 +139,7 @@ fun LazyListScope.storiesFullItems(feed: StoriesFeed, courseCode: String, onOpen
                 AlphonsoSecondaryButton("Try again", onClick = feed.retry, fullWidth = false)
             }
         }
-        groups.isEmpty() -> item(key = "stories-empty") { DsEmptyState(StoryCopy.EMPTY_TITLE, StoryCopy.EMPTY_MESSAGE, artAsset = "lesson/happy.webp") }
-        else -> groups.forEach { group ->
-            item(key = "level-${group.level}") { DsOverline(Stories.levelLabel(group.level)) }
-            items(group.stories, key = { it.id }) { story -> StoryRow(story, onOpen) }
-        }
+        else -> storiesLibraryItems(layout, onOpen)
     }
 }
 
@@ -176,29 +160,12 @@ fun StoriesPeekSection(feed: StoriesFeed, courseCode: String, onOpen: (String) -
             )
         }
         LazyRow(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
-            items(shown, key = { it.id }) { story ->
-                val status = Stories.status(story)
-                val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
-                Column(
-                    Modifier.width(168.dp).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
-                        .clickable(role = Role.Button) { onOpen(story.id) }
-                        .clearAndSetSemantics { contentDescription = "${story.title}, ${story.level}, $status"; role = Role.Button }
-                        .padding(AlphonsoTokens.Space.s3),
-                    verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
-                ) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(if (story.branching) "🧭" else "📚", style = TitleType)
-                        Text(story.level, color = ds.choice, fontWeight = FontWeight.Bold, style = CaptionType, modifier = Modifier.background(ds.choiceTint, RoundedCornerShape(8.dp)).padding(horizontal = 6.dp))
-                    }
-                    Text(story.title, color = ds.ink, fontWeight = FontWeight.Bold, style = HeadlineType)
-                    Text(status, color = ds.inkSoft, style = CaptionType)
-                }
-            }
+            items(shown, key = { it.id }) { story -> StoriesPeekCard(story, onOpen) }
         }
     }
 }
 
-/** Published stories grouped by level, like the Listen library. A failed load is never shown as an empty library. */
+/** The standalone Stories screen: the same library as the Library tab. A failed load is never shown as an empty library. */
 @Composable
 fun StoriesLibraryScreen(container: AppContainer, courseCode: String, onBack: () -> Unit, onOpen: (String) -> Unit) {
     val ds = LocalAlphonsoTokens.current
@@ -219,7 +186,6 @@ fun StoriesLibraryScreen(container: AppContainer, courseCode: String, onBack: ()
         loading = false
     }
     BackHandler(onBack = onBack)
-    val groups = Stories.groupByLevel(Stories.visible(stories, courseCode))
     Column(Modifier.fillMaxSize().background(ds.surface)) {
         StoriesTopBar("Stories", onBack)
         when {
@@ -228,23 +194,7 @@ fun StoriesLibraryScreen(container: AppContainer, courseCode: String, onBack: ()
                 DsEmptyState("Couldn't load stories", "Check your connection and try again.", artAsset = "lesson/hmm.webp")
                 AlphonsoSecondaryButton("Try again", onClick = { reload++ }, fullWidth = false)
             }
-            groups.isEmpty() -> Box(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.gutter)) {
-                DsEmptyState(StoryCopy.EMPTY_TITLE, StoryCopy.EMPTY_MESSAGE, artAsset = "lesson/happy.webp")
-            }
-            else -> LazyColumn(contentPadding = PaddingValues(AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-                groups.forEach { group ->
-                    item(key = "level-${group.level}") { DsOverline(Stories.levelLabel(group.level)) }
-                    items(group.stories, key = { it.id }) { story ->
-                        val status = Stories.status(story)
-                        Box(
-                            Modifier.fillMaxWidth().clickable(role = Role.Button) { onOpen(story.id) }
-                                .clearAndSetSemantics { contentDescription = "${story.title}, $status"; role = Role.Button },
-                        ) {
-                            AlphonsoRowCard(story.title, status, leadingEmoji = "📚")
-                        }
-                    }
-                }
-            }
+            else -> StoriesLibraryContent(stories, courseCode, onOpen)
         }
     }
 }
