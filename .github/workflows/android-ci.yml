@@ -197,7 +197,14 @@ jobs:
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           working-directory: android/LearnWithAlphonso
-          script: ./gradlew connectedDebugAndroidTest
+          script: bash scripts/ci-instrumentation.sh
+      - name: Upload device log and memory trace
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: android-diagnostics
+          path: android/LearnWithAlphonso/diag/
+          if-no-files-found: warn
       # The Gradle log only says "There were failing tests"; name them in the job summary so the reason is obvious.
       - name: Summarise failing instrumentation tests
         if: failure()
