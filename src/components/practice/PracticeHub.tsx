@@ -295,7 +295,8 @@ export function PracticeHub({
                       className="mx-auto block h-[144px] w-auto max-w-none select-none drop-shadow-[0_9px_15px_rgba(0,0,0,.5)]"
                     />
                   </div>
-                  <div className="relative z-[3] grid justify-items-center gap-2 pb-3.5">
+                  {/* self-end: with the figure hidden (large text), Call/Chat still sit at the card's foot. */}
+                  <div className="relative z-[3] grid self-end justify-items-center gap-2 pb-3.5">
                     <p className="ds-type-caption font-extrabold text-ds-call-mint">
                       <i
                         aria-hidden="true"

@@ -29,12 +29,16 @@ describe("call-card Alphonso figure", () => {
     expect(classes).toContain("hidden");
     expect(classes).toContain("min-[20rem]:block");
     const gates = classes.filter((c) => /^min-\[\d+(\.\d+)?rem\]:/.test(c));
+    // 20rem is 320 px at the default size, so every phone shows the figure; at about 1.3x text a 390 px phone is only
+    // 18.75rem wide and it hides. The real pixel check is in the final device QA (jsdom applies no media queries).
     expect(gates).toEqual(["min-[20rem]:block"]);
-    // A 320 px and a 390 px phone at the default size both reach 20rem, so the figure shows on them.
-    expect(320 / 16).toBeGreaterThanOrEqual(20);
-    expect(390 / 16).toBeGreaterThanOrEqual(20);
-    // At about 1.3x text a 390 px phone is only 18.75rem wide, so the figure hides.
-    expect(390 / (16 * 1.3)).toBeLessThan(20);
+  });
+
+  it("keeps Call and Chat at the bottom of the card when the figure is hidden", () => {
+    const { container } = renderHub();
+    const figure = container.querySelector("[data-hero-figure]") as HTMLElement;
+    const callGroup = figure.nextElementSibling as HTMLElement;
+    expect(callGroup.className.split(/\s+/)).toContain("self-end");
   });
 
   it("is 144px tall and sits in the grid flow, never absolutely positioned over the title", () => {
