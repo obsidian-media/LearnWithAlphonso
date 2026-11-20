@@ -112,6 +112,12 @@ class PracticeHubVisualTest {
         shot("04-hub-sections")
         // Large text: the hero's answers stay reachable.
         rule.runOnIdle { scale.value = 2f }
+        // The carousel is on its second card (the dot click above), and the pager has composed only the visible page, so
+        // the first card's answers do not exist until it is brought back: scrolling to a node that is absent would
+        // otherwise walk the whole list and time out.
+        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-hero-dot-0"))
+        rule.onNodeWithTag("practice-hero-dot-0").performClick()
+        rule.waitForIdle()
         rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-hero-chat-0"))
         rule.onNodeWithTag("practice-hero-chat-0").assertIsDisplayed()
         rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-say-it-right"))
