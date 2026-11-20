@@ -145,3 +145,5 @@ Counts: owner only 23, decision needed 9, device check 15, agent can do 13, done
 - Alphonso tutor videos (was 21): owner 2026-11-16, "keep the videos for now". Decided: the three videos stay published (with the free-plan watermark).
 - Admin console redesign from the approved mock: merged in #568 (becd9650); admin phases 1 to 3 are all built.
 - Build 67 cut and uploaded to TestFlight (#571, release run 43785255490), not submitted; carries the iOS support push tap.
+
+<!-- skip-path probe -->
