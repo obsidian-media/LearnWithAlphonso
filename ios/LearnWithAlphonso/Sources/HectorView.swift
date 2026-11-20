@@ -78,6 +78,8 @@ private struct HectorConversationView: View {
     @State private var voice = VoiceSessionController()
     /// Bumped when Hector's greeting should be spoken: once his learner context has loaded, and on "Call again".
     @State private var openerCue = 0
+    /// Stops a tapped recording that was never stopped (HectorRecordingCap).
+    @State private var recordingCap: Task<Void, Never>?
     @State private var notice: String?
     @State private var cefrLevel: String?
     /// V3 package 3b "tutor persona memory": open weaknesses, prepended to
@@ -128,6 +130,7 @@ private struct HectorConversationView: View {
         }
         .task(id: course) { await loadLearnerContext() }
         .onDisappear {
+            recordingCap?.cancel()
             voice.disappeared()
             voice.onCapture = nil
             analyzeWeaknessesIfNew()
@@ -261,8 +264,8 @@ private struct HectorConversationView: View {
             handsFreeOn: voice.isHandsFreeOn,
             level: { voice.inputLevelDBFS() }, reduceMotion: reduceMotion,
             onSend: { sendTyped(draft) },
-            onMic: { if voice.pressBegan() { notice = nil } },
-            onStop: { voice.pressEnded() })
+            onMic: { startTappedRecording() },
+            onStop: { stopTappedRecording() })
     }
 
     /// Chips show under the greeting until the learner has said something.
@@ -280,7 +283,29 @@ private struct HectorConversationView: View {
         draft = ""
         notice = nil
         conversation = conversationStore.append(ChatMessage(role: "user", content: text), to: key)
-        Task { await respond(to: text, generation: generation) }
+        Task {
+            await respond(to: text, generation: generation)
+            // The spoken path always ends its turn (a defer in VoiceSessionController); so does this one, so a future
+            // early return in respond can never leave the phase stuck in .thinking.
+            voice.turnFinished(generation)
+        }
+    }
+
+    /// The mic button taps to start, and stops and sends after HectorRecordingCap.seconds if nothing else did (a held
+    /// button was bounded by the finger; a tapped one is not).
+    private func startTappedRecording() {
+        guard voice.pressBegan() else { return }
+        notice = nil
+        recordingCap?.cancel()
+        recordingCap = Task {
+            try? await Task.sleep(for: .seconds(HectorRecordingCap.seconds))
+            if !Task.isCancelled, voice.isRecording { voice.pressEnded() }
+        }
+    }
+
+    private func stopTappedRecording() {
+        recordingCap?.cancel()
+        voice.pressEnded()
     }
 
     /// The setting on (the default): the full-screen call. Hands-free keeps its Pause/Resume button and status line on

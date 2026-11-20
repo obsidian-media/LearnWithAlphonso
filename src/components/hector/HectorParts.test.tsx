@@ -38,10 +38,18 @@ describe("Hector status pill words", () => {
   });
 
   it("the header announces it and says which course he teaches", () => {
-    render(<HectorHeader course="es" status="thinking" menu={null} />);
+    render(<HectorHeader course="es" status="thinking" menu={null} backTo="/learn" />);
     expect(screen.getByRole("status")).toHaveAttribute("aria-label", "Hector is thinking");
     expect(screen.getByText("Your Spanish tutor")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
+  });
+});
+
+describe("HectorHeader on the tab", () => {
+  it("has no back chevron when it is a tab root", () => {
+    render(<HectorHeader course="en" status={null} menu={null} />);
+    expect(screen.queryByRole("link", { name: "Back to Learn" })).toBeNull();
+    expect(screen.getByRole("button", { name: "More about Hector" })).toBeInTheDocument();
   });
 });
 

@@ -145,6 +145,10 @@ final class VoiceSessionController {
 
     func pressEnded() { send(.pressEnded) }
 
+    /// Ends a turn that did not come through `onCapture` (a typed one), so no spinner can outlive it. A no-op when the
+    /// turn already moved on (the reply is playing, or a newer turn began).
+    func turnFinished(_ generation: Int) { send(.turnFinished(generation: generation)) }
+
     /// Claims the session for the scene's opening line (OpenerPlayback.speak). Returns the generation to play it
     /// under with `play(_:generation:)`, or nil when a recording or turn is in progress or the screen is hidden.
     func beginOpener() -> Int? {

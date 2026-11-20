@@ -42,6 +42,14 @@ vi.mock("@/integrations/supabase/client", () => ({
     },
   },
 }));
+// The tapped-recording cap, shrunk for the one test that waits for it.
+const cap = vi.hoisted(() => ({ ms: 60_000 }));
+vi.mock("@/lib/hector-recording-cap", () => ({
+  HECTOR_RECORDING_CAP_SECONDS: 60,
+  get HECTOR_RECORDING_CAP_MS() {
+    return cap.ms;
+  },
+}));
 const fetchProgress = vi.fn();
 vi.mock("../../lib/sync.functions", () => ({ fetchProgress }));
 const getWeaknessTrend = vi.fn();
@@ -364,6 +372,22 @@ describe("Hector's type-or-talk composer", () => {
         }
       },
     );
+  });
+
+  it("a tapped recording that is never stopped is stopped at the cap", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    cap.ms = 300;
+    try {
+      renderPage();
+      await shows(GENERIC_EN);
+      await userEvent.click(screen.getByRole("button", { name: "Record a voice message" }));
+      await screen.findByTestId("hector-listening");
+      await waitFor(() => expect(screen.queryByTestId("hector-listening")).toBeNull(), {
+        timeout: 3000,
+      });
+    } finally {
+      cap.ms = 60_000;
+    }
   });
 
   it("idle: a text field, a gold mic, and no send button until something is typed", async () => {

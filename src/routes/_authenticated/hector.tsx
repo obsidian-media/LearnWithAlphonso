@@ -18,6 +18,7 @@ import { useProgress } from "../../lib/progress";
 import { readApiError } from "../../lib/read-api-error";
 import { hectorStatus } from "../../lib/hector-status";
 import { hectorChips, type HectorChip } from "@/lib/hector-chips";
+import { HECTOR_RECORDING_CAP_MS } from "@/lib/hector-recording-cap";
 import { bubbleClass } from "@/components/hector/hector-style";
 import {
   HectorAvatar,
@@ -174,10 +175,19 @@ function HectorGate({ course }: { course: Course }) {
   );
 }
 
-function ManageSubscription({ pro }: { pro: ProStatus }) {
+/** Whether there is anything to say about the subscription: an empty row in a menu is just noise. */
+function hasManageSubscription(pro: ProStatus): boolean {
+  return (pro.store === "web" && !!pro.manageUrl) || pro.store === "app_store";
+}
+
+function ManageSubscription({ pro, menuItem = false }: { pro: ProStatus; menuItem?: boolean }) {
   if (pro.store === "web" && pro.manageUrl) {
     return (
-      <a href={pro.manageUrl} className="ds-type-caption font-medium text-ds-ink-soft underline">
+      <a
+        href={pro.manageUrl}
+        role={menuItem ? "menuitem" : undefined}
+        className="ds-type-caption font-medium text-ds-ink-soft underline"
+      >
         {PAYWALL_COPY.manage}
       </a>
     );
@@ -432,6 +442,14 @@ function HectorConversation({
     onWantedChange: setHandsFreeWanted,
   });
   const recording = captureState === "recording";
+  // A tapped recording has no finger to bound it: it is stopped and sent after the cap (the same minute on every platform).
+  const stopRef = useRef(stopRecording);
+  stopRef.current = stopRecording;
+  useEffect(() => {
+    if (!recording) return;
+    const t = setTimeout(() => stopRef.current(), HECTOR_RECORDING_CAP_MS);
+    return () => clearTimeout(t);
+  }, [recording]);
   const transcribing = captureState === "transcribing";
   // While the greeting's voice loads Hector is "thinking", as before a reply.
   const status = hectorStatus({
@@ -546,9 +564,11 @@ function HectorConversation({
       status={status}
       menu={
         <>
-          <div role="none" className="px-2 py-1.5">
-            <ManageSubscription pro={pro} />
-          </div>
+          {hasManageSubscription(pro) && (
+            <div role="none" className="px-2 py-1.5">
+              <ManageSubscription pro={pro} menuItem />
+            </div>
+          )}
           <Link
             to="/profile"
             role="menuitem"

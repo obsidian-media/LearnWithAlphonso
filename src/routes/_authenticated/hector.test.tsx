@@ -135,24 +135,26 @@ describe("web Hector always has a way back (it is full screen, with no tab bar)"
     expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
   });
 
-  it("the Pro text chat has a link back to Learn", async () => {
+  it("the Pro text chat is a tab root: no back chevron, the Learn tab is the way out", async () => {
     await renderPage();
     await screen.findByRole("log");
-    expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
+    expect(screen.queryByRole("link", { name: "Back to Learn" })).toBeNull();
+    expect(
+      within(screen.getByRole("navigation")).getByRole("link", { name: "Learn" }),
+    ).toHaveAttribute("href", "/learn");
   });
 });
 
 describe("web Hector keeps the tab bar, as on iOS and Android", () => {
   const tabBar = () => screen.queryByRole("navigation");
 
-  it("the Pro text chat shows the tab bar with Hector selected, and the exit link still works", async () => {
+  it("the Pro text chat shows the tab bar with Hector selected", async () => {
     await renderPage();
     await screen.findByRole("log");
     const nav = tabBar();
     expect(nav).not.toBeNull();
     expect(within(nav!).getByRole("link", { name: "Hector" })).toBeInTheDocument();
     expect(within(nav!).getByRole("link", { name: "Learn" })).toHaveAttribute("href", "/learn");
-    expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
   });
 
   it("the composer rides above the tab bar in the same dock, so the tabs never cover it", async () => {
@@ -354,7 +356,7 @@ describe("web Hector", () => {
     routes["/api/pro-status"] = status(PRO_WEB);
     await renderPage();
     await userEvent.click(await screen.findByRole("button", { name: "More about Hector" }));
-    expect(await screen.findByRole("link", { name: "Manage Subscription" })).toHaveAttribute(
+    expect(await screen.findByRole("menuitem", { name: "Manage Subscription" })).toHaveAttribute(
       "href",
       "https://billing.example/portal",
     );
@@ -416,6 +418,40 @@ describe("web Hector in the new look", () => {
     );
     await userEvent.keyboard("{Escape}");
     expect(screen.queryByRole("menu")).toBeNull();
+    // Escape hands focus back to the button that opened it.
+    expect(button).toHaveFocus();
+  });
+
+  it("the menu takes focus on open, moves with the arrow keys, and hides a subscription row with nothing to say", async () => {
+    routes["/api/pro-status"] = status({
+      pro: true,
+      store: null,
+      trialEligible: false,
+      manageUrl: null,
+    });
+    await renderPage();
+    await userEvent.click(await screen.findByRole("button", { name: "More about Hector" }));
+    const menu = screen.getByRole("menu", { name: "Hector options" });
+    // Only "Settings and voices": there is no empty subscription row.
+    const items = within(menu).getAllByRole("menuitem");
+    expect(items).toHaveLength(1);
+    expect(items[0]).toHaveFocus();
+    expect(menu.textContent).not.toMatch(/Manage/i);
+    await userEvent.keyboard("{ArrowDown}");
+    expect(items[0]).toHaveFocus();
+  });
+
+  it("with a web subscription the manage link is a menu item, and arrows move between the two", async () => {
+    routes["/api/pro-status"] = status(PRO_WEB);
+    await renderPage();
+    await userEvent.click(await screen.findByRole("button", { name: "More about Hector" }));
+    const items = within(screen.getByRole("menu")).getAllByRole("menuitem");
+    expect(items.map((i) => i.textContent)).toEqual(["Manage Subscription", "Settings and voices"]);
+    expect(items[0]).toHaveFocus();
+    await userEvent.keyboard("{ArrowDown}");
+    expect(items[1]).toHaveFocus();
+    await userEvent.keyboard("{ArrowUp}");
+    expect(items[0]).toHaveFocus();
   });
 });
 

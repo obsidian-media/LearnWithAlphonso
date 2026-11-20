@@ -196,4 +196,26 @@ class HectorGreetingViewModelTest {
         assertEquals(withWeakSpot, v.state.value.turns.single().content)
         assertNull(v.state.value.error)
     }
+
+    @Test
+    fun `a tapped recording that is never stopped is stopped and sent at the cap`() = runBlocking {
+        val s = server()
+        val v = HectorViewModel(
+            InstantRecorder(), { true }, tutor(s), ai(s), s.progressClient, ReplyPlayer { true }, course = Course.ENGLISH,
+            hectorVoice = { "aura-2-atlas-en" }, openerCache = OpenerSpeechCache(), hectorLimit = { 150 }, recordingCapMs = 150,
+        )
+        v.tapMicBegan()
+        awaitTrue("the capped turn was sent") { v.state.value.turns.any { it.role == "user" && it.content == "yes please" } }
+    }
+
+    @Test
+    fun `typing may cut his greeting off, but never a turn already under way`() {
+        val greeting = com.obsidianmedia.learnwithalphonso.ui.practice.ConversationUiState(
+            turns = listOf(ChatMessage("assistant", withWeakSpot)), openerIndices = setOf(0), phase = ConversationPhase.SPEAKING,
+        )
+        assertTrue(HectorViewModel.canSend(greeting, com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE))
+        val reply = greeting.copy(turns = greeting.turns + ChatMessage("user", "hi"), phase = ConversationPhase.THINKING)
+        assertFalse(HectorViewModel.canSend(reply, com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE))
+        assertFalse(HectorViewModel.canSend(greeting, com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.RECORDING))
+    }
 }

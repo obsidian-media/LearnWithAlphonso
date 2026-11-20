@@ -49,6 +49,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -83,8 +86,9 @@ internal fun hectorCourseName(course: com.obsidianmedia.learnwithalphonso.core.c
 }
 
 /** What the header's status pill says: ready while Hector waits, then what he is doing. */
-enum class HectorStatusUi(val label: String) {
-    READY("ready"), LISTENING("Listening…"), THINKING("Thinking…"), SPEAKING("Speaking…");
+enum class HectorStatusUi(val label: String, val spoken: String) {
+    READY("Ready", "Hector is ready"), LISTENING("Listening…", "Hector is listening"),
+    THINKING("Thinking…", "Hector is thinking"), SPEAKING("Speaking…", "Hector is speaking");
 
     companion object {
         /** From the recorder's phase and the conversation's: the learner talking wins, then the wait for a reply, then his voice. */
@@ -115,7 +119,8 @@ private fun rememberHectorCutout(): ImageBitmap? {
 internal fun HectorHeader(
     courseName: String,
     status: HectorStatusUi,
-    onBack: () -> Unit,
+    /** Null on the Hector tab (a tab root has nowhere to go back to); set where he is presented as a sheet. */
+    onBack: (() -> Unit)?,
     reducedMotion: Boolean,
     menu: @Composable ColumnScope.(dismiss: () -> Unit) -> Unit,
     modifier: Modifier = Modifier,
@@ -128,7 +133,7 @@ internal fun HectorHeader(
             .background(Brush.verticalGradient(listOf(ds.heroA, ds.heroB))),
     ) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            HeaderRoundButton(Icons.AutoMirrored.Filled.ArrowBack, "Back", onBack)
+            if (onBack != null) HeaderRoundButton(Icons.AutoMirrored.Filled.ArrowBack, "Back", onBack) else Box {}
             Box {
                 HeaderRoundButton(Icons.Filled.MoreVert, "More options") { menuOpen = true }
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) { menu { menuOpen = false } }
@@ -156,7 +161,7 @@ internal fun HectorHeader(
                         .clip(CircleShape).background(ds.callRecord.copy(alpha = 0.14f)).border(1.dp, ds.callRecord.copy(alpha = 0.32f), CircleShape)
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                         .semantics(mergeDescendants = true) {
-                            contentDescription = "Hector is ${status.label}"
+                            contentDescription = status.spoken
                             liveRegion = LiveRegionMode.Polite
                         },
                     verticalAlignment = Alignment.CenterVertically,
@@ -189,7 +194,7 @@ private fun HeaderRoundButton(icon: androidx.compose.ui.graphics.vector.ImageVec
 internal fun HectorMiniAvatar() {
     val ds = LocalAlphonsoTokens.current
     Image(
-        painterResource(R.drawable.mascot_hector), contentDescription = "Hector", contentScale = ContentScale.Crop,
+        painterResource(R.drawable.mascot_hector), contentDescription = null, contentScale = ContentScale.Crop,
         modifier = Modifier.size(30.dp).clip(CircleShape).background(ds.brand),
     )
 }
@@ -262,7 +267,7 @@ internal fun HectorComposer(
                 Modifier.weight(1f).heightIn(min = 44.dp).testTag("hector-listening")
                     .clip(RoundedCornerShape(22.dp)).background(ds.choiceTint).border(1.5.dp, ds.choice.copy(alpha = 0.3f), RoundedCornerShape(22.dp))
                     .padding(horizontal = 16.dp)
-                    .semantics(mergeDescendants = true) { contentDescription = "Listening"; liveRegion = LiveRegionMode.Polite },
+                    .semantics(mergeDescendants = true) { contentDescription = "Listening" },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(11.dp),
             ) {
@@ -327,5 +332,38 @@ internal fun HectorWaveform(level: () -> Double?, reducedMotion: Boolean) {
             val h = if (reducedMotion || db == null) STATIC_BARS[i].toDouble() else CallLevel.barHeight(db, i) * 0.7
             Box(Modifier.size(width = 3.dp, height = h.dp).clip(RoundedCornerShape(2.dp)).background(ds.choice.copy(alpha = 0.85f)))
         }
+    }
+}
+
+/**
+ * The "mic is live" line for the classic screen while hands-free is on: what it is doing (or why it paused) and the one
+ * Pause or Resume button. Shown whenever hands-free is on, wherever it was turned on (the switch, or the stored choice
+ * starting it), so the microphone is never open without a visible sign.
+ */
+@Composable
+internal fun HectorHandsFreeBar(status: HandsFreeLoop.Status, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+    val ds = LocalAlphonsoTokens.current
+    val line = HandsFreeCopy.statusLine(status, "Hector") ?: return
+    val paused = status is HandsFreeLoop.Status.Paused
+    // A pause is a safety stop the learner must hear about; the rest is read on demand.
+    val view = LocalView.current
+    var wasPaused by remember { mutableStateOf(false) }
+    LaunchedEffect(paused) {
+        if (paused || wasPaused) view.announceForAccessibility(line)
+        wasPaused = paused
+    }
+    Row(
+        modifier.fillMaxWidth().testTag("hector-handsfree").background(ds.choiceTint).padding(horizontal = 14.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Box(Modifier.size(8.dp).clip(CircleShape).background(if (paused) ds.action else ds.right))
+        Text(line, style = FootnoteType, color = ds.ink, modifier = Modifier.weight(1f))
+        Row(
+            Modifier.testTag("hector-handsfree-toggle").heightIn(min = 44.dp).clip(CircleShape).background(ds.card).border(1.5.dp, ds.line, CircleShape)
+                .clickable(role = Role.Button, onClick = onToggle).padding(horizontal = 14.dp)
+                .semantics { contentDescription = if (paused) HandsFreeCopy.RESUME else HandsFreeCopy.PAUSE },
+            verticalAlignment = Alignment.CenterVertically,
+        ) { Text(if (paused) HandsFreeCopy.RESUME else HandsFreeCopy.PAUSE, style = FootnoteType.copy(fontWeight = FontWeight.Bold), color = ds.choice, modifier = Modifier.clearAndSetSemantics { }) }
     }
 }

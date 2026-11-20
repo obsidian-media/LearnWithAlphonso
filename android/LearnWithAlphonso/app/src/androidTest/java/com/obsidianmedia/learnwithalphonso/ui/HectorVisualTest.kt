@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -67,7 +69,7 @@ class HectorVisualTest {
         assertRealSize("hector-figure", 60, 60)
         rule.onNodeWithTag("hector-status").assertContentDescriptionEquals("Hector is ready")
         rule.runOnIdle { status = HectorStatusUi.THINKING }
-        rule.onNodeWithTag("hector-status").assertContentDescriptionEquals("Hector is Thinking…")
+        rule.onNodeWithTag("hector-status").assertContentDescriptionEquals("Hector is thinking")
         // The chips: scroll to the row first, then each is a button of tappable size.
         rule.onNodeWithTag("scroll").performScrollToNode(hasTestTag("hector-chips"))
         for (c in chips) {
@@ -110,6 +112,64 @@ class HectorVisualTest {
         rule.onNodeWithTag("hector-status").assertIsDisplayed()
         rule.onNodeWithTag("hector-mic").assertIsDisplayed()
         assertRealSize("hector-figure", 60, 60)
+    }
+
+    private class NoRecorder : com.obsidianmedia.learnwithalphonso.core.logic.RecorderPort {
+        override fun start() {}
+        override fun remainingMillisToMinimumDuration(): Long? = null
+        override fun elapsedMillis(): Long? = null
+        override suspend fun stop(): ByteArray? = null
+        override fun cancelIfRecording() {}
+    }
+
+    private class FakeCall : com.obsidianmedia.learnwithalphonso.ui.practice.call.CallConversation {
+        override val state: kotlinx.coroutines.flow.StateFlow<com.obsidianmedia.learnwithalphonso.ui.practice.ConversationUiState> =
+            kotlinx.coroutines.flow.MutableStateFlow(com.obsidianmedia.learnwithalphonso.ui.practice.ConversationUiState())
+        override val engine = com.obsidianmedia.learnwithalphonso.core.logic.ConversationTurnEngine(
+            NoRecorder(), { true }, { _, _ -> throw IllegalStateException() },
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main),
+        )
+        override fun micLevelDBFS(): Double? = null
+        override fun pressBegan() {}
+        override fun pressEnded() {}
+        override val handsFree = com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeController(com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop.Tuning.HECTOR) {}
+        override fun armAutoStartHandsFree(check: () -> Boolean) {}
+    }
+
+    /** The first-use note must survive the menu closing: open the menu, flip the switch, confirm, hands-free is on and visible. */
+    @Test fun handsFreeSwitchInTheMenuReachesItsSafetyNoteAndTurnsOn() {
+        val context = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+        (context.applicationContext as com.obsidianmedia.learnwithalphonso.AlphonsoApplication).container.prefs.edit()
+            .remove(com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeCopy.NOTE_SEEN_KEY).commit()
+        val call = FakeCall()
+        rule.setContent {
+            AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                val status by call.handsFree.status.collectAsState()
+                var showNote by remember { mutableStateOf(false) }
+                Column(Modifier.fillMaxSize()) {
+                    HectorHeader(
+                        "English", HectorStatusUi.READY, onBack = null, reducedMotion = true,
+                        menu = { dismiss -> com.obsidianmedia.learnwithalphonso.ui.practice.call.HandsFreeSwitch(call, "Hector", onNeedNote = { dismiss(); showNote = true }) },
+                    )
+                    if (showNote) com.obsidianmedia.learnwithalphonso.ui.practice.call.HandsFreeNoteDialog(call, "Hector") { showNote = false }
+                    if (status != com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop.Status.Off) {
+                        com.obsidianmedia.learnwithalphonso.ui.hector.HectorHandsFreeBar(status, onToggle = call.handsFree::togglePause)
+                    }
+                }
+            }
+        }
+        rule.onNodeWithTag("hector-handsfree").assertDoesNotExist()
+        rule.onNodeWithContentDescription("More options").performClick()
+        rule.onNodeWithText("Hands-free").performClick()
+        // The menu is gone, the note is not: it is on the screen, not in the menu.
+        rule.onNodeWithText("Turn on hands-free").assertExists()
+        rule.onNodeWithText("Turn on hands-free").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        rule.waitForIdle()
+        rule.runOnIdle { assertTrue(call.handsFree.status.value != com.obsidianmedia.learnwithalphonso.core.logic.HandsFreeLoop.Status.Off) }
+        // And the mic is never live unseen: the bar and its Pause button are on the classic screen.
+        assertRealSize("hector-handsfree", 100, 24)
+        assertRealSize("hector-handsfree-toggle", 44, 44)
+        rule.onNodeWithContentDescription("Pause").assertHasClickAction()
     }
 
     @Test fun statusMapsFromThePhases() {

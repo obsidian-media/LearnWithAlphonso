@@ -90,19 +90,30 @@ export function HectorHeader({
   course,
   status,
   menu,
-  backTo = "/learn",
+  backTo,
 }: {
   course: Course;
   status: HectorStatus | null;
   /** What the old header bar held (subscription, settings): reachable from the overflow button. */
   menu: ReactNode;
+  /** Only where Hector is presented as a subpage or sheet: on the tab (a tab root) there is nothing to go back to. */
   backTo?: string;
 }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const items = () =>
+    Array.from(listRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
   useEffect(() => {
     if (!open) return;
-    const close = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    // Opening moves focus into the menu, as a menu button does.
+    (items()[0] ?? listRef.current)?.focus();
+    const close = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    };
     const outside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
     };
@@ -120,16 +131,21 @@ export function HectorHeader({
       className="relative z-20 flex min-h-[148px] items-end gap-3 bg-gradient-to-br from-ds-hero-a to-ds-hero-b px-4 text-ds-on-hero shadow-[0_10px_24px_-14px_rgba(14,20,48,0.7)]"
     >
       <div className="absolute inset-x-0 top-0 z-30 flex items-center justify-between px-3.5 pt-3">
-        <Link
-          to={backTo}
-          aria-label="Back to Learn"
-          data-hector-exit=""
-          className="grid size-11 place-items-center rounded-full bg-ds-on-hero/15 text-ds-on-hero focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-on-hero"
-        >
-          <Glyph name="back" className="size-5" />
-        </Link>
+        {backTo ? (
+          <Link
+            to={backTo}
+            aria-label="Back to Learn"
+            data-hector-exit=""
+            className="grid size-11 place-items-center rounded-full bg-ds-on-hero/15 text-ds-on-hero focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-on-hero"
+          >
+            <Glyph name="back" className="size-5" />
+          </Link>
+        ) : (
+          <span />
+        )}
         <div ref={menuRef} className="relative">
           <button
+            ref={buttonRef}
             type="button"
             aria-label="More about Hector"
             aria-haspopup="menu"
@@ -141,8 +157,22 @@ export function HectorHeader({
           </button>
           {open && (
             <div
+              ref={listRef}
               role="menu"
+              tabIndex={-1}
               aria-label="Hector options"
+              onKeyDown={(e) => {
+                const all = items();
+                const at = all.indexOf(document.activeElement as HTMLElement);
+                const go = (i: number) => {
+                  e.preventDefault();
+                  all[(i + all.length) % all.length]?.focus();
+                };
+                if (e.key === "ArrowDown") go(at + 1);
+                else if (e.key === "ArrowUp") go(at - 1);
+                else if (e.key === "Home") go(0);
+                else if (e.key === "End") go(all.length - 1);
+              }}
               className="absolute right-0 top-12 grid min-w-52 gap-1 rounded-2xl bg-ds-card p-2 text-ds-ink shadow-[var(--ds-shadow-floating)]"
             >
               {menu}

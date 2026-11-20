@@ -93,7 +93,6 @@ struct HectorHeader<MenuContent: View>: View {
         .background(ds.onHero.opacity(0.14), in: Capsule())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(statusSpoken)
-        .accessibilityAddTraits(.updatesFrequently)
         .accessibilityIdentifier("hectorStatusPill")
     }
 
