@@ -74,4 +74,26 @@ describe("correctionInstruction", () => {
     expect(text).toContain("typo");
     expect(text).toContain("in French");
   });
+
+  it("rule 1: a misspelling of a known word is a typo, so no block", () => {
+    expect(text).toContain("misspelling of a word the learner clearly knows");
+    expect(text).toContain("realy for really");
+    expect(text).toContain("add no block");
+  });
+
+  it("rule 2: the slip is the shortest span of the exact words, the fix corrects exactly that span", () => {
+    expect(text).toContain("SHORTEST span of the learner's exact words");
+    expect(text).toContain("usually 1 to 4 words");
+    expect(text).toContain(`slip "don't", fix "doesn't"`);
+    expect(text).toContain("never the whole sentence unless the whole sentence is the error");
+    expect(text).toContain("corrected version of exactly that span");
+  });
+
+  it("rule 3: the card teaches, the reply answers what was meant and never explains or quizzes", () => {
+    expect(text).toContain("THE CARD TEACHES");
+    expect(text).toContain("answers what the learner MEANT");
+    expect(text).toContain("keeps the conversation going");
+    expect(text).toContain("never explain the rule, point out the mistake, or quiz the learner");
+    expect(text).toContain("the note in the block does the teaching");
+  });
 });

@@ -348,6 +348,11 @@ describe("POST /api/hector-respond", () => {
       const system = sent.messages[0].content as string;
       expect(system).toContain("CORRECTION CARD");
       expect(system).toContain("At most one block");
+      expect(system).toContain("misspelling of a word the learner clearly knows");
+      expect(system).toContain("SHORTEST span of the learner's exact words");
+      expect(system).toContain(
+        "never explain the rule, point out the mistake, or quiz the learner",
+      );
       expect(system).toContain(SAFETY_PREAMBLE.slice(0, 40));
     });
 
