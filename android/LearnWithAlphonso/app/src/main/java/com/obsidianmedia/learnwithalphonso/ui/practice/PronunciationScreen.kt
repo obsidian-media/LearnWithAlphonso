@@ -421,7 +421,7 @@ internal fun SayItRightContent(
                 if (word.meaning.isNotEmpty()) Text(word.meaning, style = Type.caption.toTextStyle(), color = ds.inkSoft, textAlign = TextAlign.Center)
                 // Always available, in every state: a microphone, consent or STT failure is never a dead end.
                 // Both replay the SAME audio (fetched once per word); the slower one just plays it at a slower rate.
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.s2), verticalAlignment = Alignment.CenterVertically) {
+                Column(verticalArrangement = Arrangement.spacedBy(Space.s2), horizontalAlignment = Alignment.CenterHorizontally) {
                     HubSecondaryButton("Hear it") { onHear(word.term) }
                     Box(Modifier.testTag("sir-slower").semantics { stateDescription = if (audio.playing == SirClip.MODEL_SLOW) "Playing" else "" }) {
                         HubSecondaryButton("Say it slower") { audio.onSlower(word.term) }
