@@ -257,3 +257,152 @@ final class BranchingTests: XCTestCase {
         }
     }
 }
+
+/// The ending screen's branch map and the reader's scene numbering (same fixtures as src/lib/branching.test.ts).
+final class BranchMapTests: XCTestCase {
+    private func end(_ n: Int, title: String? = nil) -> StoryNode {
+        StoryNode(segments: ["e\(n)"], ending: StoryEnding(
+            id: "end\(n)", title: title ?? "Ending \(n)", wrap: "w", quality: .ok))
+    }
+
+    private func choice(_ gotos: [String]) -> StoryChoice {
+        StoryChoice(prompt: "p", options: gotos.map { StoryChoiceOption(label: $0, goto: $0, clue: false) })
+    }
+
+    /// start(choice a,b); a(choice e1,e2); b(link -> b2); b2(choice e3,e4).
+    private var fixtureA: StoryGraph {
+        StoryGraph(start: "start", map: [
+            "start": StoryNode(segments: ["s"], choice: choice(["a", "b"])),
+            "a": StoryNode(segments: ["a"], choice: choice(["e1", "e2"])),
+            "b": StoryNode(segments: ["b"], next: "b2"),
+            "b2": StoryNode(segments: ["b2"], choice: choice(["e3", "e4"])),
+            "e1": end(1, title: "A cake in the right hands"), "e2": end(2),
+            "e3": end(3, title: "Sorry and thank you"), "e4": end(4),
+        ])
+    }
+
+    private func mapA(found: [String] = ["end1", "end3"], current: String? = "end1") -> BranchMap {
+        Branching.branchMap(fixtureA, takenPath: [0, 0], found: found, currentEndingID: current)
+    }
+
+    private func node(_ map: BranchMap, _ id: String) -> BranchMapNode? { map.nodes.first { $0.id == id } }
+
+    func testFixtureALayout() {
+        let map = mapA()
+        XCTAssertEqual(map.nodes.first?.id, "start")
+        XCTAssertEqual(map.nodes.first?.kind, .start)
+        XCTAssertEqual(map.nodes.first?.x, 0)
+        XCTAssertNil(node(map, "b"), "the link b is collapsed away")
+        for (id, y) in [("e1", 0.125), ("e2", 0.375), ("e3", 0.625), ("e4", 0.875)] {
+            XCTAssertEqual(node(map, id)?.x, 1)
+            XCTAssertEqual(node(map, id)!.y, y, accuracy: 1e-9)
+        }
+        XCTAssertEqual(node(map, "a")!.y, 0.25, accuracy: 1e-9)
+        XCTAssertEqual(node(map, "b2")!.y, 0.75, accuracy: 1e-9)
+        XCTAssertEqual(node(map, "a")!.x, 0.5, accuracy: 1e-9)
+        XCTAssertEqual(map.nodes.map(\.id), ["start", "a", "e1", "e2", "b2", "e3", "e4"])
+    }
+
+    func testFixtureAEdgesAndCounts() {
+        let map = mapA()
+        func style(_ from: String, _ to: String) -> BranchMapEdgeStyle? {
+            map.edges.first { $0.from == from && $0.to == to }?.style
+        }
+        XCTAssertEqual(style("start", "a"), .taken)
+        XCTAssertEqual(style("a", "e1"), .taken)
+        XCTAssertEqual(style("a", "e2"), .locked)
+        XCTAssertEqual(style("start", "b2"), .plain)
+        XCTAssertEqual(style("b2", "e3"), .found)
+        XCTAssertEqual(style("b2", "e4"), .locked)
+        XCTAssertEqual(map.endingsFound, 2)
+        XCTAssertEqual(map.endingsTotal, 4)
+        XCTAssertEqual(map.lockedCount, 2)
+        XCTAssertEqual(node(map, "e1")?.ending?.state, .current)
+        XCTAssertEqual(node(map, "e3")?.ending?.state, .found)
+        XCTAssertEqual(node(map, "e2")?.ending?.state, .locked)
+        XCTAssertTrue(node(map, "a")!.onPath)
+        XCTAssertFalse(node(map, "b2")!.onPath)
+        XCTAssertEqual(
+            Branching.branchMapSummary(map),
+            "You found 2 of 4 endings: A cake in the right hands, Sorry and thank you. 2 endings are still hidden.")
+        XCTAssertEqual(
+            Branching.branchMapCaption(map),
+            "Gold = the path you just took \u{00B7} try the greyed branches for 2 more endings")
+    }
+
+    func testFixtureBEndingAtDepthOneStillSitsAtTheRight() {
+        let graph = StoryGraph(start: "s", map: [
+            "s": StoryNode(segments: ["s"], choice: choice(["e1", "m"])),
+            "m": StoryNode(segments: ["m"], choice: choice(["e2", "e3"])),
+            "e1": end(1), "e2": end(2), "e3": end(3),
+        ])
+        let map = Branching.branchMap(graph, takenPath: [0], found: ["end1"], currentEndingID: "end1")
+        XCTAssertEqual(node(map, "e1")?.x, 1)
+        XCTAssertEqual(node(map, "e1")?.depth, 1)
+        XCTAssertEqual(node(map, "m")!.x, 0.5, accuracy: 1e-9)
+    }
+
+    func testFixtureCDagPlacesANodeOnceAndACycleDoesNotHang() {
+        let dag = StoryGraph(start: "s", map: [
+            "s": StoryNode(segments: ["s"], choice: choice(["e1", "e1"])),
+            "e1": end(1),
+        ])
+        let dagMap = Branching.branchMap(dag, takenPath: [0], found: [], currentEndingID: nil)
+        XCTAssertEqual(dagMap.nodes.filter { $0.id == "e1" }.count, 1)
+        XCTAssertEqual(dagMap.edges.count, 1)
+
+        let cyc = StoryGraph(start: "s", map: [
+            "s": StoryNode(segments: ["s"], choice: choice(["x", "e1"])),
+            "x": StoryNode(segments: ["x"], next: "y"),
+            "y": StoryNode(segments: ["y"], next: "x"),
+            "e1": end(1),
+        ])
+        let cycMap = Branching.branchMap(cyc, takenPath: [1], found: ["end1"], currentEndingID: "end1")
+        XCTAssertEqual(cycMap.nodes.map(\.id), ["s", "e1"], "the cyclic branch is dropped")
+        XCTAssertEqual(cycMap.endingsTotal, 1)
+    }
+
+    func testFixtureDEverythingFoundAndSingularCases() {
+        let all = mapA(found: ["end1", "end2", "end3", "end4"])
+        XCTAssertEqual(
+            Branching.branchMapSummary(all),
+            "You found all 4 endings: A cake in the right hands, Ending 2, Sorry and thank you, Ending 4.")
+        XCTAssertEqual(
+            Branching.branchMapCaption(all), "Gold = the path you just took \u{00B7} you found every ending")
+
+        let three = mapA(found: ["end1", "end2", "end3"])
+        XCTAssertTrue(Branching.branchMapSummary(three).hasSuffix("1 ending is still hidden."))
+        XCTAssertTrue(Branching.branchMapCaption(three).hasSuffix("for 1 more ending"))
+
+        let single = StoryGraph(start: "s", map: ["s": end(1, title: "Only")])
+        let one = Branching.branchMap(single, takenPath: [], found: ["end1"], currentEndingID: "end1")
+        XCTAssertEqual(Branching.branchMapSummary(one), "You found the only ending: Only.")
+        XCTAssertEqual(one.nodes.first?.kind, .start)
+        XCTAssertEqual(one.nodes.first?.x, 0, "a root that is itself an ending sits at x 0")
+        XCTAssertEqual(BranchingCopy.seeYourEnding, "See your ending")
+    }
+
+    func testPathNodesIncludesLinksAndStopsOnABadOption() {
+        let graph = StoryGraph(start: "start", map: [
+            "start": StoryNode(segments: ["s"], choice: choice(["a"])),
+            "a": StoryNode(segments: ["a"], next: "b"),
+            "b": end(1),
+        ])
+        XCTAssertEqual(Branching.pathNodes(graph, path: [0]), ["start", "a", "b"])
+        XCTAssertEqual(Branching.pathNodes(graph, path: []), ["start"])
+        XCTAssertEqual(Branching.pathNodes(graph, path: [5]), ["start"])
+        XCTAssertEqual(Branching.pathNodes(graph, path: [-1]), ["start"])
+    }
+
+    func testSceneProgress() {
+        XCTAssertEqual(Branching.sceneProgress(fixtureA, visitedCount: 1, currentNodeID: "start"),
+                       SceneProgress(current: 1, total: 3))
+        XCTAssertEqual(Branching.sceneProgress(fixtureA, visitedCount: 3, currentNodeID: "e1"),
+                       SceneProgress(current: 3, total: 3))
+        // b is a link: b -> b2 -> e3 is two more nodes.
+        XCTAssertEqual(Branching.sceneProgress(fixtureA, visitedCount: 2, currentNodeID: "b"),
+                       SceneProgress(current: 2, total: 4))
+        XCTAssertEqual(Branching.sceneProgress(fixtureA, visitedCount: 40, currentNodeID: "e1"),
+                       SceneProgress(current: 12, total: 12))
+    }
+}

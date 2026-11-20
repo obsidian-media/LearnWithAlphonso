@@ -64,6 +64,22 @@ sealed interface BranchWalk {
     data class Invalid(val reason: String) : BranchWalk
 }
 
+/** The reader's scene dots: [current] is the 1-based scene, [total] the estimate (visited + shortest route to an ending, capped at 12). */
+data class SceneProgress(val current: Int, val total: Int)
+
+enum class MapNodeKind { START, BRANCH, ENDING }
+enum class MapEndingState { CURRENT, FOUND, LOCKED }
+enum class MapEdgeStyle { TAKEN, FOUND, LOCKED, PLAIN }
+
+data class MapEnding(val id: String, val title: String, val state: MapEndingState)
+
+/** [x] and [y] are in a unit box (0..1). [ending] is set on ending nodes. */
+data class MapNode(val id: String, val kind: MapNodeKind, val x: Double, val y: Double, val depth: Int, val onPath: Boolean, val ending: MapEnding?)
+
+data class MapEdge(val from: String, val to: String, val style: MapEdgeStyle)
+
+data class BranchMap(val nodes: List<MapNode>, val edges: List<MapEdge>, val endingsTotal: Int, val endingsFound: Int, val lockedCount: Int)
+
 object Branching {
     /** The bucket scene art lives in (public, like the web's `story-art`). */
     const val ART_BUCKET = "story-art"
@@ -111,6 +127,146 @@ object Branching {
         }
         return BranchWalk.Invalid("too-deep")
     }
+
+    /** Node ids visited walking [path] from the start (links and the final node included); same guards as [walk]. */
+    fun pathNodes(graph: StoryGraph, path: List<Int>): List<String> {
+        val out = ArrayList<String>()
+        var current = graph.start
+        var step = 0
+        for (hop in 0 until 100) {
+            val node = graph.map[current] ?: break
+            out.add(current)
+            if (node.ending != null) break
+            val choice = node.choice
+            if (choice != null) {
+                if (step >= path.size) break
+                val index = path[step]
+                if (index < 0 || index >= choice.options.size) break
+                current = choice.options[index].goto
+                step += 1
+                continue
+            }
+            current = node.next ?: break
+        }
+        return out
+    }
+
+    /** The scene dots: BFS over options and links for the shortest route (in nodes) from [currentNodeId] to an ending. */
+    fun sceneProgress(graph: StoryGraph, visitedCount: Int, currentNodeId: String): SceneProgress {
+        var remaining = 0
+        if (graph.map[currentNodeId]?.ending == null) {
+            val seen = hashSetOf(currentNodeId)
+            var frontier = listOf(currentNodeId)
+            var depth = 0
+            search@ while (frontier.isNotEmpty()) {
+                depth += 1
+                val nextFrontier = ArrayList<String>()
+                for (id in frontier) {
+                    val node = graph.map[id] ?: continue
+                    val targets = node.choice?.options?.map { it.goto } ?: listOfNotNull(node.next)
+                    for (t in targets) {
+                        if (!seen.add(t)) continue
+                        val target = graph.map[t] ?: continue
+                        if (target.ending != null) { remaining = depth; break@search }
+                        nextFrontier.add(t)
+                    }
+                }
+                frontier = nextFrontier
+            }
+        }
+        return SceneProgress(visitedCount, minOf(12, visitedCount + remaining))
+    }
+
+    /** Follows `next` links from [id] to a choice or ending node; null for a missing, dead or cyclic chain. */
+    private fun resolve(graph: StoryGraph, id: String): String? {
+        var current = id
+        val seen = hashSetOf<String>()
+        while (true) {
+            if (!seen.add(current)) return null
+            val node = graph.map[current] ?: return null
+            when (nodeKind(node)) {
+                NodeKind.ENDING, NodeKind.CHOICE -> return current
+                NodeKind.LINK -> current = node.next ?: return null
+                NodeKind.INVALID -> return null
+            }
+        }
+    }
+
+    private class Draft(val id: String, val depth: Int, val parent: Draft?) {
+        val children = ArrayList<Draft>()
+        var y = 0.0
+    }
+
+    /** The ending's branch map: the story's tree with linear chains collapsed, laid out in a unit box (stories-reader spec). */
+    fun branchMap(graph: StoryGraph, takenPath: List<Int>, found: List<String>, currentEndingId: String?): BranchMap {
+        val rootId = resolve(graph, graph.start) ?: return BranchMap(emptyList(), emptyList(), 0, 0, 0)
+        val onPath = pathNodes(graph, takenPath).filter { nodeKind(graph.map[it]).let { k -> k == NodeKind.CHOICE || k == NodeKind.ENDING } }.toSet()
+        val placed = hashSetOf(rootId)
+        val order = ArrayList<Draft>()
+        fun visit(draft: Draft) {
+            order.add(draft)
+            if (graph.map[draft.id]?.ending != null) return
+            for (option in graph.map[draft.id]?.choice?.options.orEmpty()) {
+                val childId = resolve(graph, option.goto) ?: continue
+                if (!placed.add(childId)) continue
+                val child = Draft(childId, draft.depth + 1, draft)
+                draft.children.add(child)
+                visit(child)
+            }
+        }
+        val root = Draft(rootId, 0, null)
+        visit(root)
+        val leaves = order.filter { it.children.isEmpty() }
+        leaves.forEachIndexed { i, d -> d.y = (i + 0.5) / leaves.size }
+        for (d in order.asReversed()) if (d.children.isNotEmpty()) d.y = (d.children.first().y + d.children.last().y) / 2
+        val maxInternal = order.filter { graph.map[it.id]?.ending == null }.maxOfOrNull { it.depth } ?: 0
+        fun stateOf(e: StoryEnding) = when {
+            e.id == currentEndingId -> MapEndingState.CURRENT
+            e.id in found -> MapEndingState.FOUND
+            else -> MapEndingState.LOCKED
+        }
+        val nodes = order.map { d ->
+            val ending = graph.map[d.id]?.ending
+            MapNode(
+                id = d.id,
+                kind = if (d === root) MapNodeKind.START else if (ending != null) MapNodeKind.ENDING else MapNodeKind.BRANCH,
+                x = if (d === root) 0.0 else if (ending != null) 1.0 else d.depth.toDouble() / (maxInternal + 1),
+                y = d.y, depth = d.depth, onPath = d.id in onPath,
+                ending = ending?.let { MapEnding(it.id, it.title, stateOf(it)) },
+            )
+        }
+        val byId = nodes.associateBy { it.id }
+        val edges = order.drop(1).map { d ->
+            val to = byId.getValue(d.id)
+            val from = byId.getValue(d.parent!!.id)
+            val style = when {
+                from.onPath && to.onPath -> MapEdgeStyle.TAKEN
+                to.ending?.state == MapEndingState.FOUND -> MapEdgeStyle.FOUND
+                to.ending?.state == MapEndingState.LOCKED -> MapEdgeStyle.LOCKED
+                else -> MapEdgeStyle.PLAIN
+            }
+            MapEdge(from.id, to.id, style)
+        }
+        val endings = nodes.mapNotNull { it.ending }
+        val foundCount = endings.count { it.state != MapEndingState.LOCKED }
+        return BranchMap(nodes, edges, endings.size, foundCount, endings.size - foundCount)
+    }
+
+    /** The text alternative for the map card. */
+    fun branchMapSummary(map: BranchMap): String {
+        val titles = map.nodes.mapNotNull { it.ending }.filter { it.state != MapEndingState.LOCKED }.map { it.title }
+        val total = map.endingsTotal
+        val m = map.endingsFound
+        if (m == total && total == 1) return "You found the only ending: ${titles.joinToString(", ")}."
+        if (m == total) return "You found all $total endings: ${titles.joinToString(", ")}."
+        val head = "You found $m of $total endings" + if (titles.isEmpty()) "." else ": ${titles.joinToString(", ")}."
+        val k = map.lockedCount
+        return "$head ${if (k == 1) "1 ending is still hidden." else "$k endings are still hidden."}"
+    }
+
+    fun branchMapCaption(map: BranchMap): String =
+        if (map.lockedCount > 0) "Gold = the path you just took · try the greyed branches for ${if (map.lockedCount == 1) "1 more ending" else "${map.lockedCount} more endings"}"
+        else "Gold = the path you just took · you found every ending"
 
     /** The node after picking option [index] at [nodeId], or null when that is not a valid choice. */
     fun chooseOption(graph: StoryGraph, nodeId: String, index: Int): String? {
@@ -203,6 +359,7 @@ object BranchingCopy {
     const val TRY_ANOTHER_PATH = "Try another path"
     const val READ_IT_AGAIN = "Read it again"
     const val CONTINUE = "Continue"
+    const val SEE_YOUR_ENDING = "See your ending"
     const val COUNTS_LINE = "This counts toward your reading practice."
     const val NOT_READY = "This part of the story isn't ready yet."
     const val START_OVER = "Start over"
