@@ -225,7 +225,10 @@ class PracticeHubVisualTest {
     private fun shot(name: String) {
         rule.waitForIdle()
         Thread.sleep(250)
+        // A picture is an artifact, not an assertion: UiAutomation sometimes hands back no bitmap on a headless emulator
+        // (a null that surfaced as an NPE and failed the test), so a missed capture is skipped rather than fatal.
+        val bitmap = runCatching { Screenshot.capture().bitmap }.getOrNull() ?: return
         val dir = File(context.getExternalFilesDir(null), "practice-shots").apply { mkdirs() }
-        File(dir, "$name.png").outputStream().use { Screenshot.capture().bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 }
