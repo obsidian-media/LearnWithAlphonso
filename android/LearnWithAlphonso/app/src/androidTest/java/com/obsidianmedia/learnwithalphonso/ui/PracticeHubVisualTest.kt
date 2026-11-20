@@ -29,7 +29,9 @@ import java.io.File
 /** Offline fixtures: no session, consent, microphone, chat or production writes. */
 @RunWith(AndroidJUnit4::class)
 class PracticeHubVisualTest {
-    @get:Rule val rule = createComposeRule()
+    // DIAGNOSTIC: a hang here reports an empty failure; a timeout shows where the test thread is stuck.
+    @get:Rule(order = 0) val timeout: org.junit.rules.Timeout = org.junit.rules.Timeout.seconds(25)
+    @get:Rule(order = 1) val rule = createComposeRule()
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     private val content by lazy { ContentStore { context.assets.open(it).bufferedReader().use { r -> r.readText() } } }
     private val course = Course.SPANISH
@@ -71,6 +73,10 @@ class PracticeHubVisualTest {
      * rail, both drills and the Pro nudge each get a minimum height; the carousel works through its dots.
      */
     @Test fun hubSectionsRenderWithRealSize() {
+        try { hubSectionsBody() } catch (t: Throwable) { throw AssertionError("hubSections failed: $t | cause=${t.cause}", t) }
+    }
+
+    private fun hubSectionsBody() {
         val scale = mutableStateOf(1f)
         rule.setContent {
             val density = LocalDensity.current.density
