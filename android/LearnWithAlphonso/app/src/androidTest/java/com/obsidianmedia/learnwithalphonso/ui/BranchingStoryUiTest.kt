@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
@@ -82,12 +83,14 @@ class BranchingStoryUiTest {
                 BranchingEndingContent(
                     story = story, path = listOf(0, 0), ending = story.graph.map.getValue("e1").ending!!, artUrl = null,
                     found = listOf("end1", "end3"), result = EndingResult.Done(stars = 2, credited = false),
-                    onRetrySave = {}, onRestart = {},
+                    onRetrySave = {}, onRestart = {}, onBack = {},
                 )
             }
         }
         rule.waitForIdle()
         rule.onNodeWithText("Ending 1").assertIsDisplayed()
+        // The host top bar is hidden for branching stories, so the ending must carry its own back control.
+        rule.onNodeWithContentDescription("Back").assertIsDisplayed()
         rule.onNodeWithTag("branch-map-card").assertIsDisplayed().assertWidthIsAtLeast(1.dp).assertHeightIsAtLeast(1.dp)
         // The card carries one text alternative; its drawing and pill live in the unmerged tree.
         rule.onNodeWithText("2 / 4", useUnmergedTree = true).assertExists()

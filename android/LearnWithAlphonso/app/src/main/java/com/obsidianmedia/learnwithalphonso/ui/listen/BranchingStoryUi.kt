@@ -336,6 +336,22 @@ private fun ChoiceBubble(label: String, index: Int, onClick: () -> Unit) {
     }
 }
 
+/** The back control shared by the scenes and the ending: a 30 x 30 chip inside a 48 x 48 hit target. */
+@Composable
+private fun ReaderBackChip(onBack: (() -> Unit)?, modifier: Modifier = Modifier) {
+    val ds = LocalAlphonsoTokens.current
+    Box(
+        modifier.size(AlphonsoTokens.Space.minTouch)
+            .then(if (onBack != null) Modifier.clickable(role = Role.Button, onClick = onBack) else Modifier)
+            .semantics { contentDescription = "Back" },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(Modifier.size(30.dp).background(ds.onHero.copy(alpha = 0.16f), RoundedCornerShape(9.dp)), contentAlignment = Alignment.Center) {
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null, tint = ds.onHero)
+        }
+    }
+}
+
 @Composable
 private fun ReaderTopBar(title: String, progress: SceneProgress, onBack: (() -> Unit)?) {
     val ds = LocalAlphonsoTokens.current
@@ -344,17 +360,7 @@ private fun ReaderTopBar(title: String, progress: SceneProgress, onBack: (() -> 
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
     ) {
-        // A 30 x 30 chip inside a 48 x 48 hit target.
-        Box(
-            Modifier.size(AlphonsoTokens.Space.minTouch)
-                .then(if (onBack != null) Modifier.clickable(role = Role.Button, onClick = onBack) else Modifier)
-                .semantics { contentDescription = "Back" },
-            contentAlignment = Alignment.Center,
-        ) {
-            Box(Modifier.size(30.dp).background(ds.onHero.copy(alpha = 0.16f), RoundedCornerShape(9.dp)), contentAlignment = Alignment.Center) {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null, tint = ds.onHero)
-            }
-        }
+        ReaderBackChip(onBack)
         Text(
             title, style = AlphonsoTokens.Type.questionSmall.toTextStyle(), color = ds.onHero,
             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f).semantics { heading() },
@@ -426,6 +432,7 @@ private fun EndingFlow(
     container: AppContainer, story: BranchingStory, path: List<Int>, nodeId: String, round: Int, sceneNumber: Int,
     ending: StoryEnding, artUrl: String?, onRestart: () -> Unit,
 ) {
+    val back = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     var revealed by remember(nodeId, round) { mutableStateOf(false) }
     var attempt by remember(path) { mutableIntStateOf(0) }
     var state by remember(path) { mutableStateOf<FinishState>(FinishState.Saving) }
@@ -459,7 +466,7 @@ private fun EndingFlow(
         }
     }
     if (revealed) {
-        BranchingEndingContent(story, path, ending, artUrl, found, result, onRetrySave = { attempt++ }, onRestart = onRestart)
+        BranchingEndingContent(story, path, ending, artUrl, found, result, onRetrySave = { attempt++ }, onRestart = onRestart, onBack = back?.let { dispatcher -> { dispatcher.onBackPressed() } })
     } else {
         NodePage(container, story, nodeId, round, sceneNumber, onChoose = {}, onContinue = {}, onReveal = { revealed = true })
     }
@@ -476,6 +483,7 @@ internal fun BranchingEndingContent(
     result: EndingResult,
     onRetrySave: () -> Unit,
     onRestart: () -> Unit,
+    onBack: (() -> Unit)?,
 ) {
     val ds = LocalAlphonsoTokens.current
     val map = remember(story, path, found, ending.id) { Branching.branchMap(story.graph, path, found, ending.id) }
@@ -489,6 +497,8 @@ internal fun BranchingEndingContent(
                     },
                 )
                 Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.30f to ds.heroB.copy(alpha = 0.05f), 1f to ds.surface)))
+                // The host's top bar is hidden for branching stories, so the ending carries its own back, as the scenes do.
+                ReaderBackChip(onBack, Modifier.align(Alignment.TopStart).padding(AlphonsoTokens.Space.s2))
             }
             // Pulled up 50 over the fade.
             Column(
