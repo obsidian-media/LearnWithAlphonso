@@ -363,8 +363,8 @@ ${BLOCK}`);
       const body = (await res.json()) as Record<string, unknown>;
       expect(body.reply).toBe("Nice order! What size?");
       expect(body.correction).toEqual({
-        slip: "I will like",
-        fix: "I'd like",
+        slip: "I will",
+        fix: "I'd",
         note: "Polite orders use I'd like.",
       });
       const spoken = JSON.parse(
@@ -379,7 +379,7 @@ ${BLOCK}`);
       expect(res.status).toBe(200);
       const body = (await res.json()) as Record<string, unknown>;
       expect(body.reply).toBe("Good try! Keep going, I'm listening.");
-      expect(body.correction).toEqual(expect.objectContaining({ fix: "I'd like" }));
+      expect(body.correction).toEqual(expect.objectContaining({ fix: "I'd" }));
     });
 
     it("has no correction field on a clean turn", async () => {
@@ -397,6 +397,32 @@ ${BLOCK}`);
       const body = (await res.json()) as Record<string, unknown>;
       expect(body.reply).toBe("Nice! What size?");
       expect("correction" in body).toBe(false);
+    });
+
+    it("refines the card BEFORE the blocked-term filter, so the filter sees the final strings", async () => {
+      mockReply(`Oh no! What does she drink instead?
+<correction>{"slip":"She don't like coffee very much.","fix":"She doesn't like coffee very much.","note":"Use doesn't."}</correction>`);
+      blockedRpc.mockClear();
+      const body = (await (await handler({ request: req() })).json()) as Record<string, unknown>;
+      expect(body.correction).toEqual({ slip: "don't", fix: "doesn't", note: "Use doesn't." });
+      expect(blockedRpc.mock.calls[0][1]._texts).toEqual([
+        "Oh no! What does she drink instead?",
+        "don't",
+        "doesn't",
+        "Use doesn't.",
+      ]);
+    });
+
+    it("a Spanish dropped pronoun refines to nothing: no correction field, the reply still returns", async () => {
+      mockReply(`¡Qué bien! ¿Qué comiste?
+<correction>{"slip":"Ayer yo comí","fix":"Ayer comí","note":"Puedes omitir yo."}</correction>`);
+      blockedRpc.mockClear();
+      const res = await handler({ request: req({ text: "Ayer yo comí", course: "es" }) });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(body.reply).toBe("¡Qué bien! ¿Qué comiste?");
+      expect("correction" in body).toBe(false);
+      expect(blockedRpc.mock.calls[0][1]._texts).toEqual(["¡Qué bien! ¿Qué comiste?"]);
     });
 
     it("drops a correction whose words the output filter blocks, keeping the reply", async () => {
