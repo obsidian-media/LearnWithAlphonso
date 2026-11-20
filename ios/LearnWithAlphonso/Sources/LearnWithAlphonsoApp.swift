@@ -32,6 +32,8 @@ struct LearnWithAlphonsoApp: App {
         // Usage analytics start only if the learner already opted in (see Analytics).
         Analytics.start()
         Analytics.track(.appOpen)
+        // A voice clip left in tmp by a process killed mid-decode (Say it right) is removed at launch.
+        PronunciationClips.sweepLeftovers()
         // ContentStore reads JSON bundled at build time (see that type's
         // doc comment) -- a failure here means the bundled resources are
         // missing, a build configuration problem, not a runtime one. Still

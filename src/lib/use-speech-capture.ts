@@ -31,6 +31,7 @@ export function useSpeechCapture({
   onNoWords,
   onFailure,
   onMicDenied,
+  onClip,
 }: {
   onTranscript: (text: string, confidence: number | null) => void | Promise<void>;
   /** Forwarded to /api/stt so Deepgram transcribes in the right language
@@ -47,6 +48,12 @@ export function useSpeechCapture({
   onFailure?: () => void;
   /** The microphone was refused or could not open: hands-free falls back to hold-to-talk. */
   onMicDenied?: () => void;
+  /**
+   * Hands the screen the recorded clip itself, in memory, just before it is sent for transcription (only a real
+   * clip: not a cancelled or too-short one). Say it right keeps the last one so the learner can hear themselves; it
+   * is never stored or sent anywhere except the /api/stt upload that already happens.
+   */
+  onClip?: (clip: Blob) => void;
 }) {
   const [state, setState] = useState<SpeechCaptureState>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +87,8 @@ export function useSpeechCapture({
   onFailureRef.current = onFailure;
   const onMicDeniedRef = useRef(onMicDenied);
   onMicDeniedRef.current = onMicDenied;
+  const onClipRef = useRef(onClip);
+  onClipRef.current = onClip;
   // cancel() asks the recorder to stop and throw the clip away: nothing is transcribed or reported.
   const cancelRequestedRef = useRef(false);
   const startedAtRef = useRef(0);
@@ -148,6 +157,7 @@ export function useSpeechCapture({
           return;
         }
         setState("transcribing");
+        onClipRef.current?.(blob);
         try {
           const fd = new FormData();
           fd.append("file", blob, `recording.${ext}`);

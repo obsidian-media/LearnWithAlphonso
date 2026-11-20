@@ -12,10 +12,11 @@ class Speech(context: Context) {
     private var ready = false
     private val tts = TextToSpeech(context.applicationContext) { status -> ready = status == TextToSpeech.SUCCESS }
 
-    fun speak(text: String, course: Course) {
+    fun speak(text: String, course: Course, rate: Float = 1f) {
         if (!ready) return
         tts.stop()
         tts.language = course.speechLocale
+        tts.setSpeechRate(rate)
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "alphonso-${text.hashCode()}")
     }
 
