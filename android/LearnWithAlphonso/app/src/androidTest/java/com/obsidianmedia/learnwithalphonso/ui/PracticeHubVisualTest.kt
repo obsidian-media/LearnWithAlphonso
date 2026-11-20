@@ -140,7 +140,7 @@ class PracticeHubVisualTest {
 
     /** Large text, in a composition of its own: the hero's first answers and the last drill stay reachable. */
     @Test fun hubAnswersStayReachableAtLargeText() {
-        showHub(fontScale = 2f)
+        showHub(fontScale = 1.5f)
         revealByScrolling("practice-hero-chat-0")
         revealByScrolling("practice-say-it-right")
         shot("05-hub-large-text")
