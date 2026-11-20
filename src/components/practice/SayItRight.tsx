@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DsIcon } from "../ds/DsIcon";
 import { edgeButtonClass } from "../lesson/LessonParts";
 import { PracticeStars } from "./PracticeStars";
@@ -15,32 +15,40 @@ import {
   sessionStars,
   type Verdict,
 } from "@/lib/pronunciation";
+import {
+  BUBBLE,
+  LATCH_MS,
+  MAX_RECORD_MS,
+  MOVE_ON,
+  PRAISE,
+  clearlyLine,
+  nextLineIndex,
+  poseFor,
+  releaseStops,
+  type SirPhase,
+} from "@/lib/say-it-right";
 import type { VocabItem } from "@/data/vocab";
 import type { Course } from "@/data/courses";
 
 /**
- * Say it right (Practice drill): a learned word, a "Hear it" model, and a recording judged on how clearly it was
- * understood (Deepgram's transcript and confidence through the existing /api/stt, the speaking daily quota). A miss
- * replays the model and allows one retry, then the session goes on. No hearts, no penalty. The words are the learner's
- * LEARNED words, derived live when a session starts, so the pool grows as they learn.
+ * Say it right ("Talk with Alphonso"): a warm 1:1 lesson. The word is the hero, shown inside Alphonso's speech bubble
+ * with a "Hear it" model button; he reacts in pose to each state with a short, varied line, and the learner's mic sits
+ * opposite him (blue at rest, red while recording; hold to talk, tap to toggle, auto-stop at MAX_RECORD_MS). Underneath
+ * nothing changed: learned words, /api/stt through the existing speak capture, the great/almost/again bands, one
+ * gentle retry on a miss, no hearts and no new quota kind.
  */
-type Phase = "ask" | "retry" | "result" | "done";
-
-const MESSAGE: Record<Verdict, string> = {
-  great: "Great!",
-  almost: "Almost - say it a touch clearer.",
-  again: "Let's try again.",
-};
-
 export function SayItRight({
   course,
   onExit,
   words,
+  pick = Math.random,
 }: {
   course: Course;
   onExit: () => void;
   /** Hand-picked words to drill (Say the picture's missed words); without it the drill draws from the learned pool. */
   words?: VocabItem[];
+  /** Random roll in [0, 1) for the varied praise lines; injectable so tests are deterministic. */
+  pick?: () => number;
 }) {
   // The live pool is read when a session starts: a word learned since the last session is in this one.
   const [session, setSession] = useState(0);
@@ -53,9 +61,13 @@ export function SayItRight({
     [course, session],
   );
   const [index, setIndex] = useState(0);
-  const [phase, setPhase] = useState<Phase>("ask");
+  const [phase, setPhase] = useState<SirPhase>("ask");
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [greatFirst, setGreatFirst] = useState(0);
+  // Greats shown so far this session (first time or on the retry): it alternates the cheer and the impressed pose.
+  const [greatShown, setGreatShown] = useState(0);
+  const [line, setLine] = useState<string>(BUBBLE.ask);
+  const lastLine = useRef<Partial<Record<Verdict, number>>>({});
   const word = rounds[index];
 
   const consent = useOptionalAiConsent();
@@ -65,10 +77,20 @@ export function SayItRight({
   wordRef.current = word;
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
+  const pickRef = useRef(pick);
+  pickRef.current = pick;
   const playModel = useModelSpeech(course);
+
+  const say = (v: Verdict) => {
+    const bank = PRAISE[v];
+    const i = nextLineIndex(bank.length, lastLine.current[v] ?? null, pickRef.current());
+    lastLine.current[v] = i;
+    setLine(bank[i]);
+  };
 
   const next = () => {
     setVerdict(null);
+    setLine(BUBBLE.ask);
     if (index + 1 >= rounds.length) setPhase("done");
     else {
       setIndex(index + 1);
@@ -83,7 +105,9 @@ export function SayItRight({
       if (!w) return;
       const v = judgeAttempt(text, confidence, w.term, course);
       setVerdict(v);
+      if (v === "great") setGreatShown((n) => n + 1);
       if (phaseRef.current === "ask") {
+        say(v);
         if (v === "great") {
           setGreatFirst((n) => n + 1);
           setPhase("result");
@@ -93,6 +117,8 @@ export function SayItRight({
         }
       } else {
         // The one retry: whatever it was, the session goes on.
+        if (v === "great") say(v);
+        else setLine(MOVE_ON);
         setPhase("result");
       }
     },
@@ -104,6 +130,57 @@ export function SayItRight({
   useEffect(() => {
     if (phase === "ask") document.getElementById("sir-record")?.focus();
   }, [index, phase]);
+
+  // Hold to talk, or tap to start and tap to stop. A press starts recording; a release after a real hold (LATCH_MS or
+  // more) sends it, while a quick tap LATCHES the recording on so a second tap stops it. A plain click (keyboard,
+  // screen reader) toggles, so the mic is never a hold-only control. The recording also stops by itself at MAX_RECORD_MS.
+  const holding = useRef(false);
+  const pressedAt = useRef(0);
+  const pressedByPointer = useRef(false);
+  const press = () => {
+    if (transcribing) return;
+    pressedByPointer.current = true;
+    if (recording) {
+      // A latched recording: this second tap stops it (the click that follows is swallowed).
+      stop();
+      return;
+    }
+    holding.current = true;
+    pressedAt.current = Date.now();
+    void start();
+  };
+  const release = () => {
+    if (!holding.current) return;
+    holding.current = false;
+    // A quick tap latches the recording on; only a real hold sends on release.
+    if (releaseStops(Date.now() - pressedAt.current)) stop();
+  };
+  // The pointer left the mic (or was cancelled) while held: no click follows and the gesture is not a tap, so the
+  // recording stops, and the next keyboard press must not be taken for the click that follows a hold.
+  const abandon = () => {
+    if (!holding.current) return;
+    holding.current = false;
+    pressedByPointer.current = false;
+    stop();
+  };
+  const stopRef = useRef(stop);
+  stopRef.current = stop;
+  useEffect(() => {
+    if (!recording) return;
+    const t = setTimeout(() => {
+      holding.current = false;
+      stopRef.current();
+    }, MAX_RECORD_MS);
+    return () => clearTimeout(t);
+  }, [recording]);
+  const toggle = () => {
+    if (pressedByPointer.current) {
+      pressedByPointer.current = false;
+      return;
+    }
+    if (recording) stop();
+    else void start();
+  };
 
   const shell =
     "min-h-dvh bg-ds-surface px-4 pb-8 pt-5 font-[family-name:var(--ds-font-body)] text-ds-ink";
@@ -142,14 +219,22 @@ export function SayItRight({
   if (phase === "done") {
     const stars = sessionStars(greatFirst, rounds.length);
     return (
-      <div data-say-it-right="done" className={shell}>
+      <div data-say-it-right="done" data-pose="levelup-cheer" className={shell}>
         {header}
         <div className="grid justify-items-center gap-3 rounded-[22px] bg-ds-card p-6 text-center shadow-[var(--ds-shadow-resting)]">
+          <img
+            src="/figures/alphonso-levelup-cheer.webp"
+            alt=""
+            data-pose="levelup-cheer"
+            className="stp-pose h-40 w-auto"
+          />
           <PracticeStars n={stars} size="md" />
           <h2 className="ds-type-title font-extrabold">Practised {rounds.length} words</h2>
+          <p data-testid="sir-clearly" className="ds-type-headline font-extrabold text-ds-brand">
+            {clearlyLine(greatFirst, rounds.length)}
+          </p>
           <p className="ds-type-body text-ds-ink-soft">
-            {greatFirst} of {rounds.length} said clearly first time. Every word you say out loud
-            sticks a little more.
+            Every word you say out loud sticks a little more.
           </p>
           <div className="mt-2 grid w-full gap-2.5">
             <button
@@ -159,14 +244,16 @@ export function SayItRight({
                 setIndex(0);
                 setPhase("ask");
                 setGreatFirst(0);
+                setGreatShown(0);
                 setVerdict(null);
+                setLine(BUBBLE.ask);
               }}
               className={edgeButtonClass("primary")}
             >
               Practise more
             </button>
             <button type="button" onClick={onExit} className={edgeButtonClass("secondary")}>
-              Back to Practice
+              Back
             </button>
           </div>
         </div>
@@ -175,29 +262,23 @@ export function SayItRight({
   }
 
   const last = index + 1 >= rounds.length;
-  const recordButton = (
-    <button
-      id="sir-record"
-      type="button"
-      disabled={transcribing}
-      onClick={() => (recording ? stop() : void start())}
-      aria-label={recording ? "Stop recording" : "Record your answer"}
-      aria-pressed={recording}
-      className={`grid size-20 place-items-center rounded-full transition-transform motion-reduce:transition-none ${
-        recording
-          ? "bg-ds-wrong text-ds-on-wrong shadow-[0_5px_0_var(--c-wrong-edge)] motion-safe:scale-110"
-          : "bg-[linear-gradient(180deg,var(--c-action-hi)_0%,var(--c-action)_55%)] text-ds-on-action shadow-[0_5px_0_var(--c-action-edge)]"
-      } disabled:opacity-50`}
-    >
-      <DsIcon name="mic" className="size-8" />
-    </button>
-  );
+  const listening = recording || transcribing;
+  const pose = poseFor(phase, listening, verdict, greatShown);
+  const bubbleLine = recording
+    ? BUBBLE.listening
+    : transcribing
+      ? BUBBLE.checking
+      : phase === "ask"
+        ? BUBBLE.ask
+        : line;
+  const lineKind = phase === "result" && verdict !== "great" ? "moveon" : (verdict ?? undefined);
 
   return (
     <div
       data-say-it-right="round"
       data-phase={phase}
       data-verdict={verdict ?? ""}
+      data-pose={pose}
       className={shell}
     >
       {header}
@@ -205,27 +286,46 @@ export function SayItRight({
         Word {index + 1} of {rounds.length}
       </p>
       <div className="mx-auto grid w-full max-w-sm gap-4">
-        <div className="rounded-[22px] bg-ds-card px-4 py-6 text-center shadow-[var(--ds-shadow-floating)]">
-          <p lang={course} className="ds-type-display font-extrabold text-ds-brand">
-            {word.term}
-          </p>
-          {word.meaning && (
-            <p className="mt-1 ds-type-caption font-semibold text-ds-ink-soft">{word.meaning}</p>
-          )}
-          <button
-            type="button"
-            onClick={() => void playModel(word.term)}
-            className="mx-auto mt-3 flex items-center gap-1.5 rounded-full bg-ds-choice-tint px-4 py-2 ds-type-footnote font-bold text-ds-choice"
-          >
-            <DsIcon name="speaker" className="size-4" />
-            Hear it
-          </button>
+        {/* Alphonso, in pose, with the word in his speech bubble. */}
+        <div className="flex items-end gap-2" data-testid="sir-tutor">
+          <img
+            key={pose}
+            src={`/figures/alphonso-${pose}.webp`}
+            alt=""
+            data-pose={pose}
+            className="stp-pose h-44 w-auto hidden shrink-0 min-[20rem]:block"
+          />
+          <div className="relative mb-6 grid min-w-0 flex-1 justify-items-center gap-1 rounded-[22px] border-[1.5px] border-ds-line bg-ds-card px-4 py-4 text-center shadow-[var(--ds-shadow-floating)] before:absolute before:-left-[7px] before:bottom-5 before:size-[13px] before:rotate-45 before:border-b-[1.5px] before:border-l-[1.5px] before:border-ds-line before:bg-ds-card before:content-['']">
+            {/* The one live region of the round: the line changes with every state, the hint beside the mic does not announce. */}
+            <p
+              aria-live="polite"
+              data-testid="sir-line"
+              data-verdict-message={lineKind}
+              className="ds-type-footnote font-extrabold text-ds-ink-soft"
+            >
+              {bubbleLine}
+            </p>
+            <p lang={course} className="break-words ds-type-display font-extrabold text-ds-brand">
+              {word.term}
+            </p>
+            {word.meaning && (
+              <p className="ds-type-caption font-semibold text-ds-ink-soft">{word.meaning}</p>
+            )}
+            <button
+              type="button"
+              onClick={() => void playModel(word.term)}
+              className="mt-1 flex items-center gap-1.5 rounded-full bg-ds-choice-tint px-4 py-2 ds-type-footnote font-bold text-ds-choice"
+            >
+              <DsIcon name="speaker" className="size-4" />
+              Hear it
+            </button>
+          </div>
         </div>
 
         {phase !== "result" && (
-          <div className="grid justify-items-center gap-3">
+          <div className="grid justify-items-end gap-3">
             {recordingOff ? (
-              <div role="status" className="grid gap-3 rounded-[18px] bg-ds-card p-4">
+              <div role="status" className="grid w-full gap-3 rounded-[18px] bg-ds-card p-4">
                 <p className="ds-type-body text-ds-ink-soft">
                   {needsConsent
                     ? consentKnown
@@ -247,24 +347,23 @@ export function SayItRight({
               </div>
             ) : (
               <>
-                {phase === "retry" && verdict && (
-                  <p
-                    role="status"
-                    data-verdict-message={verdict}
-                    className="rounded-full bg-ds-choice-tint px-4 py-1.5 ds-type-footnote font-extrabold text-ds-choice"
-                  >
-                    {MESSAGE[verdict]}
-                  </p>
-                )}
-                {recordButton}
-                <p className="ds-type-caption text-ds-ink-soft" aria-live="polite">
+                <SirMic
+                  recording={recording}
+                  disabled={transcribing}
+                  onPointerDown={press}
+                  onPointerUp={release}
+                  onPointerCancel={abandon}
+                  onPointerLeave={abandon}
+                  onClick={toggle}
+                />
+                <p id="sir-hint" className="ds-type-caption text-ds-ink-soft">
                   {recording
-                    ? "Listening. Tap to stop."
+                    ? "Listening. Let go or tap to send."
                     : transcribing
                       ? "Checking how clear that was…"
                       : phase === "retry"
-                        ? "Listen, then try once more."
-                        : "Tap and say it."}
+                        ? BUBBLE.retry
+                        : "Hold to talk, or tap to start and tap to stop."}
                 </p>
               </>
             )}
@@ -280,7 +379,7 @@ export function SayItRight({
               type="button"
               onClick={next}
               disabled={recording || transcribing}
-              className={edgeButtonClass("tertiary")}
+              className={`${edgeButtonClass("tertiary")} justify-self-center`}
             >
               {last ? "Finish" : "Skip this word"}
             </button>
@@ -288,23 +387,7 @@ export function SayItRight({
         )}
 
         {phase === "result" && verdict && (
-          <div role="status" className="grid justify-items-center gap-3">
-            {verdict === "great" ? (
-              <p
-                data-verdict-message="great"
-                className="flex items-center gap-2 ds-type-title font-extrabold text-ds-right-ink"
-              >
-                <DsIcon name="star" solid className="size-7 text-ds-action" />
-                Great!
-              </p>
-            ) : (
-              <p
-                data-verdict-message="moveon"
-                className="ds-type-headline font-extrabold text-ds-ink"
-              >
-                Good try. It gets easier each time.
-              </p>
-            )}
+          <div className="grid justify-items-center gap-3">
             <button type="button" onClick={next} className={edgeButtonClass("right")}>
               {last ? "Finish" : "Next"}
             </button>
@@ -312,5 +395,74 @@ export function SayItRight({
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * The learner's mic: BLUE at rest, RED while recording (deliberately not Say the picture's gold). A button with its
+ * state in its name; a ring fills over MAX_RECORD_MS while it records (an instant full ring under Reduce Motion).
+ */
+function SirMic({
+  recording,
+  disabled,
+  onPointerDown,
+  onPointerUp,
+  onPointerCancel,
+  onPointerLeave,
+  onClick,
+}: {
+  recording: boolean;
+  disabled: boolean;
+  onPointerDown: () => void;
+  onPointerUp: () => void;
+  onPointerCancel: () => void;
+  onPointerLeave: () => void;
+  onClick: () => void;
+}): ReactNode {
+  const r = 43;
+  const c = 2 * Math.PI * r;
+  return (
+    <button
+      id="sir-record"
+      type="button"
+      disabled={disabled}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
+      onPointerLeave={onPointerLeave}
+      onClick={onClick}
+      onContextMenu={(e) => e.preventDefault()}
+      aria-label={recording ? "Stop recording" : "Record your answer"}
+      aria-pressed={recording}
+      aria-describedby="sir-hint"
+      data-recording={recording ? "true" : "false"}
+      data-testid="sir-mic"
+      className="relative grid size-[98px] touch-none select-none place-items-center rounded-full disabled:opacity-50"
+    >
+      <svg viewBox="0 0 98 98" aria-hidden="true" className="absolute inset-0 size-full -rotate-90">
+        <circle
+          cx="49"
+          cy="49"
+          r={r}
+          fill="none"
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={recording ? 0 : c}
+          className={`stroke-ds-wrong transition-[stroke-dashoffset] ease-linear motion-reduce:transition-none ${
+            recording ? "duration-[6000ms]" /* = MAX_RECORD_MS */ : "duration-200"
+          }`}
+        />
+      </svg>
+      <span
+        className={`relative grid size-[76px] place-items-center rounded-full ${
+          recording
+            ? "bg-ds-wrong text-ds-on-wrong shadow-[0_5px_0_var(--c-wrong-edge)]"
+            : "bg-ds-choice text-ds-on-choice shadow-[0_5px_0_var(--c-choice-edge)]"
+        }`}
+      >
+        <DsIcon name="mic" className="size-8" />
+      </span>
+    </button>
   );
 }

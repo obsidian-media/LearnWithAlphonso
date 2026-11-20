@@ -211,3 +211,92 @@ final class PronunciationTests: XCTestCase {
         XCTAssertTrue(sttBody.contains("\r\n\r\nes\r\n"))
     }
 }
+
+/// Say it right ("Talk with Alphonso"): the derived state behind the 1:1 lesson, mirroring src/lib/say-it-right.ts.
+final class SayItRightTests: XCTestCase {
+    private func words(_ n: Int) -> [VocabItem] {
+        (0..<n).map { VocabItem(term: "word\($0)", meaning: "", example: "", image: nil) }
+    }
+
+    func testNextLineIndexNeverRepeatsTheLastAndStaysInRange() {
+        for size in [2, 3, 5] {
+            for last in 0..<size {
+                for roll in [0.0, 0.2, 0.5, 0.99, 1.0] {
+                    let i = SayItRight.nextLineIndex(size: size, last: last, roll: roll)
+                    XCTAssertNotEqual(i, last)
+                    XCTAssertTrue((0..<size).contains(i))
+                }
+            }
+        }
+        XCTAssertEqual(SayItRight.nextLineIndex(size: 1, last: 0, roll: 0.5), 0)
+        XCTAssertEqual(SayItRight.nextLineIndex(size: 3, last: nil, roll: 0), 0)
+    }
+
+    func testPoseMapsEachState() {
+        XCTAssertEqual(SayItRightPose.pose(phase: .ask, listening: false, verdict: nil, greatCount: 0), .explainingPointer)
+        XCTAssertEqual(SayItRightPose.pose(phase: .ask, listening: true, verdict: nil, greatCount: 0), .listeningHeadphones)
+        XCTAssertEqual(SayItRightPose.pose(phase: .retry, listening: false, verdict: .almost, greatCount: 0), .thinkingTemple)
+        XCTAssertEqual(SayItRightPose.pose(phase: .result, listening: false, verdict: .great, greatCount: 1), .levelupCheer)
+        XCTAssertEqual(SayItRightPose.pose(phase: .result, listening: false, verdict: .great, greatCount: 2), .surprisedImpressed)
+        XCTAssertEqual(SayItRightPose.pose(phase: .result, listening: false, verdict: .again, greatCount: 2), .thinkingTemple)
+        XCTAssertEqual(SayItRightPose.allCases.map(\.rawValue).sorted(), [
+            "Alphonso-explaining-pointer", "Alphonso-levelup-cheer", "Alphonso-listening-headphones",
+            "Alphonso-surprised-impressed", "Alphonso-thinking-temple",
+        ])
+    }
+
+    func testGreatPraiseVariesAndNeverRepeatsInARow() {
+        var run = PronunciationSession(words: words(6))
+        var previous: String?
+        for _ in 0..<6 {
+            run.submit(transcript: run.current!.term, confidence: 0.95, course: .english, roll: 0)
+            let line = run.line
+            XCTAssertTrue(SayItRight.praise(.great).contains(line ?? ""))
+            XCTAssertNotEqual(line, previous)
+            previous = line
+            run.next()
+        }
+    }
+
+    func testAMissThinksAndThenMovesOnKindly() {
+        var run = PronunciationSession(words: words(2))
+        run.submit(transcript: "zzz", confidence: 0.9, course: .english, roll: 0)
+        XCTAssertEqual(run.pose(listening: false), .thinkingTemple)
+        XCTAssertEqual(run.line, SayItRight.praise(.again)[0])
+        run.submit(transcript: "zzz", confidence: 0.9, course: .english, roll: 0)
+        XCTAssertEqual(run.phase, .result)
+        XCTAssertEqual(run.line, SayItRight.moveOn)
+        XCTAssertEqual(run.pose(listening: false), .thinkingTemple)
+    }
+
+    func testWinsAlternateCheerAndImpressedAndTheWrapCountsClearly() {
+        var run = PronunciationSession(words: words(3))
+        run.submit(transcript: "word0", confidence: 0.95, course: .english, roll: 0)
+        XCTAssertEqual(run.pose(listening: false), .levelupCheer)
+        run.next()
+        run.submit(transcript: "word1", confidence: 0.95, course: .english, roll: 0)
+        XCTAssertEqual(run.pose(listening: false), .surprisedImpressed)
+        run.next()
+        run.submit(transcript: "zzz", confidence: 0.9, course: .english, roll: 0)
+        run.submit(transcript: "word2", confidence: 0.95, course: .english, roll: 0)
+        run.next()
+        XCTAssertEqual(run.phase, .done)
+        XCTAssertEqual(run.clearlyLine, "2 of 3 clearly")
+    }
+
+    func testNoBankLineSaysWrongAndTheCapMatchesSayThePicture() {
+        for verdict in [Pronunciation.Verdict.great, .almost, .again] {
+            for line in SayItRight.praise(verdict) { XCTAssertFalse(line.lowercased().contains("wrong")) }
+        }
+        XCTAssertEqual(SayItRight.maxRecordSeconds, 6.0)
+    }
+
+    func testAQuickFirstTapLatchesTheRecordingAndALongHoldOrSecondTapStopsIt() {
+        XCTAssertFalse(SayItRight.releaseStops(heldSeconds: 0.05, wasRecording: false))
+        XCTAssertFalse(SayItRight.releaseStops(heldSeconds: 0.29, wasRecording: false))
+        XCTAssertTrue(SayItRight.releaseStops(heldSeconds: 0.3, wasRecording: false))
+        XCTAssertTrue(SayItRight.releaseStops(heldSeconds: 2, wasRecording: false))
+        XCTAssertTrue(SayItRight.releaseStops(heldSeconds: 0.05, wasRecording: true))
+        XCTAssertEqual(SayItRight.latchSeconds, 0.3)
+    }
+}
