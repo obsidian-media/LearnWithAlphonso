@@ -152,29 +152,56 @@ describe("Learn page", () => {
     expect(screen.queryByText("Not sure where to start?")).not.toBeInTheDocument();
   });
 
-  it("shows one Continue card for the first undone lesson", async () => {
+  // The climbing map replaced the Continue card: its next node opens a start sheet that continues.
+  const openNext = async (user: ReturnType<typeof userEvent.setup>, title: string) => {
+    await user.click(await screen.findByRole("button", { name: new RegExp(`, ${title}, next$`) }));
+    return screen.getByRole("dialog", { name: title });
+  };
+
+  it("the map's next lesson is the first undone one, and its sheet continues it", async () => {
+    const user = userEvent.setup();
     renderPage();
-    const link = await screen.findByRole("link", {
-      name: new RegExp(`^Continue: ${firstLesson.title}`),
-    });
-    expect(link).toHaveAttribute("href", `/lesson/${firstLesson.id}`);
+    const sheet = await openNext(user, firstLesson.title);
+    expect(within(sheet).getByRole("link", { name: "Continue lesson" })).toHaveAttribute(
+      "href",
+      `/lesson/${firstLesson.id}`,
+    );
   });
 
-  it("moves the Continue card on once a lesson is done", async () => {
+  it("moves the next lesson on once a lesson is done", async () => {
     useProgress.setState({ completedLessons: [firstLesson.id] });
+    const user = userEvent.setup();
     renderPage();
-    expect(
-      await screen.findByRole("link", { name: new RegExp(`^Continue: ${secondLesson.title}`) }),
-    ).toBeInTheDocument();
+    const sheet = await openNext(user, secondLesson.title);
+    expect(within(sheet).getByRole("link", { name: "Continue lesson" })).toHaveAttribute(
+      "href",
+      `/lesson/${secondLesson.id}`,
+    );
   });
 
-  it("Continue opens the hearts modal instead when out of hearts", async () => {
+  it("out of hearts, the sheet opens the hearts modal instead of the lesson", async () => {
     useProgress.setState({ hearts: 0 });
+    const user = userEvent.setup();
     renderPage();
-    const button = await screen.findByRole("button", {
-      name: `Continue: ${firstLesson.title} (out of hearts)`,
-    });
-    expect(button).toBeInTheDocument();
+    const sheet = await openNext(user, firstLesson.title);
+    await user.click(
+      within(sheet).getByRole("button", { name: "Continue lesson (out of hearts)" }),
+    );
+    expect(await screen.findByRole("dialog", { name: "Out of hearts" })).toBeInTheDocument();
+  });
+
+  it("the map is this level's climb: with the learner's place in another level it says Start, not Continue", async () => {
+    // Nothing done: the course-wide Continue lesson is A1's first. Looking at A2, the map's next is A2's first.
+    const a2First = getCourse("en").curriculum.find((u) => u.level === "A2")!.lessons[0];
+    useProgress.setState({ cefrLevel: "A2" });
+    const user = userEvent.setup();
+    renderPage();
+    const sheet = await openNext(user, a2First.title);
+    expect(within(sheet).queryByRole("link", { name: /Continue/ })).toBeNull();
+    expect(within(sheet).getByRole("link", { name: "Start lesson" })).toHaveAttribute(
+      "href",
+      `/lesson/${a2First.id}`,
+    );
   });
 
   it("marks the first undone lesson active and later ones locked", async () => {
@@ -292,15 +319,15 @@ describe("Learn page", () => {
 describe("Learn, round 6.1: pinned current unit and folded rooms", () => {
   const unitIds = (u: { lessons: { id: string }[] }) => u.lessons.map((l) => l.id);
 
-  it("pins the current unit on its room art, with its place in the whole course", async () => {
-    renderPage();
-    const link = await screen.findByRole("link", { name: /^Continue:/ });
-    expect(link).toHaveTextContent("Continue lesson");
-    const hero = link.closest("[data-learn-hero]")!;
-    expect(hero).toHaveTextContent(`You are here · Unit 1 of ${a1Units.length}`);
-    expect(hero.querySelector("img")?.getAttribute("src")).toMatch(
-      /^\/avatar\/scenes\/[a-z]+\.webp$/,
-    );
+  it("the map's unit strip names the current unit with its place in the level, replacing the old hero", async () => {
+    const { container } = renderPage();
+    expect(
+      await screen.findByRole("heading", {
+        name: `Unit 1 of ${a1Units.length} · ${a1Units[0].title}`,
+      }),
+    ).toBeInTheDocument();
+    expect(container.querySelector("[data-learn-hero]")).toBeNull();
+    expect(container.querySelectorAll("[data-learn-map]")).toHaveLength(1);
   });
 
   it("the current unit is open and later units are folded until tapped", async () => {
@@ -328,8 +355,11 @@ describe("Learn, round 6.1: pinned current unit and folded rooms", () => {
     expect(screen.queryByRole("link", { name: `Start ${title}` })).toBeNull();
     await user.click(run);
     expect(screen.getByRole("link", { name: `Start ${title}` })).toBeInTheDocument();
-    // The pinned card moved on to unit 2.
-    expect(screen.getByRole("link", { name: /unit 2 of/ })).toHaveAttribute("href");
+    // The map moved on to unit 2, with unit 1's earned chest at the foot of the climb.
+    expect(
+      screen.getByRole("heading", { name: `Unit 2 of ${a1Units.length} · ${a1Units[1].title}` }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Unit 1 reward, earned" })).toBeInTheDocument();
   });
 
   it("folds future rooms: the next room is one row, the rest sit behind Show all units", async () => {
@@ -370,7 +400,7 @@ describe("Learn, round 6.1: pinned current unit and folded rooms", () => {
     const scroll = vi.fn();
     Element.prototype.scrollIntoView = scroll;
     renderPage();
-    await screen.findByRole("link", { name: /^Continue:/ });
+    await screen.findByRole("heading", { name: /^Unit 1 of / });
     expect(screen.queryByRole("button", { name: /Jump to where I am/ })).toBeNull();
     act(() => notify([{ isIntersecting: false }]));
     await user.click(await screen.findByRole("button", { name: /Jump to where I am/ }));
