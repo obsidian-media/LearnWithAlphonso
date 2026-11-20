@@ -147,6 +147,35 @@ test("a learner signs in, names themselves, finishes a lesson and it is saved", 
   const profile = await admin(`/rest/v1/profiles?id=eq.${userId}&select=display_name`);
   expect(profile[0].display_name).toBe("Robin Tester");
 
+  // The Learn climbing map at the narrowest phone width (PARITY-SPEC-6). jsdom cannot measure layout, so this is the
+  // real check: no side scroll, every node of the climb inside the screen, and the next lesson's sheet fits too.
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto("/learn");
+  const climb = page.getByRole("list", { name: /climb, from the foot to the summit/ });
+  await expect(climb).toBeVisible({ timeout: 30_000 });
+  await expect(
+    page.getByRole("link", { name: new RegExp(`^Lesson 1 of \\d+, ${LESSON.title}, done$`) }),
+  ).toBeVisible();
+  const sideScroll = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(sideScroll).toBeLessThanOrEqual(0);
+  const items = await climb.getByRole("listitem").all();
+  expect(items.length).toBeGreaterThan(1);
+  for (const item of items) {
+    const box = (await item.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(320);
+  }
+  await page.getByRole("button", { name: /, next$/ }).click();
+  const sheet = page.getByRole("dialog");
+  await expect(sheet.getByRole("link", { name: "Continue lesson" })).toBeVisible();
+  const sheetBox = (await sheet.boundingBox())!;
+  expect(sheetBox.x).toBeGreaterThanOrEqual(0);
+  expect(sheetBox.x + sheetBox.width).toBeLessThanOrEqual(320);
+  await page.keyboard.press("Escape");
+  await expect(sheet).toBeHidden();
+
   // Exercise the real PostgreSQL RPC from two simultaneous PostgREST requests.
   // Both carry the same state versions; row locking must let one apply and force
   // the other to observe a conflict rather than lose a progress update.
