@@ -1,6 +1,8 @@
 package com.obsidianmedia.learnwithalphonso.ui.listen
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.LruCache
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
@@ -390,8 +392,13 @@ private fun ReaderTopBar(title: String, progress: SceneProgress, onBack: (() -> 
 @Composable
 private fun SceneArtFill(url: String?, modifier: Modifier = Modifier) {
     val ds = LocalAlphonsoTokens.current
-    val bitmap by produceState<ImageBitmap?>(null, url) {
-        value = if (url == null) null else withContext(Dispatchers.IO) { fetchBitmap(url) }
+    val bitmap by produceState<ImageBitmap?>(url?.let { sceneArtCache.get(it)?.asImageBitmap() }, url) {
+        value = when {
+            url == null -> null
+            else -> sceneArtCache.get(url)?.asImageBitmap()
+                ?: if (url in failedSceneArt) null else withContext(Dispatchers.IO) { fetchBitmap(url) }?.also { sceneArtCache.put(url, it) }?.asImageBitmap()
+                    ?: run { failedSceneArt.add(url); null }
+        }
     }
     val image = bitmap
     Box(modifier.background(Brush.linearGradient(listOf(ds.heroA, ds.heroB))).clearAndSetSemantics { }) {
@@ -399,12 +406,32 @@ private fun SceneArtFill(url: String?, modifier: Modifier = Modifier) {
     }
 }
 
-private fun fetchBitmap(url: String): ImageBitmap? = try {
+// TODO(#657): share one story-art loader once both land (the Stories library cover loader is the same idea).
+/** Decoded scene art, sized in KB (about 20 MB in all), not by entry count: a decoded bitmap can be megabytes. */
+private val sceneArtCache = object : LruCache<String, Bitmap>(20 * 1024) {
+    override fun sizeOf(key: String, value: Bitmap): Int = (value.byteCount / 1024).coerceAtLeast(1)
+}
+
+/** URLs that failed this session: not re-fetched (10 s timeout each); the gradient shows instead. */
+private val failedSceneArt: MutableSet<String> = java.util.Collections.newSetFromMap(java.util.concurrent.ConcurrentHashMap())
+
+/** Longest side the art is decoded at: plenty for a phone screen, a fraction of the full-size memory. */
+internal const val SCENE_ART_MAX_PX = 1000
+
+/** The power-of-two inSampleSize that keeps the longer side at or above [maxPx] (never below it); 1 for a small or unreadable image. */
+internal fun sceneArtSampleSize(width: Int, height: Int, maxPx: Int = SCENE_ART_MAX_PX): Int {
+    var sample = 1
+    val longSide = maxOf(width, height)
+    while (longSide / (sample * 2) >= maxPx) sample *= 2
+    return sample
+}
+
+private fun fetchBitmap(url: String): Bitmap? = try {
     val connection = URL(url).openConnection() as HttpURLConnection
     connection.connectTimeout = 10_000
     connection.readTimeout = 10_000
     try {
-        if (connection.responseCode in 200..299) connection.inputStream.use { BitmapFactory.decodeStream(it)?.asImageBitmap() } else null
+        if (connection.responseCode in 200..299) decodeSampled(connection.inputStream.use { it.readBytes() }) else null
     } finally {
         connection.disconnect()
     }
@@ -412,6 +439,13 @@ private fun fetchBitmap(url: String): ImageBitmap? = try {
     throw e
 } catch (e: Exception) {
     null
+}
+
+private fun decodeSampled(bytes: ByteArray): Bitmap? {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    val options = BitmapFactory.Options().apply { inSampleSize = sceneArtSampleSize(bounds.outWidth, bounds.outHeight) }
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
 }
 
 /** What the server did with the finished path. */
