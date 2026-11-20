@@ -244,7 +244,7 @@ struct SettingsView: View {
                 // The learner's animal or initial (visual round 6, part 3); hidden from VoiceOver, the name
                 // is announced by the field below.
                 ProfileAvatarView(seed: avatarSeed.isEmpty ? "a" : avatarSeed, name: displayName, size: AlphonsoDS.Space.s12)
-                Button("Change picture") { isPickingAvatar = true }
+                Button("Change profile picture") { isPickingAvatar = true }
                     .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
                     .accessibilityHint("Choose an animal or your initial")
                 Spacer(minLength: 0)

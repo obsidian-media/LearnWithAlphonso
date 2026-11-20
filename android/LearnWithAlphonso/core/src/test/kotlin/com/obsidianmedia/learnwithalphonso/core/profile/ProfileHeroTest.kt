@@ -65,7 +65,8 @@ class ProfileHeroTest {
     @Test
     fun `a country without a drawing falls back to null never to the emoji`() {
         assertEquals("GB", m.drawnFlagCode("gb"))
-        assertNull(m.drawnFlagCode("CA"))
+        assertEquals("CA", m.drawnFlagCode("ca"))
+        assertNull(m.drawnFlagCode("ZA"))
         assertNull(m.drawnFlagCode(null))
     }
 }

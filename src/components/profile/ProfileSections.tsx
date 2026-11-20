@@ -108,9 +108,7 @@ export function DrawnFlag({ code }: { code: string }) {
   return drawn ? (
     <img
       src={`/flags/${drawn.toLowerCase()}.svg`}
-      alt=""
-      role="img"
-      aria-label={name}
+      alt={name}
       width={22}
       height={15}
       data-flag-drawn={drawn}
@@ -121,7 +119,7 @@ export function DrawnFlag({ code }: { code: string }) {
       role="img"
       aria-label={name}
       data-flag-chip={code.toUpperCase()}
-      className="grid h-[15px] shrink-0 place-items-center rounded-[3px] bg-ds-on-hero/20 px-1 ds-type-overline text-ds-on-hero"
+      className="grid h-[15px] shrink-0 place-items-center rounded-[3px] border border-ds-line bg-ds-card px-1 ds-type-caption font-bold uppercase leading-none text-ds-ink"
     >
       {code.toUpperCase()}
     </span>
@@ -130,16 +128,13 @@ export function DrawnFlag({ code }: { code: string }) {
 
 const HERO_RING = "stroke-ds-on-hero/20";
 
-function LevelRing({ pct, label }: { pct: number; label: string }) {
+/** Purely visual: the level is spoken through the picture button's description (children of a button are presentational). */
+function LevelRing({ pct }: { pct: number }) {
   const gradient = useId();
   return (
     <svg
       viewBox="0 0 76 76"
-      role="progressbar"
-      aria-label={label}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={pct}
+      aria-hidden="true"
       data-level-ring={pct}
       className="absolute inset-0 size-full -rotate-90"
     >
@@ -239,6 +234,7 @@ export function ProfileIdentityHero({
       : lvl.next
         ? `${lvl.level} done. Ready for ${lvl.next}`
         : `The top level in ${course.label}`;
+  const levelDescId = useId();
   return (
     <section
       aria-label="Your profile"
@@ -254,9 +250,13 @@ export function ProfileIdentityHero({
           type="button"
           onClick={onPicture}
           aria-label="Change picture"
+          aria-describedby={levelDescId}
           className="relative size-[76px] shrink-0 rounded-full"
         >
-          <LevelRing pct={lvl.pct} label={`${lvl.level} progress`} />
+          <LevelRing pct={lvl.pct} />
+          <span id={levelDescId} hidden>
+            {`Level ${lvl.level}, ${levelLine}`}
+          </span>
           <span className="absolute inset-1.5 overflow-hidden rounded-full bg-ds-sunk">
             <ProfileAvatar
               seed={o.profile.avatarSeed}

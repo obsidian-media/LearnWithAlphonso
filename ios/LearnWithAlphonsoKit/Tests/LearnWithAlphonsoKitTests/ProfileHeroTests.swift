@@ -51,7 +51,8 @@ final class ProfileHeroTests: XCTestCase {
 
     func testDrawnFlagFallsBackToNilNeverToTheEmoji() {
         XCTAssertEqual(M.drawnFlagCode(country: "gb"), "GB")
-        XCTAssertNil(M.drawnFlagCode(country: "CA"))
+        XCTAssertEqual(M.drawnFlagCode(country: "ca"), "CA")
+        XCTAssertNil(M.drawnFlagCode(country: "ZA"))
         XCTAssertNil(M.drawnFlagCode(country: nil))
     }
 }

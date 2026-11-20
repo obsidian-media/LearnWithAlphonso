@@ -26,7 +26,6 @@ import {
 import { AiFeaturesSetting } from "../../components/AiFeaturesSetting";
 import { GetHelpLink } from "@/components/help/HelpEntry";
 import { AnalyticsSetting } from "../../components/AnalyticsSetting";
-import { AvatarSetting } from "../../components/AvatarSetting";
 import { SoundEffectsSetting } from "../../components/SoundEffectsSetting";
 import { VoicesSetting } from "../../components/VoicesSetting";
 import { ExplainSetting } from "../../components/ExplainSetting";

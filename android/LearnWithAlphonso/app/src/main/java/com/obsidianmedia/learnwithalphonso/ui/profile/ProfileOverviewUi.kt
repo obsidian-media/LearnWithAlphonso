@@ -60,6 +60,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.obsidianmedia.learnwithalphonso.core.content.Achievement
@@ -274,10 +275,10 @@ private fun ProfileFlag(country: String) {
         )
     } else {
         Box(
-            Modifier.defaultMinSize(AlphonsoTokens.Space.s6, AlphonsoTokens.Space.s4).clip(shape).background(ds.onHero.copy(alpha = 0.2f))
-                .padding(horizontal = AlphonsoTokens.Space.s1).semantics { contentDescription = name },
+            Modifier.defaultMinSize(minWidth = AlphonsoTokens.Space.s6).height(AlphonsoTokens.Space.s4).clip(shape).background(ds.card)
+                .border(1.dp, ds.line, shape).padding(horizontal = AlphonsoTokens.Space.s1).semantics { contentDescription = name },
             contentAlignment = Alignment.Center,
-        ) { Text(country.uppercase(), style = OverlineType, color = ds.onHero) }
+        ) { Text(country.uppercase(), style = CaptionType.copy(fontWeight = FontWeight.Bold), color = ds.ink) }
     }
 }
 

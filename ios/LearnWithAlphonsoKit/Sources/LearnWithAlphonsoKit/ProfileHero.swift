@@ -62,8 +62,10 @@ extension ProfileMath {
     /// The countries whose flag Profile draws (the Flags imageset group; scripts/generate-profile-flags.mjs). Any
     /// other country shows its two-letter code in a chip, never the flag emoji.
     public static let drawnFlags: Set<String> = [
-        "AR", "AT", "BE", "BG", "CO", "DE", "EE", "ES", "FR", "GB", "HU", "ID",
-        "IE", "IT", "LT", "LU", "MC", "NL", "PE", "PL", "RO", "RU", "UA", "US",
+        "AR", "AT", "AU", "BE", "BG", "BR", "CA", "CH", "CN", "CO", "DE", "EE",
+        "ES", "FR", "GB", "HU", "ID", "IE", "IN", "IR", "IT", "JP", "KR", "LT",
+        "LU", "MC", "MX", "NL", "PE", "PL", "PT", "RO", "RU", "SE", "TR", "UA",
+        "US",
     ]
 
     /// The drawn flag's code for a country, or nil when there is no drawing (or no flag to show at all).

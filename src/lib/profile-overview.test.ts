@@ -422,7 +422,7 @@ describe("goalRings", () => {
 
 describe("the identity hero's level, league progress and week strip", () => {
   it("league progress is the share through this tier's XP span, 100 at the top", () => {
-    // sapling spans 300 to 1000 XP: 650 is halfway.
+    // silver spans 300 to 1000 XP: 650 is halfway.
     expect(leagueStatus("silver", 650)).toMatchObject({ next: "sapphire", xpToNext: 350, pct: 50 });
     expect(leagueStatus("bronze", 0).pct).toBe(0);
     expect(leagueStatus("bronze", 300).xpToNext).toBe(0);

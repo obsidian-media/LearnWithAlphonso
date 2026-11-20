@@ -302,10 +302,11 @@ struct ProfileFlagView: View {
                     .clipShape(shape)
                     .overlay(shape.strokeBorder(ds.onHero.opacity(0.4), lineWidth: 1))
             } else {
-                Text(country.uppercased()).dsText(.overline).foregroundStyle(ds.onHero)
+                Text(country.uppercased()).dsText(.caption).fontWeight(.bold).foregroundStyle(ds.ink)
                     .padding(.horizontal, AlphonsoDS.Space.s1)
                     .frame(minWidth: width, minHeight: height)
-                    .background(shape.fill(ds.onHero.opacity(0.2)))
+                    .background(shape.fill(ds.card))
+                    .overlay(shape.strokeBorder(ds.line, lineWidth: 1))
             }
         }
         .accessibilityElement(children: .ignore)

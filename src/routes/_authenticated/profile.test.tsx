@@ -160,7 +160,7 @@ describe("Profile page", () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByLabelText("Display name");
-    await user.click(screen.getByRole("button", { name: "Change picture" }));
+    await user.click(screen.getByRole("button", { name: "Change profile picture" }));
     const dialog = await screen.findByRole("dialog", { name: "Your profile picture" });
     expect(within(dialog).getAllByRole("button", { pressed: false }).length).toBeGreaterThanOrEqual(
       16,
@@ -415,9 +415,31 @@ describe("Profile, round 6", () => {
     const on = renderPage();
     const flag = await find("[data-profile-hero] [data-profile-flag]");
     expect(flag.getAttribute("data-profile-flag")).toBe("CA");
-    // Canada has no drawing yet: its code in a chip, named for a screen reader (never the emoji).
-    expect(within(flag).getByRole("img", { name: "Canada" })).toHaveTextContent("CA");
+    // Canada is drawn: an image named for a screen reader (never the emoji).
+    expect(within(flag).getByRole("img", { name: "Canada" }).getAttribute("src")).toBe(
+      "/flags/ca.svg",
+    );
     on.unmount();
+
+    // A country with no drawing: its code in a styled pill (card fill, line border, uppercase), named for a screen reader.
+    getProfileOverview.mockResolvedValue(
+      richLearner({
+        profile: {
+          displayName: "Sam",
+          avatarSeed: "animal:fox",
+          country: "ZA",
+          createdAt: "2026-08-02T00:00:00Z",
+        },
+      }),
+    );
+    const chipView = renderPage();
+    const chip = await find("[data-profile-hero] [data-flag-chip]");
+    expect(chip.getAttribute("data-flag-chip")).toBe("ZA");
+    expect(chip).toHaveTextContent("ZA");
+    expect(chip.getAttribute("aria-label")).toBe("South Africa");
+    for (const cls of ["bg-ds-card", "border-ds-line", "uppercase", "h-[15px]"])
+      expect(chip.className).toContain(cls);
+    chipView.unmount();
 
     getProfileOverview.mockResolvedValue(
       richLearner({
@@ -459,8 +481,11 @@ describe("Profile, round 6", () => {
     const lvl = heroLevel(o);
     renderPage();
     const ring = await find("[data-level-ring]");
-    expect(ring.getAttribute("aria-valuenow")).toBe(String(lvl.pct));
-    expect(ring.getAttribute("aria-label")).toBe(`${lvl.level} progress`);
+    // The ring is decorative; the level is the picture button's description (a button's children are presentational).
+    expect(ring.getAttribute("role")).toBeNull();
+    expect(ring.getAttribute("aria-hidden")).toBe("true");
+    const button = screen.getByRole("button", { name: "Change picture" });
+    expect(button).toHaveAccessibleDescription(new RegExp(`^Level ${lvl.level}, .*${lvl.level}`));
     expect(document.querySelector("[data-level-badge]")).toHaveTextContent(lvl.level);
     expect(document.querySelector("[data-level-line]")?.textContent).toMatch(
       lvl.lessonsLeft > 0 ? /lessons? left in/ : /Ready for|top level/,
@@ -486,7 +511,7 @@ describe("Profile, round 6", () => {
     renderPage();
     const flag = await find("[data-profile-flag] img");
     expect(flag.getAttribute("src")).toBe("/flags/gb.svg");
-    expect(flag.getAttribute("aria-label")).toBe("United Kingdom");
+    expect(flag.getAttribute("alt")).toBe("United Kingdom");
   });
 
   it("the picture opens the avatar editor", async () => {
