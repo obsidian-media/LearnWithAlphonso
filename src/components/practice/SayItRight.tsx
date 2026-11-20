@@ -17,12 +17,14 @@ import {
 } from "@/lib/pronunciation";
 import {
   BUBBLE,
+  LATCH_MS,
   MAX_RECORD_MS,
   MOVE_ON,
   PRAISE,
   clearlyLine,
   nextLineIndex,
   poseFor,
+  releaseStops,
   type SirPhase,
 } from "@/lib/say-it-right";
 import type { VocabItem } from "@/data/vocab";
@@ -129,27 +131,37 @@ export function SayItRight({
     if (phase === "ask") document.getElementById("sir-record")?.focus();
   }, [index, phase]);
 
-  // Hold to talk: a press starts and a release stops; a plain click (keyboard, screen reader) toggles, so the mic is
-  // never a hold-only control. The recording also stops by itself at MAX_RECORD_MS.
+  // Hold to talk, or tap to start and tap to stop. A press starts recording; a release after a real hold (LATCH_MS or
+  // more) sends it, while a quick tap LATCHES the recording on so a second tap stops it. A plain click (keyboard,
+  // screen reader) toggles, so the mic is never a hold-only control. The recording also stops by itself at MAX_RECORD_MS.
   const holding = useRef(false);
+  const pressedAt = useRef(0);
   const pressedByPointer = useRef(false);
   const press = () => {
-    if (transcribing || recording) return;
-    holding.current = true;
+    if (transcribing) return;
     pressedByPointer.current = true;
+    if (recording) {
+      // A latched recording: this second tap stops it (the click that follows is swallowed).
+      stop();
+      return;
+    }
+    holding.current = true;
+    pressedAt.current = Date.now();
     void start();
   };
   const release = () => {
     if (!holding.current) return;
     holding.current = false;
-    stop();
+    // A quick tap latches the recording on; only a real hold sends on release.
+    if (releaseStops(Date.now() - pressedAt.current)) stop();
   };
-  // The pointer left the mic (or was cancelled) while held: no click follows, so the next keyboard press must not be
-  // taken for the click that follows a hold.
+  // The pointer left the mic (or was cancelled) while held: no click follows and the gesture is not a tap, so the
+  // recording stops, and the next keyboard press must not be taken for the click that follows a hold.
   const abandon = () => {
     if (!holding.current) return;
+    holding.current = false;
     pressedByPointer.current = false;
-    release();
+    stop();
   };
   const stopRef = useRef(stop);
   stopRef.current = stop;
@@ -281,9 +293,10 @@ export function SayItRight({
             src={`/figures/alphonso-${pose}.webp`}
             alt=""
             data-pose={pose}
-            className="stp-pose h-44 w-auto shrink-0"
+            className="stp-pose h-44 w-auto hidden shrink-0 min-[20rem]:block"
           />
           <div className="relative mb-6 grid min-w-0 flex-1 justify-items-center gap-1 rounded-[22px] border-[1.5px] border-ds-line bg-ds-card px-4 py-4 text-center shadow-[var(--ds-shadow-floating)] before:absolute before:-left-[7px] before:bottom-5 before:size-[13px] before:rotate-45 before:border-b-[1.5px] before:border-l-[1.5px] before:border-ds-line before:bg-ds-card before:content-['']">
+            {/* The one live region of the round: the line changes with every state, the hint beside the mic does not announce. */}
             <p
               aria-live="polite"
               data-testid="sir-line"
@@ -343,7 +356,7 @@ export function SayItRight({
                   onPointerLeave={abandon}
                   onClick={toggle}
                 />
-                <p id="sir-hint" className="ds-type-caption text-ds-ink-soft" aria-live="polite">
+                <p id="sir-hint" className="ds-type-caption text-ds-ink-soft">
                   {recording
                     ? "Listening. Let go or tap to send."
                     : transcribing

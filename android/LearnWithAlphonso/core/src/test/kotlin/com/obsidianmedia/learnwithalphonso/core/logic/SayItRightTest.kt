@@ -75,4 +75,15 @@ class SayItRightTest {
         for (v in Pronunciation.Verdict.entries) for (l in SayItRight.praise(v)) assertFalse(l.lowercase().contains("wrong"))
         assertEquals(6000, SayItRight.MAX_RECORD_MS)
     }
+
+    @Test
+    fun `a quick first tap latches the recording, a long hold or a second tap stops it`() {
+        // A quick tap on an idle mic keeps recording; the second tap (the mic was recording at press) always stops it.
+        assertFalse(SayItRight.releaseStops(heldMs = 50, wasRecording = false))
+        assertFalse(SayItRight.releaseStops(heldMs = SayItRight.LATCH_MS - 1, wasRecording = false))
+        assertTrue(SayItRight.releaseStops(heldMs = SayItRight.LATCH_MS, wasRecording = false))
+        assertTrue(SayItRight.releaseStops(heldMs = 2_000, wasRecording = false))
+        assertTrue(SayItRight.releaseStops(heldMs = 50, wasRecording = true))
+        assertEquals(300L, SayItRight.LATCH_MS)
+    }
 }

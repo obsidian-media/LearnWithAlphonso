@@ -234,6 +234,16 @@ public enum SayItRight {
     /// The mic ring and auto-stop length, matching Say the picture.
     public static let maxRecordSeconds = SayThePicture.maxRecordSeconds
 
+    /// A press released sooner than this is a TAP: it latches the recording on and a second tap stops it. A longer
+    /// hold is hold-to-talk and its release sends. Same on the web and Android.
+    public static let latchSeconds = 0.3
+
+    /// Whether releasing the mic stops (and sends) the recording: a second tap always does, a long hold does, a quick
+    /// first tap does not.
+    public static func releaseStops(heldSeconds: Double, wasRecording: Bool) -> Bool {
+        wasRecording || heldSeconds >= latchSeconds
+    }
+
     public static func praise(_ verdict: Pronunciation.Verdict) -> [String] {
         switch verdict {
         case .great: return ["Spot on!", "You've got it!", "Lovely!", "Beautifully said!", "That was clear!"]

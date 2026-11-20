@@ -49,8 +49,8 @@ class SayItRightVisualTest {
 
     /** Waits for the node to exist, scrolls it into view, then returns it for assertions. */
     private fun visible(tag: String): SemanticsNodeInteraction {
-        rule.waitUntil(10_000) { rule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() }
-        return rule.onNodeWithTag(tag).performScrollTo()
+        rule.waitUntil(10_000) { rule.onAllNodesWithTag(tag, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+        return rule.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo()
     }
 
     private fun show(
@@ -81,7 +81,7 @@ class SayItRightVisualTest {
         visible("sir-pose").assertIsDisplayed().assertHasSize()
         visible("sir-pose-image").assertIsDisplayed().assertHasSize()
         visible("sir-bubble").assertIsDisplayed().assertHasSize()
-        rule.onNodeWithTag("sir-word").assertIsDisplayed().assertHasSize()
+        rule.onNodeWithTag("sir-word", useUnmergedTree = true).assertIsDisplayed().assertHasSize()
         rule.onNodeWithText("word0").assertIsDisplayed()
         rule.onNodeWithText(SayItRight.ASK_LINE).assertIsDisplayed()
         rule.onNodeWithText("Hear it").assertIsDisplayed()
@@ -109,7 +109,7 @@ class SayItRightVisualTest {
         visible("sir-pose-image").assertHasSize()
         rule.onNodeWithText(SayItRight.praise(com.obsidianmedia.learnwithalphonso.core.logic.Pronunciation.Verdict.AGAIN)[0]).assertIsDisplayed()
         rule.onNodeWithText(SayItRight.RETRY_HINT).performScrollTo().assertIsDisplayed()
-        assertTrue(rule.onAllNodesWithTag("sir-word").fetchSemanticsNodes().isNotEmpty())
+        assertTrue(rule.onAllNodesWithTag("sir-word", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty())
     }
 
     @Test fun aWinPraisesInTheBubbleAndOffersNext() {

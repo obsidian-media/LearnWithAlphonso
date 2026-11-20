@@ -25,6 +25,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -390,6 +394,7 @@ internal fun SirMic(recording: Boolean, busy: Boolean, reduceMotion: Boolean, on
     LaunchedEffect(recording) {
         if (recording) { kotlinx.coroutines.delay(SayItRight.MAX_RECORD_MS.toLong()); onPressEnded() }
     }
+    val recordingNow by rememberUpdatedState(recording)
     if (busy) return
     val size = 98.dp
     val track = ds.ink.copy(alpha = 0.1f)
@@ -403,8 +408,13 @@ internal fun SirMic(recording: Boolean, busy: Boolean, reduceMotion: Boolean, on
             }
             .pointerInput(Unit) {
                 detectTapGestures(onPress = {
+                    // A second tap on a latched recording stops it; a quick first tap latches the recording on; a real hold
+                    // is hold-to-talk and its release sends. The 6 s ring still stops a latched recording.
+                    val wasRecording = recordingNow
+                    val pressedAt = System.currentTimeMillis()
                     onPressBegan()
-                    try { tryAwaitRelease() } finally { onPressEnded() }
+                    tryAwaitRelease()
+                    if (SayItRight.releaseStops(System.currentTimeMillis() - pressedAt, wasRecording)) onPressEnded()
                 })
             },
         contentAlignment = Alignment.Center,
@@ -419,7 +429,7 @@ internal fun SirMic(recording: Boolean, busy: Boolean, reduceMotion: Boolean, on
         Box(Modifier.size(size - 22.dp), contentAlignment = Alignment.Center) {
             Box(Modifier.fillMaxSize().offset(y = 4.dp).clip(CircleShape).background(if (recording) ds.wrongEdge else ds.choiceEdge))
             Box(Modifier.fillMaxSize().clip(CircleShape).background(if (recording) ds.wrong else ds.choice), contentAlignment = Alignment.Center) {
-                Text("🎤", style = Type.title.toTextStyle(), modifier = Modifier.clearAndSetSemantics { })
+                Icon(Icons.Filled.Mic, contentDescription = null, tint = if (recording) ds.onWrong else ds.onChoice, modifier = Modifier.size(32.dp).clearAndSetSemantics { })
             }
         }
     }

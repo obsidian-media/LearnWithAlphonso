@@ -1,12 +1,20 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { fakeConsentApi, withAiConsent } from "@/lib/__testutils__/ai-consent";
 import { SayItRight } from "./SayItRight";
 import { learnedWordPool } from "@/lib/pronunciation";
 import { useProgress } from "@/lib/progress";
 import { getCourse } from "@/data/courses";
-import { BUBBLE, MAX_RECORD_MS, MOVE_ON, PRAISE, nextLineIndex, poseFor } from "@/lib/say-it-right";
+import {
+  BUBBLE,
+  LATCH_MS,
+  MAX_RECORD_MS,
+  MOVE_ON,
+  PRAISE,
+  nextLineIndex,
+  poseFor,
+} from "@/lib/say-it-right";
 
 const h = vi.hoisted(() => ({
   capture: {
@@ -264,18 +272,112 @@ describe("Say it right", () => {
     expect(rec.innerHTML).toContain("bg-ds-wrong");
   });
 
-  it("holding the mic starts, releasing stops; a keyboard click toggles", () => {
+  describe("the mic: hold to talk, or tap to start and tap to stop", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+    const hold = (ms: number, mic: HTMLElement) => {
+      fireEvent.pointerDown(mic);
+      act(() => {
+        vi.advanceTimersByTime(ms);
+      });
+      fireEvent.pointerUp(mic);
+    };
+
+    it("a long hold starts on press and stops on release; the click after it is swallowed", () => {
+      view();
+      h.capture.stop.mockClear();
+      const mic = screen.getByTestId("sir-mic");
+      fireEvent.pointerDown(mic);
+      expect(h.capture.start).toHaveBeenCalledTimes(1);
+      act(() => {
+        vi.advanceTimersByTime(LATCH_MS + 1);
+      });
+      fireEvent.pointerUp(mic);
+      expect(h.capture.stop).toHaveBeenCalledTimes(1);
+      fireEvent.click(mic); // the click that follows a hold is swallowed
+      expect(h.capture.start).toHaveBeenCalledTimes(1);
+      fireEvent.click(mic); // a keyboard press toggles on
+      expect(h.capture.start).toHaveBeenCalledTimes(2);
+    });
+
+    it("a quick tap latches the recording on, and a second tap stops it", () => {
+      view();
+      h.capture.stop.mockClear();
+      const mic = screen.getByTestId("sir-mic");
+      hold(50, mic);
+      fireEvent.click(mic); // swallowed
+      expect(h.capture.start).toHaveBeenCalledTimes(1);
+      expect(h.capture.stop).not.toHaveBeenCalled(); // latched: still recording
+      // The recording is now on; the second tap stops it.
+      h.capture.state = "recording";
+      cleanup();
+      view();
+      h.capture.start.mockClear();
+      fireEvent.pointerDown(screen.getByTestId("sir-mic"));
+      expect(h.capture.stop).toHaveBeenCalledTimes(1);
+      expect(h.capture.start).not.toHaveBeenCalled();
+      fireEvent.pointerUp(screen.getByTestId("sir-mic"));
+      fireEvent.click(screen.getByTestId("sir-mic")); // swallowed, not a second toggle
+      expect(h.capture.stop).toHaveBeenCalledTimes(1);
+      expect(h.capture.start).not.toHaveBeenCalled();
+    });
+
+    it("a latched recording still auto-stops at the cap", () => {
+      view();
+      h.capture.stop.mockClear();
+      hold(50, screen.getByTestId("sir-mic"));
+      expect(h.capture.stop).not.toHaveBeenCalled();
+      h.capture.state = "recording";
+      cleanup();
+      view();
+      act(() => {
+        vi.advanceTimersByTime(MAX_RECORD_MS + 1);
+      });
+      expect(h.capture.stop).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(["pointerLeave", "pointerCancel"] as const)(
+      "%s while held stops the recording, and the next click toggles (no stale swallow)",
+      (ev) => {
+        view();
+        h.capture.stop.mockClear();
+        const mic = screen.getByTestId("sir-mic");
+        fireEvent.pointerDown(mic);
+        act(() => {
+          vi.advanceTimersByTime(20); // a quick press that is abandoned is not a latching tap
+        });
+        fireEvent[ev](mic);
+        expect(h.capture.stop).toHaveBeenCalledTimes(1);
+        fireEvent.click(mic); // a keyboard activation, not the click of the abandoned hold
+        expect(h.capture.start).toHaveBeenCalledTimes(2);
+        // and the abandoned press's late pointerup does nothing
+        fireEvent.pointerUp(mic);
+        expect(h.capture.stop).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it("the pointerleave that follows a latched quick tap does not stop it", () => {
+      view();
+      h.capture.stop.mockClear();
+      const mic = screen.getByTestId("sir-mic");
+      hold(50, mic);
+      fireEvent.pointerLeave(mic);
+      expect(h.capture.stop).not.toHaveBeenCalled();
+    });
+  });
+
+  it("the pose hides at large text and narrow widths (rem-based, like iOS and Android), and only one live region speaks", async () => {
+    const fs = await import("node:fs");
+    const src = fs.readFileSync("src/components/practice/SayItRight.tsx", "utf8");
+    expect(src).toMatch(/hidden shrink-0 min-\[20rem\]:block/);
+    expect(src.match(/aria-live=/g)?.length).toBe(1);
     view();
-    h.capture.stop.mockClear();
-    const mic = screen.getByTestId("sir-mic");
-    fireEvent.pointerDown(mic);
-    expect(h.capture.start).toHaveBeenCalledTimes(1);
-    fireEvent.pointerUp(mic);
-    expect(h.capture.stop).toHaveBeenCalledTimes(1);
-    fireEvent.click(mic); // the click that follows a hold is swallowed
-    expect(h.capture.start).toHaveBeenCalledTimes(1);
-    fireEvent.click(mic); // a keyboard press toggles on
-    expect(h.capture.start).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId("sir-line").getAttribute("aria-live")).toBe("polite");
+    expect(document.getElementById("sir-hint")?.getAttribute("aria-live")).toBeNull();
   });
 
   it("auto-stops a recording at the cap", () => {

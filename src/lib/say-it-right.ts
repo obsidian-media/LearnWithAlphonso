@@ -9,6 +9,17 @@ import type { Verdict } from "./pronunciation";
 /** The mic ring/auto-stop length, matching Say the picture (6 s). */
 export { MAX_RECORD_MS } from "./say-the-picture";
 
+/**
+ * A press released sooner than this is a TAP: it latches the recording on and a second tap stops it. A longer hold is
+ * hold-to-talk and its release sends. Same on iOS and Android.
+ */
+export const LATCH_MS = 300;
+
+/** Whether releasing the mic after `heldMs` stops (and sends) the recording; a quick tap keeps recording instead. */
+export function releaseStops(heldMs: number): boolean {
+  return heldMs >= LATCH_MS;
+}
+
 /** Alphonso's in-pose reactions, by file name under /figures (alphonso-<pose>.webp). */
 export type SirPose =
   | "explaining-pointer"

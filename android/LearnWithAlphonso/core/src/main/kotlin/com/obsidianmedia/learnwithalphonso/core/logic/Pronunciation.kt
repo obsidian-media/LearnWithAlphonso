@@ -239,6 +239,15 @@ object SayItRight {
     /** The mic ring and auto-stop length, matching Say the picture. */
     const val MAX_RECORD_MS = SayThePicture.MAX_RECORD_MS
 
+    /**
+     * A press released sooner than this is a TAP: it latches the recording on and a second tap stops it. A longer hold
+     * is hold-to-talk and its release sends. Same on the web and iOS.
+     */
+    const val LATCH_MS = 300L
+
+    /** Whether releasing the mic stops (and sends) the recording: a second tap always does, a long hold does, a quick first tap does not. */
+    fun releaseStops(heldMs: Long, wasRecording: Boolean): Boolean = wasRecording || heldMs >= LATCH_MS
+
     fun praise(v: Pronunciation.Verdict): List<String> = when (v) {
         Pronunciation.Verdict.GREAT -> listOf("Spot on!", "You've got it!", "Lovely!", "Beautifully said!", "That was clear!")
         Pronunciation.Verdict.ALMOST -> listOf("So close. A touch clearer.", "Nearly there. Once more, nice and clear.", "Almost! Listen, then try again.")

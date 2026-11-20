@@ -349,6 +349,8 @@ private struct SayItRightMic: View {
     let onPress: () -> Void
     let onRelease: () -> Void
     @State private var fill: CGFloat = 0
+    @State private var pressStart: Date?
+    @State private var wasRecordingAtPress = false
     @Environment(\.alphonsoDS) private var ds
 
     private let size: CGFloat = 98
@@ -377,9 +379,21 @@ private struct SayItRightMic: View {
         .accessibilityAddTraits(.isButton)
         .accessibilityDirectTouch(true, options: .requiresActivation)
         .gesture(
+            // Hold to talk, or tap to start and tap to stop: a press released before SayItRight.latchSeconds LATCHES the
+            // recording on, a second tap (or a long hold's release) stops it.
             DragGesture(minimumDistance: 0)
-                .onChanged { _ in onPress() }
-                .onEnded { _ in onRelease() }
+                .onChanged { _ in
+                    if pressStart == nil {
+                        pressStart = Date()
+                        wasRecordingAtPress = isRecording
+                    }
+                    onPress()
+                }
+                .onEnded { _ in
+                    let held = pressStart.map { Date().timeIntervalSince($0) } ?? 0
+                    pressStart = nil
+                    if SayItRight.releaseStops(heldSeconds: held, wasRecording: wasRecordingAtPress) { onRelease() }
+                }
         )
         .accessibilityAction {
             // VoiceOver: a double-tap toggles.

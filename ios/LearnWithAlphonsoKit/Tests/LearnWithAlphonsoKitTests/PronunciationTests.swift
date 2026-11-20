@@ -290,4 +290,13 @@ final class SayItRightTests: XCTestCase {
         }
         XCTAssertEqual(SayItRight.maxRecordSeconds, 6.0)
     }
+
+    func testAQuickFirstTapLatchesTheRecordingAndALongHoldOrSecondTapStopsIt() {
+        XCTAssertFalse(SayItRight.releaseStops(heldSeconds: 0.05, wasRecording: false))
+        XCTAssertFalse(SayItRight.releaseStops(heldSeconds: 0.29, wasRecording: false))
+        XCTAssertTrue(SayItRight.releaseStops(heldSeconds: 0.3, wasRecording: false))
+        XCTAssertTrue(SayItRight.releaseStops(heldSeconds: 2, wasRecording: false))
+        XCTAssertTrue(SayItRight.releaseStops(heldSeconds: 0.05, wasRecording: true))
+        XCTAssertEqual(SayItRight.latchSeconds, 0.3)
+    }
 }
