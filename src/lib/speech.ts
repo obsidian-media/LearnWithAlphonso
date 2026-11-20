@@ -23,10 +23,11 @@ export function canSpeak(): boolean {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }
 
-export function speak(text: string, lang: string): void {
+export function speak(text: string, lang: string, rate = 1): void {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = lang;
+  utterance.rate = rate;
   // Cancel any still-playing utterance first -- otherwise tapping "play"
   // again while the first is still speaking queues rather than replaces.
   window.speechSynthesis.cancel();

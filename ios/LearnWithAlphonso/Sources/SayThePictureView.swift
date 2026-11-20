@@ -427,8 +427,8 @@ struct SayThePictureView: View {
     }
 
     private func micRing(size: CGFloat) -> some View {
-        // Hold to talk, release to send: the same control as the conversation screens and the speak question, inside
-        // a ring that fills while it is held.
+        // Hold to talk, or tap to start and tap to stop (the same rule as Say it right), inside a ring that fills while
+        // it records; a double-tap toggles for VoiceOver; the recording stops itself at the cap.
         SayPictureMicRing(
             isRecording: voice.isRecording,
             size: size,
@@ -441,13 +441,13 @@ struct SayThePictureView: View {
     // MARK: Copy
 
     private var captureHint: String {
-        if voice.isRecording { return "Listening. Let go when you are done." }
+        if voice.isRecording { return "Listening. Let go or tap to send." }
         if voice.isBusy { return "Checking what you said..." }
-        return "What is this? Hold and say it."
+        return "What is this? Hold to talk, or tap to start and tap to stop."
     }
 
     private var revealHint: String {
-        if voice.isRecording { return "Listening. Let go when you are done." }
+        if voice.isRecording { return "Listening. Let go or tap to send." }
         if voice.isBusy { return "Checking what you said..." }
         return run.heard != nil ? "Nice. That is it for this word." : "Now say it once yourself."
     }
@@ -655,8 +655,8 @@ private struct SayPictureSparks: View {
     }
 }
 
-/// The gold mic inside a ring that fills while it is held (red while recording). Hold to talk, release to send. The
-/// ring is a button for assistive tech: it says how to use it and whether it is recording.
+/// The gold mic inside a ring that fills while it records (red while recording). Hold to talk, or tap to start and tap
+/// to stop. The ring is a button for assistive tech: it says how to use it and whether it is recording.
 private struct SayPictureMicRing: View {
     let isRecording: Bool
     let size: CGFloat
@@ -664,6 +664,8 @@ private struct SayPictureMicRing: View {
     let onPress: () -> Void
     let onRelease: () -> Void
     @State private var fill: CGFloat = 0
+    @State private var pressStart: Date?
+    @State private var wasRecordingAtPress = false
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
@@ -686,13 +688,25 @@ private struct SayPictureMicRing: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Hold to say the word")
         .accessibilityValue(isRecording ? "Recording" : "Ready")
-        .accessibilityHint("Press and hold, say the word, then let go to send it.")
+        .accessibilityHint("Press and hold, say the word, then let go to send it. Or double-tap to start, and double-tap to stop.")
         .accessibilityAddTraits(.isButton)
         .accessibilityDirectTouch(true, options: .requiresActivation)
         .gesture(
+            // Hold to talk, or tap to start and tap to stop: a press released before SayItRight.latchSeconds LATCHES the
+            // recording on, a second tap (or a long hold's release) stops it.
             DragGesture(minimumDistance: 0)
-                .onChanged { _ in onPress() }
-                .onEnded { _ in onRelease() }
+                .onChanged { _ in
+                    if pressStart == nil {
+                        pressStart = Date()
+                        wasRecordingAtPress = isRecording
+                    }
+                    onPress()
+                }
+                .onEnded { _ in
+                    let held = pressStart.map { Date().timeIntervalSince($0) } ?? 0
+                    pressStart = nil
+                    if SayItRight.releaseStops(heldSeconds: held, wasRecording: wasRecordingAtPress) { onRelease() }
+                }
         )
         .accessibilityAction {
             // VoiceOver: a double-tap toggles, so recording never needs hold-and-drag.

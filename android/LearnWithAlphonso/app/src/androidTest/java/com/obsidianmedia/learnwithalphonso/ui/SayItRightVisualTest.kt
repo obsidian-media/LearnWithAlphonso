@@ -6,7 +6,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -20,7 +24,10 @@ import com.obsidianmedia.learnwithalphonso.core.logic.PronunciationSession
 import com.obsidianmedia.learnwithalphonso.core.logic.SayItRight
 import com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase
 import com.obsidianmedia.learnwithalphonso.core.logic.VocabItem
+import com.obsidianmedia.learnwithalphonso.audio.SirClip
+import com.obsidianmedia.learnwithalphonso.core.logic.Waveform
 import com.obsidianmedia.learnwithalphonso.ui.practice.SayItRightContent
+import com.obsidianmedia.learnwithalphonso.ui.practice.SirAudioUi
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTheme
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoThemeId
 import org.junit.Assert.assertEquals
@@ -61,13 +68,14 @@ class SayItRightVisualTest {
         onRestart: () -> Unit = {},
         onBack: () -> Unit = {},
         onHear: (String) -> Unit = {},
+        audio: SirAudioUi = SirAudioUi(),
     ) {
         rule.setContent {
             AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
                 Column(Modifier.testTag("sir-root").verticalScroll(rememberScrollState())) {
                     SayItRightContent(
                         session = session, phase = phase, canCapture = canCapture, error = null, reduceMotion = true,
-                        unavailable = {}, onPressBegan = {}, onPressEnded = {}, onHear = onHear, onNext = onNext,
+                        audio = audio, unavailable = {}, onPressBegan = {}, onPressEnded = {}, onHear = onHear, onNext = onNext,
                         onRestart = onRestart, onBack = onBack,
                     )
                 }
@@ -110,6 +118,71 @@ class SayItRightVisualTest {
         rule.onNodeWithText(SayItRight.praise(com.obsidianmedia.learnwithalphonso.core.logic.Pronunciation.Verdict.AGAIN)[0]).assertIsDisplayed()
         rule.onNodeWithText(SayItRight.RETRY_HINT).performScrollTo().assertIsDisplayed()
         assertTrue(rule.onAllNodesWithTag("sir-word", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty())
+    }
+
+    private fun afterAMiss(): PronunciationSession {
+        val s = PronunciationSession(words(8)).submit("zzz", 0.9, Course.ENGLISH, roll = 0.0).first
+        assertEquals(PronunciationPhase.RETRY, s.phase)
+        return s
+    }
+
+    private val bars = DoubleArray(Waveform.BARS) { 0.2 + 0.8 * (it % 7) / 6.0 }
+
+    @Test fun beforeAnAttemptThereIsNothingToCompareButSayItSlowerIsThere() {
+        show(PronunciationSession(words(8)))
+        assertTrue(rule.onAllNodesWithTag("sir-wave-you", useUnmergedTree = true).fetchSemanticsNodes().isEmpty())
+        visible("sir-slower").assertIsDisplayed().assertHasSize()
+        rule.onNodeWithText("Say it slower").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test fun afterAnAttemptBothWaveformsAndSayItSlowerAreOnScreenWithASize() {
+        show(afterAMiss(), audio = SirAudioUi(hasYou = true, youPeaks = bars, modelPeaks = bars))
+        visible("sir-wave-you").assertIsDisplayed().assertHasSize()
+        visible("sir-wave-model").assertIsDisplayed().assertHasSize()
+        visible("sir-wave-you-bars").assertHasSize()
+        visible("sir-wave-model-bars").assertHasSize()
+        visible("sir-slower").assertIsDisplayed().assertHasSize()
+        rule.onNodeWithContentDescription("Play your recording").assertIsDisplayed()
+        rule.onNodeWithContentDescription("Play Alphonso's version").assertIsDisplayed()
+    }
+
+    @Test fun theWaveformsSitSideBySideAtNormalTextSize() {
+        show(afterAMiss(), audio = SirAudioUi(hasYou = true, youPeaks = bars, modelPeaks = bars))
+        val you = visible("sir-wave-you").fetchSemanticsNode().boundsInRoot
+        val model = visible("sir-wave-model").fetchSemanticsNode().boundsInRoot
+        assertTrue("side by side: $you vs $model", kotlin.math.abs(you.center.y - model.center.y) < 2f && you.center.x < model.center.x)
+    }
+
+    @Test fun aClipThatCouldNotBeDecodedStillDrawsAFlatRowAndPlays() {
+        var tapped = 0
+        show(afterAMiss(), audio = SirAudioUi(hasYou = true, youPeaks = null, modelPeaks = null, onToggleYou = { tapped++ }))
+        visible("sir-wave-you-bars").assertHasSize()
+        visible("sir-wave-you").performClick()
+        rule.runOnIdle { assertEquals(1, tapped) }
+    }
+
+    @Test fun tappingTheWaveformsAndSayItSlowerReachesTheirHandlers() {
+        var you = 0
+        var model = ""
+        var slower = ""
+        show(
+            afterAMiss(),
+            audio = SirAudioUi(hasYou = true, youPeaks = bars, modelPeaks = bars, onToggleYou = { you++ }, onToggleModel = { model = it }, onSlower = { slower = it }),
+        )
+        visible("sir-wave-you").performClick()
+        visible("sir-wave-model").performClick()
+        rule.onNodeWithText("Say it slower").performScrollTo().performClick()
+        rule.runOnIdle {
+            assertEquals(1, you)
+            assertEquals("word0", model)
+            assertEquals("word0", slower)
+        }
+    }
+
+    @Test fun thePlayingWaveformSaysSoToTalkBack() {
+        show(afterAMiss(), audio = SirAudioUi(hasYou = true, youPeaks = bars, modelPeaks = bars, playing = SirClip.YOU, progress = 0.5f))
+        visible("sir-wave-you").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Playing"))
+        visible("sir-wave-model").assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.StateDescription).or(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "")))
     }
 
     @Test fun aWinPraisesInTheBubbleAndOffersNext() {
