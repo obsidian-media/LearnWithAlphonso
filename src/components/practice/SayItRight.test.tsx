@@ -23,6 +23,7 @@ const h = vi.hoisted(() => ({
     canRecord: true,
     start: vi.fn(),
     stop: vi.fn(),
+    cancel: vi.fn(),
     onTranscript: null as ((t: string, c: number | null) => void) | null,
     course: undefined as string | undefined,
   },
@@ -39,7 +40,21 @@ vi.mock("@/lib/use-speech-capture", () => ({
     return h.capture;
   },
 }));
-vi.mock("@/lib/use-model-speech", () => ({ useModelSpeech: () => h.model }));
+// The audio side (clips, waveforms, slower) has its own tests; here only the flow around it is under test.
+vi.mock("@/lib/use-say-it-right-audio", () => ({
+  useSayItRightAudio: () => ({
+    playing: null,
+    progress: 0,
+    hasYou: false,
+    youPeaks: null,
+    modelPeaks: null,
+    setYouClip: vi.fn(),
+    playModel: h.model,
+    toggleYou: vi.fn(),
+    toggleModel: vi.fn(),
+    stop: vi.fn(),
+  }),
+}));
 
 const lessonIds = () =>
   getCourse("en")
