@@ -27,6 +27,48 @@ class PracticeHubTest {
         assertEquals(PracticePick("coffee", "articles"), PracticeHub.today(PracticeHubData(weaknessEvents = events), scenarios))
         assertEquals(PracticePick("airport", null), PracticeHub.today(PracticeHubData(weaknessEvents = events.take(1)), scenarios))
     }
+    @Test fun `the picks start with todays pick and are distinct scenarios`() {
+        val scenarios = listOf(scenario("coffee"), scenario("airport"), scenario("smalltalk"), scenario("hotel"))
+        val data = PracticeHubData(weaknessEvents = listOf(PracticeWeaknessEvent("articles", "detected", "1")))
+        val picks = PracticeHub.picks(data, scenarios)
+        assertEquals(3, picks.size)
+        assertEquals(PracticeHub.today(data, scenarios), picks.first())
+        assertEquals(3, picks.map { it.scenarioId }.toSet().size)
+        assertEquals(2, PracticeHub.picks(PracticeHubData(), scenarios, limit = 2).size)
+        assertEquals(1, PracticeHub.picks(PracticeHubData(), listOf(scenario("coffee"))).size)
+    }
+
+    @Test fun `each weak spot gets its own card then the level fills without claiming one`() {
+        val scenarios = listOf(scenario("coffee"), scenario("airport"), scenario("smalltalk"))
+        val events = listOf("articles" to "1", "articles" to "2", "pronouns" to "3", "spelling" to "4", "spelling" to "5", "spelling" to "6").map { PracticeWeaknessEvent(it.first, "detected", it.second) }
+        assertEquals(
+            listOf(PracticePick("coffee", "articles"), PracticePick("airport", "pronouns"), PracticePick("smalltalk", null)),
+            PracticeHub.picks(PracticeHubData(weaknessEvents = events), scenarios),
+        )
+    }
+
+    @Test fun `the picks prefer unplayed scenarios`() {
+        val scenarios = listOf(scenario("coffee"), scenario("airport"), scenario("smalltalk"))
+        val rows = listOf(PracticeStarRow("scenario", "coffee", 3, "1"))
+        assertEquals(listOf("airport", "smalltalk"), PracticeHub.picks(PracticeHubData(stars = rows), scenarios, limit = 2).map { it.scenarioId })
+    }
+
+    @Test fun `a cards reason names the weak spot or the level`() {
+        assertEquals("Makes you use the past tense, your top weak spot", PracticeHub.reason(PracticePick("coffee", "past-tense"), "Beginner", first = true))
+        assertEquals("Makes you use the past tense", PracticeHub.reason(PracticePick("coffee", "past-tense"), "Beginner", first = false))
+        assertEquals("Beginner scene at your level", PracticeHub.reason(PracticePick("coffee", null), "Beginner", first = true))
+    }
+
+    @Test fun `a campaigns progress counts scenes with a star`() {
+        val c = campaign("new")
+        val none = PracticeHub.progress(c, emptyList())
+        assertEquals(PracticeCampaignProgress(0, 3, listOf(false, false, false)), none)
+        assertEquals("New", PracticeHub.progressLabel(none))
+        val some = PracticeHub.progress(c, listOf(PracticeStarRow("scene", "new/a", 1, "1"), PracticeStarRow("scene", "new/c", 3, "2"), PracticeStarRow("scene", "new/b", 0, "3")))
+        assertEquals(listOf(true, false, true), some.scenes)
+        assertEquals("2/3", PracticeHub.progressLabel(some))
+    }
+
     @Test fun `stars displayed are server award even when counts and best suggest three`() {
         val r = ContentJson.json.decodeFromString<PracticeResult>(resultJson)
         assertEquals(1, r.displayedStars)

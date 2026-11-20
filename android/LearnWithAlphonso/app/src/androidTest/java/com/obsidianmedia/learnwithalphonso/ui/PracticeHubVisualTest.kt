@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.screenshot.Screenshot
@@ -19,6 +20,7 @@ import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeReplyBar
 import com.obsidianmedia.learnwithalphonso.ui.practice.PracticeResultScreen
 import com.obsidianmedia.learnwithalphonso.ui.theme.*
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -53,6 +55,7 @@ class PracticeHubVisualTest {
         rule.onNodeWithText(scene.opener).assertIsDisplayed()
         rule.onNodeWithText(scene.persona!!).assertIsDisplayed()
         shot("02-pre-call")
+        rule.onNodeWithTag("practice-pre-call").performScrollToNode(hasText("Chat (type)"))
         rule.onNodeWithText("Chat (type)").performClick()
         rule.onNodeWithTag("practice-pre-call").performScrollToNode(hasText("Start the chat"))
         rule.onNodeWithText("Start the chat").performClick()
@@ -60,6 +63,104 @@ class PracticeHubVisualTest {
         rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-level-Advanced"))
         rule.onNodeWithTag("practice-level-Advanced").performScrollTo().performClick()
         shot("03-advanced")
+    }
+
+    /**
+     * A real render, not a source check: every section of the hub is on screen with a real size (a sibling PR shipped
+     * cards of about zero height that every source guard passed). The hero, the conversations grid, the campaigns
+     * rail, both drills and the Pro nudge each get a minimum height; the carousel works through its dots.
+     */
+    private fun showHub(fontScale: Float = 1f) {
+        rule.setContent {
+            val density = LocalDensity.current.density
+            CompositionLocalProvider(LocalDensity provides Density(density, fontScale)) {
+                AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                    PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
+                }
+            }
+        }
+    }
+
+    private fun assertSized(tag: String, minHeightDp: Int, minWidthDp: Int = 40) {
+        fun minPx(dp: Int) = with(rule.density) { dp.dp.toPx() }
+        if (tag.startsWith("practice-campaign-") && tag != "practice-campaign-rail") {
+            // Campaign tiles live in a LazyRow: scroll the outer list to the rail, then the rail to the tile.
+            rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-campaign-rail"))
+            rule.onNodeWithTag("practice-campaign-rail").performScrollToNode(hasTestTag(tag))
+        } else {
+            rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag(tag))
+        }
+        val node = rule.onNodeWithTag(tag).assertIsDisplayed().fetchSemanticsNode()
+        assertTrue("$tag is ${node.size.width}x${node.size.height}px, under ${minHeightDp}dp tall", node.size.height >= minPx(minHeightDp) && node.size.width >= minPx(minWidthDp))
+    }
+
+    @Test fun hubSectionsRenderWithRealSize() {
+        showHub()
+        // The hero: the continue card first (the fixture has a campaign in progress), both answers, the dots.
+        assertSized("practice-hero", 300, 200)
+        assertSized("practice-hero-card-0", 300, 200)
+        assertSized("practice-continue", 48, 48)
+        assertSized("practice-hero-chat-0", 48, 48)
+        for (i in 0..2) rule.onNodeWithTag("practice-hero-dot-$i").assertExists()
+        rule.onNodeWithTag("practice-hero-dot-1").performClick()
+        rule.waitForIdle()
+        assertSized("practice-hero-card-1", 300, 200)
+        rule.onNodeWithTag("practice-hero-dot-1").assertContentDescriptionEquals("Show call 2 of 3")
+        // The conversations grid, the campaigns rail, both drills and the nudge.
+        assertSized("practice-tile-coffee", 100, 100)
+        assertSized("practice-campaign-rail", 100, 150)
+        assertSized("practice-campaign-doctors-visit", 100, 100)
+        assertSized("practice-say-picture", 80, 200)
+        assertSized("practice-say-it-right", 80, 200)
+        assertSized("practice-hector-card", 60, 200)
+        shot("04-hub-sections")
+    }
+
+    /**
+     * Scrolls the hub until [tag] is fully on screen. At 2x text the hero card is taller than a small phone's screen, so
+     * jumping to the card's start leaves its answers below the fold (the learner scrolls on); this scrolls like they do.
+     */
+    private fun revealByScrolling(tag: String) {
+        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag(tag))
+        // Unclipped position and size: boundsInRoot is empty for a node wholly outside the viewport.
+        fun onScreen(): Boolean {
+            val list = rule.onNodeWithTag("practice-hub").fetchSemanticsNode()
+            val node = rule.onNodeWithTag(tag).fetchSemanticsNode()
+            val top = node.positionInRoot.y
+            return top >= list.positionInRoot.y && top + node.size.height <= list.positionInRoot.y + list.size.height
+        }
+        var swipes = 0
+        while (!onScreen() && swipes++ < 12) {
+            rule.onNodeWithTag("practice-hub").performTouchInput { swipeUp(startY = height * 0.85f, endY = height * 0.45f) }
+            rule.waitForIdle()
+        }
+        assertTrue("$tag is still not fully on screen after $swipes swipes", onScreen())
+        rule.onNodeWithTag(tag).assertIsDisplayed()
+    }
+
+    /** Large text, in a composition of its own: the hero's first answers and the last drill stay reachable. */
+    @Test fun hubAnswersStayReachableAtLargeText() {
+        showHub(fontScale = 2f)
+        revealByScrolling("practice-hero-chat-0")
+        revealByScrolling("practice-say-it-right")
+        shot("05-hub-large-text")
+    }
+
+    /** The campaign's detail (the pre-call sheet) lists every scene with the stars it holds; the rail carries no stars. */
+    @Test fun campaignDetailListsSceneStars() {
+        rule.setContent {
+            AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
+            }
+        }
+        rule.waitForIdle()
+        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-campaign-rail"))
+        rule.onNodeWithTag("practice-campaign-rail").performScrollToNode(hasTestTag("practice-campaign-doctors-visit"))
+        rule.onNodeWithTag("practice-campaign-doctors-visit").performClick()
+        rule.onNodeWithTag("practice-pre-call").performScrollToNode(hasTestTag("practice-campaign-scenes"))
+        rule.onNodeWithTag("practice-campaign-scenes").assertIsDisplayed()
+        rule.onNodeWithContentDescription("Scene 1, ${content.campaigns(course).first { it.id == "doctors-visit" }.scenes[0].title}, 3 of 3 stars").assertExists()
+        shot("06-campaign-detail")
     }
 
     @Test fun resultAwardsAndLargeTextRemainReachable() {
@@ -145,7 +246,10 @@ class PracticeHubVisualTest {
     private fun shot(name: String) {
         rule.waitForIdle()
         Thread.sleep(250)
+        // A picture is an artifact, not an assertion: UiAutomation sometimes hands back no bitmap on a headless emulator
+        // (a null that surfaced as an NPE and failed the test), so a missed capture is skipped rather than fatal.
+        val bitmap = runCatching { Screenshot.capture().bitmap }.getOrNull() ?: return
         val dir = File(context.getExternalFilesDir(null), "practice-shots").apply { mkdirs() }
-        File(dir, "$name.png").outputStream().use { Screenshot.capture().bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        File(dir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 }

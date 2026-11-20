@@ -20,6 +20,15 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.ui.text.style.TextAlign
+import com.obsidianmedia.learnwithalphonso.ui.lesson.rememberReduceMotion
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,7 +61,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 
-private data class PracticeTarget(val scenario: Scenario? = null, val campaign: Campaign? = null, val sceneIndex: Int = 0) {
+internal data class PracticeTarget(val scenario: Scenario? = null, val campaign: Campaign? = null, val sceneIndex: Int = 0) {
     val scene get() = campaign?.scenes?.get(sceneIndex)
     val title get() = scenario?.title ?: scene!!.title
     val persona get() = scenario?.persona ?: scene?.persona.orEmpty()
@@ -106,81 +115,31 @@ internal fun PracticeHubContent(
                 Course.SPANISH -> "¿Practicamos un poco hoy?\nShall we practice a bit today?"
                 else -> "Shall we practice a bit today?"
             }
-            LessonRoom("coffee", LessonExpression.TALK, Space.s12 * 6, Space.s12 * 5, titleScrim = true, overlay = {
-                Box(Modifier.fillMaxSize()) {
-                    Text("Practice", style = Type.display.toTextStyle(), color = ds.onHero, modifier = Modifier.padding(Space.s4))
-                    if (columns == 2) Text(greeting, style = Type.caption.toTextStyle(), color = ds.ink,
-                        modifier = Modifier.align(Alignment.TopEnd).padding(top = Space.s12 + Space.s3, end = Space.s2).widthIn(max = Space.s12 * 3)
-                            .background(ds.card, RoundedCornerShape(AlphonsoTokens.Radius.bubble)).padding(Space.s3))
+            Column(verticalArrangement = Arrangement.spacedBy(Space.s1)) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Practice", style = Type.display.toTextStyle(), color = ds.ink, modifier = Modifier.weight(1f, fill = false).semantics { heading() })
+                    if (data != null) {
+                        val tally = PracticeHub.tally(rows, scenarios, campaigns)
+                        Text("★ ${tally.first} / ${tally.second}", style = Type.caption.toTextStyle(), color = ds.xpText,
+                            modifier = Modifier.clip(CircleShape).background(ds.xpTint).padding(horizontal = Space.s3, vertical = Space.s1)
+                                .clearAndSetSemantics { contentDescription = "${tally.first} of ${tally.second} stars earned" })
+                    }
                 }
-            })
-            if (columns == 1) Text(greeting, style = Type.headline.toTextStyle(), color = ds.ink, modifier = Modifier.padding(Space.s3))
+                Text(greeting, style = Type.caption.toTextStyle(), color = ds.inkSoft)
+            }
         }
         if (data != null) {
+            // The call cards: where the learner left off, then Today's picks (the core's rule).
             item {
-                val tally = PracticeHub.tally(rows, scenarios, campaigns)
-                Text("★ ${tally.first} / ${tally.second}", style = Type.headline.toTextStyle(), color = ds.xpText)
-            }
-            val pick = PracticeHub.today(data, scenarios)
-            val chosen = scenarios.firstOrNull { it.id == pick?.scenarioId }
-            if (chosen != null) item {
-                Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.bubble)).background(ds.hero).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s3)) {
-                    Text("TODAY'S PICK", style = Type.overline.toTextStyle(), color = ds.onHeroKick)
-                    Text(chosen.title, style = Type.questionSmall.toTextStyle(), color = ds.onHero)
-                    PracticeStars(PracticeHub.stars(rows, "scenario", chosen.id))
-                    Text(pick?.weakSpot?.let { "A ${chosen.level.lowercase()} scene that makes you use ${PracticeHub.weakSpotName(it)}, your top weak spot." } ?: "A ${chosen.level.lowercase()} scene to put what you know into words.", style = Type.footnote.toTextStyle(), color = ds.onHeroSoft)
-                    HubButton("Call Alphonso") { target = PracticeTarget(scenario = chosen) }
-                }
-            }
-            val resume = PracticeHub.resume(rows, campaigns)
-            val campaign = campaigns.firstOrNull { it.id == resume?.campaignId }
-            if (campaign != null && resume != null) item {
-                HubHeading("Continue")
-                Column(Modifier.testTag("practice-continue").fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).clickable { target = PracticeTarget(campaign = campaign, sceneIndex = resume.sceneIndex) }.padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
-                    Text(campaign.title, style = Type.title.toTextStyle(), color = ds.ink)
-                    Text("Scene ${resume.sceneIndex + 1} of ${campaign.scenes.size} · ${campaign.scenes[resume.sceneIndex].title}", style = Type.footnote.toTextStyle(), color = ds.inkSoft)
-                    SceneStars(campaign, rows)
-                }
+                val cards = heroCards(data, scenarios, campaigns)
+                HeroCarousel(cards, onCall = { mode = "call"; target = it.target }, onChat = { mode = "chat"; target = it.target })
             }
         } else item {
             if (failed) { Text("Could not load Practice.", color = ds.ink); HubButton("Try again", onRetry) }
             else CircularProgressIndicator()
         }
-        item { HubHeading("Campaigns · ${campaigns.size} stories") }
-        items(campaigns, key = { "c-${it.id}" }) { c ->
-            PictureStory(PracticeHub.room(c.id, c.scenes.first().id), c.title, "${c.level} · Campaign · ${c.scenes.size} scenes", "",
-                onClick = { target = PracticeTarget(campaign = c, sceneIndex = PracticeHub.nextScene(c, rows)) }) {
-                if (data != null) SceneStars(c, rows)
-            }
-        }
-        // Same entitlement entry point as the Hector tab; no prices or trial promises invented here.
-        if (showHector) item {
-            val context = LocalContext.current
-            val face by produceState<ImageBitmap?>(null) { value = withContext(Dispatchers.IO) { loadAsset(context, "firstrun/hector-happy.webp") } }
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.hero).clickable(onClick = onHector).padding(Space.s4), horizontalArrangement = Arrangement.spacedBy(Space.s3)) {
-                face?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.size(Space.s12)) }
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
-                    Text("Practice speaking with Hector · Pro", style = Type.headline.toTextStyle(), color = ds.onHero)
-                    Text("A voice tutor that remembers your level and weak spots. Part of Alphonso Pro.", style = Type.caption.toTextStyle(), color = ds.onHeroSoft)
-                }
-            }
-        }
+        item { HubHeading("Conversations") }
         item {
-            HubHeading("Say the picture")
-            Column(Modifier.testTag("practice-say-picture").fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onSayPicture).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
-                Text("Say the picture", style = Type.headline.toTextStyle(), color = ds.ink)
-                Text("See a picture and say the word. A miss shows you the word and how it sounds.", style = Type.caption.toTextStyle(), color = ds.inkSoft)
-            }
-        }
-        item {
-            HubHeading("Say it right")
-            Column(Modifier.testTag("practice-say-it-right").fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onSayItRight).padding(Space.s4), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
-                Text("Say it right", style = Type.headline.toTextStyle(), color = ds.ink)
-                Text("Hear a word you have learned, say it, and find out how clearly you were understood. A miss teaches, it never punishes.", style = Type.caption.toTextStyle(), color = ds.inkSoft)
-            }
-        }
-        item {
-            HubHeading("Scenarios")
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
                 PracticeHub.levels.forEach { l -> HubChoiceChip(l, level == l, { level = l }, Modifier.testTag("practice-level-$l")) }
             }
@@ -188,13 +147,58 @@ internal fun PracticeHubContent(
         items(PracticeHub.filtered(scenarios, level).chunked(columns)) { row ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.s3)) {
                 row.forEach { scenario ->
+                    val n = PracticeHub.stars(rows, "scenario", scenario.id)
                     Box(Modifier.weight(1f)) {
-                        PictureStory(scenario.id, scenario.title, scenario.level, "", onClick = { target = PracticeTarget(scenario = scenario) }, compact = true) {
-                            if (data != null) PracticeStars(PracticeHub.stars(rows, "scenario", scenario.id))
-                        }
+                        PracticeTile(scenario.id, scenario.level, scenario.title, stars = if (data != null) n else null, mastered = n >= 3,
+                            modifier = Modifier.testTag("practice-tile-${scenario.id}"), onClick = { target = PracticeTarget(scenario = scenario) })
                     }
                 }
                 if (row.size < columns) Spacer(Modifier.weight(1f))
+            }
+        }
+        // Campaigns: a rail, each with its own room, how far in, and a dot per scene. The scene stars are in the campaign's detail.
+        item { HubHeading("Campaigns · ${campaigns.size} stories") }
+        item {
+            LazyRow(Modifier.testTag("practice-campaign-rail").fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.s3)) {
+                items(campaigns, key = { "c-${it.id}" }) { c ->
+                    PracticeTile(PracticeHub.room(c.id, c.scenes.first().id), "${c.level} · ${c.scenes.size} scenes", c.title, stars = null, mastered = false,
+                        progress = if (data != null) PracticeHub.progress(c, rows) else null,
+                        modifier = Modifier.width(Space.s12 * 3 + Space.s4).testTag("practice-campaign-${c.id}"),
+                        onClick = { target = PracticeTarget(campaign = c, sceneIndex = PracticeHub.nextScene(c, rows)) })
+                }
+            }
+        }
+        item { HubHeading("Quick practice") }
+        item {
+            DrillCard("Say the picture", "See a picture and say the word. A miss shows you the word and how it sounds.", "practice-say-picture", onSayPicture) {
+                Column(Modifier.fillMaxSize().background(ds.choiceTint).padding(Space.s2), verticalArrangement = Arrangement.spacedBy(Space.s1), horizontalAlignment = Alignment.CenterHorizontally) {
+                    val context = LocalContext.current
+                    listOf(listOf("hot_beverage", "airplane"), listOf("stethoscope", "spaghetti")).forEach { pair ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(Space.s1)) {
+                            pair.forEach { name ->
+                                val icon by produceState<ImageBitmap?>(null, name) { value = withContext(Dispatchers.IO) { loadAsset(context, "icons3d/$name.png") } }
+                                Box(Modifier.size(Space.s8)) { icon?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize()) } }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        item {
+            DrillCard("Say it right", "Hear a word you have learned, say it, and find out how clearly you were understood. A miss teaches, it never punishes.", "practice-say-it-right", onSayItRight) {
+                Box(Modifier.fillMaxSize().background(ds.rightTint), contentAlignment = Alignment.Center) { Icon(Icons.Filled.GraphicEq, contentDescription = null, tint = ds.rightEdge, modifier = Modifier.size(Space.s12)) }
+            }
+        }
+        // Hector: Pro's one feature, quiet and last; same entitlement entry point as the Hector tab.
+        if (showHector) item {
+            val context = LocalContext.current
+            val face by produceState<ImageBitmap?>(null) { value = withContext(Dispatchers.IO) { loadAsset(context, "firstrun/hector-happy.webp") } }
+            Row(Modifier.testTag("practice-hector-card").fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.hero).clickable(role = Role.Button, onClick = onHector).padding(Space.s3), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s3)) {
+                face?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.size(Space.s12 + Space.s3)) }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
+                    Text("Practice speaking with Hector · Pro", style = Type.headline.toTextStyle(), color = ds.onHero)
+                    Text("A voice tutor that remembers your level and weak spots. Part of Alphonso Pro.", style = Type.caption.toTextStyle(), color = ds.onHeroSoft)
+                }
             }
         }
     }
@@ -207,6 +211,19 @@ internal fun PracticeHubContent(
                 item {
                     Text("${t.persona.substringBefore(',')} starts the ${if (mode == "call") "call" else "chat"}:", style = Type.caption.toTextStyle(), color = ds.inkSoft)
                     Text(t.opener, style = Type.body.toTextStyle(), color = ds.ink, modifier = Modifier.fillMaxWidth().background(ds.card, RoundedCornerShape(AlphonsoTokens.Radius.bubble)).padding(Space.s3))
+                }
+                if (t.campaign != null) item {
+                    Column(Modifier.testTag("practice-campaign-scenes").fillMaxWidth().background(ds.card, RoundedCornerShape(AlphonsoTokens.Radius.control)).padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
+                        Text("Scenes in this campaign", style = Type.overline.toTextStyle(), color = ds.ink)
+                        t.campaign.scenes.forEachIndexed { i, scene ->
+                            val n = PracticeHub.stars(rows, "scene", "${t.campaign.id}/${scene.id}")
+                            Row(Modifier.clearAndSetSemantics { contentDescription = "Scene ${i + 1}, ${scene.title}, ${PracticeHub.starLabel(n)}" }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
+                                PracticeRoomThumbnail(PracticeHub.room(t.campaign.id, scene.id))
+                                Text("${i + 1}. ${scene.title}", style = Type.caption.toTextStyle(), color = ds.ink, modifier = Modifier.weight(1f))
+                                PracticeStars(n)
+                            }
+                        }
+                    }
                 }
                 item { HubHeading("How to earn stars") }
                 items(PracticeHub.starRules(chat = mode == "chat").withIndex().toList()) { (i, line) ->
@@ -247,30 +264,139 @@ internal fun PracticeHubContent(
         repeat(3) { i -> Icon(if (i < n) Icons.Filled.Star else Icons.Outlined.StarBorder, null, tint = if (i < n) ds.xp else ds.inkFaint, modifier = Modifier.size(if (prominent) Space.s12 else Space.s5)) }
     }
 }
-@Composable private fun SceneStars(c: Campaign, rows: List<PracticeStarRow>) {
-    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(Space.s3)) {
-        c.scenes.forEachIndexed { i, scene ->
-            Column(Modifier.clearAndSetSemantics { contentDescription = "Scene ${i + 1}, ${scene.title}, ${PracticeHub.starLabel(PracticeHub.stars(rows, "scene", "${c.id}/${scene.id}"))}" }, verticalArrangement = Arrangement.spacedBy(Space.s1)) {
-                PracticeRoomThumbnail(PracticeHub.room(c.id, scene.id))
-                PracticeStars(PracticeHub.stars(rows, "scene", "${c.id}/${scene.id}"))
+/** One call card: a scenario picked for the learner, or the campaign scene they were in the middle of. */
+internal data class PracticeHeroCard(val id: String, val kicker: String, val title: String, val subtitle: String, val reason: String, val room: String, val stars: Int, val isContinue: Boolean, val scenario: Scenario? = null, val campaign: Campaign? = null, val sceneIndex: Int = 0)
+
+/** Where the learner left off (if anywhere), then Today's picks, three in all (the core's rule). */
+internal fun heroCards(data: PracticeHubData, scenarios: List<Scenario>, campaigns: List<Campaign>): List<PracticeHeroCard> {
+    val rows = data.stars
+    val out = mutableListOf<PracticeHeroCard>()
+    val resume = PracticeHub.resume(rows, campaigns)
+    val c = campaigns.firstOrNull { it.id == resume?.campaignId }
+    if (resume != null && c != null) {
+        val scene = c.scenes[resume.sceneIndex]
+        out += PracticeHeroCard("continue:${c.id}:${resume.sceneIndex}", "Continue", scene.title, "${c.title} · Scene ${resume.sceneIndex + 1} of ${c.scenes.size}", "Pick up where you left off",
+            PracticeHub.room(c.id, scene.id), PracticeHub.stars(rows, "scene", "${c.id}/${scene.id}"), isContinue = true, campaign = c, sceneIndex = resume.sceneIndex)
+    }
+    var first = true
+    for (pick in PracticeHub.picks(data, scenarios).take((PracticeHub.HERO_CARDS - out.size).coerceAtLeast(0))) {
+        val s = scenarios.firstOrNull { it.id == pick.scenarioId } ?: continue
+        out += PracticeHeroCard("pick:${s.id}", if (first) "Today's pick" else "Also for you", s.title, s.level, PracticeHub.reason(pick, s.level, first),
+            s.id, PracticeHub.stars(rows, "scenario", s.id), isContinue = false, scenario = s)
+        first = false
+    }
+    return out
+}
+
+internal val PracticeHeroCard.target get() = PracticeTarget(scenario = scenario, campaign = campaign, sceneIndex = sceneIndex)
+
+/** The swipeable call cards with page dots. The dots are buttons, so it works without a swipe (TalkBack, switch access); it never advances by itself. */
+@Composable
+internal fun HeroCarousel(cards: List<PracticeHeroCard>, onCall: (PracticeHeroCard) -> Unit, onChat: (PracticeHeroCard) -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    val pager = rememberPagerState(pageCount = { cards.size })
+    val scope = rememberCoroutineScope()
+    val reduce = rememberReduceMotion()
+    Column(Modifier.testTag("practice-hero").fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
+        HorizontalPager(pager, Modifier.fillMaxWidth(), contentPadding = PaddingValues(end = if (cards.size > 1) Space.s8 else 0.dp), pageSpacing = Space.s3, verticalAlignment = Alignment.Top) { i ->
+            HeroCardView(cards[i], i + 1, cards.size, { onCall(cards[i]) }, { onChat(cards[i]) }, Modifier.testTag("practice-hero-card-$i"))
+        }
+        if (cards.size > 1) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            cards.indices.forEach { i ->
+                val on = pager.currentPage == i
+                Box(
+                    Modifier.size(Space.minTouch).testTag("practice-hero-dot-$i")
+                        .clickable(role = Role.Button, onClickLabel = "Show call ${i + 1} of ${cards.size}") { scope.launch { if (reduce) pager.scrollToPage(i) else pager.animateScrollToPage(i) } }
+                        .semantics { contentDescription = "Show call ${i + 1} of ${cards.size}"; selected = on },
+                    contentAlignment = Alignment.Center,
+                ) { Box(Modifier.size(width = if (on) Space.s5 else Space.s2 - 2.dp, height = Space.s2 - 2.dp).clip(CircleShape).background(if (on) ds.choice else ds.line)) }
             }
         }
     }
 }
-@Composable private fun PictureStory(room: String, title: String, detail: String, blurb: String, onClick: () -> Unit, compact: Boolean = false, footer: @Composable () -> Unit) {
+
+/** The incoming-call treatment: the scene behind, the full Alphonso, a "ready" cue and the round Call / Chat answers. */
+@Composable
+private fun HeroCardView(card: PracticeHeroCard, position: Int, count: Int, onCall: () -> Unit, onChat: () -> Unit, modifier: Modifier = Modifier) {
+    val ds = LocalAlphonsoTokens.current
+    val context = LocalContext.current
+    val room by produceState<ImageBitmap?>(null, card.room) { value = withContext(Dispatchers.IO) { loadAsset(context, "scenes/${card.room}.webp") } }
+    val figure by produceState<ImageBitmap?>(null) { value = withContext(Dispatchers.IO) { loadAsset(context, "lesson/talk.webp") } }
+    val bigText = androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.3f
+    Box(modifier.fillMaxWidth().heightIn(min = Space.s12 * 7).clip(RoundedCornerShape(AlphonsoTokens.Radius.sheet)).background(ds.hero).semantics { contentDescription = "$position of $count: ${card.title}" }) {
+        room?.let { Image(it, null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize()) }
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(ds.heroB.copy(alpha = 0.6f), ds.heroB.copy(alpha = 0.1f), ds.heroB.copy(alpha = 0.15f), ds.heroB.copy(alpha = 0.85f), ds.heroB))))
+        Column(Modifier.fillMaxWidth().padding(Space.s4), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Space.s2)) {
+            Column(Modifier.semantics(mergeDescendants = true) {}, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Space.s1)) {
+                Text("${card.kicker} · $position of $count", style = Type.overline.toTextStyle(), color = ds.onHeroKick, textAlign = TextAlign.Center)
+                Text(card.title, style = Type.questionSmall.toTextStyle(), color = ds.onHero, textAlign = TextAlign.Center)
+                Row(horizontalArrangement = Arrangement.spacedBy(Space.s2), verticalAlignment = Alignment.CenterVertically) {
+                    Text(card.subtitle, style = Type.caption.toTextStyle(), color = ds.onHeroSoft, textAlign = TextAlign.Center, modifier = Modifier.weight(1f, fill = false))
+                    PracticeStars(card.stars)
+                }
+                Text(card.reason, style = Type.caption.toTextStyle(), color = ds.onHero, textAlign = TextAlign.Center,
+                    modifier = Modifier.clip(CircleShape).background(ds.onHero.copy(alpha = 0.15f)).padding(horizontal = Space.s3, vertical = Space.s1))
+            }
+            if (!bigText) figure?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.height(Space.s12 * 3)) } ?: Spacer(Modifier.height(Space.s12 * 3))
+            Text("Alphonso is ready", style = Type.caption.toTextStyle(), color = ds.callMint, modifier = Modifier.clearAndSetSemantics {})
+            Row(horizontalArrangement = Arrangement.spacedBy(Space.s8), verticalAlignment = Alignment.Top) {
+                HeroAnswer("Call", Icons.Filled.Mic, gold = true, label = "Call Alphonso: ${card.title}", onClick = onCall, modifier = if (card.isContinue) Modifier.testTag("practice-continue") else Modifier.testTag("practice-hero-call-${position - 1}"))
+                HeroAnswer("Chat", Icons.Filled.ChatBubble, gold = false, label = "Chat with Alphonso: ${card.title}", onClick = onChat, modifier = Modifier.testTag("practice-hero-chat-${position - 1}"))
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeroAnswer(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, gold: Boolean, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val ds = LocalAlphonsoTokens.current
+    val d = Space.s12 + if (gold) Space.s3 else Space.s1
+    Column(modifier.clickable(role = Role.Button, onClick = onClick).clearAndSetSemantics { contentDescription = label }, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Space.s1)) {
+        Box(Modifier.size(d).clip(CircleShape).background(if (gold) ds.action else ds.onHero.copy(alpha = 0.2f)), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, tint = if (gold) ds.onAction else ds.onHero, modifier = Modifier.size(Space.s6))
+        }
+        Text(title, style = Type.caption.toTextStyle(), color = ds.onHero)
+    }
+}
+
+/** A scenario or campaign in its painted room: level, title, stars (or progress dots) and a gold Mastered badge at three stars. */
+@Composable
+internal fun PracticeTile(room: String, overline: String, title: String, stars: Int?, mastered: Boolean, modifier: Modifier = Modifier, progress: PracticeCampaignProgress? = null, onClick: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
     val image by produceState<ImageBitmap?>(null, room) { value = withContext(Dispatchers.IO) { loadAsset(context, "scenes/$room.webp") } }
-    Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(AlphonsoTokens.Radius.bubble)).background(ds.hero).clickable(onClick = onClick)) {
+    Box(modifier.fillMaxWidth().heightIn(min = Space.s12 * 3).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.hero).clickable(role = Role.Button, onClick = onClick)) {
         image?.let { Image(it, null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize()) }
-        Column {
-            Spacer(Modifier.height(Space.s12))
-            Column(Modifier.fillMaxWidth().background(ds.hero).padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s2)) {
-                Text(detail, style = Type.overline.toTextStyle(), color = ds.onHeroKick)
-                Text(title, style = (if (compact) Type.footnote else Type.questionSmall).toTextStyle(), color = ds.onHero)
-                if (blurb.isNotEmpty()) Text(blurb, style = Type.footnote.toTextStyle(), color = ds.onHeroSoft)
-                footer()
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(0.3f to ds.heroB.copy(alpha = 0f), 0.62f to ds.heroB.copy(alpha = 0.78f), 1f to ds.heroB.copy(alpha = 0.92f))))
+        Column(Modifier.fillMaxWidth().padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                if (mastered) Row(Modifier.clip(CircleShape).background(ds.action).padding(horizontal = Space.s2, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Icon(Icons.Filled.Check, contentDescription = null, tint = ds.onAction, modifier = Modifier.size(12.dp))
+                    Text("Mastered", style = Type.overline.toTextStyle(), color = ds.onAction)
+                }
             }
+            Spacer(Modifier.height(Space.s12))
+            Text(overline, style = Type.overline.toTextStyle(), color = ds.onHeroKick)
+            Text(title, style = Type.footnote.toTextStyle(), color = ds.onHero)
+            if (stars != null) PracticeStars(stars)
+            if (progress != null) Row(Modifier.clearAndSetSemantics { contentDescription = "${progress.done} of ${progress.total} scenes done" }, horizontalArrangement = Arrangement.spacedBy(Space.s2), verticalAlignment = Alignment.CenterVertically) {
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) { progress.scenes.forEach { done -> Box(Modifier.size(width = Space.s3, height = Space.s1).clip(CircleShape).background(if (done) ds.action else ds.onHero.copy(alpha = 0.35f))) } }
+                Text(PracticeHub.progressLabel(progress), style = Type.overline.toTextStyle(), color = ds.onHeroSoft)
+            }
+        }
+    }
+}
+
+/** A featured drill: its own thumbnail, title, line and a Start button. The whole card is one button. */
+@Composable
+private fun DrillCard(title: String, detail: String, tag: String, onClick: () -> Unit, thumb: @Composable () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    Row(Modifier.testTag(tag).fillMaxWidth().height(IntrinsicSize.Min).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).border(2.dp, ds.line, RoundedCornerShape(AlphonsoTokens.Radius.control)).clickable(role = Role.Button, onClick = onClick)) {
+        Box(Modifier.width(Space.s12 * 2).fillMaxHeight().clearAndSetSemantics {}) { thumb() }
+        Column(Modifier.weight(1f).padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
+            Text(title, style = Type.headline.toTextStyle(), color = ds.ink)
+            Text(detail, style = Type.caption.toTextStyle(), color = ds.inkSoft)
+            Text("Start", style = Type.caption.toTextStyle(), color = ds.onChoice, modifier = Modifier.padding(top = Space.s1).clip(CircleShape).background(ds.choice).padding(horizontal = Space.s3, vertical = Space.s2))
         }
     }
 }
