@@ -147,7 +147,7 @@ class PronunciationViewModel(
      * The last attempt's audio and Alphonso's model for the shown word, in memory only; freed when the word changes and
      * when this view model is cleared (the screen closed), not on a rotation (the view model outlives it).
      */
-    val clips = PronunciationClips(context.applicationContext, viewModelScope)
+    val clips = PronunciationClips(context.applicationContext, viewModelScope).also { PronunciationClips.sweepLeftovers(context.applicationContext) }
     val engine = ConversationTurnEngine(
         recorder, requestMic,
         { audio, timing ->
@@ -244,6 +244,8 @@ class PronunciationViewModel(
                 clips.setModel(term, audio)
                 if (clips.play(clip)) return@launch
             }
+            // The device voice must not talk over a clip that is still playing.
+            clips.stop()
             deviceSpeak(term, slow)
         }
     }
@@ -434,7 +436,7 @@ internal fun SayItRightContent(
             val you = @Composable { m: Modifier ->
                 SirWave(
                     who = "You", spoken = "Play your recording", tag = "sir-wave-you", peaks = audio.youPeaks,
-                    playing = audio.playing == SirClip.YOU, progress = audio.progress, reduceMotion = reduceMotion, tint = ds.choice,
+                    playing = audio.playing == SirClip.YOU, progress = audio.progress, reduceMotion = reduceMotion, tint = ds.action,
                     modifier = m, onClick = audio.onToggleYou,
                 )
             }
@@ -569,7 +571,7 @@ internal fun SirWave(
     Column(
         modifier.testTag(tag)
             .background(ds.card, shape)
-            .border(if (playing) 2.dp else 1.5.dp, if (playing) ds.brand else ds.line, shape)
+            .border(if (playing) 2.dp else 1.5.dp, if (playing) tint else ds.line, shape)
             .clip(shape)
             .clickable(onClickLabel = spoken, role = Role.Button, onClick = onClick)
             .heightIn(min = 72.dp).padding(Space.s3)

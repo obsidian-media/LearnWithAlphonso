@@ -50,6 +50,8 @@ export function useSayItRightAudio({
   const model = useRef<ModelClip | null>(null);
   const inflight = useRef<{ text: string; promise: Promise<ModelClip> } | null>(null);
   const active = useRef<Active | null>(null);
+  // True only while device speech THIS screen started may still be going: stop() cancels the speech synthesiser only then.
+  const deviceSpoke = useRef(false);
   const playingRef = useRef<NowPlaying>(null);
   playingRef.current = playing;
   const opts = useRef({ decode, fetchModel, createAudio, onPlayStart, course });
@@ -63,8 +65,11 @@ export function useSayItRightAudio({
       if (a.raf !== null) cancelAnimationFrame(a.raf);
       a.audio.onended = null;
       a.audio.pause();
+      // Let go of the clip itself, not just the playback.
+      a.audio.src = "";
     }
-    if (canSpeak()) window.speechSynthesis.cancel();
+    if (deviceSpoke.current && canSpeak()) window.speechSynthesis.cancel();
+    deviceSpoke.current = false;
     setPlaying(null);
     setProgress(0);
   }, []);
@@ -169,6 +174,7 @@ export function useSayItRightAudio({
     } catch {
       // No TTS (offline, over quota): the device voice, so a miss still teaches something audible.
       if (mine === token.current && canSpeak()) {
+        deviceSpoke.current = true;
         speak(text, localeForCourse(opts.current.course), slow ? SLOW_RATE : 1);
       }
     }

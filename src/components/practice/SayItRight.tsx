@@ -566,7 +566,12 @@ function SirWave({
   onClick: () => void;
 }): ReactNode {
   const bars = peaks ?? new Array<number>(WAVE_BARS).fill(0);
-  const lit = tone === "you" ? "bg-ds-choice" : "bg-ds-brand";
+  // "You" is warm gold (the action family), Alphonso brand blue, so the two read apart at a glance.
+  const lit = tone === "you" ? "bg-ds-action" : "bg-ds-brand";
+  const ring =
+    tone === "you"
+      ? "aria-pressed:shadow-[inset_0_0_0_2px_var(--c-action)]"
+      : "aria-pressed:shadow-[inset_0_0_0_2px_var(--c-brand)]";
   return (
     <button
       type="button"
@@ -576,7 +581,7 @@ function SirWave({
       data-testid={testId}
       data-playing={playing ? "true" : "false"}
       data-flat={peaks ? "false" : "true"}
-      className="grid min-h-[4.5rem] gap-1.5 rounded-[18px] bg-ds-card p-3 text-left shadow-[inset_0_0_0_1.5px_var(--c-line)] aria-pressed:shadow-[inset_0_0_0_2px_var(--c-brand)]"
+      className={`grid min-h-[4.5rem] gap-1.5 rounded-[18px] bg-ds-card p-3 text-left shadow-[inset_0_0_0_1.5px_var(--c-line)] ${ring}`}
     >
       <span aria-hidden="true" className="ds-type-caption font-extrabold text-ds-ink-soft">
         {who}

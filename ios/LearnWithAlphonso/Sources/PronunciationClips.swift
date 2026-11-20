@@ -35,8 +35,13 @@ final class PronunciationClips {
     @ObservationIgnored private var player: AVAudioPlayer?
     @ObservationIgnored private var delegate: ClipPlayerDelegate?
     @ObservationIgnored private var ticker: Task<Void, Never>?
-    /// Bumped whenever the clips are replaced or freed, so a late decode never lands on the wrong word.
-    @ObservationIgnored private var serial = 0
+    /// Bumped whenever that clip is replaced or freed, so a late decode never lands on the wrong attempt or word. One
+    /// each: a new attempt must not invalidate the model's pending decode.
+    @ObservationIgnored private var youSerial = 0
+    @ObservationIgnored private var modelSerial = 0
+
+    /// Deletes any decode temp file a killed process left behind (the learner's voice). At launch and when the screen opens.
+    nonisolated static func sweepLeftovers() { ClipTempFiles.sweep(in: FileManager.default.temporaryDirectory) }
 
     /// Whether Alphonso's audio for `term` is already held (so Hear it, the waveform and Say it slower reuse it).
     func hasModel(for term: String) -> Bool { modelAudio != nil && modelTerm == term }
@@ -44,26 +49,27 @@ final class PronunciationClips {
     /// Keeps the learner's latest attempt, replacing the last one.
     func setYou(_ audio: Data) {
         if playing == .you { stop() }
-        serial += 1
-        let mine = serial
+        youSerial += 1
+        let mine = youSerial
         youAudio = audio
         hasYou = true
         youPeaks = nil
         Task {
             let peaks = await Task.detached { Self.decodePeaks(audio, fileExtension: "m4a") }.value
-            if mine == serial, hasYou { youPeaks = peaks }
+            if mine == youSerial, hasYou { youPeaks = peaks }
         }
     }
 
     /// Keeps the model audio the screen just fetched for `term`.
     func setModel(_ audio: Data, term: String) {
-        let mine = serial
+        modelSerial += 1
+        let mine = modelSerial
         modelAudio = audio
         modelTerm = term
         modelPeaks = nil
         Task {
             let peaks = await Task.detached { Self.decodePeaks(audio, fileExtension: "mp3") }.value
-            if mine == serial, modelTerm == term { modelPeaks = peaks }
+            if mine == modelSerial, modelTerm == term { modelPeaks = peaks }
         }
     }
 
@@ -121,7 +127,8 @@ final class PronunciationClips {
     /// Frees every clip (the word changed, or the screen closed).
     func release() {
         stop()
-        serial += 1
+        youSerial += 1
+        modelSerial += 1
         youAudio = nil
         modelAudio = nil
         modelTerm = nil
@@ -134,7 +141,7 @@ final class PronunciationClips {
 
     /// The bars for a clip's bytes, or nil when they cannot be decoded. Off the main actor.
     nonisolated static func decodePeaks(_ data: Data, fileExtension: String) -> [Double]? {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + "." + fileExtension)
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(ClipTempFiles.name(fileExtension: fileExtension))
         do { try data.write(to: url, options: .atomic) } catch { return nil }
         defer { try? FileManager.default.removeItem(at: url) }
         guard let file = try? AVAudioFile(forReading: url) else { return nil }
@@ -188,7 +195,7 @@ struct ClipWaveButton: View {
             .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
             .overlay(
                 RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control)
-                    .stroke(isPlaying ? ds.brand : ds.line, lineWidth: isPlaying ? 2 : 1.5)
+                    .stroke(isPlaying ? tint : ds.line, lineWidth: isPlaying ? 2 : 1.5)
             )
             .contentShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
         }

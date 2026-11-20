@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.obsidianmedia.learnwithalphonso.core.logic.ClipTempFiles
 import com.obsidianmedia.learnwithalphonso.core.logic.Waveform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +21,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.UUID
 
 /** Which clip of Say it right's "Hear you vs Alphonso" is playing. */
 enum class SirClip { YOU, MODEL, MODEL_SLOW }
@@ -56,8 +56,9 @@ class PronunciationClips(private val context: Context, private val scope: Corout
     private var modelTerm: String? = null
     private var player: MediaPlayer? = null
     private var ticker: Job? = null
-    /** Bumped whenever the clips are replaced or freed, so a late decode never lands on the wrong word. */
-    private var serial = 0
+    /** Bumped whenever that clip is replaced or freed, so a late decode never lands on the wrong attempt or word. One each: a new attempt must not invalidate the model's pending decode. */
+    private var youSerial = 0
+    private var modelSerial = 0
 
     /** Whether Alphonso's audio for [term] is already held (Hear it, the waveform and Say it slower reuse it). */
     fun hasModel(term: String): Boolean = modelAudio != null && modelTerm == term
@@ -65,26 +66,27 @@ class PronunciationClips(private val context: Context, private val scope: Corout
     /** Keeps the learner's latest attempt, replacing the last one. */
     fun setYou(audio: ByteArray) {
         if (playing == SirClip.YOU) stop()
-        serial += 1
-        val mine = serial
+        youSerial += 1
+        val mine = youSerial
         youAudio = audio
         hasYou = true
         youPeaks = null
         scope.launch {
             val peaks = withContext(Dispatchers.Default) { decodePeaks(context, audio) }
-            if (mine == serial && hasYou) youPeaks = peaks
+            if (mine == youSerial && hasYou) youPeaks = peaks
         }
     }
 
     /** Keeps the model audio the screen just fetched for [term]. */
     fun setModel(term: String, audio: ByteArray) {
-        val mine = serial
+        modelSerial += 1
+        val mine = modelSerial
         modelAudio = audio
         modelTerm = term
         modelPeaks = null
         scope.launch {
             val peaks = withContext(Dispatchers.Default) { decodePeaks(context, audio) }
-            if (mine == serial && modelTerm == term) modelPeaks = peaks
+            if (mine == modelSerial && modelTerm == term) modelPeaks = peaks
         }
     }
 
@@ -134,7 +136,8 @@ class PronunciationClips(private val context: Context, private val scope: Corout
     /** Frees every clip (the word changed, or the screen closed). */
     fun release() {
         stop()
-        serial += 1
+        youSerial += 1
+        modelSerial += 1
         youAudio = null
         modelAudio = null
         modelTerm = null
@@ -156,6 +159,9 @@ class PronunciationClips(private val context: Context, private val scope: Corout
     }
 
     companion object {
+        /** Deletes any decode temp file a killed process left behind (the learner's voice). At launch and when the screen opens. */
+        fun sweepLeftovers(context: Context) { ClipTempFiles.sweep(context.cacheDir) }
+
         /** A word is a second or two; the cap only protects memory from a surprise. */
         private const val MAX_SECONDS = 30
 
@@ -164,7 +170,7 @@ class PronunciationClips(private val context: Context, private val scope: Corout
          * for the length of the decode (MediaExtractor reads a path), then deleted. Call off the main thread.
          */
         fun decodePeaks(context: Context, bytes: ByteArray): DoubleArray? {
-            val file = File(context.cacheDir, "wave-${UUID.randomUUID()}.audio")
+            val file = ClipTempFiles.create(context.cacheDir)
             return try {
                 file.writeBytes(bytes)
                 val samples = decodeFirstChannel(file.absolutePath) ?: return null

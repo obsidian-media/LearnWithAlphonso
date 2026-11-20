@@ -12,7 +12,10 @@ class FakeAudio {
   onended: (() => void) | null = null;
   play = vi.fn(async () => {});
   pause = vi.fn();
-  constructor(public src: string) {}
+  src: string;
+  constructor(src: string) {
+    this.src = src;
+  }
 }
 
 const samples = Array.from({ length: 960 }, (_, i) => (i < 480 ? 0.1 : 0.9) * Math.sin(i));
@@ -115,7 +118,9 @@ describe("useSayItRightAudio", () => {
     expect(fetchModel).toHaveBeenCalledTimes(1);
     expect(made[1].playbackRate).toBe(SLOW_RATE);
     expect(made[1].preservesPitch).toBe(true);
-    expect(made[1].src).toBe(made[0].src);
+    expect(made[1].src).toBe("blob:clip-1");
+    // The stopped normal-speed audio let go of its clip.
+    expect(made[0].src).toBe("");
     expect(result.current.playing).toEqual({ kind: "model", slow: true });
   });
 
@@ -180,5 +185,44 @@ describe("useSayItRightAudio", () => {
       await p;
     });
     expect(made).toHaveLength(0);
+  });
+
+  describe("device speech", () => {
+    const synth = { cancel: vi.fn(), speak: vi.fn() };
+    beforeEach(() => {
+      synth.cancel.mockClear();
+      synth.speak.mockClear();
+      vi.stubGlobal("speechSynthesis", synth);
+      vi.stubGlobal(
+        "SpeechSynthesisUtterance",
+        class {
+          lang = "";
+          rate = 1;
+        },
+      );
+      Object.defineProperty(window, "speechSynthesis", { value: synth, configurable: true });
+    });
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      Reflect.deleteProperty(window, "speechSynthesis");
+    });
+
+    it("stopping a clip does not cancel speech this screen never started", async () => {
+      const { result } = setup();
+      act(() => result.current.setYouClip(new Blob(["you"])));
+      await act(async () => result.current.toggleYou());
+      act(() => result.current.stop());
+      expect(synth.cancel).not.toHaveBeenCalled();
+    });
+
+    it("when TTS fails the device voice speaks (slowed on request) and a later stop cancels it", async () => {
+      const failing = vi.fn(async () => Promise.reject(new Error("tts")));
+      const { result } = setup({ fetchModel: failing });
+      await act(async () => result.current.playModel("bike", true));
+      expect(synth.speak).toHaveBeenCalledTimes(1);
+      synth.cancel.mockClear();
+      act(() => result.current.stop());
+      expect(synth.cancel).toHaveBeenCalledTimes(1);
+    });
   });
 });

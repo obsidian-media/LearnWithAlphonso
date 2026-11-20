@@ -66,6 +66,7 @@ struct PronunciationView: View {
         // On the always-drawn root, never on content that can draw nothing.
         .task { await startSession() }
         .onAppear {
+            PronunciationClips.sweepLeftovers()
             voice.onCapture = { capture in await handle(capture) }
             voice.appeared()
         }
@@ -201,15 +202,22 @@ struct PronunciationView: View {
         return layout {
             ClipWaveButton(
                 who: "You", spokenLabel: "Play your recording", peaks: clips.youPeaks,
-                isPlaying: clips.playing == .you, progress: clips.progress, reduceMotion: reduceMotion, tint: ds.choice
-            ) { voice.cancelRecording(); clips.toggle(.you) }
+                isPlaying: clips.playing == .you, progress: clips.progress, reduceMotion: reduceMotion, tint: ds.action
+            ) { guard clipTapsAllowed else { return }; voice.cancelRecording(); clips.toggle(.you) }
             ClipWaveButton(
                 who: "Alphonso", spokenLabel: "Play Alphonso's version", peaks: clips.modelPeaks,
                 isPlaying: clips.playing == .model(slow: false), progress: clips.progress, reduceMotion: reduceMotion, tint: ds.brand
             ) {
+                guard clipTapsAllowed else { return }
                 if clips.playing == .model(slow: false) { clips.stop() } else { Task { await playModel(word.term) } }
             }
         }
+    }
+
+    /// A tap on a clip is ignored while the mic permission prompt is pending, so no recording starts under the playback.
+    private var clipTapsAllowed: Bool {
+        if case .requestingPermission = voice.phase { return false }
+        return true
     }
 
     private var attempt: some View {
@@ -346,6 +354,7 @@ struct PronunciationView: View {
     /// waveform never cost a second /api/tts call), else from /api/tts once, with the on-device voice when it cannot be
     /// fetched or played. `slow` plays it at a slower rate.
     private func playModel(_ term: String, slow: Bool = false) async {
+        guard clipTapsAllowed else { return }
         voice.cancelRecording()
         if clips.hasModel(for: term), clips.play(.model(slow: slow)) { return }
         let voiceID = VoicePrefsCache().voice(.alphonso, course: course.wireCode)
@@ -361,6 +370,8 @@ struct PronunciationView: View {
                 if clips.play(.model(slow: slow)) { return }
             }
         }
+        // The device voice must not talk over a clip that is still playing.
+        clips.stop()
         FirstRunVoice.speak(term, course: course, slow: slow)
     }
 }
