@@ -70,17 +70,12 @@ class PracticeHubVisualTest {
      * cards of about zero height that every source guard passed). The hero, the conversations grid, the campaigns
      * rail, both drills and the Pro nudge each get a minimum height; the carousel works through its dots.
      */
-    // The heavy tests render a trimmed hub: the sections under test are all there (a few conversations, three campaigns
-    // with the one in progress), but not every tile's art, which the software-GL CI emulator has to hold in memory (it
-    // went offline mid-test on the full 12 + 13 set).
     private fun showHub(fontScale: Float = 1f) {
-        val scenarios = content.scenarios(course).filter { it.id in setOf("coffee", "interview", "airport", "doctor") }
-        val campaigns = content.campaigns(course).filter { it.id in setOf("doctors-visit", "city-day", "train-trip") }
         rule.setContent {
             val density = LocalDensity.current.density
             CompositionLocalProvider(LocalDensity provides Density(density, fontScale)) {
                 AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
-                    PracticeHubContent(course, scenarios, campaigns, hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
+                    PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
                 }
             }
         }
@@ -121,13 +116,33 @@ class PracticeHubVisualTest {
         shot("04-hub-sections")
     }
 
+    /**
+     * Scrolls the hub until [tag] is fully on screen. At 2x text the hero card is taller than a small phone's screen, so
+     * jumping to the card's start leaves its answers below the fold (the learner scrolls on); this scrolls like they do.
+     */
+    private fun revealByScrolling(tag: String) {
+        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag(tag))
+        // Unclipped position and size: boundsInRoot is empty for a node wholly outside the viewport.
+        fun onScreen(): Boolean {
+            val list = rule.onNodeWithTag("practice-hub").fetchSemanticsNode()
+            val node = rule.onNodeWithTag(tag).fetchSemanticsNode()
+            val top = node.positionInRoot.y
+            return top >= list.positionInRoot.y && top + node.size.height <= list.positionInRoot.y + list.size.height
+        }
+        var swipes = 0
+        while (!onScreen() && swipes++ < 12) {
+            rule.onNodeWithTag("practice-hub").performTouchInput { swipeUp(startY = height * 0.85f, endY = height * 0.45f) }
+            rule.waitForIdle()
+        }
+        assertTrue("$tag is still not fully on screen after $swipes swipes", onScreen())
+        rule.onNodeWithTag(tag).assertIsDisplayed()
+    }
+
     /** Large text, in a composition of its own: the hero's first answers and the last drill stay reachable. */
     @Test fun hubAnswersStayReachableAtLargeText() {
         showHub(fontScale = 2f)
-        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-hero-chat-0"))
-        rule.onNodeWithTag("practice-hero-chat-0").assertIsDisplayed()
-        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-say-it-right"))
-        rule.onNodeWithTag("practice-say-it-right").assertIsDisplayed()
+        revealByScrolling("practice-hero-chat-0")
+        revealByScrolling("practice-say-it-right")
         shot("05-hub-large-text")
     }
 
