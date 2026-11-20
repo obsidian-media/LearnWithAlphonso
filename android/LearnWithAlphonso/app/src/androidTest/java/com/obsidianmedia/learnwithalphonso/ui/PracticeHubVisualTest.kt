@@ -29,9 +29,7 @@ import java.io.File
 /** Offline fixtures: no session, consent, microphone, chat or production writes. */
 @RunWith(AndroidJUnit4::class)
 class PracticeHubVisualTest {
-    // DIAGNOSTIC: a hang here reports an empty failure; a timeout shows where the test thread is stuck.
-    @get:Rule(order = 0) val timeout: org.junit.rules.Timeout = org.junit.rules.Timeout.seconds(25)
-    @get:Rule(order = 1) val rule = createComposeRule()
+    @get:Rule val rule = createComposeRule()
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     private val content by lazy { ContentStore { context.assets.open(it).bufferedReader().use { r -> r.readText() } } }
     private val course = Course.SPANISH
@@ -73,10 +71,6 @@ class PracticeHubVisualTest {
      * rail, both drills and the Pro nudge each get a minimum height; the carousel works through its dots.
      */
     @Test fun hubSectionsRenderWithRealSize() {
-        try { hubSectionsBody() } catch (t: Throwable) { throw AssertionError("hubSections failed: $t | cause=${t.cause}", t) }
-    }
-
-    private fun hubSectionsBody() {
         val scale = mutableStateOf(1f)
         rule.setContent {
             val density = LocalDensity.current.density
@@ -228,7 +222,12 @@ class PracticeHubVisualTest {
         }
     }
 
+    // Pictures are for a person reviewing locally (-e practiceShots true). CI never reads them, and capturing on the
+    // headless software-GL emulator took the whole emulator down mid-test (the run ended with "adb: device offline").
+    private val captureShots get() = InstrumentationRegistry.getArguments().getString("practiceShots") == "true"
+
     private fun shot(name: String) {
+        if (!captureShots) return
         rule.waitForIdle()
         Thread.sleep(250)
         // A picture is an artifact, not an assertion: UiAutomation sometimes hands back no bitmap on a headless emulator
