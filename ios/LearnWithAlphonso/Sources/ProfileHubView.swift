@@ -95,16 +95,14 @@ struct ProfileHubView: View {
         _ target: Destination,
         title: String,
         subtitle: String,
-        emoji: String,
-        tone: AlphonsoTileTone
+        icon: AlphonsoDS.Icon,
+        tint: Color,
+        ink: Color
     ) -> some View {
-        Button {
+        ProfileRowCard(icon: icon, tint: tint, ink: ink, title: title, subtitle: subtitle) {
             destination = target
-        } label: {
-            AlphonsoTile(tone: tone, emoji: emoji, title: title, subtitle: subtitle, glass: true)
         }
-        .buttonStyle(.plain)
-        // The tiles carry their own shape; List separators between them read as stray lines.
+        // The cards carry their own shape; List separators between them read as stray lines.
         .listRowSeparator(.hidden)
     }
 }
@@ -114,8 +112,11 @@ extension ProfileHubView {
         if let m = overview {
             let course = activeCourse.course
             Group {
-                ProfileHeroSection(model: m, course: course, onCourse: { activeCourse.course = $0 }, onPicture: { destination = .picture })
+                ProfileHeroSection(model: m, course: course, compact: tab != .overview, onPicture: { destination = .picture })
                     .sceneScrollProbe()
+                if tab == .overview {
+                    ProfileCoursePicker(course: course, onCourse: { activeCourse.course = $0 })
+                }
                 if !m.hasAnyActivity {
                     Text("Your first lesson starts your streak and fills in this page.")
                         .dsText(.body)
@@ -125,11 +126,15 @@ extension ProfileHubView {
                 switch tab {
                 case .overview:
                     ProfileWeekSection(model: m)
+                    ProfileAchievementsPreview(model: m, catalogCount: contentStore.achievements.count, action: { destination = .achievements })
                     // Only when there is a card to show: an empty section still takes a list row and leaves a gap.
                     if m.hector != nil {
                         ProfileWeakAndHectorSection(model: m, showWeak: false, showHector: true, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
                     }
                     ProfileMemoryCard(isPro: entitlementStore.isPro, topics: Array(m.weak.top.prefix(2).map(\.display)), session: session, action: { destination = .memory })
+                    ProfileRowCard(icon: .target, tint: ds.choiceTint, ink: ds.choice, title: "Edit your answers",
+                                   subtitle: "Goal, level, daily time, interests", action: onEditAnswers)
+                    row(.settings, title: "Settings", subtitle: "Theme and account", icon: .settings, tint: ds.rightTint, ink: ds.right)
                 case .progress:
                     ProfileSkillsSection(model: m)
                     PathProfileCard(session: session, course: activeCourse.course)
@@ -147,6 +152,10 @@ extension ProfileHubView {
                         ProfileWeakAndHectorSection(model: m, showWeak: true, showHector: false, onPractice: { destination = .review }, onPaywall: { destination = .paywall })
                     }
                 case .social:
+                    ProfileLeagueCard(model: m)
+                    row(.league, title: "League", subtitle: "Leaderboards, teams, and the season ladder", icon: .league, tint: ds.xpTint, ink: ds.xpText)
+                    row(.friends, title: "Friends", subtitle: "Your friends, their activity, and duels", icon: .friends, tint: ds.choiceTint, ink: ds.choice)
+                    row(.invite, title: "Invite friends", subtitle: "You both get a reward when they finish a first lesson", icon: .gift, tint: ds.rightTint, ink: ds.right)
                     ProfileProgressSection(model: m, catalogCount: contentStore.achievements.count, showAchievements: false, showSocial: true)
                     ProfileShareSection(model: m, course: course, level: m.level.level)
                 }
@@ -165,28 +174,12 @@ extension ProfileHubView {
         }
     }
 
-    /// The rows that open full screens, kept on the tab where each belongs: settings and "Edit your answers" on
-    /// Overview, Achievements on Progress, League and Friends on Social.
+    /// The row that opens a full screen and has no card on its tab: Achievements, on Progress. Overview and Social
+    /// keep their rows (Edit your answers, Settings; League, Friends, Invite) inside the tab's own content.
     @ViewBuilder fileprivate var tabNavRows: some View {
-        switch tab {
-        case .overview:
-            ProfileEditAnswersRow(onEditAnswers: onEditAnswers)
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
+        if tab == .progress {
             Section {
-                row(.settings, title: "Settings", subtitle: "Theme and account", emoji: "⚙️", tone: .mint)
-            }
-            .listRowBackground(Color.clear)
-        case .progress:
-            Section {
-                row(.achievements, title: "Achievements", subtitle: overview.map { ProfileTabs.achievementsSummary(unlocked: $0.unlockedCount, total: contentStore.achievements.count) } ?? "Badges you have earned", emoji: "⭐️", tone: .lilac)
-            }
-            .listRowBackground(Color.clear)
-        case .social:
-            Section {
-                row(.league, title: "League", subtitle: "Leaderboards, teams, and the season ladder", emoji: "🏆", tone: .sun)
-                row(.friends, title: "Friends", subtitle: "Your friends, their activity, and duels", emoji: "👥", tone: .sky)
-                row(.invite, title: "Invite friends", subtitle: "You both get a reward when they finish a first lesson", emoji: "🤝", tone: .mint)
+                row(.achievements, title: "Achievements", subtitle: overview.map { ProfileTabs.achievementsSummary(unlocked: $0.unlockedCount, total: contentStore.achievements.count) } ?? "Badges you have earned", icon: .star, tint: ds.xpTint, ink: ds.xpText)
             }
             .listRowBackground(Color.clear)
         }

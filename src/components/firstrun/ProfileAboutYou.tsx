@@ -52,7 +52,7 @@ export function ProfileAvatarEditor({
   );
 }
 
-function AvatarDialog({
+export function AvatarDialog({
   seed,
   name,
   onClose,

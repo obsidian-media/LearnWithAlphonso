@@ -16,19 +16,31 @@ struct ProfileOverviewModel {
     let unlockedCount: Int
     let league: ProfileMath.LeagueStatus
     let friends: [ProfileMath.FriendWeekRow]
-    let flag: String?
     let name: String
     /// The daily minutes the learner chose in first run (LearnerProfile.dailyMinutes); nil if never chosen.
     let dailyGoalMinutes: Int?
     /// This week's rings in learning minutes against that goal; nil without a goal (the XP rings stay).
     let goal: (days: [ProfileMath.GoalRingDay], metDays: Int)?
     let radar: SkillsRadar.Model
+    /// This week as the Overview strip shows it (minutes against the goal, else the XP rule).
+    let strip: ProfileMath.WeekStrip
+    /// How far through the current league tier's XP span the learner is, 0 to 100.
+    let leaguePct: Int
+    /// The latest unlocked achievements (up to three), newest first, for the preview's overlapping medallions.
+    let recentAchievements: [Achievement]
 
     init(data: ProfileOverviewData, contentStore: ContentStore, course: Course, isPro: Bool, dailyGoalMinutes: Int? = nil) {
         self.data = data
         let goalMinutes: Int? = (dailyGoalMinutes ?? 0) > 0 ? dailyGoalMinutes : nil
         self.dailyGoalMinutes = goalMinutes
         goal = goalMinutes.map { ProfileMath.goalRings(today: data.today, learning: data.learning, goalMinutes: $0) }
+        strip = ProfileMath.weekStrip(
+            today: data.today, activity: data.activity, speech: data.speech, learning: data.learning, goalMinutes: goalMinutes)
+        recentAchievements = Array(
+            data.achievements.filter { $0.unlockedAt != nil }
+                .sorted { ($0.unlockedAt ?? "") > ($1.unlockedAt ?? "") }
+                .compactMap { row in contentStore.achievements.first { $0.id == row.id } }
+                .prefix(3))
         radar = SkillsRadar.radarModel(ProfileMath.skillScores(rows: data.skills, today: data.today))
         big = ProfileMath.bigNumbers(data) { id in
             contentStore.findLesson(id: id, course: course)
@@ -49,8 +61,8 @@ struct ProfileOverviewModel {
         unlockedCount = unlocked.count
         next = ProfileMath.nextAchievement(stats: ProfileMath.achievementStats(data), unlocked: unlocked, catalog: contentStore.achievements)
         league = ProfileMath.leagueStatus(tier: mine?.leagueTier ?? "bronze", courseXP: big.courseXP)
+        leaguePct = ProfileMath.leaguePct(tier: mine?.leagueTier ?? "bronze", courseXP: big.courseXP)
         name = (data.displayName?.isEmpty == false ? data.displayName : nil) ?? "Learner"
-        flag = ProfileMath.flagEmoji(country: data.country)
         friends = ProfileMath.friendsWeek(
             data.friends, meName: name, meSeed: data.avatarSeed ?? "0",
             meWeekXP: ProfileMath.rollingWeekXP(today: data.today, activity: data.activity))
@@ -94,153 +106,291 @@ private struct ProfileCard<Content: View>: View {
 
 // MARK: Hero
 
+/// The identity hero (the web's ProfileIdentityHero): the learner's picture in a level ring, their name and drawn
+/// flag, a league chip, the level bar and the four numbers. It stays on every tab; Progress and Social show it
+/// without the level bar and numbers. Every value comes from the overview through ProfileMath.
 struct ProfileHeroSection: View {
     let model: ProfileOverviewModel
     let course: Course
-    let onCourse: (Course) -> Void
+    let compact: Bool
     let onPicture: () -> Void
     @Environment(\.alphonsoDS) private var ds
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
-            HStack(spacing: AlphonsoDS.Space.s4) {
-                Button(action: onPicture) {
-                    ProfileAvatarView(seed: model.data.avatarSeed, name: model.name, size: 72)
-                }
-                .frame(minWidth: AlphonsoDS.Space.minTouch, minHeight: AlphonsoDS.Space.minTouch)
-                .accessibilityLabel("Change picture")
-                .accessibilityHint("Choose an animal or your initial")
+            identity
+            if !compact {
+                levelBar
+                numbers
+            }
+        }
+        .padding(AlphonsoDS.Space.s4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: AlphonsoDS.Radius.sheet, style: .continuous)
+                .fill(LinearGradient(colors: [ds.heroA, ds.heroB], startPoint: .topLeading, endPoint: .bottomTrailing)))
+        .dsElevation(AlphonsoDS.Elevation.floating, line: ds.line)
+    }
+
+    private var leagueChipText: String {
+        let label = "\(LeagueTierCopy.label(for: model.league.tier)) league"
+        return model.data.league.map { "\(label) · Rank \($0.rank)" } ?? label
+    }
+
+    private var identity: some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: AlphonsoDS.Space.s3))
+            : AnyLayout(HStackLayout(alignment: .center, spacing: AlphonsoDS.Space.s4))
+        return layout {
+            avatarRing
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
                 HStack(alignment: .firstTextBaseline, spacing: AlphonsoDS.Space.s2) {
                     Text(model.name).dsText(.displayXL).foregroundStyle(ds.onHero)
                         .fixedSize(horizontal: false, vertical: true)
-                    if let flag = model.flag {
-                        Text(flag).dsText(.title).accessibilityLabel("Flag")
+                    if let country = model.data.country, ProfileMath.flagAccessibilityLabel(country: country) != nil {
+                        ProfileFlagView(country: country)
                     }
                 }
-                Spacer(minLength: 0)
+                HStack(spacing: AlphonsoDS.Space.s1) {
+                    DSIconView(icon: .trophy, size: AlphonsoDS.Space.s4)
+                    Text(leagueChipText).dsText(.caption).fixedSize(horizontal: false, vertical: true)
+                }
+                .foregroundStyle(ds.onHeroKick)
+                .padding(.horizontal, AlphonsoDS.Space.s2)
+                .padding(.vertical, AlphonsoDS.Space.s1)
+                .background(Capsule().fill(ds.onHeroKick.opacity(0.22)))
+                .overlay(Capsule().strokeBorder(ds.onHeroKick.opacity(0.5), lineWidth: 1))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(leagueChipText)
             }
-            Picker("Course", selection: Binding(get: { course }, set: onCourse)) {
-                ForEach([Course.english, .french, .spanish], id: \.wireCode) { Text($0.label).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            numbers
         }
-        .padding(AlphonsoDS.Space.s4)
-        .background(
-            RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous)
-                .fill(LinearGradient(colors: [ds.heroA, ds.heroB], startPoint: .top, endPoint: .bottom)))
+    }
+
+    /// The picture in a gold ring that fills with this level's lesson progress, a level badge on its corner.
+    private var avatarRing: some View {
+        let ring = AlphonsoDS.Space.s12 + AlphonsoDS.Space.s6 + AlphonsoDS.Space.s1
+        let level = model.level
+        return Button(action: onPicture) {
+            ZStack {
+                Circle().stroke(ds.onHero.opacity(0.18), lineWidth: AlphonsoDS.Space.s1)
+                Circle().trim(from: 0, to: CGFloat(min(100, max(0, level.pct))) / 100)
+                    .stroke(
+                        LinearGradient(colors: [ds.actionHi, ds.action], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        style: StrokeStyle(lineWidth: AlphonsoDS.Space.s1, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                ProfileAvatarView(seed: model.data.avatarSeed, name: model.name, size: ring - AlphonsoDS.Space.s3)
+            }
+            .frame(width: ring, height: ring)
+            .overlay(alignment: .bottomTrailing) {
+                Text(level.level).dsText(.overline).foregroundStyle(ds.onAction)
+                    .padding(.horizontal, AlphonsoDS.Space.s2)
+                    .background(Capsule().fill(LinearGradient(colors: [ds.actionHi, ds.action], startPoint: .top, endPoint: .bottom)))
+                    .overlay(Capsule().strokeBorder(ds.heroB, lineWidth: 2))
+            }
+        }
+        .buttonStyle(.plain)
+        .frame(minWidth: AlphonsoDS.Space.minTouch, minHeight: AlphonsoDS.Space.minTouch)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Change picture")
+        .accessibilityValue("\(level.level), \(level.pct) percent of the level done")
+        .accessibilityHint("Choose an animal or your initial")
+    }
+
+    private var levelLine: String {
+        let level = model.level
+        let left = ProfileMath.lessonsLeft(level)
+        if left > 0 { return "\(left) \(plural(left, "lesson", "lessons")) left in \(level.level)" }
+        if let next = level.next { return "\(level.level) done. Ready for \(next)" }
+        return "The top level in \(course.label)"
+    }
+
+    private var levelBar: some View {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Level \(model.level.level)").dsText(.headline).foregroundStyle(ds.onHero)
+                Spacer(minLength: AlphonsoDS.Space.s2)
+                Text(levelLine).dsText(.caption).foregroundStyle(ds.onHeroSoft).multilineTextAlignment(.trailing)
+            }
+            ProfileGoldBar(pct: model.level.pct, track: ds.heroB.opacity(0.4))
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Level \(model.level.level)")
+        .accessibilityValue("\(model.level.pct) percent, \(levelLine)")
     }
 
     private var numbers: some View {
         let b = model.big
-        return LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), alignment: .leading, spacing: AlphonsoDS.Space.s4) {
-            // The same displayed streak as the header (StreakDisplay), with the same protected wording.
-            statTile(String(b.streak), "day streak",
-                 b.streakState == .protected ? StreakDisplay.protectedCaption : "Longest \(b.longestStreak)",
-                 b.streakState == .protected
-                    ? "\(StreakDisplay.accessibilityLabel(StreakDisplay.Shown(streak: b.streak, state: b.streakState))), longest \(b.longestStreak)"
-                    : "\(b.streak) day streak, longest \(b.longestStreak)")
-            statTile(String(b.courseXP), "XP in \(course.label)", "\(b.xpThisWeek) this week",
-                 "\(b.courseXP) XP in \(course.label), \(b.xpThisWeek) this week")
-            statTile(String(b.wordsLearned), plural(b.wordsLearned, "word learned", "words learned"),
-                 b.savedWords > 0 ? "\(b.savedWords) saved to review" : "Tap a word to save it",
-                 "\(b.wordsLearned) \(plural(b.wordsLearned, "word", "words")) learned, "
-                    + (b.savedWords > 0 ? "\(b.savedWords) saved to review" : "tap a word to save it"))
-            statTile(String(b.lessonsDone), plural(b.lessonsDone, "lesson done", "lessons done"),
-                 b.accuracyPct.map { "\($0)% accuracy" } ?? "No lessons yet",
-                 "\(b.lessonsDone) \(plural(b.lessonsDone, "lesson", "lessons")) done, " + (b.accuracyPct.map { "\($0) percent accuracy" } ?? "no lessons yet"))
+        let streakSpoken = b.streakState == .protected
+            ? "\(StreakDisplay.accessibilityLabel(StreakDisplay.Shown(streak: b.streak, state: b.streakState)))"
+            : "\(b.streak) day streak"
+        return LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), alignment: .topLeading), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2),
+            alignment: .leading, spacing: AlphonsoDS.Space.s3
+        ) {
+            statTile(.flameSolid, tone: ds.onHeroKick, value: String(b.streak), label: "day streak", spoken: streakSpoken)
+            statTile(.boltSolid, tone: ds.onHeroKick, value: String(b.courseXP), label: "XP in \(course.label)",
+                     spoken: "\(b.courseXP) XP in \(course.label)")
+            statTile(.words, tone: ds.onHeroSoft, value: String(b.wordsLearned), label: plural(b.wordsLearned, "word learned", "words learned"),
+                     spoken: "\(b.wordsLearned) \(plural(b.wordsLearned, "word", "words")) learned")
+            statTile(.target, tone: ds.onHeroSoft, value: b.accuracyPct.map { "\($0)%" } ?? "–", label: "accuracy",
+                     spoken: b.accuracyPct.map { "\($0) percent accuracy" } ?? "No accuracy yet")
         }
+        .padding(AlphonsoDS.Space.s3)
+        .background(
+            RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous)
+                .fill(ds.heroB.opacity(0.3))
+                .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous)
+                    .strokeBorder(ds.onHero.opacity(0.1), lineWidth: 1)))
     }
 
-    private func statTile(_ value: String, _ label: String, _ sub: String, _ spoken: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(value).dsText(.numeralXL).foregroundStyle(ds.onHero)
-            Text(label).dsText(.footnote).foregroundStyle(ds.onHero)
-            Text(sub).dsText(.caption).foregroundStyle(ds.onHeroSoft)
+    /// One number: a line icon in a subtle tile, the value and its label, read by VoiceOver as one phrase.
+    private func statTile(_ icon: AlphonsoDS.Icon, tone: Color, value: String, label: String, spoken: String) -> some View {
+        HStack(spacing: AlphonsoDS.Space.s2) {
+            DSIconView(icon: icon, size: AlphonsoDS.Space.s5)
+                .foregroundStyle(tone)
+                .frame(width: AlphonsoDS.Space.s8, height: AlphonsoDS.Space.s8)
+                .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.key, style: .continuous).fill(ds.onHero.opacity(0.1)))
+            VStack(alignment: .leading, spacing: 0) {
+                Text(value).dsText(.numeral).foregroundStyle(ds.onHero)
+                Text(label).dsText(.overline).foregroundStyle(ds.onHeroSoft)
+            }
+            .fixedSize(horizontal: false, vertical: true)
         }
-        .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(spoken)
     }
 }
 
-// MARK: Week, speech, heat map
+/// A gold bar filling to a percentage on a dark track. Static: no fill animation to turn off for Reduce Motion.
+struct ProfileGoldBar: View {
+    let pct: Int
+    let track: Color
+    @Environment(\.alphonsoDS) private var ds
 
-private struct WeekRing {
-    let day: String
-    let state: ProfileMath.RingState
-    let spoken: String
+    var body: some View {
+        GeometryReader { g in
+            ZStack(alignment: .leading) {
+                Capsule().fill(track)
+                Capsule()
+                    .fill(LinearGradient(colors: [ds.actionHi, ds.action], startPoint: .leading, endPoint: .trailing))
+                    .frame(width: g.size.width * CGFloat(min(100, max(0, pct))) / 100)
+            }
+        }
+        .frame(height: AlphonsoDS.Space.s2)
+        .accessibilityHidden(true)
+    }
 }
+
+/// The learner's flag, drawn (the Flags imageset group); a country with no drawing shows its code in a chip, never the
+/// emoji (the web and Android follow the same rule).
+struct ProfileFlagView: View {
+    let country: String
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        let width = AlphonsoDS.Space.s6
+        let height = AlphonsoDS.Space.s4
+        let shape = RoundedRectangle(cornerRadius: AlphonsoDS.Radius.key / 4, style: .continuous)
+        Group {
+            if let code = ProfileMath.drawnFlagCode(country: country) {
+                Image("flag-\(code.lowercased())")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: width, height: height)
+                    .clipShape(shape)
+                    .overlay(shape.strokeBorder(ds.onHero.opacity(0.4), lineWidth: 1))
+            } else {
+                Text(country.uppercased()).dsText(.overline).foregroundStyle(ds.onHero)
+                    .padding(.horizontal, AlphonsoDS.Space.s1)
+                    .frame(minWidth: width, minHeight: height)
+                    .background(shape.fill(ds.onHero.opacity(0.2)))
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Locale.current.localizedString(forRegionCode: country.uppercased()) ?? "Country \(country.uppercased())")
+    }
+}
+
+/// The course switch, right under the hero on Overview: the same app-wide switch as Learn's.
+struct ProfileCoursePicker: View {
+    let course: Course
+    let onCourse: (Course) -> Void
+
+    var body: some View {
+        Picker("Course", selection: Binding(get: { course }, set: onCourse)) {
+            ForEach([Course.english, .french, .spanish], id: \.wireCode) { Text($0.label).tag($0) }
+        }
+        .pickerStyle(.segmented)
+    }
+}
+
+// MARK: Week, speech, heat map
 
 struct ProfileWeekSection: View {
     let model: ProfileOverviewModel
     @Environment(\.alphonsoDS) private var ds
 
     var body: some View {
-        let week = model.week
-        // Rings in learning minutes when the learner chose a daily time; otherwise the XP rule the streak uses.
-        let rings: [WeekRing] = model.goal.map { g in
-            g.days.map { d in
-                WeekRing(day: d.day, state: d.state,
-                         spoken: d.state == .done ? "\(d.minutes) \(plural(d.minutes, "minute", "minutes")), goal met" : stateWord(d.state))
+        let strip = model.strip
+        let b = model.big
+        let chip = b.streakState == .protected ? StreakDisplay.protectedCaption : "\(b.streak)-day streak"
+        ProfileCard(title: "This week") {
+            HStack {
+                HStack(spacing: AlphonsoDS.Space.s1) {
+                    DSIconView(icon: .flameSolid, size: AlphonsoDS.Space.s4)
+                    Text(chip).dsText(.caption)
+                }
+                .foregroundStyle(ds.flame)
+                .padding(.horizontal, AlphonsoDS.Space.s2)
+                .padding(.vertical, AlphonsoDS.Space.s1)
+                .background(Capsule().fill(ds.flameTint))
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(b.streakState == .protected ? chip : "\(b.streak) day streak")
+                Spacer(minLength: 0)
             }
-        } ?? week.days.map { d in
-            WeekRing(day: d.day, state: d.state, spoken: d.state == .done ? "\(d.xp) XP" : stateWord(d.state))
-        }
-        VStack(spacing: AlphonsoDS.Space.s3) {
-            ProfileCard(title: "This week") {
-                HStack {
-                    ForEach(rings, id: \.day) { d in
-                        VStack(spacing: AlphonsoDS.Space.s1) {
-                            ring(d.state)
-                            Text(weekday(d.day)).dsText(.caption).foregroundStyle(ds.inkSoft)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("\(weekday(d.day, long: true)): \(d.spoken)")
+            HStack(spacing: AlphonsoDS.Space.s2) {
+                ForEach(strip.days, id: \.day) { d in
+                    VStack(spacing: AlphonsoDS.Space.s1) {
+                        pip(d.state)
+                        Text(weekday(d.day)).dsText(.overline)
+                            .foregroundStyle(d.state == .done ? ds.actionText : ds.inkFaint)
                     }
-                }
-                Text("\(model.goal?.metDays ?? week.activeDays) of 7 days \(model.goal == nil ? "active" : "done")")
-                    .dsText(.footnote).foregroundStyle(ds.inkSoft)
-                if let minutes = model.dailyGoalMinutes {
-                    Text("Goal: \(minutes) learning minutes a day").dsText(.caption).foregroundStyle(ds.inkSoft)
-                } else {
-                    Text("Pick a daily time in Edit your answers to measure your days in minutes.")
-                        .dsText(.caption).foregroundStyle(ds.inkSoft)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(weekday(d.day, long: true)): \(d.spoken)")
                 }
             }
-            ProfileCard(title: "Minutes spoken this week") {
-                Text("\(week.minutesSpoken)").dsText(.numeral).foregroundStyle(ds.brand)
-                    .accessibilityLabel("\(week.minutesSpoken) \(plural(week.minutesSpoken, "minute", "minutes")) spoken this week")
-                if week.minutesSpoken == 0 {
-                    Text("Speak in a lesson or with Hector and your minutes show up here.")
-                        .dsText(.footnote).foregroundStyle(ds.inkSoft)
-                }
+            Text("\(strip.doneDays) of 7 days \(strip.measuredInMinutes ? "done" : "active")")
+                .dsText(.footnote).foregroundStyle(ds.inkSoft)
+            if let minutes = model.dailyGoalMinutes {
+                Text("Goal: \(minutes) learning minutes a day").dsText(.caption).foregroundStyle(ds.inkSoft)
+            } else {
+                Text("Pick a daily time in Edit your answers to measure your days in minutes.")
+                    .dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            if strip.minutesSpoken > 0 {
+                Text("\(strip.minutesSpoken) \(plural(strip.minutesSpoken, "minute", "minutes")) spoken this week")
+                    .dsText(.caption).foregroundStyle(ds.inkSoft)
             }
         }
     }
 
-    @ViewBuilder private func ring(_ s: ProfileMath.RingState) -> some View {
-        let size = AlphonsoDS.Space.s8
+    /// Done days are stamped gold with a check, today is ringed in the choice colour, the rest are plain.
+    @ViewBuilder private func pip(_ s: ProfileMath.RingState) -> some View {
+        let shape = RoundedRectangle(cornerRadius: AlphonsoDS.Radius.key, style: .continuous)
         switch s {
         case .done:
-            Circle().fill(ds.flame).frame(width: size, height: size)
-                .overlay(DSIconView(icon: .check, size: 16).foregroundStyle(ds.onAction))
+            shape.fill(LinearGradient(colors: [ds.actionHi, ds.action], startPoint: .top, endPoint: .bottom))
+                .frame(height: AlphonsoDS.Space.s8)
+                .overlay(DSIconView(icon: .check, size: AlphonsoDS.Space.s4).foregroundStyle(ds.onAction))
         case .today:
-            Circle().strokeBorder(ds.flame, lineWidth: 3).frame(width: size, height: size)
+            shape.fill(ds.choiceTint)
+                .overlay(shape.strokeBorder(ds.choice, lineWidth: 2))
+                .frame(height: AlphonsoDS.Space.s8)
         case .missed, .future:
-            Circle().strokeBorder(ds.line, lineWidth: 3).frame(width: size, height: size)
-        }
-    }
-
-    private func stateWord(_ s: ProfileMath.RingState) -> String {
-        switch s {
-        case .done: return "done"
-        case .today: return "today, not yet"
-        case .missed: return "not done"
-        case .future: return "to come"
+            shape.fill(ds.sunk).frame(height: AlphonsoDS.Space.s8)
         }
     }
 
@@ -252,6 +402,131 @@ struct ProfileWeekSection: View {
         guard let d = f.date(from: day) else { return day }
         f.dateFormat = long ? "EEEE" : "EEEEE"
         return f.string(from: d)
+    }
+}
+
+/// The achievements preview: the latest medallions overlapping on navy, how many are unlocked, a chevron to the wall.
+struct ProfileAchievementsPreview: View {
+    let model: ProfileOverviewModel
+    let catalogCount: Int
+    let action: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        let more = model.unlockedCount - model.recentAchievements.count
+        let count = "\(model.unlockedCount) of \(catalogCount) unlocked"
+        Button(action: action) {
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                HStack(spacing: -AlphonsoDS.Space.s4) {
+                    ForEach(model.recentAchievements, id: \.id) { a in
+                        BadgeMedallion(id: a.id, size: AlphonsoDS.Space.s12, state: .earned)
+                    }
+                    if model.recentAchievements.isEmpty, let next = model.next {
+                        BadgeMedallion(id: next.achievement.id, size: AlphonsoDS.Space.s12, state: .locked)
+                    }
+                    if more > 0 {
+                        Text("+\(more)").dsText(.caption).foregroundStyle(ds.onHero)
+                            .frame(width: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s2, height: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s2)
+                            .background(Circle().fill(ds.onHero.opacity(0.15)))
+                            .padding(.leading, AlphonsoDS.Space.s4)
+                    }
+                }
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Achievements").dsText(.headline).foregroundStyle(ds.onHero)
+                    Text(count).dsText(.caption).foregroundStyle(ds.onHeroSoft)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                DSIconView(icon: .chevron, size: AlphonsoDS.Space.s4).foregroundStyle(ds.onHeroSoft)
+            }
+            .padding(AlphonsoDS.Space.s3)
+            .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous)
+                    .fill(LinearGradient(colors: [ds.heroA, ds.heroB], startPoint: .topLeading, endPoint: .bottomTrailing)))
+            .dsElevation(AlphonsoDS.Elevation.floating, line: ds.line)
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Achievements, \(count)")
+        .accessibilityHint("Opens your achievements")
+    }
+}
+
+/// A tappable row card with a drawn icon in a tinted tile (Edit your answers, Settings, League, Friends, Invite).
+struct ProfileRowCard: View {
+    let icon: AlphonsoDS.Icon
+    let tint: Color
+    let ink: Color
+    let title: String
+    let subtitle: String
+    let action: () -> Void
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                DSIconView(icon: icon, size: AlphonsoDS.Space.s5)
+                    .foregroundStyle(ink)
+                    .frame(width: AlphonsoDS.Space.s12 - AlphonsoDS.Space.s2, height: AlphonsoDS.Space.s12 - AlphonsoDS.Space.s2)
+                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.key + AlphonsoDS.Space.s1, style: .continuous).fill(tint))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).dsText(.headline).foregroundStyle(ds.ink)
+                    Text(subtitle).dsText(.caption).foregroundStyle(ds.inkSoft)
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                DSIconView(icon: .chevron, size: AlphonsoDS.Space.s4).foregroundStyle(ds.inkFaint)
+            }
+            .padding(.horizontal, AlphonsoDS.Space.s3)
+            .padding(.vertical, AlphonsoDS.Space.s3)
+            .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control + AlphonsoDS.Space.s1, style: .continuous).fill(ds.card.opacity(0.92)))
+            .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Your league, on navy: the tier, how far to the next, and where you stand this week.
+struct ProfileLeagueCard: View {
+    let model: ProfileOverviewModel
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        let league = model.league
+        let toNext = league.next.map { "\(league.xpToNext) XP to \(LeagueTierCopy.label(for: $0))" } ?? "The top league. Well done."
+        let standing = model.data.league.map {
+            "Rank \($0.rank) of \($0.size) · \(ProfileMath.leagueWeekEnds(weekEnd: $0.weekEnd, timeZone: model.data.timeZone))"
+        }
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+            Text("Your league").dsText(.overline).foregroundStyle(ds.onHeroSoft)
+            HStack(spacing: AlphonsoDS.Space.s3) {
+                ZStack {
+                    Image(systemName: "shield.fill").resizable().scaledToFit()
+                        .foregroundStyle(LeagueTierPalette.color(for: league.tier))
+                    Image(systemName: "star.fill").foregroundStyle(ds.card.opacity(0.85))
+                }
+                .frame(width: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s2, height: AlphonsoDS.Space.s12 + AlphonsoDS.Space.s2)
+                .accessibilityHidden(true)
+                Text(LeagueTierCopy.label(for: league.tier)).dsText(.displayXL).foregroundStyle(ds.onHeroKick)
+            }
+            ProfileGoldBar(pct: model.leaguePct, track: ds.heroB.opacity(0.4))
+            Text(toNext).dsText(.footnote).foregroundStyle(ds.onHeroKick)
+            if let standing {
+                Text(standing).dsText(.caption).foregroundStyle(ds.onHeroSoft)
+            }
+        }
+        .padding(AlphonsoDS.Space.s4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous)
+                .fill(LinearGradient(colors: [ds.heroA, ds.heroB], startPoint: .topLeading, endPoint: .bottomTrailing)))
+        .dsElevation(AlphonsoDS.Elevation.floating, line: ds.line)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Your league, \(LeagueTierCopy.label(for: league.tier))")
+        .accessibilityValue([toNext, standing].compactMap { $0 }.joined(separator: ". "))
     }
 }
 
@@ -544,18 +819,6 @@ struct ProfileProgressSection: View {
             }
             }
             if showSocial {
-            ProfileCard(title: "League") {
-                Text(model.league.tier.capitalized).dsText(.title).foregroundStyle(ds.brand)
-                if let next = model.league.next {
-                    Text("\(model.league.xpToNext) XP to \(next.capitalized)").dsText(.footnote).foregroundStyle(ds.inkSoft)
-                } else {
-                    Text("Top league reached").dsText(.footnote).foregroundStyle(ds.inkSoft)
-                }
-                if let standing = model.data.league {
-                    Text("Rank \(standing.rank) of \(standing.size) · \(ProfileMath.leagueWeekEnds(weekEnd: standing.weekEnd, timeZone: model.data.timeZone))")
-                        .dsText(.footnote).foregroundStyle(ds.ink)
-                }
-            }
             ProfileCard(title: "Friends this week") {
                 if model.friends.count <= 1 {
                     Text("Add friends to see who is learning with you.").dsText(.footnote).foregroundStyle(ds.inkSoft)

@@ -274,7 +274,7 @@ test("Profile: change the picture to one of the 16 animals", async ({ page }) =>
     window.localStorage.setItem("lingua.cookie-consent.v1", "essential"),
   );
   await page.goto("/profile");
-  await btn(page, "Change picture").click();
+  await btn(page, "Change picture").first().click();
   const dialog = page.getByRole("dialog", { name: "Your profile picture" });
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: "Owl" }).click();

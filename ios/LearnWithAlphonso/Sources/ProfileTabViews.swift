@@ -20,7 +20,7 @@ struct ProfileTabPicker: View {
                     Text(tab.label)
                         .dsText(.headline)
                         .lineLimit(1).minimumScaleFactor(0.5)
-                        .foregroundStyle(selected ? ds.onAction : ds.ink)
+                        .foregroundStyle(selected ? ds.onChoice : ds.ink)
                         .frame(maxWidth: .infinity, minHeight: AlphonsoDS.Space.minTouch)
                         .background(
                             RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous)
