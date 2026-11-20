@@ -71,11 +71,12 @@ private final class KeychainFlagKeyValue: FirstRunKeyValue {
 enum FirstRunVoice {
     private static let synthesizer = AVSpeechSynthesizer()
 
-    static func speak(_ text: String, course: Course = .english) {
+    static func speak(_ text: String, course: Course = .english, slow: Bool = false) {
         guard !FirstRunDevice.isBlocked else { return }
         synthesizer.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: FirstRun.spoken(text))
         utterance.voice = SpeechVoice.voice(for: course)
+        if slow { utterance.rate = AVSpeechUtteranceDefaultSpeechRate * Waveform.slowRate }
         synthesizer.speak(utterance)
     }
 

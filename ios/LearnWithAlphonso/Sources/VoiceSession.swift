@@ -87,6 +87,13 @@ final class VoiceSessionController {
         send(.appeared)
     }
 
+    /// Throws an open recording away without judging it (Say it right plays a clip instead). Nothing is sent.
+    func cancelRecording() {
+        guard isRecording else { return }
+        send(.disappeared)
+        send(.appeared)
+    }
+
     func disappeared() {
         storedPreferenceApplied = false
         // Leaving the screen (not locking the phone: SwiftUI does not disappear on lock) ends hands-free.

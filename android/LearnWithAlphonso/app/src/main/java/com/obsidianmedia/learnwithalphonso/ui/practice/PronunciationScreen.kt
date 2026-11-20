@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.practice
 
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -8,6 +9,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -52,6 +55,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -68,6 +73,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.audio.PronunciationClips
+import com.obsidianmedia.learnwithalphonso.audio.SirClip
+import com.obsidianmedia.learnwithalphonso.core.logic.Waveform
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.AiConsentStatus
@@ -121,6 +129,7 @@ data class PronunciationUi(
  * completed, derived LIVE every time a session starts ([Pronunciation.learnedPool]), never cached.
  */
 class PronunciationViewModel(
+    context: Context,
     recorder: RecorderPort,
     requestMic: suspend () -> Boolean,
     ai: AiConversationClient,
@@ -130,13 +139,25 @@ class PronunciationViewModel(
     /** Hand-picked words to drill (Say the picture's missed words). Null draws from the learned pool as usual. */
     private val seedWords: List<VocabItem>? = null,
     private val voice: () -> String?,
-    /** Plays the fetched model audio; false when it could not play. */
-    private val play: suspend (ByteArray) -> Boolean,
-    /** The on-device voice, when the model audio cannot be fetched or played. */
-    private val deviceSpeak: (String) -> Unit,
+    /** The on-device voice (slowed when asked), when the model audio cannot be fetched or played. */
+    private val deviceSpeak: (String, Boolean) -> Unit,
 ) : ViewModel() {
     private val speech = PronunciationSpeech(ai)
-    val engine = ConversationTurnEngine(recorder, requestMic, { audio, timing -> speech.transcribe(audio, course, timing) }, viewModelScope)
+    /**
+     * The last attempt's audio and Alphonso's model for the shown word, in memory only; freed when the word changes and
+     * when this view model is cleared (the screen closed), not on a rotation (the view model outlives it).
+     */
+    val clips = PronunciationClips(context.applicationContext, viewModelScope).also { PronunciationClips.sweepLeftovers(context.applicationContext) }
+    val engine = ConversationTurnEngine(
+        recorder, requestMic,
+        { audio, timing ->
+            // Keep this attempt so the learner can hear it next to Alphonso. It leaves the device only as the /api/stt
+            // upload right below, which is the one that always happened.
+            clips.setYou(audio)
+            speech.transcribe(audio, course, timing)
+        },
+        viewModelScope,
+    )
     private val _state = MutableStateFlow(PronunciationUi(PronunciationSession(emptyList())))
     val state: StateFlow<PronunciationUi> = _state.asStateFlow()
 
@@ -161,6 +182,7 @@ class PronunciationViewModel(
 
     /** A fresh session from the LIVE learned pool; also "Practise more" and "Try again". Too few words is an empty run. */
     fun startSession() {
+        clips.release()
         _state.update { it.copy(loading = true, loadFailed = false, error = null) }
         viewModelScope.launch {
             val pool = seedWords?.takeIf { it.isNotEmpty() } ?: runCatching { loadPool() }.getOrNull()
@@ -181,30 +203,66 @@ class PronunciationViewModel(
         if (outcome is PronunciationOutcome.Retry) next.current?.let { playModel(it.term) }
     }
 
-    fun pressBegan() { _state.update { it.copy(error = null) }; engine.pressBegan() }
+    fun pressBegan() { clips.stop(); _state.update { it.copy(error = null) }; engine.pressBegan() }
     fun pressEnded() = engine.pressEnded()
 
-    fun next() = _state.update { it.copy(session = it.session.next(), error = null) }
+    fun next() {
+        clips.release()
+        _state.update { it.copy(session = it.session.next(), error = null) }
+    }
 
-    /** The model pronunciation from /api/tts, with the on-device voice when it cannot be fetched or played. */
-    fun playModel(term: String) {
+    /** Playing a clip stops any recording: it is thrown away, not judged. */
+    private fun cancelRecording() {
+        val p = engine.phase.value
+        if (p == TurnPhase.RECORDING || p == TurnPhase.REQUESTING_MIC) engine.cancel()
+    }
+
+    /** Tap "You": plays the learner's last attempt, or stops it. */
+    fun toggleYou() {
+        cancelRecording()
+        clips.toggle(SirClip.YOU)
+    }
+
+    /** Tap "Alphonso" (or Say it slower, with [slow]): plays the model, or stops that very playback. */
+    fun toggleModel(term: String, slow: Boolean = false) {
+        if (clips.playing == if (slow) SirClip.MODEL_SLOW else SirClip.MODEL) clips.stop() else playModel(term, slow)
+    }
+
+    /**
+     * The model pronunciation: the audio already held for this word when there is one (so Say it slower and the waveform
+     * never cost a second /api/tts call), else from /api/tts once, with the on-device voice when it cannot be fetched or
+     * played. [slow] plays it at [Waveform.SLOW_RATE].
+     */
+    fun playModel(term: String, slow: Boolean = false) {
+        val clip = if (slow) SirClip.MODEL_SLOW else SirClip.MODEL
+        cancelRecording()
+        if (clips.hasModel(term) && clips.play(clip)) return
         viewModelScope.launch {
             val audio = runCatching { speech.modelAudio(term, voice(), course) }.getOrNull()
-            if (audio == null || !play(audio)) deviceSpeak(term)
+            // The word may have moved on while the audio was coming.
+            if (audio != null && _state.value.session.current?.term == term) {
+                clips.setModel(term, audio)
+                if (clips.play(clip)) return@launch
+            }
+            // The device voice must not talk over a clip that is still playing.
+            clips.stop()
+            deviceSpeak(term, slow)
         }
     }
 
-    override fun onCleared() = engine.tearDown()
+    override fun onCleared() {
+        clips.release()
+        engine.tearDown()
+    }
 }
 
 @Composable
 fun PronunciationScreen(container: AppContainer, course: Course, seedWords: List<VocabItem>? = null, onExit: () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     val context = LocalContext.current
-    val playback = remember { container.newPlayback() }
     val vm: PronunciationViewModel = viewModel(key = if (seedWords == null) "say-it-right-${course.code}" else "say-it-right-${course.code}-picked-${seedWords.joinToString { it.term }}") {
         PronunciationViewModel(
-            container.newRecorder(), { container.micPermission.request() }, container.aiClient, course,
+            context, container.newRecorder(), { container.micPermission.request() }, container.aiClient, course,
             // The live pool: the bundle's units and the account's completed lessons, read now, so a lesson finished since
             // the last session is in this one. A failed read is null, not an empty pool.
             seedWords = seedWords,
@@ -213,8 +271,7 @@ fun PronunciationScreen(container: AppContainer, course: Course, seedWords: List
                 ids?.let { Pronunciation.learnedPool(container.content.bundle(course).units, it.toSet(), course) }
             },
             voice = { container.voicePrefs.voice(VoiceCharacter.Alphonso, course.code) },
-            play = { playback.play(it) },
-            deviceSpeak = { Speech.get(context).speak(it, course) },
+            deviceSpeak = { term, slow -> Speech.get(context).speak(term, course, if (slow) Waveform.SLOW_RATE else 1f) },
         )
     }
     val ui by vm.state.collectAsState()
@@ -225,7 +282,7 @@ fun PronunciationScreen(container: AppContainer, course: Course, seedWords: List
     val hasAiConsent = consentStatus == AiConsentStatus.GRANTED
     var showConsent by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    DisposableEffect(Unit) { onDispose { vm.engine.cancel(); playback.stop() } }
+    DisposableEffect(Unit) { onDispose { vm.engine.cancel(); vm.clips.stop() } }
     BackHandler(onBack = onExit)
 
     val session = ui.session
@@ -248,7 +305,12 @@ fun PronunciationScreen(container: AppContainer, course: Course, seedWords: List
             else -> SayItRightContent(
                 session = session, phase = phase, canCapture = canCapture, error = ui.error, reduceMotion = reduceMotion,
                 onPressBegan = vm::pressBegan, onPressEnded = vm::pressEnded,
-                onHear = vm::playModel, onNext = { if (phase == TurnPhase.IDLE) vm.next() }, onRestart = { vm.startSession() }, onBack = onExit,
+                audio = SirAudioUi(
+                    hasYou = vm.clips.hasYou, youPeaks = vm.clips.youPeaks, modelPeaks = vm.clips.modelPeaks,
+                    playing = vm.clips.playing, progress = vm.clips.progress,
+                    onToggleYou = vm::toggleYou, onToggleModel = { vm.toggleModel(it) }, onSlower = { vm.toggleModel(it, slow = true) },
+                ),
+                onHear = { vm.playModel(it) }, onNext = { if (phase == TurnPhase.IDLE) vm.next() }, onRestart = { vm.startSession() }, onBack = onExit,
                 unavailable = {
                     // Graceful: offline, no consent, no microphone, or a failed transcription. The word can always be heard.
                     SirNote(
@@ -273,6 +335,18 @@ fun PronunciationScreen(container: AppContainer, course: Course, seedWords: List
     }
 }
 
+/** What "Hear you vs Alphonso" needs on screen, as plain state so a visual test can put it there. */
+class SirAudioUi(
+    val hasYou: Boolean = false,
+    val youPeaks: DoubleArray? = null,
+    val modelPeaks: DoubleArray? = null,
+    val playing: SirClip? = null,
+    val progress: Float = 0f,
+    val onToggleYou: () -> Unit = {},
+    val onToggleModel: (String) -> Unit = {},
+    val onSlower: (String) -> Unit = {},
+)
+
 /**
  * The Say it right lesson itself, drawn from state alone (no recorder, consent or network), so a visual test can put
  * every state on screen. A warm 1:1 lesson: Alphonso in pose with the word in his speech bubble, the learner's mic
@@ -285,6 +359,7 @@ internal fun SayItRightContent(
     canCapture: Boolean,
     error: String?,
     reduceMotion: Boolean,
+    audio: SirAudioUi = SirAudioUi(),
     unavailable: @Composable () -> Unit,
     onPressBegan: () -> Unit,
     onPressEnded: () -> Unit,
@@ -347,7 +422,35 @@ internal fun SayItRightContent(
                 Text(word.term, style = Type.title.toTextStyle(), color = ds.brand, textAlign = TextAlign.Center, modifier = Modifier.testTag("sir-word"))
                 if (word.meaning.isNotEmpty()) Text(word.meaning, style = Type.caption.toTextStyle(), color = ds.inkSoft, textAlign = TextAlign.Center)
                 // Always available, in every state: a microphone, consent or STT failure is never a dead end.
-                HubSecondaryButton("Hear it") { onHear(word.term) }
+                // Both replay the SAME audio (fetched once per word); the slower one just plays it at a slower rate.
+                Column(verticalArrangement = Arrangement.spacedBy(Space.s2), horizontalAlignment = Alignment.CenterHorizontally) {
+                    HubSecondaryButton("Hear it") { onHear(word.term) }
+                    Box(Modifier.testTag("sir-slower").semantics { stateDescription = if (audio.playing == SirClip.MODEL_SLOW) "Playing" else "" }) {
+                        HubSecondaryButton("Say it slower") { audio.onSlower(word.term) }
+                    }
+                }
+            }
+        }
+        if (session.phase != PronunciationPhase.ASK && audio.hasYou) {
+            // "Hear you vs Alphonso": the last attempt next to the model, each one a tappable waveform. They stack at large text.
+            val you = @Composable { m: Modifier ->
+                SirWave(
+                    who = "You", spoken = "Play your recording", tag = "sir-wave-you", peaks = audio.youPeaks,
+                    playing = audio.playing == SirClip.YOU, progress = audio.progress, reduceMotion = reduceMotion, tint = ds.action,
+                    modifier = m, onClick = audio.onToggleYou,
+                )
+            }
+            val model = @Composable { m: Modifier ->
+                SirWave(
+                    who = "Alphonso", spoken = "Play Alphonso's version", tag = "sir-wave-model", peaks = audio.modelPeaks,
+                    playing = audio.playing == SirClip.MODEL, progress = audio.progress, reduceMotion = reduceMotion, tint = ds.brand,
+                    modifier = m, onClick = { audio.onToggleModel(word.term) },
+                )
+            }
+            if (largeText) {
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.s3)) { you(Modifier.fillMaxWidth()); model(Modifier.fillMaxWidth()) }
+            } else {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.s3)) { you(Modifier.weight(1f)); model(Modifier.weight(1f)) }
             }
         }
         if (session.phase == PronunciationPhase.RESULT) {
@@ -443,3 +546,57 @@ private fun SirNote(text: String) {
         modifier = Modifier.fillMaxWidth().background(ds.card, RoundedCornerShape(AlphonsoTokens.Radius.control)).padding(Space.s4).semantics { liveRegion = LiveRegionMode.Polite },
     )
 }
+
+/**
+ * One side of "Hear you vs Alphonso": a single button holding a bar waveform. Its TalkBack name is fixed ("Play your
+ * recording" / "Play Alphonso's version") with the playing state announced. While it plays the bars sweep left to right;
+ * under Reduce Motion the whole row is simply highlighted (no sweep). Null peaks (a clip that would not decode) draw a
+ * flat row, and the button still plays.
+ */
+@Composable
+internal fun SirWave(
+    who: String,
+    spoken: String,
+    tag: String,
+    peaks: DoubleArray?,
+    playing: Boolean,
+    progress: Float,
+    reduceMotion: Boolean,
+    tint: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val ds = LocalAlphonsoTokens.current
+    val shape = RoundedCornerShape(AlphonsoTokens.Radius.control)
+    Column(
+        modifier.testTag(tag)
+            .background(ds.card, shape)
+            .border(if (playing) 2.dp else 1.5.dp, if (playing) tint else ds.line, shape)
+            .clip(shape)
+            .clickable(onClickLabel = spoken, role = Role.Button, onClick = onClick)
+            .heightIn(min = 72.dp).padding(Space.s3)
+            .clearAndSetSemantics {
+                contentDescription = spoken
+                stateDescription = if (playing) "Playing" else ""
+            },
+        verticalArrangement = Arrangement.spacedBy(Space.s2),
+    ) {
+        Text(who, style = Type.caption.toTextStyle(), color = ds.inkSoft)
+        val rest = ds.line
+        Canvas(Modifier.testTag("$tag-bars").fillMaxWidth().height(40.dp)) {
+            val bars = peaks ?: DoubleArray(Waveform.BARS)
+            val gap = 2.dp.toPx()
+            val w = (size.width - gap * (bars.size - 1)) / bars.size
+            for (i in bars.indices) {
+                val on = playing && (reduceMotion || (i + 1f) / bars.size <= progress)
+                val h = size.height * maxOf(MIN_BAR, bars[i]).toFloat()
+                drawRoundRect(
+                    if (on) tint else rest, Offset(i * (w + gap), (size.height - h) / 2), Size(w, h), CornerRadius(w / 2),
+                )
+            }
+        }
+    }
+}
+
+/** Height of a bar that holds no sound (and of every bar while the clip cannot be drawn), as a share of the row. */
+private const val MIN_BAR = 0.12
