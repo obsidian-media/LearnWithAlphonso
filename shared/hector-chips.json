@@ -1,0 +1,95 @@
+{
+  "_comment": "Hector suggestion chips: reference outputs replayed by the TypeScript, Swift and Kotlin tests. Rules: a weak spot (a known taxonomy key for the course) gives 'weakWords' then a roleplay tied to it (or 'coffee'); a streak of 2+ days gives 'streak'; then 'coffee', 'explain' and 'chat' fill up to 4. With no context at all the fixed fallback is used. Icons are by id: weakWords/streak=flame, coffee and roleplay-*=coffee, explain=book, chat=chat. Topic labels come from the greeting's own table (course language).",
+  "cases": [
+    {
+      "name": "no context: fixed fallback",
+      "input": { "course": "en", "weakSpot": null, "streakDays": 0 },
+      "chips": [
+        { "id": "weakWords", "label": "Practice my weak words", "message": "Let's practice my weak words." },
+        { "id": "coffee", "label": "Roleplay: ordering coffee", "message": "Let's roleplay ordering coffee." },
+        { "id": "explain", "label": "Explain a rule", "message": "Can you explain a grammar rule to me?" },
+        { "id": "chat", "label": "Just chat", "message": "Let's just chat." }
+      ]
+    },
+    {
+      "name": "a streak of 1 is not context",
+      "input": { "course": "en", "weakSpot": null, "streakDays": 1 },
+      "chips": [
+        { "id": "weakWords", "label": "Practice my weak words", "message": "Let's practice my weak words." },
+        { "id": "coffee", "label": "Roleplay: ordering coffee", "message": "Let's roleplay ordering coffee." },
+        { "id": "explain", "label": "Explain a rule", "message": "Can you explain a grammar rule to me?" },
+        { "id": "chat", "label": "Just chat", "message": "Let's just chat." }
+      ]
+    },
+    {
+      "name": "weak spot with its own roleplay",
+      "input": { "course": "en", "weakSpot": "past-tense", "streakDays": 0 },
+      "chips": [
+        { "id": "weakWords", "label": "Practice my weak words", "message": "Let's practice the past tense." },
+        { "id": "roleplay-weekend", "label": "Roleplay: my weekend", "message": "Let's roleplay: I tell you about my weekend." },
+        { "id": "coffee", "label": "Roleplay: ordering coffee", "message": "Let's roleplay ordering coffee." },
+        { "id": "explain", "label": "Explain a rule", "message": "Can you explain a grammar rule to me?" }
+      ]
+    },
+    {
+      "name": "weak spot with no special roleplay uses coffee",
+      "input": { "course": "en", "weakSpot": "articles", "streakDays": 0 },
+      "chips": [
+        { "id": "weakWords", "label": "Practice my weak words", "message": "Let's practice articles." },
+        { "id": "coffee", "label": "Roleplay: ordering coffee", "message": "Let's roleplay ordering coffee." },
+        { "id": "explain", "label": "Explain a rule", "message": "Can you explain a grammar rule to me?" },
+        { "id": "chat", "label": "Just chat", "message": "Let's just chat." }
+      ]
+    },
+    {
+      "name": "streak only",
+      "input": { "course": "en", "weakSpot": null, "streakDays": 12 },
+      "chips": [
+        { "id": "streak", "label": "Keep my 12-day streak", "message": "Let's do a quick practice to keep my 12-day streak going." },
+        { "id": "coffee", "label": "Roleplay: ordering coffee", "message": "Let's roleplay ordering coffee." },
+        { "id": "explain", "label": "Explain a rule", "message": "Can you explain a grammar rule to me?" },
+        { "id": "chat", "label": "Just chat", "message": "Let's just chat." }
+      ]
+    },
+    {
+      "name": "weak spot and streak, capped at four",
+      "input": { "course": "en", "weakSpot": "prepositions", "streakDays": 5 },
+      "chips": [
+        { "id": "weakWords", "label": "Practice my weak words", "message": "Let's practice prepositions." },
+        { "id": "roleplay-directions", "label": "Roleplay: asking for directions", "message": "Let's roleplay asking for directions." },
+        { "id": "streak", "label": "Keep my 5-day streak", "message": "Let's do a quick practice to keep my 5-day streak going." },
+        { "id": "coffee", "label": "Roleplay: ordering coffee", "message": "Let's roleplay ordering coffee." }
+      ]
+    },
+    {
+      "name": "an unknown weak spot is no context",
+      "input": { "course": "en", "weakSpot": "not-a-category", "streakDays": 0 },
+      "chips": [
+        { "id": "weakWords", "label": "Practice my weak words", "message": "Let's practice my weak words." },
+        { "id": "coffee", "label": "Roleplay: ordering coffee", "message": "Let's roleplay ordering coffee." },
+        { "id": "explain", "label": "Explain a rule", "message": "Can you explain a grammar rule to me?" },
+        { "id": "chat", "label": "Just chat", "message": "Let's just chat." }
+      ]
+    },
+    {
+      "name": "French names the topic in French",
+      "input": { "course": "fr", "weakSpot": "past-tense", "streakDays": 0 },
+      "chips": [
+        { "id": "weakWords", "label": "Practice my weak words", "message": "Let's practice le passé." },
+        { "id": "roleplay-weekend", "label": "Roleplay: my weekend", "message": "Let's roleplay: I tell you about my weekend." },
+        { "id": "coffee", "label": "Roleplay: ordering coffee", "message": "Let's roleplay ordering coffee." },
+        { "id": "explain", "label": "Explain a rule", "message": "Can you explain a grammar rule to me?" }
+      ]
+    },
+    {
+      "name": "phrasal verbs are English-only: unnamed in Spanish, so no context",
+      "input": { "course": "es", "weakSpot": "phrasal-verbs", "streakDays": 0 },
+      "chips": [
+        { "id": "weakWords", "label": "Practice my weak words", "message": "Let's practice my weak words." },
+        { "id": "coffee", "label": "Roleplay: ordering coffee", "message": "Let's roleplay ordering coffee." },
+        { "id": "explain", "label": "Explain a rule", "message": "Can you explain a grammar rule to me?" },
+        { "id": "chat", "label": "Just chat", "message": "Let's just chat." }
+      ]
+    }
+  ]
+}

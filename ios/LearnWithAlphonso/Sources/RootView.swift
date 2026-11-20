@@ -140,7 +140,7 @@ struct RootView: View {
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Practice", systemImage: "mic.fill") }
                             .tag(RootTab.practice)
-                        HectorView(session: session, entitlementStore: entitlementStore, activeCourse: activeCourse, conversationStore: conversationStore)
+                        HectorView(session: session, entitlementStore: entitlementStore, activeCourse: activeCourse, conversationStore: conversationStore, streakDays: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress()))
                             .podcastMiniBar(player: podcastPlayer, session: session, downloads: podcastDownloadManager, networkMonitor: networkMonitor)
                             .tabItem { Label("Hector", systemImage: "sparkles") }
                             .tag(RootTab.hector)

@@ -70,7 +70,7 @@ private fun HandsFreeLoop.Status.isPaused() = this is HandsFreeLoop.Status.Pause
  * remembered here and applied by [ApplyStoredHandsFree].
  */
 @Composable
-internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
+internal fun HandsFreeSwitch(vm: CallConversation, partner: String, onNeedNote: (() -> Unit)? = null) {
     val ds = LocalAlphonsoTokens.current
     val status by vm.handsFree.status.collectAsState()
     val on = status != HandsFreeLoop.Status.Off
@@ -82,7 +82,8 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
     val change: (Boolean) -> Unit = { wantsOn ->
         if (!wantsOn) { preference?.remember(false); vm.handsFree.disable() }
         else if (prefs?.getBoolean(HandsFreeCopy.NOTE_SEEN_KEY, false) == true) { preference?.remember(true); vm.handsFree.enable() }
-        else showNote = true
+        // A switch inside a menu hands the note to its screen: a dialog composed in the menu goes with the menu.
+        else if (onNeedNote != null) onNeedNote() else showNote = true
     }
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 4.dp)
@@ -92,19 +93,26 @@ internal fun HandsFreeSwitch(vm: CallConversation, partner: String) {
         Text(HandsFreeCopy.TOGGLE, style = FootnoteType, color = ds.ink, modifier = Modifier.weight(1f))
         DsSwitch(checked = on, onChange = null)
     }
-    if (showNote) {
-        DsDialog({ showNote = false }) {
-            DsDialogTitle(HandsFreeCopy.FIRST_USE_TITLE)
-            DsDialogBody(HandsFreeCopy.firstUseBody(partner))
-            Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
-                DsCompactButton(HandsFreeCopy.CANCEL, { showNote = false })
-                DsCompactButton(HandsFreeCopy.FIRST_USE_CONFIRM, {
-                    prefs?.edit()?.putBoolean(HandsFreeCopy.NOTE_SEEN_KEY, true)?.apply()
-                    preference?.remember(true)
-                    showNote = false
-                    vm.handsFree.enable()
-                }, primary = true)
-            }
+    if (showNote) HandsFreeNoteDialog(vm, partner) { showNote = false }
+}
+
+/** The once-per-device safety note; "Turn on hands-free" remembers it, remembers the choice and starts hands-free. */
+@Composable
+internal fun HandsFreeNoteDialog(vm: CallConversation, partner: String, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val prefs = remember { (context.applicationContext as? AlphonsoApplication)?.container?.prefs }
+    val preference = remember(prefs) { prefs?.let { HandsFreePreference(SharedPrefsHandsFreeStore(it)) } }
+    DsDialog(onDismiss) {
+        DsDialogTitle(HandsFreeCopy.FIRST_USE_TITLE)
+        DsDialogBody(HandsFreeCopy.firstUseBody(partner))
+        Row(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+            DsCompactButton(HandsFreeCopy.CANCEL, onDismiss)
+            DsCompactButton(HandsFreeCopy.FIRST_USE_CONFIRM, {
+                prefs?.edit()?.putBoolean(HandsFreeCopy.NOTE_SEEN_KEY, true)?.apply()
+                preference?.remember(true)
+                onDismiss()
+                vm.handsFree.enable()
+            }, primary = true)
         }
     }
 }

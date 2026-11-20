@@ -184,7 +184,7 @@ describe("Hector's call", () => {
   it("uses his own kit and label, and keeps the classic screen for the setting off", () => {
     expect(hector).toContain("hectorKit(context)");
     expect(hector).toContain('talkLabel = "Hold to talk to Hector"');
-    expect(hector).toContain("HoldToTalkButton(");
+    expect(hector).toContain("HectorComposer(");
     expect(hector).toContain("AiConsentGate(container)");
     expect(hector).toContain("AiReportStatusHost(container.aiReports)");
   });

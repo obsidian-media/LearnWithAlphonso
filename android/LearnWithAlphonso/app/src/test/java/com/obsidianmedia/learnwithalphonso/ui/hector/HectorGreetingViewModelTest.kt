@@ -129,6 +129,24 @@ class HectorGreetingViewModelTest {
     }
 
     @Test
+    fun `chips come from the weak spot, and a typed message takes the voice turn's path`() = runBlocking {
+        val s = server()
+        val v = vm(s)
+        v.greet()
+        awaitTrue("greeted") { tts(s).isNotEmpty() && v.state.value.phase == ConversationPhase.IDLE }
+        // past-tense is the open weak spot in the fixture; no streak row, so no streak chip.
+        assertEquals(listOf("weakWords", "roleplay-weekend", "coffee", "explain"), v.chips.value.map { it.id })
+        v.sendTyped("  ")
+        assertEquals(1, v.state.value.turns.size)
+        v.sendTyped(v.chips.value.first().message)
+        awaitTrue("reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
+        assertEquals(listOf("assistant", "user", "assistant"), v.state.value.turns.map { it.role })
+        val body = Json.parseToJsonElement(s.seen.first { it.path.endsWith("/api/hector-respond") }.body).jsonObject
+        assertEquals("Let's practice the past tense.", body["text"]!!.jsonPrimitive.content)
+        assertTrue(s.seen.none { it.path.endsWith("/api/stt") })
+    }
+
+    @Test
     fun `a conversation already underway is not greeted`() = runBlocking {
         val s = server()
         val v = vm(s)
@@ -177,5 +195,27 @@ class HectorGreetingViewModelTest {
         awaitTrue("greeting played") { tts(s).size == 1 }
         assertEquals(withWeakSpot, v.state.value.turns.single().content)
         assertNull(v.state.value.error)
+    }
+
+    @Test
+    fun `a tapped recording that is never stopped is stopped and sent at the cap`() = runBlocking {
+        val s = server()
+        val v = HectorViewModel(
+            InstantRecorder(), { true }, tutor(s), ai(s), s.progressClient, ReplyPlayer { true }, course = Course.ENGLISH,
+            hectorVoice = { "aura-2-atlas-en" }, openerCache = OpenerSpeechCache(), hectorLimit = { 150 }, recordingCapMs = 150,
+        )
+        v.tapMicBegan()
+        awaitTrue("the capped turn was sent") { v.state.value.turns.any { it.role == "user" && it.content == "yes please" } }
+    }
+
+    @Test
+    fun `typing may cut his greeting off, but never a turn already under way`() {
+        val greeting = com.obsidianmedia.learnwithalphonso.ui.practice.ConversationUiState(
+            turns = listOf(ChatMessage("assistant", withWeakSpot)), openerIndices = setOf(0), phase = ConversationPhase.SPEAKING,
+        )
+        assertTrue(HectorViewModel.canSend(greeting, com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE))
+        val reply = greeting.copy(turns = greeting.turns + ChatMessage("user", "hi"), phase = ConversationPhase.THINKING)
+        assertFalse(HectorViewModel.canSend(reply, com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.IDLE))
+        assertFalse(HectorViewModel.canSend(greeting, com.obsidianmedia.learnwithalphonso.core.logic.TurnPhase.RECORDING))
     }
 }

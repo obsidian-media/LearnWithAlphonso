@@ -118,7 +118,7 @@ describe("the switch and the call chrome", () => {
     const ui = code(UI);
     expect(ui).toContain("Role.Switch");
     expect(ui).toMatch(
-      /getBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, false\) == true\) \{ preference\?\.remember\(true\); vm\.handsFree\.enable\(\) \}\s*else showNote = true/,
+      /getBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, false\) == true\) \{ preference\?\.remember\(true\); vm\.handsFree\.enable\(\) \}[^\n]*\n\s*else if \(onNeedNote != null\) onNeedNote\(\) else showNote = true/,
     );
     expect(ui).toMatch(
       /putBoolean\(HandsFreeCopy\.NOTE_SEEN_KEY, true\)[\s\S]*?vm\.handsFree\.enable\(\)/,
