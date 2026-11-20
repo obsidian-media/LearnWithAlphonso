@@ -171,8 +171,8 @@ final class StoryNarrator: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
 // MARK: - Library
 
-/// How the Library draws its stories: `peek` is the All tab's one row (the first few, with "See all"), `full` is the Stories
-/// tab (every published story for the course, grouped by level).
+/// How the Library draws its stories: `peek` is the All tab's one row (the first few small cover cards, with "See all"),
+/// `full` is the Stories tab (the featured story, the continue line and the cover grid).
 enum StoriesPresentation {
     case peek, full
 }
@@ -195,7 +195,7 @@ struct StoriesSection: View {
         let visible = Stories.visible(stories, course: course)
         // The loader hangs off `loadAnchor`, a real zero-size child that is always in the tree: a `.task` on content that
         // can draw nothing would never fire (the same trap as the Watch shelf).
-        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s3) {
             if isLoading {
                 if presentation == .full {
                     ProgressView("Loading stories…").tint(ds.choice).frame(maxWidth: .infinity)
@@ -209,15 +209,7 @@ struct StoriesSection: View {
             } else if visible.isEmpty {
                 DSEmptyState(art: "Alphonso-reading-book", title: StoryCopy.emptyTitle, message: StoryCopy.emptyMessage)
             } else {
-                ForEach(Stories.groupByLevel(visible), id: \.level) { group in
-                    VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-                        DSOverline(Stories.levelLabel(group.level))
-                        ForEach(group.stories) { story in
-                            NavigationLink { reader(story) } label: { row(story) }
-                                .buttonStyle(.plain)
-                        }
-                    }
-                }
+                library(Stories.library(stories, course: course))
             }
             loadAnchor
         }
@@ -229,6 +221,27 @@ struct StoriesSection: View {
             .frame(width: 0, height: 0)
             .accessibilityHidden(true)
             .task(id: course) { await load() }
+    }
+
+    @ViewBuilder
+    private func library(_ layout: StoriesLibraryLayout) -> some View {
+        if let featured = layout.featured {
+            NavigationLink { reader(featured) } label: { StoryHeroCard(story: featured) }
+                .buttonStyle(.plain)
+        }
+        if let resume = layout.resume {
+            NavigationLink { reader(resume) } label: { StoryContinueLine(story: resume) }
+                .buttonStyle(.plain)
+        }
+        LazyVGrid(
+            columns: [GridItem(.flexible(), spacing: AlphonsoDS.Space.s3), GridItem(.flexible(), spacing: AlphonsoDS.Space.s3)],
+            alignment: .leading, spacing: AlphonsoDS.Space.s3
+        ) {
+            ForEach(layout.grid) { story in
+                NavigationLink { reader(story) } label: { StoryCoverCard(story: story, small: false) }
+                    .buttonStyle(.plain)
+            }
+        }
     }
 
     @ViewBuilder
@@ -248,7 +261,7 @@ struct StoriesSection: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
                     ForEach(shown) { story in
-                        NavigationLink { reader(story) } label: { peekCard(story) }
+                        NavigationLink { reader(story) } label: { StoryCoverCard(story: story, small: true) }
                             .buttonStyle(.plain)
                     }
                 }
@@ -265,48 +278,6 @@ struct StoriesSection: View {
         }
     }
 
-    private func peekCard(_ story: StorySummary) -> some View {
-        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
-            HStack {
-                Icon3DView(emoji: story.branching ? "\u{1F9ED}" : "\u{1F4DA}", size: AlphonsoDS.Space.s8)
-                Spacer(minLength: 0)
-                Text(story.level).dsText(.caption).foregroundStyle(ds.choice)
-                    .padding(.horizontal, AlphonsoDS.Space.s2)
-                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.choiceTint))
-            }
-            Text(story.title).dsText(.headline).foregroundStyle(ds.ink)
-                .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
-            Text(Stories.status(story)).dsText(.caption).foregroundStyle(ds.inkSoft)
-                .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(AlphonsoDS.Space.s3)
-        .frame(width: 168, alignment: .leading)
-        .frame(minHeight: AlphonsoDS.Space.minTouch)
-        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.card))
-        .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(story.title), \(story.level), \(Stories.status(story))")
-    }
-
-    private func row(_ story: StorySummary) -> some View {
-        HStack(spacing: AlphonsoDS.Space.s3) {
-            Icon3DView(emoji: story.branching ? "\u{1F9ED}" : "\u{1F4DA}", size: AlphonsoDS.Space.s12)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(story.title).dsText(.headline).foregroundStyle(ds.ink)
-                    .fixedSize(horizontal: false, vertical: true)
-                Text(Stories.status(story)).dsText(.caption).foregroundStyle(ds.inkSoft)
-            }
-            Spacer(minLength: 0)
-            Image(systemName: "chevron.right").dsText(.footnote).foregroundStyle(ds.inkSoft).accessibilityHidden(true)
-        }
-        .padding(AlphonsoDS.Space.s3)
-        .frame(minHeight: AlphonsoDS.Space.minTouch)
-        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.card))
-        .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(story.title), \(Stories.status(story))")
-    }
-
     private func load() async {
         guard let client = makePodcastClient(session: session) else { isLoading = false; failed = true; return }
         failed = false
@@ -316,6 +287,173 @@ struct StoriesSection: View {
             if !Task.isCancelled { failed = true }
         }
         isLoading = false
+    }
+}
+
+// MARK: - Library cover cards
+
+/// A story's cover: the first scene's art, or a designed fallback (brand-to-scene gradient and a 3D icon) when there is no
+/// art or it has not loaded (or fails), so a card is never a broken image. Decorative: the card carries the name.
+private struct StoryCover: View {
+    let story: StorySummary
+    let iconSize: CGFloat
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        ZStack {
+            LinearGradient(colors: [ds.heroA, ds.heroB], startPoint: .topLeading, endPoint: .bottomTrailing)
+            Icon3DView(emoji: story.branching ? "\u{1F9ED}" : "\u{1F4DA}", size: iconSize)
+            if let url = story.coverURL {
+                AsyncImage(url: url) { phase in
+                    if case .success(let image) = phase { image.resizable().scaledToFill() }
+                }
+            }
+        }
+        .clipped()
+        .accessibilityHidden(true)
+    }
+}
+
+/// The endings-found ring on a branching cover. Decorative: the same fact is in the card's name and caption.
+private struct EndingsRing: View {
+    let story: StorySummary
+    let size: CGFloat
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        ZStack {
+            Circle().fill(Color.black.opacity(0.45))
+            Circle().stroke(Color.white.opacity(0.35), lineWidth: 4)
+            Circle().trim(from: 0, to: Stories.endingsFraction(story))
+                .stroke(ds.xp, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+}
+
+/// One cover card: a single element with its full name; `small` is the Library peek's size.
+private struct StoryCoverCard: View {
+    let story: StorySummary
+    let small: Bool
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            StoryCover(story: story, iconSize: small ? AlphonsoDS.Space.s8 : AlphonsoDS.Space.s12)
+                .frame(maxWidth: .infinity)
+                .aspectRatio(4.0 / 3.0, contentMode: .fit)
+                .overlay(alignment: .bottom) {
+                    LinearGradient(colors: [.clear, ds.hero.opacity(0.7)], startPoint: .top, endPoint: .bottom)
+                        .frame(height: small ? 48 : 72)
+                        .allowsHitTesting(false)
+                }
+                .overlay(alignment: .topLeading) {
+                    if story.branching {
+                        Label("Path", systemImage: "arrow.triangle.branch").dsText(.caption).foregroundStyle(Color.white)
+                            .padding(.horizontal, AlphonsoDS.Space.s2)
+                            .background(Capsule().fill(ds.choice))
+                            .padding(AlphonsoDS.Space.s2)
+                    }
+                }
+                .overlay(alignment: .topTrailing) {
+                    if story.branching && story.endingsTotal > 0 {
+                        EndingsRing(story: story, size: small ? 30 : 36).padding(AlphonsoDS.Space.s2)
+                    }
+                }
+            VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
+                Text(story.level).dsText(.caption).foregroundStyle(ds.choice)
+                    .padding(.horizontal, AlphonsoDS.Space.s2)
+                    .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous).fill(ds.choiceTint))
+                Text(story.title).dsText(.headline).foregroundStyle(ds.ink)
+                    .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+                Text(Stories.caption(story)).dsText(.caption).foregroundStyle(ds.inkSoft)
+                    .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(AlphonsoDS.Space.s3)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(width: small ? 168 : nil)
+        .frame(minHeight: AlphonsoDS.Space.minTouch)
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(ds.card))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Stories.cardLabel(story))
+    }
+}
+
+/// The featured story: the newest branching story as a full-width card with a scrim, the "Choose your path" badge, its
+/// title, "A2 · N endings · M found" and a Read now / Continue button.
+private struct StoryHeroCard: View {
+    let story: StorySummary
+    @Environment(\.alphonsoDS) private var ds
+
+    private var action: String { story.endingsFound > 0 ? "Continue" : "Read now" }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AlphonsoDS.Space.s2) {
+            Spacer(minLength: AlphonsoDS.Space.s12 * 2)
+            Label(BranchingCopy.badge.uppercased(), systemImage: "arrow.triangle.branch").dsText(.overline).foregroundStyle(Color.white)
+                .padding(.horizontal, AlphonsoDS.Space.s3).padding(.vertical, AlphonsoDS.Space.s1)
+                .background(Capsule().fill(ds.choice))
+            Text(story.title).dsText(.title).foregroundStyle(ds.onHero)
+                .multilineTextAlignment(.leading).fixedSize(horizontal: false, vertical: true)
+            Text(Stories.heroLine(story)).dsText(.footnote).foregroundStyle(ds.onHero.opacity(0.8))
+            HStack(spacing: AlphonsoDS.Space.s2) {
+                Text(action).dsText(.headline).foregroundStyle(ds.onAction)
+                Image(systemName: "play.fill").font(.caption).foregroundStyle(ds.onAction)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(ds.onAction.opacity(0.15)))
+            }
+            .padding(.leading, AlphonsoDS.Space.s4).padding(.trailing, 6)
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .background(Capsule().fill(ds.action))
+        }
+        .padding(AlphonsoDS.Space.s4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+            ZStack {
+                StoryCover(story: story, iconSize: AlphonsoDS.Space.s12 * 2)
+                LinearGradient(
+                    stops: [.init(color: ds.hero.opacity(0.92), location: 0), .init(color: ds.hero.opacity(0.55), location: 0.4),
+                            .init(color: .clear, location: 0.75), .init(color: .clear, location: 1)],
+                    startPoint: .bottom, endPoint: .top)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(Stories.cardLabel(story)), \(action)")
+    }
+}
+
+/// The slim resume card under the hero: thumbnail, title, "Continue · Scene X" and Resume.
+private struct StoryContinueLine: View {
+    let story: StorySummary
+    @Environment(\.alphonsoDS) private var ds
+
+    var body: some View {
+        HStack(spacing: AlphonsoDS.Space.s3) {
+            StoryCover(story: story, iconSize: AlphonsoDS.Space.s6)
+                .frame(width: 52, height: 40)
+                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(story.title).dsText(.headline).foregroundStyle(ds.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(Stories.resumeLine(story)).dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+            Spacer(minLength: 0)
+            Text("Resume").dsText(.footnote).foregroundStyle(Color.white)
+                .padding(.horizontal, AlphonsoDS.Space.s3).padding(.vertical, AlphonsoDS.Space.s2)
+                .background(Capsule().fill(ds.choice))
+        }
+        .padding(AlphonsoDS.Space.s2)
+        .frame(minHeight: AlphonsoDS.Space.minTouch)
+        .background(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble, style: .continuous).fill(ds.card))
+        .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(story.title), \(Stories.resumeLine(story)), Resume")
     }
 }
 

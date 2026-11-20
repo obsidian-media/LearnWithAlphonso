@@ -90,6 +90,9 @@ const story = {
   segmentCount: 5,
   bestCorrect: null,
   checkTotal: null,
+  coverUrl: null,
+  endingsTotal: 0,
+  endingsFound: 0,
   completed: false,
 };
 
