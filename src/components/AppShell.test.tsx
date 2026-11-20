@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 let mockPathname = "/learn";
 
@@ -16,6 +17,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 const { TopBar, BottomTabs, MobileFrame, LessonFrame } = await import("./AppShell");
 const { useProgress } = await import("../lib/progress");
+const { DsIcon } = await import("./ds/DsIcon");
 
 beforeEach(() => {
   mockPathname = "/learn";
@@ -107,27 +109,64 @@ describe("TopBar", () => {
 });
 
 describe("BottomTabs", () => {
-  it("marks the tab matching the current route as active", () => {
-    mockPathname = "/league";
+  const tabs = () =>
+    within(screen.getByRole("navigation"))
+      .getAllByRole("link")
+      .map((l) => [l.getAttribute("aria-label"), l.getAttribute("href")]);
+
+  it("has the five iOS tabs in order: Learn, Library, Practice, Hector, Profile", () => {
     render(<BottomTabs />);
-    expect(screen.getByLabelText("League").firstElementChild).toHaveClass("text-ds-choice");
+    expect(tabs()).toEqual([
+      ["Learn", "/learn"],
+      ["Library", "/listen"],
+      ["Practice", "/converse"],
+      ["Hector", "/hector"],
+      ["Profile", "/profile"],
+    ]);
+  });
+
+  it("has no League or Chat tab: League lives behind Profile", () => {
+    render(<BottomTabs />);
+    expect(screen.queryByLabelText("League")).toBeNull();
+    expect(screen.queryByLabelText("Chat")).toBeNull();
+    expect(document.querySelector('nav a[href="/league"]')).toBeNull();
+  });
+
+  it("draws Practice with the microphone, not a speech bubble", () => {
+    render(<BottomTabs />);
+    const icon = screen.getByLabelText("Practice").querySelector("svg")!;
+    const mic = renderToStaticMarkup(<DsIcon name="mic" className="size-5" />);
+    expect(icon.innerHTML).toBe(mic.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, ""));
+  });
+
+  it("marks the tab matching the current route as active", () => {
+    mockPathname = "/profile";
+    render(<BottomTabs />);
+    expect(screen.getByLabelText("Profile").firstElementChild).toHaveClass("text-ds-choice");
     expect(screen.getByLabelText("Learn").firstElementChild).not.toHaveClass("text-ds-choice");
   });
 
-  it("has a Hector tab after Chat that links to /hector", () => {
-    mockPathname = "/hector";
+  it("lights Profile, and only Profile, on /league, which has no tab of its own", () => {
+    mockPathname = "/league";
     render(<BottomTabs />);
-    const hector = screen.getByLabelText("Hector");
-    expect(hector).toHaveAttribute("href", "/hector");
-    expect(hector.firstElementChild).toHaveClass("text-ds-choice");
-    const labels = screen.getAllByRole("link").map((l) => l.getAttribute("aria-label"));
-    expect(labels.indexOf("Hector")).toBe(labels.indexOf("Chat") + 1);
+    const lit = screen
+      .getAllByRole("link")
+      .filter((l) => l.firstElementChild?.classList.contains("text-ds-choice"))
+      .map((l) => l.getAttribute("aria-label"));
+    expect(lit).toEqual(["Profile"]);
   });
 
-  it("treats nested paths as active via startsWith", () => {
+  it("lights Practice for nested /converse paths and no other tab", () => {
     mockPathname = "/converse/coffee";
     render(<BottomTabs />);
-    expect(screen.getByLabelText("Chat").firstElementChild).toHaveClass("text-ds-choice");
+    expect(screen.getByLabelText("Practice").firstElementChild).toHaveClass("text-ds-choice");
+    expect(screen.getByLabelText("Hector").firstElementChild).not.toHaveClass("text-ds-choice");
+  });
+
+  it("lights Hector on /hector", () => {
+    mockPathname = "/hector";
+    render(<BottomTabs />);
+    expect(screen.getByLabelText("Hector").firstElementChild).toHaveClass("text-ds-choice");
   });
 });
 

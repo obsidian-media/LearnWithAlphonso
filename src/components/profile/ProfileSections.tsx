@@ -875,6 +875,46 @@ export function leagueWeekEnds(weekEnd: string, timeZone: string | null): string
   return `ends ${when}`;
 }
 
+/**
+ * The rows that open the social screens, in iOS's order and wording (ProfileHubView, Social tab): League first, then
+ * Friends. League has no tab of its own; this is the way to it besides the badge in the top bar.
+ */
+export function SocialLinks() {
+  const rows = [
+    {
+      to: "/league",
+      icon: "league",
+      title: "League",
+      sub: "Leaderboards, teams, and the season ladder",
+    },
+    {
+      to: "/profile/friends",
+      icon: "friends",
+      title: "Friends",
+      sub: "Your friends, their activity, and duels",
+    },
+  ] as const;
+  return (
+    <nav aria-label="Social" className="grid gap-2.5">
+      {rows.map((r) => (
+        <Link
+          key={r.to}
+          to={r.to}
+          data-social-link={r.title.toLowerCase()}
+          className={`${CARD} flex items-center gap-3 p-3 ds-type-footnote font-bold text-ds-ink`}
+        >
+          <DsIcon name={r.icon} className="size-8 shrink-0 text-ds-choice" />
+          <span className="min-w-0 flex-1">
+            {r.title}
+            <span className="block ds-type-caption font-normal text-ds-ink-soft">{r.sub}</span>
+          </span>
+          <DsIcon name="chevron" className="size-5 shrink-0 text-ds-ink-faint" />
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 export function LeagueCard({ o }: { o: ProfileOverview }) {
   const c = o.courses.find((x) => x.course === o.course);
   const s = leagueStatus(c?.leagueTier ?? "bronze", c?.xp ?? 0);
