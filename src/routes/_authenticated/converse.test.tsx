@@ -81,7 +81,7 @@ describe("Practice hub: a new learner", () => {
     expect(tiles.length).toBe(SCENARIOS.length);
     for (const t of tiles)
       expect(t.querySelector("[data-stars]")).toHaveAttribute("data-stars", "0");
-    expect(screen.getByText(`${CAMPAIGNS.length} stories`)).toBeInTheDocument();
+    expect(screen.getByText(`Campaigns · ${CAMPAIGNS.length} stories`)).toBeInTheDocument();
   });
   it("offers Hector with his own card (practice_hector_card)", () => {
     hub(NEW_LEARNER);
@@ -319,7 +319,11 @@ describe("conversations", () => {
   it("come right after the hero and before the campaigns, with a Mastered badge at three stars only", () => {
     const { container } = hub(PLAYED);
     const order = [...container.querySelectorAll("h2")].map((h) => h.textContent);
-    expect(order).toEqual(["Conversations", "Campaigns", "Quick practice"]);
+    expect(order).toEqual([
+      "Conversations",
+      `Campaigns · ${CAMPAIGNS.length} stories`,
+      "Quick practice",
+    ]);
     const airport = container.querySelector('[data-scenario-tile="airport"]')!;
     expect(airport.querySelector("[data-mastered]")).toHaveTextContent("Mastered");
     const coffee = container.querySelector('[data-scenario-tile="coffee"]')!;
