@@ -2119,7 +2119,7 @@ SELECT 'en', l.id, 'the-goodbye', 'The Goodbye', '[]'::jsonb, true, $nodes$
     "end_good": {
       "art": "en/the-goodbye/n6-northcafe.jpg",
       "segments": [
-        "Six weeks later, Mona stepped off a train in a new northern city, walked into a bright little café that smelled of coffee and fresh bread, and found Leo behind the counter in a brand-new apron, grinning like the sun. \"MAYA,\" said the cup he slid across — spelled perfectly, in big proud letters. On the saucer sat the tiny card she'd given him, framed now, propped by the till. \"My first ever booking. Had to keep it.\"",
+        "Six weeks later, Mona stepped off a train in a new northern city, walked into a bright little café that smelled of coffee and fresh bread, and found Leo behind the counter in a brand-new apron, grinning like the sun. \"MONA,\" said the cup he slid across — spelled perfectly, in big proud letters. On the saucer sat the tiny card she'd given him, framed now, propped by the till. \"My first ever booking. Had to keep it.\"",
         "They talked for hours, the way they always had. Leaving, Mona understood at last, isn't always losing. A goodbye said properly is just a friendship changing shape — stretched over distance, not broken. She'd learned to cross a city; now she knew she could keep the people she loved across a country, too."
       ],
       "ending": {
