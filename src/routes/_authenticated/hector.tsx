@@ -2,13 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { track } from "../../lib/analytics";
 import { RouteError } from "../../components/RouteError";
 import { DsIcon } from "../../components/ds/DsIcon";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { cancelSpeech } from "@/lib/speech";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
 import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
 import { LessonFrame, MobileFrame } from "../../components/AppShell";
-import { SceneBackdrop } from "../../components/SceneBackdrop";
-import { MascotImage } from "../../components/MascotImage";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
 import { WebPaywall } from "../../components/WebPaywall";
@@ -18,7 +17,20 @@ import { authHeaders } from "../../lib/auth-headers";
 import { PAYWALL_COPY, WEB_PAYWALL_COPY, type PaywallSource } from "../../lib/paywall-copy";
 import { useProgress } from "../../lib/progress";
 import { readApiError } from "../../lib/read-api-error";
-import { hectorMoment, hectorStatus, hectorStatusLabel } from "../../lib/hector-status";
+import { hectorStatus } from "../../lib/hector-status";
+import { hectorChips, type HectorChip } from "@/lib/hector-chips";
+import { HECTOR_RECORDING_CAP_MS } from "@/lib/hector-recording-cap";
+import { bubbleClass } from "@/components/hector/hector-style";
+import { CorrectionCard } from "@/components/hector/CorrectionCard";
+import { displayText, extractCorrection, validateCorrection } from "@/lib/hector-correction";
+import type { HectorCorrection } from "@/lib/hector-correction";
+import type { TutorReplyPayload } from "@/lib/hector-conversation";
+import {
+  HectorAvatar,
+  HectorChips,
+  HectorComposer,
+  HectorHeader,
+} from "@/components/hector/HectorParts";
 import { fetchProgress } from "../../lib/sync.functions";
 import { useProStatus, type ProStatus } from "../../lib/use-pro-status";
 import { useHandsFreeCapture } from "../../lib/use-hands-free";
@@ -53,7 +65,8 @@ export const Route = createFileRoute("/_authenticated/hector")({
 /** Same cap the server applies (MAX_HISTORY_MESSAGES in src/lib/hector-conversation.ts). */
 const MAX_HISTORY = 40;
 
-type Msg = { role: "user" | "assistant"; content: string };
+/** A learner message may carry Hector's correction card; it is shown, never sent back as history. */
+type Msg = { role: "user" | "assistant"; content: string; correction?: HectorCorrection };
 
 function HectorPage() {
   const course = useProgress((s) => s.course);
@@ -168,10 +181,19 @@ function HectorGate({ course }: { course: Course }) {
   );
 }
 
-function ManageSubscription({ pro }: { pro: ProStatus }) {
+/** Whether there is anything to say about the subscription: an empty row in a menu is just noise. */
+function hasManageSubscription(pro: ProStatus): boolean {
+  return (pro.store === "web" && !!pro.manageUrl) || pro.store === "app_store";
+}
+
+function ManageSubscription({ pro, menuItem = false }: { pro: ProStatus; menuItem?: boolean }) {
   if (pro.store === "web" && pro.manageUrl) {
     return (
-      <a href={pro.manageUrl} className="ds-type-caption font-medium text-ds-ink-soft underline">
+      <a
+        href={pro.manageUrl}
+        role={menuItem ? "menuitem" : undefined}
+        className="ds-type-caption font-medium text-ds-ink-soft underline"
+      >
         {PAYWALL_COPY.manage}
       </a>
     );
@@ -202,6 +224,8 @@ function HectorConversation({
   // Hector's greeting is messages[0] once said; the mic waits while its voice loads.
   const [greeted, setGreeted] = useState(false);
   const [greetingLoading, setGreetingLoading] = useState(false);
+  // Suggestion chips under the greeting: generated from the same context, gone after the learner's first message.
+  const [chips, setChips] = useState<HectorChip[]>([]);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   const leftRef = useRef(false);
@@ -259,10 +283,11 @@ function HectorConversation({
    * inside the AI consent gate and the Pro check, like every Hector turn.
    */
   const greet = useCallback(
-    async (text: string) => {
+    async (text: string, suggestions: HectorChip[]) => {
       if (messagesRef.current.length > 0) return;
       messagesRef.current = [{ role: "assistant", content: text }];
       setMessages(messagesRef.current);
+      setChips(suggestions);
       setGreeted(true);
       setGreetingLoading(true);
       try {
@@ -314,16 +339,18 @@ function HectorConversation({
       }
       const meta =
         session.status === "fulfilled" ? session.value.data.session?.user?.user_metadata : null;
+      const weakSpot =
+        trend.status === "fulfilled"
+          ? recentWeakSpot(trend.value?.categories ?? [], Date.now())
+          : null;
       void greet(
         buildHectorGreeting({
           course,
           cefr: p.status === "fulfilled" ? p.value.cefrLevel : null,
           name: parseLearnerProfile(meta?.[LEARNER_PROFILE_KEY]).name,
-          weakSpot:
-            trend.status === "fulfilled"
-              ? recentWeakSpot(trend.value?.categories ?? [], Date.now())
-              : null,
+          weakSpot,
         }),
+        hectorChips({ course, weakSpot, streakDays: useProgress.getState().streak }),
       );
     });
     return () => {
@@ -333,12 +360,15 @@ function HectorConversation({
     };
   }, [course, greet]);
 
+  // Leaving the screen stops the fix being spoken.
+  useEffect(() => () => cancelSpeech(), []);
+
   const send = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || sending) return;
       setError(null);
-      const history = messages.slice(-MAX_HISTORY);
+      const history = messages.slice(-MAX_HISTORY).map(({ role, content }) => ({ role, content }));
       setMessages([...messages, { role: "user", content: trimmed }]);
       setInput("");
       setSending(true);
@@ -379,10 +409,22 @@ function HectorConversation({
               : "Hector didn't answer. Try saying it again.",
           );
         }
-        const data = (await resp.json()) as { reply?: string; audioBase64?: string };
-        const reply = (data.reply ?? "").trim() || "…";
-        setMessages((m) => [...m, { role: "assistant", content: reply }]);
-        play(data.audioBase64);
+        const data = (await resp.json()) as {
+          reply?: string;
+          audio_base64?: TutorReplyPayload["audio_base64"];
+          correction?: unknown;
+        };
+        // The server already took the block out; parsing the reply here too means a tag can never be shown.
+        const parsed = extractCorrection(data.reply ?? "");
+        const reply = parsed.text || "…";
+        const correction = validateCorrection(data.correction) ?? parsed.correction;
+        setMessages((m) => {
+          // The card belongs under the learner's message this reply answers: the last one.
+          const at = m.map((x) => x.role).lastIndexOf("user");
+          const withCard = correction ? m.map((x, i) => (i === at ? { ...x, correction } : x)) : m;
+          return [...withCard, { role: "assistant", content: reply }];
+        });
+        play(data.audio_base64);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
       } finally {
@@ -421,6 +463,14 @@ function HectorConversation({
     onWantedChange: setHandsFreeWanted,
   });
   const recording = captureState === "recording";
+  // A tapped recording has no finger to bound it: it is stopped and sent after the cap (the same minute on every platform).
+  const stopRef = useRef(stopRecording);
+  stopRef.current = stopRecording;
+  useEffect(() => {
+    if (!recording) return;
+    const t = setTimeout(() => stopRef.current(), HECTOR_RECORDING_CAP_MS);
+    return () => clearTimeout(t);
+  }, [recording]);
   const transcribing = captureState === "transcribing";
   // While the greeting's voice loads Hector is "thinking", as before a reply.
   const status = hectorStatus({
@@ -429,6 +479,27 @@ function HectorConversation({
     sending: sending || greetingLoading,
     speaking,
   });
+
+  const learnerHasSpoken = messages.some((m) => m.role === "user");
+  const busy = sending || transcribing || greetingLoading;
+  const shownError = error ?? captureError;
+
+  // "Try again" on a correction card: the corrected phrase, said once more. Where there is a microphone it is the
+  // composer's own tap-to-talk path (so the same 60 s cap applies); in hands-free the loop re-opens the mic itself once
+  // Hector stops talking; with no microphone it puts the cursor in the composer.
+  const composerInput = useRef<HTMLTextAreaElement | null>(null);
+  const tryAgain = useCallback(() => {
+    setError(null);
+    // The mic must not record the fix being spoken, nor Hector.
+    cancelSpeech();
+    interrupt();
+    if (handsFreeWanted && showCall) return;
+    const canRecord =
+      typeof navigator !== "undefined" &&
+      typeof navigator.mediaDevices?.getUserMedia === "function";
+    if (canRecord) void beginCapture();
+    else composerInput.current?.focus();
+  }, [interrupt, handsFreeWanted, showCall, beginCapture]);
 
   const hintAndLog = (
     <>
@@ -439,47 +510,65 @@ function HectorConversation({
         role="log"
         aria-live="polite"
         aria-label="Conversation"
-        className="relative z-10 flex-1 overflow-y-auto px-5 py-6"
+        className="relative z-10 flex-1 overflow-y-auto bg-gradient-to-b from-ds-surface to-ds-sunk px-3.5 py-4"
       >
         <div className="flex flex-col gap-3">
           {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              {m.role === "assistant" ? (
-                <div className="flex max-w-[85%] flex-col items-start">
-                  <div className="rounded-2xl rounded-bl-md bg-ds-sunk px-4 py-2.5 ds-type-footnote leading-relaxed text-ds-ink">
-                    <TappableText text={m.content} course={course} />
-                  </div>
-                  {/* The greeting is our own fixed text, not the model's: nothing to report. */}
-                  {!(greeted && i === 0) && (
-                    <AiMessageReport message={m.content} surface="hector" course={course} />
-                  )}
-                  <ExplainInMyLanguage
-                    className="mt-1"
-                    surface="hector"
-                    request={{ kind: "message", course, text: m.content.slice(0, 1000) }}
-                  />
-                </div>
-              ) : (
-                <div className="max-w-[85%] rounded-2xl rounded-br-md bg-ds-ink px-4 py-2.5 ds-type-footnote leading-relaxed text-ds-card">
-                  {m.content}
-                </div>
+            <Fragment key={i}>
+              <div
+                className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                {m.role === "assistant" ? (
+                  <>
+                    <HectorAvatar />
+                    <div className="flex max-w-[85%] flex-col items-start">
+                      <div className={bubbleClass("assistant")}>
+                        <TappableText text={displayText("assistant", m.content)} course={course} />
+                      </div>
+                      {/* The greeting is our own fixed text, not the model's: nothing to report. */}
+                      {!(greeted && i === 0) && (
+                        <AiMessageReport message={m.content} surface="hector" course={course} />
+                      )}
+                      <ExplainInMyLanguage
+                        className="mt-1"
+                        surface="hector"
+                        request={{ kind: "message", course, text: m.content.slice(0, 1000) }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className={`max-w-[85%] ${bubbleClass("user")}`}>{m.content}</div>
+                )}
+              </div>
+              {m.correction && (
+                <CorrectionCard
+                  correction={m.correction}
+                  course={course}
+                  onTryAgain={tryAgain}
+                  tryAgainDisabled={sending || transcribing || greetingLoading || recording}
+                  hearDisabled={recording}
+                  onBeforeHear={interrupt}
+                />
               )}
-            </div>
+            </Fragment>
           ))}
-          {(sending || transcribing) && (
-            <p
-              role="status"
-              className="self-start rounded-full bg-ds-card/90 px-3 py-1 text-xs text-ds-ink-soft backdrop-blur-md"
-            >
-              {transcribing ? "Transcribing…" : "Hector is thinking…"}
-            </p>
+          {/* Gone as soon as the learner says anything, by chip, keyboard or voice. */}
+          {greeted && chips.length > 0 && !learnerHasSpoken && (
+            <HectorChips
+              chips={chips}
+              disabled={sending || transcribing}
+              onPick={(chip) => {
+                interrupt();
+                void send(chip.message);
+              }}
+            />
           )}
-          {(error ?? captureError) && (
+          {shownError && (
             <div
               role="alert"
-              className="self-center rounded-full border border-rose-300/60 bg-rose-50 px-3 py-1 ds-type-caption font-medium text-rose-700"
+              className="self-center rounded-full border border-ds-wrong/40 bg-ds-wrong-tint px-3 py-1 ds-type-footnote font-medium text-ds-wrong-ink"
             >
-              {error ?? captureError}
+              {shownError}
             </div>
           )}
         </div>
@@ -489,115 +578,57 @@ function HectorConversation({
   // The form itself. In the call's sheet it sticks to the sheet; on the classic screen it rides in the shell's dock
   // above the tab bar (MobileFrame aboveTabs), because a second bottom-sticky bar would hide behind the tabs.
   const composerForm = (
-    <>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void send(input);
-        }}
-        className="flex items-end gap-2"
-      >
-        <button
-          type="button"
-          onClick={() => {
-            setError(null);
-            if (recording) stopRecording();
-            else {
-              interrupt();
-              void beginCapture();
-            }
-          }}
-          aria-label={recording ? "Stop recording and send" : "Record a voice message"}
-          aria-pressed={recording}
-          disabled={sending || transcribing || greetingLoading}
-          className={`grid size-11 shrink-0 place-items-center rounded-full ${
-            recording ? "bg-ember text-ink-on-ember" : "bg-ds-brand text-ds-card"
-          } disabled:opacity-50`}
-        >
-          <span aria-hidden="true">🎙</span>
-        </button>
-        <div className="flex flex-1 items-end rounded-2xl border border-ds-line bg-ds-card px-3 py-2">
-          <textarea
-            aria-label="Message Hector"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void send(input);
-              }
-            }}
-            rows={1}
-            placeholder={recording ? "Listening…" : "Type or tap the mic"}
-            disabled={sending || transcribing || recording}
-            className="max-h-32 w-full resize-none bg-transparent ds-type-footnote text-ds-ink outline-none placeholder:text-ds-ink-soft/50"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={!input.trim() || sending}
-          className="rounded-full bg-ember px-4 py-2.5 text-sm font-semibold text-ink-on-ember disabled:opacity-50"
-        >
-          Send
-        </button>
-      </form>
-    </>
+    <HectorComposer
+      value={input}
+      onChange={setInput}
+      onSend={() => void send(input)}
+      onMic={() => {
+        setError(null);
+        if (recording) stopRecording();
+        else {
+          interrupt();
+          void beginCapture();
+        }
+      }}
+      recording={recording}
+      busy={busy}
+      disabled={sending || transcribing}
+      reducedMotion={reducedMotion}
+      getStream={getStream}
+      inputRef={composerInput}
+    />
   );
   const composer = (
-    <div className="sticky bottom-0 z-20 border-t border-ds-line bg-ds-card/95 px-4 pb-[max(env(safe-area-inset-bottom),10px)] pt-3 backdrop-blur-md">
+    <div className="sticky bottom-0 z-20 border-t border-ds-line bg-ds-card/95 px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-2.5 shadow-[0_-8px_20px_-16px_rgba(20,27,61,0.4)] backdrop-blur-md">
       {composerForm}
     </div>
   );
   const dockComposer = (
-    <div className="border-t border-ds-line bg-ds-card/95 px-4 pb-3 pt-3 backdrop-blur-md">
+    <div className="border-t border-ds-line bg-ds-card/95 px-3 pb-3 pt-2.5 shadow-[0_-8px_20px_-16px_rgba(20,27,61,0.4)] backdrop-blur-md">
       {composerForm}
     </div>
   );
   const classicTop = (
-    <>
-      <SceneBackdrop scene="hector" focus="50% 30%" />
-      <header className="relative z-20 flex items-center gap-3 border-b border-ds-line bg-ds-card/90 px-5 py-3.5 backdrop-blur-md">
-        <HectorExit />
-        <div className="min-w-0 flex-1">
-          <h1 className="font-display ds-type-headline font-semibold text-ds-ink">Hector</h1>
-          <p className="truncate ds-type-caption text-ds-ink-soft/70">
-            {PAYWALL_COPY.mascotMessage}
-          </p>
-        </div>
-        <ManageSubscription pro={pro} />
-      </header>
-      <section
-        aria-label="Hector"
-        className="relative z-10 mx-4 mt-4 flex items-center gap-4 rounded-3xl bg-ds-card/85 p-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.4)] backdrop-blur-md"
-      >
-        <MascotImage
-          moment={hectorMoment(status)}
-          size={messages.length === 0 ? 132 : 76}
-          tone="sky"
-          radius={messages.length === 0 ? 32 : 22}
-          alt="Hector"
-          className="card-lift"
-        />
-        <div className="min-w-0 space-y-1.5">
-          <p className="font-display text-2xl font-bold text-ds-ink">Your tutor</p>
-          {status ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-ds-card px-2.5 py-1 text-xs font-semibold text-ds-ink card-lift">
-              <span
-                aria-hidden="true"
-                className={`size-2 rounded-full ${
-                  status === "listening"
-                    ? "animate-pulse bg-ember motion-reduce:animate-none"
-                    : "bg-ds-brand"
-                }`}
-              />
-              {hectorStatusLabel(status)}
-            </span>
-          ) : (
-            <p className="text-xs text-ds-ink-soft/70">Type or tap the mic to start talking.</p>
+    <HectorHeader
+      course={course}
+      status={status}
+      menu={
+        <>
+          {hasManageSubscription(pro) && (
+            <div role="none" className="px-2 py-1.5">
+              <ManageSubscription pro={pro} menuItem />
+            </div>
           )}
-        </div>
-      </section>
-    </>
+          <Link
+            to="/profile"
+            role="menuitem"
+            className="rounded-xl px-2 py-2 ds-type-footnote font-semibold text-ds-ink hover:bg-ds-sunk"
+          >
+            Settings and voices
+          </Link>
+        </>
+      }
+    />
   );
 
   const avatarPhase: VoicePhase = recording

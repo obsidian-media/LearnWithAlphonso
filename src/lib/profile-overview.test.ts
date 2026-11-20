@@ -7,6 +7,8 @@ import {
   friendsWeek,
   heatMap,
   hectorCard,
+  heroLevel,
+  weekStrip,
   leagueStatus,
   levelProgress,
   nextAchievement,
@@ -415,5 +417,74 @@ describe("goalRings", () => {
   });
   it("a bigger goal is not met by the same minutes", () => {
     expect(goalRings("2026-11-04", learning, 15).metDays).toBe(0);
+  });
+});
+
+describe("the identity hero's level, league progress and week strip", () => {
+  it("league progress is the share through this tier's XP span, 100 at the top", () => {
+    // silver spans 300 to 1000 XP: 650 is halfway.
+    expect(leagueStatus("silver", 650)).toMatchObject({ next: "sapphire", xpToNext: 350, pct: 50 });
+    expect(leagueStatus("bronze", 0).pct).toBe(0);
+    expect(leagueStatus("bronze", 300).xpToNext).toBe(0);
+    expect(leagueStatus("diamond", 9000)).toMatchObject({ next: null, xpToNext: 0, pct: 100 });
+    // Never outside 0 to 100 even for odd data.
+    expect(leagueStatus("silver", 5000).pct).toBe(100);
+    expect(leagueStatus("silver", 10).pct).toBe(0);
+  });
+
+  it("the hero's level is the CEFR level with the lessons left in it, from real completions", () => {
+    const o = overview({
+      course: "en",
+      courses: [{ course: "en", xp: 100, cefrLevel: "A1", leagueTier: "bronze" }],
+      completions: [{ lessonId: EN[0]!, language: "en", correct: 5, total: 5 }],
+    });
+    const lvl = heroLevel(o);
+    const direct = levelProgress("en", "A1", [EN[0]!]);
+    expect(lvl).toMatchObject({ level: "A1", pct: direct.pct, done: 1, total: direct.total });
+    expect(lvl.lessonsLeft).toBe(direct.total - 1);
+    // Another course's completions do not count.
+    expect(heroLevel(overview({ course: "en", completions: [] })).done).toBe(0);
+  });
+
+  it("the week strip stamps done days, rings today, and leaves the rest plain (XP rule without a goal)", () => {
+    // 2026-11-06 is a Friday: Mon to Thu are before today, Fri is today, Sat and Sun come.
+    const strip = weekStrip(
+      overview({
+        dailyGoalMinutes: null,
+        activity: [
+          { day: "2026-11-02", xp: 40 },
+          { day: "2026-11-04", xp: 20 },
+        ],
+      }),
+    );
+    expect(strip.measure).toBe("xp");
+    expect(strip.days.map((d) => d.state)).toEqual([
+      "done",
+      "missed",
+      "done",
+      "missed",
+      "today",
+      "future",
+      "future",
+    ]);
+    expect(strip.doneDays).toBe(2);
+    expect(strip.days[0]!.spoken).toBe("40 XP");
+    expect(strip.days[4]!.spoken).toBe("not yet today");
+    expect(strip.days[6]!.spoken).toBe("still to come");
+  });
+
+  it("the week strip measures learning minutes against the learner's own goal when they chose one", () => {
+    const strip = weekStrip(
+      overview({
+        dailyGoalMinutes: 10,
+        activity: [{ day: "2026-11-03", xp: 90 }],
+        learning: [{ day: "2026-11-02", lessonSeconds: 420, practiceSeconds: 240 }],
+      }),
+    );
+    expect(strip.measure).toBe("minutes");
+    // XP alone does not make a day done once a goal exists; 11 minutes on Monday does.
+    expect(strip.days[0]).toMatchObject({ state: "done", spoken: "11 min, goal met" });
+    expect(strip.days[1]!.state).toBe("missed");
+    expect(strip.doneDays).toBe(1);
   });
 });

@@ -160,7 +160,7 @@ describe("Profile page", () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByLabelText("Display name");
-    await user.click(screen.getByRole("button", { name: "Change picture" }));
+    await user.click(screen.getByRole("button", { name: "Change profile picture" }));
     const dialog = await screen.findByRole("dialog", { name: "Your profile picture" });
     expect(within(dialog).getAllByRole("button", { pressed: false }).length).toBeGreaterThanOrEqual(
       16,
@@ -374,7 +374,8 @@ describe("Profile page", () => {
   });
 });
 
-const { bigNumbers, hectorCard, openMemoryCategories } = await import("../../lib/profile-overview");
+const { bigNumbers, heroLevel, hectorCard, leagueStatus, openMemoryCategories } =
+  await import("../../lib/profile-overview");
 
 /** The rendered element matching `selector`, once it exists. */
 async function find(selector: string): Promise<HTMLElement> {
@@ -414,8 +415,31 @@ describe("Profile, round 6", () => {
     const on = renderPage();
     const flag = await find("[data-profile-hero] [data-profile-flag]");
     expect(flag.getAttribute("data-profile-flag")).toBe("CA");
-    expect(flag).toHaveTextContent("Canada");
+    // Canada is drawn: an image named for a screen reader (never the emoji).
+    expect(within(flag).getByRole("img", { name: "Canada" }).getAttribute("src")).toBe(
+      "/flags/ca.svg",
+    );
     on.unmount();
+
+    // A country with no drawing: its code in a styled pill (card fill, line border, uppercase), named for a screen reader.
+    getProfileOverview.mockResolvedValue(
+      richLearner({
+        profile: {
+          displayName: "Sam",
+          avatarSeed: "animal:fox",
+          country: "ZA",
+          createdAt: "2026-08-02T00:00:00Z",
+        },
+      }),
+    );
+    const chipView = renderPage();
+    const chip = await find("[data-profile-hero] [data-flag-chip]");
+    expect(chip.getAttribute("data-flag-chip")).toBe("ZA");
+    expect(chip).toHaveTextContent("ZA");
+    expect(chip.getAttribute("aria-label")).toBe("South Africa");
+    for (const cls of ["bg-ds-card", "border-ds-line", "uppercase", "h-[15px]"])
+      expect(chip.className).toContain(cls);
+    chipView.unmount();
 
     getProfileOverview.mockResolvedValue(
       richLearner({
@@ -430,30 +454,109 @@ describe("Profile, round 6", () => {
     renderPage();
     const hero = await find("[data-profile-hero]");
     expect(hero.querySelector("[data-profile-flag]")).toBeNull();
-    expect(within(hero).queryByText(/Canada/)).toBeNull();
+    expect(within(hero).queryByRole("img", { name: "Canada" })).toBeNull();
   });
 
-  it("the four big numbers are the overview's numbers, each in its own tile", async () => {
+  it("the hero's four numbers are the overview's numbers, each readable as one phrase", async () => {
     const o = richLearner();
     const n = bigNumbers(o);
     renderPage();
     await find("[data-big-stat]");
     const value = (name: string) =>
       document.querySelector(`[data-big-stat="${name}"] [data-value]`)?.textContent;
-    expect(value("streak")).toBe(String(o.progress.streak));
-    expect(value("xp")).toBe(n.totalXp.toLocaleString("en-US"));
+    expect(value("streak")).toBe(String(n.streak));
+    expect(value("xp")).toBe(n.courseXp.toLocaleString("en-US"));
     expect(value("words")).toBe(n.wordsLearned.toLocaleString("en-US"));
-    expect(value("lessons")).toBe(String(o.completions.length));
-    expect(document.querySelector('[data-big-stat="streak"]')).toHaveTextContent(
-      `Longest: ${o.progress.longestStreak}`,
+    expect(value("accuracy")).toBe(`${n.accuracyPct}%`);
+    // One phrase for VoiceOver and TalkBack, not four loose fragments.
+    expect(screen.getByRole("group", { name: `${n.streak} day streak` })).toBeInTheDocument();
+    expect(
+      screen.getByRole("group", { name: `${n.accuracyPct} percent accuracy` }),
+    ).toBeInTheDocument();
+    expect(document.querySelectorAll("[data-big-stat]")).toHaveLength(4);
+  });
+
+  it("the hero's level ring and bar are the CEFR level's lesson progress, with a text equivalent", async () => {
+    const o = richLearner();
+    const lvl = heroLevel(o);
+    renderPage();
+    const ring = await find("[data-level-ring]");
+    // The ring is decorative; the level is the picture button's description (a button's children are presentational).
+    expect(ring.getAttribute("role")).toBeNull();
+    expect(ring.getAttribute("aria-hidden")).toBe("true");
+    const button = screen.getByRole("button", { name: "Change picture" });
+    expect(button).toHaveAccessibleDescription(new RegExp(`^Level ${lvl.level}, .*${lvl.level}`));
+    expect(document.querySelector("[data-level-badge]")).toHaveTextContent(lvl.level);
+    expect(document.querySelector("[data-level-line]")?.textContent).toMatch(
+      lvl.lessonsLeft > 0 ? /lessons? left in/ : /Ready for|top level/,
     );
-    expect(document.querySelector('[data-big-stat="words"]')).toHaveTextContent(
-      `${o.savedWords} saved to review`,
+    // The mock's "XP to Level 8" is not a number this app tracks, so it is not invented.
+    expect(document.querySelector("[data-profile-hero]")).not.toHaveTextContent(/XP to Level/);
+  });
+
+  it("the hero names the league tier with the learner's real rank", async () => {
+    renderPage();
+    const chip = await find("[data-league-chip]");
+    const o = richLearner();
+    expect(chip).toHaveTextContent(/league/);
+    if (o.league) expect(chip).toHaveTextContent(`Rank ${o.league.rank}`);
+  });
+
+  it("a country with a drawn flag shows the vector, never the emoji", async () => {
+    getProfileOverview.mockResolvedValue(
+      richLearner({
+        profile: { displayName: "Sam", avatarSeed: "animal:fox", country: "GB", createdAt: null },
+      }),
     );
-    // Total and this week's XP are both account-wide, so the two numbers agree.
-    expect(document.querySelector('[data-big-stat="xp"]')).toHaveTextContent(
-      `+${n.xpThisWeek.toLocaleString("en-US")} this week`,
+    renderPage();
+    const flag = await find("[data-profile-flag] img");
+    expect(flag.getAttribute("src")).toBe("/flags/gb.svg");
+    expect(flag.getAttribute("alt")).toBe("United Kingdom");
+  });
+
+  it("the picture opens the avatar editor", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole("button", { name: "Change picture" }));
+    expect(await screen.findByRole("heading", { name: "Your profile picture" })).toBeVisible();
+  });
+
+  it("the Overview has the week strip, the achievements preview and the two rows", async () => {
+    const o = richLearner();
+    renderPage();
+    const week = await find("[data-ring-measure]");
+    expect(within(week).getAllByRole("listitem")).toHaveLength(7);
+    const preview = await find("[data-achievements-preview]");
+    expect(preview).toHaveAttribute(
+      "aria-label",
+      `Achievements, ${o.achievements.length} of ${ACHIEVEMENTS.length} unlocked`,
     );
+    expect(preview.querySelectorAll("[data-badge-state]").length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /^Edit your answers Goal/ })).toHaveAttribute(
+      "href",
+      "/complete-profile",
+    );
+    expect(screen.getByRole("button", { name: /^Settings Theme and account/ })).toBeInTheDocument();
+  });
+
+  it("the achievements preview opens the Achievements card on Progress", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await find("[data-achievements-preview]"));
+    expect(
+      await screen.findByRole("button", { name: /^Achievements/, expanded: true }),
+    ).toBeVisible();
+  });
+
+  it("the hero stays on Progress and Social, without its level bar and numbers", async () => {
+    renderPage();
+    await find("[data-big-stat]");
+    await openTab("Progress");
+    expect(document.querySelector("[data-profile-hero]")).not.toBeNull();
+    expect(document.querySelector("[data-big-stat]")).toBeNull();
+    await openTab("Social");
+    expect(document.querySelector("[data-league-chip]")).not.toBeNull();
+    expect(document.querySelector("[data-level-ring]")).not.toBeNull();
   });
 
   it("the heat map draws exactly the 3-month window, one square a day", async () => {
@@ -535,7 +638,12 @@ describe("Profile, round 6", () => {
     await openTab("Social");
     const social = await screen.findByRole("navigation", { name: "Social" });
     const links = within(social).getAllByRole("link");
-    expect(links.map((l) => l.getAttribute("href"))).toEqual(["/league", "/profile/friends"]);
+    expect(links.map((l) => l.getAttribute("href"))).toEqual([
+      "/league",
+      "/profile/friends",
+      "/profile/invite",
+    ]);
+    expect(links[2]).toHaveTextContent("Invite friends");
     expect(links[0]).toHaveTextContent("League");
     expect(links[0]).toHaveTextContent("Leaderboards, teams, and the season ladder");
     expect(links[1]).toHaveTextContent("Friends");
@@ -561,9 +669,9 @@ describe("Profile, round 6", () => {
     getProfileOverview.mockResolvedValue(newLearner());
     renderPage();
     await screen.findByRole("heading", { level: 1, name: "Alex" });
-    expect(screen.getByText("Finish a lesson to start one")).toBeInTheDocument();
-    expect(screen.getByText("Your first one is waiting")).toBeInTheDocument();
-    expect(screen.getByText(/Talk in Practice or with Hector/)).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "0 day streak" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "No accuracy yet" })).toBeInTheDocument();
+    expect(document.querySelector("[data-minutes-spoken]")).toBeNull();
     await openTab("Progress");
     await openFold(/^Activity heat map/);
     await openFold(/^Weak spots/);
@@ -590,10 +698,10 @@ describe("Profile, round 6", () => {
     expect(useProgress.getState().course).toBe("fr");
   });
 
-  it("the gear takes you to Settings, where every account function still lives", async () => {
+  it("the Settings row takes you to Settings, where every account function still lives", async () => {
     renderPage();
     await find("[data-profile-hero]");
-    expect(screen.getByRole("button", { name: "Settings" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Settings Theme and account/ })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Settings" })).toBeInTheDocument();
     for (const name of ["Sign out", "Download my data", "Delete my account"]) {
       expect(screen.getByRole("button", { name })).toBeInTheDocument();
@@ -721,5 +829,22 @@ describe("Profile: skills radar, goal rings, mastered words, league standing", (
     const standing = await find("[data-league-standing]");
     // Sunday ends at 23:59 UTC, which is already Monday the 9th in Auckland: shown as the learner lives it.
     expect(standing).toHaveTextContent("Rank 4 of 12 · ends Mon, Nov 9");
+  });
+  it("the Social league card is navy, with the tier, a progress bar to the next tier and the standing", async () => {
+    const o = richLearner();
+    const cp = o.courses.find((c) => c.course === o.course)!;
+    const s = leagueStatus(cp.leagueTier, cp.xp);
+    renderPage();
+    await openTab("Social");
+    const card = await find("[data-league]");
+    expect(card.getAttribute("data-league")).toBe(cp.leagueTier);
+    expect(within(card).getByText("Your league")).toBeInTheDocument();
+    const bar = within(card).getByRole("progressbar");
+    expect(bar.getAttribute("aria-valuenow")).toBe(String(s.pct));
+    // The bar's text equivalent is the line under it.
+    expect(bar.getAttribute("aria-label")).toBe(card.querySelector("p")!.textContent);
+    // The old "Leaderboard" link and Friends "See all" are gone: the League and Friends rows cover them.
+    expect(screen.queryByRole("link", { name: "Leaderboard" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "See all" })).toBeNull();
   });
 });

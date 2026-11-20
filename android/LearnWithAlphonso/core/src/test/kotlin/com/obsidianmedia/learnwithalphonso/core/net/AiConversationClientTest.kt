@@ -1,5 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.core.net
 
+import com.obsidianmedia.learnwithalphonso.core.logic.HectorCorrection
 import io.ktor.client.plugins.HttpTimeoutCapability
 import com.obsidianmedia.learnwithalphonso.core.logic.BillingPeriodUnit
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
@@ -240,6 +241,19 @@ class AiConversationClientTest {
         assertEquals("tutor offline", e.serverMessage)
         assertEquals("tutor-unavailable", e.code)
         assertNull(TutorReply("", "", "", "x", "", "", "", "", "", null).audioBytes())
+    }
+
+    @Test
+    fun `tutor reply carries a valid correction and shrugs off a bad one`() = runTest {
+        suspend fun call(extra: String) = TutorConversationClient(
+            http(ArrayList()) {
+                ("""{"request_id":"r","session_id":"s","agent":"tutor","reply":"Bien","audio_base64":"","tts_model":"m","tts_provider":"d","language":"fr","state":"ok"""" + extra + "}").toByteArray() to HttpStatusCode.OK
+            }, "d",
+        ).respond("s", "hi", "fr", emptyList())
+        assertNull(call("").correction)
+        assertEquals(HectorCorrection("yo soy", "estoy", "estar"), call(""","correction":{"slip":"yo soy","fix":"estoy","note":"estar"}""").correction)
+        assertNull(call(""","correction":{"slip":"yo soy"}""").correction)
+        assertNull(call(""","correction":"nope"""").correction)
     }
 
     @Test

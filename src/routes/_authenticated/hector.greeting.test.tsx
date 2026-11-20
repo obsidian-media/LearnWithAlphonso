@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { shapeTutorReply } from "@/lib/hector-conversation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -40,6 +41,14 @@ vi.mock("@/integrations/supabase/client", () => ({
       };
       return q;
     },
+  },
+}));
+// The tapped-recording cap, shrunk for the one test that waits for it.
+const cap = vi.hoisted(() => ({ ms: 60_000 }));
+vi.mock("@/lib/hector-recording-cap", () => ({
+  HECTOR_RECORDING_CAP_SECONDS: 60,
+  get HECTOR_RECORDING_CAP_MS() {
+    return cap.ms;
   },
 }));
 const fetchProgress = vi.fn();
@@ -107,7 +116,19 @@ beforeEach(() => {
     "/api/app-config": () => Response.json({ limits: { hectorDaily: 150 } }),
     "/api/tts": () => new Response(new Blob(["mp3"]), { status: 200 }),
     "/api/hector-respond": () =>
-      Response.json({ reply: "Sure! What did you do yesterday?", audioBase64: btoa("mp3") }),
+      Response.json(
+        shapeTutorReply({
+          requestId: "r",
+          sessionId: "s",
+          agent: "tutor",
+          reply: "Sure! What did you do yesterday?",
+          audioBase64: btoa("mp3"),
+          ttsModel: "m",
+          language: "fr",
+          llmMs: 1,
+          ttsMs: 1,
+        }),
+      ),
   };
   globalThis.fetch = vi.fn(async (input: string, init?: RequestInit) => {
     const url = String(input).split("?")[0];
@@ -246,5 +267,171 @@ describe("Hector speaks first", () => {
     renderPage();
     await shows(GREETING_EN);
     expect(tts()).toHaveLength(1);
+  });
+});
+
+describe("Hector's suggestion chips", () => {
+  const chipGroup = () => screen.queryByRole("group", { name: "Things to say to Hector" });
+  const chip = (name: string) => screen.getByRole("button", { name });
+
+  it("are generated from the greeting's context: his weak spot and the streak", async () => {
+    useProgress.setState({ streak: 12 });
+    renderPage();
+    await shows(GREETING_EN);
+    await waitFor(() => expect(chipGroup()).not.toBeNull());
+    const labels = Array.from(chipGroup()!.querySelectorAll("button")).map((b) => b.textContent);
+    expect(labels).toEqual([
+      "Practice my weak words",
+      "Roleplay: my weekend",
+      "Keep my 12-day streak",
+      "Roleplay: ordering coffee",
+    ]);
+    useProgress.setState({ streak: 0 });
+  });
+
+  it("fall back to the fixed set when there is no context", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    useProgress.setState({ streak: 0 });
+    renderPage();
+    await shows(GENERIC_EN);
+    await waitFor(() => expect(chipGroup()).not.toBeNull());
+    const labels = Array.from(chipGroup()!.querySelectorAll("button")).map((b) => b.textContent);
+    expect(labels).toEqual([
+      "Practice my weak words",
+      "Roleplay: ordering coffee",
+      "Explain a rule",
+      "Just chat",
+    ]);
+  });
+
+  it("tapping one sends it as the learner's message, and the chips go", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    renderPage();
+    await shows(GENERIC_EN);
+    await waitFor(() => expect(chipGroup()).not.toBeNull());
+    await userEvent.click(chip("Just chat"));
+    await waitFor(() =>
+      expect(sent.find((s) => s.url === "/api/hector-respond")?.body).toMatchObject({
+        text: "Let's just chat.",
+      }),
+    );
+    await shows("Sure! What did you do yesterday?");
+    expect(chipGroup()).toBeNull();
+    expect(screen.getByRole("log")).toHaveTextContent("Let's just chat.");
+  });
+
+  it("also go when the learner types their own first message", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    renderPage();
+    await shows(GENERIC_EN);
+    await waitFor(() => expect(chipGroup()).not.toBeNull());
+    await userEvent.type(screen.getByRole("textbox", { name: "Message Hector" }), "hello{Enter}");
+    await waitFor(() => expect(chipGroup()).toBeNull());
+  });
+
+  it("are not shown when today's allowance is used up (no greeting, so nothing to follow)", async () => {
+    usageRows.current = [{ count: 150 }];
+    renderPage();
+    await screen.findByText(HECTOR_OUT_FOR_TODAY);
+    expect(chipGroup()).toBeNull();
+  });
+
+  it("the greeting is Hector's first bubble: a white card with his mini avatar", async () => {
+    renderPage();
+    await shows(GREETING_EN);
+    const log = screen.getByRole("log");
+    const bubble = Array.from(log.querySelectorAll("div")).find((d) =>
+      d.className.includes("bg-ds-card"),
+    );
+    expect(bubble?.textContent).toContain("past tense");
+    expect(log.querySelector('img[src="/hector/base.webp"]')).not.toBeNull();
+  });
+
+  it("the learner's bubble is the choice colour with its on-choice text", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    renderPage();
+    await shows(GENERIC_EN);
+    await userEvent.type(screen.getByRole("textbox", { name: "Message Hector" }), "hello{Enter}");
+    const mine = await screen.findByText("hello");
+    expect(mine.className).toContain("bg-ds-choice");
+    expect(mine.className).toContain("text-ds-on-choice");
+  });
+});
+
+describe("Hector's type-or-talk composer", () => {
+  const getUserMedia = vi.fn();
+
+  beforeEach(() => {
+    getUserMedia.mockReset();
+    getUserMedia.mockResolvedValue({ getTracks: () => [{ stop: vi.fn() }] });
+    Object.defineProperty(navigator, "mediaDevices", {
+      value: { getUserMedia },
+      configurable: true,
+    });
+    vi.stubGlobal(
+      "MediaRecorder",
+      class {
+        static isTypeSupported = () => true;
+        state = "inactive";
+        mimeType = "audio/webm";
+        ondataavailable: ((e: { data: Blob }) => void) | null = null;
+        onstop: (() => void) | null = null;
+        start() {
+          this.state = "recording";
+        }
+        stop() {
+          this.state = "inactive";
+          this.onstop?.();
+        }
+      },
+    );
+  });
+
+  it("a tapped recording that is never stopped is stopped at the cap", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    cap.ms = 300;
+    try {
+      renderPage();
+      await shows(GENERIC_EN);
+      await userEvent.click(screen.getByRole("button", { name: "Record a voice message" }));
+      await screen.findByTestId("hector-listening");
+      await waitFor(() => expect(screen.queryByTestId("hector-listening")).toBeNull(), {
+        timeout: 3000,
+      });
+    } finally {
+      cap.ms = 60_000;
+    }
+  });
+
+  it("idle: a text field, a gold mic, and no send button until something is typed", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    renderPage();
+    await shows(GENERIC_EN);
+    const box = screen.getByRole("textbox", { name: "Message Hector" });
+    expect(box).toHaveAttribute("placeholder", "Type or tap the mic…");
+    expect(screen.getByRole("button", { name: "Record a voice message" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Send" })).toBeNull();
+    await userEvent.type(box, "hi");
+    expect(screen.getByRole("button", { name: "Send" })).toBeInTheDocument();
+  });
+
+  it("talk mode: the field becomes a Listening pill with a waveform, and a red stop replaces the mic", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    renderPage();
+    await shows(GENERIC_EN);
+    await userEvent.click(screen.getByRole("button", { name: "Record a voice message" }));
+    const pill = await screen.findByTestId("hector-listening");
+    expect(pill).toHaveTextContent("Listening");
+    expect(screen.getByTestId("hector-wave")).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "Message Hector" })).toBeNull();
+    expect(screen.getByTestId("hector-status")).toHaveAttribute(
+      "aria-label",
+      "Hector is listening",
+    );
+    const stop = screen.getByRole("button", { name: "Stop recording and send" });
+    expect(stop.className).toContain("bg-ds-wrong");
+    await userEvent.click(stop);
+    await waitFor(() => expect(screen.queryByTestId("hector-listening")).toBeNull());
+    expect(screen.getByRole("textbox", { name: "Message Hector" })).toBeInTheDocument();
   });
 });

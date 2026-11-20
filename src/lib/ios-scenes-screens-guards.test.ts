@@ -44,17 +44,16 @@ describe("Hector: the library scene behind the tab, the hero and the paywall", (
     expect(from(convo, 'Text("Tap any word').slice(0, 400)).toContain(".alphonsoGlass(");
   });
 
-  it("the hero keeps its poses, breathing and cross-fade, drops the flat tile, and puts its title on glass", () => {
-    const hero = between(hector, "private var hero: some View", "private func heroPill");
-    expect(hero).toContain("MascotArt.assetName(for: HectorStatus.moment(for: status))");
-    expect(hero).toContain(".mascotBreathe()");
-    expect(hero).not.toContain("AlphonsoTileTone.sky.background");
-    expect(hero).not.toContain("AlphonsoColor.surface.opacity(0)");
-    const title = from(hero, 'Text("Hector")');
-    expect(title.slice(0, 700)).toContain(".alphonsoGlass(");
-    expect(hero).toContain(
-      'Text(voice.isHandsFreeOn ? "Your tutor · hands-free on" : "Your tutor")',
-    );
+  it("the header keeps its poses, on the navy hero gradient with the uncropped cut-out and a status pill", () => {
+    const classic = between(hector, "private var classicScreen", "private var callScreen");
+    expect(classic).toContain("MascotArt.assetName(for: HectorStatus.moment(for: status))");
+    const parts = read("HectorParts.swift");
+    const hero = from(parts, "struct HectorHeader");
+    expect(hero).toContain("LinearGradient(colors: [ds.heroA, ds.heroB]");
+    expect(hero).toContain(".scaledToFit()");
+    expect(hero).toContain('"Hector"');
+    expect(hero).toContain(String.raw`"Your \(courseName) tutor`);
+    expect(hero).toContain(String.raw`Hector is \(`);
   });
 
   it("the paywall opens on Hector's room, above the headline and the offer", () => {
@@ -147,7 +146,6 @@ describe("Listen: studio scene, and the empty, offline and failed states as desi
 
 describe("Profile: hall scene, hero, glass menu cards", () => {
   const profile = read("ProfileHubView.swift");
-  const components = read("DesignSystem/AlphonsoComponents.swift");
 
   it("the hall of achievements is behind Profile, with the overview hero at the top", () => {
     expect(profile).toContain(".screenScene(.profile)");
@@ -164,12 +162,14 @@ describe("Profile: hall scene, hero, glass menu cards", () => {
     expect(profile).toContain("fetchProfileOverview");
   });
 
-  it("the four menu cards are the same four, as glass cards that open the same destinations", () => {
+  it("the menu rows are drawn-icon cards that open the same destinations", () => {
     for (const keep of [
       'title: "League"',
       'title: "Friends"',
+      'title: "Invite friends"',
       'title: "Achievements"',
       'title: "Settings"',
+      'title: "Edit your answers"',
       "destination = target",
       "LeaderboardView(session: session)",
       "FriendsView(session: session)",
@@ -177,12 +177,9 @@ describe("Profile: hall scene, hero, glass menu cards", () => {
     ]) {
       expect(profile, keep).toContain(keep);
     }
-    expect(profile.match(/glass: true/g)?.length).toBe(1); // one shared row() builds all four
-    const tile = from(components, "struct AlphonsoTile: View");
-    expect(tile.slice(0, 1800)).toContain("var glass: Bool = false");
-    expect(tile.slice(0, 2600)).toContain("AnyShapeStyle(.regularMaterial)");
-    // Glass tiles keep the ink colour; the tone ink is only for the old coloured tiles.
-    // A word boundary after each ink: `AlphonsoColor.inkSoft` or `tone.inkSoft` must not pass for `.ink`.
-    expect(tile.slice(0, 2600)).toMatch(/glass \? AlphonsoColor\.ink\b : tone\.ink\b/);
+    // One shared row() builds them, from the design system's drawn icons and never an emoji tile.
+    expect(profile).toContain("ProfileRowCard(icon: icon");
+    expect(profile).not.toContain("AlphonsoTile(");
+    expect(profile).not.toMatch(/emoji:/);
   });
 });

@@ -332,6 +332,64 @@ object ProfileMath {
         return "ends " + fmt.format(end)
     }
 
+    /** How far through this tier's XP span the learner is, 0 to 100; 100 at the top tier. Never outside that range. */
+    fun leaguePct(tier: String, courseXp: Int): Int {
+        val idx = max(0, LEAGUES.indexOf(tier))
+        if (idx + 1 >= LEAGUES.size) return 100
+        val floor = LEAGUE_THRESHOLDS[idx]
+        val ceiling = LEAGUE_THRESHOLDS[idx + 1]
+        val raw = (courseXp - floor) * 100.0 / max(1, ceiling - floor)
+        return raw.roundToInt().coerceIn(0, 100)
+    }
+
+    /**
+     * The lessons still to finish at the learner's CEFR level. Alphonso has no numbered XP level, so the hero's ring
+     * and bar show this level's lesson progress and never state an "XP to next level" the app does not track.
+     */
+    fun lessonsLeft(p: LevelProgress): Int = max(0, p.total - p.done)
+
+    data class StripDay(val day: String, val state: RingState, val spoken: String)
+
+    /** [measuredInMinutes] is true when the days are measured against the learner's goal; false for the XP rule. */
+    data class WeekStrip(val days: List<StripDay>, val doneDays: Int, val measuredInMinutes: Boolean, val minutesSpoken: Int)
+
+    /**
+     * The seven days of this week as the Overview strip shows them: against the learner's own daily goal in learning
+     * minutes when they chose one, otherwise by the XP rule the streak uses.
+     */
+    fun weekStrip(
+        today: String, activity: List<ProfileActivityDay>, speech: List<ProfileSpeechDay>,
+        learning: List<ProfileLearningDay>, goalMinutes: Int?,
+    ): WeekStrip {
+        val week = weekRings(today, activity, speech)
+        fun word(s: RingState) = when (s) {
+            RingState.FUTURE -> "still to come"
+            RingState.TODAY -> "not yet today"
+            else -> "goal not met"
+        }
+        if (goalMinutes != null && goalMinutes > 0) {
+            val g = goalRings(today, learning, goalMinutes)
+            val days = g.days.map { StripDay(it.day, it.state, if (it.state == RingState.DONE) "${it.minutes} min, goal met" else word(it.state)) }
+            return WeekStrip(days, g.metDays, true, week.minutesSpoken)
+        }
+        val days = week.days.map { StripDay(it.day, it.state, if (it.state == RingState.DONE) "${it.xp} XP" else word(it.state)) }
+        return WeekStrip(days, days.count { it.state == RingState.DONE }, false, week.minutesSpoken)
+    }
+
+    /**
+     * The countries whose flag Profile draws (res/drawable/flag_<cc>.xml; scripts/generate-profile-flags.mjs). Any other
+     * country shows its two-letter code in a chip, never the flag emoji.
+     */
+    val DRAWN_FLAGS: Set<String> = setOf(
+        "AR", "AT", "AU", "BE", "BG", "BR", "CA", "CH", "CN", "CO", "DE", "EE",
+        "ES", "FR", "GB", "HU", "ID", "IE", "IN", "IR", "IT", "JP", "KR", "LT",
+        "LU", "MC", "MX", "NL", "PE", "PL", "PT", "RO", "RU", "SE", "TR", "UA",
+        "US",
+    )
+
+    /** The drawn flag's code for a country, or null when there is no drawing (or no flag to show at all). */
+    fun drawnFlagCode(country: String?): String? = country?.uppercase()?.takeIf { it in DRAWN_FLAGS }
+
     const val SHARE_APP_NAME = "Learn with Alphonso"
 
     /** Every line of text on the share card: real stats only, no link. */

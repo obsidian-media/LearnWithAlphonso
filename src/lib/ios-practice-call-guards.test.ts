@@ -159,8 +159,8 @@ describe("Hector's call", () => {
       hector.indexOf("private var classicScreen"),
       hector.indexOf("private var callScreen"),
     );
-    expect(classic).toContain("hero");
-    expect(classic).toContain("micButton");
+    expect(classic).toContain("HectorHeader(");
+    expect(classic).toContain("composer");
     expect(classic).not.toContain("PracticeCallView");
     // Pro gating lives in HectorView, outside the conversation screen, and is untouched.
     expect(hector).toContain("if !entitlementStore.isPro");
@@ -206,7 +206,9 @@ describe("Hector's call", () => {
     expect(hector).toContain(".toolbar(callEnded ? .visible : .hidden, for: .navigationBar)");
     expect(hector).not.toMatch(/\.toolbar\(\.hidden, for: \.tabBar\)/);
     expect(hector).toMatch(/if let onClose \{ onClose\(\) \} else \{ callEnded = true \}/);
-    expect(hector).toMatch(/conversationStore: conversationStore,\s*onClose: onClose/);
+    expect(hector).toMatch(
+      /conversationStore: conversationStore,\s*streakDays: streakDays,\s*onClose: onClose/,
+    );
   });
   it("says on the call when the microphone is off or would not start, as the classic screen does", () => {
     expect(call).toMatch(/notice \?\? voice\.failure\?\.userMessage\(\) \?\? microphoneMessage/);

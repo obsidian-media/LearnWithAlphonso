@@ -34,6 +34,24 @@ public struct TutorReply: Sendable, Decodable {
     public let language: String
     public let state: String
     public let timingsMs: TutorTimings
+    /// A gentle fix for the learner's last message, when Hector found one worth making (the correction card). Never
+    /// breaks a reply: a missing, malformed or invalid field is nil.
+    public let correction: HectorCorrection?
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        requestID = try c.decode(String.self, forKey: .requestID)
+        sessionID = try c.decode(String.self, forKey: .sessionID)
+        agent = try c.decode(String.self, forKey: .agent)
+        reply = try c.decode(String.self, forKey: .reply)
+        audioBase64 = try c.decode(String.self, forKey: .audioBase64)
+        ttsModel = try c.decode(String.self, forKey: .ttsModel)
+        ttsProvider = try c.decode(String.self, forKey: .ttsProvider)
+        language = try c.decode(String.self, forKey: .language)
+        state = try c.decode(String.self, forKey: .state)
+        timingsMs = try c.decode(TutorTimings.self, forKey: .timingsMs)
+        correction = (try? c.decodeIfPresent(HectorCorrection.self, forKey: .correction)) ?? nil
+    }
 
     enum CodingKeys: String, CodingKey {
         case requestID = "request_id"
@@ -44,6 +62,7 @@ public struct TutorReply: Sendable, Decodable {
         case ttsProvider = "tts_provider"
         case language, state
         case timingsMs = "timings_ms"
+        case correction
     }
 }
 

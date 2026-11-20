@@ -13,6 +13,8 @@ struct HectorView: View {
     let conversationStore: ConversationStore
     /// Set when Hector is shown as a sheet (from lesson complete): adds a Done button.
     var onClose: (() -> Void)? = nil
+    /// The learner's streak as the Learn tab shows it, for the suggestion chips ("Keep my 12-day streak").
+    var streakDays: Int = 0
 
     /// Pro just landed: the paywall stays up for Hector's welcome before the conversation replaces it.
     @State private var showingWelcome = false
@@ -28,6 +30,7 @@ struct HectorView: View {
                         entitlementStore: entitlementStore,
                         course: activeCourse.course,
                         conversationStore: conversationStore,
+                        streakDays: streakDays,
                         onClose: onClose
                     )
                     // A course switch is a fresh Hector
@@ -57,6 +60,7 @@ private struct HectorConversationView: View {
     let entitlementStore: EntitlementStore
     let course: Course
     let conversationStore: ConversationStore
+    let streakDays: Int
     /// Set when Hector is a sheet (from lesson complete): hanging up closes it, since the call hides its Done button.
     let onClose: (() -> Void)?
 
@@ -66,11 +70,20 @@ private struct HectorConversationView: View {
     /// The safety note is shown once per device, before the first time hands-free is turned on.
     @AppStorage(HandsFreeCopy.noteSeenKey) private var handsFreeNoteSeen = false
     @State private var showHandsFreeNote = false
+    /// The composer's text, and the open weak spot the suggestion chips are built from.
+    @State private var draft = ""
+    @State private var weakSpot: String?
+    /// Hector's corrections, by the index of the learner's turn each answers (shown as a card under that bubble).
+    @State private var corrections: [Int: HectorCorrection] = [:]
+    /// Bumped by "Try again" where there is no microphone, to put the cursor in the composer.
+    @State private var composerFocusCue = 0
 
     @State private var conversation = ConversationSnapshot()
     @State private var voice = VoiceSessionController()
     /// Bumped when Hector's greeting should be spoken: once his learner context has loaded, and on "Call again".
     @State private var openerCue = 0
+    /// Stops a tapped recording that was never stopped (HectorRecordingCap).
+    @State private var recordingCap: Task<Void, Never>?
     @State private var notice: String?
     @State private var cefrLevel: String?
     /// V3 package 3b "tutor persona memory": open weaknesses, prepended to
@@ -121,6 +134,8 @@ private struct HectorConversationView: View {
         }
         .task(id: course) { await loadLearnerContext() }
         .onDisappear {
+            HectorFixSpeaker.shared.stop()
+            recordingCap?.cancel()
             voice.disappeared()
             voice.onCapture = nil
             analyzeWeaknessesIfNew()
@@ -134,6 +149,12 @@ private struct HectorConversationView: View {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(Array(conversation.turns.enumerated()), id: \.offset) { index, turn in
                             bubble(for: turn, isOpener: conversation.openerIndices.contains(index)).id(index)
+                            if turn.role == "user", let correction = corrections[index] {
+                                correctionCard(correction)
+                            }
+                        }
+                        if !suggestionChips.isEmpty {
+                            HectorChipsRow(chips: suggestionChips, onTap: { sendTyped($0.message) })
                         }
                     }
                     .padding()
@@ -161,13 +182,16 @@ private struct HectorConversationView: View {
         }
     }
 
-    /// The setting off: the screen as it was before the call.
+    /// The setting off: the converged tutor screen (header, transcript with the greeting and chips, composer).
     private var classicScreen: some View {
         VStack(spacing: 0) {
-            hero
+            HectorHeader(
+                art: MascotArt.assetName(for: HectorStatus.moment(for: status)),
+                status: status, courseName: languageName, handsFreeOn: voice.isHandsFreeOn,
+                onClose: onClose, menu: { overflowMenu })
             transcript
 
-            if let message = voice.failure?.userMessage() ?? notice {
+            if let message = voice.failure?.userMessage() ?? notice ?? microphoneMessage {
                 Text(message)
                     .dsText(.footnote)
                     .foregroundStyle(AlphonsoDS.current.wrongInk)
@@ -179,11 +203,144 @@ private struct HectorConversationView: View {
 
             saveWordHint
 
-            micButton.padding()
+            if voice.isHandsFreeOn { handsFreeControls.padding(.top, 6) }
+            composer
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .onChange(of: status) { _, new in
+            // The header's status is announced, not only drawn.
+            if let new { AccessibilityNotification.Announcement("Hector is \(new.label.lowercased())").post() }
+        }
+        .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
+            Button(HandsFreeCopy.firstUseConfirm) {
+                handsFreeNoteSeen = true
+                voice.learnerSetHandsFree(true)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(HandsFreeCopy.firstUseBody(partner: "Hector"))
         }
         .sheet(item: $savingWord) { request in
             SaveWordSheet(request: request, session: session)
         }
+    }
+
+    /// Under the composer's mic: why it did not start (access off, or the recorder would not open).
+    private var microphoneMessage: String? {
+        if voice.isHandsFreeOn { return nil }
+        if voice.microphoneUnavailable { return VoiceCopy.microphoneOff }
+        if voice.recorderStartFailed { return VoiceCopy.microphoneCouldNotStart }
+        return nil
+    }
+
+    /// What the old header bar held: the hands-free switch (with its first-use note) and Pause/Resume.
+    @ViewBuilder
+    private var overflowMenu: some View {
+        Button {
+            if voice.isHandsFreeOn {
+                voice.learnerSetHandsFree(false)
+            } else if !handsFreeNoteSeen {
+                showHandsFreeNote = true
+            } else {
+                voice.learnerSetHandsFree(true)
+            }
+        } label: {
+            Label(voice.isHandsFreeOn ? "Turn hands-free off" : HandsFreeCopy.toggle,
+                  systemImage: voice.isHandsFreeOn ? "mic.slash" : "mic.badge.plus")
+        }
+        .accessibilityIdentifier("hectorHandsFreeToggle")
+        if voice.isHandsFreeOn {
+            Button {
+                voice.toggleHandsFreePause()
+            } label: {
+                Label(handsFreePaused ? HandsFreeCopy.resume : HandsFreeCopy.pause,
+                      systemImage: handsFreePaused ? "play.fill" : "pause.fill")
+            }
+        }
+    }
+
+    private var handsFreePaused: Bool {
+        if case .paused = voice.handsFreeStatus { return true }
+        return false
+    }
+
+    // MARK: - Composer and chips
+
+    private var composer: some View {
+        HectorComposer(
+            text: $draft, isListening: voice.isRecording, isBusy: voice.isBusy,
+            handsFreeOn: voice.isHandsFreeOn,
+            level: { voice.inputLevelDBFS() }, reduceMotion: reduceMotion,
+            onSend: { sendTyped(draft) },
+            onMic: { startTappedRecording() },
+            onStop: { stopTappedRecording() },
+            focusCue: composerFocusCue)
+    }
+
+    /// The correction under the learner's bubble. "Hear it" is the device's own voice; "Try again" re-arms the mic.
+    private func correctionCard(_ correction: HectorCorrection) -> some View {
+        HectorCorrectionCard(
+            correction: correction,
+            canHear: HectorFixSpeaker.canSpeak(course),
+            tryAgainDisabled: voice.isBusy || voice.isRecording,
+            hearDisabled: voice.isRecording || voice.handsFreeStatus == .listening || voice.handsFreeStatus == .hearing,
+            onHear: {
+                voice.stopReplyPlayback()
+                HectorFixSpeaker.shared.speak(correction.fix, course: course)
+            },
+            onTryAgain: { tryAgain() })
+    }
+
+    /// "Try again": the phrase, said once more. The tap-to-talk path (so its cap applies); in hands-free the loop opens
+    /// the mic itself once nothing is playing; with no microphone it puts the cursor in the composer.
+    private func tryAgain() {
+        HectorFixSpeaker.shared.stop()
+        if voice.isHandsFreeOn { return }
+        if voice.microphoneUnavailable || voice.recorderStartFailed {
+            composerFocusCue += 1
+        } else {
+            startTappedRecording()
+        }
+    }
+
+    /// Chips show under the greeting until the learner has said something.
+    private var suggestionChips: [HectorChip] {
+        let hasLearnerTurn = conversation.turns.contains { $0.role == "user" }
+        guard !conversation.turns.isEmpty, !hasLearnerTurn else { return [] }
+        return HectorChips.build(course: course, weakSpot: weakSpot, streakDays: streakDays)
+    }
+
+    /// A typed message (or a tapped chip) is a learner turn like a spoken one, minus the speech-to-text step.
+    /// `beginOpener` claims the voice session the way a press does: it refuses while a turn is in flight.
+    private func sendTyped(_ raw: String) {
+        let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, let generation = voice.beginOpener() else { return }
+        draft = ""
+        notice = nil
+        conversation = conversationStore.append(ChatMessage(role: "user", content: text), to: key)
+        Task {
+            await respond(to: text, generation: generation)
+            // The spoken path always ends its turn (a defer in VoiceSessionController); so does this one, so a future
+            // early return in respond can never leave the phase stuck in .thinking.
+            voice.turnFinished(generation)
+        }
+    }
+
+    /// The mic button taps to start, and stops and sends after HectorRecordingCap.seconds if nothing else did (a held
+    /// button was bounded by the finger; a tapped one is not).
+    private func startTappedRecording() {
+        guard voice.pressBegan() else { return }
+        notice = nil
+        recordingCap?.cancel()
+        recordingCap = Task {
+            try? await Task.sleep(for: .seconds(HectorRecordingCap.seconds))
+            if !Task.isCancelled, voice.isRecording { voice.pressEnded() }
+        }
+    }
+
+    private func stopTappedRecording() {
+        recordingCap?.cancel()
+        voice.pressEnded()
     }
 
     /// The setting on (the default): the full-screen call. Hands-free keeps its Pause/Resume button and status line on
@@ -283,68 +440,6 @@ private struct HectorConversationView: View {
         }
     }
 
-    /// Hector's 3D art across the top: tall before the first turn, shorter once the conversation needs the room.
-    private var hero: some View {
-        let art = MascotArt.assetName(for: HectorStatus.moment(for: status))
-        return ZStack(alignment: .bottomLeading) {
-            Image(art)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .mascotBreathe()
-                .id(art)
-                .transition(.opacity)
-                .frame(maxWidth: .infinity)
-                .frame(height: conversation.turns.isEmpty ? 300 : 180, alignment: .top)
-                .clipped()
-                .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: art)
-                .accessibilityHidden(true)
-
-            // Over the library the title sits on glass, never straight on the picture.
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Hector")
-                    .dsText(.display)
-                    .foregroundStyle(AlphonsoDS.current.ink)
-                Text(voice.isHandsFreeOn ? "Your tutor · hands-free on" : "Your tutor")
-                    .dsText(.footnote)
-                    .foregroundStyle(AlphonsoDS.current.inkSoft)
-            }
-            .padding(.horizontal, AlphonsoSpacing.md)
-            .padding(.vertical, AlphonsoSpacing.sm)
-            .alphonsoGlass(radius: AlphonsoRadius.xl)
-            .padding(.horizontal, AlphonsoSpacing.md)
-            .padding(.bottom, AlphonsoSpacing.sm)
-        }
-        .overlay(alignment: .top) {
-            HStack {
-                heroPill { Text(languageName) }
-                Spacer()
-                if let status {
-                    heroPill {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(status == .listening ? AlphonsoDS.current.right : AlphonsoDS.current.action)
-                                .frame(width: 8, height: 8)
-                                .pulsingGlow()
-                            Text(status.label)
-                        }
-                    }
-                    .accessibilityLabel("Hector is \(status.label.lowercased())")
-                }
-            }
-            .padding(AlphonsoSpacing.md)
-        }
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.3), value: conversation.turns.isEmpty)
-    }
-
-    private func heroPill<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        content()
-            .dsText(.caption)
-            .foregroundStyle(AlphonsoDS.current.onHero)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(AlphonsoDS.current.callGlass.opacity(0.6), in: Capsule())
-    }
-
     // MARK: - Context
 
     /// Best-effort: a failed fetch just means this session starts without
@@ -368,6 +463,7 @@ private struct HectorConversationView: View {
             return
         }
         // Hector speaks first: a conversation with no turns yet opens with his greeting (built locally, no LLM call).
+        weakSpot = HectorGreeting.recentWeakSpot(trend)
         conversation = conversationStore.openWithGreeting(key, greeting: HectorGreeting.build(
             course: course, cefrLevel: level,
             name: nameStatus?.nameConfirmed == true ? nameStatus?.displayName : nil,
@@ -389,10 +485,22 @@ private struct HectorConversationView: View {
         }
     }
 
+    /// Hector's small round face beside each of his bubbles.
+    private var miniAvatar: some View {
+        Image(MascotArt.assetName(for: .hectorIdle))
+            .resizable()
+            .scaledToFill()
+            .frame(width: 30, height: 30, alignment: .top)
+            .background(AlphonsoDS.current.heroA)
+            .clipShape(Circle())
+            .accessibilityHidden(true)
+    }
+
     private func bubble(for turn: ChatMessage, isOpener: Bool) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .bottom, spacing: 6) {
                 if turn.role == "user" { Spacer(minLength: 40) }
+                if turn.role == "assistant" { miniAvatar }
                 bubbleText(for: turn, isOpener: isOpener)
                     .dsText(.body)
                     .padding(.horizontal, 14)
@@ -447,69 +555,6 @@ private struct HectorConversationView: View {
         }
     }
 
-    private var micButton: some View {
-        VStack(spacing: 6) {
-            Toggle(HandsFreeCopy.toggle, isOn: Binding(
-                get: { voice.isHandsFreeOn },
-                set: { on in
-                    if on, !handsFreeNoteSeen {
-                        showHandsFreeNote = true
-                    } else {
-                        voice.learnerSetHandsFree(on)
-                    }
-                }
-            ))
-            .dsText(.footnote)
-            .tint(ds.choice)
-            .padding(.horizontal, AlphonsoSpacing.md)
-            .accessibilityIdentifier("hectorHandsFreeToggle")
-
-            if voice.isHandsFreeOn {
-                handsFreeControls
-            } else if voice.isBusy {
-                ProgressView().tint(AlphonsoDS.current.choice).frame(maxWidth: .infinity)
-            } else {
-                HoldToTalkButton(
-                    isRecording: voice.isRecording,
-                    idleColor: AlphonsoDS.current.choice,
-                    recordingColor: AlphonsoDS.current.wrong,
-                    iconColor: AlphonsoDS.current.onChoice,
-                    recordingIconColor: AlphonsoDS.current.onWrong,
-                    accessibilityLabel: "Hold to talk to Hector",
-                    onPress: { if voice.pressBegan() { notice = nil } },
-                    onRelease: { voice.pressEnded() }
-                )
-                .background {
-                    // A soft glow ring while Hector is listening.
-                    Circle()
-                        .fill(AlphonsoDS.current.choice.opacity(voice.isRecording ? 0.25 : 0.12))
-                        .frame(width: 96, height: 96)
-                        .pulsingGlow(scale: voice.isRecording ? 1.15 : 1.05)
-                }
-                .padding(.vertical, 10)
-                Text(voice.isRecording ? "Listening — release to send" : "Hold to talk")
-                    .dsText(.caption)
-                    .foregroundStyle(AlphonsoDS.current.inkSoft)
-                if voice.microphoneUnavailable || voice.recorderStartFailed {
-                    Text(voice.microphoneUnavailable ? VoiceCopy.microphoneOff : VoiceCopy.microphoneCouldNotStart)
-                        .dsText(.caption)
-                        .foregroundStyle(AlphonsoDS.current.wrongInk)
-                        .multilineTextAlignment(.center)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .alert(HandsFreeCopy.firstUseTitle, isPresented: $showHandsFreeNote) {
-            Button(HandsFreeCopy.firstUseConfirm) {
-                handsFreeNoteSeen = true
-                voice.learnerSetHandsFree(true)
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text(HandsFreeCopy.firstUseBody(partner: "Hector"))
-        }
-    }
-
     // MARK: - Turn
 
     private func handle(_ capture: VoiceCapture) async {
@@ -523,7 +568,6 @@ private struct HectorConversationView: View {
     }
 
     private func runTurn(audio: Data, generation: Int, debugTiming: String) async {
-        let key = self.key
         let courseCode = course.wireCode
         guard let accessToken = await session.freshAccessToken() else {
             voice.fail(generation, session.accessToken == nil ? .signedOut : .network)
@@ -532,8 +576,6 @@ private struct HectorConversationView: View {
         let refresh: @Sendable () async -> String? = { await session.freshAccessToken(forceRefresh: true) }
         let sttClient = AIConversationClient(
             baseURL: AppConfig.apiBaseURL, accessToken: { accessToken }, refreshAccessToken: refresh)
-        let tutorClient = TutorConversationClient(
-            endpoint: AppConfig.hectorRespondEndpoint, accessToken: { accessToken }, refreshAccessToken: refresh)
         do {
             let stt = try await sttClient.transcribe(
                 audio: audio, mimeType: "audio/m4a", course: courseCode, debugTiming: debugTiming)
@@ -547,9 +589,29 @@ private struct HectorConversationView: View {
                 }
                 return
             }
-            var snapshot = conversationStore.append(ChatMessage(role: "user", content: text), to: key)
-            conversation = snapshot
+            conversation = conversationStore.append(ChatMessage(role: "user", content: text), to: key)
             voice.transcribed(generation)
+            await respond(to: text, generation: generation)
+        } catch {
+            let tutorError = TutorError.from(error)
+            voice.fail(generation, tutorError)
+            if tutorError == .notEntitled { showPaywall = true }
+        }
+    }
+
+    /// The reply to a learner turn already appended to the conversation, spoken or typed, under `generation`.
+    private func respond(to text: String, generation: Int) async {
+        let key = self.key
+        let courseCode = course.wireCode
+        guard let accessToken = await session.freshAccessToken() else {
+            voice.fail(generation, session.accessToken == nil ? .signedOut : .network)
+            return
+        }
+        let refresh: @Sendable () async -> String? = { await session.freshAccessToken(forceRefresh: true) }
+        let tutorClient = TutorConversationClient(
+            endpoint: AppConfig.hectorRespondEndpoint, accessToken: { accessToken }, refreshAccessToken: refresh)
+        do {
+            var snapshot = conversationStore.snapshot(for: key) ?? conversation
 
             // The current utterance goes only in `text`; the
             // history is every turn BEFORE it. The server appends `text` itself.
@@ -563,8 +625,15 @@ private struct HectorConversationView: View {
                 // Hector's own voice for this course (Settings > Voices), never Alphonso's.
                 voice: VoicePrefsCache().voice(.hector, course: courseCode)
             )
-            snapshot = conversationStore.append(ChatMessage(role: "assistant", content: reply.reply), to: key)
+            // The server already took the block out; parsing the reply here too means a tag can never be shown.
+            let parsed = HectorCorrections.extract(reply.reply)
+            snapshot = conversationStore.append(
+                ChatMessage(role: "assistant", content: parsed.text.isEmpty ? "…" : parsed.text), to: key)
             conversation = snapshot
+            // The card belongs under the learner's turn this reply answers: the one just before it.
+            if let correction = reply.correction ?? parsed.correction, snapshot.turns.count >= 2 {
+                corrections[snapshot.turns.count - 2] = correction
+            }
 
             if let audioData = reply.audioData {
                 if !voice.play(audioData, generation: generation) {

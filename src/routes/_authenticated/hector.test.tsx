@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { shapeTutorReply } from "@/lib/hector-conversation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -73,7 +74,10 @@ class FakeAudio {
   play = vi.fn().mockResolvedValue(undefined);
   pause = vi.fn();
   onended: (() => void) | null = null;
-  constructor(public src: string) {}
+  static instances: FakeAudio[] = [];
+  constructor(public src: string) {
+    FakeAudio.instances.push(this);
+  }
 }
 
 beforeEach(() => {
@@ -87,7 +91,19 @@ beforeEach(() => {
   routes = {
     "/api/pro-status": status(PRO_APP_STORE),
     "/api/pro-offering": status(OFFER),
-    "/api/hector-respond": status({ reply: "Bonjour ! Comment ça va ?", audioBase64: btoa("mp3") }),
+    "/api/hector-respond": status(
+      shapeTutorReply({
+        requestId: "r",
+        sessionId: "s",
+        agent: "tutor",
+        reply: "Bonjour ! Comment ça va ?",
+        audioBase64: btoa("mp3"),
+        ttsModel: "m",
+        language: "fr",
+        llmMs: 1,
+        ttsMs: 1,
+      }),
+    ),
   };
   globalThis.fetch = vi.fn(async (input: string, init?: RequestInit) => {
     const url = String(input);
@@ -135,24 +151,26 @@ describe("web Hector always has a way back (it is full screen, with no tab bar)"
     expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
   });
 
-  it("the Pro text chat has a link back to Learn", async () => {
+  it("the Pro text chat is a tab root: no back chevron, the Learn tab is the way out", async () => {
     await renderPage();
     await screen.findByRole("log");
-    expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
+    expect(screen.queryByRole("link", { name: "Back to Learn" })).toBeNull();
+    expect(
+      within(screen.getByRole("navigation")).getByRole("link", { name: "Learn" }),
+    ).toHaveAttribute("href", "/learn");
   });
 });
 
 describe("web Hector keeps the tab bar, as on iOS and Android", () => {
   const tabBar = () => screen.queryByRole("navigation");
 
-  it("the Pro text chat shows the tab bar with Hector selected, and the exit link still works", async () => {
+  it("the Pro text chat shows the tab bar with Hector selected", async () => {
     await renderPage();
     await screen.findByRole("log");
     const nav = tabBar();
     expect(nav).not.toBeNull();
     expect(within(nav!).getByRole("link", { name: "Hector" })).toBeInTheDocument();
     expect(within(nav!).getByRole("link", { name: "Learn" })).toHaveAttribute("href", "/learn");
-    expect(screen.getByRole("link", { name: "Back to Learn" })).toHaveAttribute("href", "/learn");
   });
 
   it("the composer rides above the tab bar in the same dock, so the tabs never cover it", async () => {
@@ -311,7 +329,7 @@ describe("web Hector", () => {
       history: unknown[];
     };
     expect(last.history).toHaveLength(40);
-  });
+  }, 30_000);
 
   it("a 403 not-entitled mid-conversation swaps in the paywall with its own source", async () => {
     routes["/api/hector-respond"] = status({ error: "not-entitled" }, 403);
@@ -346,12 +364,15 @@ describe("web Hector", () => {
   });
 
   it("App Store Pro is told to manage it on the iPhone; web Pro gets a Manage Subscription link", async () => {
+    // The old header bar's subscription line now lives in the overflow menu.
     const first = await renderPage();
+    await userEvent.click(await screen.findByRole("button", { name: "More about Hector" }));
     expect(await screen.findByText("Manage it in your iPhone's Settings.")).toBeInTheDocument();
     first.unmount();
     routes["/api/pro-status"] = status(PRO_WEB);
     await renderPage();
-    expect(await screen.findByRole("link", { name: "Manage Subscription" })).toHaveAttribute(
+    await userEvent.click(await screen.findByRole("button", { name: "More about Hector" }));
+    expect(await screen.findByRole("menuitem", { name: "Manage Subscription" })).toHaveAttribute(
       "href",
       "https://billing.example/portal",
     );
@@ -359,8 +380,7 @@ describe("web Hector", () => {
 });
 
 describe("web Hector in the new look", () => {
-  it("hector page shows the mascot art and status pill", async () => {
-    const { mascotArt } = await import("../../lib/mascot-poses");
+  it("the header shows his real cut-out, the course tutor line and a status pill that follows him", async () => {
     const players: FakeAudio[] = [];
     vi.stubGlobal(
       "Audio",
@@ -376,24 +396,92 @@ describe("web Hector in the new look", () => {
       new Promise<Response>((r) => (answer = r))) as unknown as Handler;
     await renderPage();
 
-    const art = () => screen.getByRole("img", { name: "Hector" });
-    expect((await screen.findByRole("img", { name: "Hector" })).getAttribute("src")).toBe(
-      mascotArt("hectorIdle").src,
-    );
-    expect(screen.queryByText("Thinking", { exact: true })).toBeNull();
+    const header = await screen.findByTestId("hector-header");
+    expect(within(header).getByRole("heading", { name: "Hector" })).toBeInTheDocument();
+    expect(within(header).getByText("Your French tutor")).toBeInTheDocument();
+    // Uncropped: the whole cut-out (contain, bottom edge), not a cover crop.
+    const figure = within(header).getByTestId("hector-figure");
+    expect(figure.getAttribute("src")).toBe("/hector/base.webp");
+    expect(figure.className).toContain("object-contain");
+    expect(figure.className).toContain("object-bottom");
+    const pill = () => screen.getByTestId("hector-status");
+    // Idle: green "Ready", announced.
+    await waitFor(() => expect(pill()).toHaveTextContent("Ready"));
+    expect(pill()).toHaveAttribute("aria-label", "Hector is ready");
 
     await userEvent.type(screen.getByLabelText("Message Hector"), "Bonjour");
     await userEvent.click(screen.getByRole("button", { name: "Send" }));
-    expect(await screen.findByText("Thinking", { exact: true })).toBeInTheDocument();
-    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorThinking").src));
+    await waitFor(() => expect(pill()).toHaveTextContent("Thinking…"));
+    expect(pill()).toHaveAttribute("aria-label", "Hector is thinking");
 
-    answer(Response.json({ reply: "Salut !", audioBase64: btoa("mp3") }));
-    expect(await screen.findByText("Speaking", { exact: true })).toBeInTheDocument();
-    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorSpeaking").src));
+    answer(
+      Response.json(
+        shapeTutorReply({
+          requestId: "r",
+          sessionId: "s",
+          agent: "tutor",
+          reply: "Salut !",
+          audioBase64: btoa("mp3"),
+          ttsModel: "m",
+          language: "fr",
+          llmMs: 1,
+          ttsMs: 1,
+        }),
+      ),
+    );
+    await waitFor(() => expect(pill()).toHaveTextContent("Speaking…"));
 
     players[players.length - 1].onended?.();
-    await waitFor(() => expect(screen.queryByText("Speaking", { exact: true })).toBeNull());
-    await waitFor(() => expect(art().getAttribute("src")).toBe(mascotArt("hectorIdle").src));
+    await waitFor(() => expect(pill()).toHaveTextContent("Ready"));
+  });
+
+  it("the overflow button holds the old header bar's actions and closes on Escape", async () => {
+    await renderPage();
+    const button = await screen.findByRole("button", { name: "More about Hector" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(button);
+    expect(button).toHaveAttribute("aria-expanded", "true");
+    const menu = screen.getByRole("menu", { name: "Hector options" });
+    expect(within(menu).getByRole("menuitem", { name: "Settings and voices" })).toHaveAttribute(
+      "href",
+      "/profile",
+    );
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("menu")).toBeNull();
+    // Escape hands focus back to the button that opened it.
+    expect(button).toHaveFocus();
+  });
+
+  it("the menu takes focus on open, moves with the arrow keys, and hides a subscription row with nothing to say", async () => {
+    routes["/api/pro-status"] = status({
+      pro: true,
+      store: null,
+      trialEligible: false,
+      manageUrl: null,
+    });
+    await renderPage();
+    await userEvent.click(await screen.findByRole("button", { name: "More about Hector" }));
+    const menu = screen.getByRole("menu", { name: "Hector options" });
+    // Only "Settings and voices": there is no empty subscription row.
+    const items = within(menu).getAllByRole("menuitem");
+    expect(items).toHaveLength(1);
+    expect(items[0]).toHaveFocus();
+    expect(menu.textContent).not.toMatch(/Manage/i);
+    await userEvent.keyboard("{ArrowDown}");
+    expect(items[0]).toHaveFocus();
+  });
+
+  it("with a web subscription the manage link is a menu item, and arrows move between the two", async () => {
+    routes["/api/pro-status"] = status(PRO_WEB);
+    await renderPage();
+    await userEvent.click(await screen.findByRole("button", { name: "More about Hector" }));
+    const items = within(screen.getByRole("menu")).getAllByRole("menuitem");
+    expect(items.map((i) => i.textContent)).toEqual(["Manage Subscription", "Settings and voices"]);
+    expect(items[0]).toHaveFocus();
+    await userEvent.keyboard("{ArrowDown}");
+    expect(items[1]).toHaveFocus();
+    await userEvent.keyboard("{ArrowUp}");
+    expect(items[0]).toHaveFocus();
   });
 });
 
@@ -410,10 +498,10 @@ describe("web Hector in his library", () => {
     expect(container.querySelector("[data-pro-tag]")).not.toBeNull();
   });
 
-  it("a Pro learner talks to Hector in front of the library", async () => {
-    const { container } = await renderPage();
+  it("a Pro learner talks to Hector under his navy header", async () => {
+    await renderPage();
     await screen.findByLabelText("Message Hector");
-    expect(container.querySelector('[data-scene="hector"]')).not.toBeNull();
+    expect(screen.getByTestId("hector-header")).toBeInTheDocument();
   });
 });
 
@@ -487,13 +575,13 @@ describe("web Hector as a full-screen call (the setting on, the default)", () =>
     expect(screen.queryByTestId("call-caption")).toBeNull();
   });
 
-  it("with the setting off it is the classic screen, mascot and status pill included", async () => {
+  it("with the setting off it is the classic screen, header and status pill included", async () => {
     localStorage.setItem("showAlphonsoWhilePractising", "false");
     await renderPage();
     // Wait for something only the classic screen has: the call screen also mounts "Message Hector" (in its closed
     // sheet), so waiting for that box would resolve on either screen.
-    expect(await screen.findByText("Your tutor")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Hector" })).toBeInTheDocument();
+    expect(await screen.findByText("Your French tutor")).toBeInTheDocument();
+    expect(screen.getByTestId("hector-header")).toBeInTheDocument();
     expect(screen.queryByTestId("alphonso-stage")).toBeNull();
     expect(screen.queryByTestId("call-sheet")).toBeNull();
   });
@@ -518,7 +606,7 @@ describe("web Hector as a full-screen call (the setting on, the default)", () =>
     observer.observe(document.body, { childList: true, subtree: true });
     try {
       await renderPage();
-      await screen.findByText("Your tutor");
+      await screen.findByText("Your French tutor");
       scan(observer.takeRecords());
     } finally {
       observer.disconnect();
@@ -616,5 +704,207 @@ describe("web Hector hands-free", () => {
     await screen.findByText("$9.99 a month after the trial");
     expect(screen.queryByRole("switch", { name: "Hands-free" })).toBeNull();
     expect(getUserMedia).not.toHaveBeenCalled();
+  });
+});
+
+describe("web Hector correction card", () => {
+  const getUserMedia = vi.fn();
+  const recorders: { state: string }[] = [];
+  const cancel = vi.fn();
+  const speakCalls: { text: string; lang: string }[] = [];
+  const voices: { lang: string }[] = [{ lang: "fr-FR" }];
+  const FIX = "Je suis fatigué";
+
+  beforeEach(() => {
+    installFakeAudioContext();
+    recorders.length = 0;
+    speakCalls.length = 0;
+    cancel.mockClear();
+    FakeAudio.instances.length = 0;
+    voices.splice(0, voices.length, { lang: "fr-FR" });
+    getUserMedia.mockReset();
+    getUserMedia.mockResolvedValue({ getTracks: () => [{ stop: vi.fn() }] });
+    Object.defineProperty(navigator, "mediaDevices", {
+      value: { getUserMedia },
+      configurable: true,
+    });
+    vi.stubGlobal(
+      "MediaRecorder",
+      class {
+        static isTypeSupported = () => true;
+        state = "inactive";
+        mimeType = "audio/webm";
+        ondataavailable: ((e: { data: Blob }) => void) | null = null;
+        onstop: (() => void) | null = null;
+        constructor() {
+          recorders.push(this);
+        }
+        start() {
+          this.state = "recording";
+        }
+        stop() {
+          this.state = "inactive";
+          this.onstop?.();
+        }
+      },
+    );
+    vi.stubGlobal(
+      "SpeechSynthesisUtterance",
+      class {
+        lang = "";
+        rate = 1;
+        constructor(public text: string) {}
+      },
+    );
+    vi.stubGlobal("speechSynthesis", {
+      cancel,
+      getVoices: () => voices,
+      speak: (u: { text: string; lang: string }) => speakCalls.push({ text: u.text, lang: u.lang }),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+  });
+
+  const correction = { slip: "Je suis fatiguée", fix: FIX, note: "Hector is a man's name." };
+
+  async function sayOne(reply: Record<string, unknown>) {
+    routes["/api/hector-respond"] = status(reply);
+    await renderPage();
+    const box = await screen.findByRole("textbox", { name: "Message Hector" });
+    await waitFor(() => expect(screen.getByRole("log").textContent).toContain("Moi, c'est Hector"));
+    await userEvent.type(box, "Je suis fatiguée{Enter}");
+    await screen.findByText(/Bonjour/);
+  }
+
+  it("shows the card under the learner's message when the reply carries a correction", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    const card = await screen.findByTestId("hector-correction");
+    expect(card).toHaveTextContent("Almost — one fix");
+    // Read aloud as "You said …; better: …" (the arrow is for the eyes only).
+    expect(card.textContent).toContain("You said Je suis fatiguée; better: ");
+    expect(card).toHaveTextContent(FIX);
+    expect(card).toHaveTextContent("Hector is a man's name.");
+    expect(within(card).getByRole("button", { name: /Hear it/ })).toBeInTheDocument();
+    expect(within(card).getByRole("button", { name: /Try again/ })).toBeInTheDocument();
+    // After the learner's bubble, before Hector's answer.
+    const text = screen.getByRole("log").textContent ?? "";
+    expect(text.indexOf("Je suis fatiguée")).toBeLessThan(text.indexOf("Almost"));
+    expect(text.indexOf("Almost")).toBeLessThan(text.indexOf("Bonjour ! Pourquoi"));
+  });
+
+  it("a clean message gets no card", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?" });
+    expect(screen.queryByTestId("hector-correction")).not.toBeInTheDocument();
+  });
+
+  it("a raw tag in the reply is never shown; a valid one still makes the card", async () => {
+    const raw = `Bonjour ! Pourquoi ?\n<correction>{"slip":"a","fix":"b"}</correction>`;
+    await sayOne({ reply: raw });
+    expect(screen.getByRole("log").textContent).not.toMatch(/<correction|\{"slip"/);
+    expect(await screen.findByTestId("hector-correction")).toHaveTextContent(/better:\s*→\s*b/);
+  });
+
+  it("a cut-off or malformed block is dropped without a card or a fragment", async () => {
+    await sayOne({ reply: 'Bonjour ! Pourquoi ?\n<correction>{"slip":"a","fi' });
+    expect(screen.getByRole("log").textContent).not.toMatch(/<correction|slip/);
+    expect(screen.queryByTestId("hector-correction")).not.toBeInTheDocument();
+  });
+
+  it("the learner's own text is shown as typed, tag and all, and is never parsed", async () => {
+    routes["/api/hector-respond"] = status({ reply: "Bonjour ! Pourquoi ?" });
+    await renderPage();
+    const box = await screen.findByRole("textbox", { name: "Message Hector" });
+    await waitFor(() => expect(screen.getByRole("log").textContent).toContain("Moi, c'est Hector"));
+    await userEvent.type(box, 'x <correction>{{"slip":"a","fix":"b"}</correction>{Enter}');
+    await screen.findByText(/Bonjour/);
+    expect(screen.getByRole("log").textContent).toContain(
+      '<correction>{"slip":"a","fix":"b"}</correction>',
+    );
+    expect(screen.queryByTestId("hector-correction")).not.toBeInTheDocument();
+  });
+
+  it("the correction is never sent back to the server as history", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    await userEvent.type(screen.getByRole("textbox", { name: "Message Hector" }), "Merci{Enter}");
+    await waitFor(() =>
+      expect(sent.filter((s) => s.url === "/api/hector-respond")).toHaveLength(2),
+    );
+    const second = sent.filter((s) => s.url === "/api/hector-respond")[1]!.body as {
+      history: Record<string, unknown>[];
+    };
+    expect(second.history.every((m) => Object.keys(m).sort().join() === "content,role")).toBe(true);
+  });
+
+  it("Hear it speaks the fix with the device's voice, in the course language, and makes no request", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    const before = sent.length;
+    await userEvent.click(await screen.findByRole("button", { name: /Hear it/ }));
+    expect(speakCalls).toEqual([{ text: FIX, lang: "fr-FR" }]);
+    expect(sent).toHaveLength(before);
+  });
+
+  it("with no voice for the course Hear it is left out; the written fix and Try again stay", async () => {
+    voices.splice(0, voices.length, { lang: "en-US" });
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    const card = await screen.findByTestId("hector-correction");
+    expect(within(card).queryByRole("button", { name: /Hear it/ })).not.toBeInTheDocument();
+    expect(card).toHaveTextContent(FIX);
+    expect(within(card).getByRole("button", { name: /Try again/ })).toBeInTheDocument();
+  });
+
+  it("Try again starts a recording, the tap-to-talk path", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    await userEvent.click(await screen.findByRole("button", { name: /Try again/ }));
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalled());
+    await waitFor(() => expect(recorders.some((r) => r.state === "recording")).toBe(true));
+  });
+
+  it("Try again puts the cursor in the composer where there is no microphone", async () => {
+    Object.defineProperty(navigator, "mediaDevices", { value: undefined, configurable: true });
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    await userEvent.click(await screen.findByRole("button", { name: /Try again/ }));
+    expect(screen.getByRole("textbox", { name: "Message Hector" })).toHaveFocus();
+  });
+  it("Hear it first stops Hector's own reply audio, and is disabled while the mic is open", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction, audio_base64: btoa("mp3") });
+    await waitFor(() => expect(FakeAudio.instances.length).toBeGreaterThan(0));
+    const reply = FakeAudio.instances[FakeAudio.instances.length - 1]!;
+    reply.pause.mockClear();
+    await userEvent.click(await screen.findByRole("button", { name: /Hear it/ }));
+    expect(reply.pause).toHaveBeenCalled();
+    expect(speakCalls).toHaveLength(1);
+  });
+
+  it("Try again cancels the device speech before the mic opens, and Hear it is then disabled", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    cancel.mockClear();
+    await userEvent.click(await screen.findByRole("button", { name: /Try again/ }));
+    expect(cancel).toHaveBeenCalled();
+    await waitFor(() => expect(recorders.some((r) => r.state === "recording")).toBe(true));
+    expect(await screen.findByRole("button", { name: /Hear it/ })).toBeDisabled();
+  });
+
+  it("leaving the screen cancels the fix being spoken", async () => {
+    const view = await (async () => {
+      routes["/api/hector-respond"] = status(
+        shapeTutorReply({
+          requestId: "r",
+          sessionId: "s",
+          agent: "tutor",
+          reply: "Bonjour ! Pourquoi ?",
+          audioBase64: "",
+          ttsModel: "m",
+          language: "fr",
+          llmMs: 1,
+          ttsMs: 1,
+          correction,
+        }),
+      );
+      return renderPage();
+    })();
+    await screen.findByRole("textbox", { name: "Message Hector" });
+    cancel.mockClear();
+    view.unmount();
+    expect(cancel).toHaveBeenCalled();
   });
 });

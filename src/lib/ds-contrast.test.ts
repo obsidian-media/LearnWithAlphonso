@@ -49,11 +49,14 @@ describe.each(SETS)("%s: content on a coloured fill", (_name, p) => {
 
 describe("the screens use those pairs", () => {
   const read = (f: string) => readFileSync(`ios/LearnWithAlphonso/Sources/${f}`, "utf8");
-  it("the user bubble and the hold-to-talk buttons never put a fixed-light colour on choice or a wrongInk fill", () => {
+  it("the user bubble and the stop and hold-to-talk buttons never put a fixed-light colour on choice or a wrongInk fill", () => {
     const hector = read("HectorView.swift");
     expect(hector).toContain("foregroundStyle(AlphonsoDS.current.onChoice)");
-    expect(hector).toContain("recordingColor: AlphonsoDS.current.wrong,");
-    expect(hector).toContain("recordingIconColor: AlphonsoDS.current.onWrong");
+    // The stop button of the type-or-talk composer: a wrong fill with its on-wrong glyph.
+    const parts = read("HectorParts.swift");
+    expect(parts).toContain("fill: AnyShapeStyle(ds.wrong)");
+    expect(parts).toContain("foregroundStyle(ds.onWrong)");
+    expect(parts).not.toContain("ds.wrongInk");
     const speak = read("SpeakQuestionCard.swift");
     expect(speak).toContain("iconColor: ds.onChoice");
     expect(speak).toContain("recordingColor: ds.wrong,");
