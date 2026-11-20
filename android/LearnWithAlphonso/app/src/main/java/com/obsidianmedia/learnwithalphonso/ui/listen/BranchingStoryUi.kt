@@ -163,21 +163,23 @@ internal fun BranchingStoryReader(container: AppContainer, story: BranchingStory
     SaveWordHost(container) {
         // The same fade and slide as before between scenes; with Reduce Motion, a plain swap.
         AnimatedContent(
-            targetState = nodeId to round,
+            // The path and scene count are snapshotted into the target, so the EXITING child keeps its own values (on restart
+            // it must not re-compose with the new empty path and re-submit it).
+            targetState = ShownNode(nodeId, round, path.toList(), visited.size),
             transitionSpec = {
                 if (reduce) ContentTransform(fadeIn(tween(0)), fadeOut(tween(0)))
                 else (fadeIn(tween(260)) + slideInHorizontally(tween(260)) { it / 12 }) togetherWith (fadeOut(tween(160)) + slideOutHorizontally(tween(160)) { -it / 12 })
             },
             label = "branching-scene",
-        ) { (shownId, shownRound) ->
+        ) { (shownId, shownRound, shownPath, shownScenes) ->
             val shown = story.graph.map[shownId]
             val shownKind = Branching.nodeKind(shown)
             if (shown == null || shownKind == NodeKind.INVALID) {
                 NotReady(::restart)
             } else if (shownKind == NodeKind.ENDING) {
-                EndingFlow(container, story, path.toList(), shownId, shownRound, visited.size, shown.ending!!, shown.artUrl, ::restart)
+                EndingFlow(container, story, shownPath, shownId, shownRound, shownScenes, shown.ending!!, shown.artUrl, ::restart)
             } else {
-                NodePage(container, story, shownId, shownRound, visited.size, onChoose = { index ->
+                NodePage(container, story, shownId, shownRound, shownScenes, onChoose = { index ->
                     Branching.chooseOption(story.graph, shownId, index)?.let { target ->
                         path.add(index)
                         go(target)
@@ -187,6 +189,9 @@ internal fun BranchingStoryReader(container: AppContainer, story: BranchingStory
         }
     }
 }
+
+/** What one AnimatedContent child shows: the node, the round, and the path and scene count as they were when it was entered. */
+private data class ShownNode(val nodeId: String, val round: Int, val path: List<Int>, val scenes: Int)
 
 @Composable
 private fun NotReady(onStartOver: () -> Unit) {
