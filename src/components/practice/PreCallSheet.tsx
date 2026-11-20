@@ -91,7 +91,7 @@ export function PreCallSheet({
           <ol
             aria-label="Scenes in this campaign"
             data-campaign-scenes=""
-            className="grid gap-1 rounded-[14px] border-2 border-ds-line bg-ds-card px-3 py-2"
+            className="grid gap-1 rounded-[14px] bg-ds-card px-3 py-2"
           >
             {target.scenes.map((sc, i) => (
               <li
@@ -103,7 +103,7 @@ export function PreCallSheet({
                 <span lang={target.lang} className="min-w-0 flex-1">
                   {sc.title}
                 </span>
-                <PracticeStars n={sc.stars} size="xs" />
+                <PracticeStars n={sc.stars} />
               </li>
             ))}
           </ol>

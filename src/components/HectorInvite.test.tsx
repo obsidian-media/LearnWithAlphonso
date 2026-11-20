@@ -89,6 +89,15 @@ describe("HectorInvite", () => {
     expect(card).toHaveFocus();
   });
 
+  it("hub look: ' · Pro' in the headline, no gold Pro pill and no inset ring", async () => {
+    render(<HectorInvite source="practice_hector_card" look="hub" />);
+    const card = await screen.findByRole("button", { name: /Practice speaking with Hector/ });
+    expect(card).toHaveTextContent("Practice speaking with Hector · Pro");
+    expect(card.querySelector(".bg-ds-action")).toBeNull();
+    expect(card.className).not.toContain("inset_0_0_0");
+    expect(card.className).toContain("rounded-[var(--ds-radius-control)]");
+  });
+
   it("end-of-Practice prompt uses its own wording and source", async () => {
     render(<HectorInvite source="practice_end_prompt" />);
     await userEvent.click(await screen.findByRole("button", { name: /Continue with Hector/ }));

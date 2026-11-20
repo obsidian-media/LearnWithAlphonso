@@ -52,15 +52,13 @@ export function StarTally({
     <span
       data-star-tally=""
       aria-label={`${earned} of ${total} stars earned`}
-      className={`inline-flex items-center gap-1.5 rounded-full border-2 border-ds-line bg-ds-card py-0.5 pl-1.5 pr-2.5 ds-type-caption font-extrabold text-ds-ink ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full bg-ds-xp-tint py-0.5 pl-1.5 pr-2.5 ds-type-caption font-extrabold text-ds-xp-text ${className}`}
     >
       <DsIcon name="star" solid className="size-4 text-ds-action" />
       <span className="tabular-nums" aria-hidden="true">
         {earned}
       </span>
-      <span className="text-ds-ink-soft" aria-hidden="true">
-        / {total}
-      </span>
+      <span aria-hidden="true">/ {total}</span>
     </span>
   );
 }

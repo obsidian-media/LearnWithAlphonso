@@ -1,22 +1,17 @@
 import { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { DsIcon } from "../ds/DsIcon";
+import { DsButton } from "../ds/Blocks";
 import { HectorInvite } from "../HectorInvite";
 import { PracticeStars, StarTally } from "./PracticeStars";
+import { BubbleGlyph, WaveformGlyph } from "./PracticeGlyphs";
 import { SayThePicture } from "./SayThePicture";
 import { SayItRight } from "./SayItRight";
 import { PreCallSheet, type CallMode, type PreCallTarget } from "./PreCallSheet";
 import type { Course } from "@/data/courses";
 import { CAMPAIGNS, localizeCampaign } from "@/data/campaigns";
 import { SCENARIOS, localizeScenario, type ScenarioLevel } from "@/data/scenarios";
-import {
-  WEAK_SPOT_NAMES,
-  campaignCover,
-  personaOf,
-  roomUrl,
-  sceneKey,
-  sceneRoom,
-} from "@/lib/practice-catalog";
+import { WEAK_SPOT_NAMES, personaOf, roomUrl, sceneKey, sceneRoom } from "@/lib/practice-catalog";
 import {
   campaignProgress,
   continuePoint,
@@ -76,12 +71,17 @@ export function PracticeHub({
   data,
   initialMode,
   onStart,
+  error = false,
+  onRetry,
 }: {
   course: Course;
   /** The learner's rows, or null while they load (or when they could not be loaded). */
   data: PracticeHubData | null;
   initialMode: CallMode;
   onStart: (target: StartTarget) => void;
+  /** The learner's rows could not be loaded: show "Could not load Practice." with Try again instead of loading forever. */
+  error?: boolean;
+  onRetry?: () => void;
 }) {
   const reduce = usePrefersReducedMotion();
   const rows = useMemo(() => data?.stars ?? [], [data]);
@@ -187,7 +187,7 @@ export function PracticeHub({
     const el = track.current;
     const first = el?.children[0] as HTMLElement | undefined;
     if (!el || !first || !first.offsetWidth) return;
-    const next = Math.round(el.scrollLeft / (first.offsetWidth + 10));
+    const next = Math.round(el.scrollLeft / (first.offsetWidth + 12));
     setActive(Math.min(Math.max(next, 0), Math.max(cards.length - 1, 0)));
   };
 
@@ -219,15 +219,14 @@ export function PracticeHub({
           <h1 className="ds-type-display text-ds-ink">Practice</h1>
           {data && <StarTally earned={tally.earned} total={tally.total} />}
         </div>
-        <p className="ds-type-caption font-semibold text-ds-ink-soft">
-          <span lang={course}>{greeting.line}</span>
-          {greeting.gloss && (
-            <>
-              <span aria-hidden="true"> · </span>
-              <span className="opacity-80">{greeting.gloss}</span>
-            </>
-          )}
+        <p lang={course} className="ds-type-caption font-semibold text-ds-ink-soft">
+          {greeting.line}
         </p>
+        {greeting.gloss && (
+          <p data-greeting-gloss="" className="ds-type-caption text-ds-ink-soft opacity-80">
+            {greeting.gloss}
+          </p>
+        )}
       </header>
 
       {/* The call cards: swipe, or use the dots. Never auto-advances. */}
@@ -242,7 +241,7 @@ export function PracticeHub({
               ref={track}
               onScroll={onTrackScroll}
               data-hero-track=""
-              className="-mx-1 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {cards.map((card, i) => (
                 <div
@@ -255,7 +254,7 @@ export function PracticeHub({
                     ? { "data-todays-pick": card.pickId }
                     : {})}
                   {...(card.continueKey ? { "data-continue": card.continueKey } : {})}
-                  className="relative grid min-h-[340px] shrink-0 basis-[86%] snap-center grid-rows-[auto_1fr_auto] overflow-hidden rounded-[26px] bg-ds-hero text-ds-on-hero shadow-[var(--ds-shadow-floating)]"
+                  className="relative grid min-h-[340px] shrink-0 basis-[86%] snap-center grid-rows-[auto_1fr_auto] overflow-hidden rounded-[var(--ds-radius-sheet)] bg-ds-hero text-ds-on-hero shadow-[var(--ds-shadow-floating)]"
                 >
                   <div
                     aria-hidden="true"
@@ -276,26 +275,28 @@ export function PracticeHub({
                     </p>
                     <p className="flex items-center gap-1.5 ds-type-caption font-semibold text-ds-on-hero-soft">
                       <span lang={course}>{card.subtitle}</span>
-                      <PracticeStars n={card.stars} size="xs" onDark />
+                      <PracticeStars n={card.stars} onDark />
                     </p>
-                    <p className="mt-1 rounded-full border border-white/25 bg-white/15 px-2.5 py-0.5 ds-type-caption font-bold text-white">
+                    <p className="mt-1 rounded-full bg-ds-on-hero/15 px-2.5 py-0.5 ds-type-caption text-ds-on-hero">
                       {card.reason}
                     </p>
                   </div>
-                  {/* In the grid flow (never absolute) so the title and reason pill can't sit under Alphonso. Hidden on
-                      narrow viewports and, because the query is in rem, at large text sizes, like iOS/Android. */}
+                  {/* In the grid flow (never absolute) so the title and reason pill can't sit under Alphonso. Shown on
+                      every phone (20rem is 320 px at the default size) and hidden only at large text sizes, because the
+                      query is in rem, like iOS/Android. */}
                   <div
                     data-hero-figure=""
-                    className="relative z-[1] hidden items-end justify-center min-[30rem]:flex"
+                    className="relative z-[1] hidden self-end min-[20rem]:block"
                   >
                     <img
                       src="/figures/alphonso-waving.webp"
                       alt=""
                       draggable={false}
-                      className="h-[150px] w-auto max-w-none select-none drop-shadow-[0_9px_15px_rgba(0,0,0,.5)]"
+                      className="mx-auto block h-[144px] w-auto max-w-none select-none drop-shadow-[0_9px_15px_rgba(0,0,0,.5)]"
                     />
                   </div>
-                  <div className="relative z-[3] grid justify-items-center gap-2 pb-3.5">
+                  {/* self-end: with the figure hidden (large text), Call/Chat still sit at the card's foot. */}
+                  <div className="relative z-[3] grid self-end justify-items-center gap-2 pb-3.5">
                     <p className="ds-type-caption font-extrabold text-ds-call-mint">
                       <i
                         aria-hidden="true"
@@ -311,7 +312,7 @@ export function PracticeHub({
                         aria-label={`Call Alphonso: ${card.title}`}
                         className="grid justify-items-center gap-1 text-ds-on-hero"
                       >
-                        <span className="grid size-[58px] place-items-center rounded-full bg-ds-action text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)]">
+                        <span className="grid size-[60px] place-items-center rounded-full bg-ds-action text-ds-on-action shadow-[0_4px_0_var(--c-action-edge)]">
                           <DsIcon name="mic" className="size-6" />
                         </span>
                         <span aria-hidden="true" className="ds-type-caption font-extrabold">
@@ -325,8 +326,8 @@ export function PracticeHub({
                         aria-label={`Chat with Alphonso: ${card.title}`}
                         className="grid justify-items-center gap-1 text-ds-on-hero"
                       >
-                        <span className="grid size-[52px] place-items-center rounded-full border-[1.5px] border-white/30 bg-white/20 backdrop-blur-[3px]">
-                          <DsIcon name="words" className="size-5" />
+                        <span className="grid size-[52px] place-items-center rounded-full bg-ds-on-hero/20">
+                          <BubbleGlyph className="size-5" />
                         </span>
                         <span aria-hidden="true" className="ds-type-caption font-extrabold">
                           Chat
@@ -351,37 +352,49 @@ export function PracticeHub({
                   >
                     <i
                       aria-hidden="true"
-                      className={`block h-1.5 rounded-full ${active === i ? "w-[18px] bg-ds-choice" : "w-1.5 bg-ds-line"}`}
+                      className={`block h-1.5 rounded-full ${active === i ? "w-5 bg-ds-choice" : "w-1.5 bg-ds-line"}`}
                     />
                   </button>
                 ))}
               </div>
             )}
           </>
+        ) : error ? (
+          <div role="alert" data-hero-error="" className="grid justify-items-start gap-2">
+            <p className="ds-type-body text-ds-ink">Could not load Practice.</p>
+            <DsButton small variant="secondary" onClick={() => onRetry?.()}>
+              Try again
+            </DsButton>
+          </div>
         ) : (
           <div
             data-hero-loading=""
             aria-busy="true"
-            className="grid min-h-[340px] place-items-center rounded-[26px] bg-ds-hero ds-type-caption font-semibold text-ds-on-hero-soft"
+            className="grid min-h-[340px] place-items-center rounded-[var(--ds-radius-sheet)] bg-ds-hero ds-type-caption font-semibold text-ds-on-hero-soft"
           >
-            Alphonso is picking your calls...
+            Loading Practice…
           </div>
         )}
       </section>
 
       {/* Conversations. */}
       <section aria-labelledby="conversations" className="grid gap-2.5">
-        <h2 id="conversations" className="ds-type-headline font-extrabold text-ds-ink">
+        <h2 id="conversations" className="ds-type-title text-ds-ink">
           Conversations
         </h2>
-        <div role="group" aria-label="Level" className="flex flex-wrap gap-1.5">
+        <div
+          role="group"
+          aria-label="Level"
+          data-level-row=""
+          className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {(["All", ...LEVELS] as const).map((l) => (
             <button
               key={l}
               type="button"
               aria-pressed={level === l}
               onClick={() => setLevel(l)}
-              className={`min-h-9 rounded-full border-2 px-3 ds-type-caption font-extrabold ${level === l ? "border-ds-brand bg-ds-brand text-ds-on-hero" : "border-ds-line bg-ds-card text-ds-ink-soft"}`}
+              className={`min-h-9 shrink-0 whitespace-nowrap rounded-full px-3 ds-type-caption font-extrabold ${level === l ? "bg-ds-choice-tint text-ds-ink" : "bg-ds-card text-ds-ink-soft"}`}
             >
               {l}
             </button>
@@ -397,7 +410,7 @@ export function PracticeHub({
                 type="button"
                 data-scenario-tile={s.id}
                 onClick={() => openScenario(s.id)}
-                className="relative h-[140px] overflow-hidden rounded-[18px] bg-ds-hero bg-cover text-left shadow-[var(--ds-shadow-resting)]"
+                className="relative min-h-[144px] overflow-hidden rounded-[var(--ds-radius-control)] bg-ds-hero bg-cover text-left shadow-[var(--ds-shadow-resting)]"
                 style={{
                   backgroundImage: `url(${roomUrl(s.id)})`,
                   backgroundPosition: "center 30%",
@@ -412,11 +425,6 @@ export function PracticeHub({
                   aria-hidden="true"
                   className="absolute inset-0 z-[2] rounded-[inherit] shadow-[inset_0_0_0_1.5px_color-mix(in_srgb,var(--c-card)_55%,transparent)]"
                 />
-                <span
-                  className={`absolute left-2 top-2 z-[1] rounded-[6px] px-1.5 ds-type-caption font-extrabold ${s.level === "Advanced" ? "bg-ds-brand text-ds-on-hero-kick" : "bg-ds-card/95 text-ds-brand"}`}
-                >
-                  {s.level}
-                </span>
                 {n >= 3 && (
                   <span
                     data-mastered=""
@@ -427,6 +435,9 @@ export function PracticeHub({
                   </span>
                 )}
                 <span className="absolute inset-x-2.5 bottom-2 z-[1] grid gap-0.5 text-ds-on-hero">
+                  <span data-tile-level="" className="ds-type-overline text-ds-on-hero-kick">
+                    {s.level}
+                  </span>
                   <span lang={course} className="ds-type-footnote font-extrabold leading-tight">
                     {s.title}
                   </span>
@@ -440,18 +451,14 @@ export function PracticeHub({
 
       {/* Campaigns: a rail, each with its own room, how far in, and a dot per scene. */}
       <section aria-labelledby="campaigns" className="grid gap-2.5">
-        <div className="flex items-center justify-between">
-          <h2 id="campaigns" className="ds-type-headline font-extrabold text-ds-ink">
-            Campaigns
-          </h2>
-          <span className="ds-type-caption text-ds-choice">{campaigns.length} stories</span>
-        </div>
+        <h2 id="campaigns" className="ds-type-title text-ds-ink">
+          Campaigns · {campaigns.length} stories
+        </h2>
         <div
           data-campaign-rail=""
-          className="-mx-4 flex snap-x gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {campaigns.map((c, i) => {
-            const raw = CAMPAIGNS.find((x) => x.id === c.id)!;
             const progress = campaignProgress(c.id, rows);
             const label = !data
               ? ""
@@ -470,8 +477,8 @@ export function PracticeHub({
                     : undefined
                 }
                 onClick={() => openScene(c.id, nextSceneIndex(c.id, rows))}
-                className="relative h-[132px] w-[160px] shrink-0 snap-start overflow-hidden rounded-[18px] bg-ds-hero bg-cover bg-center text-left text-ds-on-hero shadow-[var(--ds-shadow-resting)]"
-                style={{ backgroundImage: `url(${campaignCover(raw)})` }}
+                className="relative h-[144px] w-[160px] shrink-0 snap-start overflow-hidden rounded-[var(--ds-radius-control)] bg-ds-hero bg-cover bg-center text-left text-ds-on-hero shadow-[var(--ds-shadow-resting)]"
+                style={{ backgroundImage: `url(${sceneRoom(c.id, c.scenes[0].id)})` }}
               >
                 <span
                   aria-hidden="true"
@@ -511,14 +518,14 @@ export function PracticeHub({
 
       {/* Drills: two separate features, each with its own picture and a Start button. */}
       <section aria-labelledby="quick-practice" className="grid gap-2.5">
-        <h2 id="quick-practice" className="ds-type-headline font-extrabold text-ds-ink">
+        <h2 id="quick-practice" className="ds-type-title text-ds-ink">
           Quick practice
         </h2>
         <button
           type="button"
           data-say-the-picture-card=""
           onClick={() => setSayPicture(true)}
-          className="flex items-stretch overflow-hidden rounded-[18px] border-2 border-b-4 border-ds-line bg-ds-card text-left"
+          className="flex items-stretch overflow-hidden rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card text-left"
         >
           <span
             aria-hidden="true"
@@ -533,11 +540,10 @@ export function PracticeHub({
           <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-3">
             <span className="ds-type-headline font-extrabold text-ds-ink">Say the picture</span>
             <span className="ds-type-caption font-semibold text-ds-ink-soft">
-              See a picture, say the word. 8 quick words.
+              See a picture and say the word. A miss shows you the word and how it sounds.
             </span>
-            <span className="mt-1 inline-flex items-center gap-1 self-start rounded-full bg-ds-choice px-3.5 py-1.5 ds-type-caption font-extrabold text-white shadow-[0_3px_0_var(--c-choice-edge)]">
+            <span className="mt-1 inline-flex items-center self-start rounded-full bg-ds-choice px-3.5 py-1.5 ds-type-caption font-extrabold text-ds-on-choice">
               Start
-              <DsIcon name="chevron" className="size-3" />
             </span>
           </span>
         </button>
@@ -545,24 +551,22 @@ export function PracticeHub({
           type="button"
           data-say-it-right-card=""
           onClick={() => setSayItRight(true)}
-          className="flex items-stretch overflow-hidden rounded-[18px] border-2 border-b-4 border-ds-line bg-ds-card text-left"
+          className="flex items-stretch overflow-hidden rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card text-left"
         >
           <span
             aria-hidden="true"
-            className="flex w-24 shrink-0 items-center justify-center gap-[3px] bg-ds-right-tint"
+            className="grid w-24 shrink-0 place-items-center bg-ds-right-tint text-ds-right-edge"
           >
-            {[10, 22, 36, 18, 30, 12, 24].map((h, k) => (
-              <i key={k} className="block w-1 rounded-full bg-ds-right" style={{ height: h }} />
-            ))}
+            <WaveformGlyph className="size-9" />
           </span>
           <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-3">
             <span className="ds-type-headline font-extrabold text-ds-ink">Say it right</span>
             <span className="ds-type-caption font-semibold text-ds-ink-soft">
-              Hear a word you learned, say it back. 8 quick words.
+              Hear a word you have learned, say it, and find out how clearly you were understood. A
+              miss teaches, it never punishes.
             </span>
-            <span className="mt-1 inline-flex items-center gap-1 self-start rounded-full bg-ds-choice px-3.5 py-1.5 ds-type-caption font-extrabold text-white shadow-[0_3px_0_var(--c-choice-edge)]">
+            <span className="mt-1 inline-flex items-center self-start rounded-full bg-ds-choice px-3.5 py-1.5 ds-type-caption font-extrabold text-ds-on-choice">
               Start
-              <DsIcon name="chevron" className="size-3" />
             </span>
           </span>
         </button>
