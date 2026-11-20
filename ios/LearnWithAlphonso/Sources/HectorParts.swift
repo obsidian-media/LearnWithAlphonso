@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 import LearnWithAlphonsoKit
 
 /// The pieces of Hector's converged screen: the tutor header, the suggestion chips and the type-or-talk composer.
@@ -221,6 +222,8 @@ struct HectorComposer: View {
     let onSend: () -> Void
     let onMic: () -> Void
     let onStop: () -> Void
+    /// Bumped to put the cursor in the field ("Try again" with no microphone).
+    var focusCue: Int = 0
 
     @Environment(\.alphonsoDS) private var ds
     @FocusState private var focused: Bool
@@ -237,6 +240,7 @@ struct HectorComposer: View {
         .padding(.bottom, 10)
         .background(ds.card, ignoresSafeAreaEdges: .bottom)
         .shadow(color: ds.ink.opacity(0.12), radius: 8, y: -4)
+        .onChange(of: focusCue) { focused = true }
     }
 
     private var field: some View {
@@ -306,5 +310,110 @@ struct HectorComposer: View {
         .buttonStyle(.plain)
         .accessibilityLabel(label)
         .accessibilityIdentifier(id)
+    }
+}
+
+// MARK: - Correction card
+
+/// Says a correction's fix with the device's own voice (AVSpeechSynthesizer): no request, no server, no quota. The voice
+/// comes from `SpeechVoice`, the one place the app picks one.
+@MainActor
+final class HectorFixSpeaker {
+    static let shared = HectorFixSpeaker()
+    private let synthesizer = AVSpeechSynthesizer()
+
+    func speak(_ text: String, course: Course) {
+        synthesizer.stopSpeaking(at: .immediate)
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = SpeechVoice.voice(for: course)
+        synthesizer.speak(utterance)
+    }
+
+    func stop() { synthesizer.stopSpeaking(at: .immediate) }
+
+    /// Whether the device has a voice for the course; without one the card keeps its written fix and drops "Hear it".
+    nonisolated static func canSpeak(_ course: Course) -> Bool { SpeechVoice.voice(for: course) != nil }
+}
+
+/// Hector's gentle correction under the learner's bubble: "Almost — one fix", the slip struck through, the fix in bold,
+/// an optional note, "Hear it" (gold) and "Try again" (the mic).
+struct HectorCorrectionCard: View {
+    let correction: HectorCorrection
+    /// False when the device has no voice for the course: the card still shows the written fix.
+    let canHear: Bool
+    let tryAgainDisabled: Bool
+    /// The mic is open (hands-free listening or a recording): the fix must not be spoken into it.
+    let hearDisabled: Bool
+    let onHear: () -> Void
+    let onTryAgain: () -> Void
+
+    @Environment(\.alphonsoDS) private var ds
+
+    /// What VoiceOver says for the correction line.
+    var spoken: String { "You said \(correction.slip); better: \(correction.fix)" }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 5) {
+                DSIconView(icon: .check, size: 12)
+                Text("Almost — one fix").dsText(.overline)
+            }
+            .foregroundStyle(ds.rightInk)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(ds.rightTint, in: Capsule())
+            .accessibilityHidden(true)
+
+            (Text(correction.slip).strikethrough(true, color: ds.wrong).foregroundColor(ds.wrong)
+                + Text("  →  ").foregroundColor(ds.inkSoft)
+                + Text(correction.fix).bold().foregroundColor(ds.rightInk))
+                .dsText(.footnote)
+                .accessibilityLabel(spoken)
+                .accessibilityIdentifier("hectorCorrectionLine")
+
+            if let note = correction.note {
+                Text(note).dsText(.caption).foregroundStyle(ds.inkSoft)
+            }
+
+            HStack(spacing: 8) {
+                if canHear {
+                    Button(action: onHear) {
+                        Label { Text("Hear it") } icon: { DSIconView(icon: .play, size: 13) }
+                            .dsText(.footnote)
+                            .foregroundStyle(ds.onAction)
+                            .padding(.horizontal, 14)
+                            .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                            .background(ds.action, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(hearDisabled)
+                    .opacity(hearDisabled ? 0.5 : 1)
+                    .accessibilityLabel("Hear it: \(correction.fix)")
+                    .accessibilityIdentifier("hectorHearIt")
+                }
+                Button(action: onTryAgain) {
+                    Label { Text("Try again") } icon: { DSIconView(icon: .mic, size: 13) }
+                        .dsText(.footnote)
+                        .foregroundStyle(ds.brand)
+                        .padding(.horizontal, 14)
+                        .frame(minHeight: AlphonsoSpacing.minTouchTarget)
+                        .background(ds.sunk, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .disabled(tryAgainDisabled)
+                .opacity(tryAgainDisabled ? 0.5 : 1)
+                .accessibilityLabel("Try again: say it once more")
+                .accessibilityIdentifier("hectorTryAgain")
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(ds.card, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(ds.line, lineWidth: 1))
+        .padding(.leading, 39)
+        .padding(.trailing, 40)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("hectorCorrection")
     }
 }

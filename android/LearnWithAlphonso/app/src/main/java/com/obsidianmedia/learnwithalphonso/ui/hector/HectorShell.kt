@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
@@ -253,6 +254,8 @@ internal fun HectorComposer(
     level: () -> Double?,
     reducedMotion: Boolean,
     modifier: Modifier = Modifier,
+    /** Lets "Try again" put the cursor in the field when there is no microphone. */
+    focusRequester: androidx.compose.ui.focus.FocusRequester? = null,
 ) {
     val ds = LocalAlphonsoTokens.current
     Row(
@@ -287,7 +290,7 @@ internal fun HectorComposer(
                 BasicTextField(
                     value = text, onValueChange = onText, enabled = !busy,
                     textStyle = BodyType.copy(color = ds.ink), cursorBrush = SolidColor(ds.choice), maxLines = 4,
-                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Message Hector" },
+                    modifier = Modifier.fillMaxWidth().then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier).semantics { contentDescription = "Message Hector" },
                     decorationBox = { inner ->
                         if (text.isEmpty()) Text("Type or tap the mic…", style = BodyType, color = ds.inkSoft, modifier = Modifier.clearAndSetSemantics { })
                         inner()

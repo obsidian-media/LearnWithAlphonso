@@ -179,3 +179,49 @@ describe("shapeTutorReply", () => {
     expect(r.timings_ms).toEqual({ llm: 121, tts: 80, total: 201 });
   });
 });
+
+describe("the correction instruction in Hector's prompt", () => {
+  it("is added for every course and level, after the existing persona rules", () => {
+    for (const course of ["en", "fr", "es"] as const) {
+      for (const level of ["", "A1", "B2"]) {
+        const prompt = buildHectorSystemPrompt(course, level);
+        expect(prompt).toContain("You are Hector");
+        expect(prompt).toContain("Gently correct mistakes by modelling the right form");
+        expect(prompt).toContain("CORRECTION CARD");
+        expect(prompt).toContain("<correction>");
+        expect(prompt.indexOf("CORRECTION CARD")).toBeGreaterThan(prompt.indexOf("You are Hector"));
+      }
+    }
+  });
+
+  it("asks for the note in the course language", () => {
+    expect(buildHectorSystemPrompt("fr", "A2")).toContain("encouraging sentence in French");
+  });
+
+  it("relaxes nothing: the safety preamble is still the first thing the model is told", async () => {
+    const { applySafety, SAFETY_PREAMBLE } = await import("./ai-safety");
+    const out = applySafety(buildHectorMessages([], "hi", buildHectorSystemPrompt("en", "B1")));
+    expect(out[0].content).toContain(SAFETY_PREAMBLE);
+    expect(out[0].content).toContain("CORRECTION CARD");
+  });
+
+  it("shapeTutorReply carries a correction only when there is one", () => {
+    const base = {
+      requestId: "r",
+      sessionId: "s",
+      agent: "tutor",
+      reply: "Hi",
+      audioBase64: "",
+      ttsModel: "m",
+      language: "en",
+      llmMs: 1,
+      ttsMs: 1,
+    };
+    expect("correction" in shapeTutorReply(base)).toBe(false);
+    expect("correction" in shapeTutorReply({ ...base, correction: null })).toBe(false);
+    expect(shapeTutorReply({ ...base, correction: { slip: "a", fix: "b" } }).correction).toEqual({
+      slip: "a",
+      fix: "b",
+    });
+  });
+});

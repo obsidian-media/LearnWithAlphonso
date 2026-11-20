@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { shapeTutorReply } from "@/lib/hector-conversation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -73,7 +74,10 @@ class FakeAudio {
   play = vi.fn().mockResolvedValue(undefined);
   pause = vi.fn();
   onended: (() => void) | null = null;
-  constructor(public src: string) {}
+  static instances: FakeAudio[] = [];
+  constructor(public src: string) {
+    FakeAudio.instances.push(this);
+  }
 }
 
 beforeEach(() => {
@@ -87,7 +91,19 @@ beforeEach(() => {
   routes = {
     "/api/pro-status": status(PRO_APP_STORE),
     "/api/pro-offering": status(OFFER),
-    "/api/hector-respond": status({ reply: "Bonjour ! Comment ça va ?", audioBase64: btoa("mp3") }),
+    "/api/hector-respond": status(
+      shapeTutorReply({
+        requestId: "r",
+        sessionId: "s",
+        agent: "tutor",
+        reply: "Bonjour ! Comment ça va ?",
+        audioBase64: btoa("mp3"),
+        ttsModel: "m",
+        language: "fr",
+        llmMs: 1,
+        ttsMs: 1,
+      }),
+    ),
   };
   globalThis.fetch = vi.fn(async (input: string, init?: RequestInit) => {
     const url = String(input);
@@ -398,7 +414,21 @@ describe("web Hector in the new look", () => {
     await waitFor(() => expect(pill()).toHaveTextContent("Thinking…"));
     expect(pill()).toHaveAttribute("aria-label", "Hector is thinking");
 
-    answer(Response.json({ reply: "Salut !", audioBase64: btoa("mp3") }));
+    answer(
+      Response.json(
+        shapeTutorReply({
+          requestId: "r",
+          sessionId: "s",
+          agent: "tutor",
+          reply: "Salut !",
+          audioBase64: btoa("mp3"),
+          ttsModel: "m",
+          language: "fr",
+          llmMs: 1,
+          ttsMs: 1,
+        }),
+      ),
+    );
     await waitFor(() => expect(pill()).toHaveTextContent("Speaking…"));
 
     players[players.length - 1].onended?.();
@@ -674,5 +704,207 @@ describe("web Hector hands-free", () => {
     await screen.findByText("$9.99 a month after the trial");
     expect(screen.queryByRole("switch", { name: "Hands-free" })).toBeNull();
     expect(getUserMedia).not.toHaveBeenCalled();
+  });
+});
+
+describe("web Hector correction card", () => {
+  const getUserMedia = vi.fn();
+  const recorders: { state: string }[] = [];
+  const cancel = vi.fn();
+  const speakCalls: { text: string; lang: string }[] = [];
+  const voices: { lang: string }[] = [{ lang: "fr-FR" }];
+  const FIX = "Je suis fatigué";
+
+  beforeEach(() => {
+    installFakeAudioContext();
+    recorders.length = 0;
+    speakCalls.length = 0;
+    cancel.mockClear();
+    FakeAudio.instances.length = 0;
+    voices.splice(0, voices.length, { lang: "fr-FR" });
+    getUserMedia.mockReset();
+    getUserMedia.mockResolvedValue({ getTracks: () => [{ stop: vi.fn() }] });
+    Object.defineProperty(navigator, "mediaDevices", {
+      value: { getUserMedia },
+      configurable: true,
+    });
+    vi.stubGlobal(
+      "MediaRecorder",
+      class {
+        static isTypeSupported = () => true;
+        state = "inactive";
+        mimeType = "audio/webm";
+        ondataavailable: ((e: { data: Blob }) => void) | null = null;
+        onstop: (() => void) | null = null;
+        constructor() {
+          recorders.push(this);
+        }
+        start() {
+          this.state = "recording";
+        }
+        stop() {
+          this.state = "inactive";
+          this.onstop?.();
+        }
+      },
+    );
+    vi.stubGlobal(
+      "SpeechSynthesisUtterance",
+      class {
+        lang = "";
+        rate = 1;
+        constructor(public text: string) {}
+      },
+    );
+    vi.stubGlobal("speechSynthesis", {
+      cancel,
+      getVoices: () => voices,
+      speak: (u: { text: string; lang: string }) => speakCalls.push({ text: u.text, lang: u.lang }),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+  });
+
+  const correction = { slip: "Je suis fatiguée", fix: FIX, note: "Hector is a man's name." };
+
+  async function sayOne(reply: Record<string, unknown>) {
+    routes["/api/hector-respond"] = status(reply);
+    await renderPage();
+    const box = await screen.findByRole("textbox", { name: "Message Hector" });
+    await waitFor(() => expect(screen.getByRole("log").textContent).toContain("Moi, c'est Hector"));
+    await userEvent.type(box, "Je suis fatiguée{Enter}");
+    await screen.findByText(/Bonjour/);
+  }
+
+  it("shows the card under the learner's message when the reply carries a correction", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    const card = await screen.findByTestId("hector-correction");
+    expect(card).toHaveTextContent("Almost — one fix");
+    // Read aloud as "You said …; better: …" (the arrow is for the eyes only).
+    expect(card.textContent).toContain("You said Je suis fatiguée; better: ");
+    expect(card).toHaveTextContent(FIX);
+    expect(card).toHaveTextContent("Hector is a man's name.");
+    expect(within(card).getByRole("button", { name: /Hear it/ })).toBeInTheDocument();
+    expect(within(card).getByRole("button", { name: /Try again/ })).toBeInTheDocument();
+    // After the learner's bubble, before Hector's answer.
+    const text = screen.getByRole("log").textContent ?? "";
+    expect(text.indexOf("Je suis fatiguée")).toBeLessThan(text.indexOf("Almost"));
+    expect(text.indexOf("Almost")).toBeLessThan(text.indexOf("Bonjour ! Pourquoi"));
+  });
+
+  it("a clean message gets no card", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?" });
+    expect(screen.queryByTestId("hector-correction")).not.toBeInTheDocument();
+  });
+
+  it("a raw tag in the reply is never shown; a valid one still makes the card", async () => {
+    const raw = `Bonjour ! Pourquoi ?\n<correction>{"slip":"a","fix":"b"}</correction>`;
+    await sayOne({ reply: raw });
+    expect(screen.getByRole("log").textContent).not.toMatch(/<correction|\{"slip"/);
+    expect(await screen.findByTestId("hector-correction")).toHaveTextContent(/better:\s*→\s*b/);
+  });
+
+  it("a cut-off or malformed block is dropped without a card or a fragment", async () => {
+    await sayOne({ reply: 'Bonjour ! Pourquoi ?\n<correction>{"slip":"a","fi' });
+    expect(screen.getByRole("log").textContent).not.toMatch(/<correction|slip/);
+    expect(screen.queryByTestId("hector-correction")).not.toBeInTheDocument();
+  });
+
+  it("the learner's own text is shown as typed, tag and all, and is never parsed", async () => {
+    routes["/api/hector-respond"] = status({ reply: "Bonjour ! Pourquoi ?" });
+    await renderPage();
+    const box = await screen.findByRole("textbox", { name: "Message Hector" });
+    await waitFor(() => expect(screen.getByRole("log").textContent).toContain("Moi, c'est Hector"));
+    await userEvent.type(box, 'x <correction>{{"slip":"a","fix":"b"}</correction>{Enter}');
+    await screen.findByText(/Bonjour/);
+    expect(screen.getByRole("log").textContent).toContain(
+      '<correction>{"slip":"a","fix":"b"}</correction>',
+    );
+    expect(screen.queryByTestId("hector-correction")).not.toBeInTheDocument();
+  });
+
+  it("the correction is never sent back to the server as history", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    await userEvent.type(screen.getByRole("textbox", { name: "Message Hector" }), "Merci{Enter}");
+    await waitFor(() =>
+      expect(sent.filter((s) => s.url === "/api/hector-respond")).toHaveLength(2),
+    );
+    const second = sent.filter((s) => s.url === "/api/hector-respond")[1]!.body as {
+      history: Record<string, unknown>[];
+    };
+    expect(second.history.every((m) => Object.keys(m).sort().join() === "content,role")).toBe(true);
+  });
+
+  it("Hear it speaks the fix with the device's voice, in the course language, and makes no request", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    const before = sent.length;
+    await userEvent.click(await screen.findByRole("button", { name: /Hear it/ }));
+    expect(speakCalls).toEqual([{ text: FIX, lang: "fr-FR" }]);
+    expect(sent).toHaveLength(before);
+  });
+
+  it("with no voice for the course Hear it is left out; the written fix and Try again stay", async () => {
+    voices.splice(0, voices.length, { lang: "en-US" });
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    const card = await screen.findByTestId("hector-correction");
+    expect(within(card).queryByRole("button", { name: /Hear it/ })).not.toBeInTheDocument();
+    expect(card).toHaveTextContent(FIX);
+    expect(within(card).getByRole("button", { name: /Try again/ })).toBeInTheDocument();
+  });
+
+  it("Try again starts a recording, the tap-to-talk path", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    await userEvent.click(await screen.findByRole("button", { name: /Try again/ }));
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalled());
+    await waitFor(() => expect(recorders.some((r) => r.state === "recording")).toBe(true));
+  });
+
+  it("Try again puts the cursor in the composer where there is no microphone", async () => {
+    Object.defineProperty(navigator, "mediaDevices", { value: undefined, configurable: true });
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    await userEvent.click(await screen.findByRole("button", { name: /Try again/ }));
+    expect(screen.getByRole("textbox", { name: "Message Hector" })).toHaveFocus();
+  });
+  it("Hear it first stops Hector's own reply audio, and is disabled while the mic is open", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction, audio_base64: btoa("mp3") });
+    await waitFor(() => expect(FakeAudio.instances.length).toBeGreaterThan(0));
+    const reply = FakeAudio.instances[FakeAudio.instances.length - 1]!;
+    reply.pause.mockClear();
+    await userEvent.click(await screen.findByRole("button", { name: /Hear it/ }));
+    expect(reply.pause).toHaveBeenCalled();
+    expect(speakCalls).toHaveLength(1);
+  });
+
+  it("Try again cancels the device speech before the mic opens, and Hear it is then disabled", async () => {
+    await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
+    cancel.mockClear();
+    await userEvent.click(await screen.findByRole("button", { name: /Try again/ }));
+    expect(cancel).toHaveBeenCalled();
+    await waitFor(() => expect(recorders.some((r) => r.state === "recording")).toBe(true));
+    expect(await screen.findByRole("button", { name: /Hear it/ })).toBeDisabled();
+  });
+
+  it("leaving the screen cancels the fix being spoken", async () => {
+    const view = await (async () => {
+      routes["/api/hector-respond"] = status(
+        shapeTutorReply({
+          requestId: "r",
+          sessionId: "s",
+          agent: "tutor",
+          reply: "Bonjour ! Pourquoi ?",
+          audioBase64: "",
+          ttsModel: "m",
+          language: "fr",
+          llmMs: 1,
+          ttsMs: 1,
+          correction,
+        }),
+      );
+      return renderPage();
+    })();
+    await screen.findByRole("textbox", { name: "Message Hector" });
+    cancel.mockClear();
+    view.unmount();
+    expect(cancel).toHaveBeenCalled();
   });
 });
