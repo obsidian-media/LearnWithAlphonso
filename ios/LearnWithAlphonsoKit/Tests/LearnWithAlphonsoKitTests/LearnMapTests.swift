@@ -23,7 +23,11 @@ final class LearnMapTests: XCTestCase {
     }
 
     private func loadUnits(_ root: JSON) throws -> [LearnMap.Unit] {
-        try XCTUnwrap(root["units"] as? [JSON]).map { u in
+        try units(from: try XCTUnwrap(root["units"] as? [JSON]))
+    }
+
+    private func units(from json: [JSON]) throws -> [LearnMap.Unit] {
+        try json.map { u in
             LearnMap.Unit(
                 id: try XCTUnwrap(u["id"] as? String),
                 title: try XCTUnwrap(u["title"] as? String),
@@ -100,7 +104,8 @@ final class LearnMapTests: XCTestCase {
         for c in cases {
             let name = try XCTUnwrap(c["name"] as? String)
             let completed = Set(try XCTUnwrap(c["completed"] as? [String]))
-            let climb = LearnMap.climb(units: units, completed: completed, timing: timing, unitID: c["unitId"] as? String)
+            let caseUnits = try (c["units"] as? [JSON]).map { try self.units(from: $0) } ?? units
+            let climb = LearnMap.climb(units: caseUnits, completed: completed, timing: timing, unitID: c["unitId"] as? String)
             if let expect = c["expect"] as? JSON {
                 try check(expect, try XCTUnwrap(climb, name), name)
             } else {

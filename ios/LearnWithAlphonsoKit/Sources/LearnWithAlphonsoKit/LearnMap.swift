@@ -115,15 +115,19 @@ public enum LearnMap {
 
     /// The climb for one unit of the level. Without `unitID` it is the learner's current unit: the first with a lesson
     /// not done, or the last unit when the whole level is done. nil for a level with no units (or an unknown unitID).
+    ///
+    /// A unit with no lessons is never a climb, a current unit or a trailhead: there is nothing to climb and no chest to
+    /// earn. It is skipped as if done, the same as `LearnFold.currentUnitOf`, which looks for the first lesson not done
+    /// and so passes over it. It still counts in the strip's "Unit N of M", which numbers every unit of the level.
     public static func climb(units: [Unit], completed: Set<String>, timing: LessonTiming, unitID: String? = nil) -> Climb? {
-        guard !units.isEmpty else { return nil }
-        let index: Int
+        let found: Int?
         if let unitID {
-            guard let found = units.firstIndex(where: { $0.id == unitID }) else { return nil }
-            index = found
+            found = units.firstIndex { $0.id == unitID }
         } else {
-            index = units.firstIndex { !isDone($0, completed) } ?? units.count - 1
+            found = units.firstIndex { !$0.lessons.isEmpty && !isDone($0, completed) }
+                ?? units.lastIndex { !$0.lessons.isEmpty }
         }
+        guard let index = found, !units[index].lessons.isEmpty else { return nil }
         let unit = units[index]
         let slots = unit.lessons.count + 1
         let nextIndex = unit.lessons.firstIndex { !completed.contains($0.id) }
@@ -137,7 +141,8 @@ public enum LearnMap {
         }
         let done = unit.lessons.filter { completed.contains($0.id) }.count
         let total = unit.lessons.count
-        let previous = index > 0 ? units[index - 1] : nil
+        // The trailhead looks back past empty units to the last unit that had a climb.
+        let previous = units[..<index].last { !$0.lessons.isEmpty }
         let next = nextIndex.map { unit.lessons[$0] }.map { lesson in
             StartSheet(
                 lessonID: lesson.id,

@@ -558,6 +558,552 @@
       "completed": [],
       "unitId": "nope",
       "expect": null
+    },
+    {
+      "name": "a 1-lesson unit is a full climb of two slots: the lesson at the foot, the chest at the summit",
+      "units": [
+        {
+          "id": "a",
+          "title": "First Steps",
+          "lessons": [
+            {
+              "id": "a1",
+              "title": "Hi There",
+              "subtitle": "Hello and goodbye",
+              "questionTypes": [
+                "mc"
+              ],
+              "wordCount": 2
+            }
+          ]
+        },
+        {
+          "id": "e",
+          "title": "Coming Soon",
+          "lessons": []
+        },
+        {
+          "id": "b",
+          "title": "Long Road",
+          "lessons": [
+            {
+              "id": "b1",
+              "title": "Stage 1",
+              "subtitle": "Part 1",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b2",
+              "title": "Stage 2",
+              "subtitle": "Part 2",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b3",
+              "title": "Stage 3",
+              "subtitle": "Part 3",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b4",
+              "title": "Stage 4",
+              "subtitle": "Part 4",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b5",
+              "title": "Stage 5",
+              "subtitle": "Part 5",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b6",
+              "title": "Stage 6",
+              "subtitle": "Part 6",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            }
+          ]
+        }
+      ],
+      "completed": [],
+      "expect": {
+        "unitId": "a",
+        "strip": {
+          "number": 1,
+          "count": 3,
+          "name": "First Steps",
+          "done": 0,
+          "total": 1,
+          "progress": 0.0
+        },
+        "nodes": [
+          {
+            "id": "a1",
+            "title": "Hi There",
+            "state": "next",
+            "x": 0.36,
+            "y": 0.9
+          }
+        ],
+        "chest": {
+          "earned": false,
+          "x": 0.5,
+          "y": 0.06
+        },
+        "trailhead": {
+          "kind": "start"
+        },
+        "next": {
+          "lessonId": "a1",
+          "title": "Hi There",
+          "coverage": "Hello and goodbye",
+          "minutes": 1,
+          "xp": 30,
+          "words": 2
+        }
+      }
+    },
+    {
+      "name": "an empty unit is skipped as done (like currentUnitOf); the trailhead looks back past it; a 6-lesson swing wraps",
+      "units": [
+        {
+          "id": "a",
+          "title": "First Steps",
+          "lessons": [
+            {
+              "id": "a1",
+              "title": "Hi There",
+              "subtitle": "Hello and goodbye",
+              "questionTypes": [
+                "mc"
+              ],
+              "wordCount": 2
+            }
+          ]
+        },
+        {
+          "id": "e",
+          "title": "Coming Soon",
+          "lessons": []
+        },
+        {
+          "id": "b",
+          "title": "Long Road",
+          "lessons": [
+            {
+              "id": "b1",
+              "title": "Stage 1",
+              "subtitle": "Part 1",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b2",
+              "title": "Stage 2",
+              "subtitle": "Part 2",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b3",
+              "title": "Stage 3",
+              "subtitle": "Part 3",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b4",
+              "title": "Stage 4",
+              "subtitle": "Part 4",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b5",
+              "title": "Stage 5",
+              "subtitle": "Part 5",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b6",
+              "title": "Stage 6",
+              "subtitle": "Part 6",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            }
+          ]
+        }
+      ],
+      "completed": [
+        "a1"
+      ],
+      "expect": {
+        "unitId": "b",
+        "strip": {
+          "number": 3,
+          "count": 3,
+          "name": "Long Road",
+          "done": 0,
+          "total": 6,
+          "progress": 0.0
+        },
+        "nodes": [
+          {
+            "id": "b1",
+            "title": "Stage 1",
+            "state": "next",
+            "x": 0.36,
+            "y": 0.9
+          },
+          {
+            "id": "b2",
+            "title": "Stage 2",
+            "state": "locked",
+            "x": 0.5,
+            "y": 0.76
+          },
+          {
+            "id": "b3",
+            "title": "Stage 3",
+            "state": "locked",
+            "x": 0.64,
+            "y": 0.62
+          },
+          {
+            "id": "b4",
+            "title": "Stage 4",
+            "state": "locked",
+            "x": 0.5,
+            "y": 0.48
+          },
+          {
+            "id": "b5",
+            "title": "Stage 5",
+            "state": "locked",
+            "x": 0.36,
+            "y": 0.34
+          },
+          {
+            "id": "b6",
+            "title": "Stage 6",
+            "state": "locked",
+            "x": 0.5,
+            "y": 0.2
+          }
+        ],
+        "chest": {
+          "earned": false,
+          "x": 0.5,
+          "y": 0.06
+        },
+        "trailhead": {
+          "kind": "chest",
+          "unitId": "a"
+        },
+        "next": {
+          "lessonId": "b1",
+          "title": "Stage 1",
+          "coverage": "Part 1",
+          "minutes": 1,
+          "xp": 30,
+          "words": 0
+        }
+      }
+    },
+    {
+      "name": "a finished level ends on the last unit with a climb, not on an empty one",
+      "units": [
+        {
+          "id": "a",
+          "title": "First Steps",
+          "lessons": [
+            {
+              "id": "a1",
+              "title": "Hi There",
+              "subtitle": "Hello and goodbye",
+              "questionTypes": [
+                "mc"
+              ],
+              "wordCount": 2
+            }
+          ]
+        },
+        {
+          "id": "e",
+          "title": "Coming Soon",
+          "lessons": []
+        },
+        {
+          "id": "b",
+          "title": "Long Road",
+          "lessons": [
+            {
+              "id": "b1",
+              "title": "Stage 1",
+              "subtitle": "Part 1",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b2",
+              "title": "Stage 2",
+              "subtitle": "Part 2",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b3",
+              "title": "Stage 3",
+              "subtitle": "Part 3",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b4",
+              "title": "Stage 4",
+              "subtitle": "Part 4",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b5",
+              "title": "Stage 5",
+              "subtitle": "Part 5",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b6",
+              "title": "Stage 6",
+              "subtitle": "Part 6",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            }
+          ]
+        },
+        {
+          "id": "z",
+          "title": "Also Empty",
+          "lessons": []
+        }
+      ],
+      "completed": [
+        "a1",
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5",
+        "b6"
+      ],
+      "expect": {
+        "unitId": "b",
+        "strip": {
+          "number": 3,
+          "count": 4,
+          "name": "Long Road",
+          "done": 6,
+          "total": 6,
+          "progress": 1.0
+        },
+        "nodes": [
+          {
+            "id": "b1",
+            "title": "Stage 1",
+            "state": "done",
+            "x": 0.36,
+            "y": 0.9
+          },
+          {
+            "id": "b2",
+            "title": "Stage 2",
+            "state": "done",
+            "x": 0.5,
+            "y": 0.76
+          },
+          {
+            "id": "b3",
+            "title": "Stage 3",
+            "state": "done",
+            "x": 0.64,
+            "y": 0.62
+          },
+          {
+            "id": "b4",
+            "title": "Stage 4",
+            "state": "done",
+            "x": 0.5,
+            "y": 0.48
+          },
+          {
+            "id": "b5",
+            "title": "Stage 5",
+            "state": "done",
+            "x": 0.36,
+            "y": 0.34
+          },
+          {
+            "id": "b6",
+            "title": "Stage 6",
+            "state": "done",
+            "x": 0.5,
+            "y": 0.2
+          }
+        ],
+        "chest": {
+          "earned": true,
+          "x": 0.5,
+          "y": 0.06
+        },
+        "trailhead": {
+          "kind": "chest",
+          "unitId": "a"
+        },
+        "next": null
+      }
+    },
+    {
+      "name": "an empty unit chosen by id gives no map (no empty climb)",
+      "units": [
+        {
+          "id": "a",
+          "title": "First Steps",
+          "lessons": [
+            {
+              "id": "a1",
+              "title": "Hi There",
+              "subtitle": "Hello and goodbye",
+              "questionTypes": [
+                "mc"
+              ],
+              "wordCount": 2
+            }
+          ]
+        },
+        {
+          "id": "e",
+          "title": "Coming Soon",
+          "lessons": []
+        },
+        {
+          "id": "b",
+          "title": "Long Road",
+          "lessons": [
+            {
+              "id": "b1",
+              "title": "Stage 1",
+              "subtitle": "Part 1",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b2",
+              "title": "Stage 2",
+              "subtitle": "Part 2",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b3",
+              "title": "Stage 3",
+              "subtitle": "Part 3",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b4",
+              "title": "Stage 4",
+              "subtitle": "Part 4",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b5",
+              "title": "Stage 5",
+              "subtitle": "Part 5",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            },
+            {
+              "id": "b6",
+              "title": "Stage 6",
+              "subtitle": "Part 6",
+              "questionTypes": [
+                "fill"
+              ],
+              "wordCount": 0
+            }
+          ]
+        }
+      ],
+      "completed": [],
+      "unitId": "e",
+      "expect": null
+    },
+    {
+      "name": "a level of only empty units gives no map",
+      "units": [
+        {
+          "id": "e",
+          "title": "Coming Soon",
+          "lessons": []
+        }
+      ],
+      "completed": [],
+      "expect": null
     }
   ],
   "noUnits": {

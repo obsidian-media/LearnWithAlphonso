@@ -9,7 +9,13 @@ import { learnMap, mapPoint, type LearnMap, type MapUnit } from "./learn-map";
  * Replays shared/learn-map.json. The Kit (LearnMapTests) and the Android core (LearnMapTest) replay the same file, so
  * a port that drifts from the others fails in its own suite.
  */
-type Case = { name: string; completed: string[]; unitId?: string; expect: LearnMap | null };
+type Case = {
+  name: string;
+  units?: MapUnit[];
+  completed: string[];
+  unitId?: string;
+  expect: LearnMap | null;
+};
 const fixtures = JSON.parse(
   fs.readFileSync(path.resolve(import.meta.dirname, "../../shared/learn-map.json"), "utf8"),
 ) as {
@@ -31,7 +37,7 @@ const round = (m: LearnMap | null) =>
 
 describe("the Learn climbing map (shared/learn-map.json)", () => {
   it.each(fixtures.cases)("$name", (c) => {
-    const map = learnMap(fixtures.units, new Set(c.completed), {
+    const map = learnMap(c.units ?? fixtures.units, new Set(c.completed), {
       unitId: c.unitId,
       timing: fixtures.timing,
     });

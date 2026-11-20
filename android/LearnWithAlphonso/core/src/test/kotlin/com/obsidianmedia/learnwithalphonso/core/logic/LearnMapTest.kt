@@ -40,7 +40,9 @@ class LearnMapTest {
         )
     }
 
-    private val units = root.getValue("units").jsonArray.map { u ->
+    private val units = unitsOf(root.getValue("units"))
+
+    private fun unitsOf(json: JsonElement) = json.jsonArray.map { u ->
         val o = u.jsonObject
         LearnMap.Unit(
             id = o.s("id"),
@@ -101,7 +103,8 @@ class LearnMapTest {
         for (c in cases) {
             val name = c.s("name")
             val unitId = c["unitId"]?.jsonPrimitive?.content
-            val map = LearnMap.of(units, c.getValue("completed").strings().toSet(), timing, unitId)
+            val caseUnits = c["units"]?.let(::unitsOf) ?: units
+            val map = LearnMap.of(caseUnits, c.getValue("completed").strings().toSet(), timing, unitId)
             val expect = c.getValue("expect")
             if (expect is JsonNull) assertNull(map, name) else check(expect.jsonObject, map ?: error("$name: expected a map, got none"), name)
         }

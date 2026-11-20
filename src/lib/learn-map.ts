@@ -92,27 +92,38 @@ export function mapPoint(index: number, slots: number): MapPoint {
   return { x, y };
 }
 
+/** The last index before `end` whose unit passes `test`, or -1. */
+function lastIndexWhere(units: readonly MapUnit[], end: number, test: (u: MapUnit) => boolean) {
+  for (let i = end - 1; i >= 0; i--) if (test(units[i]!)) return i;
+  return -1;
+}
+
 const unitDone = (u: MapUnit, completed: ReadonlySet<string>) =>
   u.lessons.every((l) => completed.has(l.id));
 
 /**
  * The climb for one unit of the level. Without `unitId` it is the learner's current unit: the first with a lesson
  * not done, or the last unit when the whole level is done. null for a level with no units (or an unknown unitId).
+ *
+ * A unit with no lessons is never a climb, a current unit or a trailhead: there is nothing to climb and no chest to
+ * earn. It is skipped as if done, the same as currentUnitOf (src/lib/learn-fold.ts), which looks for the first lesson
+ * not done and so passes over it. It still counts in the strip's "Unit N of M", which numbers every unit of the
+ * level like Learn A does.
  */
 export function learnMap(
   units: readonly MapUnit[],
   completed: ReadonlySet<string>,
   options: { unitId?: string; timing?: LessonTimingTable } = {},
 ): LearnMap | null {
-  if (units.length === 0) return null;
+  const climbable = (u: MapUnit) => u.lessons.length > 0;
   let index: number;
   if (options.unitId !== undefined) {
     index = units.findIndex((u) => u.id === options.unitId);
-    if (index === -1) return null;
   } else {
-    index = units.findIndex((u) => !unitDone(u, completed));
-    if (index === -1) index = units.length - 1;
+    index = units.findIndex((u) => climbable(u) && !unitDone(u, completed));
+    if (index === -1) index = lastIndexWhere(units, units.length, climbable);
   }
+  if (index === -1 || !climbable(units[index]!)) return null;
   const unit = units[index]!;
   const slots = unit.lessons.length + 1;
   const nextIndex = unit.lessons.findIndex((l) => !completed.has(l.id));
@@ -124,7 +135,9 @@ export function learnMap(
   }));
   const done = unit.lessons.filter((l) => completed.has(l.id)).length;
   const total = unit.lessons.length;
-  const previous = index > 0 ? units[index - 1]! : null;
+  // The trailhead looks back past empty units to the last unit that had a climb.
+  const previousIndex = lastIndexWhere(units, index, climbable);
+  const previous = previousIndex === -1 ? null : units[previousIndex]!;
   const nextLesson = nextIndex === -1 ? null : unit.lessons[nextIndex]!;
   return {
     unitId: unit.id,

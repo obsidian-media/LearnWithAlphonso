@@ -69,14 +69,19 @@ object LearnMap {
     /**
      * The climb for one unit of the level. Without [unitId] it is the learner's current unit: the first with a lesson
      * not done, or the last unit when the whole level is done. null for a level with no units (or an unknown unitId).
+     *
+     * A unit with no lessons is never a climb, a current unit or a trailhead: there is nothing to climb and no chest to
+     * earn. It is skipped as if done, the same as LearnFold.currentUnitOf, which looks for the first lesson not done and
+     * so passes over it. It still counts in the strip's "Unit N of M", which numbers every unit of the level.
      */
     fun of(units: List<Unit>, completed: Set<String>, timing: LessonTiming, unitId: String? = null): Climb? {
-        if (units.isEmpty()) return null
         val index = if (unitId != null) {
-            units.indexOfFirst { it.id == unitId }.takeIf { it >= 0 } ?: return null
+            units.indexOfFirst { it.id == unitId }
         } else {
-            units.indexOfFirst { !it.done(completed) }.takeIf { it >= 0 } ?: units.lastIndex
+            units.indexOfFirst { it.lessons.isNotEmpty() && !it.done(completed) }.takeIf { it >= 0 }
+                ?: units.indexOfLast { it.lessons.isNotEmpty() }
         }
+        if (index < 0 || units[index].lessons.isEmpty()) return null
         val unit = units[index]
         val slots = unit.lessons.size + 1
         val nextIndex = unit.lessons.indexOfFirst { it.id !in completed }
@@ -90,7 +95,8 @@ object LearnMap {
         }
         val done = unit.lessons.count { it.id in completed }
         val total = unit.lessons.size
-        val previous = units.getOrNull(index - 1)
+        // The trailhead looks back past empty units to the last unit that had a climb.
+        val previous = units.subList(0, index).lastOrNull { it.lessons.isNotEmpty() }
         val nextLesson = unit.lessons.getOrNull(nextIndex)
         return Climb(
             unitId = unit.id,
