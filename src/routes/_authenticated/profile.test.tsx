@@ -530,6 +530,17 @@ describe("Profile, round 6", () => {
     expect(rows).toContain("you");
   });
 
+  it("the Social tab has League and Friends rows that open /league and /profile/friends", async () => {
+    renderPage();
+    await openTab("Social");
+    const social = await screen.findByRole("navigation", { name: "Social" });
+    const links = within(social).getAllByRole("link");
+    expect(links.map((l) => l.getAttribute("href"))).toEqual(["/league", "/profile/friends"]);
+    expect(links[0]).toHaveTextContent("League");
+    expect(links[0]).toHaveTextContent("Leaderboards, teams, and the season ladder");
+    expect(links[1]).toHaveTextContent("Friends");
+  });
+
   it("the achievements count and the full wall come from the catalog and the learner's unlocks", async () => {
     const user = userEvent.setup();
     const o = richLearner();
