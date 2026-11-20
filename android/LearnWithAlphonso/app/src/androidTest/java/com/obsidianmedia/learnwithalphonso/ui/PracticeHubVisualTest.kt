@@ -70,10 +70,18 @@ class PracticeHubVisualTest {
      * cards of about zero height that every source guard passed). The hero, the conversations grid, the campaigns
      * rail, both drills and the Pro nudge each get a minimum height; the carousel works through its dots.
      */
-    private fun showHub() {
+    // The heavy tests render a trimmed hub: the sections under test are all there (a few conversations, three campaigns
+    // with the one in progress), but not every tile's art, which the software-GL CI emulator has to hold in memory (it
+    // went offline mid-test on the full 12 + 13 set).
+    private fun showHub(fontScale: Float = 1f) {
+        val scenarios = content.scenarios(course).filter { it.id in setOf("coffee", "interview", "airport", "doctor") }
+        val campaigns = content.campaigns(course).filter { it.id in setOf("doctors-visit", "city-day", "train-trip") }
         rule.setContent {
-            AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
-                PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
+            val density = LocalDensity.current.density
+            CompositionLocalProvider(LocalDensity provides Density(density, fontScale)) {
+                AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                    PracticeHubContent(course, scenarios, campaigns, hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
+                }
             }
         }
     }
@@ -91,38 +99,22 @@ class PracticeHubVisualTest {
         assertTrue("$tag is ${node.size.width}x${node.size.height}px, under ${minHeightDp}dp tall", node.size.height >= minPx(minHeightDp) && node.size.width >= minPx(minWidthDp))
     }
 
-    // One test per section, each in a fresh composition, so a failure names the section that broke.
-    @Test fun hubHeroRendersWithRealSize() {
+    @Test fun hubSectionsRenderWithRealSize() {
         showHub()
-        // The continue card first (the fixture has a campaign in progress), then both answers.
+        // The hero: the continue card first (the fixture has a campaign in progress), both answers, the dots.
         assertSized("practice-hero", 300, 200)
         assertSized("practice-hero-card-0", 300, 200)
         assertSized("practice-continue", 48, 48)
         assertSized("practice-hero-chat-0", 48, 48)
-    }
-
-    @Test fun hubHeroDotsPageThroughTheCalls() {
-        showHub()
         for (i in 0..2) rule.onNodeWithTag("practice-hero-dot-$i").assertExists()
         rule.onNodeWithTag("practice-hero-dot-1").performClick()
         rule.waitForIdle()
         assertSized("practice-hero-card-1", 300, 200)
         rule.onNodeWithTag("practice-hero-dot-1").assertContentDescriptionEquals("Show call 2 of 3")
-    }
-
-    @Test fun hubConversationTileRendersWithRealSize() {
-        showHub()
+        // The conversations grid, the campaigns rail, both drills and the nudge.
         assertSized("practice-tile-coffee", 100, 100)
-    }
-
-    @Test fun hubCampaignRailRendersWithRealSize() {
-        showHub()
         assertSized("practice-campaign-rail", 100, 150)
         assertSized("practice-campaign-doctors-visit", 100, 100)
-    }
-
-    @Test fun hubDrillsAndNudgeRenderWithRealSize() {
-        showHub()
         assertSized("practice-say-picture", 80, 200)
         assertSized("practice-say-it-right", 80, 200)
         assertSized("practice-hector-card", 60, 200)
@@ -131,14 +123,7 @@ class PracticeHubVisualTest {
 
     /** Large text, in a composition of its own: the hero's first answers and the last drill stay reachable. */
     @Test fun hubAnswersStayReachableAtLargeText() {
-        rule.setContent {
-            val density = LocalDensity.current.density
-            CompositionLocalProvider(LocalDensity provides Density(density, 2f)) {
-                AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
-                    PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
-                }
-            }
-        }
+        showHub(fontScale = 2f)
         rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-hero-chat-0"))
         rule.onNodeWithTag("practice-hero-chat-0").assertIsDisplayed()
         rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-say-it-right"))
