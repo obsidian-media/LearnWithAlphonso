@@ -71,13 +71,9 @@ class PracticeHubVisualTest {
      * rail, both drills and the Pro nudge each get a minimum height; the carousel works through its dots.
      */
     @Test fun hubSectionsRenderWithRealSize() {
-        val scale = mutableStateOf(1f)
         rule.setContent {
-            val density = LocalDensity.current.density
-            CompositionLocalProvider(LocalDensity provides Density(density, scale.value)) {
-                AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
-                    PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
-                }
+            AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
             }
         }
         fun minPx(dp: Int) = with(rule.density) { dp.dp.toPx() }
@@ -110,14 +106,18 @@ class PracticeHubVisualTest {
         assertSized("practice-say-it-right", 80, 200)
         assertSized("practice-hector-card", 60, 200)
         shot("04-hub-sections")
-        // Large text: the hero's answers stay reachable.
-        rule.runOnIdle { scale.value = 2f }
-        // The carousel is on its second card (the dot click above), and the pager has composed only the visible page, so
-        // the first card's answers do not exist until it is brought back: scrolling to a node that is absent would
-        // otherwise walk the whole list and time out.
-        rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-hero-dot-0"))
-        rule.onNodeWithTag("practice-hero-dot-0").performClick()
-        rule.waitForIdle()
+    }
+
+    /** Large text, in a composition of its own: the hero's first answers and the last drill stay reachable. */
+    @Test fun hubAnswersStayReachableAtLargeText() {
+        rule.setContent {
+            val density = LocalDensity.current.density
+            CompositionLocalProvider(LocalDensity provides Density(density, 2f)) {
+                AlphonsoTheme(AlphonsoThemeId.DEFAULT, false) {
+                    PracticeHubContent(course, content.scenarios(course), content.campaigns(course), hub, false, "call", true, {}, { _, _ -> }, { _, _, _ -> }, {})
+                }
+            }
+        }
         rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-hero-chat-0"))
         rule.onNodeWithTag("practice-hero-chat-0").assertIsDisplayed()
         rule.onNodeWithTag("practice-hub").performScrollToNode(hasTestTag("practice-say-it-right"))
@@ -222,12 +222,7 @@ class PracticeHubVisualTest {
         }
     }
 
-    // Pictures are for a person reviewing locally (-e practiceShots true). CI never reads them, and capturing on the
-    // headless software-GL emulator took the whole emulator down mid-test (the run ended with "adb: device offline").
-    private val captureShots get() = InstrumentationRegistry.getArguments().getString("practiceShots") == "true"
-
     private fun shot(name: String) {
-        if (!captureShots) return
         rule.waitForIdle()
         Thread.sleep(250)
         // A picture is an artifact, not an assertion: UiAutomation sometimes hands back no bitmap on a headless emulator
