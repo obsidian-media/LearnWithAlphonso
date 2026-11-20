@@ -154,6 +154,11 @@ describe("BottomTabs", () => {
       .filter((l) => l.firstElementChild?.classList.contains("text-ds-choice"))
       .map((l) => l.getAttribute("aria-label"));
     expect(lit).toEqual(["Profile"]);
+    const current = screen
+      .getAllByRole("link")
+      .filter((l) => l.getAttribute("aria-current") === "page")
+      .map((l) => l.getAttribute("aria-label"));
+    expect(current).toEqual(["Profile"]);
   });
 
   it("lights Practice for nested /converse paths and no other tab", () => {

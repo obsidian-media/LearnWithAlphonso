@@ -146,6 +146,8 @@ function TabItem({
       to={to}
       className="group flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 py-1"
       aria-label={label}
+      // Link marks only an exact match; a tab stays lit across its area (/league under Profile), so say so too.
+      aria-current={active ? "page" : undefined}
     >
       <span className={`transition-colors ${active ? "text-ds-choice" : "text-ds-ink-faint"}`}>
         {children}
