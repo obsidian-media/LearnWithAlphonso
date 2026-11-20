@@ -32,6 +32,7 @@ vi.mock("../../lib/podcast.functions", () => ({
 vi.mock("../../lib/podcast-quiz.functions", () => ({ fetchQuizEpisodeIds: async () => [] }));
 vi.mock("../../components/PodcastQuizLauncher", () => ({ PodcastQuizLauncher: () => null }));
 vi.mock("../../components/ListenLibrary", () => ({
+  LibraryTitle: () => <h1>Library</h1>,
   ListenLibraryView: () => <p>library</p>,
   ListenShelfView: () => null,
 }));

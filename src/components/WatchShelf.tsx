@@ -50,38 +50,35 @@ export function WatchShelf({
             aria-label="See all videos"
             className="min-h-11 px-1 text-sm font-extrabold text-ds-choice"
           >
-            See all ›
+            See all
           </button>
         ) : null}
       </div>
       <ul
-        className={
-          peek ? "-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1" : "grid grid-cols-3 gap-2.5"
-        }
+        className={peek ? "-mx-5 flex gap-3 overflow-x-auto px-5 pb-1" : "grid grid-cols-3 gap-3"}
       >
         {shown.map((video) => {
           const state = videoState(video);
           const fraction = videoFraction(video);
           return (
-            <li key={video.id} className={peek ? "w-28 shrink-0" : "min-w-0"}>
+            <li key={video.id} className={peek ? "w-26 shrink-0" : "min-w-0"}>
               <button
                 type="button"
                 onClick={() => onOpen(video)}
                 aria-label={`${video.title}, ${clock(video.durationSeconds)}, ${stateWord(state)}`}
                 className="block w-full text-left"
               >
-                <span className="relative block aspect-[2/3] overflow-hidden rounded-2xl bg-ds-sunk shadow-sm">
+                <span className="relative block aspect-[2/3] overflow-hidden rounded-[var(--ds-radius-control)] bg-ds-sunk shadow-sm">
                   {video.posterUrl ? (
                     <img src={video.posterUrl} alt="" className="size-full object-cover" />
                   ) : null}
-                  <span className="absolute inset-0 bg-gradient-to-t from-ds-hero/60 via-transparent to-transparent" />
                   {video.level ? (
-                    <span className="absolute left-1.5 top-1.5 rounded-lg bg-ds-choice-tint px-1.5 text-xs font-extrabold text-ds-choice">
+                    <span className="absolute left-1.5 top-1.5 rounded-[var(--ds-radius-control)] bg-ds-choice-tint px-1.5 text-xs font-extrabold text-ds-choice">
                       {video.level}
                     </span>
                   ) : null}
                   {state === "new" ? (
-                    <span className="absolute right-1.5 top-1.5 rounded-lg bg-ds-heart px-1.5 text-xs font-extrabold tracking-wide text-white">
+                    <span className="absolute right-1.5 top-1.5 rounded-[var(--ds-radius-control)] bg-ds-heart px-1.5 text-xs font-extrabold tracking-wide text-white">
                       NEW
                     </span>
                   ) : null}
@@ -98,7 +95,7 @@ export function WatchShelf({
                       ✓
                     </span>
                   ) : (
-                    <span className="tnum absolute bottom-1.5 right-1.5 rounded-lg bg-ds-hero/70 px-1.5 text-xs font-extrabold text-white">
+                    <span className="tnum absolute bottom-1.5 right-1.5 rounded-full bg-ds-hero/70 px-1.5 text-xs font-extrabold text-white">
                       {clock(video.durationSeconds)}
                     </span>
                   )}
