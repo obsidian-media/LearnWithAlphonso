@@ -4,6 +4,7 @@ import { quotaFailureResponse } from "@/lib/ai-quota-response";
 import { upstreamErrorResponse } from "@/lib/api-response.server";
 import { filterModelOutputs, makeBlockedTermCheck, AI_OUTPUT_FALLBACK } from "@/lib/ai-safety";
 import { extractCorrection } from "@/lib/hector-correction";
+import { refineCorrection } from "@/lib/hector-correction-refine";
 import { llmChatCompletion } from "@/lib/llm-chat.server";
 import { resolveLlmApiKey, resolveLlmChatModel } from "@/lib/llm-chat-model.server";
 import { boundTranscript } from "@/lib/chat-transcript-limits";
@@ -172,7 +173,11 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   // The correction block is the model's, not the learner's: it is taken out BEFORE the length check, the output filter
   // and the speech, so the learner never hears or reads the tag.
   const extracted = extractCorrection(llm.reply);
-  const rawCorrection = extracted.correction;
+  // Refined BEFORE the blocked-term filter, so the filter sees the final strings: only the changed words, and no card
+  // at all for a Spanish dropped subject pronoun (style, not an error). The reply still returns either way.
+  const rawCorrection = extracted.correction
+    ? refineCorrection(extracted.correction, course)
+    : null;
   // A reply that was only the block still gets a short, kind line (the card shows the fix), never an error.
   const reply = extracted.text || (llm.reply.trim() ? CORRECTION_ONLY_REPLY[course] : "");
   const llmMs = performance.now() - llmStart;

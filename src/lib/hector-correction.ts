@@ -99,10 +99,15 @@ export function correctionInstruction(language: string): string {
     "capitalisation, punctuation, a style preference, or a message that is already correct, a greeting or a question.",
     "A misspelling of a word the learner clearly knows is a typo, so add no block for it.",
     "At most one block per reply: pick the most useful fix.",
+    "Keep the tone warm and encouraging, and keep your reply itself natural.",
+    "The block is removed before the learner sees your reply, so never mention it and never put anything after it.",
     "THE CARD TEACHES, NOT YOUR REPLY. Your reply answers what the learner MEANT and keeps the conversation going.",
     "It may naturally use the correct form, but it must never explain the rule, point out the mistake, or quiz the learner about it:",
     "the note in the block does the teaching.",
-    "Keep the tone warm and encouraging, and keep your reply itself natural.",
-    "The block is removed before the learner sees your reply, so never mention it and never put anything after it.",
+    `Example: the learner writes "She don't like coffee." and your whole output is`,
+    `Oh no! What does she drink instead?
+<correction>{"slip":"don't","fix":"doesn't","note":"With she, he or it, use doesn't."}</correction>`,
+    "(the reply never mentions the mistake or the rule).",
+    "Now write your reply.",
   ].join(" ");
 }

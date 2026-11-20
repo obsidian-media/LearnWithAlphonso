@@ -96,4 +96,12 @@ describe("correctionInstruction", () => {
     expect(text).toContain("never explain the rule, point out the mistake, or quiz the learner");
     expect(text).toContain("the note in the block does the teaching");
   });
+
+  it("rule 4: the card rule is the last rule before the closing line, with one worked example", () => {
+    expect(text.indexOf("THE CARD TEACHES")).toBeGreaterThan(text.indexOf("At most one block"));
+    expect(text.indexOf("THE CARD TEACHES")).toBeGreaterThan(text.indexOf("Keep the tone warm"));
+    expect(text).toContain("What does she drink instead?");
+    expect(text).toContain(`{"slip":"don't","fix":"doesn't"`);
+    expect(text.trimEnd().endsWith("Now write your reply.")).toBe(true);
+  });
 });

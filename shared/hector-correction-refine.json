@@ -1,0 +1,159 @@
+{
+  "_comment": "Replayed by src/lib/hector-correction-refine.test.ts. expect null = no card. The real live cases are from renders-2026-11-19 HECTOR-T2-LIVE-CHECK and ROUND2.",
+  "cases": [
+    {
+      "name": "live: en tense and preposition, trailing words dropped",
+      "course": "en",
+      "slip": "I am living here since five years",
+      "fix": "I have lived here for five years",
+      "expect": { "slip": "am living here since", "fix": "have lived here for" }
+    },
+    {
+      "name": "live: fr subjunctive",
+      "course": "fr",
+      "slip": "Je veux que tu viens avec moi.",
+      "fix": "Je veux que tu viennes avec moi.",
+      "expect": { "slip": "viens", "fix": "viennes" }
+    },
+    {
+      "name": "live: fr plural already minimal",
+      "course": "fr",
+      "slip": "des glace",
+      "fix": "des glaces",
+      "expect": { "slip": "glace", "fix": "glaces" }
+    },
+    {
+      "name": "live: fr des glace -> de la glace, shared noun dropped",
+      "course": "fr",
+      "slip": "nous avons mangé des glace.",
+      "fix": "nous avons mangé de la glace.",
+      "expect": { "slip": "des", "fix": "de la" }
+    },
+    {
+      "name": "es pronoun omission is style",
+      "course": "es",
+      "slip": "Ayer yo comí",
+      "fix": "Ayer comí",
+      "expect": null
+    },
+    {
+      "name": "es pronoun omission, capitalised pronoun",
+      "course": "es",
+      "slip": "Yo quiero agua",
+      "fix": "quiero agua",
+      "expect": null
+    },
+    {
+      "name": "es word change with a pronoun is kept",
+      "course": "es",
+      "slip": "Ayer yo voy al parque",
+      "fix": "Ayer fui al parque",
+      "expect": { "slip": "yo voy", "fix": "fui" }
+    },
+    {
+      "name": "es non-pronoun removal is kept",
+      "course": "es",
+      "slip": "Voy a a la playa",
+      "fix": "Voy a la playa",
+      "expect": { "slip": "a la", "fix": "la" }
+    },
+    {
+      "name": "es word change",
+      "course": "es",
+      "slip": "Yo soy cansado hoy",
+      "fix": "Estoy cansado hoy",
+      "expect": { "slip": "Yo soy", "fix": "Estoy" }
+    },
+    {
+      "name": "en irregular verb",
+      "course": "en",
+      "slip": "I goed",
+      "fix": "I went",
+      "expect": { "slip": "goed", "fix": "went" }
+    },
+    {
+      "name": "en 3rd person auxiliary",
+      "course": "en",
+      "slip": "She don't like coffee very much.",
+      "fix": "She doesn't like coffee very much.",
+      "expect": { "slip": "don't", "fix": "doesn't" }
+    },
+    {
+      "name": "en pure deletion borrows the following word",
+      "course": "en",
+      "slip": "I am agree",
+      "fix": "I agree",
+      "expect": { "slip": "am agree", "fix": "agree" }
+    },
+    {
+      "name": "en pure insertion borrows the following word",
+      "course": "en",
+      "slip": "I went school",
+      "fix": "I went to school",
+      "expect": { "slip": "school", "fix": "to school" }
+    },
+    {
+      "name": "en pure deletion at the end borrows the preceding word",
+      "course": "en",
+      "slip": "I like pizza too much much",
+      "fix": "I like pizza too much",
+      "expect": { "slip": "much much", "fix": "much" }
+    },
+    {
+      "name": "en capitalisation and punctuation only",
+      "course": "en",
+      "slip": "i like pizza",
+      "fix": "I like pizza.",
+      "expect": null
+    },
+    {
+      "name": "no typo filter: a misspelling card is kept",
+      "course": "en",
+      "slip": "realy",
+      "fix": "really",
+      "expect": { "slip": "realy", "fix": "really" }
+    },
+    {
+      "name": "identical pair",
+      "course": "en",
+      "slip": "I like it",
+      "fix": "I like it",
+      "expect": null
+    },
+    {
+      "name": "fr spacing before a question mark",
+      "course": "fr",
+      "slip": "Tu viens ?",
+      "fix": "Tu viens?",
+      "expect": null
+    },
+    {
+      "name": "fr spacing, identical",
+      "course": "fr",
+      "slip": "Tu viens ?",
+      "fix": "Tu viens ?",
+      "expect": null
+    },
+    {
+      "name": "fr je removal is kept (not an es rule)",
+      "course": "fr",
+      "slip": "Hier je suis allé",
+      "fix": "Hier suis allé",
+      "expect": { "slip": "je suis", "fix": "suis" }
+    },
+    {
+      "name": "en pronoun removal is kept (not an es rule)",
+      "course": "en",
+      "slip": "Yesterday I went home",
+      "fix": "Yesterday went home",
+      "expect": { "slip": "I went", "fix": "went" }
+    },
+    {
+      "name": "trailing sentence punctuation is not part of the span",
+      "course": "en",
+      "slip": "I goed.",
+      "fix": "I went.",
+      "expect": { "slip": "goed", "fix": "went" }
+    }
+  ]
+}
