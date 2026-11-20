@@ -7,10 +7,26 @@ import type { Question } from "../data/curriculum";
  */
 
 export function estimateLessonMinutes(questions: readonly Question[], newWords: number): number {
-  const perQuestion = timing.secondsPerQuestion as Record<Question["type"], number>;
+  return estimateMinutes(
+    questions.map((q) => q.type),
+    newWords,
+  );
+}
+
+export type LessonTimingTable = {
+  secondsPerQuestion: Readonly<Record<string, number>>;
+  secondsPerNewWord: number;
+};
+
+/** The same estimate from the question type keys ("mc", "fill"...): whole minutes, rounded up, at least 1. */
+export function estimateMinutes(
+  questionTypes: readonly string[],
+  newWords: number,
+  table: LessonTimingTable = timing,
+): number {
   const seconds =
-    questions.reduce((sum, q) => sum + perQuestion[q.type], 0) +
-    newWords * timing.secondsPerNewWord;
+    questionTypes.reduce((sum, t) => sum + (table.secondsPerQuestion[t] ?? 0), 0) +
+    newWords * table.secondsPerNewWord;
   return Math.max(1, Math.ceil(seconds / 60));
 }
 
