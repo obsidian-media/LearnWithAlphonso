@@ -26,11 +26,10 @@ import {
 import { AiFeaturesSetting } from "../../components/AiFeaturesSetting";
 import { GetHelpLink } from "@/components/help/HelpEntry";
 import { AnalyticsSetting } from "../../components/AnalyticsSetting";
-import { AvatarSetting } from "../../components/AvatarSetting";
 import { SoundEffectsSetting } from "../../components/SoundEffectsSetting";
 import { VoicesSetting } from "../../components/VoicesSetting";
 import { ExplainSetting } from "../../components/ExplainSetting";
-import { ProfileAboutYou, ProfileAvatarEditor } from "../../components/firstrun/ProfileAboutYou";
+import { AvatarDialog } from "../../components/firstrun/ProfileAboutYou";
 import { exportMyData, deleteMyAccount } from "../../lib/account.functions";
 import { getProfileOverview } from "../../lib/profile.functions";
 import { fetchProgress } from "../../lib/sync.functions";
@@ -41,8 +40,7 @@ import type { ProfileOverview } from "../../lib/profile-overview";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Achievements,
-  BigNumbers,
-  CompactProfileHeader,
+  AchievementsPreview,
   CourseSwitcher,
   FriendsWeek,
   HeatMap,
@@ -50,7 +48,8 @@ import {
   MemoryCard,
   LeagueCard,
   LevelCard,
-  ProfileHero,
+  OverviewRows,
+  ProfileIdentityHero,
   ProfileSkeleton,
   ProfileTabBar,
   ProgressFold,
@@ -80,7 +79,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
   }),
 });
 
-function ProgressTab({ o }: { o: ProfileOverview }) {
+function ProgressTab({ o, openAchievements }: { o: ProfileOverview; openAchievements: boolean }) {
   const sum = progressFoldSummaries(o);
   const course = COURSES.find((c) => c.id === o.course)!;
   return (
@@ -103,7 +102,12 @@ function ProgressTab({ o }: { o: ProfileOverview }) {
       <ProgressFold headingId="weak-heading" title="Weak spots" summary={sum.weak}>
         <WeakSpots o={o} />
       </ProgressFold>
-      <ProgressFold headingId="ach-heading" title="Achievements" summary={sum.achievements}>
+      <ProgressFold
+        headingId="ach-heading"
+        title="Achievements"
+        summary={sum.achievements}
+        defaultOpen={openAchievements}
+      >
         <Achievements o={o} />
       </ProgressFold>
     </>
@@ -142,28 +146,24 @@ function ProfilePage() {
   }
 
   const o = overview.data;
+  const qc = useQueryClient();
+  const [pictureOpen, setPictureOpen] = useState(false);
+  const [openAchievements, setOpenAchievements] = useState(false);
+  const goToSettings = () => {
+    setTab("overview");
+    window.setTimeout(() => settingsRef.current?.scrollIntoView({ behavior: "smooth" }), 0);
+  };
   return (
     <MobileFrame>
       <div className="min-h-dvh bg-ds-surface pb-12 font-[family-name:var(--ds-font-body)] text-ds-brand">
         {o ? (
           <>
-            {tab === "overview" ? (
-              <ProfileHero
+            <div className="grid gap-3 px-3.5 pt-4" aria-busy={switching || overview.isFetching}>
+              <ProfileIdentityHero
                 o={o}
-                onSettings={() => {
-                  setTab("overview");
-                  window.setTimeout(
-                    () => settingsRef.current?.scrollIntoView({ behavior: "smooth" }),
-                    0,
-                  );
-                }}
+                compact={tab !== "overview"}
+                onPicture={() => setPictureOpen(true)}
               />
-            ) : (
-              <div className="px-3.5 pt-4">
-                <CompactProfileHeader o={o} />
-              </div>
-            )}
-            <div className="grid gap-3 px-3.5" aria-busy={switching || overview.isFetching}>
               {tab === "overview" && (
                 <CourseSwitcher o={o} busy={switching} onSwitch={(c) => void switchCourse(c)} />
               )}
@@ -176,25 +176,44 @@ function ProfilePage() {
               >
                 {tab === "overview" && (
                   <>
-                    <BigNumbers o={o} />
                     <ThisWeek o={o} />
+                    <AchievementsPreview
+                      o={o}
+                      onOpen={() => {
+                        setOpenAchievements(true);
+                        setTab("progress");
+                      }}
+                    />
                     <HectorNoticed o={o} pro={pro.state === "pro"} />
                     {pro.state !== "loading" && pro.state !== "error" && (
                       <MemoryCard o={o} pro={pro.state === "pro"} />
                     )}
+                    <OverviewRows onSettings={goToSettings} />
                   </>
                 )}
-                {tab === "progress" && <ProgressTab o={o} />}
+                {tab === "progress" && <ProgressTab o={o} openAchievements={openAchievements} />}
                 {tab === "social" && (
                   <>
-                    <SocialLinks />
                     <LeagueCard o={o} />
+                    <SocialLinks />
                     <FriendsWeek o={o} />
                     <ShareWeek o={o} />
                   </>
                 )}
               </div>
             </div>
+            {pictureOpen && (
+              <AvatarDialog
+                seed={o.profile.avatarSeed ?? ""}
+                name={o.profile.displayName ?? ""}
+                onClose={() => setPictureOpen(false)}
+                onSaved={() => {
+                  setPictureOpen(false);
+                  void qc.invalidateQueries({ queryKey: ["me"] });
+                  void qc.invalidateQueries({ queryKey: ["profile-overview"] });
+                }}
+              />
+            )}
           </>
         ) : overview.isError ? (
           <div role="alert" className="grid gap-3 px-4 py-16 text-center">

@@ -40,9 +40,10 @@ describe("the sound effect files", () => {
     const expected = names.map((n) => `${n}.mp3`).sort();
     expect(list("public/sfx")).toEqual(expected);
     expect(list("ios/LearnWithAlphonso/Sources/Sounds")).toEqual(expected);
-    expect(list("android/LearnWithAlphonso/app/src/main/res/raw")).toEqual(
-      expected.map((n) => n.replaceAll("-", "_")),
-    );
+    // raw/keep.xml is the resource-shrinker keep rule for the profile flags, not a sound.
+    expect(
+      list("android/LearnWithAlphonso/app/src/main/res/raw").filter((f) => f !== "keep.xml"),
+    ).toEqual(expected.map((n) => n.replaceAll("-", "_")));
   });
 
   it("stay small: under 100 KB together", () => {

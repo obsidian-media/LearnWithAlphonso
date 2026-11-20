@@ -1,7 +1,6 @@
 package com.obsidianmedia.learnwithalphonso.ui.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,13 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.AppContainer
+import com.obsidianmedia.learnwithalphonso.R
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.net.fetchProfileOverview
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileTab
 import com.obsidianmedia.learnwithalphonso.core.profile.ProfileTabs
-import com.obsidianmedia.learnwithalphonso.ui.components.AlphonsoRowCard
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.AvatarPickerDialog
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.TitleType
 import com.obsidianmedia.learnwithalphonso.ui.lesson.EdgeVariant
@@ -81,27 +79,37 @@ fun ProfileHubScreen(
             val m = overview
             when {
                 m != null -> {
+                    // The identity hero stays on every tab; Progress and Social show it without the level bar and numbers.
+                    ProfileHero(m, compact = tab != ProfileTab.OVERVIEW, onPicture = { picking = true })
+                    if (tab == ProfileTab.OVERVIEW) ProfileCoursePicker(m, onCourse = { container.activeCourse.set(it) })
                     ProfileTabBar(tab, onChange = { tab = it })
                     when (tab) {
                         ProfileTab.OVERVIEW -> {
-                            ProfileHero(m, onCourse = { container.activeCourse.set(it) }, onPicture = { picking = true })
                             if (!m.hasAnyActivity) Text("Your first lesson starts your streak and fills in this page.", color = ds.ink)
                             ProfileWeekSection(m)
+                            ProfileAchievementsPreview(m, onClick = onOpenAchievements)
                             ProfileHector(m, onPaywall = onOpenPaywall)
                             ProfileMemory(isPro, m.weak.first.take(2).map { it.display }, memorySummary, onOpenMemory)
+                            ProfileRowCard("Edit your answers", "Goal, level, daily time, interests", R.drawable.ds_target, ds.choiceTint, ds.choice, onEditAnswers)
+                            ProfileRowCard("Settings", "Theme and account", R.drawable.ds_settings, ds.rightTint, ds.right, onOpenSettings)
                         }
                         ProfileTab.PROGRESS -> {
-                            ProfileCompactHeader(m)
                             ProfileSkills(m)
                             com.obsidianmedia.learnwithalphonso.ui.path.PathProfileCard(container)
                             ProfileFold("Last 3 months", ProfileTabs.heatSummary(m.heat.activeDays)) { ProfileHeatMap(m) }
                             ProfileFold("Personal records", ProfileTabs.recordsSummary(m.records.bestStreak)) { ProfileRecords(m) }
-                            ProfileFold("Level ${m.level.level}", "${m.level.level} · ${m.level.pct}%") { ProfileLevel(m) }
+                            ProfileFold("Level ${m.level.level}", "${m.level.level} \u00B7 ${m.level.pct}%") { ProfileLevel(m) }
                             ProfileFold("Top weak spots", ProfileTabs.weakSummary(m.weak.second)) { ProfileWeak(m, onPractice = { onOpenReview(course) }) }
+                            ProfileRowCard(
+                                "Achievements", ProfileTabs.achievementsSummary(m.unlockedCount, m.catalogCount), R.drawable.ds_star,
+                                ds.xpTint, ds.xpText, onOpenAchievements,
+                            )
                         }
                         ProfileTab.SOCIAL -> {
-                            ProfileCompactHeader(m)
                             ProfileLeague(m)
+                            ProfileRowCard("League", "Leaderboards, teams, and the season ladder", R.drawable.ds_league, ds.xpTint, ds.xpText, onOpenLeague)
+                            ProfileRowCard("Friends", "Your friends, their activity, and duels", R.drawable.ds_friends, ds.choiceTint, ds.choice, onOpenFriends)
+                            ProfileRowCard("Invite friends", "You both get a reward when they finish a first lesson", R.drawable.ds_gift, ds.rightTint, ds.right, onOpenInvite)
                             ProfileFriends(m)
                             ProfileShare(m, onShare = { shareProfileCard(context, m, ds) })
                         }
@@ -114,20 +122,6 @@ fun ProfileHubScreen(
                     Text("Profile could not load.", color = ds.ink)
                     LessonEdgeButton("Try again", EdgeVariant.SECONDARY, { failed = false; reload++ })
                     com.obsidianmedia.learnwithalphonso.ui.support.GetHelpButton()
-                }
-            }
-            // The old hub rows keep their place, each on the tab it belongs to; Settings and Edit answers stay on Overview.
-            when (tab) {
-                ProfileTab.OVERVIEW -> {
-                    LessonEdgeButton("Edit your answers", EdgeVariant.SECONDARY, onEditAnswers)
-                    AlphonsoRowCard("Settings", "Theme and account", leadingEmoji = "⚙️", modifier = Modifier.clickable(onClick = onOpenSettings).padding(top = 8.dp))
-                }
-                ProfileTab.PROGRESS ->
-                    AlphonsoRowCard("Achievements", overview?.let { ProfileTabs.achievementsSummary(it.unlockedCount, it.catalogCount) } ?: "Badges you have earned", leadingEmoji = "⭐", modifier = Modifier.clickable(onClick = onOpenAchievements))
-                ProfileTab.SOCIAL -> {
-                    AlphonsoRowCard("League", "Leaderboards, teams, and the season ladder", leadingEmoji = "🏆", modifier = Modifier.clickable(onClick = onOpenLeague))
-                    AlphonsoRowCard("Friends", "Your friends, their activity, and duels", leadingEmoji = "👥", modifier = Modifier.clickable(onClick = onOpenFriends))
-                    AlphonsoRowCard("Invite friends", "You both get a reward when they finish a first lesson", leadingEmoji = "🤝", modifier = Modifier.clickable(onClick = onOpenInvite))
                 }
             }
         }

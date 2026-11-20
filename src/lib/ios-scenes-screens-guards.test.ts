@@ -146,7 +146,6 @@ describe("Listen: studio scene, and the empty, offline and failed states as desi
 
 describe("Profile: hall scene, hero, glass menu cards", () => {
   const profile = read("ProfileHubView.swift");
-  const components = read("DesignSystem/AlphonsoComponents.swift");
 
   it("the hall of achievements is behind Profile, with the overview hero at the top", () => {
     expect(profile).toContain(".screenScene(.profile)");
@@ -163,12 +162,14 @@ describe("Profile: hall scene, hero, glass menu cards", () => {
     expect(profile).toContain("fetchProfileOverview");
   });
 
-  it("the four menu cards are the same four, as glass cards that open the same destinations", () => {
+  it("the menu rows are drawn-icon cards that open the same destinations", () => {
     for (const keep of [
       'title: "League"',
       'title: "Friends"',
+      'title: "Invite friends"',
       'title: "Achievements"',
       'title: "Settings"',
+      'title: "Edit your answers"',
       "destination = target",
       "LeaderboardView(session: session)",
       "FriendsView(session: session)",
@@ -176,12 +177,9 @@ describe("Profile: hall scene, hero, glass menu cards", () => {
     ]) {
       expect(profile, keep).toContain(keep);
     }
-    expect(profile.match(/glass: true/g)?.length).toBe(1); // one shared row() builds all four
-    const tile = from(components, "struct AlphonsoTile: View");
-    expect(tile.slice(0, 1800)).toContain("var glass: Bool = false");
-    expect(tile.slice(0, 2600)).toContain("AnyShapeStyle(.regularMaterial)");
-    // Glass tiles keep the ink colour; the tone ink is only for the old coloured tiles.
-    // A word boundary after each ink: `AlphonsoColor.inkSoft` or `tone.inkSoft` must not pass for `.ink`.
-    expect(tile.slice(0, 2600)).toMatch(/glass \? AlphonsoColor\.ink\b : tone\.ink\b/);
+    // One shared row() builds them, from the design system's drawn icons and never an emoji tile.
+    expect(profile).toContain("ProfileRowCard(icon: icon");
+    expect(profile).not.toContain("AlphonsoTile(");
+    expect(profile).not.toMatch(/emoji:/);
   });
 });

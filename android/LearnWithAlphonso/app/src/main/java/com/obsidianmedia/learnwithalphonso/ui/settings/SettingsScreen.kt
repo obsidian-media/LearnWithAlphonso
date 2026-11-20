@@ -122,7 +122,7 @@ fun SettingsScreen(container: AppContainer, onBack: () -> Unit, onOpenHelp: () -
                 Section("Profile", footer = "Your name and picture are visible to other learners on leaderboards, friends, and duels.") {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
                         ProfileAvatar(identity.avatarSeed.ifEmpty { "a" }, identity.displayName, AlphonsoTokens.Space.s8 + AlphonsoTokens.Space.s4)
-                        DsCompactButton("Change picture", { pickingAvatar = true })
+                        DsCompactButton("Change profile picture", { pickingAvatar = true })
                     }
                     DsField(identity.displayName, identityVm::editName, "Display name")
                     LessonEdgeButton("Save Name", EdgeVariant.PRIMARY, { identityVm.saveName() }, enabled = !identity.saving && identity.displayName.isNotBlank())
