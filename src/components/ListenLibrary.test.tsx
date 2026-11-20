@@ -295,6 +295,9 @@ describe("Library: the All, Listen, Watch and Stories tabs", () => {
     segmentCount: 5,
     bestCorrect: null,
     checkTotal: null,
+    coverUrl: null,
+    endingsTotal: 0,
+    endingsFound: 0,
     completed: false,
     ...over,
   });

@@ -74,6 +74,96 @@ final class StoriesTests: XCTestCase {
         XCTAssertEqual(Stories.status(summary("s")), "New")
     }
 
+    // MARK: - Library layout (featured, continue line, cover cards)
+
+    private func branchingSummary(
+        _ title: String, order: Int, total: Int = 4, found: Int = 1, published: Bool = true, index: Int = 0
+    ) -> StorySummary {
+        StorySummary(
+            id: title, course: "en", level: "A2", slug: title, title: title, sortOrder: order, published: published,
+            segmentIndex: index, segmentCount: 0, bestCorrect: nil, checkTotal: nil, completed: false, branching: true,
+            endingsTotal: total, endingsFound: found)
+    }
+
+    func testTheNewestBranchingStoryIsFeaturedAndLeftOutOfTheGrid() {
+        let layout = Stories.library(
+            [branchingSummary("old", order: 1), branchingSummary("new", order: 9), summary("lin", order: 20),
+             branchingSummary("draft", order: 99, published: false)],
+            course: "en")
+        XCTAssertEqual(layout.featured?.title, "new")
+        XCTAssertEqual(Set(layout.grid.map(\.title)), ["old", "lin"])
+        XCTAssertNil(Stories.library([summary("lin")], course: "en").featured)
+    }
+
+    func testOnlyAStartedUnfinishedLinearStoryIsOfferedToResume() {
+        XCTAssertEqual(Stories.library([summary("a", index: 2)], course: "en").resume?.title, "a")
+        XCTAssertNil(Stories.library([summary("a", index: 2, completed: true)], course: "en").resume)
+        XCTAssertNil(Stories.library([summary("a")], course: "en").resume)
+        XCTAssertNil(Stories.library([branchingSummary("b", order: 1, index: 3)], course: "en").resume)
+    }
+
+    func testTheResumeStoryIsShownOnceNotAlsoInTheGrid() {
+        let layout = Stories.library([summary("a", index: 2), summary("b")], course: "en")
+        XCTAssertEqual(layout.resume?.title, "a")
+        XCTAssertEqual(layout.grid.map(\.title), ["b"])
+    }
+
+    func testLibraryLabelsCarryEndingsAndTheFullCardName() {
+        let b = branchingSummary("The Key", order: 1)
+        XCTAssertEqual(Stories.endingsLine(b), "1 of 4 endings")
+        XCTAssertEqual(Stories.heroLine(b), "A2 · 4 endings · 1 found")
+        XCTAssertEqual(Stories.cardLabel(b), "The Key, A2, Choose your path, 1 of 4 endings")
+        XCTAssertEqual(Stories.cardLabel(summary("Tea")), "Tea, A1, New")
+        XCTAssertEqual(Stories.resumeLine(summary("s", index: 2)), "Continue · Scene 3")
+        XCTAssertEqual(Stories.endingsFraction(b), 0.25, accuracy: 0.0001)
+        XCTAssertEqual(Stories.endingsFraction(summary("lin")), 0)
+    }
+
+    func testEndingsFoundNeverExceedsTheTotal() {
+        XCTAssertEqual(branchingSummary("x", order: 1, total: 2, found: 5).endingsFound, 2)
+    }
+
+    func testBranchingFactsTakeTheFirstScenesArtAndCountOnlyRealEndings() {
+        let nodes: [String: Any] = [
+            "start": "n1",
+            "map": [
+                "n1": ["segments": ["a"], "art": "en/key/n1.jpg", "next": "e1"],
+                "e1": ["segments": ["b"], "ending": ["id": "good", "title": "Good", "wrap": "w", "quality": "good"]],
+                "e2": ["segments": ["c"], "ending": ["id": "bad", "title": "Bad", "wrap": "w", "quality": "lesser"]],
+            ],
+        ]
+        let facts = Stories.branchingFacts(nodes: nodes, savedEndings: ["good", "ghost"], supabaseURL: supabaseURL)
+        XCTAssertEqual(facts.cover?.absoluteString, "https://project.supabase.co/storage/v1/object/public/story-art/en/key/n1.jpg")
+        XCTAssertEqual(facts.total, 2)
+        XCTAssertEqual(facts.found, 1)
+        XCTAssertNil(Stories.branchingFacts(nodes: "junk", savedEndings: nil, supabaseURL: supabaseURL).cover)
+    }
+
+    func testTheLibraryReadsNodesAndSavedEndingsForBranchingCards() async throws {
+        let box = RequestBox()
+        let rows: [[String: Any]] = [[
+            "id": "b1", "course": "en", "level_id": "A2", "slug": "key", "title": "The Key", "sort_order": 3,
+            "published": true, "branching": true, "segments": [],
+            "nodes": ["start": "n1", "map": [
+                "n1": ["segments": ["a"], "art": "en/key/n1.jpg", "next": "e1"],
+                "e1": ["segments": ["b"], "ending": ["id": "good", "title": "G", "wrap": "w", "quality": "good"]],
+            ]],
+        ]]
+        let client = makeClient { request in
+            await box.record(request)
+            if request.url?.path.contains("story_progress") == true {
+                return self.json([["story_id": "b1", "segment_index": 0, "endings_found": ["good"]]])
+            }
+            return self.json(rows)
+        }
+        let stories = try await client.fetchStories(course: "en")
+        XCTAssertEqual(stories.first?.endingsTotal, 1)
+        XCTAssertEqual(stories.first?.endingsFound, 1)
+        XCTAssertNotNil(stories.first?.coverURL)
+        let first = await box.requests.first?.url?.absoluteString ?? ""
+        XCTAssertTrue(first.contains("nodes"))
+    }
+
     func testNextSegmentNeverRunsPastTheTextOrLoops() {
         XCTAssertEqual(Stories.nextSegment(after: 0, count: 3), 1)
         XCTAssertNil(Stories.nextSegment(after: 2, count: 3))

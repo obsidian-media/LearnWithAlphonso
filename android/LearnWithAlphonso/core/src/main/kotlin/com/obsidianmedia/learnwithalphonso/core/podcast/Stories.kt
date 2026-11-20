@@ -26,6 +26,12 @@ data class StorySummary(
     val completed: Boolean,
     /** A "choose your path" story: its text lives in the node graph, so it has no top-level sentences. */
     val branching: Boolean = false,
+    /** The first scene's art (public `story-art` URL), or null: a linear story, or a branching one without art (a designed fallback is drawn). */
+    val coverUrl: String? = null,
+    /** Endings in a branching story's node graph; 0 for a linear story. */
+    val endingsTotal: Int = 0,
+    /** Distinct endings this learner has reached (`story_progress.endings_found`), never more than [endingsTotal]. */
+    val endingsFound: Int = 0,
 )
 
 data class Story(
@@ -41,6 +47,9 @@ data class Story(
 )
 
 data class StoryLevelGroup(val level: String, val stories: List<StorySummary>)
+
+/** The library's three parts: the featured story, the continue line and the cover grid. */
+data class StoriesLibraryLayout(val featured: StorySummary?, val resume: StorySummary?, val grid: List<StorySummary>)
 
 object Stories {
     val COURSES = setOf("en", "fr", "es")
@@ -66,6 +75,40 @@ object Stories {
         "C1" -> "C1 · Advanced"
         else -> level
     }
+
+    /**
+     * Splits the visible stories for the library. Featured is the newest branching story (the highest sort order: stories are
+     * added at the end). Resume is a linear story the learner started and has not finished: its saved position is stored, a
+     * branching path's position is not, so a branching story is never offered there. The grid is everything except the
+     * featured story, in level then reading order.
+     */
+    fun library(stories: List<StorySummary>, course: String): StoriesLibraryLayout {
+        val shown = visible(stories, course)
+        val featured = shown.filter { it.branching }.fold<StorySummary, StorySummary?>(null) { best, s -> if (best == null || s.sortOrder >= best.sortOrder) s else best }
+        val resume = shown.firstOrNull { !it.branching && it.segmentIndex > 0 && !it.completed }
+        return StoriesLibraryLayout(featured, resume, shown.filter { it.id != featured?.id && it.id != resume?.id })
+    }
+
+    /** "3 of 5 endings". */
+    fun endingsLine(story: StorySummary): String = "${minOf(story.endingsFound, story.endingsTotal)} of ${story.endingsTotal} endings"
+
+    /** The hero's line: "A2 · 4 endings · 1 found". */
+    fun heroLine(story: StorySummary): String =
+        "${story.level} · ${story.endingsTotal} ${if (story.endingsTotal == 1) "ending" else "endings"} · ${minOf(story.endingsFound, story.endingsTotal)} found"
+
+    /** What a card says under its title: the endings progress (branching) or the read state (linear). */
+    fun caption(story: StorySummary): String = if (story.branching && story.endingsTotal > 0) endingsLine(story) else status(story)
+
+    /** The one full accessible name of a card or the hero. */
+    fun cardLabel(story: StorySummary): String =
+        listOfNotNull(story.title, story.level, if (story.branching) BranchingCopy.BADGE else null, caption(story)).joinToString(", ")
+
+    /** The continue line: the saved segment counted from 1. */
+    fun resumeLine(story: StorySummary): String = "Continue · Scene ${story.segmentIndex + 1}"
+
+    /** Fraction of endings found, 0..1, for the progress ring. */
+    fun endingsFraction(story: StorySummary): Float =
+        if (story.endingsTotal <= 0) 0f else minOf(1f, story.endingsFound.toFloat() / story.endingsTotal)
 
     /** A short status for a library row. */
     fun status(story: StorySummary): String {

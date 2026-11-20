@@ -29,11 +29,18 @@ public struct StorySummary: Equatable, Identifiable, Sendable {
     public let completed: Bool
     /// A "choose your path" story: its text lives in the node graph, so it has no top-level sentences.
     public let branching: Bool
+    /// The first scene's art (public `story-art` URL), or nil: a linear story, or a branching one without art. The library
+    /// draws a designed fallback then, never a broken image.
+    public let coverURL: URL?
+    /// Endings in a branching story's node graph; 0 for a linear story.
+    public let endingsTotal: Int
+    /// Distinct endings this learner has reached (`story_progress.endings_found`), never more than `endingsTotal`.
+    public let endingsFound: Int
 
     public init(
         id: String, course: String, level: String, slug: String, title: String, sortOrder: Int, published: Bool,
         segmentIndex: Int, segmentCount: Int, bestCorrect: Int?, checkTotal: Int?, completed: Bool,
-        branching: Bool = false
+        branching: Bool = false, coverURL: URL? = nil, endingsTotal: Int = 0, endingsFound: Int = 0
     ) {
         self.id = id
         self.course = course
@@ -48,6 +55,9 @@ public struct StorySummary: Equatable, Identifiable, Sendable {
         self.checkTotal = checkTotal
         self.completed = completed
         self.branching = branching
+        self.coverURL = coverURL
+        self.endingsTotal = max(0, endingsTotal)
+        self.endingsFound = min(max(0, endingsFound), max(0, endingsTotal))
     }
 }
 
@@ -79,6 +89,13 @@ public struct Story: Equatable, Identifiable, Sendable {
 public struct StoryLevelGroup: Equatable, Sendable {
     public let level: String
     public let stories: [StorySummary]
+}
+
+/// The library's three parts: the featured story, the continue line and the cover grid.
+public struct StoriesLibraryLayout: Equatable, Sendable {
+    public let featured: StorySummary?
+    public let resume: StorySummary?
+    public let grid: [StorySummary]
 }
 
 public enum Stories {
@@ -117,6 +134,58 @@ public enum Stories {
         case "C1": return "C1 · Advanced"
         default: return level
         }
+    }
+
+    /// Splits the visible stories for the library. Featured is the newest branching story (the highest sort order: stories
+    /// are added at the end). Resume is a linear story the learner started and has not finished: its saved position is
+    /// stored, a branching path's position is not, so a branching story is never offered there. The grid is everything
+    /// except the featured and the resume story (each is shown once), in level then reading order.
+    public static func library(_ stories: [StorySummary], course: String) -> StoriesLibraryLayout {
+        let shown = Stories.visible(stories, course: course)
+        var featured: StorySummary?
+        for story in shown where story.branching {
+            if featured == nil || story.sortOrder >= featured!.sortOrder { featured = story }
+        }
+        let resume = shown.first { !$0.branching && $0.segmentIndex > 0 && !$0.completed }
+        return StoriesLibraryLayout(featured: featured, resume: resume, grid: shown.filter { $0.id != featured?.id && $0.id != resume?.id })
+    }
+
+    /// "3 of 5 endings".
+    public static func endingsLine(_ story: StorySummary) -> String { "\(story.endingsFound) of \(story.endingsTotal) endings" }
+
+    /// The hero's line: "A2 · 4 endings · 1 found".
+    public static func heroLine(_ story: StorySummary) -> String {
+        "\(story.level) · \(story.endingsTotal) \(story.endingsTotal == 1 ? "ending" : "endings") · \(story.endingsFound) found"
+    }
+
+    /// What a card says under its title: the endings progress (branching) or the read state (linear).
+    public static func caption(_ story: StorySummary) -> String {
+        story.branching && story.endingsTotal > 0 ? endingsLine(story) : status(story)
+    }
+
+    /// The one full accessible name of a card or the hero.
+    public static func cardLabel(_ story: StorySummary) -> String {
+        var parts = [story.title, story.level]
+        if story.branching { parts.append(BranchingCopy.badge) }
+        parts.append(caption(story))
+        return parts.joined(separator: ", ")
+    }
+
+    /// The continue line: the saved segment counted from 1.
+    public static func resumeLine(_ story: StorySummary) -> String { "Continue · Scene \(story.segmentIndex + 1)" }
+
+    /// Fraction of endings found, 0...1, for the progress ring.
+    public static func endingsFraction(_ story: StorySummary) -> Double {
+        story.endingsTotal <= 0 ? 0 : min(1, Double(story.endingsFound) / Double(story.endingsTotal))
+    }
+
+    /// Cover art and endings counts from a stored `nodes` object and the learner's saved ending ids: the first scene's
+    /// art, the number of endings in the graph, and how many of the saved ids are real endings of it.
+    public static func branchingFacts(nodes: Any?, savedEndings: Any?, supabaseURL: URL) -> (cover: URL?, total: Int, found: Int) {
+        guard let graph = Branching.parseGraph(from: nodes, supabaseURL: supabaseURL) else { return (nil, 0, 0) }
+        let ids = Set(Branching.allEndings(graph).map(\.id))
+        let saved = Set((savedEndings as? [Any])?.compactMap { $0 as? String } ?? [])
+        return (graph.map[graph.start]?.artURL, ids.count, saved.intersection(ids).count)
     }
 
     /// A short status for a library row.
@@ -210,7 +279,9 @@ public enum StoryCopy {
 
 extension PodcastClient {
     static let storyColumns = "id,course,level_id,slug,title,segments,sort_order,published,branching"
-    static let storyProgressColumns = "story_id,segment_index,best_correct,check_total,completed_at"
+    static let storyProgressColumns = "story_id,segment_index,best_correct,check_total,completed_at,endings_found"
+    /// The library also reads `nodes`, for each branching story's cover art and endings count.
+    static let storyListColumns = storyColumns + ",nodes"
 
     /// The published stories in one course with this learner's progress (RLS limits both reads). A failed progress read
     /// never fails the library: the stories still open, they just show as new.
@@ -218,7 +289,7 @@ extension PodcastClient {
         guard Stories.courses.contains(course) else { return [] }
         let storiesRequest = request(
             path: "rest/v1/stories",
-            query: "select=\(Self.storyColumns)&course=eq.\(course)&published=eq.true&order=sort_order.asc",
+            query: "select=\(Self.storyListColumns)&course=eq.\(course)&published=eq.true&order=sort_order.asc",
             method: "GET"
         )
         let (data, response) = try await requester(storiesRequest)
@@ -245,6 +316,10 @@ extension PodcastClient {
                   let title = row["title"] as? String else { return nil }
             let saved = progress[id]
             let completedAt: Any? = saved?["completed_at"]
+            let isBranching = row["branching"] as? Bool ?? false
+            let facts = isBranching
+                ? Stories.branchingFacts(nodes: row["nodes"], savedEndings: saved?["endings_found"], supabaseURL: supabaseURL)
+                : (cover: nil, total: 0, found: 0)
             return StorySummary(
                 id: id,
                 course: row["course"] as? String ?? course,
@@ -258,7 +333,10 @@ extension PodcastClient {
                 bestCorrect: saved?["best_correct"] as? Int,
                 checkTotal: saved?["check_total"] as? Int,
                 completed: completedAt != nil && !(completedAt is NSNull),
-                branching: row["branching"] as? Bool ?? false
+                branching: isBranching,
+                coverURL: facts.cover,
+                endingsTotal: facts.total,
+                endingsFound: facts.found
             )
         }
     }
