@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { shapeTutorReply } from "@/lib/hector-conversation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -87,7 +88,19 @@ beforeEach(() => {
   routes = {
     "/api/pro-status": status(PRO_APP_STORE),
     "/api/pro-offering": status(OFFER),
-    "/api/hector-respond": status({ reply: "Bonjour ! Comment ça va ?", audioBase64: btoa("mp3") }),
+    "/api/hector-respond": status(
+      shapeTutorReply({
+        requestId: "r",
+        sessionId: "s",
+        agent: "tutor",
+        reply: "Bonjour ! Comment ça va ?",
+        audioBase64: btoa("mp3"),
+        ttsModel: "m",
+        language: "fr",
+        llmMs: 1,
+        ttsMs: 1,
+      }),
+    ),
   };
   globalThis.fetch = vi.fn(async (input: string, init?: RequestInit) => {
     const url = String(input);
@@ -398,7 +411,21 @@ describe("web Hector in the new look", () => {
     await waitFor(() => expect(pill()).toHaveTextContent("Thinking…"));
     expect(pill()).toHaveAttribute("aria-label", "Hector is thinking");
 
-    answer(Response.json({ reply: "Salut !", audioBase64: btoa("mp3") }));
+    answer(
+      Response.json(
+        shapeTutorReply({
+          requestId: "r",
+          sessionId: "s",
+          agent: "tutor",
+          reply: "Salut !",
+          audioBase64: btoa("mp3"),
+          ttsModel: "m",
+          language: "fr",
+          llmMs: 1,
+          ttsMs: 1,
+        }),
+      ),
+    );
     await waitFor(() => expect(pill()).toHaveTextContent("Speaking…"));
 
     players[players.length - 1].onended?.();

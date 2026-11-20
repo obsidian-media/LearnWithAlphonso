@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { shapeTutorReply } from "@/lib/hector-conversation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -115,7 +116,19 @@ beforeEach(() => {
     "/api/app-config": () => Response.json({ limits: { hectorDaily: 150 } }),
     "/api/tts": () => new Response(new Blob(["mp3"]), { status: 200 }),
     "/api/hector-respond": () =>
-      Response.json({ reply: "Sure! What did you do yesterday?", audioBase64: btoa("mp3") }),
+      Response.json(
+        shapeTutorReply({
+          requestId: "r",
+          sessionId: "s",
+          agent: "tutor",
+          reply: "Sure! What did you do yesterday?",
+          audioBase64: btoa("mp3"),
+          ttsModel: "m",
+          language: "fr",
+          llmMs: 1,
+          ttsMs: 1,
+        }),
+      ),
   };
   globalThis.fetch = vi.fn(async (input: string, init?: RequestInit) => {
     const url = String(input).split("?")[0];

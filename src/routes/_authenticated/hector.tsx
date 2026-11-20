@@ -23,6 +23,7 @@ import { bubbleClass } from "@/components/hector/hector-style";
 import { CorrectionCard } from "@/components/hector/CorrectionCard";
 import { displayText, extractCorrection, validateCorrection } from "@/lib/hector-correction";
 import type { HectorCorrection } from "@/lib/hector-correction";
+import type { TutorReplyPayload } from "@/lib/hector-conversation";
 import {
   HectorAvatar,
   HectorChips,
@@ -406,7 +407,7 @@ function HectorConversation({
         }
         const data = (await resp.json()) as {
           reply?: string;
-          audioBase64?: string;
+          audio_base64?: TutorReplyPayload["audio_base64"];
           correction?: unknown;
         };
         // The server already took the block out; parsing the reply here too means a tag can never be shown.
@@ -419,7 +420,7 @@ function HectorConversation({
           const withCard = correction ? m.map((x, i) => (i === at ? { ...x, correction } : x)) : m;
           return [...withCard, { role: "assistant", content: reply }];
         });
-        play(data.audioBase64);
+        play(data.audio_base64);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Something went wrong.");
       } finally {
