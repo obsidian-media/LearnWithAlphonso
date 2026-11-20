@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planStoryAudio, recordingFile, storySentences } from "./story-audio-plan";
+import { planStoryAudio, planStoryFilter, recordingFile, storySentences } from "./story-audio-plan";
 
 const linear = {
   id: "s1",
@@ -67,5 +67,38 @@ describe("story audio plan", () => {
   it("ignores a manifest it cannot read", async () => {
     const plan = await planStoryAudio(linear, "v1", { v: 9 });
     expect(plan.toGenerate).toHaveLength(2);
+  });
+});
+
+describe("story audio filter plan", () => {
+  it("defaults to published stories only", () => {
+    expect(planStoryFilter({})).toEqual({ publishedOnly: true });
+    expect(planStoryFilter({ course: "es" }).publishedOnly).toBe(true);
+    expect(planStoryFilter({ slugs: "a,b" }).publishedOnly).toBe(true);
+  });
+
+  it("refuses --include-unpublished without --slugs or --story", () => {
+    expect(() => planStoryFilter({ "include-unpublished": true })).toThrow(
+      /requires --slugs or --story/,
+    );
+    expect(() => planStoryFilter({ "include-unpublished": true, course: "en" })).toThrow(
+      /requires/,
+    );
+  });
+
+  it("narrows by slugs, trimming and dropping empties", () => {
+    expect(planStoryFilter({ slugs: "a, b,,c" }).slugs).toEqual(["a", "b", "c"]);
+    expect(() => planStoryFilter({ slugs: "," })).toThrow(/at least one slug/);
+  });
+
+  it("skips the published filter only with the flag plus --slugs or --story", () => {
+    expect(planStoryFilter({ "include-unpublished": true, slugs: "a" })).toMatchObject({
+      publishedOnly: false,
+      slugs: ["a"],
+    });
+    expect(planStoryFilter({ "include-unpublished": true, story: "u1" })).toMatchObject({
+      publishedOnly: false,
+      story: "u1",
+    });
   });
 });

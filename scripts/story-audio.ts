@@ -12,6 +12,8 @@
  *   bun run scripts/story-audio.ts generate                       # all published stories, dry run
  *   bun run scripts/story-audio.ts generate --confirm             # record everything that is missing
  *   bun run scripts/story-audio.ts generate --story <uuid> [--confirm]   # --story still requires the story to be published
+ *   bun run scripts/story-audio.ts generate --slugs a,b,c [--confirm]    # published stories with these slugs
+ *   bun run scripts/story-audio.ts generate --slugs a,b,c --include-unpublished [--confirm]   # hidden (draft) stories too
  *   bun run scripts/story-audio.ts generate --course es [--confirm]
  *
  * Keys come from the environment only: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and DEEPGRAM_API_KEY. If they are not
@@ -27,14 +29,17 @@ import { deepgramSpeakUrl } from "../src/lib/podcast-tts";
 import { ttsCostMicro } from "../src/lib/ai-cost";
 import { pickEnv } from "../src/lib/video-authoring";
 import { CliArgError, parseCliArgs, type CliFlags } from "../src/lib/podcast-cli-args";
-import { planStoryAudio } from "../src/lib/story-audio-plan";
+import { planStoryAudio, planStoryFilter } from "../src/lib/story-audio-plan";
 import {
   STORY_AUDIO_BUCKET,
   storyAudioPrefix,
   storyManifestPath,
 } from "../src/lib/story-recordings";
 
-const FLAG_SPEC = { booleans: ["confirm"], values: ["story", "course"] } as const;
+const FLAG_SPEC = {
+  booleans: ["confirm", "include-unpublished"],
+  values: ["story", "course", "slugs"],
+} as const;
 const WANTED = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "DEEPGRAM_API_KEY"] as const;
 
 function fail(message: string): never {
@@ -87,12 +92,21 @@ async function cmdGenerate(flags: CliFlags) {
   const confirm = flags.confirm === true;
   const db = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-  let query = db.from("stories").select("id, course, slug, segments, nodes").eq("published", true);
-  if (typeof flags.story === "string") query = query.eq("id", flags.story);
-  if (typeof flags.course === "string") query = query.eq("course", flags.course);
+  let filter;
+  try {
+    filter = planStoryFilter(flags);
+  } catch (err) {
+    fail(err instanceof Error ? err.message : String(err));
+  }
+  let query = db.from("stories").select("id, course, slug, segments, nodes");
+  if (filter.publishedOnly) query = query.eq("published", true);
+  if (filter.story) query = query.eq("id", filter.story);
+  if (filter.slugs) query = query.in("slug", filter.slugs);
+  if (filter.course) query = query.eq("course", filter.course);
   const { data: stories, error } = await query.order("course").order("sort_order");
   if (error) fail(`could not read stories: ${error.message}`);
-  if (!stories?.length) fail("no published stories matched.");
+  if (!stories?.length)
+    fail(filter.publishedOnly ? "no published stories matched." : "no stories matched.");
 
   let totalChars = 0;
   let totalNew = 0;
@@ -163,7 +177,8 @@ async function cmdGenerate(flags: CliFlags) {
 }
 
 const USAGE = `Usage:
-  story-audio.ts generate [--story <id>] [--course en|fr|es] [--confirm]`;
+  story-audio.ts generate [--story <id>] [--slugs a,b,c] [--course en|fr|es] [--include-unpublished] [--confirm]
+  --include-unpublished also narrates hidden (published=false) stories; it requires --slugs or --story.`;
 
 async function main() {
   const { command, flags } = parseCliArgs(process.argv.slice(2), FLAG_SPEC);
