@@ -22,6 +22,7 @@ import {
   type PictureWord,
   type RoundResult,
 } from "@/lib/say-the-picture";
+import { releaseStops } from "@/lib/say-it-right";
 import { validateSavedWordInput, type SavedWordInput } from "@/lib/saved-word";
 import {
   SavedWordError,
@@ -131,27 +132,38 @@ export function SayThePicture({
     if (phase === "ask") document.getElementById("stp-record")?.focus();
   }, [index, phase]);
 
-  // Hold to talk. A press starts and a release stops; a plain click (keyboard, screen reader) toggles, so the ring is
-  // never a hold-only control.
+  // Hold to talk, or tap to start and tap to stop (the same rule as Say it right). A press starts recording; a release
+  // after a real hold (LATCH_MS or more) sends it, while a quick tap LATCHES the recording on so a second tap stops it.
+  // A plain click (keyboard, screen reader) toggles, so the ring is never a hold-only control. The recording also stops
+  // by itself at MAX_RECORD_MS.
   const holding = useRef(false);
+  const pressedAt = useRef(0);
   const pressedByPointer = useRef(false);
   const press = () => {
-    if (transcribing || recording) return;
-    holding.current = true;
+    if (transcribing) return;
     pressedByPointer.current = true;
+    if (recording) {
+      // A latched recording: this second tap stops it (the click that follows is swallowed).
+      stop();
+      return;
+    }
+    holding.current = true;
+    pressedAt.current = Date.now();
     void start();
   };
   const release = () => {
     if (!holding.current) return;
     holding.current = false;
-    stop();
+    // A quick tap latches the recording on; only a real hold sends on release.
+    if (releaseStops(Date.now() - pressedAt.current)) stop();
   };
-  // The pointer left the ring (or was cancelled) while held: no click follows, so the next keyboard press must not be
-  // taken for the click that follows a hold.
+  // The pointer left the ring (or was cancelled) while held: no click follows and the gesture is not a tap, so the
+  // recording stops, and the next keyboard press must not be taken for the click that follows a hold.
   const abandon = () => {
     if (!holding.current) return;
+    holding.current = false;
     pressedByPointer.current = false;
-    release();
+    stop();
   };
   // The ring fills over MAX_RECORD_MS; when it is full the recording stops and is sent.
   const stopRef = useRef(stop);
@@ -399,7 +411,7 @@ export function SayThePicture({
           ? BUBBLE.reveal
           : BUBBLE.ask;
   const live = recording
-    ? "Listening. Let go to send."
+    ? "Listening. Let go or tap to send."
     : transcribing
       ? "Checking what you said…"
       : null;
@@ -558,7 +570,7 @@ export function SayThePicture({
               className="ds-type-caption font-semibold text-ds-ink-soft"
               aria-live="polite"
             >
-              {live ?? "What is this? Hold and say it."}
+              {live ?? "What is this? Hold to talk, or tap to start and tap to stop."}
             </p>
             {error && (
               <p
