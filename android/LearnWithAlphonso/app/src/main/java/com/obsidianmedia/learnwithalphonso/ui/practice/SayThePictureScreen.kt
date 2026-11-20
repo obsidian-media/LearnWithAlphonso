@@ -50,6 +50,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,6 +97,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordError
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordException
 import com.obsidianmedia.learnwithalphonso.core.logic.SavedWordPolicy
 import com.obsidianmedia.learnwithalphonso.core.logic.SayPictureOutcome
+import com.obsidianmedia.learnwithalphonso.core.logic.SayItRight
 import com.obsidianmedia.learnwithalphonso.core.logic.SayPicturePhase
 import com.obsidianmedia.learnwithalphonso.core.logic.SayPicturePose
 import com.obsidianmedia.learnwithalphonso.core.logic.SayPictureResult
@@ -517,7 +519,7 @@ private fun StpStage(
                 if (canCapture) {
                     StpMicRing(listening, busy, 98.dp, reduceMotion, onPressBegan, onPressEnded)
                     Text(
-                        when { listening -> "Listening. Let go when you're done"; busy -> "Checking what you said..."; else -> "What is this? Hold and say it." },
+                        when { listening -> "Listening. Let go or tap to send."; busy -> "Checking what you said..."; else -> "What is this? Hold to talk, or tap to start and tap to stop." },
                         style = Type.footnote.toTextStyle(), color = ds.inkSoft, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                     )
                 } else unavailable()
@@ -529,7 +531,7 @@ private fun StpStage(
             }
             SayPicturePhase.REVEAL -> {
                 Text(
-                    when { listening -> "Listening. Let go when you're done."; busy -> "Checking what you said..."; session.heard != null -> "Nice. That is it for this word."; else -> "Now say it once yourself." },
+                    when { listening -> "Listening. Let go or tap to send."; busy -> "Checking what you said..."; session.heard != null -> "Nice. That is it for this word."; else -> "Now say it once yourself." },
                     style = Type.footnote.toTextStyle(), color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
                 error?.let { Text(it, style = Type.footnote.toTextStyle(), color = ds.wrongInk, textAlign = TextAlign.Center) }
@@ -560,6 +562,7 @@ internal fun StpMicRing(recording: Boolean, busy: Boolean, size: androidx.compos
     LaunchedEffect(recording) {
         if (recording) { kotlinx.coroutines.delay(SayThePicture.MAX_RECORD_MS.toLong()); onPressEnded() }
     }
+    val recordingNow by rememberUpdatedState(recording)
     if (busy) {
         Text("Checking what you said...", style = Type.footnote.toTextStyle(), color = ds.inkSoft)
         return
@@ -568,15 +571,21 @@ internal fun StpMicRing(recording: Boolean, busy: Boolean, size: androidx.compos
     Box(
         Modifier.testTag("stp-mic").size(size)
             .semantics {
-                contentDescription = "Hold to say the word. Press and hold, say the word, then let go to send it."
+                contentDescription = "Hold to say the word. Press and hold, say the word, then let go to send it. Or tap to start, and tap to stop."
                 stateDescription = if (recording) "Recording" else "Ready"
                 role = Role.Button
                 onClick(label = if (recording) "Stop and send" else "Start recording") { if (recording) onPressEnded() else onPressBegan(); true }
             }
             .pointerInput(Unit) {
                 detectTapGestures(onPress = {
+                    // The same rule as Say it right: a second tap on a latched recording stops it; a quick first tap
+                    // latches the recording on; a real hold is hold-to-talk and its release sends. The 6 s ring still
+                    // stops a latched recording.
+                    val wasRecording = recordingNow
+                    val pressedAt = System.currentTimeMillis()
                     onPressBegan()
-                    try { tryAwaitRelease() } finally { onPressEnded() }
+                    tryAwaitRelease()
+                    if (SayItRight.releaseStops(System.currentTimeMillis() - pressedAt, wasRecording)) onPressEnded()
                 })
             },
         contentAlignment = Alignment.Center,
