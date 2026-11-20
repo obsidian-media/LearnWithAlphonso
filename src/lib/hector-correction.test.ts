@@ -97,6 +97,14 @@ describe("correctionInstruction", () => {
     expect(text).toContain("the note in the block does the teaching");
   });
 
+  it("rule 4: the note shows the pattern and never guesses a grammar reason (live check: a false 'feminine so -s')", () => {
+    expect(text).toContain("tiny example (une glace, des glaces)");
+    expect(text).toContain("REASON only for a core");
+    expect(text).toContain("never guess a reason");
+    expect(text).toContain("When unsure, show the example and give no reason");
+    expect(text).not.toContain("encouraging sentence in French on why");
+  });
+
   it("rule 4: the card rule is the last rule before the closing line, with one worked example", () => {
     expect(text.indexOf("THE CARD TEACHES")).toBeGreaterThan(text.indexOf("At most one block"));
     expect(text.indexOf("THE CARD TEACHES")).toBeGreaterThan(text.indexOf("Keep the tone warm"));
