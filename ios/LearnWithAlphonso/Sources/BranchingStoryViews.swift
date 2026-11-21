@@ -270,15 +270,17 @@ private struct BranchingNodePage: View {
 
     private var courseValue: Course { Course(wireCode: story.course) ?? .english }
 
-    /// The mock's full-screen fade: light at the top so the art reads, near-black behind the text.
+    /// The mock's full-screen fade: light at the top so the art reads, near-black behind the text. It is dark by the
+    /// time the first paragraph starts (about a third of the way down), so bright art never washes the opening lines.
     private var fade: some View {
         LinearGradient(
             stops: [
                 .init(color: ds.heroB.opacity(0.10), location: 0),
                 .init(color: ds.heroB.opacity(0.10), location: 0.20),
-                .init(color: ds.heroB.opacity(0.05), location: 0.40),
-                .init(color: ds.heroB.opacity(0.72), location: 0.66),
-                .init(color: ds.heroB.opacity(0.97), location: 0.86),
+                .init(color: ds.heroB.opacity(0.30), location: 0.30),
+                .init(color: ds.heroB.opacity(0.78), location: 0.44),
+                .init(color: ds.heroB.opacity(0.94), location: 0.60),
+                .init(color: ds.heroB.opacity(0.97), location: 0.80),
                 .init(color: ds.heroB.opacity(0.97), location: 1),
             ],
             startPoint: .top, endPoint: .bottom)
@@ -346,6 +348,7 @@ private struct BranchingNodePage: View {
             Text("Scene \(sceneNumber)")
                 .dsText(.overline)
                 .foregroundStyle(ds.onHeroKick)
+                .shadow(color: ds.heroB.opacity(0.9), radius: 3, y: 1)
                 .accessibilityAddTraits(.isHeader)
             passage(current: current)
             narrationControls
@@ -384,6 +387,7 @@ private struct BranchingNodePage: View {
                 }
                 .dsText(.body)
                 .lineSpacing(3)
+                .shadow(color: ds.heroB.opacity(0.8), radius: 3, y: 1)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, AlphonsoDS.Space.s3)
                 .padding(.vertical, AlphonsoDS.Space.s2)

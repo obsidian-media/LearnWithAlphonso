@@ -56,6 +56,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
@@ -253,8 +254,11 @@ private fun NodePage(container: AppContainer, story: BranchingStory, nodeId: Str
 
 // The mock's overlay: the dark of the fade is the hero's deep colour and the white is the on-hero colour, so both come from tokens.
 private fun readerFade(dark: Color) = Brush.verticalGradient(
-    0.20f to dark.copy(alpha = 0.10f), 0.40f to dark.copy(alpha = 0.05f), 0.66f to dark.copy(alpha = 0.72f), 0.86f to dark.copy(alpha = 0.97f),
+    0.20f to dark.copy(alpha = 0.10f), 0.30f to dark.copy(alpha = 0.30f), 0.44f to dark.copy(alpha = 0.78f), 0.60f to dark.copy(alpha = 0.94f), 0.80f to dark.copy(alpha = 0.97f),
 )
+
+// The scene text sits over art that can be bright: a soft dark shadow in the hero's deep colour keeps each letter readable.
+private fun readerShadow(dark: Color) = Shadow(color = dark.copy(alpha = 0.85f), offset = Offset(0f, 2f), blurRadius = 6f)
 
 /**
  * The cinematic reader, stateless: full-bleed art (a gradient when there is none), a top bar with back, title and scene dots,
@@ -293,7 +297,7 @@ internal fun BranchingSceneContent(
                     Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3),
                     verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2),
                 ) {
-                    Text("Scene $sceneNumber".uppercase(), style = OverlineType, color = ds.onHeroKick, modifier = Modifier.semantics { heading() })
+                    Text("Scene $sceneNumber".uppercase(), style = OverlineType.copy(shadow = readerShadow(ds.heroB)), color = ds.onHeroKick, modifier = Modifier.semantics { heading() })
                     segments.forEachIndexed { index, segment ->
                         val active = activeSegment == index
                         Box(
@@ -303,9 +307,9 @@ internal fun BranchingSceneContent(
                                 .semantics(mergeDescendants = true) { if (active) stateDescription = "Reading now" },
                         ) {
                             if (onWordTap != null) {
-                                TappableText(segment, courseCode, SaveWordMode.AllWords, onSave = onWordTap, style = BodyType, color = ds.onHero)
+                                TappableText(segment, courseCode, SaveWordMode.AllWords, onSave = onWordTap, style = BodyType.copy(shadow = readerShadow(ds.heroB)), color = ds.onHero)
                             } else {
-                                Text(segment, style = BodyType, color = ds.onHero)
+                                Text(segment, style = BodyType.copy(shadow = readerShadow(ds.heroB)), color = ds.onHero)
                             }
                         }
                     }

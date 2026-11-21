@@ -241,8 +241,7 @@ struct FirstRunHUD: View {
                 if let onSkip {
                     Button("Skip", action: onSkip)
                         .dsText(.headline)
-                        .foregroundStyle(ds.card)
-                        .shadow(color: ds.heroB.opacity(0.5), radius: 2, y: 1)
+                        .foregroundStyle(ds.brand)
                         .frame(minWidth: AlphonsoDS.Space.minTouch, minHeight: AlphonsoDS.Space.minTouch)
                         .accessibilityHint("Goes to the next question")
                 } else if showCounter && total > 0 {

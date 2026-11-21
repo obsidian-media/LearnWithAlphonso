@@ -556,7 +556,22 @@ struct SpeechBubbleShape: InsettableShape {
     var cornerRadius: CGFloat = AlphonsoRadius.lg
     var tailWidth: CGFloat = 14
     var tailHeight: CGFloat = 16
+    /// The tail points out the LEADING edge instead (Alphonso standing to the left of the bubble).
+    var tailLeading = false
+    /// False draws a plain rounded bubble (no tail, no room reserved for one).
+    var showsTail = true
     private var insetAmount: CGFloat = 0
+
+    init(
+        cornerRadius: CGFloat = AlphonsoRadius.lg, tailWidth: CGFloat = 14, tailHeight: CGFloat = 16,
+        tailLeading: Bool = false, showsTail: Bool = true
+    ) {
+        self.cornerRadius = cornerRadius
+        self.tailWidth = tailWidth
+        self.tailHeight = tailHeight
+        self.tailLeading = tailLeading
+        self.showsTail = showsTail
+    }
 
     func inset(by amount: CGFloat) -> some InsettableShape {
         var copy = self
@@ -567,16 +582,24 @@ struct SpeechBubbleShape: InsettableShape {
     func path(in rect: CGRect) -> Path {
         let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
         let radius = max(0, cornerRadius - insetAmount)
-        let bubbleRect = CGRect(x: rect.minX, y: rect.minY, width: rect.width - tailWidth, height: rect.height)
-        var path = Path(roundedRect: bubbleRect, cornerRadius: radius)
-        // Tail anchored low on the trailing edge, pointing toward Alphonso's
-        // portrait (which sits just outside the bubble's trailing edge).
+        let tailWidth = showsTail ? tailWidth : 0
+        let bubbleRect = CGRect(
+            x: tailLeading ? rect.minX + tailWidth : rect.minX, y: rect.minY, width: rect.width - tailWidth, height: rect.height)
+        let body = Path(roundedRect: bubbleRect, cornerRadius: radius)
+        guard showsTail else { return body }
+        // Tail anchored low on the edge nearest Alphonso's portrait, pointing at him. Trailing by default (his portrait
+        // sits just outside the bubble's trailing edge); leading when he stands to the left.
         let tailMidY = rect.maxY - radius - tailHeight / 2
-        path.move(to: CGPoint(x: bubbleRect.maxX, y: tailMidY - tailHeight / 2))
-        path.addLine(to: CGPoint(x: rect.maxX, y: tailMidY))
-        path.addLine(to: CGPoint(x: bubbleRect.maxX, y: tailMidY + tailHeight / 2))
-        path.closeSubpath()
-        return path
+        // The base sits 1 pt inside the body so the union is one piece, not two shapes sharing an edge.
+        let baseX = tailLeading ? bubbleRect.minX + 1 : bubbleRect.maxX - 1
+        let tipX = tailLeading ? rect.minX : rect.maxX
+        var tail = Path()
+        tail.move(to: CGPoint(x: baseX, y: tailMidY - tailHeight / 2))
+        tail.addLine(to: CGPoint(x: tipX, y: tailMidY))
+        tail.addLine(to: CGPoint(x: baseX, y: tailMidY + tailHeight / 2))
+        tail.closeSubpath()
+        // One outline, so a stroke does not draw a line across the tail's base.
+        return body.union(tail)
     }
 }
 

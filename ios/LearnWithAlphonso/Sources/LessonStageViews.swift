@@ -1201,7 +1201,16 @@ struct LessonCompleteView<Extras: View>: View {
                 .padding(.horizontal, AlphonsoDS.Space.s4)
                 .padding(.top, AlphonsoDS.Space.s3)
                 .padding(.bottom, AlphonsoDS.Space.s2)
-                .background(ds.surface.opacity(0.95))
+                // Opaque, so a stat label scrolling under the bar is covered whole rather than showing through it, with a
+                // short fade above so the cut-off reads as scrolling, not as a clipped label.
+                .background(ds.surface)
+                .overlay(alignment: .top) {
+                    LinearGradient(colors: [ds.surface.opacity(0), ds.surface], startPoint: .top, endPoint: .bottom)
+                        .frame(height: AlphonsoDS.Space.s4)
+                        .offset(y: -AlphonsoDS.Space.s4)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
                 .overlay(alignment: .top) { Rectangle().fill(ds.line).frame(height: 1) }
         }
         .onAppear {

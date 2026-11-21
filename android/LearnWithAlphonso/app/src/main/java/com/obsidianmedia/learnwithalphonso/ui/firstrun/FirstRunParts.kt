@@ -286,7 +286,7 @@ internal fun FirstRunHud(
                 Box(
                     Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = Role.Button, onClick = onSkip).padding(horizontal = AlphonsoTokens.Space.s2),
                     contentAlignment = Alignment.Center,
-                ) { Text("Skip", style = HeadlineType, color = ds.card) }
+                ) { Text("Skip", style = HeadlineType, color = ds.brand) }
             } else if (counted) {
                 Spacer(Modifier.width(AlphonsoTokens.Space.minTouch))
             }
