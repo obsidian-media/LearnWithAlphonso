@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -149,6 +150,8 @@ internal fun PracticeCallScreen(
     statusHost: @Composable () -> Unit,
     /** Something that belongs on the call itself (a campaign's "Continue" button), shown above the caption. */
     extra: (@Composable () -> Unit)? = null,
+    /** Pinned under the transcript in the conversation sheet and lifted above the keyboard (Hector's type box). */
+    sheetFooter: (@Composable () -> Unit)? = null,
     transcript: @Composable () -> Unit,
 ) {
     val ds = LocalAlphonsoTokens.current
@@ -280,6 +283,7 @@ internal fun PracticeCallScreen(
             }
             HandsFreeSwitch(vm, kit.displayName)
             Box(Modifier.weight(1f, fill = false)) { transcript() }
+            if (sheetFooter != null) Box(Modifier.imePadding()) { sheetFooter() }
         }
     }
 }

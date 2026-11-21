@@ -363,6 +363,9 @@ private struct HectorConversationView: View {
                             transcript
                             saveWordHint
                         }
+                        // The same composer as the classic screen (one send path): type and send, or tap the mic. Pinned
+                        // to the bottom safe area, so the field rides above the keyboard and the transcript scrolls.
+                        .safeAreaInset(edge: .bottom, spacing: 0) { composer }
                         // The save-word sheet opens from inside the conversation sheet, so it is presented from here.
                         .sheet(item: $savingWord) { request in
                             SaveWordSheet(request: request, session: session)

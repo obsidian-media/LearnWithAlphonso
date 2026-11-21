@@ -464,6 +464,20 @@ private fun HectorConversation(container: AppContainer) {
       LaunchedEffect(Unit) { vm.greet() }
       LaunchedEffect(Unit) { Analytics.track(AnalyticsEvent.HECTOR_OPENED) }
       SaveWordHost(container) {
+        val reduced = systemMotionReduced(context)
+        var draft by rememberSaveable { mutableStateOf("") }
+        val composerFocus = remember { FocusRequester() }
+        val listening = phase == TurnPhase.RECORDING
+        val busy = !listening && !HectorViewModel.canSend(state, phase)
+        // One composer for both screens: the classic screen's bottom bar, and the call's conversation sheet.
+        val composer: @Composable () -> Unit = {
+            HectorComposer(
+                listening = listening, busy = busy, text = draft, onText = { draft = it },
+                onSend = { val t = draft; draft = ""; vm.sendTyped(t) },
+                onMic = { vm.tapMicBegan() }, onStop = { vm.pressEnded() },
+                level = { vm.micLevelDBFS() }, reducedMotion = reduced, focusRequester = composerFocus,
+            )
+        }
         if (showCall) {
             if (callEnded) {
                 Column(Modifier.fillMaxSize().background(ds.surface), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
@@ -477,19 +491,15 @@ private fun HectorConversation(container: AppContainer) {
                     onEnd = { vm.hangUp(); playback.stop(); callEnded = true },
                     talkLabel = "Hold to talk to Hector",
                     statusHost = { AiReportStatusHost(container.aiReports) },
-                    transcript = { HectorTranscript(container, vm, Modifier, stopReply = { playback.stop() }) },
+                    sheetFooter = composer,
+                    transcript = { HectorTranscript(container, vm, Modifier, focusComposer = { composerFocus.requestFocus() }, stopReply = { playback.stop() }) },
                 )
             }
             return@SaveWordHost
         }
-        val reduced = systemMotionReduced(context)
-        var draft by rememberSaveable { mutableStateOf("") }
-        val composerFocus = remember { FocusRequester() }
         // Hands-free is kept on this screen too: its switch is in the header's menu, and a remembered choice starts it.
         HandsFreeCallEffects(vm)
         ApplyStoredHandsFree(vm)
-        val listening = phase == TurnPhase.RECORDING
-        val busy = !listening && !HectorViewModel.canSend(state, phase)
         val handsFreeStatus by vm.handsFree.status.collectAsState()
         var showNote by remember { mutableStateOf(false) }
         Column(Modifier.fillMaxSize().background(ds.surface)) {
@@ -505,12 +515,7 @@ private fun HectorConversation(container: AppContainer) {
             state.error?.let { Text(it, style = FootnoteType, color = ds.wrongInk, modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) }
             // Hands-free can be on from the stored choice with the switch still in the menu: the mic is never live unseen.
             if (handsFreeStatus != HandsFreeLoop.Status.Off) HectorHandsFreeBar(handsFreeStatus, onToggle = vm.handsFree::togglePause)
-            HectorComposer(
-                listening = listening, busy = busy, text = draft, onText = { draft = it },
-                onSend = { val t = draft; draft = ""; vm.sendTyped(t) },
-                onMic = { vm.tapMicBegan() }, onStop = { vm.pressEnded() },
-                level = { vm.micLevelDBFS() }, reducedMotion = reduced, focusRequester = composerFocus,
-            )
+            composer()
         }
       }
     }
