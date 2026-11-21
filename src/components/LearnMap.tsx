@@ -272,30 +272,45 @@ export function LearnMap({
                 style={at(map.chest)}
                 data-chest={map.chest.earned ? "earned" : "locked"}
               >
-                <span
-                  role="img"
-                  aria-label={
-                    map.chest.earned
-                      ? `Unit ${map.strip.number} reward, earned`
-                      : `Unit ${map.strip.number} reward, locked until you finish the unit`
-                  }
-                  className={`relative grid size-14 place-items-center rounded-full ${
-                    map.chest.earned
-                      ? "bg-[radial-gradient(circle_at_36%_28%,var(--c-action-hi),var(--c-action))] text-ds-on-action shadow-[0_6px_0_0_var(--c-action-edge),0_0_0_7px_color-mix(in_srgb,var(--c-on-hero-kick)_25%,transparent)]"
-                      : "bg-[radial-gradient(circle_at_36%_28%,color-mix(in_srgb,var(--c-on-hero)_55%,var(--c-hero-a)),color-mix(in_srgb,var(--c-on-hero)_25%,var(--c-hero-a)))] text-ds-on-hero-soft shadow-[0_6px_0_0_var(--c-hero-b)]"
-                  }`}
-                >
-                  <DsIcon name="chest" className="size-7" />
-                  <span
-                    className={`absolute -right-1 -top-1 grid size-5 place-items-center rounded-full ${
-                      map.chest.earned
-                        ? "bg-ds-right text-ds-on-right"
-                        : "bg-ds-hero-b text-ds-on-hero-soft"
-                    }`}
-                  >
-                    <DsIcon name={map.chest.earned ? "check" : "lock"} className="size-3" />
-                  </span>
-                </span>
+                {(() => {
+                  const face = (
+                    <span
+                      aria-hidden="true"
+                      className={`relative grid size-14 place-items-center rounded-full ${
+                        map.chest.earned
+                          ? "bg-[radial-gradient(circle_at_36%_28%,var(--c-action-hi),var(--c-action))] text-ds-on-action shadow-[0_6px_0_0_var(--c-action-edge),0_0_0_7px_color-mix(in_srgb,var(--c-on-hero-kick)_25%,transparent)]"
+                          : "bg-[radial-gradient(circle_at_36%_28%,color-mix(in_srgb,var(--c-on-hero)_55%,var(--c-hero-a)),color-mix(in_srgb,var(--c-on-hero)_25%,var(--c-hero-a)))] text-ds-on-hero-soft shadow-[0_6px_0_0_var(--c-hero-b)]"
+                      }`}
+                    >
+                      <DsIcon name="chest" className="size-7" />
+                      <span
+                        className={`absolute -right-1 -top-1 grid size-5 place-items-center rounded-full ${
+                          map.chest.earned
+                            ? "bg-ds-right text-ds-on-right"
+                            : "bg-ds-hero-b text-ds-on-hero-soft"
+                        }`}
+                      >
+                        <DsIcon name={map.chest.earned ? "check" : "lock"} className="size-3" />
+                      </span>
+                    </span>
+                  );
+                  // An earned chest is a picture with a name; a locked one explains itself on a tap, like a locked
+                  // lesson, through the same status line.
+                  return map.chest.earned ? (
+                    <span role="img" aria-label={`Unit ${map.strip.number} reward, earned`}>
+                      {face}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      aria-label={`Unit ${map.strip.number} reward, locked until you finish the unit`}
+                      onClick={() => setHint("Finish this unit to open the chest.")}
+                      className={`block rounded-full ${FOCUS}`}
+                    >
+                      {face}
+                    </button>
+                  );
+                })()}
                 <span
                   aria-hidden="true"
                   className="absolute bottom-full left-1/2 mb-1.5 -translate-x-1/2 whitespace-nowrap ds-type-overline text-ds-on-hero-kick"
