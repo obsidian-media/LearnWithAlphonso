@@ -12,6 +12,15 @@ const from = (s: string, marker: string) => {
   return s.slice(at);
 };
 
+/** The source between the first `a` and the next `b` after it. */
+const between = (s: string, a: string, b: string) => {
+  const i = s.indexOf(a);
+  expect(i, `missing: ${a}`).toBeGreaterThan(-1);
+  const j = s.indexOf(b, i + a.length);
+  expect(j, `missing: ${b}`).toBeGreaterThan(-1);
+  return s.slice(i, j);
+};
+
 describe("ScreenScene: the reusable scene background", () => {
   const s = read("DesignSystem/ScreenScene.swift");
 
@@ -81,14 +90,17 @@ describe("ScreenScene: the reusable scene background", () => {
 
 describe("Learn tab: garden scene, one hero, standing Alphonso", () => {
   const browser = read("LessonBrowserView.swift");
-  const map = read("LearnHeroStage.swift");
+  const map = read("LearnClimbMap.swift");
   const header = read("StatusHeaderView.swift");
 
-  it("Learn sits on the flat surface; the hero card brings its own room (no full-screen clip, no scroll probe)", () => {
+  it("Learn sits on the flat surface; the climbing map brings its own night hill (no full-screen clip, no scroll probe)", () => {
     expect(browser).not.toMatch(/\.screenScene\(/);
     expect(browser).not.toContain(".sceneScrollProbe()");
     expect(browser).toContain(".background(ds.surface)");
-    expect(map).toContain("LessonArt.room(roomID)");
+    expect(map).toContain("LinearGradient(colors: [ds.heroA, ds.heroB]");
+    // The map replaces the old hero: it is mounted, the hero stage is not.
+    expect(browser).toContain("LearnClimbMap(");
+    expect(browser).not.toContain("LearnHeroStage(");
   });
 
   it("the greeting moved from the small banner into Alphonso's speech bubble, text unchanged", () => {
@@ -99,21 +111,19 @@ describe("Learn tab: garden scene, one hero, standing Alphonso", () => {
     );
     expect(browser).toContain("StatusHeaderView.greeting(streak:");
     expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
-    // The bubble text sits on a material surface, not straight on the scene.
-    const bubble = from(map, "struct PathSpeechBubble");
-    expect(bubble).toContain("Text(message)");
-    expect(bubble).toContain(".regularMaterial");
+    // The bubble text sits on the surface colour, not straight on the scene.
+    const bubble = between(map, "private var greetingBubble", "private func alphonso(");
+    expect(bubble).toContain("Text(greeting)");
+    expect(bubble).toContain(".background(ds.surface");
   });
 
-  it("the hero is the scene stage plus the current-unit card, with one gold Continue lesson button", () => {
-    expect(browser).toContain("LearnHeroStage(");
-    const card = from(read("LearnFoldViews.swift"), "struct LearnCurrentUnitCard");
-    expect(card.slice(0, card.indexOf("/// One slim row"))).toContain('Text("Continue lesson")');
-    expect(card).toContain("ds.actionEdge");
-    // The card was never wired to open its lesson (only the map's node was); with the map gone the link sits behind it.
-    expect(browser).toContain(
-      ".background(NavigationLink(value: next.lesson.id) { EmptyView() }.opacity(0))",
-    );
+  it("the map's start sheet has one gold lesson button, wired to open the lesson through openedLesson", () => {
+    expect(browser).toContain("onOpenLesson: { openedLesson = OpenedLesson(id: $0) }");
+    const sheet = from(map, "private struct ClimbStartSheet");
+    expect(sheet).toContain("Text(ctaLabel)");
+    expect(sheet).toContain("ds.actionEdge");
+    // Built from the shared model, level-scoped, never from its own rules.
+    expect(browser).toContain("LearnMap.climb(units: units, completed: completedLessonIDs");
   });
 
   it("the Continue lesson card opens the lesson through the same destination builder as the list rows", () => {
@@ -122,24 +132,23 @@ describe("Learn tab: garden scene, one hero, standing Alphonso", () => {
     const dest = from(browser, "private func lessonDestination(");
     expect(dest).toContain("LessonPlayerView(lesson: found.lesson");
     expect(dest).toContain("hectorAccess: hectorAccess");
-    // The stage is not a button.
-    expect(map).not.toContain("Button");
+    // The map opens lessons through the one callback; it holds no navigation of its own.
+    expect(map).not.toContain("NavigationLink");
+    expect(map).toContain("onOpenLesson(");
   });
 
-  it("Alphonso waves in the garden clip; the stage keeps 170 to 200 pt of room clear for him", () => {
-    // The cut-out is gone (ios-clips-guards.test.ts pins the clip and the bubble); the room it took stays.
+  it("Alphonso stands at the trailhead, bottom right, as decoration with his greeting readable", () => {
     expect(map).not.toContain("Figure-alphonso-waving");
-    const h = /static let figureHeight: CGFloat = (\d+)/.exec(map);
-    expect(h).not.toBeNull();
-    expect(Number(h![1])).toBeGreaterThanOrEqual(170);
-    expect(Number(h![1])).toBeLessThanOrEqual(200);
-    expect(map).toContain("Self.figureHeight");
+    const stand = between(map, "private func alphonso(", "/// The next lesson's gold face");
+    expect(stand).toContain("LessonArt.expression(.happy)");
+    expect(stand).toContain(".accessibilityHidden(true)");
+    expect(map).toContain("alignment: .bottomTrailing");
   });
 
   it("the stat chips, Up next card and everything below stay, on solid or material surfaces", () => {
     for (const keep of [
       "StatusHeaderView(progress:",
-      "LearnCurrentUnitCard(",
+      "LearnClimbMap(",
       "LearnForYouRail(",
       "PathCardSection(",
       "TeamMissionSection(",

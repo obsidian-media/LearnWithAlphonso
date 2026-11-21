@@ -113,24 +113,25 @@ describe("SceneClip: the looping clip view", () => {
 // Lesson complete no longer plays a clip: since visual round 6 it is drawn in code in the unit's room, and the
 // complete clip is retired (ios-lesson-room-guards.test.ts, scenes.test.ts).
 
-describe("Learn is one hero card: no full-screen clip, the greeting bubble sits in the card", () => {
+describe("Learn is one climbing map: no full-screen clip, the greeting bubble sits in the map", () => {
   const browser = read("LessonBrowserView.swift");
-  const map = read("LearnHeroStage.swift");
+  const map = read("LearnClimbMap.swift");
 
-  it("the screen has no full-screen clip or pinned bubble; the hero card draws the bubble itself", () => {
+  it("the screen has no full-screen clip or pinned bubble; the map draws the bubble itself", () => {
     expect(browser).not.toContain(".screenScene(");
     expect(browser).not.toContain("ClipPin(");
-    expect(map).toContain("PathSpeechBubble(message: greeting)");
+    expect(map).toContain("Text(greeting)");
+    expect(browser).toContain("greeting: StatusHeaderView.greeting(streak:");
   });
 
-  it("Alphonso is drawn in the hero card at full strength, and VoiceOver still hears his greeting", () => {
+  it("Alphonso is drawn at the trailhead at full strength, and VoiceOver still hears his greeting", () => {
     expect(map).not.toContain("SceneFigure(");
     expect(map).not.toContain("Figure-alphonso-waving");
     expect(map).toContain("LessonArt.expression(.happy)");
     expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
-    expect(map).toContain("Self.figureColumnWidth");
-    // The stage still reserves the room for him and his bubble above the current-unit card.
-    expect(map).toContain("Self.figureHeight");
+    // He is decoration, bottom right, sized from the map's width; at accessibility text sizes he steps aside.
+    expect(map).toContain("min(width * 0.34, 144)");
+    expect(map).toContain("showsAlphonso");
   });
 });
 

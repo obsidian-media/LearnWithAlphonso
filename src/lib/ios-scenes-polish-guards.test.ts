@@ -13,20 +13,19 @@ const between = (s: string, a: string, b: string) => {
 };
 
 describe("iOS scenes follow-ups", () => {
-  const map = read("LearnHeroStage.swift");
+  const map = read("LearnClimbMap.swift");
   const browser = read("LessonBrowserView.swift");
   const listen = read("ListenView.swift");
 
-  it("VoiceOver hears the stage as Alphonso's greeting only; the Continue lesson card is the one way in", () => {
+  it("VoiceOver hears Alphonso's greeting as its own element, and the climb's nodes as buttons", () => {
     expect(map).not.toContain('accessibilityLabel("Continue:');
-    expect(map).not.toContain("Button");
     expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
+    expect(map).toContain(".accessibilityAddTraits(.isButton)");
   });
 
-  it("the Up next card no longer draws its own mini path, since the map shows the unit", () => {
-    const card = between(read("LearnFoldViews.swift"), "struct LearnCurrentUnitCard", "\n}\n");
-    expect(card).not.toContain("pathNode(");
-    expect(card).not.toContain("let path:");
+  it("the unit is drawn once, by the climbing map: the old Up next card is not mounted", () => {
+    expect(browser).not.toContain("LearnCurrentUnitCard(");
+    expect(browser).toContain("LearnClimbMap(");
   });
 
   it("the Listen root draws the studio once, not once per layer", () => {
@@ -36,10 +35,11 @@ describe("iOS scenes follow-ups", () => {
     expect(read("ListenShelfViews.swift")).not.toContain(".screenScene(");
   });
 
-  it("the winding path map and its bouncing nodes are gone: one hero, no second way in", () => {
+  it("the old winding path map is gone and the climbing map is the one way in: no hero beside it", () => {
     expect(map).not.toContain("PathNodeView");
     expect(map).not.toContain("LearnPathMap");
     expect(browser).not.toContain("LearnPathMap(");
-    expect(browser).toContain("LearnHeroStage(");
+    expect(browser).not.toContain("LearnHeroStage(");
+    expect(browser).toContain("LearnClimbMap(");
   });
 });
