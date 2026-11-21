@@ -1,4 +1,3 @@
-import { DsButton, dsButtonClass } from "@/components/ds/Blocks";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -6,7 +5,6 @@ import { MobileFrame } from "../../components/AppShell";
 import { ForYouRail } from "../../components/learn/ForYouRail";
 import { HeartsModal } from "../../components/HeartsModal";
 import { LEVELS, type Level } from "../../data/curriculum";
-import { UNIT_ROOMS } from "../../data/unit-rooms";
 import { COURSES, getCourse } from "../../data/courses";
 import { useProgress } from "../../lib/progress";
 import { useServerFn } from "@tanstack/react-start";
@@ -22,11 +20,12 @@ import {
   currentUnitOf,
   foldLearn,
   limitAhead,
-  roomArtFor,
-  roomName,
   runLabel,
   type FoldUnit,
 } from "../../lib/learn-fold";
+import { learnMap, type MapUnit } from "../../lib/learn-map";
+import { vocabForLesson } from "../../data/vocab";
+import { LearnMap } from "../../components/LearnMap";
 
 export const Route = createFileRoute("/_authenticated/learn")({
   component: LearnPage,
@@ -46,82 +45,6 @@ export const Route = createFileRoute("/_authenticated/learn")({
  * The one hero: the learner's current unit on its painted room with Alphonso, and a single Continue lesson button
  * (the design-system button) underneath. The scene itself is not a link; the button is the one way in.
  */
-function LearnHero({
-  index,
-  count,
-  artIndex,
-  unitId,
-  unitTitle,
-  level,
-  lessonId,
-  lessonTitle,
-  blocked,
-  onBlockedClick,
-}: {
-  /** The unit's place among the units of its level ("Unit 1 of 28"). */
-  index: number;
-  count: number;
-  /** Its place in the whole course, which picks the room painting. */
-  artIndex: number;
-  unitId: string;
-  unitTitle: string;
-  level: string;
-  lessonId: string;
-  lessonTitle: string;
-  blocked: boolean;
-  onBlockedClick: () => void;
-}) {
-  // The same unit -> room table iOS and Android read; the rotation only for a unit it does not know.
-  const art = UNIT_ROOMS[unitId] ?? roomArtFor(artIndex - 1);
-  return (
-    <div className="grid gap-3" data-learn-hero="">
-      <div className="ds-light relative block h-48 overflow-hidden rounded-3xl border-2 border-ds-brand bg-ds-brand text-left">
-        <img
-          src={`/avatar/scenes/${art}.webp`}
-          alt=""
-          className="absolute inset-0 size-full object-cover"
-        />
-        <span
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-ds-brand/85 via-ds-brand/20 to-transparent"
-        />
-        <img
-          src="/alphonso/lesson/happy.webp"
-          alt=""
-          className="pointer-events-none absolute -bottom-1.5 -right-3.5 w-32"
-        />
-        <span className="absolute left-4 top-3.5 text-xs font-extrabold uppercase tracking-wider text-ds-card">
-          You are here · Unit {index} of {count}
-        </span>
-        <span className="absolute bottom-3.5 left-4 right-28 grid gap-0.5 text-ds-card">
-          <span className="text-xs font-semibold">
-            {roomName(art)} · {level} · {unitTitle}
-          </span>
-          <span className="font-display text-2xl font-bold leading-tight">{lessonTitle}</span>
-        </span>
-      </div>
-      {blocked ? (
-        <DsButton
-          full
-          onClick={onBlockedClick}
-          aria-label={`Continue: ${lessonTitle} (out of hearts)`}
-        >
-          Continue lesson
-        </DsButton>
-      ) : (
-        <Link
-          to="/lesson/$id"
-          params={{ id: lessonId }}
-          aria-label={`Continue: ${lessonTitle}, unit ${index} of ${count}`}
-          className={dsButtonClass("primary", { full: true })}
-        >
-          Continue lesson
-        </Link>
-      )}
-    </div>
-  );
-}
-
 /** A slim folded row: name on the left, count and chevron on the right. Tap to open. */
 function FoldRowButton({
   open,
@@ -364,15 +287,28 @@ function LearnPage() {
     [hydrated, foldUnits, completedSet],
   );
   const hereUnit = here ? curriculum.find((u) => u.id === here.unitId) : undefined;
-  const hereLesson = hereUnit?.lessons.find((l) => l.id === here?.lessonId);
-  // "Unit 1 of 28": the unit's place among the units of its own level, the same count on every platform.
-  const hereLevelPlace = useMemo(() => {
-    const inLevel = hereUnit ? curriculum.filter((u) => u.level === hereUnit.level) : [];
-    return {
-      index: hereUnit ? inLevel.findIndex((u) => u.id === hereUnit.id) + 1 : 0,
-      count: inLevel.length,
-    };
-  }, [curriculum, hereUnit]);
+  // The climbing map is one LEVEL's climb (the level on screen, units in curriculum order, so "Unit N of M" counts
+  // the same units as the list). Its next lesson is the course-wide Continue lesson only when the learner's place is
+  // in this level; LearnMap then says Continue, and otherwise Start.
+  const mapUnits = useMemo<MapUnit[]>(
+    () =>
+      units.map((u) => ({
+        id: u.id,
+        title: u.title,
+        lessons: u.lessons.map((l) => ({
+          id: l.id,
+          title: l.title,
+          subtitle: l.subtitle,
+          questionTypes: l.questions.map((q) => q.type),
+          wordCount: vocabForLesson(l.id, course).length,
+        })),
+      })),
+    [units, course],
+  );
+  const climb = useMemo(
+    () => (hydrated ? learnMap(mapUnits, completedSet) : null),
+    [hydrated, mapUnits, completedSet],
+  );
   const levelFoldUnits = useMemo(
     () => foldUnits.filter((fu) => curriculum.find((u) => u.id === fu.id)?.level === level),
     [foldUnits, curriculum, level],
@@ -447,22 +383,20 @@ function LearnPage() {
           ))}
         </div>
 
-        {here && hereUnit && hereLesson ? (
-          <LearnHero
-            index={hereLevelPlace.index}
-            count={hereLevelPlace.count}
-            artIndex={here.index}
-            unitId={hereUnit.id}
-            unitTitle={hereUnit.title}
-            level={hereUnit.level}
-            lessonId={hereLesson.id}
-            lessonTitle={hereLesson.title}
+        {climb && (
+          <LearnMap
+            map={climb}
+            greeting={
+              climb.next ? "Ready for today's lesson?" : "You reached the top. Nice climbing!"
+            }
+            continueLessonId={here?.lessonId ?? null}
             blocked={outOfHearts}
-            onBlockedClick={() => setShowHeartsModal(true)}
+            onBlocked={() => setShowHeartsModal(true)}
           />
-        ) : hydrated ? (
+        )}
+        {hydrated && !here && (
           <div
-            className="rounded-3xl border-2 border-ds-brand bg-ds-sunk p-5 text-center"
+            className="mt-4 rounded-3xl border-2 border-ds-brand bg-ds-sunk p-5 text-center"
             data-learn-finished=""
           >
             <p className="font-display text-xl font-bold text-ds-ink">Course complete</p>
@@ -470,7 +404,7 @@ function LearnPage() {
               You have finished every unit. Review keeps it fresh.
             </p>
           </div>
-        ) : null}
+        )}
 
         <div className="my-4">
           <ForYouRail course={course} dueCount={dueCount} />

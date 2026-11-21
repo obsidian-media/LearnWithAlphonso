@@ -13,9 +13,11 @@ const KT =
 
 describe("web Learn", () => {
   const learn = read("src/routes/_authenticated/learn.tsx");
-  it("mounts the rail and the hero, and no longer stacks the old cards", () => {
+  it("mounts the rail and the climbing map (which replaced the hero), and no longer stacks the old cards", () => {
     expect(learn).toContain("<ForYouRail");
-    expect(learn).toContain("<LearnHero");
+    // Path B (PARITY-SPEC-6): the climbing map replaces Learn A's Continue hero; both never show.
+    expect(learn).toContain("<LearnMap");
+    expect(learn).not.toContain("<LearnHero");
     expect(learn).not.toMatch(/<PathCard\b|<WeeklySocialCards\b|<SegmentedControl\b/);
     expect(learn).not.toContain("Review missed items");
   });
@@ -171,16 +173,17 @@ describe("Learn does not scroll its own hero out of view", () => {
 
 describe("the hero's unit count is per level on every platform", () => {
   it("web, iOS and Android all count the units of the unit's own level", () => {
-    expect(read("src/routes/_authenticated/learn.tsx")).toContain(
-      "curriculum.filter((u) => u.level === hereUnit.level)",
-    );
+    // Web: the climbing map's strip counts the units of the level on screen (learn.test.tsx renders "Unit 1 of N").
+    const learn = read("src/routes/_authenticated/learn.tsx");
+    expect(learn).toContain("curriculum.filter((u) => u.level === level)");
+    expect(learn).toContain("learnMap(mapUnits, completedSet)");
     expect(read(`${IOS}/LessonBrowserView.swift`)).toContain("filter { $0.level == unit.level }");
     expect(read(`${KT}/LearnScreen.kt`)).toContain("filter { it.level == u.level }");
   });
 });
 
-describe("the hero's room is the unit's mapped room on every platform", () => {
-  it("unit u1 (Everyday Basics) maps to one room, and web, iOS and Android all read that table", async () => {
+describe("the hero's room is the unit's mapped room on iOS and Android", () => {
+  it("unit u1 (Everyday Basics) maps to one room, and iOS and Android read the same table", async () => {
     const { UNIT_ROOMS } = await import("../data/unit-rooms");
     const room = UNIT_ROOMS.u1;
     expect(room).toBeTruthy();
@@ -190,7 +193,8 @@ describe("the hero's room is the unit's mapped room on every platform", () => {
       "android/LearnWithAlphonso/app/src/main/assets/content/unit-rooms.json",
     ])
       expect(JSON.parse(read(path)).units.u1, path).toBe(room);
-    expect(read("src/routes/_authenticated/learn.tsx")).toContain("UNIT_ROOMS[unitId]");
+    // The web hero and its room are gone: the climbing map draws its own night-hill scene (PARITY-SPEC-6). iOS and
+    // Android keep their room heroes until their maps land.
     expect(read(`${IOS}/LessonBrowserView.swift`)).toContain(
       "LessonData.roomMap?.roomID(forUnit: unit.id)",
     );
