@@ -10,6 +10,7 @@ import {
   listeningGate,
   speakGate,
   transcriptVariants,
+  spokenOf,
   translateGate,
   type GateContext,
 } from "./gates";
@@ -81,6 +82,33 @@ describe("lessonNeed: listening and translate everywhere, speak on every other e
     const speak = ["l1", "l2", "l3", "l4", "l5"].map((id) => n.get(id)!.includes("speak"));
     expect(speak).toEqual([true, false, true, false, true]);
     expect(n.has("p1")).toBe(false);
+  });
+});
+
+describe("addLessonExtras: the server's 50-question cap", () => {
+  it("throws when appending would pass 50 questions", () => {
+    const full = unit("u", "A1", [
+      lesson(
+        "big",
+        Array.from({ length: 48 }, () => "mc"),
+      ),
+    ]);
+    const rec = {
+      listening: {
+        prompt: "What did you hear?",
+        audioText: "I see a cat.",
+        wrong: ["I see a hat.", "I see a bat.", "I see a mat."],
+        explanation: 'The audio says "I see a cat."',
+      },
+      speak: { answer: "Good morning, teacher.", explanation: 'Say "Good morning, teacher."' },
+      translate: {
+        prompt: "Greet your teacher.",
+        acceptableAnswers: ["Hello, teacher.", "Hi, teacher."],
+        explanation: 'One way: "Hello, teacher."',
+      },
+    };
+    expect(() => addLessonExtras([full], { big: rec })).toThrow(/at most 50/);
+    expect(() => addLessonExtras([full], { big: { listening: rec.listening } })).not.toThrow();
   });
 });
 
@@ -291,6 +319,30 @@ describe("speak gate: the round trip through the platform normalisers", () => {
         expect(t.length).toBeGreaterThan(0);
       }
   });
+  it("the COURSE's normaliser matters: accents, elision and a spoken number grade correct", () => {
+    // Each of these fails under a different course's normaliser, so swapping spokenOf goes red.
+    const m = (c: "en" | "fr" | "es", said: string, answer: string) =>
+      spokenOf[c].match(said, answer);
+    expect(m("fr", "ou est l'ecole", "Où est l'école ?")).toBe(true);
+    expect(m("fr", "j ai vingt ans", "J'ai vingt ans.")).toBe(true);
+    expect(m("fr", "j'ai 20 ans", "J'ai vingt ans.")).toBe(true);
+    expect(m("es", "como estas hoy", "¿Cómo estás hoy?")).toBe(true);
+    expect(m("es", "tengo 5 gatos", "Tengo cinco gatos.")).toBe(true);
+    expect(m("en", "i have 2 cats at home", "I have two cats at home.")).toBe(true);
+    // and the gate itself uses them for these phrases
+    expect(
+      speakGate(
+        { answer: "Où est l'école ?", explanation: `"Où est l'école ?"` },
+        ctx("fr"),
+      ).problems.join(),
+    ).not.toMatch(/round trip/);
+    expect(
+      speakGate(
+        { answer: "¿Cómo estás hoy?", explanation: `"¿Cómo estás hoy?"` },
+        ctx("es"),
+      ).problems.join(),
+    ).not.toMatch(/round trip/);
+  });
   it("rejects a phrase the course already has, and an unquoted explanation", () => {
     const c = ctx("en");
     c.existing.speak.add("good morning teacher");
@@ -373,6 +425,36 @@ describe("existingKeys", () => {
   });
 });
 
+describe("the spoken-answer normalisers match the edge-function copies the server grades with", () => {
+  it("web and Deno copies agree on a spread of transcripts", async () => {
+    const web = await Promise.all([
+      import("../spoken-answer"),
+      import("../spoken-answer-fr"),
+      import("../spoken-answer-es"),
+    ]);
+    const edge = await Promise.all([
+      import("../../../supabase/functions/_shared/spoken-answer"),
+      import("../../../supabase/functions/_shared/spoken-answer-fr"),
+      import("../../../supabase/functions/_shared/spoken-answer-es"),
+    ]);
+    const samples = [
+      "I have 2 cats at home.",
+      "She's a doctor",
+      "Où est l'école ?",
+      "j ai vingt ans",
+      "J'ai 20 ans",
+      "¿Cómo estás hoy?",
+      "tengo 5 gatos",
+      "Euh, bonjour",
+    ];
+    for (const [i, key] of ["normaliseSpoken", "normaliseSpokenFr", "normaliseSpokenEs"].entries())
+      for (const t of samples)
+        expect((edge[i] as never as Record<string, (x: string) => string>)[key]!(t)).toBe(
+          (web[i] as never as Record<string, (x: string) => string>)[key]!(t),
+        );
+  });
+});
+
 describe("the ledger: US$60 hard cap, refused in code before anything is sent", () => {
   const dirs: string[] = [];
   afterEach(() => {
@@ -384,6 +466,22 @@ describe("the ledger: US$60 hard cap, refused in code before anything is sent", 
     return { d, ledger: openLessonMixLedger(path.join(d, "state"), path.join(d, "mirror")) };
   };
   const meta = { phase: "t", provider: "anthropic", model: "m" };
+
+  it("a stale instance cannot overwrite another process's entries (two providers, one file)", () => {
+    const { d, ledger: a } = open();
+    const b = openLessonMixLedger(path.join(d, "state"), path.join(d, "mirror"));
+    a.reserve("anthropic-1", 5, meta);
+    // b was opened before a's write: its write is refused, not merged over a's.
+    expect(() => b.reserve("mistral-1", 1, { ...meta, provider: "mistral" })).toThrow(
+      /changed on disk/,
+    );
+    // Re-opened (as the runner does inside its lock), both persist.
+    const c = openLessonMixLedger(path.join(d, "state"), path.join(d, "mirror"));
+    c.reserve("mistral-1", 1, { ...meta, provider: "mistral" });
+    const again = openLessonMixLedger(path.join(d, "state"), path.join(d, "mirror"));
+    expect(again.status().open.sort()).toEqual(["anthropic-1", "mistral-1"]);
+    expect(again.status().openUsd).toBe(6);
+  });
 
   it("is a US$60 cap across Anthropic and Mistral together", () => {
     const { ledger } = open();
