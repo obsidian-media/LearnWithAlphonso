@@ -1,0 +1,13 @@
+{
+ "batch": "r49d-b001",
+ "pass": "first",
+ "reviewer": "agent:review-r49d-b001",
+ "reviewedAt": "2026-11-17",
+ "verdicts": {
+  "sala de urgencias": {
+   "verdict": "approve",
+   "alt": "nurse wheeling a patient down a hospital emergency corridor",
+   "peopleVisible": true
+  }
+ }
+}

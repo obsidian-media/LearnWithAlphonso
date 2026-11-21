@@ -1,0 +1,23 @@
+{
+ "batch": "r49c-b001",
+ "pass": "first",
+ "reviewer": "agent:review-r49c-b001",
+ "reviewedAt": "2026-11-17",
+ "verdicts": {
+  "l'agence immobilière": {
+   "verdict": "approve",
+   "alt": "agent handing keys to clients at a desk",
+   "peopleVisible": true
+  },
+  "l'ambassade": {
+   "verdict": "approve",
+   "alt": "stately building facade with flags",
+   "peopleVisible": false
+  },
+  "le lycée": {
+   "verdict": "approve",
+   "alt": "school building around a courtyard",
+   "peopleVisible": false
+  }
+ }
+}
