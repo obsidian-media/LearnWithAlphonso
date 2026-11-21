@@ -28,7 +28,7 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
 ): ProfileOverviewData = coroutineScope {
     // The stored zone arrives with the rows below, so the reads start a day early: the stored zone's today can be a day
     // either side of this device's. The rules filter every row by `today`, settled once the zone is in.
-    val early = ProfileMath.addDays(ProfileMath.streakToday(nowMillis), -1)
+    val early = ProfileMath.addDays(com.obsidianmedia.learnwithalphonso.core.logic.localDateString(nowMillis, java.time.ZoneId.systemDefault()), -1)
     val from = ProfileMath.weekStart(ProfileMath.threeMonthsWindow(early).first)
     val me = "eq.$userId"
     suspend fun rows(table: String, query: Map<String, String>, extra: List<Pair<String, String>> = emptyList()) =

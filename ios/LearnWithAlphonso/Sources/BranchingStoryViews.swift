@@ -387,6 +387,7 @@ private struct BranchingNodePage: View {
                 }
                 .dsText(.body)
                 .lineSpacing(3)
+                // On the text only, before the active sentence's wash and gold edge, so the highlight stays crisp.
                 .shadow(color: ds.heroB.opacity(0.8), radius: 3, y: 1)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, AlphonsoDS.Space.s3)

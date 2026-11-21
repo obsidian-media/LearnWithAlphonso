@@ -74,7 +74,7 @@ extension ProgressSyncClient {
     public func fetchProfileOverview(userID: String, course: String, now: Date = Date()) async throws -> ProfileOverviewData {
         // The stored zone arrives with the rows below, so the reads start a day early: the stored zone's today can be a
         // day either side of this device's. The rules filter every row by `today`, settled once the zone is in.
-        let deviceToday = ProfileMath.streakToday(now: now)
+        let deviceToday = localDateString(now)
         let early = ProfileMath.addDays(deviceToday, -1)
         let from = ProfileMath.weekStart(ProfileMath.threeMonthsWindow(today: early).start)
         let me = "eq.\(userID)"

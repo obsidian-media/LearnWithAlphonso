@@ -287,12 +287,14 @@ class HectorViewModel(
      * A typed message (or a tapped chip) as the learner's turn: the same path a transcribed voice turn takes. Ignored
      * when blank or while a turn is already under way; it cuts the greeting off, like holding to talk does.
      */
-    fun sendTyped(text: String) {
+    /** True when the message was taken; false (blank, or a turn still under way) leaves it for the caller to keep. */
+    fun sendTyped(text: String): Boolean {
         val trimmed = text.trim()
-        if (trimmed.isEmpty() || !canSend()) return
+        if (trimmed.isEmpty() || !canSend()) return false
         opener.stop()
         _state.update { it.copy(error = null) }
         viewModelScope.launch { sendTurn(trimmed) }
+        return true
     }
 
     /**
@@ -473,7 +475,7 @@ private fun HectorConversation(container: AppContainer) {
         val composer: @Composable () -> Unit = {
             HectorComposer(
                 listening = listening, busy = busy, text = draft, onText = { draft = it },
-                onSend = { val t = draft; draft = ""; vm.sendTyped(t) },
+                onSend = { draft = submitDraft(draft, vm::sendTyped) },
                 onMic = { vm.tapMicBegan() }, onStop = { vm.pressEnded() },
                 level = { vm.micLevelDBFS() }, reducedMotion = reduced, focusRequester = composerFocus,
             )
@@ -520,3 +522,9 @@ private fun HectorConversation(container: AppContainer) {
       }
     }
 }
+
+/**
+ * The composer's Send: the draft clears only once [send] takes it (as on iPhone), so a turn still under way never eats
+ * the text. The draft that should stay in the field.
+ */
+internal fun submitDraft(draft: String, send: (String) -> Boolean): String = if (send(draft)) "" else draft
