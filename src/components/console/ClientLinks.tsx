@@ -21,7 +21,9 @@ export function clientNavigationHref(event: {
   const el = event.target instanceof Element ? event.target.closest("a") : null;
   if (!el) return null;
   const href = el.getAttribute("href");
-  if (!href || !href.startsWith("/") || href.startsWith("//")) return null;
+  // Only a plain absolute path: not "//host" or "/\host" (browsers read a backslash as a slash), and no tab, CR, LF or
+  // other control character (browsers strip those before parsing, which can turn a path into another origin).
+  if (!href || !/^\/(?![/\\])/.test(href) || /[\u0000-\u001f\u007f]/.test(href)) return null;
   if (el.hasAttribute("download")) return null;
   const target = el.getAttribute("target");
   if (target && target !== "_self") return null;

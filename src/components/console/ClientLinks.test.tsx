@@ -16,6 +16,9 @@ function frame(navigate = vi.fn()) {
       <a href="/support?t=1">With search</a>
       <a href="https://example.com/x">External</a>
       <a href="//evil.example/x">Protocol relative</a>
+      <a href={"/\\evil.example"}>Backslash host</a>
+      <a href={"/\tevil.example"}>Tab prefixed</a>
+      <a href={"/\n/evil.example"}>Newline then slash</a>
       <a href="/users" target="_blank">
         New tab
       </a>
@@ -47,7 +50,16 @@ describe("in-app links navigate on the client, never with a full page load", () 
 
   it("leaves to the browser what the browser should handle", () => {
     const navigate = frame();
-    for (const name of ["External", "Protocol relative", "New tab", "Download", "Anchor"]) {
+    for (const name of [
+      "External",
+      "Protocol relative",
+      "Backslash host",
+      "Tab prefixed",
+      "Newline then slash",
+      "New tab",
+      "Download",
+      "Anchor",
+    ]) {
       expect(fireEvent.click(screen.getByRole("link", { name })), name).toBe(true);
     }
     const link = screen.getByRole("link", { name: "Support" });
