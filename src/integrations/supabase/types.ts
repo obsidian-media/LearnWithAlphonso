@@ -74,6 +74,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_settings: {
+        Row: {
+          key: string;
+          updated_at: string;
+          updated_by: string | null;
+          value: NonNullable<Json>;
+        };
+        Insert: {
+          key: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          value: NonNullable<Json>;
+        };
+        Update: {
+          key?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          value?: NonNullable<Json>;
+        };
+        Relationships: [];
+      };
       admin_users: {
         Row: {
           added_at: string;
@@ -2501,11 +2522,13 @@ export type Database = {
           assigned_to: string | null;
           channel: string;
           created_at: string;
+          handed_off_at: string | null;
           handoff_reason: string | null;
           id: string;
           learner_last_read_at: string | null;
           solved_at: string | null;
           status: string;
+          ticket_no: number | null;
           topic: string | null;
           updated_at: string;
           user_id: string;
@@ -2515,11 +2538,13 @@ export type Database = {
           assigned_to?: string | null;
           channel?: string;
           created_at?: string;
+          handed_off_at?: string | null;
           handoff_reason?: string | null;
           id?: string;
           learner_last_read_at?: string | null;
           solved_at?: string | null;
           status?: string;
+          ticket_no?: number | null;
           topic?: string | null;
           updated_at?: string;
           user_id: string;
@@ -2529,11 +2554,13 @@ export type Database = {
           assigned_to?: string | null;
           channel?: string;
           created_at?: string;
+          handed_off_at?: string | null;
           handoff_reason?: string | null;
           id?: string;
           learner_last_read_at?: string | null;
           solved_at?: string | null;
           status?: string;
+          ticket_no?: number | null;
           topic?: string | null;
           updated_at?: string;
           user_id?: string;
@@ -4014,6 +4041,7 @@ export type Database = {
         Returns: undefined;
       };
       skip_display_name_prompt: { Args: Record<PropertyKey, never>; Returns: string };
+      staff_active_role: { Args: { p_actor: string }; Returns: string };
       staff_add_member: {
         Args: {
           p_actor: string;
@@ -4047,6 +4075,8 @@ export type Database = {
         Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
         Returns: boolean;
       };
+      staff_get_settings: { Args: { p_actor: string }; Returns: Json };
+      staff_home_metrics: { Args: { p_range: string }; Returns: Json };
       staff_lift_restriction: {
         Args: {
           p_actor: string;
@@ -4126,6 +4156,10 @@ export type Database = {
         };
         Returns: string;
       };
+      staff_set_setting: {
+        Args: { p_actor: string; p_key: string; p_reason: string; p_role: string; p_value: Json };
+        Returns: boolean;
+      };
       staff_support_add_note: {
         Args: { p_actor: string; p_body: string; p_conversation: string; p_role: string };
         Returns: string;
@@ -4201,6 +4235,15 @@ export type Database = {
       support_learner_view: { Args: { p_user: string }; Returns: Json };
       support_open_conversation: { Args: { p_channel: string; p_user: string }; Returns: string };
       support_purge_old: { Args: Record<PropertyKey, never>; Returns: number };
+      support_waiting_since: {
+        Args: {
+          p_conversation: string;
+          p_handed_off_at: string;
+          p_status: string;
+          p_updated_at: string;
+        };
+        Returns: string;
+      };
       team_name_problem: { Args: { _name: string }; Returns: string };
       trip_ai_spend_breaker: { Args: { p_limit_micro: number }; Returns: Json };
       weekly_xp: { Args: { _user_id: string; _week_start: string }; Returns: number };

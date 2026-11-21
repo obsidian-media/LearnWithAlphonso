@@ -4,7 +4,16 @@ import type { Scope } from "./staff-scopes";
  * The console's navigation. Items whose scope the signed-in person lacks are hidden. That is only courtesy: every
  * server function checks the scope itself (requireStaff), so a hidden link is never the control.
  */
-export type NavItem = { key: string; label: string; to: string; scope: Scope; alsoScope?: Scope };
+export type NavGroupKey = "operate" | "content" | "system";
+export type NavItem = {
+  key: string;
+  label: string;
+  to: string;
+  scope: Scope;
+  alsoScope?: Scope;
+  /** The rail group the item sits under. */
+  group: NavGroupKey;
+};
 
 export const NAV_ITEMS: readonly NavItem[] = [
   {
@@ -13,15 +22,42 @@ export const NAV_ITEMS: readonly NavItem[] = [
     to: "/numbers",
     scope: "numbers.read",
     alsoScope: "numbers.revenue",
+    group: "operate",
   },
-  { key: "health", label: "System health", to: "/health", scope: "numbers.read" },
-  { key: "users", label: "Users", to: "/users", scope: "users.read" },
-  { key: "support", label: "Support", to: "/support", scope: "support.read" },
-  { key: "reports", label: "Reports", to: "/reports", scope: "reports.manage" },
-  { key: "podcasts", label: "Podcasts", to: "/folders", scope: "podcasts.manage" },
-  { key: "staff", label: "Staff", to: "/staff", scope: "staff.manage" },
-  { key: "audit", label: "Action record", to: "/audit", scope: "audit.read" },
+  { key: "health", label: "System health", to: "/health", scope: "numbers.read", group: "system" },
+  { key: "users", label: "Users", to: "/users", scope: "users.read", group: "operate" },
+  { key: "support", label: "Support", to: "/support", scope: "support.read", group: "operate" },
+  { key: "reports", label: "Reports", to: "/reports", scope: "reports.manage", group: "operate" },
+  {
+    key: "podcasts",
+    label: "Podcasts",
+    to: "/folders",
+    scope: "podcasts.manage",
+    group: "content",
+  },
+  { key: "staff", label: "Staff", to: "/staff", scope: "staff.manage", group: "system" },
+  { key: "audit", label: "Action record", to: "/audit", scope: "audit.read", group: "system" },
 ];
+
+/** The rail's groups in order, with the items inside each in the order the rail shows them. */
+export const NAV_GROUPS: readonly { key: NavGroupKey; label: string; order: readonly string[] }[] =
+  [
+    { key: "operate", label: "Operate", order: ["support", "reports", "users", "numbers"] },
+    { key: "content", label: "Content", order: ["podcasts"] },
+    { key: "system", label: "System", order: ["staff", "audit", "health"] },
+  ];
+
+/** The rail for a person's scopes: only groups that still have an item, only items they may open. Home is separate. */
+export function navGroupsFor(
+  scopes: readonly string[],
+): { key: NavGroupKey; label: string; items: NavItem[] }[] {
+  const visible = navItemsFor(scopes);
+  return NAV_GROUPS.map((g) => ({
+    key: g.key,
+    label: g.label,
+    items: g.order.flatMap((k) => visible.filter((i) => i.key === k && i.group === g.key)),
+  })).filter((g) => g.items.length > 0);
+}
 
 export function navItemsFor(scopes: readonly string[]): NavItem[] {
   return NAV_ITEMS.filter(

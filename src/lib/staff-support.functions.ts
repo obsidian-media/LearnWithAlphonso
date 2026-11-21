@@ -21,11 +21,13 @@ export const ASSIGN_OTHERS_MESSAGE = "Handing a ticket to someone else needs the
 export const TOO_OLD_MESSAGE = "This chat is too old to reopen; the learner can start a new one.";
 export const SELF_TICKET_MESSAGE = "You cannot act on your own account.";
 
-export type TicketFilter = "open" | "waiting" | "solved" | "all";
+export type TicketFilter = "open" | "waiting" | "solved" | "breaching" | "all";
 export type TicketAssigned = "any" | "me" | "unassigned";
 
 export type TicketSummary = {
   id: string;
+  /** The visible ticket number; null only for a chat that has not reached a person. */
+  ticketNo: number | null;
   status: "new" | "open" | "waiting_learner" | "solved";
   topic: string | null;
   channel: "web" | "ios" | "android";
@@ -36,12 +38,33 @@ export type TicketSummary = {
   createdAt: string;
   updatedAt: string;
   unopened: boolean;
+  /** When the learner started waiting for a staff reply; null unless the ticket needs one (new or open). */
+  waitingSince: string | null;
+  /** True when it has waited longer than the support_breach_hours setting. */
+  breaching: boolean;
+};
+
+export type InboxCounts = {
+  open: number;
+  waiting: number;
+  solved: number;
+  all: number;
+  unassigned: number;
+  /** Tickets that need a reply and nobody holds. */
+  openUnassigned: number;
+  /** Tickets that need a reply and the caller holds. */
+  mine: number;
+  /** null when the setting is missing: never a 0 for unknown. */
+  breaching: number | null;
+  oldestWaitingSince: string | null;
 };
 
 export type InboxPage = {
   tickets: TicketSummary[];
   total: number;
-  counts: { open: number; waiting: number; solved: number; all: number; unassigned: number };
+  counts: InboxCounts;
+  /** The support_breach_hours setting the counts used; null when it is missing. */
+  breachHours: number | null;
   next: { at: string; id: string } | null;
   /** The signed-in staff member, so the screen can say "You". */
   me: string;
@@ -67,7 +90,7 @@ export const staffListTickets = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
       .object({
-        filter: z.enum(["open", "waiting", "solved", "all"]).default("open"),
+        filter: z.enum(["open", "waiting", "solved", "breaching", "all"]).default("open"),
         assigned: z.enum(["any", "me", "unassigned"]).default("any"),
         cursor: z.object({ at: z.string().min(1).max(64), id: idSchema }).optional(),
       })

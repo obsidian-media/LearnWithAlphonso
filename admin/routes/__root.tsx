@@ -1,6 +1,15 @@
-import { createRootRoute, Outlet, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  Outlet,
+  HeadContent,
+  Scripts,
+  useLocation,
+  useRouter,
+} from "@tanstack/react-router";
 import { adminWhoAmI } from "@/lib/admin.functions";
-import { ConsoleNav } from "@/components/staff/ConsoleNav";
+import { staffNavCounts, type NavCounts } from "@/lib/staff-home.functions";
+import { ConsoleShell } from "@/components/console/ConsoleShell";
+import { CONSOLE_THEME_BOOT_SCRIPT } from "@/lib/console-theme";
 import { NAV_ITEMS } from "@/lib/staff-nav";
 import { signOutAndLeave } from "@/lib/staff-signout";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,42 +31,63 @@ export const Route = createRootRoute({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  // Who is signed in and what they may use, for the navigation. A signed-out visitor (or anyone who is not staff)
-  // gets null and sees no navigation; the pages themselves are gated by their own server calls.
+  // Who is signed in and what they may use, for the rail, and the rail's pips (real counts, only the ones this
+  // person's scopes allow). A signed-out visitor (or anyone who is not staff) gets null and sees no rail; the pages
+  // themselves are gated by their own server calls. A pip count that cannot be read shows no pip, never a 0.
   loader: async () => {
     try {
-      return { me: await adminWhoAmI() };
+      const me = await adminWhoAmI();
+      const counts: NavCounts | null = await staffNavCounts().catch(() => null);
+      return { me, counts };
     } catch {
-      return { me: null };
+      return { me: null, counts: null };
     }
   },
   component: RootDocument,
 });
 
 function RootDocument() {
-  const { me } = Route.useLoaderData();
+  const { me, counts } = Route.useLoaderData();
   const { pathname } = useLocation();
-  const current = NAV_ITEMS.find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))?.key;
+  const nonce = useRouter().options?.ssr?.nonce;
+  const current =
+    pathname === "/"
+      ? "home"
+      : NAV_ITEMS.find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))?.key;
   return (
-    // The palette is set statically (Royal), unlike the learner app which reads a stored preference before
-    // first paint. There is no theme picker here and no reason for one.
-    <html lang="en" data-palette="royal">
+    // Royal light by default; the console's day/night choice (src/lib/console-theme.ts) is applied before first paint by
+    // the inline script below, which adds data-ds-mode="night" for the app's Royal Night tokens. The fonts are the
+    // design system's Bricolage Grotesque (display) and Figtree (body), set on <html> so every utility follows.
+    <html
+      lang="en"
+      data-palette="royal"
+      suppressHydrationWarning
+      style={
+        {
+          "--font-display": "var(--ds-font-display)",
+          "--font-sans": "var(--ds-font-body)",
+        } as React.CSSProperties
+      }
+    >
       <head>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: CONSOLE_THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
-      <body className="bg-surface text-ink font-sans">
+      <body className="bg-ds-surface text-ds-ink font-sans">
         {me ? (
-          <ConsoleNav
-            scopes={me.scopes}
-            role={me.role}
-            name={me.displayName}
+          <ConsoleShell
+            me={me}
+            counts={counts}
             current={current}
             onSignOut={() =>
               void signOutAndLeave(supabase.auth, (path) => window.location.assign(path))
             }
-          />
-        ) : null}
-        <Outlet />
+          >
+            <Outlet />
+          </ConsoleShell>
+        ) : (
+          <Outlet />
+        )}
         <Scripts />
       </body>
     </html>

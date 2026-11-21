@@ -43,16 +43,16 @@ describe("the home page", () => {
   it("no longer redirects a signed-in person away", () => {
     const src = route("index.tsx");
     expect(src).not.toContain("homeFor");
-    expect(src).toContain("HomeView");
+    expect(src).toContain("HomeScreen");
     // The only redirect left is the signed-out one.
     expect(src.match(/redirect\(/g)?.length).toBe(1);
     expect(src).toContain('to: "/signin"');
   });
 
-  it("asks for a card's count only when the person holds that card's scope", () => {
+  it("asks for a card's data only when the person holds that card's scope", () => {
     const src = route("index.tsx");
-    for (const card of ["support", "reports", "numbers"]) {
-      expect(src).toContain(`cards.includes("${card}")`);
+    for (const scope of ["support.read", "numbers.read", "audit.read"]) {
+      expect(src).toContain(`has("${scope}")`);
     }
   });
 });
@@ -60,7 +60,7 @@ describe("the home page", () => {
 describe("the navigation names the person and signs out", () => {
   it("the root passes the display name and a sign-out that leaves for /signin", () => {
     const src = route("__root.tsx");
-    expect(src).toContain("name={me.displayName}");
+    expect(src).toContain("me={me}");
     expect(src).toContain("signOutAndLeave(supabase.auth");
   });
 });

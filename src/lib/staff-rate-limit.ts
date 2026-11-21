@@ -16,6 +16,8 @@ export type StaffLimit = { bucket: string; max: number; windowSeconds: number };
 
 /** The console's limits, one bucket each so a busy list does not use up another action's allowance. */
 export const STAFF_LIMITS = {
+  home: { bucket: "home", max: 120, windowSeconds: 60 },
+  settings_write: { bucket: "settings_write", max: 10, windowSeconds: 60 },
   numbers: { bucket: "numbers", max: 30, windowSeconds: 60 },
   numbersRefresh: { bucket: "numbers_refresh", max: 6, windowSeconds: 60 },
   support_read: { bucket: "support_read", max: 120, windowSeconds: 60 },

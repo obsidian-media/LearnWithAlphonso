@@ -152,7 +152,7 @@ export function TicketList({
   onFilter: (filter: TicketFilter, assigned: TicketAssigned) => void;
   onMore: () => void;
 }) {
-  const counts = page.counts as Record<string, number>;
+  const counts = page.counts as unknown as Record<string, number>;
   return (
     <section>
       <h1 className="font-display text-2xl font-semibold text-ds-ink">Support</h1>

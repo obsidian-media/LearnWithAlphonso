@@ -64,7 +64,7 @@ describe("the registry of console server functions", () => {
       const next = sources.indexOf("\nexport const ", start + 1);
       const body = sources.slice(start, next === -1 ? undefined : next);
       expect(body, `${name} must record what it did`).toMatch(
-        /recordStaffAction|rpc\(\s*"staff_|applyRestriction/,
+        /recordStaffAction|rpc\(\s*"staff_|callRpc\([^,]+,\s*"staff_|applyRestriction/,
       );
     }
     // applyRestriction (block, unblock, ban, unban) is the helper that reaches the SQL functions that record.
