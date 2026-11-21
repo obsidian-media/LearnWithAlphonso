@@ -5,6 +5,8 @@ import {
   NotConnectedError,
   ownTiles,
   type GroupKey,
+  type GrowthAggregates,
+  type GrowthFn,
   type OwnAggregates,
   type OwnFn,
   type SourceContext,
@@ -46,13 +48,16 @@ import { MICRO } from "./ai-cost";
 export type Env = Record<string, string | undefined>;
 type FetchLike = typeof fetch;
 
+/** Every setting the source needs, or a NotConnectedError naming ALL the missing ones (names only, never a value). */
 function need(env: Env, names: string[], reason: string): Record<string, string> {
   const out: Record<string, string> = {};
+  const missing: string[] = [];
   for (const n of names) {
     const v = env[n]?.trim();
-    if (!v) throw new NotConnectedError(reason);
-    out[n] = v;
+    if (!v) missing.push(n);
+    else out[n] = v;
   }
+  if (missing.length > 0) throw new NotConnectedError(reason, missing);
   return out;
 }
 
@@ -641,6 +646,76 @@ export async function fetchOwnAggregates(
   return parseOwn(data);
 }
 
+/**
+ * Strict, like parseOwn: a payload that is not the expected object throws (the tiles that need it say "Could not
+ * read"); it never becomes zeros. Previous-window values and perfectPct may be null (not comparable / no lessons).
+ */
+export function parseGrowth(raw: unknown): GrowthAggregates {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw))
+    throw new Error("unexpected growth payload");
+  const r = raw as Record<string, unknown>;
+  const must = (k: string): number => {
+    const v = num(r[k]);
+    if (v === null) throw new Error(`growth payload: ${k} missing or not a number`);
+    return v;
+  };
+  const nullable = (k: string): number | null => {
+    if (!(k in r)) throw new Error(`growth payload: ${k} missing`);
+    if (r[k] === null) return null;
+    const v = num(r[k]);
+    if (v === null) throw new Error(`growth payload: ${k} not a number`);
+    return v;
+  };
+  const list = (k: string): unknown[] => {
+    if (!Array.isArray(r[k])) throw new Error(`growth payload: ${k} not a list`);
+    return r[k] as unknown[];
+  };
+  const byCourse = list("byCourse").map((c) => {
+    const o = obj(c);
+    const learners = num(o.learners);
+    if (typeof o.language !== "string" || learners === null)
+      throw new Error("growth payload: byCourse row malformed");
+    return { language: o.language, learners };
+  });
+  const dauSeries = list("dauSeries").map((p) => {
+    const o = obj(p);
+    const active = num(o.active);
+    if (typeof o.day !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(o.day) || active === null)
+      throw new Error("growth payload: dauSeries point malformed");
+    return { day: o.day, active };
+  });
+  return {
+    newPrev: nullable("newPrev"),
+    activePrev: nullable("activePrev"),
+    lessonsPrev: nullable("lessonsPrev"),
+    storiesPrev: nullable("storiesPrev"),
+    storiesRead: must("storiesRead"),
+    perfectPct: nullable("perfectPct"),
+    byCourse,
+    dauSeries,
+    reactivated: must("reactivated"),
+  };
+}
+
+export async function fetchGrowthAggregates(
+  client: RpcClient,
+  windowDays: WindowDays,
+  signal: AbortSignal,
+): Promise<GrowthAggregates> {
+  const { data, error } = await client
+    .rpc("admin_numbers_growth", { p_days: windowDays })
+    .abortSignal(signal);
+  if (error) throw new Error(error.message);
+  return parseGrowth(data);
+}
+
+export function createGrowthFetcher(): GrowthFn {
+  return async ({ windowDays, signal }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    return fetchGrowthAggregates(supabaseAdmin as unknown as RpcClient, windowDays, signal);
+  };
+}
+
 export function createOwnFetcher(): OwnFn {
   return async ({ windowDays, signal }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -694,7 +769,15 @@ export function aiCostSource(env: Env, rpcClient?: RpcClient): SourceFn {
 
 export function createSources(env: Env, f: FetchLike = fetch, rpcClient?: RpcClient): Sources {
   const own: Record<"own" | "aicost", SourceFn> = {
-    own: async (ctx: SourceContext) => ownTiles(await ctx.own(), ctx.windowDays),
+    own: async (ctx: SourceContext) => {
+      // The growth read is separate: when it fails (or the migration is not applied yet) only its tiles go blank.
+      const [a, g] = await Promise.allSettled([
+        ctx.own(),
+        ctx.growth ? ctx.growth() : Promise.reject(new Error("no growth read")),
+      ]);
+      if (a.status === "rejected") throw a.reason;
+      return ownTiles(a.value, ctx.windowDays, g.status === "fulfilled" ? g.value : null);
+    },
     aicost: aiCostSource(env, rpcClient),
   };
   const map: Record<GroupKey, SourceFn> = {

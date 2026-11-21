@@ -121,7 +121,7 @@ const sortedRows = (m: Record<string, number>) =>
 export function aiCostPlaceholders(
   windowDays: WindowDays,
 ): { id: string; label: string; kind: Tile["kind"]; note: string }[] {
-  const w = `last ${windowDays} days`;
+  const w = windowDays === 1 ? "last 24 hours" : `last ${windowDays} days`;
   return [
     ...PERIODS.map((p) => ({
       id: `spend_${p.key}`,

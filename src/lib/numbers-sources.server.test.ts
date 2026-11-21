@@ -11,6 +11,8 @@ import {
   countDownloads,
   fetchOwnAggregates,
   googlePlaySource,
+  parseGrowth,
+  fetchGrowthAggregates,
   parseOwn,
   postHogSource,
   resolveSentryProjects,
@@ -61,6 +63,25 @@ describe("every provider with no key is not_connected, never an empty success", 
       expect(f).not.toHaveBeenCalled();
     });
   }
+});
+
+describe("a missing key names every missing setting (names only)", () => {
+  it("lists all the absent env names, and none that are set", async () => {
+    const err = await sentrySource(
+      { SENTRY_API_TOKEN: "secret-token" },
+      vi.fn() as unknown as typeof fetch,
+    )(ctx()).catch((e) => e);
+    expect(err).toBeInstanceOf(NotConnectedError);
+    expect((err as NotConnectedError).envNames).toEqual(["SENTRY_ORG", "SENTRY_PROJECTS"]);
+    expect(JSON.stringify((err as NotConnectedError).envNames)).not.toContain("secret-token");
+  });
+  it("every provider reports its names", async () => {
+    for (const make of [revenueCatSource, postHogSource, appStoreSource, googlePlaySource]) {
+      const err = await make({}, vi.fn() as unknown as typeof fetch)(ctx()).catch((e) => e);
+      expect((err as NotConnectedError).envNames.length, make.name).toBeGreaterThan(0);
+      for (const n of (err as NotConnectedError).envNames) expect(n).toMatch(/^[A-Z][A-Z0-9_]+$/);
+    }
+  });
 });
 
 describe("hosts", () => {
@@ -528,5 +549,70 @@ describe("Sentry project ids", () => {
         [{ label: "x", ref: "nope" }],
       ),
     ).rejects.toThrow("unknown Sentry project");
+  });
+});
+
+const GOOD_GROWTH = {
+  newPrev: 5,
+  activePrev: null,
+  lessonsPrev: 0,
+  storiesPrev: null,
+  storiesRead: 0,
+  perfectPct: null,
+  byCourse: [{ language: "en", learners: 3 }],
+  dauSeries: [{ day: "2026-11-21", active: 2 }],
+  reactivated: 0,
+};
+
+describe("Our database: the growth read", () => {
+  it("parseGrowth keeps a real 0 and a null (not comparable / no lessons) exactly as they are", () => {
+    const g = parseGrowth({ ...GOOD_GROWTH, email: "leak@example.com" });
+    expect(g.storiesRead).toBe(0);
+    expect(g.reactivated).toBe(0);
+    expect(g.activePrev).toBeNull();
+    expect(g.perfectPct).toBeNull();
+    expect(g.lessonsPrev).toBe(0);
+    expect(JSON.stringify(g)).not.toContain("leak@example.com");
+  });
+  it("parseGrowth THROWS on anything that is not the expected object, never a wall of zeros", () => {
+    for (const bad of [null, undefined, "x", 5, [], {}, { storiesRead: 1 }])
+      expect(() => parseGrowth(bad), JSON.stringify(bad)).toThrow();
+    expect(() => parseGrowth({ ...GOOD_GROWTH, storiesRead: null })).toThrow();
+    expect(() => parseGrowth({ ...GOOD_GROWTH, storiesRead: "4" })).toThrow();
+    expect(() => parseGrowth({ ...GOOD_GROWTH, reactivated: undefined })).toThrow();
+    const { newPrev: _omit, ...noPrev } = GOOD_GROWTH;
+    expect(() => parseGrowth(noPrev)).toThrow();
+    expect(() => parseGrowth({ ...GOOD_GROWTH, newPrev: "5" })).toThrow();
+    expect(() => parseGrowth({ ...GOOD_GROWTH, byCourse: null })).toThrow();
+    expect(() => parseGrowth({ ...GOOD_GROWTH, byCourse: [{ language: "en" }] })).toThrow();
+    expect(() =>
+      parseGrowth({ ...GOOD_GROWTH, dauSeries: [{ day: "yesterday", active: 1 }] }),
+    ).toThrow();
+    expect(() =>
+      parseGrowth({ ...GOOD_GROWTH, dauSeries: [{ day: "2026-11-21", active: null }] }),
+    ).toThrow();
+  });
+  it("calls admin_numbers_growth with the window and surfaces an rpc error as a throw", async () => {
+    const calls: unknown[] = [];
+    const client = (data: unknown, error: { message: string } | null) => ({
+      rpc: (name: string, args: Record<string, unknown>) => {
+        calls.push([name, args]);
+        return { abortSignal: async () => ({ data, error }) };
+      },
+    });
+    const ok = await fetchGrowthAggregates(
+      client(GOOD_GROWTH, null),
+      30,
+      new AbortController().signal,
+    );
+    expect(ok.byCourse).toEqual([{ language: "en", learners: 3 }]);
+    expect(calls).toEqual([["admin_numbers_growth", { p_days: 30 }]]);
+    await expect(
+      fetchGrowthAggregates(
+        client(null, { message: "function does not exist" }),
+        7,
+        new AbortController().signal,
+      ),
+    ).rejects.toThrow("function does not exist");
   });
 });

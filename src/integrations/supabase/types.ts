@@ -3402,6 +3402,7 @@ export type Database = {
       add_speech_seconds: { Args: { _seconds: number; _user_id: string }; Returns: string };
       admin_ai_cost: { Args: { p_days: number; p_heavy_micro: number }; Returns: Json };
       admin_ai_cost_capped: { Args: { p_free_micro: number; p_pro_micro: number }; Returns: Json };
+      admin_numbers_growth: { Args: { p_days: number }; Returns: Json };
       admin_numbers_own: { Args: { p_days: number }; Returns: Json };
       admin_rename_team: { Args: { _name: string; _team_id: string }; Returns: string };
       admin_reset_display_name: { Args: { _user_id: string }; Returns: string };
