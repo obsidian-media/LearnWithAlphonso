@@ -184,12 +184,13 @@ public enum ProfileMath {
         return string(r)
     }
 
-    /// Today as the streak counts it: the learner's LOCAL calendar date (20261114100000_local_days.sql), in their
-    /// stored zone (learner_time_zones, what the server books days in), else this device's zone. The week strip, the
-    /// heat map and the goal rings all read this day, so they agree with the streak about which day a lesson counted for.
-    public static func streakToday(now: Date = Date(), timeZone: String? = nil, device: TimeZone = .current) -> String {
+    /// Today as the streak counts it: the learner's LOCAL calendar date in their stored zone (learner_time_zones), the
+    /// day the server books (20261114100000_local_days.sql). With no usable stored zone the server books the UTC date, so
+    /// this does too (not the device's zone): the week strip, the heat map and the goal rings read this day, and must
+    /// agree with the streak about which day a lesson counted for. The apps send the zone after sign-in (TimeZoneSync).
+    public static func streakToday(now: Date = Date(), timeZone: String?) -> String {
         let stored = timeZone.flatMap { $0.isEmpty ? nil : TimeZone(identifier: $0) }
-        return localDateString(now, timeZone: stored ?? device)
+        return localDateString(now, timeZone: stored ?? utc.timeZone)
     }
 
     /// Monday of the week holding `day`.

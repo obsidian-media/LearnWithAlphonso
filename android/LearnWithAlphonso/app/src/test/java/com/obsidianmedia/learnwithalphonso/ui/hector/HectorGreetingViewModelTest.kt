@@ -136,9 +136,9 @@ class HectorGreetingViewModelTest {
         awaitTrue("greeted") { tts(s).isNotEmpty() && v.state.value.phase == ConversationPhase.IDLE }
         // past-tense is the open weak spot in the fixture; no streak row, so no streak chip.
         assertEquals(listOf("weakWords", "roleplay-weekend", "coffee", "explain"), v.chips.value.map { it.id })
-        v.sendTyped("  ")
+        assertFalse(v.sendTyped("  "))
         assertEquals(1, v.state.value.turns.size)
-        v.sendTyped(v.chips.value.first().message)
+        assertTrue(v.sendTyped(v.chips.value.first().message))
         awaitTrue("reply") { v.state.value.turns.size == 3 && v.state.value.phase == ConversationPhase.IDLE }
         assertEquals(listOf("assistant", "user", "assistant"), v.state.value.turns.map { it.role })
         val body = Json.parseToJsonElement(s.seen.first { it.path.endsWith("/api/hector-respond") }.body).jsonObject

@@ -13,17 +13,18 @@ final class ProfileOverviewTests: XCTestCase {
 
     // MARK: Today
 
-    /// The streak counts the learner's local day, so Profile's today is that day: the stored zone first, else the device's.
-    func testStreakTodayIsTheLocalDayNotTheUTCDay() {
+    /// The streak counts the learner's local day in the stored zone, and the UTC date when there is none (the server's
+    /// own fallback), so Profile's today is that same day, never the device's.
+    func testStreakTodayIsTheStoredZonesDayElseTheServersUTCDay() {
         let fridayEvening = ISO8601DateFormatter().date(from: "2026-11-21T03:21:00Z")! // Fri 19:21 in Los Angeles
-        let la = TimeZone(identifier: "America/Los_Angeles")!
-        XCTAssertEqual(M.streakToday(now: fridayEvening, timeZone: "America/Los_Angeles", device: .gmt), "2026-11-20")
-        XCTAssertEqual(M.streakToday(now: fridayEvening, timeZone: nil, device: la), "2026-11-20")
-        XCTAssertEqual(M.streakToday(now: fridayEvening, timeZone: "", device: la), "2026-11-20")
-        XCTAssertEqual(M.streakToday(now: fridayEvening, timeZone: "Not/AZone", device: la), "2026-11-20")
+        XCTAssertEqual(M.streakToday(now: fridayEvening, timeZone: "America/Los_Angeles"), "2026-11-20")
+        // No usable stored zone: the server books the UTC date, and so does Profile.
+        XCTAssertEqual(M.streakToday(now: fridayEvening, timeZone: nil), "2026-11-21")
+        XCTAssertEqual(M.streakToday(now: fridayEvening, timeZone: ""), "2026-11-21")
+        XCTAssertEqual(M.streakToday(now: fridayEvening, timeZone: "Not/AZone"), "2026-11-21")
         // East of UTC the local day is already tomorrow.
         let karachiNight = ISO8601DateFormatter().date(from: "2026-11-05T20:00:00Z")!
-        XCTAssertEqual(M.streakToday(now: karachiNight, timeZone: "Asia/Karachi", device: .gmt), "2026-11-06")
+        XCTAssertEqual(M.streakToday(now: karachiNight, timeZone: "Asia/Karachi"), "2026-11-06")
     }
 
     // MARK: Hector card
