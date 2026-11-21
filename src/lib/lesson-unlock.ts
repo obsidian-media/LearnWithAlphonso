@@ -37,7 +37,7 @@ export function firstUndoneInCurriculumOrder(
 
 /**
  * The lesson ids this learner may start. `lessons` is the course in CURRICULUM order (the array order). Open are:
- *  - everything up to and including the lesson after the learner's FURTHEST completion, in learning order (so a
+ *  - everything up to and including the lesson after the learner's FURTHEST strictly startable completion, in learning order (so a
  *    learner whose completions are out of order, or who had lessons inserted before them later, can always carry on,
  *    and every lesson they skipped is open to replay);
  *  - the first lesson of their CEFR level, and everything before it (a placement result, or the level they picked
@@ -55,18 +55,25 @@ export function unlockedLessonIds(
   options: { curriculumNext?: boolean } = {},
 ): Set<string> {
   const order = lessonsInLearningOrder(lessons);
-  let furthest = -1;
-  order.forEach((l, i) => {
-    if (completed.has(l.id)) furthest = i;
-  });
   let floor = 0;
   if (cefrLevel) {
     const want = levelRank(cefrLevel);
     const at = order.findIndex((l) => levelRank(l.level) >= want);
     floor = at === -1 ? 0 : at;
   }
+  // The furthest STRICTLY startable completion. Completions are taken in learning order and accepted only while
+  // they sit inside the running ceiling (furthest + 1, or the level's floor), so a lesson that was only open
+  // through the curriculum-order allowance below cannot push the ceiling up (that would ratchet: each raw-order
+  // lesson done opens more). Completed lessons stay open for replay whether or not they count here.
+  let furthest = -1;
+  for (let i = 0; i < order.length; i++) {
+    if (!completed.has(order[i]!.id)) continue;
+    if (i > Math.max(furthest + 1, floor)) break;
+    furthest = i;
+  }
   const ceiling = Math.max(furthest + 1, floor);
   const open = new Set(order.slice(0, ceiling + 1).map((l) => l.id));
+  for (const l of order) if (completed.has(l.id)) open.add(l.id);
   const rawNext =
     options.curriculumNext === false ? null : firstUndoneInCurriculumOrder(lessons, completed);
   if (rawNext) open.add(rawNext);

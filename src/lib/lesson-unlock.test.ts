@@ -66,18 +66,23 @@ describe("lesson-unlock rule", () => {
     for (const id of all) expect(open(all, "A1", id)).toBe(true);
   });
 
-  it("furthest completion: out-of-order history never locks the learner out of the next lesson", () => {
+  it("furthest completion: only completions that were themselves startable move the ceiling", () => {
+    // u3l1 done with u1l1/u1l2 skipped (it was not startable then): it stays open to replay, but it opens nothing.
+    expect(open(["u3l1"], "A1", "u3l1")).toBe(true);
     expect(open(["u3l1"], "A1", "u1l1")).toBe(true);
-    expect(open(["u3l1"], "A1", "u1l2")).toBe(true);
-    expect(open(["u3l1"], "A1", "u2l1")).toBe(true);
-    expect(open(["u3l1"], "A1", "u4l1")).toBe(false);
+    expect(open(["u3l1"], "A1", "u1l2")).toBe(false);
+    expect(open(["u3l1"], "A1", "u2l1")).toBe(false);
+    // A normal run opens the next one.
+    expect(open(["u1l1", "u1l2"], "A1", "u3l1")).toBe(true);
   });
 
-  it("a lesson inserted into the course later cannot lock anyone out of the lesson after their furthest", () => {
+  it("a lesson inserted into the course later never hides the lesson the map offers", () => {
     const grown = [...raw.slice(0, 2), { id: "new1", level: "A1" }, ...raw.slice(2)];
     const done = new Set(["u1l1", "u1l2", "u3l1"]);
-    expect(isLessonUnlocked(grown, done, "A1", "u2l1")).toBe(true);
+    // The map's next is the new lesson (first not done), and the one they already finished replays.
+    expect(nextStartableLessonId(grown, done, "A1")).toBe("new1");
     expect(isLessonUnlocked(grown, done, "A1", "new1")).toBe(true);
+    expect(isLessonUnlocked(grown, done, "A1", "u3l1")).toBe(true);
   });
 
   it("the first lesson not done in curriculum order (the installed apps' place) stays startable, and only that one", () => {
@@ -86,6 +91,14 @@ describe("lesson-unlock rule", () => {
     expect(open(["u1l1", "u1l2"], "A1", "u2l1")).toBe(true);
     expect(open(["u1l1", "u1l2"], "A1", "u3l1")).toBe(true);
     expect(open(["u1l1", "u1l2"], "A1", "u4l1")).toBe(false);
+  });
+
+  it("a missing progress row (no stored level) opens exactly what A1 does, as the Path's default level assumes", () => {
+    for (const done of [[], ["u1l1"], ["u1l1", "u1l2"]]) {
+      expect([...unlockedLessonIds(raw, new Set(done), null)].sort()).toEqual(
+        [...unlockedLessonIds(raw, new Set(done), "A1")].sort(),
+      );
+    }
   });
 
   it("a lesson that is not in the course is never unlocked", () => {
@@ -143,6 +156,39 @@ function lessonItems(node: unknown, out: string[] = []): string[] {
   }
   return out;
 }
+
+describe("the curriculum-order allowance cannot ratchet", () => {
+  for (const course of ["en", "fr", "es"] as const) {
+    it(`${course}: a learner who always takes the curriculum-order next never has more open than strict + that one + replays`, () => {
+      const { curriculum } = getCourse(course);
+      const rawLessons = curriculum.flatMap((u) =>
+        u.lessons.map((l) => ({ id: l.id, level: u.level })),
+      );
+      const learning = lessonsInLearningOrder(rawLessons);
+      for (const level of ["A1", "A2"]) {
+        const floor = Math.max(
+          0,
+          learning.findIndex((l) => l.level === level),
+        );
+        const done = new Set<string>();
+        for (const next of rawLessons) {
+          // Independent model: the open prefix ends at the first lesson not done at or after the level's floor, plus the curriculum-order next, plus whatever is already done.
+          const firstUndone = learning.findIndex((l, i) => i >= floor && !done.has(l.id));
+          const prefixEnd = firstUndone === -1 ? learning.length - 1 : firstUndone;
+          const model = new Set([
+            ...learning.slice(0, prefixEnd + 1).map((l) => l.id),
+            ...done,
+            next.id,
+          ]);
+          const got = unlockedLessonIds(rawLessons, done, level);
+          expect(got.has(next.id)).toBe(true);
+          for (const id of got) expect(model.has(id)).toBe(true);
+          done.add(next.id);
+        }
+      }
+    });
+  }
+});
 
 describe("every lesson any Learn surface offers is startable (the screens cannot offer what the server refuses)", () => {
   for (const course of COURSES.map((c) => c.id)) {
@@ -207,7 +253,7 @@ describe("every lesson any Learn surface offers is startable (the screens cannot
     });
 
     it(`${course}: Path lesson candidates are all startable`, () => {
-      const sets = completionSets(rawLessons, learning).filter((_, i) => i % 4 === 0);
+      const sets = completionSets(rawLessons, learning);
       for (const done of sets) {
         for (const level of LEVELS) {
           const data: PathData = {
@@ -235,6 +281,7 @@ describe("every lesson any Learn surface offers is startable (the screens cannot
             profile: { showFlag: false, goal: "travel", interests: [], dailyMinutes: 10 },
           };
           const plan = buildLearningPath(data);
+          if (level === "A1") expect(plan).not.toBeNull();
           if (!plan) continue;
           const allowed = unlockedLessonIds(rawLessons, done, level, { curriculumNext: false });
           for (const id of lessonItems(plan)) {

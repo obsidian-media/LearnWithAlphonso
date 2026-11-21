@@ -250,9 +250,10 @@ Deno.test(
     // Placement at A2: the first A2 lesson opens, and so do the A1 lessons before it.
     assertEquals(await v([], "A2", "u2l1"), "unlocked");
     assertEquals(await v([], "A2", "u3l1"), "unlocked");
-    // Out-of-order history (u1l2 done, u1l1 not): the next after the furthest stays open, and the skipped one.
-    assertEquals(await v(["u1l2"], "A1", "u3l1"), "unlocked");
+    // Out-of-order history (u1l2 done, u1l1 not): the skipped one is open, the done one replays, and it opens nothing.
     assertEquals(await v(["u1l2"], "A1", "u1l1"), "unlocked");
+    assertEquals(await v(["u1l2"], "A1", "u1l2"), "unlocked");
+    assertEquals(await v(["u1l2"], "A1", "u3l1"), "locked");
     // What the installed apps call "where you are" (first undone in curriculum order, here the A2 u2l1) stays open too.
     assertEquals(await v(["u1l1", "u1l2"], "A1", "u2l1"), "unlocked");
     // A replay of a finished lesson.
