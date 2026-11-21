@@ -150,3 +150,26 @@ describe("account deletion erases both ids", () => {
     ]);
   });
 });
+
+describe("getAccountSubscriberSummary: a key IS set but RevenueCat cannot be reached", () => {
+  // The Users screen reads a missing summary (no key) as "Not connected"; a failed call must never look like that.
+  it.each([
+    ["the network fails", async () => Promise.reject(new TypeError("fetch failed"))],
+    [
+      "the request times out",
+      async () => Promise.reject(new DOMException("timed out", "TimeoutError")),
+    ],
+    ["RevenueCat answers 500", async () => new Response("{}", { status: 500 })],
+    ["the body is not JSON", async () => new Response("<html>", { status: 200 })],
+  ])("%s: status unavailable, not null and not inactive", async (_name, f) => {
+    const s = await getAccountSubscriberSummary(CONFIG, USER, f as unknown as typeof fetch);
+    expect(s).toEqual({ status: "unavailable", loginId: null });
+  });
+
+  it("revenueCatConfigFromEnv is null only when the secret key is absent", () => {
+    expect(revenueCatConfigFromEnv({} as NodeJS.ProcessEnv)).toBeNull();
+    expect(
+      revenueCatConfigFromEnv({ REVENUECAT_SECRET_API_KEY: "sk" } as NodeJS.ProcessEnv),
+    ).not.toBeNull();
+  });
+});

@@ -24,6 +24,7 @@ import {
   type FoldUnit,
 } from "../../lib/learn-fold";
 import { learnMap, type MapUnit } from "../../lib/learn-map";
+import { lessonsInLearningOrder } from "../../lib/lesson-unlock";
 import { vocabForLesson } from "../../data/vocab";
 import { LearnMap } from "../../components/LearnMap";
 
@@ -272,9 +273,10 @@ function LearnPage() {
   }, [curriculum, completedSet]);
 
   // The learner's place in the whole course (not just the level on screen).
+  // In LEARNING order (band by band): the array interleaves bands, and the server only opens lessons in this order.
   const foldUnits = useMemo<FoldUnit[]>(
     () =>
-      curriculum.map((u) => ({
+      lessonsInLearningOrder(curriculum).map((u) => ({
         id: u.id,
         eyebrow: u.eyebrow,
         title: u.title,

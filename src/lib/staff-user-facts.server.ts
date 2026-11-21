@@ -18,14 +18,22 @@ export type LearnerFacts = {
   lastActiveAt: string | null;
   course: string | null;
   level: string | null;
-  streak: number;
-  xp: number;
-  /** `unavailable` is true when RevenueCat could not be read: that is not the same as "no Pro". */
+  /** null when the learner has no progress row or it could not be read (never a 0 for unknown). */
+  streak: number | null;
+  /** The current course's XP; null when there is no course row. */
+  xp: number | null;
+  /** Lessons the learner has completed; null when the count could not be read (never a 0 for unknown). */
+  lessonsDone: number | null;
+  /**
+   * `notConnected` is true when no RevenueCat key is set (the plan cannot be known); `unavailable` is true when it is
+   * set but could not be read. Neither is the same as "no Pro".
+   */
   pro: {
     active: boolean;
     source: "store" | "gift" | "none";
     until: string | null;
     unavailable: boolean;
+    notConnected: boolean;
   };
   platforms: string[];
   restrictions: { kind: string; reason: string; createdAt: string; liftedAt: string | null }[];
@@ -43,8 +51,10 @@ export type RawLearnerFacts = {
     xp: number;
     updated_at: string;
   }[];
-  streak: number;
+  streak: number | null;
   lastActiveDay: string | null;
+  /** null when the count could not be read. */
+  lessonsDone?: number | null;
   platforms: string[];
   reportsAgainst: number;
   restrictions: { kind: string; reason: string; created_at: string; lifted_at: string | null }[];
@@ -60,17 +70,25 @@ export function buildLearnerFacts(raw: RawLearnerFacts, now: number = Date.now()
     b.updated_at.localeCompare(a.updated_at),
   )[0];
   const sub = raw.subscriber;
-  let pro: LearnerFacts["pro"] = { active: false, source: "none", until: null, unavailable: false };
-  if (!sub || sub.status === "unavailable") {
+  let pro: LearnerFacts["pro"] = {
+    active: false,
+    source: "none",
+    until: null,
+    unavailable: false,
+    notConnected: false,
+  };
+  if (!sub) {
+    pro = { ...pro, unavailable: true, notConnected: true };
+  } else if (sub.status === "unavailable") {
     pro = { ...pro, unavailable: true };
   } else if (sub.status === "active") {
     if (sub.store === "promotional") {
       const live = raw.grants
         .filter((g) => !g.revoked_at && Date.parse(g.ends_at) > now)
         .sort((a, b) => b.ends_at.localeCompare(a.ends_at))[0];
-      pro = { active: true, source: "gift", until: live?.ends_at ?? null, unavailable: false };
+      pro = { ...pro, active: true, source: "gift", until: live?.ends_at ?? null };
     } else {
-      pro = { active: true, source: "store", until: null, unavailable: false };
+      pro = { ...pro, active: true, source: "store" };
     }
   }
   return {
@@ -82,7 +100,8 @@ export function buildLearnerFacts(raw: RawLearnerFacts, now: number = Date.now()
     course: course?.language ?? null,
     level: course?.cefr_level ?? null,
     streak: raw.streak,
-    xp: course?.xp ?? 0,
+    lessonsDone: raw.lessonsDone ?? null,
+    xp: course ? course.xp : null,
     pro,
     platforms: [...new Set(raw.platforms)].sort(),
     restrictions: raw.restrictions.map((r) => ({
@@ -123,42 +142,56 @@ export async function loadLearnerFacts(
   const user = authData.user;
 
   const config = revenueCatConfigFromEnv();
-  const [lang, progress, active, tokens, reports, restrictions, grants, notes, subscriber] =
-    await Promise.all([
-      admin
-        .from("language_progress")
-        .select("language, cefr_level, xp, updated_at")
-        .eq("user_id", userId),
-      admin.from("user_progress").select("streak").eq("user_id", userId).maybeSingle(),
-      admin
-        .from("activity_days")
-        .select("day")
-        .eq("user_id", userId)
-        .order("day", { ascending: false })
-        .limit(1),
-      admin.from("device_tokens").select("platform").eq("user_id", userId),
-      admin
-        .from("content_reports")
-        .select("id", { count: "exact", head: true })
-        .eq("reported", userId),
-      admin
-        .from("user_restrictions")
-        .select("kind, reason, created_at, lifted_at")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }),
-      admin
-        .from("pro_grants")
-        .select("ends_at, reason, revoked_at")
-        .eq("user_id", userId)
-        .order("starts_at", { ascending: false }),
-      admin
-        .from("staff_notes")
-        .select("author_id, body, created_at")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(100),
-      config ? getAccountSubscriberSummary(config, userId, fetchImpl) : Promise.resolve(null),
-    ]);
+  const [
+    lang,
+    progress,
+    active,
+    lessons,
+    tokens,
+    reports,
+    restrictions,
+    grants,
+    notes,
+    subscriber,
+  ] = await Promise.all([
+    admin
+      .from("language_progress")
+      .select("language, cefr_level, xp, updated_at")
+      .eq("user_id", userId),
+    admin.from("user_progress").select("streak").eq("user_id", userId).maybeSingle(),
+    admin
+      .from("activity_days")
+      .select("day")
+      .eq("user_id", userId)
+      .order("day", { ascending: false })
+      .limit(1),
+    admin
+      .from("lesson_completions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+    admin.from("device_tokens").select("platform").eq("user_id", userId),
+    admin
+      .from("content_reports")
+      .select("id", { count: "exact", head: true })
+      .eq("reported", userId),
+    admin
+      .from("user_restrictions")
+      .select("kind, reason, created_at, lifted_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false }),
+    admin
+      .from("pro_grants")
+      .select("ends_at, reason, revoked_at")
+      .eq("user_id", userId)
+      .order("starts_at", { ascending: false }),
+    admin
+      .from("staff_notes")
+      .select("author_id, body, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(100),
+    config ? getAccountSubscriberSummary(config, userId, fetchImpl) : Promise.resolve(null),
+  ]);
   if (reports.error) throw new Error("Could not read reports.");
   const noteRows = (ok(notes, "notes") ?? []) as {
     author_id: string | null;
@@ -183,8 +216,9 @@ export async function loadLearnerFacts(
     user: { id: user.id, email: user.email ?? null, createdAt: user.created_at ?? null },
     displayName: names.get(userId) ?? null,
     languageProgress: (ok(lang, "progress") ?? []) as RawLearnerFacts["languageProgress"],
-    streak: (ok(progress, "progress") as { streak: number } | null)?.streak ?? 0,
+    streak: (ok(progress, "progress") as { streak: number } | null)?.streak ?? null,
     lastActiveDay: ((ok(active, "activity") ?? []) as { day: string }[])[0]?.day ?? null,
+    lessonsDone: lessons.error ? null : (lessons.count ?? 0),
     platforms: ((ok(tokens, "devices") ?? []) as { platform: string }[]).map((t) => t.platform),
     reportsAgainst: reports.count ?? 0,
     restrictions: (ok(restrictions, "restrictions") ?? []) as RawLearnerFacts["restrictions"],
