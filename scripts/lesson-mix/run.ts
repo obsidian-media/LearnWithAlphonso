@@ -12,8 +12,9 @@
  *   bun scripts/lesson-mix/run.ts review [--go]              # Sonnet batch over every item that passed the gates
  *   bun scripts/lesson-mix/run.ts second [--go]              # Mistral (synchronous) over every flag plus 10% of the rest
  *   bun scripts/lesson-mix/run.ts judge [--go]               # Opus batch over every flagged item
- *   bun scripts/lesson-mix/run.ts apply                      # checked judge patches into the drafts, gates re-run
- *   bun scripts/lesson-mix/run.ts export                     # pilot JSON, the panel report and the owner's review page
+ *   bun scripts/lesson-mix/run.ts apply                      # checked judge patches into the drafts, gates re-run (every key change is HELD)
+ *   bun scripts/lesson-mix/run.ts blind [--go]               # the 300-item blind sample: Opus, no earlier verdicts shown
+ *   bun scripts/lesson-mix/run.ts export [--bulk]            # pilot JSON + page; --bulk: the live src/data/lesson-extras, held file, summary page
  *   bun scripts/lesson-mix/run.ts status                     # the ledger and open jobs
  *
  * Money: `--go` is the only thing that spends, and only with LESSON_MIX_APPROVED=yes (the owner's
@@ -57,7 +58,7 @@ import {
   type Verdict,
 } from "../../src/lib/content-review/review";
 import { withLock } from "../../src/lib/content-review/ledger";
-import { secondOpinionSet } from "../../src/lib/content-review/sampling";
+import { blindSample, secondOpinionSet, wilson } from "../../src/lib/content-review/sampling";
 import { ASSUME, MODEL } from "../../src/lib/content-review/plan";
 import type { ReviewItem } from "../../src/lib/content-review/inventory";
 import {
@@ -143,7 +144,7 @@ function approved() {
 
 type Job = {
   ref: string;
-  phase: "draft" | "review" | "judge";
+  phase: "draft" | "review" | "judge" | "blind";
   model: string;
   reservedUsd: number;
   status: "reserved" | "submitted" | "unknown" | "collected" | "released";
@@ -183,6 +184,8 @@ const verdictPath = (phase: string) => path.join(STATE, "verdicts", `${phase}.js
 const loadVerdicts = (phase: string) => readJson<Record<string, Verdict>>(verdictPath(phase), {});
 const rulingPath = path.join(STATE, "rulings", "judge.json");
 const loadRulings = () => readJson<Record<string, Ruling>>(rulingPath, {});
+const blindPath = path.join(STATE, "rulings", "blind.json");
+const loadBlind = () => readJson<Record<string, Ruling>>(blindPath, {});
 
 // ---- Content ---------------------------------------------------------------------------------------------
 
@@ -615,7 +618,8 @@ async function collect() {
           }
           writeJson(verdictPath("review"), store);
         } else {
-          const store = loadRulings();
+          const blind = job.phase === "blind";
+          const store = blind ? loadBlind() : loadRulings();
           for (const c of job.chunks ?? []) {
             const t = texts.get(c.customId);
             if (!t) {
@@ -627,7 +631,7 @@ async function collect() {
             got += p.rulings.length;
             missing += p.missing.length;
           }
-          writeJson(rulingPath, store);
+          writeJson(blind ? blindPath : rulingPath, store);
         }
         writeJson(path.join(STATE, "raw", `${job.ref}.json`), raw);
         ledger.settle(job.ref, cost, `${got} parsed, ${missing} missing`);
@@ -811,12 +815,30 @@ async function judge() {
   }));
 }
 
+/** What the learner must produce or pick: the answer key of an extra. */
+const keyOf = (t: ExtraType, e: LessonExtra) => {
+  const x = e[t];
+  if (!x) return "";
+  if (t === "listening") return JSON.stringify([e.listening!.audioText, e.listening!.wrong]);
+  if (t === "speak") return e.speak!.answer;
+  return JSON.stringify(e.translate!.acceptableAnswers);
+};
+
 function applyCommand() {
   const drafts = loadDrafts();
   const items = new Map(reviewItems(drafts).map((it) => [it.id, it]));
   const rulings = [...Object.values(loadRulings())];
   const mistral = loadVerdicts("second");
-  const { fixes, kept, owner } = route(rulings, (id) => mistral[id]?.verdict === "ok");
+  const routed = route(rulings, (id) => mistral[id]?.verdict === "ok");
+  const { kept } = routed;
+  // The owner's rule (2026-11-21): NO answer-key change is applied, whatever the judge's confidence.
+  const owner: Ruling[] = [...routed.owner];
+  const fixes = routed.fixes.filter((f) => {
+    if (!f.keyChange) return true;
+    const r = rulings.find((x) => x.id === f.id)!;
+    owner.push({ ...r, reason: `answer-key change HELD for the owner: ${r.reason}` });
+    return false;
+  });
   const applied: string[] = [];
   const refused: { id: string; why: string[] }[] = [];
   for (const f of fixes) {
@@ -829,6 +851,14 @@ function applyCommand() {
       refused.push({ id: f.id, why: r.refused });
       continue;
     }
+    if (keyOf(parsed.type, r.extra) !== keyOf(parsed.type, d.extra)) {
+      const ru = rulings.find((x) => x.id === f.id)!;
+      owner.push({
+        ...ru,
+        reason: `patch would change the answer key, HELD for the owner: ${ru.reason}`,
+      });
+      continue;
+    }
     d.extra = r.extra;
     d.fixed = [...new Set([...d.fixed, parsed.type])];
     applied.push(f.id);
@@ -839,6 +869,156 @@ function applyCommand() {
   writeJson(path.join(STATE, "apply.json"), { applied, refused, kept, owner });
   console.log(
     `apply: ${applied.length} fixes applied, ${refused.length} refused by the checker, ${kept.length} kept, ${owner.length} for the owner.`,
+  );
+}
+
+/** The published error rate: 300 items (100 per course) from the content as it will ship, judged blind. */
+async function blindCommand() {
+  const drafts = loadDrafts();
+  runGates(drafts);
+  const apply = readJson<{ owner: Ruling[] }>(path.join(STATE, "apply.json"), { owner: [] });
+  const held = new Set(apply.owner.map((r) => r.id));
+  const items = reviewItems(drafts).filter((it) => !held.has(it.id));
+  const sample = blindSample(items, 100, SEED);
+  writeJson(
+    path.join(STATE, "blind-sample.json"),
+    sample.map((it) => it.id),
+  );
+  const done = loadBlind();
+  const todo = sample.filter((it) => !done[it.id]);
+  const none = new Map<string, Verdict>();
+  const chunks = chunk(todo, "bld");
+  const reqs = chunks.map((c) =>
+    buildRequest(c, {
+      model: MODEL.judge,
+      effort: "medium",
+      system: judgeSystem(c.course),
+      user: userMessage(c, (it) => judgeContext(it, none, none)),
+      maxTokens: maxTokensFor(c, ASSUME.maxOut.judge),
+    }),
+  );
+  if (!reqs.length) return console.log("blind: the sample is already judged.");
+  console.log(`blind: ${sample.length} items sampled, ${todo.length} to judge.`);
+  await submitAnthropic("blind", MODEL.judge, reqs, (_ref, group) => ({
+    chunks: chunks.filter((c) => group.some((r) => r.custom_id === c.customId)),
+  }));
+}
+
+function blindStats() {
+  const ids = readJson<string[]>(path.join(STATE, "blind-sample.json"), []);
+  const b = loadBlind();
+  const judged = ids.filter((id) => b[id]);
+  const defects = judged.filter((id) => b[id]!.decision !== "keep").length;
+  return { n: judged.length, defects, ...wilson(defects, judged.length) };
+}
+
+/** The bulk summary page and the held-for-owner file (docs/lesson-mix/held-for-owner.json). */
+function exportBulkPage(a: {
+  drafts: Record<string, Draft>;
+  claude: Record<string, Verdict>;
+  mistral: Record<string, Verdict>;
+  rulings: Record<string, Ruling>;
+  apply: { applied: string[]; refused: { id: string; why: string[] }[]; owner: Ruling[] };
+  lessons: PageLesson[];
+  out: Record<Course, Record<string, LessonExtra>>;
+  dir: string;
+}) {
+  const { drafts, claude, rulings, apply, lessons, out } = a;
+  const shipped = { listening: 0, speak: 0, translate: 0 } as Record<ExtraType, number>;
+  for (const c of COURSES)
+    for (const r of Object.values(out[c])) for (const t of EXTRA_TYPES) if (r[t]) shipped[t]++;
+  const total = shipped.listening + shipped.speak + shipped.translate;
+  const all = Object.values(drafts);
+  const needed = all.reduce((n, d) => n + d.need.length, 0);
+  const dropped = all.reduce((n, d) => n + d.need.filter((t) => !passing(d, t)).length, 0);
+  const firstPass = all.reduce(
+    (n, d) =>
+      n +
+      d.need.filter((t) => d.firstProblems[t] !== undefined && !d.firstProblems[t]!.length).length,
+    0,
+  );
+  const cv = Object.values(claude);
+  const flagged = cv.filter((v) => v.verdict === "defect").length;
+  const rv = Object.values(rulings);
+  const n = (x: string) => rv.filter((r) => r.decision === x).length;
+  const bs = blindStats();
+  const ledger = openLedger().status();
+  const pct = (x: number, y: number) => `${((100 * x) / Math.max(1, y)).toFixed(1)}%`;
+  const heldRows = apply.owner.map((r) => {
+    const parsed = parseItemId(r.id);
+    const d = parsed ? drafts[dkey(parsed.course, parsed.lessonId)] : undefined;
+    return {
+      id: r.id,
+      decision: r.decision,
+      confidence: r.confidence,
+      reason: r.reason,
+      patch: r.patch,
+      draft: d && parsed ? d.extra[parsed.type] : undefined,
+    };
+  });
+  writeJson(path.resolve("docs/lesson-mix/held-for-owner.json"), heldRows);
+  // The owner's spot-check: 60 random lessons (20 per course), plus every lesson with a held item.
+  const rank = (l: PageLesson) => hash(`${SEED}:page:${l.course}:${l.lessonId}`) >>> 0;
+  const sample = COURSES.flatMap((c) =>
+    lessons
+      .filter((l) => l.course === c && l.items.length)
+      .sort((x, y) => rank(x) - rank(y))
+      .slice(0, 20),
+  );
+  const heldLessons = lessons.filter(
+    (l) => !sample.includes(l) && l.items.some((it) => it.status === "held"),
+  );
+  const html = renderPage(
+    "Lesson mix: every lesson",
+    {
+      generatedAt: new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC",
+      lines: [
+        [
+          "Lessons and items",
+          `${all.length} lessons drafted; ${total} new questions ship (listening ${shipped.listening}, speak ${shipped.speak}, translate ${shipped.translate}) of ${needed} wanted.`,
+        ],
+        [
+          "Automatic checks",
+          `${pct(needed - dropped, needed)} of items pass the checks after retries (${dropped} dropped and left out); ${pct(firstPass, needed)} passed on the first draft.`,
+        ],
+        [
+          "Panel",
+          `Sonnet 5.5 reviewed ${cv.length} items and flagged ${flagged} (${pct(flagged, cv.length)}). Opus judged ${rv.length}: ${n("fix")} fix, ${n("keep")} keep, ${rv.length - n("fix") - n("keep")} other. ${apply.applied.length} fixes applied, ${apply.refused.length} refused by the checker.`,
+        ],
+        [
+          "Blind sample",
+          bs.n
+            ? `${bs.n} items (100 per course) from the shipped content, judged blind by Opus: ${bs.defects} defects, error rate ${(100 * bs.rate).toFixed(1)}% (95% range ${(100 * bs.low).toFixed(1)} to ${(100 * bs.high).toFixed(1)}%).`
+            : "Not run.",
+        ],
+        [
+          "Held for you",
+          `${apply.owner.length} items. Every answer-key change the panel proposed is held, not applied, and held items are NOT in the data. List: docs/lesson-mix/held-for-owner.json, and the cards at the end of this page.`,
+        ],
+        [
+          "Second opinion",
+          "Mistral stayed off (403 / 429 as in the pilot); the Opus judge also saw a control sample of Sonnet-passed items. AI-reviewed, not native-reviewed.",
+        ],
+        [
+          "Spend",
+          `US$${ledger.settledUsd.toFixed(2)} settled of the US$${LESSON_MIX_CAP_USD} cap (all providers, pilot included).`,
+        ],
+        [
+          "Not merged",
+          "The data is wired into the app on this branch only; the database is not reseeded. Merge and reseed wait for the next native build.",
+        ],
+      ],
+      note: `Below: a random spot-check of ${sample.length} lessons (20 per course, any level), then the lessons with held items. Green line = the answer.`,
+    },
+    [...sample, ...heldLessons],
+  );
+  const page = path.resolve(
+    arg("page", "D:/AgentDevWork/repos/renders-2026-11-19/lesson-mix-bulk/index.html"),
+  );
+  fs.mkdirSync(path.dirname(page), { recursive: true });
+  fs.writeFileSync(page, html);
+  console.log(
+    `export --bulk: ${total} items in ${Object.values(out).reduce((x, c) => x + Object.keys(c).length, 0)} lessons written to ${a.dir}; ${heldRows.length} held; page ${page}`,
   );
 }
 
@@ -856,7 +1036,12 @@ function exportCommand() {
   const ownerIds = new Set(apply.owner.map((r) => r.id));
   const lessons: PageLesson[] = [];
   const out: Record<Course, Record<string, LessonExtra>> = { en: {}, fr: {}, es: {} };
-  const pilot = readJson<PilotLesson[]>(path.join(STATE, "pilot.json"), []);
+  const bulk = flag("bulk");
+  const pilot: { course: Course; lessonId: string }[] = bulk
+    ? Object.values(drafts)
+        .map((d) => ({ course: d.course, lessonId: d.lessonId }))
+        .sort((a, b) => (dkey(a.course, a.lessonId) < dkey(b.course, b.lessonId) ? -1 : 1))
+    : readJson<PilotLesson[]>(path.join(STATE, "pilot.json"), []);
   for (const p of pilot) {
     const d = drafts[dkey(p.course, p.lessonId)];
     if (!d) continue;
@@ -914,7 +1099,9 @@ function exportCommand() {
               ? "Failed the automatic checks after a retry: NOT included in the pilot data."
               : undefined,
       });
-      if (!problems.length) (record as Record<string, unknown>)[t] = d.extra[t];
+      // A held item (a suspected wrong key) never ships: it waits for the owner.
+      if (!problems.length && !(bulk && status === "held"))
+        (record as Record<string, unknown>)[t] = d.extra[t];
     }
     if (Object.keys(record).length) out[p.course][p.lessonId] = record;
     lessons.push({
@@ -930,9 +1117,10 @@ function exportCommand() {
       items,
     });
   }
-  const dir = path.resolve(arg("docs", "docs/lesson-mix/pilot"));
+  const dir = path.resolve(arg("docs", bulk ? "src/data/lesson-extras" : "docs/lesson-mix/pilot"));
   for (const c of COURSES) writeJson(path.join(dir, `${c}.json`), out[c]);
   writeJson(path.join(STATE, "page-lessons.json"), lessons);
+  if (bulk) return exportBulkPage({ drafts, claude, mistral, rulings, apply, lessons, out, dir });
   const ledger = openLedger().status();
   const html = renderPage(
     "Lesson-mix pilot: 45 lessons",
@@ -998,6 +1186,7 @@ const commands: Record<string, () => unknown> = {
   second,
   judge,
   apply: applyCommand,
+  blind: blindCommand,
   export: exportCommand,
   status,
 };
