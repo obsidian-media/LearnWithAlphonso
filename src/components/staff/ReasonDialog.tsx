@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Button } from "../ui/Button";
 
 /** The shortest reason the server accepts (staff-audit.server validateReason); the dialog enforces it first. */
@@ -10,6 +10,8 @@ export const MIN_REASON = 3;
  */
 export function ReasonDialog({
   title,
+  description,
+  suggestions,
   confirmLabel,
   busy,
   error,
@@ -17,6 +19,10 @@ export function ReasonDialog({
   onSubmit,
 }: {
   title: string;
+  /** One line under the title saying what will happen. */
+  description?: string;
+  /** Ready-made reasons the person can tap to fill the box (the text still goes through the same checks). */
+  suggestions?: readonly string[];
   confirmLabel: string;
   busy: boolean;
   error: string | null;
@@ -24,6 +30,16 @@ export function ReasonDialog({
   onSubmit: (reason: string) => void;
 }) {
   const [reason, setReason] = useState("");
+  const box = useRef<HTMLTextAreaElement>(null);
+  // The box takes focus when the dialog opens, and Escape cancels (unless a change is in flight).
+  useEffect(() => {
+    box.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !busy) onCancel();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [busy, onCancel]);
   const ready = reason.trim().length >= MIN_REASON;
 
   function submit(event: FormEvent) {
@@ -43,9 +59,25 @@ export function ReasonDialog({
         className="w-full max-w-md space-y-3 rounded-3xl border border-ds-line bg-ds-card p-5 shadow-lg"
       >
         <h2 className="ds-type-title text-ds-ink">{title}</h2>
+        {description ? <p className="text-sm text-ds-ink-soft">{description}</p> : null}
+        {suggestions && suggestions.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {suggestions.map((text) => (
+              <button
+                key={text}
+                type="button"
+                onClick={() => setReason(text)}
+                className="rounded-full border border-ds-line px-2.5 py-1 text-xs font-semibold text-ds-ink-soft"
+              >
+                {text}
+              </button>
+            ))}
+          </div>
+        ) : null}
         <label className="block text-sm">
           Reason (3 to 500 characters, kept in the action record)
           <textarea
+            ref={box}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             maxLength={500}

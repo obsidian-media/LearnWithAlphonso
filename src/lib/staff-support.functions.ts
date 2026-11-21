@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireStaff } from "./staff-middleware";
 import { consumeStaffLimit, STAFF_LIMITS } from "./staff-rate-limit";
+import { callRpc } from "./untyped-rpc";
 import type { TicketDetail } from "./staff-support.server";
 
 /**
@@ -20,6 +21,9 @@ export const NO_TICKET_MESSAGE = "That ticket does not exist.";
 export const ASSIGN_OTHERS_MESSAGE = "Handing a ticket to someone else needs the Staff permission.";
 export const TOO_OLD_MESSAGE = "This chat is too old to reopen; the learner can start a new one.";
 export const SELF_TICKET_MESSAGE = "You cannot act on your own account.";
+export const NO_OWNER_MESSAGE = "There is no active owner to hand this ticket to.";
+export const OWNER_ONLY_MESSAGE = "Only an owner can do that.";
+export const REASON_NEEDED_MESSAGE = "A reason of 3 to 500 characters is required.";
 
 export type TicketFilter = "open" | "waiting" | "solved" | "breaching" | "all";
 export type TicketAssigned = "any" | "me" | "unassigned";
@@ -42,6 +46,8 @@ export type TicketSummary = {
   waitingSince: string | null;
   /** True when it has waited longer than the support_breach_hours setting. */
   breaching: boolean;
+  /** Handed to an owner and not yet cleared or solved. */
+  urgent: boolean;
 };
 
 export type InboxCounts = {
@@ -54,6 +60,8 @@ export type InboxCounts = {
   openUnassigned: number;
   /** Tickets that need a reply and the caller holds. */
   mine: number;
+  /** Unsolved tickets handed to an owner. */
+  urgent: number;
   /** null when the setting is missing: never a 0 for unknown. */
   breaching: number | null;
   oldestWaitingSince: string | null;
@@ -65,7 +73,7 @@ export type InboxPage = {
   counts: InboxCounts;
   /** The support_breach_hours setting the counts used; null when it is missing. */
   breachHours: number | null;
-  next: { at: string; id: string } | null;
+  next: { at: string; id: string; urgent: boolean } | null;
   /** The signed-in staff member, so the screen can say "You". */
   me: string;
 };
@@ -92,7 +100,13 @@ export const staffListTickets = createServerFn({ method: "POST" })
       .object({
         filter: z.enum(["open", "waiting", "solved", "breaching", "all"]).default("open"),
         assigned: z.enum(["any", "me", "unassigned"]).default("any"),
-        cursor: z.object({ at: z.string().min(1).max(64), id: idSchema }).optional(),
+        cursor: z
+          .object({
+            at: z.string().min(1).max(64),
+            id: idSchema,
+            urgent: z.boolean().default(false),
+          })
+          .optional(),
       })
       .parse(d),
   )
@@ -109,6 +123,7 @@ export const staffListTickets = createServerFn({ method: "POST" })
       p_cursor_at: data.cursor?.at ?? null,
       p_cursor_id: data.cursor?.id ?? null,
       p_limit: 25,
+      p_cursor_urgent: data.cursor?.urgent ?? false,
     } as never);
     if (error || !raw || typeof raw !== "object") throw new Error("Could not read the tickets.");
     const page = raw as unknown as Omit<InboxPage, "me">;
@@ -136,7 +151,7 @@ export const staffGetTicket = createServerFn({ method: "POST" })
     )
       throw new Error(TOO_MANY_READS);
     const { recordUserView } = await import("./staff-audit.server");
-    const { readTicketRow, loadTicketDetail } = await import("./staff-support.server");
+    const { readTicketRow, loadTicketDetail, readWaiting } = await import("./staff-support.server");
     const { loadSupportFacts } = await import("./support-facts.server");
     const row = await readTicketRow(context.supabaseAdmin, data.id);
     if (!row) throw new Error(NO_TICKET_MESSAGE);
@@ -147,6 +162,7 @@ export const staffGetTicket = createServerFn({ method: "POST" })
     });
     const detail = await loadTicketDetail(context.supabaseAdmin, row, {
       canSeeLearner: context.staffScopes.includes("users.read"),
+      waiting: await readWaiting(context.supabaseAdmin, row, context.userId),
       rebuildFacts: (userId) => loadSupportFacts(context.supabaseAdmin, userId),
     });
     return { ...detail, me: context.userId };
@@ -178,31 +194,52 @@ export const staffReplyTicket = createServerFn({ method: "POST" })
     return { ok: true, messageId: Number(messageId) };
   });
 
+/** The reason on a write that needs one: trimmed, 3 to 500 characters, else the plain sentence. */
+function reasonOf(reason: unknown): string {
+  const text = typeof reason === "string" ? reason.trim() : "";
+  if (text.length < 3 || text.length > 500) throw new Error(REASON_NEEDED_MESSAGE);
+  return text;
+}
+
 /**
- * Assign a ticket. Taking it yourself, or giving back one you hold, needs support.assign; handing it to anyone else
- * also needs staff.manage. `assignTo: null` takes the ticket back.
+ * Assign a ticket. Taking it yourself, or giving back one you hold, needs support.assign and no reason; handing it to
+ * anyone else (or taking someone else's back) also needs staff.manage AND a reason (N-8). `assignTo: null` takes the
+ * ticket back.
  */
 export const staffAssignTicket = createServerFn({ method: "POST" })
   .middleware([requireStaff("support.assign")])
   .inputValidator((d: unknown) =>
-    z.object({ id: idSchema, assignTo: idSchema.nullable() }).parse(d),
+    z
+      .object({
+        id: idSchema,
+        assignTo: idSchema.nullable(),
+        reason: z.string().max(2000).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true; changed: boolean }> => {
     if (
       !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_write))
     )
       throw new Error(TOO_MANY_CHANGES);
-    if (data.assignTo !== context.userId && !context.staffScopes.includes("staff.manage")) {
+    let selfMove = data.assignTo === context.userId;
+    if (!selfMove) {
       const { readTicketRow } = await import("./staff-support.server");
       const row = await readTicketRow(context.supabaseAdmin, data.id);
       const givingBackMine = data.assignTo === null && row?.assigned_to === context.userId;
-      if (!givingBackMine) throw new Error(ASSIGN_OTHERS_MESSAGE);
+      selfMove = givingBackMine;
+      if (!givingBackMine && !context.staffScopes.includes("staff.manage")) {
+        throw new Error(ASSIGN_OTHERS_MESSAGE);
+      }
     }
+    // A reason only for someone else; a self-claim or giving back your own sends none (a fixed word is recorded).
+    const reason = selfMove ? null : reasonOf(data.reason);
     const { data: changed, error } = await context.supabaseAdmin.rpc("staff_support_assign", {
       p_actor: context.userId,
       p_role: context.staffRole,
       p_conversation: data.id,
       p_assignee: data.assignTo,
+      p_reason: reason,
     } as never);
     if (error) {
       throw refusal(error, "Could not assign the ticket. Nothing was changed.", {
@@ -213,13 +250,20 @@ export const staffAssignTicket = createServerFn({ method: "POST" })
     return { ok: true, changed: changed === true };
   });
 
-/** open, waiting on the learner, or solved; a solved ticket can only be reopened. */
+/** open, waiting on the learner, or solved; a solved ticket can only be reopened. Every change carries a reason (N-8). */
 export const staffSetTicketStatus = createServerFn({ method: "POST" })
   .middleware([requireStaff("support.reply")])
   .inputValidator((d: unknown) =>
-    z.object({ id: idSchema, status: z.enum(["open", "waiting_learner", "solved"]) }).parse(d),
+    z
+      .object({
+        id: idSchema,
+        status: z.enum(["open", "waiting_learner", "solved"]),
+        reason: z.string().max(2000).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true; changed: boolean }> => {
+    const reason = reasonOf(data.reason);
     if (
       !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_write))
     )
@@ -229,6 +273,7 @@ export const staffSetTicketStatus = createServerFn({ method: "POST" })
       p_role: context.staffRole,
       p_conversation: data.id,
       p_status: data.status,
+      p_reason: reason,
     } as never);
     if (error) {
       throw refusal(error, "Could not change the status. Nothing was changed.", {
@@ -265,4 +310,69 @@ export const staffAddTicketNote = createServerFn({ method: "POST" })
       });
     }
     return { ok: true };
+  });
+
+/**
+ * Hand a ticket to an owner (N-13): the database reassigns it to an active owner and marks it urgent, with this reason
+ * and one action-record row. Any support agent who may assign can do it; it needs no Staff permission because the
+ * ticket only ever goes UP to an owner, never sideways.
+ */
+export const staffHandToOwner = createServerFn({ method: "POST" })
+  .middleware([requireStaff("support.assign")])
+  .inputValidator((d: unknown) => z.object({ id: idSchema, reason: z.string().max(2000) }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true; changed: boolean }> => {
+    const reason = reasonOf(data.reason);
+    if (
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_write))
+    )
+      throw new Error(TOO_MANY_CHANGES);
+    const { data: changed, error } = await callRpc(
+      context.supabaseAdmin,
+      "staff_support_hand_to_owner",
+      {
+        p_actor: context.userId,
+        p_role: context.staffRole,
+        p_conversation: data.id,
+        p_reason: reason,
+      },
+    );
+    if (error) {
+      throw refusal(error, "Could not hand the ticket over. Nothing was changed.", {
+        ...COMMON_REFUSALS,
+        "22023": REASON_NEEDED_MESSAGE,
+        LW002: NO_OWNER_MESSAGE,
+      });
+    }
+    return { ok: true, changed: changed === true };
+  });
+
+/** An owner takes the urgent flag off a ticket, with a reason. (Solving a ticket clears it too.) */
+export const staffClearUrgent = createServerFn({ method: "POST" })
+  .middleware([requireStaff("staff.manage")])
+  .inputValidator((d: unknown) => z.object({ id: idSchema, reason: z.string().max(2000) }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true; changed: boolean }> => {
+    if (context.staffRole !== "owner") throw new Error(OWNER_ONLY_MESSAGE);
+    const reason = reasonOf(data.reason);
+    if (
+      !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_write))
+    )
+      throw new Error(TOO_MANY_CHANGES);
+    const { data: changed, error } = await callRpc(
+      context.supabaseAdmin,
+      "staff_support_clear_urgent",
+      {
+        p_actor: context.userId,
+        p_role: context.staffRole,
+        p_conversation: data.id,
+        p_reason: reason,
+      },
+    );
+    if (error) {
+      throw refusal(error, "Could not clear the flag. Nothing was changed.", {
+        ...COMMON_REFUSALS,
+        "42501": OWNER_ONLY_MESSAGE,
+        "22023": REASON_NEEDED_MESSAGE,
+      });
+    }
+    return { ok: true, changed: changed === true };
   });

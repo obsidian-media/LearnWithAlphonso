@@ -5,6 +5,7 @@ import { auditSentence, auditTone } from "../../../lib/audit-labels";
 import { greetingWord, waitingLabel } from "../../../lib/console-format";
 import { opsEventLabel } from "../../../lib/ops-events-config";
 import { Figure } from "../Figure";
+import { useNow } from "../useNow";
 import { QueueCard } from "./QueueCard";
 import { TicketDrawer } from "./TicketDrawer";
 import type { HomeApi, HomeData } from "./homeApi";
@@ -21,17 +22,6 @@ const RANGE_NOTE: Record<HomeRange, string> = {
   "7": "last 7 days",
   "30": "last 30 days",
 };
-
-/** The viewer's clock, ticking, set after mount so the server render and the first client render agree. */
-function useNow(everyMs: number): number | null {
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), everyMs);
-    return () => clearInterval(id);
-  }, [everyMs]);
-  return now;
-}
 
 function Card({
   title,

@@ -3,6 +3,7 @@ import type { TicketDetail } from "../../../lib/staff-support.server";
 import { TOPIC_LABELS, courseName, label, stampLabel } from "../../../lib/support-inbox-copy";
 import { ticketStatusWord } from "../../../lib/console-format";
 import { Figure } from "../Figure";
+import { ReasonDialog } from "../../staff/ReasonDialog";
 import type { HomeApi } from "./homeApi";
 
 /** Canned openings the staff member can drop into the reply box; copy, not data. */
@@ -27,7 +28,7 @@ function proText(pro: NonNullable<TicketDetail["facts"]>["pro"]): string {
  * The triage drawer: one ticket's conversation with the reply box, "Assign to me" and "Resolve", all through the
  * EXISTING server functions. Opening it reads the ticket, which the server records in the action record first. A
  * full-width sheet on a phone, a side panel on a desktop. Reply and Assign need no reason (a message, a self-claim);
- * Resolve keeps its current behaviour in this PR.
+ * Resolve asks for one first (N-8).
  */
 export function TicketDrawer({
   ticketId,
@@ -47,6 +48,8 @@ export function TicketDrawer({
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(false);
+  const [resolveError, setResolveError] = useState<string | null>(null);
 
   const panel = useRef<HTMLElement>(null);
 
@@ -122,6 +125,23 @@ export function TicketDrawer({
       () => api.replyTicket(ticketId, body.trim()),
       () => setBody(""),
     );
+  }
+
+  async function resolve(reason: string) {
+    setBusy(true);
+    setResolveError(null);
+    try {
+      await api.resolveTicket(ticketId, reason);
+      setResolving(false);
+      await load();
+      onChanged();
+    } catch (e) {
+      setResolveError(
+        e instanceof Error ? e.message : "That did not go through. Nothing was changed.",
+      );
+    } finally {
+      setBusy(false);
+    }
   }
 
   const canReply = scopes.includes("support.reply");
@@ -286,7 +306,7 @@ export function TicketDrawer({
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => void act(() => api.resolveTicket(ticketId))}
+                  onClick={() => setResolving(true)}
                   className="min-h-11 rounded-xl border border-ds-line px-3 text-sm font-bold text-ds-ink disabled:opacity-50"
                 >
                   Resolve
@@ -296,6 +316,21 @@ export function TicketDrawer({
           ) : null}
         </footer>
       </section>
+      {resolving ? (
+        <ReasonDialog
+          title="Resolve this ticket"
+          description="Every action is logged. Pick a reason or write your own so the next person has the context."
+          suggestions={["Resolved for the learner", "Duplicate", "No longer needed"]}
+          confirmLabel="Resolve and log"
+          busy={busy}
+          error={resolveError}
+          onCancel={() => {
+            setResolving(false);
+            setResolveError(null);
+          }}
+          onSubmit={(reason) => void resolve(reason)}
+        />
+      ) : null}
     </div>
   );
 }

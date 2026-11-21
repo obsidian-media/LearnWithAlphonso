@@ -19,6 +19,8 @@ export const STAFF_WRITE_FUNCTIONS = [
   "staffReplyTicket",
   "staffAssignTicket",
   "staffSetTicketStatus",
+  "staffHandToOwner",
+  "staffClearUrgent",
   "staffAddTicketNote",
   "staffSetSetting",
 ] as const;
