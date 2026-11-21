@@ -22,6 +22,7 @@ describe("the console navigation points at real screens", () => {
       "/audit",
       "/users",
       "/numbers",
+      "/reports",
       "/support",
       "/support/$id",
     ]) {
@@ -126,6 +127,29 @@ describe("every screen is gated by a server call, not by the navigation", () => 
     const old = readFileSync("admin/routes/users_.$id.tsx", "utf8");
     expect(old).toContain("redirect(");
     expect(old).toMatch(/to: "\/users"[\s\S]*u: params\.id/);
+  });
+
+  it("the reports page is gated by reports.manage in its loader and acts only through server functions that take a reason", () => {
+    const src = readFileSync("admin/routes/reports.tsx", "utf8");
+    expect(src).toContain('"reports.manage"');
+    expect(src).not.toMatch(/supabaseAdmin|from\(["']content_reports/);
+    for (const fn of [
+      "adminListReports",
+      "adminDismissReport",
+      "adminResetDisplayName",
+      "adminRenameTeam",
+      "adminDisbandTeam",
+      "staffBanUser",
+      "staffDeleteUser",
+    ]) {
+      expect(src, fn).toContain(fn);
+    }
+    // every action passes the reason the person typed
+    for (const call of src.match(
+      /(adminDismissReport|adminResetDisplayName|adminRenameTeam|adminDisbandTeam)\(\{ data: \{[^}]*\} \}\)/g,
+    ) ?? []) {
+      expect(call, call).toContain("reason");
+    }
   });
 
   it("the staff page is owner-only in the loader and changes staff only through the staff server functions", () => {

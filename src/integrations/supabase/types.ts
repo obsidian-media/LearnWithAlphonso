@@ -4077,6 +4077,7 @@ export type Database = {
       staff_disband_team: {
         Args: {
           p_actor: string;
+          p_reason: string;
           p_report: string;
           p_role: string;
           p_target: string;
@@ -4085,7 +4086,13 @@ export type Database = {
         Returns: boolean;
       };
       staff_dismiss_report: {
-        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Args: {
+          p_actor: string;
+          p_reason: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+        };
         Returns: boolean;
       };
       staff_get_settings: { Args: { p_actor: string }; Returns: Json };
@@ -4152,6 +4159,7 @@ export type Database = {
         Args: {
           p_actor: string;
           p_name: string;
+          p_reason: string;
           p_report: string;
           p_role: string;
           p_target: string;
@@ -4159,8 +4167,15 @@ export type Database = {
         };
         Returns: string;
       };
+      staff_report_reason: { Args: { p_reason: string }; Returns: string };
       staff_reset_display_name: {
-        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Args: {
+          p_actor: string;
+          p_reason: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+        };
         Returns: string;
       };
       staff_revoke_sessions: { Args: { p_target: string }; Returns: undefined };

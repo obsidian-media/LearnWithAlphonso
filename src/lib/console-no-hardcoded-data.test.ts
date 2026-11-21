@@ -40,7 +40,6 @@ export const LEGACY_ROUTES = [
   "folder.$id.tsx",
   "folders.tsx",
   "health.tsx",
-  "reports.tsx",
   "signin.tsx",
 ];
 
