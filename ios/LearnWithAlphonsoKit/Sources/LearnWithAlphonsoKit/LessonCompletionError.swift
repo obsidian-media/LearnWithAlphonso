@@ -92,7 +92,7 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
             return "This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again."
         case .rejected(code: "out-of-hearts"):
             return "Saved. It will sync when your hearts refill."
-        case .rejected(code: lessonLockedCode):
+        case .rejected(code: Self.lessonLockedCode):
             return "This lesson opens once the earlier lessons are done, so this attempt can't be saved."
         case .rejected, .invalidPayload:
             return "We couldn't save this lesson."

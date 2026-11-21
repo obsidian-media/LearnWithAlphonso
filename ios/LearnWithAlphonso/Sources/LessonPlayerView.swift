@@ -89,6 +89,10 @@ struct LessonPlayerView: View {
     @State private var heartsGateState: HeartsGateState = .open
     /// The server refused this lesson as not unlocked yet: "Finish the earlier lessons first" replaces it.
     @State private var lessonLocked = false
+    /// The session call is out. Start waits for it (`startWhenOpen`), so the server's answer (locked, out of hearts)
+    /// always comes before any of the lesson is played.
+    @State private var sessionOpening = false
+    @State private var startWhenOpen = false
     @State private var showingReviewInstead = false
     @State private var showingHector = false
     @State private var showingHectorPaywall = false
@@ -261,6 +265,10 @@ struct LessonPlayerView: View {
     }
 
     private func startLesson() {
+        if sessionOpening {
+            startWhenOpen = true
+            return
+        }
         lessonTimer = ActiveTimer(now: Date().timeIntervalSince1970)
         phase = vocab.isEmpty ? .quiz : .vocab
         Analytics.track(.lessonStarted, ["lesson_id": lesson.id, "level": "\(unit?.level ?? "")", "course": course.wireCode])
@@ -745,6 +753,7 @@ struct LessonPlayerView: View {
     private func openLessonSession() async {
         sessionToken = nil
         lessonLocked = false
+        startWhenOpen = false
         lessonOwnerUserID = session.userID
         guard networkMonitor.isConnected else {
             if let cached = syncQueueStore.lastKnownProgress(),
@@ -757,7 +766,11 @@ struct LessonPlayerView: View {
             }
             return
         }
-        guard let accessToken = await session.freshAccessToken() else { return }
+        sessionOpening = true
+        guard let accessToken = await session.freshAccessToken() else {
+            sessionOpened()
+            return
+        }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         do {
             sessionToken = try await client.startLessonSession(lessonID: lesson.id, course: course.wireCode)
@@ -768,10 +781,11 @@ struct LessonPlayerView: View {
             heartsGateState = .open
             outOfHearts = nil
             lessonLocked = true
-            return
         } catch {
             // Best-effort: finish() starts a session itself when none is held.
         }
+        sessionOpened()
+        if lessonLocked { return }
         // The earlier best decides which right answers pay on a replay. Unreadable means unknown: no XP is promised.
         let openedFor = lesson.id
         do {
@@ -781,6 +795,15 @@ struct LessonPlayerView: View {
         } catch {
             previousBest = .unknown
         }
+    }
+
+    /// The session call is answered (or could not be made): a Start tapped meanwhile goes ahead now, unless the server
+    /// refused the lesson.
+    private func sessionOpened() {
+        sessionOpening = false
+        guard startWhenOpen else { return }
+        startWhenOpen = false
+        if !lessonLocked, outOfHearts == nil, phase == .overview { startLesson() }
     }
 
     private func block(refillAt: Date?) {

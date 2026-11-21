@@ -199,6 +199,22 @@ class LearnViewModelTest {
     }
 
     @Test
+    fun `leaving the course and coming back while a pick is still saving ends on the picked level`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val base = routes()
+        val s = FakeServer { req -> if (req.path.endsWith("set_cefr_level")) { gate.await(); json("") } else base(this, req) }
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore())
+        v.initialLoad.join()
+        kotlin.concurrent.thread(isDaemon = true) { Thread.sleep(3_000); gate.complete(Unit) }
+        val saving = v.selectLevel("C1")
+        v.selectCourse(Course.FRENCH).join()
+        v.selectCourse(Course.ENGLISH).join()
+        gate.complete(Unit)
+        saving.join()
+        assertEquals("the server's B1 was read before the C1 save landed", "C1", v.state.value.selectedLevel)
+    }
+
+    @Test
     fun `two quick course switches leave no load running`() = runBlocking {
         val gate = CompletableDeferred<Unit>()
         val s = FakeServer { req -> if (req.query["select"] == "cefr_level") { gate.await(); json("[]") } else json("[]") }

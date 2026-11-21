@@ -54,17 +54,18 @@ struct LessonBrowserView: View {
     /// mirrors web's `learn.tsx` `level` state exactly, so the two clients
     /// group lessons by level the same way and don't drift.
     @State private var selectedLevel: String = LessonBrowserView.levels[0].id
-    /// The level the server holds for this course, as last read or saved; nil until known. start-lesson-session opens
-    /// lessons from it, so the picker never stays on a level that did not save (`saveLevel`).
-    @State private var savedLevel: String?
+    /// The level the server holds for each course (by course code), as last read or saved; missing until known.
+    /// start-lesson-session opens lessons from it, so the picker never stays on a level that did not save (`saveLevel`).
+    @State private var savedLevels: [String: String] = [:]
     @State private var levelSaveTask: Task<Void, Never>?
     /// The course of the pick still saving, if any, and a count of picks so only the newest one acts on its result.
     @State private var levelSavingCourse: String?
     @State private var levelPickNumber = 0
     /// Set when a pick could not be saved and the picker went back; cleared by the next pick.
     @State private var levelSaveMessage: String?
-    /// A change the app made itself (the level read from the server, or a failed pick put back): not a pick to save.
-    @State private var levelChangeIsOurs = false
+    /// A level the app set itself (read from the server, or a failed pick put back): its change is not a pick to save.
+    /// A value, not a flag: if that change never reaches onChange, the next real pick (another level) still saves.
+    @State private var levelSetByApp: String?
     /// TestFlight feedback (2026-09-29): "there is a circle with color
     /// beside each lesson but they need to change color as the user
     /// successfully completes that lesson." Populated by `loadLevel()`;
@@ -462,10 +463,9 @@ struct LessonBrowserView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .onChange(of: selectedLevel) { oldLevel, newLevel in
-                        if levelChangeIsOurs {
-                            levelChangeIsOurs = false
-                            return
-                        }
+                        let ours = levelSetByApp
+                        levelSetByApp = nil
+                        if newLevel == ours { return }
                         saveLevel(newLevel, previous: oldLevel)
                     }
 
@@ -651,17 +651,23 @@ struct LessonBrowserView: View {
         // switched course must not apply (or, via saveLevel, persist) its level
         // to the wrong course.
         let fetchedCourseCode = course.code
-        let fetchedLevel = try? await client.fetchCefrLevel(course: fetchedCourseCode)
+        // A pick made while this read was out is newer than whatever it returns.
+        let picksBefore = levelPickNumber
+        // A failed read keeps what is known; only an answer (a level, or none saved) replaces it.
+        var answered = false
+        var fetchedLevel: String?
+        do {
+            fetchedLevel = try await client.fetchCefrLevel(course: fetchedCourseCode)
+            answered = true
+        } catch {}
         guard !Task.isCancelled, course.code == fetchedCourseCode else { return }
-        if let level = fetchedLevel, !level.isEmpty {
-            savedLevel = level
-            // A pick still saving for this course outranks the level read before it landed.
-            if levelSavingCourse != fetchedCourseCode, selectedLevel != level {
-                levelChangeIsOurs = true
-                selectedLevel = level
+        if answered, levelPickNumber == picksBefore, levelSavingCourse != fetchedCourseCode {
+            if let level = fetchedLevel, !level.isEmpty {
+                savedLevels[fetchedCourseCode] = level
+                if selectedLevel != level { setLevelByApp(level) }
+            } else {
+                savedLevels[fetchedCourseCode] = nil
             }
-        } else {
-            savedLevel = nil
         }
         // Most-recent-first: element 0 is "the last lesson completed,"
         // which is exactly what continueLessonID needs to find where to
@@ -691,17 +697,23 @@ struct LessonBrowserView: View {
             guard pick == levelPickNumber else { return }
             levelSaveTask = nil
             levelSavingCourse = nil
+            if saved { savedLevels[savingCourse] = level }
             guard course.code == savingCourse else { return }
             if saved {
-                savedLevel = level
+                // Back on this course after leaving it mid-save: the load skipped the level, so show the saved one.
+                if selectedLevel != level { setLevelByApp(level) }
             } else if selectedLevel == level {
-                let back = savedLevel ?? previous
+                let back = savedLevels[savingCourse] ?? previous
                 guard back != level else { return }
-                levelChangeIsOurs = true
-                selectedLevel = back
+                setLevelByApp(back)
                 levelSaveMessage = LevelSave.failedMessage
             }
         }
+    }
+
+    private func setLevelByApp(_ level: String) {
+        levelSetByApp = level
+        selectedLevel = level
     }
 
     /// Best-effort, shows nothing on failure. A cancelled load leaves the section as it was.

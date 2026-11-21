@@ -6,8 +6,10 @@ import { describe, expect, it } from "vitest";
  * Lesson order (#688) on iOS: start-lesson-session refuses a lesson the learner has not unlocked (409 lesson-locked).
  * The SwiftUI cannot run here (the app target only compiles in CI), so the wiring is read from the source, and each
  * check is proved to go red when its fix is taken out:
- *   1. the player shows "Finish the earlier lessons first" INSTEAD of the lesson, with a way back to Learn;
- *   2. the level picker's save is retried and put back when it fails (LevelSave), not fire-and-forget;
+ *   1. the player shows "Finish the earlier lessons first" INSTEAD of the lesson, with a way back to Learn, and Start
+ *      waits for the session call, so the answer always comes before play;
+ *   2. the level picker's save is retried and put back when it fails (LevelSave), not fire-and-forget, and only the
+ *      level the app set itself is skipped (no sticky boolean);
  *   3. the course's Continue reads the units in learning order (band by band), as the server opens them.
  * The Android twin is LessonLockedSourceGuardsTest.kt; the Kit's behaviour is pinned by its own XCTests.
  */
@@ -41,6 +43,22 @@ function playerProblems(playerText: string, lockedText: string): string[] {
     out.push("the locked screen is not the first thing the stage checks");
   if (!/private var onStage: Bool \{\s*!lessonLocked &&/.test(player))
     out.push("the locked screen counts as the stage, so its navigation bar (and Back) is hidden");
+  if (
+    !/private func startLesson\(\) \{\s*if sessionOpening \{\s*startWhenOpen = true\s*return/.test(
+      player,
+    )
+  )
+    out.push("Start does not wait for the session call");
+  if (
+    !/sessionOpening = true\s*guard let accessToken = await session\.freshAccessToken\(\)/.test(
+      open,
+    )
+  )
+    out.push("the session call is not marked as out before it starts");
+  if (
+    !player.includes("if !lessonLocked, outOfHearts == nil, phase == .overview { startLesson() }")
+  )
+    out.push("a held Start goes ahead even when the lesson was refused");
   const locked = code(lockedText);
   for (const part of [
     "LessonLockedCopy.title",
@@ -59,10 +77,15 @@ function levelSaveProblems(browserText: string): string[] {
   if (!save.includes("await LevelSave.run { try await client.setCefrLevel("))
     out.push("the save is not retried");
   if (/try\? await client\.setCefrLevel/.test(save)) out.push("the save is fire-and-forget");
-  if (!/selectedLevel = back\n\s*levelSaveMessage = LevelSave\.failedMessage/.test(save))
+  if (!/setLevelByApp\(back\)\n\s*levelSaveMessage = LevelSave\.failedMessage/.test(save))
     out.push("a failed save does not put the picker back and say so");
   if (!browser.includes("saveLevel(newLevel, previous: oldLevel)"))
     out.push("picks do not reach saveLevel");
+  // A Bool "skip the next change" sticks when its change never reaches onChange, and then eats the next real pick.
+  if (!browser.includes("if newLevel == ours { return }"))
+    out.push("only the level the app set itself is skipped");
+  if (/@State private var levelChangeIsOurs\b/.test(browser))
+    out.push("the app's own level changes are skipped with a sticky boolean");
   return out;
 }
 
@@ -90,7 +113,6 @@ describe("lesson order on iOS", () => {
   it("2. the level picker's save is retried, and put back when it fails", () => {
     expect(levelSaveProblems(browser)).toEqual([]);
   });
-
   it("3. Continue reads the course in learning order", () => {
     expect(continueProblems(browser)).toEqual([]);
   });
@@ -101,6 +123,7 @@ describe("lesson order on iOS", () => {
       expect(next).not.toBe(text);
       return next;
     };
+    // 1: the catch, the stage order, the Back button, the Start gate and the refusal check on a held Start.
     expect(
       playerProblems(
         mutate(
@@ -127,6 +150,23 @@ describe("lesson order on iOS", () => {
         mutate(locked, "Button(LessonLockedCopy.backTitle, action: onBack)", "EmptyView()"),
       ),
     ).toContain("the locked screen lacks Button(LessonLockedCopy.backTitle, action: onBack)");
+    expect(
+      playerProblems(
+        mutate(player, /if sessionOpening \{\s*startWhenOpen = true\s*return\s*\}\n/, ""),
+        locked,
+      ),
+    ).toContain("Start does not wait for the session call");
+    expect(
+      playerProblems(
+        mutate(
+          player,
+          "if !lessonLocked, outOfHearts == nil, phase == .overview { startLesson() }",
+          "startLesson()",
+        ),
+        locked,
+      ),
+    ).toContain("a held Start goes ahead even when the lesson was refused");
+    // 2: fire-and-forget again, no put-back, and a skip that is not tied to the level the app set.
     const fireAndForget = mutate(
       browser,
       "await LevelSave.run { try await client.setCefrLevel(course: savingCourse, level: level) }",
@@ -139,11 +179,17 @@ describe("lesson order on iOS", () => {
       levelSaveProblems(
         mutate(
           browser,
-          /selectedLevel = back\n(\s*)levelSaveMessage = LevelSave\.failedMessage/,
+          /setLevelByApp\(back\)\n(\s*)levelSaveMessage = LevelSave\.failedMessage/,
           "$1levelSaveMessage = LevelSave.failedMessage",
         ),
       ),
     ).toContain("a failed save does not put the picker back and say so");
+    expect(
+      levelSaveProblems(
+        mutate(browser, "if newLevel == ours { return }", "if ours != nil { return }"),
+      ),
+    ).toContain("only the level the app set itself is skipped");
+    // 3: raw curriculum order again.
     expect(
       continueProblems(
         mutate(

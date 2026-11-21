@@ -180,6 +180,11 @@ class LessonViewModel(
 
     private var opened = false
 
+    /** The session call is out. Start waits for it ([beginWhenOpen]), so the server's answer (locked, out of hearts)
+     * always comes before any of the lesson is played. */
+    private var sessionOpening = false
+    private var beginWhenOpen = false
+
     /** Called by the screen when it first shows; the view model survives rotation, so this opens one session. */
     fun onScreenShown() {
         if (opened) return
@@ -189,12 +194,14 @@ class LessonViewModel(
 
     private suspend fun openSessionNow() {
         sessionToken = null
+        beginWhenOpen = false
         if (!isConnected()) {
             val cached = syncStore.lastKnownProgress() ?: return
             val decision = HeartsEconomy.gate(cached.hearts, cached.heartsRefillAt?.toLong(), now(), unlimited = isPro())
             _state.update { it.copy(outOfHearts = (decision as? HeartsEconomy.GateDecision.OutOfHearts)?.let { d -> OutOfHeartsModel(d.refillAt) }) }
             return
         }
+        sessionOpening = true
         try {
             sessionToken = client.startLessonSession(_state.value.lesson.id, course.code)
             Analytics.track(
@@ -206,10 +213,17 @@ class LessonViewModel(
             _state.update { it.copy(outOfHearts = OutOfHeartsModel(e.refillAt)) }
         } catch (e: ProgressSyncError.LessonLocked) {
             _state.update { it.copy(lessonLocked = true, outOfHearts = null) }
-            return
         } catch (e: Exception) {
             // Best effort: finish() starts a session when none is held.
         }
+        sessionOpening = false
+        // A Start tapped while the call was out goes ahead now, unless the server refused the lesson.
+        if (beginWhenOpen) {
+            beginWhenOpen = false
+            val s = _state.value
+            if (!s.lessonLocked && s.outOfHearts == null && s.phase == LessonPhase.Overview) begin()
+        }
+        if (_state.value.lessonLocked) return
         // The earlier best decides which right answers pay on a replay. Unreadable means unknown: no XP is promised.
         val openedFor = _state.value.lesson.id
         val best = runCatching { client.fetchLessonBest(openedFor, course.code) }
@@ -261,6 +275,10 @@ class LessonViewModel(
     }
 
     fun begin() {
+        if (sessionOpening) {
+            beginWhenOpen = true
+            return
+        }
         timer = ActiveTimer(now())
         _state.update { it.copy(phase = if (vocab.isEmpty()) LessonPhase.Quiz else LessonPhase.Vocab) }
     }

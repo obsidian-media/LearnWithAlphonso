@@ -17,6 +17,7 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -310,6 +311,40 @@ class LessonViewModelTest {
     }
 
     @Test
+    fun `Start tapped while the session call is out waits for it, and a locked answer never starts the lesson`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) { gate.await(); json("""{"error":"lesson-locked"}""", HttpStatusCode.Conflict) } else json("[]")
+        }
+        val v = vm(server)
+        kotlin.concurrent.thread(isDaemon = true) { Thread.sleep(5_000); gate.complete(Unit) }
+        v.onScreenShown()
+        awaitTrue("call out") { server.seen.any { it.path.endsWith("start-lesson-session") } }
+        v.begin()
+        assertEquals("Start waits for the server's answer", LessonPhase.Overview, v.state.value.phase)
+        gate.complete(Unit)
+        awaitTrue("locked") { v.state.value.lessonLocked }
+        assertEquals("never started", LessonPhase.Overview, v.state.value.phase)
+    }
+
+    @Test
+    fun `Start tapped while the session call is out goes ahead once the lesson is opened`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) { gate.await(); json("""{"token":"tok"}""") } else json("[]")
+        }
+        val v = vm(server)
+        kotlin.concurrent.thread(isDaemon = true) { Thread.sleep(5_000); gate.complete(Unit) }
+        v.onScreenShown()
+        awaitTrue("call out") { server.seen.any { it.path.endsWith("start-lesson-session") } }
+        v.begin()
+        assertEquals(LessonPhase.Overview, v.state.value.phase)
+        gate.complete(Unit)
+        awaitTrue("started") { v.state.value.phase != LessonPhase.Overview }
+        assertTrue(!v.state.value.lessonLocked)
+    }
+
+    @Test
     fun `offline, the cached hearts decide the gate and a due refill opens it`() = runBlocking {
         val blockedStore = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 0, 1_000.0, 0, "bronze")) }
         val blocked = vm(okServer(), blockedStore, connected = false)
@@ -571,6 +606,8 @@ class LessonViewModelTest {
         val (got, scope) = recordEffects(v)
         playThrough(v)
         awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        // The phase is set just before the finish sound is emitted (from the engine's thread): wait for both.
+        awaitTrue("finish sound") { got.any { it.key?.startsWith("finish-") == true } }
         val effects = got.effects()
         assertEquals(lesson.questions.size, effects.count { it == listOf(SoundEffect.TAP) })
         assertEquals(listOf(listOf(SoundEffect.LESSON_COMPLETE, SoundEffect.XP)), effects.filter { SoundEffect.LESSON_COMPLETE in it })
