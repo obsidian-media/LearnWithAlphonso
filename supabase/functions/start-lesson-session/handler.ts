@@ -19,7 +19,7 @@ import { z } from "zod";
 import { suspendedResponseIfBanned } from "../_shared/account-status.ts";
 import { issueLessonSessionToken, type LessonSessionClaim } from "./lesson-session.ts";
 import { heartsGate, heartsGateEnforced, MAX_HEARTS, outOfHeartsBody } from "../_shared/hearts.ts";
-import { isLessonUnlocked, lessonsInLearningOrder } from "../_shared/lesson-unlock.ts";
+import { isLessonUnlocked } from "../_shared/lesson-unlock.ts";
 import { heartsProCachedAnyAge, heartsUnlimitedOrUnknown } from "../_shared/hearts-pro.ts";
 
 // Was missing "es" -- same gap and same fix as complete-lesson/index.ts,
@@ -141,7 +141,7 @@ async function lessonExists(
   return !!data;
 }
 
-/** Every lesson of a course in learning order (band by band, then the curriculum's own order), read in pages. */
+/** Every lesson of a course in CURRICULUM order (units.sort_order, then lessons.sort_order), read in pages. */
 async function courseLessonOrder(
   admin: SupabaseClient,
   course: string,
@@ -160,7 +160,7 @@ async function courseLessonOrder(
     if (data.length < 1000) break;
   }
   rows.sort((a, b) => a.units.sort_order - b.units.sort_order || a.sort_order - b.sort_order);
-  return lessonsInLearningOrder(rows.map((r) => ({ id: r.id, level: r.units.level_id })));
+  return rows.map((r) => ({ id: r.id, level: r.units.level_id }));
 }
 
 export async function lessonStartVerdict(

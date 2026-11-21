@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getCourse } from "../data/courses";
 import { lessonStartVerdict } from "./lesson-unlock.server";
+import { buildLessonRows, buildUnitRows } from "./curriculum-seed";
 import { lessonsInLearningOrder } from "./lesson-unlock";
 import { chainable, type ChainCall } from "./__testutils__/supabase-mock";
 
@@ -74,4 +75,25 @@ describe("lessonStartVerdict (web server read)", () => {
     );
     expect(await verdict(db({ done: [], level: null, fail: "progress" }), "u5l1")).toBe("unknown");
   });
+});
+
+describe("the Edge Function's database order is the static curriculum order", () => {
+  // start-lesson-session orders lessons by units.sort_order then lessons.sort_order. Those columns are written by
+  // curriculum-seed.ts, so the rows it builds, sorted the way the Edge Function sorts them, must give the
+  // curriculum's own lesson order for every course. (CI has no database; production was checked by hash.)
+  for (const course of ["en", "fr", "es"] as const) {
+    it(`${course}: units.sort_order then lessons.sort_order = curriculum order, with the same bands`, () => {
+      const unitRows = buildUnitRows(course);
+      const unitOrder = new Map(unitRows.map((u) => [u.id, u]));
+      const fromDb = buildLessonRows(course)
+        .map((l) => ({ id: l.id, unit: unitOrder.get(l.unit_id)!, sort: l.sort_order }))
+        .sort((a, b) => a.unit.sort_order - b.unit.sort_order || a.sort - b.sort)
+        .map((l) => `${l.id}:${l.unit.level_id}`);
+      const fromCurriculum = getCourse(course).curriculum.flatMap((u) =>
+        u.lessons.map((l) => `${l.id}:${u.level}`),
+      );
+      expect(fromDb).toEqual(fromCurriculum);
+      expect(new Set(unitRows.map((u) => u.sort_order)).size).toBe(unitRows.length);
+    });
+  }
 });

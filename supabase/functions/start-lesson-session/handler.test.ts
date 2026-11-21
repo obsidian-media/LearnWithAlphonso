@@ -253,6 +253,8 @@ Deno.test(
     // Out-of-order history (u1l2 done, u1l1 not): the next after the furthest stays open, and the skipped one.
     assertEquals(await v(["u1l2"], "A1", "u3l1"), "unlocked");
     assertEquals(await v(["u1l2"], "A1", "u1l1"), "unlocked");
+    // What the installed apps call "where you are" (first undone in curriculum order, here the A2 u2l1) stays open too.
+    assertEquals(await v(["u1l1", "u1l2"], "A1", "u2l1"), "unlocked");
     // A replay of a finished lesson.
     assertEquals(await v(["u1l1", "u1l2", "u3l1"], "A1", "u1l1"), "unlocked");
   },
