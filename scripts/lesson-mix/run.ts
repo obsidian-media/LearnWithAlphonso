@@ -788,6 +788,12 @@ async function judge() {
   const ids = new Set<string>();
   for (const m of [claude, mistral])
     for (const v of m.values()) if (v.verdict === "defect") ids.add(v.id);
+  // Fallback when the Mistral second opinion is unavailable: the judge also sees the control sample
+  // (Sonnet-passed items), so the panel still measures what Sonnet misses.
+  if (process.env.LESSON_MIX_JUDGE_CONTROL === "yes") {
+    const s = secondOpinionSet(items, claude, ASSUME.controlRate, SEED);
+    for (const it of s.control) ids.add(it.id);
+  }
   const todo = items.filter((it) => ids.has(it.id) && !rulings[it.id]);
   const chunks = chunk(todo, "jdg");
   const reqs = chunks.map((c) =>
@@ -936,6 +942,20 @@ function exportCommand() {
         [
           "Spend (ledger, all providers)",
           `US$${ledger.settledUsd.toFixed(2)} settled of the US$${LESSON_MIX_CAP_USD} cap`,
+        ],
+        [
+          "Panel results",
+          (() => {
+            const cv = Object.values(claude);
+            const rv = Object.values(rulings);
+            const d = cv.filter((v) => v.verdict === "defect").length;
+            const n = (x: string) => rv.filter((r) => r.decision === x).length;
+            return `Sonnet reviewed ${cv.length} items and flagged ${d} (${((100 * d) / Math.max(1, cv.length)).toFixed(1)}%). Opus judged ${rv.length} (the ${d} flagged plus the control sample of Sonnet-passed items): ${n("fix")} fix, ${n("keep")} keep, ${rv.length - n("fix") - n("keep")} other.`;
+          })(),
+        ],
+        [
+          "Mistral second opinion",
+          "UNAVAILABLE. Mistral Large 4 returned HTTP 403 (account tier), and Medium and Small returned HTTP 429 on every retry, both directly and through OpenRouter (BYOK). The Opus judge ran on every Sonnet-flagged item plus the control sample instead, so this pilot has no independent second model.",
         ],
         [
           "Not merged",

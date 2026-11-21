@@ -48,8 +48,14 @@ const headers = (key: string) => ({
 });
 
 async function readError(res: Response) {
-  const body = (await res.json().catch(() => ({}))) as { message?: string; detail?: unknown };
-  return `HTTP ${res.status} ${body.message ?? (body.detail ? JSON.stringify(body.detail) : "")}`.trim();
+  const body = (await res.json().catch(() => ({}))) as {
+    message?: string;
+    detail?: unknown;
+    error?: { message?: string } | string;
+  };
+  const nested = typeof body.error === "string" ? body.error : body.error?.message;
+  const text = body.message ?? nested ?? (body.detail ? JSON.stringify(body.detail) : "");
+  return `HTTP ${res.status} ${text}`.trim();
 }
 
 export type MistralJob = {

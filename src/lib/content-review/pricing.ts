@@ -59,6 +59,10 @@ export const MODELS = {
   // lists $0.70 in / $2.10 out. With BYOK, OpenRouter may add a small fee and Mistral bills the key
   // itself; the full listed price is booked as an upper bound.
   "mistralai/mistral-large-4-0": { provider: "mistral", input: 0.7, output: 2.1, batch: 1 },
+  // Other OpenRouter Mistral ids, listed prices (same upper-bound rule).
+  "mistralai/mistral-large-2512": { provider: "mistral", input: 0.5, output: 1.5, batch: 1 },
+  "mistralai/mistral-medium-3-5": { provider: "mistral", input: 1.5, output: 7.5, batch: 1 },
+  "mistralai/mistral-small-2603": { provider: "mistral", input: 0.15, output: 0.6, batch: 1 },
   "mistral-small-latest": { provider: "mistral", input: 0.7, output: 2.1, batch: 0.5 },
 } as const satisfies Record<string, ModelPrice>;
 export type ModelId = keyof typeof MODELS;
