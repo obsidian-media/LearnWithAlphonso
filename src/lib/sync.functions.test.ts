@@ -68,6 +68,12 @@ vi.mock("./learner-time-zone.server", () => ({ readLearnerTimeZone }));
 // Account AI consent is read through hasAiConsent; the default here is "allowed", individual tests flip it.
 const hasAiConsent = vi.fn(async () => true);
 vi.mock("./ai-consent.server", () => ({ hasAiConsent }));
+// The unlock rule and its database read have their own tests (lesson-unlock.test.ts, lesson-unlock.server.test.ts);
+// here startLessonSession's handling of the verdict is what is under test. Default: the lesson is open.
+const lessonStartVerdict = vi.hoisted(() =>
+  vi.fn(async (): Promise<"unlocked" | "locked" | "unknown"> => "unlocked"),
+);
+vi.mock("./lesson-unlock.server", () => ({ lessonStartVerdict }));
 
 const {
   fetchProgress,
@@ -279,6 +285,39 @@ describe("startLessonSession", () => {
   }
   afterEach(() => {
     delete process.env.ENFORCE_HEARTS_GATE;
+    lessonStartVerdict.mockReset();
+    lessonStartVerdict.mockResolvedValue("unlocked");
+  });
+
+  it("refuses a lesson the learner has not unlocked: lesson-locked, no token, asked about THIS learner", async () => {
+    lessonStartVerdict.mockResolvedValue("locked");
+    const supabase = heartsRow(3, null);
+    const result = await startLessonSession({
+      context: ctx(supabase),
+      data: { lessonId: "u5l1", course: "en" },
+    });
+    expect(result).toEqual({ error: "lesson-locked" });
+    expect(lessonStartVerdict).toHaveBeenCalledWith(supabase, USER_ID, "en", "u5l1");
+  });
+
+  it("a locked lesson is refused even for a learner at 0 hearts (lock first, no hearts read)", async () => {
+    lessonStartVerdict.mockResolvedValue("locked");
+    const supabase = createSupabaseMock();
+    const result = await startLessonSession({
+      context: ctx(supabase),
+      data: { lessonId: "u5l1", course: "en" },
+    });
+    expect(result).toEqual({ error: "lesson-locked" });
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("an unreadable unlock state (unknown) lets the learner in", async () => {
+    lessonStartVerdict.mockResolvedValue("unknown");
+    const result = await startLessonSession({
+      context: ctx(heartsRow(3, null)),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect("token" in result).toBe(true);
   });
 
   it("issues a token for a real lesson with hearts left", async () => {

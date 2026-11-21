@@ -18,6 +18,7 @@ import {
 } from "@/data/path-tags";
 import { SCENARIOS } from "@/data/scenarios";
 import { estimateLessonMinutes } from "./lesson-time";
+import { unlockedLessonIds } from "./lesson-unlock";
 import { callCountsAsDone } from "./practice-stars";
 import { LEVEL_ORDER, planGoal } from "./learning-goal";
 import { lessonsByLevel } from "./learning-goal.server";
@@ -45,6 +46,9 @@ export type PathData = {
   /** The learner's IANA time zone (learner_time_zones); every day below is their calendar day. UTC when missing. */
   timeZone?: string | null;
   currentLevel: Level;
+  /** Offer only lessons the server lets this learner start (lesson-unlock.ts). The API sets it; the checked-in contract
+   *  fixtures (shared with the apps' own builders) leave it off. */
+  startableOnly?: boolean;
   goal: { targetLevel: Level; targetDate: string; createdAt: string };
   completions: { lessonId: string; completedAt: string }[];
   learningDays: { day: string; lessonSeconds: number; practiceSeconds: number }[];
@@ -212,6 +216,14 @@ export function buildLearningPath(data: PathData): LearningPath | null {
   }
 
   // ---- candidates (what is left, with its tag)
+  // With startableOnly: only lessons the server will let this learner start (lesson-unlock.ts); the Path links
+  // straight to /lesson/$id.
+  const startable = unlockedLessonIds(
+    units.flatMap((u) => u.lessons.map((l) => ({ id: l.id, level: u.level }))),
+    new Set(Object.keys(completedAt)),
+    data.currentLevel,
+    { curriculumNext: false },
+  );
   const lessons: Candidate[] = [];
   const levelLessonsLeft: Partial<Record<Level, number>> = {};
   let unit: { title: string; subtitle: string; lessonsLeft: number } | undefined;
@@ -231,6 +243,7 @@ export function buildLearningPath(data: PathData): LearningPath | null {
     }
     for (const l of left) {
       if (lessons.length >= LESSON_CANDIDATES) break;
+      if (data.startableOnly && !startable.has(l.id)) continue;
       lessons.push({
         id: l.id,
         type: "lesson",
