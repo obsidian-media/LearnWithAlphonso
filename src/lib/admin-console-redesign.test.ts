@@ -30,7 +30,6 @@ describe("a signed-in person missing a scope sees a forbidden card, not the sign
 
   it.each([
     ["users.tsx", "Users"],
-    ["users_.$id.tsx", "Learner"],
     ["staff.tsx", "Staff"],
     ["audit.tsx", "Action record"],
     ["support.tsx", "Support"],

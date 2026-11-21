@@ -26,7 +26,13 @@ const {
   staffRevokePro,
   staffBlockUser,
   staffUnblockUser,
+  staffBanUser,
+  staffUnbanUser,
+  staffDeleteUser,
 } = asTestFns({
+  staffBanUser: mod.staffBanUser,
+  staffUnbanUser: mod.staffUnbanUser,
+  staffDeleteUser: mod.staffDeleteUser,
   staffBlockUser: mod.staffBlockUser,
   staffUnblockUser: mod.staffUnblockUser,
   staffGrantPro: mod.staffGrantPro,
@@ -444,5 +450,213 @@ describe("staffBlockUser and staffUnblockUser", () => {
         context: { supabaseAdmin: admin, userId: SUPPORT },
       }),
     ).rejects.toThrow("That learner is not blocked.");
+  });
+});
+
+describe("every sensitive learner action is reason-gated and scope-gated on the server (Users screen)", () => {
+  const NO_SCOPES = "00000000-0000-4000-8000-0000000000b2";
+  beforeEach(() => {
+    setStaff({
+      [OWNER]: { role: "owner", scopes: [] },
+      [SUPPORT]: { role: "support", scopes: ["users.read", "users.notes", "user.block"] },
+      [NO_SCOPES]: { role: "support", scopes: ["users.read"] },
+    });
+  });
+  const base = { id: LEARNER, confirmEmail: "ada@example.com" };
+  const actions: [
+    string,
+    (u: string, a: ReturnType<typeof adminClient>, reason: string) => Promise<unknown>,
+    string,
+  ][] = [
+    [
+      "grant",
+      (u, a, reason) =>
+        staffGrantPro({
+          data: { ...base, days: 30, reason },
+          context: { supabaseAdmin: a, userId: u },
+        }),
+      "pro.grant",
+    ],
+    [
+      "revoke",
+      (u, a, reason) =>
+        staffRevokePro({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "pro.revoke",
+    ],
+    [
+      "block",
+      (u, a, reason) =>
+        staffBlockUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.block",
+    ],
+    [
+      "unblock",
+      (u, a, reason) =>
+        staffUnblockUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.block",
+    ],
+    [
+      "ban",
+      (u, a, reason) =>
+        staffBanUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.ban",
+    ],
+    [
+      "unban",
+      (u, a, reason) =>
+        staffUnbanUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.unban",
+    ],
+    [
+      "delete",
+      (u, a, reason) =>
+        staffDeleteUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.delete",
+    ],
+  ];
+
+  it.each(actions)(
+    "%s refuses a missing, empty or too-short reason before anything is written",
+    async (_name, call) => {
+      for (const reason of ["", "  ", "ab"]) {
+        const admin = adminClient();
+        await expect(call(OWNER, admin, reason)).rejects.toThrow(/reason/i);
+        expect(admin.rpc).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it.each(actions)(
+    "%s is Forbidden for a staff member without its scope, and nothing is written",
+    async (_name, call, scope) => {
+      const admin = adminClient();
+      // NO_SCOPES holds users.read only, so every action is refused by name
+      await expect(call(NO_SCOPES, admin, "a good reason")).rejects.toThrow(
+        `Forbidden: missing scope ${scope}`,
+      );
+      expect(admin.rpc).not.toHaveBeenCalled();
+    },
+  );
+
+  it("a plain support agent cannot delete, ban or grant Pro (owner-only by default scopes)", async () => {
+    const { DEFAULT_SCOPES } = await import("./staff-scopes");
+    for (const scope of ["user.delete", "user.ban", "pro.grant"]) {
+      expect(DEFAULT_SCOPES.support).not.toContain(scope);
+      expect(DEFAULT_SCOPES.owner).toContain(scope);
+    }
+  });
+});
+
+describe("staffGetUser: the lessons count and the plan", () => {
+  const open = (admin: ReturnType<typeof adminClient>) =>
+    staffGetUser({ data: { id: LEARNER }, context: { supabaseAdmin: admin, userId: SUPPORT } });
+  const withLessons = (admin: ReturnType<typeof adminClient>, result: object) => {
+    const before = admin.from.getMockImplementation()!;
+    admin.from.mockImplementation((table: string) =>
+      table === "lesson_completions" ? chainable(result) : before(table),
+    );
+  };
+
+  it("reads the real lesson count for that learner", async () => {
+    const admin = adminClient();
+    withLessons(admin, { data: null, count: 7, error: null });
+    expect((await open(admin)).lessonsDone).toBe(7);
+    expect(admin.from).toHaveBeenCalledWith("lesson_completions");
+  });
+
+  it("a count that could not be read is null, never 0", async () => {
+    const admin = adminClient();
+    withLessons(admin, { data: null, count: null, error: { message: "down" } });
+    expect((await open(admin)).lessonsDone).toBeNull();
+  });
+
+  it("with no RevenueCat key the plan is 'not connected', not Free (and the read is still recorded)", async () => {
+    vi.stubEnv("REVENUECAT_SECRET_API_KEY", "");
+    const admin = adminClient();
+    const facts = await open(admin);
+    vi.unstubAllEnvs();
+    expect(facts.pro).toMatchObject({ notConnected: true, unavailable: true, active: false });
+    expect(admin.rpc).toHaveBeenCalledWith(
+      "staff_record",
+      expect.objectContaining({ p_action: "user.view" }),
+    );
+  });
+});
+
+describe("staffGetUser refresh (no extra audit row)", () => {
+  const withAuditRows = (
+    admin: ReturnType<typeof adminClient>,
+    rows: unknown[] | null,
+    error: unknown = null,
+  ) => {
+    const before = admin.from.getMockImplementation()!;
+    admin.from.mockImplementation((table: string) =>
+      table === "staff_audit_log" ? chainable({ data: rows, error }) : before(table),
+    );
+  };
+  const call = (admin: ReturnType<typeof adminClient>, refresh?: boolean) =>
+    staffGetUser({
+      data: { id: LEARNER, ...(refresh === undefined ? {} : { refresh }) },
+      context: { supabaseAdmin: admin, userId: SUPPORT },
+    });
+  const views = (admin: ReturnType<typeof adminClient>) =>
+    admin.rpc.mock.calls.filter(
+      ([name, args]) =>
+        name === "staff_record" && (args as { p_action: string }).p_action === "user.view",
+    );
+
+  it("an ordinary open always records, whatever the log says", async () => {
+    const admin = adminClient();
+    withAuditRows(admin, [{ id: 1 }]);
+    await call(admin);
+    await call(admin, false);
+    expect(views(admin)).toHaveLength(2);
+  });
+
+  it("a refresh after this staff member's own recent view records nothing and still returns the facts", async () => {
+    const admin = adminClient();
+    withAuditRows(admin, [{ id: 1 }]);
+    const facts = await call(admin, true);
+    expect(facts.email).toBe("ada@example.com");
+    expect(views(admin)).toHaveLength(0);
+    expect(admin.from).toHaveBeenCalledWith("staff_audit_log");
+  });
+
+  it("a refresh with no earlier view, or an unreadable log, is an ordinary recorded open (it cannot skip the record)", async () => {
+    const none = adminClient();
+    withAuditRows(none, []);
+    await call(none, true);
+    expect(views(none)).toHaveLength(1);
+    const broken = adminClient();
+    withAuditRows(broken, null, { message: "down" });
+    await call(broken, true);
+    expect(views(broken)).toHaveLength(1);
+  });
+
+  it("the lookup is scoped to the caller, the learner and user.view", async () => {
+    const admin = adminClient();
+    const builder = chainable({ data: [{ id: 1 }], error: null });
+    const before = admin.from.getMockImplementation()!;
+    admin.from.mockImplementation((t: string) =>
+      t === "staff_audit_log" ? (builder as never) : before(t),
+    );
+    await call(admin, true);
+    const eqs = builder.calls.filter((c) => c.method === "eq").map((c) => c.args);
+    expect(eqs).toContainEqual(["actor_user_id", SUPPORT]);
+    expect(eqs).toContainEqual(["target_user_id", LEARNER]);
+    expect(eqs).toContainEqual(["action", "user.view"]);
+    expect(builder.calls.some((c) => c.method === "gte")).toBe(true);
+  });
+});
+
+describe("staffGetUser: XP and streak are null, not 0, when there is no row", () => {
+  it("no progress rows gives null streak and null XP", async () => {
+    const admin = adminClient();
+    const facts = await staffGetUser({
+      data: { id: LEARNER },
+      context: { supabaseAdmin: admin, userId: SUPPORT },
+    });
+    expect(facts.streak).toBeNull();
+    expect(facts.xp).toBeNull();
   });
 });
