@@ -1329,6 +1329,22 @@ final class ProgressSyncClientTests: XCTestCase {
         }
     }
 
+    func testStartLessonSessionForALessonNotUnlockedThrowsLessonLockedAndIsNeverQueued() async {
+        let client = makeClient { request in
+            self.jsonResponse(for: request.url!, body: ["error": "lesson-locked"], status: 409)
+        }
+        do {
+            _ = try await client.startLessonSession(lessonID: "u9l1", course: "en")
+            XCTFail("expected lessonLocked")
+        } catch {
+            XCTAssertEqual(error as? ProgressSyncError, .lessonLocked)
+            let classified = LessonCompletionError.classify(error)
+            XCTAssertEqual(classified, .rejected(code: "lesson-locked"))
+            XCTAssertEqual(classified.finishDisposition, .showFailure)
+            XCTAssertEqual(classified.userMessage, "This lesson opens once the earlier lessons are done, so this attempt can't be saved.")
+        }
+    }
+
     func testAnOther409IsStillAPlainServerError() async {
         let client = makeClient { request in
             self.jsonResponse(for: request.url!, body: ["error": "something-else"], status: 409)

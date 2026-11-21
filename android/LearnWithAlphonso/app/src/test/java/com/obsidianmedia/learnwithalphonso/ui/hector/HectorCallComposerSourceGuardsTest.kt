@@ -44,17 +44,19 @@ class HectorCallComposerSourceGuardsTest {
     fun `the check goes red when the composer is taken out of the call`() {
         val screen = read("hector/HectorScreen.kt")
         val call = read("practice/call/PracticeCallScreen.kt")
+        // Each mutation must trip the check for the property it breaks, not just any check.
         val noFooter = screen.replace("sheetFooter = composer,", "")
         assertTrue(noFooter != screen)
-        assertTrue(problems(noFooter, call).isNotEmpty())
+        assertTrue(problems(noFooter, call).contains("the call is not given the composer as its sheet footer"))
         val insetsOff = call.replace("ModalBottomSheet(", "ModalBottomSheet(contentWindowInsets = { WindowInsets(0) }, ")
         assertTrue(insetsOff != call)
-        assertTrue(problems(screen, insetsOff).isNotEmpty())
+        assertTrue(problems(screen, insetsOff).contains("the sheet overrides material3's insets, so the footer can sit under the bars"))
         val doubled = call.replace("if (sheetFooter != null) sheetFooter()", "if (sheetFooter != null) Box(Modifier.navigationBarsPadding()) { sheetFooter() }")
         assertTrue(doubled != call)
-        assertTrue(problems(screen, doubled).isNotEmpty())
+        // This also removes the plain footer call, so the doubled inset must be reported on its own line.
+        assertTrue(problems(screen, doubled).contains("a second inset in the sheet doubles the gap"))
         val draftEaten = screen.replace("draft = submitDraft(draft, vm::sendTyped)", "val t = draft; draft = \"\"; vm.sendTyped(t)")
         assertTrue(draftEaten != screen)
-        assertTrue(problems(draftEaten, call).isNotEmpty())
+        assertTrue(problems(draftEaten, call).contains("the composer does not send through vm.sendTyped"))
     }
 }

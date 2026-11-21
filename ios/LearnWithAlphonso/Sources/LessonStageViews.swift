@@ -761,6 +761,8 @@ struct LessonStartView: View {
     let steps: [LessonStartStep]
     let hearts: Int?
     let topInset: CGFloat
+    /// Start was tapped and the lesson is still being opened: the button shows it and ignores more taps.
+    var waiting = false
     let onClose: () -> Void
     let onStart: () -> Void
 
@@ -833,8 +835,9 @@ struct LessonStartView: View {
         .scrollBounceBehavior(.basedOnSize)
         .background(ds.surface)
         .safeAreaInset(edge: .bottom) {
-            Button("Start lesson", action: onStart)
+            Button(waiting ? "Opening lesson..." : "Start lesson", action: onStart)
                 .buttonStyle(LessonEdgeButtonStyle(variant: .primary))
+                .disabled(waiting)
                 .padding(.horizontal, AlphonsoDS.Space.s4)
                 .padding(.top, AlphonsoDS.Space.s3)
                 .padding(.bottom, AlphonsoDS.Space.s2)

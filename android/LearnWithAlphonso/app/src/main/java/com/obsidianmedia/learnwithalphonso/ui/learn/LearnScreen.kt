@@ -187,7 +187,11 @@ fun LearnScreen(
     LaunchedEffect(missionVm) { missionVm.refresh() }
 
     // Round 6.1 Learn fold: finished units fold to one row per run, the current unit is open, later units show a name.
-    val courseUnits = remember(state.course, container.content) { container.content.bundle(state.course).units.map(::foldUnitOf) }
+    // In LEARNING order (band by band), like the web's foldUnits: the curriculum interleaves bands, and the server opens
+    // lessons only in this order, so the map's "Continue" must not point at the raw array's first undone lesson.
+    val courseUnits = remember(state.course, container.content) {
+        LearnFold.inLearningOrder(container.content.bundle(state.course).units) { it.level }.map(::foldUnitOf)
+    }
     val completedSet = state.completedLessonIds
     val currentUnit = LearnFold.currentUnitOf(courseUnits, completedSet)
     var showAllUnits by rememberSaveable { mutableStateOf(false) }

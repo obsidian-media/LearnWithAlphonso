@@ -16,7 +16,7 @@ const between = (src: string, start: string, end: RegExp) => {
 
 describe("Learn level load", () => {
   const src = read(`${APP}/LessonBrowserView.swift`);
-  const fn = between(src, "private func loadLevel()", /\n {4}\/\/\/ Fire-and-forget/);
+  const fn = between(src, "private func loadLevel()", /\n {4}\/\/\/ The band switch is instant/);
   it("loads the level again when onboarding settles or a placement test finishes", () => {
     // Keyed on the course alone, a level set by placement stayed hidden until the app was relaunched.
     expect(src).toContain(
@@ -29,9 +29,20 @@ describe("Learn level load", () => {
       fn.match(/guard !Task\.isCancelled, course\.code == fetchedCourseCode else \{ return \}/g) ??
       [];
     expect(guards.length).toBe(2);
-    // The level must be applied only after the first guard.
-    expect(fn.indexOf("selectedLevel = level")).toBeGreaterThan(
+    // The slice ends where loadLevel does (the next doc comment), so it cannot pick up another function's guards.
+    expect(fn).not.toContain("private func saveLevel(");
+    // The level must be applied only after the first guard (through setLevelByApp, so it is not saved back).
+    expect(fn.indexOf("setLevelByApp(level)")).toBeGreaterThan(
       fn.indexOf("guard !Task.isCancelled"),
+    );
+    // Goes red when the level is applied before the course check.
+    const early = fn.replace(
+      "let fetchedCourseCode = course.code",
+      "let fetchedCourseCode = course.code\n        setLevelByApp(level)",
+    );
+    expect(early).not.toBe(fn);
+    expect(early.indexOf("setLevelByApp(level)")).toBeLessThan(
+      early.indexOf("guard !Task.isCancelled"),
     );
   });
 });

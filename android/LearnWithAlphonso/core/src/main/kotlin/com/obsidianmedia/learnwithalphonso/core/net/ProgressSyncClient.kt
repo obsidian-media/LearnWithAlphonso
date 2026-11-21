@@ -66,8 +66,9 @@ class ProgressSyncClient(
         val response = http.function("start-lesson-session", buildJsonObject { put("lessonId", lessonId); put("course", course) })
         if (response.status.value == 409) {
             val body = runCatching { http.json.parseToJsonElement(response.bodyAsText()).jsonObject }.getOrNull()
-            if (body?.string("error") == "out-of-hearts") {
-                throw ProgressSyncError.OutOfHearts(body.string("refillAt")?.let(::parsePostgresTimestampMillis)?.toLong())
+            when (body?.string("error")) {
+                "out-of-hearts" -> throw ProgressSyncError.OutOfHearts(body.string("refillAt")?.let(::parsePostgresTimestampMillis)?.toLong())
+                "lesson-locked" -> throw ProgressSyncError.LessonLocked()
             }
         }
         val obj = objectOf(response)
