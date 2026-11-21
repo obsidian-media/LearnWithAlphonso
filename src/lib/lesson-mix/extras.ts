@@ -92,6 +92,9 @@ export function extraQuestions(lessonId: string, extra: LessonExtra): Question[]
  * Appends every record's questions to its lesson. A record for a lesson that does not exist, or one
  * that would reuse an id the lesson already has, throws: a silent skip would hide a typo.
  */
+/** The server (complete-lesson, sync) rejects a lesson of more than this many questions. */
+export const MAX_QUESTIONS_PER_LESSON = 50;
+
 export function addLessonExtras(units: Unit[], extras: LessonExtras): Unit[] {
   const wanted = new Set(Object.keys(extras));
   if (!wanted.size) return units;
@@ -105,6 +108,10 @@ export function addLessonExtras(units: Unit[], extras: LessonExtras): Unit[] {
       const have = new Set(lesson.questions.map((q) => q.id));
       for (const q of add)
         if (have.has(q.id)) throw new Error(`lesson ${lesson.id} already has a question ${q.id}`);
+      if (lesson.questions.length + add.length > MAX_QUESTIONS_PER_LESSON)
+        throw new Error(
+          `lesson ${lesson.id} would have ${lesson.questions.length + add.length} questions (the server accepts at most ${MAX_QUESTIONS_PER_LESSON})`,
+        );
       return add.length ? { ...lesson, questions: [...lesson.questions, ...add] } : lesson;
     }),
   }));

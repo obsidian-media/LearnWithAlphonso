@@ -190,7 +190,7 @@ const ORDINAL =
 const COMPOUND_NUMBER =
   /\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[ -](one|two|three|four|five|six|seven|eight|nine)\b|\bhundred\b|\bthousand\b|\btreinta y\b|\bcuarenta y\b|\bcincuenta y\b|\bsesenta y\b|\bsetenta y\b|\bochenta y\b|\bnoventa y\b|\bcien\b|\bciento\b|\bmil\b|\b(trente|quarante|cinquante|soixante|quatre-vingt)[ -]|\bcent\b|\bmille\b/i;
 
-const spokenOf = {
+export const spokenOf = {
   en: { norm: normaliseSpoken, match: matchesSpokenAnswer },
   fr: { norm: normaliseSpokenFr, match: matchesSpokenAnswerFr },
   es: { norm: normaliseSpokenEs, match: matchesSpokenAnswerEs },
@@ -209,8 +209,6 @@ export function transcriptVariants(answer: string): string[] {
     noPunct.toLowerCase(),
     noAccent.toLowerCase(),
     `${noPunct.toLowerCase()}.`,
-    // smart_format renders a bare small number as digits; the normaliser must map them back.
-    answer.replace(/\b(\d+)\b/g, "$1"),
   ];
 }
 

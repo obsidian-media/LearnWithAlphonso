@@ -119,6 +119,12 @@ const writeJson = (file: string, data: unknown) => {
   fs.writeFileSync(file, JSON.stringify(data, null, 1));
 };
 const openLedger = () => openLessonMixLedger(STATE);
+/** ONE lock for every phase and provider; the ledger is (re)opened INSIDE it, never before. */
+const LOCK = path.join(STATE, "run.lock");
+let refCounter = 0;
+/** A batch ref that cannot collide in the same millisecond. */
+const newRef = (prefix: string) =>
+  `${prefix}-${Date.now().toString(36)}${(refCounter++).toString(36)}`;
 
 // ---- Keys ---------------------------------------------------------------------------------------------
 
@@ -497,10 +503,11 @@ async function submitAnthropic(
     return console.log("Dry run: nothing sent. Add --go (with LESSON_MIX_APPROVED=yes) to submit.");
   approved();
   const key = loadKey("anthropic");
-  await withLock(path.join(STATE, "run.lock"), async () => {
+  await withLock(LOCK, async () => {
+    const ledger = openLedger(); // re-opened inside the lock: the one above was only for the dry-run check
     const state = loadState();
     for (const group of splitBatches(reqs)) {
-      const ref = `${phase}-${Date.now().toString(36)}`;
+      const ref = newRef(phase);
       const usd = worstOf(model, group);
       reserveWithinCap(ledger, ref, usd, { phase, provider: "anthropic", model });
       const job: Job = {
@@ -544,7 +551,7 @@ async function collect() {
     if (!flag("go"))
       return console.log(`${open.length} open jobs. Add --go to poll them (no cost).`);
     const key = loadKey("anthropic");
-    await withLock(path.join(STATE, "run.lock"), async () => {
+    await withLock(LOCK, async () => {
       const ledger = openLedger();
       for (const job of open) {
         const info = await getBatch(fetch, key, job.remoteId!);
@@ -734,12 +741,13 @@ async function second() {
     return console.log(chunks.length ? "Dry run: nothing sent." : "");
   approved();
   const key = loadKey("mistral");
-  await withLock(path.join(STATE, "run-mistral.lock"), async () => {
+  await withLock(LOCK, async () => {
+    const ledger = openLedger(); // re-opened inside the lock
     const store = loadVerdicts("second");
     for (const c of chunks) {
       const req = mreq(c);
       const w = worstCaseUsd(MISTRAL_MODEL, shapeOf(req.body as never), false);
-      const ref = `sec-${c.customId}-${Date.now().toString(36)}`;
+      const ref = newRef(`sec-${c.customId}`);
       reserveWithinCap(ledger, ref, w, {
         phase: "second",
         provider: "mistral",

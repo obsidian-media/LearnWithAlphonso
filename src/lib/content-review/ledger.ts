@@ -209,6 +209,7 @@ export class Ledger {
     now = new Date().toISOString(),
   ): LedgerStatus {
     validUsd(usd, `reserve ${ref}`);
+    this.assertFresh();
     if (this.data.provider && meta.provider !== this.data.provider)
       throw new Error(
         `${ref}: a ${meta.provider} job cannot be booked on the ${this.data.provider} ledger`,
@@ -234,6 +235,7 @@ export class Ledger {
   /** Replaces the open reservation `ref` by its actual cost. */
   settle(ref: string, usd: number, note?: string, now = new Date().toISOString()): LedgerStatus {
     validUsd(usd, `settle ${ref}`);
+    this.assertFresh();
     if (!this.status().open.includes(ref)) throw new Error(`${ref} has no open reservation`);
     this.data.entries.push({ type: "settle", ref, usd, at: now, ...(note ? { note } : {}) });
     this.persist();
@@ -245,10 +247,25 @@ export class Ledger {
    * accepted, nothing can be billed). A submit whose outcome is unknown stays reserved.
    */
   release(ref: string, note: string, now = new Date().toISOString()): LedgerStatus {
+    this.assertFresh();
     if (!this.status().open.includes(ref)) throw new Error(`${ref} has no open reservation`);
     this.data.entries.push({ type: "release", ref, at: now, note });
     this.persist();
     return this.status();
+  }
+
+  /**
+   * A stale instance (another process wrote since this one opened) must not overwrite those entries:
+   * refuse, and the caller re-opens the ledger inside its lock.
+   */
+  private assertFresh() {
+    const a = readLedger(this.paths.primary);
+    const b = readLedger(this.paths.mirror);
+    const disk = Math.max(a?.entries.length ?? 0, b?.entries.length ?? 0);
+    if (disk !== this.data.entries.length)
+      throw new Error(
+        `The ledger changed on disk since it was opened (${disk} entries there, ${this.data.entries.length} here): re-open it inside the run lock.`,
+      );
   }
 
   private persist() {

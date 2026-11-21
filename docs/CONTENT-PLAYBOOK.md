@@ -215,7 +215,7 @@ built before the full review, because today it would fail on every item.
 ## 11. The lesson mix: listening, speak and translate in every lesson
 
 Most lessons were pure mc and fill. The lesson-mix pass appends a listening and a translate question to
-every eligible lesson, and a speak question to lessons 1, 3 and 5 of each unit ("every other lesson",
+every eligible lesson, and a speak question to every second eligible lesson of the course (`courseNeeds`: alternate across eligible lessons, "every other lesson",
 owner, 2026-11-21). Dedicated listening, speak and translate packs (no mc or fill) are left alone. A
 lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N min" updates itself.
 
@@ -230,7 +230,7 @@ lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N 
 - **Money.** Its own ledger (`.lesson-mix/ledger.json`, mirrored in `~/.lwa-lesson-mix/`), a US$60 hard cap
   across Anthropic and Mistral together, enforced in code (`src/lib/lesson-mix/ledger.ts`): the worst case
   is reserved before every submission and a projection over the cap is refused. `--go` needs
-  `LESSON_MIX_APPROVED=yes`. Keys come from the key-file env vars, read inside the script, never printed.
+  `LESSON_MIX_APPROVED=yes`. Use the `*_FILE` key form only (`ANTHROPIC_API_KEY_FILE`, `OPENROUTER_API_KEY_FILE`): the script reads the file at the point of use and never prints it; never put a key itself in an env var or on a command line. ONE lock (`.lesson-mix/run.lock`) covers every phase and provider, and the ledger is re-opened inside it; a stale ledger instance refuses to write.
 - **Deterministic gates** (`src/lib/lesson-mix/gates.ts`, held by `lesson-mix.test.ts` and, for the data,
   `src/data/lesson-extras.test.ts`): listening (prompt never restates the audio, four distinct choices,
   one-to-three-word variants, no homophone: English list, French est/et a/à ou/où and silent endings,
@@ -245,5 +245,7 @@ lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N 
   Question ids and counts change, so after the merge the owner reseeds (`bun scripts/seed-curriculum-db.ts`);
   an installed build with the old bundle gets `409 lesson-version-mismatch` on a changed lesson, so cut
   the builds before the reseed or accept the tester window.
+- **Web rollout order.** Appended lessons answer `409 lesson-version-mismatch` between the web deploy and the database reseed, so run the reseed IMMEDIATELY after the merge's deploy. Old native bundles also get 409 on changed lessons until the app updates: cut and distribute the build first.
+- **What the speak gate proves.** The round trip proves WEB grading only (`src/lib/spoken-answer*.ts`); `lesson-mix.test.ts` also checks the web normalisers agree with the edge copies in `supabase/functions/_shared/spoken-answer*.ts` on a sample. A lesson may not pass 50 questions after appending (server cap; `addLessonExtras` throws).
 - **Counts.** No test hard-codes a question count (they assert lesson counts, which do not change); id-parity compares ids with a
   baseline (`src/lib/id-parity.test.ts`): a bulk content PR must check it and say if it adds ids.
