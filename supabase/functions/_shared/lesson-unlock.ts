@@ -26,19 +26,35 @@ export function lessonsInLearningOrder<T extends OrderedLesson>(lessons: readonl
     .map((x) => x.lesson);
 }
 
+/** The learner's place in the course the way the apps already installed show it: the first lesson not done, in the
+ * curriculum's own array order (which interleaves bands), or null when everything is done. */
+export function firstUndoneInCurriculumOrder(
+  lessons: readonly OrderedLesson[],
+  completed: ReadonlySet<string>,
+): string | null {
+  return lessons.find((l) => !completed.has(l.id))?.id ?? null;
+}
+
 /**
- * The last position (in learning order) the learner may start. Everything up to and including it is open:
- *  - the lesson after their FURTHEST completion (so a learner whose completions are out of order, or who had
- *    lessons inserted before them later, can always carry on, and every lesson they skipped is open to replay);
- *  - the first lesson of their CEFR level (a placement result, or the level they picked on Learn, is stored as
- *    cefr_level: it is how placement lets a learner start above A1), and everything before it.
- * `cefrLevel` null/unknown counts as no floor.
+ * The lesson ids this learner may start. `lessons` is the course in CURRICULUM order (the array order). Open are:
+ *  - everything up to and including the lesson after the learner's FURTHEST completion, in learning order (so a
+ *    learner whose completions are out of order, or who had lessons inserted before them later, can always carry on,
+ *    and every lesson they skipped is open to replay);
+ *  - the first lesson of their CEFR level, and everything before it (a placement result, or the level they picked
+ *    on Learn, is stored as cefr_level: it is how placement lets a learner start above A1);
+ *  - the first lesson not done in curriculum order. Web used to offer that one as "where you are", and the apps
+ *    already installed still do (their Continue label and Android's list), so refusing it would break their normal
+ *    screens. Remove this line once those builds are gone.
+ * `cefrLevel` null/unknown counts as no floor. The web screens offer only lessons from the first two bullets, so they
+ * pass `{ curriculumNext: false }` to prove that; the server uses the default.
  */
-export function unlockCeiling(
-  order: readonly OrderedLesson[],
+export function unlockedLessonIds(
+  lessons: readonly OrderedLesson[],
   completed: ReadonlySet<string>,
   cefrLevel: string | null | undefined,
-): number {
+  options: { curriculumNext?: boolean } = {},
+): Set<string> {
+  const order = lessonsInLearningOrder(lessons);
   let furthest = -1;
   order.forEach((l, i) => {
     if (completed.has(l.id)) furthest = i;
@@ -49,18 +65,37 @@ export function unlockCeiling(
     const at = order.findIndex((l) => levelRank(l.level) >= want);
     floor = at === -1 ? 0 : at;
   }
-  return Math.max(furthest + 1, floor);
+  const ceiling = Math.max(furthest + 1, floor);
+  const open = new Set(order.slice(0, ceiling + 1).map((l) => l.id));
+  const rawNext =
+    options.curriculumNext === false ? null : firstUndoneInCurriculumOrder(lessons, completed);
+  if (rawNext) open.add(rawNext);
+  return open;
 }
 
-/** Whether `lessonId` may be started. False for a lesson that is not in `order`. */
+/** Whether `lessonId` may be started. False for a lesson that is not in `lessons`. */
 export function isLessonUnlocked(
-  order: readonly OrderedLesson[],
+  lessons: readonly OrderedLesson[],
   completed: ReadonlySet<string>,
   cefrLevel: string | null | undefined,
   lessonId: string,
 ): boolean {
-  const at = order.findIndex((l) => l.id === lessonId);
-  return at !== -1 && at <= unlockCeiling(order, completed, cefrLevel);
+  return unlockedLessonIds(lessons, completed, cefrLevel).has(lessonId);
+}
+
+/**
+ * The lesson the Learn map offers this learner next: the first not done at their level or above in learning order,
+ * else the first not done anywhere. Always startable. null when every lesson is done.
+ */
+export function nextStartableLessonId(
+  lessons: readonly OrderedLesson[],
+  completed: ReadonlySet<string>,
+  cefrLevel: string | null | undefined,
+): string | null {
+  const order = lessonsInLearningOrder(lessons);
+  const want = cefrLevel ? levelRank(cefrLevel) : 0;
+  const undone = order.filter((l) => !completed.has(l.id));
+  return (undone.find((l) => levelRank(l.level) >= want) ?? undone[0])?.id ?? null;
 }
 
 export type PathState = "done" | "next" | "locked";
