@@ -45,6 +45,9 @@ const api: SupportApi = {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const Route = createFileRoute("/support")({
+  // No server-side render for this page: who is signed in lives in the browser (a server render has no session), so the
+  // identity check in the loader runs there, never on the server. Otherwise every full load looked signed out.
+  ssr: false,
   // `t` is the open ticket, so a link to one ticket (the old /support/<id>) lands on the same screen.
   validateSearch: (search: Record<string, unknown>): { t?: string } =>
     typeof search.t === "string" && UUID.test(search.t) ? { t: search.t } : {},
