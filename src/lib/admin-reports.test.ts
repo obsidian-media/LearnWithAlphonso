@@ -113,6 +113,7 @@ describe("adminListReports", () => {
         teamName: null,
         createdAt: "2026-01-01T00:00:00Z",
         accountDeletedAt: null,
+        repeatCount: 1,
       },
     ]);
   });
@@ -245,6 +246,7 @@ describe("teamIdForReport", () => {
 describe("moderation actions", () => {
   const REPORT = "8a0c7d0e-6a8f-4f41-9d3c-2f0f6a7b1c11";
   const TEAM = "5b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b";
+  const REASON = "Confirmed with the learner";
 
   it("adminListReports keeps an AI report with no reported account", async () => {
     const supabaseAdmin = createSupabaseMock();
@@ -289,7 +291,7 @@ describe("moderation actions", () => {
       .mockReturnValueOnce(chainable({ data: null, error: null, count: 1 }, deletes));
     supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: "Learner-1A2B", error: null }));
     const result = await adminResetDisplayName({
-      data: { reportId: REPORT },
+      data: { reportId: REPORT, reason: REASON },
       context: ctx(supabaseAdmin),
     });
     expect(supabaseAdmin.rpc).toHaveBeenCalledWith("staff_reset_display_name", {
@@ -297,6 +299,7 @@ describe("moderation actions", () => {
       p_role: "support",
       p_target: "u2",
       p_report: REPORT,
+      p_reason: REASON,
     });
     expect(result).toEqual({ ok: true, newName: "Learner-1A2B" });
     expect(deletes.some((c) => c.method === "delete")).toBe(true);
@@ -318,7 +321,10 @@ describe("moderation actions", () => {
     );
     supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: "blocked-content", error: null }));
     await expect(
-      adminRenameTeam({ data: { reportId: REPORT, name: "FuckYou" }, context: ctx(supabaseAdmin) }),
+      adminRenameTeam({
+        data: { reportId: REPORT, name: "FuckYou", reason: REASON },
+        context: ctx(supabaseAdmin),
+      }),
     ).rejects.toThrow("That name isn't allowed. Try another.");
     expect(supabaseAdmin.rpc).toHaveBeenCalledWith("staff_rename_team", {
       p_actor: "admin-1",
@@ -327,6 +333,7 @@ describe("moderation actions", () => {
       p_report: REPORT,
       p_team: TEAM,
       p_name: "FuckYou",
+      p_reason: REASON,
     });
     expect(supabaseAdmin.from).toHaveBeenCalledTimes(1);
   });
@@ -349,7 +356,10 @@ describe("moderation actions", () => {
       .mockReturnValueOnce(chainable({ data: null, error: null, count: 1 }));
     supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: true, error: null }));
     expect(
-      await adminDisbandTeam({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+      await adminDisbandTeam({
+        data: { reportId: REPORT, reason: REASON },
+        context: ctx(supabaseAdmin),
+      }),
     ).toEqual({ ok: true });
     expect(supabaseAdmin.rpc).toHaveBeenCalledWith("staff_disband_team", {
       p_actor: "admin-1",
@@ -357,6 +367,7 @@ describe("moderation actions", () => {
       p_target: "u2",
       p_report: REPORT,
       p_team: TEAM,
+      p_reason: REASON,
     });
     expect(supabaseAdmin.from).toHaveBeenCalledTimes(2);
     expect(supabaseAdmin.from).not.toHaveBeenCalledWith("teams");
@@ -378,7 +389,7 @@ describe("moderation actions", () => {
     );
     supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: false, error: null }));
     await expect(
-      adminDisbandTeam({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+      adminDisbandTeam({ data: { reportId: REPORT, reason: REASON }, context: ctx(supabaseAdmin) }),
     ).rejects.toThrow("That team no longer exists.");
     expect(supabaseAdmin.from).toHaveBeenCalledTimes(1);
   });
@@ -386,13 +397,16 @@ describe("moderation actions", () => {
   it("when the recording function fails the action fails and the report is kept", async () => {
     for (const run of [
       (a: ReturnType<typeof createSupabaseMock>) =>
-        adminDisbandTeam({ data: { reportId: REPORT }, context: ctx(a) }),
+        adminDisbandTeam({ data: { reportId: REPORT, reason: REASON }, context: ctx(a) }),
       (a: ReturnType<typeof createSupabaseMock>) =>
-        adminResetDisplayName({ data: { reportId: REPORT }, context: ctx(a) }),
+        adminResetDisplayName({ data: { reportId: REPORT, reason: REASON }, context: ctx(a) }),
       (a: ReturnType<typeof createSupabaseMock>) =>
-        adminRenameTeam({ data: { reportId: REPORT, name: "Fine name" }, context: ctx(a) }),
+        adminRenameTeam({
+          data: { reportId: REPORT, name: "Fine name", reason: REASON },
+          context: ctx(a),
+        }),
       (a: ReturnType<typeof createSupabaseMock>) =>
-        adminDismissReport({ data: { reportId: REPORT }, context: ctx(a) }),
+        adminDismissReport({ data: { reportId: REPORT, reason: REASON }, context: ctx(a) }),
     ]) {
       const supabaseAdmin = createSupabaseMock();
       supabaseAdmin.from.mockReturnValueOnce(
@@ -424,7 +438,7 @@ describe("moderation actions", () => {
       }),
     );
     await expect(
-      adminDisbandTeam({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+      adminDisbandTeam({ data: { reportId: REPORT, reason: REASON }, context: ctx(supabaseAdmin) }),
     ).rejects.toThrow("This report is not about a team.");
   });
 
@@ -438,13 +452,17 @@ describe("moderation actions", () => {
     );
     supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: true, error: null }));
     expect(
-      await adminDismissReport({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+      await adminDismissReport({
+        data: { reportId: REPORT, reason: REASON },
+        context: ctx(supabaseAdmin),
+      }),
     ).toEqual({ ok: true });
     expect(supabaseAdmin.rpc).toHaveBeenCalledWith("staff_dismiss_report", {
       p_actor: "admin-1",
       p_role: "support",
       p_target: "u2",
       p_report: REPORT,
+      p_reason: REASON,
     });
   });
 
@@ -458,7 +476,10 @@ describe("moderation actions", () => {
     );
     supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: false, error: null }));
     await expect(
-      adminDismissReport({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+      adminDismissReport({
+        data: { reportId: REPORT, reason: REASON },
+        context: ctx(supabaseAdmin),
+      }),
     ).rejects.toThrow("That report no longer exists.");
   });
 
@@ -501,7 +522,10 @@ describe("moderation actions", () => {
       .mockReturnValueOnce(chainable({ data: null, error: { message: "connection lost" } }));
     supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: "Learner-1A2B", error: null }));
     await expect(
-      adminResetDisplayName({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) }),
+      adminResetDisplayName({
+        data: { reportId: REPORT, reason: REASON },
+        context: ctx(supabaseAdmin),
+      }),
     ).rejects.toThrow("Action done, but the report wasn't dismissed. Refresh the list.");
     expect(supabaseAdmin.rpc).toHaveBeenCalledOnce();
   });
@@ -525,7 +549,10 @@ describe("moderation actions", () => {
         )
         .mockReturnValueOnce(chainable({ data: null, error: null, count: 1 }));
       supabaseAdmin.rpc.mockReturnValueOnce(chainable({ data: true, error: null }));
-      await adminDisbandTeam({ data: { reportId: REPORT }, context: ctx(supabaseAdmin) });
+      await adminDisbandTeam({
+        data: { reportId: REPORT, reason: REASON },
+        context: ctx(supabaseAdmin),
+      });
       expect(info).toHaveBeenCalledOnce();
       expect(JSON.parse(info.mock.calls[0][0] as string)).toEqual({
         event: "admin_action",
@@ -537,5 +564,107 @@ describe("moderation actions", () => {
     } finally {
       info.mockRestore();
     }
+  });
+});
+
+describe("report actions need a reason (N-6)", () => {
+  const REPORT = "8a0c7d0e-6a8f-4f41-9d3c-2f0f6a7b1c11";
+  const calls: Array<
+    [string, (a: ReturnType<typeof createSupabaseMock>, reason: unknown) => Promise<unknown>]
+  > = [
+    [
+      "dismiss",
+      (a, reason) => adminDismissReport({ data: { reportId: REPORT, reason }, context: ctx(a) }),
+    ],
+    [
+      "reset name",
+      (a, reason) => adminResetDisplayName({ data: { reportId: REPORT, reason }, context: ctx(a) }),
+    ],
+    [
+      "rename team",
+      (a, reason) =>
+        adminRenameTeam({ data: { reportId: REPORT, name: "Fine", reason }, context: ctx(a) }),
+    ],
+    [
+      "disband team",
+      (a, reason) => adminDisbandTeam({ data: { reportId: REPORT, reason }, context: ctx(a) }),
+    ],
+  ];
+  for (const [name, run] of calls) {
+    for (const bad of [undefined, "", "  ", "ab", "x".repeat(501)]) {
+      it(`${name} refuses a reason of ${JSON.stringify(bad)?.slice(0, 12) ?? "nothing"} before touching the database`, async () => {
+        const supabaseAdmin = createSupabaseMock();
+        await expect(run(supabaseAdmin, bad)).rejects.toThrow();
+        expect(supabaseAdmin.rpc).not.toHaveBeenCalled();
+        expect(supabaseAdmin.from).not.toHaveBeenCalled();
+      });
+    }
+    it(`${name} passes the trimmed reason to the database function`, async () => {
+      const supabaseAdmin = createSupabaseMock();
+      supabaseAdmin.from.mockReturnValueOnce(
+        chainable({
+          data: {
+            id: REPORT,
+            kind: "team_name",
+            reported: "u2",
+            reason: "x",
+            context: { team_id: "5b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b" },
+          },
+          error: null,
+        }),
+      );
+      supabaseAdmin.rpc.mockReturnValueOnce(
+        chainable({ data: null, error: { message: "stop here" } }),
+      );
+      await expect(run(supabaseAdmin, "  because  ")).rejects.toThrow("stop here");
+      expect(supabaseAdmin.rpc.mock.calls[0]![1]).toMatchObject({ p_reason: "because" });
+    });
+  }
+});
+
+describe("repeat count per reported target", () => {
+  const TEAM = "5b1c2d3e-4f50-4617-8a9b-0c1d2e3f4a5b";
+  const row = (id: string, kind: string, reported: string | null, context: unknown = null) => ({
+    id,
+    kind,
+    reporter: "u9",
+    reported,
+    reason: "x",
+    context,
+    created_at: "2026-01-01T00:00:00Z",
+  });
+  it("counts open reports about the same learner or team; an AI report or a gone account has none", async () => {
+    const supabaseAdmin = createSupabaseMock();
+    supabaseAdmin.from.mockImplementation((table: string) => {
+      if (table === "content_reports")
+        return chainable({
+          data: [
+            row("a", "user", "u2"),
+            row("b", "user", "u2"),
+            row("c", "user", "u3"),
+            row("d", "team_name", "u2", { team_id: TEAM }),
+            row("e", "team_name", "u4", { team_id: TEAM }),
+            row("f", "ai_response", null, { message: "m" }),
+            row("g", "user", null),
+          ],
+          error: null,
+        });
+      if (table === "teams") return chainable({ data: [{ id: TEAM, name: "T" }], error: null });
+      return chainable({ data: [], error: null });
+    });
+    const out = await adminListReports({ context: ctx(supabaseAdmin) });
+    expect(
+      Object.fromEntries(
+        out.map((r: { id: string; repeatCount: number | null }) => [r.id, r.repeatCount]),
+      ),
+    ).toEqual({
+      a: 2,
+      b: 2,
+      c: 1,
+      d: 2,
+      e: 2,
+      f: null,
+      g: null,
+    });
   });
 });
