@@ -63,11 +63,11 @@ describe("streak freeze purchase on iOS", () => {
   it("the Learn screen shows the row under the status header, for the active course", () => {
     const header = browser.indexOf("StatusHeaderView(progress:");
     const at = browser.indexOf("StreakFreezeRow(");
-    const next = browser.indexOf("if let next = nextLesson");
+    const next = browser.indexOf("if let climb = climbMap");
     expect(header).toBeGreaterThan(-1);
     expect(at).toBeGreaterThan(header);
     expect(at).toBeLessThan(next);
-    const call = between(browser, "StreakFreezeRow(", "if let next = nextLesson");
+    const call = between(browser, "StreakFreezeRow(", "if let climb = climbMap");
     expect(call).toContain("course: course");
     expect(call).toContain("isOnline: networkMonitor.isConnected");
   });
@@ -98,7 +98,7 @@ describe("streak freeze purchase on iOS", () => {
       "public static func recoveryMessage",
     );
     expect(cached).toContain("xp: p.xp");
-    const wire = between(browser, "onFreezesChanged:", "if let next = nextLesson");
+    const wire = between(browser, "onFreezesChanged:", "if let climb = climbMap");
     expect(wire).toContain("StreakFreezeShop.cachedProgress(freezes: freezes, from: latest)");
     expect(wire).toContain("syncQueueStore.lastKnownProgress()");
     expect(browser).not.toMatch(/updateLastKnownProgress\([^)]*\.xp/);

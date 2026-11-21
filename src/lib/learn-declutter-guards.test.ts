@@ -40,10 +40,14 @@ describe("iOS Learn", () => {
   const browser = read(`${IOS}/LessonBrowserView.swift`);
   const rail = read(`${IOS}/LearnForYouRail.swift`);
   const status = read(`${IOS}/StatusHeaderView.swift`);
-  it("one hero: the stage and the Continue lesson card, no path map, no second Continue", () => {
-    expect(browser).toContain("LearnHeroStage(");
+  it("one map: the climbing map replaces the hero, no path map, one Continue lesson button in its sheet", () => {
+    expect(browser).toContain("LearnClimbMap(");
+    expect(browser).not.toContain("LearnHeroStage(");
     expect(browser).not.toContain("LearnPathMap(");
-    expect(read(`${IOS}/LearnFoldViews.swift`)).toContain('Text("Continue lesson")');
+    const climb = read(`${IOS}/LearnClimbMap.swift`);
+    expect(climb).toContain('"Continue lesson"');
+    expect(climb).toContain('"Start lesson"');
+    expect(climb.match(/Text\(ctaLabel\)/g)?.length).toBe(1);
   });
   it("one rail replaces the Review row and the stacked path, mission and challenge sections", () => {
     expect(browser).toContain("LearnForYouRail(items: forYouItems)");
@@ -148,15 +152,11 @@ describe("Android Learn", () => {
   });
 });
 
-describe("iOS hero is one unit on the scene", () => {
-  it("the current-unit info and the CTA are the stage's content, in the order greeting, lesson, button", () => {
+describe("iOS map is one unit on its own night hill", () => {
+  it("the map gets the greeting, the course-wide Continue lesson and the open-lesson callback", () => {
     const browser = read(`${IOS}/LessonBrowserView.swift`);
     expect(browser).toMatch(
-      /LearnHeroStage\(\s*greeting:[\s\S]*?roomID: roomID\(for: next\.unit\)\s*\) \{\s*(\/\/[^\n]*\s*)?LearnCurrentUnitCard\(/,
-    );
-    const stage = read(`${IOS}/LearnHeroStage.swift`);
-    expect(stage.indexOf('"Alphonso: ')).toBeLessThan(
-      stage.indexOf("content" + String.fromCharCode(10)),
+      /LearnClimbMap\(\s*climb: climb,\s*greeting: StatusHeaderView\.greeting[\s\S]*?continueLessonID: courseContinueLessonID,\s*onOpenLesson:/,
     );
     expect(read(`${IOS}/LearnFoldViews.swift`)).not.toContain("LessonArt.room");
   });
