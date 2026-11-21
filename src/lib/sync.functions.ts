@@ -212,7 +212,9 @@ const lessonIdSchema = z
  * mounts; completeLessonRemote below requires and verifies it.
  */
 export type StartLessonSessionResult =
-  { token: string } | { error: "out-of-hearts"; refillAt: number | null };
+  | { token: string }
+  | { error: "out-of-hearts"; refillAt: number | null }
+  | { error: "lesson-locked" };
 
 export const startLessonSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -222,6 +224,16 @@ export const startLessonSession = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<StartLessonSessionResult> => {
     const found = getCourse(data.course).findLesson(data.lessonId);
     if (!found) throw new Error("Lesson not found");
+    // Unlock order is enforced HERE, from this learner's own completions and stored level (never client input):
+    // "locked" used to be drawn by the Learn screen only. Same rule as the start-lesson-session Edge Function and the
+    // Learn map (lesson-unlock.ts). A failed read lets the learner in (logged).
+    const { lessonStartVerdict } = await import("./lesson-unlock.server");
+    if (
+      (await lessonStartVerdict(context.supabase, context.userId, data.course, data.lessonId)) ===
+      "locked"
+    ) {
+      return { error: "lesson-locked" };
+    }
     // No lesson starts at 0 hearts. This is the same heartsGate as the start-lesson-session edge function, so
     // web and iOS share one rule. Returned as a value rather than thrown, because the page needs refillAt for
     // its countdown. A failed hearts read fails OPEN (an economy rule must not lock a learner out).

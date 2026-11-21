@@ -19,6 +19,7 @@ import { z } from "zod";
 import { suspendedResponseIfBanned } from "../_shared/account-status.ts";
 import { issueLessonSessionToken, type LessonSessionClaim } from "./lesson-session.ts";
 import { heartsGate, heartsGateEnforced, MAX_HEARTS, outOfHeartsBody } from "../_shared/hearts.ts";
+import { isLessonUnlocked, lessonsInLearningOrder } from "../_shared/lesson-unlock.ts";
 import { heartsProCachedAnyAge, heartsUnlimitedOrUnknown } from "../_shared/hearts-pro.ts";
 
 // Was missing "es" -- same gap and same fix as complete-lesson/index.ts,
@@ -48,6 +49,16 @@ export type StartLessonSessionDeps = {
   heartsUnlimited: (admin: SupabaseClient, userId: string) => Promise<boolean | null>;
   /** The last stored Pro answer at any age (null = none). The fallback when heartsUnlimited is null. Absent = none. */
   heartsProCached?: (admin: SupabaseClient, userId: string) => Promise<boolean | null>;
+  /**
+   * Whether this learner may start the lesson (the shared rule, _shared/lesson-unlock.ts, from their own
+   * completions and stored level). "unknown" (a failed read) lets them in: it must never lock anyone out.
+   */
+  lessonStartVerdict: (
+    admin: SupabaseClient,
+    userId: string,
+    course: string,
+    lessonId: string,
+  ) => Promise<"unlocked" | "locked" | "unknown">;
   issueToken: (claim: LessonSessionClaim) => string;
   now: () => number;
 };
@@ -105,6 +116,7 @@ export function liveDeps(): StartLessonSessionDeps {
     heartsGateEnforced: () => heartsGateEnforced(),
     heartsUnlimited: (admin, userId) => heartsUnlimitedOrUnknown(admin, userId),
     heartsProCached: (admin, userId) => heartsProCachedAnyAge(admin, userId),
+    lessonStartVerdict,
     issueToken: issueLessonSessionToken,
     now: () => Date.now(),
   };
@@ -127,6 +139,60 @@ async function lessonExists(
     .maybeSingle();
   if (error) return "read-failed";
   return !!data;
+}
+
+/** Every lesson of a course in learning order (band by band, then the curriculum's own order), read in pages. */
+async function courseLessonOrder(
+  admin: SupabaseClient,
+  course: string,
+): Promise<{ id: string; level: string }[] | null> {
+  type Row = { id: string; sort_order: number; units: { level_id: string; sort_order: number } };
+  const rows: Row[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await admin
+      .from("lessons")
+      .select("id, sort_order, units!inner(level_id, sort_order, course)")
+      .eq("units.course", course)
+      .order("id")
+      .range(from, from + 999);
+    if (error || !data) return null;
+    rows.push(...(data as unknown as Row[]));
+    if (data.length < 1000) break;
+  }
+  rows.sort((a, b) => a.units.sort_order - b.units.sort_order || a.sort_order - b.sort_order);
+  return lessonsInLearningOrder(rows.map((r) => ({ id: r.id, level: r.units.level_id })));
+}
+
+export async function lessonStartVerdict(
+  admin: SupabaseClient,
+  userId: string,
+  course: string,
+  lessonId: string,
+): Promise<"unlocked" | "locked" | "unknown"> {
+  const [order, done, level] = await Promise.all([
+    courseLessonOrder(admin, course),
+    admin
+      .from("lesson_completions")
+      .select("lesson_id")
+      .eq("user_id", userId)
+      .eq("language", course),
+    admin
+      .from("language_progress")
+      .select("cefr_level")
+      .eq("user_id", userId)
+      .eq("language", course)
+      .maybeSingle(),
+  ]);
+  if (!order || done.error || level.error) {
+    console.error(
+      JSON.stringify({ event: "lesson_unlock_read_failed", fn: "start-lesson-session" }),
+    );
+    return "unknown";
+  }
+  const completed = new Set((done.data ?? []).map((r: { lesson_id: string }) => r.lesson_id));
+  return isLessonUnlocked(order, completed, level.data?.cefr_level, lessonId)
+    ? "unlocked"
+    : "locked";
 }
 
 /**
@@ -188,6 +254,12 @@ async function handleRequest(req: Request, deps: StartLessonSessionDeps): Promis
   const exists = await lessonExists(admin, course, lessonId);
   if (exists === "read-failed") return jsonResponse({ error: "Could not load lesson" }, 503);
   if (!exists) return jsonResponse({ error: "Lesson not found" }, 404);
+
+  // Unlock order is enforced here, not only drawn by the Learn screen: no token for a lesson this learner has not
+  // unlocked (409 lesson-locked; the apps treat any other 409 as a failed start).
+  if ((await deps.lessonStartVerdict(admin, userId, course, lessonId)) === "locked") {
+    return jsonResponse({ error: "lesson-locked" }, 409);
+  }
 
   // Alphonso Pro has unlimited hearts. Asked on every start (cached for up to an hour) so lose_heart() also honours
   // it for the whole lesson. null = not established (RevenueCat unreachable): never read as "not Pro".
