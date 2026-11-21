@@ -20,7 +20,7 @@ import type { UsersApi } from "@/components/console/users/usersApi";
 /** The Users screen's calls: the existing server functions, each of which checks its own scope and asks for its reason. */
 const api: UsersApi = {
   search: (q) => staffSearchUsers({ data: { q } }),
-  getUser: (id) => staffGetUser({ data: { id } }),
+  getUser: (id, opts) => staffGetUser({ data: { id, refresh: opts?.refresh === true } }),
   addNote: (id, body) => staffAddNote({ data: { id, body } }),
   grantPro: (id, days, reason) => staffGrantPro({ data: { id, days, reason } }),
   revokePro: (id, reason) => staffRevokePro({ data: { id, reason } }),

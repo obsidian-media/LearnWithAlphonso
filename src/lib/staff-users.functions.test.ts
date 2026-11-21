@@ -582,3 +582,81 @@ describe("staffGetUser: the lessons count and the plan", () => {
     );
   });
 });
+
+describe("staffGetUser refresh (no extra audit row)", () => {
+  const withAuditRows = (
+    admin: ReturnType<typeof adminClient>,
+    rows: unknown[] | null,
+    error: unknown = null,
+  ) => {
+    const before = admin.from.getMockImplementation()!;
+    admin.from.mockImplementation((table: string) =>
+      table === "staff_audit_log" ? chainable({ data: rows, error }) : before(table),
+    );
+  };
+  const call = (admin: ReturnType<typeof adminClient>, refresh?: boolean) =>
+    staffGetUser({
+      data: { id: LEARNER, ...(refresh === undefined ? {} : { refresh }) },
+      context: { supabaseAdmin: admin, userId: SUPPORT },
+    });
+  const views = (admin: ReturnType<typeof adminClient>) =>
+    admin.rpc.mock.calls.filter(
+      ([name, args]) =>
+        name === "staff_record" && (args as { p_action: string }).p_action === "user.view",
+    );
+
+  it("an ordinary open always records, whatever the log says", async () => {
+    const admin = adminClient();
+    withAuditRows(admin, [{ id: 1 }]);
+    await call(admin);
+    await call(admin, false);
+    expect(views(admin)).toHaveLength(2);
+  });
+
+  it("a refresh after this staff member's own recent view records nothing and still returns the facts", async () => {
+    const admin = adminClient();
+    withAuditRows(admin, [{ id: 1 }]);
+    const facts = await call(admin, true);
+    expect(facts.email).toBe("ada@example.com");
+    expect(views(admin)).toHaveLength(0);
+    expect(admin.from).toHaveBeenCalledWith("staff_audit_log");
+  });
+
+  it("a refresh with no earlier view, or an unreadable log, is an ordinary recorded open (it cannot skip the record)", async () => {
+    const none = adminClient();
+    withAuditRows(none, []);
+    await call(none, true);
+    expect(views(none)).toHaveLength(1);
+    const broken = adminClient();
+    withAuditRows(broken, null, { message: "down" });
+    await call(broken, true);
+    expect(views(broken)).toHaveLength(1);
+  });
+
+  it("the lookup is scoped to the caller, the learner and user.view", async () => {
+    const admin = adminClient();
+    const builder = chainable({ data: [{ id: 1 }], error: null });
+    const before = admin.from.getMockImplementation()!;
+    admin.from.mockImplementation((t: string) =>
+      t === "staff_audit_log" ? (builder as never) : before(t),
+    );
+    await call(admin, true);
+    const eqs = builder.calls.filter((c) => c.method === "eq").map((c) => c.args);
+    expect(eqs).toContainEqual(["actor_user_id", SUPPORT]);
+    expect(eqs).toContainEqual(["target_user_id", LEARNER]);
+    expect(eqs).toContainEqual(["action", "user.view"]);
+    expect(builder.calls.some((c) => c.method === "gte")).toBe(true);
+  });
+});
+
+describe("staffGetUser: XP and streak are null, not 0, when there is no row", () => {
+  it("no progress rows gives null streak and null XP", async () => {
+    const admin = adminClient();
+    const facts = await staffGetUser({
+      data: { id: LEARNER },
+      context: { supabaseAdmin: admin, userId: SUPPORT },
+    });
+    expect(facts.streak).toBeNull();
+    expect(facts.xp).toBeNull();
+  });
+});

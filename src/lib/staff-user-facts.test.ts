@@ -183,3 +183,24 @@ describe("buildLearnerFacts", () => {
     expect(JSON.stringify(f)).not.toContain("portal");
   });
 });
+
+describe("buildLearnerFacts: XP and streak", () => {
+  it("no course row means XP is null, not 0; a real 0 stays 0", () => {
+    expect(buildLearnerFacts(raw({ languageProgress: [] }), NOW).xp).toBeNull();
+    expect(
+      buildLearnerFacts(
+        raw({
+          languageProgress: [
+            { language: "fr", cefr_level: "A1", xp: 0, updated_at: "2026-11-01T00:00:00Z" },
+          ],
+        }),
+        NOW,
+      ).xp,
+    ).toBe(0);
+  });
+
+  it("a missing streak is null, a real 0 stays 0", () => {
+    expect(buildLearnerFacts(raw({ streak: null }), NOW).streak).toBeNull();
+    expect(buildLearnerFacts(raw({ streak: 0 }), NOW).streak).toBe(0);
+  });
+});

@@ -18,8 +18,10 @@ export type LearnerFacts = {
   lastActiveAt: string | null;
   course: string | null;
   level: string | null;
-  streak: number;
-  xp: number;
+  /** null when the learner has no progress row or it could not be read (never a 0 for unknown). */
+  streak: number | null;
+  /** The current course's XP; null when there is no course row. */
+  xp: number | null;
   /** Lessons the learner has completed; null when the count could not be read (never a 0 for unknown). */
   lessonsDone: number | null;
   /**
@@ -49,7 +51,7 @@ export type RawLearnerFacts = {
     xp: number;
     updated_at: string;
   }[];
-  streak: number;
+  streak: number | null;
   lastActiveDay: string | null;
   /** null when the count could not be read. */
   lessonsDone?: number | null;
@@ -99,7 +101,7 @@ export function buildLearnerFacts(raw: RawLearnerFacts, now: number = Date.now()
     level: course?.cefr_level ?? null,
     streak: raw.streak,
     lessonsDone: raw.lessonsDone ?? null,
-    xp: course?.xp ?? 0,
+    xp: course ? course.xp : null,
     pro,
     platforms: [...new Set(raw.platforms)].sort(),
     restrictions: raw.restrictions.map((r) => ({
@@ -214,7 +216,7 @@ export async function loadLearnerFacts(
     user: { id: user.id, email: user.email ?? null, createdAt: user.created_at ?? null },
     displayName: names.get(userId) ?? null,
     languageProgress: (ok(lang, "progress") ?? []) as RawLearnerFacts["languageProgress"],
-    streak: (ok(progress, "progress") as { streak: number } | null)?.streak ?? 0,
+    streak: (ok(progress, "progress") as { streak: number } | null)?.streak ?? null,
     lastActiveDay: ((ok(active, "activity") ?? []) as { day: string }[])[0]?.day ?? null,
     lessonsDone: lessons.error ? null : (lessons.count ?? 0),
     platforms: ((ok(tokens, "devices") ?? []) as { platform: string }[]).map((t) => t.platform),

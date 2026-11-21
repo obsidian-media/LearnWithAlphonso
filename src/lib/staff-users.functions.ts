@@ -40,18 +40,42 @@ export const staffSearchUsers = createServerFn({ method: "POST" })
     }));
   });
 
-/** One learner's facts. The view is recorded FIRST: no record, no facts. */
+/** How long an earlier user.view by the same staff member keeps a refresh of the same learner from adding another row. */
+export const VIEW_REFRESH_WINDOW_MS = 30 * 60_000;
+
+/**
+ * One learner's facts. The view is recorded FIRST: no record, no facts. `refresh` re-reads the facts after an action
+ * WITHOUT writing another user.view row, and is honoured only when this same staff member already has a user.view row
+ * for this same learner inside the window; otherwise (or if that cannot be checked) it is an ordinary, recorded open.
+ */
 export const staffGetUser = createServerFn({ method: "POST" })
   .middleware([requireStaff("users.read")])
-  .inputValidator((d: unknown) => z.object({ id: idSchema }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({ id: idSchema, refresh: z.boolean().optional() }).parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { recordUserView } = await import("./staff-audit.server");
     const { loadLearnerFacts } = await import("./staff-user-facts.server");
-    await recordUserView(context.supabaseAdmin, {
-      actor: context.userId,
-      role: context.staffRole,
-      target: data.id,
-    });
+    let alreadyViewed = false;
+    if (data.refresh) {
+      const since = new Date(Date.now() - VIEW_REFRESH_WINDOW_MS).toISOString();
+      const { data: rows, error } = await context.supabaseAdmin
+        .from("staff_audit_log")
+        .select("id")
+        .eq("actor_user_id", context.userId)
+        .eq("target_user_id", data.id)
+        .eq("action", "user.view")
+        .gte("at", since)
+        .limit(1);
+      alreadyViewed = !error && (rows ?? []).length > 0;
+    }
+    if (!alreadyViewed) {
+      await recordUserView(context.supabaseAdmin, {
+        actor: context.userId,
+        role: context.staffRole,
+        target: data.id,
+      });
+    }
     return loadLearnerFacts(context.supabaseAdmin, data.id);
   });
 

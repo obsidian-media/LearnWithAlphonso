@@ -12,8 +12,11 @@ export type UserHit = StaffUserHit;
 export type UsersApi = {
   /** Exact email or id, or the start of a display name. Never a list of everyone. */
   search: (q: string) => Promise<UserHit[]>;
-  /** One learner's facts. Opening a learner is recorded (user.view) before anything comes back. */
-  getUser: (id: string) => Promise<LearnerFacts>;
+  /**
+   * One learner's facts. Opening a learner is recorded (user.view) before anything comes back. `refresh` re-reads the
+   * same open learner after an action without recording another view (the server honours it only after a recorded one).
+   */
+  getUser: (id: string, opts?: { refresh?: boolean }) => Promise<LearnerFacts>;
   addNote: (id: string, body: string) => Promise<unknown>;
   grantPro: (id: string, days: number, reason: string) => Promise<unknown>;
   revokePro: (id: string, reason: string) => Promise<unknown>;

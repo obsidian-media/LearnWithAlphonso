@@ -161,7 +161,7 @@ describe("the learner pane", () => {
     const pane = await screen.findByRole("region", { name: "Learner" });
     await within(pane).findByText("Wrote in about billing");
     expect(api.getUser).toHaveBeenCalledTimes(1);
-    expect(api.getUser).toHaveBeenCalledWith(ADA);
+    expect(api.getUser).toHaveBeenCalledWith(ADA, undefined);
     expect(within(pane).getByText("FR · A2")).toBeTruthy();
     expect(pane.querySelectorAll("[data-figure]").length).toBeGreaterThanOrEqual(4);
     expect(
@@ -173,7 +173,7 @@ describe("the learner pane", () => {
     const api = makeApi();
     show(owner, api, ADA);
     expect(await screen.findByText("Wrote in about billing")).toBeTruthy();
-    expect(api.getUser).toHaveBeenCalledWith(ADA);
+    expect(api.getUser).toHaveBeenCalledWith(ADA, undefined);
   });
 
   it("the plan is shown here only: Free, Pro (gift), Pro (store), Not connected, Could not check", async () => {
@@ -389,9 +389,17 @@ describe("every existing action stays reachable, and each sensitive one goes thr
     await typeReason(user, dialog);
     await user.type(within(dialog).getByLabelText(/Type the learner/), "ada@example.com");
     await user.click(within(dialog).getByRole("button", { name: "Delete account" }));
-    await waitFor(() =>
-      expect(screen.queryByRole("region", { name: "Learner" })?.textContent).toContain("Deleted."),
-    );
+    // the confirmation sits in the search column, not in the learner pane (hidden on a phone once closed)
+    const notice = await waitFor(() => {
+      const el = document.querySelector("[data-search-notice]");
+      if (!el) throw new Error("no notice yet");
+      return el;
+    });
+    expect(notice.textContent).toBe("Deleted.");
+    expect(notice.closest('section[aria-label="Learner"]')).toBeNull();
+    const column = notice.closest('section[aria-label="Find a learner"]');
+    expect(column).not.toBeNull();
+    expect(column!.className).not.toMatch(/\bhidden\b/);
     expect(screen.queryByText("ada@example.com")).toBeNull();
     expect(screen.getByText("ben@example.com")).toBeTruthy();
   });
@@ -436,5 +444,41 @@ describe("role matrix", () => {
     await screen.findByText("Wrote in about billing");
     expect(screen.getByText("No actions are available to you.")).toBeTruthy();
     expect(screen.queryByLabelText("New note")).toBeNull();
+  });
+});
+
+describe("refresh after a change is not a new view", () => {
+  it("the first open is an ordinary (recorded) read; each re-read after a note or action asks for a refresh", async () => {
+    const api = makeApi();
+    const user = show(owner, api, ADA);
+    await screen.findByText("Wrote in about billing");
+    expect(vi.mocked(api.getUser).mock.calls[0]).toEqual([ADA, undefined]);
+    await user.type(screen.getByLabelText("New note"), "Called back");
+    await user.click(screen.getByRole("button", { name: "Add note" }));
+    await waitFor(() => expect(api.getUser).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(api.getUser).mock.calls[1]).toEqual([ADA, { refresh: true }]);
+    await user.click(screen.getByRole("button", { name: "Block" }));
+    const dialog = screen.getByRole("dialog", { name: "Block" });
+    await user.type(within(dialog).getByRole("textbox", { name: /Reason/ }), "spam");
+    await user.click(within(dialog).getByRole("button", { name: "Block" }));
+    await waitFor(() => expect(api.getUser).toHaveBeenCalledTimes(3));
+    expect(vi.mocked(api.getUser).mock.calls[2]).toEqual([ADA, { refresh: true }]);
+  });
+});
+
+describe("XP and streak never read 0 for a missing row", () => {
+  const dd = (label: string) =>
+    [...document.querySelectorAll("dt")].find((n) => n.textContent === label)!.nextElementSibling!;
+
+  it("null XP and streak write the honest state; a real 0 still reads as a figure", async () => {
+    show(owner, makeApi({ getUser: vi.fn(async () => facts({ xp: null, streak: null })) }), ADA);
+    await screen.findByText("Wrote in about billing");
+    expect(dd("Streak").textContent).toBe("Unknown");
+    expect(dd("Total XP").textContent).toBe("Unknown");
+    expect(dd("Streak").querySelector("[data-figure]")).toBeNull();
+    cleanup();
+    show(owner, makeApi({ getUser: vi.fn(async () => facts({ xp: 0, streak: 0 })) }), ADA);
+    await screen.findByText("Wrote in about billing");
+    expect(dd("Streak").querySelector("[data-figure]")).not.toBeNull();
   });
 });

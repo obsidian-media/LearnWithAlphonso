@@ -73,11 +73,11 @@ export function UsersScreen({
     }
   }
 
-  async function open(id: string) {
+  async function open(id: string, refresh = false) {
     const mine = ++detailSeq.current;
     setDetail((d) => (d.status === "ready" && d.facts.id === id ? d : { status: "loading" }));
     try {
-      const facts = await api.getUser(id);
+      const facts = await api.getUser(id, refresh ? { refresh: true } : undefined);
       if (mine === detailSeq.current) setDetail({ status: "ready", facts });
     } catch (e) {
       if (mine === detailSeq.current)
@@ -117,7 +117,8 @@ export function UsersScreen({
         setResults((rows) => rows.filter((r) => r.id !== id));
         onSelect(null);
       } else if (selectedId) {
-        await open(selectedId);
+        // the same open learner, read again after the change: not a new view, so no new audit row
+        await open(selectedId, true);
       }
     } catch (e) {
       setError(messageOf(e, "That did not work."));
@@ -187,6 +188,11 @@ export function UsersScreen({
           {searchError ? (
             <p role="alert" className="text-sm font-semibold text-ds-wrong-ink">
               {searchError}
+            </p>
+          ) : null}
+          {detail.status === "idle" && notice ? (
+            <p role="status" data-search-notice="" className="text-sm font-semibold text-ds-ink">
+              {notice}
             </p>
           ) : null}
           {searched && !searchError && results.length === 0 ? (
@@ -267,11 +273,6 @@ export function UsersScreen({
                 void run(() => api.addNote(detail.facts.id, body), "Note added.")
               }
             />
-          ) : null}
-          {detail.status === "idle" && notice ? (
-            <p role="status" className="px-6 pb-2 text-center text-sm font-semibold text-ds-ink">
-              {notice}
-            </p>
           ) : null}
         </section>
       </div>
