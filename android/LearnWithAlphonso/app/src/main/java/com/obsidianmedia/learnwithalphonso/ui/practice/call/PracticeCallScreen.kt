@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -283,7 +282,11 @@ internal fun PracticeCallScreen(
             }
             HandsFreeSwitch(vm, kit.displayName)
             Box(Modifier.weight(1f, fill = false)) { transcript() }
-            if (sheetFooter != null) Box(Modifier.imePadding()) { sheetFooter() }
+            // No insets of its own: material3 1.4's ModalBottomSheet pads its content with BottomSheetDefaults.windowInsets
+            // (safeDrawing, top and bottom: the navigation bar when the keyboard is closed, the keyboard when it is open)
+            // and consumes them, so the footer clears both. Another imePadding or navigationBarsPadding here would add
+            // nothing at best and a double gap at worst.
+            if (sheetFooter != null) sheetFooter()
         }
     }
 }
