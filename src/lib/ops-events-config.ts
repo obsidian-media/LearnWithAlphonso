@@ -19,6 +19,25 @@ export const OPS_EVENT_THRESHOLDS: Record<string, OpsThreshold> = {
   hearts_settlement_shadow_stale_pro: { amberAt: 10, redAt: 100, alertPerHour: 50 },
 };
 
+/**
+ * What each event is called for a person. The event NAME is the failure itself (a row is written only when that thing
+ * went wrong), so a count of zero is the good state and any count is how many times it happened.
+ */
+export const OPS_EVENT_LABELS: Record<string, string> = {
+  hearts_settlement_failed: "Hearts settlement",
+  lesson_result_finalize_failed: "Lesson result saving",
+  hearts_settlement_shadow_pro_unknown: "Pro check at settlement",
+  hearts_settlement_shadow_stale_pro: "Stale Pro answer at settlement",
+};
+
+/** A readable label for an event: the table above, else the name with spaces ("some_new_event" to "Some new event"). */
+export function opsEventLabel(event: string): string {
+  const known = OPS_EVENT_LABELS[event];
+  if (known) return known;
+  const spaced = event.replace(/_/g, " ").trim();
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
 export const UNLISTED: OpsThreshold = { amberAt: 1, redAt: 10, alertPerHour: 10 };
 
 /** Events always shown on the page, even with no rows (a green line is information). */

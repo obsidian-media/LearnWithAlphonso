@@ -63,7 +63,7 @@ const data = (over: Partial<HomeData> = {}): HomeData => ({
     lessons: 42,
     activeToday: 17,
   },
-  health: { events: [{ event: "hearts_settlement_failed", status: "green" }] },
+  health: { events: [{ event: "hearts_settlement_failed", status: "green", count24h: 0 }] },
   feed: {
     rows: [{ id: 1, at: hoursAgo(1), action: "support.reply", actorName: "Sam" }],
   },
@@ -181,6 +181,30 @@ describe("Home: every tile shows the real value it was given", () => {
     expect(screen.getByText("New", { selector: "span" })).toBeTruthy();
   });
 
+  it("System health says what each event is and what it counted: zero is 'no failures', not a bare green label", () => {
+    render(
+      <HomeScreen
+        me={ownerMe}
+        data={data({
+          health: {
+            events: [
+              { event: "hearts_settlement_failed", status: "green", count24h: 0 },
+              { event: "lesson_result_finalize_failed", status: "red", count24h: 7 },
+              { event: "hearts_settlement_shadow_stale_pro", status: "amber", count24h: 1 },
+            ],
+          },
+        })}
+        api={makeApi()}
+      />,
+    );
+    const text = screen.getByRole("region", { name: "System health" }).textContent!;
+    expect(text).toContain("Hearts settlement: no failures in 24 h");
+    expect(text).toContain("Lesson result saving: 7 failures in 24 h");
+    expect(text).toContain("Stale Pro answer at settlement: 1 failure in 24 h");
+    expect(text).not.toContain("hearts settlement failed");
+    expect(text).not.toContain("lesson result finalize failed");
+  });
+
   it("the feed names who did what, from the action record", () => {
     render(<HomeScreen me={ownerMe} data={data()} api={makeApi()} />);
     expect(screen.getByText("Sam")).toBeTruthy();
@@ -278,14 +302,18 @@ describe("Home: the attention banner reads real signals", () => {
     render(
       <HomeScreen
         me={ownerMe}
-        data={data({ health: { events: [{ event: "hearts_settlement_failed", status: "red" }] } })}
+        data={data({
+          health: { events: [{ event: "hearts_settlement_failed", status: "red", count24h: 7 }] },
+        })}
         api={makeApi()}
       />,
     );
     const banner = within(screen.getByRole("region", { name: "Needs attention" }));
     await waitFor(() => expect(banner.getByText(/oldest ticket has waited 3h/i)).toBeTruthy());
     expect(banner.getByText(/ticket is breaching/)).toBeTruthy();
-    expect(banner.getByText(/hearts settlement failed \(problem\)/)).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Needs attention" }).textContent).toContain(
+      "Hearts settlement: 7 in 24 h (problem)",
+    );
   });
 
   it("is absent when nothing real needs attention", () => {

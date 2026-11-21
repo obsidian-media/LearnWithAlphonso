@@ -23,6 +23,9 @@ export type HomeData = {
   loadedAt: string;
   queue: InboxPage | null | undefined;
   metrics: HomeMetrics | null | undefined;
-  health: { events: { event: string; status: "green" | "amber" | "red" }[] } | null | undefined;
+  health:
+    | { events: { event: string; status: "green" | "amber" | "red"; count24h: number }[] }
+    | null
+    | undefined;
   feed: { rows: FeedRow[] } | null | undefined;
 };

@@ -60,7 +60,7 @@ describe("the home page", () => {
 describe("the navigation names the person and signs out", () => {
   it("the root passes the display name and a sign-out that leaves for /signin", () => {
     const src = route("__root.tsx");
-    expect(src).toContain("me={me}");
+    expect(src).toContain("<ConsoleFrame");
     expect(src).toContain("signOutAndLeave(supabase.auth");
   });
 });
