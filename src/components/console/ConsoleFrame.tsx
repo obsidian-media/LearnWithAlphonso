@@ -31,16 +31,35 @@ export function ConsoleFrame({
     { status: "loading" } | { status: "none" } | ({ status: "ready" } & ConsoleIdentity)
   >({ status: "loading" });
   const asking = useRef(false);
+  const again = useRef(false); // a sign-in arrived while a read was in flight: read once more when it ends
+  const epoch = useRef(0); // bumps on every sign-out: an answer that started before it is dropped
+  const known = useRef(false); // an identity is on screen
   const onSignin = pathname === "/signin" || pathname.startsWith("/signin/");
 
   async function resolve() {
-    if (asking.current) return;
+    if (asking.current) {
+      again.current = true;
+      return;
+    }
     asking.current = true;
     try {
-      const identity = await loadIdentity();
-      setState({ status: "ready", ...identity });
-    } catch {
-      setState({ status: "none" });
+      do {
+        again.current = false;
+        const started = epoch.current;
+        try {
+          const identity = await loadIdentity();
+          if (started === epoch.current) {
+            known.current = true;
+            setState({ status: "ready", ...identity });
+          }
+        } catch (e) {
+          if (started === epoch.current && (!known.current || isAuthError(e))) {
+            known.current = false;
+            setState({ status: "none" });
+          }
+          // Otherwise a refresh failed for a passing reason (network, a busy server): keep the rail the person has.
+        }
+      } while (again.current);
     } finally {
       asking.current = false;
     }
@@ -51,20 +70,26 @@ export function ConsoleFrame({
       if (state.status === "loading") setState({ status: "none" });
       return;
     }
-    if (state.status !== "ready") void resolve();
+    if (!known.current) void resolve();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-ask when the page changes while no one is known
   }, [pathname]);
 
   useEffect(
     () =>
       subscribeAuth((event) => {
-        if (event === "out") setState({ status: "none" });
-        else void resolve();
+        if (event === "out") {
+          epoch.current += 1;
+          again.current = false;
+          known.current = false;
+          setState({ status: "none" });
+        } else void resolve();
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once
     [],
   );
 
+  // The sign-in page is never wrapped in the menu, even for someone who is signed in.
+  if (onSignin) return <>{children}</>;
   if (state.status === "ready") {
     return (
       <ConsoleShell
@@ -77,7 +102,7 @@ export function ConsoleFrame({
       </ConsoleShell>
     );
   }
-  if (state.status === "loading" && !onSignin) {
+  if (state.status === "loading") {
     return (
       <div className="min-h-dvh md:flex md:items-start">
         <aside
@@ -90,6 +115,15 @@ export function ConsoleFrame({
     );
   }
   return <>{children}</>;
+}
+
+/**
+ * A refusal about WHO the person is (no session, not staff, second factor, a missing scope), as opposed to a passing
+ * failure. Only these take the rail away once it is showing.
+ */
+export function isAuthError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : "";
+  return /^(Unauthorized|Forbidden)/.test(message) || message.includes("Only an owner");
 }
 
 /** Which rail item a path belongs to ("home" for /). */

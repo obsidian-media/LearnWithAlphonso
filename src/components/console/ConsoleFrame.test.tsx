@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
-import { ConsoleFrame, currentKey, type ConsoleIdentity } from "./ConsoleFrame";
+import { ConsoleFrame, currentKey, isAuthError, type ConsoleIdentity } from "./ConsoleFrame";
 import { DEFAULT_SCOPES, SCOPES } from "../../lib/staff-scopes";
 
 const owner: ConsoleIdentity = {
@@ -139,5 +139,95 @@ describe("the root puts every page inside the frame", () => {
     ]) {
       expect(readFileSync(`admin/routes/${f}.tsx`, "utf8"), f).not.toContain("ConsoleShell");
     }
+  });
+});
+
+describe("the frame under races and refreshes", () => {
+  const deferred = () => {
+    let resolve: (i: ConsoleIdentity) => void = () => {};
+    let reject: (e: unknown) => void = () => {};
+    const promise = new Promise<ConsoleIdentity>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
+  };
+
+  it("A: a sign-in that arrives while a read is in flight is not dropped (one more read runs after it)", async () => {
+    const first = deferred();
+    const second = deferred();
+    const loadIdentity = vi
+      .fn<() => Promise<ConsoleIdentity>>()
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise);
+    const f = frame({ loadIdentity });
+    expect(loadIdentity).toHaveBeenCalledTimes(1);
+    f.fire("in"); // arrives during the first read
+    f.fire("in"); // and again: still only one extra read
+    expect(loadIdentity).toHaveBeenCalledTimes(1);
+    await act(async () => first.reject(new Error("Unauthorized: Invalid token"))); // the first read saw no session
+    await waitFor(() => expect(loadIdentity).toHaveBeenCalledTimes(2));
+    await act(async () => second.resolve(owner));
+    expect(rail()).toBeTruthy();
+    expect(loadIdentity).toHaveBeenCalledTimes(2);
+  });
+
+  it("B: a late success after a sign-out does not show the rail for a signed-out session", async () => {
+    const late = deferred();
+    const f = frame({ loadIdentity: vi.fn(() => late.promise) });
+    f.fire("out");
+    await act(async () => late.resolve(owner));
+    expect(rail()).toBeNull();
+    expect(screen.getByText("page body")).toBeTruthy();
+    // and a sign-in AFTER the sign-out works again
+    f.props.loadIdentity.mockResolvedValue(owner);
+    f.fire("in");
+    await waitFor(() => expect(rail()).toBeTruthy());
+  });
+
+  it("C: a refresh that fails for a passing reason keeps the rail; an auth refusal or a sign-out drops it", async () => {
+    const loadIdentity = vi
+      .fn<() => Promise<ConsoleIdentity>>()
+      .mockResolvedValueOnce(owner)
+      .mockRejectedValueOnce(new Error("Failed to fetch"))
+      .mockRejectedValueOnce(new Error("Too many requests. Wait a minute and try again."))
+      .mockRejectedValueOnce(new Error("Forbidden: missing scope support.read"));
+    const f = frame({ loadIdentity });
+    await waitFor(() => expect(rail()).toBeTruthy());
+    f.fire("in"); // tab refocus: network blip
+    await waitFor(() => expect(loadIdentity).toHaveBeenCalledTimes(2));
+    expect(rail()).toBeTruthy();
+    f.fire("in"); // a busy server
+    await waitFor(() => expect(loadIdentity).toHaveBeenCalledTimes(3));
+    expect(rail()).toBeTruthy();
+    f.fire("in"); // the person is no longer allowed
+    await waitFor(() => expect(rail()).toBeNull());
+  });
+
+  it("C: isAuthError separates who-you-are refusals from passing failures", () => {
+    for (const m of [
+      "Unauthorized: Invalid token",
+      "Unauthorized: Second factor required",
+      "Forbidden: missing scope audit.read",
+      "Only an owner can do that.",
+    ]) {
+      expect(isAuthError(new Error(m)), m).toBe(true);
+    }
+    for (const m of ["Failed to fetch", "Too many requests", "boom"]) {
+      expect(isAuthError(new Error(m)), m).toBe(false);
+    }
+    expect(isAuthError("Unauthorized")).toBe(false); // not an Error
+  });
+
+  it("D: the sign-in page is never wrapped in the menu, even when someone is signed in", async () => {
+    const f = frame();
+    await waitFor(() => expect(rail()).toBeTruthy());
+    f.view.rerender(
+      <ConsoleFrame {...f.props} pathname="/signin">
+        <p>page body</p>
+      </ConsoleFrame>,
+    );
+    expect(rail()).toBeNull();
+    expect(screen.getByText("page body")).toBeTruthy();
   });
 });
