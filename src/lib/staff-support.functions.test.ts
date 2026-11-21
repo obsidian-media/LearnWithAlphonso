@@ -31,6 +31,8 @@ const {
   staffAssignTicket,
   staffSetTicketStatus,
   staffAddTicketNote,
+  staffHandToOwner,
+  staffClearUrgent,
 } = asTestFns({
   staffListTickets: mod.staffListTickets,
   staffGetTicket: mod.staffGetTicket,
@@ -38,6 +40,8 @@ const {
   staffAssignTicket: mod.staffAssignTicket,
   staffSetTicketStatus: mod.staffSetTicketStatus,
   staffAddTicketNote: mod.staffAddTicketNote,
+  staffHandToOwner: mod.staffHandToOwner,
+  staffClearUrgent: mod.staffClearUrgent,
 });
 
 const OWNER = "00000000-0000-4000-8000-0000000000a1";
@@ -84,6 +88,9 @@ const conversation = (over: Record<string, unknown> = {}) => ({
   created_at: "2026-11-14T10:02:00Z",
   updated_at: "2026-11-14T10:41:00Z",
   solved_at: null,
+  ticket_no: 7,
+  handed_off_at: "2026-11-14T10:02:00Z",
+  urgent: false,
   ...over,
 });
 
@@ -92,9 +99,12 @@ type Tables = {
   messages?: unknown[];
   notes?: unknown[];
   profiles?: unknown[];
+  /** What the learner's own profile row says (the second profiles read, made only with users.read). */
+  learnerProfile?: unknown;
 };
 function adminClient(t: Tables = {}) {
   const order: string[] = [];
+  let profileReads = 0;
   const admin = createSupabaseMock();
   admin.rpc.mockImplementation(async (name: string) => {
     order.push(`rpc:${name}`);
@@ -112,11 +122,17 @@ function adminClient(t: Tables = {}) {
         return chainable({ data: t.messages ?? [], error: null });
       case "support_notes":
         return chainable({ data: t.notes ?? [], error: null });
-      case "profiles":
+      case "profiles": {
+        profileReads += 1;
+        // the staff names come first; a second read is the learner's own row (only with users.read)
         return chainable({
-          data: t.profiles ?? [{ id: SAM, display_name: "Sam" }],
+          data:
+            profileReads === 1 || t.learnerProfile === undefined
+              ? (t.profiles ?? [{ id: SAM, display_name: "Sam" }])
+              : t.learnerProfile,
           error: null,
         });
+      }
       default:
         return chainable({ data: [], error: null });
     }
@@ -154,7 +170,7 @@ describe("staffListTickets", () => {
     const out = await call(staffListTickets, SAM, admin, {
       filter: "waiting",
       assigned: "me",
-      cursor: { at: "2026-11-14T10:00:00Z", id: TICKET },
+      cursor: { at: "2026-11-14T10:00:00Z", id: TICKET, urgent: true },
       actor: OWNER, // forged field: ignored
     });
     expect(admin.rpc).toHaveBeenCalledWith("staff_support_inbox", {
@@ -164,6 +180,7 @@ describe("staffListTickets", () => {
       p_cursor_at: "2026-11-14T10:00:00Z",
       p_cursor_id: TICKET,
       p_limit: 25,
+      p_cursor_urgent: true,
     });
     expect(out).toMatchObject({ total: 1, me: SAM });
   });
@@ -174,7 +191,12 @@ describe("staffListTickets", () => {
     await call(staffListTickets, SAM, admin, {});
     expect(admin.rpc).toHaveBeenCalledWith(
       "staff_support_inbox",
-      expect.objectContaining({ p_filter: "open", p_assigned: "any", p_cursor_at: null }),
+      expect.objectContaining({
+        p_filter: "open",
+        p_assigned: "any",
+        p_cursor_at: null,
+        p_cursor_urgent: false,
+      }),
     );
   });
 
@@ -362,11 +384,71 @@ describe("staffGetTicket", () => {
     expect(asOwner.learnerId).toBe(LEARNER);
   });
 
-  it("never returns an email or the learner's name", async () => {
-    const { admin } = adminClient({ messages });
-    const text = JSON.stringify(await call(staffGetTicket, SAM, admin, { id: TICKET }));
-    expect(text).not.toMatch(/@/);
+  it("never returns an email, and the learner's name only to someone holding users.read (N-11)", async () => {
+    const { admin } = adminClient({ messages, learnerProfile: { display_name: "Ada" } });
+    const plain = (await call(staffGetTicket, SAM, admin, { id: TICKET })) as {
+      displayName: string | null;
+    };
+    expect(plain.displayName).toBeNull();
+    expect(JSON.stringify(plain)).not.toMatch(/@|Ada/);
     expect(admin.from).not.toHaveBeenCalledWith("users");
+    // without users.read the learner's profile row is not even read (only the staff names are)
+    expect(admin.from.mock.calls.filter(([t]) => t === "profiles")).toHaveLength(1);
+
+    const withUsers = adminClient({ messages, learnerProfile: { display_name: "Ada" } });
+    setStaff({ [SAM]: { role: "support", scopes: [...ALL_SUPPORT, "users.read"] } });
+    const named = (await call(staffGetTicket, SAM, withUsers.admin, { id: TICKET })) as {
+      displayName: string | null;
+      learnerId: string | null;
+    };
+    expect(named.displayName).toBe("Ada");
+    expect(named.learnerId).toBe(LEARNER);
+    expect(JSON.stringify(named)).not.toMatch(/@/);
+
+    // a learner who never set a name is null, not an error
+    const unnamed = adminClient({ messages, learnerProfile: { display_name: null } });
+    const none = (await call(staffGetTicket, SAM, unnamed.admin, { id: TICKET })) as {
+      displayName: string | null;
+    };
+    expect(none.displayName).toBeNull();
+  });
+
+  it("carries the ticket number, the urgent flag, and the wait and breach from the database's own rule", async () => {
+    const waitingSince = new Date(Date.now() - 9 * 3_600_000).toISOString();
+    const make = (hours: number | null) => {
+      const c = adminClient({ messages, conversation: conversation({ urgent: true }) });
+      c.admin.rpc.mockImplementation(async (name: string) => {
+        if (name === "support_waiting_since") return { data: waitingSince, error: null };
+        if (name === "staff_get_settings")
+          return { data: hours === null ? {} : { support_breach_hours: hours }, error: null };
+        return { data: name === "staff_record" ? 7 : null, error: null };
+      });
+      return c.admin;
+    };
+    type D = { ticketNo: number; urgent: boolean; waitingSince: string; breaching: boolean };
+    const slow = (await call(staffGetTicket, SAM, make(8), { id: TICKET })) as D;
+    expect(slow).toMatchObject({ ticketNo: 7, urgent: true, waitingSince, breaching: true });
+    // the SAME wait is not breaching once the setting is 12: the setting is read, not a constant
+    expect(((await call(staffGetTicket, SAM, make(12), { id: TICKET })) as D).breaching).toBe(
+      false,
+    );
+    // a missing setting never breaches
+    expect(((await call(staffGetTicket, SAM, make(null), { id: TICKET })) as D).breaching).toBe(
+      false,
+    );
+  });
+
+  it("a solved ticket is never urgent, whatever the flag says", async () => {
+    const { admin } = adminClient({
+      messages,
+      conversation: conversation({
+        status: "solved",
+        urgent: true,
+        solved_at: "2026-11-15T10:00:00Z",
+      }),
+    });
+    const out = (await call(staffGetTicket, SAM, admin, { id: TICKET })) as { urgent: boolean };
+    expect(out.urgent).toBe(false);
   });
 });
 
@@ -432,6 +514,7 @@ describe("the four writes", () => {
       p_role: "support",
       p_conversation: TICKET,
       p_assignee: SAM,
+      p_reason: null, // a self-claim sends no reason
     });
   });
 
@@ -444,10 +527,45 @@ describe("the four writes", () => {
 
     const owner = adminClient();
     owner.admin.rpc.mockResolvedValueOnce({ data: true, error: null });
-    await call(staffAssignTicket, OWNER, owner.admin, { id: TICKET, assignTo: SAM });
+    await call(staffAssignTicket, OWNER, owner.admin, {
+      id: TICKET,
+      assignTo: SAM,
+      reason: "  Sam knows billing ",
+    });
     expect(owner.admin.rpc).toHaveBeenCalledWith(
       "staff_support_assign",
-      expect.objectContaining({ p_actor: OWNER, p_assignee: SAM }),
+      expect.objectContaining({
+        p_actor: OWNER,
+        p_assignee: SAM,
+        p_reason: "Sam knows billing",
+      }),
+    );
+  });
+
+  it("assign: handing it to someone else needs a reason (N-8), checked before the database is called", async () => {
+    for (const reason of [undefined, "", "  ", "ab", "x".repeat(501)]) {
+      const { admin } = adminClient();
+      await expect(
+        call(staffAssignTicket, OWNER, admin, { id: TICKET, assignTo: SAM, reason }),
+      ).rejects.toThrow(mod.REASON_NEEDED_MESSAGE);
+      expect(admin.rpc).not.toHaveBeenCalledWith("staff_support_assign", expect.anything());
+    }
+  });
+
+  it("assign: taking back someone else's ticket (unassign) needs staff.manage and a reason", async () => {
+    const theirs = adminClient({ conversation: conversation({ assigned_to: READER }) });
+    await expect(
+      call(staffAssignTicket, OWNER, theirs.admin, { id: TICKET, assignTo: null }),
+    ).rejects.toThrow(mod.REASON_NEEDED_MESSAGE);
+    theirs.admin.rpc.mockResolvedValueOnce({ data: true, error: null });
+    await call(staffAssignTicket, OWNER, theirs.admin, {
+      id: TICKET,
+      assignTo: null,
+      reason: "Reader is away",
+    });
+    expect(theirs.admin.rpc).toHaveBeenCalledWith(
+      "staff_support_assign",
+      expect.objectContaining({ p_assignee: null, p_reason: "Reader is away" }),
     );
   });
 
@@ -457,7 +575,7 @@ describe("the four writes", () => {
     await call(staffAssignTicket, SAM, mine.admin, { id: TICKET, assignTo: null });
     expect(mine.admin.rpc).toHaveBeenCalledWith(
       "staff_support_assign",
-      expect.objectContaining({ p_assignee: null }),
+      expect.objectContaining({ p_assignee: null, p_reason: null }),
     );
 
     const theirs = adminClient({ conversation: conversation({ assigned_to: READER }) });
@@ -479,29 +597,49 @@ describe("the four writes", () => {
     for (const status of ["open", "waiting_learner", "solved"]) {
       const { admin } = adminClient();
       admin.rpc.mockResolvedValueOnce({ data: true, error: null });
-      await call(staffSetTicketStatus, SAM, admin, { id: TICKET, status });
+      await call(staffSetTicketStatus, SAM, admin, {
+        id: TICKET,
+        status,
+        reason: "  because of the thing ",
+      });
       expect(admin.rpc).toHaveBeenCalledWith(
         "staff_support_set_status",
-        expect.objectContaining({ p_status: status, p_actor: SAM }),
+        expect.objectContaining({
+          p_status: status,
+          p_actor: SAM,
+          p_reason: "because of the thing",
+        }),
       );
     }
     const { admin } = adminClient();
     for (const status of ["new", "ai", "closed"]) {
       await expect(
-        call(staffSetTicketStatus, SAM, admin, { id: TICKET, status }),
+        call(staffSetTicketStatus, SAM, admin, { id: TICKET, status, reason: "because" }),
       ).rejects.toThrow();
     }
     await expect(
-      call(staffSetTicketStatus, READER, admin, { id: TICKET, status: "solved" }),
+      call(staffSetTicketStatus, READER, admin, { id: TICKET, status: "solved", reason: "x y z" }),
     ).rejects.toThrow("Forbidden: missing scope support.reply");
     expect(admin.rpc).not.toHaveBeenCalled();
+  });
+
+  it("status: every change needs a reason of 3 to 500 characters, checked before anything is called", async () => {
+    for (const status of ["open", "waiting_learner", "solved"]) {
+      for (const reason of [undefined, "", "   ", "ab", "x".repeat(501)]) {
+        const { admin } = adminClient();
+        await expect(
+          call(staffSetTicketStatus, SAM, admin, { id: TICKET, status, reason }),
+        ).rejects.toThrow(mod.REASON_NEEDED_MESSAGE);
+        expect(admin.rpc).not.toHaveBeenCalled();
+      }
+    }
   });
 
   it("status: a reopen the database refuses because the learner started a new chat says so", async () => {
     const { admin } = adminClient();
     admin.rpc.mockResolvedValueOnce({ data: null, error: { code: "23505" } });
     await expect(
-      call(staffSetTicketStatus, SAM, admin, { id: TICKET, status: "open" }),
+      call(staffSetTicketStatus, SAM, admin, { id: TICKET, status: "open", reason: "they wrote" }),
     ).rejects.toThrow(/already has an open conversation/);
   });
 
@@ -509,7 +647,7 @@ describe("the four writes", () => {
     const { admin } = adminClient();
     admin.rpc.mockResolvedValueOnce({ data: null, error: { code: "LW001" } });
     await expect(
-      call(staffSetTicketStatus, SAM, admin, { id: TICKET, status: "open" }),
+      call(staffSetTicketStatus, SAM, admin, { id: TICKET, status: "open", reason: "they wrote" }),
     ).rejects.toThrow(mod.TOO_OLD_MESSAGE);
   });
 
@@ -536,7 +674,14 @@ describe("the four writes", () => {
     const calls = [
       () => call(staffReplyTicket, "stranger", admin, { id: TICKET, body: "hi" }),
       () => call(staffAssignTicket, "stranger", admin, { id: TICKET, assignTo: null }),
-      () => call(staffSetTicketStatus, "stranger", admin, { id: TICKET, status: "solved" }),
+      () =>
+        call(staffSetTicketStatus, "stranger", admin, {
+          id: TICKET,
+          status: "solved",
+          reason: "because",
+        }),
+      () => call(staffHandToOwner, "stranger", admin, { id: TICKET, reason: "because" }),
+      () => call(staffClearUrgent, "stranger", admin, { id: TICKET, reason: "because" }),
       () => call(staffAddTicketNote, "stranger", admin, { id: TICKET, body: "n" }),
     ];
     for (const run of calls) await expect(run()).rejects.toThrow(UNAUTHORIZED_MESSAGE);
@@ -559,5 +704,165 @@ describe("the four writes", () => {
     ).resolves.toEqual({
       ok: true,
     });
+  });
+});
+
+describe("Hand to owner and Clear urgent (N-13)", () => {
+  it("hand to owner: passes the signed-in actor and role and the trimmed reason; any support.assign holder may", async () => {
+    const { admin } = adminClient();
+    admin.rpc.mockResolvedValueOnce({ data: true, error: null });
+    await expect(
+      call(staffHandToOwner, SAM, admin, {
+        id: TICKET,
+        reason: "  Chargeback threat ",
+        actor: OWNER,
+      }),
+    ).resolves.toEqual({ ok: true, changed: true });
+    expect(admin.rpc).toHaveBeenCalledWith("staff_support_hand_to_owner", {
+      p_actor: SAM,
+      p_role: "support",
+      p_conversation: TICKET,
+      p_reason: "Chargeback threat",
+    });
+  });
+
+  it("hand to owner: a repeat that changes nothing says so (changed false)", async () => {
+    const { admin } = adminClient();
+    admin.rpc.mockResolvedValueOnce({ data: false, error: null });
+    await expect(
+      call(staffHandToOwner, SAM, admin, { id: TICKET, reason: "again" }),
+    ).resolves.toEqual({ ok: true, changed: false });
+  });
+
+  it("hand to owner: needs support.assign and a reason, and calls nothing otherwise", async () => {
+    setStaff({
+      [SAM]: { role: "support", scopes: ALL_SUPPORT },
+      [READER]: { role: "support", scopes: ["support.read", "support.reply"] },
+    });
+    const { admin } = adminClient();
+    await expect(
+      call(staffHandToOwner, READER, admin, { id: TICKET, reason: "because" }),
+    ).rejects.toThrow("Forbidden: missing scope support.assign");
+    for (const reason of ["", "  ", "ab", "x".repeat(501)]) {
+      await expect(call(staffHandToOwner, SAM, admin, { id: TICKET, reason })).rejects.toThrow(
+        mod.REASON_NEEDED_MESSAGE,
+      );
+    }
+    expect(admin.rpc).not.toHaveBeenCalled();
+  });
+
+  it("hand to owner: translates the database's refusals", async () => {
+    const cases: [string, RegExp][] = [
+      ["LW002", /no active owner/],
+      ["55000", /Reopen it first/],
+      ["P0002", /does not exist/],
+      ["XX000", /Nothing was changed/],
+    ];
+    for (const [code, message] of cases) {
+      const { admin } = adminClient();
+      admin.rpc.mockResolvedValueOnce({ data: null, error: { code } });
+      await expect(
+        call(staffHandToOwner, SAM, admin, { id: TICKET, reason: "because" }),
+      ).rejects.toThrow(message);
+    }
+  });
+
+  it("clear urgent: an owner only (staff.manage and the owner role), with a reason", async () => {
+    const { admin } = adminClient();
+    admin.rpc.mockResolvedValueOnce({ data: true, error: null });
+    await expect(
+      call(staffClearUrgent, OWNER, admin, { id: TICKET, reason: " handled " }),
+    ).resolves.toEqual({ ok: true, changed: true });
+    expect(admin.rpc).toHaveBeenCalledWith("staff_support_clear_urgent", {
+      p_actor: OWNER,
+      p_role: "owner",
+      p_conversation: TICKET,
+      p_reason: "handled",
+    });
+    // a support agent lacks staff.manage; even one who somehow held it is refused for not being an owner
+    const denied = adminClient();
+    await expect(
+      call(staffClearUrgent, SAM, denied.admin, { id: TICKET, reason: "because" }),
+    ).rejects.toThrow("Forbidden: missing scope staff.manage");
+    setStaff({
+      [OWNER]: { role: "owner", scopes: [] },
+      [SAM]: { role: "support", scopes: [...ALL_SUPPORT, "staff.manage"] },
+    });
+    await expect(
+      call(staffClearUrgent, SAM, denied.admin, { id: TICKET, reason: "because" }),
+    ).rejects.toThrow(mod.OWNER_ONLY_MESSAGE);
+    await expect(
+      call(staffClearUrgent, OWNER, denied.admin, { id: TICKET, reason: "ab" }),
+    ).rejects.toThrow(mod.REASON_NEEDED_MESSAGE);
+    expect(denied.admin.rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("taking over a ticket someone else holds (L2)", () => {
+  it("needs a reason, and still only support.assign (no Staff permission) when it is for yourself", async () => {
+    const held = adminClient({ conversation: conversation({ assigned_to: READER }) });
+    for (const reason of [undefined, "", "ab"]) {
+      await expect(
+        call(staffAssignTicket, SAM, held.admin, { id: TICKET, assignTo: SAM, reason }),
+      ).rejects.toThrow(mod.REASON_NEEDED_MESSAGE);
+    }
+    expect(held.admin.rpc).not.toHaveBeenCalledWith("staff_support_assign", expect.anything());
+    held.admin.rpc.mockResolvedValueOnce({ data: true, error: null });
+    await call(staffAssignTicket, SAM, held.admin, {
+      id: TICKET,
+      assignTo: SAM,
+      reason: " covering ",
+    });
+    expect(held.admin.rpc).toHaveBeenCalledWith(
+      "staff_support_assign",
+      expect.objectContaining({ p_assignee: SAM, p_reason: "covering" }),
+    );
+  });
+
+  it("picking up an unassigned ticket sends no reason", async () => {
+    const free = adminClient({ conversation: conversation({ assigned_to: null }) });
+    free.admin.rpc.mockResolvedValueOnce({ data: true, error: null });
+    await call(staffAssignTicket, SAM, free.admin, { id: TICKET, assignTo: SAM });
+    expect(free.admin.rpc).toHaveBeenCalledWith(
+      "staff_support_assign",
+      expect.objectContaining({ p_assignee: SAM, p_reason: null }),
+    );
+  });
+
+  it("hand to owner and clear urgent refuse with an accurate sentence, not 'your own account'", async () => {
+    const { admin } = adminClient();
+    admin.rpc.mockResolvedValueOnce({ data: null, error: { code: "42501" } });
+    await expect(
+      call(staffHandToOwner, SAM, admin, { id: TICKET, reason: "because" }),
+    ).rejects.toThrow(mod.NOT_ALLOWED_MESSAGE);
+    expect(mod.NOT_ALLOWED_MESSAGE).not.toMatch(/own account/);
+    admin.rpc.mockResolvedValueOnce({ data: null, error: { code: "42501" } });
+    await expect(
+      call(staffClearUrgent, OWNER, admin, { id: TICKET, reason: "because" }),
+    ).rejects.toThrow(mod.NOT_ALLOWED_MESSAGE);
+  });
+});
+
+describe("22023 from the assign call (L2 follow-up)", () => {
+  it("a reason refusal (someone took the ticket in between) says a reason is needed; an assignee refusal still says that person cannot work tickets", async () => {
+    const free = adminClient({ conversation: conversation({ assigned_to: null }) });
+    free.admin.rpc.mockResolvedValueOnce({
+      data: null,
+      error: {
+        code: "22023",
+        message:
+          "staff_support_assign: moving a ticket someone else holds, or handing it to someone else, needs a reason of 3 to 500 characters",
+      },
+    });
+    await expect(
+      call(staffAssignTicket, SAM, free.admin, { id: TICKET, assignTo: SAM }),
+    ).rejects.toThrow(mod.TAKE_OVER_NEEDS_REASON_MESSAGE);
+    free.admin.rpc.mockResolvedValueOnce({
+      data: null,
+      error: { code: "22023", message: "staff_support_assign: that person cannot work tickets" },
+    });
+    await expect(
+      call(staffAssignTicket, SAM, free.admin, { id: TICKET, assignTo: SAM }),
+    ).rejects.toThrow("That person cannot work support tickets.");
   });
 });

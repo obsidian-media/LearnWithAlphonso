@@ -37,6 +37,8 @@ export const CONSOLE_FUNCTIONS: Readonly<Record<string, readonly string[]>> = {
     "staffReplyTicket",
     "staffAssignTicket",
     "staffSetTicketStatus",
+    "staffHandToOwner",
+    "staffClearUrgent",
     "staffAddTicketNote",
   ],
 };

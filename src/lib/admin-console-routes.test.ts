@@ -30,27 +30,33 @@ describe("the console navigation points at real screens", () => {
   });
 });
 
-describe("the support inbox screens", () => {
-  it("the inbox and the ticket page are separate pages gated by support.read and read through staff server functions", () => {
-    const list = readFileSync("admin/routes/support.tsx", "utf8");
-    const one = readFileSync("admin/routes/support_.$id.tsx", "utf8");
-    for (const src of [list, one]) {
-      expect(src).toContain('"support.read"');
-      expect(src).not.toMatch(/supabaseAdmin|from\(["']support_/);
-    }
-    expect(list).toContain("staffListTickets");
+describe("the support screen", () => {
+  it("is one page gated by support.read that reaches the data only through staff server functions", () => {
+    const page = readFileSync("admin/routes/support.tsx", "utf8");
+    expect(page).toContain('"support.read"');
+    expect(page).not.toMatch(/supabaseAdmin|from\(["']support_/);
     for (const fn of [
+      "staffListTickets",
       "staffGetTicket",
       "staffReplyTicket",
       "staffAssignTicket",
       "staffSetTicketStatus",
+      "staffHandToOwner",
+      "staffClearUrgent",
       "staffAddTicketNote",
+      "staffSetSetting",
     ]) {
-      expect(one, fn).toContain(fn);
+      expect(page, fn).toContain(fn);
     }
-    // The ticket page must not nest under the inbox (support.tsx has no Outlet).
+  });
+
+  it("the old /support/<id> address only redirects to the screen (it reads nothing itself)", () => {
+    const old = readFileSync("admin/routes/support_.$id.tsx", "utf8");
+    expect(old).toContain("redirect(");
+    expect(old).toContain('to: "/support"');
+    expect(old).not.toMatch(/supabaseAdmin|staff[A-Z]\w+|from\(["']/);
+    // It must not nest under the screen (support.tsx has no Outlet).
     expect(tree).toContain("path: '/support/$id'");
-    expect(tree).toContain("getParentRoute: () => rootRouteImport");
     expect(tree).not.toMatch(
       /SupportIdRoute = SupportIdRouteImport\.update\(\{[^}]*getParentRoute: \(\) => SupportRoute/,
     );
@@ -83,6 +89,7 @@ describe("every screen is gated by a server call, not by the navigation", () => 
     for (const file of routes.filter((f) => f !== "signin.tsx")) {
       const src = readFileSync(`admin/routes/${file}`, "utf8");
       if (file === "__root.tsx") continue; // the root only decides whether to show the navigation
+      if (file === "support_.$id.tsx") continue; // only redirects to /support (tested above)
       expect(src, file).toMatch(/adminWhoAmI|adminList|adminGetTranscript/);
     }
   });

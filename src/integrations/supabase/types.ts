@@ -2531,6 +2531,7 @@ export type Database = {
           ticket_no: number | null;
           topic: string | null;
           updated_at: string;
+          urgent: boolean;
           user_id: string;
         };
         Insert: {
@@ -2547,6 +2548,7 @@ export type Database = {
           ticket_no?: number | null;
           topic?: string | null;
           updated_at?: string;
+          urgent?: boolean;
           user_id: string;
         };
         Update: {
@@ -2563,6 +2565,7 @@ export type Database = {
           ticket_no?: number | null;
           topic?: string | null;
           updated_at?: string;
+          urgent?: boolean;
           user_id?: string;
         };
         Relationships: [];
@@ -4165,7 +4168,21 @@ export type Database = {
         Returns: string;
       };
       staff_support_assign: {
-        Args: { p_actor: string; p_assignee: string; p_conversation: string; p_role: string };
+        Args: {
+          p_actor: string;
+          p_assignee: string;
+          p_conversation: string;
+          p_reason: string;
+          p_role: string;
+        };
+        Returns: boolean;
+      };
+      staff_support_clear_urgent: {
+        Args: { p_actor: string; p_conversation: string; p_reason: string; p_role: string };
+        Returns: boolean;
+      };
+      staff_support_hand_to_owner: {
+        Args: { p_actor: string; p_conversation: string; p_reason: string; p_role: string };
         Returns: boolean;
       };
       staff_support_inbox: {
@@ -4174,6 +4191,7 @@ export type Database = {
           p_assigned: string;
           p_cursor_at: string;
           p_cursor_id: string;
+          p_cursor_urgent?: boolean;
           p_filter: string;
           p_limit: number;
         };
@@ -4184,7 +4202,13 @@ export type Database = {
         Returns: number;
       };
       staff_support_set_status: {
-        Args: { p_actor: string; p_conversation: string; p_role: string; p_status: string };
+        Args: {
+          p_actor: string;
+          p_conversation: string;
+          p_reason: string;
+          p_role: string;
+          p_status: string;
+        };
         Returns: boolean;
       };
       staff_update_member: {
