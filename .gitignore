@@ -167,3 +167,6 @@ android/LearnWithAlphonso/app/google-services.json
 
 # Swift tests on Windows write UserDefaults(suiteName: #file) next to the test source.
 ios/LearnWithAlphonsoKit/Tests/**/*.swift.plist
+
+# Lesson-mix content run state: ledger, jobs, raw replies, verdicts (scripts/lesson-mix/run.ts)
+.lesson-mix/

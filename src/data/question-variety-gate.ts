@@ -166,7 +166,7 @@ export function movableAdverbial(sentence: string): string | null {
 }
 
 /** Words that sound the same or nearly so but are spelled differently, which the spelling rules above miss. */
-const HOMOPHONES: string[][] = [
+export const HOMOPHONES: string[][] = [
   ["their", "there", "they're"],
   ["to", "too", "two"],
   ["for", "four", "fore"],
