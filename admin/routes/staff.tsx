@@ -1,10 +1,17 @@
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { adminWhoAmI } from "@/lib/admin.functions";
 import { staffAddStaff, staffListStaff, staffUpdateStaff } from "@/lib/staff-admin.functions";
 import { classifyStaffError } from "@/lib/staff-route-errors";
 import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
-import { StaffView } from "@/components/staff/StaffView";
+import { StaffScreen } from "@/components/console/staff/StaffScreen";
+import type { StaffApi } from "@/components/console/staff/staffApi";
+
+/** The Staff screen's calls: the existing server functions, each owner-only on the server and each asking for its reason. */
+const api: StaffApi = {
+  list: () => staffListStaff(),
+  add: (input) => staffAddStaff({ data: input }),
+  update: (input) => staffUpdateStaff({ data: input }),
+};
 
 export const Route = createFileRoute("/staff")({
   // No server-side render for this page: who is signed in lives in the browser (a server render has no session), so the
@@ -13,8 +20,10 @@ export const Route = createFileRoute("/staff")({
   loader: async () => {
     try {
       const me = await adminWhoAmI();
-      if (!me.scopes.includes("staff.manage")) return { forbidden: true as const };
-      return { forbidden: false as const, rows: await staffListStaff(), myId: me.userId };
+      // Owner only: a support person who somehow stores the scope is still refused by the server.
+      if (!me.scopes.includes("staff.manage") || me.role !== "owner")
+        return { forbidden: true as const };
+      return { forbidden: false as const, myId: me.userId };
     } catch (e) {
       if (classifyStaffError(e) === "forbidden") return { forbidden: true as const };
       throw redirect({ to: "/signin" });
@@ -25,37 +34,6 @@ export const Route = createFileRoute("/staff")({
 
 function Staff() {
   const data = Route.useLoaderData();
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  if (data.forbidden) {
-    return <ForbiddenCard title="Staff" scope="staff.manage" />;
-  }
-
-  async function run(action: () => Promise<unknown>) {
-    setBusy(true);
-    setError(null);
-    try {
-      await action();
-      await router.invalidate();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "That did not work.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <main className="mx-auto max-w-5xl p-4 sm:p-6">
-      <StaffView
-        rows={data.rows}
-        myId={data.myId}
-        error={error}
-        busy={busy}
-        onAdd={(input) => run(() => staffAddStaff({ data: input }))}
-        onUpdate={(input) => run(() => staffUpdateStaff({ data: input }))}
-      />
-    </main>
-  );
+  if (data.forbidden) return <ForbiddenCard title="Staff" scope="staff.manage" />;
+  return <StaffScreen myId={data.myId} api={api} />;
 }

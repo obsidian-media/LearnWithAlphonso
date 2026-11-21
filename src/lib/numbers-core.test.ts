@@ -12,6 +12,7 @@ import {
   ownTiles,
   parseWindow,
   type GroupKey,
+  type GrowthAggregates,
   type OwnAggregates,
   type Sources,
   type Tile,
@@ -64,11 +65,11 @@ beforeEach(() => {
 });
 
 describe("the window picker", () => {
-  it("accepts exactly 7, 30 and 90", () => {
-    expect([7, 30, 90].map(parseWindow)).toEqual([7, 30, 90]);
+  it("accepts exactly 1 (today, UTC), 7, 30 and 90", () => {
+    expect([1, 7, 30, 90].map(parseWindow)).toEqual([1, 7, 30, 90]);
   });
   it("rejects everything else", () => {
-    for (const bad of [0, 1, 14, 31, 91, 365, -7, NaN, "7", null, undefined, {}]) {
+    for (const bad of [0, 2, 14, 31, 91, 365, -7, NaN, "7", null, undefined, {}]) {
       expect(parseWindow(bad), String(bad)).toBeNull();
     }
   });
@@ -76,11 +77,11 @@ describe("the window picker", () => {
     const { sources: s, calls } = sources();
     await expect(
       collectNumbers({ scopes: ["numbers.read"], windowDays: 14, sources: s, fetchOwn }),
-    ).rejects.toThrow("Choose 7, 30 or 90 days.");
+    ).rejects.toThrow("Choose today, 7, 30 or 90 days.");
     expect(calls).toEqual([]);
   });
   it("passes the chosen window to every source", async () => {
-    for (const w of [7, 30, 90]) {
+    for (const w of [1, 7, 30, 90]) {
       clearNumbersCache();
       const seen: number[] = [];
       const { sources: s } = sources({
@@ -95,7 +96,9 @@ describe("the window picker", () => {
       expect(r.windowDays).toBe(w);
       expect(seen).toEqual([w]);
       const own = r.groups.find((g) => g.key === "own")!;
-      expect(own.tiles.find((t) => t.id === "new_window")!.note).toBe(`last ${w} days`);
+      expect(own.tiles.find((t) => t.id === "new_window")!.note).toBe(
+        w === 1 ? "today (UTC)" : `last ${w} days`,
+      );
     }
   });
 });
@@ -316,8 +319,18 @@ describe("own tiles", () => {
 });
 
 describe("no personal data in any response", () => {
-  const ALLOWED_TILE_KEYS = ["id", "kind", "label", "note", "reason", "rows", "value"];
-  const ALLOWED_GROUP_KEYS = ["key", "source", "state", "tiles", "title"];
+  const ALLOWED_TILE_KEYS = [
+    "id",
+    "kind",
+    "label",
+    "note",
+    "previous",
+    "reason",
+    "rows",
+    "series",
+    "value",
+  ];
+  const ALLOWED_GROUP_KEYS = ["envNames", "key", "source", "state", "tiles", "title"];
   it("every key of the response is a known, non-identifying one", async () => {
     const { sources: s } = sources({
       sentry: async () => [{ ...tile("t"), rows: [{ label: "TypeError", value: 3 }] }],
@@ -330,7 +343,8 @@ describe("no personal data in any response", () => {
     });
     expect(Object.keys(r).sort()).toEqual(["generatedAt", "groups", "windowDays"]);
     for (const g of r.groups) {
-      expect(Object.keys(g).sort()).toEqual(ALLOWED_GROUP_KEYS);
+      for (const k of ["key", "source", "state", "tiles", "title"]) expect(g).toHaveProperty(k);
+      for (const k of Object.keys(g)) expect(ALLOWED_GROUP_KEYS, `${g.key}.${k}`).toContain(k);
       for (const t of g.tiles) {
         for (const k of Object.keys(t))
           expect(ALLOWED_TILE_KEYS, `${g.key}.${t.id}.${k}`).toContain(k);
@@ -338,6 +352,179 @@ describe("no personal data in any response", () => {
       }
     }
     expect(JSON.stringify(r)).not.toMatch(/user_id|email|@|display_name/);
+  });
+  it("the new growth tiles (series, by course, previous) carry no identifier either", async () => {
+    const growth = vi.fn(async () => GROWTH);
+    const { sources: s } = sources({
+      own: async (ctx) => ownTiles(await ctx.own(), ctx.windowDays, await ctx.growth!()),
+    });
+    const r = await collectNumbers({
+      scopes: ["numbers.read"],
+      windowDays: 7,
+      sources: s,
+      fetchOwn,
+      fetchGrowth: growth,
+    });
+    const own = r.groups.find((g) => g.key === "own")!;
+    for (const id of ["by_course", "dau_series", "stories", "perfect", "reactivated"])
+      expect(
+        own.tiles.find((t) => t.id === id),
+        id,
+      ).toBeTruthy();
+    expect(Object.keys(own.tiles.find((t) => t.id === "dau_series")!.series![0]!).sort()).toEqual([
+      "day",
+      "value",
+    ]);
+    expect(JSON.stringify(r)).not.toMatch(/user_id|email|@|display_name|[0-9a-f]{8}-[0-9a-f]{4}-/);
+  });
+});
+
+const GROWTH: GrowthAggregates = {
+  newPrev: 5,
+  activePrev: 10,
+  lessonsPrev: 0,
+  storiesPrev: null,
+  storiesRead: 4,
+  perfectPct: null,
+  byCourse: [{ language: "en", learners: 3 }],
+  dauSeries: [
+    { day: "2026-11-20", active: 2 },
+    { day: "2026-11-21", active: 3 },
+  ],
+  reactivated: 0,
+};
+
+describe("own tiles with the growth read", () => {
+  const byId = (g: GrowthAggregates | null) =>
+    Object.fromEntries(ownTiles(OWN, 7, g).map((t) => [t.id, t]));
+  it("attaches a previous-window value only when it was read, and keeps a real 0", () => {
+    const t = byId(GROWTH);
+    expect(t.new_window!.previous).toBe(5);
+    expect(t.lessons!.previous).toBe(0); // a real 0: the page decides it gives no percent
+    expect(t.stories!.previous).toBeUndefined(); // null = not comparable
+    expect(t.dau!.previous).toBeUndefined();
+  });
+  it("a real 0 stays 0 and a null perfect share is 'no lessons', never 0%", () => {
+    const t = byId(GROWTH);
+    expect(t.reactivated!.value).toBe(0);
+    expect(t.perfect!.value).toBeNull();
+    expect(t.perfect!.reason).toBe("No lessons in this window");
+  });
+  it("builds the chart series from the real days, oldest first, only with 2 or more points", () => {
+    expect(byId(GROWTH).dau_series!.series).toEqual([
+      { day: "2026-11-20", value: 2 },
+      { day: "2026-11-21", value: 3 },
+    ]);
+    const one = byId({ ...GROWTH, dauSeries: [{ day: "2026-11-21", active: 3 }] }).dau_series!;
+    expect(one.series).toBeUndefined();
+    expect(one.reason).toBe("No data yet");
+  });
+  it("lists courses as rows, and says so when nobody finished a lesson", () => {
+    expect(byId(GROWTH).by_course!.rows).toEqual([{ label: "en", value: 3 }]);
+    expect(byId({ ...GROWTH, byCourse: [] }).by_course!.reason).toBe("No lessons in this window");
+  });
+  it("a failed growth read blanks exactly its tiles with 'Could not read' (never a 0); the rest is unchanged", () => {
+    const t = byId(null);
+    for (const id of ["stories", "perfect", "by_course", "dau_series", "reactivated"]) {
+      expect(t[id]!.value, id).toBeNull();
+      expect(t[id]!.reason, id).toBe("Could not read");
+    }
+    expect(t.new_window!.value).toBe(9);
+    expect(t.new_window!.previous).toBeUndefined();
+  });
+});
+
+describe("growth through collectNumbers", () => {
+  it("a failing growth read (or none configured) leaves the own group ok with only its tiles blank", async () => {
+    const { sources: s } = sources({
+      own: async (ctx) => {
+        const [a, g] = await Promise.allSettled([ctx.own(), ctx.growth!()]);
+        if (a.status === "rejected") throw a.reason;
+        return ownTiles(a.value, ctx.windowDays, g.status === "fulfilled" ? g.value : null);
+      },
+    });
+    const r = await collectNumbers({
+      scopes: ["numbers.read"],
+      windowDays: 7,
+      sources: s,
+      fetchOwn,
+      fetchGrowth: async () => {
+        throw new Error("function does not exist");
+      },
+    });
+    const own = r.groups.find((g) => g.key === "own")!;
+    expect(own.state).toBe("ok");
+    expect(own.tiles.find((t) => t.id === "stories")!.reason).toBe("Could not read");
+    expect(own.tiles.find((t) => t.id === "lessons")!.value).toBe(40);
+  });
+  it("the growth read is made once per request, and not at all for a person without numbers.read", async () => {
+    const growth = vi.fn(async () => GROWTH);
+    const { sources: s } = sources({
+      own: async (ctx) => {
+        await ctx.growth!();
+        await ctx.growth!();
+        return [tile("o")];
+      },
+    });
+    await collectNumbers({
+      scopes: ["numbers.read"],
+      windowDays: 7,
+      sources: s,
+      fetchOwn,
+      fetchGrowth: growth,
+    });
+    expect(growth).toHaveBeenCalledTimes(1);
+    clearNumbersCache();
+    growth.mockClear();
+    await expect(
+      collectNumbers({ scopes: [], windowDays: 7, sources: s, fetchOwn, fetchGrowth: growth }),
+    ).rejects.toThrow("Forbidden");
+    expect(growth).not.toHaveBeenCalled();
+  });
+  it("a numbers.revenue-only person never triggers the growth read (their groups do not need it)", async () => {
+    const growth = vi.fn(async () => GROWTH);
+    const { sources: s } = sources();
+    await collectNumbers({
+      scopes: ["numbers.revenue"],
+      windowDays: 7,
+      sources: s,
+      fetchOwn,
+      fetchGrowth: growth,
+    });
+    expect(growth).not.toHaveBeenCalled();
+  });
+  it("a not-connected group carries the NAMES of the missing settings and no value", async () => {
+    const { sources: s } = sources({
+      sentry: async () => {
+        throw new NotConnectedError("Add a Sentry token (owner step)", [
+          "SENTRY_API_TOKEN",
+          "SENTRY_ORG",
+        ]);
+      },
+    });
+    const r = await collectNumbers({
+      scopes: ["numbers.read"],
+      windowDays: 7,
+      sources: s,
+      fetchOwn,
+    });
+    const g = r.groups.find((x) => x.key === "sentry")!;
+    expect(g.envNames).toEqual(["SENTRY_API_TOKEN", "SENTRY_ORG"]);
+    expect(g.tiles.every((t) => t.value === null)).toBe(true);
+  });
+  it("a failing provider (an error, not a missing key) never lists env names", async () => {
+    const { sources: s } = sources({
+      sentry: async () => {
+        throw new Error("HTTP 500");
+      },
+    });
+    const r = await collectNumbers({
+      scopes: ["numbers.read"],
+      windowDays: 7,
+      sources: s,
+      fetchOwn,
+    });
+    expect(r.groups.find((x) => x.key === "sentry")!.envNames).toBeUndefined();
   });
 });
 
