@@ -37,41 +37,47 @@ export function DauChart({ series }: { series: SeriesPoint[] }) {
   const labelEvery = series.length <= 8 ? 1 : Math.ceil(series.length / 6);
   return (
     <div data-chart="dau">
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="none"
-        role="img"
-        aria-label={summary}
-        className="h-32 w-full text-ds-choice"
-      >
-        <line
-          x1={PAD}
-          x2={W - PAD}
-          y1={H - PAD}
-          y2={H - PAD}
-          stroke="currentColor"
-          strokeOpacity={0.25}
-        />
-        <polygon points={area} fill="currentColor" fillOpacity={0.12} />
-        <polyline
-          points={points.join(" ")}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-        />
-        <circle
-          cx={x(series.length - 1)}
-          cy={y(lastPoint.value)}
-          r={4}
-          fill={lastPoint.day === today ? "none" : "currentColor"}
-          stroke="currentColor"
-          strokeWidth={2}
+      <div className="relative text-ds-choice">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label={summary}
+          className="h-32 w-full"
+        >
+          <line
+            x1={PAD}
+            x2={W - PAD}
+            y1={H - PAD}
+            y2={H - PAD}
+            stroke="currentColor"
+            strokeOpacity={0.25}
+          />
+          <polygon points={area} fill="currentColor" fillOpacity={0.12} />
+          <polyline
+            points={points.join(" ")}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        {/* The end dot is HTML, placed by percentage, because a circle inside this stretched SVG becomes an ellipse. */}
+        <span
+          aria-hidden="true"
+          data-end-dot=""
           data-partial={lastPoint.day === today ? "" : undefined}
+          className={`absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-current ${
+            lastPoint.day === today ? "bg-ds-card" : "bg-current"
+          }`}
+          style={{
+            left: `${(x(series.length - 1) / W) * 100}%`,
+            top: `${(y(lastPoint.value) / H) * 100}%`,
+          }}
         />
-      </svg>
+      </div>
       <div
         aria-hidden="true"
         className="mt-1 flex justify-between text-xs font-semibold text-ds-ink-faint"

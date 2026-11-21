@@ -11,8 +11,6 @@ import { Figure } from "../Figure";
 import { DauChart } from "./DauChart";
 import type { NumbersApi } from "./numbersApi";
 
-export type NumbersMe = { scopes: readonly string[] };
-
 const WINDOW_WORD: Record<WindowDays, string> = {
   1: "Today",
   7: "7 days",
@@ -297,7 +295,7 @@ function Skeleton() {
  * connected" and names the setting to add; a read that failed says "Could not load"; nothing is ever shown as 0 unless
  * the source answered 0. Changes are against the previous equal window and appear only when both numbers are real.
  */
-export function NumbersScreen({ api }: { me: NumbersMe; api: NumbersApi }) {
+export function NumbersScreen({ api }: { api: NumbersApi }) {
   const [windowDays, setWindowDays] = useState<WindowDays>(7);
   const [data, setData] = useState<NumbersResponse | null>(null);
   const [busy, setBusy] = useState(false);

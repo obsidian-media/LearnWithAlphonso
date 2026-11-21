@@ -75,6 +75,8 @@ BEGIN
     'avgStreak', (SELECT round(avg(streak)::numeric, 1) FROM public.user_progress
                     WHERE streak > 0 AND last_active_date >= today - 1),
     'retention', ret,
+    -- Every report is open: content_reports has no status column and every handling path (dismiss, reset name, rename
+    -- or disband team) deletes the row via resolveReport/staff_dismiss_report, so a handled report cannot remain.
     'openReports', (SELECT count(*) FROM public.content_reports),
     'openTickets', (SELECT count(*) FROM public.support_conversations WHERE status <> 'solved'),
     'aiByKind', ai

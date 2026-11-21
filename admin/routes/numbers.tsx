@@ -20,7 +20,7 @@ export const Route = createFileRoute("/numbers")({
       const me = await adminWhoAmI();
       const allowed = me.scopes.includes("numbers.read") || me.scopes.includes("numbers.revenue");
       if (!allowed) return { forbidden: true as const };
-      return { forbidden: false as const, me: { scopes: me.scopes } };
+      return { forbidden: false as const };
     } catch (e) {
       if (classifyStaffError(e) === "forbidden") return { forbidden: true as const };
       throw redirect({ to: "/signin" });
@@ -32,5 +32,5 @@ export const Route = createFileRoute("/numbers")({
 function Numbers() {
   const data = Route.useLoaderData();
   if (data.forbidden) return <ForbiddenCard title="Numbers" scope="numbers.read" />;
-  return <NumbersScreen me={data.me} api={api} />;
+  return <NumbersScreen api={api} />;
 }

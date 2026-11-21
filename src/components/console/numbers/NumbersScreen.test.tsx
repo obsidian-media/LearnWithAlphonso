@@ -88,10 +88,10 @@ const ownerView = (): NumbersGroup[] => [
   group("googleplay", { envNames: ["GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"] }),
 ];
 
-function show(res: NumbersResponse | (() => Promise<NumbersResponse>), scopes = [...SCOPES]) {
+function show(res: NumbersResponse | (() => Promise<NumbersResponse>)) {
   const get = vi.fn<NumbersApi["get"]>(async () => (typeof res === "function" ? res() : res));
   const user = userEvent.setup();
-  const out = render(<NumbersScreen me={{ scopes }} api={{ get }} />);
+  const out = render(<NumbersScreen api={{ get }} />);
   return { get, user, ...out };
 }
 const tile = (id: string) => document.querySelector(`[data-tile="${id}"]`) as HTMLElement;
@@ -186,6 +186,13 @@ describe("changes against the previous window are real or absent", () => {
         .closest("[data-tile]") as HTMLElement;
       expect(per.querySelector("[data-delta]")).toBeNull();
     }
+  });
+  it("draws the end dot as an unstretched HTML marker, not a circle inside the stretched SVG", async () => {
+    show(response(ownerView()));
+    await screen.findByRole("img", { name: /Active learners per day/ });
+    expect(document.querySelector('[data-chart="dau"] svg circle')).toBeNull();
+    const dot = document.querySelector("[data-end-dot]") as HTMLElement;
+    expect(dot.style.left).toMatch(/^[0-9.]+%$/);
   });
   it("marks today's partial UTC day in the chart and the table", async () => {
     const today = new Date().toISOString().slice(0, 10);
