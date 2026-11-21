@@ -52,4 +52,24 @@ class MainDispatcherRuleTest {
         assertTrue("new work runs inline while the gate is open", ran)
         rule.finished(desc)
     }
+
+    /** The flake behind HandsFreeWiringTest: a previous test's opener fetch stuck holding the shared cache's lock. */
+    @Test
+    fun `an opener fetch a previous test left holding the shared cache does not hang the next test`() = runBlocking {
+        val cache = com.obsidianmedia.learnwithalphonso.ui.practice.OpenerSpeechCache.shared
+        val stuck = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val holding = CompletableDeferred<Unit>()
+        // The dropped resume: a fetch that never comes back, inside the cache's lock.
+        stuck.launch { cache.audio("Hi there", null, "en") { holding.complete(Unit); CompletableDeferred<ByteArray>().await() } }
+        holding.await()
+        val rule = MainDispatcherRule()
+        rule.starting(desc)
+        try {
+            val bytes = kotlinx.coroutines.withTimeout(5_000) { cache.audio("Hello", null, "en") { byteArrayOf(1) } }
+            assertEquals(1, bytes.size)
+        } finally {
+            rule.finished(desc)
+            stuck.coroutineContext[kotlinx.coroutines.Job]?.cancel()
+        }
+    }
 }
