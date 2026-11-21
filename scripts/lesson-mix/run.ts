@@ -21,6 +21,7 @@
  * US$60 ledger (src/lib/lesson-mix/ledger.ts) before it is sent and refused when it would pass the cap.
  *
  * Keys: ANTHROPIC_API_KEY / MISTRAL_API_KEY, or ANTHROPIC_API_KEY_FILE / MISTRAL_API_KEY_FILE (a path).
+ * Second opinion via OpenRouter (BYOK): LESSON_MIX_SECOND_ROUTE=openrouter + OPENROUTER_API_KEY_FILE.
  * Read into memory at the point of use; never printed, logged or written.
  */
 import fs from "node:fs";
@@ -38,6 +39,7 @@ import {
   splitBatches,
   type BatchRequest,
 } from "../../src/lib/content-review/anthropic-batch";
+import { resolveSecondRoute } from "../../src/lib/lesson-mix/second-route";
 import { sendMistralChat, buildMistralRequest } from "../../src/lib/content-review/mistral-batch";
 import {
   judgeContext,
@@ -105,7 +107,8 @@ const flag = (name: string) => argv.includes(`--${name}`);
 const STATE = path.resolve(arg("state", ".lesson-mix"));
 const SEED = "20261121";
 /** Mistral Large 4 is 403 on the owner's account (2026-11-21); override with LESSON_MIX_MISTRAL_MODEL. */
-const MISTRAL_MODEL = process.env.LESSON_MIX_MISTRAL_MODEL ?? MODEL.mistral;
+const SECOND = resolveSecondRoute(process.env, MODEL.mistral);
+const MISTRAL_MODEL = SECOND.model;
 const COURSES: Course[] = ["en", "fr", "es"];
 
 const readJson = <T>(file: string, fallback: T): T =>
@@ -119,7 +122,7 @@ const openLedger = () => openLessonMixLedger(STATE);
 // ---- Keys ---------------------------------------------------------------------------------------------
 
 function loadKey(provider: "anthropic" | "mistral"): string {
-  const env = provider === "anthropic" ? "ANTHROPIC_API_KEY" : "MISTRAL_API_KEY";
+  const env = provider === "anthropic" ? "ANTHROPIC_API_KEY" : SECOND.keyEnv;
   const direct = process.env[env]?.trim();
   if (direct) return direct;
   const file = process.env[`${env}_FILE`];
@@ -741,7 +744,13 @@ async function second() {
       let res: Awaited<ReturnType<typeof sendMistralChat>>;
       for (let attempt = 1; ; attempt++) {
         try {
-          res = await sendMistralChat(fetch, key, MISTRAL_MODEL, req.body);
+          res = await sendMistralChat(
+            fetch,
+            key,
+            MISTRAL_MODEL,
+            SECOND.shapeBody(req.body),
+            SECOND.url,
+          );
           break;
         } catch (e) {
           const msg = (e as Error).message;

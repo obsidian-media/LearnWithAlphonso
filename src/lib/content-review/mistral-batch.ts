@@ -156,8 +156,9 @@ export async function sendMistralChat(
   key: string,
   model: string,
   body: Record<string, unknown>,
+  url = `${MISTRAL_API}/chat/completions`,
 ): Promise<{ text: string; usage: MistralLine["usage"] }> {
-  const res = await f(`${MISTRAL_API}/chat/completions`, {
+  const res = await f(url, {
     method: "POST",
     headers: headers(key),
     body: JSON.stringify({ model, ...body }),
