@@ -36,6 +36,23 @@ describe("Cookies route", () => {
   });
 });
 
+describe("the in-app account settings are linked, not only described", () => {
+  it("support's Your data section links to /profile", () => {
+    const Support = SupportRoute.options.component!;
+    render(<Support />);
+    expect(screen.getByRole("link", { name: "open your Profile" })).toHaveAttribute(
+      "href",
+      "/profile",
+    );
+  });
+
+  it("terms' Your data section links to /profile", () => {
+    const Terms = TermsRoute.options.component!;
+    render(<Terms />);
+    expect(screen.getByRole("link", { name: "Profile" })).toHaveAttribute("href", "/profile");
+  });
+});
+
 describe("Terms route", () => {
   it("renders the terms with a contact address", () => {
     const Terms = TermsRoute.options.component!;

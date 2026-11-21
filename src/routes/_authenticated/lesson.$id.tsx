@@ -24,6 +24,7 @@ import { isLeaguePromotion } from "../../lib/league-engagement";
 import { lessonExpression, roomLayout, roomSrcForUnit } from "../../lib/lesson-stage";
 import { answerXpChip, maxLessonXp } from "../../lib/lesson-xp";
 import { ActiveTimer, estimateLessonMinutes } from "../../lib/lesson-time";
+import { practiceKinds } from "../../lib/lesson-intro";
 import { correctAnswerText, verdictTitle } from "../../lib/answer-verdict";
 import { playSfx, playSfxCues, SFX_DURATION_MS } from "../../lib/sfx";
 import { deckButtonTitle } from "../../lib/vocab-deck";
@@ -657,6 +658,7 @@ function LessonPage() {
           words={vocab.length}
           wordSample={vocab.slice(0, 3).map((v) => v.term.replace(/[.!?…]+$/, ""))}
           questions={total}
+          kinds={practiceKinds(questions.map((q) => q.type))}
           minutes={estimateLessonMinutes(questions, vocab.length)}
           maxXp={maxLessonXp(total)}
           roomSrc={roomSrc}
@@ -1121,6 +1123,7 @@ function OverviewScreen({
   words,
   wordSample,
   questions,
+  kinds,
   minutes,
   maxXp,
   roomSrc,
@@ -1134,6 +1137,8 @@ function OverviewScreen({
   words: number;
   wordSample: string[];
   questions: number;
+  /** The question types this lesson really has, as a phrase ("pick, listen"). */
+  kinds: string;
   minutes: number;
   maxXp: number;
   roomSrc: string;
@@ -1158,7 +1163,7 @@ function OverviewScreen({
       key: "practice",
       icon: "check" as const,
       label: "Practice",
-      detail: `${questions} question${questions === 1 ? "" : "s"}: pick, listen, say it back`,
+      detail: `${questions} question${questions === 1 ? "" : "s"}: ${kinds}`,
     },
     {
       key: "review",

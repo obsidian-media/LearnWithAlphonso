@@ -601,7 +601,7 @@ describe("Lesson page", () => {
 
     expect(await screen.findByText("Saying Hello")).toBeInTheDocument();
     expect(screen.getAllByText("8 new words").length).toBeGreaterThan(0);
-    expect(screen.getByText("8 questions: pick, listen, say it back")).toBeInTheDocument();
+    expect(screen.getByText("8 questions: pick, fill in")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Start lesson" }));
     expect(await screen.findByText("Word 1 of 8")).toBeInTheDocument();

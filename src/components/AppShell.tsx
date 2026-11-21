@@ -172,7 +172,10 @@ function profileTabActive(pathname: string): boolean {
 export function BottomTabs() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="sticky bottom-0 z-30 border-t border-ds-line bg-ds-card/95 backdrop-blur-md">
+    <nav
+      aria-label="Main"
+      className="sticky bottom-0 z-30 border-t border-ds-line bg-ds-card/95 backdrop-blur-md"
+    >
       <div className="mx-auto flex max-w-[430px] items-stretch px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-1">
         <TabItem to="/learn" label="Learn" active={pathname === "/learn"}>
           <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden="true">

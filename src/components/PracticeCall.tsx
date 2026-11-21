@@ -47,6 +47,8 @@ export type CallCaption = {
 type Props = {
   /** The scenario's name, shown under "Alphonso". */
   title: string;
+  /** A visually hidden page heading, for a screen that is the whole page and has no other h1 (Hector's). */
+  heading?: string;
   /** Who is on the call: the name in the call bar, his art and his default room. Alphonso unless told otherwise. */
   kit?: CharacterKit;
   /** The scenario whose room is shown; null (a campaign, free talk) gets the character's default room. */
@@ -108,6 +110,7 @@ const formatClock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padSt
 export function PracticeCall(props: Props) {
   const {
     title,
+    heading,
     kit = ALPHONSO_KIT,
     scenarioId,
     dark: darkProp,
@@ -234,6 +237,7 @@ export function PracticeCall(props: Props) {
         color: "var(--c-on-hero)",
       }}
     >
+      {heading && <h1 className="sr-only">{heading}</h1>}
       {art.dimInDark && dark && (
         <div
           aria-hidden="true"
@@ -587,7 +591,7 @@ export function PracticeCall(props: Props) {
       <ul className="sr-only" aria-label="Conversation so far" hidden={sheetOpen}>
         {messages.map((m, i) => (
           <li key={i}>
-            {m.role === "assistant" ? "Alphonso: " : "You: "}
+            {m.role === "assistant" ? `${kit.displayName}: ` : "You: "}
             {m.content}
           </li>
         ))}

@@ -169,6 +169,7 @@ describe("web Hector keeps the tab bar, as on iOS and Android", () => {
     await screen.findByRole("log");
     const nav = tabBar();
     expect(nav).not.toBeNull();
+    expect(nav).toHaveAccessibleName("Main");
     expect(within(nav!).getByRole("link", { name: "Hector" })).toBeInTheDocument();
     expect(within(nav!).getByRole("link", { name: "Learn" })).toHaveAttribute("href", "/learn");
   });
@@ -517,7 +518,8 @@ describe("web Hector as a full-screen call (the setting on, the default)", () =>
 
   it("is a call with Hector in his own kit, hidden from assistive technology", async () => {
     await renderCall();
-    expect(screen.getByText("Hector")).toBeInTheDocument();
+    // The call bar's name, and the hidden page heading.
+    expect(screen.getAllByText("Hector")).toHaveLength(2);
     const stage = screen.getByTestId("alphonso-stage");
     expect(stage).toHaveAttribute("aria-hidden", "true");
     for (const img of stage.querySelectorAll("img"))
@@ -543,6 +545,30 @@ describe("web Hector as a full-screen call (the setting on, the default)", () =>
     // The call itself shows Hector's reply as the live caption.
     await userEvent.click(within(sheet).getByRole("button", { name: "Back to call" }));
     expect(screen.getByTestId("call-caption")).toHaveTextContent("Comment ça va");
+  });
+
+  it("has one page heading, and every button on it has a name", async () => {
+    await renderCall();
+    expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual([
+      "Hector",
+    ]);
+    for (const b of screen.getAllByRole("button")) {
+      expect(b.getAttribute("aria-label") || b.textContent?.trim()).toBeTruthy();
+    }
+  });
+
+  it("the transcript for assistive technology calls Hector's turns Hector, never Alphonso", async () => {
+    await renderCall();
+    await userEvent.click(screen.getByRole("button", { name: "Show the conversation" }));
+    const sheet = await screen.findByRole("dialog", { name: "Conversation" });
+    await userEvent.type(
+      within(sheet).getByRole("textbox", { name: "Message Hector" }),
+      "Salut{Enter}",
+    );
+    await within(sheet).findByText(/Comment ça va/);
+    const list = document.querySelector('ul[aria-label="Conversation so far"]')!;
+    expect(list.textContent).toContain("Hector: Bonjour");
+    expect(list.textContent).not.toContain("Alphonso");
   });
 
   it("Hector does not react to right or wrong: his endpoint returns no verdict", async () => {

@@ -183,6 +183,17 @@ test("a learner signs in, names themselves, finishes a lesson and it is saved", 
   await page.keyboard.press("Escape");
   await expect(sheet).toBeHidden();
 
+  // 200% zoom on that phone is a 160 CSS px viewport (WCAG 1.4.10): none of the four tab pages may scroll sideways.
+  await page.setViewportSize({ width: 160, height: 700 });
+  for (const route of ["/learn", "/listen", "/converse", "/profile"]) {
+    await page.goto(route);
+    await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible({ timeout: 30_000 });
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow, `${route} scrolls sideways at 160px`).toBeLessThanOrEqual(0);
+  }
+
   // Exercise the real PostgreSQL RPC from two simultaneous PostgREST requests.
   // Both carry the same state versions; row locking must let one apply and force
   // the other to observe a conflict rather than lose a progress update.

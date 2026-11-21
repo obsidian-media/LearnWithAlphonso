@@ -653,6 +653,7 @@ function HectorConversation({
         <PracticeCall
           kit={HECTOR_KIT}
           title={PAYWALL_COPY.mascotMessage}
+          heading="Hector"
           scenarioId="hector"
           avatar={{
             phase: avatarPhase,

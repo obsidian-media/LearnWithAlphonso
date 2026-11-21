@@ -89,6 +89,10 @@ function Support() {
           ]}
         />
         <p>
+          On the website, <a href="/profile">open your Profile</a> and go to Settings (you need to
+          be signed in).
+        </p>
+        <p>
           What we collect and why is set out in full in our <a href="/privacy">Privacy Policy</a>.
         </p>
       </Section>

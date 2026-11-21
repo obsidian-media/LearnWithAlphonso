@@ -3,6 +3,7 @@ import { Modal } from "../Modal";
 import { DsIcon } from "../ds/DsIcon";
 import { edgeButtonClass } from "../lesson/LessonParts";
 import { PracticeStars } from "./PracticeStars";
+import { isOnline } from "@/lib/is-online";
 import { starRuleLines } from "@/lib/practice-stars";
 
 export type CallMode = "call" | "chat";
@@ -41,6 +42,15 @@ export function PreCallSheet({
 }) {
   const titleId = useId();
   const [mode, setMode] = useState<CallMode>(initialMode);
+  const [offline, setOffline] = useState(false);
+  const [checking, setChecking] = useState(false);
+  async function start() {
+    setChecking(true);
+    const ok = await isOnline();
+    setChecking(false);
+    setOffline(!ok);
+    if (ok) onStart(mode);
+  }
   const name = target.persona.split(",")[0].trim();
   return (
     <Modal
@@ -141,9 +151,24 @@ export function PreCallSheet({
           ))}
         </div>
 
-        <button type="button" onClick={() => onStart(mode)} className={edgeButtonClass("primary")}>
+        {offline && (
+          <div
+            role="alert"
+            data-offline=""
+            className="grid gap-1 rounded-[14px] bg-ds-wrong-tint px-3 py-2.5 ds-type-footnote text-ds-wrong-ink"
+          >
+            <p className="font-extrabold">You&rsquo;re offline</p>
+            <p>Calls and chats need a connection. Check your network, then try again.</p>
+          </div>
+        )}
+        <button
+          type="button"
+          disabled={checking}
+          onClick={() => void start()}
+          className={edgeButtonClass("primary")}
+        >
           <DsIcon name={mode === "call" ? "mic" : "words"} className="size-5" />
-          {mode === "call" ? "Start the call" : "Start the chat"}
+          {offline ? "Retry" : mode === "call" ? "Start the call" : "Start the chat"}
         </button>
       </div>
     </Modal>

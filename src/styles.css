@@ -370,3 +370,36 @@
     animation: none;
   }
 }
+
+/*
+ * 200% text zoom on a 320px phone is a 160 CSS px viewport (WCAG 1.4.10 Reflow). Below 220px rows wrap, flex and grid
+ * items may shrink below their content, grids drop to one column, and long words break, so nothing pushes the page
+ * sideways. Carousels keep scrolling inside their own overflow-x container. Unlayered on purpose: it beats utilities.
+ */
+@media (max-width: 220px) {
+  :is(.flex, .grid) > * {
+    min-width: 0;
+  }
+  .flex:not(.flex-col):not(.overflow-x-auto):not(nav *) {
+    flex-wrap: wrap;
+  }
+  .grid[class*="grid-cols-"]:not([role="tablist"]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .inline-flex {
+    max-width: 100%;
+  }
+  h1,
+  h2,
+  h3,
+  p,
+  button,
+  a {
+    overflow-wrap: anywhere;
+  }
+  nav a > span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
