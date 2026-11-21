@@ -2,6 +2,7 @@ import { createRouter } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { routeTree } from "./routeTree.gen";
+import { ConsolePending } from "../src/components/console/ConsolePending";
 import { readCspNonce } from "../src/lib/security-policy";
 
 const getRouterNonce = createIsomorphicFn()
@@ -27,6 +28,8 @@ export const getRouter = () => {
     routeTree,
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // What a page shows while its identity-gated loader runs in the browser: a neutral line, never the sign-in form.
+    defaultPendingComponent: ConsolePending,
     ssr: { nonce },
   });
 };

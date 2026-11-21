@@ -25,6 +25,9 @@ const api: HomeApi = {
 };
 
 export const Route = createFileRoute("/")({
+  // No server-side render for this page: who is signed in lives in the browser (a server render has no session), so the
+  // identity check in the loader runs there, never on the server. Otherwise every full load looked signed out.
+  ssr: false,
   // The gate is the server function, not this loader. A loader runs on the client too and is trivially skipped;
   // adminWhoAmI throws for anyone who is not active staff, and every read below is made by a call that checks its own
   // scope. This redirect is a courtesy to a signed-out person, not a control.

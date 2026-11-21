@@ -252,6 +252,11 @@ export function ConsoleShell({
     setCollapsed(readStored(RAIL_KEY) === "1");
   }, []);
 
+  // A client-side navigation does not reload the page, so the phone menu closes when the page changes.
+  useEffect(() => {
+    setOpen(false);
+  }, [current]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
