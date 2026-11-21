@@ -1,0 +1,311 @@
+{
+ "fra1p13l3": {
+  "speak": {
+   "answer": "Je dors la nuit",
+   "explanation": "\"Je dors la nuit\" means \"I sleep at night\"; la nuit on its own means at night."
+  },
+  "translate": {
+   "prompt": "Say that you sleep at night.",
+   "acceptableAnswers": [
+    "Je dors la nuit.",
+    "La nuit, je dors.",
+    "Moi, je dors la nuit."
+   ],
+   "explanation": "\"Je dors la nuit.\" uses \"la nuit\" on its own to mean at night, with no preposition, and the word order can also start with \"la nuit\"."
+  }
+ },
+ "fra1p13l2": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Il est six heures du matin.",
+   "wrong": [
+    "Il est six heures du soir.",
+    "Il est sept heures du matin.",
+    "Il est six heures et demie."
+   ],
+   "explanation": "The speaker says \"Il est six heures du matin.\" because \"du matin\" marks the morning, so this is 6 a.m."
+  },
+  "translate": {
+   "prompt": "Say that it is half past five in the afternoon.",
+   "acceptableAnswers": [
+    "Il est cinq heures et demie de l'après-midi.",
+    "Il est cinq heures et demie.",
+    "C'est cinq heures et demie de l'après-midi.",
+    "Il est dix-sept heures trente."
+   ],
+   "explanation": "\"Il est cinq heures et demie de l'après-midi.\" uses \"et demie\" for half past and \"de l'après-midi\" to show it is the afternoon."
+  }
+ },
+ "fra1p13l1": {
+  "speak": {
+   "answer": "Il est midi et demi",
+   "explanation": "\"Il est midi et demi\" means it's half past twelve (12:30 p.m.); midi is masculine, so it takes \"demi\" without the -e of \"demie\"."
+  },
+  "translate": {
+   "prompt": "Say that it is midnight.",
+   "acceptableAnswers": [
+    "Il est minuit.",
+    "Il est minuit pile."
+   ],
+   "explanation": "\"Il est minuit.\" uses il est plus minuit, the French word for midnight."
+  }
+ },
+ "frga2p2l1": {
+  "speak": {
+   "answer": "Nous buvons de l'eau avec le repas",
+   "explanation": "The phrase \"Nous buvons de l'eau avec le repas\" uses buvons, the nous form of boire, and means we drink water with the meal."
+  },
+  "translate": {
+   "prompt": "Say that you drink tea in the morning.",
+   "acceptableAnswers": [
+    "Je bois du thé le matin.",
+    "Le matin, je bois du thé.",
+    "Je bois du thé tous les matins."
+   ],
+   "explanation": "\"Je bois du thé le matin.\" uses bois, the je form of boire, and du for an unspecified amount of tea."
+  }
+ },
+ "frga2p2l2": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Nous buvons du lait avec le dîner.",
+   "wrong": [
+    "Nous buvons du thé avec le dîner.",
+    "Nous buvons du lait avec le café.",
+    "Nous buvons du jus avec le dîner."
+   ],
+   "explanation": "The sentence is \"Nous buvons du lait avec le dîner.\" and it means 'We drink milk with dinner.' With nous, boire becomes \"buvons\"."
+  },
+  "translate": {
+   "prompt": "Say that you (to a friend) drink water every day.",
+   "acceptableAnswers": [
+    "Tu bois de l'eau tous les jours.",
+    "Tu bois de l'eau chaque jour."
+   ],
+   "explanation": "With tu, boire is conjugated \"bois\", so the sentence is \"Tu bois de l'eau tous les jours.\" Use \"de l'eau\" for water, with the elision, and \"tous les jours\" for every day."
+  }
+ },
+ "frga2p2l3": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Nous buvons du café le matin.",
+   "wrong": [
+    "Nous buvons du café le soir.",
+    "Nous prenons du café le matin.",
+    "Nous buvons du thé le matin."
+   ],
+   "explanation": "The speaker says \"Nous buvons du café le matin.\" The wrong choices change one word you can clearly hear: thé, soir or prenons."
+  },
+  "speak": {
+   "answer": "Elle boit de l'eau le matin",
+   "explanation": "Read the phrase aloud: \"Elle boit de l'eau le matin\". With elle, boire takes the form boit."
+  },
+  "translate": {
+   "prompt": "Say that you (informal, one friend) drink milk every day.",
+   "acceptableAnswers": [
+    "Tu bois du lait tous les jours.",
+    "Tu bois du lait chaque jour.",
+    "Tous les jours, tu bois du lait."
+   ],
+   "explanation": "\"Tu bois du lait tous les jours.\" The subject tu takes the form bois, and du is used before lait."
+  }
+ },
+ "frb1p4l3": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Demain, nous irons au marché avec nos amis très tôt.",
+   "wrong": [
+    "Demain, nous irons au marché avec nos voisins très tôt.",
+    "Demain, nous irons au musée avec nos amis très tôt.",
+    "Demain, nous irons au marché avec nos amis très tard."
+   ],
+   "explanation": "The sentence \"Demain, nous irons au marché avec nos amis très tôt.\" uses the future of aller (irons) with au marché, nos amis and très tôt, which separate it from the other choices."
+  },
+  "speak": {
+   "answer": "Je saurai la réponse bientôt",
+   "explanation": "Savoir has the irregular future stem saur-, so you say \"Je saurai la réponse bientôt\" for something you will know soon."
+  },
+  "translate": {
+   "prompt": "Tell a friend that you will see the result tomorrow.",
+   "acceptableAnswers": [
+    "Je verrai le résultat demain.",
+    "Demain, je verrai le résultat."
+   ],
+   "explanation": "Voir has the irregular future stem verr-, and \"Je\" takes -ai, giving \"Je verrai le résultat demain.\""
+  }
+ },
+ "frb1p4l2": {
+  "translate": {
+   "prompt": "Say that next week your friends will come to see you and will be in Paris on Friday.",
+   "acceptableAnswers": [
+    "La semaine prochaine, mes amis viendront me voir et seront à Paris vendredi.",
+    "La semaine prochaine, mes amis viendront me voir et ils seront à Paris vendredi.",
+    "Mes amis viendront me voir la semaine prochaine et seront à Paris vendredi."
+   ],
+   "explanation": "Venir and être have irregular future stems (viendr-, ser-), and the plural subject \"mes amis\" takes the ending -ont: \"La semaine prochaine, mes amis viendront me voir et seront à Paris vendredi.\""
+  }
+ },
+ "frb1p4l5": {
+  "speak": {
+   "answer": "Nous finirons le travail demain matin",
+   "explanation": "\"Nous finirons le travail demain matin\" uses the regular future of finir with the ending -ons for \"nous\", to say what will happen tomorrow morning."
+  },
+  "translate": {
+   "prompt": "Say that next year you will travel to Italy with your friends.",
+   "acceptableAnswers": [
+    "L'année prochaine, je voyagerai en Italie avec mes amis.",
+    "L'année prochaine, je voyagerai en Italie avec mes copains.",
+    "L'an prochain, je voyagerai en Italie avec mes amis.",
+    "L'année prochaine, j'irai en Italie avec mes amis."
+   ],
+   "explanation": "\"L'année prochaine, je voyagerai en Italie avec mes amis.\" uses the regular future of voyager with the ending -ai for \"je\", and \"l'année prochaine\" marks the future time."
+  }
+ },
+ "frb2p1l5": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Il est dommage que nos amis ne puissent pas venir à la fête demain soir.",
+   "wrong": [
+    "Il est dommage que nos amis ne veuillent pas venir à la fête demain soir.",
+    "Il est dommage que nos amis ne puissent pas rester à la fête demain soir.",
+    "Il est dommage que nos amis ne puissent pas venir à la fête demain matin."
+   ],
+   "explanation": "The sentence \"Il est dommage que nos amis ne puissent pas venir à la fête demain soir.\" uses the subjunctive \"puissent\" after an expression of regret."
+  },
+  "speak": {
+   "answer": "Il faut que nous soyons prêts demain matin",
+   "explanation": "\"Il faut que nous soyons prêts demain matin\" expresses necessity, so it takes the subjunctive, and être with \"nous\" is \"soyons\"."
+  },
+  "translate": {
+   "prompt": "Tell a friend that you doubt your brother will arrive on time tonight.",
+   "acceptableAnswers": [
+    "Je doute que mon frère arrive à l'heure ce soir.",
+    "Je ne pense pas que mon frère arrive à l'heure ce soir.",
+    "Je doute que mon frère soit à l'heure ce soir."
+   ],
+   "explanation": "\"Je doute que mon frère arrive à l'heure ce soir.\" uses \"douter que\", which expresses doubt and therefore takes the subjunctive (\"arrive\"); the other wordings express the same doubt with different constructions."
+  }
+ },
+ "frb2p1l4": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Il faut que vous attendiez à la gare jusqu'à ce que nous arrivions.",
+   "wrong": [
+    "Il faut que vous partiez à la gare jusqu'à ce que nous arrivions.",
+    "Il faut que vous attendiez à la gare jusqu'à ce que nous mangions.",
+    "Il faut que vous attendiez à la poste jusqu'à ce que nous arrivions."
+   ],
+   "explanation": "The sentence \"Il faut que vous attendiez à la gare jusqu'à ce que nous arrivions.\" uses the subjunctive after \"il faut que\" and after \"jusqu'à ce que\". The wrong choices change one word: partiez, mangions or poste."
+  },
+  "translate": {
+   "prompt": "Say that you doubt your brother will be able to come to the party tonight.",
+   "acceptableAnswers": [
+    "Je doute que mon frère puisse venir à la fête ce soir.",
+    "Je ne suis pas sûr que mon frère puisse venir à la fête ce soir.",
+    "Je ne suis pas sûre que mon frère puisse venir à la fête ce soir.",
+    "Je ne pense pas que mon frère puisse venir à la fête ce soir.",
+    "Je ne crois pas que mon frère puisse venir à la fête ce soir."
+   ],
+   "explanation": "Doubt triggers the subjunctive, so \"Je doute que mon frère puisse venir à la fête ce soir.\" uses puisse, the subjunctive of pouvoir. The other wordings express doubt with negated opinion verbs, which also take the subjunctive."
+  }
+ },
+ "frb2p1l3": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Je doute que tu comprennes ce qu'il a voulu dire hier soir.",
+   "wrong": [
+    "Je doute que tu comprennes ce qu'il a voulu faire hier soir.",
+    "Je doute que tu comprennes ce qu'il a voulu dire hier matin.",
+    "Je crois que tu comprennes ce qu'il a voulu dire hier soir."
+   ],
+   "explanation": "The sentence heard is \"Je doute que tu comprennes ce qu'il a voulu dire hier soir.\" The verb \"douter que\" expresses doubt and takes the subjunctive \"comprennes\"; the other choices change dire to faire, soir to matin, or doute to crois."
+  },
+  "speak": {
+   "answer": "Il faut que tu dises la vérité",
+   "explanation": "\"Il faut que tu dises la vérité\" uses \"il faut que\" (necessity) with the subjunctive \"dises\", the tu form of dire."
+  },
+  "translate": {
+   "prompt": "Say that you want your friends to be here before noon (use vouloir que).",
+   "acceptableAnswers": [
+    "Je veux que mes amis soient ici avant midi.",
+    "Je veux que mes amis soient là avant midi.",
+    "Je veux que mes amis soient présents avant midi."
+   ],
+   "explanation": "\"Je veux que mes amis soient ici avant midi.\" Vouloir que expresses desire and is followed by the subjunctive, here \"soient\" (être, third person plural)."
+  }
+ },
+ "frc1p10l5": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Le tribunal a ordonné la suspension immédiate des travaux jusqu'à la décision définitive du juge.",
+   "wrong": [
+    "Le tribunal a ordonné la suspension immédiate des travaux jusqu'à la réunion définitive du juge.",
+    "Le tribunal a ordonné la suspension immédiate des travaux jusqu'à la décision définitive du maire.",
+    "Le tribunal a ordonné la reprise immédiate des travaux jusqu'à la décision définitive du juge."
+   ],
+   "explanation": "The sentence heard was \"Le tribunal a ordonné la suspension immédiate des travaux jusqu'à la décision définitive du juge.\" The court halted the works until the judge's final ruling; the other choices change one clearly audible word (réunion, maire, reprise)."
+  },
+  "speak": {
+   "answer": "Le plaignant a déposé sa demande auprès du tribunal",
+   "explanation": "\"Le plaignant a déposé sa demande auprès du tribunal\" means the claimant filed the application with the court, using the legal verb \"déposer\" for submitting a document."
+  },
+  "translate": {
+   "prompt": "Say that the witnesses were summoned to appear before the court because the dispute had not been settled out of court.",
+   "acceptableAnswers": [
+    "Les témoins ont été convoqués devant le tribunal parce que le litige n'avait pas été réglé à l'amiable.",
+    "Les témoins ont été convoqués à comparaître devant le tribunal car le litige n'avait pas été réglé à l'amiable.",
+    "Les témoins ont été convoqués devant le tribunal, le litige n'ayant pas été réglé à l'amiable.",
+    "Les témoins ont été convoqués à comparaître devant le tribunal puisque le litige n'avait pas été réglé à l'amiable."
+   ],
+   "explanation": "\"Les témoins ont été convoqués devant le tribunal parce que le litige n'avait pas été réglé à l'amiable.\" uses the passive with \"convoqués\" agreeing with the masculine plural \"témoins\", and the fixed phrase \"à l'amiable\" for an out-of-court settlement."
+  }
+ },
+ "frc1p10l4": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "La cour d'appel a confirmé le jugement rendu par le tribunal de première instance.",
+   "wrong": [
+    "La cour d'appel a annulé le jugement rendu par le tribunal de première instance.",
+    "La cour d'appel a confirmé le contrat rendu par le tribunal de première instance.",
+    "La cour d'appel a confirmé le jugement rendu par le greffier de première instance."
+   ],
+   "explanation": "The sentence \"La cour d'appel a confirmé le jugement rendu par le tribunal de première instance.\" says the appeal court upheld the lower court's decision; \"annulé\", \"contrat\" and \"greffier\" in the other choices sound clearly different and change the meaning."
+  },
+  "translate": {
+   "prompt": "Say that the plaintiff withdrew his complaint before the hearing took place.",
+   "acceptableAnswers": [
+    "Le plaignant a retiré sa plainte avant que l'audience n'ait lieu.",
+    "Le plaignant a retiré sa plainte avant la tenue de l'audience.",
+    "Le plaignant a retiré sa plainte avant l'audience.",
+    "Avant que l'audience n'ait lieu, le plaignant a retiré sa plainte."
+   ],
+   "explanation": "\"Le plaignant a retiré sa plainte avant que l'audience n'ait lieu.\" uses \"retirer une plainte\" for withdrawing a complaint, and \"avant que\" always takes the subjunctive (\"ait\"). The \"ne\" before \"ait\" is an optional formal touch, and the simpler \"avant l'audience\" is also correct."
+  }
+ },
+ "frc1p11l5": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Le Conseil de sécurité n'est parvenu à aucune résolution en raison du veto d'un membre permanent.",
+   "wrong": [
+    "Le Conseil de sécurité n'est parvenu à aucune résolution en raison du vote d'un membre permanent.",
+    "Le Conseil de sécurité n'est parvenu à aucune résolution en raison du retrait d'un membre permanent.",
+    "Le Conseil de sécurité n'est parvenu à aucune résolution en raison du boycott d'un membre permanent."
+   ],
+   "explanation": "The speaker says \"Le Conseil de sécurité n'est parvenu à aucune résolution en raison du veto d'un membre permanent.\" The noun you hear is veto, not vote, retrait or boycott, so the resolution was blocked by a permanent member's veto."
+  },
+  "speak": {
+   "answer": "la délégation attend l'envoyé à l'ambassade",
+   "explanation": "\"la délégation attend l'envoyé à l'ambassade\" combines three terms from this lesson: la délégation, l'envoyé and l'ambassade."
+  },
+  "translate": {
+   "prompt": "Say that the envoy released an official written statement to the press after the negotiation.",
+   "acceptableAnswers": [
+    "L'envoyé a remis un communiqué à la presse après la négociation.",
+    "L'envoyé a publié un communiqué de presse après la négociation.",
+    "Après la négociation, l'envoyé a remis un communiqué à la presse.",
+    "Après la négociation, l'envoyé a diffusé un communiqué officiel à la presse."
+   ],
+   "explanation": "\"L'envoyé a remis un communiqué à la presse après la négociation.\" uses le communiqué, an official written statement released to the press, and l'envoyé, a person sent on a diplomatic mission."
+  }
+ }
+}
