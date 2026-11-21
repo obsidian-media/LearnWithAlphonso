@@ -4,6 +4,7 @@ import { requireStaff } from "./staff-middleware";
 import { consumeStaffLimit, STAFF_LIMITS } from "./staff-rate-limit";
 import { callRpc } from "./untyped-rpc";
 import type { TicketDetail } from "./staff-support.server";
+import { NOT_ALLOWED_MESSAGE } from "./staff-route-errors";
 
 /**
  * The support inbox for the staff console. Every function is gated by requireStaff(scope). The reads never show the
@@ -23,7 +24,8 @@ export const TOO_OLD_MESSAGE = "This chat is too old to reopen; the learner can 
 export const SELF_TICKET_MESSAGE = "You cannot act on your own account.";
 export const NO_OWNER_MESSAGE = "There is no active owner to hand this ticket to.";
 export const OWNER_ONLY_MESSAGE = "Only an owner can do that.";
-export const NOT_ALLOWED_MESSAGE = "You cannot do that on this ticket.";
+export const TAKE_OVER_NEEDS_REASON_MESSAGE = "Taking over this ticket needs a reason.";
+export { NOT_ALLOWED_MESSAGE };
 export const REASON_NEEDED_MESSAGE = "A reason of 3 to 500 characters is required.";
 
 export type TicketFilter = "open" | "waiting" | "solved" | "breaching" | "all";
@@ -79,7 +81,7 @@ export type InboxPage = {
   me: string;
 };
 
-type SqlError = { code?: string } | null;
+type SqlError = { code?: string; message?: string } | null;
 
 /** The plain sentence for each database refusal; anything unexpected says nothing was changed. */
 function refusal(error: NonNullable<SqlError>, fallback: string, byCode: Record<string, string>) {
@@ -252,7 +254,11 @@ export const staffAssignTicket = createServerFn({ method: "POST" })
     if (error) {
       throw refusal(error, "Could not assign the ticket. Nothing was changed.", {
         ...COMMON_REFUSALS,
-        "22023": "That person cannot work support tickets.",
+        // 22023 is two different refusals: the reason check (someone took the ticket between our read and the write, so a
+        // reason is needed after all) and the assignee check. The SQL message tells them apart.
+        "22023": /needs a reason/i.test(error.message ?? "")
+          ? TAKE_OVER_NEEDS_REASON_MESSAGE
+          : "That person cannot work support tickets.",
       });
     }
     return { ok: true, changed: changed === true };

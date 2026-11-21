@@ -842,3 +842,27 @@ describe("taking over a ticket someone else holds (L2)", () => {
     ).rejects.toThrow(mod.NOT_ALLOWED_MESSAGE);
   });
 });
+
+describe("22023 from the assign call (L2 follow-up)", () => {
+  it("a reason refusal (someone took the ticket in between) says a reason is needed; an assignee refusal still says that person cannot work tickets", async () => {
+    const free = adminClient({ conversation: conversation({ assigned_to: null }) });
+    free.admin.rpc.mockResolvedValueOnce({
+      data: null,
+      error: {
+        code: "22023",
+        message:
+          "staff_support_assign: moving a ticket someone else holds, or handing it to someone else, needs a reason of 3 to 500 characters",
+      },
+    });
+    await expect(
+      call(staffAssignTicket, SAM, free.admin, { id: TICKET, assignTo: SAM }),
+    ).rejects.toThrow(mod.TAKE_OVER_NEEDS_REASON_MESSAGE);
+    free.admin.rpc.mockResolvedValueOnce({
+      data: null,
+      error: { code: "22023", message: "staff_support_assign: that person cannot work tickets" },
+    });
+    await expect(
+      call(staffAssignTicket, SAM, free.admin, { id: TICKET, assignTo: SAM }),
+    ).rejects.toThrow("That person cannot work support tickets.");
+  });
+});
