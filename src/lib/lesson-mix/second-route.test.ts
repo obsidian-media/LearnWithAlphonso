@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MODELS, mistralUsageUsd } from "../content-review/pricing";
-import { OPENROUTER_URL, resolveSecondRoute } from "./second-route";
+import { OPENROUTER_URL, resolveSecondRoute } from "../../../scripts/lesson-mix/second-route";
 
 const body = { temperature: 0, top_p: 1, reasoning_effort: "low", max_tokens: 9, messages: [] };
 

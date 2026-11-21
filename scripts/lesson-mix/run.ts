@@ -39,7 +39,7 @@ import {
   splitBatches,
   type BatchRequest,
 } from "../../src/lib/content-review/anthropic-batch";
-import { resolveSecondRoute } from "../../src/lib/lesson-mix/second-route";
+import { resolveSecondRoute } from "./second-route";
 import { sendMistralChat, buildMistralRequest } from "../../src/lib/content-review/mistral-batch";
 import {
   judgeContext,

@@ -55,7 +55,7 @@ export const MODELS = {
   // Large 4 rates, which are an upper bound for a Medium model: the ledger errs high.
   "mistral-medium-latest": { provider: "mistral", input: 0.7, output: 2.1, batch: 0.5 },
   // mistral-small-latest: price not confirmed either; booked at the same Large-4 upper bound.
-  // OpenRouter route (BYOK Mistral key), openrouter.ai/api/v1/models read 2026-11-21: mistral-large-4-0
+  // OpenRouter route (BYOK Mistral key), OpenRouter model list read 2026-11-21: mistral-large-4-0
   // lists $0.70 in / $2.10 out. With BYOK, OpenRouter may add a small fee and Mistral bills the key
   // itself; the full listed price is booked as an upper bound.
   "mistralai/mistral-large-4-0": { provider: "mistral", input: 0.7, output: 2.1, batch: 1 },
