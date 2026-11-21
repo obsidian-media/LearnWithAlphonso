@@ -271,6 +271,29 @@ describe("LearnMap: the climbing map", () => {
     }
   });
 
+  it("tapping the same locked lesson again restarts the 6 s clock", () => {
+    vi.useFakeTimers();
+    try {
+      show(["u1l1"]);
+      const locked = screen.getByRole("button", { name: /Numbers, locked/ });
+      fireEvent.click(locked);
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      fireEvent.click(locked); // same text: the clock must start over
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(screen.getByRole("status").textContent).not.toBe("");
+      act(() => {
+        vi.advanceTimersByTime(1100);
+      });
+      expect(screen.getByRole("status").textContent).toBe("");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("the hint clears at once when the next lesson changes", () => {
     const props = { greeting: "Hi", continueLessonId: null, blocked: false, onBlocked: () => {} };
     const { rerender } = render(<LearnMap map={learnMap(units, new Set(["u1l1"]))!} {...props} />);

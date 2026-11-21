@@ -69,6 +69,12 @@ export function LearnMap({
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
+  // Counts hint taps, so tapping the same locked node again restarts the 6 s clock (as on iOS and Android).
+  const [hintTap, setHintTap] = useState(0);
+  const showHint = (message: string) => {
+    setHint(message);
+    setHintTap((n) => n + 1);
+  };
   // The "finish X first" hint is about this moment: it clears after a few seconds, and at once when the next lesson
   // changes, so the live region never holds a stale instruction.
   const nextId = map.next?.lessonId ?? null;
@@ -77,7 +83,7 @@ export function LearnMap({
     if (!hint) return;
     const t = setTimeout(() => setHint(null), HINT_MS);
     return () => clearTimeout(t);
-  }, [hint]);
+  }, [hint, hintTap]);
   const stripId = useId();
   const total = map.nodes.length;
   const nextNode = map.nodes.find((n) => n.state === "next") ?? null;
@@ -244,7 +250,7 @@ export function LearnMap({
                       onClick={() => {
                         if (n.state === "done") onBlocked();
                         else
-                          setHint(
+                          showHint(
                             nextNode
                               ? `Finish ${nextNode.title} first, then this one opens.`
                               : "Finish the lessons before it first.",
@@ -304,7 +310,7 @@ export function LearnMap({
                     <button
                       type="button"
                       aria-label={`Unit ${map.strip.number} reward, locked until you finish the unit`}
-                      onClick={() => setHint("Finish this unit to open the chest.")}
+                      onClick={() => showHint("Finish this unit to open the chest.")}
                       className={`block rounded-full ${FOCUS}`}
                     >
                       {face}

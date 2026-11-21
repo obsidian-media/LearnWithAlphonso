@@ -40,8 +40,11 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -143,13 +146,20 @@ internal fun LearnClimbMap(
     onOpenLesson: (String) -> Unit,
 ) {
     val ds = LocalAlphonsoTokens.current
-    var sheetOpen by remember { mutableStateOf(false) }
+    // Saveable like the rest of Learn's state, so turning the phone does not close an open sheet.
+    var sheetOpen by rememberSaveable { mutableStateOf(false) }
     var hint by remember { mutableStateOf<String?>(null) }
+    // Counts hint taps: tapping the same locked node again restarts the 6 s clock and redraws the status line.
+    var hintTap by remember { mutableIntStateOf(0) }
+    fun showHint(message: String) {
+        hint = message
+        hintTap++
+    }
     // The "finish X first" hint is about this moment: it clears after a few seconds, and at once when the next lesson
     // changes, so the live region never holds a stale instruction.
     val nextId = climb.next?.lessonId
     LaunchedEffect(nextId) { hint = null }
-    LaunchedEffect(hint) { if (hint != null) { delay(HINT_MS); hint = null } }
+    LaunchedEffect(hintTap) { if (hint != null) { delay(HINT_MS); hint = null } }
 
     val total = climb.nodes.size
     val nextNode = climb.nodes.firstOrNull { it.state == LearnMap.NodeState.NEXT }
@@ -158,10 +168,12 @@ internal fun LearnClimbMap(
     // At large font sizes the greeting takes its own full-width row and Alphonso steps aside, so nothing overlaps the climb.
     val big = LocalDensity.current.fontScale >= 1.3f
     val sceneShape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
-    val trail = buildList {
-        if (earnedTrailhead) add(Trailhead)
-        climb.nodes.forEach { add(it.point) }
-        add(climb.chest.point)
+    val trail = remember(climb, earnedTrailhead) {
+        buildList {
+            if (earnedTrailhead) add(Trailhead)
+            climb.nodes.forEach { add(it.point) }
+            add(climb.chest.point)
+        }
     }
 
     Column(Modifier.testTag("learn-climb")) {
@@ -192,7 +204,7 @@ internal fun LearnClimbMap(
                         val onTap: () -> Unit = when (node.state) {
                             LearnMap.NodeState.NEXT -> { { hint = null; sheetOpen = true } }
                             LearnMap.NodeState.DONE -> { { onOpenLesson(node.id) } }
-                            LearnMap.NodeState.LOCKED -> { { hint = nextNode?.let { "Finish ${it.title} first, then this one opens." } ?: "Finish the lessons before it first." } }
+                            LearnMap.NodeState.LOCKED -> { { showHint(nextNode?.let { "Finish ${it.title} first, then this one opens." } ?: "Finish the lessons before it first.") } }
                         }
                         Placed(
                             node.point, w, h, size,
@@ -204,7 +216,7 @@ internal fun LearnClimbMap(
                     val chestDescription = if (climb.chest.earned) "Unit ${climb.strip.number} reward, earned" else "Unit ${climb.strip.number} reward, locked until you finish the unit"
                     val summitIndex = order
                     val chestModifier = Modifier.testTag("climb-chest-summit").semantics { traversalIndex = summitIndex; contentDescription = chestDescription }.let {
-                        if (climb.chest.earned) it.semantics { role = Role.Image } else it.clickable(role = Role.Button) { hint = "Finish this unit to open the chest." }
+                        if (climb.chest.earned) it.semantics { role = Role.Image } else it.clickable(role = Role.Button) { showHint("Finish this unit to open the chest.") }
                     }
                     Placed(climb.chest.point, w, h, ChestSummit, chestModifier) {
                         ChestFace(earned = climb.chest.earned, size = ChestSummit, glyph = 28.dp)
@@ -224,10 +236,13 @@ internal fun LearnClimbMap(
             }
             if (big) GreetingBubble(greeting, Modifier.padding(AlphonsoTokens.Space.s3).semantics { traversalIndex = 2f })
         }
-        Text(
-            hint ?: "", style = FootnoteType, color = ds.inkSoft,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 20.dp).padding(top = AlphonsoTokens.Space.s2).testTag("climb-hint").semantics { liveRegion = LiveRegionMode.Polite },
-        )
+        // Keyed on the tap count: a repeat tap makes a fresh live-region node, so TalkBack has a change to speak.
+        key(hintTap) {
+            Text(
+                hint ?: "", style = FootnoteType, color = ds.inkSoft,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 20.dp).padding(top = AlphonsoTokens.Space.s2).testTag("climb-hint").semantics { liveRegion = LiveRegionMode.Polite },
+            )
+        }
     }
 
     val next = climb.next

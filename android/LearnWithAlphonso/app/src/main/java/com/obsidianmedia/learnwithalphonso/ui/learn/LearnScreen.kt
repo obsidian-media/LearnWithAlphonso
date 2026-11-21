@@ -211,7 +211,7 @@ fun LearnScreen(
     var showFreezeShop by rememberSaveable { mutableStateOf(false) }
     fun toggleForYou(which: String) { forYouOpen = if (forYouOpen == which) "" else which }
     // Items before the unit rows: status, rail, units header, jump button, plus the ones that come and go (the climbing map is one).
-    val fixedItems = 4 + (if (climb != null) 1 else 0) + (if (forYouOpen.isNotEmpty()) 1 else 0) + (if (state.placementTaken == false) 1 else 0)
+    val fixedItems = learnFixedItems(hasClimb = climb != null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = state.placementTaken == false)
     val currentRowIndex = rows.indexOfFirst { it is FoldRow.UnitRow && it.current }.let { if (it < 0) -1 else fixedItems + it }
     // No scroll on first show: the status row and the climbing map are the top of the screen. "Jump to current" is the way down.
     Column(Modifier.fillMaxSize().background(ds.surface)) {
@@ -588,3 +588,11 @@ private fun HeartsPill(progress: LessonCompletionProgress) {
         hint = wait?.let { "+1 in $it" },
     )
 }
+
+/**
+ * How many LazyColumn items sit above the unit rows, so Jump to current scrolls to the right one: the header, the For
+ * you rail, the levels menu and the jump row always; the climbing map, the open For-you detail and the placement
+ * banner when shown. Keep it in step with the `item(...)` calls before the unit rows in [LearnScreen].
+ */
+internal fun learnFixedItems(hasClimb: Boolean, forYouDetailOpen: Boolean, showsPlacement: Boolean): Int =
+    4 + (if (hasClimb) 1 else 0) + (if (forYouDetailOpen) 1 else 0) + (if (showsPlacement) 1 else 0)
