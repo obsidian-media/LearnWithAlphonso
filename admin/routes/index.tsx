@@ -19,7 +19,7 @@ const api: HomeApi = {
   getTicket: (id) => staffGetTicket({ data: { id } }),
   replyTicket: (id, body) => staffReplyTicket({ data: { id, body } }),
   assignTicket: (id, assignTo) => staffAssignTicket({ data: { id, assignTo } }),
-  resolveTicket: (id) => staffSetTicketStatus({ data: { id, status: "solved" } }),
+  resolveTicket: (id, reason) => staffSetTicketStatus({ data: { id, status: "solved", reason } }),
   metrics: (range) => staffHomeMetrics({ data: { range } }),
   money: () => staffHomeMoney(),
 };

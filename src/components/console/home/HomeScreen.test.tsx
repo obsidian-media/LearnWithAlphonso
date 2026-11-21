@@ -27,6 +27,7 @@ const ticket = (id: string, over: Partial<TicketSummary> = {}): TicketSummary =>
   unopened: true,
   waitingSince: hoursAgo(3),
   breaching: false,
+  urgent: false,
   ...over,
 });
 
@@ -44,6 +45,7 @@ const page = (over: Partial<InboxPage> = {}): InboxPage => ({
     unassigned: 3,
     openUnassigned: 2,
     mine: 1,
+    urgent: 0,
     breaching: 1,
     oldestWaitingSince: hoursAgo(3),
   },
@@ -415,11 +417,31 @@ describe("Home: the triage drawer uses the existing reply, assign and resolve", 
     await waitFor(() => expect(api.assignTicket).toHaveBeenCalledWith(T1, ME));
   });
 
-  it("Resolve calls the status function for this ticket", async () => {
+  it("Resolve asks for a reason first, cannot submit under 3 characters, and sends the reason", async () => {
     const api = makeApi();
     const user = await open(api);
     await user.click(screen.getByRole("button", { name: "Resolve" }));
-    await waitFor(() => expect(api.resolveTicket).toHaveBeenCalledWith(T1));
+    const dialog = screen.getByRole("dialog", { name: "Resolve this ticket" });
+    expect(api.resolveTicket).not.toHaveBeenCalled();
+    const confirm = within(dialog).getByRole("button", { name: "Resolve and log" });
+    expect(confirm).toBeDisabled();
+    await user.type(within(dialog).getByRole("textbox"), "ab");
+    expect(confirm).toBeDisabled();
+    await user.type(within(dialog).getByRole("textbox"), "c");
+    await user.click(confirm);
+    await waitFor(() => expect(api.resolveTicket).toHaveBeenCalledWith(T1, "abc"));
+  });
+
+  it("cancelling the Resolve dialog resolves nothing", async () => {
+    const api = makeApi();
+    const user = await open(api);
+    await user.click(screen.getByRole("button", { name: "Resolve" }));
+    await user.click(
+      within(screen.getByRole("dialog", { name: "Resolve this ticket" })).getByRole("button", {
+        name: "Cancel",
+      }),
+    );
+    expect(api.resolveTicket).not.toHaveBeenCalled();
   });
 
   it("a refusal from the server is shown in the drawer", async () => {

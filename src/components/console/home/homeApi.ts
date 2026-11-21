@@ -12,8 +12,8 @@ export type HomeApi = {
   getTicket: (id: string) => Promise<TicketDetail & { me: string }>;
   replyTicket: (id: string, body: string) => Promise<unknown>;
   assignTicket: (id: string, assignTo: string | null) => Promise<unknown>;
-  /** Resolve keeps its current behaviour in this PR (status "solved", no reason); the reason arrives with N-8. */
-  resolveTicket: (id: string) => Promise<unknown>;
+  /** Resolve asks for a reason (N-8): status "solved" with the reason, kept in the action record. */
+  resolveTicket: (id: string, reason: string) => Promise<unknown>;
   metrics: (range: HomeRange) => Promise<HomeMetrics>;
   money: () => Promise<{ generatedAt: string; tiles: MoneyTile[] }>;
 };

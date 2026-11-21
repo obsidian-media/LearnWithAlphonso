@@ -75,12 +75,12 @@ function client(opts: { rpc?: Record<string, unknown>; from?: Record<string, unk
 
 describe("staffNavCounts: only the counts a person's scopes allow", () => {
   it("support.read gets the needs-reply count and is never asked for reports", async () => {
-    const admin = client({
-      rpc: { staff_support_inbox: { data: { counts: { open: 4 } }, error: null } },
-    });
+    const admin = client({ from: { support_conversations: { count: 4, error: null } } });
     const out = await staffNavCounts({ context: { supabaseAdmin: admin, userId: SUPPORT } });
     expect(out).toEqual({ support: 4 });
     expect(admin.calls).not.toContain("from:content_reports");
+    // counts only: it never builds the inbox page
+    expect(admin.calls).not.toContain("rpc:staff_support_inbox");
   });
 
   it("reports.manage gets the open reports and is never asked for tickets", async () => {

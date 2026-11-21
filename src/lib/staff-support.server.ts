@@ -6,7 +6,7 @@ import { SUPPORT_FACT_KEYS, type SupportFacts } from "./support-facts.server";
  * What the staff inbox reads for one ticket. Every reader of support_messages.body goes through the link parser
  * (stripSupportLink, support-links.ts), so an AI answer's trailing [[link:id]] marker never shows to staff as text
  * (support-body-guard.test.ts scans this file). Internal notes and the learner's facts are read here too, and nothing
- * more: no email, no display name of the learner, no payment details, no lesson answers.
+ * more: no email, no payment details, no lesson answers, and the learner's display name only for a viewer who also holds users.read.
  */
 
 export type TicketMessageKind = "learner" | "ai" | "staff" | "system";
@@ -24,7 +24,15 @@ export type TicketNote = { id: string; body: string; at: string; authorName: str
 
 export type TicketDetail = {
   id: string;
+  /** The visible ticket number; null only for a chat that has not reached a person. */
+  ticketNo: number | null;
   status: string;
+  /** Set when a support agent handed the ticket to an owner and nobody has cleared it or solved it. */
+  urgent: boolean;
+  /** When the learner started waiting for a staff reply; null unless the ticket needs one (new or open). */
+  waitingSince: string | null;
+  /** True when it has waited longer than the support_breach_hours setting; false when the setting is missing. */
+  breaching: boolean;
   topic: string | null;
   channel: string;
   handoffReason: string | null;
@@ -42,6 +50,8 @@ export type TicketDetail = {
   factsSource: "ai" | "rebuilt" | "unavailable";
   /** Set only when the viewer also holds users.read, so the console can link to the learner page. */
   learnerId: string | null;
+  /** The learner's display name; set only with users.read (null too when the learner never set one). */
+  displayName: string | null;
 };
 
 const MAX_MESSAGES = 500;
@@ -102,6 +112,9 @@ type ConversationRow = {
   created_at: string;
   updated_at: string;
   solved_at: string | null;
+  ticket_no: number | null;
+  handed_off_at: string | null;
+  urgent: boolean;
 };
 
 /** The conversation row, or null when it does not exist or is still with the AI (not a ticket). */
@@ -112,12 +125,12 @@ export async function readTicketRow(
   const { data, error } = await admin
     .from("support_conversations")
     .select(
-      "id, user_id, status, topic, channel, handoff_reason, assigned_to, ai_summary, created_at, updated_at, solved_at",
+      "id, user_id, status, topic, channel, handoff_reason, assigned_to, ai_summary, created_at, updated_at, solved_at, ticket_no, handed_off_at, urgent",
     )
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error("Could not read the ticket.");
-  const row = data as ConversationRow | null;
+  const row = data as unknown as ConversationRow | null;
   return row && row.status !== "ai" ? row : null;
 }
 
@@ -131,6 +144,8 @@ export async function loadTicketDetail(
   opts: {
     canSeeLearner: boolean;
     rebuildFacts: (userId: string) => Promise<SupportFacts>;
+    /** The wait and the breach hours for this ticket, read by the caller (see readWaiting). */
+    waiting?: { waitingSince: string | null; breachHours: number | null };
   },
 ): Promise<TicketDetail> {
   const [messages, notes] = await Promise.all([
@@ -199,9 +214,28 @@ export async function loadTicketDetail(
     }
   }
 
+  let displayName: string | null = null;
+  if (opts.canSeeLearner) {
+    const { data: learner } = await admin
+      .from("profiles")
+      .select("display_name")
+      .eq("id", row.user_id)
+      .maybeSingle();
+    displayName = (learner as { display_name: string | null } | null)?.display_name ?? null;
+  }
+
+  const waitingSince = opts.waiting?.waitingSince ?? null;
+  const breachHours = opts.waiting?.breachHours ?? null;
   return {
     id: row.id,
+    ticketNo: row.ticket_no ?? null,
     status: row.status,
+    urgent: row.urgent === true && row.status !== "solved",
+    waitingSince,
+    breaching:
+      waitingSince !== null &&
+      breachHours !== null &&
+      Date.now() - Date.parse(waitingSince) > breachHours * 3_600_000,
     topic: row.topic,
     channel: row.channel,
     handoffReason: row.handoff_reason,
@@ -229,5 +263,35 @@ export async function loadTicketDetail(
     facts,
     factsSource,
     learnerId: opts.canSeeLearner ? row.user_id : null,
+    displayName,
+  };
+}
+
+/**
+ * When this ticket's learner started waiting (the database's own rule: support_waiting_since) and the breach hours
+ * setting. Either is null when it could not be read; the screen then shows no wait and no breach, never a guess.
+ */
+export async function readWaiting(
+  admin: SupabaseClient,
+  row: ConversationRow,
+  actor: string,
+): Promise<{ waitingSince: string | null; breachHours: number | null }> {
+  const { callRpc } = await import("./untyped-rpc");
+  const [wait, settings] = await Promise.all([
+    callRpc(admin, "support_waiting_since", {
+      p_conversation: row.id,
+      p_status: row.status,
+      p_handed_off_at: row.handed_off_at,
+      p_updated_at: row.updated_at,
+    }),
+    callRpc(admin, "staff_get_settings", { p_actor: actor }),
+  ]);
+  const hours =
+    settings.data && typeof settings.data === "object"
+      ? (settings.data as Record<string, unknown>).support_breach_hours
+      : null;
+  return {
+    waitingSince: !wait.error && typeof wait.data === "string" ? wait.data : null,
+    breachHours: typeof hours === "number" ? hours : null,
   };
 }
