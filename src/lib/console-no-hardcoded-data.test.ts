@@ -43,7 +43,6 @@ export const LEGACY_ROUTES = [
   "health.tsx",
   "reports.tsx",
   "signin.tsx",
-  "staff.tsx",
 ];
 
 export function findViolations(source: string, file = "x.tsx"): string[] {

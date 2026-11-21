@@ -121,4 +121,14 @@ describe("every screen is gated by a server call, not by the navigation", () => 
     expect(old).toContain("redirect(");
     expect(old).toMatch(/to: "\/users"[\s\S]*u: params\.id/);
   });
+
+  it("the staff page is owner-only in the loader and changes staff only through the staff server functions", () => {
+    const src = readFileSync("admin/routes/staff.tsx", "utf8");
+    expect(src).toContain('"staff.manage"');
+    expect(src).toMatch(/me\.role !== "owner"/);
+    for (const fn of ["staffListStaff", "staffAddStaff", "staffUpdateStaff"]) {
+      expect(src, fn).toContain(fn);
+    }
+    expect(src).not.toMatch(/supabaseAdmin|from\(["']staff_roles/);
+  });
 });
