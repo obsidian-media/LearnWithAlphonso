@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import type { Lesson, Unit } from "../../data/curriculum";
 import { CapExceededError } from "../content-review/ledger";
-import { addLessonExtras, extraQuestions, isEligible, lessonNeed } from "./extras";
+import { addLessonExtras, courseNeeds, extraQuestions, isEligible, lessonNeed } from "./extras";
 import {
   existingKeys,
   listeningGate,
@@ -59,21 +59,28 @@ const unit = (id: string, level: Unit["level"], lessons: Lesson[]): Unit => ({
   lessons,
 });
 
-describe("lessonNeed: listening and translate everywhere, speak on lessons 1, 3 and 5", () => {
-  it("asks for all three on lesson 1, two on lesson 2", () => {
+describe("lessonNeed: listening and translate everywhere, speak on every other eligible lesson", () => {
+  it("asks for speak only in a speak slot", () => {
     const l = lesson("l", ["mc", "mc"]);
-    expect(lessonNeed(l, 0)).toEqual(["listening", "speak", "translate"]);
-    expect(lessonNeed(l, 1)).toEqual(["listening", "translate"]);
-    expect(lessonNeed(l, 2)).toContain("speak");
-    expect(lessonNeed(l, 3)).not.toContain("speak");
-    expect(lessonNeed(l, 4)).toContain("speak");
+    expect(lessonNeed(l, true)).toEqual(["listening", "speak", "translate"]);
+    expect(lessonNeed(l, false)).toEqual(["listening", "translate"]);
   });
   it("never asks for a type the lesson already has, and skips a dedicated pack", () => {
-    expect(lessonNeed(lesson("l", ["mc", "listening", "translate"]), 1)).toEqual([]);
-    expect(lessonNeed(lesson("l", ["mc", "listening", "translate"]), 0)).toEqual(["speak"]);
+    expect(lessonNeed(lesson("l", ["mc", "listening", "translate"]), false)).toEqual([]);
+    expect(lessonNeed(lesson("l", ["mc", "listening", "translate"]), true)).toEqual(["speak"]);
     const pack = lesson("p", ["listening", "listening"]);
     expect(isEligible(pack)).toBe(false);
-    expect(lessonNeed(pack, 0)).toEqual([]);
+    expect(lessonNeed(pack, true)).toEqual([]);
+  });
+  it("courseNeeds alternates along the eligible lessons, across unit borders, skipping packs", () => {
+    const units = [
+      unit("a", "A1", [lesson("l1", ["mc"]), lesson("p1", ["listening"]), lesson("l2", ["mc"])]),
+      unit("b", "A1", [lesson("l3", ["mc"]), lesson("l4", ["mc"]), lesson("l5", ["mc"])]),
+    ];
+    const n = courseNeeds(units);
+    const speak = ["l1", "l2", "l3", "l4", "l5"].map((id) => n.get(id)!.includes("speak"));
+    expect(speak).toEqual([true, false, true, false, true]);
+    expect(n.has("p1")).toBe(false);
   });
 });
 

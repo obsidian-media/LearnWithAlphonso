@@ -74,7 +74,7 @@ import {
 } from "../../src/lib/lesson-mix/draft";
 import {
   EXTRA_TYPES,
-  lessonNeed,
+  courseNeeds,
   type ExtraType,
   type LessonExtra,
 } from "../../src/lib/lesson-mix/extras";
@@ -308,13 +308,11 @@ function countNeeds() {
   > = {};
   for (const c of COURSES) {
     const r = { lessons: 0, listening: 0, speak: 0, translate: 0 };
-    for (const u of getCourse(c).curriculum)
-      u.lessons.forEach((l, i) => {
-        const need = lessonNeed(l, i);
-        if (!need.length) return;
-        r.lessons++;
-        for (const t of need) r[t]++;
-      });
+    for (const need of courseNeeds(getCourse(c).curriculum).values()) {
+      if (!need.length) continue;
+      r.lessons++;
+      for (const t of need) r[t]++;
+    }
     rows[c] = r;
   }
   return rows;
@@ -421,11 +419,9 @@ async function draft() {
     [];
   const lessons = flag("all")
     ? COURSES.flatMap((c) =>
-        getCourse(c).curriculum.flatMap((u) =>
-          u.lessons
-            .map((l, i) => ({ course: c, lessonId: l.id, need: lessonNeed(l, i) }))
-            .filter((x) => x.need.length),
-        ),
+        [...courseNeeds(getCourse(c).curriculum)]
+          .map(([lessonId, need]) => ({ course: c, lessonId, need }))
+          .filter((x) => x.need.length),
       )
     : pilot.map((p) => ({ course: p.course, lessonId: p.lessonId, need: p.need }));
   for (const t of lessons) {
@@ -586,7 +582,7 @@ async function collect() {
               course: meta.course,
               lessonId: meta.lessonId,
               level: idx.level,
-              need: prev?.need ?? lessonNeed(idx.lesson, idx.index),
+              need: prev?.need ?? meta.need,
               extra: merged,
               rounds: (prev?.rounds ?? 0) + 1,
               firstProblems: prev?.firstProblems ?? {},

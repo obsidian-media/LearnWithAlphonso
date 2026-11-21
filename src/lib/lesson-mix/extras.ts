@@ -122,15 +122,32 @@ export function isEligible(lesson: Lesson): boolean {
 }
 
 /**
- * Listening and translate: every eligible lesson that lacks one. Speak: lessons 1, 3 and 5 of each unit
- * (`indexInUnit` 0, 2, 4), "Every other lesson" as the owner chose (2026-11-21).
+ * Listening and translate: every eligible lesson that lacks one. Speak: "Every other lesson" (owner,
+ * 2026-11-21), so `speakSlot` is true on every second ELIGIBLE lesson of the course (see courseNeeds).
  */
-export function lessonNeed(lesson: Lesson, indexInUnit: number): LessonNeed {
+export function lessonNeed(lesson: Lesson, speakSlot: boolean): LessonNeed {
   if (!isEligible(lesson)) return [];
   const has = (t: string) => lesson.questions.some((q) => q.type === t);
   const need: LessonNeed = [];
   if (!has("listening")) need.push("listening");
-  if (indexInUnit % 2 === 0 && !has("speak")) need.push("speak");
+  if (speakSlot && !has("speak")) need.push("speak");
   if (!has("translate")) need.push("translate");
   return need;
+}
+
+/**
+ * What every lesson of a course needs. Speak alternates along the course's eligible lessons in
+ * curriculum order (1st, 3rd, 5th ... eligible lesson), so exactly half of them, rounded up, get a
+ * speak question however the units are sized.
+ */
+export function courseNeeds(units: Unit[]): Map<string, LessonNeed> {
+  const out = new Map<string, LessonNeed>();
+  let ordinal = 0;
+  for (const u of units)
+    for (const l of u.lessons) {
+      if (!isEligible(l)) continue;
+      out.set(l.id, lessonNeed(l, ordinal % 2 === 0));
+      ordinal++;
+    }
+  return out;
 }

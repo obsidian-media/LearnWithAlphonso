@@ -9,7 +9,7 @@ import { renderQuestion } from "../content-panel/panel";
 import { languageName } from "../content-review/inventory";
 import { firstJsonObject } from "../content-review/review";
 import { thinkingParams, type BatchRequest } from "../content-review/anthropic-batch";
-import { EXTRA_TYPES, lessonNeed, type ExtraType, type LessonExtra } from "./extras";
+import { EXTRA_TYPES, courseNeeds, type ExtraType, type LessonExtra } from "./extras";
 
 export const DRAFT_MODEL = "claude-sonnet-5-5";
 
@@ -194,11 +194,12 @@ export function selectPilot(
   order: (lessonId: string) => number,
 ): PilotLesson[] {
   const out: PilotLesson[] = [];
+  const needs = courseNeeds(units);
   for (const level of LEVELS) {
     const pool: PilotLesson[] = [];
     for (const u of units.filter((x) => x.level === level))
       u.lessons.forEach((lesson, i) => {
-        const need = lessonNeed(lesson, i);
+        const need = needs.get(lesson.id) ?? [];
         if (need.length)
           pool.push({ course, level, unitId: u.id, lessonId: lesson.id, indexInUnit: i, need });
       });
