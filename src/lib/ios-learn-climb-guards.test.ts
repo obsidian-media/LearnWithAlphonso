@@ -80,14 +80,32 @@ function mapProblems(browserText: string, mapText: string): string[] {
   );
   need(/private static let hintSeconds: UInt64 = 6$/m.test(map), "the hint lasts 6 s");
   need(
-    /\.task\(id: hint\) \{[\s\S]*Task\.sleep\(nanoseconds: Self\.hintSeconds[\s\S]*hint = nil/.test(
+    /\.task\(id: hintTap\) \{[\s\S]*Task\.sleep\(nanoseconds: Self\.hintSeconds[\s\S]*hint = nil/.test(
       map,
     ),
     "the hint clears after hintSeconds",
   );
+  // Keyed on a tap counter, so tapping the same locked node again restarts the clock.
+  need(/hint = message\s*\n\s*hintTap \+= 1/.test(map), "a repeat tap restarts the hint clock");
   need(
-    /\.onChange\(of: climb\.next\?\.lessonID\) \{ _, _ in hint = nil \}/.test(map),
+    /\.onChange\(of: climb\.next\?\.lessonID\) \{ _, _ in\s*hint = nil/.test(map),
     "the hint clears at once when the next lesson changes",
+  );
+  need(
+    /\.onChange\(of: climb\.next\?\.lessonID\)[\s\S]{0,300}if climb\.next == nil \{ sheetOpen = false \}/.test(
+      map,
+    ),
+    "the sheet closes when a sync leaves no next lesson",
+  );
+  need(
+    /ClimbNextFace\(title: node\.title\)\s*\n\s*\.frame\(width: 80, height: 80\)\s*\n\s*\.contentShape\(Circle\(\)\)/.test(
+      map,
+    ),
+    "the next node's hit area is a fixed circle outside the bobbing face",
+  );
+  need(
+    map.includes('climb.next == nil ? "You reached the top. Nice climbing!" : greeting'),
+    "the top-of-the-climb greeting matches the web",
   );
 
   // The bob: on the face only, off with Reduce Motion.
@@ -102,6 +120,13 @@ function mapProblems(browserText: string, mapText: string): string[] {
         "reduceMotion ? nil : .easeInOut(duration: 1.8).repeatForever(autoreverses: true)",
       ),
     "the bob is a 6 pt, 1.8 s ease-in-out repeat, and off under Reduce Motion",
+  );
+  // Reduce Motion switched in Settings while the map is on screen: the bob settles, then restarts only if allowed.
+  need(
+    /\.task\(id: reduceMotion\) \{[\s\S]*?withTransaction\(still\) \{ bobbing = false \}\s*\n\s*guard !reduceMotion else \{ return \}/.test(
+      face,
+    ),
+    "the bob restarts when Reduce Motion changes at runtime",
   );
   const nextButton = between(
     map.slice(map.lastIndexOf("case .next:")),

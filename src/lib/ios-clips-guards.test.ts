@@ -120,7 +120,7 @@ describe("Learn is one climbing map: no full-screen clip, the greeting bubble si
   it("the screen has no full-screen clip or pinned bubble; the map draws the bubble itself", () => {
     expect(browser).not.toContain(".screenScene(");
     expect(browser).not.toContain("ClipPin(");
-    expect(map).toContain("Text(greeting)");
+    expect(map).toContain("Text(shownGreeting)");
     expect(browser).toContain("greeting: StatusHeaderView.greeting(streak:");
   });
 
@@ -128,7 +128,7 @@ describe("Learn is one climbing map: no full-screen clip, the greeting bubble si
     expect(map).not.toContain("SceneFigure(");
     expect(map).not.toContain("Figure-alphonso-waving");
     expect(map).toContain("LessonArt.expression(.happy)");
-    expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
+    expect(map).toContain('.accessibilityLabel("Alphonso: \\(shownGreeting)")');
     // He is decoration, bottom right, sized from the map's width; at accessibility text sizes he steps aside.
     expect(map).toContain("min(width * 0.34, 144)");
     expect(map).toContain("showsAlphonso");

@@ -19,7 +19,7 @@ describe("iOS scenes follow-ups", () => {
 
   it("VoiceOver hears Alphonso's greeting as its own element, and the climb's nodes as buttons", () => {
     expect(map).not.toContain('accessibilityLabel("Continue:');
-    expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
+    expect(map).toContain('.accessibilityLabel("Alphonso: \\(shownGreeting)")');
     expect(map).toContain(".accessibilityAddTraits(.isButton)");
   });
 

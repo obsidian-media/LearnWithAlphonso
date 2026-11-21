@@ -24,6 +24,8 @@ struct LearnClimbMap: View {
     /// A lesson chosen in the sheet; opened once the sheet has finished closing, so the push is not lost to the dismissal.
     @State private var pendingStart: String?
     @State private var hint: String?
+    /// Counts hint taps, so tapping the same locked node again restarts the 6 s clock (and announces again).
+    @State private var hintTap = 0
 
     /// Room above the summit (for the chest) and below the foot (for the trailhead chest and the Start pill).
     private static let topRoom: CGFloat = 44
@@ -70,8 +72,12 @@ struct LearnClimbMap: View {
         .padding(.vertical, AlphonsoDS.Space.s2)
         // The "finish X first" hint is about this moment: it clears after a few seconds, and at once when the next
         // lesson changes, so the status line never holds a stale instruction.
-        .onChange(of: climb.next?.lessonID) { _, _ in hint = nil }
-        .task(id: hint) {
+        .onChange(of: climb.next?.lessonID) { _, _ in
+            hint = nil
+            // A sync finished the lesson while its sheet was open: close the sheet rather than show an empty one.
+            if climb.next == nil { sheetOpen = false }
+        }
+        .task(id: hintTap) {
             guard hint != nil else { return }
             try? await Task.sleep(nanoseconds: Self.hintSeconds * 1_000_000_000)
             if !Task.isCancelled { hint = nil }
@@ -104,6 +110,7 @@ struct LearnClimbMap: View {
     /// Shows the hint and says it aloud, so VoiceOver users hear why the tap did nothing.
     private func showHint(_ message: String) {
         hint = message
+        hintTap += 1
         AccessibilityNotification.Announcement(message).post()
     }
 
@@ -279,8 +286,11 @@ struct LearnClimbMap: View {
                 hint = nil
                 sheetOpen = true
             } label: {
-                // The face bobs inside a still button: the tap target never moves under a finger.
+                // The face bobs inside a still button: the hit area is this fixed 80 pt circle, outside the face's
+                // offset, so the tap target never moves under a finger.
                 ClimbNextFace(title: node.title)
+                    .frame(width: 80, height: 80)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(label)
@@ -381,8 +391,13 @@ struct LearnClimbMap: View {
 
     // MARK: Alphonso at the trailhead
 
+    /// The same top-of-the-climb line as the web once the unit has no next lesson; otherwise the screen's greeting.
+    private var shownGreeting: String {
+        climb.next == nil ? "You reached the top. Nice climbing!" : greeting
+    }
+
     private var greetingBubble: some View {
-        Text(greeting)
+        Text(shownGreeting)
             .dsText(.caption)
             .foregroundStyle(ds.ink)
             .multilineTextAlignment(.leading)
@@ -392,7 +407,7 @@ struct LearnClimbMap: View {
             .background(ds.surface, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control, style: .continuous))
             .frame(maxWidth: .infinity, alignment: .trailing)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Alphonso: \(greeting)")
+            .accessibilityLabel("Alphonso: \(shownGreeting)")
     }
 
     @MainActor
@@ -425,7 +440,16 @@ private struct ClimbNextFace: View {
         face
             .offset(y: (bobbing && !reduceMotion) ? -6 : 0)
             .animation(reduceMotion ? nil : .easeInOut(duration: 1.8).repeatForever(autoreverses: true), value: bobbing)
-            .onAppear { bobbing = true }
+            // Restarted whenever Reduce Motion changes: settle at rest without animating, then bob again only if
+            // motion is allowed.
+            .task(id: reduceMotion) {
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) { bobbing = false }
+                guard !reduceMotion else { return }
+                try? await Task.sleep(nanoseconds: 50_000_000)
+                bobbing = true
+            }
     }
 
     private var face: some View {

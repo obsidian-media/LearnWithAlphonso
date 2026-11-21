@@ -110,10 +110,10 @@ describe("Learn tab: garden scene, one hero, standing Alphonso", () => {
       `streak > 0 ? "Nice \\(streak)-day streak! Ready for today's lesson?" : "Ready for today's lesson?"`,
     );
     expect(browser).toContain("StatusHeaderView.greeting(streak:");
-    expect(map).toContain('.accessibilityLabel("Alphonso: \\(greeting)")');
+    expect(map).toContain('.accessibilityLabel("Alphonso: \\(shownGreeting)")');
     // The bubble text sits on the surface colour, not straight on the scene.
     const bubble = between(map, "private var greetingBubble", "private func alphonso(");
-    expect(bubble).toContain("Text(greeting)");
+    expect(bubble).toContain("Text(shownGreeting)");
     expect(bubble).toContain(".background(ds.surface");
   });
 
