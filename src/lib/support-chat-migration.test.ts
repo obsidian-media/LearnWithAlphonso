@@ -657,6 +657,8 @@ describe("support chat migrations against the whole migration history", () => {
         "20261117100300_support_notifications.sql",
         // Replaces the staff inbox function of the skipped milestone 3 migration and alters support_conversations.
         "20261127100000_admin_settings_ticket_numbers.sql",
+        // Replaces the staff functions of the skipped milestone 3 migration (reason, urgent flag).
+        "20261127110000_admin_support_screen.sql",
         // Indexes support_notify_queue, which the skipped notifications migration creates.
         "20261120100000_db_hardening_indexes_policy_initplan.sql",
       ],

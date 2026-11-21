@@ -30,7 +30,7 @@ const EXPECTED_SITES: Record<string, number> = {
   "src/lib/admin.functions.ts": 2, // admin reports (service role); whoami: the caller's own display name for the navigation (service role)
   "src/lib/staff-home.functions.ts": 1, // console home: count of profiles created today, no row read (service role)
   "src/lib/staff-admin.functions.ts": 1, // staff list: display names of staff (service role)
-  "src/lib/staff-support.server.ts": 1, // support inbox: display names of the assignee and staff authors on one ticket (service role)
+  "src/lib/staff-support.server.ts": 2, // support inbox: display names of the assignee and staff authors on one ticket, and the learner's own name with users.read (service role)
   "src/lib/support-chat-runtime.server.ts": 1, // Help chat: display name of the staff author of a reply, reduced to a first name before it leaves the server (service role)
   "src/lib/support-notify.server.ts": 1, // reply notice: the staff author's display name, reduced to a first name for the notice label (service role)
   "src/lib/staff-user-facts.server.ts": 1, // staff console learner page: display names of one learner and note authors (service role)

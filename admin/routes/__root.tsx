@@ -8,9 +8,8 @@ import {
 } from "@tanstack/react-router";
 import { adminWhoAmI } from "@/lib/admin.functions";
 import { staffNavCounts, type NavCounts } from "@/lib/staff-home.functions";
-import { ConsoleShell } from "@/components/console/ConsoleShell";
+import { ConsoleFrame, type ConsoleIdentity } from "@/components/console/ConsoleFrame";
 import { CONSOLE_THEME_BOOT_SCRIPT } from "@/lib/console-theme";
-import { NAV_ITEMS } from "@/lib/staff-nav";
 import { signOutAndLeave } from "@/lib/staff-signout";
 import { supabase } from "@/integrations/supabase/client";
 // The learner root imports the stylesheet the same way -- as a URL
@@ -31,29 +30,31 @@ export const Route = createRootRoute({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  // Who is signed in and what they may use, for the rail, and the rail's pips (real counts, only the ones this
-  // person's scopes allow). A signed-out visitor (or anyone who is not staff) gets null and sees no rail; the pages
-  // themselves are gated by their own server calls. A pip count that cannot be read shows no pip, never a 0.
-  loader: async () => {
-    try {
-      const me = await adminWhoAmI();
-      const counts: NavCounts | null = await staffNavCounts().catch(() => null);
-      return { me, counts };
-    } catch {
-      return { me: null, counts: null };
-    }
-  },
   component: RootDocument,
 });
 
+/**
+ * Who is signed in, for the rail: read in the browser, where the session lives (a server render has no bearer token, so
+ * a root loader could never know). adminWhoAmI throws for anyone who is not active staff; the rail's pips are real
+ * counts and a pip that cannot be read shows nothing.
+ */
+async function loadIdentity(): Promise<ConsoleIdentity> {
+  const me = await adminWhoAmI();
+  const counts: NavCounts | null = await staffNavCounts().catch(() => null);
+  return { me, counts };
+}
+
+function subscribeAuth(onChange: (event: "in" | "out") => void): () => void {
+  const { data } = supabase.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_IN") onChange("in");
+    else if (event === "SIGNED_OUT") onChange("out");
+  });
+  return () => data.subscription.unsubscribe();
+}
+
 function RootDocument() {
-  const { me, counts } = Route.useLoaderData();
   const { pathname } = useLocation();
   const nonce = useRouter().options?.ssr?.nonce;
-  const current =
-    pathname === "/"
-      ? "home"
-      : NAV_ITEMS.find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))?.key;
   return (
     // Royal light by default; the console's day/night choice (src/lib/console-theme.ts) is applied before first paint by
     // the inline script below, which adds data-ds-mode="night" for the app's Royal Night tokens. The fonts are the
@@ -74,20 +75,16 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body className="bg-ds-surface text-ds-ink font-sans">
-        {me ? (
-          <ConsoleShell
-            me={me}
-            counts={counts}
-            current={current}
-            onSignOut={() =>
-              void signOutAndLeave(supabase.auth, (path) => window.location.assign(path))
-            }
-          >
-            <Outlet />
-          </ConsoleShell>
-        ) : (
+        <ConsoleFrame
+          pathname={pathname}
+          loadIdentity={loadIdentity}
+          subscribeAuth={subscribeAuth}
+          onSignOut={() =>
+            void signOutAndLeave(supabase.auth, (path) => window.location.assign(path))
+          }
+        >
           <Outlet />
-        )}
+        </ConsoleFrame>
         <Scripts />
       </body>
     </html>

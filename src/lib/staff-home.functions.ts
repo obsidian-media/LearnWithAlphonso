@@ -40,17 +40,12 @@ export const staffNavCounts = createServerFn({ method: "GET" })
     if (context.staffScopes.includes("support.read")) {
       jobs.push(
         (async () => {
-          const { data, error } = await context.supabaseAdmin.rpc("staff_support_inbox", {
-            p_actor: context.userId,
-            p_filter: "open",
-            p_assigned: "any",
-            p_cursor_at: null,
-            p_cursor_id: null,
-            p_limit: 1,
-          } as never);
-          out.support = error
-            ? null
-            : finite((data as { counts?: { open?: unknown } } | null)?.counts?.open);
+          // Counts only: one head count of the tickets that need a reply (new or open), not the inbox page.
+          const { count, error } = await context.supabaseAdmin
+            .from("support_conversations")
+            .select("id", { count: "exact", head: true })
+            .in("status", ["new", "open"]);
+          out.support = error ? null : finite(count);
         })(),
       );
     }

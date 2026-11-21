@@ -29,6 +29,8 @@ const SENTENCES: Record<string, string> = {
   "support.assign": "assigned a ticket",
   "support.status": "changed a ticket's status",
   "support.note": "added an internal note to a ticket",
+  "support.handoff": "handed a ticket to an owner",
+  "support.urgent_clear": "cleared a ticket's urgent flag",
   "settings.update": "changed a console setting",
   "podcast.folder.create": "created a podcast folder",
   "podcast.folder.rename": "renamed a podcast folder",

@@ -45,8 +45,6 @@ export const LEGACY_ROUTES = [
   "reports.tsx",
   "signin.tsx",
   "staff.tsx",
-  "support.tsx",
-  "support_.$id.tsx",
   "users.tsx",
   "users_.$id.tsx",
 ];
