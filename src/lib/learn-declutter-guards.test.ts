@@ -83,9 +83,20 @@ describe("iOS Learn", () => {
 
 describe("Android Learn", () => {
   const screen = read(`${KT}/LearnScreen.kt`);
-  it("one hero with a single Continue lesson button", () => {
-    expect(screen).toContain('Text("Continue lesson"');
-    expect(screen.match(/onClickLabel = "Continue /g)?.length).toBe(1);
+  const climbMap = read(`${KT}/LearnClimbMap.kt`);
+  it("the climbing map replaces the hero: one map item, one Continue lesson CTA (in the start sheet), no room hero", () => {
+    // One item draws the map from the shared model; the old CurrentUnitCard and its second CTA are gone.
+    expect(screen.match(/item\(key = "learn-climb"\)/g)?.length).toBe(1);
+    expect(screen).not.toContain('item(key = "current-unit")');
+    expect(screen).not.toContain("CurrentUnitCard");
+    expect(screen).toContain("LearnMap.of(climbUnits, completedSet, it)");
+    // Continue lesson only when the map's next lesson is the course-wide one; the CTA text lives only in the sheet.
+    expect(screen).toContain("continueLessonId = currentUnit?.lessonId");
+    expect(climbMap).toContain(
+      'if (next.lessonId == continueLessonId) "Continue lesson" else "Start lesson"',
+    );
+    expect(screen).not.toContain('Text("Continue lesson"');
+    expect(climbMap.match(/"Continue lesson"/g)?.length).toBe(1);
   });
   it("one rail replaces the Review row and the stacked path, mission and challenge cards", () => {
     expect(screen).toContain("ForYouRail(cards)");
@@ -113,14 +124,27 @@ describe("Android Learn", () => {
     expect(screen).toContain("StreakDisplay.accessibilityLabel(streak)");
     expect(screen).toContain("Buy freeze ($STREAK_FREEZE_XP_COST XP)");
   });
-  it("the hero is one piece: the lesson line and the CTA sit inside the same Box as the scene, not below it", () => {
-    const hero = screen.slice(
-      screen.indexOf("fun CurrentUnitCard"),
-      screen.indexOf("private fun greeting("),
+  it("the map's start sheet is a bottom sheet with the lesson's chips and both buttons, in a scrolling column", () => {
+    const sheet = climbMap.slice(climbMap.indexOf("private fun ClimbStartSheet"));
+    expect(sheet).toContain("ModalBottomSheet(");
+    expect(sheet).toContain("skipPartiallyExpanded = true");
+    expect(sheet).toContain("verticalScroll(rememberScrollState())");
+    expect(sheet).toContain("FlowRow(");
+    for (const chip of ['"Time"', '"XP"', '"Words"', '"Not now"'])
+      expect(sheet, chip).toContain(chip);
+  });
+  it("the map's next node bobs only on an inner face, never on the clickable node, and not under Reduce Motion", () => {
+    const face = climbMap.slice(climbMap.indexOf("private fun BobBox"));
+    expect(face).toContain("translationY = dy * density");
+    // The clickable node is built where the nodes are placed; it carries no bob.
+    const placed = climbMap.slice(
+      climbMap.indexOf("climb.nodes.forEachIndexed"),
+      climbMap.indexOf("// The summit chest"),
     );
-    expect(hero.indexOf(`Text("Continue lesson"`)).toBeGreaterThan(hero.indexOf("alphonso?.let"));
-    expect(hero).not.toContain("Column(verticalArrangement");
-    expect(hero).not.toContain("semantics(mergeDescendants");
+    expect(placed).toContain("clickable(role = Role.Button");
+    expect(placed).not.toContain("graphicsLayer");
+    expect(climbMap).toContain("val bob = !reduceMotion");
+    expect(screen).toContain("rememberReduceMotion()");
   });
 });
 
@@ -178,12 +202,15 @@ describe("the hero's unit count is per level on every platform", () => {
     expect(learn).toContain("curriculum.filter((u) => u.level === level)");
     expect(learn).toContain("learnMap(mapUnits, completedSet)");
     expect(read(`${IOS}/LessonBrowserView.swift`)).toContain("filter { $0.level == unit.level }");
-    expect(read(`${KT}/LearnScreen.kt`)).toContain("filter { it.level == u.level }");
+    // The map is built from the level on screen: the screen's own level-filtered units, and the strip reads "Unit N of M".
+    expect(read(`${KT}/LearnScreen.kt`)).toContain("state.unitsForLevel(container.content)");
+    expect(read(`${KT}/LearnScreen.kt`)).toContain("climbUnitsOf(units, ");
+    expect(read(`${KT}/LearnClimbMap.kt`)).toContain('"Unit ${strip.number} of ${strip.count}');
   });
 });
 
-describe("the hero's room is the unit's mapped room on iOS and Android", () => {
-  it("unit u1 (Everyday Basics) maps to one room, and iOS and Android read the same table", async () => {
+describe("the hero's room is the unit's mapped room on iOS (web and Android draw the climbing map)", () => {
+  it("unit u1 (Everyday Basics) maps to one room, and iOS and Android bundle the same table", async () => {
     const { UNIT_ROOMS } = await import("../data/unit-rooms");
     const room = UNIT_ROOMS.u1;
     expect(room).toBeTruthy();
@@ -193,11 +220,14 @@ describe("the hero's room is the unit's mapped room on iOS and Android", () => {
       "android/LearnWithAlphonso/app/src/main/assets/content/unit-rooms.json",
     ])
       expect(JSON.parse(read(path)).units.u1, path).toBe(room);
-    // The web hero and its room are gone: the climbing map draws its own night-hill scene (PARITY-SPEC-6). iOS and
-    // Android keep their room heroes until their maps land.
+    // The web and Android heroes and their room are gone: the climbing map draws its own night-hill scene
+    // (PARITY-SPEC-6). iOS keeps its room hero until its map lands.
     expect(read(`${IOS}/LessonBrowserView.swift`)).toContain(
       "LessonData.roomMap?.roomID(forUnit: unit.id)",
     );
-    expect(read(`${KT}/LearnScreen.kt`)).toContain("unitRooms[u.id]");
+    expect(read(`${KT}/LearnScreen.kt`)).not.toContain("unitRooms");
+    expect(read(`${KT}/LearnClimbMap.kt`)).toContain(
+      "Brush.verticalGradient(listOf(ds.heroA, ds.heroB))",
+    );
   });
 });
