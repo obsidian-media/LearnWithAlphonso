@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { adminWhoAmI } from "@/lib/admin.functions";
 import { staffNavCounts, type NavCounts } from "@/lib/staff-home.functions";
+import { ClientLinks } from "@/components/console/ClientLinks";
 import { ConsoleFrame, type ConsoleIdentity } from "@/components/console/ConsoleFrame";
 import { CONSOLE_THEME_BOOT_SCRIPT } from "@/lib/console-theme";
 import { signOutAndLeave } from "@/lib/staff-signout";
@@ -54,7 +55,8 @@ function subscribeAuth(onChange: (event: "in" | "out") => void): () => void {
 
 function RootDocument() {
   const { pathname } = useLocation();
-  const nonce = useRouter().options?.ssr?.nonce;
+  const router = useRouter();
+  const nonce = router.options?.ssr?.nonce;
   return (
     // Royal light by default; the console's day/night choice (src/lib/console-theme.ts) is applied before first paint by
     // the inline script below, which adds data-ds-mode="night" for the app's Royal Night tokens. The fonts are the
@@ -75,16 +77,18 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body className="bg-ds-surface text-ds-ink font-sans">
-        <ConsoleFrame
-          pathname={pathname}
-          loadIdentity={loadIdentity}
-          subscribeAuth={subscribeAuth}
-          onSignOut={() =>
-            void signOutAndLeave(supabase.auth, (path) => window.location.assign(path))
-          }
-        >
-          <Outlet />
-        </ConsoleFrame>
+        <ClientLinks navigate={(href) => router.history.push(href)}>
+          <ConsoleFrame
+            pathname={pathname}
+            loadIdentity={loadIdentity}
+            subscribeAuth={subscribeAuth}
+            onSignOut={() =>
+              void signOutAndLeave(supabase.auth, (path) => window.location.assign(path))
+            }
+          >
+            <Outlet />
+          </ConsoleFrame>
+        </ClientLinks>
         <Scripts />
       </body>
     </html>

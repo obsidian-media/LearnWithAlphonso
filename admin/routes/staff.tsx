@@ -7,6 +7,9 @@ import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
 import { StaffView } from "@/components/staff/StaffView";
 
 export const Route = createFileRoute("/staff")({
+  // No server-side render for this page: who is signed in lives in the browser (a server render has no session), so the
+  // identity check in the loader runs there, never on the server. Otherwise every full load looked signed out.
+  ssr: false,
   loader: async () => {
     try {
       const me = await adminWhoAmI();
