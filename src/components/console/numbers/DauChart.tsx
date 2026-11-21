@@ -23,6 +23,8 @@ const dayLabel = (day: string) =>
  */
 export function DauChart({ series }: { series: SeriesPoint[] }) {
   if (series.length < 2) return null;
+  // Today's UTC day is still in progress, so its count is partial and is said to be.
+  const today = new Date().toISOString().slice(0, 10);
   const max = Math.max(...series.map((p) => p.value));
   const top = max > 0 ? max : 1;
   const x = (i: number) => PAD + (i * (W - 2 * PAD)) / (series.length - 1);
@@ -31,7 +33,7 @@ export function DauChart({ series }: { series: SeriesPoint[] }) {
   const area = `${points.join(" ")} ${x(series.length - 1).toFixed(1)},${H - PAD} ${x(0).toFixed(1)},${H - PAD}`;
   const first = series[0]!;
   const lastPoint = series[series.length - 1]!;
-  const summary = `Active learners per day, ${series.length} days from ${dayLabel(first.day)} to ${dayLabel(lastPoint.day)}. Highest ${max}. Latest ${lastPoint.value}.`;
+  const summary = `Active learners per day, ${series.length} days from ${dayLabel(first.day)} to ${dayLabel(lastPoint.day)}. Highest ${max}. Latest ${lastPoint.value}${lastPoint.day === today ? " (today so far, not a full day)" : ""}.`;
   const labelEvery = series.length <= 8 ? 1 : Math.ceil(series.length / 6);
   return (
     <div data-chart="dau">
@@ -60,7 +62,15 @@ export function DauChart({ series }: { series: SeriesPoint[] }) {
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
         />
-        <circle cx={x(series.length - 1)} cy={y(lastPoint.value)} r={4} fill="currentColor" />
+        <circle
+          cx={x(series.length - 1)}
+          cy={y(lastPoint.value)}
+          r={4}
+          fill={lastPoint.day === today ? "none" : "currentColor"}
+          stroke="currentColor"
+          strokeWidth={2}
+          data-partial={lastPoint.day === today ? "" : undefined}
+        />
       </svg>
       <div
         aria-hidden="true"
@@ -75,6 +85,7 @@ export function DauChart({ series }: { series: SeriesPoint[] }) {
       <p className="mt-2 text-xs font-semibold text-ds-ink-soft">
         Highest <Figure value={max} reason="" /> · latest{" "}
         <Figure value={lastPoint.value} reason="" />
+        {lastPoint.day === today ? " (today so far)" : ""}
       </p>
       <table className="sr-only">
         <caption>Active learners per day (UTC)</caption>
@@ -87,7 +98,10 @@ export function DauChart({ series }: { series: SeriesPoint[] }) {
         <tbody>
           {series.map((p) => (
             <tr key={p.day}>
-              <th scope="row">{dayLabel(p.day)}</th>
+              <th scope="row">
+                {dayLabel(p.day)}
+                {p.day === today ? " (partial day, so far)" : ""}
+              </th>
               <td>
                 <Figure value={p.value} reason="" />
               </td>

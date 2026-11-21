@@ -148,6 +148,7 @@ function Stat({
   tile,
   label,
   value,
+  previousValue,
   windowDays,
   wide,
   children,
@@ -157,6 +158,8 @@ function Stat({
   label?: string;
   /** Override the tile's own value (a derived number). */
   value?: number | null;
+  /** With `value`: the previous window's value for the same derived number (absent means no change is shown). */
+  previousValue?: number | null;
   windowDays: WindowDays;
   wide?: boolean;
   children?: ReactNode;
@@ -193,7 +196,11 @@ function Stat({
         {tile?.note}
       </p>
       {!missing ? (
-        <Delta current={shown} previous={tile?.previous} windowDays={windowDays} />
+        <Delta
+          current={shown}
+          previous={value !== undefined ? previousValue : tile?.previous}
+          windowDays={windowDays}
+        />
       ) : null}
       {children}
     </div>
@@ -341,6 +348,14 @@ export function NumbersScreen({ api }: { me: NumbersMe; api: NumbersApi }) {
     activeTile.value > 0
       ? Math.round((lessonsTile.value / activeTile.value) * 10) / 10
       : null;
+  // The previous window's average is derived the same way from the two previous counts (never the raw previous lessons).
+  const avgLessonsPrev =
+    typeof lessonsTile?.previous === "number" &&
+    typeof activeTile?.previous === "number" &&
+    lessonsTile.previous > 0 &&
+    activeTile.previous > 0
+      ? lessonsTile.previous / activeTile.previous
+      : null;
 
   const generated = data
     ? new Date(data.generatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
@@ -473,6 +488,7 @@ export function NumbersScreen({ api }: { me: NumbersMe; api: NumbersApi }) {
               tile={lessonsTile}
               label="Lessons per active learner"
               value={avgLessons}
+              previousValue={avgLessonsPrev}
               windowDays={windowDays}
             />
             <Stat group={own} tile={tileOf(own, "perfect")} windowDays={windowDays} />

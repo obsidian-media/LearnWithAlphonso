@@ -164,6 +164,50 @@ describe("changes against the previous window are real or absent", () => {
     expect(tile("dau").querySelector("[data-delta]")).toBeNull(); // no previous window is read for it
     expect(tile("perfect").querySelector("[data-delta]")).toBeNull();
   });
+  it("compares the lessons-per-learner average with the previous AVERAGE, never the raw previous lesson count", async () => {
+    show(response(supportView()));
+    await waitFor(() => expect(figure("new_window")).toBe("90"));
+    const per = () =>
+      screen.getByText("Lessons per active learner").closest("[data-tile]") as HTMLElement;
+    // 1000 / 200 = 5 now, 1000 / 250 = 4 before: up 25%. (Against the raw 1000 it would read "down 99%".)
+    const delta = per().querySelector("[data-delta]")?.textContent ?? "";
+    expect(delta).toMatch(/up.*25%/);
+    expect(delta).not.toMatch(/99/);
+  });
+  it("shows no change on lessons per learner when a previous count is missing or zero", async () => {
+    for (const over of [{ activePrev: 0 }, { lessonsPrev: null }]) {
+      cleanup();
+      show(
+        response([group("own", { state: "ok", tiles: ownTiles(OWN, 7, { ...GROWTH, ...over }) })]),
+      );
+      await waitFor(() => expect(figure("lessons")).toBe("1,000"));
+      const per = screen
+        .getByText("Lessons per active learner")
+        .closest("[data-tile]") as HTMLElement;
+      expect(per.querySelector("[data-delta]")).toBeNull();
+    }
+  });
+  it("marks today's partial UTC day in the chart and the table", async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    show(
+      response([
+        group("own", {
+          state: "ok",
+          tiles: ownTiles(OWN, 7, {
+            ...GROWTH,
+            dauSeries: [
+              { day: "2026-11-01", active: 10 },
+              { day: today, active: 4 },
+            ],
+          }),
+        }),
+      ]),
+    );
+    const chart = await screen.findByRole("img", { name: /Active learners per day/ });
+    expect(chart.getAttribute("aria-label")).toMatch(/today so far/);
+    expect(document.querySelector("[data-partial]")).not.toBeNull();
+    expect(document.querySelector('[data-chart="dau"] table')?.textContent).toMatch(/partial day/);
+  });
   it("shows no change for the one-day window", async () => {
     const day = response(
       [
