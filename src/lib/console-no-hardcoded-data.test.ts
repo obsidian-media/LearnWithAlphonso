@@ -37,7 +37,6 @@ const NUMERIC_TEXT = /^[\s$€£]*\d[\d,.\s]*[%kKmM]?\s*$/;
 
 /** Old pages not yet rebuilt (each rebuild PR removes its line). */
 export const LEGACY_ROUTES = [
-  "audit.tsx",
   "folder.$id.tsx",
   "folders.tsx",
   "health.tsx",

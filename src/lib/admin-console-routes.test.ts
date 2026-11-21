@@ -95,10 +95,16 @@ describe("every screen is gated by a server call, not by the navigation", () => 
     }
   });
 
-  it("the audit page reads through staffListAudit and asks for audit.read first", () => {
+  it("the audit page reads only through the two audit server functions and asks for audit.read first", () => {
     const src = readFileSync("admin/routes/audit.tsx", "utf8");
     expect(src).toContain("staffListAudit");
+    expect(src).toContain("staffListAuditActors");
     expect(src).toContain('"audit.read"');
+    expect(src).toContain("ssr: false");
+    expect(src).not.toMatch(/supabaseAdmin|from\(["']staff_audit_log/);
+    // the old view is gone: the screen is the only thing the route renders
+    expect(existsSync("src/components/staff/AuditView.tsx")).toBe(false);
+    expect(src).toContain("AuditScreen");
   });
 
   it("the learner page offers actions from the viewer's scopes and writes only through staff server functions", () => {
