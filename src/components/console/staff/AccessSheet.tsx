@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from "react";
-import { DEFAULT_SCOPES, type Scope } from "../../../lib/staff-scopes";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { DEFAULT_SCOPES, scopeLabel, type Scope } from "../../../lib/staff-scopes";
 import { Button } from "../../ui/Button";
-import { ScopePicker } from "./ScopeChips";
+import { ScopePicker, isDestructiveScope } from "./ScopeChips";
 
 export type AccessChoice = { role: "owner" | "support"; scopes: Scope[] };
 
@@ -21,6 +21,7 @@ export function AccessSheet({
   startScopes,
   name,
   busy,
+  covered = false,
   onCancel,
   onSubmit,
 }: {
@@ -30,9 +31,20 @@ export function AccessSheet({
   /** Who is being changed (edit mode). */
   name?: string;
   busy: boolean;
+  /** The reason dialog is open on top: hide this sheet from assistive tech and bring focus back when it closes. */
+  covered?: boolean;
   onCancel: () => void;
   onSubmit: (input: { email: string; role: "owner" | "support"; scopes: Scope[] }) => void;
 }) {
+  const form = useRef<HTMLFormElement>(null);
+  const wasCovered = useRef(false);
+  useEffect(() => {
+    // Back from the reason dialog (cancelled): focus returns to the sheet's first control.
+    if (wasCovered.current && !covered) {
+      form.current?.querySelector<HTMLElement>("select, input, button")?.focus();
+    }
+    wasCovered.current = covered;
+  }, [covered]);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"owner" | "support">(startRole);
   // Demoting an owner starts from the standard support scopes (an owner's stored scopes are empty, they have every one).
@@ -53,10 +65,13 @@ export function AccessSheet({
     <div
       role="dialog"
       aria-modal="true"
+      aria-hidden={covered ? true : undefined}
+      inert={covered}
       aria-label={mode === "add" ? "Add staff" : "Change access"}
       className="fixed inset-0 z-40 flex items-end justify-center bg-ds-ink/40 p-4 sm:items-center"
     >
       <form
+        ref={form}
         onSubmit={submit}
         className="max-h-[90dvh] w-full max-w-lg space-y-4 overflow-y-auto rounded-3xl border border-ds-line bg-ds-card p-5 shadow-lg"
       >
@@ -95,6 +110,11 @@ export function AccessSheet({
           <div className="grid gap-2">
             <p className="text-sm">Scopes</p>
             <ScopePicker value={scopes} onChange={setScopes} disabled={busy} />
+            {scopes.filter(isDestructiveScope).map((scope) => (
+              <p key={scope} role="note" className="text-sm font-semibold text-ds-wrong-ink">
+                Includes “{scopeLabel(scope)}”: this cannot be undone by the person who holds it.
+              </p>
+            ))}
             <p className="ds-type-footnote text-ds-ink-soft">
               These are exactly what the server allows this person to do. Managing staff is for
               owners only.

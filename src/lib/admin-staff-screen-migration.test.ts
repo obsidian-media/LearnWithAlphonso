@@ -347,6 +347,23 @@ describe("staff_update_member (reason, actor rule, last owner)", () => {
   });
 });
 
+describe("the owner guard lock", () => {
+  // PGlite is a single connection, so a real race cannot be run here. The lock is asserted in the SQL text: both
+  // functions take the advisory lock before anything counts owners (it also covers implicit owners, which have no row
+  // to lock).
+  it("staff_update_member and staff_add_member take pg_advisory_xact_lock(staff_owner_guard) before any owner check", () => {
+    for (const name of ["staff_add_member", "staff_update_member"]) {
+      const body = STAFF_SCREEN.slice(
+        STAFF_SCREEN.indexOf(`FUNCTION public.${name}(`),
+        STAFF_SCREEN.indexOf(`REVOKE ALL ON FUNCTION public.${name}(`),
+      );
+      const lock = body.indexOf("pg_advisory_xact_lock(hashtext('staff_owner_guard'))");
+      expect(lock, name).toBeGreaterThan(-1);
+      expect(lock, name).toBeLessThan(body.indexOf("staff_is_active_owner"));
+    }
+  });
+});
+
 /** A random account that is not staff and has no row anywhere. */
 function LEARNER2(): string {
   return id(99);

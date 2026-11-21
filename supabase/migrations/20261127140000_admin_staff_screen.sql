@@ -9,7 +9,7 @@
 --                                   what the console says), and the role recorded is the database's, not the argument's.
 --         staff_update_member     REPLACED (same signature): same actor rule, plus the LAST-OWNER GUARD: a change that
 --                                   would leave no active owner (demoting or disabling the only one) is refused. Every
---                                   owner row is locked (FOR UPDATE, fixed order) before the count, so two owners
+--                                   owner row is locked (FOR UPDATE, fixed order) and one advisory lock (staff_owner_guard, also taken by staff_add_member) is held before the count, so two owners
 --                                   demoting each other at the same moment cannot both succeed. A person made an owner
 --                                   has their stored scopes cleared (an owner has every scope whatever is stored).
 --
@@ -86,6 +86,9 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
+  -- One lock for every owner-count decision, taken BEFORE any owner is counted: row locks cannot cover an implicit
+  -- owner (admin_users with no staff_roles row), so two simultaneous demotions could otherwise leave zero owners.
+  PERFORM pg_advisory_xact_lock(hashtext('staff_owner_guard'));
   IF NOT public.staff_is_active_owner(p_actor) THEN
     RAISE EXCEPTION 'staff_add_member: only an active owner may add staff' USING ERRCODE = '42501';
   END IF;
@@ -131,6 +134,9 @@ DECLARE
   new_disabled boolean;
   was_active_owner boolean;
 BEGIN
+  -- One lock for every owner-count decision, taken BEFORE any owner is counted: row locks cannot cover an implicit
+  -- owner (admin_users with no staff_roles row), so two simultaneous demotions could otherwise leave zero owners.
+  PERFORM pg_advisory_xact_lock(hashtext('staff_owner_guard'));
   IF p_actor = p_user THEN
     RAISE EXCEPTION 'staff_update_member: staff cannot act on their own account' USING ERRCODE = '42501';
   END IF;

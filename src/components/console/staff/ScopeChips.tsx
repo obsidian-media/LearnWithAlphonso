@@ -3,6 +3,9 @@ import { SCOPES, scopeLabel, type Scope } from "../../../lib/staff-scopes";
 /** Scopes a support person can hold. staff.manage belongs to owners only (the server refuses it for anyone else). */
 export const GRANTABLE_SCOPES: readonly Scope[] = SCOPES.filter((s) => s !== "staff.manage");
 
+/** A scope whose key ends in .delete or .ban: acting on a learner for good. Derived from the real key, nothing invented. */
+export const isDestructiveScope = (scope: string) => /\.(delete|ban)$/.test(scope);
+
 const CHIP = "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold";
 
 /** The scopes a person really has, as read-only chips (label from the real key; the key is the tooltip). */

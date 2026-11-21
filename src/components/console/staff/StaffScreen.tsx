@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { formatDateTime } from "../../../lib/staff-dates";
-import { DEFAULT_SCOPES, isScope, type Scope } from "../../../lib/staff-scopes";
+import { DEFAULT_SCOPES, type Scope } from "../../../lib/staff-scopes";
 import { Button } from "../../ui/Button";
 import { ReasonDialog } from "../../staff/ReasonDialog";
 import { Figure } from "../Figure";
 import { AccessSheet } from "./AccessSheet";
-import { ScopeList } from "./ScopeChips";
+import { GRANTABLE_SCOPES, ScopeList } from "./ScopeChips";
 import type { StaffApi, StaffRow } from "./staffApi";
 
 const messageOf = (e: unknown, fallback: string) =>
@@ -305,7 +305,11 @@ export function StaffScreen({ myId, api }: { myId: string; api: StaffApi }) {
           mode={sheet.mode}
           startRole={sheet.mode === "edit" && sheet.row.role === "owner" ? "owner" : "support"}
           startScopes={
-            sheet.mode === "edit" ? sheet.row.scopes.filter(isScope) : [...DEFAULT_SCOPES.support]
+            sheet.mode === "edit"
+              ? sheet.row.scopes.filter((x): x is Scope =>
+                  (GRANTABLE_SCOPES as readonly string[]).includes(x),
+                )
+              : [...DEFAULT_SCOPES.support]
           }
           name={
             sheet.mode === "edit"
@@ -313,6 +317,7 @@ export function StaffScreen({ myId, api }: { myId: string; api: StaffApi }) {
               : undefined
           }
           busy={busy}
+          covered={pending !== null}
           onCancel={() => setSheet(null)}
           onSubmit={({ email, role, scopes }) =>
             setPending(

@@ -307,3 +307,54 @@ describe("every change asks for a reason first and sends it", () => {
     expect(api.list).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("the sheet", () => {
+  it("a forbidden stored staff.manage cannot get stuck in the sheet or be sent", async () => {
+    const api = makeApi({
+      list: vi.fn(async () => [ROWS[0]!, row({ scopes: ["users.read", "staff.manage"] as never })]),
+    });
+    const user = await show(api);
+    await user.click(within(rowOf("Sam")).getByRole("button", { name: /Change access/ }));
+    await user.click(screen.getByRole("button", { name: SCOPE_LABELS["support.reply"] }));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+    await user.type(reasonBox(), "more access");
+    await user.click(screen.getByRole("button", { name: "Save change" }));
+    await waitFor(() => expect(api.update).toHaveBeenCalled());
+    expect(api.update).toHaveBeenCalledWith({
+      userId: SAM,
+      scopes: ["users.read", "support.reply"],
+      reason: "more access",
+    });
+  });
+
+  it("warns when a destructive scope is chosen, from the real key's label", async () => {
+    const user = await show();
+    await user.click(within(rowOf("Sam")).getByRole("button", { name: /Change access/ }));
+    expect(screen.queryByRole("note")).toBeNull();
+    await user.click(screen.getByRole("button", { name: SCOPE_LABELS["user.delete"] }));
+    expect(screen.getByRole("note").textContent).toContain(SCOPE_LABELS["user.delete"]);
+    await user.click(screen.getByRole("button", { name: SCOPE_LABELS["user.ban"] }));
+    expect(screen.getAllByRole("note")).toHaveLength(2);
+    await user.click(screen.getByRole("button", { name: SCOPE_LABELS["user.delete"] }));
+    expect(screen.getAllByRole("note")).toHaveLength(1);
+  });
+
+  it("is hidden from assistive tech while the reason dialog is open, and focus returns on cancel", async () => {
+    const user = await show();
+    await user.click(within(rowOf("Sam")).getByRole("button", { name: /Change access/ }));
+    await user.click(screen.getByRole("button", { name: SCOPE_LABELS["pro.grant"] }));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+    const sheet = document.querySelector('[aria-label="Change access"]') as HTMLElement;
+    expect(sheet.getAttribute("aria-hidden")).toBe("true");
+    expect(sheet.hasAttribute("inert")).toBe(true);
+    expect(screen.queryByRole("dialog", { name: "Change access" })).toBeNull();
+    await user.click(
+      within(screen.getByRole("dialog", { name: "Reason for this change" })).getByRole("button", {
+        name: "Cancel",
+      }),
+    );
+    expect(sheet.getAttribute("aria-hidden")).toBeNull();
+    expect(sheet.hasAttribute("inert")).toBe(false);
+    expect(sheet.contains(document.activeElement)).toBe(true);
+  });
+});
