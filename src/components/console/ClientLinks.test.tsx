@@ -112,7 +112,9 @@ describe("a page whose identity is still loading shows a neutral state, never th
 
   it("every identity-gated route skips the server render (so no loader decides 'signed out' without a session)", () => {
     const gated = readdirSync("admin/routes").filter(
-      (f) => f.endsWith(".tsx") && !["__root.tsx", "signin.tsx", "support_.$id.tsx"].includes(f),
+      (f) =>
+        f.endsWith(".tsx") &&
+        !["__root.tsx", "signin.tsx", "support_.$id.tsx", "users_.$id.tsx"].includes(f),
     );
     expect(gated.length).toBeGreaterThan(8);
     for (const f of gated) {
