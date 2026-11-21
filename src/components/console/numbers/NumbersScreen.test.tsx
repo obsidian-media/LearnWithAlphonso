@@ -301,7 +301,7 @@ describe("the honest absent states", () => {
 
 describe("what each role sees (the server sends the groups; the page adds nothing)", () => {
   it("support: Growth, Learning and App health, and NO Money section or provider", async () => {
-    show(response(supportView()), [...DEFAULT_SCOPES.support, "numbers.read"]);
+    show(response(supportView()));
     await waitFor(() => expect(figure("new_window")).toBe("90"));
     expect(screen.getByRole("heading", { name: "Growth" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Money" })).toBeNull();
