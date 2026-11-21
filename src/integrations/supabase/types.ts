@@ -4080,6 +4080,7 @@ export type Database = {
       };
       staff_get_settings: { Args: { p_actor: string }; Returns: Json };
       staff_home_metrics: { Args: { p_range: string }; Returns: Json };
+      staff_is_active_owner: { Args: { p_user: string }; Returns: boolean };
       staff_lift_restriction: {
         Args: {
           p_actor: string;
@@ -4089,6 +4090,19 @@ export type Database = {
           p_target: string;
         };
         Returns: undefined;
+      };
+      staff_list_members: {
+        Args: { p_actor: string };
+        Returns: {
+          added_at: string;
+          disabled_at: string;
+          display_name: string;
+          email: string;
+          last_sign_in_at: string;
+          role: string;
+          scopes: string[];
+          user_id: string;
+        }[];
       };
       staff_record: {
         Args: {

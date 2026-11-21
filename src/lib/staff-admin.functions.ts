@@ -26,10 +26,14 @@ const scopesSchema = z.array(z.enum(SCOPES));
 export type StaffMember = {
   userId: string;
   displayName: string | null;
+  /** The account's sign-in email (auth.users), null only if the account row is gone. */
+  email: string | null;
   role: StaffRole;
   scopes: string[];
   disabled: boolean;
   addedAt: string;
+  /** auth.users.last_sign_in_at. null = this person has never signed in (shown as "Never signed in"). */
+  lastSignInAt: string | null;
 };
 
 type Ctx = { staffRole: StaffRole };
@@ -41,27 +45,23 @@ export const staffListStaff = createServerFn({ method: "GET" })
   .middleware([requireStaff("staff.manage")])
   .handler(async ({ context }): Promise<StaffMember[]> => {
     assertOwner(context);
-    const { data: rows, error } = await context.supabaseAdmin
-      .from("staff_roles")
-      .select("user_id, role, scopes, disabled_at, added_at")
-      .order("added_at", { ascending: true });
+    // One database call that returns ONLY staff rows (and only to an active owner), with the sign-in email and last
+    // sign-in read from auth.users inside the database.
+    const { data: rows, error } = await context.supabaseAdmin.rpc("staff_list_members", {
+      p_actor: context.userId,
+    });
     if (error) throw new Error("Could not read the staff list.");
-    const ids = (rows ?? []).map((r) => r.user_id);
-    const { data: names, error: namesError } = await context.supabaseAdmin
-      .from("profiles")
-      .select("id, display_name")
-      .in("id", ids);
-    if (namesError) throw new Error("Could not read the staff list.");
-    const byId = new Map((names ?? []).map((n) => [n.id, n.display_name as string | null]));
     return (rows ?? [])
       .filter((r) => isStaffRole(r.role))
       .map((r) => ({
         userId: r.user_id,
-        displayName: byId.get(r.user_id) ?? null,
+        displayName: r.display_name,
+        email: r.email,
         role: r.role as StaffRole,
         scopes: effectiveScopes(r.role as StaffRole, r.scopes ?? []),
         disabled: r.disabled_at != null,
         addedAt: r.added_at,
+        lastSignInAt: r.last_sign_in_at,
       }));
   });
 
@@ -70,7 +70,11 @@ function mapRpcError(error: { code?: string; message?: string }): Error {
   if (error.code === "P0002") return new Error("That person is not staff.");
   if (error.code === "42501" && /staff\.manage/.test(error.message ?? ""))
     return new Error(MANAGE_MESSAGE);
+  if (error.code === "42501" && /active owner/.test(error.message ?? ""))
+    return new Error(OWNER_ONLY_MESSAGE);
   if (error.code === "42501") return new Error("You cannot act on your own account.");
+  if (error.code === "23514")
+    return new Error("That would leave no active owner, so nothing was changed.");
   if (error.code === "22023" && /support_ai/.test(error.message ?? ""))
     return new Error(SUPPORT_AI_MESSAGE);
   return new Error("Could not change the staff list. Nothing was changed.");
