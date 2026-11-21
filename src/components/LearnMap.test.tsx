@@ -114,9 +114,18 @@ describe("LearnMap: the climbing map", () => {
   it("the summit chest reads locked until the unit is done, and earned after", () => {
     show([]);
     expect(
-      screen.getByRole("img", { name: "Unit 1 reward, locked until you finish the unit" }),
+      screen.getByRole("button", { name: "Unit 1 reward, locked until you finish the unit" }),
     ).toBeTruthy();
     expect(document.querySelector("[data-chest=trailhead]")).toBeNull();
+  });
+
+  it("a tap on the locked summit chest explains itself in the status line, like a locked lesson", () => {
+    show([]);
+    expect(screen.getByRole("status").textContent).toBe("");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Unit 1 reward, locked until you finish the unit" }),
+    );
+    expect(screen.getByRole("status").textContent).toBe("Finish this unit to open the chest.");
   });
 
   it("a finished unit's chest sits at the foot of the next climb, earned; the new summit is locked", () => {
@@ -255,6 +264,29 @@ describe("LearnMap: the climbing map", () => {
       expect(screen.getByRole("status").textContent).not.toBe("");
       act(() => {
         vi.advanceTimersByTime(200);
+      });
+      expect(screen.getByRole("status").textContent).toBe("");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("tapping the same locked lesson again restarts the 6 s clock", () => {
+    vi.useFakeTimers();
+    try {
+      show(["u1l1"]);
+      const locked = screen.getByRole("button", { name: /Numbers, locked/ });
+      fireEvent.click(locked);
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      fireEvent.click(locked); // same text: the clock must start over
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(screen.getByRole("status").textContent).not.toBe("");
+      act(() => {
+        vi.advanceTimersByTime(1100);
       });
       expect(screen.getByRole("status").textContent).toBe("");
     } finally {

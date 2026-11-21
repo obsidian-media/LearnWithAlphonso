@@ -197,7 +197,11 @@ fun LearnScreen(
     fun isExpanded(key: String) = expandedKeys.split(",").contains(key)
     fun toggle(key: String) { expandedKeys = (expandedKeys.split(",").filter { it.isNotEmpty() && it != key } + if (isExpanded(key)) emptyList() else listOf(key)).joinToString(",") }
     val context = androidx.compose.ui.platform.LocalContext.current
-    val unitRooms = remember { runCatching { com.obsidianmedia.learnwithalphonso.core.logic.UnitRooms.fromJson(context.assets.open("content/unit-rooms.json").bufferedReader().use { it.readText() }) }.getOrDefault(emptyMap()) }
+    // The climbing map: one level's climb from the shared model. No timing file, no map (nothing honest to say about minutes).
+    val timing = remember { runCatching { com.obsidianmedia.learnwithalphonso.core.logic.LessonTiming.fromJson(context.assets.open("content/lesson-timing.json").bufferedReader().use { it.readText() }) }.getOrNull() }
+    val climbUnits = remember(units, container.content) { climbUnitsOf(units, container.content.vocabImages) }
+    val climb = remember(climbUnits, completedSet, timing) { timing?.let { com.obsidianmedia.learnwithalphonso.core.logic.LearnMap.of(climbUnits, completedSet, it) } }
+    val reduceMotion = com.obsidianmedia.learnwithalphonso.ui.lesson.rememberReduceMotion()
     val scope = rememberCoroutineScope()
     // The one path view-model for this course: the rail card reads its goal, and the card opened from the rail shows it in full.
     val pathVm = com.obsidianmedia.learnwithalphonso.ui.path.rememberPathViewModel(container, state.course)
@@ -206,10 +210,10 @@ fun LearnScreen(
     var forYouOpen by rememberSaveable { mutableStateOf("") }
     var showFreezeShop by rememberSaveable { mutableStateOf(false) }
     fun toggleForYou(which: String) { forYouOpen = if (forYouOpen == which) "" else which }
-    // Items before the unit rows: status, rail, units header, jump button, plus the ones that come and go.
-    val fixedItems = 4 + (if (currentUnit != null) 1 else 0) + (if (forYouOpen.isNotEmpty()) 1 else 0) + (if (state.placementTaken == false) 1 else 0)
+    // Items before the unit rows: status, rail, units header, jump button, plus the ones that come and go (the climbing map is one).
+    val fixedItems = learnFixedItems(hasClimb = climb != null, forYouDetailOpen = forYouOpen.isNotEmpty(), showsPlacement = state.placementTaken == false)
     val currentRowIndex = rows.indexOfFirst { it is FoldRow.UnitRow && it.current }.let { if (it < 0) -1 else fixedItems + it }
-    // No scroll on first show: the status row and the hero are the top of the screen. "Jump to current" is the way down.
+    // No scroll on first show: the status row and the climbing map are the top of the screen. "Jump to current" is the way down.
     Column(Modifier.fillMaxSize().background(ds.surface)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             CoursePicker(state.course, onSelect = { picked -> container.activeCourse.set(picked); vm.selectCourse(picked) })
@@ -225,13 +229,11 @@ fun LearnScreen(
             // and unkeyed items shifting index is the one way a lazy list can show a row twice.
             // The slim status row (streak with its protected mark, hearts, XP, league). The streak pill opens the freeze shop.
             item(key = "header") { StatusHeader(progress, showFreezeShop = showFreezeShop, onToggleFreezeShop = { showFreezeShop = !showFreezeShop }, onBuyStreakFreeze = vm::buyStreakFreeze) }
-            // The one hero: the current unit on its room with Alphonso and a single Continue lesson button.
-            currentUnit?.let { place ->
-                container.content.bundle(state.course).units.firstOrNull { it.id == place.unitId }?.let { u ->
-                    // "Unit 1 of 28": the unit's place among the units of its own level, the same count on every platform.
-                    val levelUnits = container.content.bundle(state.course).units.filter { it.level == u.level }
-                    val nextLessonTitle = u.lessons.firstOrNull { it.id == place.lessonId }?.title
-                    item(key = "current-unit") { CurrentUnitCard(u, place, unitRooms[u.id], levelUnits.indexOfFirst { it.id == u.id } + 1, levelUnits.size, nextLessonTitle, greeting(progress), onContinue = { onOpenLesson(state.course, place.lessonId) }) }
+            // The climbing map replaces the old hero: this level's unit as a climb, with the start sheet for the next lesson.
+            // "Unit N of M" counts the units of the level on screen. Continue lesson only when the next lesson is the course-wide one.
+            climb?.let { c ->
+                item(key = "learn-climb") {
+                    LearnClimbMap(c, greeting(progress), continueLessonId = currentUnit?.lessonId, reduceMotion = reduceMotion, onOpenLesson = { id -> onOpenLesson(state.course, id) })
                 }
             }
             item(key = "for-you") {
@@ -356,47 +358,6 @@ private fun FoldHeaderRow(label: String, open: Boolean, kind: String, onClick: (
     ) {
         Text(label, style = FootnoteType, color = ds.inkSoft, modifier = Modifier.weight(1f))
         Text(if (open) "\u25BE" else "\u25B8", style = CaptionType, color = ds.inkSoft)
-    }
-}
-
-/**
- * The one hero: the current unit on its painted room with Alphonso standing in it, his greeting, and a single gold
- * Continue lesson button (the design-system primary button look: gold face, darker edge). Replaces the old pinned card.
- */
-@Composable
-internal fun CurrentUnitCard(unit: com.obsidianmedia.learnwithalphonso.core.content.Unit, place: CurrentUnit, roomId: String?, levelIndex: Int, levelCount: Int, lessonTitle: String?, greeting: String, onContinue: () -> kotlin.Unit) {
-    val ds = LocalAlphonsoTokens.current
-    // The same unit -> room table the lesson and iOS read; the rotation only for a unit it does not know.
-    val art = roomId ?: LearnFold.roomArtFor(place.index - 1)
-    val room = rememberFirstRunAsset("scenes/$art.webp") ?: rememberFirstRunAsset("scenes/${LessonStage.FALLBACK_ROOM}.webp")
-    val alphonso = rememberFirstRunAsset("lesson/happy.webp")
-    val shape = RoundedCornerShape(AlphonsoTokens.Radius.bubble)
-    // At large font sizes the text takes the full width and Alphonso (decorative) steps aside, so nothing overlaps him.
-    val big = LocalDensity.current.fontScale >= 1.3f
-    val textWidth = if (big) 1f else 0.62f
-    Column {
-        // Not merged: TalkBack reads the greeting, then the lesson line, then the Continue lesson button.
-        Box(Modifier.fillMaxWidth().clip(shape).background(ds.hero)) {
-            room?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.matchParentSize()) }
-            Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent, ds.hero.copy(alpha = 0.92f)))))
-            if (!big) alphonso?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.align(Alignment.BottomEnd).height(150.dp).clearAndSetSemantics { }) }
-            Column(Modifier.fillMaxWidth().padding(AlphonsoTokens.Space.s4), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
-                Text(greeting, style = CaptionType, color = ds.ink, modifier = Modifier.fillMaxWidth(textWidth).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).padding(horizontal = AlphonsoTokens.Space.s3, vertical = AlphonsoTokens.Space.s2))
-                Spacer(Modifier.height(AlphonsoTokens.Space.s12))
-                Text("YOU ARE HERE \u00B7 UNIT $levelIndex OF $levelCount", style = OverlineType, color = ds.onHeroKick)
-                Text(unit.title, style = TitleType, color = ds.onHero, modifier = Modifier.fillMaxWidth(textWidth))
-                if (lessonTitle != null) Text("Next: $lessonTitle", style = FootnoteType, color = ds.onHeroSoft, modifier = Modifier.fillMaxWidth(textWidth))
-                // The one way in, on the scene with the rest of the hero. The edge under the gold face is the button's darker lip.
-                val button = RoundedCornerShape(AlphonsoTokens.Radius.control)
-                Box(
-                    Modifier.fillMaxWidth(textWidth).clip(button).background(ds.actionEdge).padding(bottom = 4.dp).clip(button).background(ds.action)
-                        .heightIn(min = 48.dp)
-                        .clickable(role = Role.Button, onClickLabel = "Continue ${lessonTitle ?: unit.title}", onClick = onContinue)
-                        .padding(horizontal = AlphonsoTokens.Space.s6, vertical = AlphonsoTokens.Space.s3),
-                    contentAlignment = Alignment.Center,
-                ) { Text("Continue lesson", style = HeadlineType, color = ds.onAction) }
-            }
-        }
     }
 }
 
@@ -627,3 +588,11 @@ private fun HeartsPill(progress: LessonCompletionProgress) {
         hint = wait?.let { "+1 in $it" },
     )
 }
+
+/**
+ * How many LazyColumn items sit above the unit rows, so Jump to current scrolls to the right one: the header, the For
+ * you rail, the levels menu and the jump row always; the climbing map, the open For-you detail and the placement
+ * banner when shown. Keep it in step with the `item(...)` calls before the unit rows in [LearnScreen].
+ */
+internal fun learnFixedItems(hasClimb: Boolean, forYouDetailOpen: Boolean, showsPlacement: Boolean): Int =
+    4 + (if (hasClimb) 1 else 0) + (if (forYouDetailOpen) 1 else 0) + (if (showsPlacement) 1 else 0)
