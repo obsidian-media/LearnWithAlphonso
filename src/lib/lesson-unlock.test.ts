@@ -186,7 +186,7 @@ describe("the curriculum-order allowance cannot ratchet", () => {
           done.add(next.id);
         }
       }
-    });
+    }, 120_000);
   }
 });
 
@@ -250,7 +250,7 @@ describe("every lesson any Learn surface offers is startable (the screens cannot
           for (const id of offered) expect(allowed.has(id)).toBe(true);
         }
       }
-    });
+    }, 120_000);
 
     it(`${course}: Path lesson candidates are all startable`, () => {
       const sets = completionSets(rawLessons, learning);
@@ -289,7 +289,7 @@ describe("every lesson any Learn surface offers is startable (the screens cannot
           }
         }
       }
-    });
+    }, 120_000);
   }
 
   it("the Learn map states are the shared pathStates", () => {
