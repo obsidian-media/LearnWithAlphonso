@@ -205,7 +205,7 @@ describe("the pre-call sheet", () => {
     const dialog = screen.getByRole("dialog");
     const online = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
     fireEvent.click(within(dialog).getByRole("button", { name: /Start the call/ }));
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent("You’re offline");
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Can’t reach the server");
     expect(onStart).not.toHaveBeenCalled();
     online.mockReturnValue(true);
     fireEvent.click(within(dialog).getByRole("button", { name: "Retry" }));
