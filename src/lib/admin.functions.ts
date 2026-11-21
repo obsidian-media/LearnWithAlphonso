@@ -873,6 +873,12 @@ export type AdminReport = {
   createdAt: string;
   /** When an account on this report was deleted; the maintenance sweep removes the report 90 days later. */
   accountDeletedAt: string | null;
+  /**
+   * How many OPEN reports name the same target (this one included): the same learner for a learner report, the same
+   * team for a team-name report. Null when the report has no target to count (an AI response, or an account that is
+   * gone), so "unknown" is never a 1.
+   */
+  repeatCount: number | null;
 };
 
 const LEGACY_TEAM_REASON = /^team_name:([0-9a-f-]{36}):/i;
@@ -946,6 +952,18 @@ export const adminListReports = createServerFn({ method: "GET" })
       for (const t of teams ?? []) teamNameById.set(t.id, t.name);
     }
 
+    // Open reports per target. Every row read here is open (a handled report is deleted), so this is the real count.
+    const targetOf = (r: (typeof reports)[number]): string | null => {
+      const team = teamIdForReport({ reason: r.reason, context: r.context });
+      if (r.kind === "team_name" || team) return team ? `team:${team}` : null;
+      return r.kind === "user" && r.reported ? `user:${r.reported}` : null;
+    };
+    const perTarget = new Map<string, number>();
+    for (const r of reports) {
+      const t = targetOf(r);
+      if (t) perTarget.set(t, (perTarget.get(t) ?? 0) + 1);
+    }
+
     return reports.map((r) => ({
       id: r.id,
       kind: r.kind as AdminReport["kind"],
@@ -960,6 +978,7 @@ export const adminListReports = createServerFn({ method: "GET" })
         teamNameById.get(teamIdForReport({ reason: r.reason, context: r.context }) ?? "") ?? null,
       createdAt: r.created_at,
       accountDeletedAt: r.account_deleted_at ?? null,
+      repeatCount: perTarget.get(targetOf(r) ?? "") ?? null,
     }));
   });
 
@@ -991,6 +1010,8 @@ async function resolveReport(supabaseAdmin: AdminClient, reportId: string): Prom
 }
 
 const reportIdSchema = z.object({ reportId: z.string().uuid() });
+/** Every report action carries the reason the person typed; the handler checks its length and the SQL checks it again. */
+const reportActionSchema = reportIdSchema.extend({ reason: z.string() });
 
 /** Audit trail: one structured line per admin action, ids only (never names, reasons or messages). */
 function logAdminAction(
@@ -1020,14 +1041,17 @@ async function resolveAfterAction(supabaseAdmin: AdminClient, reportId: string):
  */
 export const adminDismissReport = createServerFn({ method: "POST" })
   .middleware([requireStaff("reports.manage")])
-  .inputValidator((d: unknown) => reportIdSchema.parse(d))
+  .inputValidator((d: unknown) => reportActionSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { validateReason } = await import("./staff-audit.server");
+    const reason = validateReason(data.reason);
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     const { data: removed, error } = await context.supabaseAdmin.rpc("staff_dismiss_report", {
       p_actor: context.userId,
       p_role: context.staffRole,
       p_target: report.reported,
       p_report: data.reportId,
+      p_reason: reason,
     } as never);
     if (error) throw new Error(error.message);
     if (!removed) throw new Error("That report no longer exists.");
@@ -1038,8 +1062,10 @@ export const adminDismissReport = createServerFn({ method: "POST" })
 /** A fresh Learner-XXXX handle for the reported account; they are asked to choose a name again. */
 export const adminResetDisplayName = createServerFn({ method: "POST" })
   .middleware([requireStaff("reports.manage")])
-  .inputValidator((d: unknown) => reportIdSchema.parse(d))
+  .inputValidator((d: unknown) => reportActionSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true; newName: string }> => {
+    const { validateReason } = await import("./staff-audit.server");
+    const reason = validateReason(data.reason);
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     if (!report.reported) throw new Error("This report has no account to rename.");
     const { data: newName, error } = await context.supabaseAdmin.rpc("staff_reset_display_name", {
@@ -1047,6 +1073,7 @@ export const adminResetDisplayName = createServerFn({ method: "POST" })
       p_role: context.staffRole,
       p_target: report.reported,
       p_report: data.reportId,
+      p_reason: reason,
     } as never);
     if (error) throw new Error(error.message);
     if (!newName) throw new Error("That account no longer exists.");
@@ -1058,22 +1085,25 @@ export const adminResetDisplayName = createServerFn({ method: "POST" })
 export const adminRenameTeam = createServerFn({ method: "POST" })
   .middleware([requireStaff("reports.manage")])
   .inputValidator((d: unknown) =>
-    reportIdSchema.extend({ name: z.string().min(1).max(80) }).parse(d),
+    reportActionSchema.extend({ name: z.string().min(1).max(80) }).parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { validateReason } = await import("./staff-audit.server");
+    const reason = validateReason(data.reason);
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     const teamId = teamIdForReport(report);
     if (!teamId) throw new Error("This report is not about a team.");
-    const { data: reason, error } = await context.supabaseAdmin.rpc("staff_rename_team", {
+    const { data: refusal, error } = await context.supabaseAdmin.rpc("staff_rename_team", {
       p_actor: context.userId,
       p_role: context.staffRole,
       p_target: report.reported,
       p_report: data.reportId,
       p_team: teamId,
       p_name: data.name,
+      p_reason: reason,
     } as never);
     if (error) throw new Error(error.message);
-    if (reason) throw new Error(socialReasonMessage(reason as string));
+    if (refusal) throw new Error(socialReasonMessage(refusal as string));
     logAdminAction("rename_team", data.reportId, teamId, context.userId);
     await resolveAfterAction(context.supabaseAdmin, data.reportId);
     return { ok: true };
@@ -1082,8 +1112,10 @@ export const adminRenameTeam = createServerFn({ method: "POST" })
 /** Deletes the team the report names; members, missions, rewards and kicks cascade. */
 export const adminDisbandTeam = createServerFn({ method: "POST" })
   .middleware([requireStaff("reports.manage")])
-  .inputValidator((d: unknown) => reportIdSchema.parse(d))
+  .inputValidator((d: unknown) => reportActionSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { validateReason } = await import("./staff-audit.server");
+    const reason = validateReason(data.reason);
     const report = await loadReport(context.supabaseAdmin, data.reportId);
     const teamId = teamIdForReport(report);
     if (!teamId) throw new Error("This report is not about a team.");
@@ -1093,6 +1125,7 @@ export const adminDisbandTeam = createServerFn({ method: "POST" })
       p_target: report.reported,
       p_report: data.reportId,
       p_team: teamId,
+      p_reason: reason,
     } as never);
     if (error) throw new Error(error.message);
     if (!removed) throw new Error("That team no longer exists.");
