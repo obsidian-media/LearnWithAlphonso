@@ -235,9 +235,13 @@ lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N 
   `src/data/lesson-extras.test.ts`): listening (prompt never restates the audio, four distinct choices,
   one-to-three-word variants, no homophone: English list, French est/et a/à ou/où and silent endings,
   Spanish seseo, yeísmo, b/v, silent h, a bare tilde); speak (3 to 12 words, no digits, compound numbers,
-  ordinals or possessive 's, round trip through the course's spoken-answer normaliser); translate (2 to 5
+  ordinals or possessive 's, round trip through the course's spoken-answer normaliser); translate (2 to 9
   distinct wordings, the idea never contains the sentence, no "(e)" trick, word counts by level); all
   types: explanation quotes the answer, no duplicate of an existing item, no English in French or Spanish.
+- **Meta-text gate** (`src/lib/lesson-mix/meta-gate.ts`): an explanation or prompt is shown to the learner, so it never mentions "the learner", "this item", "the prompt", "the lesson", "read aloud", a CEFR level or a [placeholder], and is never just the target sentence said again. Quoted course text is exempt. The first bulk missed this (a blind sample found it in about a third of the speak explanations).
+- **Second answers.** `alts` (Sonnet batch) proposes extra wordings for every translate item, `merge-alts` appends them to `acceptableAnswers` (the existing alternatives field; first stays canonical, at most 9 wordings) one at a time through the translate gate. Speak grades one phrase by design and has no alternatives field.
+- **New drafts vs existing items.** The "hold every answer-key change" rule protects EXISTING questions. Lesson-mix items are new drafts no learner has seen, so `apply` applies the judge's patches, keys included, then re-runs the gates; an unpatchable ruling goes to `regen.json` and the next `draft --retry-failed` repairs it with the reason. The tooling always plans from `stripLessonExtras(curriculum)`, so it is re-runnable over an exported data file.
+- **Blind sample.** `blind --round 1|2`: 300 items, 100 per course, judged by Opus with no earlier verdicts; round 2 excludes round 1's ids. Report the rate with its 95% Wilson range and, separately, the share where a correct answer would be marked wrong.
 - **Panel.** The closure run's reviewers read every new item (Sonnet), every flag plus 10% (Mistral), and
   Opus judges the flagged. Say "AI-reviewed", never "native-reviewed".
 - **Bundles.** Content changes need the native bundles: `bun scripts/export-ios-content.ts` and

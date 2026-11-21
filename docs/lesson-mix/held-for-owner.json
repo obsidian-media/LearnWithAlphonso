@@ -1,0 +1,108 @@
+[
+ {
+  "id": "en:question:a1p5l3/sx1",
+  "why": "failed the automatic checks after 5 drafts: duplicate: the course already has this phrase",
+  "draft": {
+   "answer": "I ride my bike to school.",
+   "explanation": "In English you \"ride\" a bike, so the verb \"ride\" goes with \"bike\" in \"I ride my bike to school.\""
+  }
+ },
+ {
+  "id": "en:question:b1p20l5/tx1",
+  "why": "failed the automatic checks after 13 drafts: explanation is meta text (an instruction addressed to the author)",
+  "draft": {
+   "prompt": "Give advice about the last stage of a process: say that going over all of the work two times is a good idea before you stop.",
+   "acceptableAnswers": [
+    "Before finishing, you should check everything twice.",
+    "Before you finish, you should check everything twice.",
+    "You should check everything twice before you finish.",
+    "Before you finish, you should verify everything twice."
+   ],
+   "explanation": "You give advice with \"should\" plus the base verb, and the time phrase can come first or last: \"Before finishing, you should check everything twice.\" The verb \"check\" means to make sure something is right, and \"verify\" is a more formal word with the same meaning."
+  }
+ },
+ {
+  "id": "en:question:c1p18l1/lx1",
+  "why": "failed the automatic checks after 16 drafts: \"Following the merger, the company confirmed that several senior managers had been paid quietly.\" does not have the answer's 15 words",
+  "draft": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "Following the merger, the company confirmed that several senior managers had been let go quietly.",
+   "wrong": [
+    "Following the merger, the company confirmed that several senior managers had been paid quietly.",
+    "Following the merger, the company confirmed that several senior managers had been warned quietly.",
+    "Following the merger, the company confirmed that several senior managers had been promoted quietly."
+   ],
+   "explanation": "In \"Following the merger, the company confirmed that several senior managers had been let go quietly.\", the phrase \"let go\" is a polite way of saying the managers were fired. Listen closely to the words before \"quietly\", because being paid, warned, or promoted means something quite different."
+  }
+ },
+ {
+  "id": "fr:question:fra1p12l2/lx1",
+  "why": "failed the automatic checks after 16 drafts: \"Le chat est loin de la table.\" does not have the answer's 8 words",
+  "draft": {
+   "prompt": "What did you hear?",
+   "audioText": "Le chat est à côté de la table.",
+   "wrong": [
+    "Le chat est loin de la table.",
+    "Le chat est près de la table.",
+    "Le chat est devant de la table."
+   ],
+   "explanation": "\"Le chat est à côté de la table.\" means the cat is next to the table. Listen for \"à côté de\" (next to), which sounds different from \"loin de\" (far from) and \"près de\" (near)."
+  }
+ },
+ {
+  "id": "fr:question:fra1p17l5/lx1",
+  "why": "failed the automatic checks after 16 drafts: \"Je reçois un message de mon ami.\" does not have the answer's 6 words",
+  "draft": {
+   "prompt": "What did you hear?",
+   "audioText": "J'envoie un message à mon ami.",
+   "wrong": [
+    "Je reçois un message de mon ami.",
+    "J'envoie un courriel à mon ami.",
+    "J'envoie un message à mon père."
+   ],
+   "explanation": "\"J'envoie un message à mon ami.\" means you are sending a message to a friend. Listen for the verb \"envoyer\" (to send), the noun \"message\", and \"ami\" at the end."
+  }
+ },
+ {
+  "id": "fr:question:fra2p20l2/lx1",
+  "why": "failed the automatic checks after 16 drafts: \"Il y a un marché près de la gare.\" is not a close variant (5 words apart)",
+  "draft": {
+   "prompt": "What did you hear?",
+   "audioText": "Il y a un rond-point près de la gare.",
+   "wrong": [
+    "Il y a un marché près de la gare.",
+    "Il y a un trottoir près de la gare.",
+    "Il y a un bâtiment près de la gare."
+   ],
+   "explanation": "\"Il y a un rond-point près de la gare.\" means there is a roundabout near the station. Listen for the key noun: \"rond-point\" sounds very different from \"marché\", \"trottoir\" or \"bâtiment\"."
+  }
+ },
+ {
+  "id": "fr:question:frc1p1l2/lx1",
+  "why": "failed the automatic checks after 16 drafts: the audio is 17 words (3 to 16)",
+  "draft": {
+   "prompt": "What did you hear?",
+   "audioText": "Depuis son dernier succès, cette jeune entreprise a vraiment le vent en poupe sur le marché européen.",
+   "wrong": [
+    "Depuis son dernier échec, cette jeune entreprise a vraiment le vent en poupe sur le marché européen.",
+    "Depuis son dernier succès, cette jeune entreprise a vraiment le vent en poupe sur le marché mondial.",
+    "Depuis son dernier succès, cette jeune entreprise a vraiment le vent en poupe sur le marché français."
+   ],
+   "explanation": "The sentence you hear is \"Depuis son dernier succès, cette jeune entreprise a vraiment le vent en poupe sur le marché européen.\" The idiom \"avoir le vent en poupe\" describes a company thriving and gaining momentum, so listen closely to the final word, which tells you which market is meant."
+  }
+ },
+ {
+  "id": "es:question:esa1p26l3/lx1",
+  "why": "failed the automatic checks after 3 drafts: \"Espera un momento, gracias.\" does not have the answer's 5 words",
+  "draft": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "Espera un momento, por favor.",
+   "wrong": [
+    "Corre un momento, por favor.",
+    "Espera un minuto, por favor.",
+    "Espera un momento, gracias."
+   ],
+   "explanation": "The speaker says \"Espera un momento, por favor.\", using espera, the tú command of esperar (to wait), to politely ask someone to wait a moment."
+  }
+ }
+]

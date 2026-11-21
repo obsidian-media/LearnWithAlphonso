@@ -4,8 +4,16 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import type { Lesson, Unit } from "../../data/curriculum";
 import { CapExceededError } from "../content-review/ledger";
-import { addLessonExtras, courseNeeds, extraQuestions, isEligible, lessonNeed } from "./extras";
 import {
+  NO_EXTRAS_LESSONS,
+  addLessonExtras,
+  courseNeeds,
+  extraQuestions,
+  isEligible,
+  lessonNeed,
+} from "./extras";
+import {
+  britishProblems,
   existingKeys,
   listeningGate,
   speakGate,
@@ -202,7 +210,8 @@ const goodListening = {
   prompt: "What did you hear?",
   audioText: "She works at the hospital.",
   wrong: ["She walks at the hospital.", "She works at the school.", "He works at the hospital."],
-  explanation: 'The audio says "She works at the hospital."',
+  explanation:
+    '"She works at the hospital." puts the verb "works" in the third person; the other choices change one word.',
 };
 
 describe("listening gate", () => {
@@ -287,7 +296,10 @@ describe("listening gate", () => {
 });
 
 describe("speak gate: the round trip through the platform normalisers", () => {
-  const good = (answer: string) => ({ answer, explanation: `Say "${answer}"` });
+  const good = (answer: string) => ({
+    answer,
+    explanation: `"${answer}" is a common polite phrase, and each word in it is spoken plainly.`,
+  });
   it("passes plain phrases in each course", () => {
     expect(speakGate(good("Good morning, teacher."), ctx("en")).problems).toEqual([]);
     expect(speakGate(good("Bonjour, comment allez-vous ?"), ctx("fr")).problems).toEqual([]);
@@ -361,10 +373,11 @@ describe("translate gate", () => {
     prompt: "Ask where the station is.",
     acceptableAnswers: [
       "Where is the station?",
-      "Where's the station?",
       "Could you tell me where the station is?",
+      "Can you tell me where the station is?",
     ],
-    explanation: 'One way to say it: "Where is the station?"',
+    explanation:
+      '"Where is the station?" asks for a place with "where" and the verb "is", the usual way to ask a stranger.',
   };
   it("passes a good item", () => {
     expect(translateGate(good, ctx("en")).problems).toEqual([]);
@@ -373,14 +386,26 @@ describe("translate gate", () => {
     const p = (patch: object, c = ctx("en")) =>
       translateGate({ ...good, ...patch }, c).problems.join(" | ");
     expect(p({ acceptableAnswers: ["Where is the station?"] })).toMatch(/at least 2/);
+    // "Where is" and "Where's" are one wording to the grader, so this list is really two.
+    expect(
+      p({
+        acceptableAnswers: [
+          "Where is the station?",
+          "Where's the station?",
+          "Could you tell me where the station is?",
+        ],
+      }),
+    ).toMatch(/at least 3/);
     expect(p({ acceptableAnswers: ["Where is the station?", "where is the station"] })).toMatch(
       /same after normalising/,
     );
     expect(
       p({
-        acceptableAnswers: ["A", "B", "C", "D", "E", "F"].map((x) => `Where is the station ${x}?`),
+        acceptableAnswers: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"].map(
+          (x) => `Where is the station ${x}?`,
+        ),
       }),
-    ).toMatch(/at most 5/);
+    ).toMatch(/at most 9/);
     expect(p({ prompt: "Say: Where is the station?" })).toMatch(/prompt contains/);
     expect(
       p({ acceptableAnswers: ["Estoy cansado(a).", "Estoy muy cansado."] }, ctx("es")),
@@ -608,5 +633,86 @@ describe("panel glue", () => {
     });
     expect(bad.refused.length).toBeGreaterThan(0);
     expect(bad.extra).toBe(rec);
+  });
+});
+
+describe("stripLessonExtras: the tooling sees the lessons as they were", () => {
+  it("removes exactly the appended ids and gives the same needs back", async () => {
+    const { stripLessonExtras } = await import("./extras");
+    const base = [unit("u", "A1", [lesson("l1", ["mc", "mc"])])];
+    const withExtras = addLessonExtras(base, {
+      l1: {
+        listening: {
+          prompt: "p",
+          audioText: "a b c",
+          wrong: ["a b d", "a b e", "a b f"],
+          explanation: '"a b c" e',
+        },
+        translate: { prompt: "p", acceptableAnswers: ["x y", "y x"], explanation: '"x y" e' },
+      },
+    });
+    expect(withExtras[0]!.lessons[0]!.questions.length).toBe(4);
+    const stripped = stripLessonExtras(withExtras);
+    expect(stripped[0]!.lessons[0]!.questions.map((q) => q.id)).toEqual(["q0", "q1"]);
+    expect([...courseNeeds(stripped).values()]).toEqual([...courseNeeds(base).values()]);
+  });
+});
+
+describe("listening gate: French spacing before ? ! : ;", () => {
+  const fr = (a: string, w: string[]) => ({
+    prompt: "What did you hear?",
+    audioText: a,
+    wrong: w,
+    explanation: `"${a}" is a question with "comment" and the reflexive "vous appelez"; listen for the question word.`,
+  });
+  it("accepts the French space before a question mark, still rejects it in English", () => {
+    const item = fr("Comment vous appelez-vous ?", [
+      "Pourquoi vous appelez-vous ?",
+      "Quand vous appelez-vous ?",
+      "Où vous appelez-vous ?",
+    ]);
+    expect(listeningGate(item, ctx("fr")).problems.join("|")).not.toMatch(/space before/);
+    const en = {
+      ...item,
+      audioText: "What is your name ?",
+      wrong: ["Who is your name ?", "Where is your name ?", "When is your name ?"],
+    };
+    expect(listeningGate(en, ctx("en")).problems.join("|")).toMatch(/space before/);
+  });
+});
+
+describe("gates the consistency tests forced: American English, repeats, minimal pairs", () => {
+  it("rejects a British word anywhere in an English item, and not in French", () => {
+    const t = {
+      prompt: "Say that you must retake the exam.",
+      acceptableAnswers: [
+        "I have to retake the exam.",
+        "I must resit the exam.",
+        "I need to retake the exam.",
+      ],
+      explanation:
+        '"I have to retake the exam." uses "have to" for a duty and "retake" for doing it again.',
+    };
+    expect(translateGate(t, ctx("en")).problems.join("|")).toMatch(/resit.*British/);
+    expect(britishProblems("fr", ["resit"])).toEqual([]);
+  });
+  it("rejects a text another question already has, compared the way the consistency test does", () => {
+    const c: GateContext = {
+      ...ctx("en"),
+      existing: { ...ctx("en").existing, all: new Set(["i take a nap after lunch."]) },
+    };
+    const r = speakGate(
+      {
+        answer: "I take a nap after lunch.",
+        explanation:
+          '"I take a nap after lunch." uses the present simple for a daily habit with "after".',
+      },
+      c,
+    );
+    expect(r.problems.join("|")).toMatch(/another question/);
+  });
+  it("asks for nothing in the Spanish Minimal Pairs lessons (a dedicated pack)", () => {
+    expect(NO_EXTRAS_LESSONS.has("esa1p28l3")).toBe(true);
+    expect(lessonNeed({ ...lesson("esa1p28l3", ["mc", "mc"]) }, true)).toEqual([]);
   });
 });

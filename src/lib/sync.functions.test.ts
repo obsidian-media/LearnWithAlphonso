@@ -7,6 +7,12 @@ import {
 } from "./__testutils__/supabase-mock";
 
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
+// These fixtures pin u1l1 as authored (8 questions, q1..q8). The lesson-mix questions appended to it
+// (src/data/lesson-extras) are covered by lesson-extras.test.ts, so this file loads the curriculum without them.
+vi.mock("@/data/lesson-extras", () => ({
+  LESSON_EXTRAS: { en: {}, fr: {}, es: {} },
+  applyLessonExtras: <T>(units: T) => units,
+}));
 vi.mock("@tanstack/react-start", () => ({
   createServerFn: () => {
     let validator: ((d: unknown) => unknown) | undefined;

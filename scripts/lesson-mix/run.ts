@@ -58,7 +58,19 @@ import {
   type Verdict,
 } from "../../src/lib/content-review/review";
 import { withLock } from "../../src/lib/content-review/ledger";
-import { blindSample, secondOpinionSet, wilson } from "../../src/lib/content-review/sampling";
+import {
+  blindSample,
+  secondOpinionSet,
+  stratifiedDraw,
+  wilson,
+} from "../../src/lib/content-review/sampling";
+import {
+  altsSystem,
+  altsUser,
+  dedupeWordings,
+  mergeAlternatives,
+  parseAlts,
+} from "../../src/lib/lesson-mix/alternatives";
 import { ASSUME, MODEL } from "../../src/lib/content-review/plan";
 import type { ReviewItem } from "../../src/lib/content-review/inventory";
 import {
@@ -77,12 +89,17 @@ import {
 } from "../../src/lib/lesson-mix/draft";
 import {
   EXTRA_TYPES,
+  NO_EXTRAS_LESSONS,
   courseNeeds,
+  stripLessonExtras,
   type ExtraType,
   type LessonExtra,
 } from "../../src/lib/lesson-mix/extras";
 import {
   existingKeys,
+  MAX_WORDINGS,
+  britishProblems,
+  dedupKey,
   gateExtra,
   normKey,
   type GateContext,
@@ -95,7 +112,12 @@ import {
   remainingUnderCap,
   reserveWithinCap,
 } from "../../src/lib/lesson-mix/ledger";
-import { checkedApply, parseItemId, toReviewItem } from "../../src/lib/lesson-mix/panel";
+import {
+  checkedApply,
+  extraItemId,
+  parseItemId,
+  toReviewItem,
+} from "../../src/lib/lesson-mix/panel";
 import { renderPage, type PageLesson } from "../../src/lib/lesson-mix/page";
 
 const argv = process.argv.slice(2);
@@ -111,6 +133,8 @@ const SEED = "20261121";
 const SECOND = resolveSecondRoute(process.env, MODEL.mistral);
 const MISTRAL_MODEL = SECOND.model;
 const COURSES: Course[] = ["en", "fr", "es"];
+/** The curriculum without the lesson-mix extras: the tooling always works from the lessons as they were. */
+const baseCurriculum = (c: Course) => stripLessonExtras(getCourse(c).curriculum);
 
 const readJson = <T>(file: string, fallback: T): T =>
   fs.existsSync(file) ? (JSON.parse(fs.readFileSync(file, "utf8")) as T) : fallback;
@@ -150,7 +174,7 @@ function approved() {
 
 type Job = {
   ref: string;
-  phase: "draft" | "review" | "judge" | "blind";
+  phase: "draft" | "review" | "judge" | "blind" | "blind2" | "blind3" | "alts";
   model: string;
   reservedUsd: number;
   status: "reserved" | "submitted" | "unknown" | "collected" | "released";
@@ -192,6 +216,75 @@ const rulingPath = path.join(STATE, "rulings", "judge.json");
 const loadRulings = () => readJson<Record<string, Ruling>>(rulingPath, {});
 const blindPath = path.join(STATE, "rulings", "blind.json");
 const loadBlind = () => readJson<Record<string, Ruling>>(blindPath, {});
+const blind2Path = path.join(STATE, "rulings", "blind2.json");
+const loadBlind2 = () => readJson<Record<string, Ruling>>(blind2Path, {});
+const blind3Path = path.join(STATE, "rulings", "blind3.json");
+const loadBlind3 = () => readJson<Record<string, Ruling>>(blind3Path, {});
+const blindFiles = (round: number) =>
+  round === 1
+    ? { sample: "blind-sample.json", store: blindPath, load: loadBlind, phase: "blind" as const }
+    : round === 2
+      ? {
+          sample: "blind-sample-2.json",
+          store: blind2Path,
+          load: loadBlind2,
+          phase: "blind2" as const,
+        }
+      : {
+          sample: "blind-sample-3.json",
+          store: blind3Path,
+          load: loadBlind3,
+          phase: "blind3" as const,
+        };
+
+/** Items whose draft was edited, regenerated or extended since they were last reviewed: they are re-verified, nothing else is. */
+const changedPath = path.join(STATE, "changed.json");
+const loadChanged = () => new Set(readJson<string[]>(changedPath, []));
+/** Items a judge or a blind ruling found wrong and that must be redrafted: id -> the reasons. */
+const regenPath = path.join(STATE, "regen.json");
+const loadRegen = () => readJson<Record<string, string[]>>(regenPath, {});
+const altsPath = path.join(STATE, "alts.json");
+/** What the second-answer pass actually added (and what the gates refused), per item. */
+const mergedAltsPath = path.join(STATE, "alts-merged.json");
+
+/** Forgets every earlier verdict and ruling on these items (the text they judged is gone) and marks them changed. */
+function invalidate(ids: string[], opts: { keepAlts?: boolean } = {}) {
+  if (!ids.length) return;
+  const gone = new Set(ids);
+  if (!opts.keepAlts)
+    for (const f of [altsPath, mergedAltsPath]) {
+      const a = readJson<Record<string, unknown>>(f, {});
+      let n = 0;
+      for (const id of gone)
+        if (a[id]) {
+          delete a[id];
+          n++;
+        }
+      if (n) writeJson(f, a);
+    }
+  for (const phase of ["review", "second"]) {
+    const v = loadVerdicts(phase);
+    let n = 0;
+    for (const id of gone)
+      if (v[id]) {
+        delete v[id];
+        n++;
+      }
+    if (n) writeJson(verdictPath(phase), v);
+  }
+  const r = loadRulings();
+  const old = readJson<Record<string, Ruling>>(path.join(STATE, "rulings", "superseded.json"), {});
+  for (const id of gone)
+    if (r[id]) {
+      old[id] = r[id]!;
+      delete r[id];
+    }
+  writeJson(rulingPath, r);
+  writeJson(path.join(STATE, "rulings", "superseded.json"), old);
+  const ch = loadChanged();
+  for (const id of gone) ch.add(id);
+  writeJson(changedPath, [...ch].sort());
+}
 
 // ---- Content ---------------------------------------------------------------------------------------------
 
@@ -206,7 +299,7 @@ const lessonIndex = (course: Course) => {
       lesson: ReturnType<typeof getCourse>["curriculum"][number]["lessons"][number];
     }
   >();
-  for (const u of getCourse(course).curriculum)
+  for (const u of baseCurriculum(course))
     u.lessons.forEach((lesson, index) =>
       m.set(lesson.id, { unitTitle: u.title, level: u.level, unitId: u.id, index, lesson }),
     );
@@ -223,7 +316,7 @@ function gateContext(
 
 /** Existing keys per course, plus whatever accepted drafts already claim (two lessons never share a phrase). */
 function baseKeys(course: Course) {
-  return existingKeys(getCourse(course).curriculum);
+  return existingKeys(baseCurriculum(course));
 }
 
 function runGates(drafts: Record<string, Draft>) {
@@ -248,6 +341,7 @@ function runGates(drafts: Record<string, Draft>) {
               ? d.extra.speak!.answer
               : d.extra.translate!.acceptableAnswers[0]!;
         keys[d.course][t].add(normKey(k));
+        keys[d.course].all?.add(dedupKey(t === "translate" ? d.extra.translate!.prompt : k));
         if (t === "translate")
           for (const a of d.extra.translate!.acceptableAnswers)
             keys[d.course].translate.add(normKey(a));
@@ -303,7 +397,7 @@ function select() {
   const per = Number(arg("per-level", "3"));
   const out: PilotLesson[] = [];
   for (const c of COURSES)
-    out.push(...selectPilot(getCourse(c).curriculum, c, per, (id) => hash(`${SEED}:${id}`) >>> 0));
+    out.push(...selectPilot(baseCurriculum(c), c, per, (id) => hash(`${SEED}:${id}`) >>> 0));
   writeJson(path.join(STATE, "pilot.json"), out);
   for (const c of COURSES) {
     const mine = out.filter((p) => p.course === c);
@@ -322,7 +416,7 @@ function countNeeds() {
   > = {};
   for (const c of COURSES) {
     const r = { lessons: 0, listening: 0, speak: 0, translate: 0 };
-    for (const need of courseNeeds(getCourse(c).curriculum).values()) {
+    for (const need of courseNeeds(baseCurriculum(c)).values()) {
       if (!need.length) continue;
       r.lessons++;
       for (const t of need) r[t]++;
@@ -429,11 +523,16 @@ async function draft() {
   const drafts = loadDrafts();
   const pilot = readJson<PilotLesson[]>(path.join(STATE, "pilot.json"), []);
   if (!pilot.length && !flag("all")) throw new Error("No pilot lessons: run `select` first.");
-  const targets: { course: Course; lessonId: string; need: ExtraType[]; feedback?: string[] }[] =
-    [];
+  const targets: {
+    course: Course;
+    lessonId: string;
+    need: ExtraType[];
+    feedback?: string[];
+    previous?: unknown;
+  }[] = [];
   const lessons = flag("all")
     ? COURSES.flatMap((c) =>
-        [...courseNeeds(getCourse(c).curriculum)]
+        [...courseNeeds(baseCurriculum(c))]
           .map(([lessonId, need]) => ({ course: c, lessonId, need }))
           .filter((x) => x.need.length),
       )
@@ -445,15 +544,20 @@ async function draft() {
       continue;
     }
     if (!d) continue;
-    const bad = t.need.filter((x) => !passing(d, x));
+    const regen = loadRegen();
+    // The draft's own types count too: a lesson's speak slot can move when the curriculum changes.
+    const want = [...new Set([...t.need, ...d.need])];
+    const bad = want.filter((x) => !passing(d, x) || regen[extraItemId(t.course, t.lessonId, x)]);
     if (!bad.length) continue;
     targets.push({
       ...t,
       need: bad,
+      previous: Object.fromEntries(bad.filter((x) => d.extra[x]).map((x) => [x, d.extra[x]])),
       feedback: bad.flatMap((x) =>
         (d.problems[x] ?? [])
           .map((p) => `${x}: ${p}`)
-          .concat(d.missing.includes(x) ? [`${x}: it was missing from your reply`] : []),
+          .concat(d.missing.includes(x) ? [`${x}: it was missing from your reply`] : [])
+          .concat((regen[extraItemId(t.course, t.lessonId, x)] ?? []).map((p) => `${x}: ${p}`)),
       ),
     });
   }
@@ -471,6 +575,7 @@ async function draft() {
         lesson: idx.lesson,
         need: t.need,
         feedback: t.feedback,
+        previous: t.previous,
       }),
     );
     meta[id] = { course: t.course, lessonId: t.lessonId, need: t.need };
@@ -608,6 +713,15 @@ async function collect() {
             };
             if (text && !stillMissing.length) got++;
             else missing++;
+            // A type that came back is a new text: its old verdicts and any repair request are void.
+            const back = meta.need.filter((t) => parsed.extra[t]);
+            if (back.length) {
+              const regen = loadRegen();
+              const ids = back.map((t) => extraItemId(meta.course, meta.lessonId, t));
+              for (const id of ids) delete regen[id];
+              writeJson(regenPath, regen);
+              invalidate(ids);
+            }
           }
           saveDrafts(drafts);
         } else if (job.phase === "review") {
@@ -624,9 +738,31 @@ async function collect() {
             missing += p.missing.length;
           }
           writeJson(verdictPath("review"), store);
+        } else if (job.phase === "alts") {
+          const store = readJson<Record<string, string[]>>(altsPath, {});
+          for (const c of job.chunks ?? []) {
+            const t = texts.get(c.customId);
+            if (!t) {
+              missing += c.items.length;
+              continue;
+            }
+            const p = parseAlts(c, t);
+            Object.assign(store, p.adds);
+            got += Object.keys(p.adds).length;
+            missing += p.missing.length;
+          }
+          writeJson(altsPath, store);
         } else {
           const blind = job.phase === "blind";
-          const store = blind ? loadBlind() : loadRulings();
+          const blind2 = job.phase === "blind2";
+          const blind3 = job.phase === "blind3";
+          const store = blind
+            ? loadBlind()
+            : blind2
+              ? loadBlind2()
+              : blind3
+                ? loadBlind3()
+                : loadRulings();
           for (const c of job.chunks ?? []) {
             const t = texts.get(c.customId);
             if (!t) {
@@ -638,7 +774,10 @@ async function collect() {
             got += p.rulings.length;
             missing += p.missing.length;
           }
-          writeJson(blind ? blindPath : rulingPath, store);
+          writeJson(
+            blind ? blindPath : blind2 ? blind2Path : blind3 ? blind3Path : rulingPath,
+            store,
+          );
         }
         writeJson(path.join(STATE, "raw", `${job.ref}.json`), raw);
         ledger.settle(job.ref, cost, `${got} parsed, ${missing} missing`);
@@ -798,12 +937,33 @@ async function judge() {
   const mistral = new Map(Object.entries(loadVerdicts("second")));
   const rulings = loadRulings();
   const ids = new Set<string>();
+  // --changed: only what was edited, regenerated or extended since its last review.
+  const changed = loadChanged();
+  const universe = new Set(
+    items.filter((it) => !flag("changed") || changed.has(it.id)).map((it) => it.id),
+  );
   for (const m of [claude, mistral])
-    for (const v of m.values()) if (v.verdict === "defect") ids.add(v.id);
+    for (const v of m.values()) if (v.verdict === "defect" && universe.has(v.id)) ids.add(v.id);
+  // --all-types translate,listening: Opus reads EVERY item of those types it has not ruled on yet.
+  const allTypes = arg("all-types", "").split(",").filter(Boolean);
+  if (allTypes.length)
+    for (const it of items) if (allTypes.includes(it.subtype) && !rulings[it.id]) ids.add(it.id);
+  // --sample N: Opus also reads N of the items the second-answer pass extended (a quality check on the additions).
+  const sampleN = Number(arg("sample", "0"));
+  if (sampleN) {
+    const merged = readJson<Record<string, { added: string[] }>>(mergedAltsPath, {});
+    const pool = items.filter((it) => universe.has(it.id) && merged[it.id]?.added.length);
+    for (const it of stratifiedDraw(pool, sampleN, `${SEED}:alts`, (x) => x.course)) ids.add(it.id);
+  }
   // Fallback when the Mistral second opinion is unavailable: the judge also sees the control sample
   // (Sonnet-passed items), so the panel still measures what Sonnet misses.
   if (process.env.LESSON_MIX_JUDGE_CONTROL === "yes") {
-    const s = secondOpinionSet(items, claude, ASSUME.controlRate, SEED);
+    const s = secondOpinionSet(
+      items.filter((it) => universe.has(it.id)),
+      claude,
+      ASSUME.controlRate,
+      SEED,
+    );
     for (const it of s.control) ids.add(it.id);
   }
   const todo = items.filter((it) => ids.has(it.id) && !rulings[it.id]);
@@ -823,60 +983,244 @@ async function judge() {
   }));
 }
 
-/** What the learner must produce or pick: the answer key of an extra. */
-const keyOf = (t: ExtraType, e: LessonExtra) => {
-  const x = e[t];
-  if (!x) return "";
-  if (t === "listening") return JSON.stringify([e.listening!.audioText, e.listening!.wrong]);
-  if (t === "speak") return e.speak!.answer;
-  return JSON.stringify(e.translate!.acceptableAnswers);
-};
+/** Redrafts a repair may use before an item is given up on and held (the first draft is round 1). */
+const MAX_ROUNDS = 5;
 
+/**
+ * Applies the judge's rulings. EVERY item here is a NEW draft no learner has seen (ids lx1/sx1/tx1 on a
+ * lesson that lacked the type), so the earlier "hold every answer-key change" rule, which protects the
+ * answers of EXISTING questions, does not apply: a patch may change the key, then the gates re-run.
+ * An item whose id already exists in the curriculum is never touched and stays held.
+ * --blind: the blind-sample rulings (round 1) are applied the same way, once.
+ * A ruling that cannot be applied (owner call, low confidence, no patch, refused) puts the item into
+ * regen.json, so the next `draft --retry-failed` repairs it with the reason in front of the model.
+ */
 function applyCommand() {
   const drafts = loadDrafts();
   const items = new Map(reviewItems(drafts).map((it) => [it.id, it]));
-  const rulings = [...Object.values(loadRulings())];
   const mistral = loadVerdicts("second");
-  const routed = route(rulings, (id) => mistral[id]?.verdict === "ok");
-  const { kept } = routed;
-  // The owner's rule (2026-11-21): NO answer-key change is applied, whatever the judge's confidence.
-  const owner: Ruling[] = [...routed.owner];
-  const fixes = routed.fixes.filter((f) => {
-    if (!f.keyChange) return true;
-    const r = rulings.find((x) => x.id === f.id)!;
-    owner.push({ ...r, reason: `answer-key change HELD for the owner: ${r.reason}` });
-    return false;
-  });
+  const doneBlind = new Set(readJson<string[]>(path.join(STATE, "applied-blind.json"), []));
+  const blindFile = arg("blind-file", "");
+  const rulings: Ruling[] = flag("blind")
+    ? Object.values(
+        blindFile ? readJson<Record<string, Ruling>>(blindFile, {}) : loadBlind(),
+      ).filter((r) => r.decision !== "keep" && !doneBlind.has(r.id))
+    : [...Object.values(loadRulings())];
+  const regen = loadRegen();
   const applied: string[] = [];
   const refused: { id: string; why: string[] }[] = [];
-  for (const f of fixes) {
-    const item = items.get(f.id);
-    const parsed = parseItemId(f.id);
-    if (!item || !parsed) continue;
-    const d = drafts[dkey(parsed.course, parsed.lessonId)]!;
-    const r = checkedApply(item, parsed.type, d.extra, f);
-    if (r.refused.length) {
-      refused.push({ id: f.id, why: r.refused });
+  const kept: string[] = [];
+  const owner: Ruling[] = [];
+  const existingQ = (course: Course, lessonId: string, qid: string) =>
+    !!lessonIndex(course)
+      .get(lessonId)
+      ?.lesson.questions.some((q) => q.id === qid);
+  for (const r of rulings) {
+    if (r.decision === "keep") {
+      kept.push(r.id);
       continue;
     }
-    if (keyOf(parsed.type, r.extra) !== keyOf(parsed.type, d.extra)) {
-      const ru = rulings.find((x) => x.id === f.id)!;
-      owner.push({
-        ...ru,
-        reason: `patch would change the answer key, HELD for the owner: ${ru.reason}`,
-      });
+    const parsed = parseItemId(r.id);
+    if (!parsed) continue;
+    const d = drafts[dkey(parsed.course, parsed.lessonId)];
+    const qid = r.id.split("/")[1]!;
+    if (!d || existingQ(parsed.course, parsed.lessonId, qid)) {
+      owner.push({ ...r, reason: `targets an existing item, HELD: ${r.reason}` });
       continue;
     }
-    d.extra = r.extra;
+    const giveUp = (why: string) => {
+      if (d.rounds >= MAX_ROUNDS) owner.push({ ...r, reason: `${why}: ${r.reason}` });
+      else regen[r.id] = [...(regen[r.id] ?? []), `${why}: ${r.reason}`];
+    };
+    const item = items.get(r.id);
+    if (r.decision !== "fix" || !r.patch || r.confidence < 0.5 || !item) {
+      giveUp(
+        r.decision === "owner" ? "a judgment call, pick the plainer option" : "needs a redraft",
+      );
+      continue;
+    }
+    const out = checkedApply(item, parsed.type, d.extra, {
+      id: r.id,
+      patch: r.patch,
+      reason: r.reason,
+      keyChange: true,
+    });
+    if (out.refused.length) {
+      refused.push({ id: r.id, why: out.refused });
+      giveUp(`the judge's patch was refused (${out.refused.join("; ")})`);
+      continue;
+    }
+    // A patch that would break a gate is refused: the item keeps the draft it has.
+    const broke = gateExtra(
+      parsed.type,
+      out.extra,
+      gateContext(d.course, d.level as GateContext["level"], baseKeys(d.course)),
+    ).problems.filter((p) => !/^duplicate:/.test(p));
+    const had = new Set(d.problems[parsed.type] ?? []);
+    if (broke.some((p) => !had.has(p))) {
+      refused.push({ id: r.id, why: ["the patch breaks a gate: " + broke[0]] });
+      continue;
+    }
+    d.extra = out.extra;
     d.fixed = [...new Set([...d.fixed, parsed.type])];
-    applied.push(f.id);
+    applied.push(r.id);
+    if (mistral[r.id]?.verdict === "ok") kept.push(r.id);
   }
+  // A patch may add wordings past the cap; the first nine (canonical first) stay.
+  for (const d of Object.values(drafts))
+    if (d.extra.translate && d.extra.translate.acceptableAnswers.length > MAX_WORDINGS)
+      d.extra.translate.acceptableAnswers = d.extra.translate.acceptableAnswers.slice(
+        0,
+        MAX_WORDINGS,
+      );
+  if (flag("blind"))
+    writeJson(path.join(STATE, "applied-blind.json"), [...doneBlind, ...rulings.map((r) => r.id)]);
   runGates(drafts);
-  // A fix that broke a gate is undone by the next draft round; list it.
   saveDrafts(drafts);
-  writeJson(path.join(STATE, "apply.json"), { applied, refused, kept, owner });
+  writeJson(regenPath, regen);
+  invalidate(applied);
+  const prev = readJson<{ owner?: Ruling[] }>(path.join(STATE, "apply.json"), {});
+  const ownerAll = new Map((prev.owner ?? []).map((r) => [r.id, r]));
+  for (const r of owner) ownerAll.set(r.id, r);
+  // A held item that was patched or queued for a redraft is no longer held for the reason it had.
+  for (const id of [...ownerAll.keys()]) if (applied.includes(id) || regen[id]) ownerAll.delete(id);
+  writeJson(path.join(STATE, "apply.json"), {
+    applied,
+    refused,
+    kept,
+    owner: [...ownerAll.values()],
+    regen: Object.keys(regen),
+  });
   console.log(
-    `apply: ${applied.length} fixes applied, ${refused.length} refused by the checker, ${kept.length} kept, ${owner.length} for the owner.`,
+    `apply${flag("blind") ? " --blind" : ""}: ${applied.length} fixes applied (answer keys included: these are new drafts), ${refused.length} refused by the checker, ${kept.length} kept, ${Object.keys(regen).length} queued for redraft, ${ownerAll.size} held.`,
+  );
+}
+
+/** The second-answer pass: Sonnet proposes extra accepted wordings for every translate item. */
+async function altsCommand() {
+  const drafts = loadDrafts();
+  runGates(drafts);
+  // --again: a second pass over every translate item, whatever the first pass said.
+  const have = flag("again")
+    ? {}
+    : {
+        ...readJson<Record<string, unknown>>(mergedAltsPath, {}),
+        ...readJson<Record<string, unknown>>(altsPath, {}),
+      };
+  const items = reviewItems(drafts).filter((it) => it.subtype === "translate" && !have[it.id]);
+  const chunks = chunk(items, "alt");
+  const reqs = chunks.map((c) =>
+    buildRequest(c, {
+      model: MODEL.review,
+      effort: "low",
+      system: altsSystem(c.course, flag("again")),
+      user: altsUser(c),
+      maxTokens: Math.max(1024, c.items.length * 260),
+    }),
+  );
+  if (!reqs.length) return console.log("alts: nothing left.");
+  await submitAnthropic("alts", MODEL.review, reqs, (_ref, group) => ({
+    chunks: chunks.filter((c) => group.some((r) => r.custom_id === c.customId)),
+  }));
+}
+
+/** Merges the proposals into acceptableAnswers, one wording at a time, each through the translate gate. */
+function mergeAltsCommand() {
+  const drafts = loadDrafts();
+  runGates(drafts);
+  const adds = readJson<Record<string, string[]>>(altsPath, {});
+  const merged = readJson<Record<string, { added: string[]; rejected: string[] }>>(
+    mergedAltsPath,
+    {},
+  );
+  const changed: string[] = [];
+  let added = 0;
+  let rejected = 0;
+  for (const [id, proposed] of Object.entries(adds)) {
+    const parsed = parseItemId(id);
+    const d = parsed && drafts[dkey(parsed.course, parsed.lessonId)];
+    if (!parsed || !d?.extra.translate || !passing(d, "translate")) continue;
+    const ctx = gateContext(d.course, d.level as GateContext["level"], baseKeys(d.course));
+    const base = d.extra.translate;
+    const r = mergeAlternatives(
+      base,
+      proposed,
+      (answers) =>
+        gateExtra("translate", { translate: { ...base, acceptableAnswers: answers } }, ctx)
+          .problems,
+    );
+    merged[id] = { added: r.added, rejected: r.rejected };
+    added += r.added.length;
+    rejected += r.rejected.length;
+    if (r.added.length) {
+      d.extra.translate = r.translate;
+      changed.push(id);
+    }
+  }
+  writeJson(mergedAltsPath, merged);
+  writeJson(altsPath, {});
+  runGates(drafts);
+  saveDrafts(drafts);
+  invalidate(changed, { keepAlts: true });
+  console.log(
+    `merge-alts: ${changed.length} translate items extended, ${added} wordings added, ${rejected} refused by the gates (or already accepted).`,
+  );
+}
+
+/** Deterministic tidy: wordings the grader treats as one are collapsed (the consistency test needs 3 DISTINCT). */
+function tidyCommand() {
+  const drafts = loadDrafts();
+  const changed: string[] = [];
+  for (const d of Object.values(drafts)) {
+    // Spanish Minimal Pairs lessons are a dedicated pack: no appended question of any type.
+    if (NO_EXTRAS_LESSONS.has(d.lessonId)) {
+      d.extra = {};
+      d.need = [];
+      d.problems = {};
+      continue;
+    }
+    if (!d.extra.translate) continue;
+    // A British-only accepted wording (not the first) is dropped; the first is a redraft's business.
+    if (d.course === "en") {
+      const [first, ...rest] = d.extra.translate.acceptableAnswers;
+      const kept = rest.filter((a) => !britishProblems("en", [a]).length);
+      if (kept.length !== rest.length) {
+        d.extra.translate = { ...d.extra.translate, acceptableAnswers: [first!, ...kept] };
+        changed.push(extraItemId(d.course, d.lessonId, "translate"));
+      }
+    }
+    const next = dedupeWordings(d.extra.translate);
+    if (next !== d.extra.translate) {
+      d.extra.translate = next;
+      changed.push(extraItemId(d.course, d.lessonId, "translate"));
+    }
+  }
+  saveDrafts(drafts);
+  invalidate(changed, { keepAlts: true });
+  runGates(drafts);
+  saveDrafts(drafts);
+  console.log(
+    `tidy: ${changed.length} translate items had wordings the grader counts as one; collapsed.`,
+  );
+}
+
+/** Items that still need a redraft and what is wrong (no spend). */
+function regenReport() {
+  const drafts = loadDrafts();
+  runGates(drafts);
+  const regen = loadRegen();
+  let failing = 0;
+  const byType: Record<string, number> = {};
+  for (const d of Object.values(drafts))
+    for (const t of d.need) {
+      const id = extraItemId(d.course, d.lessonId, t);
+      if (!passing(d, t) || regen[id]) {
+        failing++;
+        byType[t] = (byType[t] ?? 0) + 1;
+      }
+    }
+  console.log(
+    `regen set: ${failing} items (${JSON.stringify(byType)}); ${Object.keys(regen).length} queued by rulings.`,
   );
 }
 
@@ -886,13 +1230,19 @@ async function blindCommand() {
   runGates(drafts);
   const apply = readJson<{ owner: Ruling[] }>(path.join(STATE, "apply.json"), { owner: [] });
   const held = new Set(apply.owner.map((r) => r.id));
-  const items = reviewItems(drafts).filter((it) => !held.has(it.id));
-  const sample = blindSample(items, 100, SEED);
+  const round = Number(arg("round", "1"));
+  // A later round is a FRESH sample of the post-fix content: every earlier sample's ids are excluded.
+  const earlier = new Set<string>();
+  for (let r = 1; r < round; r++)
+    for (const id of readJson<string[]>(path.join(STATE, blindFiles(r).sample), []))
+      earlier.add(id);
+  const items = reviewItems(drafts).filter((it) => !held.has(it.id) && !earlier.has(it.id));
+  const sample = blindSample(items, 100, round === 1 ? SEED : `${SEED}:round${round}`);
   writeJson(
-    path.join(STATE, "blind-sample.json"),
+    path.join(STATE, blindFiles(round).sample),
     sample.map((it) => it.id),
   );
-  const done = loadBlind();
+  const done = blindFiles(round).load();
   const todo = sample.filter((it) => !done[it.id]);
   const none = new Map<string, Verdict>();
   const chunks = chunk(todo, "bld");
@@ -906,19 +1256,45 @@ async function blindCommand() {
     }),
   );
   if (!reqs.length) return console.log("blind: the sample is already judged.");
-  console.log(`blind: ${sample.length} items sampled, ${todo.length} to judge.`);
-  await submitAnthropic("blind", MODEL.judge, reqs, (_ref, group) => ({
+  console.log(`blind round ${round}: ${sample.length} items sampled, ${todo.length} to judge.`);
+  await submitAnthropic(blindFiles(round).phase, MODEL.judge, reqs, (_ref, group) => ({
     chunks: chunks.filter((c) => group.some((r) => r.custom_id === c.customId)),
   }));
 }
 
-function blindStats() {
-  const ids = readJson<string[]>(path.join(STATE, "blind-sample.json"), []);
-  const b = loadBlind();
+function blindStats(round = 1) {
+  const ids = readJson<string[]>(path.join(STATE, blindFiles(round).sample), []);
+  const b = blindFiles(round).load();
   const judged = ids.filter((id) => b[id]);
-  const defects = judged.filter((id) => b[id]!.decision !== "keep").length;
-  return { n: judged.length, defects, ...wilson(defects, judged.length) };
+  const bad = judged.filter((id) => b[id]!.decision !== "keep");
+  const wrongSide = bad.filter((id) =>
+    ["second-answer", "wrong-key"].includes(b[id]!.category ?? ""),
+  );
+  const byCategory: Record<string, number> = {};
+  for (const id of bad)
+    byCategory[b[id]!.category ?? "other"] = (byCategory[b[id]!.category ?? "other"] ?? 0) + 1;
+  return {
+    n: judged.length,
+    defects: bad.length,
+    markedWrong: wrongSide.length,
+    markedWrongStats: wilson(wrongSide.length, judged.length),
+    byCategory,
+    ...wilson(bad.length, judged.length),
+  };
 }
+
+/** A held item's reason in plain English (the raw gate text stays in held-for-owner.json). */
+const plainWhy = (why: string) => {
+  const n = /after (\d+) drafts/.exec(why)?.[1];
+  const tries = n ? ` after ${n} tries` : "";
+  if (/meta text/.test(why))
+    return `The explanation keeps reading like an instruction to us instead of a note to the learner${tries}, so this question is left out until a person rewrites it.`;
+  if (/words|close variant|audio is/.test(why))
+    return `The wrong choices keep being too far from (or a different length than) the sentence that is played${tries}, so this listening question is left out.`;
+  if (/never returned/.test(why))
+    return `The model never produced this question${tries}, so it is left out.`;
+  return why.replace(/\s+/g, " ").slice(0, 200);
+};
 
 /** The bulk summary page and the held-for-owner file (docs/lesson-mix/held-for-owner.json). */
 function exportBulkPage(a: {
@@ -949,33 +1325,72 @@ function exportBulkPage(a: {
   const flagged = cv.filter((v) => v.verdict === "defect").length;
   const rv = Object.values(rulings);
   const n = (x: string) => rv.filter((r) => r.decision === x).length;
-  const bs = blindStats();
+  const b1 = blindStats(1);
+  const b2 = blindStats(2);
+  const b3 = blindStats(3);
   const ledger = openLedger().status();
   const pct = (x: number, y: number) => `${((100 * x) / Math.max(1, y)).toFixed(1)}%`;
-  const heldRows = apply.owner.map((r) => {
+  const range = (b: ReturnType<typeof blindStats>) =>
+    `95% range ${(100 * b.low).toFixed(1)} to ${(100 * b.high).toFixed(1)}%`;
+  const cats = (b: ReturnType<typeof blindStats>) =>
+    Object.entries(b.byCategory)
+      .sort((x, y) => y[1] - x[1])
+      .map(([k, v]) => `${k} ${v}`)
+      .join(", ");
+  const blindLine = (b: ReturnType<typeof blindStats>, what: string) =>
+    b.n
+      ? `${what}. ${b.n} items (100 per course), ${b.defects} defects, error rate ${(100 * b.rate).toFixed(1)}% (${range(b)}). A correct answer that would be marked wrong (a valid alternative or a wrong key): ${b.markedWrong} of ${b.n} (${(100 * b.markedWrongStats.rate).toFixed(1)}%, 95% range ${(100 * b.markedWrongStats.low).toFixed(1)} to ${(100 * b.markedWrongStats.high).toFixed(1)}%). Defects by category: ${cats(b) || "none"}.`
+      : `${what}: not run.`;
+  // Every wanted item that is not in the data: still held for the owner, or dropped by the gates.
+  const heldRows: {
+    id: string;
+    why: string;
+    decision?: string;
+    confidence?: number;
+    patch?: unknown;
+    draft?: unknown;
+  }[] = apply.owner.map((r) => {
     const parsed = parseItemId(r.id);
     const d = parsed ? drafts[dkey(parsed.course, parsed.lessonId)] : undefined;
     return {
       id: r.id,
+      why: r.reason,
       decision: r.decision,
       confidence: r.confidence,
-      reason: r.reason,
       patch: r.patch,
       draft: d && parsed ? d.extra[parsed.type] : undefined,
     };
   });
+  const have = new Set(heldRows.map((h) => h.id));
+  for (const d of all)
+    for (const t of d.need) {
+      const id = extraItemId(d.course, d.lessonId, t);
+      if (passing(d, t) || have.has(id)) continue;
+      heldRows.push({
+        id,
+        why: d.extra[t]
+          ? `failed the automatic checks after ${d.rounds} drafts: ${(d.problems[t] ?? [])[0] ?? ""}`
+          : `the model never returned it after ${d.rounds} drafts`,
+        draft: d.extra[t],
+      });
+    }
   writeJson(path.resolve("docs/lesson-mix/held-for-owner.json"), heldRows);
-  // The owner's spot-check: 60 random lessons (20 per course), plus every lesson with a held item.
-  const rank = (l: PageLesson) => hash(`${SEED}:page:${l.course}:${l.lessonId}`) >>> 0;
-  const sample = COURSES.flatMap((c) =>
-    lessons
-      .filter((l) => l.course === c && l.items.length)
-      .sort((x, y) => rank(x) - rank(y))
-      .slice(0, 20),
-  );
-  const heldLessons = lessons.filter(
-    (l) => !sample.includes(l) && l.items.some((it) => it.status === "held"),
-  );
+  // The owner's spot-check: about 60 items, 20 per course and 4 per level, drawn at random.
+  const LEVELS: string[] = ["A1", "A2", "B1", "B2", "C1"];
+  const spot: PageLesson[] = [];
+  for (const c of COURSES)
+    for (const level of LEVELS) {
+      const pool = lessons
+        .filter((l) => l.course === c && l.level === level)
+        .flatMap((l) => l.items.map((it) => ({ l, it })))
+        .filter(({ it }) => it.status !== "held" && it.status !== "dropped")
+        .sort(
+          (x, y) =>
+            (hash(`${SEED}:spot:${c}:${x.l.lessonId}:${x.it.type}`) >>> 0) -
+            (hash(`${SEED}:spot:${c}:${y.l.lessonId}:${y.it.type}`) >>> 0),
+        );
+      for (const { l, it } of pool.slice(0, 4)) spot.push({ ...l, items: [it] });
+    }
   const html = renderPage(
     "Lesson mix: every lesson",
     {
@@ -983,42 +1398,51 @@ function exportBulkPage(a: {
       lines: [
         [
           "Lessons and items",
-          `${all.length} lessons drafted; ${total} new questions ship (listening ${shipped.listening}, speak ${shipped.speak}, translate ${shipped.translate}) of ${needed} wanted.`,
+          `${all.length} lessons drafted; ${total} new questions ship (listening ${shipped.listening}, speak ${shipped.speak}, translate ${shipped.translate}) of ${needed} wanted; ${heldRows.length} are held back.`,
         ],
         [
           "Automatic checks",
-          `${pct(needed - dropped, needed)} of items pass the checks after retries (${dropped} dropped and left out); ${pct(firstPass, needed)} passed on the first draft.`,
+          `${pct(needed - dropped, needed)} of items pass the checks (now including a gate that rejects text written for developers instead of learners); ${pct(firstPass, needed)} passed on the very first draft.`,
         ],
         [
           "Panel",
-          `Sonnet 5.5 reviewed ${cv.length} items and flagged ${flagged} (${pct(flagged, cv.length)}). Opus judged ${rv.length}: ${n("fix")} fix, ${n("keep")} keep, ${rv.length - n("fix") - n("keep")} other. ${apply.applied.length} fixes applied, ${apply.refused.length} refused by the checker.`,
+          `Sonnet 5.5 reviewed ${cv.length} items and flagged ${flagged} (${pct(flagged, cv.length)}). Opus judged ${rv.length} (this round, after the redrafts): ${n("fix")} fix, ${n("keep")} keep, ${rv.length - n("fix") - n("keep")} other.`,
         ],
         [
-          "Blind sample",
-          bs.n
-            ? `${bs.n} items (100 per course) from the shipped content, judged blind by Opus: ${bs.defects} defects, error rate ${(100 * bs.rate).toFixed(1)}% (95% range ${(100 * bs.low).toFixed(1)} to ${(100 * bs.high).toFixed(1)}%).`
-            : "Not run.",
+          "Blind sample 1 (before the fixes)",
+          blindLine(b1, "The first bulk, before any fix, judged blind by Opus"),
         ],
         [
-          "Held for you",
-          `${apply.owner.length} items. Every answer-key change the panel proposed is held, not applied, and held items are NOT in the data. List: docs/lesson-mix/held-for-owner.json, and the cards at the end of this page.`,
+          "Blind sample 2 (after the first fixes)",
+          blindLine(
+            b2,
+            "After the first fixes, a fresh sample (the first sample's items excluded), judged blind by Opus",
+          ),
+        ],
+        [
+          "Blind sample 3 (after the targeted round)",
+          blindLine(
+            b3,
+            "After the targeted round (a second Sonnet pass for extra accepted answers, then Opus read every translate and listening item), a fresh sample of the shipping content (samples 1 and 2 excluded), judged blind by Opus. The target was 6% with no wrong-answer defects: NOT met. The 29 patches Opus proposed for this sample's defects were applied afterwards, which this rate does not reflect",
+          ),
         ],
         [
           "Second opinion",
-          "Mistral stayed off (403 / 429 as in the pilot); the Opus judge also saw a control sample of Sonnet-passed items. AI-reviewed, not native-reviewed.",
+          "Mistral stayed off (403 / 429 as in the pilot). Everything is AI-reviewed (Sonnet reads, Opus judges), not native-reviewed.",
         ],
         [
           "Spend",
-          `US$${ledger.settledUsd.toFixed(2)} settled of the US$${LESSON_MIX_CAP_USD} cap (all providers, pilot included).`,
+          `US$${ledger.settledUsd.toFixed(2)} settled of the US$${LESSON_MIX_CAP_USD} cap (all providers, pilot and both bulk rounds included).`,
         ],
         [
           "Not merged",
-          "The data is wired into the app on this branch only; the database is not reseeded. Merge and reseed wait for the next native build.",
+          "The data is wired into the app on this branch only; the database is not reseeded. Order: cut and distribute the native build, merge, then reseed immediately after the deploy.",
         ],
+        ...heldRows.map((h, i): [string, string] => [`Held ${i + 1}: ${h.id}`, plainWhy(h.why)]),
       ],
-      note: `Below: a random spot-check of ${sample.length} lessons (20 per course, any level), then the lessons with held items. Green line = the answer.`,
+      note: `Below: a random spot-check of ${spot.length} items (20 per course, 4 per level), none of them held. Green line = the answer.`,
     },
-    [...sample, ...heldLessons],
+    spot,
   );
   const page = path.resolve(
     arg("page", "D:/AgentDevWork/repos/renders-2026-11-19/lesson-mix-bulk/index.html"),
@@ -1026,7 +1450,7 @@ function exportBulkPage(a: {
   fs.mkdirSync(path.dirname(page), { recursive: true });
   fs.writeFileSync(page, html);
   console.log(
-    `export --bulk: ${total} items in ${Object.values(out).reduce((x, c) => x + Object.keys(c).length, 0)} lessons written to ${a.dir}; ${heldRows.length} held; page ${page}`,
+    `export --bulk: ${total} items in ${Object.values(out).reduce((x, c) => x + Object.keys(c).length, 0)} lessons written to ${a.dir}; ${heldRows.length} held; page ${page} (${(html.length / 1024).toFixed(0)} KB)`,
   );
 }
 
@@ -1194,6 +1618,10 @@ const commands: Record<string, () => unknown> = {
   second,
   judge,
   apply: applyCommand,
+  alts: altsCommand,
+  "merge-alts": mergeAltsCommand,
+  regen: regenReport,
+  tidy: tidyCommand,
   blind: blindCommand,
   export: exportCommand,
   status,
