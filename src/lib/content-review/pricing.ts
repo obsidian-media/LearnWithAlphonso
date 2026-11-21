@@ -49,6 +49,11 @@ export const MODELS = {
   // account (there is no "mistral-large-latest" alias). It always reasons; its reasoning tokens are
   // counted as output here (the docs do not say otherwise, so the estimate errs high).
   "mistral-large-4": { provider: "mistral", input: 0.7, output: 2.1, batch: 0.5 },
+  // Lesson-mix pilot (2026-11-21): the owner's account answers 403 "not available in your subscription
+  // tier" for mistral-large-4, so the second opinion used mistral-medium-latest. Its price could not be
+  // confirmed (docs.mistral.ai model card and mistral.ai/pricing list none), so it is booked at the
+  // Large 4 rates, which are an upper bound for a Medium model: the ledger errs high.
+  "mistral-medium-latest": { provider: "mistral", input: 0.7, output: 2.1, batch: 0.5 },
 } as const satisfies Record<string, ModelPrice>;
 export type ModelId = keyof typeof MODELS;
 

@@ -104,6 +104,8 @@ const arg = (name: string, fallback: string) => {
 const flag = (name: string) => argv.includes(`--${name}`);
 const STATE = path.resolve(arg("state", ".lesson-mix"));
 const SEED = "20261121";
+/** Mistral Large 4 is 403 on the owner's account (2026-11-21); override with LESSON_MIX_MISTRAL_MODEL. */
+const MISTRAL_MODEL = process.env.LESSON_MIX_MISTRAL_MODEL ?? MODEL.mistral;
 const COURSES: Course[] = ["en", "fr", "es"];
 
 const readJson = <T>(file: string, fallback: T): T =>
@@ -705,13 +707,19 @@ async function second() {
   const s = secondOpinionSet(items, claude, ASSUME.controlRate, SEED);
   const todo = [...s.flagged, ...s.control].filter((it) => !have[it.id]);
   const chunks = chunk(todo, "sec");
-  const reqs = chunks.map((c) => buildMistralRequest(c));
+  const mreq = (c: Chunk) => {
+    const r = buildMistralRequest(c);
+    // Only the Large 4 family takes reasoning_effort.
+    if (!/large/.test(MISTRAL_MODEL)) delete (r.body as Record<string, unknown>).reasoning_effort;
+    return r;
+  };
+  const reqs = chunks.map(mreq);
   const worst = reqs.reduce(
-    (a, r) => a + worstCaseUsd(MODEL.mistral, shapeOf(r.body as never), false),
+    (a, r) => a + worstCaseUsd(MISTRAL_MODEL, shapeOf(r.body as never), false),
     0,
   );
   console.log(
-    `second: ${todo.length} items (${s.flagged.length} flagged + ${s.control.length} control) in ${chunks.length} requests to ${MODEL.mistral} (synchronous, full price: the account has no Mistral batch); worst case US$${worst.toFixed(2)}.`,
+    `second: ${todo.length} items (${s.flagged.length} flagged + ${s.control.length} control) in ${chunks.length} requests to ${MISTRAL_MODEL} (synchronous, full price: the account has no Mistral batch); worst case US$${worst.toFixed(2)}.`,
   );
   const ledger = openLedger();
   if (refuseIfOver(ledger, worst)) throw new Error("Refused: above what is left under the cap.");
@@ -722,22 +730,23 @@ async function second() {
   await withLock(path.join(STATE, "run-mistral.lock"), async () => {
     const store = loadVerdicts("second");
     for (const c of chunks) {
-      const req = buildMistralRequest(c);
-      const w = worstCaseUsd(MODEL.mistral, shapeOf(req.body as never), false);
+      const req = mreq(c);
+      const w = worstCaseUsd(MISTRAL_MODEL, shapeOf(req.body as never), false);
       const ref = `sec-${c.customId}-${Date.now().toString(36)}`;
       reserveWithinCap(ledger, ref, w, {
         phase: "second",
         provider: "mistral",
-        model: MODEL.mistral,
+        model: MISTRAL_MODEL,
       });
       let res: Awaited<ReturnType<typeof sendMistralChat>>;
       for (let attempt = 1; ; attempt++) {
         try {
-          res = await sendMistralChat(fetch, key, MODEL.mistral, req.body);
+          res = await sendMistralChat(fetch, key, MISTRAL_MODEL, req.body);
           break;
         } catch (e) {
           const msg = (e as Error).message;
           if (e instanceof RejectedError && /HTTP 429/.test(msg) && attempt < 20) {
+            console.error(`${c.customId}: HTTP 429, waiting (attempt ${attempt}/20)`);
             await new Promise((r) =>
               setTimeout(r, Math.min(60_000, 2000 * 2 ** Math.min(attempt, 5))),
             );
@@ -749,7 +758,7 @@ async function second() {
           throw e;
         }
       }
-      const cost = res.usage ? mistralUsageUsd(MODEL.mistral, res.usage, false) : w;
+      const cost = res.usage ? mistralUsageUsd(MISTRAL_MODEL, res.usage, false) : w;
       ledger.settle(ref, cost);
       const parsed = parseChunkReply(c, res.text);
       for (const v of parsed.verdicts) store[v.id] = v;
