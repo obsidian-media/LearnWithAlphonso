@@ -26,7 +26,6 @@ const MOCK_SAMPLES = [
   "3h 02m",
   "99.94%",
   "$4.21",
-  "Mona",
   "196 clips",
   "2,041",
   "alex@alphonso.app",
@@ -65,7 +64,30 @@ export function findViolations(source: string, file = "x.tsx"): string[] {
     (ts.isPrefixUnaryExpression(e) && ts.isNumericLiteral(e.operand)) ||
     numericString(e);
 
+  // (e) a fallback number: `x ?? 0` or `x || 0` anywhere inside what JSX renders turns "unknown" into a number.
+  const fallbacks = (root: ts.Node) => {
+    const walkFb = (m: ts.Node) => {
+      if (
+        ts.isBinaryExpression(m) &&
+        (m.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken ||
+          m.operatorToken.kind === ts.SyntaxKind.BarBarToken) &&
+        isNumber(m.right)
+      ) {
+        out.push(`${file}:${at(m)} a numeric fallback in rendered data: ${m.getText()}`);
+      }
+      ts.forEachChild(m, walkFb);
+    };
+    walkFb(root);
+  };
+
   const visit = (n: ts.Node) => {
+    if (
+      ts.isJsxExpression(n) &&
+      n.expression &&
+      (ts.isJsxElement(n.parent) || ts.isJsxFragment(n.parent))
+    ) {
+      fallbacks(n.expression);
+    }
     if (ts.isJsxText(n) && NUMERIC_TEXT.test(n.text) && n.text.trim() !== "") {
       out.push(`${file}:${at(n)} a number written as JSX text: ${n.text.trim()}`);
     }
@@ -88,6 +110,7 @@ export function findViolations(source: string, file = "x.tsx"): string[] {
       const tag =
         ts.isJsxOpeningElement(el) || ts.isJsxSelfClosingElement(el) ? el.tagName.getText() : "";
       const v = ts.isJsxExpression(n.initializer) ? n.initializer.expression : n.initializer;
+      if (tag === "Figure" && v) fallbacks(v);
       if (tag === "Figure" && v && isNumber(v as ts.Expression)) {
         out.push(`${file}:${at(n)} Figure value is a literal: ${n.getText()}`);
       }
@@ -146,6 +169,20 @@ describe("the scanner itself (it must be able to fail)", () => {
     );
     expect(findViolations("const SAMPLE_ROWS = [];")).toHaveLength(1);
     expect(findViolations("const mockTickets = [];")).toHaveLength(1);
+  });
+  it("flags a numeric fallback (?? 0, || 0) in JSX and in a Figure value", () => {
+    expect(
+      findViolations("const a = <Figure value={x ?? 0} reason='r' />;").length,
+    ).toBeGreaterThan(0);
+    expect(
+      findViolations("const a = <Figure value={x || 0} reason='r' />;").length,
+    ).toBeGreaterThan(0);
+    expect(findViolations("const a = <p>{(counts.open ?? 0) + 1}</p>;").length).toBeGreaterThan(0);
+    expect(findViolations("const a = <p>{x ?? 'none'}</p>;")).toEqual([]);
+    expect(findViolations("const a = <Figure value={x} reason='r' />;")).toEqual([]);
+  });
+  it("does not flag real story content (a character name is not a sample)", () => {
+    expect(findViolations("const a = <p>Mona walked in</p>;")).toEqual([]);
   });
   it("flags row-like arrays and the sample strings from the mocks", () => {
     expect(findViolations("const r = [{ name: 'a' }, { name: 'b' }];")).toHaveLength(1);

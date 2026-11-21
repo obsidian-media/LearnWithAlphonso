@@ -404,6 +404,24 @@ describe("Home: the triage drawer uses the existing reply, assign and resolve", 
     expect(await screen.findByText("This chat is too old.")).toBeTruthy();
   });
 
+  it("focus moves into the drawer, Tab wraps inside it, and Escape closes it and restores focus to the row", async () => {
+    const api = makeApi();
+    const user = userEvent.setup();
+    render(<HomeScreen me={ownerMe} data={data()} api={api} />);
+    const row = screen.getByRole("button", { name: /Pro is not showing/ });
+    await user.click(row);
+    await screen.findByText("Pro is not showing after I paid", { selector: "p.inline-block" });
+    const drawer = document.querySelector<HTMLElement>("[data-ticket-drawer]")!;
+    expect(drawer.contains(document.activeElement)).toBe(true);
+    for (let i = 0; i < 12; i++) {
+      await user.tab();
+      expect(drawer.contains(document.activeElement)).toBe(true);
+    }
+    await user.keyboard("{Escape}");
+    expect(document.querySelector("[data-ticket-drawer]")).toBeNull();
+    expect(document.activeElement).toBe(row);
+  });
+
   it("a resolved ticket offers no reply, assign or resolve", async () => {
     const api = makeApi({ getTicket: vi.fn(async () => detail({ status: "solved" }) as never) });
     await open(api);

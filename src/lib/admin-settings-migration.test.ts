@@ -311,6 +311,29 @@ describe("admin_settings", () => {
     ).toBe(true);
   });
 
+  it("a 9.0 write is stored as 9, reads back as 9, and the inbox still works", async () => {
+    const raw = (v: string) =>
+      one<boolean>(
+        "public.staff_set_setting($1,'owner','support_breach_hours',$2::jsonb,'tune the clock')",
+        [OWNER, v],
+      );
+    expect(await raw("9.0")).toBe(true);
+    expect(await one("public.staff_get_settings($1)", [SAM])).toEqual({ support_breach_hours: 9 });
+    const stored = (
+      await db.query<{ t: string }>(
+        "SELECT value::text t FROM public.admin_settings WHERE key = 'support_breach_hours'",
+      )
+    ).rows[0]!.t;
+    expect(stored).toBe("9");
+    expect((await inbox(SAM)).breachHours).toBe(9);
+    // an old non-canonical row (written before this fix) must not break the inbox either
+    await db.exec("UPDATE public.admin_settings SET value = '9.0'::jsonb");
+    expect((await inbox(SAM)).breachHours).toBe(9);
+    await db.exec("UPDATE public.admin_settings SET value = '8'::jsonb");
+    // writing 8.0 over 8 is the same value: nothing changes
+    expect(await raw("8.0")).toBe(false);
+  });
+
   it("refuses a bad value, a short reason and an unknown key, and records nothing", async () => {
     const count = async () =>
       Number(
@@ -508,6 +531,27 @@ describe("staff_home_metrics", () => {
     expect(await m("today")).toEqual({ newLearners: 1, lessons: 2, activeToday: 2 });
     expect(await m("7")).toEqual({ newLearners: 2, lessons: 3, activeToday: 2 });
     expect(await m("30")).toEqual({ newLearners: 3, lessons: 4, activeToday: 2 });
+  });
+
+  it("the range tests are sargable (no date cast on the column) and the indexes exist", async () => {
+    expect(MIGRATION).not.toMatch(/created_at AT TIME ZONE 'UTC'\)::date >= first_day/);
+    expect(MIGRATION).not.toMatch(/completed_at AT TIME ZONE 'UTC'\)::date >= first_day/);
+    const idx = (
+      await db.query<{ indexname: string }>(
+        "SELECT indexname FROM pg_indexes WHERE indexname IN ('lesson_completions_completed_at','profiles_created_at')",
+      )
+    ).rows.map((r) => r.indexname);
+    expect(idx.sort()).toEqual(["lesson_completions_completed_at", "profiles_created_at"]);
+  });
+
+  it("a row at UTC midnight of the first day counts, one a second earlier does not (boundary kept)", async () => {
+    await db.exec(`
+      DELETE FROM public.lesson_completions;
+      INSERT INTO public.lesson_completions(user_id, lesson_id, completed_at) VALUES
+        ('${L2}', 'b1', ((now() AT TIME ZONE 'UTC')::date - 6)::timestamp AT TIME ZONE 'UTC'),
+        ('${L2}', 'b2', ((now() AT TIME ZONE 'UTC')::date - 6)::timestamp AT TIME ZONE 'UTC' - interval '1 second');
+    `);
+    expect((await one<Record<string, number>>("public.staff_home_metrics('7')")).lessons).toBe(1);
   });
 
   it("a real zero is a number (the database counted nothing), and a bad range is refused", async () => {

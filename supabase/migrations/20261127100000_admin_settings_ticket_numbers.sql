@@ -95,6 +95,7 @@ AS $$
 DECLARE
   old_value jsonb;
   hours numeric;
+  new_value jsonb;
 BEGIN
   IF p_actor IS NULL OR p_role IS DISTINCT FROM 'owner' OR public.staff_active_role(p_actor) IS DISTINCT FROM 'owner' THEN
     RAISE EXCEPTION 'staff_set_setting: only an owner can change settings' USING ERRCODE = '42501';
@@ -110,20 +111,22 @@ BEGIN
     IF hours <> trunc(hours) OR hours < 1 OR hours > 168 THEN
       RAISE EXCEPTION 'staff_set_setting: support_breach_hours must be 1 to 168' USING ERRCODE = '22023';
     END IF;
+    -- Stored canonically (9.0 is stored as 9), so every reader can cast it.
+    new_value := to_jsonb(hours::integer);
   ELSE
     RAISE EXCEPTION 'staff_set_setting: unknown setting' USING ERRCODE = '22023';
   END IF;
   SELECT s.value INTO old_value FROM public.admin_settings s WHERE s.key = p_key FOR UPDATE;
-  IF old_value IS NOT DISTINCT FROM p_value THEN
+  IF old_value IS NOT DISTINCT FROM new_value THEN
     RETURN false;
   END IF;
   INSERT INTO public.admin_settings (key, value, updated_by, updated_at)
-  VALUES (p_key, p_value, p_actor, now())
+  VALUES (p_key, new_value, p_actor, now())
   ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_by = EXCLUDED.updated_by, updated_at = now();
   PERFORM public.staff_record(
     p_actor, 'owner', 'settings.update', NULL, btrim(p_reason),
     jsonb_build_object('key', p_key, 'value', old_value),
-    jsonb_build_object('key', p_key, 'value', p_value), NULL);
+    jsonb_build_object('key', p_key, 'value', new_value), NULL);
   RETURN true;
 END;
 $$;
@@ -244,7 +247,7 @@ BEGIN
     RAISE EXCEPTION 'staff_support_inbox: a cursor needs both parts' USING ERRCODE = '22023';
   END IF;
 
-  SELECT (s.value #>> '{}')::integer INTO hours FROM public.admin_settings s WHERE s.key = 'support_breach_hours';
+  SELECT (s.value #>> '{}')::numeric::integer INTO hours FROM public.admin_settings s WHERE s.key = 'support_breach_hours';
   breach_before := CASE WHEN hours IS NULL THEN NULL ELSE now() - make_interval(hours => hours) END;
 
   WITH base AS (
@@ -347,6 +350,9 @@ REVOKE ALL ON FUNCTION public.staff_support_inbox(uuid, text, text, timestamptz,
 GRANT EXECUTE ON FUNCTION public.staff_support_inbox(uuid, text, text, timestamptz, uuid, integer) TO service_role;
 
 -- ---- the Home metric row ----
+-- The range tests compare the raw timestamp with UTC midnight (not a date cast), so these indexes can serve them.
+CREATE INDEX IF NOT EXISTS lesson_completions_completed_at ON public.lesson_completions (completed_at);
+CREATE INDEX IF NOT EXISTS profiles_created_at ON public.profiles (created_at);
 -- p_range: today (this UTC day), 7 or 30 (the last 7 or 30 UTC days including today). Counts only: no id, no name.
 --   newLearners   profiles created in the range
 --   lessons       lesson_completions finished in the range
@@ -371,8 +377,8 @@ BEGIN
     RAISE EXCEPTION 'staff_home_metrics: range must be today, 7 or 30' USING ERRCODE = '22023';
   END IF;
   RETURN jsonb_build_object(
-    'newLearners', (SELECT count(*) FROM public.profiles p WHERE (p.created_at AT TIME ZONE 'UTC')::date >= first_day),
-    'lessons', (SELECT count(*) FROM public.lesson_completions l WHERE (l.completed_at AT TIME ZONE 'UTC')::date >= first_day),
+    'newLearners', (SELECT count(*) FROM public.profiles p WHERE p.created_at >= first_day::timestamp AT TIME ZONE 'UTC'),
+    'lessons', (SELECT count(*) FROM public.lesson_completions l WHERE l.completed_at >= first_day::timestamp AT TIME ZONE 'UTC'),
     'activeToday', (SELECT count(DISTINCT d.user_id) FROM public.learning_days d WHERE d.day = today));
 END;
 $$;

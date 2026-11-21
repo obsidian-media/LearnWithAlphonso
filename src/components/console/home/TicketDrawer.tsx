@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { TicketDetail } from "../../../lib/staff-support.server";
 import { TOPIC_LABELS, courseName, label, stampLabel } from "../../../lib/support-inbox-copy";
 import { ticketStatusWord } from "../../../lib/console-format";
@@ -47,6 +47,44 @@ export function TicketDrawer({
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const panel = useRef<HTMLElement>(null);
+
+  // Focus moves into the drawer when it opens, Tab stays inside it, Escape closes it, and focus goes back to the row
+  // that opened it.
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    panel.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !panel.current) return;
+      const items = [
+        ...panel.current.querySelectorAll<HTMLElement>(
+          "button:not([disabled]), textarea:not([disabled]), a[href], input:not([disabled])",
+        ),
+      ];
+      if (items.length === 0) return;
+      const first = items[0]!;
+      const last = items[items.length - 1]!;
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === panel.current)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      opener?.focus?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per open
+  }, []);
 
   async function load() {
     try {
@@ -101,6 +139,8 @@ export function TicketDrawer({
         className="absolute inset-0 bg-ds-ink/40"
       />
       <section
+        ref={panel}
+        tabIndex={-1}
         data-ticket-drawer=""
         className="absolute inset-y-0 right-0 flex w-full flex-col bg-ds-card shadow-xl sm:w-[30rem]"
       >
