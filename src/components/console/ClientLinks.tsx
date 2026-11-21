@@ -23,11 +23,19 @@ export function clientNavigationHref(event: {
   const href = el.getAttribute("href");
   // Only a plain absolute path: not "//host" or "/\host" (browsers read a backslash as a slash), and no tab, CR, LF or
   // other control character (browsers strip those before parsing, which can turn a path into another origin).
-  if (!href || !/^\/(?![/\\])/.test(href) || /[\u0000-\u001f\u007f]/.test(href)) return null;
+  if (!href || !/^\/(?![/\\])/.test(href) || hasControlCharacter(href)) return null;
   if (el.hasAttribute("download")) return null;
   const target = el.getAttribute("target");
   if (target && target !== "_self") return null;
   return href;
+}
+
+function hasControlCharacter(text: string): boolean {
+  for (let i = 0; i < text.length; i += 1) {
+    const code = text.charCodeAt(i);
+    if (code <= 0x1f || code === 0x7f) return true;
+  }
+  return false;
 }
 
 /** Turns every in-app `<a href="/...">` below it into a client-side navigation. It adds no element to the layout. */
