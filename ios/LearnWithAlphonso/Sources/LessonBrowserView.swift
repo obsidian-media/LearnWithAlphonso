@@ -683,8 +683,7 @@ struct LessonBrowserView: View {
     /// refuses. It is retried (LevelSave), and if it still fails the picker goes back to the level the server holds,
     /// with a line saying so. A newer pick replaces one still saving.
     private func saveLevel(_ level: String, previous: String) {
-        guard let accessToken = session.accessToken else { return }
-        let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+        guard session.accessToken != nil else { return }
         let savingCourse = course.code
         if levelSavingCourse == savingCourse { levelSaveTask?.cancel() }
         levelPickNumber += 1
@@ -692,7 +691,14 @@ struct LessonBrowserView: View {
         levelSavingCourse = savingCourse
         levelSaveMessage = nil
         levelSaveTask = Task {
-            let saved = await LevelSave.run { try await client.setCefrLevel(course: savingCourse, level: level) }
+            // The token is fetched inside the retried closure, so a token that expired mid-retry is refreshed.
+            let saved = await LevelSave.run {
+                guard let accessToken = await session.freshAccessToken() else { throw URLError(.userAuthenticationRequired) }
+                let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
+                try await client.setCefrLevel(course: savingCourse, level: level)
+            }
+            // A save that landed is recorded per course even when a newer pick superseded it: the server holds it.
+            if saved, pick != levelPickNumber { savedLevels[savingCourse] = level }
             // A newer pick took over (and cancelled this one if it was for the same course).
             guard pick == levelPickNumber else { return }
             levelSaveTask = nil

@@ -39,10 +39,10 @@ class LessonViewModelTest {
     private val lesson = testContent.findLesson("u1l1", Course.ENGLISH)!!.second
     private var tier: String? = "bronze"
 
-    private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true, owner: String? = "u1", pro: Boolean = false) = LessonViewModel(
+    private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true, owner: String? = "u1", pro: Boolean = false, sessionWaitMs: Long = 8_000) = LessonViewModel(
         lesson, Course.ENGLISH, testContent, server.progressClient, server.translation, store,
         isConnected = { connected }, lastKnownTier = { tier }, rememberTier = { tier = it }, now = { 42L }, hasAiConsent = { true },
-        ownerUserId = { owner }, isPro = { pro },
+        ownerUserId = { owner }, isPro = { pro }, sessionWaitMs = sessionWaitMs,
     )
 
     private suspend fun playThrough(v: LessonViewModel) {
@@ -342,6 +342,50 @@ class LessonViewModelTest {
         gate.complete(Unit)
         awaitTrue("started") { v.state.value.phase != LessonPhase.Overview }
         assertTrue(!v.state.value.lessonLocked)
+    }
+
+    @Test
+    fun `a held Start proceeds after the wait when the session call is a 5xx, and it is not the locked screen`() = runBlocking {
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) json("""{"error":"boom"}""", HttpStatusCode.InternalServerError) else json("[]")
+        }
+        val v = vm(server, sessionWaitMs = 300)
+        v.onScreenShown()
+        v.begin()
+        awaitTrue("started") { v.state.value.phase != LessonPhase.Overview }
+        assertTrue("best effort, not locked", !v.state.value.lessonLocked)
+        assertTrue("no longer held", !v.state.value.startPending)
+    }
+
+    @Test
+    fun `a held Start proceeds after the wait when the session call never answers`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) { gate.await(); json("""{"token":"tok"}""") } else json("[]")
+        }
+        val v = vm(server, sessionWaitMs = 300)
+        v.onScreenShown()
+        awaitTrue("call out") { server.seen.any { it.path.endsWith("start-lesson-session") } }
+        v.begin()
+        assertTrue("shows the wait", v.state.value.startPending)
+        assertEquals(LessonPhase.Overview, v.state.value.phase)
+        awaitTrue("started") { v.state.value.phase != LessonPhase.Overview }
+        assertTrue(!v.state.value.lessonLocked)
+        gate.complete(Unit); Unit
+    }
+
+    @Test
+    fun `reopening the session clears an earlier locked answer`() = runBlocking {
+        var locked = true
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) { if (locked) json("""{"error":"lesson-locked"}""", HttpStatusCode.Conflict) else json("""{"token":"tok"}""") } else json("[]")
+        }
+        val v = vm(server)
+        v.onScreenShown()
+        awaitTrue("locked") { v.state.value.lessonLocked }
+        locked = false
+        v.openSession().join()
+        assertTrue("unlocked on re-entry", !v.state.value.lessonLocked)
     }
 
     @Test

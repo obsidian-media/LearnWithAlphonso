@@ -6,6 +6,7 @@ import type { Level } from "../data/levels";
 import {
   firstUndoneInCurriculumOrder,
   isLessonUnlocked,
+  LEVEL_ORDER,
   lessonsInLearningOrder,
   nextStartableLessonId,
   pathStates,
@@ -413,6 +414,9 @@ describe("the rule against an independent model, on random interleaved courses",
           const legacy = firstUndoneInCurriculumOrder(lessons, done);
           if (legacy) expect(isLessonUnlocked(lessons, done, level, legacy)).toBe(true);
           for (const l of lessons) if (done.has(l.id)) expect(strict.has(l.id)).toBe(true);
+          // The first undone lesson in learning order is where the learner is: it is always open.
+          const firstUndone = learning.find((l) => !done.has(l.id));
+          if (firstUndone) expect(strict.has(firstUndone.id)).toBe(true);
         }
       }
     }
@@ -421,4 +425,27 @@ describe("the rule against an independent model, on random interleaved courses",
     expect(someLocked).toBeGreaterThan(cases / 5);
     expect(allOpen).toBeGreaterThan(cases / 20);
   }, 120_000);
+});
+
+/** The apps carry their own copy of the band order (LearnFold); a drift would sort lessons differently from the server. */
+describe("the native copies of LEVEL_ORDER", () => {
+  const root = path.resolve(import.meta.dirname, "../..");
+  const text = (p: string) => fs.readFileSync(path.join(root, p), "utf8");
+  const bands = (list: string) => [...list.matchAll(/"([A-Z]\d)"/g)].map((m) => m[1]);
+
+  it("iOS levelOrder equals LEVEL_ORDER", () => {
+    const swift = text("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/LearnFold.swift");
+    const m = swift.match(/static let levelOrder = \[([^\]]*)\]/);
+    expect(m, "levelOrder not found").not.toBeNull();
+    expect(bands(m![1])).toEqual([...LEVEL_ORDER]);
+  });
+
+  it("Android LEVEL_ORDER equals LEVEL_ORDER", () => {
+    const kt = text(
+      "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/logic/LearnFold.kt",
+    );
+    const m = kt.match(/val LEVEL_ORDER = listOf\(([^)]*)\)/);
+    expect(m, "LEVEL_ORDER not found").not.toBeNull();
+    expect(bands(m![1])).toEqual([...LEVEL_ORDER]);
+  });
 });

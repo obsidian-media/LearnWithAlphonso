@@ -40,6 +40,7 @@ import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectCue
 import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectCues
 import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectRequest
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -80,6 +81,8 @@ data class LessonUiState(
     val outOfHearts: OutOfHeartsModel? = null,
     /** True when the server refused this lesson as not unlocked yet: "Finish the earlier lessons first" replaces it. */
     val lessonLocked: Boolean = false,
+    /** Start was tapped while the session call is out: the button shows the wait (at most [LessonViewModel.SESSION_WAIT_MS]). */
+    val startPending: Boolean = false,
     val buyingHeart: Boolean = false,
     val buyMessage: String? = null,
     /** The learner's earlier best on this lesson, read when it opens; unknown (offline) promises no XP per answer. */
@@ -123,7 +126,14 @@ class LessonViewModel(
     private val ownerUserId: () -> String? = { null },
     /** Alphonso Pro: unlimited hearts, so no heart is spent and the offline gate never blocks. */
     private val isPro: () -> Boolean = { false },
+    /** How long a tapped Start waits for the session call (which has no deadline) before playing without it. */
+    private val sessionWaitMs: Long = SESSION_WAIT_MS,
 ) : ViewModel() {
+    companion object {
+        /** How long a tapped Start waits for the start-lesson-session call before the lesson plays without it. */
+        const val SESSION_WAIT_MS = 8_000L
+    }
+
     private val _state = MutableStateFlow(LessonUiState(lesson))
     val state: StateFlow<LessonUiState> = _state.asStateFlow()
     private var attemptSeed = UUID.randomUUID().toString()
@@ -195,6 +205,7 @@ class LessonViewModel(
     private suspend fun openSessionNow() {
         sessionToken = null
         beginWhenOpen = false
+        _state.update { it.copy(lessonLocked = false, startPending = false) }
         if (!isConnected()) {
             val cached = syncStore.lastKnownProgress() ?: return
             val decision = HeartsEconomy.gate(cached.hearts, cached.heartsRefillAt?.toLong(), now(), unlimited = isPro())
@@ -220,6 +231,7 @@ class LessonViewModel(
         // A Start tapped while the call was out goes ahead now, unless the server refused the lesson.
         if (beginWhenOpen) {
             beginWhenOpen = false
+            _state.update { it.copy(startPending = false) }
             val s = _state.value
             if (!s.lessonLocked && s.outOfHearts == null && s.phase == LessonPhase.Overview) begin()
         }
@@ -276,7 +288,19 @@ class LessonViewModel(
 
     fun begin() {
         if (sessionOpening) {
+            if (beginWhenOpen) return
             beginWhenOpen = true
+            _state.update { it.copy(startPending = true) }
+            // No deadline on the call itself: past the wait the lesson plays best-effort (finish() starts a session).
+            viewModelScope.launch {
+                delay(sessionWaitMs)
+                if (!beginWhenOpen || !sessionOpening) return@launch
+                beginWhenOpen = false
+                sessionOpening = false
+                _state.update { it.copy(startPending = false) }
+                val s = _state.value
+                if (!s.lessonLocked && s.outOfHearts == null && s.phase == LessonPhase.Overview) begin()
+            }
             return
         }
         timer = ActiveTimer(now())

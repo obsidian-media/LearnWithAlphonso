@@ -44,11 +44,14 @@ function playerProblems(playerText: string, lockedText: string): string[] {
   if (!/private var onStage: Bool \{\s*!lessonLocked &&/.test(player))
     out.push("the locked screen counts as the stage, so its navigation bar (and Back) is hidden");
   if (
-    !/private func startLesson\(\) \{\s*if sessionOpening \{\s*startWhenOpen = true\s*return/.test(
+    !/private func startLesson\(\) \{\s*if sessionOpening \{\s*guard !startWhenOpen else \{ return \}\s*startWhenOpen = true/.test(
       player,
     )
   )
     out.push("Start does not wait for the session call");
+  // The wait has a deadline: the session call has none of its own (a dead connection reported as online).
+  if (!/Task\.sleep\(nanoseconds: Self\.sessionWaitNanoseconds\)/.test(player))
+    out.push("the held Start has no deadline");
   if (
     !/sessionOpening = true\s*guard let accessToken = await session\.freshAccessToken\(\)/.test(
       open,
@@ -74,8 +77,14 @@ function levelSaveProblems(browserText: string): string[] {
   const browser = code(browserText);
   const out: string[] = [];
   const save = between(browser, "private func saveLevel(", "private func loadChallenges");
-  if (!save.includes("await LevelSave.run { try await client.setCefrLevel("))
+  if (!save.includes("await LevelSave.run {") || !save.includes("try await client.setCefrLevel("))
     out.push("the save is not retried");
+  // The token is read inside the retried closure, so a token that expired between tries is refreshed.
+  if (!/LevelSave\.run \{\s*guard let accessToken = await session\.freshAccessToken\(\)/.test(save))
+    out.push("the save reads its token once, outside the retry");
+  // A save that landed is recorded even when a pick on another course superseded it.
+  if (!/if saved, pick != levelPickNumber \{ savedLevels\[savingCourse\] = level \}/.test(save))
+    out.push("a landed save superseded by another course's pick is not recorded");
   if (/try\? await client\.setCefrLevel/.test(save)) out.push("the save is fire-and-forget");
   if (!/setLevelByApp\(back\)\n\s*levelSaveMessage = LevelSave\.failedMessage/.test(save))
     out.push("a failed save does not put the picker back and say so");
@@ -152,10 +161,16 @@ describe("lesson order on iOS", () => {
     ).toContain("the locked screen lacks Button(LessonLockedCopy.backTitle, action: onBack)");
     expect(
       playerProblems(
-        mutate(player, /if sessionOpening \{\s*startWhenOpen = true\s*return\s*\}\n/, ""),
+        mutate(player, /guard !startWhenOpen else \{ return \}\s*startWhenOpen = true/, ""),
         locked,
       ),
     ).toContain("Start does not wait for the session call");
+    expect(
+      playerProblems(
+        mutate(player, "Task.sleep(nanoseconds: Self.sessionWaitNanoseconds)", "Task.yield()"),
+        locked,
+      ),
+    ).toContain("the held Start has no deadline");
     expect(
       playerProblems(
         mutate(
@@ -169,9 +184,27 @@ describe("lesson order on iOS", () => {
     // 2: fire-and-forget again, no put-back, and a skip that is not tied to the level the app set.
     const fireAndForget = mutate(
       browser,
-      "await LevelSave.run { try await client.setCefrLevel(course: savingCourse, level: level) }",
+      /await LevelSave\.run \{[\s\S]*?try await client\.setCefrLevel\(course: savingCourse, level: level\)\s*\}/,
       "(try? await client.setCefrLevel(course: savingCourse, level: level)) != nil",
     );
+    expect(
+      levelSaveProblems(
+        mutate(
+          browser,
+          "guard let accessToken = await session.freshAccessToken() else { throw",
+          "guard let accessToken = session.accessToken else { throw",
+        ),
+      ),
+    ).toContain("the save reads its token once, outside the retry");
+    expect(
+      levelSaveProblems(
+        mutate(
+          browser,
+          "if saved, pick != levelPickNumber {",
+          "if saved, pick == levelPickNumber {",
+        ),
+      ),
+    ).toContain("a landed save superseded by another course's pick is not recorded");
     expect(levelSaveProblems(fireAndForget)).toEqual(
       expect.arrayContaining(["the save is not retried", "the save is fire-and-forget"]),
     );

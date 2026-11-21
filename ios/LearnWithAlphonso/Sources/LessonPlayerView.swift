@@ -93,6 +93,8 @@ struct LessonPlayerView: View {
     /// always comes before any of the lesson is played.
     @State private var sessionOpening = false
     @State private var startWhenOpen = false
+    /// How long a tapped Start waits for the session call before playing without it.
+    private static let sessionWaitNanoseconds: UInt64 = 8_000_000_000
     @State private var showingReviewInstead = false
     @State private var showingHector = false
     @State private var showingHectorPaywall = false
@@ -266,7 +268,16 @@ struct LessonPlayerView: View {
 
     private func startLesson() {
         if sessionOpening {
+            guard !startWhenOpen else { return }
             startWhenOpen = true
+            // The session call has no deadline of its own, so a dead connection reported as online would leave Start
+            // doing nothing for the OS timeout. Past this wait the lesson plays best-effort (finish() mints a session).
+            let waitingFor = lesson.id
+            Task {
+                try? await Task.sleep(nanoseconds: Self.sessionWaitNanoseconds)
+                guard startWhenOpen, sessionOpening, lesson.id == waitingFor else { return }
+                sessionOpened()
+            }
             return
         }
         lessonTimer = ActiveTimer(now: Date().timeIntervalSince1970)
@@ -385,7 +396,7 @@ struct LessonPlayerView: View {
             case .overview:
                 LessonStartView(
                     roomID: roomID, unitLine: unitLine, title: lesson.title, meta: startMeta, steps: startSteps,
-                    hearts: hudHearts, topInset: topInset, onClose: { dismiss() }, onStart: startLesson)
+                    hearts: hudHearts, topInset: topInset, waiting: startWhenOpen, onClose: { dismiss() }, onStart: startLesson)
             case .vocab:
                 VStack(spacing: 0) {
                     LessonHUD(progress: 0, hearts: hudHearts, onLight: true, onClose: { dismiss() })

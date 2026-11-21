@@ -215,7 +215,7 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                         LessonStart(
                             roomId, unitLine, state.lesson.title,
                             "About $minutes min · $total question${if (total == 1) "" else "s"} · Up to ${LessonXp.maxXp(total)} XP",
-                            steps, hearts, onClose = onExit, onStart = vm::begin,
+                            steps, hearts, onClose = onExit, onStart = vm::begin, waiting = state.startPending,
                         )
                     }
                     LessonPhase.Vocab -> if (androidx.compose.ui.platform.LocalDensity.current.fontScale >= 1.5f) {
