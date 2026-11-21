@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.obsidianmedia.learnwithalphonso.core.content.ContentStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
 import com.obsidianmedia.learnwithalphonso.core.content.Unit
+import com.obsidianmedia.learnwithalphonso.core.logic.LevelSave
 import com.obsidianmedia.learnwithalphonso.core.logic.ReviewBadge
 import com.obsidianmedia.learnwithalphonso.core.logic.mondayDateString
 import com.obsidianmedia.learnwithalphonso.core.net.BuyStreakFreezeResult
@@ -18,6 +19,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.getWeeklyChallenges
 import com.obsidianmedia.learnwithalphonso.core.sync.DeadLetterInfo
 import com.obsidianmedia.learnwithalphonso.data.SyncQueueStore
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -67,6 +69,8 @@ class LearnViewModel(
     /** The signed-in account: queued work and lost lessons are shown for this account only. */
     userId: String? = null,
     private val nowMillis: () -> Long = System::currentTimeMillis,
+    /** Between the level save's tries ([LevelSave]); tests pass a no-op. */
+    private val levelSavePause: suspend (Int) -> Unit = { delay(it * 1_000L) },
 ) : ViewModel() {
     private val _state = MutableStateFlow(LearnUiState(course = initialCourse))
     val state: StateFlow<LearnUiState> = _state.asStateFlow()
@@ -84,6 +88,10 @@ class LearnViewModel(
 
     private var loadJob: Job? = null
 
+    /** The level the server holds for this course, as last read or saved; null until known. */
+    private var savedLevel: String? = null
+    private var levelSave: Pair<Course, Job>? = null
+
     /** The first load, so tests can join it instead of polling. */
     @VisibleForTesting
     val initialLoad: Job = load()
@@ -92,14 +100,31 @@ class LearnViewModel(
     fun selectCourse(course: Course): Job {
         if (course == _state.value.course) return COMPLETED
         _state.value = LearnUiState(course = course)
+        savedLevel = null
         return load()
     }
 
-    /** Local band switch is instant; the server save is fire-and-forget, mirroring the web's pick(). */
+    /**
+     * The band switch is instant. The saved level is what start-lesson-session opens lessons from, so a lost save
+     * would leave the map offering lessons the server refuses: the save is retried ([LevelSave]), and if it still fails
+     * the picker goes back to the level the server holds, with a notice. A newer pick replaces one still saving.
+     */
     fun selectLevel(level: String): Job {
+        val before = _state.value.selectedLevel
         _state.update { it.copy(selectedLevel = level) }
         val course = _state.value.course
-        return viewModelScope.launch { runCatching { client.setCefrLevel(course.code, level) } }
+        levelSave?.let { (c, job) -> if (c == course) job.cancel() }
+        val job = viewModelScope.launch {
+            val saved = LevelSave.run(pause = levelSavePause) { client.setCefrLevel(course.code, level) }
+            if (_state.value.course != course) return@launch
+            if (saved) {
+                savedLevel = level
+            } else if (_state.value.selectedLevel == level) {
+                _state.update { it.copy(selectedLevel = savedLevel ?: before, notice = LevelSave.FAILED_MESSAGE) }
+            }
+        }
+        levelSave = course to job
+        return job
     }
 
     fun refresh(): Job = load()
@@ -147,9 +172,12 @@ class LearnViewModel(
             val placed = runCatching { client.fetchPlacementTakenAt(course.code) }
             val challenges = runCatching { client.getWeeklyChallenges() }.getOrDefault(emptyList())
             if (_state.value.course != course) return@launch
+            if (level != null) savedLevel = level
+            // A pick still saving outranks the level read before it landed.
+            val saving = levelSave?.let { (c, job) -> c == course && job.isActive } == true
             _state.update {
                 it.copy(
-                    selectedLevel = level ?: it.selectedLevel,
+                    selectedLevel = if (saving) it.selectedLevel else level ?: it.selectedLevel,
                     completedLessonIds = ids.toSet(),
                     mostRecentlyCompletedLessonId = ids.firstOrNull(),
                     placementTaken = placed.getOrNull()?.let { true } ?: if (placed.isSuccess) false else null,

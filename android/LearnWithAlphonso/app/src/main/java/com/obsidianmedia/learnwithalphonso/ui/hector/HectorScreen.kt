@@ -284,10 +284,10 @@ class HectorViewModel(
     fun canSend(): Boolean = canSend(_state.value, engine.phase.value)
 
     /**
-     * A typed message (or a tapped chip) as the learner's turn: the same path a transcribed voice turn takes. Ignored
-     * when blank or while a turn is already under way; it cuts the greeting off, like holding to talk does.
+     * A typed message (or a tapped chip) as the learner's turn: the same path a transcribed voice turn takes; it cuts
+     * the greeting off, like holding to talk does. Returns true when the message was taken, and false (blank, or a turn
+     * still under way) to leave it for the caller to keep.
      */
-    /** True when the message was taken; false (blank, or a turn still under way) leaves it for the caller to keep. */
     fun sendTyped(text: String): Boolean {
         val trimmed = text.trim()
         if (trimmed.isEmpty() || !canSend()) return false

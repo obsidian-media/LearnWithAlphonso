@@ -62,6 +62,19 @@ final class LearnFoldTests: XCTestCase {
         XCTAssertNil(LearnFold.currentUnitOf(mk(2), completed: all(1, 2)))
     }
 
+    /// The course's Continue reads units band by band, not in the curriculum array's interleaved order.
+    func testInLearningOrderIsBandByBandAndKeepsCurriculumOrderWithinABand() {
+        // The array puts a B1 unit before the last A1 one, as the English curriculum does.
+        struct U { let id: String; let level: String }
+        let raw = [U(id: "a1", level: "A1"), U(id: "b1", level: "B1"), U(id: "a2", level: "A1"), U(id: "x", level: "Z9"), U(id: "e1", level: "A2")]
+        let ordered = LearnFold.inLearningOrder(raw, level: \.level)
+        XCTAssertEqual(ordered.map(\.id), ["a1", "a2", "e1", "b1", "x"])
+        let units = ordered.map { FoldUnit(id: $0.id, eyebrow: $0.id, title: $0.id, lessonIDs: ["\($0.id)l1"]) }
+        // a1 done: the next lesson is the A1 unit after it, never the B1 unit the array lists first.
+        XCTAssertEqual(LearnFold.currentUnitOf(units, completed: ["a1l1"])?.lessonID, "a2l1")
+        XCTAssertEqual(["A1", "A2", "B1", "B2", "C1", "??"].map(LearnFold.levelRank), [0, 1, 2, 3, 4, 5])
+    }
+
     func testRoomArtWrapsForAnyIndex() {
         XCTAssertEqual(LearnFold.roomArtFor(0), LearnFold.roomArt[0])
         XCTAssertEqual(LearnFold.roomArtFor(LearnFold.roomArt.count), LearnFold.roomArt[0])

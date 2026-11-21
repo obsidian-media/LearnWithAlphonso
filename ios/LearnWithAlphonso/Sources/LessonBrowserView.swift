@@ -54,6 +54,17 @@ struct LessonBrowserView: View {
     /// mirrors web's `learn.tsx` `level` state exactly, so the two clients
     /// group lessons by level the same way and don't drift.
     @State private var selectedLevel: String = LessonBrowserView.levels[0].id
+    /// The level the server holds for this course, as last read or saved; nil until known. start-lesson-session opens
+    /// lessons from it, so the picker never stays on a level that did not save (`saveLevel`).
+    @State private var savedLevel: String?
+    @State private var levelSaveTask: Task<Void, Never>?
+    /// The course of the pick still saving, if any, and a count of picks so only the newest one acts on its result.
+    @State private var levelSavingCourse: String?
+    @State private var levelPickNumber = 0
+    /// Set when a pick could not be saved and the picker went back; cleared by the next pick.
+    @State private var levelSaveMessage: String?
+    /// A change the app made itself (the level read from the server, or a failed pick put back): not a pick to save.
+    @State private var levelChangeIsOurs = false
     /// TestFlight feedback (2026-09-29): "there is a circle with color
     /// beside each lesson but they need to change color as the user
     /// successfully completes that lesson." Populated by `loadLevel()`;
@@ -161,10 +172,12 @@ struct LessonBrowserView: View {
         return nil
     }
 
-    /// The learner's place in the whole course: the first lesson not done, across every level. The map is one band's
-    /// climb, so its sheet says "Continue lesson" only when its next lesson is this one (web: continueLessonId).
+    /// The learner's place in the whole course: the first lesson not done, across every level, in LEARNING order (band
+    /// by band, as the web's foldUnits): the curriculum interleaves bands, and the server opens lessons only in this
+    /// order. The map is one band's climb, so its sheet says "Continue lesson" only when its next lesson is this one
+    /// (web: continueLessonId).
     private var courseContinueLessonID: String? {
-        for unit in contentStore.bundle(for: course).units {
+        for unit in LearnFold.inLearningOrder(contentStore.bundle(for: course).units, level: \.level) {
             if let lesson = unit.lessons.first(where: { !completedLessonIDs.contains($0.id) }) { return lesson.id }
         }
         return nil
@@ -448,9 +461,21 @@ struct LessonBrowserView: View {
                     .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
-                    .onChange(of: selectedLevel) { _, newLevel in
-                        saveLevel(newLevel)
+                    .onChange(of: selectedLevel) { oldLevel, newLevel in
+                        if levelChangeIsOurs {
+                            levelChangeIsOurs = false
+                            return
+                        }
+                        saveLevel(newLevel, previous: oldLevel)
                     }
+
+                if let levelSaveMessage {
+                    Text(levelSaveMessage)
+                        .dsText(.footnote)
+                        .foregroundStyle(ds.wrongInk)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
 
                 // Filtered, not the whole bundle: showing every unit at
                 // every level in one list is the regression the CEFR
@@ -629,7 +654,14 @@ struct LessonBrowserView: View {
         let fetchedLevel = try? await client.fetchCefrLevel(course: fetchedCourseCode)
         guard !Task.isCancelled, course.code == fetchedCourseCode else { return }
         if let level = fetchedLevel, !level.isEmpty {
-            selectedLevel = level
+            savedLevel = level
+            // A pick still saving for this course outranks the level read before it landed.
+            if levelSavingCourse != fetchedCourseCode, selectedLevel != level {
+                levelChangeIsOurs = true
+                selectedLevel = level
+            }
+        } else {
+            savedLevel = nil
         }
         // Most-recent-first: element 0 is "the last lesson completed,"
         // which is exactly what continueLessonID needs to find where to
@@ -640,15 +672,35 @@ struct LessonBrowserView: View {
         mostRecentlyCompletedLessonID = ids.first
     }
 
-    /// Fire-and-forget persist, mirroring web's `pick()`: the local band
-    /// switch is never blocked on the network round trip, and a failure
-    /// here just means the next launch re-lands on whatever was last
-    /// successfully saved rather than today's tap.
-    private func saveLevel(_ level: String) {
+    /// The band switch is instant (web's `pick()`), but the save is not fire-and-forget: the saved level is what
+    /// start-lesson-session opens lessons from, so a lost save would leave the map offering lessons the server
+    /// refuses. It is retried (LevelSave), and if it still fails the picker goes back to the level the server holds,
+    /// with a line saying so. A newer pick replaces one still saving.
+    private func saveLevel(_ level: String, previous: String) {
         guard let accessToken = session.accessToken else { return }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
-        Task {
-            try? await client.setCefrLevel(course: course.code, level: level)
+        let savingCourse = course.code
+        if levelSavingCourse == savingCourse { levelSaveTask?.cancel() }
+        levelPickNumber += 1
+        let pick = levelPickNumber
+        levelSavingCourse = savingCourse
+        levelSaveMessage = nil
+        levelSaveTask = Task {
+            let saved = await LevelSave.run { try await client.setCefrLevel(course: savingCourse, level: level) }
+            // A newer pick took over (and cancelled this one if it was for the same course).
+            guard pick == levelPickNumber else { return }
+            levelSaveTask = nil
+            levelSavingCourse = nil
+            guard course.code == savingCourse else { return }
+            if saved {
+                savedLevel = level
+            } else if selectedLevel == level {
+                let back = savedLevel ?? previous
+                guard back != level else { return }
+                levelChangeIsOurs = true
+                selectedLevel = back
+                levelSaveMessage = LevelSave.failedMessage
+            }
         }
     }
 

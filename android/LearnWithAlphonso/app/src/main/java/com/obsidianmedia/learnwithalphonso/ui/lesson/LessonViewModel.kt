@@ -78,6 +78,8 @@ data class LessonUiState(
     val isSubmitting: Boolean = false,
     /** Non-null while the hearts gate blocks this lesson: the out-of-hearts screen replaces the lesson. */
     val outOfHearts: OutOfHeartsModel? = null,
+    /** True when the server refused this lesson as not unlocked yet: "Finish the earlier lessons first" replaces it. */
+    val lessonLocked: Boolean = false,
     val buyingHeart: Boolean = false,
     val buyMessage: String? = null,
     /** The learner's earlier best on this lesson, read when it opens; unknown (offline) promises no XP per answer. */
@@ -170,7 +172,9 @@ class LessonViewModel(
     /**
      * The lesson session starts when the lesson opens, which is where the server's hearts gate applies
      * (start-lesson-session's 409). Offline, the cached hearts decide with the same rule (HeartsEconomy.gate).
-     * Any other failure is not fatal: finish() starts a session itself when none is held.
+     * The same call refuses a lesson the learner has not unlocked (409 lesson-locked): that is told now, before play,
+     * since its finish could never be saved. Any other failure is not fatal: finish() starts a session itself when none
+     * is held.
      */
     fun openSession(): Job = viewModelScope.launch { openSessionNow() }
 
@@ -200,6 +204,9 @@ class LessonViewModel(
             _state.update { it.copy(outOfHearts = null, buyMessage = null) }
         } catch (e: ProgressSyncError.OutOfHearts) {
             _state.update { it.copy(outOfHearts = OutOfHeartsModel(e.refillAt)) }
+        } catch (e: ProgressSyncError.LessonLocked) {
+            _state.update { it.copy(lessonLocked = true, outOfHearts = null) }
+            return
         } catch (e: Exception) {
             // Best effort: finish() starts a session when none is held.
         }

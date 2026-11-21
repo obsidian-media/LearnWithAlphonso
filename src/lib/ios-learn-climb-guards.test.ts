@@ -47,10 +47,10 @@ function mapProblems(browserText: string, mapText: string): string[] {
   );
   need(
     /continueLessonID: courseContinueLessonID/.test(browser) &&
-      /private var courseContinueLessonID: String\? \{\s*for unit in contentStore\.bundle\(for: course\)\.units/.test(
+      /private var courseContinueLessonID: String\? \{\s*for unit in LearnFold\.inLearningOrder\(contentStore\.bundle\(for: course\)\.units, level: \\\.level\)/.test(
         browser,
       ),
-    "the Continue lesson is the course-wide first lesson not done",
+    "the Continue lesson is the course-wide first lesson not done, in learning order (band by band)",
   );
   need(!browser.includes("LearnHeroStage("), "the hero is not mounted beside the map");
   need(

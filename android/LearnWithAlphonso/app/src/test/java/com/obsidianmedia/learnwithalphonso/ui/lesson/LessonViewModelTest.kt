@@ -295,6 +295,21 @@ class LessonViewModelTest {
     }
 
     @Test
+    fun `a lesson the server says is not unlocked yet is refused before play, never played and then lost`() = runBlocking {
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) json("""{"error":"lesson-locked"}""", HttpStatusCode.Conflict) else json("[]")
+        }
+        val store = MemorySyncStore()
+        val v = vm(server, store)
+        v.onScreenShown()
+        awaitTrue("locked") { v.state.value.lessonLocked }
+        assertEquals("still on the start screen: nothing was played", LessonPhase.Overview, v.state.value.phase)
+        assertNull("not a hearts block", v.state.value.outOfHearts)
+        assertTrue("nothing queued", store.completions.isEmpty())
+        assertEquals(1, server.seen.count { it.path.endsWith("start-lesson-session") })
+    }
+
+    @Test
     fun `offline, the cached hearts decide the gate and a due refill opens it`() = runBlocking {
         val blockedStore = MemorySyncStore().apply { updateLastKnownProgress(LessonCompletionProgress(0, 0, 0, null, 0, 1_000.0, 0, "bronze")) }
         val blocked = vm(okServer(), blockedStore, connected = false)

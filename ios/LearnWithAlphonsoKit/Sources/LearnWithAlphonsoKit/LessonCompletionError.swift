@@ -40,6 +40,9 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
         shouldQueue || self == .rejected(code: "out-of-hearts") ? .queue : .showFailure
     }
 
+    /// start-lesson-session's code for a lesson the learner has not unlocked (src/lib/lesson-unlock.ts).
+    public static let lessonLockedCode = "lesson-locked"
+
     public static func classify(_ error: Error) -> LessonCompletionError {
         if let classified = error as? LessonCompletionError { return classified }
         if let urlError = error as? URLError {
@@ -47,6 +50,7 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
         }
         switch error as? ProgressSyncError {
         case .outOfHearts?: return .rejected(code: "out-of-hearts")
+        case .lessonLocked?: return .rejected(code: lessonLockedCode)
         case let .server(status, message)?: return classify(status: status, code: message)
         // A 2xx we could not read: the server may have recorded it, and complete-lesson is replay-safe.
         case .badResponse?, .invalidPayload?: return .server(status: 502)
@@ -88,6 +92,8 @@ public enum LessonCompletionError: Error, Equatable, Sendable {
             return "This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again."
         case .rejected(code: "out-of-hearts"):
             return "Saved. It will sync when your hearts refill."
+        case .rejected(code: lessonLockedCode):
+            return "This lesson opens once the earlier lessons are done, so this attempt can't be saved."
         case .rejected, .invalidPayload:
             return "We couldn't save this lesson."
         }

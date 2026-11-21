@@ -87,6 +87,8 @@ struct LessonPlayerView: View {
     @State private var sessionToken: String?
     @State private var outOfHearts: OutOfHeartsModel?
     @State private var heartsGateState: HeartsGateState = .open
+    /// The server refused this lesson as not unlocked yet: "Finish the earlier lessons first" replaces it.
+    @State private var lessonLocked = false
     @State private var showingReviewInstead = false
     @State private var showingHector = false
     @State private var showingHectorPaywall = false
@@ -254,7 +256,9 @@ struct LessonPlayerView: View {
     }
 
     /// The stage covers the whole screen (its own HUD closes it); a plain result screen keeps the navigation bar.
-    private var onStage: Bool { result != nil || (queuedOffline == nil && completionFailure == nil && total > 0) }
+    private var onStage: Bool {
+        !lessonLocked && (result != nil || (queuedOffline == nil && completionFailure == nil && total > 0))
+    }
 
     private func startLesson() {
         lessonTimer = ActiveTimer(now: Date().timeIntervalSince1970)
@@ -348,7 +352,9 @@ struct LessonPlayerView: View {
 
     @ViewBuilder
     private func stage(topInset: CGFloat) -> some View {
-        if let result {
+        if lessonLocked {
+            LessonLockedView(onBack: { dismiss() })
+        } else if let result {
             completeScreen(result: result, topInset: topInset)
         } else if let queuedOffline {
             OfflineFinishView(
@@ -734,9 +740,11 @@ struct LessonPlayerView: View {
 
     /// The lesson session starts when the lesson opens, which is where the server's hearts gate applies
     /// (start-lesson-session's 409). Offline, the cached hearts decide with the same rule (HeartsEconomy.gate).
-    /// A failure here is not fatal: finish() mints a token if none is held.
+    /// The same call refuses a lesson the learner has not unlocked (409 lesson-locked): that is told now, before play,
+    /// since its finish could never be saved. Any other failure is not fatal: finish() mints a token if none is held.
     private func openLessonSession() async {
         sessionToken = nil
+        lessonLocked = false
         lessonOwnerUserID = session.userID
         guard networkMonitor.isConnected else {
             if let cached = syncQueueStore.lastKnownProgress(),
@@ -755,6 +763,12 @@ struct LessonPlayerView: View {
             sessionToken = try await client.startLessonSession(lessonID: lesson.id, course: course.wireCode)
         } catch let ProgressSyncError.outOfHearts(refillAt) {
             block(refillAt: refillAt)
+        } catch ProgressSyncError.lessonLocked {
+            // Open first, so closing a hearts sheet still up (a reopen after a purchase) does not leave the lesson.
+            heartsGateState = .open
+            outOfHearts = nil
+            lessonLocked = true
+            return
         } catch {
             // Best-effort: finish() starts a session itself when none is held.
         }

@@ -9,6 +9,8 @@ public enum ProgressSyncError: Error, Equatable {
     case invalidPayload
     /// start-lesson-session's 409 at 0 hearts. `refillAt` is nil when the server has no refill timer.
     case outOfHearts(refillAt: Date?)
+    /// start-lesson-session's 409 for a lesson this learner has not unlocked yet (the earlier lessons come first).
+    case lessonLocked
 }
 
 /// The outcome of `buy_heart_with_xp(_course)`, the same SECURITY DEFINER RPC the web's buyHeartWithXpRemote
@@ -469,10 +471,16 @@ public final class ProgressSyncClient: Sendable {
 
         let (data, response) = try await requester(request)
         if let http = response as? HTTPURLResponse, http.statusCode == 409,
-           let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           object["error"] as? String == "out-of-hearts" {
-            throw ProgressSyncError.outOfHearts(
-                refillAt: (object["refillAt"] as? String).flatMap(Self.parsePostgresTimestamp))
+           let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            switch object["error"] as? String {
+            case "out-of-hearts"?:
+                throw ProgressSyncError.outOfHearts(
+                    refillAt: (object["refillAt"] as? String).flatMap(Self.parsePostgresTimestamp))
+            case "lesson-locked"?:
+                throw ProgressSyncError.lessonLocked
+            default:
+                break
+            }
         }
         try Self.requireSuccess(data: data, response: response)
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],

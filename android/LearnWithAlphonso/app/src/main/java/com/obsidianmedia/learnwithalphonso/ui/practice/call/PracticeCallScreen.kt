@@ -282,10 +282,10 @@ internal fun PracticeCallScreen(
             }
             HandsFreeSwitch(vm, kit.displayName)
             Box(Modifier.weight(1f, fill = false)) { transcript() }
-            // No insets of its own: material3 1.4's ModalBottomSheet pads its content with BottomSheetDefaults.windowInsets
-            // (safeDrawing, top and bottom: the navigation bar when the keyboard is closed, the keyboard when it is open)
-            // and consumes them, so the footer clears both. Another imePadding or navigationBarsPadding here would add
-            // nothing at best and a double gap at worst.
+            // No insets of its own: in the material3 resolved by the BOM (1.4.0 at time of writing), ModalBottomSheet
+            // pads its content with BottomSheetDefaults.windowInsets (safeDrawing, top and bottom: the navigation bar
+            // when the keyboard is closed, the keyboard when it is open) and consumes them, so the footer clears both.
+            // Another imePadding or navigationBarsPadding here would add nothing at best and a double gap at worst.
             if (sheetFooter != null) sheetFooter()
         }
     }

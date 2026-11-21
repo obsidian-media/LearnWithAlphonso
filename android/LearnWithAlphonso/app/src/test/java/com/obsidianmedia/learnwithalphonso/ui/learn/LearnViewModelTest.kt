@@ -6,10 +6,15 @@ import com.obsidianmedia.learnwithalphonso.MainDispatcherRule
 import com.obsidianmedia.learnwithalphonso.awaitTrue
 import com.obsidianmedia.learnwithalphonso.MemorySyncStore
 import com.obsidianmedia.learnwithalphonso.core.content.Course
+import com.obsidianmedia.learnwithalphonso.core.logic.LevelSave
 import com.obsidianmedia.learnwithalphonso.core.net.ReviewItem
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingLessonCompletion
 import com.obsidianmedia.learnwithalphonso.core.sync.PendingReviewGrade
 import com.obsidianmedia.learnwithalphonso.testContent
+import com.obsidianmedia.learnwithalphonso.SeenRequest
+import io.ktor.client.engine.mock.MockRequestHandleScope
+import io.ktor.client.request.HttpResponseData
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -21,7 +26,14 @@ import org.junit.Test
 class LearnViewModelTest {
     @get:Rule val main = MainDispatcherRule()
 
-    private fun server(level: String? = "B1", completed: List<String> = listOf("u1l2", "u1l1"), placementTaken: Boolean = true) = FakeServer { req ->
+    private fun server(level: String? = "B1", completed: List<String> = listOf("u1l2", "u1l1"), placementTaken: Boolean = true) =
+        FakeServer(routes(level, completed, placementTaken))
+
+    private fun routes(
+        level: String? = "B1",
+        completed: List<String> = listOf("u1l2", "u1l1"),
+        placementTaken: Boolean = true,
+    ): suspend MockRequestHandleScope.(SeenRequest) -> HttpResponseData = { req ->
         when {
             req.query["select"] == "cefr_level" -> json(if (level == null) "[]" else """[{"cefr_level":"$level"}]""")
             req.query["select"] == "lesson_id" -> json(completed.joinToString(",", "[", "]") { """{"lesson_id":"$it"}""" })
@@ -133,6 +145,57 @@ class LearnViewModelTest {
         gate.complete(Unit)
         saving.join()
         assertTrue(s.seen.any { it.path.endsWith("set_cefr_level") })
+    }
+
+    /** [server] whose set_cefr_level fails its first [failures] tries (null: every try). */
+    private fun flakySave(failures: Int?): FakeServer {
+        val base = routes()
+        var tries = 0
+        return FakeServer { req ->
+            if (req.path.endsWith("set_cefr_level")) {
+                tries++
+                if (failures == null || tries <= failures) json("""{"message":"boom"}""", HttpStatusCode.InternalServerError) else json("")
+            } else base(this, req)
+        }
+    }
+
+    @Test
+    fun `a level pick whose save keeps failing is retried, then the picker goes back to the saved level and says so`() = runBlocking {
+        val s = flakySave(failures = null)
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore(), levelSavePause = {})
+        v.initialLoad.join()
+        assertEquals("B1", v.state.value.selectedLevel)
+        v.selectLevel("C1").join()
+        assertEquals(LevelSave.ATTEMPTS, s.seen.count { it.path.endsWith("set_cefr_level") })
+        assertEquals("the map shows what the server holds", "B1", v.state.value.selectedLevel)
+        assertEquals(LevelSave.FAILED_MESSAGE, v.state.value.notice)
+    }
+
+    @Test
+    fun `a level pick whose save fails twice then lands keeps the pick, with no notice`() = runBlocking {
+        val s = flakySave(failures = 2)
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore(), levelSavePause = {})
+        v.initialLoad.join()
+        v.selectLevel("C1").join()
+        assertEquals(3, s.seen.count { it.path.endsWith("set_cefr_level") })
+        assertEquals("C1", v.state.value.selectedLevel)
+        assertNull(v.state.value.notice)
+    }
+
+    @Test
+    fun `a refresh while a pick is still saving keeps the pick on screen`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val base = routes()
+        val s = FakeServer { req -> if (req.path.endsWith("set_cefr_level")) { gate.await(); json("") } else base(this, req) }
+        val v = LearnViewModel(testContent, s.progressClient, MemorySyncStore())
+        v.initialLoad.join()
+        kotlin.concurrent.thread(isDaemon = true) { Thread.sleep(3_000); gate.complete(Unit) }
+        val saving = v.selectLevel("C1")
+        v.refresh().join()
+        assertEquals("the server's B1 was read before the C1 save landed", "C1", v.state.value.selectedLevel)
+        gate.complete(Unit)
+        saving.join()
+        assertEquals("C1", v.state.value.selectedLevel)
     }
 
     @Test

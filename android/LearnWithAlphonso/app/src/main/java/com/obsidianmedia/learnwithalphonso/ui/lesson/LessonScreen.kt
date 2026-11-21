@@ -83,6 +83,7 @@ import com.obsidianmedia.learnwithalphonso.core.logic.ExplainRules
 import com.obsidianmedia.learnwithalphonso.core.logic.HeartsEconomy
 import com.obsidianmedia.learnwithalphonso.ui.explain.ExplainInMyLanguage
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonFinishCopy
+import com.obsidianmedia.learnwithalphonso.core.logic.LessonLockedCopy
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonStage
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonTiming
 import com.obsidianmedia.learnwithalphonso.core.logic.LessonXp
@@ -182,7 +183,8 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
         LessonLightScope(themeId, paletteId) {
             val gate = state.outOfHearts
             val phase = state.phase
-            val onStage = gate == null && (phase == LessonPhase.Overview || phase == LessonPhase.Vocab || phase == LessonPhase.Quiz || phase is LessonPhase.Finished)
+            val locked = state.lessonLocked
+            val onStage = !locked && gate == null && (phase == LessonPhase.Overview || phase == LessonPhase.Vocab || phase == LessonPhase.Quiz || phase is LessonPhase.Finished)
             Column(Modifier.fillMaxSize().background(lessonSurface())) {
                 if (!onStage) {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -190,7 +192,9 @@ fun LessonScreen(container: AppContainer, course: Course, lessonId: String, onEx
                         Text(state.lesson.title, style = MaterialTheme.typography.titleMedium, color = palette.ink)
                     }
                 }
-                if (gate != null) {
+                if (locked) {
+                    LessonLockedContent(onBack = onExit)
+                } else if (gate != null) {
                     OutOfHeartsContent(
                         model = gate, isOnline = container.connectivity.isConnected.collectAsState().value,
                         buying = state.buyingHeart, buyMessage = state.buyMessage,
@@ -436,6 +440,27 @@ internal fun OfflineFinishScreen(message: String, estimate: Int, correct: Int, t
             Text("A lesson you've already finished only earns XP for a better score.", style = FootnoteType, color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             Text("$correct/$total correct", style = BodyType, color = ds.inkSoft, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
         }
+    }
+}
+
+/**
+ * Shown instead of the lesson when the server refuses it as not unlocked yet (start-lesson-session's 409
+ * lesson-locked), before any of it is played: its finish could never be saved. The web lesson page says the same.
+ */
+@Composable
+internal fun LessonLockedContent(onBack: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(AlphonsoTokens.Space.gutter),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3, Alignment.CenterVertically),
+    ) {
+        Text(
+            LessonLockedCopy.TITLE, style = HeadlineType, color = ds.ink, textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading(); liveRegion = LiveRegionMode.Polite },
+        )
+        Text(LessonLockedCopy.MESSAGE, style = BodyType, color = ds.inkSoft, textAlign = TextAlign.Center)
+        LessonEdgeButton(LessonLockedCopy.BACK_TITLE, EdgeVariant.PRIMARY, onBack)
     }
 }
 
