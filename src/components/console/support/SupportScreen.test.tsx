@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SupportScreen, type SupportMe } from "./SupportScreen";
 import type { SupportApi } from "./supportApi";
@@ -578,7 +578,7 @@ describe("Support: a ticket's actions, reasons and role matrix", () => {
     // the current holder is not offered (that would be a no-op)
     expect(within(pick).queryByRole("option", { name: "Ola" })).toBeNull();
     await user.selectOptions(pick, ME);
-    const dialog = screen.getByRole("dialog", { name: "Assign to Olga" });
+    const dialog = screen.getByRole("dialog", { name: "Take over this ticket" });
     expect(api.assign).not.toHaveBeenCalled();
     await user.type(within(dialog).getByRole("textbox"), "Olga knows billing");
     await user.click(within(dialog).getByRole("button", { name: "Assign and log" }));
@@ -670,5 +670,100 @@ describe("Support: the legacy page's every action is reachable here", () => {
     cleanup();
     await openPane(agent, makeApi(), { learnerId: null });
     expect(document.querySelector("a[href^='/users/']")).toBeNull();
+  });
+});
+
+describe("Support: taking over a ticket someone else holds (L2)", () => {
+  it("'Assign to me' on another person's (or an owner's urgent) ticket asks for a reason first", async () => {
+    const api = makeApi();
+    const { user } = await openPane(agent, api, {
+      assignedTo: OTHER,
+      assignedName: "Ola",
+      urgent: true,
+    });
+    await user.click(screen.getByRole("button", { name: "Assign to me" }));
+    const dialog = screen.getByRole("dialog", { name: "Take over this ticket" });
+    expect(api.assign).not.toHaveBeenCalled();
+    const confirm = within(dialog).getByRole("button", { name: "Assign and log" });
+    expect(confirm).toBeDisabled();
+    await user.type(within(dialog).getByRole("textbox"), "Ola is away");
+    await user.click(confirm);
+    await waitFor(() => expect(api.assign).toHaveBeenCalledWith(T1, ME, "Ola is away"));
+  });
+
+  it("picking up an unassigned ticket and giving back your own stay reason-free", async () => {
+    const api = makeApi();
+    const { user } = await openPane(agent, api, { assignedTo: null });
+    await user.click(screen.getByRole("button", { name: "Assign to me" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await waitFor(() => expect(api.assign).toHaveBeenCalledWith(T1, ME));
+  });
+});
+
+describe("Support: focus and ordering", () => {
+  it("the breach-time dialog keeps focus where the person put it across the 30-second re-render", async () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+    try {
+      const user = userEvent.setup();
+      show(owner, makeApi());
+      await user.click(screen.getByRole("button", { name: /Breach time/ }));
+      const dialog = screen.getByRole("dialog", { name: "Breach time" });
+      expect(document.activeElement).toBe(within(dialog).getByLabelText(/Hours/));
+      within(dialog)
+        .getByLabelText(/Reason/)
+        .focus();
+      act(() => {
+        vi.advanceTimersByTime(30_000);
+        vi.advanceTimersByTime(30_000);
+      });
+      expect(document.activeElement).toBe(within(dialog).getByLabelText(/Reason/));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("an older list answer that arrives late does not replace the newest one", async () => {
+    const user = userEvent.setup();
+    let releaseSlow: (p: InboxPage) => void = () => {};
+    const slow = new Promise<InboxPage>((r) => (releaseSlow = r));
+    const api = makeApi({
+      listTickets: vi.fn(async (q) =>
+        q.filter === "solved"
+          ? slow
+          : page({ tickets: [ticket(T2, { snippet: "The newest answer", ticketNo: 2 })] }),
+      ),
+    });
+    show(agent, api);
+    await user.click(screen.getByRole("tab", { name: /^Resolved/ })); // slow, still in flight
+    await user.click(screen.getByRole("tab", { name: /^All/ })); // answers at once
+    expect(await screen.findByRole("button", { name: /The newest answer/ })).toBeTruthy();
+    await act(async () =>
+      releaseSlow(page({ tickets: [ticket(T3, { snippet: "A stale answer" })] })),
+    );
+    expect(screen.queryByRole("button", { name: /A stale answer/ })).toBeNull();
+    expect(screen.getByRole("button", { name: /The newest answer/ })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: /^All/ }).getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("unknown learner facts read 'Unknown', never 'never' or 'none yet'", async () => {
+    const facts = {
+      pro: { active: false, source: "none", until: null, unavailable: false },
+      course: null,
+      level: null,
+      streak: 0,
+      streakProtected: false,
+      streakFreezes: 0,
+      daysActiveLast30: 0,
+      lastActiveDay: null,
+      lessonsLast7Days: 0,
+      lastLessonDay: null,
+      platforms: [],
+      socialBlocked: false,
+      previousTickets: [],
+    };
+    await openPane(agent, makeApi(), { facts, factsSource: "ai" });
+    const text = document.querySelector("details")!.textContent!;
+    expect(text).toContain("Unknown");
+    expect(text).not.toMatch(/never|none yet/);
   });
 });

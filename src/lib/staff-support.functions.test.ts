@@ -797,3 +797,48 @@ describe("Hand to owner and Clear urgent (N-13)", () => {
     expect(denied.admin.rpc).not.toHaveBeenCalled();
   });
 });
+
+describe("taking over a ticket someone else holds (L2)", () => {
+  it("needs a reason, and still only support.assign (no Staff permission) when it is for yourself", async () => {
+    const held = adminClient({ conversation: conversation({ assigned_to: READER }) });
+    for (const reason of [undefined, "", "ab"]) {
+      await expect(
+        call(staffAssignTicket, SAM, held.admin, { id: TICKET, assignTo: SAM, reason }),
+      ).rejects.toThrow(mod.REASON_NEEDED_MESSAGE);
+    }
+    expect(held.admin.rpc).not.toHaveBeenCalledWith("staff_support_assign", expect.anything());
+    held.admin.rpc.mockResolvedValueOnce({ data: true, error: null });
+    await call(staffAssignTicket, SAM, held.admin, {
+      id: TICKET,
+      assignTo: SAM,
+      reason: " covering ",
+    });
+    expect(held.admin.rpc).toHaveBeenCalledWith(
+      "staff_support_assign",
+      expect.objectContaining({ p_assignee: SAM, p_reason: "covering" }),
+    );
+  });
+
+  it("picking up an unassigned ticket sends no reason", async () => {
+    const free = adminClient({ conversation: conversation({ assigned_to: null }) });
+    free.admin.rpc.mockResolvedValueOnce({ data: true, error: null });
+    await call(staffAssignTicket, SAM, free.admin, { id: TICKET, assignTo: SAM });
+    expect(free.admin.rpc).toHaveBeenCalledWith(
+      "staff_support_assign",
+      expect.objectContaining({ p_assignee: SAM, p_reason: null }),
+    );
+  });
+
+  it("hand to owner and clear urgent refuse with an accurate sentence, not 'your own account'", async () => {
+    const { admin } = adminClient();
+    admin.rpc.mockResolvedValueOnce({ data: null, error: { code: "42501" } });
+    await expect(
+      call(staffHandToOwner, SAM, admin, { id: TICKET, reason: "because" }),
+    ).rejects.toThrow(mod.NOT_ALLOWED_MESSAGE);
+    expect(mod.NOT_ALLOWED_MESSAGE).not.toMatch(/own account/);
+    admin.rpc.mockResolvedValueOnce({ data: null, error: { code: "42501" } });
+    await expect(
+      call(staffClearUrgent, OWNER, admin, { id: TICKET, reason: "because" }),
+    ).rejects.toThrow(mod.NOT_ALLOWED_MESSAGE);
+  });
+});

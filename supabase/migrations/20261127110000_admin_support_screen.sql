@@ -2,11 +2,13 @@
 --
 --   N-8   staff_support_set_status   REPLACED (+ p_reason): every status change (solve, reopen, waiting on the learner)
 --                                    needs a reason of 3 to 500 characters, kept in the action record.
---         staff_support_assign       REPLACED (+ p_reason): handing a ticket to SOMEONE ELSE (or taking another person's
---                                    ticket back to the pool) needs a reason. Taking a ticket yourself, or giving back
---                                    one you hold, stays reason-free (a self-claim; the fixed words are recorded).
+--         staff_support_assign       REPLACED (+ p_reason): handing a ticket to SOMEONE ELSE, taking over a ticket ANOTHER
+--                                    person holds, or taking another person's ticket back to the pool needs a reason.
+--                                    Picking up an unassigned ticket, or giving back one you hold, stays reason-free
+--                                    (the fixed words are recorded).
 --   N-13  support_conversations.urgent  a flag set when a support agent hands a ticket to an owner.
---         staff_support_hand_to_owner   reassigns the ticket to an active owner and sets urgent, with a reason and one
+--         staff_support_hand_to_owner   reassigns the ticket to an active owner, sets urgent and moves it to open (Needs
+--                                    reply) if it was new or waiting on the learner, with a reason and one
 --                                    action-record row ("support.handoff"), in one transaction. Refuses a ticket that is
 --                                    still with the AI or already solved. FALSE (nothing written, nothing recorded) when
 --                                    the ticket is already urgent and already with that owner.
@@ -155,10 +157,12 @@ BEGIN
   IF conv.assigned_to IS NOT DISTINCT FROM p_assignee THEN
     RETURN false;
   END IF;
-  self_move := p_assignee IS NOT DISTINCT FROM p_actor
+  -- Reason-free: picking up a ticket nobody holds, or giving back one you hold. Taking over a ticket ANOTHER person
+  -- holds (an owner's urgent one included) is a reassignment and needs a reason.
+  self_move := (p_assignee IS NOT DISTINCT FROM p_actor AND conv.assigned_to IS NULL)
             OR (p_assignee IS NULL AND conv.assigned_to IS NOT DISTINCT FROM p_actor);
   IF NOT self_move AND (p_reason IS NULL OR char_length(btrim(p_reason)) NOT BETWEEN 3 AND 500) THEN
-    RAISE EXCEPTION 'staff_support_assign: handing a ticket to someone else needs a reason of 3 to 500 characters'
+    RAISE EXCEPTION 'staff_support_assign: moving a ticket someone else holds, or handing it to someone else, needs a reason of 3 to 500 characters'
       USING ERRCODE = '22023';
   END IF;
   new_status := CASE WHEN p_assignee IS NOT NULL AND conv.status = 'new' THEN 'open' ELSE conv.status END;
@@ -227,7 +231,8 @@ BEGIN
   IF conv.assigned_to IS NOT DISTINCT FROM target AND conv.urgent THEN
     RETURN false;
   END IF;
-  new_status := CASE WHEN conv.status = 'new' THEN 'open' ELSE conv.status END;
+  -- Waiting-on-learner moves to open too, so the owner's default Needs reply tab shows what the header counts as urgent.
+  new_status := CASE WHEN conv.status IN ('new', 'waiting_learner') THEN 'open' ELSE conv.status END;
   UPDATE public.support_conversations
      SET assigned_to = target, urgent = true, status = new_status, updated_at = now()
    WHERE id = conv.id;

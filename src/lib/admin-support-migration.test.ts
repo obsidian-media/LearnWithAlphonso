@@ -289,9 +289,29 @@ describe("staff_support_assign needs a reason only for someone else (N-8)", () =
     expect(await assign(SAM, 13, null, null)).toBe(true);
   });
 
-  it("a support agent taking a ticket another agent holds for themselves is still a self-claim: reason-free", async () => {
+  it("taking over a ticket ANOTHER person holds needs a reason (an agent from an agent, an agent from an owner)", async () => {
     await ticket(14, 14, "open", SUE);
-    expect(await assign(SAM, 14, SAM, null)).toBe(true);
+    for (const bad of [null, "", " ", "ab"]) await rejects(assign(SAM, 14, SAM, bad), "22023");
+    expect((await row(14)).assigned_to).toBe(SUE);
+    expect(await assign(SAM, 14, SAM, "  Sue is off today ")).toBe(true);
+    expect((await audit("support.assign", 14))[0]!.reason).toBe("Sue is off today");
+    // a ticket just handed to an owner as urgent is somebody else's too
+    await ticket(18, 18, "open", SAM);
+    await handToOwner(SAM, 18, "needs an owner");
+    const holder = (await row(18)).assigned_to!;
+    await rejects(assign(SUE, 18, SUE, null), "22023");
+    expect((await row(18)).assigned_to).toBe(holder);
+    expect(await assign(SUE, 18, SUE, "Owner asked me to take it")).toBe(true);
+  });
+
+  it("picking up an UNASSIGNED ticket is still reason-free, and so is giving back your own", async () => {
+    await ticket(19, 19, "open", null);
+    expect(await assign(SAM, 19, SAM, null)).toBe(true);
+    expect(await assign(SAM, 19, null, null)).toBe(true);
+    expect((await audit("support.assign", 19)).map((r) => r.reason)).toEqual([
+      "ticket assignment",
+      "ticket assignment",
+    ]);
   });
 
   it("a repeated assignment to the same person is a no-op even without a reason, and records nothing", async () => {
@@ -345,6 +365,18 @@ describe("Hand to owner (N-13)", () => {
       urgent: true,
       status: "open",
     });
+  });
+
+  it("a ticket waiting on the learner moves to open (Needs reply) on hand-off, and the record shows both statuses", async () => {
+    await ticket(24, 24, "waiting_learner", SAM);
+    expect(await handToOwner(SAM, 24, "owner must decide")).toBe(true);
+    const r = await row(24);
+    expect([r.status, r.urgent]).toEqual(["open", true]);
+    const rec = (await audit("support.handoff", 24))[0]!;
+    expect(rec.before).toMatchObject({ status: "waiting_learner", urgent: false });
+    expect(rec.after).toMatchObject({ status: "open", urgent: true });
+    const owner = await inbox(OWNER, "open", "any");
+    expect(owner.tickets.map((t) => t.id)).toContain(cid(24));
   });
 
   it("a second hand-over of the same ticket is a no-op: false, nothing written, no second record", async () => {

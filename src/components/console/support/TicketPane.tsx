@@ -126,9 +126,9 @@ function Facts({ detail }: { detail: Detail }) {
   }
   const text: [string, string][] = [
     ["Pro", proText(f.pro)],
-    ["Course, level", [courseName(f.course), f.level].filter(Boolean).join(", ") || "none yet"],
-    ["Last active", f.lastActiveDay ?? "never"],
-    ["Platforms", f.platforms.length ? f.platforms.join(", ") : "unknown"],
+    ["Course, level", [courseName(f.course), f.level].filter(Boolean).join(", ") || "Unknown"],
+    ["Last active", f.lastActiveDay ?? "Unknown"],
+    ["Platforms", f.platforms.length ? f.platforms.join(", ") : "Unknown"],
     ["Social features blocked", f.socialBlocked ? "Yes" : "No"],
   ];
   return (
@@ -383,7 +383,7 @@ export function TicketPane({
               {detail.facts
                 ? [courseName(detail.facts.course), detail.facts.level]
                     .filter(Boolean)
-                    .join(", ") || "No course yet"
+                    .join(", ") || "Course unknown"
                 : "The learner's facts could not be loaded."}
               {detail.facts ? " · " : ""}
               {detail.facts ? proText(detail.facts.pro) : ""}
@@ -543,7 +543,12 @@ export function TicketPane({
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => void act(() => api.assign(ticketId, detail.me), "Assigned to you.")}
+                onClick={() =>
+                  detail.assignedTo === null
+                    ? void act(() => api.assign(ticketId, detail.me), "Assigned to you.")
+                    : // Taking over a ticket someone else holds is a reassignment: it asks for a reason.
+                      setDialog({ kind: "assign", to: detail.me, name: "you" })
+                }
                 className={btn}
               >
                 Assign to me
@@ -714,7 +719,9 @@ export function TicketPane({
                     : "Move back to needs reply"
               : dialog.kind === "assign"
                 ? dialog.to
-                  ? `Assign to ${dialog.name}`
+                  ? dialog.to === detail?.me
+                    ? "Take over this ticket"
+                    : `Assign to ${dialog.name}`
                   : "Unassign this ticket"
                 : dialog.kind === "hand"
                   ? "Hand to owner"

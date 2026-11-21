@@ -120,14 +120,17 @@ function BreachHoursDialog({
   const [hours, setHours] = useState(current === null ? "" : String(current));
   const [reason, setReason] = useState("");
   const first = useRef<HTMLInputElement>(null);
+  // Focus moves in once on open; the latest busy / onCancel are read when Escape is pressed (see ReasonDialog).
+  const live = useRef({ busy, onCancel });
+  live.current = { busy, onCancel };
   useEffect(() => {
     first.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !busy) onCancel();
+      if (e.key === "Escape" && !live.current.busy) live.current.onCancel();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [busy, onCancel]);
+  }, []);
   const n = Number(hours);
   const hoursOk = hours.trim() !== "" && Number.isInteger(n) && n >= 1 && n <= 168;
   const ready = hoursOk && reason.trim().length >= MIN_REASON;
@@ -236,7 +239,10 @@ export function SupportScreen({
   const isOwner = me.role === "owner" && me.scopes.includes("staff.manage");
   const counts = page?.counts ?? null;
 
+  // Only the newest request may change the screen: an older answer that arrives late is dropped.
+  const latest = useRef(0);
   async function load(next: StatusTab, nextAssigned: TicketAssigned, append: boolean) {
+    const mine = ++latest.current;
     setBusy(true);
     try {
       const result = await api.listTickets({
@@ -244,6 +250,7 @@ export function SupportScreen({
         assigned: nextAssigned,
         cursor: append ? (page?.next ?? undefined) : undefined,
       });
+      if (mine !== latest.current) return;
       setPage(
         append && page ? { ...result, tickets: [...page.tickets, ...result.tickets] } : result,
       );
@@ -251,9 +258,9 @@ export function SupportScreen({
       setTab(next);
       setAssigned(nextAssigned);
     } catch {
-      setFailed(true);
+      if (mine === latest.current) setFailed(true);
     } finally {
-      setBusy(false);
+      if (mine === latest.current) setBusy(false);
     }
   }
 

@@ -31,15 +31,18 @@ export function ReasonDialog({
 }) {
   const [reason, setReason] = useState("");
   const box = useRef<HTMLTextAreaElement>(null);
-  // The box takes focus when the dialog opens, and Escape cancels (unless a change is in flight).
+  // The latest callbacks, read at the moment of use: focus moves into the box ONCE when the dialog opens (not every time
+  // the parent re-renders with a new onCancel), and Escape cancels unless a change is in flight.
+  const live = useRef({ busy, onCancel });
+  live.current = { busy, onCancel };
   useEffect(() => {
     box.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !busy) onCancel();
+      if (e.key === "Escape" && !live.current.busy) live.current.onCancel();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [busy, onCancel]);
+  }, []);
   const ready = reason.trim().length >= MIN_REASON;
 
   function submit(event: FormEvent) {

@@ -23,6 +23,7 @@ export const TOO_OLD_MESSAGE = "This chat is too old to reopen; the learner can 
 export const SELF_TICKET_MESSAGE = "You cannot act on your own account.";
 export const NO_OWNER_MESSAGE = "There is no active owner to hand this ticket to.";
 export const OWNER_ONLY_MESSAGE = "Only an owner can do that.";
+export const NOT_ALLOWED_MESSAGE = "You cannot do that on this ticket.";
 export const REASON_NEEDED_MESSAGE = "A reason of 3 to 500 characters is required.";
 
 export type TicketFilter = "open" | "waiting" | "solved" | "breaching" | "all";
@@ -222,17 +223,24 @@ export const staffAssignTicket = createServerFn({ method: "POST" })
       !(await consumeStaffLimit(context.supabaseAdmin, context.userId, STAFF_LIMITS.support_write))
     )
       throw new Error(TOO_MANY_CHANGES);
-    let selfMove = data.assignTo === context.userId;
-    if (!selfMove) {
-      const { readTicketRow } = await import("./staff-support.server");
-      const row = await readTicketRow(context.supabaseAdmin, data.id);
-      const givingBackMine = data.assignTo === null && row?.assigned_to === context.userId;
-      selfMove = givingBackMine;
-      if (!givingBackMine && !context.staffScopes.includes("staff.manage")) {
-        throw new Error(ASSIGN_OTHERS_MESSAGE);
-      }
+    const { readTicketRow } = await import("./staff-support.server");
+    const row = await readTicketRow(context.supabaseAdmin, data.id);
+    const held = row?.assigned_to ?? null;
+    // Reason-free: picking up a ticket nobody holds, or giving back one you hold (a fixed word is recorded). Taking over
+    // a ticket ANOTHER person holds is a reassignment: it needs a reason.
+    const pickUp = data.assignTo === context.userId && held === null;
+    const giveBack = data.assignTo === null && held === context.userId;
+    const alreadyMine = data.assignTo === context.userId && held === context.userId; // a no-op
+    const selfMove = pickUp || giveBack || alreadyMine;
+    // Moving a ticket to someone else (or taking someone else's back to the pool) also needs the Staff permission;
+    // taking one over for yourself needs only support.assign.
+    if (
+      data.assignTo !== context.userId &&
+      !giveBack &&
+      !context.staffScopes.includes("staff.manage")
+    ) {
+      throw new Error(ASSIGN_OTHERS_MESSAGE);
     }
-    // A reason only for someone else; a self-claim or giving back your own sends none (a fixed word is recorded).
     const reason = selfMove ? null : reasonOf(data.reason);
     const { data: changed, error } = await context.supabaseAdmin.rpc("staff_support_assign", {
       p_actor: context.userId,
@@ -339,6 +347,7 @@ export const staffHandToOwner = createServerFn({ method: "POST" })
     if (error) {
       throw refusal(error, "Could not hand the ticket over. Nothing was changed.", {
         ...COMMON_REFUSALS,
+        "42501": NOT_ALLOWED_MESSAGE,
         "22023": REASON_NEEDED_MESSAGE,
         LW002: NO_OWNER_MESSAGE,
       });
@@ -370,7 +379,7 @@ export const staffClearUrgent = createServerFn({ method: "POST" })
     if (error) {
       throw refusal(error, "Could not clear the flag. Nothing was changed.", {
         ...COMMON_REFUSALS,
-        "42501": OWNER_ONLY_MESSAGE,
+        "42501": NOT_ALLOWED_MESSAGE,
         "22023": REASON_NEEDED_MESSAGE,
       });
     }
