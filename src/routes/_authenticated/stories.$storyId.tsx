@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BackPill, DsEmptyState, GlassTitle } from "@/components/ds/Blocks";
 import { LessonFrame } from "@/components/AppShell";
@@ -20,13 +20,32 @@ export const Route = createFileRoute("/_authenticated/stories/$storyId")({
   }),
 });
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** A story that is not there (a mistyped or stale link, or one that is no longer published): not a connection problem. */
+function StoryNotFound() {
+  return (
+    <DsEmptyState icon="books" title="We couldn't find this story">
+      <Link
+        to="/stories"
+        className="inline-flex min-h-11 items-center ds-type-footnote font-semibold text-ds-brand underline"
+      >
+        Back to Stories
+      </Link>
+    </DsEmptyState>
+  );
+}
+
 function StoryPage() {
   const { storyId } = Route.useParams();
   const queryClient = useQueryClient();
+  // The server rejects anything that is not a UUID, which used to surface as "Check your connection".
+  const malformed = !UUID.test(storyId);
   const query = useQuery({
     queryKey: ["story", storyId],
     queryFn: () => getStory({ data: { storyId } }),
     retry: false,
+    enabled: !malformed,
   });
   const story = query.data;
   // The cinematic reader is full-bleed with its own back bar and title: no scene, back pill or glass title.
@@ -48,7 +67,9 @@ function StoryPage() {
       <BackPill to="/stories" label="Back to stories">
         Stories
       </BackPill>
-      {query.isLoading ? (
+      {malformed ? (
+        <StoryNotFound />
+      ) : query.isLoading ? (
         <p className="ds-type-footnote text-ds-ink-soft">Loading…</p>
       ) : query.isError ? (
         <DsEmptyState
@@ -58,7 +79,7 @@ function StoryPage() {
           message="Check your connection and try again."
         />
       ) : !story ? (
-        <DsEmptyState icon="books" title="Story not found" message="It may not be available yet." />
+        <StoryNotFound />
       ) : (
         <>
           <GlassTitle title={story.title} sub={null} />

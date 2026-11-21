@@ -184,6 +184,19 @@ describe("Say the picture", () => {
     expect(screen.getByRole("img", { name: "alt" })).toBeTruthy();
   });
 
+  it("never clips the result on a short phone: only the photo is clipped, the screen grows with its content", () => {
+    view();
+    const root = document.querySelector("[data-say-the-picture]") as HTMLElement;
+    expect(root.className).not.toMatch(/(^|\s)overflow-hidden(\s|$)/);
+    expect(screen.getByTestId("vocab-image").closest("[data-stp-backdrop]")?.className).toContain(
+      "overflow-hidden",
+    );
+    // Alphonso and his bubble shrink on a short, narrow screen so the word and the controls stay in view.
+    expect(screen.getByTestId("stp-tutor").querySelector("img")!.className).toContain(
+      "max-height:640px",
+    );
+  });
+
   it("Alphonso is explaining while asking, listening while recording, thinking after a miss and cheering on a win", () => {
     const { rerender } = view();
     const root = () => document.querySelector("[data-say-the-picture]") as HTMLElement;

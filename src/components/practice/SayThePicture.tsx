@@ -421,18 +421,21 @@ export function SayThePicture({
       data-say-the-picture="round"
       data-phase={phase}
       data-pose={pose}
-      className="relative flex min-h-dvh flex-col overflow-hidden bg-ds-brand font-[family-name:var(--ds-font-body)] text-white"
+      className="relative flex min-h-dvh flex-col overflow-x-clip bg-ds-brand font-[family-name:var(--ds-font-body)] text-white"
     >
       {/* The photo is the hero. While asking, its own description would give the answer away. */}
-      <VocabImage
-        url={word.image.url}
-        alt={phase === "ask" ? "A picture of a word to say" : word.image.alt}
-        className="stp-kenburns absolute inset-0 h-full w-full"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/10"
-      />
+      {/* Clipped here, not on the screen: the result must never be cut off when the phone is short or the text large. */}
+      <div className="absolute inset-0 overflow-hidden" data-stp-backdrop="">
+        <VocabImage
+          url={word.image.url}
+          alt={phase === "ask" ? "A picture of a word to say" : word.image.alt}
+          className="stp-kenburns absolute inset-0 h-full w-full"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/10"
+        />
+      </div>
 
       <div className="relative z-10 flex items-center gap-2.5 px-3.5 pb-2.5 pt-4">
         <button
@@ -544,17 +547,20 @@ export function SayThePicture({
       )}
 
       {/* Alphonso, fully in frame, reacting in pose with a small speech bubble. */}
-      <div className="relative z-10 mt-auto flex items-end gap-1 px-2" data-testid="stp-tutor">
+      <div
+        className="relative z-10 mt-auto flex items-end gap-1 overflow-y-clip px-2"
+        data-testid="stp-tutor"
+      >
         <img
           key={pose}
           src={`/figures/alphonso-${pose}.webp`}
           alt=""
           data-pose={pose}
-          className="stp-pose h-[28dvh] max-h-[260px] w-auto drop-shadow-xl"
+          className="stp-pose h-[28dvh] max-h-[260px] w-auto drop-shadow-xl max-[420px]:[@media(max-height:640px)]:h-[16dvh]"
         />
         <p
           aria-hidden="true"
-          className="relative mb-[22dvh] max-w-[190px] rounded-2xl border-[1.5px] border-ds-line bg-white px-3 py-2 ds-type-footnote font-bold leading-snug text-ds-ink shadow-[var(--ds-shadow-floating)] before:absolute before:-left-[7px] before:bottom-3 before:size-[13px] before:rotate-45 before:border-b-[1.5px] before:border-l-[1.5px] before:border-ds-line before:bg-white before:content-['']"
+          className="relative mb-[22dvh] max-w-[190px] max-[420px]:[@media(max-height:640px)]:mb-[12dvh] rounded-2xl border-[1.5px] border-ds-line bg-white px-3 py-2 ds-type-footnote font-bold leading-snug text-ds-ink shadow-[var(--ds-shadow-floating)] before:absolute before:-left-[7px] before:bottom-3 before:size-[13px] before:rotate-45 before:border-b-[1.5px] before:border-l-[1.5px] before:border-ds-line before:bg-white before:content-['']"
         >
           {bubble}
         </p>

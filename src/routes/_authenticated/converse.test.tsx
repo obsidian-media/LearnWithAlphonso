@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// The pre-call sheet checks the network before it starts a call; the check settles on the next tick.
+beforeEach(() => {
+  vi.stubGlobal("fetch", async () => new Response(""));
+});
+const settle = () => new Promise((r) => setTimeout(r, 0));
 import { fireEvent, render, screen, within } from "@testing-library/react";
 
 vi.mock("@/components/HectorInvite", () => ({
@@ -54,18 +60,18 @@ function hub(data: HubData | null, course: "en" | "fr" | "es" = "es") {
 }
 
 describe("Practice hub: a new learner", () => {
-  it("counts zero stars out of the catalog's total", () => {
+  it("counts zero stars out of the catalog's total", async () => {
     const { container } = hub(NEW_LEARNER);
     const tallies = container.querySelectorAll("[data-star-tally]");
     expect(tallies.length).toBe(1);
     for (const t of tallies)
       expect(t).toHaveAccessibleName(`0 of ${maxStarsInCourse()} stars earned`);
   });
-  it("has nothing to continue", () => {
+  it("has nothing to continue", async () => {
     hub(NEW_LEARNER);
     expect(document.querySelector("[data-continue]")).toBeNull();
   });
-  it("still gets a pick at their level, without claiming a weak spot", () => {
+  it("still gets a pick at their level, without claiming a weak spot", async () => {
     const { container } = hub(NEW_LEARNER);
     const pick = container.querySelector("[data-todays-pick]") as HTMLElement;
     const s = SCENARIOS.find((x) => x.id === pick.dataset.todaysPick)!;
@@ -73,7 +79,7 @@ describe("Practice hub: a new learner", () => {
     expect(pick).toHaveTextContent("Beginner scene at your level");
     expect(pick).not.toHaveTextContent("your top weak spot");
   });
-  it("shows every campaign and every scenario in the course language, with no stars", () => {
+  it("shows every campaign and every scenario in the course language, with no stars", async () => {
     const { container } = hub(NEW_LEARNER);
     for (const c of campaignsFor("es"))
       expect(screen.getAllByText(c.title).length).toBeGreaterThan(0);
@@ -83,13 +89,13 @@ describe("Practice hub: a new learner", () => {
       expect(t.querySelector("[data-stars]")).toHaveAttribute("data-stars", "0");
     expect(screen.getByText(`Campaigns · ${CAMPAIGNS.length} stories`)).toBeInTheDocument();
   });
-  it("offers Hector with his own card (practice_hector_card)", () => {
+  it("offers Hector with his own card (practice_hector_card)", async () => {
     hub(NEW_LEARNER);
     const card = screen.getByTestId("hector-invite");
     expect(card).toHaveAttribute("data-source", "practice_hector_card");
     expect(card).toHaveAttribute("data-look", "hub");
   });
-  it("greets in the course language with an English gloss", () => {
+  it("greets in the course language with an English gloss", async () => {
     hub(NEW_LEARNER, "es");
     expect(screen.getByText("¿Practicamos un poco hoy?")).toHaveAttribute("lang", "es");
     expect(screen.getByText("Shall we practice a bit today?")).toBeInTheDocument();
@@ -97,13 +103,13 @@ describe("Practice hub: a new learner", () => {
 });
 
 describe("Practice hub: a learner with stars and a campaign in progress", () => {
-  it("adds up the stars held", () => {
+  it("adds up the stars held", async () => {
     const { container } = hub(PLAYED);
     expect(container.querySelector("[data-star-tally]")).toHaveAccessibleName(
       `8 of ${maxStarsInCourse()} stars earned`,
     );
   });
-  it("shows each scenario's best stars on its tile and each scene's under its room", () => {
+  it("shows each scenario's best stars on its tile and each scene's under its room", async () => {
     const { container } = hub(PLAYED);
     expect(container.querySelector('[data-scenario-tile="coffee"] [data-stars]')).toHaveAttribute(
       "data-stars",
@@ -114,7 +120,7 @@ describe("Practice hub: a learner with stars and a campaign in progress", () => 
       "3",
     );
   });
-  it("Continue resumes the campaign at its first scene without stars", () => {
+  it("Continue resumes the campaign at its first scene without stars", async () => {
     const { container, onStart } = hub(PLAYED);
     const card = container.querySelector("[data-continue]") as HTMLElement;
     expect(card.dataset.continue).toBe("doctors-visit:1");
@@ -124,6 +130,7 @@ describe("Practice hub: a learner with stars and a campaign in progress", () => 
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveTextContent(doctor.scenes[1].opener);
     fireEvent.click(within(dialog).getByRole("button", { name: /Start the call/ }));
+    await settle();
     expect(onStart).toHaveBeenCalledWith({
       kind: "scene",
       campaignId: "doctors-visit",
@@ -131,13 +138,13 @@ describe("Practice hub: a learner with stars and a campaign in progress", () => 
       mode: "call",
     });
   });
-  it("Today's pick names the learner's real top weak spot, at their level", () => {
+  it("Today's pick names the learner's real top weak spot, at their level", async () => {
     const { container } = hub(PLAYED);
     const pick = container.querySelector("[data-todays-pick]") as HTMLElement;
     expect(pick).toHaveTextContent("Makes you use the past tense, your top weak spot");
     expect(SCENARIOS.find((s) => s.id === pick.dataset.todaysPick)!.level).toBe("Intermediate");
   });
-  it("while the rows load there is no counter and no pick, never a false zero", () => {
+  it("while the rows load there is no counter and no pick, never a false zero", async () => {
     const { container } = hub(null);
     expect(container.querySelector("[data-star-tally]")).toBeNull();
     expect(container.querySelector("[data-todays-pick]")).toBeNull();
@@ -145,7 +152,7 @@ describe("Practice hub: a learner with stars and a campaign in progress", () => 
 });
 
 describe("Practice hub: level chips", () => {
-  it("filter the scenarios to one level and back to all", () => {
+  it("filter the scenarios to one level and back to all", async () => {
     const { container } = hub(NEW_LEARNER);
     fireEvent.click(screen.getByRole("button", { name: "Advanced" }));
     expect(screen.getByRole("button", { name: "Advanced" })).toHaveAttribute(
@@ -159,7 +166,7 @@ describe("Practice hub: level chips", () => {
     fireEvent.click(screen.getByRole("button", { name: "All" }));
     expect(container.querySelectorAll("[data-scenario-tile]").length).toBe(SCENARIOS.length);
   });
-  it("Advanced scenarios are open: their tiles open the pre-call sheet like any other", () => {
+  it("Advanced scenarios are open: their tiles open the pre-call sheet like any other", async () => {
     const { container } = hub(NEW_LEARNER);
     fireEvent.click(container.querySelector('[data-scenario-tile="negotiation"]')!);
     expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -167,7 +174,7 @@ describe("Practice hub: level chips", () => {
 });
 
 describe("the pre-call sheet", () => {
-  it("shows the persona, the real opener and the star rule from the tuning constants", () => {
+  it("shows the persona, the real opener and the star rule from the tuning constants", async () => {
     const { container } = hub(NEW_LEARNER);
     fireEvent.click(container.querySelector('[data-scenario-tile="coffee"]')!);
     const dialog = screen.getByRole("dialog");
@@ -179,7 +186,7 @@ describe("the pre-call sheet", () => {
     expect(dialog).toHaveTextContent(`${STAR_RULE.twoStarMinRightPercent}% of your replies right`);
     expect(dialog).toHaveTextContent(`${STAR_RULE.threeStarMinWords}+ words`);
   });
-  it("chooses call or chat, and starts the chosen one", () => {
+  it("chooses call or chat, and starts the chosen one", async () => {
     const { container, onStart } = hub(NEW_LEARNER);
     fireEvent.click(container.querySelector('[data-scenario-tile="hotel"]')!);
     const dialog = screen.getByRole("dialog");
@@ -189,17 +196,34 @@ describe("the pre-call sheet", () => {
     );
     fireEvent.click(within(dialog).getByRole("radio", { name: "Chat (type)" }));
     fireEvent.click(within(dialog).getByRole("button", { name: /Start the chat/ }));
+    await settle();
     expect(onStart).toHaveBeenCalledWith({ kind: "scenario", scenarioId: "hotel", mode: "chat" });
   });
-  it("a campaign card starts at its first scene without stars", () => {
+  it("offline, Start shows an in-app offline state with Retry instead of navigating, and Retry starts once back online", async () => {
+    const { container, onStart } = hub(NEW_LEARNER);
+    fireEvent.click(container.querySelector('[data-scenario-tile="hotel"]')!);
+    const dialog = screen.getByRole("dialog");
+    const online = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    fireEvent.click(within(dialog).getByRole("button", { name: /Start the call/ }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Can’t reach the server");
+    expect(onStart).not.toHaveBeenCalled();
+    online.mockReturnValue(true);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Retry" }));
+    await vi.waitFor(() =>
+      expect(onStart).toHaveBeenCalledWith({ kind: "scenario", scenarioId: "hotel", mode: "call" }),
+    );
+    online.mockRestore();
+  });
+  it("a campaign card starts at its first scene without stars", async () => {
     const { container, onStart } = hub(PLAYED);
     fireEvent.click(container.querySelector('[data-campaign-card="doctors-visit"]')!);
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: /Start/ }));
+    await settle();
     expect(onStart).toHaveBeenCalledWith(
       expect.objectContaining({ campaignId: "doctors-visit", sceneIndex: 1 }),
     );
   });
-  it("closes without starting", () => {
+  it("closes without starting", async () => {
     const { container, onStart } = hub(NEW_LEARNER);
     fireEvent.click(container.querySelector('[data-scenario-tile="hotel"]')!);
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
@@ -208,12 +232,12 @@ describe("the pre-call sheet", () => {
   });
 });
 
-it("scene keys in the hub are the server's keys", () => {
+it("scene keys in the hub are the server's keys", async () => {
   expect(sceneKey("doctors-visit", "doctor-book-phone")).toBe(PLAYED.stars[2].itemKey);
 });
 
 describe("the call-card carousel", () => {
-  it("is a labelled carousel of up to three slides, each announcing its scene, reason and both actions", () => {
+  it("is a labelled carousel of up to three slides, each announcing its scene, reason and both actions", async () => {
     const { container } = hub(NEW_LEARNER);
     const region = screen.getByRole("region", { name: "Calls picked for you" });
     expect(region).toHaveAttribute("aria-roledescription", "carousel");
@@ -233,7 +257,7 @@ describe("the call-card carousel", () => {
     // Three different scenarios.
     expect(new Set([...slides].map((s) => s.dataset.heroCard)).size).toBe(3);
   });
-  it("the first slide is Today's pick; a learner with a campaign in progress gets Continue first", () => {
+  it("the first slide is Today's pick; a learner with a campaign in progress gets Continue first", async () => {
     const { container } = hub(PLAYED);
     const slides = [...container.querySelectorAll<HTMLElement>("[data-hero-card]")];
     expect(slides.length).toBe(3);
@@ -243,7 +267,7 @@ describe("the call-card carousel", () => {
     expect(slides[2].dataset.todaysPick).toBeUndefined();
     expect(slides[2]).toHaveTextContent("Also for you");
   });
-  it("has page dots that work without swiping, and the current one is marked", () => {
+  it("has page dots that work without swiping, and the current one is marked", async () => {
     const scrollIntoView = vi.fn();
     Element.prototype.scrollIntoView = scrollIntoView;
     const { container } = hub(NEW_LEARNER);
@@ -264,7 +288,7 @@ describe("the call-card carousel", () => {
       container.querySelector("[data-hero-track]")!.children[2],
     );
   });
-  it("never moves by itself", () => {
+  it("never moves by itself", async () => {
     vi.useFakeTimers();
     try {
       hub(NEW_LEARNER);
@@ -275,7 +299,7 @@ describe("the call-card carousel", () => {
       vi.useRealTimers();
     }
   });
-  it("Call opens the pre-call sheet on the call choice, with the star rules, and starts the call", () => {
+  it("Call opens the pre-call sheet on the call choice, with the star rules, and starts the call", async () => {
     const { container, onStart } = hub(NEW_LEARNER);
     const slide = container.querySelector<HTMLElement>("[data-hero-card]")!;
     fireEvent.click(within(slide).getByRole("button", { name: /^Call Alphonso/ }));
@@ -286,13 +310,14 @@ describe("the call-card carousel", () => {
     );
     expect(dialog).toHaveTextContent("How to earn stars");
     fireEvent.click(within(dialog).getByRole("button", { name: /Start the call/ }));
+    await settle();
     expect(onStart).toHaveBeenCalledWith({
       kind: "scenario",
       scenarioId: slide.dataset.heroCard,
       mode: "call",
     });
   });
-  it("Chat opens the same sheet on the chat choice, even when calls are the default", () => {
+  it("Chat opens the same sheet on the chat choice, even when calls are the default", async () => {
     const { container, onStart } = hub(NEW_LEARNER);
     const slide = container.querySelector<HTMLElement>("[data-hero-card]")!;
     fireEvent.click(within(slide).getByRole("button", { name: /^Chat with Alphonso/ }));
@@ -302,13 +327,14 @@ describe("the call-card carousel", () => {
       "true",
     );
     fireEvent.click(within(dialog).getByRole("button", { name: /Start the chat/ }));
+    await settle();
     expect(onStart).toHaveBeenCalledWith({
       kind: "scenario",
       scenarioId: slide.dataset.heroCard,
       mode: "chat",
     });
   });
-  it("while the rows load there is a quiet placeholder, not a zero-height hole", () => {
+  it("while the rows load there is a quiet placeholder, not a zero-height hole", async () => {
     const { container } = hub(null);
     expect(container.querySelector("[data-hero-loading]")).toHaveAttribute("aria-busy", "true");
     expect(container.querySelector("[data-hero-card]")).toBeNull();
@@ -316,7 +342,7 @@ describe("the call-card carousel", () => {
 });
 
 describe("conversations", () => {
-  it("come right after the hero and before the campaigns, with a Mastered badge at three stars only", () => {
+  it("come right after the hero and before the campaigns, with a Mastered badge at three stars only", async () => {
     const { container } = hub(PLAYED);
     const order = [...container.querySelectorAll("h2")].map((h) => h.textContent);
     expect(order).toEqual([
@@ -332,7 +358,7 @@ describe("conversations", () => {
 });
 
 describe("the campaigns rail", () => {
-  it("is one card per campaign, each with its own room, a level and scene count, and a progress label", () => {
+  it("is one card per campaign, each with its own room, a level and scene count, and a progress label", async () => {
     const { container } = hub(PLAYED);
     const rail = container.querySelector("[data-campaign-rail]")!;
     const cards = rail.querySelectorAll<HTMLElement>("[data-campaign-card]");
@@ -350,7 +376,7 @@ describe("the campaigns rail", () => {
     const backgrounds = new Set([...cards].map((c) => c.style.backgroundImage));
     expect(backgrounds.size).toBeGreaterThan(1);
   });
-  it("its detail (the pre-call sheet) lists every scene with the stars it holds", () => {
+  it("its detail (the pre-call sheet) lists every scene with the stars it holds", async () => {
     const { container } = hub(PLAYED);
     fireEvent.click(container.querySelector('[data-campaign-card="doctors-visit"]')!);
     const list = within(screen.getByRole("dialog")).getByRole("list", {
@@ -366,7 +392,7 @@ describe("the campaigns rail", () => {
 });
 
 describe("the drills", () => {
-  it("are two separate featured cards, each with a picture and a Start button", () => {
+  it("are two separate featured cards, each with a picture and a Start button", async () => {
     const { container } = hub(NEW_LEARNER);
     const picture = container.querySelector("[data-say-the-picture-card]") as HTMLElement;
     const right = container.querySelector("[data-say-it-right-card]") as HTMLElement;
@@ -378,7 +404,7 @@ describe("the drills", () => {
     fireEvent.click(picture);
     expect(screen.getByTestId("say-the-picture")).toBeInTheDocument();
   });
-  it("Say it right opens its own drill", () => {
+  it("Say it right opens its own drill", async () => {
     const { container } = hub(NEW_LEARNER);
     fireEvent.click(container.querySelector("[data-say-it-right-card]")!);
     expect(screen.getByTestId("say-it-right")).toBeInTheDocument();
@@ -386,7 +412,7 @@ describe("the drills", () => {
 });
 
 describe("the Pro nudge", () => {
-  it("comes last, after the drills", () => {
+  it("comes last, after the drills", async () => {
     const { container } = hub(NEW_LEARNER);
     const nudge = screen.getByTestId("hector-invite");
     const drills = container.querySelector("[data-say-it-right-card]")!;

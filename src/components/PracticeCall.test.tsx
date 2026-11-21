@@ -207,4 +207,16 @@ describe("the character is a parameter", () => {
     const { getByText } = render(<PracticeCall {...base} scenarioId="coffee" dark={false} />);
     expect(getByText("Alphonso")).toBeInTheDocument();
   });
+
+  it("labels his lines in the transcript 'Alphonso:' when no kit is given", () => {
+    const { getByLabelText } = render(
+      <PracticeCall
+        {...base}
+        scenarioId="coffee"
+        dark={false}
+        messages={[{ role: "assistant", content: "Hello!" }]}
+      />,
+    );
+    expect(getByLabelText("Conversation so far").textContent).toContain("Alphonso: Hello!");
+  });
 });
