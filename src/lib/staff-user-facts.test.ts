@@ -75,7 +75,13 @@ describe("buildLearnerFacts", () => {
       }),
       NOW,
     );
-    expect(f.pro).toEqual({ active: true, source: "store", until: null, unavailable: false });
+    expect(f.pro).toEqual({
+      active: true,
+      source: "store",
+      until: null,
+      unavailable: false,
+      notConnected: false,
+    });
   });
 
   it("a promotional entitlement reads as a gift ending when the live grant ends", () => {
@@ -100,7 +106,13 @@ describe("buildLearnerFacts", () => {
       }),
       NOW,
     );
-    expect(f.pro).toEqual({ active: true, source: "gift", until: FUTURE, unavailable: false });
+    expect(f.pro).toEqual({
+      active: true,
+      source: "gift",
+      until: FUTURE,
+      unavailable: false,
+      notConnected: false,
+    });
     expect(f.gifts).toHaveLength(3);
     expect(f.gifts[2]).toEqual({
       endsAt: "2027-06-01T00:00:00Z",
@@ -109,20 +121,37 @@ describe("buildLearnerFacts", () => {
     });
   });
 
-  it("no Pro reads as none; an unreadable RevenueCat reads as unavailable, not as none", () => {
+  it("no Pro reads as none; RevenueCat unset is 'not connected'; set but unreachable is 'unavailable'; neither is 'none'", () => {
     expect(buildLearnerFacts(raw(), NOW).pro).toEqual({
       active: false,
       source: "none",
       until: null,
       unavailable: false,
+      notConnected: false,
     });
-    const unavailable = buildLearnerFacts(raw({ subscriber: null }), NOW);
-    expect(unavailable.pro).toEqual({
+    expect(buildLearnerFacts(raw({ subscriber: null }), NOW).pro).toEqual({
       active: false,
       source: "none",
       until: null,
       unavailable: true,
+      notConnected: true,
     });
+    const unreachable = buildLearnerFacts(
+      raw({ subscriber: { status: "unavailable" } as never }),
+      NOW,
+    );
+    expect(unreachable.pro).toMatchObject({
+      unavailable: true,
+      notConnected: false,
+      active: false,
+    });
+  });
+
+  it("the lessons count is a number or null (never a 0 for a count that could not be read)", () => {
+    expect(buildLearnerFacts(raw({ lessonsDone: 42 }), NOW).lessonsDone).toBe(42);
+    expect(buildLearnerFacts(raw({ lessonsDone: 0 }), NOW).lessonsDone).toBe(0);
+    expect(buildLearnerFacts(raw({ lessonsDone: null }), NOW).lessonsDone).toBeNull();
+    expect(buildLearnerFacts(raw(), NOW).lessonsDone).toBeNull();
   });
 
   it("facts never include keys named like payment|card|messages|answers (deep scan)", () => {

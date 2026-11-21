@@ -90,6 +90,7 @@ describe("every screen is gated by a server call, not by the navigation", () => 
       const src = readFileSync(`admin/routes/${file}`, "utf8");
       if (file === "__root.tsx") continue; // the root only decides whether to show the navigation
       if (file === "support_.$id.tsx") continue; // only redirects to /support (tested above)
+      if (file === "users_.$id.tsx") continue; // only redirects to /users (tested below)
       expect(src, file).toMatch(/adminWhoAmI|adminList|adminGetTranscript/);
     }
   });
@@ -101,7 +102,7 @@ describe("every screen is gated by a server call, not by the navigation", () => 
   });
 
   it("the learner page offers actions from the viewer's scopes and writes only through staff server functions", () => {
-    const src = readFileSync("admin/routes/users_.$id.tsx", "utf8");
+    const src = readFileSync("admin/routes/users.tsx", "utf8");
     for (const fn of [
       "staffGrantPro",
       "staffRevokePro",
@@ -115,5 +116,9 @@ describe("every screen is gated by a server call, not by the navigation", () => 
       expect(src, fn).toContain(fn);
     }
     expect(src).not.toMatch(/supabaseAdmin|from\(["']user_restrictions/);
+    // the old learner address only redirects into the Users screen, keeping the learner id
+    const old = readFileSync("admin/routes/users_.$id.tsx", "utf8");
+    expect(old).toContain("redirect(");
+    expect(old).toMatch(/to: "\/users"[\s\S]*u: params\.id/);
   });
 });

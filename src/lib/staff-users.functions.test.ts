@@ -26,7 +26,13 @@ const {
   staffRevokePro,
   staffBlockUser,
   staffUnblockUser,
+  staffBanUser,
+  staffUnbanUser,
+  staffDeleteUser,
 } = asTestFns({
+  staffBanUser: mod.staffBanUser,
+  staffUnbanUser: mod.staffUnbanUser,
+  staffDeleteUser: mod.staffDeleteUser,
   staffBlockUser: mod.staffBlockUser,
   staffUnblockUser: mod.staffUnblockUser,
   staffGrantPro: mod.staffGrantPro,
@@ -444,5 +450,135 @@ describe("staffBlockUser and staffUnblockUser", () => {
         context: { supabaseAdmin: admin, userId: SUPPORT },
       }),
     ).rejects.toThrow("That learner is not blocked.");
+  });
+});
+
+describe("every sensitive learner action is reason-gated and scope-gated on the server (Users screen)", () => {
+  const NO_SCOPES = "00000000-0000-4000-8000-0000000000b2";
+  beforeEach(() => {
+    setStaff({
+      [OWNER]: { role: "owner", scopes: [] },
+      [SUPPORT]: { role: "support", scopes: ["users.read", "users.notes", "user.block"] },
+      [NO_SCOPES]: { role: "support", scopes: ["users.read"] },
+    });
+  });
+  const base = { id: LEARNER, confirmEmail: "ada@example.com" };
+  const actions: [
+    string,
+    (u: string, a: ReturnType<typeof adminClient>, reason: string) => Promise<unknown>,
+    string,
+  ][] = [
+    [
+      "grant",
+      (u, a, reason) =>
+        staffGrantPro({
+          data: { ...base, days: 30, reason },
+          context: { supabaseAdmin: a, userId: u },
+        }),
+      "pro.grant",
+    ],
+    [
+      "revoke",
+      (u, a, reason) =>
+        staffRevokePro({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "pro.revoke",
+    ],
+    [
+      "block",
+      (u, a, reason) =>
+        staffBlockUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.block",
+    ],
+    [
+      "unblock",
+      (u, a, reason) =>
+        staffUnblockUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.block",
+    ],
+    [
+      "ban",
+      (u, a, reason) =>
+        staffBanUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.ban",
+    ],
+    [
+      "unban",
+      (u, a, reason) =>
+        staffUnbanUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.unban",
+    ],
+    [
+      "delete",
+      (u, a, reason) =>
+        staffDeleteUser({ data: { ...base, reason }, context: { supabaseAdmin: a, userId: u } }),
+      "user.delete",
+    ],
+  ];
+
+  it.each(actions)(
+    "%s refuses a missing, empty or too-short reason before anything is written",
+    async (_name, call) => {
+      for (const reason of ["", "  ", "ab"]) {
+        const admin = adminClient();
+        await expect(call(OWNER, admin, reason)).rejects.toThrow(/reason/i);
+        expect(admin.rpc).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it.each(actions)(
+    "%s is Forbidden for a staff member without its scope, and nothing is written",
+    async (_name, call, scope) => {
+      const admin = adminClient();
+      // NO_SCOPES holds users.read only, so every action is refused by name
+      await expect(call(NO_SCOPES, admin, "a good reason")).rejects.toThrow(
+        `Forbidden: missing scope ${scope}`,
+      );
+      expect(admin.rpc).not.toHaveBeenCalled();
+    },
+  );
+
+  it("a plain support agent cannot delete, ban or grant Pro (owner-only by default scopes)", async () => {
+    const { DEFAULT_SCOPES } = await import("./staff-scopes");
+    for (const scope of ["user.delete", "user.ban", "pro.grant"]) {
+      expect(DEFAULT_SCOPES.support).not.toContain(scope);
+      expect(DEFAULT_SCOPES.owner).toContain(scope);
+    }
+  });
+});
+
+describe("staffGetUser: the lessons count and the plan", () => {
+  const open = (admin: ReturnType<typeof adminClient>) =>
+    staffGetUser({ data: { id: LEARNER }, context: { supabaseAdmin: admin, userId: SUPPORT } });
+  const withLessons = (admin: ReturnType<typeof adminClient>, result: object) => {
+    const before = admin.from.getMockImplementation()!;
+    admin.from.mockImplementation((table: string) =>
+      table === "lesson_completions" ? chainable(result) : before(table),
+    );
+  };
+
+  it("reads the real lesson count for that learner", async () => {
+    const admin = adminClient();
+    withLessons(admin, { data: null, count: 7, error: null });
+    expect((await open(admin)).lessonsDone).toBe(7);
+    expect(admin.from).toHaveBeenCalledWith("lesson_completions");
+  });
+
+  it("a count that could not be read is null, never 0", async () => {
+    const admin = adminClient();
+    withLessons(admin, { data: null, count: null, error: { message: "down" } });
+    expect((await open(admin)).lessonsDone).toBeNull();
+  });
+
+  it("with no RevenueCat key the plan is 'not connected', not Free (and the read is still recorded)", async () => {
+    vi.stubEnv("REVENUECAT_SECRET_API_KEY", "");
+    const admin = adminClient();
+    const facts = await open(admin);
+    vi.unstubAllEnvs();
+    expect(facts.pro).toMatchObject({ notConnected: true, unavailable: true, active: false });
+    expect(admin.rpc).toHaveBeenCalledWith(
+      "staff_record",
+      expect.objectContaining({ p_action: "user.view" }),
+    );
   });
 });

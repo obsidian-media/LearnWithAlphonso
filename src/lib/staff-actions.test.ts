@@ -3,8 +3,20 @@ import { DEFAULT_SCOPES, SCOPES } from "./staff-scopes";
 import { allowedActions, NEEDS_EMAIL } from "./staff-actions";
 import { homeFor, navItemsFor } from "./staff-nav";
 
-const noPro = { active: false, source: "none" as const, until: null, unavailable: false };
-const gift = { active: true, source: "gift" as const, until: "2026-12-01", unavailable: false };
+const noPro = {
+  active: false,
+  source: "none" as const,
+  until: null,
+  unavailable: false,
+  notConnected: false,
+};
+const gift = {
+  active: true,
+  source: "gift" as const,
+  until: "2026-12-01",
+  unavailable: false,
+  notConnected: false,
+};
 const none: never[] = [];
 
 describe("allowedActions", () => {
