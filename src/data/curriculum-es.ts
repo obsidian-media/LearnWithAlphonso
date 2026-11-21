@@ -4,7 +4,10 @@ import { generatedUnitsEs } from "./lesson-bank-es";
 import { applyReviewFixes } from "./review-fixes";
 import { applyLessonExtras } from "./lesson-extras";
 
-export const curriculumEs: Unit[] = applyReviewFixes(applyLessonExtras(generatedUnitsEs(), "es"), "es");
+export const curriculumEs: Unit[] = applyReviewFixes(
+  applyLessonExtras(generatedUnitsEs(), "es"),
+  "es",
+);
 
 export type QuestionRef = { lessonId: string; unitId: string; level: Level; question: Question };
 
