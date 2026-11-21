@@ -18,7 +18,6 @@ const route = (name: string) => readFileSync(`admin/routes/${name}`, "utf8");
 
 describe("a signed-in person missing a scope sees a forbidden card, not the sign-in page", () => {
   it.each([
-    ["reports.tsx", "reports.manage"],
     ["folders.tsx", "podcasts.manage"],
     ["folder.$id.tsx", "podcasts.manage"],
   ])("%s decides with forbiddenOrSignIn and never redirects by itself", (file, scope) => {
@@ -33,6 +32,7 @@ describe("a signed-in person missing a scope sees a forbidden card, not the sign
     ["staff.tsx", "Staff"],
     ["audit.tsx", "Action record"],
     ["support.tsx", "Support"],
+    ["reports.tsx", "Reports"],
   ])("%s shows the forbidden card titled %s", (file, title) => {
     expect(route(file)).toContain(`<ForbiddenCard title="${title}"`);
   });
