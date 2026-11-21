@@ -161,6 +161,39 @@ struct LessonBrowserView: View {
         return nil
     }
 
+    /// The learner's place in the whole course: the first lesson not done, across every level. The map is one band's
+    /// climb, so its sheet says "Continue lesson" only when its next lesson is this one (web: continueLessonId).
+    private var courseContinueLessonID: String? {
+        for unit in contentStore.bundle(for: course).units {
+            if let lesson = unit.lessons.first(where: { !completedLessonIDs.contains($0.id) }) { return lesson.id }
+        }
+        return nil
+    }
+
+    /// The climbing map's data, built by the shared model (`LearnMap.climb`) from this band's units in curriculum order.
+    /// nil (no map) while the timing table is missing. Only the first lesson not done is counted for words: it is the
+    /// lesson the sheet is about, and counting every lesson of the band on each render would be wasted work.
+    private var climbMap: LearnMap.Climb? {
+        guard let timing = LessonData.timing else { return nil }
+        let nextID = nextLesson?.lesson.id
+        let units: [LearnMap.Unit] = unitsForSelectedLevel.map { unit in
+            LearnMap.Unit(
+                id: unit.id,
+                title: unit.title,
+                lessons: unit.lessons.map { lesson in
+                    LearnMap.Lesson(
+                        id: lesson.id,
+                        title: lesson.title,
+                        subtitle: lesson.subtitle,
+                        questionTypes: lesson.questions.map(\.typeKey),
+                        wordCount: lesson.id == nextID ? deriveVocab(lesson: lesson, images: contentStore.vocabImages).count : 0
+                    )
+                }
+            )
+        }
+        return LearnMap.climb(units: units, completed: completedLessonIDs, timing: timing)
+    }
+
     // MARK: Round 6.1 fold
 
     private var foldRows: [FoldRow] {
@@ -357,24 +390,15 @@ struct LessonBrowserView: View {
                     .listRowBackground(Color.clear)
                 }
 
-                // The one hero: one rounded card with the unit's room, Alphonso, his greeting and the single
-                // Continue lesson button.
-                if let next = nextLesson {
-                    // The link sits invisibly behind the hero: a visible NavigationLink in a List adds a
-                    // disclosure chevron beside it and narrows it.
-                    LearnHeroStage(
+                // The one map: the climbing map for the learner's unit in the band on screen (Path B). It replaces the
+                // old hero, never sits beside it. Its nodes and the start sheet open lessons through `openedLesson`.
+                if let climb = climbMap {
+                    LearnClimbMap(
+                        climb: climb,
                         greeting: StatusHeaderView.greeting(streak: StatusHeaderView.shownStreak(syncQueueStore.lastKnownProgress())),
-                        roomID: roomID(for: next.unit)
-                    ) {
-                        // The unit's place among the units of its level (the web's and Android's count).
-                        LearnCurrentUnitCard(
-                            unitNumber: coursePlace(of: next.unit).index,
-                            unitCount: coursePlace(of: next.unit).count,
-                            unitTitle: next.unit.title,
-                            lessonTitle: next.lesson.title
-                        )
-                    }
-                    .background(NavigationLink(value: next.lesson.id) { EmptyView() }.opacity(0))
+                        continueLessonID: courseContinueLessonID,
+                        onOpenLesson: { openedLesson = OpenedLesson(id: $0) }
+                    )
                     .listRowInsets(EdgeInsets())
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
