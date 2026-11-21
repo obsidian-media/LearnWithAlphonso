@@ -119,7 +119,7 @@ public struct ProfileOverviewData: Sendable, Equatable {
     public var longestStreak: Int
     public var streakFreezes: Int
     /// For the displayed streak (StreakDisplay), which the header uses too: the last active day, the account's
-    /// day basis, and the learner's LOCAL today (`today` above is the UTC day the heat map uses).
+    /// day basis, and the learner's LOCAL today (the same day as `today` above: the stored zone, else this device's).
     public var lastActiveDate: String?
     public var dayBasis: String?
     public var localToday: String?
@@ -184,8 +184,13 @@ public enum ProfileMath {
         return string(r)
     }
 
-    /// Today as the streak counts it: the UTC calendar date.
-    public static func streakToday(now: Date = Date()) -> String { string(now) }
+    /// Today as the streak counts it: the learner's LOCAL calendar date (20261114100000_local_days.sql), in their
+    /// stored zone (learner_time_zones, what the server books days in), else this device's zone. The week strip, the
+    /// heat map and the goal rings all read this day, so they agree with the streak about which day a lesson counted for.
+    public static func streakToday(now: Date = Date(), timeZone: String? = nil, device: TimeZone = .current) -> String {
+        let stored = timeZone.flatMap { $0.isEmpty ? nil : TimeZone(identifier: $0) }
+        return localDateString(now, timeZone: stored ?? device)
+    }
 
     /// Monday of the week holding `day`.
     public static func weekStart(_ day: String) -> String {

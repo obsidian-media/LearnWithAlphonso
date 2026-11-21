@@ -12,6 +12,20 @@ class ProfileOverviewTest {
     private val m = ProfileMath
     private val today = "2026-11-07" // a Saturday
 
+    /** The streak counts the learner's local day, so Profile's today is that day: the stored zone first, else the device's. */
+    @Test
+    fun `streak today is the local day not the UTC day`() {
+        val fridayEvening = java.time.Instant.parse("2026-11-21T03:21:00Z").toEpochMilli() // Fri 19:21 in Los Angeles
+        val la = java.time.ZoneId.of("America/Los_Angeles")
+        val utc = java.time.ZoneOffset.UTC
+        assertEquals("2026-11-20", m.streakToday(fridayEvening, "America/Los_Angeles", utc))
+        assertEquals("2026-11-20", m.streakToday(fridayEvening, null, la))
+        assertEquals("2026-11-20", m.streakToday(fridayEvening, "", la))
+        assertEquals("2026-11-20", m.streakToday(fridayEvening, "Not/AZone", la))
+        // East of UTC the local day is already tomorrow.
+        assertEquals("2026-11-06", m.streakToday(java.time.Instant.parse("2026-11-05T20:00:00Z").toEpochMilli(), "Asia/Karachi", utc))
+    }
+
     @Test
     fun `free teaser uses only own weak spots never Hector memory`() {
         val weak = listOf(ProfileWeakItem("a", "ser and estar", 3, 0))

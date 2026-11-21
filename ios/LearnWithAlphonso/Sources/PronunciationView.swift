@@ -178,19 +178,36 @@ struct PronunciationView: View {
             }
             // Always available, in every state: a microphone, consent or STT failure is never a dead end.
             // Both replay the SAME audio (fetched once per word); the slower one just plays it at a slower rate.
-            HStack(spacing: AlphonsoDS.Space.s2) {
-                Button { Task { await playModel(word.term) } } label: { Label("Hear it", systemImage: "speaker.wave.2.fill") }
-                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
-                Button { Task { await playModel(word.term, slow: true) } } label: { Label("Say it slower", systemImage: "tortoise.fill") }
-                    .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
-                    .accessibilityValue(clips.playing == .model(slow: true) ? "Playing" : "")
+            // Side by side when both labels fit on one line, stacked when they do not (large text): a label never breaks
+            // mid-word.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: AlphonsoDS.Space.s2) { modelButtons(word) }
+                VStack(spacing: AlphonsoDS.Space.s2) { modelButtons(word) }
             }
         }
         .frame(maxWidth: .infinity)
         .padding(AlphonsoDS.Space.s4)
-        .background(ds.card, in: RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble))
-        .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.bubble).stroke(ds.line, lineWidth: 1.5))
+        // The tail points at Alphonso, who stands to the left (none when his pose is hidden at accessibility sizes).
+        .padding(.leading, showsTail ? 14 : 0)
+        .background(SpeechBubbleShape(cornerRadius: AlphonsoDS.Radius.bubble, tailLeading: true, showsTail: showsTail).fill(ds.card))
+        .overlay(SpeechBubbleShape(cornerRadius: AlphonsoDS.Radius.bubble, tailLeading: true, showsTail: showsTail).strokeBorder(ds.line, lineWidth: 1.5))
         .accessibilityElement(children: .contain)
+    }
+
+    /// Whether Alphonso's pose is on screen, and so whether the bubble has a tail pointing at him.
+    private var showsTail: Bool { !dynamicTypeSize.isAccessibilitySize }
+
+    /// "Hear it" and "Say it slower". Each label is one unbreakable line (`ViewThatFits` above stacks them instead).
+    @ViewBuilder private func modelButtons(_ word: VocabItem) -> some View {
+        Button { Task { await playModel(word.term) } } label: {
+            Label("Hear it", systemImage: "speaker.wave.2.fill").lineLimit(1).fixedSize(horizontal: true, vertical: false)
+        }
+        .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+        Button { Task { await playModel(word.term, slow: true) } } label: {
+            Label("Say it slower", systemImage: "tortoise.fill").lineLimit(1).fixedSize(horizontal: true, vertical: false)
+        }
+        .buttonStyle(.dsButton(.secondary, compact: true, fullWidth: false))
+        .accessibilityValue(clips.playing == .model(slow: true) ? "Playing" : "")
     }
 
     /// "Hear you vs Alphonso": the learner's last attempt next to the model, each one a tappable waveform. They stack

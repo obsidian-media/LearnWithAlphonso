@@ -216,3 +216,57 @@ describe("Hector's call", () => {
     expect(call).toContain("VoiceCopy.microphoneCouldNotStart");
   });
 });
+
+/**
+ * Owner decision: "Add a type box to the call". Hector's call used to hold only the hands-free switch, the transcript and
+ * a hint, so a learner on the call could not type. The conversation sheet now mounts the same HectorComposer (one view,
+ * one send path), pinned to the bottom safe area so the field rides above the keyboard.
+ */
+const callSheetComposerProblems = (src: string): string[] => {
+  const problems: string[] = [];
+  const callScreen = src.slice(
+    src.indexOf("private var callScreen"),
+    src.indexOf("private func endCall"),
+  );
+  const sheet = callScreen.slice(callScreen.indexOf("sheet: {"), callScreen.indexOf(".toolbar("));
+  if (!/\.safeAreaInset\(edge: \.bottom, spacing: 0\) \{ composer \}/.test(sheet))
+    problems.push(
+      "the call's conversation sheet does not mount the composer in the bottom safe area",
+    );
+  // The classic screen keeps its own composer, and both use the one view whose onSend is sendTyped.
+  const classic = src.slice(
+    src.indexOf("private var classicScreen"),
+    src.indexOf("private var callScreen"),
+  );
+  if (!/\n\s+composer\n/.test(classic)) problems.push("the classic screen lost its composer");
+  const composerDef = src.slice(
+    src.indexOf("private var composer: some View"),
+    src.indexOf("private func correctionCard"),
+  );
+  if (
+    !composerDef.includes("HectorComposer(") ||
+    !composerDef.includes("onSend: { sendTyped(draft) }")
+  )
+    problems.push("the composer no longer sends through sendTyped");
+  if ((src.match(/HectorComposer\(/g) ?? []).length !== 1) problems.push("the composer was forked");
+  return problems;
+};
+
+describe("Hector's call has a type box", () => {
+  const src = code(`${APP}/Sources/HectorView.swift`);
+  it("mounts the shared composer in the conversation sheet, sending through the one path", () => {
+    expect(callSheetComposerProblems(src)).toEqual([]);
+  });
+  it("keeps the composer's accessibility id single on screen (classic and call are never shown together)", () => {
+    const parts = code(`${APP}/Sources/HectorParts.swift`);
+    expect(parts.match(/accessibilityIdentifier\("hectorField"\)/g)).toHaveLength(1);
+  });
+  it("goes red when the composer is taken out of the call's sheet, or its send path is forked", () => {
+    const noComposer = src.replace(".safeAreaInset(edge: .bottom, spacing: 0) { composer }", "");
+    expect(noComposer).not.toBe(src);
+    expect(callSheetComposerProblems(noComposer)).toHaveLength(1);
+    const forked = src.replace("onSend: { sendTyped(draft) }", 'onSend: { draft = "" }');
+    expect(forked).not.toBe(src);
+    expect(callSheetComposerProblems(forked)).not.toEqual([]);
+  });
+});

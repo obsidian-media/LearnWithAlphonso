@@ -45,7 +45,8 @@ class ProfileOverviewClientTest {
         assertEquals("Europe/Paris", o.timeZone)
         assertEquals(listOf(ProfileSkillDay("2025-09-16", "grammar", 4, 5)), o.skills)
         assertEquals("gte.2025-09-15", f.seen.first { it.path.endsWith("learning_days") }.query["day"])
-        assertEquals("gte.2025-08-20", f.seen.first { it.path.endsWith("skill_days") }.query["day"])
+        // A day earlier than the 28-day window: the stored zone's today can be a day behind this device's.
+        assertEquals("gte.2025-08-19", f.seen.first { it.path.endsWith("skill_days") }.query["day"])
         val mastered = f.seen.first { it.path.endsWith("mastered_words") }
         assertEquals("eq.fr", mastered.query["language"])
         assertEquals("eq.u1", mastered.query["user_id"])
@@ -72,5 +73,20 @@ class ProfileOverviewClientTest {
         assertNull(o.league)
         assertNull(o.timeZone)
         assertEquals(emptyList<ProfileSkillDay>(), o.skills)
+    }
+
+    // Final QA 2026-11-21: at Friday 19:21 in Los Angeles (Saturday 03:21 UTC) the week strip said Saturday "not yet
+    // today". The streak books the learner's local day, so Profile's today is the local day in the stored zone.
+    @Test
+    fun `today is the local day in the stored zone so the week strip matches the streak`() = runTest {
+        val fridayEvening = java.time.Instant.parse("2026-11-21T03:21:00Z").toEpochMilli()
+        val f = FakeSupabase { req ->
+            if (req.path.endsWith("learner_time_zones")) json("""[{"time_zone":"America/Los_Angeles"}]""") else json("[]")
+        }
+        val o = ProgressSyncClient(f.http) { fridayEvening }.fetchProfileOverview("u1", "fr", fridayEvening)
+        assertEquals("2026-11-20", o.today)
+        assertEquals("2026-11-20", o.localToday) // the header streak reads the same day
+        val week = com.obsidianmedia.learnwithalphonso.core.profile.ProfileMath.weekRings(o.today, emptyList(), emptyList())
+        assertEquals(4, week.days.indexOfFirst { it.state == com.obsidianmedia.learnwithalphonso.core.profile.ProfileMath.RingState.TODAY }) // Friday
     }
 }

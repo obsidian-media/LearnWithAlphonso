@@ -84,4 +84,24 @@ final class ProfileOverviewReadTests: XCTestCase {
         XCTAssertEqual(o.learning.count, 1)
         XCTAssertEqual(o.timeZone, "Europe/Paris")
     }
+
+    // Final QA 2026-11-21: at Friday 19:21 in Los Angeles (Saturday 03:21 UTC) the week strip said Saturday "not yet
+    // today". The streak books the learner's local day, so Profile's today is the local day in the stored zone.
+    func testTodayIsTheLocalDayInTheStoredZoneSoTheWeekStripMatchesTheStreak() async throws {
+        let log = Log()
+        let client = ProgressSyncClient(supabaseURL: URL(string: "https://x.test")!, anonKey: "k", accessToken: "t") { request in
+            log.add(request.url!.path + "?" + (request.url!.query ?? ""))
+            let body: Any = request.url!.path == "/rest/v1/learner_time_zones" ? [["time_zone": "America/Los_Angeles"]] : [[String: Any]]()
+            let data = try JSONSerialization.data(withJSONObject: body)
+            return (data, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: [:])!)
+        }
+        let fridayEvening = ISO8601DateFormatter().date(from: "2026-11-21T03:21:00Z")!
+        let o = try await client.fetchProfileOverview(userID: "u1", course: "en", now: fridayEvening)
+        XCTAssertEqual(o.today, "2026-11-20")
+        XCTAssertEqual(o.localToday, "2026-11-20") // the header streak reads the same day
+        let week = ProfileMath.weekRings(today: o.today, activity: [], speech: [])
+        XCTAssertEqual(week.days.firstIndex { $0.state == .today }, 4) // Friday, not Saturday
+        // The reads start early enough for a stored zone a day behind this device.
+        XCTAssertTrue(log.all.contains { $0.hasPrefix("/rest/v1/speech_days") && $0.contains("day=gte.2026-11-16") })
+    }
 }

@@ -56,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
+import com.obsidianmedia.learnwithalphonso.ui.components.SpeechBubbleShape
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -403,6 +404,7 @@ internal fun SayItRightContent(
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.s4), horizontalAlignment = Alignment.CenterHorizontally) {
         Text("Word ${session.index + 1} of ${session.words.size}", style = Type.caption.toTextStyle(), color = ds.inkSoft)
         // Alphonso, in pose, with the word in his speech bubble.
+        val bubbleShape = SpeechBubbleShape(AlphonsoTokens.Radius.bubble, showsTail = !largeText)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Space.s2)) {
             if (!largeText) {
                 Box(Modifier.testTag("sir-pose").height(176.dp).width(110.dp).clearAndSetSemantics { }, contentAlignment = Alignment.BottomStart) {
@@ -411,8 +413,10 @@ internal fun SayItRightContent(
             }
             Column(
                 Modifier.testTag("sir-bubble").weight(1f).padding(bottom = Space.s5)
-                    .background(ds.card, RoundedCornerShape(AlphonsoTokens.Radius.bubble))
-                    .border(1.5.dp, ds.line, RoundedCornerShape(AlphonsoTokens.Radius.bubble)).padding(Space.s4),
+                    .background(ds.card, bubbleShape)
+                    .border(1.5.dp, ds.line, bubbleShape)
+                    // The tail points at Alphonso, so the start pad includes its width (no tail when his pose is hidden at large text).
+                    .padding(start = Space.s4 + (if (largeText) 0.dp else bubbleShape.tailWidth), top = Space.s4, end = Space.s4, bottom = Space.s4),
                 verticalArrangement = Arrangement.spacedBy(Space.s2), horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(

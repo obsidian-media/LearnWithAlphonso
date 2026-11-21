@@ -65,6 +65,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.obsidianmedia.learnwithalphonso.ui.components.SpeechBubbleShape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -486,8 +487,10 @@ private fun StpTutor(pose: SayPicturePose, phase: SayPicturePhase, listening: Bo
         }
         Text(
             bubble, style = Type.footnote.toTextStyle(), color = ds.ink,
-            modifier = Modifier.padding(bottom = 130.dp).widthIn(max = 190.dp).clearAndSetSemantics { }
-                .background(Color.White, RoundedCornerShape(16.dp)).border(1.5.dp, ds.line, RoundedCornerShape(16.dp)).padding(horizontal = 12.dp, vertical = 9.dp),
+            modifier = Modifier.padding(bottom = 130.dp).widthIn(max = 204.dp).clearAndSetSemantics { }
+                .background(Color.White, SpeechBubbleShape(16.dp)).border(1.5.dp, ds.line, SpeechBubbleShape(16.dp))
+                // Start padding includes the tail's width: the tail points at Alphonso on the bubble's leading side.
+                .padding(start = 12.dp + SpeechBubbleShape(16.dp).tailWidth, top = 9.dp, end = 12.dp, bottom = 9.dp),
         )
     }
 }

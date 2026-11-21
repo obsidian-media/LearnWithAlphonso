@@ -55,6 +55,9 @@ import kotlin.coroutines.CoroutineContext
 class MainDispatcherRule : TestWatcher() {
     public override fun starting(description: Description) {
         GatedMainDispatcher.install()
+        // A fresh process-wide opener cache: an opener fetch a previous test left suspended holds its lock forever once
+        // that test's late dispatch is dropped, and every scenario opener after it would hang (HandsFreeWiringTest).
+        com.obsidianmedia.learnwithalphonso.ui.practice.OpenerSpeechCache.shared.resetForTests()
         GatedMainDispatcher.open = true
     }
 

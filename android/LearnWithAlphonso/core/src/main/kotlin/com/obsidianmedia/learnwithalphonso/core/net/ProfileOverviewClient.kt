@@ -26,8 +26,10 @@ import kotlinx.serialization.json.put
 suspend fun ProgressSyncClient.fetchProfileOverview(
     userId: String, course: String, nowMillis: Long = System.currentTimeMillis(),
 ): ProfileOverviewData = coroutineScope {
-    val today = ProfileMath.streakToday(nowMillis)
-    val from = ProfileMath.weekStart(ProfileMath.threeMonthsWindow(today).first)
+    // The stored zone arrives with the rows below, so the reads start a day early: the stored zone's today can be a day
+    // either side of this device's. The rules filter every row by `today`, settled once the zone is in.
+    val early = ProfileMath.addDays(ProfileMath.streakToday(nowMillis), -1)
+    val from = ProfileMath.weekStart(ProfileMath.threeMonthsWindow(early).first)
     val me = "eq.$userId"
     suspend fun rows(table: String, query: Map<String, String>, extra: List<Pair<String, String>> = emptyList()) =
         rowsOf(http.rest(HttpMethod.Get, table, query + ("user_id" to me), queryList = extra))
@@ -38,7 +40,7 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
     val comps = async { rows("lesson_completions", mapOf("select" to "lesson_id,language,correct,total")) }
     val acts = async { rows("activity_days", mapOf("select" to "day,xp_earned", "day" to "gte.$from", "order" to "day.asc")) }
     val best = async { rows("activity_days", mapOf("select" to "xp_earned", "order" to "xp_earned.desc", "limit" to "1")) }
-    val speech = async { rows("speech_days", mapOf("select" to "day,speech_seconds", "day" to "gte.${ProfileMath.weekStart(today)}")) }
+    val speech = async { rows("speech_days", mapOf("select" to "day,speech_seconds", "day" to "gte.${ProfileMath.weekStart(early)}")) }
     val weak = async {
         rows("review_items", mapOf("select" to "weakness_label,weakness_display,lapses,repetitions", "language" to "eq.$course", "source" to "eq.weakness"))
     }
@@ -61,7 +63,7 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
         try { block() } catch (e: CancellationException) { throw e } catch (e: Exception) { fallback }
     val learning = async {
         secondary(emptyList()) {
-            rows("learning_days", mapOf("select" to "day,lesson_seconds,practice_seconds", "day" to "gte.${ProfileMath.weekStart(today)}"))
+            rows("learning_days", mapOf("select" to "day,lesson_seconds,practice_seconds", "day" to "gte.${ProfileMath.weekStart(early)}"))
                 .mapNotNull { r -> ProfileLearningDay(r.string("day") ?: return@mapNotNull null, r.int("lesson_seconds") ?: 0, r.int("practice_seconds") ?: 0) }
         }
     }
@@ -91,7 +93,7 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
     }
     val skills = async {
         secondary(emptyList()) {
-            rows("skill_days", mapOf("select" to "day,skill,right_answers,total_answers", "day" to "gte.${ProfileMath.addDays(today, -(ProfileMath.SKILL_WINDOW_DAYS - 1))}"))
+            rows("skill_days", mapOf("select" to "day,skill,right_answers,total_answers", "day" to "gte.${ProfileMath.addDays(early, -(ProfileMath.SKILL_WINDOW_DAYS - 1))}"))
                 .mapNotNull { r ->
                     ProfileSkillDay(r.string("day") ?: return@mapNotNull null, r.string("skill") ?: return@mapNotNull null, r.int("right_answers") ?: 0, r.int("total_answers") ?: 0)
                 }
@@ -100,8 +102,9 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
 
     val p = profile.await().firstOrNull()
     val u = prog.await().firstOrNull()
+    val storedZone = zone.await()
     ProfileOverviewData(
-        today = today,
+        today = ProfileMath.streakToday(nowMillis, storedZone),
         course = course,
         displayName = p?.string("display_name"),
         avatarSeed = p?.string("avatar_seed"),
@@ -114,7 +117,7 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
         streakFreezes = u?.int("streak_freezes") ?: 0,
         lastActiveDate = u?.string("last_active_date"),
         dayBasis = u?.string("day_basis"),
-        localToday = com.obsidianmedia.learnwithalphonso.core.logic.localDateString(nowMillis, java.time.ZoneId.systemDefault()),
+        localToday = ProfileMath.streakToday(nowMillis, storedZone),
         completions = comps.await().mapNotNull { r ->
             ProfileCompletion(r.string("lesson_id") ?: return@mapNotNull null, r.string("language") ?: return@mapNotNull null, r.int("correct") ?: 0, r.int("total") ?: 0)
         },
@@ -137,7 +140,7 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
         learning = learning.await(),
         masteredWords = mastered.await(),
         league = league.await(),
-        timeZone = zone.await(),
+        timeZone = storedZone,
         skills = skills.await(),
     )
 }
