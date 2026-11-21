@@ -69,6 +69,9 @@ class ProfileOverviewClientTest {
     @Test
     fun `an empty profile data response gives empty defaults`() = runTest {
         val o = client(FakeSupabase { json("[]") }).fetchProfileOverview("u1", "fr", now)
+        // No stored zone: the server books the UTC date, so Profile's today is that date too, on any device.
+        assertEquals("2025-09-16", o.today)
+        assertEquals("2025-09-16", o.localToday)
         assertEquals(0, o.masteredWords)
         assertNull(o.league)
         assertNull(o.timeZone)

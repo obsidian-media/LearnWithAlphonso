@@ -103,6 +103,13 @@ function readerProblems(story: string): string[] {
   if (!eyebrow.includes(".shadow(")) out.push('the "Scene N" eyebrow has no text shadow');
   const passage = between(s, "private func passage", "private var narrationControls");
   if (!passage.includes(".shadow(")) out.push("the read-along text has no text shadow");
+  // On the text only: before the active sentence's wash (.background) and gold edge (.overlay), which a later shadow
+  // would also blur.
+  const shadowAt = passage.indexOf(".shadow(");
+  const fillAt = passage.indexOf(".background(");
+  const edgeAt = passage.indexOf(".overlay(");
+  if (shadowAt >= 0 && ((fillAt >= 0 && shadowAt > fillAt) || (edgeAt >= 0 && shadowAt > edgeAt)))
+    out.push("the read-along shadow also shadows the active sentence's highlight");
   return out;
 }
 
@@ -205,6 +212,15 @@ describe("final QA P2 polish on iOS", () => {
         mutate(f.story, ".shadow(color: ds.heroB.opacity(0.9), radius: 3, y: 1)\n", ""),
       ),
     ).not.toEqual([]);
+    // 6: the passage shadow moved after the highlight, so it blurs the wash and the gold edge too.
+    const shadowed = mutate(
+      f.story,
+      /(\.lineSpacing\(3\)\n)(?:\s*\/\/.*\n)?\s*\.shadow\(color: ds\.heroB\.opacity\(0\.8\), radius: 3, y: 1\)\n((?:.*\n){0,12}?\s*\.id\(index\)\n)/,
+      "$1$2                .shadow(color: ds.heroB.opacity(0.8), radius: 3, y: 1)\n",
+    );
+    expect(readerProblems(shadowed)).toContain(
+      "the read-along shadow also shadows the active sentence's highlight",
+    );
     // 7: Skip back to the white card colour.
     const white = mutate(
       f.parts,

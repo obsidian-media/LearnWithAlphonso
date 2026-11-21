@@ -104,4 +104,16 @@ final class ProfileOverviewReadTests: XCTestCase {
         // The reads start early enough for a stored zone a day behind this device.
         XCTAssertTrue(log.all.contains { $0.hasPrefix("/rest/v1/speech_days") && $0.contains("day=gte.2026-11-16") })
     }
+
+    /// No stored zone: the server books the UTC date, so Profile's today is that date too, whatever the device's zone.
+    func testWithNoStoredZoneTodayIsTheServersUTCDay() async throws {
+        let client = ProgressSyncClient(supabaseURL: URL(string: "https://x.test")!, anonKey: "k", accessToken: "t") { request in
+            let data = try JSONSerialization.data(withJSONObject: [[String: Any]]())
+            return (data, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: [:])!)
+        }
+        let fridayEvening = ISO8601DateFormatter().date(from: "2026-11-21T03:21:00Z")!
+        let o = try await client.fetchProfileOverview(userID: "u1", course: "en", now: fridayEvening)
+        XCTAssertEqual(o.today, "2026-11-21")
+        XCTAssertEqual(o.localToday, "2026-11-21")
+    }
 }
