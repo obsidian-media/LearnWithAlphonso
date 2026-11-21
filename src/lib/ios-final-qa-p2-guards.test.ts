@@ -111,7 +111,10 @@ function skipProblems(parts: string): string[] {
   const skip = between(code(parts), 'Button("Skip", action: onSkip)', ".accessibilityHint");
   const out: string[] = [];
   if (!skip.includes(".foregroundStyle(ds.brand)")) out.push("Skip is not the brand ink");
-  if (skip.includes("ds.card")) out.push("Skip is the white card colour on a cream surface");
+  if (skip.includes(".foregroundStyle(ds.card)"))
+    out.push("Skip is the white card colour on a cream surface");
+  if (!skip.includes(".background(Capsule().fill(ds.card))"))
+    out.push("Skip has no card chip behind it (brand ink alone vanishes over the room art)");
   return out;
 }
 
@@ -209,5 +212,12 @@ describe("final QA P2 polish on iOS", () => {
       "$1ds.card)",
     );
     expect(skipProblems(white)).not.toEqual([]);
+    // 7: Skip without its card chip.
+    const bare = mutate(
+      f.parts,
+      /(\.frame\(minHeight: AlphonsoDS\.Space\.minTouch\)\n)\s*\.background\(Capsule\(\)\.fill\(ds\.card\)\)\n/,
+      "$1",
+    );
+    expect(skipProblems(bare)).not.toEqual([]);
   });
 });

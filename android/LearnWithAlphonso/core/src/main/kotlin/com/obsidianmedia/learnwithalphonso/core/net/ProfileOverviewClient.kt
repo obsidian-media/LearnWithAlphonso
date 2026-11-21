@@ -117,7 +117,7 @@ suspend fun ProgressSyncClient.fetchProfileOverview(
         streakFreezes = u?.int("streak_freezes") ?: 0,
         lastActiveDate = u?.string("last_active_date"),
         dayBasis = u?.string("day_basis"),
-        localToday = com.obsidianmedia.learnwithalphonso.core.logic.localDateString(nowMillis, java.time.ZoneId.systemDefault()),
+        localToday = ProfileMath.streakToday(nowMillis, storedZone),
         completions = comps.await().mapNotNull { r ->
             ProfileCompletion(r.string("lesson_id") ?: return@mapNotNull null, r.string("language") ?: return@mapNotNull null, r.int("correct") ?: 0, r.int("total") ?: 0)
         },

@@ -242,7 +242,11 @@ struct FirstRunHUD: View {
                     Button("Skip", action: onSkip)
                         .dsText(.headline)
                         .foregroundStyle(ds.brand)
-                        .frame(minWidth: AlphonsoDS.Space.minTouch, minHeight: AlphonsoDS.Space.minTouch)
+                        // On a card chip like the counter: brand ink alone can vanish over the room art in either theme.
+                        .padding(.horizontal, AlphonsoDS.Space.s3)
+                        .frame(minHeight: AlphonsoDS.Space.minTouch)
+                        .background(Capsule().fill(ds.card))
+                        .dsElevation(AlphonsoDS.Elevation.resting, line: ds.line)
                         .accessibilityHint("Goes to the next question")
                 } else if showCounter && total > 0 {
                     Color.clear.frame(width: AlphonsoDS.Space.minTouch, height: 1)

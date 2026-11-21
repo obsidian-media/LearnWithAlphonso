@@ -98,6 +98,7 @@ final class ProfileOverviewReadTests: XCTestCase {
         let fridayEvening = ISO8601DateFormatter().date(from: "2026-11-21T03:21:00Z")!
         let o = try await client.fetchProfileOverview(userID: "u1", course: "en", now: fridayEvening)
         XCTAssertEqual(o.today, "2026-11-20")
+        XCTAssertEqual(o.localToday, "2026-11-20") // the header streak reads the same day
         let week = ProfileMath.weekRings(today: o.today, activity: [], speech: [])
         XCTAssertEqual(week.days.firstIndex { $0.state == .today }, 4) // Friday, not Saturday
         // The reads start early enough for a stored zone a day behind this device.

@@ -207,6 +207,6 @@ extension ProgressSyncClient {
             },
             lastActiveDate: u?["last_active_date"] as? String,
             dayBasis: u?["day_basis"] as? String,
-            localToday: localDateString(now))
+            localToday: ProfileMath.streakToday(now: now, timeZone: storedZone))
     }
 }

@@ -42,7 +42,12 @@ class FinalQaP2SourceGuardsTest {
 
     private fun skipProblems(parts: String): List<String> {
         val skip = parts.lineSequence().firstOrNull { it.contains("Text(\"Skip\"") }.orEmpty()
-        return if (skip.contains("color = ds.brand") && !skip.contains("ds.card")) emptyList() else listOf("Skip is not the brand ink")
+        val out = mutableListOf<String>()
+        if (!skip.contains("color = ds.brand") || skip.contains("ds.card")) out += "Skip is not the brand ink"
+        // The chip behind it: brand ink alone can vanish over the room art in either theme.
+        val button = parts.substringAfter("if (onSkip != null)", "").substringBefore("Text(\"Skip\"")
+        if (!button.contains(".background(ds.card)")) out += "Skip has no card chip behind it"
+        return out
     }
 
     private val shape = read("components/SpeechBubbleShape.kt")
@@ -70,5 +75,7 @@ class FinalQaP2SourceGuardsTest {
         assertTrue(readerProblems(mutate(story, "0.44f to dark.copy(alpha = 0.78f)", "0.44f to dark.copy(alpha = 0.30f)")).isNotEmpty())
         assertTrue(readerProblems(mutate(story, "OverlineType.copy(shadow = readerShadow(ds.heroB))", "OverlineType")).isNotEmpty())
         assertTrue(skipProblems(mutate(parts, "Text(\"Skip\", style = HeadlineType, color = ds.brand)", "Text(\"Skip\", style = HeadlineType, color = ds.card)")).isNotEmpty())
+        // The chip taken off Skip.
+        assertTrue(skipProblems(mutate(parts, ".shadow(2.dp, CircleShape).clip(CircleShape).background(ds.card)\n                        .clickable(role = Role.Button, onClick = onSkip)", "\n                        .clickable(role = Role.Button, onClick = onSkip)")).isNotEmpty())
     }
 }

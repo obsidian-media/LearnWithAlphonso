@@ -582,9 +582,9 @@ struct SpeechBubbleShape: InsettableShape {
     func path(in rect: CGRect) -> Path {
         let rect = rect.insetBy(dx: insetAmount, dy: insetAmount)
         let radius = max(0, cornerRadius - insetAmount)
-        let tailWidth = showsTail ? tailWidth : 0
+        let reserved = showsTail ? tailWidth : 0
         let bubbleRect = CGRect(
-            x: tailLeading ? rect.minX + tailWidth : rect.minX, y: rect.minY, width: rect.width - tailWidth, height: rect.height)
+            x: tailLeading ? rect.minX + reserved : rect.minX, y: rect.minY, width: rect.width - reserved, height: rect.height)
         let body = Path(roundedRect: bubbleRect, cornerRadius: radius)
         guard showsTail else { return body }
         // Tail anchored low on the edge nearest Alphonso's portrait, pointing at him. Trailing by default (his portrait

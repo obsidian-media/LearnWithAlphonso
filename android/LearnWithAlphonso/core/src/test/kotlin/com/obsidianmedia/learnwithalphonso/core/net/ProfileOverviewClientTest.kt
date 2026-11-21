@@ -85,6 +85,7 @@ class ProfileOverviewClientTest {
         }
         val o = ProgressSyncClient(f.http) { fridayEvening }.fetchProfileOverview("u1", "fr", fridayEvening)
         assertEquals("2026-11-20", o.today)
+        assertEquals("2026-11-20", o.localToday) // the header streak reads the same day
         val week = com.obsidianmedia.learnwithalphonso.core.profile.ProfileMath.weekRings(o.today, emptyList(), emptyList())
         assertEquals(4, week.days.indexOfFirst { it.state == com.obsidianmedia.learnwithalphonso.core.profile.ProfileMath.RingState.TODAY }) // Friday
     }

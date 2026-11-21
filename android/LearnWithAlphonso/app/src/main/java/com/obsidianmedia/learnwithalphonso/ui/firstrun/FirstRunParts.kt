@@ -284,7 +284,9 @@ internal fun FirstRunHud(
             }
             if (onSkip != null) {
                 Box(
-                    Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).clickable(role = Role.Button, onClick = onSkip).padding(horizontal = AlphonsoTokens.Space.s2),
+                    // On a card chip like the counter: brand ink alone can vanish over the room art in either theme.
+                    Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).shadow(2.dp, CircleShape).clip(CircleShape).background(ds.card)
+                        .clickable(role = Role.Button, onClick = onSkip).padding(horizontal = AlphonsoTokens.Space.s3),
                     contentAlignment = Alignment.Center,
                 ) { Text("Skip", style = HeadlineType, color = ds.brand) }
             } else if (counted) {

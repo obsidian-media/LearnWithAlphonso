@@ -119,7 +119,7 @@ public struct ProfileOverviewData: Sendable, Equatable {
     public var longestStreak: Int
     public var streakFreezes: Int
     /// For the displayed streak (StreakDisplay), which the header uses too: the last active day, the account's
-    /// day basis, and the learner's LOCAL today in this device's zone (`today` above is the same local day, in the stored zone).
+    /// day basis, and the learner's LOCAL today (the same day as `today` above: the stored zone, else this device's).
     public var lastActiveDate: String?
     public var dayBasis: String?
     public var localToday: String?
