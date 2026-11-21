@@ -67,9 +67,19 @@ object ProfileMath {
     private fun date(day: String): LocalDate = LocalDate.parse(day)
     fun addDays(day: String, n: Int): String = date(day).plusDays(n.toLong()).toString()
 
-    /** Today as the streak counts it: the UTC calendar date. */
-    fun streakToday(nowMillis: Long = System.currentTimeMillis()): String =
-        java.time.Instant.ofEpochMilli(nowMillis).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()
+    /**
+     * Today as the streak counts it: the learner's LOCAL calendar date (20261114100000_local_days.sql), in their stored
+     * zone (learner_time_zones, what the server books days in), else this device's zone. The week strip, the heat map and
+     * the goal rings all read this day, so they agree with the streak about which day a lesson counted for.
+     */
+    fun streakToday(
+        nowMillis: Long = System.currentTimeMillis(),
+        timeZone: String? = null,
+        device: java.time.ZoneId = java.time.ZoneId.systemDefault(),
+    ): String {
+        val stored = timeZone?.takeIf { it.isNotBlank() }?.let { runCatching { java.time.ZoneId.of(it) }.getOrNull() }
+        return java.time.Instant.ofEpochMilli(nowMillis).atZone(stored ?: device).toLocalDate().toString()
+    }
 
     /** Monday of the week holding [day]. */
     fun weekStart(day: String): String = date(day).with(DayOfWeek.MONDAY).toString()

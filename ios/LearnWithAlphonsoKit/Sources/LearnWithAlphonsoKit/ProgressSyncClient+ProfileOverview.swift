@@ -72,8 +72,11 @@ extension ProgressSyncClient {
     }
 
     public func fetchProfileOverview(userID: String, course: String, now: Date = Date()) async throws -> ProfileOverviewData {
-        let today = ProfileMath.streakToday(now: now)
-        let from = ProfileMath.weekStart(ProfileMath.threeMonthsWindow(today: today).start)
+        // The stored zone arrives with the rows below, so the reads start a day early: the stored zone's today can be a
+        // day either side of this device's. The rules filter every row by `today`, settled once the zone is in.
+        let deviceToday = ProfileMath.streakToday(now: now)
+        let early = ProfileMath.addDays(deviceToday, -1)
+        let from = ProfileMath.weekStart(ProfileMath.threeMonthsWindow(today: early).start)
         let me = "eq.\(userID)"
 
         async let profile = profileRows("profiles", [
@@ -107,7 +110,7 @@ extension ProgressSyncClient {
         async let speech = profileRows("speech_days", [
             URLQueryItem(name: "select", value: "day,speech_seconds"),
             URLQueryItem(name: "user_id", value: me),
-            URLQueryItem(name: "day", value: "gte.\(ProfileMath.weekStart(today))"),
+            URLQueryItem(name: "day", value: "gte.\(ProfileMath.weekStart(early))"),
         ])
         async let weak = profileRows("review_items", [
             URLQueryItem(name: "select", value: "weakness_label,weakness_display,lapses,repetitions"),
@@ -132,7 +135,7 @@ extension ProgressSyncClient {
         async let learning = try? profileRows("learning_days", [
             URLQueryItem(name: "select", value: "day,lesson_seconds,practice_seconds"),
             URLQueryItem(name: "user_id", value: me),
-            URLQueryItem(name: "day", value: "gte.\(ProfileMath.weekStart(today))"),
+            URLQueryItem(name: "day", value: "gte.\(ProfileMath.weekStart(early))"),
         ])
         async let mastered = try? masteredWordCount(userID: userID, course: course)
         async let league = try? leagueStanding(course: course)
@@ -143,13 +146,14 @@ extension ProgressSyncClient {
         async let skillRows = try? profileRows("skill_days", [
             URLQueryItem(name: "select", value: "day,skill,right_answers,total_answers"),
             URLQueryItem(name: "user_id", value: me),
-            URLQueryItem(name: "day", value: "gte.\(ProfileMath.addDays(today, -(ProfileMath.skillWindowDays - 1)))"),
+            URLQueryItem(name: "day", value: "gte.\(ProfileMath.addDays(early, -(ProfileMath.skillWindowDays - 1)))"),
         ])
 
         let p = try await profile.first
         let u = try await prog.first
+        let storedZone = (await zone)?.first?["time_zone"] as? String
         return ProfileOverviewData(
-            today: today, course: course,
+            today: ProfileMath.streakToday(now: now, timeZone: storedZone), course: course,
             displayName: p?["display_name"] as? String,
             avatarSeed: p?["avatar_seed"] as? String,
             country: p?["country"] as? String,
@@ -196,7 +200,7 @@ extension ProgressSyncClient {
             },
             masteredWords: await mastered ?? 0,
             league: (await league) ?? nil,
-            timeZone: (await zone)?.first?["time_zone"] as? String,
+            timeZone: storedZone,
             skills: (await skillRows ?? []).compactMap { r in
                 guard let d = r["day"] as? String, let s = r["skill"] as? String else { return nil }
                 return ProfileSkillDay(day: d, skill: s, right: r["right_answers"] as? Int ?? 0, total: r["total_answers"] as? Int ?? 0)
