@@ -16,3 +16,11 @@ describe("classifyStaffError", () => {
     expect(classifyStaffError("nope")).toBe("signin");
   });
 });
+
+describe("the ticket 'not allowed' sentence", () => {
+  it("is forbidden (a card on the page), never a sign-in", async () => {
+    const { NOT_ALLOWED_MESSAGE } = await import("./staff-route-errors");
+    expect(classifyStaffError(new Error(NOT_ALLOWED_MESSAGE))).toBe("forbidden");
+    expect(classifyStaffError(new Error("something else"))).toBe("signin");
+  });
+});
