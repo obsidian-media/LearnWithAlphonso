@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { authorizeStaff } from "./staff-authorize";
 import { readOpsHealth } from "./ops-health.server";
@@ -32,11 +32,14 @@ function client(opts: { admin: boolean; role?: string; scopes?: string[] }) {
 }
 
 describe("the System health server function is staff-only", () => {
-  it("is one POST server function gated by requireStaff('numbers.read') that reads through readOpsHealth", () => {
-    expect(fn.match(/createServerFn\(/g)).toHaveLength(1);
-    expect(fn).toMatch(/\.middleware\(\[requireStaff\("numbers\.read"\)\]\)/);
+  it("has two POST server functions (Home's event strip and the Health screen), each gated by requireStaff('numbers.read') and the system_health limit", () => {
+    expect(fn.match(/createServerFn\(/g)).toHaveLength(2);
+    expect(fn.match(/\.middleware\(\[requireStaff\("numbers\.read"\)\]\)/g)).toHaveLength(2);
+    expect(fn.match(/consumeStaffLimit\([^)]*STAFF_LIMITS\.system_health\)/g)).toHaveLength(2);
     expect(fn).toMatch(/readOpsHealth\(context\.supabaseAdmin\)/);
-    expect(fn).toMatch(/consumeStaffLimit\([^)]*STAFF_LIMITS\.system_health\)/);
+    expect(fn).toMatch(/readHealth\(context\.supabaseAdmin, process\.env\)/);
+    // no other scope can reach it: nothing in the file asks for a weaker gate
+    expect(fn).not.toMatch(/requireStaff\(\)/);
   });
 
   const call = (c: SupabaseClient, claims: { aal?: unknown } = { aal: "aal2" }) =>
@@ -65,7 +68,11 @@ describe("the System health server function is staff-only", () => {
   });
 
   it("the page does not touch the database or a server-only module itself", () => {
-    for (const f of ["admin/routes/health.tsx", "src/components/staff/SystemHealthView.tsx"]) {
+    for (const f of [
+      "admin/routes/health.tsx",
+      "src/components/console/health/HealthScreen.tsx",
+      "src/components/console/health/healthApi.ts",
+    ]) {
       const src = strip(readFileSync(f, "utf8"));
       expect(src, f).not.toMatch(/supabaseAdmin|process\.env|from "[^"]*\.server"/);
     }
@@ -117,5 +124,25 @@ describe("readOpsHealth", () => {
       status: "green",
     });
     expect(r.latest).toHaveLength(1);
+  });
+});
+
+describe("the Health route gate", () => {
+  const route = strip(readFileSync("admin/routes/health.tsx", "utf8"));
+
+  it("asks for numbers.read in the loader, shows the forbidden card without it, and reads only through staffGetHealth", () => {
+    expect(route).toContain('me.scopes.includes("numbers.read")');
+    expect(route).toContain("ForbiddenCard");
+    expect(route).toContain('scope="numbers.read"');
+    expect(route).toContain("staffGetHealth");
+    expect(route).toContain('redirect({ to: "/signin" })');
+  });
+
+  it("is a rebuilt screen: the old view is gone and the page is no longer in the legacy list", () => {
+    expect(existsSync("src/components/staff/SystemHealthView.tsx")).toBe(false);
+    expect(readFileSync("src/lib/console-no-hardcoded-data.test.ts", "utf8")).not.toContain(
+      '"health.tsx"',
+    );
+    expect(readFileSync("admin/routeTree.gen.ts", "utf8")).toContain("'/health'");
   });
 });
