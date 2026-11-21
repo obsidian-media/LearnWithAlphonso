@@ -44,7 +44,10 @@ describe("staffGetNumbers", () => {
     expect(fn).toMatch(/scopes:\s*context\.staffScopes/);
     expect(fn).toMatch(/windowDays:\s*data\.window/);
   });
-  it("accepts only 7, 30 or 90 and no extra input keys", () => {
+  it("reads the growth aggregates too, through the same per-request collector (never from the page)", () => {
+    expect(fn).toMatch(/fetchGrowth:\s*createGrowthFetcher\(\)/);
+  });
+  it("accepts only today (1), 7, 30 or 90 and no extra input keys", () => {
     expect(fn).toMatch(/parseWindow\(n\) !== null/);
     expect(fn).toMatch(/\.strict\(\)/);
   });
@@ -64,7 +67,7 @@ describe("the page code never reads a provider key", () => {
   it("numbers-core and the view have no process.env and no server imports", () => {
     for (const f of [
       "src/lib/numbers-core.ts",
-      "src/components/staff/NumbersView.tsx",
+      "src/components/console/numbers/NumbersScreen.tsx",
       "admin/routes/numbers.tsx",
     ]) {
       const src = strip(readFileSync(f, "utf8"));
