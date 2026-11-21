@@ -149,6 +149,8 @@ test("a learner signs in, names themselves, finishes a lesson and it is saved", 
 
   // The Learn climbing map at the narrowest phone width (PARITY-SPEC-6). jsdom cannot measure layout, so this is the
   // real check: no side scroll, every node of the climb inside the screen, and the next lesson's sheet fits too.
+  // With Reduce Motion on, the next lesson's bob must really stop (the override in src/styles.css).
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto("/learn");
   const climb = page.getByRole("list", { name: /climb, from the foot to the summit/ });
@@ -167,7 +169,12 @@ test("a learner signs in, names themselves, finishes a lesson and it is saved", 
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(320);
   }
-  await page.getByRole("button", { name: /, next$/ }).click();
+  const next = page.getByRole("button", { name: /, next$/ });
+  const bobbing = await next
+    .locator("[data-bob]")
+    .evaluate((el) => el.getAnimations().filter((a) => a.playState === "running").length);
+  expect(bobbing).toBe(0);
+  await next.click();
   const sheet = page.getByRole("dialog");
   await expect(sheet.getByRole("link", { name: "Continue lesson" })).toBeVisible();
   const sheetBox = (await sheet.boundingBox())!;

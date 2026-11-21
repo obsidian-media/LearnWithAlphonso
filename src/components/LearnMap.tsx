@@ -208,20 +208,23 @@ export function LearnMap({
                         setHint(null);
                         setSheetOpen(true);
                       }}
-                      className={`relative block rounded-full map-node-bounce ${FOCUS}`}
+                      className={`relative block rounded-full ${FOCUS}`}
                     >
-                      <span
-                        aria-hidden="true"
-                        className="absolute bottom-full left-1/2 mb-2 max-w-[11rem] -translate-x-1/2 truncate rounded-lg bg-ds-surface px-2.5 py-1 font-display text-xs font-extrabold text-ds-ink shadow-[var(--ds-shadow-floating)]"
-                      >
-                        {n.title}
-                      </span>
-                      {face}
-                      <span
-                        aria-hidden="true"
-                        className="absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ds-surface px-3 py-0.5 font-display text-xs font-extrabold uppercase tracking-widest text-ds-action-text shadow-[var(--ds-shadow-floating)]"
-                      >
-                        Start
+                      {/* The face bobs inside a still button: the tap target never moves under a finger. */}
+                      <span data-bob="" className="relative block map-node-bounce">
+                        <span
+                          aria-hidden="true"
+                          className="absolute bottom-full left-1/2 mb-2 max-w-[11rem] -translate-x-1/2 truncate rounded-lg bg-ds-surface px-2.5 py-1 font-display text-xs font-extrabold text-ds-ink shadow-[var(--ds-shadow-floating)]"
+                        >
+                          {n.title}
+                        </span>
+                        {face}
+                        <span
+                          aria-hidden="true"
+                          className="absolute left-1/2 top-full mt-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ds-surface px-3 py-0.5 font-display text-xs font-extrabold uppercase tracking-widest text-ds-action-text shadow-[var(--ds-shadow-floating)]"
+                        >
+                          Start
+                        </span>
                       </span>
                     </button>
                   ) : n.state === "done" && !blocked ? (

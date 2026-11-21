@@ -137,7 +137,9 @@ describe("LearnMap: the climbing map", () => {
   it("the next lesson glows and bobs (stilled by Reduce Motion in CSS)", () => {
     show([]);
     const next = screen.getByRole("button", { name: /, next$/ });
-    expect(next.className).toContain("map-node-bounce");
+    // The face bobs inside the button; the button (the tap target) itself never moves.
+    expect(next.className).not.toContain("map-node-bounce");
+    expect(next.querySelector("[data-bob]")!.className).toContain("map-node-bounce");
     const css = readFileSync("src/styles.css", "utf8");
     const reduce = css.slice(
       css.indexOf("@media (prefers-reduced-motion: reduce)", css.indexOf(".map-node-bounce {")),
