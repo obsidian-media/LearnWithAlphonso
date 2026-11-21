@@ -242,6 +242,8 @@ function LessonPage() {
   // (countdown, XP purchase, review instead) instead of a lesson that could never be saved.
   const [heartsBlock, setHeartsBlock] = useState<{ refillAt: number | null } | null>(null);
   const [buyHeartError, setBuyHeartError] = useState<string | null>(null);
+  // The server refused the start because earlier lessons are not finished (unlock order is enforced there).
+  const [lessonLocked, setLessonLocked] = useState(false);
   const [sessionAttempt, setSessionAttempt] = useState(0);
   const heartsXp = useProgress((s) => s.xp);
   const spendXpForHeartLocal = useProgress((s) => s.spendXpForHeartLocal);
@@ -255,9 +257,11 @@ function LessonPage() {
       .then((res) => {
         if (!alive) return;
         if ("error" in res) {
-          setHeartsBlock({ refillAt: res.refillAt });
+          if (res.error === "lesson-locked") setLessonLocked(true);
+          else setHeartsBlock({ refillAt: res.refillAt });
           return;
         }
+        setLessonLocked(false);
         setHeartsBlock(null);
         setSessionToken(res.token);
         sessionReceivedAt.current = Date.now();
@@ -320,6 +324,21 @@ function LessonPage() {
               Try again
             </button>
           ) : null}
+          <Link to="/learn" className="mt-4 inline-block ds-type-footnote text-ds-choice underline">
+            Back to learn
+          </Link>
+        </div>
+      </LessonScreen>
+    );
+  }
+  if (lessonLocked) {
+    return (
+      <LessonScreen>
+        <div className="p-6 text-center" role="alert">
+          <p className="ds-type-body font-bold text-ds-ink">Finish the earlier lessons first</p>
+          <p className="mt-2 ds-type-footnote text-ds-ink-soft">
+            This lesson opens once the ones before it are done.
+          </p>
           <Link to="/learn" className="mt-4 inline-block ds-type-footnote text-ds-choice underline">
             Back to learn
           </Link>

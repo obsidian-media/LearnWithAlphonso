@@ -174,6 +174,18 @@ beforeEach(() => {
   playSfxCues.mockClear();
 });
 
+describe("locked lesson", () => {
+  it("shows a friendly message and no lesson when the server says lesson-locked", async () => {
+    startLessonSession.mockResolvedValue({ error: "lesson-locked" });
+    renderPage();
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Finish the earlier lessons first");
+    expect(screen.queryByRole("button", { name: "Start lesson" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Out of hearts" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to learn" })).toBeInTheDocument();
+  });
+});
+
 describe("out of hearts", () => {
   it("shows the hearts dialog, not the lesson, when the server says out-of-hearts", async () => {
     startLessonSession.mockResolvedValue({
