@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Modal } from "../Modal";
 import { DsIcon } from "../ds/DsIcon";
 import { edgeButtonClass } from "../lesson/LessonParts";
@@ -44,9 +44,21 @@ export function PreCallSheet({
   const [mode, setMode] = useState<CallMode>(initialMode);
   const [offline, setOffline] = useState(false);
   const [checking, setChecking] = useState(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  // A new mode is a fresh attempt: no stale "Retry".
+  useEffect(() => {
+    setOffline(false);
+  }, [mode]);
   async function start() {
     setChecking(true);
     const ok = await isOnline();
+    if (!mounted.current) return;
     setChecking(false);
     setOffline(!ok);
     if (ok) onStart(mode);
@@ -157,13 +169,14 @@ export function PreCallSheet({
             data-offline=""
             className="grid gap-1 rounded-[14px] bg-ds-wrong-tint px-3 py-2.5 ds-type-footnote text-ds-wrong-ink"
           >
-            <p className="font-extrabold">You&rsquo;re offline</p>
-            <p>Calls and chats need a connection. Check your network, then try again.</p>
+            <p className="font-extrabold">Can&rsquo;t reach the server</p>
+            <p>Check your connection and try again.</p>
           </div>
         )}
         <button
           type="button"
           disabled={checking}
+          aria-busy={checking}
           onClick={() => void start()}
           className={edgeButtonClass("primary")}
         >

@@ -547,7 +547,10 @@ export function SayThePicture({
       )}
 
       {/* Alphonso, fully in frame, reacting in pose with a small speech bubble. */}
-      <div className="relative z-10 mt-auto flex items-end gap-1 px-2" data-testid="stp-tutor">
+      <div
+        className="relative z-10 mt-auto flex items-end gap-1 overflow-y-clip px-2"
+        data-testid="stp-tutor"
+      >
         <img
           key={pose}
           src={`/figures/alphonso-${pose}.webp`}
