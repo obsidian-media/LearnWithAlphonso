@@ -100,7 +100,9 @@ describe("step 1", () => {
     await user.type(screen.getByLabelText("Work email"), "someone@example.com");
     await user.click(screen.getByRole("button", { name: "Forgot your password?" }));
     expect(api.resetPassword).toHaveBeenCalledWith("someone@example.com");
-    expect(await screen.findByText(/Reset email sent/)).toBeTruthy();
+    expect(
+      await screen.findByText("If an account exists for that email, we’ve sent a reset link."),
+    ).toBeTruthy();
   });
 
   it("picks up a session that arrives by itself (the Google redirect lands here)", async () => {
@@ -118,6 +120,41 @@ describe("step 1", () => {
 });
 
 describe("enrolment (?mfa=required)", () => {
+  it("asks for the next step ONCE even when the SIGNED_IN event and the submit both fire (one enrol, not two)", async () => {
+    let fire = () => {};
+    let release: (n: NextStep) => void = () => {};
+    const nextStep = vi.fn(() => new Promise<NextStep>((r) => (release = r)));
+    const api = makeApi({
+      nextStep,
+      onSession: vi.fn((cb) => {
+        fire = cb;
+        return () => {};
+      }),
+      signInWithPassword: vi.fn(async () => {
+        fire(); // the SIGNED_IN event arrives during sign-in
+        return { failed: false };
+      }),
+    });
+    const { user } = show(api, true);
+    await signInWithPassword(user);
+    release({ kind: "verify", factorId: "f1" });
+    await screen.findByText(/Enter the 6-digit code/);
+    expect(nextStep).toHaveBeenCalledTimes(1);
+  });
+
+  it("a QR that is not an inline image is not shown; the key still is", async () => {
+    const api = makeApi({
+      nextStep: vi.fn(
+        async () =>
+          ({ kind: "enroll", factorId: "f", secret: "KEY123", uri: "u", qr: null }) as NextStep,
+      ),
+    });
+    const { user } = show(api, true);
+    await signInWithPassword(user);
+    await screen.findByText("KEY123");
+    expect(screen.queryByAltText("Authenticator setup QR code")).toBeNull();
+  });
+
   const enroll: NextStep = {
     kind: "enroll",
     factorId: "f2",
@@ -187,6 +224,31 @@ describe("the code step", () => {
     await toCodeStep();
     fireEvent.change(boxes()[0]!, { target: { value: "135790" } });
     expect(typed()).toBe("135790");
+  });
+
+  it("a full autofill dropped into a non-first box restarts at box 1, like paste", async () => {
+    await toCodeStep();
+    fireEvent.change(boxes()[3]!, { target: { value: "135790" } });
+    expect(typed()).toBe("135790");
+  });
+
+  it("a failed code clears the boxes and puts the cursor back in box 1", async () => {
+    const api = makeApi({ verifyCode: vi.fn(async () => ({ failed: true })) });
+    const { user } = await toCodeStep(api);
+    await user.click(boxes()[0]!);
+    await user.keyboard("123456");
+    await user.click(screen.getByRole("button", { name: "Verify and sign in" }));
+    await screen.findByText("That code did not work. Try the current one.");
+    expect(typed()).toBe("");
+    expect(document.activeElement).toBe(boxes()[0]);
+  });
+
+  it("the code group is labelled by the visible instruction", async () => {
+    await toCodeStep();
+    const group = screen.getByRole("group");
+    expect(document.getElementById(group.getAttribute("aria-labelledby")!)?.textContent).toMatch(
+      /6-digit code/,
+    );
   });
 
   it("letters are ignored", async () => {
@@ -286,7 +348,7 @@ describe("the Supabase adapter keeps every existing path", () => {
         getAuthenticatorAssuranceLevel: async () => ({ data: { currentLevel: "aal1" } }),
         listFactors: async () => ({ data: { totp: [] } }),
         enroll: vi.fn(async () => ({
-          data: { id: "e1", totp: { secret: "S", uri: "U", qr_code: "Q" } },
+          data: { id: "e1", totp: { secret: "S", uri: "U", qr_code: "data:image/svg+xml;utf8,Q" } },
           error: null,
         })),
         challengeAndVerify: vi.fn(async () => ({ error: null })),
@@ -315,6 +377,24 @@ describe("the Supabase adapter keeps every existing path", () => {
     ).toEqual({ kind: "home" });
   });
 
+  it("only an inline data:image QR is passed on", async () => {
+    const { api } = fake({
+      enroll: async () => ({
+        data: { id: "e1", totp: { secret: "S", uri: "U", qr_code: "https://evil.example/q.png" } },
+        error: null,
+      }),
+    });
+    expect(await api.nextStep(true)).toMatchObject({ kind: "enroll", qr: null });
+  });
+
+  it("the admin CSP lets a data: image through, so the QR displays", async () => {
+    const { contentSecurityPolicy } = await import("../../../lib/security-policy");
+    const img = contentSecurityPolicy("n")
+      .split("; ")
+      .find((d) => d.startsWith("img-src "))!;
+    expect(img).toContain("data:");
+  });
+
   it("?mfa=required with no verified factor enrols one and returns the QR and key", async () => {
     const { api, auth } = fake();
     expect(await api.nextStep(true)).toEqual({
@@ -322,7 +402,7 @@ describe("the Supabase adapter keeps every existing path", () => {
       factorId: "e1",
       secret: "S",
       uri: "U",
-      qr: "Q",
+      qr: "data:image/svg+xml;utf8,Q",
     });
     expect(auth.mfa.enroll).toHaveBeenCalledWith({ factorType: "totp" });
   });

@@ -15,18 +15,24 @@ export function CodeBoxes({
   onChange,
   disabled = false,
   focusOnMount = false,
+  focusKey = 0,
+  labelledBy,
 }: {
   value: string;
   onChange: (next: string) => void;
   disabled?: boolean;
   focusOnMount?: boolean;
+  /** Changing this refocuses box 1 (after a failed code). */
+  focusKey?: number;
+  /** id of the visible label for the group. */
+  labelledBy?: string;
 }) {
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const focus = (i: number) => refs.current[Math.max(0, Math.min(CODE_LENGTH - 1, i))]?.focus();
   // The person just reached this step by pressing a button, so the first box takes focus (as in the mock).
   useEffect(() => {
     if (focusOnMount) refs.current[0]?.focus();
-  }, [focusOnMount]);
+  }, [focusOnMount, focusKey]);
   const cells = () => value.padEnd(CODE_LENGTH, " ").split("");
   const emit = (chars: string[]) => onChange(chars.join("").replace(/ +$/, ""));
 
@@ -49,7 +55,8 @@ export function CodeBoxes({
       emit(chars);
       return;
     }
-    place(i, digits);
+    // A whole code (an OS autofill into any box) is the whole code, wherever it landed, as with paste.
+    place(digits.length >= CODE_LENGTH ? 0 : i, digits);
   }
 
   function onKeyDown(i: number, e: KeyboardEvent<HTMLInputElement>) {
@@ -74,7 +81,12 @@ export function CodeBoxes({
   }
 
   return (
-    <div role="group" aria-label="6-digit code" className="flex justify-center gap-2">
+    <div
+      role="group"
+      aria-labelledby={labelledBy}
+      aria-label={labelledBy ? undefined : "6-digit code"}
+      className="flex justify-center gap-2"
+    >
       {SLOTS.map((i) => (
         <input
           key={i}

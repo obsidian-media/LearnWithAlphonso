@@ -35,20 +35,30 @@ export function SignInScreen({
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [focusKey, setFocusKey] = useState(0); // bumps to put the cursor back in box 1
 
   // After any sign-in: an admin with an authenticator enters its code first; one the server refused for lacking a
   // second factor is offered enrolment; everyone else goes straight home.
   // Held in refs so the session subscription below is made once per `api`, not again on every render.
   const latest = useRef({ mfaRequired, onDone });
   latest.current = { mfaRequired, onDone };
-  const continueAfterSignIn = useRef(async () => {});
-  continueAfterSignIn.current = async () => {
-    const next = await api.nextStep(latest.current.mfaRequired);
-    if (next.kind === "home") return latest.current.onDone();
-    if (next.kind === "error") return setError("Could not start authenticator setup.");
-    setCode("");
-    setStep(next);
-  };
+  // Runs once per sign-in: the password submit AND the SIGNED_IN event both ask, and a second nextStep would enrol a
+  // second authenticator factor. Back (or a failed start) clears it so the next sign-in can ask again.
+  const inFlight = useRef<Promise<void> | null>(null);
+  const continueAfterSignIn = useRef(() => {
+    if (inFlight.current) return inFlight.current;
+    inFlight.current = (async () => {
+      const next = await api.nextStep(latest.current.mfaRequired);
+      if (next.kind === "home") return latest.current.onDone();
+      if (next.kind === "error") {
+        inFlight.current = null;
+        return setError("Could not start authenticator setup.");
+      }
+      setCode("");
+      setStep(next);
+    })();
+    return inFlight.current;
+  });
 
   // The OAuth callback lands on this page, so it waits for the session and moves on from here.
   useEffect(() => api.onSession(() => void continueAfterSignIn.current()), [api]);
@@ -90,7 +100,7 @@ export function SignInScreen({
     const { failed } = await api.resetPassword(email);
     setBusy(false);
     if (failed) setError("Couldn't send the reset email.");
-    else setNotice("Reset email sent. Set a new password, then sign in here.");
+    else setNotice("If an account exists for that email, we’ve sent a reset link.");
   }
 
   async function verify(event: FormEvent) {
@@ -104,11 +114,15 @@ export function SignInScreen({
     setError(null);
     const { failed } = await api.verifyCode(step.factorId, code);
     setBusy(false);
-    if (failed) setError("That code did not work. Try the current one.");
-    else onDone();
+    if (failed) {
+      setError("That code did not work. Try the current one.");
+      setCode("");
+      setFocusKey((k) => k + 1);
+    } else onDone();
   }
 
   function back() {
+    inFlight.current = null;
     setStep({ kind: "credentials" });
     setCode("");
     setPassword("");
@@ -194,7 +208,14 @@ export function SignInScreen({
               <p id="signin-code-label" className="mb-3 text-xs font-bold text-ds-ink-soft">
                 Enter the {CODE_LENGTH}-digit code from your authenticator
               </p>
-              <CodeBoxes value={code} onChange={setCode} disabled={busy} focusOnMount />
+              <CodeBoxes
+                value={code}
+                onChange={setCode}
+                disabled={busy}
+                focusOnMount
+                focusKey={focusKey}
+                labelledBy="signin-code-label"
+              />
               <Button type="submit" disabled={busy} fullWidth className="mt-4">
                 {busy ? "Checking…" : "Verify and sign in"}
               </Button>

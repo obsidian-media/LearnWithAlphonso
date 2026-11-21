@@ -81,7 +81,8 @@ export function supabaseAuthApi(auth: SupabaseAuthLike, origin: () => string): A
           factorId: data.id,
           secret: data.totp.secret,
           uri: data.totp.uri,
-          qr: data.totp.qr_code ?? null,
+          // Only an inline image is shown; anything else falls back to the key.
+          qr: data.totp.qr_code?.startsWith("data:image/") ? data.totp.qr_code : null,
         };
       }
       return { kind: "home" };
