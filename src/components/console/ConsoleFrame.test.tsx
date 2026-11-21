@@ -180,7 +180,7 @@ describe("the frame under races and refreshes", () => {
     expect(rail()).toBeNull();
     expect(screen.getByText("page body")).toBeTruthy();
     // and a sign-in AFTER the sign-out works again
-    f.props.loadIdentity.mockResolvedValue(owner);
+    (f.props.loadIdentity as ReturnType<typeof vi.fn>).mockResolvedValue(owner);
     f.fire("in");
     await waitFor(() => expect(rail()).toBeTruthy());
   });
