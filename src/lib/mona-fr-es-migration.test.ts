@@ -18,10 +18,12 @@ interface Row {
   slug: string;
   title: string;
   sortOrder: number;
+  level: string;
+  conflictClause: boolean;
   nodes: { start: string; map: Record<string, Node> };
 }
 
-const rows: Row[] = [...sql.matchAll(/INSERT INTO public\.stories[\s\S]*?ON CONFLICT/g)].map(
+const rows: Row[] = [...sql.matchAll(/INSERT INTO public\.stories[\s\S]*?ON CONFLICT[^;]*;/g)].map(
   (m) => {
     const block = m[0];
     const head = /SELECT '(fr|es)', l\.id, '([^']+)', '((?:[^']|'')+)'/.exec(block)!;
@@ -32,6 +34,8 @@ const rows: Row[] = [...sql.matchAll(/INSERT INTO public\.stories[\s\S]*?ON CONF
       slug: head[2],
       title: head[3].replace(/''/g, "'"),
       sortOrder: Number(sort[1]),
+      level: /l\.id = '([^']+)'/.exec(block)![1],
+      conflictClause: /ON CONFLICT \(course, slug\) DO NOTHING;$/.test(block),
       nodes,
     };
   },
@@ -58,6 +62,19 @@ describe("Mona's New City FR/ES seed", () => {
     const code = sql.replace(/--[^\n]*/g, "");
     expect(code).not.toMatch(/published\s*=\s*true/i);
     expect((code.match(/false, false, NULL/g) ?? []).length).toBe(24);
+  });
+
+  it("is idempotent per INSERT and joins each story to its level (A1 01-03, A2 04-06, B1 07-09, B2 10-12)", () => {
+    const levels = ["A1", "A2", "B1", "B2"];
+    for (const r of rows) {
+      expect(r.conflictClause, `${r.course}/${r.slug} ON CONFLICT (course, slug) DO NOTHING`).toBe(
+        true,
+      );
+      expect(r.level, `${r.course}/${r.slug} level`).toBe(
+        levels[Math.floor((r.sortOrder - 101) / 3)],
+      );
+    }
+    expect((sql.match(/ON CONFLICT \(course, slug\) DO NOTHING;/g) ?? []).length).toBe(24);
   });
 
   it("every goto resolves, every node is reachable, and the start exists", () => {
@@ -105,7 +122,9 @@ describe("Mona's New City FR/ES seed", () => {
   it("uses the approved dog names", () => {
     const text = (course: string) =>
       JSON.stringify(rows.filter((r) => r.course === course).map((r) => r.nodes));
+    expect(text("fr")).toContain("Biscuit");
     expect(text("fr")).not.toContain("Galleta");
+    expect(text("es")).toContain("Galleta");
     expect(text("es")).not.toContain("Biscuit");
   });
 

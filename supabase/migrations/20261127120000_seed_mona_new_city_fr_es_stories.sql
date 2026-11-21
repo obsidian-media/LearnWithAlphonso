@@ -1713,7 +1713,7 @@ SELECT 'fr', l.id, 'crossed-wires', 'Fils croisés', '[]'::jsonb, true, $nodes$
     "a_what_priya_learned_once": {
       "art": "en/crossed-wires/n5-lift.jpg",
       "segments": [
-        "« Merci de dire ça », a dit Priya, et un peu de la glace a fondu. « Je ne pense pas que tu étais malveillante. Je pense que tu es affamée et douée, et que tu n'as pas encore appris où sont les limites. Quand j'étais nouvelle, j'ai fait quelque chose de semblable — quelqu'un m'a prise à part, exactement comme ça. » « Qu'est-ce qu'on t'a dit ? » a demandé Mona. Priya a réfléchi. « Que le moyen le plus rapide de perdre une équipe, c'est de la rendre invisible. Et le moyen le plus rapide de la gagner, c'est de s'assurer que chacun reçoive le crédit qu'il a mérité. »"
+        "« Merci de dire ça », a dit Priya, et un peu de la glace a fondu. « Je ne pense pas que tu étais malveillante. Je pense que tu es ambitieuse et douée, et que tu n'as pas encore appris où sont les limites. Quand j'étais nouvelle, j'ai fait quelque chose de semblable — quelqu'un m'a prise à part, exactement comme ça. » « Qu'est-ce qu'on t'a dit ? » a demandé Mona. Priya a réfléchi. « Que le moyen le plus rapide de perdre une équipe, c'est de la rendre invisible. Et le moyen le plus rapide de la gagner, c'est de s'assurer que chacun reçoive le crédit qu'il a mérité. »"
       ],
       "choice": {
         "prompt": "Que fait Mona ensuite ?",
@@ -1924,7 +1924,7 @@ SELECT 'fr', l.id, 'the-negotiation', 'La négociation', '[]'::jsonb, true, $nod
     "b_upstairs_deciding": {
       "art": "en/the-negotiation/n10-upstairs.jpg",
       "segments": [
-        "La conversation a boité jusqu'à un « réfléchissons-y tous les deux » qui ne satisfaisait personne. Mona est remontée, la lettre encore à la main et un nœud dans la poitrine. Elle avait quelques jours pour décider qui elle voulait être là-dedans : la locataire qui souffre en silence, celle qui se bat et s'en va — ou quelque chose de mieux. Cette nuit-là, elle a entendu ses pas lents en bas, et le cliquetis de lui essayant, en vain, de réparer un robinet tout seul."
+        "La conversation a boité jusqu'à un « réfléchissons-y tous les deux » qui ne satisfaisait personne. Mona est remontée, la lettre encore à la main et un nœud dans la poitrine. Elle avait quelques jours pour décider qui elle voulait être là-dedans : la locataire qui souffre en silence, celle qui se bat et s'en va — ou quelque chose de mieux. Cette nuit-là, elle a entendu ses pas lents en bas, et le bruit de ses vaines tentatives pour réparer un robinet tout seul."
       ],
       "choice": {
         "prompt": "Le lendemain matin, Mona…",
@@ -1958,7 +1958,7 @@ SELECT 'fr', l.id, 'the-negotiation', 'La négociation', '[]'::jsonb, true, $nod
     "end_ok": {
       "art": "en/the-negotiation/n7-middle.jpg",
       "segments": [
-        "La deuxième conversation s'est mieux passée que la première. Autour d'un café frais, Mona et Monsieur Alder ont trouvé un montant du milieu — pas aussi malin qu'un vrai partenariat, mais équitable, gentil et gérable. « J'aurais pu mieux gérer le début », a admis Mona. « Nous deux », a-t-il dit.",
+        "La deuxième conversation s'est mieux passée que la première. Autour d'un café frais, Mona et Monsieur Alder ont trouvé un montant du milieu — pas aussi ingénieux qu'un vrai partenariat, mais équitable, gentil et gérable. « J'aurais pu mieux gérer le début », a admis Mona. « Nous deux », a-t-il dit.",
         "Elle a gardé son appartement, lui a gardé sa dignité, et la lumière dorée du matin a continué d'arriver. Pas un accord parfait, mais un accord honnête, atteint par deux personnes prêtes à réessayer. « La prochaine fois qu'il y a une lettre », a-t-il dit, « frappez d'abord. On sautera la partie gênante. »"
       ],
       "ending": {
@@ -1971,7 +1971,7 @@ SELECT 'fr', l.id, 'the-negotiation', 'La négociation', '[]'::jsonb, true, $nod
     "end_lesser": {
       "art": "en/the-negotiation/n8-hallway.jpg",
       "segments": [
-        "Mona a glissé le mot sous sa porte — loyer plein, accepté, sans conversation. Le choix sûr, et le choix solitaire. Elle a gardé l'appartement, mais quelque chose de petit et de chaud avait disparu. Pendant des semaines, Monsieur Alder et elle se sont salués d'un signe de tête dans le couloir, comme des étrangers. La soupe a cessé d'arriver ; la fenêtre, quand elle a recoincé, est restée coincée.",
+        "Mona a glissé le mot sous sa porte — loyer plein, accepté, sans conversation. Le choix sûr, et le choix solitaire. Elle a gardé l'appartement, mais quelque chose de petit et de chaud avait disparu. Pendant des semaines, Monsieur Alder et elle se sont salués d'un signe de tête dans le couloir, comme des étrangers. La soupe a cessé d'arriver ; la fenêtre, quand elle s'est de nouveau coincée, est restée coincée.",
         "Ce n'est que lorsqu'elle a enfin frappé, des mois plus tard, avec des excuses et une marmite de sa propre soupe, que le gel a fondu — et elle a appris le vrai coût d'éviter la conversation difficile : pas de l'argent, mais la chaleur d'une amitié qu'elle avait laissée refroidir pour s'épargner une heure gênante."
       ],
       "ending": {
@@ -2038,7 +2038,7 @@ SELECT 'fr', l.id, 'the-goodbye', 'L''au revoir', '[]'::jsonb, true, $nodes$
     "a_under_the_streetlight": {
       "art": "en/the-goodbye/n4-streetlight.jpg",
       "segments": [
-        "Leo s'est arrêté de marcher. Sous le réverbère, Mona a vu que ses yeux étaient humides. « Tu crois que j'ai fait ça pour toi », a-t-il dit. « Mona — c'est toi qui l'as fait. Moi, j'ai juste préparé le café. » Il a ri, s'est essuyé le visage, et n'a pas fait semblant de ne pas pleurer. « La fille effrayée qui est entrée ce premier matin, et la femme debout ici maintenant — j'ai eu la chance de voir ça arriver. Tu sais à quel point c'est rare ? De voir quelqu'un devenir soi-même ? » C'était ce qu'on lui avait jamais dit de plus beau. Toute l'année lui est remontée dans la gorge."
+        "Leo s'est arrêté de marcher. Sous le réverbère, Mona a vu que ses yeux étaient humides. « Tu crois que j'ai fait ça pour toi », a-t-il dit. « Mona — c'est toi qui l'as fait. Moi, j'ai juste préparé le café. » Il a ri, s'est essuyé le visage, et n'a pas fait semblant de ne pas pleurer. « La fille effrayée qui est entrée ce premier matin, et la femme debout ici maintenant — j'ai eu la chance de voir ça arriver. Tu sais à quel point c'est rare ? De voir quelqu'un devenir soi-même ? » C'était la plus belle chose qu'on lui ait jamais dite. Toute l'année lui est remontée dans la gorge."
       ],
       "choice": {
         "prompt": "Mona…",
@@ -2070,7 +2070,7 @@ SELECT 'fr', l.id, 'the-goodbye', 'L''au revoir', '[]'::jsonb, true, $nodes$
             "clue": true
           },
           {
-            "label": "le serre fort dans ses bras : « Va être brillant. »",
+            "label": "le serre fort dans ses bras : « Ça va être brillant. »",
             "goto": "end_ok",
             "clue": false
           }
@@ -2135,7 +2135,7 @@ SELECT 'fr', l.id, 'the-goodbye', 'L''au revoir', '[]'::jsonb, true, $nodes$
     "end_ok": {
       "art": "en/the-goodbye/n7-watching.jpg",
       "segments": [
-        "« Va être brillant », a dit Mona, et elle l'a serré si fort qu'il a ri. C'était un bon adieu — chaleureux, assez vrai, dit avec le cœur plein si ce n'est tout à fait chaque mot. Elle a regardé les feux du taxi disparaître et est rentrée à pied par la ville tranquille qui, d'une certaine façon, était devenue la sienne.",
+        "« Ça va être brillant », a dit Mona, et elle l'a serré si fort qu'il a ri. C'était un bon adieu — chaleureux, assez vrai, dit avec le cœur plein si ce n'est tout à fait chaque mot. Elle a regardé les feux du taxi disparaître et est rentrée à pied par la ville tranquille qui, d'une certaine façon, était devenue la sienne.",
         "Elle lui enverrait des messages. Elle irait le voir, sans doute. Ils resteraient amis à la manière facile et moderne des gens qui s'apprécient malgré la distance. Pas tout ce qu'elle aurait pu dire — mais elle était venue, l'avait serré dans ses bras, l'avait pensé. En montant l'escalier vers son petit appartement doré, elle a senti la douleur d'un chapitre qui se referme, et la fierté tranquille d'une année survécue et d'un ami bien aimé."
       ],
       "ending": {
@@ -3810,7 +3810,7 @@ SELECT 'es', l.id, 'crossed-wires', 'Cables cruzados', '[]'::jsonb, true, $nodes
     "the_cold": {
       "art": "en/crossed-wires/n2-frozen.jpg",
       "segments": [
-        "Después de la reunión, algo había cambiado. Priya estaba educada — perfecta, cuidadosamente educada — y fue así como Mona supo que algo iba mal. La calidez fácil de tres meses había desaparecido, sustituida por respuestas secas y una puerta de despacho cerrada.",
+        "Después de la reunión, algo había cambiado. Priya estaba siendo educada — perfecta, cuidadosamente educada — y fue así como Mona supo que algo iba mal. La calidez fácil de tres meses había desaparecido, sustituida por respuestas secas y una puerta de despacho cerrada.",
         "Mona lo repasó todo. Los «errores» que había corregido no lo eran — eran las decisiones deliberadas de Priya. El «repaso» había borrado una semana de su trabajo, y luego habían felicitado a Mona, en público, mientras Priya no decía nada. No había ayudado. Había pasado por encima de la persona que creía en ella."
       ],
       "next": "the_closed_door"
@@ -4019,7 +4019,7 @@ SELECT 'es', l.id, 'the-negotiation', 'La negociación', '[]'::jsonb, true, $nod
         "prompt": "Mona propone:",
         "options": [
           {
-            "label": "«¿Y si me subo en dos pasos — la mitad ahora, la mitad en primavera — y a cambio me encargo de la gestión del edificio y las reparaciones pequeñas? Se me dan bien las listas, y conozco a alguien mañoso.»",
+            "label": "«¿Y si asumo la subida en dos plazos — la mitad ahora, la mitad en primavera — y a cambio me encargo de la gestión del edificio y las reparaciones pequeñas? Se me dan bien las listas, y conozco a alguien mañoso.»",
             "goto": "a_the_handshake",
             "clue": true
           },
@@ -4034,7 +4034,7 @@ SELECT 'es', l.id, 'the-negotiation', 'La negociación', '[]'::jsonb, true, $nod
     "a_the_handshake": {
       "art": "en/the-negotiation/n5-handshake.jpg",
       "segments": [
-        "El señor Alder dejó el té y la miró un buen rato — esta joven que había llegado seis meses antes apenas capaz de pedir un café, y ahora le resolvía los problemas en su cocina. «En cuarenta años alquilando habitaciones», dijo, «nunca nadie se ha ofrecido a ayudar en vez de discutir.» Le tendió la mano. «La mitad ahora, la mitad en primavera. Y si de verdad consigue arreglarme los grifos que gotean, lo dejamos en paz.»"
+        "El señor Alder dejó el té y la miró un buen rato — esta joven que había llegado seis meses antes apenas capaz de pedir un café, y ahora le resolvía los problemas en su cocina. «En cuarenta años alquilando habitaciones», dijo, «nunca nadie se ha ofrecido a ayudar en vez de discutir.» Le tendió la mano. «La mitad ahora, la mitad en primavera. Y si de verdad consigue arreglarme los grifos que gotean, quedamos en paz.»"
       ],
       "choice": {
         "prompt": "Se dan la mano. Luego Mona…",
