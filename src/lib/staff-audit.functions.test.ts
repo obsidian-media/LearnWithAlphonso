@@ -165,6 +165,33 @@ describe("staffListAudit", () => {
     expect(c).toMatchObject({ actorName: null, targetName: null });
   });
 
+  it("learner names need users.read as well: audit.read alone gets staff names but the short id for learners", async () => {
+    const AUDITOR = "00000000-0000-4000-8000-0000000000d1";
+    const VIEWER = "00000000-0000-4000-8000-0000000000d2";
+    setStaff({
+      [AUDITOR]: { role: "support", scopes: ["audit.read"] },
+      [VIEWER]: { role: "support", scopes: ["audit.read", "users.read"] },
+    });
+    const names = [
+      { id: OWNER, display_name: "Olive" },
+      { id: LEARNER, display_name: "Sam" },
+    ];
+    const plain = clientWith([row(1)], names);
+    const a = await staffListAudit({
+      data: {},
+      context: { supabaseAdmin: plain.admin, userId: AUDITOR },
+    });
+    expect(a.rows[0]).toMatchObject({ actorName: "Olive", targetName: null });
+    // the learner's id is not even asked for
+    expect(plain.nameCalls.find((c) => c.method === "in")?.args).toEqual(["id", [OWNER]]);
+    const both = clientWith([row(1)], names);
+    const b = await staffListAudit({
+      data: {},
+      context: { supabaseAdmin: both.admin, userId: VIEWER },
+    });
+    expect(b.rows[0]).toMatchObject({ actorName: "Olive", targetName: "Sam" });
+  });
+
   it("a failed name read still returns the whole record, with no names", async () => {
     const admin = createSupabaseMock();
     admin.from.mockImplementation((table: string) =>

@@ -16,7 +16,7 @@ export type AuditRow = {
   actorRole: string;
   action: string;
   targetUserId: string | null;
-  /** The target learner's display name (never an email), or null (the screen then shows the short id). */
+  /** The target learner's display name (never an email), only when the caller also holds users.read; else null (short id). */
   targetName: string | null;
   reason: string | null;
   before: Json | null;
@@ -77,9 +77,13 @@ export const staffListAudit = createServerFn({ method: "POST" })
     const { data: rows, error } = await query;
     if (error) throw new Error("Could not read the action record.");
     const page = (rows ?? []).slice(0, PAGE);
+    const canSeeLearners = (context.staffScopes as readonly string[]).includes("users.read");
     const names = await resolveNames(
       context.supabaseAdmin,
-      page.flatMap((r) => [r.actor_user_id, r.target_user_id]),
+      // Learner names only for a caller who may also look up learners (users.read); staff names always.
+      page.flatMap((r) =>
+        canSeeLearners ? [r.actor_user_id, r.target_user_id] : [r.actor_user_id],
+      ),
     );
     return {
       rows: page.map((r) => ({
@@ -90,7 +94,8 @@ export const staffListAudit = createServerFn({ method: "POST" })
         actorRole: r.actor_role,
         action: r.action,
         targetUserId: r.target_user_id,
-        targetName: r.target_user_id ? (names.get(r.target_user_id) ?? null) : null,
+        targetName:
+          canSeeLearners && r.target_user_id ? (names.get(r.target_user_id) ?? null) : null,
         reason: r.reason,
         before: r.before,
         after: r.after,

@@ -37,12 +37,17 @@ const isCode = (f: string) =>
   !/audit-labels\.ts$/.test(f) &&
   !/staff-scopes\.ts$/.test(f);
 
+/** Strings that look like an action but are something else (scripts/story-audio.ts reads a file called podcast.env). */
+const NOT_ACTIONS = new Set(["podcast.env"]);
+
 /** Every action-looking literal in the source: in migrations (staff_record calls) and in TypeScript call sites. */
 function sourceLiterals(): Map<string, string[]> {
   const files = [
     ...walk("supabase/migrations").filter((f) => f.endsWith(".sql")),
     ...walk("src").filter(isCode),
     ...walk("admin").filter(isCode),
+    ...walk("supabase/functions").filter(isCode),
+    ...walk("scripts").filter(isCode),
   ];
   const found = new Map<string, string[]>();
   for (const f of files) {
@@ -53,12 +58,18 @@ function sourceLiterals(): Map<string, string[]> {
       .replace(/^\s*--.*$/gm, "");
     for (const m of text.matchAll(LITERAL)) {
       const code = m[2]!;
+      if (NOT_ACTIONS.has(code)) continue;
       found.set(code, [...(found.get(code) ?? []), f]);
     }
   }
   return found;
 }
 
+/**
+ * LIMIT OF THE SCAN: it sees only action codes written as whole string literals. A code assembled at run time (a join
+ * like 'user.un' || kind, a template like `podcast.${x}`) is invisible to it, so each such place must be listed here
+ * by hand with the full codes it can produce. A new joined or templated action added without an entry here is NOT caught.
+ */
 /** Codes the source builds by joining text (staff_set_restriction writes 'user.un' || kind): each full code is listed. */
 const BUILT_BY_JOIN: Record<string, string[]> = { "user.un": ["user.unblock", "user.unban"] };
 
@@ -99,6 +110,14 @@ describe("every action the system writes has words in the Action record", () => 
   it("the table has no stale entries: each label is still written somewhere in the source", () => {
     const written = new Set<string>([...literals.keys()].flatMap((c) => BUILT_BY_JOIN[c] ?? [c]));
     expect(Object.keys(ACTION_LABELS).filter((c) => !written.has(c))).toEqual([]);
+  });
+
+  it("the scan is blind to joined and template codes (so BUILT_BY_JOIN must be kept by hand)", () => {
+    const text = "p_actor, 'user.un' || p_kind;  action: `podcast.${kind}`; action: 'staff.' + x";
+    const hits = [...text.matchAll(LITERAL)].map((m) => m[2]);
+    // only the stub 'user.un' is seen, never what it becomes; the templates are not seen at all
+    expect(hits).toEqual(["user.un"]);
+    expect(Object.keys(BUILT_BY_JOIN)).toEqual(["user.un"]);
   });
 
   it("the scan would catch a new action: an unmapped literal is reported", () => {
