@@ -23,6 +23,11 @@ const ALLOWED: Record<string, { cols: string[]; ownRowOnly: boolean; why: string
     ownRowOnly: false,
     why: "admin numbers dashboard: counts of sign-ups and retention cohorts by join date; service_role only, no row or id is returned",
   },
+  admin_numbers_growth: {
+    cols: ["created_at"],
+    ownRowOnly: false,
+    why: "admin numbers dashboard: previous-window sign-up counts, reactivation and the per-day series by join date; service_role only, aggregates only, no row or id is returned",
+  },
   staff_home_metrics: {
     cols: ["created_at"],
     ownRowOnly: false,

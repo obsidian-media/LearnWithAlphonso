@@ -67,7 +67,7 @@ function Slab({ title, aside }: { title: string; aside?: ReactNode }) {
 function SourceBadge({ group }: { group: NumbersGroup | undefined }) {
   if (!group) return null;
   return (
-    <span className="inline-flex items-center gap-1.5 text-[0.68rem] font-bold uppercase tracking-wider text-ds-ink-faint">
+    <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-ds-ink-faint">
       {SOURCE_LABEL[group.key]}
       <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${STATE_DOT[group.state]}`} />
       <span className="sr-only">{STATE_WORD[group.state]}</span>
@@ -250,7 +250,7 @@ function GroupHead({
       <h3 className="text-sm font-bold text-ds-ink">{group.title}</h3>
       <span className="text-xs font-semibold text-ds-ink-faint">{SOURCE_LABEL[group.key]}</span>
       <span
-        className={`rounded-lg px-2 py-0.5 text-[0.68rem] font-extrabold uppercase tracking-wide ${
+        className={`rounded-lg px-2 py-0.5 text-xs font-extrabold uppercase tracking-wide ${
           group.state === "ok"
             ? "bg-ds-right-tint text-ds-right-ink"
             : group.state === "error"
