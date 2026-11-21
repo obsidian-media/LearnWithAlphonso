@@ -8,6 +8,7 @@ import type { InboxPage, TicketSummary } from "../../lib/staff-support.functions
 const ME = "00000000-0000-4000-8000-0000000000b1";
 const ticket = (n: number, over: Partial<TicketSummary> = {}): TicketSummary => ({
   id: `10000000-0000-4000-8000-00000000000${n}`,
+  ticketNo: n,
   status: "new",
   topic: "billing",
   channel: "ios",
@@ -18,12 +19,25 @@ const ticket = (n: number, over: Partial<TicketSummary> = {}): TicketSummary => 
   createdAt: "2026-11-14T10:02:00Z",
   updatedAt: new Date(Date.now() - 12 * 60_000).toISOString(),
   unopened: true,
+  waitingSince: "2026-11-14T10:02:00Z",
+  breaching: false,
   ...over,
 });
 const page = (over: Partial<InboxPage> = {}): InboxPage => ({
   tickets: [ticket(1)],
   total: 1,
-  counts: { open: 4, waiting: 1, solved: 12, all: 17, unassigned: 2 },
+  counts: {
+    open: 4,
+    waiting: 1,
+    solved: 12,
+    all: 17,
+    unassigned: 2,
+    openUnassigned: 2,
+    mine: 1,
+    breaching: 0,
+    oldestWaitingSince: null,
+  },
+  breachHours: 8,
   next: null,
   me: ME,
   ...over,

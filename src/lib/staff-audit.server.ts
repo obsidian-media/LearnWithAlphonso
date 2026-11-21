@@ -20,6 +20,7 @@ export const STAFF_WRITE_FUNCTIONS = [
   "staffAssignTicket",
   "staffSetTicketStatus",
   "staffAddTicketNote",
+  "staffSetSetting",
 ] as const;
 
 /**

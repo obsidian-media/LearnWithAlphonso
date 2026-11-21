@@ -319,10 +319,12 @@ export async function collectNumbers(input: {
   now?: Date;
   refresh?: boolean;
   timeoutMs?: number;
+  /** Only these groups (the Home money card asks for three, not all seven). Scope filtering still applies first. */
+  only?: readonly GroupKey[];
 }): Promise<NumbersResponse> {
   const windowDays = parseWindow(input.windowDays);
   if (windowDays === null) throw new Error("Choose 7, 30 or 90 days.");
-  const allowed = groupsFor(input.scopes);
+  const allowed = groupsFor(input.scopes).filter((g) => !input.only || input.only.includes(g.key));
   if (allowed.length === 0) throw new Error(NUMBERS_FORBIDDEN_MESSAGE);
   const now = input.now ?? new Date();
 
