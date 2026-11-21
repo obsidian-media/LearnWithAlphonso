@@ -3,6 +3,7 @@ import type { HomeMetrics, HomeRange, MoneyTile } from "../../../lib/staff-home.
 import { ageLabel } from "../../../lib/support-inbox-copy";
 import { auditSentence, auditTone } from "../../../lib/audit-labels";
 import { greetingWord, waitingLabel } from "../../../lib/console-format";
+import { opsEventLabel } from "../../../lib/ops-events-config";
 import { Figure } from "../Figure";
 import { QueueCard } from "./QueueCard";
 import { TicketDrawer } from "./TicketDrawer";
@@ -158,7 +159,8 @@ export function HomeScreen({ me, data, api }: { me: HomeMe; data: HomeData; api:
       href: "/health",
       text: (
         <>
-          System: {e.event.replace(/_/g, " ")} ({e.status === "red" ? "problem" : "watch"})
+          {opsEventLabel(e.event)}: <Figure value={e.count24h} reason="" /> in 24 h (
+          {e.status === "red" ? "problem" : "watch"})
         </>
       ),
     });
@@ -385,9 +387,19 @@ export function HomeScreen({ me, data, api }: { me: HomeMe; data: HomeData; api:
                     >
                       <span
                         aria-hidden="true"
-                        className={`h-2 w-2 rounded-full ${DOT[e.status]}`}
+                        className={`h-2 w-2 flex-none rounded-full ${DOT[e.status]}`}
                       />
-                      {e.event.replace(/_/g, " ")}
+                      <span>
+                        {opsEventLabel(e.event)}:{" "}
+                        {e.count24h === 0 ? (
+                          "no failures in 24 h"
+                        ) : (
+                          <>
+                            <Figure value={e.count24h} reason="" />{" "}
+                            {e.count24h === 1 ? "failure" : "failures"} in 24 h
+                          </>
+                        )}
+                      </span>
                       <span className="sr-only"> {DOT_WORD[e.status]}</span>
                     </li>
                   ))}
