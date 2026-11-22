@@ -1,0 +1,45 @@
+{
+ "batch": "r49-2nd-b001",
+ "pass": "second",
+ "reviewer": "agent:review-r49-2nd-b001",
+ "reviewedAt": "2026-11-17",
+ "verdicts": {
+  "abrazar": {
+   "verdict": "approve",
+   "alt": "two people hugging, faces not visible",
+   "peopleVisible": true
+  },
+  "l'agence immobilière": {
+   "verdict": "approve",
+   "alt": "agent handing keys to clients at a desk",
+   "peopleVisible": true
+  },
+  "la police": {
+   "verdict": "approve",
+   "alt": "police officer in uniform with badge",
+   "peopleVisible": true
+  },
+  "receta médica": {
+   "verdict": "approve",
+   "alt": "doctor writing a prescription",
+   "peopleVisible": true
+  },
+  "sala de urgencias": {
+   "verdict": "reject",
+   "reasons": [
+    "brand-logo-or-foreign-text"
+   ],
+   "note": "English EMERGENCY sign dominates"
+  },
+  "visa": {
+   "verdict": "approve",
+   "alt": "passport with visa documents",
+   "peopleVisible": true
+  },
+  "warm up": {
+   "verdict": "approve",
+   "alt": "athlete stretching on a field",
+   "peopleVisible": true
+  }
+ }
+}
