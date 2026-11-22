@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { asTestFns, chainable } from "./__testutils__/supabase-mock";
 import { setStaff } from "./__testutils__/staff-harness";
@@ -231,6 +232,40 @@ describe("what the database says becomes a sentence a person can act on", () => 
     ).rejects.toThrow(/inside itself/);
     expect(db.rpc).not.toHaveBeenCalled();
   });
+});
+
+describe("the arguments each write sends are exactly the generated types' Args (a typo fails here, not in production)", () => {
+  const types = readFileSync("src/integrations/supabase/types.ts", "utf8");
+  const src = readFileSync("src/lib/admin.functions.ts", "utf8");
+  const argsOf = (fn: string): string[] => {
+    const at = types.indexOf(`      ${fn}: {`);
+    expect(at, `${fn} is in types.ts`).toBeGreaterThan(-1);
+    const block = types.slice(at, types.indexOf("Returns:", at));
+    return [...block.matchAll(/(p_\w+)\??:/g)].map((m) => m[1]!).sort();
+  };
+  const sent = [
+    ...src.matchAll(/podcastWrite\(\s*context,\s*"(staff_podcast_\w+)",\s*\{([^}]*)\}/g),
+  ];
+  it("finds all nine writes", () => {
+    expect(sent.map((m) => m[1]).sort()).toEqual([
+      "staff_podcast_episode_audio_replace",
+      "staff_podcast_episode_create",
+      "staff_podcast_episode_set_published",
+      "staff_podcast_episode_update",
+      "staff_podcast_folder_create",
+      "staff_podcast_folder_delete",
+      "staff_podcast_folder_move",
+      "staff_podcast_folder_rename",
+      "staff_podcast_transcript_save",
+    ]);
+  });
+  for (const m of sent) {
+    it(`${m[1]}`, () => {
+      const keys = [...m[2]!.matchAll(/\b(p_\w+):/g)].map((k) => k[1]!);
+      // podcastWrite itself adds the actor and the role (checked in staff-registry.test.ts)
+      expect([...keys, "p_actor", "p_role"].sort()).toEqual(argsOf(m[1]!));
+    });
+  }
 });
 
 describe("the reads show only what is real", () => {

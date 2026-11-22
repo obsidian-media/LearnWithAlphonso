@@ -4257,7 +4257,7 @@ export type Database = {
           p_role: string;
           p_text: string;
         };
-        Returns: string;
+        Returns: boolean;
       };
       staff_record: {
         Args: {

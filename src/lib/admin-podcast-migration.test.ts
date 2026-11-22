@@ -431,11 +431,120 @@ describe("what else the podcast functions guarantee", () => {
           [ACTOR, E1, text],
         ),
       );
-    expect((await save("one")).rows[0]!.r).toBe("saved");
-    expect((await save("two")).rows[0]!.r).toBe("saved");
+    expect((await save("one")).rows[0]!.r).toBe(true);
+    expect((await save("two")).rows[0]!.r).toBe(true);
     expect(await count("podcast_transcripts", "text='two'")).toBe(1);
-    expect((await save("  ")).rows[0]!.r).toBe("deleted");
+    expect((await save("  ")).rows[0]!.r).toBe(true);
     expect(await count("podcast_transcripts")).toBe(0);
+  });
+
+  it("clearing a transcript that does not exist returns false and records nothing", async () => {
+    await seed();
+    const before = await count("staff_audit_log");
+    const r = await server(() =>
+      db.query<{ r: boolean }>(
+        "SELECT public.staff_podcast_transcript_save($1,'support',$2,'','because') AS r",
+        [ACTOR, E1],
+      ),
+    );
+    expect(r.rows[0]!.r).toBe(false);
+    expect(await count("staff_audit_log")).toBe(before);
+  });
+
+  it("moving a folder into its grandchild is refused (23514), with no audit row and no change", async () => {
+    await seed();
+    const F4 = "00000000-0000-4000-8000-0000000000f4";
+    await db.exec(
+      `INSERT INTO public.podcast_folders (id, parent_id, slug, title) VALUES ('${F4}', '${F2}', 'four', 'Four')`,
+    );
+    const before = await audit("podcast.folder.move");
+    await expect(
+      server(() =>
+        db.query("SELECT public.staff_podcast_folder_move($1,'support',$2,$3,'because')", [
+          ACTOR,
+          F1,
+          F4,
+        ]),
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+    expect(await audit("podcast.folder.move")).toBe(before);
+    expect(await count("podcast_folders", `id='${F1}' AND parent_id IS NULL`)).toBe(1);
+  });
+
+  it("folder moves are serialised: the advisory lock is taken before the guard reads the tree (PGlite cannot test concurrency, so the order is pinned in the SQL text)", () => {
+    const sql = read("20261127180000_admin_podcast_screen.sql");
+    const body = sql.slice(sql.indexOf("CREATE FUNCTION public.staff_podcast_folder_move"));
+    const fn = body.slice(0, body.indexOf("$$;", body.indexOf("AS $$")));
+    const lock = fn.indexOf("pg_advisory_xact_lock(hashtext('podcast_folders_tree'))");
+    const cte = fn.indexOf("WITH RECURSIVE");
+    const read1 = fn.indexOf("SELECT parent_id INTO old_parent");
+    expect(lock).toBeGreaterThan(-1);
+    expect(cte).toBeGreaterThan(-1);
+    expect(lock).toBeLessThan(read1);
+    expect(lock).toBeLessThan(cte);
+  });
+
+  it("an episode's audio_path must be a relative path ending in /<slug>.mp3 (defense in depth)", async () => {
+    await seed();
+    const total = await count("staff_audit_log");
+    for (const bad of [
+      "",
+      "../x/n.mp3",
+      "one/../n.mp3",
+      "/one/n.mp3",
+      "one/other.mp3",
+      "one/n.wav",
+      "n.mp3",
+      "one/xn.mp3",
+    ]) {
+      await expect(
+        server(() =>
+          db.query(
+            "SELECT public.staff_podcast_episode_create($1,'support',$2,'n','N',NULL,$3,40,NULL,NULL,'because')",
+            [ACTOR, F2, bad],
+          ),
+        ),
+        bad,
+      ).rejects.toMatchObject({ code: "22023" });
+    }
+    expect(await count("podcast_episodes")).toBe(2);
+    expect(await count("staff_audit_log")).toBe(total);
+    await server(() =>
+      db.query(
+        "SELECT public.staff_podcast_episode_create($1,'support',$2,'n','N',NULL,'one/two/n.mp3',40,NULL,NULL,'because')",
+        [ACTOR, F2],
+      ),
+    );
+    expect(await count("podcast_episodes")).toBe(3);
+  });
+
+  it("move records the previous parent and rename the previous title and description in the audit row", async () => {
+    await seed();
+    await db.exec(`UPDATE public.podcast_folders SET description = 'Old words' WHERE id = '${F3}'`);
+    await server(() =>
+      db.query(
+        "SELECT public.staff_podcast_folder_rename($1,'support',$2,'Newer','New words','because')",
+        [ACTOR, F3],
+      ),
+    );
+    await server(() =>
+      db.query("SELECT public.staff_podcast_folder_move($1,'support',$2,$3,'because')", [
+        ACTOR,
+        F3,
+        F1,
+      ]),
+    );
+    const row = async (action: string) =>
+      (
+        await db.query<{ before: unknown }>(
+          `SELECT before FROM public.staff_audit_log WHERE action='${action}' ORDER BY id DESC LIMIT 1`,
+        )
+      ).rows[0]!.before;
+    expect(await row("podcast.folder.rename")).toEqual({
+      title: "Three",
+      description: "Old words",
+    });
+    expect(await row("podcast.folder.move")).toEqual({ parentId: null });
   });
 
   it("folder counts are grouped in the database: total and published per folder, folders without episodes absent", async () => {

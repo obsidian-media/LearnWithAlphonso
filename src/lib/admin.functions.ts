@@ -168,7 +168,7 @@ export const adminListFolders = createServerFn({ method: "GET" })
         .from("podcast_folders")
         .select("id,parent_id,slug,title,description,sort_order")
         .order("sort_order", { ascending: true }),
-      context.supabaseAdmin.rpc("staff_podcast_folder_counts" as never),
+      context.supabaseAdmin.rpc("staff_podcast_folder_counts"),
     ]);
     if (error) throw new Error(error.message);
     // Grouped in the database. A folder missing from the result has no episodes: a real zero, but only when the read worked.

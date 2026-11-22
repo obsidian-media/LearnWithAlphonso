@@ -13,8 +13,15 @@
 --          staff_podcast_transcript_save   (empty text removes the transcript, as before)
 --
 --   Also: staff_podcast_folder_counts() (episodes and published episodes per folder, grouped in the database so a
---   long list cannot be truncated by the API row limit), and a cycle guard in staff_podcast_folder_move (the TypeScript
---   check still gives the readable message; this closes the race between its read and the write).
+--   long list cannot be truncated by the API row limit), and a cycle guard in staff_podcast_folder_move. The guard
+--   alone does not close the race (two moves, each legal on its own, can together make a loop when they read the
+--   tree at the same time); the transaction-scoped advisory lock taken before the guard is what closes it, by making
+--   every folder move wait for the one before it. The TypeScript check still gives the readable message.
+--
+--   Defense in depth: staff_podcast_episode_create refuses an audio_path that is empty, holds "..", starts with "/",
+--   or does not end with "/<slug>.mp3" (the only shape the server writes: storagePathFor).
+--   The audit rows keep what was there before: move records the previous parent, rename the previous title and
+--   description. Saving an empty transcript when there is none records nothing and returns false.
 --
 --   Publishing now stamps published_at the first time (the CLI has always done; the console did not), so the screen can
 --   show a real "Published <date>".
@@ -87,15 +94,18 @@ SET search_path = ''
 AS $$
 DECLARE
   why text := public.staff_podcast_reason(p_reason);
-  changed integer;
+  old_title text;
+  old_description text;
 BEGIN
-  UPDATE public.podcast_folders SET title = p_title, description = p_description WHERE id = p_id;
-  GET DIAGNOSTICS changed = ROW_COUNT;
-  IF changed = 0 THEN
+  SELECT title, description INTO old_title, old_description FROM public.podcast_folders WHERE id = p_id FOR UPDATE;
+  IF NOT FOUND THEN
     RETURN false;
   END IF;
+  UPDATE public.podcast_folders SET title = p_title, description = p_description WHERE id = p_id;
   PERFORM public.staff_record(
-    p_actor, p_role, 'podcast.folder.rename', NULL, why, NULL, jsonb_build_object('folderId', p_id), NULL);
+    p_actor, p_role, 'podcast.folder.rename', NULL, why,
+    jsonb_build_object('title', old_title, 'description', old_description),
+    jsonb_build_object('folderId', p_id), NULL);
   RETURN true;
 END;
 $$;
@@ -114,8 +124,15 @@ SET search_path = ''
 AS $$
 DECLARE
   why text := public.staff_podcast_reason(p_reason);
-  changed integer;
+  old_parent uuid;
 BEGIN
+  -- One folder move at a time: this lock (released at the end of the transaction) is what closes the race the guard
+  -- below cannot, so it must come before the guard reads the tree.
+  PERFORM pg_advisory_xact_lock(hashtext('podcast_folders_tree'));
+  SELECT parent_id INTO old_parent FROM public.podcast_folders WHERE id = p_id;
+  IF NOT FOUND THEN
+    RETURN false;
+  END IF;
   IF p_parent IS NOT NULL AND (
     p_parent = p_id OR EXISTS (
       WITH RECURSIVE up(id, parent_id) AS (
@@ -129,12 +146,9 @@ BEGIN
     RAISE EXCEPTION 'that move would put the folder inside itself' USING ERRCODE = '23514';
   END IF;
   UPDATE public.podcast_folders SET parent_id = p_parent WHERE id = p_id;
-  GET DIAGNOSTICS changed = ROW_COUNT;
-  IF changed = 0 THEN
-    RETURN false;
-  END IF;
   PERFORM public.staff_record(
-    p_actor, p_role, 'podcast.folder.move', NULL, why, NULL,
+    p_actor, p_role, 'podcast.folder.move', NULL, why,
+    jsonb_build_object('parentId', old_parent),
     jsonb_build_object('folderId', p_id, 'parentId', p_parent), NULL);
   RETURN true;
 END;
@@ -202,6 +216,11 @@ DECLARE
   why text := public.staff_podcast_reason(p_reason);
   new_id uuid;
 BEGIN
+  IF p_audio_path IS NULL OR p_audio_path = '' OR position('..' IN p_audio_path) > 0
+     OR left(p_audio_path, 1) = '/' OR p_slug IS NULL
+     OR right(p_audio_path, char_length(p_slug) + 5) <> '/' || p_slug || '.mp3' THEN
+    RAISE EXCEPTION 'audio_path must be a relative path ending in /<slug>.mp3' USING ERRCODE = '22023';
+  END IF;
   INSERT INTO public.podcast_episodes
     (folder_id, slug, title, description, audio_path, duration_seconds, course, level_id, source, published)
   VALUES
@@ -310,31 +329,37 @@ REVOKE ALL ON FUNCTION public.staff_podcast_episode_audio_replace(uuid, text, uu
 GRANT EXECUTE ON FUNCTION public.staff_podcast_episode_audio_replace(uuid, text, uuid, integer, text)
   TO service_role;
 
--- Saves a transcript (the server has already normalised and refused markup). Empty text removes it. Returns 'saved' or
--- 'deleted'. An episode that does not exist is refused by the foreign key (23503).
+-- Saves a transcript (the server has already normalised and refused markup). Empty text removes it. Returns false
+-- (nothing recorded) when there was no transcript to remove. An episode that does not exist is refused by the foreign
+-- key (23503).
 CREATE FUNCTION public.staff_podcast_transcript_save(
   p_actor uuid, p_role text, p_episode uuid, p_text text, p_reason text
 )
-RETURNS text
+RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
   why text := public.staff_podcast_reason(p_reason);
+  removed integer;
 BEGIN
   IF p_text IS NULL OR btrim(p_text) = '' THEN
     DELETE FROM public.podcast_transcripts WHERE episode_id = p_episode;
+    GET DIAGNOSTICS removed = ROW_COUNT;
+    IF removed = 0 THEN
+      RETURN false;
+    END IF;
     PERFORM public.staff_record(
       p_actor, p_role, 'podcast.transcript.delete', NULL, why, NULL, jsonb_build_object('episodeId', p_episode), NULL);
-    RETURN 'deleted';
+    RETURN true;
   END IF;
   INSERT INTO public.podcast_transcripts (episode_id, text) VALUES (p_episode, p_text)
   ON CONFLICT (episode_id) DO UPDATE SET text = EXCLUDED.text, updated_at = now();
   PERFORM public.staff_record(
     p_actor, p_role, 'podcast.transcript.save', NULL, why, NULL,
     jsonb_build_object('episodeId', p_episode, 'characters', char_length(p_text)), NULL);
-  RETURN 'saved';
+  RETURN true;
 END;
 $$;
 REVOKE ALL ON FUNCTION public.staff_podcast_transcript_save(uuid, text, uuid, text, text)
