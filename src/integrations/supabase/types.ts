@@ -4161,6 +4161,104 @@ export type Database = {
           user_id: string;
         }[];
       };
+      staff_podcast_episode_audio_replace: {
+        Args: {
+          p_actor: string;
+          p_duration: number;
+          p_id: string;
+          p_reason: string;
+          p_role: string;
+        };
+        Returns: boolean;
+      };
+      staff_podcast_episode_create: {
+        Args: {
+          p_actor: string;
+          p_audio_path: string;
+          p_course: string;
+          p_description: string;
+          p_duration: number;
+          p_folder: string;
+          p_level: string;
+          p_reason: string;
+          p_role: string;
+          p_slug: string;
+          p_title: string;
+        };
+        Returns: string;
+      };
+      staff_podcast_episode_set_published: {
+        Args: {
+          p_actor: string;
+          p_id: string;
+          p_published: boolean;
+          p_reason: string;
+          p_role: string;
+        };
+        Returns: boolean;
+      };
+      staff_podcast_episode_update: {
+        Args: {
+          p_actor: string;
+          p_description: string;
+          p_id: string;
+          p_reason: string;
+          p_role: string;
+          p_title: string;
+        };
+        Returns: boolean;
+      };
+      staff_podcast_folder_counts: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          folder_id: string;
+          published: number;
+          total: number;
+        }[];
+      };
+      staff_podcast_folder_create: {
+        Args: {
+          p_actor: string;
+          p_description: string;
+          p_parent: string;
+          p_reason: string;
+          p_role: string;
+          p_slug: string;
+          p_sort_order: number;
+          p_title: string;
+        };
+        Returns: string;
+      };
+      staff_podcast_folder_delete: {
+        Args: { p_actor: string; p_id: string; p_reason: string; p_role: string };
+        Returns: boolean;
+      };
+      staff_podcast_folder_move: {
+        Args: { p_actor: string; p_id: string; p_parent: string; p_reason: string; p_role: string };
+        Returns: boolean;
+      };
+      staff_podcast_folder_rename: {
+        Args: {
+          p_actor: string;
+          p_description: string;
+          p_id: string;
+          p_reason: string;
+          p_role: string;
+          p_title: string;
+        };
+        Returns: boolean;
+      };
+      staff_podcast_reason: { Args: { p_reason: string }; Returns: string };
+      staff_podcast_transcript_save: {
+        Args: {
+          p_actor: string;
+          p_episode: string;
+          p_reason: string;
+          p_role: string;
+          p_text: string;
+        };
+        Returns: boolean;
+      };
       staff_record: {
         Args: {
           p_action: string;

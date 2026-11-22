@@ -237,12 +237,12 @@ describe("adminSetPublished refuses audio the app may not distribute", () => {
   it("finds the function it is checking", () => {
     // Guards the guard: an empty slice would make every assertion below vacuous.
     expect(start).toBeGreaterThan(-1);
-    expect(body).toContain(".update(");
+    expect(body).toContain("staff_podcast_episode_set_published");
   });
 
   it("reads the row's voice_provider and checks it before any write", () => {
     const check = body.indexOf("isPublishableProvider(");
-    const write = body.indexOf(".update(");
+    const write = body.indexOf("podcastWrite(");
     expect(body).toContain("voice_provider");
     expect(check).toBeGreaterThan(-1);
     expect(check).toBeLessThan(write);
