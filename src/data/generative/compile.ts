@@ -4,7 +4,7 @@ import { PRONOUNS } from "./templates";
 
 /**
  * Generative sentence-content pilot (English only) --
- * docs/superpowers/specs/2026-09-22-generative-sentence-content-design.md.
+ * docs/archive/2026-09/2026-09-22-generative-sentence-content-design.md.
  *
  * VERIFIED 2026-09-22 via a hands-on spike, not assumed from docs:
  * querying `compromise` with a sentence's *actual* subject and trusting

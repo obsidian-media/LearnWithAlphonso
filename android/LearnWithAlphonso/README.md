@@ -2,8 +2,8 @@
 
 The native Android app. Kotlin, Jetpack Compose, Material 3, against the
 same Supabase project, Edge Functions and `/api/*` routes the iOS app and the
-web app use. Design: `docs/superpowers/specs/2026-09-29-android-app-design.md`.
-Plans: `docs/superpowers/plans/2026-09-29-android-plan-1-*.md` and follow-ons.
+web app use. Design: `docs/archive/2026-09/2026-09-29-android-app-design.md`.
+Plans: `docs/archive/2026-09/2026-09-29-android-plan-1-*.md` and follow-ons.
 
 ## Modules
 

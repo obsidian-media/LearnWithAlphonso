@@ -24,7 +24,7 @@
  * real transcripts once Spanish speak content is live, not as settled fact.
  *
  * What this module deliberately does NOT attempt, per
- * docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md §6.1:
+ * docs/archive/2026-09/2026-09-25-spanish-content-audit-design.md §6.1:
  * seseo/ceceo (casa/caza), the b/v merger (tubo/tuvo), and yeísmo
  * (pollo/poyo) are genuine PHONEMIC mergers for most Spanish speakers --
  * two different words that are pronounced identically. No normalisation

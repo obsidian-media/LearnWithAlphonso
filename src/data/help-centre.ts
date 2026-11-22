@@ -1,7 +1,7 @@
 import { SUPPORT_EMAIL } from "@/lib/legal-required-phrases";
 
 /**
- * The help file the Help chat's AI answers from (docs/superpowers/plans/2026-11-14-support-help-chat.md). Plain
+ * The help file the Help chat's AI answers from (docs/archive/2026-11/2026-11-14-support-help-chat.md). Plain
  * strings, reviewed by the owner: the AI may say what is written here and what is in the learner's own facts
  * snapshot, and nothing else. Every sentence is a promise the product makes, so keep it short and true, and change
  * it here, not in the prompt.

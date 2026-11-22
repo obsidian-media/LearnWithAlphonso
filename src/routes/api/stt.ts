@@ -64,7 +64,7 @@ export const Route = createFileRoute("/api/stt")({
         // the parameter is omitted, and nothing here ever set it. Silent for
         // English (the default already matched), latent for French/Spanish
         // until they had speak content to submit -- see
-        // docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md.
+        // docs/archive/2026-09/2026-09-24-french-phase-2-question-types-design.md.
         const rawCourse = inForm?.get("course");
         const course = typeof rawCourse === "string" && isCourse(rawCourse) ? rawCourse : "en";
         // iOS builds up to 50 still send a `debugTiming` field. It is accepted and ignored: nothing reads it.

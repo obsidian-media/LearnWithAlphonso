@@ -1,7 +1,7 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// Interactive branching stories (docs/superpowers/specs/2026-11-18-interactive-branching-stories-design.md): the
+/// Interactive branching stories (docs/archive/2026-11/2026-11-18-interactive-branching-stories-design.md): the
 /// "choose your path" reader on iOS. Port of the web BranchingStoryReader and the Android BranchingStoryReader; the rules
 /// are `Branching`, `BranchingCopy` and `PodcastClient.fetchBranchingStory/finishBranchingStory` in the Kit (XCTest in
 /// BranchingTests), this file only draws them. Each node is a full-bleed cinematic scene (art under a dark fade) with the

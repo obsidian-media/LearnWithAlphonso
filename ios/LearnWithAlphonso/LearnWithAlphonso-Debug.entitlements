@@ -4,7 +4,7 @@
 <dict>
 	<!-- V4 candidate #2 (real push) -- Debug/Simulator builds' device
 	     tokens register against APNs' sandbox environment. See
-	     docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md.
+	     docs/archive/2026-09/2026-09-21-remote-push-notifications-design.md.
 	     Push Notifications capability is confirmed enabled on the App ID
 	     (see the Release entitlements file's own comment) -- an unsigned/
 	     Simulator build (ios-app-build CI, CODE_SIGNING_ALLOWED=NO) never

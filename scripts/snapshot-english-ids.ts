@@ -7,7 +7,7 @@
  * Usage: bun run scripts/snapshot-english-ids.ts [course]
  * `course` is "en" (default), "fr", or "es". Kept as "english-ids.json" for
  * English's filename specifically so the existing committed baseline stays
- * valid (see docs/superpowers/specs/2026-09-24-french-content-audit-design.md
+ * valid (see docs/archive/2026-09/2026-09-24-french-content-audit-design.md
  * section 9).
  */
 import fs from "node:fs";

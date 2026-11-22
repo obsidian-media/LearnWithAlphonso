@@ -2,7 +2,7 @@ import Foundation
 
 /// V3 package 3b -- "tutor persona memory." Hector's own conversation
 /// content lives entirely on AlphonsoEcosystem's Cloud Voice backend,
-/// which this repo cannot read or modify (see docs/superpowers/specs/
+/// which this repo cannot read or modify (see docs/archive/2026-09/
 /// 2026-09-20-hector-weakness-detection-design.md's "What this does NOT
 /// change" section) -- there is no transcript to literally recall.
 ///

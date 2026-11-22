@@ -1,5 +1,5 @@
 /**
- * View model for a team's weekly mission (docs/superpowers/specs/2026-10-06-study-together-design.md, Part 1).
+ * View model for a team's weekly mission (docs/archive/2026-10/2026-10-06-study-together-design.md, Part 1).
  * Everything is computed by the get_team_mission() SQL function; this only parses its row and owns the wording,
  * which is identical on iOS and Android and pinned by team-mission.fixtures.json.
  */

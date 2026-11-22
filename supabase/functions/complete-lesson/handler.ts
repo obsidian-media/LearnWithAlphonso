@@ -2,7 +2,7 @@
 //
 // The trust-boundary piece of lesson completion that a Swift/web client
 // cannot implement directly -- see
-// docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md
+// docs/archive/2026-09/2026-09-17-complete-lesson-edge-function-design.md
 // for the full design rationale. This is a 1:1 port of
 // src/lib/sync.functions.ts's completeLessonRemote handler
 // (src/lib/sync.functions.ts:174-351), reading curriculum data from the

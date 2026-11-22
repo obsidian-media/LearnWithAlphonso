@@ -1,6 +1,16 @@
 # Referral program (design, approved 2026-11-17)
 
-Status: owner-approved design. First increment is server + web. iOS and Android (native share sheet) follow.
+## Status (verified 2026-11-22 against d8350542)
+
+Delivered: server and web in #610 (merged 2026-11-17, migration `20261120140000_referral_program.sql`), the privacy line in #612, and the Invite screens on iOS and Android in #615 (iOS `ReferralInviteView.swift`, Android `ui/referral/ReferralInviteScreen.kt`). LIVING because this is the only document of the referral rules (nothing in ARCHITECTURE.md, AGENTS.md or README.md mentions them) and one follow-up is genuinely open: a tapped referral link still opens the browser, not the app (see "Out of scope"). Not tracked in `docs/OPEN-ITEMS.md` at the time of this check.
+
+Checked in code: constants `REFERRAL_REWARD_HEARTS = 5`, `REFERRAL_MONTHLY_CAP = 20`, `REFERRAL_FREEZE_CAP = 3`, 30-day capture (`REFERRAL_KEEP_MS`) in `src/lib/referral.ts`; `claim_referral` refuses an account older than 2 days and `monthly_cap = 20` / `freeze-cap` / `monthly-cap` notes in the migration; the first-lesson hook after a saved completion in `src/lib/sync.functions.ts` (`completeLessonRemote`, `settleReferralReward`) and `supabase/functions/complete-lesson/handler.ts` (`_shared/referral.ts`); the screen `src/routes/_authenticated/profile_.invite.tsx`. The link host is no longer fixed: the web builds it from `window.location.origin` (`referralLink` in `src/lib/referral.ts`), so on the current web address it is `https://learnwithalphonso.com/?ref=<code>`, not the old `learn.alphonsoecosystem.app` host written below.
+
+Open work:
+- Make a referral link open the app. The app links cover `/invite/*` only (iOS associated domains; Android manifest `pathPrefix="/invite/"` at `AndroidManifest.xml:52` and `:54`), and the referral link is `/?ref=<code>`. Needs the owner/infra step of an association for the site root (iOS can match the `ref` query; Android App Links cannot filter by query, so a root `/` path would claim every site link) or a dedicated `/r/<code>` path. Until then iOS and Android rely on the manual "Got an invite code?" claim and on `ReferralPending` for a `?ref` link that does reach the app.
+- Device and network based duplicate detection stays out of scope (unchanged).
+
+Original status line: owner-approved design. First increment is server + web. iOS and Android (native share sheet) follow.
 
 ## Goal
 
@@ -35,7 +45,7 @@ is the catch-up path.
 ## Attribution
 
 - Each learner already has an opaque, unguessable invite code (`friend_invite_codes`, created lazily). The referral link
-  is `https://learn.alphonsoecosystem.app/?ref=<code>`. No second code system.
+  was `https://learn.alphonsoecosystem.app/?ref=<code>` when written; today it is the site origin plus `/?ref=<code>`. No second code system.
 - A visitor opening the link has the code captured (kept 30 days in the browser, only the opaque code) and carried
   through sign-up, including email confirmation in another tab. Once signed in, the app claims it once with
   `claim_referral`.

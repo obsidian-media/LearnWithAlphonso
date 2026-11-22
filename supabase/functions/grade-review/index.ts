@@ -5,7 +5,7 @@
 // implement directly (re-deriving correctness against the real question
 // needs the real question content + can't trust a client-supplied
 // `correct` boolean, same reasoning as complete-lesson). See
-// docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md
+// docs/archive/2026-09/2026-09-17-complete-lesson-edge-function-design.md
 // for the general pattern this follows.
 //
 // Env vars: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY are

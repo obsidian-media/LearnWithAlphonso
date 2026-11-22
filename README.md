@@ -60,7 +60,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   explains a missing or offline episode with a Retry button instead of a
   silent Pause icon, follows the active course and hides folders with nothing
   published. See
-  `docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md`.
+  `docs/archive/2026-09/2026-09-24-podcast-library-phase1-design.md`.
 - **Admin app** — live at `admin.alphonsoecosystem.app` (sign in with
   Google or email/password), run locally with
   `bun run dev:admin` (port 8081). A separately-deployed
@@ -71,7 +71,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   self-bootstrapping admin mechanism is a bypass waiting to happen. It
   shares every validation rule with `scripts/podcast-tool.ts` rather than
   reimplementing them, so the CLI and the UI cannot drift. See
-  `docs/superpowers/specs/2026-09-25-podcast-phase4-admin-design.md`.
+  `docs/archive/2026-09/2026-09-25-podcast-phase4-admin-design.md`.
 - **5 CEFR levels** per course, A1 (Beginner) → C1 (Advanced)
 - **Three courses**: English, French, and Spanish, via a shared `getCourse()` content bundle
 - **Spaced repetition**: SM-2 algorithm for long-term retention of missed items, with a due-count badge on the learn page
@@ -100,7 +100,7 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
 - **Your learning path** (build 62, web, iOS and Android): a personalised roadmap built once on the server (`/api/learning-path`): a weekly mix of lessons, podcasts with their quiz, practice talks and story scenes, today's list, the road to your goal with dates from your own pace, three recovery choices when you are behind, a week view, "Why this mix", per-type switches (lessons cannot be switched off), a rest day you pick (or none), and a My path card on Profile. No migration: the switches live with the first-run answers. Every path stop opens on iOS too.
 - **Podcast quiz mistakes go to review** (build 62): a missed podcast question becomes a spaced-review item on every platform (migration `20261112140000`).
 - **Optional usage analytics** (build 62): off until you agree (the cookie banner on web, a neutral step after sign-in on iOS and Android, plus a Settings switch). PostHog, US region, anonymous only: no name, email or account id, no autocapture, no session replay. Under-13 devices never send. The project key is not in this repo (`VITE_POSTHOG_KEY`).
-- **Staff console, phase 1** (build 62, the admin app): roles (owner, support) with named scopes, an append-only record of every staff action with a required reason, a learner search and learner page (no payment details, answers or chats), notes, gifting and ending Pro through RevenueCat, block (no social features) and ban (no sign-in), enforced in every place learners meet, and deleting an account. Phase 2 (in-app Help, AI support agent and inbox) and phase 3 (numbers) are designed (`docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md`) and not started.
+- **Staff console, phase 1** (build 62, the admin app): roles (owner, support) with named scopes, an append-only record of every staff action with a required reason, a learner search and learner page (no payment details, answers or chats), notes, gifting and ending Pro through RevenueCat, block (no social features) and ban (no sign-in), enforced in every place learners meet, and deleting an account. Phase 2 (in-app Help, AI support agent and inbox) and phase 3 (numbers) are designed (`docs/archive/2026-11/2026-11-13-admin-console-and-support-design.md`) and not started.
 - **Learn and Profile layout** (build 61): Learn pins your current unit at the top and folds finished units; Profile has Overview, Progress and Social tabs, with settings at the bottom of Overview.
 - **Skills radar and learning minutes** (build 61): a five-skill radar (listening, speaking, vocabulary, grammar, reading) that appears once there are at least 3 skills with 5 answers each, week rings that count your daily goal in learning minutes, "words mastered", and your rank in this week's league. These are stored as daily totals and per-skill counts only; your time zone is used to show dates, streaks stay on UTC days.
 - **Hector remembers on the web**: the web Hector call is primed, on the server, with your own open weak-spot labels, as on iOS.
@@ -115,9 +115,9 @@ See `ARCHITECTURE.md` for the full request flow, database schema, and design not
   (lock-screen and Control Center controls included), and resume where you left off —
   including across to the web app on the same account. (Phase 3 later added the
   explicit offline download described under Listen above.) See
-  `docs/superpowers/specs/2026-09-24-podcast-phase0-ios-tabs-design.md` and
-  `docs/superpowers/specs/2026-09-24-podcast-phase1b-ios-design.md`.
-- **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). Has its own theme system (`ios/LearnWithAlphonso/Sources/DesignSystem/`) with 2 themes, Royal (the default) and Meadow (fonts, oklch-accurate palette, the hard-shadow pressed-button effect), applied across every screen, with an in-app picker (Settings, from the Learn tab) that syncs to the same `profiles.theme` the web app reads — see the "Native iOS app" section below and `docs/superpowers/specs/2026-09-17-native-ios-app-design.md` (original 3-theme port) / `docs/superpowers/specs/2026-09-23-ios-canopy-theme-redesign-design.md` (Canopy)
+  `docs/archive/2026-09/2026-09-24-podcast-phase0-ios-tabs-design.md` and
+  `docs/archive/2026-09/2026-09-24-podcast-phase1b-ios-design.md`.
+- **Native iOS app** (`ios/`): "Learn with Alphonso" — auth, lesson player, review queue, leaderboards, friends, achievements/leagues, push-notification-style local reminders, offline-first lesson completion/review grading, and AI-conversation weakness detection (Hector + free mode both feed the review queue). Has its own theme system (`ios/LearnWithAlphonso/Sources/DesignSystem/`) with 2 themes, Royal (the default) and Meadow (fonts, oklch-accurate palette, the hard-shadow pressed-button effect), applied across every screen, with an in-app picker (Settings, from the Learn tab) that syncs to the same `profiles.theme` the web app reads — see the "Native iOS app" section below and `docs/archive/2026-09/2026-09-17-native-ios-app-design.md` (original 3-theme port) / `docs/archive/2026-09/2026-09-23-ios-canopy-theme-redesign-design.md` (Canopy)
 
 ## Content
 
@@ -146,7 +146,7 @@ their name") and let the learner write it themselves, accepting any of a
 curated list of wordings — and, for a valid wording the list did not
 anticipate, asking an AI grader.
 
-**French phase 2** (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
+**French phase 2** (`docs/archive/2026-09/2026-09-24-french-phase-2-question-types-design.md`)
 closed that type gap, one PR per generator change / question type: the
 shared generator (`bank-engine.ts`) now knows all three new kinds, and
 French has **translate**, **listening**, and **speak** content (375 new
@@ -157,7 +157,7 @@ required its own French speech-normalisation module
 French elision is a phonological rule with no relationship to English's
 auxiliary-verb-contraction rules — see that module's header comment.
 **Spanish's own phase 2**
-(`docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md` §6-7)
+(`docs/archive/2026-09/2026-09-25-spanish-content-audit-design.md` §6-7)
 followed the same one-PR-per-question-type shape, all four PRs now
 merged: `bank-engine.ts` needed zero Spanish-specific changes (verified
 against real Spanish content, not inferred from French); **translate**
@@ -376,7 +376,7 @@ compile verification that exists):
 - **Team mission**: every team of two or more gets a weekly shared goal (members x 4 lessons); reaching it pays each
   contributing member +50 XP and a "Team player" badge. One server function (`get_team_mission`) behind web, iOS and
   Android; no cron. Language buddies (friend pairing, opt-in matching, a shared weekly goal, preset messages only) are
-  built on web, iOS and Android: `docs/superpowers/specs/2026-10-06-study-together-design.md`
+  built on web, iOS and Android: `docs/archive/2026-10/2026-10-06-study-together-design.md`
 - **Teams, weekly challenges, open duels, season ladder**: persistent
   teams with weekly-XP competition (private teams are join-by-code only and are not listed on the board or readable by non-members); fixed weekly solo goals plus
   stranger-matchmaking duels (alongside friend duels); a weekly
@@ -480,7 +480,7 @@ ios/
 - `android/LearnWithAlphonso/` — the Android app's own `README.md`, `TOOLING.md`, `OWNER-SETUP.md`, `DEVICE-CHECKLIST.md` and `play/` listing files
 - `DEFERRED-WORDS.md` — granular postponed items too small for their own tracked task (gitignored, local-only)
 - `LESSON_ASSETS.md` — asset plan for lesson content (audio, images, icons, animations) and the vocab-image pipeline; its status banner explains what's actually built vs. still aspirational
-- `docs/superpowers/specs/` and `docs/superpowers/plans/` — design docs and implementation plans for major features (curriculum DB schema, the `complete-lesson` Edge Function, the native iOS app, theme foundation, every V2 iOS feature, the podcast library, study together). They are historical records: a dated status line under a title says what was built or later changed, and the code wins over the document
+- `docs/archive/` — the archived design docs and implementation plans of delivered, superseded or abandoned features (index: `docs/archive/README.md`). Each starts with a one-line header saying which PR delivered it and where the current behaviour is documented. `docs/superpowers/specs/` keeps only the three specs that still describe open work (learning path, Explain in my language, referral). The code wins over any document
 - `docs/v2-kickoffs/` — gitignored, local-only briefing docs used to hand off individual V2 feature slices to fresh sessions; kept as a reference for the pattern, verify against current code before trusting one
 - `docs/v3-kickoffs/` — same pattern, for whatever's next after V2 (gitignored, local-only)
 

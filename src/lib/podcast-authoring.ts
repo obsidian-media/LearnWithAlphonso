@@ -1,6 +1,6 @@
 /**
  * Validation and path logic for podcast authoring (Phase 1a, see
- * docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md).
+ * docs/archive/2026-09/2026-09-24-podcast-library-phase1-design.md).
  *
  * All the real logic lives here -- scripts/podcast-tool.ts is a thin
  * argv/fs wrapper, the same split scripts/pack-tool.ts uses, because

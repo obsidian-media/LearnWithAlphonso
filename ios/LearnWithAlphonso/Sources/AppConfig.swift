@@ -25,7 +25,7 @@ enum AppConfig {
     static let apiBaseURL = URL(string: "https://learnwithalphonso.com")!
 
     /// Hector's tutor turn runs in our own backend against the main
-    /// account (docs/superpowers/specs/2026-09-27-hector-decoupling-design.md).
+    /// account (docs/archive/2026-09/2026-09-27-hector-decoupling-design.md).
     /// The Pro "Hector" mode used to sign in to a separate Cloud Voice
     /// Supabase project; the 2026-09-27 decouple removed that -- one
     /// account, one backend, and account deletion now covers Hector.

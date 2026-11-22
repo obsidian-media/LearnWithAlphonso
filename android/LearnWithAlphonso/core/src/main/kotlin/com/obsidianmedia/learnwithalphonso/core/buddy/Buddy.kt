@@ -1,7 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.buddy
 
 /**
- * Study buddies (study together, Phase 3a on the server; docs/superpowers/specs/2026-10-06-study-together-design.md).
+ * Study buddies (study together, Phase 3a on the server; docs/archive/2026-10/2026-10-06-study-together-design.md).
  * The server is the source of truth for the week rules (`_resolve_buddy_pair`); [BuddyRules] mirrors them so the
  * clients stay honest, and [BuddyCopy] owns the wording, word-for-word src/lib/buddy.ts and the iOS Kit's
  * `BuddyCopy` (all pinned by the shared buddy.fixtures.json).

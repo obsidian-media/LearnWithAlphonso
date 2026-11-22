@@ -179,7 +179,7 @@ describe("buildFullSeed", () => {
     // translate packs + 25 from PR 3's listening packs + 25 from PR 4's
     // (this PR's) speak packs -- all four Spanish Phase 2 PRs now landed,
     // full type parity with English and French
-    // (docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md
+    // (docs/archive/2026-09/2026-09-25-spanish-content-audit-design.md
     // §7 step 7).
     expect(seed.lessons.length).toBe(609 + 611 + 610);
     expect(seed.questions.length).toBe(

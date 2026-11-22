@@ -21,7 +21,7 @@ import type { QuotaResult } from "./ai-quota.server";
 import type { Course } from "@/data/courses";
 
 /**
- * The Help chat's server logic (docs/superpowers/plans/2026-11-14-support-help-chat.md, "Order in POST /api/support/message").
+ * The Help chat's server logic (docs/archive/2026-11/2026-11-14-support-help-chat.md, "Order in POST /api/support/message").
  * The three routes under src/routes/api/support/ are thin: they verify the session and call these. Everything the
  * learner does goes through here with the user id taken from the VERIFIED SESSION, never from a body.
  *

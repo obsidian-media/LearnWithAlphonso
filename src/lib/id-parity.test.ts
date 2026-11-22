@@ -52,7 +52,7 @@ const COURSES: {
   baseline: string;
   samplePackId: string;
   // Spanish deliberately has non-uniform pack lengths (10/15/20/25 lines) --
-  // docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md §2's
+  // docs/archive/2026-09/2026-09-25-spanish-content-audit-design.md §2's
   // recorded 2026-09-25 decision: "accept, document, do not fill" 83 of its
   // 130 packs rather than author ~710 new lines under audit cover. The
   // uniform-25-lines test below only applies where that's actually the
@@ -123,7 +123,7 @@ describe.each(COURSES)(
         // §2 short-pack decision and change only if that decision changes;
         // the 25 bucket also grows as phase-2 packs land (each one full-length
         // by construction): +5 for the translate packs, +5 for the listening
-        // packs, +5 for the speak packs (docs/superpowers/specs/2026-09-25-
+        // packs, +5 for the speak packs (docs/archive/2026-09/2026-09-25-
         // spanish-content-audit-design.md §7 step 7, PRs 2-4) -- all four
         // Spanish Phase 2 PRs now landed. The 15 bucket also gained the 9 generated
         // one-verb packs (esga2p1-9), 15 questions each.

@@ -5,11 +5,11 @@
  * person before any edit is made, and it never edits content itself. That
  * matters especially for the part-of-speech check: `compromise`'s tagging of
  * bare words out of context has documented false positives in this repo (see
- * docs/superpowers/specs/2026-09-22-generative-sentence-content-design.md), so
+ * docs/archive/2026-09/2026-09-22-generative-sentence-content-design.md), so
  * its output is a reading order, not a verdict.
  *
  * `compromise` is an English-only NLP library (spec
- * docs/superpowers/specs/2026-09-24-french-content-audit-design.md section
+ * docs/archive/2026-09/2026-09-24-french-content-audit-design.md section
  * 2.1) -- the `pos` check only runs for course "en"; running it against
  * French or Spanish words would produce confidently wrong tags the same way
  * the first (bare-word) English tag map did.

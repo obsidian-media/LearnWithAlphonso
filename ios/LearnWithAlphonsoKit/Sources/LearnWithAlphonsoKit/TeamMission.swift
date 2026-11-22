@@ -3,7 +3,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-/// A team's weekly shared mission (docs/superpowers/specs/2026-10-06-study-together-design.md, Part 1).
+/// A team's weekly shared mission (docs/archive/2026-10/2026-10-06-study-together-design.md, Part 1).
 /// The server computes everything in `get_team_mission()`; this only decodes its row and owns the wording,
 /// which is word-for-word the web card's (src/lib/team-mission.ts) and pinned by the shared fixtures
 /// (Tests/.../Fixtures/team-mission.fixtures.json, a byte-for-byte copy guarded on the web side).

@@ -21,7 +21,7 @@ import {
 import { playSfx } from "../lib/sfx";
 
 /**
- * Tap-to-save for the web (docs/superpowers/specs/2026-10-05-save-any-word-design.md,
+ * Tap-to-save for the web (docs/archive/2026-10/2026-10-05-save-any-word-design.md,
  * phase 4). `SaveWordProvider` owns the one confirmation dialog; `TappableText`
  * (separate file) turns words into buttons that open it. A tree with no provider
  * renders plain text, so a screen opts in by wrapping itself.

@@ -98,7 +98,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Graded stories (docs/superpowers/specs/2026-11-17-graded-stories-design.md): the reading analog of the Listen library.
+ * Graded stories (docs/archive/2026-11/2026-11-17-graded-stories-design.md): the reading analog of the Listen library.
  * Port of StoriesViews.swift; mirrors the web's StoriesLibrary, StoryReader and StoryCheck. The rules are
  * [Stories], [StoryNarration] and [com.obsidianmedia.learnwithalphonso.core.net.StoriesClient] in core (JVM tests); this
  * file only draws them. StoriesSourceGuardsTest pins the wiring.

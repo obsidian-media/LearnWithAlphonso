@@ -1,6 +1,6 @@
 import Foundation
 
-/// Podcast library models, Phase 1b (see docs/superpowers/specs/
+/// Podcast library models, Phase 1b (see docs/archive/2026-09/
 /// 2026-09-24-podcast-phase1b-ios-design.md).
 ///
 /// Mirrors the web app's `PodcastFolder` in src/lib/podcast-tree.ts and

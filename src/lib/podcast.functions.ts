@@ -9,7 +9,7 @@ import { roomForFolder } from "./listen-library";
 
 /**
  * Read/write server functions for the podcast library (Phase 1a, see
- * docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md).
+ * docs/archive/2026-09/2026-09-24-podcast-library-phase1-design.md).
  * Same shape as review.functions.ts: createServerFn + requireSupabaseAuth
  * + a zod validator.
  *
