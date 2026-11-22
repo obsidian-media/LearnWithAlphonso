@@ -48,8 +48,14 @@ const headers = (key: string) => ({
 });
 
 async function readError(res: Response) {
-  const body = (await res.json().catch(() => ({}))) as { message?: string; detail?: unknown };
-  return `HTTP ${res.status} ${body.message ?? (body.detail ? JSON.stringify(body.detail) : "")}`.trim();
+  const body = (await res.json().catch(() => ({}))) as {
+    message?: string;
+    detail?: unknown;
+    error?: { message?: string } | string;
+  };
+  const nested = typeof body.error === "string" ? body.error : body.error?.message;
+  const text = body.message ?? nested ?? (body.detail ? JSON.stringify(body.detail) : "");
+  return `HTTP ${res.status} ${text}`.trim();
 }
 
 export type MistralJob = {
@@ -156,8 +162,9 @@ export async function sendMistralChat(
   key: string,
   model: string,
   body: Record<string, unknown>,
+  url = `${MISTRAL_API}/chat/completions`,
 ): Promise<{ text: string; usage: MistralLine["usage"] }> {
-  const res = await f(`${MISTRAL_API}/chat/completions`, {
+  const res = await f(url, {
     method: "POST",
     headers: headers(key),
     body: JSON.stringify({ model, ...body }),

@@ -1,0 +1,349 @@
+{
+ "esa1p18l3": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Salgo a las seis de la mañana.",
+   "wrong": [
+    "Salgo a las siete de la mañana.",
+    "Salgo a las seis de la tarde.",
+    "Salgo a las seis de la noche."
+   ],
+   "explanation": "The speaker says \"Salgo a las seis de la mañana.\", meaning 'I leave at six in the morning'; the hour and the part of the day both matter."
+  },
+  "speak": {
+   "answer": "Son las tres y diez",
+   "explanation": "\"Son las tres y diez\" means 'It is ten past three' (3:10); say the hour first, then y and the minutes."
+  },
+  "translate": {
+   "prompt": "Say that the train arrives at one in the afternoon.",
+   "acceptableAnswers": [
+    "El tren llega a la una de la tarde.",
+    "El tren llega a la una por la tarde."
+   ],
+   "explanation": "\"El tren llega a la una de la tarde.\" uses a la una for one o'clock and de la tarde for p.m. in the afternoon."
+  }
+ },
+ "esa1p23l2": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Tengo suficiente dinero para el café.",
+   "wrong": [
+    "Tengo suficiente tiempo para el café.",
+    "Tengo suficiente dinero para el té.",
+    "Tengo demasiado dinero para el café."
+   ],
+   "explanation": "The sentence heard was \"Tengo suficiente dinero para el café.\", meaning I have enough money for the coffee; the other choices change one word (tiempo, té, demasiado)."
+  }
+ },
+ "esa1p23l5": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Tengo pocos libros en casa.",
+   "wrong": [
+    "Tengo muchos libros en casa.",
+    "Tengo pocos amigos en casa.",
+    "Tengo pocos libros en clase."
+   ],
+   "explanation": "The sentence is \"Tengo pocos libros en casa.\" and it means \"I have few books at home\"; \"pocos\" means \"few\"."
+  },
+  "speak": {
+   "answer": "Quiero comer la pizza entera",
+   "explanation": "The phrase \"Quiero comer la pizza entera\" means \"I want to eat the whole pizza\"; \"entera\" agrees with the feminine noun \"pizza\"."
+  },
+  "translate": {
+   "prompt": "Say that there are exactly ten people here.",
+   "acceptableAnswers": [
+    "Hay exactamente diez personas aquí.",
+    "Aquí hay exactamente diez personas.",
+    "Son exactamente diez personas aquí."
+   ],
+   "explanation": "\"Hay exactamente diez personas aquí.\" uses \"exactamente\" for \"exactly\" and \"hay\" for \"there are\"."
+  }
+ },
+ "esga2p5l1": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "Mis amigos leen el periódico por la mañana.",
+   "wrong": [
+    "Mis amigos venden el periódico por la mañana.",
+    "Mis amigos leen el periódico por la tarde.",
+    "Mis amigos leen el libro por la mañana."
+   ],
+   "explanation": "The sentence \"Mis amigos leen el periódico por la mañana.\" says that my friends read the newspaper in the morning; \"leen\" is the they-form of leer."
+  },
+  "speak": {
+   "answer": "Nosotros leemos una revista en casa",
+   "explanation": "The phrase \"Nosotros leemos una revista en casa\" uses \"leemos\", the we-form of leer, and means 'We read a magazine at home'."
+  },
+  "translate": {
+   "prompt": "Say that you read a book every night.",
+   "acceptableAnswers": [
+    "Yo leo un libro todas las noches.",
+    "Leo un libro todas las noches.",
+    "Leo un libro cada noche."
+   ],
+   "explanation": "\"Yo leo un libro todas las noches.\" uses \"leo\", the first person singular of leer; the subject \"yo\" can be dropped."
+  }
+ },
+ "esga2p8l2": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Ayer ella compró una regla en la tienda.",
+   "wrong": [
+    "Ayer ella compró una silla en la tienda.",
+    "Ayer ella compró una regla en la escuela.",
+    "Ayer ella vendió una regla en la tienda."
+   ],
+   "explanation": "The speaker says \"Ayer ella compró una regla en la tienda.\" The other choices change one word (silla, escuela, vendió), so listen for \"regla\", \"tienda\" and \"compró\"."
+  },
+  "translate": {
+   "prompt": "Say that you (informal, one person) bought a notebook yesterday.",
+   "acceptableAnswers": [
+    "Ayer compraste un cuaderno.",
+    "Ayer tú compraste un cuaderno.",
+    "Compraste un cuaderno ayer."
+   ],
+   "explanation": "With \"tú\" the preterite of comprar ends in -aste, so \"Ayer compraste un cuaderno.\" means you bought a notebook yesterday."
+  }
+ },
+ "esga2p8l1": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Ayer yo compré una camisa azul.",
+   "wrong": [
+    "Ayer yo compré una camisa roja.",
+    "Ayer yo vendí una camisa azul.",
+    "Hoy yo compré una camisa azul."
+   ],
+   "explanation": "The sentence \"Ayer yo compré una camisa azul.\" uses the preterite \"compré\" because the buying happened yesterday and the subject is \"yo\"."
+  },
+  "speak": {
+   "answer": "Ayer tú compraste unos zapatos nuevos",
+   "explanation": "The phrase \"Ayer tú compraste unos zapatos nuevos\" uses the \"tú\" preterite ending -aste to say what you bought yesterday."
+  },
+  "translate": {
+   "prompt": "Say that yesterday you (singular, informal) bought a red hat.",
+   "acceptableAnswers": [
+    "Ayer tú compraste un sombrero rojo.",
+    "Ayer compraste un sombrero rojo.",
+    "Tú compraste un sombrero rojo ayer."
+   ],
+   "explanation": "\"Ayer tú compraste un sombrero rojo.\" uses the preterite ending -aste for \"tú\"; the subject pronoun can be dropped."
+  }
+ },
+ "esb1p1l1": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "El próximo verano mis primos visitarán a mi abuela en Cali.",
+   "wrong": [
+    "El próximo verano mis primos visitaron a mi abuela en Cali.",
+    "El próximo verano mis primos visitarán a mi abuela en Lima.",
+    "El próximo verano mi primo visitará a mi abuela en Cali."
+   ],
+   "explanation": "The sentence \"El próximo verano mis primos visitarán a mi abuela en Cali.\" uses the future ending -án for \"mis primos\" (they will visit), while the other choices change the tense, the city or the number of people."
+  },
+  "speak": {
+   "answer": "Mis amigos saldrán de la oficina a las seis",
+   "explanation": "\"Mis amigos saldrán de la oficina a las seis\" uses the irregular future stem saldr- with the ending -án for a plural third-person subject."
+  },
+  "translate": {
+   "prompt": "Tell a friend that next week you will have a lot of work to do at the office.",
+   "acceptableAnswers": [
+    "La próxima semana tendré mucho trabajo en la oficina.",
+    "La semana que viene tendré mucho trabajo en la oficina.",
+    "Tendré mucho trabajo en la oficina la próxima semana."
+   ],
+   "explanation": "\"La próxima semana tendré mucho trabajo en la oficina.\" uses the irregular future stem tendr- with the first-person ending -é, and \"la próxima semana\" marks the future."
+  }
+ },
+ "esb1p1l2": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Mañana mis padres vendrán a visitarnos y traerán la comida.",
+   "wrong": [
+    "Mañana mis padres vendrán a visitarnos y traerán el vino.",
+    "Mañana mis padres vendrán a visitarnos y llevarán la comida.",
+    "Mañana mis padres vendrán a buscarnos y traerán la comida."
+   ],
+   "explanation": "The speaker says \"Mañana mis padres vendrán a visitarnos y traerán la comida.\": \"vendrán\" uses the irregular future stem vendr-, while \"traerán\" just adds -án to the full infinitive traer."
+  },
+  "translate": {
+   "prompt": "Say that next week we will be able to tell you the results.",
+   "acceptableAnswers": [
+    "La próxima semana podremos decirte los resultados.",
+    "La semana que viene podremos decirte los resultados.",
+    "La semana próxima podremos decirte los resultados."
+   ],
+   "explanation": "\"La próxima semana podremos decirte los resultados.\" uses the irregular future stem podr- with the nosotros ending -emos, followed by an infinitive."
+  }
+ },
+ "esb1p13l1": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Mi jefe trabaja en una empresa grande de la ciudad",
+   "wrong": [
+    "Mi jefa trabaja en una empresa grande de la ciudad",
+    "Mi jefe trabaja en una oficina grande de la ciudad",
+    "Mi jefe trabaja en una empresa pequeña de la ciudad"
+   ],
+   "explanation": "The sentence heard was \"Mi jefe trabaja en una empresa grande de la ciudad\"; it says the boss works at a big company, and each other choice changes one word (jefa, oficina, pequeña)."
+  },
+  "speak": {
+   "answer": "Trabajo en una oficina con mis colegas",
+   "explanation": "\"Trabajo en una oficina con mis colegas\" means 'I work in an office with my colleagues', using the lesson's words for office and coworkers."
+  },
+  "translate": {
+   "prompt": "Say that you are looking for a job in a big company.",
+   "acceptableAnswers": [
+    "Busco trabajo en una empresa grande",
+    "Estoy buscando trabajo en una empresa grande",
+    "Busco un trabajo en una empresa grande"
+   ],
+   "explanation": "\"Busco trabajo en una empresa grande\" uses \"busco trabajo\" for looking for a job and \"empresa\" for company; \"estoy buscando\" works too."
+  }
+ },
+ "esb2p11l1": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "Compré estas flores para mi madre porque hoy es su cumpleaños",
+   "wrong": [
+    "Compré estas flores para mi abuela porque hoy es su cumpleaños",
+    "Compré estas flores para mi madre porque hoy es su aniversario",
+    "Vendí estas flores para mi madre porque hoy es su cumpleaños"
+   ],
+   "explanation": "The speaker says \"Compré estas flores para mi madre porque hoy es su cumpleaños\": \"para\" marks the recipient of the flowers, and \"porque\" gives the reason."
+  },
+  "speak": {
+   "answer": "Caminamos por la calle para llegar al parque",
+   "explanation": "\"Caminamos por la calle para llegar al parque\" uses \"por\" for movement along a place and \"para\" for the purpose of reaching the park."
+  },
+  "translate": {
+   "prompt": "Say that you paid twenty dollars for a ticket in order to travel to Madrid.",
+   "acceptableAnswers": [
+    "Pagué veinte dólares por un boleto para viajar a Madrid.",
+    "Pagué veinte dólares por un boleto para ir a Madrid.",
+    "Pagué veinte dólares por un pasaje para viajar a Madrid.",
+    "Por un boleto para viajar a Madrid pagué veinte dólares."
+   ],
+   "explanation": "\"Pagué veinte dólares por un boleto para viajar a Madrid.\" uses \"por\" for the exchange (money given in return for the ticket) and \"para\" for the purpose of the trip (in order to travel to Madrid)."
+  }
+ },
+ "esb2p11l2": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Salimos temprano para que podamos llegar antes de que cierren las tiendas.",
+   "wrong": [
+    "Salimos temprano para que podamos llegar antes de que abran las tiendas.",
+    "Salimos tarde para que podamos llegar antes de que cierren las tiendas.",
+    "Salimos temprano para que podamos volver antes de que cierren las tiendas."
+   ],
+   "explanation": "The sentence \"Salimos temprano para que podamos llegar antes de que cierren las tiendas.\" says they left early so they can arrive before the stores close; the other choices change one word (abran, tarde, volver) that sounds clearly different."
+  },
+  "translate": {
+   "prompt": "Say that you are thanking someone because they helped you, and that you will send them the documents by email for Friday.",
+   "acceptableAnswers": [
+    "Gracias por tu ayuda; te mando los documentos por correo para el viernes.",
+    "Gracias por ayudarme; te envío los documentos por correo electrónico para el viernes.",
+    "Te agradezco tu ayuda; te mando los documentos por correo para el viernes."
+   ],
+   "explanation": "\"Gracias por tu ayuda; te mando los documentos por correo para el viernes.\" uses \"por\" for the reason for thanks and the means of sending, and \"para\" for the deadline."
+  }
+ },
+ "esb2p17l1": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "El periodista confirmó que la noticia era falsa antes de publicar el artículo.",
+   "wrong": [
+    "El periodista confirmó que la noticia era falsa antes de publicar el titular.",
+    "El periodista confirmó que la noticia era cierta antes de publicar el artículo.",
+    "El editor confirmó que la noticia era falsa antes de publicar el artículo."
+   ],
+   "explanation": "The sentence is \"El periodista confirmó que la noticia era falsa antes de publicar el artículo.\" Listen for falsa (false), which contrasts with cierta, and for artículo versus titular."
+  },
+  "speak": {
+   "answer": "El titular del periódico habla de las noticias",
+   "explanation": "The phrase \"El titular del periódico habla de las noticias\" uses titular for the headline, periódico for the newspaper and the plural noticias for the news."
+  },
+  "translate": {
+   "prompt": "Say that the journalist wrote an article about the news for the newspaper.",
+   "acceptableAnswers": [
+    "La periodista escribió un artículo sobre las noticias para el periódico.",
+    "El periodista escribió un artículo sobre las noticias para el periódico.",
+    "La periodista escribió un artículo sobre la noticia para el diario.",
+    "El periodista redactó un artículo sobre la noticia para el periódico."
+   ],
+   "explanation": "The model sentence \"La periodista escribió un artículo sobre las noticias para el periódico.\" uses artículo for the whole piece; periodista is the same for masculine and feminine, and diario can replace periódico."
+  }
+ },
+ "esc1p23l1": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "La desigualdad social se ha agravado y la opinión pública exige una reforma de políticas urgente.",
+   "wrong": [
+    "La desigualdad social se ha agravado y la opinión pública exige una reforma de políticas inmediata.",
+    "La desigualdad social se ha reducido y la opinión pública exige una reforma de políticas urgente.",
+    "La desigualdad social se ha agravado y la opinión pública rechaza una reforma de políticas urgente."
+   ],
+   "explanation": "The sentence heard was \"La desigualdad social se ha agravado y la opinión pública exige una reforma de políticas urgente.\", meaning social inequality has worsened and public opinion demands an urgent policy reform."
+  },
+  "speak": {
+   "answer": "la participación cívica fortalece el movimiento de base",
+   "explanation": "\"la participación cívica fortalece el movimiento de base\" means civic engagement strengthens the grassroots movement, combining two terms from the lesson."
+  },
+  "translate": {
+   "prompt": "Say that social inequality and the lack of civic engagement worry public opinion.",
+   "acceptableAnswers": [
+    "La desigualdad social y la falta de participación cívica preocupan a la opinión pública.",
+    "La desigualdad social y la falta de participación cívica inquietan a la opinión pública.",
+    "A la opinión pública le preocupan la desigualdad social y la falta de participación cívica."
+   ],
+   "explanation": "\"La desigualdad social y la falta de participación cívica preocupan a la opinión pública.\" uses the plural verb \"preocupan\" because it has two subjects, and the personal \"a\" before \"la opinión pública\" marks the people affected."
+  }
+ },
+ "esc1p23l2": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "La polarización política dificulta que las comunidades marginadas logren un cambio sistémico mediante la acción colectiva.",
+   "wrong": [
+    "La polarización política dificulta que las comunidades marginadas logren un cambio sistémico mediante la opinión pública.",
+    "La polarización política facilita que las comunidades marginadas logren un cambio sistémico mediante la acción colectiva.",
+    "La participación política dificulta que las comunidades marginadas logren un cambio sistémico mediante la acción colectiva."
+   ],
+   "explanation": "The sentence heard was \"La polarización política dificulta que las comunidades marginadas logren un cambio sistémico mediante la acción colectiva.\" It says political polarization makes it harder for marginalized communities to achieve systemic change through collective action."
+  },
+  "translate": {
+   "prompt": "Say that a person's socioeconomic status shapes their access to social mobility and the public welfare.",
+   "acceptableAnswers": [
+    "El estatus socioeconómico de una persona determina su acceso a la movilidad social y al bienestar público.",
+    "El nivel socioeconómico de una persona condiciona su acceso a la movilidad social y al bienestar público.",
+    "El estatus socioeconómico de alguien influye en su acceso a la movilidad social y al bienestar público."
+   ],
+   "explanation": "The natural wording is \"El estatus socioeconómico de una persona determina su acceso a la movilidad social y al bienestar público.\" Verbs like \"determina\", \"condiciona\" or \"influye en\" all express that status shapes access."
+  }
+ },
+ "esc1p16l3": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Los investigadores publicaron una teoría que explica por qué fallaron todas las simulaciones anteriores del experimento.",
+   "wrong": [
+    "Los investigadores publicaron una teoría que explica por qué fallaron todos los prototipos anteriores del experimento.",
+    "Los investigadores publicaron una teoría que explica por qué fallaron todas las predicciones anteriores del experimento.",
+    "Los investigadores publicaron una teoría que explica por qué fallaron todas las simulaciones recientes del experimento."
+   ],
+   "explanation": "The speaker says \"Los investigadores publicaron una teoría que explica por qué fallaron todas las simulaciones anteriores del experimento.\"; the distractors change one clearly audible word (prototipos, predicciones, recientes)."
+  },
+  "speak": {
+   "answer": "un gran avance en la computación cuántica",
+   "explanation": "\"un gran avance en la computación cuántica\" combines \"avance\" (breakthrough) with \"cuántica\", which agrees with the feminine noun computación."
+  },
+  "translate": {
+   "prompt": "Say that the new neural network analyzes the evidence faster than the previous algorithm.",
+   "acceptableAnswers": [
+    "La nueva red neuronal analiza la evidencia más rápido que el algoritmo anterior.",
+    "La nueva red neuronal analiza la evidencia más rápidamente que el algoritmo anterior.",
+    "La nueva red neuronal analiza las evidencias más rápido que el algoritmo anterior."
+   ],
+   "explanation": "\"La nueva red neuronal analiza la evidencia más rápido que el algoritmo anterior.\" uses \"red neuronal\" with the adjective after the noun, and \"más rápido que\" for the comparison."
+  }
+ }
+}

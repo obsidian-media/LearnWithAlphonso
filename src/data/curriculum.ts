@@ -2,6 +2,7 @@ import { advancedUnits, type Level } from "./levels";
 import { applyQuestionFixes } from "./question-fixes";
 import { applyReviewFixes } from "./review-fixes";
 import { addQuestionVariety } from "./question-variety";
+import { applyLessonExtras } from "./lesson-extras";
 import { generatedUnits } from "./lesson-bank";
 export type { Level };
 export { LEVELS } from "./levels";
@@ -1232,7 +1233,7 @@ export const rawCurriculum: Unit[] = [...handAuthored, ...generatedUnits(existin
 
 /** The fixed curriculum plus one reorder, listening and translate question per A1/A2 lesson (question-variety.ts). */
 export const curriculum: Unit[] = applyReviewFixes(
-  addQuestionVariety(applyQuestionFixes(rawCurriculum)),
+  applyLessonExtras(addQuestionVariety(applyQuestionFixes(rawCurriculum)), "en"),
   "en",
 );
 

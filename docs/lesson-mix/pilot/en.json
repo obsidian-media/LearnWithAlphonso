@@ -1,0 +1,296 @@
+{
+ "u2l3": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "I enjoy playing guitar on weekends.",
+   "wrong": [
+    "I enjoy playing guitar on Sundays.",
+    "I enjoy playing soccer on weekends.",
+    "I enjoy playing guitar on weekdays."
+   ],
+   "explanation": "The speaker says \"I enjoy playing guitar on weekends.\" The other choices change one word: Sundays, soccer, or weekdays."
+  },
+  "speak": {
+   "answer": "We go hiking every Sunday",
+   "explanation": "Say the phrase \"We go hiking every Sunday\" aloud. We use \"go\" with an -ing word for activities."
+  },
+  "translate": {
+   "prompt": "Tell a friend that soccer is a hobby you enjoy.",
+   "acceptableAnswers": [
+    "I like playing soccer.",
+    "I enjoy playing soccer.",
+    "I like to play soccer."
+   ],
+   "explanation": "\"I like playing soccer.\" uses \"like\" with the -ing form to talk about a hobby you enjoy."
+  }
+ },
+ "u2l2": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "She works in a bank.",
+   "wrong": [
+    "She works in a barn.",
+    "She walks in a bank.",
+    "She works in a park."
+   ],
+   "explanation": "The speaker says \"She works in a bank.\" It uses the present simple with -s for \"she\"."
+  },
+  "translate": {
+   "prompt": "Say that you answer emails all day.",
+   "acceptableAnswers": [
+    "I answer emails all day.",
+    "I answer emails every day.",
+    "I answer emails all the time."
+   ],
+   "explanation": "With \"I\" the present simple uses the base verb, so the idea is \"I answer emails all day.\""
+  }
+ },
+ "u2l1": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "I wake up at seven.",
+   "wrong": [
+    "I walk up at seven.",
+    "I wake up at eleven.",
+    "I wash up at seven."
+   ],
+   "explanation": "The speaker says \"I wake up at seven.\" using the base verb \"wake\" with \"I\" in the present simple."
+  },
+  "speak": {
+   "answer": "I eat breakfast with my family",
+   "explanation": "The phrase \"I eat breakfast with my family\" uses the base verb \"eat\" with \"I\" to describe a daily habit."
+  },
+  "translate": {
+   "prompt": "Say that your friend drinks tea every morning.",
+   "acceptableAnswers": [
+    "My friend drinks tea every morning.",
+    "My friend drinks tea in the morning.",
+    "My friend has tea every morning."
+   ],
+   "explanation": "\"My friend drinks tea every morning.\" uses \"drinks\" with -s because \"my friend\" is third person singular."
+  }
+ },
+ "u5l1": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Can I pay by card for the blue jacket?",
+   "wrong": [
+    "Can I pay by cash for the blue jacket?",
+    "Can I pay by card for the red jacket?",
+    "Can I pay by card for the blue shirt?"
+   ],
+   "explanation": "The speaker says \"Can I pay by card for the blue jacket?\" The other choices change one word: the way of paying, the color, or the item."
+  },
+  "speak": {
+   "answer": "Do you have this in a smaller size?",
+   "explanation": "You read the phrase \"Do you have this in a smaller size?\" aloud. It is a polite way to ask a shop assistant for another size."
+  }
+ },
+ "u5l2": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "Our flight was delayed, so we waited at the gate.",
+   "wrong": [
+    "Our flight was canceled, so we waited at the gate.",
+    "Our flight was delayed, so we waited at the desk.",
+    "Our flight was delayed, so we walked at the gate."
+   ],
+   "explanation": "The speaker says \"Our flight was delayed, so we waited at the gate.\" The flight is late but still going, and they wait at the gate."
+  }
+ },
+ "u4l1": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "We watched a movie last night.",
+   "wrong": [
+    "We washed a movie last night.",
+    "We watched a movie last week.",
+    "We wanted a movie last night."
+   ],
+   "explanation": "The speaker says \"We watched a movie last night.\" using the regular past form \"watched\" and the time phrase \"last night\"."
+  },
+  "speak": {
+   "answer": "I went to the store yesterday",
+   "explanation": "Say \"I went to the store yesterday\" with the irregular past form \"went\", because \"yesterday\" shows the action is finished."
+  },
+  "translate": {
+   "prompt": "Say that you visited your grandmother last weekend.",
+   "acceptableAnswers": [
+    "I visited my grandmother last weekend.",
+    "Last weekend I visited my grandmother.",
+    "I went to see my grandmother last weekend."
+   ],
+   "explanation": "\"I visited my grandmother last weekend.\" uses the regular verb \"visit\" with -ed, because \"last weekend\" shows the action is finished and in the past."
+  }
+ },
+ "b1p2l5": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "If I had more free time, I would learn the piano.",
+   "wrong": [
+    "If I had more free time, I would learn the guitar.",
+    "If I had more free money, I would learn the piano.",
+    "If I had more free time, I would teach the piano."
+   ],
+   "explanation": "The speaker said \"If I had more free time, I would learn the piano.\" This is a second conditional: past simple in the if-clause, would plus a verb in the result."
+  },
+  "speak": {
+   "answer": "If it rains, we will stay home",
+   "explanation": "Read the phrase \"If it rains, we will stay home\" aloud. It is a first conditional: if plus present simple, then will plus a verb."
+  }
+ },
+ "b1p2l4": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "If it rains tomorrow, we will stay at home and cook.",
+   "wrong": [
+    "If it rains tomorrow, we will stay at home and swim.",
+    "If it rains tomorrow, we will stay at school and cook.",
+    "If it rains tomorrow, we will stay at home and clean."
+   ],
+   "explanation": "The speaker said \"If it rains tomorrow, we will stay at home and cook.\" The other choices change one word (swim, school, clean), so they describe a different plan."
+  }
+ },
+ "b1p2l3": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "If the train is late, we will take a taxi instead.",
+   "wrong": [
+    "If the train was late, we will take a taxi instead.",
+    "If the train is late, we would take a taxi instead.",
+    "If the train is late, we will take a bus instead."
+   ],
+   "explanation": "The speaker says \"If the train is late, we will take a taxi instead.\" It is a real future possibility, so the if-clause uses the present simple and the result uses \"will\"."
+  },
+  "speak": {
+   "answer": "If I had more time, I would learn another language",
+   "explanation": "The phrase \"If I had more time, I would learn another language\" is a second conditional: the past simple in the if-clause plus \"would\" describes an unreal present situation."
+  },
+  "translate": {
+   "prompt": "Say that you would travel more if you had more money.",
+   "acceptableAnswers": [
+    "I would travel more if I had more money.",
+    "If I had more money, I would travel more.",
+    "If I had more money, I'd travel more.",
+    "I'd travel more if I had more money."
+   ],
+   "explanation": "\"I would travel more if I had more money.\" is a second conditional: the if-clause takes the past simple \"had\" and the result clause takes \"would\" plus the base verb for an unreal situation."
+  }
+ },
+ "b2p10l3": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "The report was quickly debunked by fact-checkers after it spread on social media.",
+   "wrong": [
+    "The report was quickly shared by fact-checkers after it spread on social media.",
+    "The report was quickly forgotten by fact-checkers after it spread on social media.",
+    "The report was quickly verified by fact-checkers after it spread on social media."
+   ],
+   "explanation": "The speaker says \"The report was quickly debunked by fact-checkers after it spread on social media.\" Debunked means shown to be false, which is why fact-checkers are the ones doing it."
+  },
+  "speak": {
+   "answer": "He upgraded his old phone for a new one",
+   "explanation": "The phrase \"He upgraded his old phone for a new one\" uses upgraded to mean replacing a device with a better version."
+  }
+ },
+ "b2p10l2": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "The company was criticized after the news site reported that customer data had been exposed.",
+   "wrong": [
+    "The company was praised after the news site reported that customer data had been exposed.",
+    "The company was criticized after the news site reported that customer data had been deleted.",
+    "The company was criticized after the news site reported that customer data had been upgraded."
+   ],
+   "explanation": "The sentence the learner hears is \"The company was criticized after the news site reported that customer data had been exposed.\" The wrong choices change one word (praised, deleted, upgraded), which sounds different and changes the meaning."
+  }
+ },
+ "b2p16l3": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "The flight was delayed on account of the storm, so we missed our connection.",
+   "wrong": [
+    "The flight was canceled on account of the storm, so we missed our connection.",
+    "The flight was delayed on account of the storm, so we booked our connection.",
+    "The flight was delayed on account of the strike, so we missed our connection."
+   ],
+   "explanation": "The speaker says \"The flight was delayed on account of the storm, so we missed our connection.\" and the other choices each change one word, such as delayed, storm or missed."
+  },
+  "speak": {
+   "answer": "The strike led to long delays across the city",
+   "explanation": "The phrase \"The strike led to long delays across the city\" uses \"led to\" to link a cause to its outcome, which is the connector this lesson practices."
+  }
+ },
+ "c1p16l5": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "What really surprised everyone was how quickly the committee reached a final decision.",
+   "wrong": [
+    "What really surprised everyone was how quickly the committee reached a formal decision.",
+    "What really surprised everyone was how quietly the committee reached a final decision.",
+    "What really worried everyone was how quickly the committee reached a final decision."
+   ],
+   "explanation": "The speaker said \"What really surprised everyone was how quickly the committee reached a final decision.\" The other choices each change one word, such as 'formal', 'quietly' or 'worried'."
+  },
+  "speak": {
+   "answer": "What annoyed me was the lack of communication",
+   "explanation": "Read the cleft sentence aloud: \"What annoyed me was the lack of communication\". The wh-clause 'What annoyed me' is the singular subject, so it takes 'was'."
+  },
+  "translate": {
+   "prompt": "Emphasize that the delay, not the cost, was the real problem, using a structure beginning with 'It'.",
+   "acceptableAnswers": [
+    "It was the delay, not the cost, that was the real problem.",
+    "It was the delay that was the real problem, not the cost.",
+    "It was the delay rather than the cost that was the real problem."
+   ],
+   "explanation": "A cleft with 'It was ... that' puts the focus on one element, as in \"It was the delay, not the cost, that was the real problem.\" The contrast is added with 'not' or 'rather than'."
+  }
+ },
+ "c1p16l4": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "It was the unexpected delay that caused most of the confusion during the meeting.",
+   "wrong": [
+    "It was the unexpected delay that caused most of the confusion during the journey.",
+    "It was the unexpected delay that caused most of the confusion during the lecture.",
+    "It was the unexpected delay that caused most of the confusion during the interview."
+   ],
+   "explanation": "The sentence heard is \"It was the unexpected delay that caused most of the confusion during the meeting.\" It is an it-cleft that puts the focus on \"the unexpected delay\", and only the final word separates it from the other choices."
+  },
+  "translate": {
+   "prompt": "Use a cleft sentence beginning with 'What' to stress that his honesty, more than anything else, impressed the committee.",
+   "acceptableAnswers": [
+    "What impressed the committee most was his honesty.",
+    "What impressed the committee most of all was his honesty.",
+    "What the committee found most impressive was his honesty.",
+    "What impressed the committee more than anything else was his honesty."
+   ],
+   "explanation": "A wh-cleft places the emphasized idea at the end after \"was\", so the natural sentence is \"What impressed the committee most was his honesty.\""
+  }
+ },
+ "c1p16l1": {
+  "listening": {
+   "prompt": "What did you hear?",
+   "audioText": "It was the manager who made the final decision about the new budget.",
+   "wrong": [
+    "It was the manager who made the final decision about the new schedule.",
+    "It was the manager who made the final decision about the old budget.",
+    "It was the manager who changed the final decision about the new budget."
+   ],
+   "explanation": "The speaker says \"It was the manager who made the final decision about the new budget.\" The other choices each change one word, such as schedule, old, or changed."
+  },
+  "speak": {
+   "answer": "What surprised me most was his honesty",
+   "explanation": "Read the wh-cleft aloud: \"What surprised me most was his honesty\". The whole clause 'What surprised me most' is the subject, and 'was' links it to the emphasized idea."
+  },
+  "translate": {
+   "prompt": "Emphasize that it was your sister, and nobody else, who called the police.",
+   "acceptableAnswers": [
+    "It was my sister who called the police.",
+    "It was my sister that called the police.",
+    "It was my sister who phoned the police."
+   ],
+   "explanation": "A cleft sentence with 'It was' puts the focus on the person: \"It was my sister who called the police.\" 'Who' or 'that' introduces the clause about what she did."
+  }
+ }
+}

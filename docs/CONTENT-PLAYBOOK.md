@@ -212,3 +212,41 @@ After the full review every item has a verdict. The closure PR can then commit
 verdict file), with a test that fails when an item's current hash is not in it: content changed
 without a review record. `run.ts check` would update the entries it reviewed. It is deliberately not
 built before the full review, because today it would fail on every item.
+
+## 11. The lesson mix: listening, speak and translate in every lesson
+
+Most lessons were pure mc and fill. The lesson-mix pass appends a listening and a translate question to
+every eligible lesson, and a speak question to every second eligible lesson of the course (`courseNeeds`: alternate across eligible lessons, "every other lesson",
+owner, 2026-11-21). Dedicated listening, speak and translate packs (no mc or fill) are left alone. A
+lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N min" updates itself.
+
+- **Append only.** The new questions get the fixed ids `lx1`, `sx1`, `tx1` (listening, speak, translate;
+  they match the server's `^[a-z0-9]+$` rule) after the lesson's last question. Nothing existing moves,
+  so review history is safe. Data: `src/data/lesson-extras/{en,fr,es}.json`, keyed by lesson id, loaded by
+  `src/data/lesson-extras.ts` into the three curriculum chains. A record for a missing lesson throws.
+- **Tooling:** `scripts/lesson-mix/run.ts` (header lists the commands), logic in `src/lib/lesson-mix/`.
+  `select`, `draft` (Sonnet 5.5 batch, one request per lesson, only the types the lesson needs),
+  `gates`, `review` (Sonnet), `second` (Mistral, synchronous: flagged plus 10%), `judge` (Opus),
+  `apply` (patches through the closure run's `fixes.ts` checker), `export`.
+- **Money.** Its own ledger (`.lesson-mix/ledger.json`, mirrored in `~/.lwa-lesson-mix/`), a US$60 hard cap
+  across Anthropic and Mistral together, enforced in code (`src/lib/lesson-mix/ledger.ts`): the worst case
+  is reserved before every submission and a projection over the cap is refused. `--go` needs
+  `LESSON_MIX_APPROVED=yes`. Use the `*_FILE` key form only (`ANTHROPIC_API_KEY_FILE`, `OPENROUTER_API_KEY_FILE`): the script reads the file at the point of use and never prints it; never put a key itself in an env var or on a command line. ONE lock (`.lesson-mix/run.lock`) covers every phase and provider, and the ledger is re-opened inside it; a stale ledger instance refuses to write.
+- **Deterministic gates** (`src/lib/lesson-mix/gates.ts`, held by `lesson-mix.test.ts` and, for the data,
+  `src/data/lesson-extras.test.ts`): listening (prompt never restates the audio, four distinct choices,
+  one-to-three-word variants, no homophone: English list, French est/et a/à ou/où and silent endings,
+  Spanish seseo, yeísmo, b/v, silent h, a bare tilde); speak (3 to 12 words, no digits, compound numbers,
+  ordinals or possessive 's, round trip through the course's spoken-answer normaliser); translate (2 to 5
+  distinct wordings, the idea never contains the sentence, no "(e)" trick, word counts by level); all
+  types: explanation quotes the answer, no duplicate of an existing item, no English in French or Spanish.
+- **Panel.** The closure run's reviewers read every new item (Sonnet), every flag plus 10% (Mistral), and
+  Opus judges the flagged. Say "AI-reviewed", never "native-reviewed".
+- **Bundles.** Content changes need the native bundles: `bun scripts/export-ios-content.ts` and
+  `bun scripts/export-android-content.ts`, committed with the content (CI fails stale bundles).
+  Question ids and counts change, so after the merge the owner reseeds (`bun scripts/seed-curriculum-db.ts`);
+  an installed build with the old bundle gets `409 lesson-version-mismatch` on a changed lesson, so cut
+  the builds before the reseed or accept the tester window.
+- **Web rollout order.** Appended lessons answer `409 lesson-version-mismatch` between the web deploy and the database reseed, so run the reseed IMMEDIATELY after the merge's deploy. Old native bundles also get 409 on changed lessons until the app updates: cut and distribute the build first.
+- **What the speak gate proves.** The round trip proves WEB grading only (`src/lib/spoken-answer*.ts`); `lesson-mix.test.ts` also checks the web normalisers agree with the edge copies in `supabase/functions/_shared/spoken-answer*.ts` on a sample. A lesson may not pass 50 questions after appending (server cap; `addLessonExtras` throws).
+- **Counts.** No test hard-codes a question count (they assert lesson counts, which do not change); id-parity compares ids with a
+  baseline (`src/lib/id-parity.test.ts`): a bulk content PR must check it and say if it adds ids.

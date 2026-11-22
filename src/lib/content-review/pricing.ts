@@ -49,6 +49,21 @@ export const MODELS = {
   // account (there is no "mistral-large-latest" alias). It always reasons; its reasoning tokens are
   // counted as output here (the docs do not say otherwise, so the estimate errs high).
   "mistral-large-4": { provider: "mistral", input: 0.7, output: 2.1, batch: 0.5 },
+  // Lesson-mix pilot (2026-11-21): the owner's account answers 403 "not available in your subscription
+  // tier" for mistral-large-4, so the second opinion used mistral-medium-latest. Its price could not be
+  // confirmed (docs.mistral.ai model card and mistral.ai/pricing list none), so it is booked at the
+  // Large 4 rates, which are an upper bound for a Medium model: the ledger errs high.
+  "mistral-medium-latest": { provider: "mistral", input: 0.7, output: 2.1, batch: 0.5 },
+  // mistral-small-latest: price not confirmed either; booked at the same Large-4 upper bound.
+  // OpenRouter route (BYOK Mistral key), OpenRouter model list read 2026-11-21: mistral-large-4-0
+  // lists $0.70 in / $2.10 out. With BYOK, OpenRouter may add a small fee and Mistral bills the key
+  // itself; the full listed price is booked as an upper bound.
+  "mistralai/mistral-large-4-0": { provider: "mistral", input: 0.7, output: 2.1, batch: 1 },
+  // Other OpenRouter Mistral ids, listed prices (same upper-bound rule).
+  "mistralai/mistral-large-2512": { provider: "mistral", input: 0.5, output: 1.5, batch: 1 },
+  "mistralai/mistral-medium-3-5": { provider: "mistral", input: 1.5, output: 7.5, batch: 1 },
+  "mistralai/mistral-small-2603": { provider: "mistral", input: 0.15, output: 0.6, batch: 1 },
+  "mistral-small-latest": { provider: "mistral", input: 0.7, output: 2.1, batch: 0.5 },
 } as const satisfies Record<string, ModelPrice>;
 export type ModelId = keyof typeof MODELS;
 
