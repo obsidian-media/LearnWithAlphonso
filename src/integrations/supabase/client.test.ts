@@ -52,7 +52,11 @@ describe("supabase client", () => {
       "https://example.supabase.co",
       "sb_publishable_abc",
       expect.objectContaining({
-        auth: { persistSession: true, autoRefreshToken: true },
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          storageKey: "sb-qhcjpfbxfcltjbiuknyt-auth-token",
+        },
       }),
     );
   });

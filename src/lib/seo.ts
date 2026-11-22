@@ -7,7 +7,7 @@
  */
 
 /** The public origin of the web app (the one the legal pages and the share card already name). */
-export const SITE_ORIGIN = "https://learn.alphonsoecosystem.app";
+export const SITE_ORIGIN = "https://learnwithalphonso.com";
 
 /** Browser-chrome colours: the Royal light and Royal night page backgrounds (--c-surface). Kept here, outside view code, because a meta tag cannot read a CSS variable. */
 export const THEME_COLOR_LIGHT = "#FBF6EC";

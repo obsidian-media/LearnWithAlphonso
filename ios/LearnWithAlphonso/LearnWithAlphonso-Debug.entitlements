@@ -29,6 +29,7 @@
 	     (a missing capability fails codesigning outright). -->
 	<key>com.apple.developer.associated-domains</key>
 	<array>
+		<string>applinks:learnwithalphonso.com</string>
 		<string>applinks:learn.alphonsoecosystem.app</string>
 	</array>
 </dict>

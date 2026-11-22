@@ -24,7 +24,10 @@ object SayThePicture {
     const val MAX_RECORD_MS = 6000
 
     /** Only photos from the project's own public bucket are ever drawn (same origin as VocabImagePolicy on iOS). */
-    private const val ALLOWED_URL_PREFIX = "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/"
+    private val ALLOWED_URL_PREFIXES = listOf(
+        "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/",
+        "https://api.learnwithalphonso.com/storage/v1/object/public/vocab-images/",
+    )
 
     data class PictureWord(val term: String, val image: VocabImageRef, val example: String = "") {
         /**
@@ -61,7 +64,7 @@ object SayThePicture {
         val pool = ArrayList<PictureWord>()
         for (unit in units) for (lesson in unit.lessons) for (item in deriveVocab(lesson, images)) {
             val image = item.image ?: continue
-            if (!image.url.startsWith(ALLOWED_URL_PREFIX)) continue
+            if (ALLOWED_URL_PREFIXES.none { image.url.startsWith(it) }) continue
             if (!seen.add(item.term.trim().lowercase())) continue
             pool.add(PictureWord(item.term, image, item.example))
         }

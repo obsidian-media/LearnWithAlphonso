@@ -25,4 +25,12 @@ final class FriendInviteLinkTests: XCTestCase {
         XCTAssertNil(FriendInviteLink.code(fromEntry: "not a code"))
         XCTAssertNil(FriendInviteLink.code(fromEntry: "https://evil.example/invite/29d081151d67"))
     }
+
+    func testAcceptsTheNewAndThePreviousHostOnly() {
+        XCTAssertEqual(FriendInviteLink.code(from: URL(string: "https://learnwithalphonso.com/invite/29d081151d67")!), "29d081151d67")
+        XCTAssertEqual(FriendInviteLink.code(from: URL(string: "https://learn.alphonsoecosystem.app/invite/29d081151d67")!), "29d081151d67")
+        XCTAssertNil(FriendInviteLink.code(from: URL(string: "https://learnwithalphonso.com.evil.example/invite/29d081151d67")!))
+        XCTAssertEqual(ReferralLink.code(from: URL(string: "https://learnwithalphonso.com/?ref=29d081151d67")!), "29d081151d67")
+        XCTAssertEqual(ReferralLink.code(from: URL(string: "https://learn.alphonsoecosystem.app/?ref=29d081151d67")!), "29d081151d67")
+    }
 }

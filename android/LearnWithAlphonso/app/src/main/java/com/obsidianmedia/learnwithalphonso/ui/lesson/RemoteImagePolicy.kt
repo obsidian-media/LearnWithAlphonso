@@ -12,7 +12,8 @@ import java.net.URI
  * the body is read with a hard cap instead of trusting the server.
  */
 internal object RemoteImagePolicy {
-    const val ALLOWED_HOST = "qhcjpfbxfcltjbiuknyt.supabase.co"
+    /** The project host and its custom API domain: the same bucket, both serve it. */
+    val ALLOWED_HOSTS = setOf("qhcjpfbxfcltjbiuknyt.supabase.co", "api.learnwithalphonso.com")
     const val ALLOWED_PATH_PREFIX = "/storage/v1/object/public/vocab-images/"
 
     /** Same 512 KiB ceiling the vocab-image pipeline enforces on upload. */
@@ -22,7 +23,7 @@ internal object RemoteImagePolicy {
         val uri = runCatching { URI(url) }.getOrNull() ?: return false
         return uri.scheme == "https" &&
             uri.rawUserInfo == null &&
-            uri.host == ALLOWED_HOST &&
+            uri.host in ALLOWED_HOSTS &&
             (uri.port == -1 || uri.port == 443) &&
             isVocabImagePath(uri.rawPath)
     }

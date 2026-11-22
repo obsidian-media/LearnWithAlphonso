@@ -138,7 +138,7 @@ async function liveProductTitle(): Promise<string> {
 }
 
 // Public client values, the same ones AppConfig.swift ships in the app.
-const SUPABASE_URL = "https://qhcjpfbxfcltjbiuknyt.supabase.co";
+const SUPABASE_URL = "https://api.learnwithalphonso.com";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9";
 
 /**

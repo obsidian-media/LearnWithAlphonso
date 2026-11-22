@@ -33,6 +33,13 @@ export async function requestWithCspNonce(request: Request, nonce: string): Prom
   });
 }
 
+/**
+ * The project's original Supabase host. Always allowed alongside the configured SUPABASE_URL (now
+ * https://api.learnwithalphonso.com): stored public storage URLs (vocab images) and older native/web builds still
+ * point at it, and it keeps working. Drop it only after those are migrated.
+ */
+export const LEGACY_SUPABASE_ORIGIN = "https://qhcjpfbxfcltjbiuknyt.supabase.co";
+
 export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): string {
   let supabaseOrigin: string | undefined;
   try {
@@ -45,10 +52,23 @@ export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): stri
     // Invalid/missing configuration must not broaden the policy.
   }
   const realtimeOrigin = supabaseOrigin?.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
-  const connect = ["'self'", supabaseOrigin, realtimeOrigin, SENTRY_INGEST_ORIGIN, POSTHOG_ORIGIN]
+  const legacyOrigin =
+    LEGACY_SUPABASE_ORIGIN === supabaseOrigin ? undefined : LEGACY_SUPABASE_ORIGIN;
+  const legacyRealtime = legacyOrigin?.replace(/^https:/, "wss:");
+  const connect = [
+    "'self'",
+    supabaseOrigin,
+    realtimeOrigin,
+    legacyOrigin,
+    legacyRealtime,
+    SENTRY_INGEST_ORIGIN,
+    POSTHOG_ORIGIN,
+  ]
     .filter(Boolean)
     .join(" ");
-  const images = ["'self'", "data:", "blob:", supabaseOrigin].filter(Boolean).join(" ");
+  const images = ["'self'", "data:", "blob:", supabaseOrigin, legacyOrigin]
+    .filter(Boolean)
+    .join(" ");
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
@@ -56,7 +76,7 @@ export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): stri
     // Script execution remains nonce-only; style tightening is a separate migration.
     "style-src 'self' 'unsafe-inline'",
     `img-src ${images}`,
-    `media-src 'self' blob: ${supabaseOrigin ?? ""}`.trim(),
+    `media-src ${["'self'", "blob:", supabaseOrigin, legacyOrigin].filter(Boolean).join(" ")}`,
     `connect-src ${connect}`,
     "font-src 'self' data:",
     "object-src 'none'",
@@ -81,7 +101,7 @@ export function addSecurityHeaders(response: Response, request: Request, nonce: 
     headers.set("content-security-policy", contentSecurityPolicy(nonce, process.env.SUPABASE_URL));
     if (new URL(request.url).protocol === "https:") {
       // Same value as the static files (static-headers.ts / vercel.json). includeSubDomains covers only hosts under
-      // this one (*.learn.alphonsoecosystem.app), never siblings such as discover.alphonsoecosystem.app.
+      // this one (*.learnwithalphonso.com), never siblings such as discover.alphonsoecosystem.app.
       headers.set("strict-transport-security", HSTS_VALUE);
     }
   }

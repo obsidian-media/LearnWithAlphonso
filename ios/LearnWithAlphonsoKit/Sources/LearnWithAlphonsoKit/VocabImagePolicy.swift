@@ -15,9 +15,14 @@ public enum VocabImageSlot: Sendable, Equatable {
 public enum VocabImagePolicy {
     public static let allowedURLPrefix =
         "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/"
+    /// The same bucket through the project's custom API domain.
+    public static let allowedURLPrefixes = [
+        allowedURLPrefix,
+        "https://api.learnwithalphonso.com/storage/v1/object/public/vocab-images/",
+    ]
 
     public static func isRenderable(_ url: String) -> Bool {
-        url.hasPrefix(allowedURLPrefix) && URL(string: url) != nil
+        allowedURLPrefixes.contains(where: { url.hasPrefix($0) }) && URL(string: url) != nil
     }
 
     /// `failedURL` is the URL whose load failed, not a Bool: SwiftUI reuses a

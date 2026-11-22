@@ -25,7 +25,7 @@ describe("LISTING", () => {
 
   it("points the marketing URL at the marketing site and support at the support page", () => {
     expect(LISTING.marketingUrl).toBe("https://discover.alphonsoecosystem.app");
-    expect(LISTING.supportUrl).toBe("https://learn.alphonsoecosystem.app/support");
+    expect(LISTING.supportUrl).toBe("https://learnwithalphonso.com/support");
   });
 
   it("states no price", () => {
@@ -47,13 +47,13 @@ describe("LISTING", () => {
     expect(
       listingProblems({
         ...LISTING,
-        description: LISTING.description.replace("https://learn.alphonsoecosystem.app/terms", ""),
+        description: LISTING.description.replace("https://learnwithalphonso.com/terms", ""),
       }),
     ).toContain("description: missing Terms of Use URL");
     expect(
       listingProblems({
         ...LISTING,
-        description: LISTING.description.replace("https://learn.alphonsoecosystem.app/privacy", ""),
+        description: LISTING.description.replace("https://learnwithalphonso.com/privacy", ""),
       }),
     ).toContain("description: missing Privacy Policy URL");
   });

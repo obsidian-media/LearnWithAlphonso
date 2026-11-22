@@ -84,7 +84,10 @@ sealed interface ReferralClaimResult {
 }
 
 object ReferralLink {
-    const val HOST = "learn.alphonsoecosystem.app"
+    const val HOST = "learnwithalphonso.com"
+
+    /** Links already shared name the previous host; both open the same invite. */
+    val ACCEPTED_HOSTS = setOf(HOST, "learn.alphonsoecosystem.app")
 
     /** An invite code is the opaque token from friend_invite_codes. Anything else is ignored. Same shape as the web's. */
     private val CODE = Regex("^[A-Za-z0-9+/=_-]{4,32}$")
@@ -99,10 +102,10 @@ object ReferralLink {
         return code.takeIf { isValid(it) }
     }
 
-    /** The code in a web link `https://learn.alphonsoecosystem.app/?ref=<code>`; null for any other URL. */
+    /** The code in a web link `https://learnwithalphonso.com/?ref=<code>`; null for any other URL. */
     fun codeFromUrl(url: String): String? {
         val uri = runCatching { URI(url) }.getOrNull() ?: return null
-        if (uri.scheme != "https" || uri.host?.lowercase() != HOST) return null
+        if (uri.scheme != "https" || uri.host?.lowercase() !in ACCEPTED_HOSTS) return null
         val query = uri.rawQuery ?: return null
         val value = query.split('&').firstNotNullOfOrNull { pair ->
             val i = pair.indexOf('=')

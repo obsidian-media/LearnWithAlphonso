@@ -5,7 +5,7 @@
  * (Nitro writes them into .vercel/output/config.json). static-headers.test.ts fails when either drifts from here,
  * when a public/ folder or root file is missing, or when Referrer-Policy stops matching the app responses'.
  *
- * includeSubDomains here covers only hosts *under* learn.alphonsoecosystem.app, never sibling hosts such as
+ * includeSubDomains here covers only hosts *under* learnwithalphonso.com, never sibling hosts such as
  * discover.alphonsoecosystem.app: HSTS is scoped to the host that sends it.
  */
 /** The one HSTS value: static files (here) and app responses (security-policy.ts) both send exactly this. */

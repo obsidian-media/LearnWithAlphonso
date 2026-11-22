@@ -33,4 +33,12 @@ class InviteLinkTest {
         assertNull(InviteLink.codeFromEntry("https://learn.alphonsoecosystem.app/learn"))
         assertNull(InviteLink.codeFromEntry("not a code"))
     }
+
+    @Test
+    fun `accepts invite links on the new and the previous host only`() {
+        assertEquals("a1b2c3d4e5f6", InviteLink.codeFromEntry("https://learnwithalphonso.com/invite/a1b2c3d4e5f6"))
+        assertEquals("a1b2c3d4e5f6", InviteLink.codeFromEntry("https://learn.alphonsoecosystem.app/invite/a1b2c3d4e5f6"))
+        assertNull(InviteLink.codeFromEntry("https://learnwithalphonso.com.evil.example/invite/a1b2c3d4e5f6"))
+        assertNull(InviteLink.codeFromEntry("https://evil-learnwithalphonso.com/invite/a1b2c3d4e5f6"))
+    }
 }

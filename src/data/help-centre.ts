@@ -16,6 +16,8 @@ export type HelpTopic = { id: string; title: string; body: string };
 
 /** Hosts a help sentence or an AI reply may link to. Email addresses are checked separately (SUPPORT_EMAIL only). */
 export const HELP_ALLOWED_HOSTS: readonly string[] = [
+  "learnwithalphonso.com",
+  // The previous hosts keep working and older replies/links may still name them.
   "alphonsoecosystem.app",
   "learn.alphonsoecosystem.app",
 ];
@@ -75,7 +77,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     title: "Your data and privacy",
     body: [
       "You can download a copy of your data: on the web, Profile, Your data, Download my data. In the app: Profile, Settings, Account, Export My Data.",
-      "The privacy page explains what we keep and why: https://learn.alphonsoecosystem.app/privacy",
+      "The privacy page explains what we keep and why: https://learnwithalphonso.com/privacy",
       "Requests about legal rights over your data (access, correction, erasure under a law) go to a person.",
     ].join("\n"),
   },

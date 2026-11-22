@@ -97,7 +97,7 @@ export const LEGAL_REQUIRED_PHRASES: Readonly<Record<LegalPath, readonly string[
   ],
   "/cookies": [
     SUPPORT_EMAIL,
-    "On learn.alphonsoecosystem.app the only optional storage is a campaign tag",
+    "On learnwithalphonso.com the only optional storage is a campaign tag",
     "If you choose Essential only they are discarded",
     "uses Vercel Web Analytics, which does not use cookies",
     "Cloudflare Turnstile runs a check in your browser",

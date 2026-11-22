@@ -19,10 +19,7 @@ import {
   type LegalPath,
 } from "../src/lib/legal-required-phrases";
 
-const BASE = (process.env.LEGAL_BASE_URL ?? "https://learn.alphonsoecosystem.app").replace(
-  /\/$/,
-  "",
-);
+const BASE = (process.env.LEGAL_BASE_URL ?? "https://learnwithalphonso.com").replace(/\/$/, "");
 let failures = 0;
 
 function fail(message: string): void {

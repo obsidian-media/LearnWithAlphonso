@@ -226,4 +226,11 @@ class ReferralTest {
         assertEquals(ReferralClaimResult.Error, result)
         assertNotNull(store.kept)
     }
+
+    @Test
+    fun `reads a referral code from the new and the previous host only`() {
+        assertEquals("29d081151d67", ReferralLink.codeFromUrl("https://learnwithalphonso.com/?ref=29d081151d67"))
+        assertEquals("29d081151d67", ReferralLink.codeFromUrl("https://learn.alphonsoecosystem.app/?ref=29d081151d67"))
+        assertNull(ReferralLink.codeFromUrl("https://evil.example/?ref=29d081151d67"))
+    }
 }

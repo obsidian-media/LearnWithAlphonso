@@ -45,7 +45,7 @@ describe("security policy", () => {
       policy.split("; ").find((directive) => directive.startsWith("script-src")),
     ).not.toContain("unsafe-inline");
     expect(policy).toContain(
-      "connect-src 'self' https://project.supabase.co wss://project.supabase.co https://o4511662373273600.ingest.us.sentry.io https://us.i.posthog.com",
+      "connect-src 'self' https://project.supabase.co wss://project.supabase.co https://qhcjpfbxfcltjbiuknyt.supabase.co wss://qhcjpfbxfcltjbiuknyt.supabase.co https://o4511662373273600.ingest.us.sentry.io https://us.i.posthog.com",
     );
     expect(policy).toContain("object-src 'none'");
     expect(policy).toContain("frame-ancestors 'none'");
@@ -55,6 +55,21 @@ describe("security policy", () => {
     );
     expect(contentSecurityPolicy("n", "not-a-url")).not.toContain("not-a-url");
     expect(contentSecurityPolicy("n", "http://localhost:54321")).not.toContain("localhost");
+  });
+
+  it("allows the custom API domain and, still, the legacy project host for images, media and connections", () => {
+    const policy = contentSecurityPolicy("n", "https://api.learnwithalphonso.com");
+    const directive = (name: string) => policy.split("; ").find((d) => d.startsWith(name)) ?? "";
+    for (const name of ["img-src", "media-src", "connect-src"]) {
+      expect(directive(name)).toContain("https://api.learnwithalphonso.com");
+      expect(directive(name)).toContain("https://qhcjpfbxfcltjbiuknyt.supabase.co");
+    }
+    expect(directive("connect-src")).toContain("wss://api.learnwithalphonso.com");
+    // The legacy host is not listed twice when it is also the configured one.
+    const same = contentSecurityPolicy("n", "https://qhcjpfbxfcltjbiuknyt.supabase.co");
+    expect(same.split("https://qhcjpfbxfcltjbiuknyt.supabase.co").length - 1).toBe(
+      same.split("; ").filter((d) => /^(img|media|connect)-src/.test(d)).length,
+    );
   });
 
   it("applies CSP in production and only sends HSTS on HTTPS responses", () => {

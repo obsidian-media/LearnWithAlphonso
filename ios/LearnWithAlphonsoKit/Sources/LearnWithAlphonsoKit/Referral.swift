@@ -87,9 +87,10 @@ public enum ReferralLink {
         return isValid(code) ? code : nil
     }
 
-    /// The code in a web link `https://learn.alphonsoecosystem.app/?ref=<code>`; nil for any other URL.
+    /// The code in a web link `https://learnwithalphonso.com/?ref=<code>`; nil for any other URL.
     public static func code(from url: URL, host: String = FriendInviteLink.host) -> String? {
-        guard url.scheme == "https", url.host?.lowercased() == host,
+        let accepted = host == FriendInviteLink.host ? FriendInviteLink.acceptedHosts : [host]
+        guard url.scheme == "https", let urlHost = url.host?.lowercased(), accepted.contains(urlHost),
               let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems else { return nil }
         return code(fromParam: items.first(where: { $0.name == "ref" })?.value)
     }
