@@ -128,10 +128,10 @@ final class LessonFlowTests: XCTestCase {
         // 2*20 + 25 + 45 + 3*8 = 134 s -> 3 min
         XCTAssertEqual(timing.estimateMinutes(questionTypes: ["mc", "mc", "fill", "translate"], newWords: 3), 3)
         XCTAssertEqual(timing.estimateMinutes(questionTypes: [], newWords: 0), 1)
-        // The real first English lesson: the web's start screen says "About 4 min".
+        // The real first English lesson: the web's start screen says "About 6 min" (11 questions: the 8 authored plus the listening, speak and translate questions appended by the lesson mix).
         let lesson = try ContentStore().bundle(for: .english).units[0].lessons[0]
         let words = deriveVocab(lesson: lesson, images: [:]).count
-        XCTAssertEqual(timing.estimateMinutes(questionTypes: lesson.questions.map(\.typeKey), newWords: words), 4)
+        XCTAssertEqual(timing.estimateMinutes(questionTypes: lesson.questions.map(\.typeKey), newWords: words), 6)
     }
 
     func testTheTimerLeavesOutPausedTime() {

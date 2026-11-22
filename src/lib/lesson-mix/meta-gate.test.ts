@@ -16,6 +16,7 @@ describe("metaTextProblems: text addressed to us instead of to the learner", () 
   });
 
   const bad: [string, string][] = [
+    ["distractors", `"${ans}" is right; each distractor changes one word.`],
     ["the learner", `The learner reads this aloud: "${ans}" uses the present simple.`],
     ["the user", `"${ans}" is what the user should say to ask for a seat.`],
     ["this item", `This item checks the present simple in "${ans}".`],

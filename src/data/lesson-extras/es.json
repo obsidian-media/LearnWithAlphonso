@@ -1968,8 +1968,8 @@
    "explanation": "The speaker says \"Tengo tres libros y dos lápices.\" meaning 'I have three books and two pencils.' Listen for tres (three) and dos (two), which differ clearly from seis (six) and cinco (five)."
   },
   "speak": {
-   "answer": "uno, dos, tres, cuatro, cinco",
-   "explanation": "\"uno, dos, tres, cuatro, cinco\" counts from one to five in order. Watch out for \"cuatro\" (four), which is easy to confuse with catorce, the word for fourteen."
+   "answer": "Tengo un gato y dos perros",
+   "explanation": "\"Tengo un gato y dos perros\" means I have one cat and two dogs; \"un\" (one) is masculine singular, while \"dos\" (two) is followed by a plural noun."
   },
   "translate": {
    "prompt": "Say that you have four books.",
@@ -7359,7 +7359,7 @@
     "Mis hermanos se enojan mucho cuando ganan el partido.",
     "Mis hermanos se enojan poco cuando pierden el partido."
    ],
-   "explanation": "\"Mis hermanos se enojan mucho cuando pierden el partido.\" \"Se enojan\" is reflexive enojarse (to get angry) in the plural. Distractors change the amount, the emotion or \"pierden\" (they lose)."
+   "explanation": "\"Mis hermanos se enojan mucho cuando pierden el partido.\" \"Se enojan\" is reflexive enojarse (to get angry) in the plural. The other choices change the amount, the emotion or \"pierden\" (they lose)."
   },
   "translate": {
    "prompt": "Say that you get nervous when you speak in front of many people. Use a reflexive verb with an adjective, and assume the speaker is male.",
@@ -7598,7 +7598,7 @@
     "Cuando me dieron la noticia, dije que no me lo creerían.",
     "Cuando me dieron la noticia, dijo que no me lo creía."
    ],
-   "explanation": "\"Cuando me dieron la noticia, dije que no me lo creía.\" \"Dije\" (I said) is first person, and \"creía\" is imperfect, matching the past. Distractors change the person (\"dijo\") or the tense (\"creo\", \"creerían\")."
+   "explanation": "\"Cuando me dieron la noticia, dije que no me lo creía.\" \"Dije\" (I said) is first person, and \"creía\" is imperfect, matching the past. The other choices change the person (\"dijo\") or the tense (\"creo\", \"creerían\")."
   },
   "translate": {
    "prompt": "Say that you were very surprised when you heard the news.",
@@ -14011,7 +14011,7 @@
     "Los investigadores lograron corroborar la hipótesis inicial mediante un análisis superficial de los datos recopilados.",
     "Los investigadores lograron corroborar la hipótesis inicial mediante un análisis riguroso de los datos publicados."
    ],
-   "explanation": "The sentence heard was \"Los investigadores lograron corroborar la hipótesis inicial mediante un análisis riguroso de los datos recopilados.\" Corroborar means to confirm, which differs clearly from refutar (to disprove) in the first distractor."
+   "explanation": "\"Los investigadores lograron corroborar la hipótesis inicial mediante un análisis riguroso de los datos recopilados.\" Corroborar means to confirm, which differs clearly from refutar (to disprove) in the first wrong choice."
   },
   "translate": {
    "prompt": "Say that the author needs to substantiate her argument with solid evidence.",

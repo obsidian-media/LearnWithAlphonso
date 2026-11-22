@@ -231,7 +231,7 @@ struct LessonPlayerView: View {
         return "Unit \(index + 1) \u{00B7} \(unit.title)"
     }
 
-    /// "About 4 min · 8 questions · Up to 100 XP": the minutes from the same rules as the web (lesson-timing.json).
+    /// "About 6 min · 11 questions · Up to 100 XP": the minutes from the same rules as the web (lesson-timing.json).
     private var startMeta: String {
         let minutes = LessonData.timing?.estimateMinutes(questionTypes: lesson.questions.map(\.typeKey), newWords: vocab.count) ?? 1
         return "About \(minutes) min \u{00B7} \(total) question\(total == 1 ? "" : "s") \u{00B7} Up to \(LessonXP.maxXp(total: total)) XP"

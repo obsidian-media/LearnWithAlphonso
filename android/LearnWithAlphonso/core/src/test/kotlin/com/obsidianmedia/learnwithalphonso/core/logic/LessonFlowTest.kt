@@ -109,7 +109,7 @@ class LessonFlowTest {
     }
 
     @Test
-    fun `the bundled timing matches the web rules and the first lesson is about 4 minutes`() {
+    fun `the bundled timing matches the web rules and the first lesson is about 6 minutes`() {
         val timing = LessonTiming.fromJson(resource("content/lesson-timing.json"))
         assertEquals(mapOf("mc" to 20, "listening" to 25, "fill" to 25, "reorder" to 30, "speak" to 30, "translate" to 45), timing.secondsPerQuestion)
         assertEquals(8, timing.secondsPerNewWord)
@@ -118,7 +118,7 @@ class LessonFlowTest {
         val store = ContentStore(::resource)
         val lesson = checkNotNull(store.findLesson("u1l1", Course.ENGLISH)).second
         val words = deriveVocab(lesson, store.vocabImages).size
-        assertEquals(4, timing.estimateMinutes(lesson.questions.map { it.typeKey }, words))
+        assertEquals(6, timing.estimateMinutes(lesson.questions.map { it.typeKey }, words))
     }
 
     @Test

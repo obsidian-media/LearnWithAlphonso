@@ -317,6 +317,12 @@ describe("speak gate: the round trip through the platform normalisers", () => {
     expect(p("I live on the second floor")).toMatch(/ordinal/);
     expect(p("This is Sara's house")).toMatch(/possessive/);
     expect(p("Tengo cuarenta y dos años", "es")).toMatch(/compound number/);
+    expect(p("J'ai dix-neuf euros", "fr")).toMatch(/compound number/);
+    expect(p("Il a dix sept ans", "fr")).toMatch(/compound number/);
+    expect(p("Tengo diecisiete años", "es")).toMatch(/compound number/);
+    expect(p("uno, dos, tres, cuatro, cinco", "es")).toMatch(/compound number/);
+    expect(p("Il y a dix euros", "fr")).not.toMatch(/compound number/);
+    expect(p("Tengo doce libros", "es")).not.toMatch(/compound number/);
   });
   it("round trip: every transcript variant of a correct phrase matches it", () => {
     for (const [a, c] of [

@@ -17,10 +17,11 @@ const RULES: { re: RegExp; why: string; roles?: MetaRole[] }[] = [
   },
   { re: /\bthis (item|question|exercise|task)\b/i, why: "talks about this item or question" },
   {
-    re: /\bthe (prompt|audio ?text|answer key|distractors?|acceptable answers?|accepted (wording|answer)s?|first wording|canonical (wording|answer)|model answer)\b/i,
+    re: /\bthe (prompt|audio ?text|answer key|acceptable answers?|accepted (wording|answer)s?|first wording|canonical (wording|answer)|model answer)\b/i,
     why: "names the item's machinery (prompt, key, distractors, wordings)",
   },
   { re: /\b(first|canonical) wording\b/i, why: "names the first wording" },
+  { re: /\bdistractors?\b/i, why: "names the distractors" },
   {
     re: /\btarget (sentence|answer|language|phrase)\b|\bcourse language\b/i,
     why: "names the target sentence or course language",
@@ -96,6 +97,9 @@ const RESTATING_OPENER =
   /^(the speaker (says|said)|the sentence (heard|is|you hear)|you (hear|heard)|the idea is|the model answer|the natural wording|the first wording)\b/i;
 
 /**
+ * GENERATOR-ONLY: this decides which explanations the `explain` pass rewrites. It is NOT a content gate: nothing
+ * in CI or in gateExtra enforces it, and a shipped explanation may fail it.
+ *
  * The stricter explanation rubric of the last round: it explains the pattern (enough content outside the
  * quoted sentence), says no more than the answer needs (230 characters), and does not open by restating
  * the sentence and stop. A failure is rewritten, not dropped.

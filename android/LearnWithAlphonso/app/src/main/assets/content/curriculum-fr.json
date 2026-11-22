@@ -1032,8 +1032,8 @@
               "id": "sx1",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "J'ai dix-neuf euros",
-              "explanation": "\"J'ai dix-neuf euros\" means I have nineteen euros; dix-neuf is ten plus nine, joined with a hyphen."
+              "answer": "J'ai douze euros",
+              "explanation": "\"J'ai douze euros\" means I have twelve euros; douze is a single word, and \"J'ai\" is je plus ai, written with an apostrophe."
             },
             {
               "id": "tx1",
@@ -57883,7 +57883,7 @@
                 "Il est dommage que vous ne soyez pas venus à la réunion hier soir."
               ],
               "answer": "Il est dommage que vous ne soyez pas venus à la conférence hier soir.",
-              "explanation": "The sentence \"Il est dommage que vous ne soyez pas venus à la conférence hier soir.\" uses the past subjunctive after an expression of regret, and each distractor changes one clearly audible word (partis, réunion, ce)."
+              "explanation": "\"Il est dommage que vous ne soyez pas venus à la conférence hier soir.\" uses the past subjunctive after an expression of regret; the other choices each change one clearly audible word (partis, réunion, ce)."
             },
             {
               "id": "tx1",

@@ -1768,8 +1768,8 @@
    "explanation": "The speaker says \"J'ai dix-sept ans.\" (I am seventeen years old); dix-sept sounds different from dix-huit, seize and vingt."
   },
   "speak": {
-   "answer": "J'ai dix-neuf euros",
-   "explanation": "\"J'ai dix-neuf euros\" means I have nineteen euros; dix-neuf is ten plus nine, joined with a hyphen."
+   "answer": "J'ai douze euros",
+   "explanation": "\"J'ai douze euros\" means I have twelve euros; douze is a single word, and \"J'ai\" is je plus ai, written with an apostrophe."
   },
   "translate": {
    "prompt": "Say the number that comes right after sixteen.",
@@ -14346,7 +14346,7 @@
     "Il est dommage que vous ne soyez pas venus à la réunion hier soir.",
     "Il est dommage que vous ne soyez pas venus à la conférence ce soir."
    ],
-   "explanation": "The sentence \"Il est dommage que vous ne soyez pas venus à la conférence hier soir.\" uses the past subjunctive after an expression of regret, and each distractor changes one clearly audible word (partis, réunion, ce)."
+   "explanation": "\"Il est dommage que vous ne soyez pas venus à la conférence hier soir.\" uses the past subjunctive after an expression of regret; the other choices each change one clearly audible word (partis, réunion, ce)."
   },
   "translate": {
    "prompt": "Say that you are sorry your neighbours did not come to the party (you wish they had come, and you regret it).",

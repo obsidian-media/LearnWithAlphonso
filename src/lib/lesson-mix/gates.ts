@@ -241,7 +241,7 @@ const POSSESSIVE_OK = new Set([
 const ORDINAL =
   /\b(\d+(st|nd|rd|th)|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|primer[oa]?|segund[oa]|tercer[oa]?|cuart[oa]|quint[oa]|premier|première|deuxième|troisième)\b/i;
 const COMPOUND_NUMBER =
-  /\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[ -](one|two|three|four|five|six|seven|eight|nine)\b|\bhundred\b|\bthousand\b|\btreinta y\b|\bcuarenta y\b|\bcincuenta y\b|\bsesenta y\b|\bsetenta y\b|\bochenta y\b|\bnoventa y\b|\bcien\b|\bciento\b|\bmil\b|\b(trente|quarante|cinquante|soixante|quatre-vingt)[ -]|\bcent\b|\bmille\b/i;
+  /\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[ -](one|two|three|four|five|six|seven|eight|nine)\b|\bhundred\b|\bthousand\b|\btreinta y\b|\bcuarenta y\b|\bcincuenta y\b|\bsesenta y\b|\bsetenta y\b|\bochenta y\b|\bnoventa y\b|\bcien\b|\bciento\b|\bmil\b|\b(trente|quarante|cinquante|soixante|quatre-vingt)[ -]|\bcent\b|\bmille\b|\bdix[ -](sept|huit|neuf)\b|\bdieci(s[eé]is|siete|ocho|nueve)\b|\bveinti\w+|\b(un|une|deux|trois|uno|dos|tres|cuatro|cinco|one|two|three|four|five)\s*,\s*(un|une|deux|trois|uno|dos|tres|cuatro|cinco|one|two|three|four|five|six|seis)\s*,\s*(deux|trois|quatre|dos|tres|cuatro|cinco|two|three|four|five|six|seis|siete)\b/i;
 
 export const spokenOf = {
   en: { norm: normaliseSpoken, match: matchesSpokenAnswer },

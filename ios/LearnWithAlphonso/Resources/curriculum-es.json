@@ -587,8 +587,8 @@
               "id": "sx1",
               "type": "speak",
               "prompt": "Say this aloud:",
-              "answer": "uno, dos, tres, cuatro, cinco",
-              "explanation": "\"uno, dos, tres, cuatro, cinco\" counts from one to five in order. Watch out for \"cuatro\" (four), which is easy to confuse with catorce, the word for fourteen."
+              "answer": "Tengo un gato y dos perros",
+              "explanation": "\"Tengo un gato y dos perros\" means I have one cat and two dogs; \"un\" (one) is masculine singular, while \"dos\" (two) is followed by a plural noun."
             },
             {
               "id": "tx1",
@@ -38587,7 +38587,7 @@
                 "Mis hermanos se enojan mucho cuando pierden el partido."
               ],
               "answer": "Mis hermanos se enojan mucho cuando pierden el partido.",
-              "explanation": "\"Mis hermanos se enojan mucho cuando pierden el partido.\" \"Se enojan\" is reflexive enojarse (to get angry) in the plural. Distractors change the amount, the emotion or \"pierden\" (they lose)."
+              "explanation": "\"Mis hermanos se enojan mucho cuando pierden el partido.\" \"Se enojan\" is reflexive enojarse (to get angry) in the plural. The other choices change the amount, the emotion or \"pierden\" (they lose)."
             },
             {
               "id": "tx1",
@@ -39542,7 +39542,7 @@
                 "Cuando me dieron la noticia, dije que no me lo creerían."
               ],
               "answer": "Cuando me dieron la noticia, dije que no me lo creía.",
-              "explanation": "\"Cuando me dieron la noticia, dije que no me lo creía.\" \"Dije\" (I said) is first person, and \"creía\" is imperfect, matching the past. Distractors change the person (\"dijo\") or the tense (\"creo\", \"creerían\")."
+              "explanation": "\"Cuando me dieron la noticia, dije que no me lo creía.\" \"Dije\" (I said) is first person, and \"creía\" is imperfect, matching the past. The other choices change the person (\"dijo\") or the tense (\"creo\", \"creerían\")."
             },
             {
               "id": "tx1",
@@ -65299,7 +65299,7 @@
                 "Los investigadores lograron corroborar la hipótesis inicial mediante un análisis superficial de los datos recopilados."
               ],
               "answer": "Los investigadores lograron corroborar la hipótesis inicial mediante un análisis riguroso de los datos recopilados.",
-              "explanation": "The sentence heard was \"Los investigadores lograron corroborar la hipótesis inicial mediante un análisis riguroso de los datos recopilados.\" Corroborar means to confirm, which differs clearly from refutar (to disprove) in the first distractor."
+              "explanation": "\"Los investigadores lograron corroborar la hipótesis inicial mediante un análisis riguroso de los datos recopilados.\" Corroborar means to confirm, which differs clearly from refutar (to disprove) in the first wrong choice."
             },
             {
               "id": "tx1",

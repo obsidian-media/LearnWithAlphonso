@@ -85,6 +85,14 @@ async function answerCurrentQuestion(page: Page) {
       await page.getByRole("button", { name: q.choices[q.answer], exact: true }).click();
     } else if (q.type === "fill") {
       await page.getByPlaceholder("Type your answer").fill(q.answer);
+    } else if (q.type === "listening") {
+      // The audio is played by the device voice; the learner picks the sentence they heard.
+      await page.locator("[data-answers] button").filter({ hasText: q.answer }).first().click();
+    } else if (q.type === "translate") {
+      await page.getByLabel("Your answer").fill(q.acceptableAnswers[0]!);
+    } else if (q.type === "speak") {
+      // No microphone in the test browser: the app offers the typed fallback, as lesson-room.spec.ts relies on.
+      await page.getByLabel("Type the phrase").fill(q.answer);
     } else {
       throw new Error(`the first lesson gained a ${q.type} question; extend this test`);
     }
