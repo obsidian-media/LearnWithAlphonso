@@ -1,120 +1,125 @@
 # Open items
 
-A public, sanitised list of what is not finished yet in Learn with Alphonso. The detailed internal backlog is kept private. Last swept 2026-11-16.
+A public, sanitised list of what is not finished yet in Learn with Alphonso. The detailed internal backlog is kept private. Last swept 2026-11-22 against main (d8350542, build 72), merged pull requests #603 to #705 and read-only checks of the production database.
 
-Sweep of 2026-11-15 against main, merged pull requests and read-only checks of the production database. "Unverified" means it could not be confirmed from code, merged PRs or the database; nothing is marked done without evidence. Old section ids (for example 0.0-an) point at the private internal backlog.
+"Unverified" means it could not be confirmed from code, merged PRs, the database or live URLs; nothing is marked done without evidence. Old section ids (for example 0.0-an) point at the private internal backlog.
 
 **GitHub upkeep.** Since 2026-11-16 the owner has delegated GitHub upkeep (update, rebase and merge reviewed green pull requests, including migrations) to the coordinating agent.
 
 **Staleness sweep (standing rule, every pass).** Besides closing new merges, reconcile every standing risk, weak-spot, not-done or blocker statement against merged reality (closure reports, migrations, the database) and never cite a dated analysis document as current state without checking it against ground truth. Anything that cannot be reconciled is flagged to the coordinator, not left to age.
 
-**How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections below are history and are not updated any more.
+**How to keep this list current.** New work items go into this section, in the right class, with their evidence. When an item is finished, move its line to "Recently closed" at the bottom of this section with the PR number; do not delete it. Old numbered sections in the private backlog are history and are not updated any more.
 
-Counts: owner only 23, decision needed 9, device check 15, agent can do 13, done 10 groups, obsolete 8. Coverage: older history below line ~880 of the full backlog was checked by targeted search, not a full read.
+**Current facts.** Web https://learnwithalphonso.com, admin https://admin.learnwithalphonso.com, Supabase custom domain https://api.learnwithalphonso.com; the old alphonsoecosystem.app hosts still work (redirects are item 72). iOS build 72 is on TestFlight, not submitted. 13,429 questions in 1,830 lessons; 47 stories, all published. Themes: Royal light, Royal night, Meadow.
+
+Items keep their old numbers; gaps are closed items (see E and Recently closed). Counts: owner only 22, decision needed 4, device and QA checks 18, agent can do 13.
 
 ### A. STILL OPEN - owner only (in priority order)
 
-1. **Decide and perform the next App Review submission.** Builds up to 67 are on TestFlight; nothing newer than the notes shows a submission. App Store Connect state is unverified from here. (0.0-am #7, 0.0-y)
-1b. **Two Vercel settings the agent could not change (403, needs production env permission), project `learnwithalphonso`:** (a) set `SUPPORT_NOTIFY_FROM` to `Learn with Alphonso Support team <support@hello.alphonsoecosystem.app>` (a verified Resend sender), then redeploy; (b) delete `NVIDIA_API_KEY` and `NVIDIA_CHAT_MODEL` if they are present (no code reads them). Both stay owner steps. (#557, #576)
-1c. **AI cost tracking owner steps (live 2026-11-16, #588):** `SUPPORT_NOTIFY_FROM` (step 1b) is also needed for the daily cost email; grant `numbers.revenue` to whoever should see Numbers, then AI cost; optionally set the `AI_COST_*` alert thresholds (see docs/operations.md).
-2. **Paid Applications Agreement must be Active** (terms, bank, tax). Older notes disagree on whether it already is; unverified. A "New" agreement blocks every in-app price. (0.0-am, 1.1)
-3. **Store privacy answers in one visit** (App Store Connect App Privacy and Google Play Data safety), before any submission: Product Interaction and Device ID for Analytics (PostHog, linked, not tracking), Product Personalization, Crash Data and Other Diagnostic Data, first-run answers (name, age range, country, avatar, goal, level, how you heard of us), Explain and Hector AI requests, learning minutes, mastered words, time zone, listening progress, and **Customer Support** for the Help chat (kept 12 months after a chat is solved, in the export). Age rating 13+. (0.0-as #1 #7 #8, 0.0-bn, 2026-11-15 note, 0.0-ai)
-4. **Security follow-ups, details kept private.** Several owner-only account, settings and switch-on steps (including one timed switch-on) are tracked privately and are not described here. (0.0-bb, 0.0-as #3)
-5. **Admin console numbers (#567 is merged and its migration is applied: verified).** Set the provider settings on the admin project (list in docs/operations.md), then check each group shows Connected: revenue, AI cost, App Store, Google Play (also needs the reports bucket name), own database, crash reports, analytics. Not tried with real provider settings. (r13 note 2026-11-15)
-6. Moved: the admin redesign merged (#568); the one agent task left from it is item 64.
-7. **Staff names for Miya.** Staff profiles need real first names in their display name, otherwise person replies read just "Support team". (r13 Miya note)
-8. **Review the Help chat help file and 10 sample transcripts, then turn on the support_ai switch.** It is OFF in production (verified), so every message goes to a person. (r12 support M1)
-9. **Web Pro launch:** a real payment-processor account, RevenueCat production web billing (products, trial and no-trial links, return page), production Vercel settings, redeploy, then one real purchase-and-refund check by the agent. The live web paywall is intentionally unconfigured. (0.0-an #1-4)
-10. **Google Play and Android release setup:** Play developer account, move Firebase to the same Google account and rotate its settings, add the Play app-signing fingerprint to the asset-links file, RevenueCat Android setting, first hand upload. (0.0-z, OWNER-SETUP, 2026-11-14 note)
-11. **After App Review approval:** point support, privacy and report mail forwarding back to the owner's inbox and send a test mail; remove the review demo-code setting from production and consider deleting the review account; turn on the RevenueCat sandbox-rejection switch. (0.0-x, remediation P-6)
+1. **Decide and perform the next App Review submission.** Build 72 (main d8350542, #705) is on TestFlight and not submitted. App Store Connect state is unverified from here. (0.0-am #7, 0.0-y)
+10. **Android: create the Play app and the RevenueCat Android setup.** The Android release workflow is blocked only on the repository secret `REVENUECAT_ANDROID_PUBLIC_KEY` (the production Play Store SDK key; `android-release.yml` refuses an empty or `test_` key). Also: Play developer account, move Firebase to the same Google account and rotate its settings, add the Play app-signing fingerprint to the asset-links file, first hand upload (steps in android/OWNER-SETUP.md). The latest Android Release Bundle dispatch (2026-11-22 on main) failed in its signed-bundle and store-screenshot jobs; the agent reads that run once the owner secret exists (item 73). (0.0-z)
+72a. **Resend plan before launch.** The owner chose the free plan for now (about 100 mails a day); move to Resend Pro before launch. Auth emails are separately capped at 100 an hour.
+1b. **Two Vercel settings the agent cannot read or change (403 on listing and editing production environment variables), project `learnwithalphonso`:** (a) `SUPPORT_NOTIFY_FROM` must be a verified @hello.learnwithalphonso.com sender (the old hello.alphonsoecosystem.app Resend domain was deleted, #704); (b) delete `NVIDIA_API_KEY` and `NVIDIA_CHAT_MODEL` if present (no code reads them). Current values are unverified. (#557, #576, #704)
+1c. **AI cost tracking owner steps (live since #588):** grant `numbers.revenue` to whoever should see Numbers, then AI cost; optionally set the `AI_COST_*` alert thresholds (docs/operations.md and docs/ENV-SETUP.md).
+2. **Paid Applications Agreement must be Active** (terms, bank, tax). Unverified. A "New" agreement blocks every in-app price. (0.0-am, 1.1)
+3. **Store privacy answers in one visit** (App Store Connect App Privacy and Google Play Data safety), before any submission. The answer sheet is under docs/app-store (added in #642); the data list includes referral invite codes, AI usage, time zone and Customer Support for the Help chat. Age rating 13+. (0.0-as, 0.0-bn)
+4. **Security follow-ups, details kept private.** Several owner-only account, settings and switch-on steps are tracked privately and are not described here. (0.0-bb, 0.0-as #3)
+5. **Admin numbers: set the provider settings on the admin project** (list in docs/operations.md), then check each Numbers group shows Connected: revenue, AI cost, App Store, Google Play (also needs the reports bucket name), own database, crash reports, analytics. The Numbers screen was rebuilt in #693; not tried with real provider settings. Unverified. (r13 note)
+7. **Staff names for Miya.** Staff profiles need real first names in their display name, otherwise person replies read just "Support team". Unverified. (r13 Miya note)
+9. **Web Pro launch:** live payment-processor and RevenueCat production web billing settings in Vercel, redeploy, then one real purchase-and-refund check by the agent. Whether the production settings are in place is unverified (item 1b: they cannot be read). (0.0-an, #634)
+11. **After App Review approval:** point support, privacy and report mail forwarding back to the owner's inbox and send a test mail (the contact addresses are support@ and privacy@learnwithalphonso.com); remove the review demo-code setting from production (src/routes/api/review-demo-code.ts still exists) and consider deleting the review account; turn on the RevenueCat sandbox-rejection switch. (0.0-x, remediation P-6)
 12. **Demo account session cleanup** (owner step in the auth dashboard). Cannot be verified from code. (0.0-aa)
-13. **Delete leftover QA test accounts** made during QA (one named in 0.0-al); unverified which remain. (0.0-al, 0.0-as #3)
-14. **Timed switch-ons:** at about 90 percent adoption plus 30 days: the store URL setting, then minimum builds (update gate). (wave 2, #421, #423)
+13. **Delete leftover QA and test accounts** from earlier passes (the standing QA account stays); unverified which remain. (0.0-al)
+14. **Timed switch-ons:** at about 90 percent adoption plus 30 days: the store URL setting, then minimum builds (update gate). (#421, #423)
 15. **Confirm the RevenueCat server setting is present on the backend** before Pro learners exist (needed by server-side hearts, #494). Unverified. (#494 note)
-16. **Optional:** connect Sentry for readable crash locations; delete leftover Vercel Preview entries of the merged web-Hector branch. Other optional credential tidying is tracked privately. (0.0-as #9, 0.0-an #6)
+16. **Optional:** connect Sentry for readable crash locations (web releases are tagged since #636); delete leftover Vercel Preview entries of merged branches. (0.0-as #9)
 17. **Podcast content partnership conversation**, respecting the licensed-only publishing rule (#262). (0.0-i)
-18. **Custom domain for the Supabase project** (paid plan, repoint apps, retest sign-in). iOS still points at the raw project URL. (0.0-t)
-19. Moved to E: stale worktree and branch cleanup was done by the owner on 2026-11-15.
-20. **Store listing leftovers (likely moot):** subscription review screenshot, walkthrough recording, upgrade test 50 to 51. (0.0-am)
-20a. **Limrun top-up for cloud iOS QA (owner).** Limrun refused the 2026-11-16 run: the organisation has no credits or subscription. Without a top-up the agent cannot check iOS on a simulator.
-69. **OWNER ONLY: submit the sitemap to Google Search Console** once the domain learn.alphonsoecosystem.app is attached there: https://learn.alphonsoecosystem.app/sitemap.xml (from #600).
-70. **OWNER ONLY: unblock the Instagram System User token.** Enable 2FA and add contact info on the Meta account. The Graph API Explorer path is unavailable (the login is Instagram/Business-only, with no personal Facebook).
+20. **Store listing leftovers (likely moot):** subscription review screenshot, walkthrough recording, upgrade test. (0.0-am)
+69. **Submit the sitemap to Google Search Console** for the new domain: https://learnwithalphonso.com/sitemap.xml (serves 200 today; generated from the route tree, #600; host moved in #702).
+70. **Unblock the Instagram System User token.** Enable 2FA and add contact info on the Meta account. The Graph API Explorer path is unavailable (Instagram/Business-only login, no personal Facebook).
+74. **Apple web sign-in has no Services ID.** Sign in with Apple works in the native apps only; web Apple sign-in needs an Apple Services ID and its settings. Fine unless web Apple sign-in is wanted.
 
 ### B. DECISION NEEDED (owner choice)
 
-**Order of work (owner 2026-11-16).** A small fixes, then B redesign gaps and social parity, then C reliability. D content run: DONE 2026-11-06 (see item 43). E art: done (#589).
-
 27. **Two Qlty warnings: PARKED 2026-11-16.** Owner: "keep it for later, ignore for now".
-28. **Hands-free with the screen locked: MOVED to device checks (owner) 2026-11-16.** Owner: "i will check on device and let you know". The Android microphone foreground service stays unbuilt.
-29. **Someday features: discussed 2026-11-16, owner to pick.** Competitor research is published (owner page). The owner chose the art workstream (items 45 and 46) and asked for cost tracking (items 65 and 66) and similar tools. Not started, owner picks which, if any:
-    - IN PROGRESS: call recap card plus a "what Alphonso remembers" page. Owner decisions 2026-11-16: recap on the result screen, text only with tap-to-hear; memory is weak spots, phrases and goals (presets only), with delete and "forget everything"; recap free, memory page Pro, memory saved for Pro only; own `recap` quota (30 a day) and cost kind; Alphonso's Pro calls are primed with memory. Server and web merged (#594, f224d0dd; migration 20261119100000_call_recap_memory verified live: `tutor_memory` has RLS on, no anon read, the forget function is service-role only). iOS and Android are PR #595 (open, fixing review findings). Privacy: a code filter drops emails, phone numbers, links and name introductions, and memory stores only the corrected phrase; "forget" removes memory, weakness events and recap-made review items and keeps lessons, stars, streak, XP and saved words; free learners can forget their weak-spot notes from Settings. The privacy page wording changed (docs/privacy-and-data.md).
-    - Referral.
-    - Pronunciation feedback, word level first.
-    - Honest billing kit plus an AI minutes meter.
-    - Graded stories.
-    - Quick wins: say-the-picture, and gift-a-streak-freeze.
-    - Pricing risk to keep in view: heavy users are estimated at CAD 17.12 a month against the CAD 12.99 price (market-decision-2026-10-24 note; a point-in-time analysis from before the content run, so check it against current data before citing it as current), so lifetime pricing needs a usage cap.
 29a. **Podcast audio bucket is public by URL, including unpublished episodes** (documented trade-off, #582). Decide whether to make unpublished audio private.
+76. **Held lesson-mix items:** 9 extras that failed the automatic checks after many drafts are listed with their drafts and reasons in docs/lesson-mix/held-for-owner.json (from #692 and #700). Decide: approve a rewrite, leave them out, or write them by hand. The lessons are fine without them (3,598 extras ship in 1,500 lessons).
+77. **Pricing risk to keep in view:** heavy users were estimated at CAD 17.12 a month against the CAD 12.99 price (a point-in-time note from before the content run; check it against the AI cost log before citing it). The per-user monthly AI cost cap is live (#605); the price decision is the owner's.
 
-### C. DEVICE CHECK (needs a real phone; nothing can show these from code)
+### C. DEVICE AND QA CHECKS (a real phone or a QA pass; nothing can show these from code)
 
-30. **Build 65/66 iOS redesign**, starting with the Practice call screen, Library and Watch shelf, video player, path stops. Limrun has no credits, so none of the redesign was seen on a simulator. (2026-11-14 notes, 0.0-bi)
-31. **Hands-free conversation** on iOS, web and Android: headset versus speaker echo, 2-3 s Practice pause, noisy room, interruptions, tab switch, large text, screen reader. (#538, #560, Android PR)
-32. **Android**: TalkBack double verdict on the quiz, unlock sheet at 360dp, dialog scroll at large font, Help chat night, practice chat, voices picker, DEVICE-CHECKLIST.md rows (teams error state, hearts gate, quota copy). (2026-11-14 STATUS, 0.0-al)
-33. **Streak widget redesign** on iOS and Android (never seen on a device). (#553)
-34. **Help chat** end to end after one real ticket: web, iOS, Android, staff inbox, reply notices and push tap. (r12 support M2-M6)
+**Final QA (2026-11-21 and 2026-11-22).** Web phase 1 on production: about 38 PASS, about 18 PARTIAL, no P0; about 110 rows not run. iOS Limrun run 1 (frozen commit 94df7e1d, 31 of the 44 minute budget): 19 PASS, 4 FAIL rows (2 defects, both fixed in #686), 18 PARTIAL, about 33 untested. Fixes shipped in #686, #687, #688, #689 and #694.
+
+78. **iOS QA on build 72:** re-run the fixed rows (Hector typed input in the call, Say it right buttons, lesson-complete labels, story scene contrast, first-run Skip, Profile week strip on the local day) and the untested blocks (Hector classic screen, a story to an ending, Library tabs, Profile Social/League with redaction, Help/Miya, Learn jump to current and a locked-lesson tap). Largest text, night and Reduce Motion did not reach the app in the Limrun run; do them on a real iPhone or in the Android pass.
+79. **Web QA, remaining rows (about 70):** sign-up and wrong-code flows, the lesson-flow rows, Library offline, stories FR/ES, calls, Hector voice, settings toggles, league, friends, teams (need new or free accounts). Candidate defects from phase 1: /hector has no h1 and 6 unnamed icon buttons, a correction card without Hear it, closing a lesson mid-way exits without a confirm, a call started offline lands on the browser error page, the Say the picture reveal is clipped at 320x568, a bad story id says "Check your connection". Locked lessons were reachable by URL; #688 enforces unlock on the server (re-test).
+80. **Full Android pass** on the emulator (largest text, night, Reduce Motion, TalkBack) once virtualization is on.
+30. **Redesigns on build 72 on a real iPhone:** Practice call screen, Library and Watch shelf, video player, path stops, the climbing Learn map (#680), the five-tab bar. (0.0-bi)
+31. **Hands-free conversation** on iOS, web and Android: headset versus speaker echo, 2-3 s Practice pause, noisy room, interruptions, tab switch, large text, screen reader, and with the screen locked (the Android microphone foreground service stays unbuilt). (#538, #560, #561, #650)
+32. **Android device rows:** TalkBack double verdict on the quiz, unlock sheet at 360dp, dialog scroll at large font, Help chat night, practice chat, voices picker, climbing map (#681), DEVICE-CHECKLIST.md rows. (0.0-al)
+33. **Streak widget redesign** on iOS and Android. (#553)
+34. **Help chat** end to end after one real ticket: web, iOS, Android, staff inbox (the new Support screen, #683), reply notices and push tap. Miya AI answers are ON (app switch `support_ai`, turned on by owner decision 2026-11-19; verified in the database).
 35. **Push notification delivery** to a physical phone. (1.3)
 36. **Sandbox purchase** on TestFlight (Pro unlock end to end), Hector paywall in StoreKit. (0.0-as #4)
-37. **VoiceOver, Dynamic Type, Reduced Motion** across the app; RTL layout in Explain; follow-along; staff ban screen. (0.1-a, 2026-11-13 NEXT)
-38. **Voice round trip** (microphone audio cannot be carried by the simulator). (0.0-j)
+37. **VoiceOver, Dynamic Type, Reduced Motion** across the app; RTL layout in Explain; staff ban screen. (0.1-a)
+38. **Voice round trip** (microphone audio cannot be carried by the simulator), including Say it right and Say the picture. (0.0-j)
 39. **Meadow stays light in dark mode** on iOS and Android. (#547)
-40. **Real-device web look** at phone width: teams, save-a-word dialog, word-bank layout. (0.0-ac #4, 0.0-ae)
-41. **Learn tab badge after clearing the review queue**; lesson-complete button clipping at largest text. (0.0-z #5 #6)
+40. **Real-device web look** at phone width: teams, save-a-word dialog, word-bank layout, the new web Learn map (#672) and Practice hub (#674). (0.0-ac #4)
 42. **Real-microphone checks of the web voice flows** in Safari, Firefox and a phone. (#560)
-42a. **Call scenes v2 and Royal-night rooms on iOS and Android (build 69).** Look at the 12 call scenes plus the study room day and evening, the five Royal-night screens (learn, hector, listen, profile, practice), and the bottom fade on Alphonso's call avatar (no hard robe edge). Seen on web only; iOS (Limrun refused, no credits) and Android never seen. (#589)
-42b. **Call recap and "What Alphonso remembers" on the next build** (after #595): recap card on the call result screen and tap-to-hear; memory page as Pro (weak spots, phrases, goals, delete one, forget everything); free learner forgetting weak-spot notes from Settings; Alphonso's Pro call using the memory; the 30 a day recap quota message. Web is merged (#594); iOS and Android never seen.
-
-- Moved here from 28 (owner 2026-11-16, "i will check on device and let you know"): hands-free with the screen locked, iOS and Android.
+42a. **Call scenes v2 and Royal-night rooms on iOS and Android.** Seen on web only. (#589)
+42b. **Call recap and "What Alphonso remembers"** on iOS and Android (merged in #595; web is #594): recap card, tap-to-hear, the Pro memory page, forgetting, the 30 a day recap quota message.
+42c. **Never seen on a device:** Mona's New City narration (12 branching stories live since #678, FR/ES since #691) and the live-speech fallback (#651); the referral invite screen, the AI usage meter, Gift a streak freeze, Say the picture and Say it right on iOS and Android (merged 2026-11-17 to 2026-11-20).
 
 ### D. STILL OPEN - agent can do
 
-43. **Content residue after the finished content run.** The full content review is DONE (2026-11-06, `docs/content-review/closure-report.md`): 17,196 English, French and Spanish items reviewed, 10,922 fixes applied including 2,074 French/Spanish word-card meanings. What remains by design: 681 items whose proposed fixes still failed the checks after two judge rounds (left as they are); 93 held answer keys (17 on the owner short list in `docs/content-review/owner-list.md`); 59 roleplay-prompt, campaign-premise and podcast-quiz fixes that need a whitelist of the previous prompt before they can ship; measured defect rate of the final content 13.5% (4.2% high-confidence). After any content merge the owner reseeds. Older figures ("about 438 English", "about 580", "about 190 English-term FR/ES cards") were pre-run and are superseded; the 190 cards are probably covered by the 2,074 meanings, unverified.
-52. **Marketing site:** social proof, Android status, more than one sample question, and the "try one" question mock are not built (separate repository). (1.2, 2026-11-14 web batch 3)
-53. **Resident hazards in tests:** a gate misses a frontable "here" (a2p16q34 was moved; the gate rule was added); the option-class tables are unaudited by a second source. (0.0-av)
+72. **Old-host 308 redirects (timed).** Redirect learn.alphonsoecosystem.app and admin.alphonsoecosystem.app to the new hosts only AFTER build 72 (which carries the new API host) has shipped and old builds have aged out, because older builds call the old host's /api/* and a redirect would strip their auth headers. NEVER redirect /api/*, /.well-known/*, /auth/* or any OAuth callback, and never redirect POST. The pg_net cron jobs from applied migrations POST to the old host's /api/internal/* routes: keep those excluded or repoint them in a migration first. Then remove the legacy hosts from the CSP, policies and allowlists. (#702 runbook)
+73. **Android release workflow:** once the owner adds the RevenueCat Android key (item 10), re-run the Android Release Bundle workflow and read the failure of the 2026-11-22 dispatch (signed bundle and the API 34 store-screenshot emulator job failed; the screenshot log shows "Unable to connect to adb daemon").
+81. **vocab_images legacy host (optional cleanup).** All 1,421 `vocab_images.url` rows (queried 2026-11-22: 1,421 of 1,421) still point at the raw Supabase project host, which keeps working and is on the allowlists. Rewrite them to api.learnwithalphonso.com after item 72, together with the bundled data in src/data/vocab-images.ts.
+82. **Remaining final QA, agent-runnable parts:** items 78 to 80 (iOS on build 72 with the Limrun minutes left, about 70 web rows via Playwright, the full Android pass once virtualization is on).
+83. **Native-speaker review of the lesson extras (optional).** The 3,598 listening, speaking and translation extras (ids lx1, sx1, tx1; #692, #700) passed the automatic checks only; there is no native teacher (owner decision), so a paid spot-check of French and Spanish is optional before marketing in those languages.
+84. **`cron.job_run_details` prune (low priority).** The table holds 3,959 rows (queried 2026-11-22); add a scheduled prune so it does not grow without bound.
+43. **Content residue after the finished content run** (docs/content-review/closure-report.md): 681 items whose fixes failed the checks, 93 held answer keys (17 on the owner short list), 59 prompt fixes that need a whitelist; measured defect rate 13.5 percent (4.2 high-confidence) at the time. The curriculum is seeded by the deploy job on every main deploy, so nobody reseeds by hand.
+52. **Marketing site:** social proof, Android status, more than one sample question and the "try one" mock are not built (separate repository, discover.alphonsoecosystem.app). (1.2)
+53. **Resident hazards in tests:** the option-class tables are unaudited by a second source. (0.0-av)
 57. **Remove the unused push-to-talk capability** from the App ID. (1.1 #9)
-59. **Vocab image quality** beyond metadata triage; Android needs no change for empty lines (verified done). (3 Content)
-63. **Dev server does not boot in the Windows sandbox.** (4)
-66. **Later: monthly per-user cost budget**, to be revisited after about a month of real cost data from the AI cost log (#588). Ties to the lifetime-pricing usage cap in item 29.
-67. **LAUNCH READINESS (owner 2026-11-16).** Web first, then iOS and Android; paid from day one; polished full launch; content run already done. Done and live: #598 DB hardening, #600 web launch readiness, #601 security fix (see Recently closed). The AI-tutor safety findings are fixed by #603 (see Recently closed). In flight: store privacy answer sheets (doc). Build 70 is on TestFlight, not submitted.
-68. **Owner dashboard toggle:** turn on leaked-password protection in the Supabase auth settings (cannot be done from code).
-71. **Cleanup (small):** delete the throwaway test account obsidianteamhq+r21safety@agentmail.to, left behind by the AI-safety pass.
+59. **Vocab image quality:** draft PR #620 (B1-C1 imageability and licensed photos) is still open as a draft; A1/A2 photos merged in #618.
+63. **Dev server does not boot in the Windows sandbox.** Unverified since 2026-11 (4).
+66. **Per-user cost budget:** the cap shipped (#605); revisit its limits after about a month of real cost data in the AI cost log (#588).
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
 
-- Admin numbers dashboard: PR #567 merged, migration 20261118100000 applied in production (queried).
-- Stale worktree and branch cleanup (2026-11-15, owner).
-- Hands-free on web #560, Android #561, iOS #538; Practice result and reply bar #552; Meadow stays light #547; streak widget #553.
-- Miya #554; Help chat web #524, iOS #541, Android #544; staff inbox #532; reply email, push and retention #557 (all six support milestones).
-- Privacy page covers the Help chat (#564) and the time zone wording is current (src/routes/privacy.tsx line 61).
-- Admin learner page nesting suspicion: the route is users_.$id, so it does not nest under users (verified).
-- Android vocab card hides empty meaning lines (LessonScreen.kt:387, LessonStage.kt:944).
-- Hector daily limit now comes from the server on iOS and Android (HectorAllowance.fetchLimit, HectorView.swift:362, AppContainer.kt:83).
-- Words tile counts lesson words (#537); hearts refill and talk rule (#511); themes Royal and Meadow (#512, #516); server hearts on by default (#494); local-day streaks (#497).
-- Podcast quiz on web, iOS and Android (#374-#381); mistakes into review (#487); FR/ES word cards A1-C1 (#486, #492); American English (#485).
-- Explain in my language (#488); opt-in analytics (#489); first-run onboarding, Profile, Practice hub, paywall (round 6); sound effects; Hector speaks first.
+- Admin console rebuilt: shell and Home (#682), Support (#683), Users (#690), Numbers (#693), Staff (#695), Action record (#696), Reports (#697), Sign-in (#698), Health (#699), Podcasts (#703), plus menu and sign-in-flash fixes (#684, #685). Every sensitive action needs a reason in SQL.
+- Lesson mix: tooling #692 and content #700 (3,598 extras in 1,500 lessons; 13,429 questions in the database, queried), #701 accepts the base and the full lesson version during a changeover.
+- Lesson unlock is enforced on the server (#688), with a friendly message on native (#694). Single-use lesson sessions (#630, #637, #641).
+- Domain move to learnwithalphonso.com (#702) and email senders to hello.learnwithalphonso.com (#704). The Supabase custom domain is live (iOS and Android point at it); leaked-password protection is on; Turnstile allows the new hosts.
+- Stories: graded stories on all platforms (#617, #623 to #625), interactive branching stories (#622, #635), Mona's New City EN (#675, #678) and FR/ES (#691); 47 stories, all published (queried).
+- Features from the old "someday" list: referral (#610, #615), AI usage meter (#607, #611), gift a streak freeze (#608, #614), Say the picture (#609, #613, #658), Say it right (#616, #621, #661, #664), Hector corrections (#671, #673, #677, #679), call recap and memory (#594, #595).
+- Redesign wave: Learn, Library, Practice, Hector and Profile on web, iOS and Android (#653 to #667, #670 to #674, #680, #681); five web tabs (#662).
+- Security and reliability: client table privileges narrowed with a grants guard (#628), staff console role checks (#629), ops events and System health (#640), CI promotes web builds after the database deploy (#639) and regenerates types in the PR (#652).
+- Support: Miya AI answers are on (`support_ai`, owner decision 2026-11-19; was owner item 8).
+- Stale worktree and branch cleanup (2026-11-15, owner); earlier groups as in Recently closed below.
 
 ### F. OBSOLETE (superseded)
 
+- Old item 18 (custom domain for Supabase): done, api.learnwithalphonso.com (#702).
+- Old item 20a (Limrun top-up): iOS QA ran on Limrun on 2026-11-21; the remaining minutes are item 82.
+- Old item 29 (someday feature list): shipped, see E. "Honest billing kit" was not built and is not planned.
+- Old item 68 (leaked-password protection): on.
+- Old item 71 (delete a throwaway AI-safety test account): folded into item 13.
+- Old item 67 (launch readiness in flight): done, see E.
 - 0.0-ax and 0.0-az (3D and Rive Alphonso): replaced by the realistic image kit with lip sync (#408, #426).
 - 0.0-ay native-speaker items and the paid teacher check: folded into the content closure project; no native teacher.
 - 2.4 Hector option B spike: Hector runs on this backend (#189).
-- 0.7 Canopy QA: Canopy removed; themes are Royal and Meadow only.
+- 0.7 Canopy QA: Canopy removed; themes are Royal light, Royal night and Meadow (no Meadow night).
 - Meadow night palette: removed (#547).
-- pg_net move and revoke: not possible by migration (grants belong to a platform role); closed as won't fix.
+- pg_net move and revoke: not possible by migration; closed as won't fix.
 - Anti-farming and STT limit decisions: shipped in #367.
-- Vercel billing outage of 2026-11-12: later notes say deploys resumed (unverified here).
+- Vercel billing outage of 2026-11-12: deploys resumed.
 
 ### Recently closed
+- 2026-11-22: build 72 cut (#705, d8350542), on TestFlight, not submitted.
+- 2026-11-21 and 2026-11-22: admin rebuild (#682 to #699, #703), final QA fixes (#686 to #689, #694), FR/ES Mona stories (#691), lesson mix (#692, #700, #701), domain move (#702), email domain (#704). See E.
+- 2026-11-17 to 2026-11-20: features and redesign wave (#603 to #681), see E. #603 hardened the recap personal-data filter and AI input limits; #605 per-user monthly AI cost cap; #606 environment variable reference (docs/ENV-SETUP.md).
+- Call recap and memory: web #594 and iOS and Android #595 merged 2026-11-17.
 - #603 (eab784fe) Harden recap personal-data filter and AI input limits (code only, no migration), fixing all three AI-tutor safety findings (1 Medium, 2 Low). The recap looksPersonal filter now NFKC and whitespace-normalises (new src/lib/text-normalize.ts) and covers email obfuscation, spelled-out and fullwidth digits, EN/FR/ES name introductions, passwords and schools, applied to all recap fields. TTS is capped at 600 characters (413 over the cap). The Miya support link guard is an exact-host allowlist with broad TLD, spoken-dot and IP detection (Miya AI is still off in prod). 79 tests, mutation-checked.
 - #598 (cc980a55) DB hardening: 21 foreign-key indexes and 4 RLS initplan policy fixes; live on prod (index verified).
 - #600 (8a94bb6d) Web launch readiness: robots.txt and sitemap.xml generated from the route tree, SEO, canonical and OG tags on the 7 public pages, redesigned 404 and error pages. Owner follow-up is item 69.
