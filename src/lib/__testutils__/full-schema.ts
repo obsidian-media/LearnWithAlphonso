@@ -33,6 +33,8 @@ const STUBS = `
     headers jsonb DEFAULT NULL, timeout_milliseconds integer DEFAULT NULL) RETURNS bigint LANGUAGE sql AS $$ SELECT 0::bigint $$;
   CREATE FUNCTION cron.schedule(job text, schedule text, command text) RETURNS bigint LANGUAGE sql AS $$ SELECT 0::bigint $$;
   CREATE FUNCTION cron.unschedule(job text) RETURNS boolean LANGUAGE sql AS $$ SELECT true $$;
+  CREATE TABLE cron.job(jobid bigint PRIMARY KEY, jobname text);
+  CREATE TABLE cron.job_run_details(runid bigserial PRIMARY KEY, jobid bigint, status text, start_time timestamptz);
   GRANT USAGE ON SCHEMA public, auth TO authenticated, anon, service_role;
 `;
 
