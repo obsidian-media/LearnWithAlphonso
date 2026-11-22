@@ -77,7 +77,7 @@ enum class ReportReason(val raw: String, val label: String) {
 
 object SocialSafetyCopy {
     fun blockConfirmationMessage(displayName: String): String =
-        "$displayName won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you need help with this."
+        "$displayName won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact support@learnwithalphonso.com if you need help with this."
 }
 
 @Composable
@@ -142,7 +142,7 @@ fun ReportSheet(target: SocialTarget?, container: AppContainer, onDismiss: () ->
         if (submitted) {
             Icon(painterResource(R.drawable.ds_check), null, tint = ds.right, modifier = Modifier.size(AlphonsoTokens.Space.s12))
             Text("Report submitted", style = HeadlineType, color = ds.ink)
-            DsDialogBody("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@alphonsoecosystem.app.")
+            DsDialogBody("Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@learnwithalphonso.com.")
             DsCompactButton("Done", onDismiss, primary = true)
         } else {
             DsOverline(SafetyPresentation.reasonQuestion(target.isTeamName))

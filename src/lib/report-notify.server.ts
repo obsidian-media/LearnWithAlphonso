@@ -69,7 +69,7 @@ export async function sendEmailViaResend(
       from:
         msg.from ||
         process.env.REPORT_NOTIFY_FROM ||
-        "Alphonso Reports <reports@hello.alphonsoecosystem.app>",
+        "Alphonso Reports <reports@hello.learnwithalphonso.com>",
       to: [msg.to],
       subject: msg.subject,
       text: msg.text,

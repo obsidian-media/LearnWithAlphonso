@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 class AccountSuspensionTest {
     private val now = 1_758_000_000L
     private val expectedMessage =
-        "This account is suspended. If you think this is a mistake, contact support at support@alphonsoecosystem.app."
+        "This account is suspended. If you think this is a mistake, contact support at support@learnwithalphonso.com."
 
     private class MemoryStore(var session: SupabaseSession? = null) : SessionStore {
         override fun load() = session
@@ -27,7 +27,7 @@ class AccountSuspensionTest {
     @Test
     fun `the copy is plain and names the support address`() {
         assertEquals("This account is suspended.", AccountSuspension.TITLE)
-        assertEquals("If you think this is a mistake, contact support at support@alphonsoecosystem.app.", AccountSuspension.BODY)
+        assertEquals("If you think this is a mistake, contact support at support@learnwithalphonso.com.", AccountSuspension.BODY)
         assertEquals(expectedMessage, AccountSuspension.MESSAGE)
     }
 

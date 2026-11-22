@@ -29,7 +29,7 @@ object PendingSyncNotice {
  * know a finished lesson was not saved.
  */
 object DeadLetterNotice {
-    const val SUPPORT_ADDRESS = "support@alphonsoecosystem.app"
+    const val SUPPORT_ADDRESS = "support@learnwithalphonso.com"
     const val CONTACT_TITLE = "Contact support"
     const val DISMISS_TITLE = "Dismiss"
 

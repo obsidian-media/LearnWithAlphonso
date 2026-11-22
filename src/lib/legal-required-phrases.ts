@@ -16,7 +16,7 @@
  */
 export type LegalPath = "/terms" | "/privacy" | "/cookies" | "/support";
 
-export const SUPPORT_EMAIL = "support@alphonsoecosystem.app";
+export const SUPPORT_EMAIL = "support@learnwithalphonso.com";
 
 export const LEGAL_REQUIRED_PHRASES: Readonly<Record<LegalPath, readonly string[]>> = {
   "/terms": [
@@ -117,7 +117,7 @@ export const LEGAL_FORBIDDEN_PHRASES: Readonly<Record<LegalPath, readonly string
     "Terms of Service",
     "Keep your password secure",
     "You can delete your account at any time from Profile → Your data",
-    "privacy@alphonsoecosystem.app",
+    "privacy@learnwithalphonso.com",
     "keep the generated name",
     "parent or guardian’s consent",
     "Payment: Payment",
@@ -130,7 +130,7 @@ export const LEGAL_FORBIDDEN_PHRASES: Readonly<Record<LegalPath, readonly string
     "paid monthly or yearly.",
   ],
   "/privacy": [
-    "privacy@alphonsoecosystem.app",
+    "privacy@learnwithalphonso.com",
     "is not retained on our servers after it answers",
     "Changing it from inside the iOS app is not available yet",
     "Terms of Service",
@@ -138,13 +138,13 @@ export const LEGAL_FORBIDDEN_PHRASES: Readonly<Record<LegalPath, readonly string
     "Amazon Web Services",
     "Only friends who both agree can pair",
   ],
-  "/cookies": ["Product analytics", "privacy@alphonsoecosystem.app"],
+  "/cookies": ["Product analytics", "privacy@learnwithalphonso.com"],
   "/support": [
     "rather than a password",
     "These are separate accounts from an email sign-in",
     "Everything else is free.",
     "auto-renewable monthly subscription",
-    "privacy@alphonsoecosystem.app",
+    "privacy@learnwithalphonso.com",
   ],
 };
 

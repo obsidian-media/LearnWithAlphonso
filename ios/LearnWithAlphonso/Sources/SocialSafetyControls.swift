@@ -135,7 +135,7 @@ struct ReportSheet: View {
             DSEmptyState(
                 emoji: "\u{1F6E1}",
                 title: "Report submitted",
-                message: "Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@alphonsoecosystem.app.")
+                message: "Thanks for letting us know. Our team reviews every report. If you need to follow up, contact support@learnwithalphonso.com.")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(AlphonsoDS.Space.gutter)
@@ -196,10 +196,10 @@ struct SocialSafetyMenu: View {
 
 /// Shared block confirmation -- one line of copy every surface uses
 /// verbatim, so the "does not delete/report anything, only blocks"
-/// scope and the support@alphonsoecosystem.app contact stay consistent
+/// scope and the support@learnwithalphonso.com contact stay consistent
 /// wherever this is shown.
 enum SocialSafetyCopy {
     static func blockConfirmationMessage(_ displayName: String) -> String {
-        "\(displayName) won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact support@alphonsoecosystem.app if you need help with this."
+        "\(displayName) won't be able to add you as a friend or challenge you to a duel, and you won't see them in friends, activity, or leaderboards. Contact support@learnwithalphonso.com if you need help with this."
     }
 }

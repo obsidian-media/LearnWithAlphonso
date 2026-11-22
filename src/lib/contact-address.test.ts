@@ -24,11 +24,15 @@ function files(dir: string): string[] {
 }
 
 describe("in-app contact address", () => {
-  it("is support@alphonsoecosystem.app everywhere", () => {
+  it("is support@learnwithalphonso.com everywhere", () => {
     const offenders = ROOTS.flatMap((r) => files(path.join(process.cwd(), r))).flatMap((f) =>
-      [...fs.readFileSync(f, "utf8").matchAll(/[a-z0-9._+-]+@alphonsoecosystem\.app/gi)]
+      [
+        ...fs
+          .readFileSync(f, "utf8")
+          .matchAll(/[a-z0-9._+-]+@(?:learnwithalphonso\.com|alphonsoecosystem\.app)/gi),
+      ]
         .map((m) => m[0])
-        .filter((a) => a.toLowerCase() !== "support@alphonsoecosystem.app")
+        .filter((a) => a.toLowerCase() !== "support@learnwithalphonso.com")
         .map((a) => `${path.relative(process.cwd(), f)}: ${a}`),
     );
     expect(offenders).toEqual([]);

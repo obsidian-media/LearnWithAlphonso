@@ -13,8 +13,8 @@ describe("SuspendedScreen", () => {
   it("says the account is suspended and shows the support address as a mail link", () => {
     render(<SuspendedScreen />);
     expect(screen.getByRole("heading", { name: "This account is suspended." })).toBeTruthy();
-    const link = screen.getByRole("link", { name: "support@alphonsoecosystem.app" });
-    expect(link.getAttribute("href")).toBe("mailto:support@alphonsoecosystem.app");
+    const link = screen.getByRole("link", { name: "support@learnwithalphonso.com" });
+    expect(link.getAttribute("href")).toBe("mailto:support@learnwithalphonso.com");
     expect(screen.getByText(/If you think this is a mistake, contact support at/)).toBeTruthy();
   });
 

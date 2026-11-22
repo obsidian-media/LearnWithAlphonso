@@ -32,7 +32,7 @@ const req = (body: unknown, secret?: string) =>
 
 beforeEach(() => {
   vi.stubEnv("REPORT_NOTIFY_SECRET", SECRET);
-  vi.stubEnv("REPORT_NOTIFY_TO", "report@alphonsoecosystem.app");
+  vi.stubEnv("REPORT_NOTIFY_TO", "report@learnwithalphonso.com");
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -43,7 +43,7 @@ describe("POST /api/internal/report-notify", () => {
     expect(res.status).toBe(200);
     expect(send).toHaveBeenCalledOnce();
     const msg = send.mock.calls[0][0];
-    expect(msg.to).toBe("report@alphonsoecosystem.app");
+    expect(msg.to).toBe("report@learnwithalphonso.com");
     expect(msg.subject).toBe("[Alphonso] New report: a learner");
     expect(msg.text).toContain(payload.id);
     expect(msg.text).toContain("Reason: harassment");

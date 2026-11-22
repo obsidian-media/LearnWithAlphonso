@@ -9,7 +9,7 @@ public enum AccountSuspension {
     public static let title = "This account is suspended."
     /// The API's answer for a banned learner's token (ACCOUNT_SUSPENDED_MESSAGE on the server).
     public static let apiError = "account_suspended"
-    public static let supportAddress = "support@alphonsoecosystem.app"
+    public static let supportAddress = "support@learnwithalphonso.com"
     public static var body: String { "If you think this is a mistake, contact support at \(supportAddress)." }
     public static var message: String { "\(title) \(body)" }
 
