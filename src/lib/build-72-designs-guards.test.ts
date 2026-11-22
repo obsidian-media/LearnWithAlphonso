@@ -101,6 +101,41 @@ describe("pick 1: the launch screen is the brand colour and the app icon, on eve
   });
 });
 
+describe("pick 2: the Library All tab has a Podcasts rail, and the course is a compact EN chip", () => {
+  it("web: the rail comes before Watch and Stories, and the full-width course control is gone", () => {
+    const lib = read("src/components/ListenLibrary.tsx");
+    expect(lib).toContain("<PodcastsRail");
+    expect(lib.indexOf("<PodcastsRail library")).toBeLessThan(lib.indexOf("<WatchShelf\n"));
+    expect(lib).toContain("<CourseChip");
+    expect(lib).not.toMatch(/role="group"\s+aria-label="Course"/);
+  });
+
+  it("iOS: the rail comes before Watch, 'See all' opens Listen, and the course is a Menu chip", () => {
+    const shelf = read(`${IOS}/Sources/ListenShelfViews.swift`);
+    expect(shelf.indexOf("podcastsRail(all)")).toBeGreaterThan(-1);
+    expect(shelf.indexOf("podcastsRail(all)")).toBeLessThan(
+      shelf.indexOf("WatchShelfHost(session:"),
+    );
+    expect(shelf).toContain('Button("See all") { select(.listen) }');
+    expect(shelf).toContain("courseChip");
+    expect(shelf).not.toContain("DSSegmented(");
+  });
+
+  it("Android: the rail comes before Watch, 'See all' opens Listen, and the course is a DropdownMenu chip", () => {
+    const shelf = read(
+      `${ANDROID}/java/com/obsidianmedia/learnwithalphonso/ui/listen/ListenShelfUi.kt`,
+    );
+    expect(shelf).toContain(
+      "PodcastsRailSection(shelves, onOpenFolder) { select(LibraryTab.Listen) }",
+    );
+    expect(shelf.indexOf("PodcastsRailSection(shelves, onOpenFolder)")).toBeLessThan(
+      shelf.indexOf('item(key = "watch")'),
+    );
+    expect(shelf).toContain("CourseChip(course) { course = it }");
+    expect(shelf).not.toContain("DsSegmented(");
+  });
+});
+
 describe("pick 4: Practice cards show real art on every platform", () => {
   it("the two vocab photos are bundled as small thumbnails everywhere", () => {
     for (const w of ["coffee", "train"]) {

@@ -18,6 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.platform.testTag
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -88,7 +92,6 @@ import com.obsidianmedia.learnwithalphonso.ui.components.DsCompactButton
 import com.obsidianmedia.learnwithalphonso.ui.components.DsEmptyState
 import com.obsidianmedia.learnwithalphonso.ui.components.DsPill
 import com.obsidianmedia.learnwithalphonso.ui.components.DsPillTone
-import com.obsidianmedia.learnwithalphonso.ui.components.DsSegmented
 import com.obsidianmedia.learnwithalphonso.ui.theme.AlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import com.obsidianmedia.learnwithalphonso.ui.firstrun.BodyType
@@ -222,13 +225,12 @@ fun ListenShelfRoot(container: AppContainer, vm: ListenViewModel, onOpenFolder: 
     val watchVideos = VideoShelf.shelf(watch.videos, course)
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(AlphonsoTokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
-        item {
-            DsSegmented(COURSES.map { (code, label) -> code to label }, course, { course = it }, "Course")
-        }
         item { LibraryTabs(tab, select) }
+        item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { CourseChip(course) { course = it } } }
         when (tab) {
             LibraryTab.All -> {
                 target?.let { t -> item(key = "continue") { ContinueCard(t) { scope.launch { playEpisode(container, t.episode, t.shelf.episodes) } } } }
+                if (shelves.isNotEmpty()) item(key = "podcasts") { PodcastsRailSection(shelves, onOpenFolder) { select(LibraryTab.Listen) } }
                 if (watch.failed || watchVideos.isNotEmpty()) {
                     item(key = "watch") { WatchShelfSection(watchVideos, watch.failed, onRetry = watchVm::load, onOpen = openVideo, peek = true, onSeeAll = { select(LibraryTab.Watch) }) }
                 }
@@ -285,6 +287,62 @@ private fun LibraryFailedCard(onRetry: () -> Unit) {
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
         DsEmptyState("Couldn't load these episodes", null, artAsset = "lesson/hmm.webp")
         AlphonsoSecondaryButton("Try again", onClick = onRetry, fullWidth = false)
+    }
+}
+
+/**
+ * The course chip, "EN ▾" (owner pick 2): the compact chip the approved Library design had, in place of the full-width
+ * English / Français / Español control. It opens a menu of the three courses and is announced as "Course: English".
+ */
+@Composable
+private fun CourseChip(course: String, onSelect: (String) -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    var open by remember { mutableStateOf(false) }
+    val current = COURSES.first { it.first == course }
+    val shape = CircleShape
+    Box {
+        Row(
+            Modifier.testTag("course-chip").heightIn(min = AlphonsoTokens.Space.minTouch).clip(shape).background(ds.card).border(2.dp, ds.line, shape)
+                .clickable(role = Role.Button) { open = true }
+                .padding(horizontal = AlphonsoTokens.Space.s3)
+                .clearAndSetSemantics { contentDescription = "Course: ${current.second}"; role = Role.Button },
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s1),
+        ) {
+            Text(course.uppercase(), color = ds.ink, fontWeight = FontWeight.ExtraBold, style = FootnoteType)
+            Text("▾", color = ds.ink, style = FootnoteType)
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            COURSES.forEach { (code, label) ->
+                DropdownMenuItem(
+                    text = { Text(if (code == course) "✓ $label" else label) },
+                    onClick = { onSelect(code); open = false },
+                    modifier = Modifier.heightIn(min = AlphonsoTokens.Space.minTouch).semantics { selected = code == course; contentDescription = label },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The All tab's Podcasts rail (owner pick 2): the course's rooms in a row, between the Continue card and the Watch rail, with
+ * "See all" jumping to the Listen tab. The same room cards the Listen tab draws.
+ */
+@Composable
+private fun PodcastsRailSection(shelves: List<ListenShelfFolder>, onOpenFolder: (String) -> Unit, onSeeAll: () -> Unit) {
+    val ds = LocalAlphonsoTokens.current
+    Column(Modifier.fillMaxWidth().testTag("podcasts-rail"), verticalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s2)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Podcasts", color = ds.ink, style = TitleType, modifier = Modifier.semantics { heading() })
+            Text(
+                "See all", color = ds.choice, fontWeight = FontWeight.Bold, style = FootnoteType,
+                modifier = Modifier.clickable(role = Role.Button, onClick = onSeeAll)
+                    .clearAndSetSemantics { contentDescription = "See all podcasts"; role = Role.Button }
+                    .heightIn(min = AlphonsoTokens.Space.minTouch).wrapContentHeight(Alignment.CenterVertically).padding(horizontal = AlphonsoTokens.Space.s1),
+            )
+        }
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(AlphonsoTokens.Space.s3)) {
+            items(shelves, key = { it.folder.id }) { shelf -> RoomTile(shelf, Modifier.width(160.dp)) { onOpenFolder(shelf.folder.id) } }
+        }
     }
 }
 

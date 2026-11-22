@@ -33,6 +33,12 @@ beforeEach(() => {
   resetLibrarySessionTab();
 });
 
+/** The course chip ("EN ▾") opens a menu of the three courses: pick one by name. */
+async function chooseCourse(name: "English" | "Français" | "Español") {
+  await userEvent.click(screen.getByRole("button", { name: /^Course:/ }));
+  await userEvent.click(screen.getByRole("menuitemradio", { name }));
+}
+
 const folder = (
   id: string,
   parentId: string | null,
@@ -136,7 +142,7 @@ describe("Listen library", () => {
 
   it("the course switch hides other courses' folders", async () => {
     render(<ListenLibraryView library={lib()} initialTab="listen" />);
-    await userEvent.click(screen.getByRole("button", { name: "Français" }));
+    await chooseCourse("Français");
     expect(screen.getByText(/No Français episodes/)).toBeInTheDocument();
   });
 
@@ -225,8 +231,12 @@ describe("Library: the Watch shelf", () => {
     render(<ListenLibraryView library={lib()} videos={[vid()]} />);
     expect(screen.getByRole("heading", { level: 1, name: "Library" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Watch" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Bookshop/ })).toBeNull();
+    // All shows the rooms as the Podcasts rail; Listen shows them as the full grid (no rail).
+    expect(
+      within(screen.getByTestId("podcasts-rail")).getByRole("link", { name: /Bookshop/ }),
+    ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("tab", { name: "Listen" }));
+    expect(screen.queryByTestId("podcasts-rail")).toBeNull();
     expect(screen.getByRole("link", { name: /Bookshop/ })).toBeInTheDocument();
   });
 
@@ -244,7 +254,7 @@ describe("Library: the Watch shelf", () => {
       <ListenLibraryView library={lib()} videos={[vid({ course: "fr", title: "Au café" })]} />,
     );
     expect(screen.queryByRole("button", { name: /Au café/ })).toBeNull();
-    await userEvent.click(screen.getByRole("button", { name: "Français" }));
+    await chooseCourse("Français");
     expect(screen.getByRole("button", { name: /Au café/ })).toBeInTheDocument();
   });
 
@@ -333,7 +343,7 @@ describe("Library: the All, Listen, Watch and Stories tabs", () => {
     expect(screen.getByRole("tab", { name: "All" })).toHaveAttribute("aria-selected", "true");
   });
 
-  it("All: a Continue card plus one-row peeks of Watch and Stories, no room grid", () => {
+  it("All: a Continue card plus one-row peeks of Podcasts, Watch and Stories, no room grid", () => {
     render(
       <ListenLibraryView
         library={lib({
@@ -351,7 +361,9 @@ describe("Library: the All, Listen, Watch and Stories tabs", () => {
     expect(
       within(peek).getByRole("link", { name: /Story 1.*Choose your path/ }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Bookshop/ })).toBeNull();
+    // The rooms are a one-row rail here, not the Listen tab's grid.
+    const rail = screen.getByTestId("podcasts-rail");
+    expect(within(rail).getAllByRole("link")).toHaveLength(1);
   });
 
   it("See all switches to the focused tab and shows everything", async () => {
@@ -461,13 +473,41 @@ describe("Library: the iPhone layout", () => {
   const before = (a: Element, b: Element) =>
     Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
 
-  it("the title comes first, then the course switch, then the tabs", () => {
+  it("the title comes first, then the tabs, then the compact course chip (not a full-width switch)", () => {
     render(<ListenLibraryView library={lib()} />);
     const h1 = screen.getByRole("heading", { level: 1, name: "Library" });
-    const course = screen.getByRole("group", { name: "Course" });
     const tabs = screen.getByRole("tablist");
-    expect(before(h1, course)).toBe(true);
-    expect(before(course, tabs)).toBe(true);
+    const chip = screen.getByRole("button", { name: "Course: English" });
+    expect(before(h1, tabs)).toBe(true);
+    expect(before(tabs, chip)).toBe(true);
+    expect(chip).toHaveTextContent("EN");
+    expect(chip).toHaveAttribute("aria-haspopup", "menu");
+    expect(screen.queryByRole("group", { name: "Course" })).toBeNull();
+  });
+
+  it("the chip opens a menu of the three courses, marks the current one, and Escape closes it", async () => {
+    render(<ListenLibraryView library={lib()} />);
+    const chip = screen.getByRole("button", { name: "Course: English" });
+    expect(chip).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(chip);
+    expect(chip).toHaveAttribute("aria-expanded", "true");
+    const items = screen.getAllByRole("menuitemradio");
+    expect(items.map((i) => i.textContent)).toEqual(["English", "Français", "Español"]);
+    expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("menu")).toBeNull();
+  });
+
+  it("choosing a course updates the chip, tells the parent, and closes the menu", async () => {
+    const onCourseChange = vi.fn();
+    render(<ListenLibraryView library={lib()} onCourseChange={onCourseChange} />);
+    await chooseCourse("Español");
+    expect(onCourseChange).toHaveBeenCalledWith("es");
+    expect(screen.getByRole("button", { name: "Course: Español" })).toHaveTextContent("ES");
+    expect(screen.queryByRole("menu")).toBeNull();
   });
 
   it("everything after the Continue card sits on one solid sheet panel; the Continue card is outside it", () => {
@@ -561,5 +601,80 @@ describe("Library: the iPhone layout", () => {
     expect(start.className).not.toContain("rounded-2xl");
     const row = screen.getByRole("button", { name: /Episode title 2,/ });
     expect(row.querySelector("span")!.className).toContain("bg-ds-action-tint");
+  });
+});
+
+describe("Library All: the Podcasts rail (owner pick 2)", () => {
+  const vid = (over: Partial<LibraryVideo> = {}): LibraryVideo => ({
+    id: "v1",
+    slug: "en-a",
+    course: "en",
+    title: "I'd like vs I want",
+    description: null,
+    level: "A1",
+    durationSeconds: 49,
+    videoUrl: "https://x.test/a.mp4",
+    posterUrl: null,
+    captionsUrl: "https://x.test/a.vtt",
+    tags: [],
+    practice: null,
+    sortOrder: 0,
+    progressSeconds: 0,
+    completedAt: null,
+    ...over,
+  });
+  const before = (a: Element, b: Element) =>
+    Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+  it("shows the course's rooms as a rail on All, between the Continue card and Watch", () => {
+    render(
+      <ListenLibraryView
+        library={lib({
+          progress: [
+            { episodeId: "e2", positionS: 230, completedAt: null, updatedAt: "2026-01-01" },
+          ],
+        })}
+        videos={[vid({ course: "en", title: "Cafe talk" })]}
+        stories={[]}
+      />,
+    );
+    const rail = screen.getByTestId("podcasts-rail");
+    expect(within(rail).getByRole("heading", { name: "Podcasts" })).toBeInTheDocument();
+    expect(within(rail).getByRole("link", { name: /Bookshop/ })).toBeInTheDocument();
+    expect(before(screen.getByTestId("continue-card"), rail)).toBe(true);
+    expect(before(rail, screen.getByRole("heading", { name: "Watch" }))).toBe(true);
+  });
+
+  it("'See all' jumps to the Listen tab", async () => {
+    render(<ListenLibraryView library={lib()} />);
+    await userEvent.click(screen.getByRole("button", { name: "See all podcasts" }));
+    expect(screen.getByRole("tab", { name: "Listen" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByTestId("podcasts-rail")).toBeNull();
+  });
+
+  it("follows the course chip: another course with no podcasts draws no rail", async () => {
+    render(<ListenLibraryView library={lib()} />);
+    expect(screen.getByTestId("podcasts-rail")).toBeInTheDocument();
+    await chooseCourse("Français");
+    expect(screen.queryByTestId("podcasts-rail")).toBeNull();
+  });
+
+  it("is only on All, not on Listen, Watch or Stories", () => {
+    render(<ListenLibraryView library={lib()} initialTab="listen" />);
+    expect(screen.queryByTestId("podcasts-rail")).toBeNull();
+  });
+
+  it("the rail's rooms are the same cards the Listen tab draws", () => {
+    const { unmount } = render(<ListenLibraryView library={lib()} />);
+    const inRail = within(screen.getByTestId("podcasts-rail")).getByRole("link", {
+      name: /Bookshop/,
+    });
+    const railLabel = inRail.getAttribute("aria-label");
+    unmount();
+    render(<ListenLibraryView library={lib()} initialTab="listen" />);
+    expect(screen.getByRole("link", { name: /Bookshop/ })).toHaveAttribute(
+      "aria-label",
+      railLabel!,
+    );
   });
 });

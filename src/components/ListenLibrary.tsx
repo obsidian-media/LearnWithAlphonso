@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useProgress } from "../lib/progress";
 import { mascotArt } from "../lib/mascot-poses";
 import { AI_NARRATED_LABEL } from "../lib/podcast-label";
@@ -77,6 +77,142 @@ function shelfLink(library: PodcastLibrary, shelf: Shelf) {
 }
 
 const plural = (n: number) => `${n} ${n === 1 ? "episode" : "episodes"}`;
+
+/** One painted room: a podcast folder with its level, episode count and percent heard. The Listen grid and the All rail share it. */
+function RoomCard({ library, shelf }: { library: PodcastLibrary; shelf: Shelf }) {
+  return (
+    <Link
+      {...shelfLink(library, shelf)}
+      aria-label={`${shelf.folder.title}, ${shelf.level ?? "all levels"}, ${plural(shelf.episodes.length)}, ${shelf.percent === 100 ? "finished" : `${shelf.percent} percent done`}`}
+      className="relative block min-h-[150px] overflow-hidden rounded-[var(--ds-radius-bubble)] border-2 border-ds-line bg-cover bg-center"
+      style={{ backgroundImage: `url(${roomArt(shelf.room)})` }}
+    >
+      <span className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-ds-hero/85" />
+      {shelf.level ? (
+        <span className="absolute left-2 top-2 rounded-full bg-ds-card px-2 py-0.5 text-xs font-extrabold text-ds-ink">
+          {shelf.level}
+        </span>
+      ) : null}
+      <span className="absolute inset-x-3 bottom-2 text-ds-on-hero">
+        <span className="block truncate font-display text-base font-extrabold">
+          {shelf.folder.title}
+        </span>
+        <span className="block text-xs font-bold text-ds-on-hero-soft">
+          {plural(shelf.episodes.length)} ·{" "}
+          {shelf.percent === 100 ? "finished ✓" : `${shelf.percent}%`}
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+/**
+ * The All tab's Podcasts rail (owner pick 2, build 72 feedback): the course's rooms in a row, between the Continue card
+ * and the Watch rail, with "See all" jumping to the Listen tab. Nothing is drawn for a course with no podcasts.
+ */
+function PodcastsRail({
+  library,
+  shelves,
+  onSeeAll,
+}: {
+  library: PodcastLibrary;
+  shelves: Shelf[];
+  onSeeAll: () => void;
+}) {
+  if (shelves.length === 0) return null;
+  return (
+    <section
+      aria-labelledby="podcasts-rail-title"
+      data-testid="podcasts-rail"
+      className="grid gap-2"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <h2 id="podcasts-rail-title" className="font-display text-xl font-extrabold text-ds-ink">
+          Podcasts
+        </h2>
+        <button
+          type="button"
+          onClick={onSeeAll}
+          aria-label="See all podcasts"
+          className="min-h-11 px-1 text-sm font-extrabold text-ds-choice"
+        >
+          See all ›
+        </button>
+      </div>
+      <ul className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1">
+        {shelves.map((shelf) => (
+          <li key={shelf.folder.id} className="w-40 shrink-0">
+            <RoomCard library={library} shelf={shelf} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/**
+ * The course chip, "EN ▾" (owner pick 2): the compact chip the approved Library design had, in place of the full-width
+ * English / Français / Español control. A button that opens a small menu of the three courses; Escape or a tap outside
+ * closes it, and the choice is announced as "Course: English".
+ */
+function CourseChip({ course, onChange }: { course: Course; onChange: (course: Course) => void }) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (event: Event) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const key = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", key);
+    };
+  }, [open]);
+  const current = COURSES.find((c) => c.id === course)!;
+  return (
+    <div ref={root} className="relative ml-auto w-fit" data-testid="course-chip">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`Course: ${current.label}`}
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex min-h-11 items-center gap-1 rounded-full border-2 border-ds-line bg-ds-card px-3 text-sm font-extrabold text-ds-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-choice"
+      >
+        {course.toUpperCase()}
+        <span aria-hidden="true">▾</span>
+      </button>
+      {open ? (
+        <div
+          role="menu"
+          aria-label="Course"
+          className="absolute right-0 top-full z-30 mt-1 grid min-w-40 gap-0.5 rounded-2xl border-2 border-ds-line bg-ds-card p-1 shadow-lg"
+        >
+          {COURSES.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={course === c.id}
+              onClick={() => {
+                setOpen(false);
+                onChange(c.id);
+              }}
+              className={`min-h-11 rounded-xl px-3 text-left text-sm font-bold ${course === c.id ? "bg-ds-choice-tint text-ds-choice" : "text-ds-ink"}`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export type LibraryTab = "all" | "listen" | "watch" | "stories";
 
@@ -254,29 +390,16 @@ export function ListenLibraryView({
     >
       {hideTitle ? null : <LibraryTitle />}
 
-      <div
-        role="group"
-        aria-label="Course"
-        className="grid grid-cols-3 gap-1 rounded-2xl bg-ds-sunk p-1"
-      >
-        {COURSES.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            aria-pressed={course === c.id}
-            onClick={() => {
-              setCourse(c.id);
-              setLevel(null);
-              onCourseChange?.(c.id);
-            }}
-            className={`min-h-11 rounded-xl px-2 text-sm font-bold ${course === c.id ? "bg-ds-card text-ds-ink shadow-sm" : "text-ds-ink-soft"}`}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
       <LibraryTabs tab={tab} onChange={setTab} />
+
+      <CourseChip
+        course={course}
+        onChange={(next) => {
+          setCourse(next);
+          setLevel(null);
+          onCourseChange?.(next);
+        }}
+      />
 
       <div
         role="tabpanel"
@@ -346,6 +469,8 @@ export function ListenLibraryView({
         >
           {tab === "all" ? (
             <>
+              <PodcastsRail library={library} shelves={shelves} onSeeAll={() => setTab("listen")} />
+
               {videosFailed ? (
                 videosError
               ) : videos ? (
@@ -420,28 +545,7 @@ export function ListenLibraryView({
                 <ul className="grid grid-cols-2 gap-2.5">
                   {shown.map((shelf) => (
                     <li key={shelf.folder.id}>
-                      <Link
-                        {...shelfLink(library, shelf)}
-                        aria-label={`${shelf.folder.title}, ${shelf.level ?? "all levels"}, ${plural(shelf.episodes.length)}, ${shelf.percent === 100 ? "finished" : `${shelf.percent} percent done`}`}
-                        className="relative block min-h-[150px] overflow-hidden rounded-[var(--ds-radius-bubble)] border-2 border-ds-line bg-cover bg-center"
-                        style={{ backgroundImage: `url(${roomArt(shelf.room)})` }}
-                      >
-                        <span className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-ds-hero/85" />
-                        {shelf.level ? (
-                          <span className="absolute left-2 top-2 rounded-full bg-ds-card px-2 py-0.5 text-xs font-extrabold text-ds-ink">
-                            {shelf.level}
-                          </span>
-                        ) : null}
-                        <span className="absolute inset-x-3 bottom-2 text-ds-on-hero">
-                          <span className="block truncate font-display text-base font-extrabold">
-                            {shelf.folder.title}
-                          </span>
-                          <span className="block text-xs font-bold text-ds-on-hero-soft">
-                            {plural(shelf.episodes.length)} ·{" "}
-                            {shelf.percent === 100 ? "finished ✓" : `${shelf.percent}%`}
-                          </span>
-                        </span>
-                      </Link>
+                      <RoomCard library={library} shelf={shelf} />
                     </li>
                   ))}
                 </ul>
