@@ -1,3 +1,5 @@
+> Historical record. Pilot panel run (2026-11-06), superseded by the full content review delivered in #471 (2026-11-07). Current behaviour: docs/CONTENT-PLAYBOOK.md.
+
 # FR/ES review panel, first run (2026-11-06)
 
 Two reviewers, seed `20261106`: **Claude** `anthropic/claude-sonnet-5.5` (served by Anthropic) and **Mistral** `mistralai/mistral-large-4-0` (served by Mistral).

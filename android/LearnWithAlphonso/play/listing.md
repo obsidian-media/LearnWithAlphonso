@@ -1,3 +1,5 @@
+> Status (verified 2026-11-22 against d8350542): contact, website and privacy URLs moved to learnwithalphonso.com; copy otherwise unchanged. Not pasted into Play Console yet (no Play app record).
+
 # Google Play listing copy
 
 Adapted from the App Store copy in `scripts/update-app-store-metadata.ts`
@@ -44,9 +46,9 @@ Learn with Alphonso does not use advertising or tracking. You can manage your ac
 
 - Category: Education
 - Tags: Language learning, Education
-- Email: the support address already published on learn.alphonsoecosystem.app/support
-- Website: https://learn.alphonsoecosystem.app
-- Privacy policy: https://learn.alphonsoecosystem.app/privacy
+- Email: support@learnwithalphonso.com (the address published on https://learnwithalphonso.com/support)
+- Website: https://learnwithalphonso.com
+- Privacy policy: https://learnwithalphonso.com/privacy
 
 ## Graphics the owner supplies
 

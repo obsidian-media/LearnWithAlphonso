@@ -1,7 +1,7 @@
 # Architecture
 
-Written 2026-09-13, last substantially updated 2026-11-13 (a documentation pass against
-`main` at #498: see "Build 62" near the end; the 2026-11-04 pass was against `main` at #365; the 2026-10-07 to 2026-10-09 changes are summarised in the
+Written 2026-09-13, last substantially updated 2026-11-22 (a full verification pass against
+`main` at d8350542, #705, of everything down to the middle of "Native Android app"; earlier passes were against #498 on 2026-11-13 and #365 on 2026-11-04; the 2026-10-07 to 2026-10-09 changes are summarised in the
 sections from "AI integrations" through "Release and QA tooling", and the
 2026-10-19 to 2026-11-04 changes in "Word cards", "Podcast quiz" and "Anti-farming and quotas" after
 "Vocab images") — re-verify
@@ -15,8 +15,9 @@ over "what the answer currently is," since the latter goes stale fast.
 - **Framework:** TanStack Start (SSR) on Vite 8 + Nitro, React 19
 - **Routing:** TanStack Router, file-based (`src/routes/`, see
   `src/routes/README.md` for conventions)
-- **Styling:** Tailwind CSS v4, hand-written components (no UI kit —
-  `src/components/ui/` was removed 2026-09-13, confirmed unused)
+- **Styling:** Tailwind CSS v4, hand-written components (no third-party UI kit;
+  `src/components/ui/` was removed 2026-09-13 and is back since the admin console
+  redesign, #568, as four small in-house primitives: `Button`, `Card`, `StatPill`, `TileCard`)
 - **Client state:** Zustand (`src/lib/progress.ts`)
 - **Server state / data fetching:** TanStack Query + TanStack Start server
   functions (`createServerFn`, in `src/lib/*.functions.ts`)
@@ -83,7 +84,7 @@ over "what the answer currently is," since the latter goes stale fast.
 | `buddy_age_confirmations` / `buddy_pool_attempts` / `buddy_pool_exclusions` | Matching hardening (`20261008130700`, `20261013100100`): a durable record of the 13+ declaration, per-learner attempt counts behind the matching rate limits (20 tries an hour, 3 matches a week), and an exclusions table (RLS on, no client access) that `join_buddy_pool` checks so a seeded demo account can never enter the real matching pool. The first two are in the data export. |
 | `duel_queue`                                                     | V4 #7 — open/stranger duel matchmaking (as opposed to `duels`' friend-challenge flow): `join_open_duel_queue(_course, _match_by_level)` uses `FOR UPDATE SKIP LOCKED` to safely match two waiting rows concurrently, going straight to an `active` duel with XP baselines captured (mirroring `respond_to_duel`'s logic, since both sides already consented by queueing — no separate accept step). Added `supabase/migrations/20260922030500_weekly_challenges.sql`, which also fixed a real pre-existing bug: `duels.course`'s `CHECK` constraint only allowed `('en','fr')`, silently breaking Spanish duels since the V4 #1 Spanish launch. |
 
-| `podcast_folders` / `podcast_episodes` / `podcast_playback` / `podcast_play_events` | Podcast library Phase 1a — a self-referencing folder tree of arbitrary depth (the editorial Course/Level/Series shape is a convention for filling it, not a schema constraint), published episodes, per-user resume positions, and play events. Only `service_role` writes folders and episodes; there is no client insert/update policy on either. Two constraints carry weight: root folder slugs need their own partial unique index because Postgres treats `NULL` parent_id values as mutually distinct, and cycle prevention lives in `src/lib/podcast-tree.ts` (tested) rather than a trigger, since only the CLI writes. Added `supabase/migrations/20260926030000_podcast_library.sql`. **`podcast_play_events` is written only through `record_podcast_play_event()`** -- the direct INSERT grant it shipped with let any signed-in client write arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including unpublished ones (foreign keys do not consult RLS), on the one table Phase 2's XP and SRS wiring is meant to trust. Hardened the same way the gamification tables were in `20260920050000`; see `20260926223031_podcast_play_event_rpc.sql`. `podcast_playback` deliberately keeps its direct grant: falsifying your own resume position affects only you. **Since 2026-10-08:** `podcast_playback.user_id` defaults to `auth.uid()` (`20261012500000`; the iOS first save upserts on `(user_id, episode_id)`), `podcast_episodes` records `voice_provider` and `voice_model` (`20261012500100`; rows from before provenance tracking defaulted to `unknown`), and `CHECK (NOT published OR voice_provider IN ('deepgram','human'))` (`20261012500200`, validated by `20261013100000`) makes licensed-only publishing a property of the table rather than of one tool. The episodes live today are AI-narrated with Deepgram Aura-2 voices (10 English, 3 French, 3 Spanish); the unlicensed audio was unpublished and its files deleted. |
+| `podcast_folders` / `podcast_episodes` / `podcast_playback` / `podcast_play_events` | Podcast library Phase 1a — a self-referencing folder tree of arbitrary depth (the editorial Course/Level/Series shape is a convention for filling it, not a schema constraint), published episodes, per-user resume positions, and play events. Only `service_role` writes folders and episodes; there is no client insert/update policy on either. Two constraints carry weight: root folder slugs need their own partial unique index because Postgres treats `NULL` parent_id values as mutually distinct, and cycle prevention lives in `src/lib/podcast-tree.ts` (tested) rather than a trigger, since only the CLI writes. Added `supabase/migrations/20260926030000_podcast_library.sql`. **`podcast_play_events` is written only through `record_podcast_play_event()`** -- the direct INSERT grant it shipped with let any signed-in client write arbitrary `seconds_listened`, arbitrary `started_at`, and any episode id including unpublished ones (foreign keys do not consult RLS), on the one table Phase 2's XP and SRS wiring is meant to trust. Hardened the same way the gamification tables were in `20260920050000`; see `20260926223031_podcast_play_event_rpc.sql`. `podcast_playback` deliberately keeps its direct grant: falsifying your own resume position affects only you. **Since 2026-10-08:** `podcast_playback.user_id` defaults to `auth.uid()` (`20261012500000`; the iOS first save upserts on `(user_id, episode_id)`), `podcast_episodes` records `voice_provider` and `voice_model` (`20261012500100`; rows from before provenance tracking defaulted to `unknown`), and `CHECK (NOT published OR voice_provider IN ('deepgram','human'))` (`20261012500200`, validated by `20261013100000`) makes licensed-only publishing a property of the table rather than of one tool. The episodes live today are AI-narrated with Deepgram Aura-2 voices (21 published on 2026-11-22, all `voice_provider = 'deepgram'`; the per-language split was not re-derived); the unlicensed audio (69 rows with provenance `unknown`) is unpublished. |
 | `podcast_transcripts` | Podcast library Phase 2a. One row per episode (`episode_id` PRIMARY KEY, cascade), plain text with blank-line paragraph breaks. **An accessibility obligation, not a feature**: the players carry no captions, so without text on screen an episode is unavailable to deaf and hard-of-hearing learners. A separate table rather than a column on `podcast_episodes` because the episode row is read by every folder listing and every search, and a transcript is kilobytes nobody needs until they open one episode. Plain text only -- timed cues need forced alignment against the audio, which is the Deepgram path and is gated on the unrun chunk-join probe. Added `supabase/migrations/20260927230000_podcast_transcripts.sql`, versioned deliberately after **both** `20260926030000` and `20260926223031`: wall-clock "now" was 2026-09-25, which sorts below both, because the library migration was itself renumbered forward out of a version collision. **A transcript is not the TTS script** -- `--transcript` rejects markup, since episode 1's script carries ElevenLabs SSML that would otherwise render to the exact readers the feature exists for. |
 | `blocked_users` / `content_reports` | App Store compliance for user-generated content: Apple requires a way to block and report when an app carries social features, and this one has friends, nudges, duels, open matchmaking and leaderboards. **The table is the easy half.** A block that stores a row and changes nothing is a guard that cannot act, so the block is enforced at every path a blocked relationship could reach -- `get_friends_progress`, `get_leaderboard`, `join_open_duel_queue`, `create_duel`, `accept_friend_invite`, the `nudges` insert policy, and the `friend_activity_events` RLS policy. `blocked_users` is owner-scoped (a user reads, adds and removes their own blocks). `content_reports` is **insert-only with no select policy for anyone including the reporter** -- same reasoning as `admin_users`: a report list a client can read is one an abuser can audit. Added `supabase/migrations/20260928020000_block_and_report.sql`. **Block and report are two of the four things Guideline 1.2 actually requires** for an app with user-generated content -- filtering objectionable material *before* it posts, and published contact information, are the other two. A 2026-09-28 audit found the filter was the one genuinely missing piece: `profiles.display_name` and `teams.name` (the only user-authored text shown to other users) had length checks only, nowhere in the codebase. `20260930030000_ugc_content_filter.sql` closes it -- a `BEFORE INSERT OR UPDATE OF display_name` trigger on `profiles` (the one write path with no server function to validate in, since it's a direct PostgREST PATCH from iOS) plus an inline check inside `create_team` itself, both calling one shared `contains_blocked_term`/`normalize_for_moderation` pair so there is exactly one blocklist to review or extend. Deliberately documented as a real, working baseline rather than a claim of completeness -- report/block remain the backstop for anything it misses. **Superseded in detail by the 2026-10-08 moderation work**: the filter is now v2 (Unicode normalisation, bidi overrides refused, punctuation-split words caught, one rule set shared by `display_name_problem` and `team_name_problem`), `content_reports` gained `kind` (`user`, `team_name`, `ai_response`) and `context`, and each new report notifies the owner; see "Moderation, names and reports" below. |
 | `apple_auth_tokens` | Apple refresh tokens, stored **only** so account deletion can revoke the Sign in with Apple grant -- which Apple requires and checks. **RLS enabled with zero policies** plus `REVOKE ALL FROM anon, authenticated`: a refresh token a client can read is a credential it can exfiltrate, and this one authorises Apple identity operations for the whole app. Deliberately no own-row policy -- the app never reads it back, it only ever posts a fresh authorization code to `/api/apple-link`. We store the refresh token rather than the authorization code because the code is single-use, five-minute-lived, and the app's copy does not survive relaunch, so "sign in with Apple, quit, return tomorrow, delete account" would have had nothing to revoke with. Added `supabase/migrations/20260928030000_apple_auth_tokens.sql`. |
@@ -112,7 +113,8 @@ because a recorder's `stop()` is itself what makes iOS send `.shouldResume`.
 Reading the session category instead would be wrong — a lingering
 `.playAndRecord` is a known problem in this app.
 
-**Podcast admin deployment.** Live at **admin.alphonsoecosystem.app**,
+**Podcast admin deployment.** Live at **admin.learnwithalphonso.com** (the old
+`admin.alphonsoecosystem.app` host still answers),
 served by a **separate Vercel project** (`learnwithalphonso-admin`) built
 from this same repo with `bun run build:admin`. No admin code is in the
 learner project's build and no key was added to it.
@@ -145,7 +147,10 @@ it, because the missing piece was a file nothing referenced by name.
 attacher, and lists the _same_ middleware as `src/start.ts` -- add one
 there and it must be added here.
 
-Sign-in offers **Google and email/password**, plus a reset link. Google
+Sign-in (`src/components/console/auth/SignInScreen.tsx`, rebuilt in the #684 to #703 console redesign, which
+also rebuilt the 11 console screens: Home, Support, Users, Numbers, Staff, Reports, Action record, Health,
+Sign-in, Podcasts and the shell; every admin route sits under `console-no-hardcoded-data.test.ts` and its
+`LEGACY_ROUTES` is empty) offers **Google and email/password**, plus a reset link, then a second-factor step. Google
 matters because the owner's account carries both `email` and `google`
 identities, and an admin page that only accepted a password would look
 like it was rejecting someone who normally clicks "Sign in with Google"
@@ -159,8 +164,9 @@ the PKCE `code` from the URL on load, and `/`'s loader calls
 a valid admin straight back to the sign-in page. `/signin` has no loader
 guard, so it waits for the session and then navigates.
 
-**Prerequisite in the Supabase dashboard:** `https://admin.alphonsoecosystem.app/**`
-must be in Authentication → URL Configuration → Redirect URLs, or Google
+**Prerequisite in the Supabase dashboard:** `https://admin.learnwithalphonso.com/**`
+(and, while the old host is kept, `https://admin.alphonsoecosystem.app/**`; the dashboard setting itself is
+unverified here, it is not readable from the repo) must be in Authentication → URL Configuration → Redirect URLs, or Google
 sign-in is refused before it starts. Password sign-in works without it,
 which is what makes this easy to miss. Password reset deliberately
 redirects to the LEARNER app's existing `/reset-password` route rather
@@ -182,7 +188,7 @@ audit found missing, all now shipped, recorded together because they are
 one requirement set rather than four features.
 
 **Sign in with Apple** is mandatory under Guideline 4.8 once an app
-offers Google. `AppleSignInPresenter.swift` drives
+offers Google. `AppleSignIn.swift` (`AppleSignInCoordinator`) drives
 `ASAuthorizationController` directly -- a sibling to
 `GoogleSignInPresenter`, not a shared abstraction, because Apple's flow
 is a native controller and Google's is a web session and forcing one
@@ -467,9 +473,10 @@ build predates this change** and will see permission-denied errors on
 heart loss / CEFR level / placement save until a new build ships.
 
 **Applying migrations:** `.github/workflows/ci.yml`'s `deploy-supabase` job
-now runs `supabase db push` (and redeploys all six Edge Functions)
-automatically on every push to `main`, gated on `lint-and-typecheck`/`e2e`/
-`deno-tests` passing first. The generated-types freshness check
+now runs `supabase db push` (and redeploys all eight Edge Functions)
+automatically on every push to `main`, gated on `lint-and-typecheck`/`web-build`/`admin-build`/`e2e`/
+`deno-tests` passing first; it also runs the "Seed curriculum data" step
+(`bun scripts/seed-curriculum-db.ts`) on every main deploy, so nobody seeds by hand. The generated-types freshness check
 (`types-fresh`) is deliberately NOT in that gate: it fails on any PR that adds
 a table until this very job applies the migration (see "Known rough edges" below for the incident history that
 motivated this, and the job's own comment for the required repo secrets).
@@ -502,11 +509,13 @@ placement pool) for `"en"`, `"fr"`, or `"es"`. Each course pairs
 hand-written units (`curriculum.ts` / `curriculum-fr.ts` / `curriculum-es.ts`)
 with a generator-produced bank (`lesson-bank.ts` / `lesson-bank-fr.ts` /
 `lesson-bank-es.ts`, via `generatedUnits()`/`unitsFromBank()`). Actual
-counts, measured 2026-11-13 (re-run the count rather than trusting this
+counts, re-derived 2026-11-22 from the live `lessons`/`questions` tables (re-run the count rather than trusting this
 without checking — see README.md's Content table for the same numbers,
-kept in sync): English 609 lessons / 3,726 questions (3,096 on 2026-11-04), French 611 lessons
-/ 3,055 questions, Spanish 610 lessons / 3,050 questions (French and Spanish
-were 575 / 583 until the generated practice packs shipped in #319). French's phase 2
+kept in sync): English 609 lessons, French 611, Spanish 610 (1,830 in all). The authored base is 3,726 / 3,055 /
+3,050 questions (9,831); the lesson-mix pass (#692 tooling, #700 content, live 2026-11-22) appended 3,598 extras
+(ids `lx1`/`sx1`/`tx1`: 918 English, 1,340 French, 1,340 Spanish, in 1,500 lessons), so the database holds 13,429
+questions (4,644 / 4,395 / 4,390). French and Spanish
+were 575 / 583 lessons until the generated practice packs shipped in #319. French's phase 2
 (`docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md`)
 closed the type gap English opened on 2026-09-24 by porting
 `listening`/`speak`/`translate` to the shared generator (`bank-engine.ts`,
@@ -555,11 +564,12 @@ wordings. Four things about them are load bearing:
   answer would break that, since several call sites narrow `mc` away and
   then assume the remainder has a string answer.
 - A new question type must be wired into **both** players on **both**
-  platforms: `lesson.$id.tsx` AND `review.tsx` on web,
-  `LessonPlayerView.swift` AND `ReviewQueueView.swift` on iOS, plus
-  `QuestionGrading.swift` and `VocabDerivation.swift` (three switches) in
-  the Kit. A type handled only in the lesson player renders as a blank card
-  in spaced review — silently on web, as a compile error on iOS.
+  platforms: `lesson.$id.tsx` AND `review.tsx` on web; on iOS the review
+  queue hosts the same shared `QuestionCard` as the lesson player, and the
+  compiler-enforced `Question` switches (11, plus 4 hand-checked spots) are
+  listed in `docs/ios-notes.md` section 3. A type handled only in the lesson
+  player renders as a blank card in spaced review on web, and is a compile
+  error on iOS.
 - Anything graded with a rule of its own needs that rule in
   `deriveAnswerCorrectness` (`src/lib/srs.ts`), not in the player. The
   review server re-derives correctness independently, so a rule that lives
@@ -767,8 +777,9 @@ verified spike data: `docs/superpowers/specs/
 Trust-sensitive write/issue paths that aren't TanStack Start server
 functions, because the native iOS client has no server layer of its own
 to run them in. Also home to `get-season-status`, which needs genuinely
-complex server-side logic (not just a trust boundary) — see below. All
-are deployed and live in production (project `qhcjpfbxfcltjbiuknyt`):
+complex server-side logic (not just a trust boundary) — see below. Eight
+are deployed by `ci.yml`'s `deploy-supabase` job (project `qhcjpfbxfcltjbiuknyt`); the two story functions
+below were added after the first six:
 
 - **`complete-lesson`** — 1:1 port of `completeLessonRemote`
   (`src/lib/sync.functions.ts`) to Deno, reading curriculum data from the
@@ -820,6 +831,11 @@ are deployed and live in production (project `qhcjpfbxfcltjbiuknyt`):
   Function secrets; `not_configured` now means neither sender is
   configured. `fcm.test.ts` runs in `ci.yml`'s `deno-tests` job.
 - **`complete-podcast-quiz`** — #374: the podcast quiz's one write path. Takes `{ episodeId, answers, completedAt }` (never a score) and calls `submit_podcast_quiz` through the service role after the caller's JWT is checked; the grading, the XP and every anti-farming rule live in that SQL transaction. Its handler is unit-tested in `deno-tests` (10 cases) and `src/lib/edge-functions-deploy.test.ts` fails if a function directory is missing from the CI deploy list. See "Podcast quiz".
+- **`complete-story-check`** and **`finish-branching-story`** — the native apps' write path for graded stories
+  and interactive branching stories (the web goes through `src/lib/stories.functions.ts`). Each authenticates the
+  learner, takes the user id from the token, checks the account is not banned and calls a service-role-only
+  database function (`submit_story_check`, `finish_branching_story`; migrations `20261121100000_graded_stories.sql`
+  and `20261122100000_branching_stories.sql`) that grades from the stored key and pays the one-time reading credit.
 - **`get-season-status`** — V4 #7 (deeper gamification): resolves the
   caller's previous week's season-ladder cohort lazily (a side effect
   of this call, same no-cron pattern as `get_my_duels`), ensures a
@@ -1164,15 +1180,15 @@ explanation) slides in from the trailing edge on a wrong answer, via a
 shared `ExplanationView` (`question`/`picked` in, a plain caption for a
 correct answer vs `AlphonsoTipCard` for a wrong one out) so every
 question-type call site across `LessonPlayerView`'s `QuestionCard`/
-`GeneratedPracticeSection` and `ReviewQueueView`'s `ReviewQuestionCard`
+`GeneratedPracticeSection` and `ReviewQueueView` (it now hosts the shared `QuestionCard`; `ReviewQuestionCard` no longer exists)
 shares one decision point. **Deliberately Alphonso, not Hector, for
-this** — Hector is a $9.99/mo persona; giving him away for free in the
+this** — Hector is the paid-tier persona; giving him away for free in the
 ordinary lesson/review flow would undercut the subscription. Hector
 instead gets real presence in his own paid screen: his portrait on
 Hector's sign-in step, a small avatar beside his chat bubbles during
 conversation. Alphonso also now greets the user on the app's own
 sign-in screen (`AuthView`), replacing the generic SF Symbol icon the
-liveliness pass had used there. `QuestionCard`/`ReviewQuestionCard`'s
+liveliness pass had used there. `QuestionCard`'s (formerly also `ReviewQuestionCard`'s)
 `body` (a bare `switch` before this) is now wrapped in `Group { switch
 ... }` so `.animation(value: checked)` can drive the slide-in transition
 — without an explicit animation tied to that state change, the card
@@ -1191,7 +1207,7 @@ button — this can't repeat that regardless of portrait size. The
 card's public API (`explanation:` only) didn't change, so no call site
 needed touching.
 
-**Canopy theme (2026-09-23, iOS; ported to the web in #91)**: a fourth theme — emerald/coral,
+**Canopy theme (2026-09-23, iOS; ported to the web in #91; REMOVED 2026-11-16, only Royal and Meadow remain, see Themes)**: a fourth theme — emerald/coral,
 mascot-forward — added as the new default for installs/accounts with no
 saved theme preference, following direct feedback ("too much like a
 book and wordish") that the original three themes' serif-display
@@ -1217,13 +1233,12 @@ decisions rather than trusting that doc's roadmap section as current).
 ## Native Android app (`android/LearnWithAlphonso/`)
 
 Kotlin + Jetpack Compose (Material 3), minSdk 26, targetSdk 36, compileSdk
-37.2, against the same Supabase project, Edge Functions and `/api/*` routes
+37 (minor 2), against the same Supabase project, Edge Functions and `/api/*` routes
 the iOS app uses. Started 2026-09-29 on the long-lived `android` branch and merged to `main`
-on 2026-10-01 (#200); the app is not on Google Play yet (owner-gated: Play
-account, subscription, RevenueCat Android key). It has NOT received the
-2026-10-08 iOS and web safety work except the account-level AI consent
-screen and the hearts gate at lesson open (both ported, see below); the
-public-name step and report-an-AI-reply are still missing. Design in `docs/superpowers/specs/2026-09-29-android-app-design.md`, plans
+on 2026-10-01 (#200); the app is not on Google Play yet (owner-gated: the Play app and
+RevenueCat setup; the release is blocked only on the `REVENUECAT_ANDROID_PUBLIC_KEY` build secret). The 2026-10-08 iOS and web
+safety work has since been ported: the account-level AI consent screen, the hearts gate at lesson open, the
+public-name step (`ui/onboarding/NameOnboarding.kt`) and report-an-AI-reply (`AiResponseReport`, below). Design in `docs/superpowers/specs/2026-09-29-android-app-design.md`, plans
 under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
 
 - **Two Gradle modules.** `core` is pure JVM Kotlin: content models with
@@ -1236,8 +1251,8 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   `SupabaseAuthClient` over the GoTrue endpoints, `ApiHttp` for
   `/api/account-*` and `/api/grade-translation`), `SyncEngine` (completions
   drain independently, review grades strictly in order) and the
-  `SessionManager` state machine. `app` renders and persists: four themes
-  with dark variants and the seven OFL fonts, `EncryptedSharedPreferences`
+  `SessionManager` state machine. `app` renders and persists: two themes
+  (Royal with a night variant, Meadow light only) and five OFL fonts, `EncryptedSharedPreferences`
   session store, Room offline queue (`RoomSyncQueueStore`), connectivity,
   `SyncCoordinator` (sync on launch, resume and reconnect, then read the
   server when nothing was pushed), navigation-compose with five tabs.
@@ -1618,8 +1633,11 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
     tokens.
   - **Routes:** `src/routes/api/chat.ts`, `hector-respond.ts`.
 - **TTS/STT:** Deepgram directly (Aura-2 / Nova-3) —
-  `src/routes/api/tts.ts`, `src/routes/api/stt.ts`. `/api/tts` picks a native
-  Aura-2 voice per course (en `thalia`, fr `agathe`, es `selena`). Every
+  `src/routes/api/tts.ts`, `src/routes/api/stt.ts`. `/api/tts` resolves the
+  voice with `resolveTtsVoice` (`src/lib/voice-catalog.ts`): the learner's
+  allow-listed choice, else the character's per-course default (see "Voice
+  choice"; podcasts keep their own per-course voices: en `thalia`, fr `agathe`,
+  es `selena`). Every
   Deepgram URL carries `mip_opt_out=true` (the model-improvement opt-out the
   privacy policy promises), built by one tested helper. STT takes the
   course for Deepgram's `language` parameter. The temporary recording-timing
@@ -1628,9 +1646,10 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
 - **Course-aware tutor (2026-10-08).** The active course (shared with Learn,
   remembered per account) drives Hector, Practice, Campaigns and speaking
   questions. Scenarios and campaigns are course-keyed (`en`/`fr`/`es`: 12
-  scenarios and nine campaigns each: `city-day` plus the story campaigns `first-week-job`,
-  `doctors-visit`, `train-trip` and `new-flat` (`src/data/campaigns-more.ts`) and `market-day`,
-  `dinner-guest`, `lost-bag` and `refund-return` (`src/data/campaigns-batch2.ts`). `/api/chat`'s
+  scenarios and 13 campaigns each: `city-day` plus the story campaigns `first-week-job`,
+  `doctors-visit`, `train-trip` and `new-flat` (`src/data/campaigns-more.ts`), `market-day`,
+  `dinner-guest`, `lost-bag` and `refund-return` (`src/data/campaigns-batch2.ts`) and `study-abroad`,
+  `gym-join`, `project-week` and `family-weekend` (`src/data/campaigns-batch3.ts`). `/api/chat`'s
   whitelist is `ALL_SYSTEM_PROMPTS` (156 prompts) and it requires a known
   persona (400 `unknown-system-prompt`). English prompts are byte-identical
   to the pre-course ones (`legacy-system-prompts.test.ts`), so old builds keep
@@ -1667,10 +1686,12 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
   so a refused request never spends quota. A failed consent read is 503
   `consent-check-failed`, which clients must not show as a consent problem.
   Gated: `/api/chat`, `/api/stt`, `/api/tts`, `/api/hector-respond`,
-  `/api/grade-translation`, `/api/define-word`, `/api/analyze-weaknesses`.
-  Not gated: `/api/generate-practice` (it sends only the lesson's own
-  wording; still authenticated and metered). `requireAiConsent` and
-  `authorizeAiRequest` are the helpers; `ENFORCE_AI_CONSENT` defaults on.
+  `/api/grade-translation`, `/api/define-word`, `/api/analyze-weaknesses`,
+  `/api/explain`, `/api/call-recap`. Not gated: `/api/generate-practice` (it
+  sends only the lesson's own wording; still authenticated and metered:
+  `requireConsent: false`). `requireAiConsent` and `authorizeAiRequest` are the
+  helpers; there is no off switch (the old `ENFORCE_AI_CONSENT=false` is
+  ignored, pinned in `ai-consent.server.test.ts`).
 - **Zero AI calls without consent in lessons and review.** The graders take
   `{ ai: { allowed, checkQuota? } }`; omitting it means no AI, so a new caller
   that forgets consent fails safe (web server functions and both edge
@@ -1698,7 +1719,7 @@ under `docs/superpowers/plans/2026-09-29-android-plan-*.md`.
 
 ### Help chat server (support chat, milestone 1)
 
-Tables `support_conversations`, `support_messages`, `support_notes` (`20261117100000_support_chat.sql`): RLS on, no policy, no client privilege, service role reads only; every write is a `support_*` SECURITY DEFINER function. Three routes under `src/routes/api/support/` (`conversation`, `message`, `handoff`) are thin; the logic is `src/lib/support-chat.server.ts` (order: auth and ban check, body check, store the learner message, then only if the conversation is still with the AI: keyword hand-off, the `ai` and `support_ai` switches, consent, quota kind `support`, facts, model, output guard). The learner id is always the verified session's. The AI is `src/lib/support-ai.server.ts` (prompt, keyword table in en/fr/es, JSON reply parser, link and address guard) with the learner's own small facts snapshot from `src/lib/support-facts.server.ts` and the owner-reviewed help file `src/data/help-centre.ts`; it has no tools and no write path. AI answers are OFF until `app_switches.support_ai` is turned on. Plan: `docs/superpowers/plans/2026-11-14-support-help-chat.md`.
+Tables `support_conversations`, `support_messages`, `support_notes` (`20261117100000_support_chat.sql`): RLS on, no policy, no client privilege, service role reads only; every write is a `support_*` SECURITY DEFINER function. Three routes under `src/routes/api/support/` (`conversation`, `message`, `handoff`) are thin; the logic is `src/lib/support-chat.server.ts` (order: auth and ban check, body check, store the learner message, then only if the conversation is still with the AI: keyword hand-off, the `ai` and `support_ai` switches, consent, quota kind `support`, facts, model, output guard). The learner id is always the verified session's. The AI is `src/lib/support-ai.server.ts` (prompt, keyword table in en/fr/es, JSON reply parser, link and address guard) with the learner's own small facts snapshot from `src/lib/support-facts.server.ts` and the owner-reviewed help file `src/data/help-centre.ts`; it has no tools and no write path. AI answers need `app_switches.support_ai`, which is ON (owner decision 2026-11-19; read from production 2026-11-22). Plan: `docs/superpowers/plans/2026-11-14-support-help-chat.md`.
 
 ### Help chat on the web (support chat, milestone 2)
 
@@ -1792,14 +1813,14 @@ Added 2026-10-08 (#249). Every vocab image is self-hosted in the public
 metadata stripped, `?v=<hash>` cache key; migration `20261008140000`). Only
 picturable terms get an image (a closed-default classifier,
 `scripts/vocab-imageability.json`); abstract words, phrases and anything
-sensitive get a text-only card. **1,288 images are live** (English 444, French
-419, Spanish 425), each visually reviewed (every image showing a person, plus a
+sensitive get a text-only card. **1,421 images are live** (English 471, French
+476, Spanish 474; counted in the `vocab_images` table and in `src/data/vocab-images.ts` on 2026-11-22), each visually reviewed (every image showing a person, plus a
 10% sample, twice) and signed off by the owner (`signoff.json` digest). The
 first pass (#249) was 415 images (English 212, Spanish 176, French 27); a
 second pass of 315 more (#268, 2026-10-09) shipped in build 50, passes 3 and 4
 (#352, #353) are in build 55 (886 images), and passes 5 to 7 (#360 English, #370 and #379
-French and Spanish photos) ship with the next iOS build, because
-the iOS and Android apps bundle `vocab-images.json`. The renderers (web `VocabImage`, iOS
+French and Spanish photos) followed; the iOS and Android apps bundle `vocab-images.json`, so a
+new image reaches them with the next build. The renderers (web `VocabImage`, iOS
 `VocabImageView`, Kit `VocabImagePolicy`) accept only bucket URLs, show a
 placeholder while loading and collapse the whole slot on failure. The iOS
 state is keyed by the loaded URL and exposes `vocab-image-loaded` /
@@ -1815,7 +1836,7 @@ provider URL in the source or native exports, sign-off digest) and the
 
 A lesson's vocabulary is derived from its questions (`deriveVocab`, ported to
 `VocabDerivation.swift` and `VocabDerivation.kt`); questions carry no gloss, so the
-meaning and example are authored on the pack line. English A1 to C1 (2,629 cards,
+meaning and example are authored on the pack line. English A1 to C1 (2,629 cards when written, not re-counted 2026-11-22,
 all with a meaning and an example, 509 with a photo) got them in #366 and #369: optional
 3rd and 4th `|` fields on pair/cloze pack lines, `meaning`/`example` on hand-written
 questions, bundled to iOS and Android by the existing exports. A pack whose answer is a
@@ -1829,9 +1850,9 @@ band with the word on it (iOS, #350). The web and iOS lesson shows the cards one
 ## Podcast quiz
 
 #374 (backend), #375 (web UI), #376 (iOS UI: Kit `PodcastQuiz.swift`, `PodcastQuizSheet`, offered by `PodcastMiniBar` when playback finishes and from a `PodcastQuizRowButton` under episode rows), #381 (Android UI: core `PodcastQuiz`/`PodcastQuizSession`, `PodcastClient`, `PodcastQuizUi`), 2026-11-04; the quiz runs on web, iOS and Android.
-`src/data/podcast-quizzes.ts` holds 110 authored multiple-choice questions for 16 episodes
+`src/data/podcast-quizzes.ts` holds 145 authored multiple-choice questions (21 episodes are published and have a quiz in production, 2026-11-22)
 and is the source of truth: `scripts/gen-podcast-quiz-migration.ts` regenerates the seed
-migration (`20261104100300`) and a test fails on drift, another grounds every answer in the
+migrations (`20261104100300`, later `20261121110000_podcast_quiz_seed_r47.sql`) and a test fails on drift, another grounds every answer in the
 episode transcript. Episodes are keyed by (course, folder slug, episode slug) because ids differ
 per database. `submit_podcast_quiz` does everything in one transaction: grades from the stored
 key (clients send answers, never a score), pays 10 XP per correct answer (at most 70 an
@@ -1844,6 +1865,31 @@ uses a server function (`src/lib/podcast-quiz.functions.ts`). The web player off
 the player bar when playback ends (the store's `finished` flag), and `PodcastQuiz` shows the server's
 score, never its own marking. Since #487 (build 62) a missed question also becomes a spaced-review item, written in the same transaction; since #497 the streak and activity day it books are the learner's local day (see "Build 62").
 
+## Graded stories
+
+Short leveled read-along texts, the reading analog of the Listen library (migrations `20261121100000_graded_stories.sql` and `20261122100000_branching_stories.sql`; the FR/ES Mona editions were seeded by `20261127120000` and are published, #691). Original design: `docs/superpowers/specs/2026-11-17-graded-stories-design.md` and `2026-11-18-interactive-branching-stories-design.md`.
+
+- **Model.** `stories` (course en/fr/es, `level_id`, unique `(course, slug)`, `segments` jsonb of 1 to 60 sentences, `needs_review`, `published`, and a CHECK that a story cannot be published while it still needs review); `story_quiz_questions` (1 to 10 per story, 2 to 4 `choices`, `answer_index`; ids on the wire are `q<position>`); `story_progress` (primary key `(user_id, story_id)`: `segment_index`, `best_correct`, `check_total`, `completed_at`, plus `endings_found` and `reading_credited` from the branching migration). All three have RLS on and clients get SELECT only: a story and its questions are visible only while `published` (the questions' policy checks the story), progress is own-row. `save_story_progress` (authenticated, user from `auth.uid()`, index clamped, never un-completes) is the only client write; grading is service-role-only. Production on 2026-11-22: 14 en, 12 es and 12 fr branching stories plus 3 linear per course, all published.
+- **Reader.** Web: `StoryReader.tsx` (sentence-by-sentence narration through `/api/tts`, current sentence highlighted, every word tappable into the save-word dialog) with `StoryCheck.tsx`; `BranchingStoryReader.tsx` for branching ones; routes `src/routes/_authenticated/stories.index.tsx` and `stories.$storyId.tsx`; server functions in `src/lib/stories.functions.ts`. iOS: Kit `Stories.swift` and `Branching.swift`; Android: core `podcast/Stories.kt`, `podcast/Branching.kt`, `net/StoriesClient.kt` and `ui/listen/BranchingStoryUi.kt`.
+- **Linear check and the credit rule (`submit_story_check`).** The client sends answers, never a score. The function requires exactly one well-formed answer per stored question (missing, duplicate, foreign or malformed gives `invalid`), grades from `answer_index`, and keeps the best score. The `reading` skill credit (`add_skill_results`, the profile skills chart) is given once, on a learner's first attempt (`check_total IS NULL`), under an advisory lock per user and story; later attempts only raise `best_correct`. It returns `{status, correct, total, bestCorrect, missedQuestionIds, credited}`.
+- **Write path.** Web: `completeStoryCheck` and `finishBranchingStory` (`requireSupabaseAuth`, then `supabaseAdmin.rpc` with `context.userId`). Native: the Edge Functions `complete-story-check` and `finish-branching-story`, which take the user from the token, refuse a banned account (`suspendedResponseIfBanned`) and call the same functions.
+## Branching stories
+
+Branching stories are `stories` rows whose `nodes` jsonb is set (same tables, readers and write path as above).
+
+- **Branching shape.** `stories.nodes` jsonb is `{ "start": "<nodeId>", "map": { "<nodeId>": node } }` (CHECK `stories_nodes_shape`; `branching = (nodes IS NOT NULL)` is enforced by `stories_branching_consistent`; a branching story's top-level `segments` is `[]`). A node has `segments` (strings), an optional `art` key and exactly one of `choice` (`{ prompt, options: [{ label, goto, clue }] }`), `next` (a node id) or `ending` (`{ id, title, wrap, quality }` with quality `good`, `ok` or `lesser`).
+- **Farm-proof finish (`finish_branching_story`).** The client sends only `_path`: the option index chosen at each choice node. The function re-walks the stored graph from `start`, following `next` links and consuming one path entry per choice; the ending it lands on, from the stored graph, is authoritative and the client's claimed ending is ignored. A path that is too short, too long, has a negative or out-of-range index, a non-number, or a graph that cycles past 100 steps returns `invalid`; an unpublished or non-branching story is `not-found`. It records the ending in `endings_found` and credits `reading` (1 of 1) once, only on the first `good` ending, gated by the one-way `reading_credited` flag under an advisory lock, so replaying any path cannot farm it. It returns `{status, endingId, quality, endingsFound, endingsTotal, credited}`.
+- **Art.** Scene art lives in the public bucket `story-art` at the key `<course>/<slug>/<nodeId>.jpg`; a node's `art` holds that key and every platform resolves it to the bucket's public URL (web `artUrlOf` in `stories.functions.ts`, iOS `Branching.artBucket`, Android `Branching.artUrl`). A node without a file shows a themed placeholder; the cover on a library card is the start node's art.
+
+## Say it right
+
+Web `src/components/practice/`.
+
+- **Say it right** (`SayItRight.tsx`, derived state in `src/lib/say-it-right.ts`, scoring in `src/lib/pronunciation.ts`; Kit `Pronunciation.swift`, core `logic/Pronunciation.kt`). #661 (2026-11-19) made it a 1:1 lesson with Alphonso: eight learned words (`ROUNDS`; the pool is the vocabulary of lessons the learner completed, `learnedWordPool`, at least `MIN_POOL` = 4 words), the learner holds the mic (a press shorter than `LATCH_MS` = 300 ms latches recording on, a second tap stops it; the ring fills over `MAX_RECORD_MS` = 6 s), audio goes through `/api/stt`, and Alphonso reacts in a pose by phase and verdict, with a warm line per band and one retry after a miss. The score is unchanged: `judgeAttempt` first requires the transcript to match the word (`matchesTarget`, whole-word, per-course normaliser), then bands the Deepgram utterance confidence: **great** at or above `HIGH_CONFIDENCE` = 0.85 (`pronunciation.ts:13`), **almost** at or above `LOW_CONFIDENCE` = 0.6 (`:15`) and below 0.85, **again** below 0.6 or on no match; a match with no confidence value counts as great. The same two numbers are in `Pronunciation.swift:15,17` and `Pronunciation.kt:25,28`. Stars (`sessionStars`) are by the share of first-try greats: 3 at 75 percent or more, 2 at 50 percent or more, otherwise 1. No hearts and no new quota kind. #664 (2026-11-19) added "hear yourself next to Alphonso" and "say it slower": `use-say-it-right-audio.ts` keeps the learner's last clip and Alphonso's model clip in memory only (never uploaded, freed when the word changes), draws both waveforms (`waveform.ts`), plays one clip at a time, and replays the model at `SLOW_RATE` = 0.75 on the client with no second `/api/tts` call; iOS `PronunciationClips.swift` and Android `audio/PronunciationClips.kt` do the same.
+## Say the picture
+
+- **Say the picture** (`SayThePicture.tsx`, `src/lib/say-the-picture.ts`). The word pool is `imageWordPool(course)`: every word of the course that has a picture, learned or not, derived live on each call from the lessons' own vocabulary (`deriveVocab` attaches the image at that moment), de-duplicated by lower-cased term, never cached, so a word that gains a photo is in the next session with no curation step. A session is `ROUNDS` = 8 pictures drawn from it (`drawRounds`) and needs at least `MIN_POOL` = 4 or it says there are not enough words with pictures. `saidThePicture` is forgiving: the word counts as the whole utterance or as whole words inside it ("a dog", "el abogado").
+
 ## Anti-farming and quotas
 
 #367, 2026-11-04, machine speed only (owner decision: no minimum lesson time, no daily XP
@@ -1852,7 +1898,7 @@ hour (counted at the clamped completion instant, serialised per user with an adv
 `release_lesson_completion_slot` returns the slot when the save then fails. Production's busiest
 real hour was 7. The podcast quiz shares the ceiling. Daily AI allowances in `consume_ai_quota`
 (and `DAILY_LIMITS` in `src/lib/ai-quota.server.ts`, compared by a test): chat 60, stt 120 (was a
-temporary 300), tts 80, translate 60, define 40, hector 150; per-minute limits are unchanged.
+temporary 300), tts 80, translate 60, define 40, hector 150, explain 40, support 30, recap 30; per-minute limits are unchanged.
 
 ## Sign-in and onboarding (iOS)
 
@@ -1986,11 +2032,10 @@ RevenueCat's hosted Web Purchase Link.
   `revenuecat_erasure_pending` and erases nothing, and the scheduled retry
   cancels, then erases.
 - **State 2026-11-03:** verified end to end in RevenueCat's Stripe sandbox on
-  the PR preview (purchase, Pro unlock, deletion cancels and erases). Production
-  is deliberately unconfigured (the web paywall shows "Couldn't load
-  subscription options") until a real Stripe account and the production
-  RevenueCat web app, products and purchase links (redirecting to the live
-  `/pro-return`) exist.
+  the PR preview (purchase, Pro unlock, deletion cancels and erases). At that
+  date production was deliberately unconfigured. The variables are listed in
+  `docs/ENV-SETUP.md`; whether production now holds live Stripe and RevenueCat
+  values is not readable without an authenticated call (unverified: 2026-11-22).
 
 ## Binary polish and release guards (iOS)
 
@@ -2010,7 +2055,7 @@ Debug-only UI-test launch arguments are pinned inside `#if DEBUG`, and
 build number is not above App Store Connect's latest, if the app and widget
 versions differ, or if the exported .ipa's name, microphone string, manifest
 reasons, icon name or licence files are wrong. The checked-in project is
-version 1.0, build 55.
+version 1.0, build 72 (`CURRENT_PROJECT_VERSION` in `ios/LearnWithAlphonso/project.yml`, set twice).
 
 ## Release and QA tooling
 
@@ -2097,8 +2142,9 @@ Added 2026-10-12 (#283-#290, #295-#298). `docs/operations.md` is the runbook.
   twice (#284).
 - **Uptime and `main`.** `.github/workflows/uptime.yml` makes six public
   requests every 15 minutes; a failed run is the alert (#290). `main` is
-  protected by a ruleset that requires seven checks (lint-and-typecheck,
-  web-build, admin-build, e2e, deno-tests, ios-swift-tests, ios-app-build); the
+  protected by a ruleset that requires ten checks (lint-and-typecheck,
+  web-build, admin-build, e2e, deno-tests, ios-swift-tests, ios-app-build, "Supabase types match the migrations",
+  "Instrumentation tests (API 34 emulator)", "JVM tests and lint"; ruleset 24907530, read 2026-11-22); the
   types-regeneration workflow pushes with a deploy key the ruleset exempts
   (#296).
 
@@ -2118,7 +2164,7 @@ Hearts (#420): the server can own the heart count (migration 20261105101000); it
 
 #437 (foundations), #445 and #451 (lesson flow), #453 and #458 (first run), #454 and #462 (paywall), #459 and #463 (Profile), #461 and #464 (Practice hub), #466 (sign-in), 2026-11-06 and 2026-11-07.
 
-- **Token pipeline.** `design/tokens.json` is the only source: Royal (default) and Meadow palettes, each light and night (42 semantic colours), type scale, space, radii, pressable edge, elevation and motion. `bun scripts/export-design-system.ts` writes every mirror: web `src/styles/ds-tokens.generated.css` (`--c-*` variables, `bg-ds-*` utilities, `.ds-type-*` classes) and `src/design/*.generated.ts`, Swift `AlphonsoDS.generated.swift`, Kotlin `AlphonsoTokens`. Guards: `design-system-sync.test.ts` (web, Swift, Kotlin and icons all match the JSON), `design-tokens.test.ts` (72 contrast checks), `design-fonts.test.ts`, Android `AlphonsoTokensSyncTest`, and a raw-value baseline (`design/baselines/*.json`) that only goes down. Fonts (Bricolage Grotesque, Figtree) are bundled on every platform; 22 drawn icons live in `design/icons/*.svg`.
+- **Token pipeline.** `design/tokens.json` is the only source: Royal (default, light and night) and Meadow (light only: there is no Meadow night) palettes (47 semantic colours each), type scale, space, radii, pressable edge, elevation and motion. `bun scripts/export-design-system.ts` writes every mirror: web `src/styles/ds-tokens.generated.css` (`--c-*` variables, `bg-ds-*` utilities, `.ds-type-*` classes) and `src/design/*.generated.ts`, Swift `AlphonsoDS.generated.swift`, Kotlin `AlphonsoTokens`. Guards: `design-system-sync.test.ts` (web, Swift, Kotlin and icons all match the JSON), `design-tokens.test.ts` (54 contrast checks: 18 pairs in Royal light, Royal night and Meadow light), `design-fonts.test.ts`, Android `AlphonsoTokensSyncTest`, and a raw-value baseline (`design/baselines/*.json`) that only goes down. Fonts (Bricolage Grotesque, Figtree) are bundled on every platform; 22 drawn icons live in `design/icons/*.svg`.
 - **Rooms.** Each unit maps to a painted room (`src/data/unit-rooms.ts`, mirrored in the Kit and Android and checked by tests). The lesson, first run, sign-in, paywall, Practice hub and call screens put Alphonso or Hector in a room instead of on a flat colour. A room picture is a background and never sizes the layout.
 - **Lesson flow.** Question, verdict sheet, start and finish all live in the unit's room. The per-answer XP chip follows the server's replay rule (`answerXpChip`, `computeLessonReplayXp`), so it never promises XP a replay will not pay. Lesson length comes from `src/data/lesson-timing.json`, copied into the native bundles by the exporters.
 - **First run and learner profile.** `/welcome` (before sign-in, answers in localStorage under `lwa.firstRun.v1`), then `/hello` (after sign-in) and `/complete-profile` (for a learner who skipped it). The answers are stored in the auth user's `user_metadata.learner_profile` (no table): name, course, native language, country, goal, level, daily minutes, age range, interests and how the learner heard about us, written only through `saveLearnerProfile` with strict allow-lists. The age is a range only (13-17 and up; there is no under-13 value). Under 13 is a device block (`lwa.under13.v1`): answers wiped, nothing sent. The profile picture is `profiles.avatar_seed` (`animal:<id>` of 16 presets, or initials); the country is copied to `profiles.country` only while the flag switch is on. Native apps follow the same rules (Kit `LearnerProfile`, Android `core/firstrun`).
@@ -2139,7 +2185,7 @@ Hearts (#420): the server can own the heart count (migration 20261105101000); it
 
 ## Content review
 
-`docs/CONTENT-PLAYBOOK.md` is required reading for any content change. `scripts/content-review/run.ts` and `src/lib/content-review/` run a one-time review of every learner-facing item (free flags, two independent model reviewers, a judge that writes constrained patches, a spend ledger with a hard cap in code); checked fixes land in `src/data/review-fixes/<course>.json` and are applied when the bundles are built (#430, #440 to #449, #460, #465). A `snapshot` and `check` step on changed items is mandatory for later content PRs.
+`docs/CONTENT-PLAYBOOK.md` is required reading for any content change. `scripts/content-review/run.ts` and `src/lib/content-review/` run a one-time review of every learner-facing item (free flags, two independent model reviewers, a judge that writes constrained patches, a spend ledger with a hard cap in code); checked fixes land in `src/data/review-fixes/<course>.json` and are applied when the bundles are built (#430, #440 to #449, #460, #465). A `snapshot` and `check` step on changed items is mandatory for later content PRs. **Lesson mix (#692 tooling in `src/lib/lesson-mix/`, #700 content):** listening, speaking and translation extras (ids `lx1`, `sx1`, `tx1`) live in `src/data/lesson-extras/{en,fr,es}.json`: 3,598 extras across 1,500 lessons (counted from the files 2026-11-22; production has 13,429 questions). #701 accepts the previous lesson version during a changeover, and #688 enforces on the server that a lesson can only be started once unlocked. The deploy job seeds the curriculum on every `main` deploy.
 
 ## Build 61: Profile data, Listen (now Library), Learn and Profile layout (#469 to #477)
 
@@ -2150,11 +2196,11 @@ Hearts (#420): the server can own the heart count (migration 20261105101000); it
 - **Listen (#469 fix, #474, migration `20261107130000_listen_progress.sql`).** A rooms shelf (continue card, course switch, level chips from the folder path, a painted room per folder with count and percent), a folder view (finished, in progress, new), a mini player and a full-screen player (back 15, forward 30, speed 0.75 to 1.5x on web, transcript panel). Pure logic: `src/lib/listen-library.ts`, Kit and core `ListenShelf`. Playback writes progress to `podcast_playback` (resume, unchanged) and to `listen_progress` through `save_listen_progress`; there is no backfill. Not built: transcript follow-along and tap-to-seek (transcripts have no line timestamps), a sleep timer, swipe-to-dismiss, a month chip on native. `/listen` renders an `Outlet` for its child routes (`listen.route.test.tsx`).
 - **Web Hector memory (#470).** `/api/hector-respond` reads the learner's own open `weakness_events` on the server (after the Pro entitlement and AI consent checks), keeps only `WEAKNESS_TAXONOMY` labels and prepends one priming user turn, worded like iOS's `TutorMemoryContext`. No client field can supply it; a free or non-consenting learner reads and sends nothing.
 - **`/api/chat` old-prompt map (#471).** 45 scene and scenario prompts changed, so `src/data/legacy-prompt-aliases.json` (frozen old to new) lets `/api/chat` accept the old text from older app builds and answer with the current prompt (`canonicalSystemPrompt`). `ALL_SYSTEM_PROMPTS` stays exactly the current set that the bundles send. 17 scene prompts composed from shared constants are changed through the overlay `src/data/campaign-scene-prompt-fixes.json`. Guards: `legacy-prompt-aliases.test.ts`, `legacy-system-prompts.test.ts`. The held-back roleplay, premise and podcast-quiz fixes live in `docs/content-review/manual-fixes.json`; podcast quizzes are seeded by the idempotent file `20261104100300_podcast_quiz_seed.sql` (an applied migration is not re-run, so it was run once by hand).
-- **Round-6 colour on the default theme (#477, #469).** Canopy on iOS and Android and the web `--color-*` legacy names now read the round-6 tokens; the `moss` and `mossDeep` names remain as aliases, and Meadow, Manuscript and Studio Ink keep their own palettes. The first run that ends on Hector skips the placement cover (`OnboardingSequence.done`, `OnboardingFlow.deferPlacementForHector`). Friends skips the "13 or older" gate when an age band is known. The Sound effects switch also turns haptics off (#469). iOS QA fixes (#476): picture overlays no longer size or hit-test their parents; accessibility sizes stack instead of breaking words.
+- **Round-6 colour on the default theme (#477, #469).** Canopy on iOS and Android and the web `--color-*` legacy names now read the round-6 tokens; the `moss` and `mossDeep` names remain as aliases (Meadow kept its own palette; Manuscript and Studio Ink existed then and are gone: `design/tokens.json` now has only `royal` and `meadow`). The first run that ends on Hector skips the placement cover (`OnboardingSequence.done`, `OnboardingFlow.deferPlacementForHector`). Friends skips the "13 or older" gate when an age band is known. The Sound effects switch also turns haptics off (#469). iOS QA fixes (#476): picture overlays no longer size or hit-test their parents; accessibility sizes stack instead of breaking words.
 
 ## Build 62: explain, learning path, staff console, analytics, local days (#480 to #498)
 
-Build 62 is on TestFlight (2026-11-13, not submitted). Merged since build 61: #480 to #498; each item below names its PR.
+Build 62 went to TestFlight on 2026-11-13 (a historical status: the checked-in build is now 72, on TestFlight and not submitted). Merged since build 61: #480 to #498; each item below names its PR.
 
 - **Explain in my language (#488, migration `20261112100000`).** `POST /api/explain` runs, in this order: auth, the owner's AI switch, AI consent, the free checks and the cache lookup, the quota, the model. The body carries only the item (a wrong answer, a word, or a chat message); the native language is read from `user_metadata.learner_profile.nativeLanguage`, never from the request; the prompt is built on the server and learner text enters it only as JSON data. A cache hit spends nothing; from Hector (`surface: "hector"`) the request needs Pro and spends Hector's own 150 a day instead of the `explain` 40. Modes (Tap to explain, the default / Always show / Target language only) live in `learner_profile.explainMode`. Clients: an "Explain in <language>" chip on the wrong-answer verdict and word cards, "Say that in <language>" under Practice and Hector tutor bubbles, a shared AI label, per-block right-to-left (fa, ar, he, ur, ps) with quoted course-language phrases kept left to right. The chip is hidden when the mode is off, the native language is unset, or it equals the course.
 - **Learning path (#490, #493, no migration).** One pure engine, `planPath` (`src/lib/path-plan.ts`), run on the server by `/api/learning-path`; its input comes from the database (`learning_days`, `listen_progress`, `practice_calls` and `practice_stars`, campaigns, the goal planner, the Skills data, the first-run answers) and its output is the only thing the three clients render. The contract is `src/lib/learning-path.fixtures.json`, regenerated by a web test and decoded byte for byte by the Swift and Kotlin tests. Minutes are not guessed: lessons use `lesson-timing.json` through `estimateLessonMinutes`, podcasts the episode's real `duration_seconds` plus the quiz, done days `learning_days`, done talks the call's first to last reply (capped at 15 minutes). `TALK_MINUTES`, `CAMPAIGN_SCENE_MINUTES` and `QUIZ_MINUTES` in `src/data/path-config.ts` are estimates awaiting calibration. The learner's choices (`pathOff`, `pathTrimUntil`, `pathRestDay` as 0 to 6 or `"none"`) live in `learner_profile`, set through `PUT /api/learning-path`; the path JSON carries `restDay` (0 to 6, or -1 for none). iOS stop routing is `PathStopRouting` in the Kit: a lesson opens the lesson, a talk or scene opens that pre-call sheet in Practice, a podcast stop opens the Library tab (the library, not the episode); a video stop opens that video's player in the Library (#499); a finished stop or a stale id opens nothing. `video` is a path stop type since #499 (`PATH_TYPES`, `PATH_TYPE_INFO`, candidates matched on `videos.tags` against the learner's goal and interests, done from `video_watches.completed_at`).
@@ -2162,35 +2208,45 @@ Build 62 is on TestFlight (2026-11-13, not submitted). Merged since build 61: #4
 - **Hearts enforced on the server (#494, no migration).** `serverHeartsMode` (web `hearts-gate.server.ts` and the Edge Functions' `_shared/hearts.ts`, kept identical) now defaults to `on`; only the literals `shadow` and `off` opt out. After a completion is saved, `settle_lesson_hearts` charges only the misses the app did not already report through `lose_heart`; it never fails a saved lesson, runs once per session and skips Pro. Shipped builds keep calling `lose_heart` for every miss, so nothing changes for them. Pro is decided by RevenueCat through `REVENUECAT_SECRET_API_KEY`, which must also be in Supabase secrets, or nobody is Pro in the Edge Functions.
 - **The Hector daily limit comes from the server (#482, #493).** All three platforms read today's `ai_usage` hector row (the learner's own, RLS-readable, UTC day) before greeting; at the limit they show the existing "out for today" copy and fetch no speech. The limit itself is `limits.hectorDaily` in the public `GET /api/app-config` response (from `DAILY_LIMITS.hector`), so no client holds the number. Fails open: the server stays the real guard.
 - **Podcast quiz mistakes go to spaced review (#487, migration `20261112140000`).** A `podcast_quiz` source on `review_items` (a self-contained row: prompt, choices, answer index) and a `CREATE OR REPLACE` of `submit_podcast_quiz` that upserts one row per missed question in the same transaction as the score, after every refusal path. Key `podcast:<episode id without dashes><question id>`, `lesson_id = 'podcast'`, language = the episode's course, explanation `Correct answer: <choice>`, due today. Both callers (the web server function and `complete-podcast-quiz`) use the RPC, so no client write path and no new grant were needed. `weakness` and `saved_word` were not reused: they feed other surfaces.
-- **Listen follow-along, sleep timer, swipe to close (#483).** Per-sentence start times for the 16 published episodes are a data file (`src/data/podcast-timings.json`, the iOS bundle and the Android asset), not a column, produced by faster-whisper as a clock over the stored transcripts. They are used only when the line text, whitespace aside, still equals the episode's transcript and starts never go backwards (`timedLinesFor`, `PodcastTimings.lines`); otherwise the plain transcript shows. A Vitest guard fails if the three copies differ. Sleep timer: off, 15, 30, 45 minutes, end of episode (`src/lib/sleep-timer.ts` and the ports). #493 swapped the player's minimise glyph for the design-system chevron.
+- **Listen follow-along, sleep timer, swipe to close (#483).** Per-sentence start times for 16 episodes (21 are published in production on 2026-11-22; the other five show the plain transcript) are a data file (`src/data/podcast-timings.json`, the iOS bundle and the Android asset), not a column, produced by faster-whisper as a clock over the stored transcripts. They are used only when the line text, whitespace aside, still equals the episode's transcript and starts never go backwards (`timedLinesFor`, `PodcastTimings.lines`); otherwise the plain transcript shows. A Vitest guard fails if the three copies differ. Sleep timer: off, 15, 30, 45 minutes, end of episode (`src/lib/sleep-timer.ts` and the ports). #493 swapped the player's minimise glyph for the design-system chevron.
 - **Optional analytics (#489).** PostHog (US cloud) behind one wrapper per platform (`src/lib/analytics.ts`, Kit `AnalyticsTracker`, core `AnalyticsTracker`). Nothing loads, is created or is sent until the learner opts in; opting out resets the anonymous id and stops sending at once; under-13 devices never send, even with a stored opt-in. `identify` is never called; no autocapture, screen or lifecycle capture, replay, surveys or flags. Events: `app_open`, `onboarding_step`, `sign_in_completed`, `lesson_started`, `lesson_completed` (score band), `practice_call_started` and `completed` (scenario, stars), `podcast_played` and `completed`, `hector_opened`, `paywall_viewed`, `purchase_started`, `explain_requested` (source = the kind of item, sent only when the item really goes to the AI service, after consent) and `path_built` (course, the first time a goal is saved for a course; changing a goal later is not counted), at real call sites on web, iOS and Android. Each event allows listed properties only and a value survives only if it is a short identifier or a small number. `analytics-parity.test.ts` holds the three lists equal. iOS `PrivacyInfo.xcprivacy` gives Device ID the Analytics purpose (Product Interaction already had it); the Play data-safety file is updated. Details: `docs/privacy-and-data.md`.
-- **Staff console, phase 1 (#496, migrations `20261113100000` and `20261113100100`; design `docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md`, plan `docs/superpowers/plans/2026-11-13-admin-console-phase1.md`).** `requireStaff(scope?)` replaced `requireAdmin` (no scope means any active staff member); scopes are the named list in `src/lib/staff-scopes.ts` and the owner has all of them whatever is stored; the console only hides what a role cannot do, each server function checks its own scope, and `staff-registry.test.ts` fails if a staff function skips `requireStaff`. `adminWhoAmI` returns `{ userId, role, scopes }`; existing podcast functions need `podcasts.manage` and reports `reports.manage`. Recording: `recordStaffAction` and `validateReason` (a reason is required), `recordUserView` writes `user.view` before any facts are returned. Gifting Pro goes to RevenueCat first and then one database call records the grant and the audit row (a refusal records `pro.grant.failed`; if recording fails after RevenueCat succeeded, the gift is withdrawn); iOS and Android show "Pro (gift)". Block means hidden (a restricted learner's rows are left out of what others read) and refused (they cannot act); `social-surfaces.ts` lists every RPC and policy with evidence and a data-driven test executes each against the migration history in PGlite. Ban: `requireSupabaseAuth` refuses a banned token with `account_suspended`, and the five learner Edge Functions do the same through `_shared/account-status.ts` (one small RPC per authenticated request, failing open and logged if the database cannot be asked); ban also revokes sessions and sets the Auth ban, and returns `partial` steps instead of throwing when the Auth call fails after the restriction is written. Delete: a failed web-subscription cancel or Apple revocation does not stop it (recorded as `user.delete.failed`); only a failed Auth delete stops. Staff management is owner-only and never on one's own row. Search is a SQL function (emails are in `auth.users`) rate limited to 30 a minute per staff member, counted in the database (`consume_staff_rate_limit`, `20261125120000`) so every server instance shares the window. A second factor is required by default (only `ADMIN_REQUIRE_AAL2=false` opts out). **Phase 2 (in-app Help, AI support agent, support inbox) is built (see the support entries); phase 3, the numbers dashboard, is built:** `staffGetNumbers` (one server function, `requireStaff()` then `collectNumbers` in `numbers-core.ts`) returns only the groups the caller's scopes allow (`numbers.read`: own database via the service-role-only SQL function `admin_numbers_own(p_days)`, Sentry, PostHog; `numbers.revenue`: RevenueCat, AI cost estimate, App Store, Google Play), never fetching a group the caller may not see; window 7, 30 or 90 only; a missing key is `not_connected`, a failing or slow (8 s) provider is `error` for that group only; counts only, no personal data (the test asserts the response keys). Provider code is `numbers-sources.server.ts`.
+- **Staff console, phase 1 (#496, migrations `20261113100000` and `20261113100100`; design `docs/superpowers/specs/2026-11-13-admin-console-and-support-design.md`, plan `docs/superpowers/plans/2026-11-13-admin-console-phase1.md`).** `requireStaff(scope?)` replaced `requireAdmin` (no scope means any active staff member); scopes are the named list in `src/lib/staff-scopes.ts` and the owner has all of them whatever is stored; the console only hides what a role cannot do, each server function checks its own scope, and `staff-registry.test.ts` fails if a staff function skips `requireStaff`. `adminWhoAmI` returns `{ userId, role, scopes }`; existing podcast functions need `podcasts.manage` and reports `reports.manage`. Recording: `recordStaffAction` and `validateReason` (a reason is required), `recordUserView` writes `user.view` before any facts are returned. Gifting Pro goes to RevenueCat first and then one database call records the grant and the audit row (a refusal records `pro.grant.failed`; if recording fails after RevenueCat succeeded, the gift is withdrawn); iOS and Android show "Pro (gift)". Block means hidden (a restricted learner's rows are left out of what others read) and refused (they cannot act); `social-surfaces.ts` lists every RPC and policy with evidence and a data-driven test executes each against the migration history in PGlite. Ban: `requireSupabaseAuth` refuses a banned token with `account_suspended`, and the five learner Edge Functions do the same through `_shared/account-status.ts` (one small RPC per authenticated request, failing open and logged if the database cannot be asked); ban also revokes sessions and sets the Auth ban, and returns `partial` steps instead of throwing when the Auth call fails after the restriction is written. Delete: a failed web-subscription cancel or Apple revocation does not stop it (recorded as `user.delete.failed`); only a failed Auth delete stops. Staff management is owner-only and never on one's own row. Search is a SQL function (emails are in `auth.users`) rate limited to 30 a minute per staff member, counted in the database (`consume_staff_rate_limit`, `20261125120000`) so every server instance shares the window. A second factor is required by default (only `ADMIN_REQUIRE_AAL2=false` opts out). **The console was later rebuilt screen by screen (11 screens, #684 to #703; every admin route sits under `console-no-hardcoded-data.test.ts`, `LEGACY_ROUTES` is empty; components in `src/components/console/`), and every sensitive action needs a reason. Phase 2 (in-app Help, AI support agent, support inbox) is built (see the support entries); phase 3, the numbers dashboard, is built:** `staffGetNumbers` (one server function, `requireStaff()` then `collectNumbers` in `numbers-core.ts`) returns only the groups the caller's scopes allow (`numbers.read`: own database via the service-role-only SQL function `admin_numbers_own(p_days)`, Sentry, PostHog; `numbers.revenue`: RevenueCat, AI cost estimate, App Store, Google Play), never fetching a group the caller may not see; window 7, 30 or 90 only; a missing key is `not_connected`, a failing or slow (8 s) provider is `error` for that group only; counts only, no personal data (the test asserts the response keys). Provider code is `numbers-sources.server.ts`.
 - **Types regenerate after a deploy (#484).** `regenerate-supabase-types.yml` also runs on `workflow_run` of CI for pushes to `main`; a first step reads the CI run's "Deploy Supabase migrations + Edge Functions" job and skips everything unless it succeeded (the run as a whole is red until types catch up, so its conclusion cannot be the gate). It skips its own commit, never runs for pull-request CI, keeps the checkout without credentials, pushes only with the deploy key and holds a read-only token. `lesson-completion-concurrency.test.ts` (in the `e2e-signed-in` job against a real local Postgres) completes 20 lessons in parallel with no lost XP and sends one snapshot ten times to apply it once.
 - **Android "Instrumentation tests" job (#482).** The smoke test waited for "Continue with Google" but a fresh install opens on the name question, so it failed on every run; it now waits for the first question, and the job summary lists failing tests by name.
-- **Content (#481, #485, #486, #492, #495).** English is American English (`american-english.test.ts`, empty allow-list), no explanation is a bare "is correct here" in any course, and the English bank has 3,726 questions (3,096 on 2026-11-04). French and Spanish conjugation drills and word cards are authored at every level (cards: `src/data/review-fixes/{fr,es}.json` card entries, `cardProblems(lang)` with the English circularity checks off for fr and es, an elided "j'écoute" counts as "écoute", a leading article is not part of the word an example must contain; B1 examples may run 12 words). About 190 French and Spanish cards have an English term, so their example is plain English; the real fix is an authored `term`, not done. Four more story campaigns, three scenes each, in all three languages (`study-abroad`, `gym-join`, `project-week`, `family-weekend`; 156 prompts in all), tagged in `path-tags.ts`. The owner reseeded the database after #485 (questions 9,831; `vocab_images` 1,288). A native speaker has not read the new French and Spanish text.
+- **Content (#481, #485, #486, #492, #495).** English is American English (`american-english.test.ts`, empty allow-list), no explanation is a bare "is correct here" in any course, and the English bank had 3,726 questions (3,096 on 2026-11-04; production holds 13,429 questions in 1,830 lessons across the three courses on 2026-11-22). French and Spanish conjugation drills and word cards are authored at every level (cards: `src/data/review-fixes/{fr,es}.json` card entries, `cardProblems(lang)` with the English circularity checks off for fr and es, an elided "j'écoute" counts as "écoute", a leading article is not part of the word an example must contain; B1 examples may run 12 words). About 190 French and Spanish cards have an English term, so their example is plain English; the real fix is an authored `term`, not done. Four more story campaigns, three scenes each, in all three languages (`study-abroad`, `gym-join`, `project-week`, `family-weekend`; 156 prompts in all), tagged in `path-tags.ts`. The owner reseeded the database after #485 (questions 9,831; `vocab_images` 1,288). A native speaker has not read the new French and Spanish text.
 - **Web Hector exit (#480).** Every full-screen Hector state on the web has a way back to Learn (a Close button on the paywall, a "Back to Learn" link on the loading, subscription-check and activating screens and in the text chat header).
 - **Library tab and Watch shelf (#499, migration `20261115100000_videos_watch_shelf.sql`, merged 2026-11-13; in build 63).** The Listen tab is renamed Library on all three platforms; the route stays `/listen` and the `listen_*` tables and Swift/Kotlin names are unchanged. Data: `videos` (catalogue; RLS shows clients published rows only; service role writes; a CHECK refuses a published row with no `captions_path`), `video_watches` (PK `(user_id, video_id)`, `progress_seconds`, `completed_at`; `ON DELETE CASCADE` on both foreign keys; clients have SELECT and DELETE only) and `save_video_progress(video, seconds)` (SECURITY DEFINER, published videos only, clamps to the duration, completed once within the last max(3 s, 5 %), never un-completes). Media: the public `videos` bucket (mp4, poster, WebVTT; 50 MB; no `storage.objects` policy, like `podcast-audio`; unpublishing hides the row but the file stays fetchable by URL). Authoring: `scripts/video-tool.ts add | publish | unpublish` (rules in `src/lib/video-authoring.ts`, dry run without `--confirm`, owner service-role key; `publish` lists the course folder and matches exact object paths). Clients: the Watch shelf is hidden when the course has no videos and sits above the empty, offline and failed states; the player sheet has captions on by default, scrubber, speed and, when it ends, one tap to the matching practice item (`practice_kind` and `practice_id`: lesson, talk or campaign). Players: web `<video>` with a text track (`VideoPlayerSheet.tsx`); iOS `AVPlayer` with the Kit's `WebVTT` parser drawing the cues, because AVPlayer does not load a sidecar .vtt for a progressive mp4 (`VideoPlayerSheet.swift`); Android Media3 with core `WebVtt` (`WatchShelfUi.kt`). Playing a video pauses the podcast player. Progress is saved through `save_video_progress`. Analytics: `video_started` and `video_completed` (once per play-through), properties `video_id` and `course` only, sent only with the learner's analytics consent. Not run on a device. The pipeline that makes the videos is `docs/VIDEO-PLAYBOOK.md`.
 
 ## Build 64 batch: device-check fixes, social flows, polish (#504 to #506)
 
 - **Device-check fixes (#504).** A `.task` or `.onAppear` hung on a `Group { if ... }` with no else never fires while the group draws nothing: that is why the iOS Watch shelf (`WatchShelfHost`) never loaded and the "Tap a word to save it" hint (`SaveWordHintLine`) never showed. Loaders now sit on an always-present zero-size anchor. `src/lib/ios-device-check-guards.test.ts` forbids that pattern, forbids `confirmationDialog` (accent-tinted text unreadable on iOS 26 glass; all eight dialogs use `alphonsoChoiceDialog`, `AlphonsoChoiceDialog.swift`) and pins the scene order (`.screenScene(...)` before `.background(ds.surface)`, since a later `.background` sits behind an earlier one; web and Android Learn stay flat by design). MY PATH starts with a goal card on all three platforms, one rule in three ports: `pathGoalCard` (`src/lib/path-goal-card.ts`), `PathGoalCard` (Kit) and `PathGoalCard.kt` (`:core`), built from the server's numbers (target level and date, lessons a week, status) with a "Set a goal" invitation when there is no goal.
-- **Social flows (#505).** Web: the signed-out guard keeps the requested page as `next` (invite links open sign-up). iOS: Universal Links for `/invite/*` only (`/.well-known/apple-app-site-association`, `src/lib/apple-app-site-association.ts`; entitlement `applinks:learn.alphonsoecosystem.app` in Debug, Release and `project.yml`), an accept sheet (`FriendInviteAccept.swift`) that looks the code up through `get_friend_invite_preview`. Android: paste a link or a code (`InviteLink.codeFromEntry`). Associated Domains is enabled on the App ID and in the profile (2026-11-14, see below); the Play app-signing SHA-256 in `assetlinks.json` is still owed before Android invite links verify. Buddy and duels verified; learner-to-learner calls do not exist.
+- **Social flows (#505).** Web: the signed-out guard keeps the requested page as `next` (invite links open sign-up). iOS: Universal Links for `/invite/*` only (`/.well-known/apple-app-site-association`, `src/lib/apple-app-site-association.ts`; entitlement `applinks:learnwithalphonso.com` plus the old `applinks:learn.alphonsoecosystem.app` in Debug, Release and `project.yml`; the live association file lists `/invite/*`), an accept sheet (`FriendInviteAccept.swift`) that looks the code up through `get_friend_invite_preview`. Android: paste a link or a code (`InviteLink.codeFromEntry`). Associated Domains is enabled on the App ID and in the profile (2026-11-14, see below); `public/.well-known/assetlinks.json` holds one SHA-256 fingerprint; the Play app-signing one is still owed until the Play app exists (unverified: no Play app yet, Android release is blocked on `REVENUECAT_ANDROID_PUBLIC_KEY`). Buddy and duels verified; learner-to-learner calls do not exist.
 - **Polish (#506).** Web Hector keeps the tab bar; league flags for consenting learners only (a present `profiles.country` is the consent signal; `country-flag.ts` and the Kit and core `flagEmoji`); web header brand mark and league badge beside the stats.
 - **Fixed in the progress-rules PR (migration `20261116100000`):** hearts refill one per 30 minutes below 5 (the seven stuck learners are restored to 5 by the migration); the path counts a finished call as done only when it earned at least one star (`callCountsAsDone` in `src/lib/practice-stars.ts`; the server builds the path, so web, iOS and Android all follow it).
 - **Provisioning profile workflow (#508, #510, 2026-11-14).** `regenerate-ios-profile.yml` takes an `ensure_capabilities` input (settings-free capabilities, today `ASSOCIATED_DOMAINS`), enables them on the App ID through the App Store Connect API, mints the profile on the existing distribution certificate and verifies the entitlement is in it. Run 43570547651 enabled Associated Domains (profile UUID `02d1ae14-17d6-4881-8f58-0fa20bcb5af1`; the owner updated the two `apple-signing` secrets). The capabilities relationship rejects `limit`; the `apple-signing` environment deploys only from `main`.
 - **Themes deploy lesson (#516).** The first deploy of the themes migration failed because the old `profiles.theme` CHECK rejected `royal` while retired values were being rewritten; nothing was applied. Constraint first, rewrite second, new constraint last, and rehearse the exact statements in a rolled-back transaction before merging. Production: royal 5, meadow 5, none 16.
 - **Hands-free on the web (#560, a5719ce9).** `src/lib/hands-free-loop.ts` is a 1:1 port of the iOS `HandsFreeLoop` (same state machine and tuning; end of turn 2.5 s in Practice, 1.2 s for Hector), tested in `hands-free-loop.test.ts`. The switch lives in the call's conversation sheet, is off at every call start, is carried across campaign scenes, and is free in Practice and Pro for Hector. It runs only in a foreground tab: a hidden tab or a lost microphone pauses and drops the open recording. `getUserMedia` asks for `echoCancellation`; the campaign page now uses the shared `use-speech-capture`. The 8 s and 30 s limits have a wall-clock fallback, capture is cancelled in every phase on stop, and the `AudioContext` is created in the tap and closed. Not tried with a real microphone; Hands-free now exists on iOS, web and Android.
-- **Hands-free Practice calls (iOS, #538, 1ae2aa64; never run on a device).** One shared `HandsFreeSwitch` in the conversation sheet of `PracticeCallView`, used by scenario talks (`ConversationView`) and campaign scenes (`CampaignView`). `HandsFreeLoop.Tuning` presets: `.practice` ends a turn after 2.5 s of quiet, `.hector` keeps 1.2 s; `VoiceSessionController(handsFreeTuning:)` takes the preset. No Pro gate (server caps apply); off at each call start, carried across the scenes of one campaign run, off when it finishes. The first-use note is shared with Hector under the key `handsFree.safetyNoteSeen.v2` ("Best with earbuds or a quiet room."). The loop is half-duplex with no echo cancellation. Guard: `src/lib/ios-practice-hands-free-guards.test.ts`. Android and web hands-free (Practice and Hector) are still to do.
+- **Hands-free Practice calls (iOS, #538, 1ae2aa64; never run on a device).** One shared `HandsFreeSwitch` in the conversation sheet of `PracticeCallView`, used by scenario talks (`ConversationView`) and campaign scenes (`CampaignView`). `HandsFreeLoop.Tuning` presets: `.practice` ends a turn after 2.5 s of quiet, `.hector` keeps 1.2 s; `VoiceSessionController(handsFreeTuning:)` takes the preset. No Pro gate (server caps apply); off at each call start, carried across the scenes of one campaign run, off when it finishes. The first-use note is shared with Hector under the key `handsFree.safetyNoteSeen.v2` ("Best with earbuds or a quiet room."). The loop is half-duplex with no echo cancellation. Guard: `src/lib/ios-practice-hands-free-guards.test.ts`. Hands-free has since shipped on web (#560) and Android (#561), see below.
 - **Hands-free on Android (#561, a968c9a7; Hector and the Practice calls; round 13, not run on a real microphone).** `core/.../logic/HandsFreeLoop.kt` is `HandsFreeLoop.swift` number for number (Tuning `HECTOR` 1.2 s of quiet, `PRACTICE` 2.5 s; floor over 0.3 s capped at -35 dBFS, speech = floor + 14 dB and at least -42 dBFS held 0.2 s, 8 s no-speech and 30 s max-turn cancel and pause, 20 turns without a touch pause), with `HandsFreeController` performing its effects on the existing `ConversationTurnEngine` (begin = press, end = release, cancel = `engine.cancel()`) and `HandsFreeInterruption` (audio focus loss pauses, a duck does not). `ui/practice/call/HandsFreeBinding.kt` is the one place a view model (`BaseConversationViewModel`, so scenarios and campaigns, and `HectorViewModel`) meets it: the loop is fed the engine phase combined with the conversation phase, so the mic opens only after the reply has finished playing (half-duplex, no barge-in); a blank transcript (`TurnEvent.Empty`) or a failure pauses, a capture under the minimum (`TurnEvent.TooShort`, split out of `Empty` for this) just listens again. The switch and the once-per-device note (`handsFree.safetyNoteSeen.v2`, same copy as iOS except it says "while the screen is on" instead of "also with the screen locked") are in the call's conversation sheet (`HandsFreeCallUi.kt`); on the call the hold button becomes a labelled Pause or Resume button and a status pill shows the line. Screen-on only: `FLAG_KEEP_SCREEN_ON` while it is on, off when the app stops, paused on audio focus loss or earbuds removed (`ACTION_AUDIO_BECOMING_NOISY`); no foreground service, no locked-screen use. Off at every call start (nothing persists the switch), carried across the scenes of one campaign run. Practice has no Pro gate; Hector keeps the tab's. Guards: `HandsFreeLoopTest` (the iOS tests 1:1), `HandsFreeWiringTest`, `src/lib/android-hands-free-guards.test.ts`.
-- **Admin numbers dashboard (#567, c9be201a; staff console phase 3).** `admin/routes/numbers.tsx` shows a 7, 30 or 90 day window with Refresh; every group is Connected, Not connected or Could not load, never 0. Groups: our database (migration `20261118100000`, `admin_numbers_own(integer)`, service role only, counts only), Sentry and PostHog under `numbers.read`; RevenueCat, the AI cost estimate, App Store and Google Play under the new `numbers.revenue` scope (owner only by default), enforced on the server so a group the caller may not see is never fetched. Results are cached 5 minutes per `group:window`; App Store has a 25 s budget and a 6 h cache; Sentry slugs are resolved to ids. Keys are in `docs/operations.md`. Not tested against real providers.
+- **Admin numbers dashboard (#567, c9be201a; staff console phase 3).** `admin/routes/numbers.tsx` (screen in `src/components/console/numbers/`) shows a 7, 30 or 90 day window with Refresh; every group is Connected, Not connected or Could not load, never 0. Groups: our database (migration `20261118100000`, `admin_numbers_own(integer)`, service role only, counts only), Sentry and PostHog under `numbers.read`; RevenueCat, the AI cost estimate, App Store and Google Play under the new `numbers.revenue` scope (owner only by default), enforced on the server so a group the caller may not see is never fetched. Results are cached 5 minutes per `group:window`; App Store has a 25 s budget and a 6 h cache; Sentry slugs are resolved to ids. Keys are in `docs/operations.md`. Not tested against real providers.
 - **Admin numbers growth read (migration `20261127130000`).** `admin_numbers_growth(integer)` (service role only, aggregates only) supplies the previous window, stories, perfect %, by-course, reactivated and the per-day series; `admin_numbers_own` is re-created with the same keys but a 1-day window now means today since UTC midnight (not a rolling 24 hours), so today's series point is partial and marked so. Derived tiles (lessons per active learner) compare against a derived previous value, never a raw previous count.
 - **Offline streak credit and review grading (#582, b953a0a7).** `sendReview` carries the schedule snapshot the grade was made against, and the server ignores a `superseded` result silently, so two tabs cannot lapse a card twice. A queued offline completion credits the day it was finished (at most 48 hours back) only if it is a first completion done a plausible time after the session began; replays never credit a past day, and the hourly anti-farming slot counts when the server receives the completion. Known gap: a lesson both started and finished offline credits the sync day.
-- **Support notices and retention (#557, 10cdbebc).** A trigger on `support_messages` queues a row in `support_notify_queue` (RLS on, no anon or authenticated access) for a staff reply, one per conversation per 30 minutes; the queue row is written before the call out, so a down `pg_net` leaves it for the sweep (retry after 10 minutes, give up after 24 hours). `/api/internal/support-notify` (shared secret) sends the email through Resend (30 an hour, support only) and the push through the `send-push` Edge Function. The text is "You have a reply in Help" under "<first name> · Support team" or "Support team": never Miya, never message text, and an AI reply never notifies. `support_purge_old()` deletes solved conversations 12 months after `solved_at`; `staff_audit_log` is untouched. The owner digest counts each handed-over ticket once, at most every 15 minutes. iOS opens Help from a notification delegate; Android opens help/reply for type `support`. The privacy page describing the Help chat, the notices and the 12-month retention is done (#564). Open points: `SUPPORT_NOTIFY_FROM` must be set, no real email or push has been received end to end, the email cap is not shared with other email paths, and a pending notice can hold later ones for up to 24 hours.
+- **Support notices and retention (#557, 10cdbebc).** A trigger on `support_messages` queues a row in `support_notify_queue` (RLS on, no anon or authenticated access) for a staff reply, one per conversation per 30 minutes; the queue row is written before the call out, so a down `pg_net` leaves it for the sweep (retry after 10 minutes, give up after 24 hours). `/api/internal/support-notify` (shared secret) sends the email through Resend (30 an hour, support only) and the push through the `send-push` Edge Function. The text is "You have a reply in Help" under "<first name> · Support team" or "Support team": never Miya, never message text, and an AI reply never notifies. `support_purge_old()` deletes solved conversations 12 months after `solved_at`; `staff_audit_log` is untouched. The owner digest counts each handed-over ticket once, at most every 15 minutes. iOS opens Help from a notification delegate; Android opens help/reply for type `support`. The privacy page describing the Help chat, the notices and the 12-month retention is done (#564). Open points (unverified on 2026-11-22: Vercel values and mailbox not read): `SUPPORT_NOTIFY_FROM` must be set, no real email or push has been received end to end, the email cap is not shared with other email paths, and a pending notice can hold later ones for up to 24 hours.
 - **iOS redesign batch 3 (#539) and Help chat on iOS (#541).** The mini bar shows art, title with time left and play, while Next and Transcript live in the full player; the iOS raw-value baseline is 13 (was 54); the `onChoice` token has a contrast test. The iOS Help chat is Support milestone 4: human-only while `support_ai` is off, 2000 UTF-16 units, unsent text kept on device, immediate poll on return, stale-poll guard; push-tap routing waits for milestone 6. Neither was run on a simulator.
 - **Android redesign batch 3 (#543, e9436afd).** Same shape as iOS: the mini bar shows art, title with minutes left and a gold play button, and Next, Transcript and Stop live in the expanded player. Library shell and its empty, failed and offline states use `DsEmptyState`; the Watch shelf, lesson Speak card with a fallback QuestionCard, This week, Why this mix and the road, the Practice and campaign chat chrome (multiline reply) and the Voices picker (inside system bars) are on the new look. The `onChoice` token is shared and pinned by `OnChoiceTest`; each row gives TalkBack one readout. Device checks of #534: unlock sheet fits at 360 dp, report dialog fits at font 2.0; AI consent buttons at font 2.0 and the TalkBack double readout are unconfirmed. The Android Help chat (#544, e9f80ef0, Support milestone 5) mirrors iOS: Settings Help row, human-only while `support_ai` is off, the `[[link]]` marker only on AI rows, polling under `repeatOnLifecycle` with refresh on resume, a send that survives leaving the screen, a kept draft; push-tap routing waits for milestone 6.
 - **Web redesign batch 3 (#540, d5419a8d).** The shared `DsEmptyState` (hero variant) is the one empty and error card for League, Review, Season, Teams and the AI consent gate; the header chips and tab bar are on tokens; the landing page's "1,800+" lessons claim is pinned by a test (1,830 lessons: en 609, fr 611, es 610); the web design baseline is 44 (was 63).
 - **Owner decisions of 2026-11-14 that shape the code** (full list in CHANGELOG, "Owner decisions"): only Royal (light and night) and Meadow exist, and Meadow stays light even when the device is in dark mode (the shipped Meadow night look was a bug, fixed in #547: the palette is removed at the source and the generators throw on any Meadow night); the support persona is Miya, the AI helper in the Help chat only, with staff shown as "first name · Support team"; the widget follows Meadow and the wide widget shows Alphonso and "Best" (built in #553: the shared snapshot carries `theme`, old snapshots read as Royal, it is published at launch, on every publish and on a theme change; not yet seen on a device); a 0-star Practice result says "Try again" in gold, and a campaign's next scene comes from the Practice hub v3 result screen ("Try for 3" / "Next scene"), not the in-call Continue button.
 - **Design history first.** An audit found redesign batch duplicates (Build my path is Round 8 A0, the Library folder is round 6.1, the Practice call and Hector were designed in earlier rounds). Rule: check the design history before drawing a mock, and every design ships on web, iOS and Android. Redesign batch 1 (#514, 443b27c8; Settings #519) and batch 2 are merged on iOS (#520, #525, #527, #528, #530) and web (#522, #526); Android is merged too (#529, #531, #534), so the redesign is on all three platforms; build 65 (#535, ce0a5cfc) carries the iOS part. None has simulator or emulator shots (Limrun is out of credits); the owner checks on a device. Android is unverified for TalkBack double-announcing the quiz verdict, the unlock sheet at 360 dp and dialog scrolling at large font. Notes: the Practice call tokens `callGlass`, `callMint`, `callRecord`, `callDock` and `callEnd` are in `design/tokens.json` and the generated Swift and TypeScript; the 25 badge medallions are `public/badges` on web and image sets `Badge-<achievement id>` on iOS; the iOS poses are listed in `src/data/alphonso-figure-poses.json`; the weekly recap, pending-sync notice, update gate and offline finish exist on native only. Art is in the owner's SocialMedia workstation, `alphonso-art` folder. The Help chat mocks were approved as drawn; the web Help chat is #524 and the staff inbox is milestone 3 (#532, migration `20261117100200`, deployed; see Support inbox). Data caveats: the skills chart has no data for learners whose lessons all predate 2026-11-07 (`skill_days` has no backfill; #537 gives the chart an honest empty state). The words tile counts words from completed lessons ("words learned", #537), no longer retired saved words.
+
+## Admin console: the reason is checked in SQL
+
+Every sensitive staff action carries a reason, and the database enforces it, not only the TypeScript (`validateReason` in the server function is the first check, not the only one). The `staff_*` functions (migrations `20261113100000_staff_console.sql`, `20261117100200`, `20261127100000` to `20261127180000`) are SECURITY DEFINER with `search_path = ''`, EXECUTE granted to `service_role` only, and take the verified actor and role as arguments (`p_actor`, `p_role`). Each one rejects a reason that is null or outside 3 to 500 characters (`ERRCODE 22023`; the support, staff, settings, reports and podcast screens use `staff_support_*`, `staff_add_member`, `staff_set_setting`, `staff_report_reason` and `staff_podcast_reason`) and then does the change and writes its `staff_audit_log` row through `staff_record` in the same transaction, so a change cannot exist without its audit row. `staff_audit_log` is append-only (`staff_audit_log_append_only`). Exceptions are stated in the function: a support person moving their own ticket needs no reason, moving someone else's does (`staff_support_assign`); `staff_assert_may_restrict` refuses restricting an owner and lets only an owner restrict another staff member. The 11 console screens are listed under "Podcast admin deployment" above.
+
+## Supabase custom domain and the pinned storage key (#702, 2026-11-22)
+
+Web, admin and the native apps talk to Supabase through **https://api.learnwithalphonso.com** (the Custom Domain add-on); the learner site is https://learnwithalphonso.com and the admin https://admin.learnwithalphonso.com. The web URL is still env-driven (`SUPABASE_URL` / `VITE_SUPABASE_URL`, baked at build for `VITE_*`); iOS `AppConfig.supabaseURL` and Android `SUPABASE_URL` are hardcoded to the custom domain, and the apps' API base is `https://learnwithalphonso.com`. The legacy project host `https://qhcjpfbxfcltjbiuknyt.supabase.co` stays allowed in the CSP (`LEGACY_SUPABASE_ORIGIN` in `src/lib/security-policy.ts`) because stored public storage URLs (`vocab_images.url`, 1,421 rows) and older builds still name it; the vocab-image policies on all three platforms accept both hosts. Deep-link and referral parsers accept both site hosts and reject lookalikes.
+
+**The browser session key is pinned.** supabase-js derives its default localStorage key from the first label of the URL host (`sb-<label>-auth-token`), so moving to `api.learnwithalphonso.com` would have changed it to `sb-api-auth-token` and signed out every learner. `src/integrations/supabase/auth-storage-key.ts` therefore exports `AUTH_STORAGE_KEY = "sb-qhcjpfbxfcltjbiuknyt-auth-token"` (the key the old host produced), passed as `auth.storageKey` in `src/integrations/supabase/client.ts:58` for web and admin. `auth-storage-key.test.ts` pins the literal, proves the installed supabase-js derives it from the old host and the trap from the new one, and fails if any session-persisting client in `src/` or `admin/` lacks the pin. Never change the string without a migration that copies the stored session. Native apps do not use supabase-js: iOS keeps the session in the Keychain (service `com.obsidianmedia.learnwithalphonso.session`, account `supabase-session`) and Android in EncryptedSharedPreferences (`alphonso.session`, key `session`, PKCE key `pendingPkce`), none derived from the URL, and the same test guards those names. The pin only protects a learner who stays on the same origin; moving from the old web host to the new one is a one-time sign-in because localStorage is per origin.
 
 ## Known rough edges
 
@@ -2209,11 +2265,11 @@ note in README.md's Documentation section for why.)
   INVOKER` function. The advisor's "extension in public" note is cosmetic:
   pg_net puts no objects in `public`, and moving it means dropping and
   recreating it in production.
-- **Android's `LearnViewModelTest` is flaky** ("selecting a level saves it to
+- **Android's `LearnViewModelTest` was flaky** ("selecting a level saves it to
   the server without blocking"): it uses `MainDispatcherRule` with real-time
-  polling and fails now and then in CI; a re-run passes.
-- **Android hearts gate and AI error copy (#302, #303) have not run on a
-  device or emulator**; see `android/LearnWithAlphonso/DEVICE-CHECKLIST.md`.
+  polling and failed now and then in CI; a re-run passed (unverified 2026-11-22: CI history not re-read).
+- **Android hearts gate and AI error copy (#302, #303) had not run on a
+  device or emulator** when written (unverified 2026-11-22); see `android/LearnWithAlphonso/DEVICE-CHECKLIST.md`.
 
 - **A custom SwiftUI color palette that doesn't set `.preferredColorScheme`
   will look broken on a device in system Dark Mode, even if every color
@@ -2280,15 +2336,15 @@ update-auth-email-template.ts` fix these via the Supabase Management
   via the `configure-auth-emails.yml` workflow. That scope gap
   (iOS was OTP-only while the web used password + Google OAuth) was closed
   later: iOS now offers Apple, Google and the emailed code (see "Sign-in and
-  onboarding (iOS)" below).
+  onboarding (iOS)" below). The mail path is now custom SMTP through Resend: the script and the `RESEND_API_KEY` and `SMTP_SENDER_EMAIL` secrets exist (read 2026-11-22); whether a real address receives mail today is not re-tested here (unverified).
 - `src/integrations/supabase/{client.ts,client.server.ts,auth-middleware.ts}`
   carry "auto-generated, do not edit" banners from the Lovable Supabase
   connection tool and duplicate a `createSupabaseFetch` helper 3 ways;
   consolidating them risks a future regeneration reverting the change (see
   `src/integrations/supabase/fetch.ts`'s comment for the one file that was
   safe to consolidate).
-- `bun run dev` still doesn't boot in the Windows sandbox this has been
-  developed in, so nothing UI-level has been visually verified there —
+- `bun run dev` did not boot in the Windows sandbox this was
+  developed in (unverified 2026-11-22: not re-run), so nothing UI-level has been visually verified there —
   `bun run build` does work now, though (the Windows path-separator bug
   was in `@lovable.dev/mcp-js`'s Vite plugin, removed along with the MCP
   feature this repo used to expose at `/mcp`).
@@ -2316,7 +2372,7 @@ deploy`, both easy to forget (this bit a real session that added several
   count) silently stayed at 18 until it was caught while regenerating for
   pkg 4a's new question formats.
   `seed-curriculum-db.ts` got a CI step first (`deploy-supabase` job,
-  no-ops without `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`). This entry
+  no-ops without `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`; both secrets exist, so the "Seed curriculum data" step runs on every `main` deploy and nobody seeds by hand). This entry
   used to argue that `export-ios-content.ts` _couldn't_ have one, because
   its output is committed JSON rather than a DB write — **that reasoning
   was wrong**, and the fix is the standard generated-artifact pattern:
@@ -2463,31 +2519,16 @@ deploy`, both easy to forget (this bit a real session that added several
   sessions (hit a real mid-upload failure
   this way, a file vanished from a live worktree during upload).
 - **Test coverage was near-zero before 2026-09-20's PR #46.** As of
-  2026-11-13 there are 549 web test files (6,966 tests passed plus 8 skipped, a full local run on main at #498), 1,631 Swift Kit test functions and 1,221 Android JVM tests (core 911, app 310; the last two counted from their
-  declarations, `func test` and `@Test`, not run); run `bun run
+  2026-11-22 (d8350542) there are 808 web test files (plus 12 Playwright specs in `e2e/`), 2,096 Swift `func test` declarations and
+  1,329 core plus 449 app Android `@Test` declarations (68 more instrumented); all counted from declarations, none run; run `bun run
 test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   The old note that `HeartsModal.tsx`, `__root.tsx` and
   `analyze-weaknesses.ts` are thin was corrected on 2026-09-24 and no longer
   holds.
-- **Nudge-a-friend (iOS) is deliberately the weaker V2 approach, not the
-  finished feature** — a `nudges` table (`supabase/migrations/
-20260920020000_nudges.sql`) the recipient's app polls for on foreground/
-  screen-appear, not real push. A nudge only surfaces once the recipient
-  next opens the Friends tab, which the kickoff doc (`docs/v2-kickoffs/
-04-friends-and-social.md`) flagged as largely defeating the point of a
-  "nudge" (reaching someone who _hasn't_ opened the app). Built anyway per
-  explicit direction, with this note as the promised V3 follow-up marker.
-  A real V3 version needs: an APNs Auth Key (Apple Developer Console →
-  Keys), a `device_tokens` table (RLS-scoped to `auth.uid()`), device-token
-  registration on app launch requesting _remote_ notification permission
-  (a materially different flow than this app's existing local-only
-  `NotificationScheduler`), and a server-side trigger — Supabase has no
-  built-in cron for Edge Functions as of this note; verify current
-  capabilities before assuming `pg_cron` + a `SECURITY DEFINER` function
-  is the only path. The same infrastructure would also serve
-  leaderboards' "you've been overtaken" feature (currently an in-app
-  toast, same reasoning) if that's ever upgraded to real push too — worth
-  building once for both rather than twice.
+- **Nudge-a-friend started as the weaker V2 approach** (a `nudges` table polled on foreground, `20260920020000_nudges.sql`).
+  Real push has since been built: `device_tokens` (`20260921030000_remote_push_notifications.sql`, Android in
+  `20260930170000_device_tokens_android.sql`), `notify_nudge_push` and its rate limit (`20260930070000_nudge_push_rate_limit.sql`).
+  The "overtaken" toast on leaderboards was not re-checked (unverified).
 - **`pickDistractors`/`packQuestions` (content-pack question generation)
   is duplicated in both `src/data/lesson-bank.ts` (English) and
   `src/data/bank-engine.ts` (the shared engine French/Spanish import) —
@@ -2522,19 +2563,11 @@ test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   baseline, so a placement question can be re-authored freely. Editing a pack line
   changes the content behind an id real users hold spaced-repetition state
   against. Where an overlap has to be resolved, the placement side gives way.
-- **Placement is outside the distractor gate, and the adaptive skip can place a learner
-  above what they answered (found on a Limrun run, 2026-11-05; both still open).**
-  The distractor gates (`distractor-gate.test.ts` for English, `romance-options.test.ts` for
-  French and Spanish) cover lesson banks only, so English placement items still carry
-  absurd wrong options (the A1 item `p3c` in `src/data/placement.ts` offers "Good night"
-  among "Nighting" and "Good nightly"); the same text ships in the iOS and Android
-  `placement-en.json` exports. Separately, after a band answered 3/3 `nextAdaptiveBand`
-  skips the next band and `placement.tsx` credits it with a synthetic 2; if the band after
-  the skip then goes 0/3 the test stops and `scorePlacement` still counts the skipped band
-  as passed, so A1 3/3 then B1 0/3 (3 of 6 right) places at B1, although the code comment
-  says the credit is "never the sole basis for the final result" (reproduced by calling
-  the two functions). No test covers a failed band after a skip. iOS and Android show the
-  same "Fast-tracked past" line; their scoring has not been checked.
+- **Placement distractors and the adaptive skip (found on a Limrun run, 2026-11-05; both since fixed, checked 2026-11-22).**
+  `distractor-gate.test.ts` now also sweeps the placement pool (the A1 item `p3c` in `src/data/placement.ts` no longer offers
+  "Nighting"), and `resolveBand` withdraws the synthetic credit of a skipped band when the band after it fails, so the learner is
+  placed at the skipped band (`placement.test.ts`, "withdraws the credit"). Whether the iOS and Android scoring does the same
+  was not checked (unverified).
 - **French and Spanish A1/A2 lesson quality is a first pass, not a clean bill (#391,
   2026-11-05).** An independent re-measure still found problems in 7% of French and 10% of
   Spanish questions (down from 40% and 35%). What remains: conjugation drills where the
@@ -2589,7 +2622,7 @@ test:coverage` for current percentages (see `AGENTS.md`'s Testing section).
   (fixed 2026-10-08, #258).** Conversation scenarios now carry the course, and
   `/api/stt` passes it to Deepgram's `language` parameter, so French and
   Spanish conversations are transcribed in their own language. Builds from
-  before the change (and Android) still omit `course` and get English.
+  before the change still omit `course` and get English (Android sends it, pinned in `HectorAndBillingTest`).
 
 
 ### Miya in the Help chat (round 13)
@@ -2598,4 +2631,4 @@ The speaker words come from one place per platform: `speakerLabel` / `staffLabel
 
 ### Support inbox (support chat, milestone 3)
 
-Staff answer from `/support` in the admin console. Server functions are in `src/lib/staff-support.functions.ts` (reads `staffListTickets`, `staffGetTicket` under `support.read`; writes `staffReplyTicket`, `staffSetTicketStatus`, `staffAddTicketNote` under `support.reply`, `staffAssignTicket` under `support.assign`, plus `staff.manage` to hand a ticket to someone else), registered in `console-registry.ts` and `staff-audit.server.ts`. The database side is `20261117100200_support_staff_actions.sql`: `staff_support_inbox` (list, counts, paging; no learner name or email) and four write functions that each write their `staff_audit_log` row (`support.reply`, `support.assign`, `support.status`, `support.note`) in the same transaction, with ids and the status change only, never message text. Opening a ticket records a `user.view` row for the learner BEFORE the data is returned. Ticket bodies are read in `src/lib/staff-support.server.ts` through `stripSupportLink` (`support-body-guard.test.ts` covers it). Screens: `TicketList.tsx`, `TicketView.tsx`, `admin/routes/support.tsx`, `admin/routes/support_.$id.tsx`.
+Staff answer from `/support` in the admin console. Server functions are in `src/lib/staff-support.functions.ts` (reads `staffListTickets`, `staffGetTicket` under `support.read`; writes `staffReplyTicket`, `staffSetTicketStatus`, `staffAddTicketNote` under `support.reply`; `staffAssignTicket` and `staffHandToOwner` under `support.assign`; `staffClearUrgent` under `staff.manage`), registered in `console-registry.ts` and `staff-audit.server.ts`. The database side is `20261117100200_support_staff_actions.sql`: `staff_support_inbox` (list, counts, paging; no learner name or email) and four write functions that each write their `staff_audit_log` row (`support.reply`, `support.assign`, `support.status`, `support.note`) in the same transaction, with ids and the status change only, never message text. Opening a ticket records a `user.view` row for the learner BEFORE the data is returned. Ticket bodies are read in `src/lib/staff-support.server.ts` through `stripSupportLink` (`support-body-guard.test.ts` covers it). Screens: `src/components/console/support/SupportScreen.tsx` and `TicketPane.tsx` (they replaced the old `TicketList` and `TicketView` in the console rebuild), mounted by `admin/routes/support.tsx` and `admin/routes/support_.$id.tsx`.

@@ -17,15 +17,19 @@ owed.
 | 6 | Subscription product `pro_monthly` (base plan `monthly`) | Play Console, Monetize | product | A price on the paywall |
 | 7 | RevenueCat Play Store app, `pro` entitlement attached, current offering, public SDK key (`goog_...`) | RevenueCat | GitHub secret `REVENUECAT_ANDROID_PUBLIC_KEY` | Hector unlocking after purchase |
 | 8 | Upload keystore, store password, alias `upload`, key password | `keytool` on the owner's machine | GitHub secrets `ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_KEYSTORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, `ANDROID_UPLOAD_KEY_PASSWORD` | Signed release builds |
-| 9 | The keystore's SHA-256 fingerprint (public) | same `keytool -list -v` | sent to the agent; published as `public/.well-known/assetlinks.json` | Invite links opening in the app |
+| 9 | The keystore's SHA-256 fingerprint (public) | same `keytool -list -v` | published as `public/.well-known/assetlinks.json` (live) | Invite links opening in the app |
 | 10 | Play service account with Release manager | Google Cloud + Play Console, Users and permissions | GitHub secret `PLAY_SERVICE_ACCOUNT_JSON` | Unattended uploads from `android-release.yml` |
 | 11 | Listing material: feature graphic 1024x500, 512 px icon, screenshots, content rating | Play Console | uploads | Production review |
 
-Status 2026-09-30: items 1 to 4 done; item 2 on a provisional Google account
-(see `docs/BACKLOG.md` 0.0-z); items 8
-and 9 done by the agent (the keystore and its passwords are kept on the owner's machine, never in this repository, the four secrets
-set, `assetlinks.json` published from the fingerprint); item 5 in progress;
-items 6, 7, 10, 11 open.
+Status (verified 2026-11-22 against d8350542, secrets by name with `gh secret list`):
+
+- Done: items 1 to 4 (reported by the owner 2026-09-30, dashboard settings not re-checkable from the repo; the secrets `FIREBASE_GOOGLE_SERVICES_JSON`, `FCM_SERVICE_ACCOUNT_JSON`, `FCM_PROJECT_ID` exist; item 2 is on a provisional Google account, to move to the owner's account, `docs/OPEN-ITEMS.md` item 10).
+- Done: items 8 and 9. The four `ANDROID_UPLOAD_*` secrets exist, and `public/.well-known/assetlinks.json` is live on `https://learnwithalphonso.com/.well-known/assetlinks.json` with the upload key's fingerprint. The keystore and its passwords stay on the owner's machine, never in this repository.
+- Still owed, by the owner (these are the only things blocking the first Android release; neither secret exists yet):
+  1. Create the app record in Play Console (item 5: developer account, app record, merchant profile) and upload the first bundle by hand.
+  2. Item 6, the `pro_monthly` subscription product, then item 7: the Android app in RevenueCat, the `pro` entitlement attached to a current offering, and its public SDK key stored as the GitHub secret `REVENUECAT_ANDROID_PUBLIC_KEY` (the release build refuses an empty or `test_` key).
+  3. Item 10: the Play service account with Release manager, stored as `PLAY_SERVICE_ACCOUNT_JSON` (only needed for unattended uploads).
+  4. Item 11, listing material, at the production submission. After Play App Signing re-signs the app, add the Play signing certificate's fingerprint to `assetlinks.json`.
 
 Order that respects the dependencies: 1, then 5 (Google's identity
 verification and the 14-day closed-test rule are wall-clock waits), 8 and 9,

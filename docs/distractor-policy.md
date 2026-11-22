@@ -53,7 +53,7 @@ the answer (`inferSlot`). A slot type has a curated pool of plausible options.
 | `category:<pack>`  | the other words of the same topic pack (food, clothes, rooms ...)                                                               |
 
 A question whose slot cannot be inferred is **unclassified**. Unclassified questions
-are counted and the count may only go down.
+are counted and the budget is 0 (`UNCLASSIFIED_BUDGET` in `distractor-gate.test.ts`).
 
 ## Disambiguating, not removing
 
@@ -127,7 +127,7 @@ rules are applied from what the pack itself says. The code is `src/data/romance-
   "mange / fais / dors", where the one option that looked like the bracketed verb was the answer. The subject in the
   sentence rules the other persons out, so every drill line names it. Spanish leaves out vosotros (the course teaches
   Latin American Spanish). The gate (`romance-conjugation.test.ts`) checks "is a form of this verb" from the spelling
-  alone, not from the engine's paradigms. B1 to C1 drills are not fixed yet; their count may only go down.
+  alone, not from the engine's paradigms. B1 to C1 drills are held to the same check: the count of drills with a non-form wrong option is 0 (it was 490 before the 2026-11-06 content review) and may not rise.
 - **Please and thanks.** A phrase answer ending in "s'il vous plaît", "merci", "por favor" or "gracias" is never the
   only option with that ending, or the English gloss ("Nothing else, thanks") answers it. The pack's own phrases with
   the same ending come first, then reviewed ones (`POLITE_DECOYS`).
@@ -147,7 +147,7 @@ change when a question is fixed; only its content does.
 - **English fill-in questions** run through the same slot check as the lessons
   (`distractor-gate.test.ts`, "the English placement bank"): no wrong option outside its slot pool unless it is on
   that test's reviewed allow-list (with a reason), no wrong option that is also correct, and the count of
-  questions the inference cannot classify may only go down.
+  questions the inference cannot classify may only go down (`UNCLASSIFIED_BUDGET` is 17 there today).
 - **French and Spanish** have no tagger, so the gate (`romance-options.test.ts`, "the French and Spanish placement
   banks") checks what generalises: no English outside a quoted gloss or a bracketed hint, the sentence the key makes
   has no doubled word and no uncontracted article ("a pesar de el"), a Spanish question opens with the inverted mark

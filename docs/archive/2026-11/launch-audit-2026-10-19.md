@@ -1,3 +1,5 @@
+> Historical record. Delivered in #337 (2026-11-02). Current behaviour: `ARCHITECTURE.md` and `AGENTS.md`; open work in `docs/OPEN-ITEMS.md`.
+
 # Learn With Alphonso — Launch and Pre-Launch Audit
 
 > **Status 2026-11-04:** a historical record. PR #337 (the pre-launch hardening it describes) merged as `fab509c1` on 2026-11-02; the vocab-image counts, branch names and CI run ids below are as of 2026-10-19/20 and are not updated. For current state read `AGENTS.md`, `ARCHITECTURE.md` and `CHANGELOG.md`.

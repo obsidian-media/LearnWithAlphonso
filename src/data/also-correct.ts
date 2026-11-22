@@ -6,7 +6,7 @@
 // CONSERVATIVE in the direction of removing a distractor: a false positive costs
 // one swapped wrong answer, a false negative costs a learner a right answer
 // marked wrong. It cannot see meaning ("Which verb goes with homework? have"),
-// so it does not claim to find every case -- see docs/content-audit-2026-11.md.
+// so it does not claim to find every case -- see docs/archive/2026-11/content-audit-2026-11.md.
 
 const BE_SUBJECT: Record<string, "i" | "sg" | "pl"> = {
   am: "i",

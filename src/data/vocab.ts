@@ -77,7 +77,7 @@ function titleCaseKey(s: string) {
  * none is authored yet. The quiz explanation is never used for it: it says why the
  * answer was right ("'am' is correct here. Match the verb form to the subject."),
  * not what the word means. `example` is the authored sentence (pack line field 4),
- * falling back to the filled cloze sentence (see docs/content-audit-2026-11.md).
+ * falling back to the filled cloze sentence (see docs/archive/2026-11/content-audit-2026-11.md).
  */
 export function deriveVocab(lesson: Lesson): VocabItem[] {
   return deriveVocabWithContext(lesson).map(({ context: _context, ...item }) => item);

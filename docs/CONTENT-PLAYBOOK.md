@@ -9,7 +9,7 @@ Other pipelines have their own playbook: the Alphonso tutor videos are `docs/VID
 `scripts/video/`); video scripts that teach English follow the same American-English rule as the course.
 
 Every rule here exists because breaking it shipped a defect. The history is in
-`docs/distractor-policy.md`, `docs/content-panel/`, and the "Content guards" table in `AGENTS.md`.
+`docs/distractor-policy.md`, `docs/archive/2026-11/content-panel-2026-11-06-first-run.md`, and the "Content guards" table in `AGENTS.md`.
 
 ## 1. The workflow, in order
 
@@ -167,7 +167,7 @@ A content change is done when all of these are true:
 - [ ] Every gate in section 5 for the touched content passes locally, ratchets lowered where you fixed something.
 - [ ] `run.ts check` ran on the final content; its report is committed and linked in the PR body; every row is fixed or answered.
 - [ ] The iOS and Android bundles are re-exported and committed.
-- [ ] If an answer key changed: the PR says so, because the server grades lessons from the database tables seeded from these files (`supabase/functions/complete-lesson`), and the owner must run `bun scripts/seed-curriculum-db.ts` (service-role key) after the merge.
+- [ ] If an answer key changed: the PR says so, because the server grades lessons from the database tables seeded from these files (`supabase/functions/complete-lesson`). Nobody runs the seed by hand: the `deploy-supabase` job's "Seed curriculum data" step runs `bun scripts/seed-curriculum-db.ts` on every main deploy (`.github/workflows/ci.yml`).
 - [ ] A `docs/` or `AGENTS.md` number you changed (counts, ratchets) is updated in the same PR.
 - [ ] The PR title is neutral product language.
 - [ ] CI is green.
@@ -175,7 +175,7 @@ A content change is done when all of these are true:
 ## 9. The full review (the one-time job that closed the content backlog)
 
 `scripts/content-review/run.ts`, logic in `src/lib/content-review/`. Run once over every item,
-under a **US$99 hard cap**, owner-approved. The cost plan is `docs/content-review/cost-plan.md`.
+under a **US$99 hard cap**, owner-approved (in code: Anthropic US$99 and Mistral US$10, each with its own ledger file, `PROVIDER_CAPS` in `src/lib/content-review/ledger.ts`). The cost plan is `docs/archive/2026-11/cost-plan.md`.
 
 | Phase            | Command                                                                                     | What it does                                                                                                                                                                                   |
 | ---------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -195,7 +195,7 @@ byte a token, every cached prefix a cache write, `max_tokens` billed in full), w
 and refuses the submission if that would pass US$99. Results settle the reservation at the actual
 cost. Phases before verification leave US$12 untouched so the measurement is always affordable.
 The ledger lives in `.content-review/ledger.json` and is mirrored to
-`~/.lwa-content-review/ledger.json` (or `CONTENT_REVIEW_LEDGER_MIRROR`); deleting either loses
+`~/.lwa-content-review/ledger.json` (or `CONTENT_REVIEW_LEDGER_MIRROR_DIR`); deleting either loses
 nothing, and a missing ledger next to a started run is refused, never recreated empty.
 
 **Where fixes land.** `run.ts route --apply` merges every checked fix into `src/data/review-fixes/<course>.json`, which `src/data/review-fixes.ts` applies at build time to questions, word cards, lesson and unit titles and placement (a fix that matches nothing throws). Campaign, scenario and podcast fixes are listed in `.content-review/manual-fixes.json` and applied in their source files by hand.
@@ -216,8 +216,8 @@ built before the full review, because today it would fail on every item.
 
 Most lessons were pure mc and fill. The lesson-mix pass appends a listening and a translate question to
 every eligible lesson, and a speak question to every second eligible lesson of the course (`courseNeeds`: alternate across eligible lessons, "every other lesson",
-owner, 2026-11-21). Dedicated listening, speak and translate packs (no mc or fill) are left alone. A
-lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N min" updates itself.
+owner, 2026-11-21). Dedicated listening, speak and translate packs (no mc or fill) are left alone. The mix added 3,598 questions in 1,500 lessons (listening 1,388, speak 817, translate 1,393; English 429 lessons, French 536, Spanish 535; counted from `src/data/lesson-extras/*.json`), live 2026-11-22 (tooling #692, content #700, lesson-version tolerance #701). A
+lesson gains up to three questions; `lesson-timing.json` is per type, so "About N min" updates itself.
 
 - **Append only.** The new questions get the fixed ids `lx1`, `sx1`, `tx1` (listening, speak, translate;
   they match the server's `^[a-z0-9]+$` rule) after the lesson's last question. Nothing existing moves,
@@ -226,7 +226,7 @@ lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N 
 - **Tooling:** `scripts/lesson-mix/run.ts` (header lists the commands), logic in `src/lib/lesson-mix/`.
   `select`, `draft` (Sonnet 5.5 batch, one request per lesson, only the types the lesson needs),
   `gates`, `review` (Sonnet), `second` (Mistral, synchronous: flagged plus 10%), `judge` (Opus),
-  `apply` (patches through the closure run's `fixes.ts` checker), `export`.
+  `apply` (patches through the closure run's `fixes.ts` checker), `export`. The file header lists only the main commands; the full set in the dispatch table is `select plan draft collect gates review second judge apply alts explain explain-apply merge-alts regen tidy blind export status` (`blind --round`, `draft --retry-failed`, `export --bulk`).
 - **Money.** Its own ledger (`.lesson-mix/ledger.json`, mirrored in `~/.lwa-lesson-mix/`), a US$60 hard cap
   across Anthropic and Mistral together, enforced in code (`src/lib/lesson-mix/ledger.ts`): the worst case
   is reserved before every submission and a projection over the cap is refused. `--go` needs
@@ -247,10 +247,8 @@ lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N 
   Opus judges the flagged. Say "AI-reviewed", never "native-reviewed".
 - **Bundles.** Content changes need the native bundles: `bun scripts/export-ios-content.ts` and
   `bun scripts/export-android-content.ts`, committed with the content (CI fails stale bundles).
-  Question ids and counts change, so after the merge the owner reseeds (`bun scripts/seed-curriculum-db.ts`);
-  an installed build with the old bundle gets `409 lesson-version-mismatch` on a changed lesson, so cut
-  the builds before the reseed or accept the tester window.
-- **Web rollout order.** Appended lessons answer `409 lesson-version-mismatch` between the web deploy and the database reseed, so run the reseed IMMEDIATELY after the merge's deploy. Old native bundles also get 409 on changed lessons until the app updates: cut and distribute the build first.
+  Question ids and counts change; the database is reseeded by the deploy job on the merge (no manual step).
+- **Rollout order (since #701).** `complete-lesson` accepts either the FULL lesson version (an answer for every question the server has) or the BASE version (every non-extra question), via `resolveLessonSubmission` in `src/lib/lesson-version.ts` (byte-identical copy in `supabase/functions/complete-lesson/lesson-version.ts`). Extras are recognised server-side by id (`lx1|sx1|tx1`); an extra answer the server lesson lacks is dropped, ungraded and uncounted. So an old bundle against the new database, and a new bundle before the reseed, both complete. A partial set of the server's extras, an unknown id, a duplicate or a missing real question is still `409 lesson-version-mismatch`. Order of build, merge and reseed no longer matters for extras.
 - **What the speak gate proves.** The round trip proves WEB grading only (`src/lib/spoken-answer*.ts`); `lesson-mix.test.ts` also checks the web normalisers agree with the edge copies in `supabase/functions/_shared/spoken-answer*.ts` on a sample. A lesson may not pass 50 questions after appending (server cap; `addLessonExtras` throws).
 - **Reserved ids.** Ids `lx1`/`sx1`/`tx1` are reserved for appended extras; never use them in hand-written content.
 - **Counts.** No test hard-codes a question count (they assert lesson counts, which do not change); id-parity compares ids with a

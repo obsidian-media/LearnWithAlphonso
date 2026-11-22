@@ -1,4 +1,4 @@
-// Writes docs/content-fixes-a1a2-phase1.md: one row per hand-reviewed rewrite in
+// Writes docs/archive/2026-11/content-fixes-a1a2-phase1.md: one row per hand-reviewed rewrite in
 // src/data/question-fixes-a1a2.ts (id, before, after, why).
 // Run: bun scripts/gen-content-fixes-table.ts
 import { writeFileSync } from "node:fs";
@@ -36,5 +36,5 @@ then the wrong options.
 | --- | --- | --- | --- |
 ${rows.join("\n")}
 `;
-writeFileSync("docs/content-fixes-a1a2-phase1.md", doc);
+writeFileSync("docs/archive/2026-11/content-fixes-a1a2-phase1.md", doc);
 console.log(rows.length, "rows");

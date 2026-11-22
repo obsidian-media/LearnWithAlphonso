@@ -1,3 +1,5 @@
+> Historical record. Delivered in #464 (2026-11-07). Current behaviour: ARCHITECTURE.md ("Practice hub" and the `practice_stars` table).
+
 # Native Practice hub with stars
 
 Ports the owner-approved web hub from b05ff3e8 to SwiftUI and Compose. Both platforms show Alphonso's café greeting, Today's pick, Continue, every campaign with scene-room thumbnails, the Hector invitation, painted scenarios with unlocked level filters, the persona/opener pre-call sheet, and the server's result with stars, statistics, first slip, retry and next/done actions.

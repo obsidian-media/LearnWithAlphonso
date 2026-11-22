@@ -43,6 +43,12 @@ ROLLBACK;
 Afterwards confirm nothing leaked: `SELECT count(*) FROM auth.users WHERE email LIKE 't-%-probe'` is 0, no `idle in transaction`
 in `pg_stat_activity`, and the deployed function text is unchanged.
 
+Checked read-only against production on 2026-11-22: the leak-check queries return 0 users and 0 idle transactions, every
+function named in this file still exists in `public`, and the seed columns used above (`language_progress.user_id`,
+`language`, `xp`, `league_tier`) exist. The admin console functions (`staff_*`, 2026-11-21 and 2026-11-22) follow the same
+rule: they are service-role only, so run them as `postgres` inside the rolled-back transaction with a throwaway staff user,
+and probe the reason check (a missing, short or long reason must raise `22023` and leave no row in `staff_audit_log`).
+
 ## Rules that cost us time
 
 - **An early-exit "ok" proves nothing.** A function that returns early (no team, no rows) never reaches the broken statement.

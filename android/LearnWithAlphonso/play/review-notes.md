@@ -1,3 +1,5 @@
+> Status (verified 2026-11-22 against d8350542): tab order, sign-in flow, demo account (B2, Pro via `grant-demo-entitlement.yml`) and AI-consent reset match the code and `scripts/seed-demo-account.ts`; account-deletion URL moved to learnwithalphonso.com.
+
 # Play Console: App access and review notes
 
 Play asks, under App content, App access, whether any part of the app is
@@ -43,4 +45,4 @@ Education app. No violence, sexual content, profanity, controlled substances, ga
 - News app: No. COVID-19 app: No. Government app: No.
 - Financial features: No (a subscription through Google Play Billing is not a financial feature).
 - Health: No.
-- Account deletion URL: https://learn.alphonsoecosystem.app/profile
+- Account deletion URL: https://learnwithalphonso.com/profile
