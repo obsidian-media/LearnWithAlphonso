@@ -135,6 +135,8 @@ export const Route = createFileRoute("/api/grade-translation")({
           submission,
           apiKey: key,
           model: resolveLlmChatModel(),
+          course,
+          level: lessonId ? bundle.findLesson(lessonId)?.unit.level : undefined,
           userId: auth.userId,
         });
         if (!verdict) return noStoreJson(localVerdict);

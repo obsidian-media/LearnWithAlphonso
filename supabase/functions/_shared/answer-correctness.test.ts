@@ -50,7 +50,9 @@ Deno.test("an AI-accepted paraphrase is graded correct, not lapsed", async () =>
   // function string-matched only, the learner would be shown "Still got it" and
   // have the item lapsed anyway.
   Deno.env.set("OPENROUTER_API_KEY", "test-key");
-  stubVerdict('{"correct": true, "reason": "Same meaning."}');
+  stubVerdict(
+    '{"elements": ["buen día"], "missing": [], "correct": true, "reason": "Same meaning."}',
+  );
   try {
     assertEquals(
       await deriveAnswerCorrectness(TRANSLATE, "I really do not follow you", "en", CONSENTED),
@@ -124,7 +126,9 @@ Deno.test("checkQuota returning false blocks the AI call entirely", async () => 
 
 Deno.test("checkQuota returning true still allows a real AI-accepted paraphrase", async () => {
   Deno.env.set("OPENROUTER_API_KEY", "test-key");
-  stubVerdict('{"correct": true, "reason": "Same meaning."}');
+  stubVerdict(
+    '{"elements": ["buen día"], "missing": [], "correct": true, "reason": "Same meaning."}',
+  );
   try {
     assertEquals(
       await deriveAnswerCorrectness(TRANSLATE, "I really do not follow you", "en", {
@@ -140,7 +144,9 @@ Deno.test("checkQuota returning true still allows a real AI-accepted paraphrase"
 
 Deno.test("omitting checkQuota (with consent) leaves the AI grader unlimited", async () => {
   Deno.env.set("OPENROUTER_API_KEY", "test-key");
-  stubVerdict('{"correct": true, "reason": "Same meaning."}');
+  stubVerdict(
+    '{"elements": ["buen día"], "missing": [], "correct": true, "reason": "Same meaning."}',
+  );
   try {
     assertEquals(
       await deriveAnswerCorrectness(TRANSLATE, "I really do not follow you", "en", CONSENTED),
@@ -214,7 +220,14 @@ Deno.test("the AI grading prompt carries the safety preamble", async () => {
     return Promise.resolve(
       new Response(
         JSON.stringify({
-          choices: [{ message: { content: '{"correct": true, "reason": "ok"}' } }],
+          choices: [
+            {
+              message: {
+                content:
+                  '{"elements": ["buen día"], "missing": [], "correct": true, "reason": "ok"}',
+              },
+            },
+          ],
         }),
       ),
     );

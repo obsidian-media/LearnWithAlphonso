@@ -71,7 +71,18 @@ describe("gradeLessonAnswer", () => {
     global.fetch = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
-          choices: [{ message: { content: JSON.stringify({ correct: true, reason: null }) } }],
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  elements: ["buen día"],
+                  missing: [],
+                  correct: true,
+                  reason: null,
+                }),
+              },
+            },
+          ],
         }),
         { status: 200 },
       ),
@@ -113,7 +124,18 @@ describe("gradeLessonAnswer", () => {
       global.fetch = vi.fn().mockResolvedValue(
         new Response(
           JSON.stringify({
-            choices: [{ message: { content: JSON.stringify({ correct: true, reason: null }) } }],
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    elements: ["buen día"],
+                    missing: [],
+                    correct: true,
+                    reason: null,
+                  }),
+                },
+              },
+            ],
           }),
           { status: 200 },
         ),
@@ -133,7 +155,18 @@ describe("gradeLessonAnswer", () => {
       global.fetch = vi.fn().mockResolvedValue(
         new Response(
           JSON.stringify({
-            choices: [{ message: { content: JSON.stringify({ correct: true, reason: null }) } }],
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    elements: ["buen día"],
+                    missing: [],
+                    correct: true,
+                    reason: null,
+                  }),
+                },
+              },
+            ],
           }),
           { status: 200 },
         ),
