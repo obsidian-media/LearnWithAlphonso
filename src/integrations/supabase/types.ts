@@ -4086,6 +4086,15 @@ export type Database = {
         Args: { p_actor_role: string; p_target: string };
         Returns: undefined;
       };
+      staff_audit_actors: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          disabled: boolean;
+          display_name: string;
+          role: string;
+          user_id: string;
+        }[];
+      };
       staff_disband_team: {
         Args: {
           p_actor: string;
