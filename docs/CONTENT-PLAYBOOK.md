@@ -28,6 +28,7 @@ Every rule here exists because breaking it shipped a defect. The history is in
   repetition is keyed on them. Fix a question by replacing it in place, 1:1. Append, never insert
   or delete. `id-parity.test.ts` holds this. Placement question ids are not review keys, so placement
   content may be rewritten (ARCHITECTURE.md, "Placement content is safe to rewrite").
+- **Reserved ids.** Ids `lx1`/`sx1`/`tx1` are reserved for appended extras; never use them in hand-written content.
 - **One correct answer.** The sentence, a bracketed clue, the subject or a picture rules every
   other option out. If two options fit, add a clue or change an option.
 - **Wrong options earn their place.** `docs/distractor-policy.md` applies in full: same slot,

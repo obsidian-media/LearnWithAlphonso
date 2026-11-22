@@ -118,6 +118,8 @@ export function deriveLessonCompletion(
  * against the real answer key -- this only guards coverage, the same job
  * deriveLessonCompletion's membership check did for the old
  * missedQuestionIds-only payload.
+ * Kept as the strict exact-coverage rule and its tests; the completion paths now go through resolveLessonSubmission
+ * (lesson-version.ts), which also accepts the base version of a lesson that gained appended extras.
  */
 export function validateLessonAnswerCoverage(
   lesson: { questions: { id: string }[] },
