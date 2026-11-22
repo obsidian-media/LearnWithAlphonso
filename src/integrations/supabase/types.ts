@@ -1366,6 +1366,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      ops_health_checks: {
+        Row: {
+          at: string;
+          latency_ms: number | null;
+          ok: boolean;
+          service: string;
+        };
+        Insert: {
+          at?: string;
+          latency_ms?: number | null;
+          ok: boolean;
+          service: string;
+        };
+        Update: {
+          at?: string;
+          latency_ms?: number | null;
+          ok?: boolean;
+          service?: string;
+        };
+        Relationships: [];
+      };
       placement_questions: {
         Row: {
           answer_index: number | null;
@@ -3402,6 +3423,7 @@ export type Database = {
       add_speech_seconds: { Args: { _seconds: number; _user_id: string }; Returns: string };
       admin_ai_cost: { Args: { p_days: number; p_heavy_micro: number }; Returns: Json };
       admin_ai_cost_capped: { Args: { p_free_micro: number; p_pro_micro: number }; Returns: Json };
+      admin_numbers_growth: { Args: { p_days: number }; Returns: Json };
       admin_numbers_own: { Args: { p_days: number }; Returns: Json };
       admin_rename_team: { Args: { _name: string; _team_id: string }; Returns: string };
       admin_reset_display_name: { Args: { _user_id: string }; Returns: string };
@@ -4064,9 +4086,19 @@ export type Database = {
         Args: { p_actor_role: string; p_target: string };
         Returns: undefined;
       };
+      staff_audit_actors: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          disabled: boolean;
+          display_name: string;
+          role: string;
+          user_id: string;
+        }[];
+      };
       staff_disband_team: {
         Args: {
           p_actor: string;
+          p_reason: string;
           p_report: string;
           p_role: string;
           p_target: string;
@@ -4075,11 +4107,37 @@ export type Database = {
         Returns: boolean;
       };
       staff_dismiss_report: {
-        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Args: {
+          p_actor: string;
+          p_reason: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+        };
         Returns: boolean;
       };
       staff_get_settings: { Args: { p_actor: string }; Returns: Json };
+      staff_health_history: {
+        Args: { p_days?: number };
+        Returns: {
+          checks: number;
+          day: string;
+          ok_checks: number;
+          service: string;
+        }[];
+      };
+      staff_health_summary: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          first_at: string;
+          last_at: string;
+          last_latency_ms: number;
+          last_ok: boolean;
+          service: string;
+        }[];
+      };
       staff_home_metrics: { Args: { p_range: string }; Returns: Json };
+      staff_is_active_owner: { Args: { p_user: string }; Returns: boolean };
       staff_lift_restriction: {
         Args: {
           p_actor: string;
@@ -4089,6 +4147,117 @@ export type Database = {
           p_target: string;
         };
         Returns: undefined;
+      };
+      staff_list_members: {
+        Args: { p_actor: string };
+        Returns: {
+          added_at: string;
+          disabled_at: string;
+          display_name: string;
+          email: string;
+          last_sign_in_at: string;
+          role: string;
+          scopes: string[];
+          user_id: string;
+        }[];
+      };
+      staff_podcast_episode_audio_replace: {
+        Args: {
+          p_actor: string;
+          p_duration: number;
+          p_id: string;
+          p_reason: string;
+          p_role: string;
+        };
+        Returns: boolean;
+      };
+      staff_podcast_episode_create: {
+        Args: {
+          p_actor: string;
+          p_audio_path: string;
+          p_course: string;
+          p_description: string;
+          p_duration: number;
+          p_folder: string;
+          p_level: string;
+          p_reason: string;
+          p_role: string;
+          p_slug: string;
+          p_title: string;
+        };
+        Returns: string;
+      };
+      staff_podcast_episode_set_published: {
+        Args: {
+          p_actor: string;
+          p_id: string;
+          p_published: boolean;
+          p_reason: string;
+          p_role: string;
+        };
+        Returns: boolean;
+      };
+      staff_podcast_episode_update: {
+        Args: {
+          p_actor: string;
+          p_description: string;
+          p_id: string;
+          p_reason: string;
+          p_role: string;
+          p_title: string;
+        };
+        Returns: boolean;
+      };
+      staff_podcast_folder_counts: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          folder_id: string;
+          published: number;
+          total: number;
+        }[];
+      };
+      staff_podcast_folder_create: {
+        Args: {
+          p_actor: string;
+          p_description: string;
+          p_parent: string;
+          p_reason: string;
+          p_role: string;
+          p_slug: string;
+          p_sort_order: number;
+          p_title: string;
+        };
+        Returns: string;
+      };
+      staff_podcast_folder_delete: {
+        Args: { p_actor: string; p_id: string; p_reason: string; p_role: string };
+        Returns: boolean;
+      };
+      staff_podcast_folder_move: {
+        Args: { p_actor: string; p_id: string; p_parent: string; p_reason: string; p_role: string };
+        Returns: boolean;
+      };
+      staff_podcast_folder_rename: {
+        Args: {
+          p_actor: string;
+          p_description: string;
+          p_id: string;
+          p_reason: string;
+          p_role: string;
+          p_title: string;
+        };
+        Returns: boolean;
+      };
+      staff_podcast_reason: { Args: { p_reason: string }; Returns: string };
+      staff_podcast_transcript_save: {
+        Args: {
+          p_actor: string;
+          p_episode: string;
+          p_reason: string;
+          p_role: string;
+          p_text: string;
+        };
+        Returns: boolean;
       };
       staff_record: {
         Args: {
@@ -4128,6 +4297,7 @@ export type Database = {
         Args: {
           p_actor: string;
           p_name: string;
+          p_reason: string;
           p_report: string;
           p_role: string;
           p_target: string;
@@ -4135,8 +4305,15 @@ export type Database = {
         };
         Returns: string;
       };
+      staff_report_reason: { Args: { p_reason: string }; Returns: string };
       staff_reset_display_name: {
-        Args: { p_actor: string; p_report: string; p_role: string; p_target: string };
+        Args: {
+          p_actor: string;
+          p_reason: string;
+          p_report: string;
+          p_role: string;
+          p_target: string;
+        };
         Returns: string;
       };
       staff_revoke_sessions: { Args: { p_target: string }; Returns: undefined };
@@ -4210,6 +4387,17 @@ export type Database = {
           p_status: string;
         };
         Returns: boolean;
+      };
+      staff_sweep_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          failed_24h: number;
+          last_ok_at: string;
+          last_run_at: string;
+          last_status: string;
+          runs_24h: number;
+          scheduled: boolean;
+        }[];
       };
       staff_update_member: {
         Args: {

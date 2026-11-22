@@ -21,7 +21,9 @@ export const staffGetNumbers = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
       .object({
-        window: z.number().refine((n) => parseWindow(n) !== null, "Choose 7, 30 or 90 days."),
+        window: z
+          .number()
+          .refine((n) => parseWindow(n) !== null, "Choose today, 7, 30 or 90 days."),
         refresh: z.boolean().optional(),
       })
       .strict()
@@ -36,12 +38,14 @@ export const staffGetNumbers = createServerFn({ method: "POST" })
     )
       throw new Error(TOO_MANY_NUMBERS);
     const { collectNumbers } = await import("./numbers-core");
-    const { createSources, createOwnFetcher } = await import("./numbers-sources.server");
+    const { createSources, createOwnFetcher, createGrowthFetcher } =
+      await import("./numbers-sources.server");
     return collectNumbers({
       scopes: context.staffScopes,
       windowDays: data.window,
       refresh: data.refresh,
       sources: createSources(process.env),
       fetchOwn: createOwnFetcher(),
+      fetchGrowth: createGrowthFetcher(),
     });
   });

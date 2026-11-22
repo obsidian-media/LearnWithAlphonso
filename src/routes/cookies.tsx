@@ -62,7 +62,7 @@ function Cookies() {
 
       <Section heading="Optional">
         <p>
-          On learn.alphonsoecosystem.app the only optional storage is a campaign tag. If you arrive
+          On learnwithalphonso.com the only optional storage is a campaign tag. If you arrive
           through a link that carries utm_source, utm_medium or utm_campaign (for example from a
           post or from our marketing website) and you choose Accept all, we keep those tags and the
           time you arrived in your browser's local storage. Until you choose, they are held only for

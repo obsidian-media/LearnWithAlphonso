@@ -93,7 +93,7 @@ class MainActivity : ComponentActivity() {
         intent.removeExtra(PushTap.EXTRA_TYPE)
     }
 
-    /** https://learn.alphonsoecosystem.app/invite/{code}, opened as an App Link or from a share. */
+    /** https://learnwithalphonso.com/invite/{code}, opened as an App Link or from a share. */
     private fun handleInviteLink(intent: Intent?) {
         val uri = intent?.data ?: return
         if (intent.action != Intent.ACTION_VIEW || uri.scheme != "https") return
@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * https://learn.alphonsoecosystem.app/?ref=<code>: kept until the account exists (the first code wins). The app link
+     * https://learnwithalphonso.com/?ref=<code>: kept until the account exists (the first code wins). The app link
      * association covers /invite/ only today, so this waits on that infra; the manual code field is the fallback.
      */
     private fun handleReferralLink(intent: Intent?) {

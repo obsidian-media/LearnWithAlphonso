@@ -11,11 +11,11 @@ import { aiCostPlaceholders } from "./ai-cost-numbers";
  * or an email (numbers-core.test.ts asserts the keys).
  */
 
-export const WINDOW_CHOICES = [7, 30, 90] as const;
+export const WINDOW_CHOICES = [1, 7, 30, 90] as const;
 export type WindowDays = (typeof WINDOW_CHOICES)[number];
 export const DEFAULT_WINDOW: WindowDays = 7;
 
-/** Only 7, 30 and 90 are accepted; anything else (a string, 14, 0, -1, NaN) is refused. */
+/** Only 1 (today, UTC), 7, 30 and 90 are accepted; anything else (a string, 14, 0, -1, NaN) is refused. */
 export function parseWindow(value: unknown): WindowDays | null {
   return (WINDOW_CHOICES as readonly unknown[]).includes(value) ? (value as WindowDays) : null;
 }
@@ -38,6 +38,9 @@ export function formatUsd(v: number): string {
   return `$${v.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
 }
 
+/** One point of a per-day series: a UTC date (YYYY-MM-DD) and the count for that day. */
+export type SeriesPoint = { day: string; value: number };
+
 export type Tile = {
   id: string;
   label: string;
@@ -45,6 +48,10 @@ export type Tile = {
   /** null = no value to show (see `reason`); never a stand-in 0. */
   value: number | string | null;
   rows?: { label: string; value: number; unit?: "%" | "usd" }[];
+  /** The same measure over the equal-length window right before this one; absent when it is not comparable or unread. */
+  previous?: number | null;
+  /** A per-day series (real counts, oldest first); only the tile that is a chart has one. */
+  series?: SeriesPoint[];
   /** The time window or basis, e.g. "last 7 days". */
   note: string;
   /** Why there is no value, shown instead of one. */
@@ -57,6 +64,8 @@ export type NumbersGroup = {
   source: string;
   state: GroupState;
   tiles: Tile[];
+  /** Only on a "not_connected" group whose cause is a missing setting: the NAMES of the env vars to set. Never values. */
+  envNames?: string[];
 };
 
 export type NumbersResponse = {
@@ -81,7 +90,10 @@ export type GroupDef = {
   ) => { id: string; label: string; kind: TileKind; note: string }[];
 };
 
-const last = (w: number) => `last ${w} days`;
+/** The note for our own counts: a one-day window is today since midnight UTC. */
+const last = (w: number) => (w === 1 ? "today (UTC)" : `last ${w} days`);
+/** The note for a provider's numbers: a one-day window is the provider's last 24 hours. */
+const lastP = (w: number) => (w === 1 ? "last 24 hours" : `last ${w} days`);
 
 export const GROUP_DEFS: readonly GroupDef[] = [
   {
@@ -95,6 +107,21 @@ export const GROUP_DEFS: readonly GroupDef[] = [
       { id: "dau", label: "Active learners (DAU)", kind: "number", note: "today" },
       { id: "active_window", label: `Active learners (${w} days)`, kind: "number", note: last(w) },
       { id: "lessons", label: "Lessons finished", kind: "number", note: last(w) },
+      { id: "stories", label: "Stories read", kind: "number", note: last(w) },
+      {
+        id: "perfect",
+        label: "Perfect lessons",
+        kind: "percent",
+        note: `of lessons finished, ${last(w)}`,
+      },
+      { id: "by_course", label: "Active learners by course", kind: "list", note: last(w) },
+      { id: "dau_series", label: "Active learners per day", kind: "list", note: "UTC days" },
+      {
+        id: "reactivated",
+        label: "Reactivated",
+        kind: "number",
+        note: "active today after 14+ quiet days",
+      },
       { id: "practice", label: "Practice calls", kind: "number", note: last(w) },
       { id: "podcasts", label: "Podcasts finished", kind: "number", note: last(w) },
       { id: "avg_streak", label: "Average streak", kind: "days", note: "all active streaks" },
@@ -118,8 +145,8 @@ export const GROUP_DEFS: readonly GroupDef[] = [
     placeholders: (w) => [
       { id: "active_pro", label: "Active Pro", kind: "number", note: "right now" },
       { id: "trials", label: "Trials", kind: "number", note: "right now" },
-      { id: "new_subs", label: "New subscriptions", kind: "number", note: last(w) },
-      { id: "churn", label: "Churn rate", kind: "percent", note: last(w) },
+      { id: "new_subs", label: "New subscriptions", kind: "number", note: lastP(w) },
+      { id: "churn", label: "Churn rate", kind: "percent", note: lastP(w) },
       { id: "mrr", label: "MRR (estimate)", kind: "money", note: "right now" },
     ],
   },
@@ -140,9 +167,9 @@ export const GROUP_DEFS: readonly GroupDef[] = [
         id: "crash_free",
         label: "Crash-free sessions",
         kind: "list",
-        note: `${last(Math.min(w, 90))}, per app`,
+        note: `${lastP(Math.min(w, 90))}, per app`,
       },
-      { id: "new_issues", label: "Top new issues", kind: "list", note: last(w) },
+      { id: "new_issues", label: "Top new issues", kind: "list", note: lastP(w) },
     ],
   },
   {
@@ -151,8 +178,8 @@ export const GROUP_DEFS: readonly GroupDef[] = [
     source: "product analytics",
     scope: "numbers.read",
     placeholders: (w) => [
-      { id: "first_lesson", label: "First run to first lesson", kind: "percent", note: last(w) },
-      { id: "onboarding", label: "Onboarding drop-off", kind: "list", note: last(w) },
+      { id: "first_lesson", label: "First run to first lesson", kind: "percent", note: lastP(w) },
+      { id: "onboarding", label: "Onboarding drop-off", kind: "list", note: lastP(w) },
     ],
   },
   {
@@ -169,7 +196,7 @@ export const GROUP_DEFS: readonly GroupDef[] = [
         id: "downloads",
         label: "Downloads",
         kind: "number",
-        note: `${last(Math.min(w, 30))}, to yesterday`,
+        note: `${lastP(Math.min(w, 30))}, to yesterday`,
       },
       { id: "rating", label: "Rating", kind: "rating", note: "all time" },
     ],
@@ -184,7 +211,7 @@ export const GROUP_DEFS: readonly GroupDef[] = [
         id: "installs",
         label: "Installs",
         kind: "number",
-        note: `${last(Math.min(w, 90))}, to a few days ago`,
+        note: `${lastP(Math.min(w, 90))}, to a few days ago`,
       },
     ],
   },
@@ -199,7 +226,11 @@ export const NUMBERS_FORBIDDEN_MESSAGE = "Forbidden: missing scope numbers.read"
 
 /** A provider that is switched off: its env is not set. Not an error; shown as "Not connected". */
 export class NotConnectedError extends Error {
-  constructor(public readonly reason: string) {
+  /** `envNames`: the names (never the values) of the settings that are missing, so the page can say what to set. */
+  constructor(
+    public readonly reason: string,
+    public readonly envNames: readonly string[] = [],
+  ) {
     super(reason);
     this.name = "NotConnectedError";
   }
@@ -211,6 +242,8 @@ export type SourceContext = {
   now: Date;
   /** The own-database aggregates, fetched once per request and shared (the cost group derives from them). */
   own: () => Promise<OwnAggregates>;
+  /** The growth aggregates (previous windows, series, by course ...), fetched once per request; may reject. */
+  growth?: () => Promise<GrowthAggregates>;
 };
 
 export type OwnFn = (ctx: {
@@ -218,6 +251,24 @@ export type OwnFn = (ctx: {
   now: Date;
   signal: AbortSignal;
 }) => Promise<OwnAggregates>;
+/** What admin_numbers_growth(p_days) returns (counts only). Previous-window values are null when not comparable. */
+export type GrowthAggregates = {
+  newPrev: number | null;
+  activePrev: number | null;
+  lessonsPrev: number | null;
+  storiesPrev: number | null;
+  storiesRead: number;
+  /** Share of finished lessons answered perfectly; null with no lessons in the window. */
+  perfectPct: number | null;
+  byCourse: { language: string; learners: number }[];
+  dauSeries: { day: string; active: number }[];
+  reactivated: number;
+};
+export type GrowthFn = (ctx: {
+  windowDays: WindowDays;
+  now: Date;
+  signal: AbortSignal;
+}) => Promise<GrowthAggregates>;
 export type SourceFn = (ctx: SourceContext) => Promise<Tile[]>;
 export type Sources = Record<GroupKey, SourceFn>;
 
@@ -291,6 +342,7 @@ async function runGroup(
         ...head,
         state: "not_connected",
         tiles: placeholdersAs(def, base.windowDays, e.reason),
+        ...(e.envNames.length > 0 ? { envNames: [...e.envNames] } : {}),
       };
     }
     // The cause stays on the server; the page only learns that this group could not load.
@@ -316,6 +368,8 @@ export async function collectNumbers(input: {
   sources: Sources;
   /** Reads the own-database aggregates once; the "own" and "aicost" sources both go through ctx.own(). */
   fetchOwn: OwnFn;
+  /** Reads the growth aggregates once. Optional: without it the tiles that need it say "Could not read". */
+  fetchGrowth?: GrowthFn;
   now?: Date;
   refresh?: boolean;
   timeoutMs?: number;
@@ -323,7 +377,7 @@ export async function collectNumbers(input: {
   only?: readonly GroupKey[];
 }): Promise<NumbersResponse> {
   const windowDays = parseWindow(input.windowDays);
-  if (windowDays === null) throw new Error("Choose 7, 30 or 90 days.");
+  if (windowDays === null) throw new Error("Choose today, 7, 30 or 90 days.");
   const allowed = groupsFor(input.scopes).filter((g) => !input.only || input.only.includes(g.key));
   if (allowed.length === 0) throw new Error(NUMBERS_FORBIDDEN_MESSAGE);
   const now = input.now ?? new Date();
@@ -342,12 +396,27 @@ export async function collectNumbers(input: {
     return ownPromise;
   };
 
+  let growthPromise: Promise<GrowthAggregates> | null = null;
+  const growth = () => {
+    growthPromise ??= (async () => {
+      if (!input.fetchGrowth) throw new Error("growth not configured");
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), input.timeoutMs ?? PROVIDER_TIMEOUT_MS);
+      try {
+        return await input.fetchGrowth({ windowDays, now, signal: controller.signal });
+      } finally {
+        clearTimeout(t);
+      }
+    })();
+    return growthPromise;
+  };
+
   const groups = await Promise.all(
     allowed.map((def) =>
       runGroup(
         def,
         input.sources,
-        { windowDays, now, own },
+        { windowDays, now, own, growth },
         groupBudgetMs(def, input.timeoutMs),
         !input.refresh,
       ),
@@ -359,25 +428,64 @@ export async function collectNumbers(input: {
 // ---------------------------------------------------------------------------------------------------------------
 // The group built from the own aggregates (pure; the tests feed them numbers).
 
-export function ownTiles(a: OwnAggregates, windowDays: WindowDays): Tile[] {
+/**
+ * The own-database tiles. `growth` is null when its read failed: the tiles that need it then say "Could not read" (never
+ * a 0), and the rest are unaffected. A previous-window value is attached only when it was read.
+ */
+export function ownTiles(
+  a: OwnAggregates,
+  windowDays: WindowDays,
+  growth: GrowthAggregates | null = null,
+): Tile[] {
   const ph = GROUP_DEFS[0]!.placeholders(windowDays);
   const note = (id: string) => ph.find((p) => p.id === id)!;
-  const t = (id: string, value: number | null, reason?: string): Tile => ({
+  const t = (
+    id: string,
+    value: number | null,
+    reason?: string,
+    previous?: number | null,
+  ): Tile => ({
     ...note(id),
     value,
     ...(reason ? { reason } : {}),
+    ...(previous !== undefined && previous !== null ? { previous } : {}),
   });
   const noCohort = "Nobody joined that day";
+  const g = <K extends keyof GrowthAggregates>(k: K): GrowthAggregates[K] | null =>
+    growth ? growth[k] : null;
+  const unread = "Could not read";
   const calls = Object.entries(a.aiByKind)
     .filter(([k]) => !NON_CALL_KINDS.includes(k))
     .sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]))
     .map(([label, value]) => ({ label, value }));
+  const courseRows = (growth?.byCourse ?? []).map((c) => ({
+    label: c.language,
+    value: c.learners,
+  }));
+  const series = growth?.dauSeries.map((p) => ({ day: p.day, value: p.active })) ?? [];
   const tiles: Tile[] = [
     t("new_today", a.newToday),
-    t("new_window", a.newWindow),
+    t("new_window", a.newWindow, undefined, g("newPrev")),
     t("dau", a.activeToday),
-    t("active_window", a.activeWindow),
-    t("lessons", a.lessons),
+    t("active_window", a.activeWindow, undefined, g("activePrev")),
+    t("lessons", a.lessons, undefined, g("lessonsPrev")),
+    growth
+      ? t("stories", growth.storiesRead, undefined, growth.storiesPrev)
+      : t("stories", null, unread),
+    growth
+      ? t("perfect", growth.perfectPct, "No lessons in this window")
+      : t("perfect", null, unread),
+    !growth
+      ? { ...note("by_course"), value: null, reason: unread }
+      : courseRows.length > 0
+        ? { ...note("by_course"), value: null, rows: courseRows }
+        : { ...note("by_course"), value: null, reason: "No lessons in this window" },
+    !growth
+      ? { ...note("dau_series"), value: null, reason: unread }
+      : series.length >= 2
+        ? { ...note("dau_series"), value: null, series }
+        : { ...note("dau_series"), value: null, reason: "No data yet" },
+    growth ? t("reactivated", growth.reactivated) : t("reactivated", null, unread),
     t("practice", a.practiceCalls),
     t("podcasts", a.podcastsFinished),
     t("avg_streak", a.avgStreak, "No active streaks"),
@@ -390,7 +498,7 @@ export function ownTiles(a: OwnAggregates, windowDays: WindowDays): Tile[] {
       : { ...note("ai_calls"), value: null, reason: "No AI calls in this window" },
   ];
   return tiles.map((tile) =>
-    tile.value === null && tile.reason === undefined && !tile.rows
+    tile.value === null && tile.reason === undefined && !tile.rows && !tile.series
       ? { ...tile, reason: "No data" }
       : tile,
   );

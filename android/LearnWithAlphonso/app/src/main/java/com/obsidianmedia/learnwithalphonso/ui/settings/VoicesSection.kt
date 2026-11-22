@@ -98,7 +98,7 @@ internal fun VoicesSection(container: AppContainer) {
 
 /**
  * One character's voices for one course, grouped Male / Female. ▶ streams the voice's static clip from the web app
- * (learn.alphonsoecosystem.app/voices/<id>.mp3): not bundled, so the app does not carry ~2 MB of clips, and never a
+ * (learnwithalphonso.com/voices/<id>.mp3): not bundled, so the app does not carry ~2 MB of clips, and never a
  * TTS call.
  */
 @Composable

@@ -2,7 +2,7 @@ import SwiftUI
 import Observation
 import LearnWithAlphonsoKit
 
-/// A friend invite waiting to be shown: set when a Universal Link (https://learn.alphonsoecosystem.app/invite/{code})
+/// A friend invite waiting to be shown: set when a Universal Link (https://learnwithalphonso.com/invite/{code})
 /// opens the app, or when a pasted link or code is entered on the Friends screen. It survives being signed out, so the
 /// learner signs in or up first and then sees the invite; RootView shows it once the learner is signed in and not in
 /// the middle of onboarding.

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { asTestFns, chainable, createSupabaseMock } from "./__testutils__/supabase-mock";
+import { asTestFns, createSupabaseMock } from "./__testutils__/supabase-mock";
 import { setStaff } from "./__testutils__/staff-harness";
 
 vi.mock(
@@ -216,35 +216,76 @@ describe("staffUpdateStaff", () => {
   });
 });
 
+describe("database refusals reach the screen in plain words", () => {
+  const failing = (code: string, message: string) => {
+    const admin = adminClient();
+    admin.rpc.mockResolvedValue({ data: null, error: { code, message } });
+    return admin;
+  };
+  it("the last active owner cannot be demoted or disabled", async () => {
+    await expect(
+      update(failing("23514", "the last active owner cannot be demoted or disabled"), {
+        disabled: true,
+      }),
+    ).rejects.toThrow("That would leave no active owner, so nothing was changed.");
+  });
+  it("an actor the database does not know as an active owner is told only an owner can do this", async () => {
+    await expect(
+      update(failing("42501", "only an active owner may change staff"), { disabled: true }),
+    ).rejects.toThrow("Only an owner can manage staff.");
+  });
+});
+
 describe("staffListStaff", () => {
-  it("lists staff with their names and effective scopes, owner only", async () => {
+  const dbRow = (over = {}) => ({
+    user_id: HIRE,
+    display_name: "Hire",
+    email: "hire@example.com",
+    role: "support",
+    scopes: ["users.read", "bogus"],
+    disabled_at: null,
+    added_at: "t",
+    last_sign_in_at: "2026-11-20T09:00:00Z",
+    ...over,
+  });
+
+  it("lists staff with name, email, last sign-in and effective scopes from ONE database call, owner only", async () => {
     const admin = createSupabaseMock();
-    admin.from.mockImplementation((table: string) =>
-      table === "staff_roles"
-        ? chainable({
-            data: [
-              { user_id: OWNER, role: "owner", scopes: [], disabled_at: null, added_at: "t" },
-              {
-                user_id: HIRE,
-                role: "support",
-                scopes: ["users.read", "bogus"],
-                disabled_at: null,
-                added_at: "t",
-              },
-            ],
-            error: null,
-          })
-        : chainable({ data: [{ id: HIRE, display_name: "Hire" }], error: null }),
-    );
+    admin.rpc.mockResolvedValue({
+      data: [dbRow({ user_id: OWNER, role: "owner", scopes: [], last_sign_in_at: null }), dbRow()],
+      error: null,
+    });
     const rows = await staffListStaff({ context: { supabaseAdmin: admin, userId: OWNER } });
+    expect(admin.rpc).toHaveBeenCalledWith("staff_list_members", { p_actor: OWNER });
+    expect(admin.from).not.toHaveBeenCalled();
     expect(rows.find((r: { userId: string }) => r.userId === HIRE)).toMatchObject({
       role: "support",
       scopes: ["users.read"],
       displayName: "Hire",
+      email: "hire@example.com",
+      lastSignInAt: "2026-11-20T09:00:00Z",
       disabled: false,
     });
+    // never signed in stays null (the screen says so), never a made-up date
+    expect(rows.find((r: { userId: string }) => r.userId === OWNER)?.lastSignInAt).toBeNull();
     await expect(
       staffListStaff({ context: { supabaseAdmin: admin, userId: SUPPORT } }),
     ).rejects.toThrow(/only an owner/i);
+  });
+
+  it("a support person never reaches the database (refused before the call)", async () => {
+    const admin = createSupabaseMock();
+    await expect(
+      staffListStaff({ context: { supabaseAdmin: admin, userId: SUPPORT } }),
+    ).rejects.toThrow(/only an owner/i);
+    expect(admin.rpc).not.toHaveBeenCalled();
+  });
+
+  it("a failed read is an error, not an empty list", async () => {
+    const admin = createSupabaseMock();
+    admin.rpc.mockResolvedValue({ data: null, error: { code: "XX000", message: "boom" } });
+    await expect(
+      staffListStaff({ context: { supabaseAdmin: admin, userId: OWNER } }),
+    ).rejects.toThrow("Could not read the staff list.");
   });
 });

@@ -1,5 +1,6 @@
 import { estimateMinutes, type LessonTimingTable } from "./lesson-time";
 import { maxLessonXp } from "./lesson-xp";
+import { pathStates } from "./lesson-unlock";
 import type { UnitPathState } from "./unit-path";
 
 /**
@@ -126,11 +127,16 @@ export function learnMap(
   if (index === -1 || !climbable(units[index]!)) return null;
   const unit = units[index]!;
   const slots = unit.lessons.length + 1;
-  const nextIndex = unit.lessons.findIndex((l) => !completed.has(l.id));
+  // The same states the server's start rule is built on (lesson-unlock.ts): the "next" lesson is always startable.
+  const states = pathStates(
+    unit.lessons.map((l) => l.id),
+    completed,
+  );
+  const nextIndex = states.indexOf("next");
   const nodes = unit.lessons.map((l, i): MapLessonNode => ({
     id: l.id,
     title: l.title,
-    state: completed.has(l.id) ? "done" : i === nextIndex ? "next" : "locked",
+    state: states[i]!,
     ...mapPoint(i, slots),
   }));
   const done = unit.lessons.filter((l) => completed.has(l.id)).length;

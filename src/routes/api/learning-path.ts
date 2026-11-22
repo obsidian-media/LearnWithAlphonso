@@ -71,7 +71,7 @@ async function handle(request: Request, method: "GET" | "PUT"): Promise<Response
     }
     const data = await loadPathData(admin, userId, course, new Date());
     if (!data) return json({ path: null });
-    return json({ path: buildLearningPath(data) });
+    return json({ path: buildLearningPath({ ...data, startableOnly: true }) });
   } catch (error) {
     console.error(`[learning-path] ${method} failed: ${(error as Error).message}`);
     return json({ error: "Could not load your path." }, 500);

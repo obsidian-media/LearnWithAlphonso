@@ -49,6 +49,8 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="learnwithalphonso.com" android:pathPrefix="/invite/" />
+                <!-- The previous host keeps working for links already shared. -->
                 <data android:scheme="https" android:host="learn.alphonsoecosystem.app" android:pathPrefix="/invite/" />
             </intent-filter>
         </activity>

@@ -1638,3 +1638,192 @@ Deno.test(
     assertEquals(db.opsEvents.length, 1);
   },
 );
+
+// Content changeover: the lesson-mix pass appended extra questions (ids lx1/sx1/tx1) to the seeded lessons. Both the
+// bundle that has them and the bundle that does not must complete, against a database that has them or does not.
+const EXTRA_QUESTION = {
+  id: "lx1",
+  type: "mc",
+  prompt: "listen",
+  choices: ["x", "y"],
+  bank: null,
+  answer_index: 0,
+  answer_text: null,
+};
+const withExtra = (extra: string[] = ["lx1"]) => [
+  ...QUESTIONS,
+  ...extra.map((id) => ({ ...EXTRA_QUESTION, id })),
+];
+const answersFor = (pairs: [string, string][]) => ({
+  lessonId: "u1l1",
+  total: pairs.length,
+  answers: pairs.map(([questionId, answer]) => ({ questionId, answer })),
+  course: "fr",
+  sessionToken: "tok",
+});
+const BASE: [string, string][] = [
+  ["q1", "a"],
+  ["q2", "d"],
+];
+
+Deno.test("old bundle against the reseeded lesson: accepted, paid on the base count", async () => {
+  const { db, handler } = setup();
+  db.lesson!.questions = withExtra();
+  const res = await handler(post(answersFor(BASE)));
+  assertEquals(res.status, 200);
+  assertEquals((await res.json()).xpGain, computeXpGain(2, 2));
+  assertEquals(db.lastNext?.total, 2);
+});
+
+Deno.test("new bundle against the reseeded lesson: accepted, paid on the full count", async () => {
+  const { db, handler } = setup();
+  db.lesson!.questions = withExtra();
+  const res = await handler(post(answersFor([...BASE, ["lx1", "x"]])));
+  assertEquals(res.status, 200);
+  assertEquals((await res.json()).xpGain, computeXpGain(3, 3));
+  assertEquals(db.lastNext?.total, 3);
+});
+
+Deno.test(
+  "new bundle before the reseed: accepted, the unknown extra is neither graded nor paid",
+  async () => {
+    const { db, handler } = setup();
+    const res = await handler(post(answersFor([...BASE, ["lx1", "wrong"]])));
+    assertEquals(res.status, 200);
+    // Paid as a perfect two-question lesson: the extra did not lower it (not graded) nor raise it (not counted).
+    assertEquals((await res.json()).xpGain, computeXpGain(2, 2));
+    assertEquals(db.lastNext?.total, 2);
+  },
+);
+
+Deno.test("forged extra ids earn nothing on a lesson that has none", async () => {
+  const { db, handler } = setup();
+  const res = await handler(post(answersFor([...BASE, ["lx1", "x"], ["sx1", "x"], ["tx1", "x"]])));
+  assertEquals(res.status, 200);
+  assertEquals((await res.json()).xpGain, computeXpGain(2, 2));
+  assertEquals(db.lastNext?.total, 2);
+});
+
+Deno.test("a submission missing a real question is a 409, with or without extras", async () => {
+  const cases: [string, string][][] = [
+    [["q1", "a"]],
+    [
+      ["q1", "a"],
+      ["lx1", "x"],
+    ],
+    [
+      ["q2", "d"],
+      ["lx1", "x"],
+    ],
+  ];
+  for (const pairs of cases) {
+    const { db, handler } = setup();
+    db.lesson!.questions = withExtra();
+    const res = await handler(post(answersFor(pairs)));
+    assertEquals(res.status, 409);
+    assertEquals((await res.json()).error, "lesson-version-mismatch");
+    assertEquals(db.rpcCalls.length, 0);
+  }
+});
+
+Deno.test("an id that is neither in the lesson nor exactly an extra id is a 409", async () => {
+  const { db, handler } = setup();
+  const res = await handler(post(answersFor([...BASE, ["lx2", "x"]])));
+  assertEquals(res.status, 409);
+  assertEquals(db.rpcCalls.length, 0);
+});
+
+Deno.test("a base completion moves hearts and streak like any completion", async () => {
+  const { db, handler } = setup();
+  db.lesson!.questions = withExtra();
+  db.tables.user_progress = [
+    {
+      user_id: USER,
+      streak: 3,
+      longest_streak: 3,
+      last_active_date: "2026-10-16",
+      hearts: 3,
+      hearts_refill_at: "2026-10-17T12:30:00Z",
+      streak_freezes: 0,
+    },
+  ];
+  const res = await handler(post(answersFor(BASE)));
+  assertEquals(res.status, 200);
+  assertEquals(db.lastNext!.streak, 4);
+  // A perfect lesson on the base set earns the perfect-lesson heart.
+  assertEquals(db.lastNext!.hearts, 4);
+});
+
+// A stored best is a (correct, total) pair and lesson_completions has CHECK (correct <= total): replaying the shorter
+// (base) version of a lesson already completed on the full one must keep the pair consistent and must not pay again.
+Deno.test(
+  "a base replay of a lesson stored on the full version keeps best_correct <= total and pays nothing",
+  async () => {
+    const { db, handler } = setup();
+    db.lesson!.questions = withExtra();
+    db.tables.lesson_completions = [
+      {
+        user_id: USER,
+        lesson_id: "u1l1",
+        language: "fr",
+        correct: 3,
+        total: 3,
+        xp_earned: computeXpGain(3, 3),
+      },
+    ];
+    const res = await handler(post(answersFor(BASE)));
+    assertEquals(res.status, 200);
+    assertEquals((await res.json()).xpGain, 0);
+    const next = db.lastNext!;
+    assert((next.best_correct as number) <= (next.total as number));
+    assertEquals(next.total, 3);
+    assertEquals(next.best_correct, 3);
+  },
+);
+
+Deno.test(
+  "a perfect base replay of a lesson stored 2 of 3 on the full version cannot farm the perfect bonus",
+  async () => {
+    const { db, handler } = setup();
+    db.lesson!.questions = withExtra();
+    db.tables.lesson_completions = [
+      {
+        user_id: USER,
+        lesson_id: "u1l1",
+        language: "fr",
+        correct: 2,
+        total: 3,
+        xp_earned: computeXpGain(2, 3),
+      },
+    ];
+    const res = await handler(post(answersFor(BASE)));
+    assertEquals(res.status, 200);
+    assertEquals((await res.json()).xpGain, 0);
+    const next = db.lastNext!;
+    assert((next.best_correct as number) <= (next.total as number));
+    assertEquals(next.total, 3);
+  },
+);
+
+Deno.test(
+  "a full replay of a lesson stored on the base version raises the pair together",
+  async () => {
+    const { db, handler } = setup();
+    db.lesson!.questions = withExtra();
+    db.tables.lesson_completions = [
+      {
+        user_id: USER,
+        lesson_id: "u1l1",
+        language: "fr",
+        correct: 2,
+        total: 2,
+        xp_earned: computeXpGain(2, 2),
+      },
+    ];
+    const res = await handler(post(answersFor([...BASE, ["lx1", "x"]])));
+    assertEquals(res.status, 200);
+    assertEquals((await res.json()).xpGain, computeXpGain(3, 3) - computeXpGain(2, 2));
+    const next = db.lastNext!;
+    assertEquals([next.best_correct, next.total], [3, 3]);
+  },
+);

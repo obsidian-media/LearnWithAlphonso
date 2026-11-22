@@ -13,8 +13,14 @@ export const VOCAB_IMAGE_PUBLIC_BASE = `${SUPABASE_PROJECT_ORIGIN}/storage/v1/ob
 export const VOCAB_IMAGE_MAX_BYTES = 524288;
 export const VOCAB_IMAGE_MIME = "image/jpeg";
 
+/**
+ * The same bucket through the project's custom API domain. The recorded URLs (data + DB rows) still name the original
+ * host, which keeps working; both are accepted so rows can move to the custom domain without a code change.
+ */
+export const CUSTOM_API_ORIGIN = "https://api.learnwithalphonso.com";
+
 const URL_SHAPE =
-  /^https:\/\/qhcjpfbxfcltjbiuknyt\.supabase\.co\/storage\/v1\/object\/public\/vocab-images\/(en|fr|es)\/([a-z0-9-]+)\.jpg\?v=([0-9a-f]{8})$/;
+  /^https:\/\/(?:qhcjpfbxfcltjbiuknyt\.supabase\.co|api\.learnwithalphonso\.com)\/storage\/v1\/object\/public\/vocab-images\/(en|fr|es)\/([a-z0-9-]+)\.jpg\?v=([0-9a-f]{8})$/;
 
 export function parseVocabImageUrl(
   url: string,

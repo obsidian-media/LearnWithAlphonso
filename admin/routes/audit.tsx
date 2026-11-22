@@ -1,10 +1,16 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useState } from "react";
 import { adminWhoAmI } from "@/lib/admin.functions";
-import { staffListAudit, type AuditRow } from "@/lib/staff-audit.functions";
+import { staffListAudit, staffListAuditActors } from "@/lib/staff-audit.functions";
 import { classifyStaffError } from "@/lib/staff-route-errors";
 import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
-import { AuditView, type AuditFilters } from "@/components/staff/AuditView";
+import { AuditScreen } from "@/components/console/audit/AuditScreen";
+import type { AuditApi } from "@/components/console/audit/auditApi";
+
+/** The Audit screen's calls: both server functions check audit.read themselves and only read. */
+const api: AuditApi = {
+  list: (filters, cursor) => staffListAudit({ data: { ...filters, cursor } }),
+  actors: () => staffListAuditActors(),
+};
 
 export const Route = createFileRoute("/audit")({
   // No server-side render for this page: who is signed in lives in the browser (a server render has no session), so the
@@ -14,7 +20,7 @@ export const Route = createFileRoute("/audit")({
     try {
       const me = await adminWhoAmI();
       if (!me.scopes.includes("audit.read")) return { forbidden: true as const };
-      return { forbidden: false as const, first: await staffListAudit({ data: {} }) };
+      return { forbidden: false as const };
     } catch (e) {
       if (classifyStaffError(e) === "forbidden") return { forbidden: true as const };
       throw redirect({ to: "/signin" });
@@ -25,43 +31,6 @@ export const Route = createFileRoute("/audit")({
 
 function Audit() {
   const data = Route.useLoaderData();
-  const [rows, setRows] = useState<AuditRow[] | null>(null);
-  const [cursor, setCursor] = useState<number | null | undefined>(undefined);
-  const [filters, setFilters] = useState<AuditFilters>({});
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  if (data.forbidden) {
-    return <ForbiddenCard title="Action record" scope="audit.read" />;
-  }
-  const shownRows = rows ?? data.first.rows;
-  const shownCursor = cursor === undefined ? data.first.nextCursor : cursor;
-
-  async function load(next: AuditFilters, after?: number, append = false) {
-    setBusy(true);
-    setError(null);
-    try {
-      const page = await staffListAudit({ data: { ...next, cursor: after } });
-      setRows(append ? [...shownRows, ...page.rows] : page.rows);
-      setCursor(page.nextCursor);
-      setFilters(next);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not read the action record.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <main className="mx-auto max-w-5xl p-4 sm:p-6">
-      <AuditView
-        rows={shownRows}
-        nextCursor={shownCursor}
-        error={error}
-        busy={busy}
-        onFilter={(f) => load(f)}
-        onMore={() => (shownCursor ? load(filters, shownCursor, true) : undefined)}
-      />
-    </main>
-  );
+  if (data.forbidden) return <ForbiddenCard title="Action record" scope="audit.read" />;
+  return <AuditScreen api={api} />;
 }

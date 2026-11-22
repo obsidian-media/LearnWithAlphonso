@@ -30,7 +30,7 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Learn With Alphonso" },
-      { property: "og:image", content: "https://learn.alphonsoecosystem.app/og-image.png" },
+      { property: "og:image", content: "https://learnwithalphonso.com/og-image.png" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       {
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/")({
         content: "Alphonso the llama, mascot of Learn With Alphonso",
       },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "https://learn.alphonsoecosystem.app/og-image.png" },
+      { name: "twitter:image", content: "https://learnwithalphonso.com/og-image.png" },
     ],
   }),
 });

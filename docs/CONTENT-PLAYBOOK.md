@@ -252,5 +252,6 @@ lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N 
   the builds before the reseed or accept the tester window.
 - **Web rollout order.** Appended lessons answer `409 lesson-version-mismatch` between the web deploy and the database reseed, so run the reseed IMMEDIATELY after the merge's deploy. Old native bundles also get 409 on changed lessons until the app updates: cut and distribute the build first.
 - **What the speak gate proves.** The round trip proves WEB grading only (`src/lib/spoken-answer*.ts`); `lesson-mix.test.ts` also checks the web normalisers agree with the edge copies in `supabase/functions/_shared/spoken-answer*.ts` on a sample. A lesson may not pass 50 questions after appending (server cap; `addLessonExtras` throws).
+- **Reserved ids.** Ids `lx1`/`sx1`/`tx1` are reserved for appended extras; never use them in hand-written content.
 - **Counts.** No test hard-codes a question count (they assert lesson counts, which do not change); id-parity compares ids with a
   baseline (`src/lib/id-parity.test.ts`): a bulk content PR must check it and say if it adds ids.

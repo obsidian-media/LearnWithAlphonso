@@ -32,7 +32,7 @@ const PROJECT_REF = process.env.SUPABASE_PROJECT_REF || "qhcjpfbxfcltjbiuknyt";
  * still points AppConfig.apiBaseURL at that older alias; it resolves, so
  * nothing is broken, but the two should converge on the next build.
  */
-const SITE_URL = process.env.SITE_URL || "https://learn.alphonsoecosystem.app";
+const SITE_URL = process.env.SITE_URL || "https://learnwithalphonso.com";
 
 if (!ACCESS_TOKEN) {
   console.error("Missing environment variable: SUPABASE_ACCESS_TOKEN");

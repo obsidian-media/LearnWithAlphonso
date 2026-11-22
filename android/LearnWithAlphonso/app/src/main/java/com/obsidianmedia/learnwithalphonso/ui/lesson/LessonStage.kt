@@ -620,7 +620,7 @@ data class LessonStartStep(val icon: Int, val label: String, val detail: String)
 
 /** Lesson start, set in the unit's room: unit and title over it, the honest estimate, the steps and the gold Start. */
 @Composable
-fun LessonStart(roomId: String, unitLine: String, title: String, meta: String, steps: List<LessonStartStep>, hearts: Int?, onClose: () -> Unit, onStart: () -> Unit) {
+fun LessonStart(roomId: String, unitLine: String, title: String, meta: String, steps: List<LessonStartStep>, hearts: Int?, onClose: () -> Unit, onStart: () -> Unit, waiting: Boolean = false) {
     val ds = LocalAlphonsoTokens.current
     Column(Modifier.fillMaxSize().background(ds.surface)) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
@@ -653,7 +653,7 @@ fun LessonStart(roomId: String, unitLine: String, title: String, meta: String, s
             }
         }
         Box(Modifier.background(ds.surface).padding(horizontal = AlphonsoTokens.Space.s4, vertical = AlphonsoTokens.Space.s3)) {
-            LessonEdgeButton("Start lesson", EdgeVariant.PRIMARY, onStart)
+            LessonEdgeButton(if (waiting) "Opening lesson..." else "Start lesson", EdgeVariant.PRIMARY, onStart, enabled = !waiting)
         }
     }
 }
