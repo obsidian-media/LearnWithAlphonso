@@ -6,7 +6,9 @@ export function pathNodeDelay(placeInUnit: number): number {
   return Math.min(placeInUnit, 10) * 0.05;
 }
 
-export type UnitPathState = "done" | "next" | "locked";
+import { pathStates, type PathState } from "./lesson-unlock";
+
+export type UnitPathState = PathState;
 export type UnitPathNode = { id: string; state: UnitPathState };
 
 /**
@@ -20,11 +22,9 @@ export function unitPathNodes(
   completed: ReadonlySet<string>,
   max = 5,
 ): UnitPathNode[] {
-  const nextIndex = lessonIds.findIndex((id) => !completed.has(id));
-  const nodes = lessonIds.map((id, i): UnitPathNode => ({
-    id,
-    state: completed.has(id) ? "done" : i === nextIndex ? "next" : "locked",
-  }));
+  const states = pathStates(lessonIds, completed);
+  const nextIndex = states.indexOf("next");
+  const nodes = lessonIds.map((id, i): UnitPathNode => ({ id, state: states[i]! }));
   const anchor = nextIndex === -1 ? nodes.length : nextIndex;
   const start = Math.max(0, Math.min(anchor - 2, nodes.length - max));
   return nodes.slice(start, start + max);

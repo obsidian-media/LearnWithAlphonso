@@ -36,12 +36,12 @@ export const PROJECTS: readonly VercelProject[] = [
   {
     name: "web",
     projectId: "prj_how8TU8niiUjV2FHf0oAezHXrOSp",
-    domain: "learn.alphonsoecosystem.app",
+    domain: "learnwithalphonso.com",
   },
   {
     name: "admin",
     projectId: "prj_atzbsZv03JBDuqxCKuMKlb7BeZV7",
-    domain: "admin.alphonsoecosystem.app",
+    domain: "admin.learnwithalphonso.com",
   },
 ];
 

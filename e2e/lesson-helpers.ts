@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { AUTH_STORAGE_KEY } from "../src/integrations/supabase/auth-storage-key";
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? "https://placeholder.supabase.co";
 
@@ -30,7 +31,7 @@ export async function signInAsFakeUser(
     expires_at: exp,
     user,
   };
-  const key = `sb-${new URL(SUPABASE_URL).hostname.split(".")[0]}-auth-token`;
+  const key = AUTH_STORAGE_KEY; // pinned in the app; no longer derived from the URL host
   await page.addInitScript(
     ([k, v]) => {
       localStorage.setItem(k, v);

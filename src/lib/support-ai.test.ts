@@ -291,11 +291,13 @@ describe("the optional app link in a reply", () => {
 describe("output guard", () => {
   const blocked = [
     "Verify your account at https://evil.example/login",
-    "Go to http://learn.alphonsoecosystem.app/privacy",
+    "Go to http://learnwithalphonso.com/privacy",
     "Visit www.free-pro.com now",
     "Open evil.example.com/verify",
-    "Visit learn.alphonsoecosystem.app.evil.com/x",
-    "Visit https://evil-learn.alphonsoecosystem.app/x",
+    "Visit learnwithalphonso.com.evil.com/x",
+    "Visit https://learnwithalphonso.com@evil.com/x",
+    "Visit https://user@learnwithalphonso.com@evil.com/x",
+    "Visit https://evil-learnwithalphonso.com/x",
     "Write to billing@evil.example",
     "Write to support@alphonsoecosystem.app.evil.com",
     "Write to Support@evil.example or support@alphonsoecosystem.app",
@@ -308,8 +310,8 @@ describe("output guard", () => {
   const allowed = [
     "Tap Restore Purchases on the subscription screen.",
     `You can write to ${SUPPORT_EMAIL}.`,
-    "The privacy page is https://learn.alphonsoecosystem.app/privacy and that is all.",
-    "See www.learn.alphonsoecosystem.app/support",
+    "The privacy page is https://learnwithalphonso.com/privacy and that is all.",
+    "See www.learnwithalphonso.com/support",
     "Use the sign-in page, e.g. Forgot your password. Then wait.",
     `Write to ${SUPPORT_EMAIL.toUpperCase()}`,
   ];

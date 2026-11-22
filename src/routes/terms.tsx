@@ -34,8 +34,8 @@ function Terms() {
         <p>
           These Terms of Use are an agreement between you and {OPERATOR}, who operates Learn with
           Alphonso ("Alphonso", "we", "us"). They cover the Learn with Alphonso app for iPhone, the
-          Android app where it is available, the website at learn.alphonsoecosystem.app, and the
-          services behind them (together, "the app").
+          Android app where it is available, the website at learnwithalphonso.com, and the services
+          behind them (together, "the app").
         </p>
         <p>
           By creating an account or using the app you agree to these terms and to our{" "}

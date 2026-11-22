@@ -15,12 +15,12 @@ import {
  * in its own doc comment gets a test that goes red without the check.
  */
 const GOOD: AuthConfig = {
-  site_url: "https://learn.alphonsoecosystem.app",
+  site_url: "https://learnwithalphonso.com",
   mailer_otp_length: 6,
   mailer_templates_magic_link_content: "<p>{{ .Token }}</p>",
   mailer_templates_confirmation_content: "<p>{{ .Token }}</p>",
   uri_allow_list:
-    "https://learn.alphonsoecosystem.app/**,com.obsidianmedia.learnwithalphonso://login-callback",
+    "https://learnwithalphonso.com/**,com.obsidianmedia.learnwithalphonso://login-callback",
   external_google_enabled: true,
 };
 
@@ -111,7 +111,7 @@ describe("OAuth redirect allowlist and Google provider", () => {
   it("catches an allowlist without the iOS callback", () => {
     const problems = findAuthConfigProblems({
       ...GOOD,
-      uri_allow_list: "https://learn.alphonsoecosystem.app/**",
+      uri_allow_list: "https://learnwithalphonso.com/**",
     });
     expect(problems).toEqual([expect.stringContaining(IOS_OAUTH_CALLBACK)]);
   });
@@ -127,7 +127,7 @@ describe("OAuth redirect allowlist and Google provider", () => {
       findAuthConfigProblems({
         ...GOOD,
         uri_allow_list:
-          " https://learn.alphonsoecosystem.app/** , com.obsidianmedia.learnwithalphonso://** ",
+          " https://learnwithalphonso.com/** , com.obsidianmedia.learnwithalphonso://** ",
       }),
     ).toEqual([]);
   });
@@ -161,7 +161,7 @@ describe("OAuth redirect allowlist and Google provider", () => {
     expect(
       findAuthConfigProblems({
         ...GOOD,
-        uri_allow_list: `${GOOD.uri_allow_list},https://learn.alphonsoecosystem.app/auth/callback,http://localhost:3000/**`,
+        uri_allow_list: `${GOOD.uri_allow_list},https://learnwithalphonso.com/auth/callback,http://localhost:3000/**`,
       }),
     ).toEqual([]);
   });

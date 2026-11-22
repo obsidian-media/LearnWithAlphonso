@@ -1,10 +1,15 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
 import { adminWhoAmI } from "@/lib/admin.functions";
-import { staffGetNumbers, type NumbersResponse } from "@/lib/staff-numbers.functions";
-import { DEFAULT_WINDOW, type WindowDays } from "@/lib/numbers-core";
+import { staffGetNumbers } from "@/lib/staff-numbers.functions";
 import { classifyStaffError } from "@/lib/staff-route-errors";
-import { NumbersView } from "@/components/staff/NumbersView";
+import { ForbiddenCard } from "@/components/staff/ForbiddenCard";
+import { NumbersScreen } from "@/components/console/numbers/NumbersScreen";
+import type { NumbersApi } from "@/components/console/numbers/numbersApi";
+
+/** The Numbers screen's one call: the server function checks the scopes and sends only the groups this person may see. */
+const api: NumbersApi = {
+  get: (window, refresh) => staffGetNumbers({ data: { window, refresh } }),
+};
 
 export const Route = createFileRoute("/numbers")({
   // No server-side render for this page: who is signed in lives in the browser (a server render has no session), so the
@@ -14,9 +19,10 @@ export const Route = createFileRoute("/numbers")({
     try {
       const me = await adminWhoAmI();
       const allowed = me.scopes.includes("numbers.read") || me.scopes.includes("numbers.revenue");
-      return { allowed };
+      if (!allowed) return { forbidden: true as const };
+      return { forbidden: false as const };
     } catch (e) {
-      if (classifyStaffError(e) === "forbidden") return { allowed: false };
+      if (classifyStaffError(e) === "forbidden") return { forbidden: true as const };
       throw redirect({ to: "/signin" });
     }
   },
@@ -24,60 +30,7 @@ export const Route = createFileRoute("/numbers")({
 });
 
 function Numbers() {
-  const { allowed } = Route.useLoaderData();
-  const [windowDays, setWindowDays] = useState<WindowDays>(DEFAULT_WINDOW);
-  const [data, setData] = useState<NumbersResponse | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const latest = useRef(0);
-
-  async function load(w: WindowDays, refresh: boolean) {
-    const mine = ++latest.current;
-    setBusy(true);
-    setError(null);
-    try {
-      const result = await staffGetNumbers({ data: { window: w, refresh } });
-      if (mine === latest.current) setData(result);
-    } catch (e) {
-      if (mine === latest.current)
-        setError(e instanceof Error ? e.message : "Could not read the numbers.");
-    } finally {
-      if (mine === latest.current) setBusy(false);
-    }
-  }
-
-  useEffect(() => {
-    if (allowed) void load(DEFAULT_WINDOW, false);
-  }, [allowed]);
-
-  if (!allowed) {
-    return (
-      <main className="mx-auto max-w-5xl p-4 sm:p-6">
-        <h1 className="font-display text-2xl font-semibold text-ds-ink">Numbers</h1>
-        <div className="mt-4 rounded-2xl border border-ds-line bg-ds-card p-4">
-          <p className="text-sm font-bold text-ds-ink">Forbidden: missing scope numbers.read</p>
-          <p className="ds-type-footnote text-ds-ink-soft">
-            Ask the owner to add the Numbers permission to your account.
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main className="mx-auto max-w-5xl p-4 sm:p-6">
-      <NumbersView
-        data={data}
-        windowDays={windowDays}
-        busy={busy}
-        error={error}
-        onWindow={(w) => {
-          setWindowDays(w);
-          setData(null);
-          void load(w, false);
-        }}
-        onRefresh={() => void load(windowDays, true)}
-      />
-    </main>
-  );
+  const data = Route.useLoaderData();
+  if (data.forbidden) return <ForbiddenCard title="Numbers" scope="numbers.read" />;
+  return <NumbersScreen api={api} />;
 }

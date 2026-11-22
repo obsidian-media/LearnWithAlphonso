@@ -19,8 +19,8 @@ export const LISTING_LIMITS = {
   description: 4000,
 } as const;
 
-const TERMS = "https://learn.alphonsoecosystem.app/terms";
-export const PRIVACY = "https://learn.alphonsoecosystem.app/privacy";
+const TERMS = "https://learnwithalphonso.com/terms";
+export const PRIVACY = "https://learnwithalphonso.com/privacy";
 const EULA = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/";
 
 const DESCRIPTION = `Learn With Alphonso helps you build a language habit in English, French or Spanish, a few minutes at a time.
@@ -64,7 +64,7 @@ export const LISTING: Listing = {
     "Short lessons, speaking practice and podcasts in English, French and Spanish. Hector, your AI voice tutor, comes with Alphonso Pro.",
   keywords:
     "speaking,vocabulary,grammar,listening,podcast,tutor,fluency,cefr,conversation,practice,review,ai",
-  supportUrl: "https://learn.alphonsoecosystem.app/support",
+  supportUrl: "https://learnwithalphonso.com/support",
   marketingUrl: "https://discover.alphonsoecosystem.app",
   description: DESCRIPTION,
 };

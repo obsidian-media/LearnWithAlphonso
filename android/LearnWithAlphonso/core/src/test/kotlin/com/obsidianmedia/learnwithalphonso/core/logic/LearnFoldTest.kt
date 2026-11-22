@@ -76,6 +76,18 @@ class LearnFoldTest {
     }
 
     @Test
+    fun `the course's Continue reads units band by band, not in the curriculum array's interleaved order`() {
+        // The array puts a B1 unit before the last A1 one, as the English curriculum does.
+        data class U(val id: String, val level: String)
+        val raw = listOf(U("a1", "A1"), U("b1", "B1"), U("a2", "A1"), U("x", "Z9"), U("e1", "A2"))
+        assertEquals(listOf("a1", "a2", "e1", "b1", "x"), LearnFold.inLearningOrder(raw) { it.level }.map { it.id })
+        val units = LearnFold.inLearningOrder(raw) { it.level }.map { FoldUnit(it.id, it.id, it.id, listOf("${it.id}l1")) }
+        // a1 done: the next lesson is the A1 unit after it, never the B1 unit the array lists first.
+        assertEquals("a2l1", LearnFold.currentUnitOf(units, setOf("a1l1"))?.lessonId)
+        assertEquals(listOf(0, 1, 2, 3, 4, 5), listOf("A1", "A2", "B1", "B2", "C1", "??").map(LearnFold::levelRank))
+    }
+
+    @Test
     fun `roomArtFor wraps and never throws`() {
         val list = LearnFold.ROOM_ART
         assertEquals(list.first(), LearnFold.roomArtFor(0))

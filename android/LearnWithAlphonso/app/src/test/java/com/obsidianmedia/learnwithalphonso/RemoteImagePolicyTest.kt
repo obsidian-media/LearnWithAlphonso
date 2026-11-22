@@ -87,4 +87,18 @@ class RemoteImagePolicyTest {
         assertTrue(src.contains("RemoteImagePolicy.readCapped("))
         assertFalse(src.contains("decodeStream("))
     }
+
+    @Test
+    fun `accepts the custom api domain and rejects its lookalikes and userinfo tricks`() {
+        val api = good.replace("qhcjpfbxfcltjbiuknyt.supabase.co", "api.learnwithalphonso.com")
+        assertTrue(RemoteImagePolicy.isAllowed(api))
+        for (host in listOf(
+            "api.learnwithalphonso.com.evil.com",
+            "api.learnwithalphonso.com@evil.com",
+            "user@api.learnwithalphonso.com@evil.com",
+            "qhcjpfbxfcltjbiuknyt.supabase.co@evil.com",
+        )) {
+            assertFalse(host, RemoteImagePolicy.isAllowed(good.replace("qhcjpfbxfcltjbiuknyt.supabase.co", host)))
+        }
+    }
 }

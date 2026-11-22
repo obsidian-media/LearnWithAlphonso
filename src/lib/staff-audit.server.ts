@@ -37,8 +37,9 @@ export const REPORT_WRITE_FUNCTIONS = [
 ] as const;
 
 /**
- * The podcast and folder write actions (admin.functions.ts, scope podcasts.manage). Each writes its action-record row
- * through recordStaffAction after the change; staff-registry.test.ts checks it.
+ * The podcast and folder write actions (admin.functions.ts, scope podcasts.manage). Each reaches a staff_podcast_* SQL
+ * function that checks the reason, changes the data and writes the action record in one transaction;
+ * staff-registry.test.ts checks it.
  */
 export const PODCAST_WRITE_FUNCTIONS = [
   "adminCreateFolder",

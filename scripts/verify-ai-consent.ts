@@ -3,12 +3,12 @@
  * demo account).
  *   bun scripts/verify-ai-consent.ts send-code <email>
  *   bun scripts/verify-ai-consent.ts run <email> <6-digit code>
- * Env: SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY (public values), API_BASE (default https://learn.alphonsoecosystem.app).
+ * Env: SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY (public values), API_BASE (default https://learnwithalphonso.com).
  * Exits non-zero on any mismatch. Deletes the account at the end.
  */
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const KEY = process.env.SUPABASE_PUBLISHABLE_KEY!;
-const API = process.env.API_BASE ?? "https://learn.alphonsoecosystem.app";
+const API = process.env.API_BASE ?? "https://learnwithalphonso.com";
 const [cmd, email, code] = process.argv.slice(2);
 
 async function auth(path: string, body: unknown) {

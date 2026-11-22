@@ -3,7 +3,7 @@ import SwiftUI
 import LearnWithAlphonsoKit
 
 /// The list for one character and course, grouped Male / Female. ▶ plays the voice's static clip from the web app
-/// (learn.alphonsoecosystem.app/voices/<id>.mp3): streamed, not bundled, so the app does not carry ~2 MB of clips
+/// (learnwithalphonso.com/voices/<id>.mp3): streamed, not bundled, so the app does not carry ~2 MB of clips
 /// for a screen most learners open once, and never a TTS call.
 struct VoicePickerView: View {
     let session: Session

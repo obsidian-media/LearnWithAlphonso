@@ -5,6 +5,8 @@ import {
   createSupabaseMock,
   type ChainCall,
 } from "./__testutils__/supabase-mock";
+import { findLesson } from "../data/curriculum";
+import { getCourse } from "../data/courses";
 
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
 vi.mock("@tanstack/react-start", () => ({
@@ -68,6 +70,12 @@ vi.mock("./learner-time-zone.server", () => ({ readLearnerTimeZone }));
 // Account AI consent is read through hasAiConsent; the default here is "allowed", individual tests flip it.
 const hasAiConsent = vi.fn(async () => true);
 vi.mock("./ai-consent.server", () => ({ hasAiConsent }));
+// The unlock rule and its database read have their own tests (lesson-unlock.test.ts, lesson-unlock.server.test.ts);
+// here startLessonSession's handling of the verdict is what is under test. Default: the lesson is open.
+const lessonStartVerdict = vi.hoisted(() =>
+  vi.fn(async (): Promise<"unlocked" | "locked" | "unknown"> => "unlocked"),
+);
+vi.mock("./lesson-unlock.server", () => ({ lessonStartVerdict }));
 
 const {
   fetchProgress,
@@ -279,6 +287,39 @@ describe("startLessonSession", () => {
   }
   afterEach(() => {
     delete process.env.ENFORCE_HEARTS_GATE;
+    lessonStartVerdict.mockReset();
+    lessonStartVerdict.mockResolvedValue("unlocked");
+  });
+
+  it("refuses a lesson the learner has not unlocked: lesson-locked, no token, asked about THIS learner", async () => {
+    lessonStartVerdict.mockResolvedValue("locked");
+    const supabase = heartsRow(3, null);
+    const result = await startLessonSession({
+      context: ctx(supabase),
+      data: { lessonId: "u5l1", course: "en" },
+    });
+    expect(result).toEqual({ error: "lesson-locked" });
+    expect(lessonStartVerdict).toHaveBeenCalledWith(supabase, USER_ID, "en", "u5l1");
+  });
+
+  it("a locked lesson is refused even for a learner at 0 hearts (lock first, no hearts read)", async () => {
+    lessonStartVerdict.mockResolvedValue("locked");
+    const supabase = createSupabaseMock();
+    const result = await startLessonSession({
+      context: ctx(supabase),
+      data: { lessonId: "u5l1", course: "en" },
+    });
+    expect(result).toEqual({ error: "lesson-locked" });
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
+  it("an unreadable unlock state (unknown) lets the learner in", async () => {
+    lessonStartVerdict.mockResolvedValue("unknown");
+    const result = await startLessonSession({
+      context: ctx(heartsRow(3, null)),
+      data: { lessonId: LESSON_ID, course: "en" },
+    });
+    expect("token" in result).toBe(true);
   });
 
   it("issues a token for a real lesson with hearts left", async () => {
@@ -670,6 +711,168 @@ describe("completeLessonRemote", () => {
         },
       }),
     ).rejects.toThrow("Invalid lesson completion payload");
+  });
+
+  /** The mocks a first-ever completion of u1l1 needs, so a version-compat test only states what differs. */
+  function mockFirstCompletion() {
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            streak: 0,
+            longest_streak: 0,
+            last_active_date: null,
+            hearts: 4,
+            hearts_refill_at: null,
+            streak_freezes: 0,
+          },
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
+      .mockReturnValueOnce(chainable({ data: [] }));
+    supabaseAdminFrom.mockReturnValue(chainable({}));
+    return supabase;
+  }
+  const savedTotal = () =>
+    (
+      adminRpc.mock.calls.find((c) => c[0] === "apply_lesson_completion_once")?.[1] as {
+        _next: { total: number };
+      }
+    )._next.total;
+
+  describe("across a content changeover (extras appended to the lesson)", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("a build that sends extra questions this server does not have is paid on the real lesson only", async () => {
+      const supabase = mockFirstCompletion();
+      const result = await completeLessonRemote({
+        context: ctx(supabase),
+        data: {
+          lessonId: LESSON_ID,
+          total: 11,
+          answers: [
+            ...answers(),
+            { questionId: "lx1", answer: "wrong" },
+            { questionId: "sx1", answer: "x" },
+            { questionId: "tx1", answer: "x" },
+          ],
+          course: "en",
+          sessionToken: validToken(),
+        },
+      });
+      expect(result.xpGain).toBe(8 * 10 + 20); // computeXpGain(8, 8): extras neither graded nor counted
+      expect(savedTotal()).toBe(8);
+    });
+
+    it("an older build is accepted once the server lesson has the extras, and a full one is paid on all", async () => {
+      const real = findLesson(LESSON_ID)!;
+      const extra = { id: "lx1", type: "mc", prompt: "p", choices: ["a", "b"], answer: 0 };
+      const withExtra = {
+        ...real,
+        lesson: { ...real.lesson, questions: [...real.lesson.questions, extra] },
+      };
+      vi.spyOn(getCourse("en"), "findLesson").mockReturnValue(
+        withExtra as unknown as ReturnType<typeof findLesson>,
+      );
+      const base = await completeLessonRemote({
+        context: ctx(mockFirstCompletion()),
+        data: {
+          lessonId: LESSON_ID,
+          total: 8,
+          answers: answers(),
+          course: "en",
+          sessionToken: validToken(),
+        },
+      });
+      expect(base.xpGain).toBe(8 * 10 + 20);
+      expect(savedTotal()).toBe(8);
+
+      adminRpc.mockClear();
+      const full = await completeLessonRemote({
+        context: ctx(mockFirstCompletion()),
+        data: {
+          lessonId: LESSON_ID,
+          total: 9,
+          answers: [...answers(), { questionId: "lx1", answer: "a" }],
+          course: "en",
+          sessionToken: validToken(),
+        },
+      });
+      expect(full.xpGain).toBe(9 * 10 + 20);
+      expect(savedTotal()).toBe(9);
+    });
+
+    it("a base replay of a lesson stored on the full version keeps best_correct <= total and pays nothing", async () => {
+      const real = findLesson(LESSON_ID)!;
+      const extra = { id: "lx1", type: "mc", prompt: "p", choices: ["a", "b"], answer: 0 };
+      vi.spyOn(getCourse("en"), "findLesson").mockReturnValue({
+        ...real,
+        lesson: { ...real.lesson, questions: [...real.lesson.questions, extra] },
+      } as unknown as ReturnType<typeof findLesson>);
+      for (const stored of [
+        { correct: 9, total: 9, xp_earned: 9 * 10 + 20 },
+        { correct: 8, total: 9, xp_earned: 8 * 10 }, // full 8/9: a perfect base replay must not earn the bonus
+      ]) {
+        adminRpc.mockClear();
+        const supabase = createSupabaseMock();
+        supabase.from
+          .mockReturnValueOnce(
+            chainable({
+              data: {
+                streak: 1,
+                longest_streak: 1,
+                last_active_date: new Date().toISOString().slice(0, 10),
+                hearts: 5,
+                hearts_refill_at: null,
+                streak_freezes: 0,
+              },
+            }),
+          )
+          .mockReturnValueOnce(chainable({ data: { xp: 200, league_tier: "bronze" } }))
+          .mockReturnValueOnce(chainable({ data: stored }))
+          .mockReturnValueOnce(chainable({ data: { xp_earned: 100 } }))
+          .mockReturnValueOnce(chainable({ data: [{ correct: stored.correct, total: 9 }] }))
+          .mockReturnValueOnce(chainable({ data: [{ achievement_id: "first_lesson" }] }));
+        supabaseAdminFrom.mockReturnValue(chainable({}));
+        const result = await completeLessonRemote({
+          context: ctx(supabase),
+          data: {
+            lessonId: LESSON_ID,
+            total: 8,
+            answers: answers(),
+            course: "en",
+            sessionToken: validToken(),
+          },
+        });
+        expect(result.xpGain).toBe(0);
+        const next = (
+          adminRpc.mock.calls.find((c) => c[0] === "apply_lesson_completion_once")?.[1] as {
+            _next: { best_correct: number; total: number };
+          }
+        )._next;
+        expect(next.best_correct).toBeLessThanOrEqual(next.total);
+        expect(next.total).toBe(9);
+      }
+    });
+
+    it("a submission missing a real question is still rejected when extras are present", async () => {
+      await expect(
+        completeLessonRemote({
+          context: ctx(createSupabaseMock()),
+          data: {
+            lessonId: LESSON_ID,
+            total: 8,
+            answers: [...answers().slice(0, 7), { questionId: "lx1", answer: "x" }],
+            course: "en",
+            sessionToken: validToken(),
+          },
+        }),
+      ).rejects.toThrow("Invalid lesson completion payload");
+    });
   });
 
   it("rejects a payload that doesn't answer every real question in the lesson", async () => {

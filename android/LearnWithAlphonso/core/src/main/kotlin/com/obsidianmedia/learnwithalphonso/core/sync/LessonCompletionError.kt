@@ -62,6 +62,7 @@ sealed class LessonCompletionError : Exception() {
             is Rejected -> when (code) {
                 "lesson-version-mismatch" -> "This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again."
                 "out-of-hearts" -> "Saved. It will sync when your hearts refill."
+                LESSON_LOCKED -> "This lesson opens once the earlier lessons are done, so this attempt can't be saved."
                 else -> "We couldn't save this lesson."
             }
             InvalidPayload -> "We couldn't save this lesson."
@@ -94,12 +95,16 @@ sealed class LessonCompletionError : Exception() {
 
     companion object {
         const val SUPPORT_ADDRESS = "support@alphonsoecosystem.app"
+
+        /** start-lesson-session's code for a lesson the learner has not unlocked (src/lib/lesson-unlock.ts). */
+        const val LESSON_LOCKED = "lesson-locked"
         private val STABLE_CODE = Regex("^[a-z][a-z0-9-]*$")
 
         fun classify(error: Throwable): LessonCompletionError {
             if (error is LessonCompletionError) return error
             return when (error) {
                 is ProgressSyncError.OutOfHearts -> Rejected("out-of-hearts")
+                is ProgressSyncError.LessonLocked -> Rejected(LESSON_LOCKED)
                 is ProgressSyncError.Server -> classify(error.status, error.serverMessage)
                 // A 2xx we could not read: the server may have recorded it, and complete-lesson is replay-safe.
                 is ProgressSyncError.InvalidPayload -> Server(502)

@@ -21,6 +21,7 @@ import {
   WordTile,
 } from "../../components/lesson/LessonParts";
 import { isLeaguePromotion } from "../../lib/league-engagement";
+import { nextStartableLessonId } from "../../lib/lesson-unlock";
 import { lessonExpression, roomLayout, roomSrcForUnit } from "../../lib/lesson-stage";
 import { answerXpChip, maxLessonXp } from "../../lib/lesson-xp";
 import { ActiveTimer, estimateLessonMinutes } from "../../lib/lesson-time";
@@ -242,6 +243,20 @@ function LessonPage() {
   // (countdown, XP purchase, review instead) instead of a lesson that could never be saved.
   const [heartsBlock, setHeartsBlock] = useState<{ refillAt: number | null } | null>(null);
   const [buyHeartError, setBuyHeartError] = useState<string | null>(null);
+  // The server refused the start because earlier lessons are not finished (unlock order is enforced there).
+  const [lessonLocked, setLessonLocked] = useState(false);
+  // Where "Finish the earlier lessons first" points: the lesson the Learn map offers next (always startable).
+  const nextOpenLessonId = useMemo(
+    () =>
+      lessonLocked
+        ? nextStartableLessonId(
+            curriculum.flatMap((u) => u.lessons.map((l) => ({ id: l.id, level: u.level }))),
+            new Set(state.completedLessons),
+            state.cefrLevel,
+          )
+        : null,
+    [lessonLocked, curriculum, state.completedLessons, state.cefrLevel],
+  );
   const [sessionAttempt, setSessionAttempt] = useState(0);
   const heartsXp = useProgress((s) => s.xp);
   const spendXpForHeartLocal = useProgress((s) => s.spendXpForHeartLocal);
@@ -255,9 +270,11 @@ function LessonPage() {
       .then((res) => {
         if (!alive) return;
         if ("error" in res) {
-          setHeartsBlock({ refillAt: res.refillAt });
+          if (res.error === "lesson-locked") setLessonLocked(true);
+          else setHeartsBlock({ refillAt: res.refillAt });
           return;
         }
+        setLessonLocked(false);
         setHeartsBlock(null);
         setSessionToken(res.token);
         sessionReceivedAt.current = Date.now();
@@ -321,6 +338,30 @@ function LessonPage() {
             </button>
           ) : null}
           <Link to="/learn" className="mt-4 inline-block ds-type-footnote text-ds-choice underline">
+            Back to learn
+          </Link>
+        </div>
+      </LessonScreen>
+    );
+  }
+  if (lessonLocked) {
+    return (
+      <LessonScreen>
+        <div className="p-6 text-center" role="alert">
+          <p className="ds-type-body font-bold text-ds-ink">Finish the earlier lessons first</p>
+          <p className="mt-2 ds-type-footnote text-ds-ink-soft">
+            This lesson opens once the ones before it are done.
+          </p>
+          {nextOpenLessonId ? (
+            <Link
+              to="/lesson/$id"
+              params={{ id: nextOpenLessonId }}
+              className={`mt-4 ${edgeButtonClass("primary")}`}
+            >
+              Go to your next lesson
+            </Link>
+          ) : null}
+          <Link to="/learn" className="mt-4 block ds-type-footnote text-ds-choice underline">
             Back to learn
           </Link>
         </div>

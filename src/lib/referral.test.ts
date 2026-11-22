@@ -129,8 +129,8 @@ describe("carrying the code through signup (claimPendingRef)", () => {
 describe("the Invite screen's numbers", () => {
   const NOW = Date.UTC(2026, 10, 17, 12);
   it("builds the link", () => {
-    expect(referralLink("https://learn.alphonsoecosystem.app/", "ab+c/d=")).toBe(
-      "https://learn.alphonsoecosystem.app/?ref=ab%2Bc%2Fd%3D",
+    expect(referralLink("https://learnwithalphonso.com/", "ab+c/d=")).toBe(
+      "https://learnwithalphonso.com/?ref=ab%2Bc%2Fd%3D",
     );
   });
 

@@ -8,6 +8,11 @@ final class VocabImagePolicyTests: XCTestCase {
         XCTAssertTrue(VocabImagePolicy.isRenderable(ok))
     }
 
+    func testTheCustomApiDomainBucketURLIsRenderable() {
+        XCTAssertTrue(VocabImagePolicy.isRenderable("https://api.learnwithalphonso.com/storage/v1/object/public/vocab-images/en/apple.jpg?v=0123abcd"))
+        XCTAssertFalse(VocabImagePolicy.isRenderable("https://api.learnwithalphonso.com.evil.example/storage/v1/object/public/vocab-images/en/apple.jpg?v=0123abcd"))
+    }
+
     func testProviderAndForeignURLsAreNotRenderable() {
         let bad = [
             "https://pixabay.com/get/gabc_640.jpg",
@@ -38,5 +43,11 @@ final class VocabImagePolicyTests: XCTestCase {
 
     func testAnUnrenderableURLCollapsesBeforeAnyLoadAttempt() {
         XCTAssertEqual(VocabImagePolicy.slot(url: "https://pixabay.com/get/gabc_640.jpg", failedURL: nil), .collapsed)
+    }
+
+    func testApiDomainLookalikesAndUserinfoTricksAreNotRenderable() {
+        for host in ["api.learnwithalphonso.com.evil.com", "api.learnwithalphonso.com@evil.com", "user@api.learnwithalphonso.com@evil.com", "qhcjpfbxfcltjbiuknyt.supabase.co@evil.com"] {
+            XCTAssertFalse(VocabImagePolicy.isRenderable("https://\(host)/storage/v1/object/public/vocab-images/en/apple.jpg?v=0123abcd"), host)
+        }
     }
 }

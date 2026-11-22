@@ -36,16 +36,7 @@ const ROW_KEYS = new Set(["name", "title", "id", "email", "subject", "ticketNo",
 const NUMERIC_TEXT = /^[\s$€£]*\d[\d,.\s]*[%kKmM]?\s*$/;
 
 /** Old pages not yet rebuilt (each rebuild PR removes its line). */
-export const LEGACY_ROUTES = [
-  "audit.tsx",
-  "folder.$id.tsx",
-  "folders.tsx",
-  "health.tsx",
-  "numbers.tsx",
-  "reports.tsx",
-  "signin.tsx",
-  "staff.tsx",
-];
+export const LEGACY_ROUTES: string[] = [];
 
 export function findViolations(source: string, file = "x.tsx"): string[] {
   const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
