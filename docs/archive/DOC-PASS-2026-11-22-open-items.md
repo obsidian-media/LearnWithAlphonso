@@ -10,3 +10,5 @@ Verified against origin/main d8350542 (build 72, #705), `gh pr` (merged #603 to 
 Not verifiable from here (kept, marked unverified in the doc): Vercel production env values (403), App Store Connect state, Paid Apps Agreement, Supabase auth dashboard toggles, provider settings on the admin project, staff display names.
 
 The private master (docs/BACKLOG.md, gitignored) carries the same list plus a private addendum; it was edited in place in the main checkout, no git operation run there.
+
+Follow-up: SUPPORT_NOTIFY_FROM and REPORT_NOTIFY_FROM item closed (code defaults since #704 at src/lib/support-notify.server.ts:86 and src/lib/report-notify.server.ts:72; both variables confirmed unset by a coordinator browser check on 2026-11-22). Other Vercel-only items re-tagged "verify via browser (coordinator)". Marketing-site item re-checked against that repository (7df17a1). Android setup path corrected to android/LearnWithAlphonso/OWNER-SETUP.md. Old "Recently closed" build lines labelled history. End-of-pass grep and path checks run; remaining hits are intentional.
