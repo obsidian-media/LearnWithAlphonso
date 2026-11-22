@@ -4,7 +4,7 @@ Tools for the Alphonso tutor-video pipeline. The process, the approval gates and
 
 | File | What it does |
 |---|---|
-| `scene-prompt.txt` | The Codex image prompt for the classroom scene (an empty whiteboard, Alphonso waist-up). Pass it on stdin. |
+| `scene-prompt.txt` | The Codex image prompt for the classroom scene (an empty whiteboard, Alphonso waist-up; it asks for two compositions, A and B). Pass it on stdin. |
 | `voice-join.sh` | Joins the per-section TTS clips into one voice track with the fixed pauses, and writes the per-section wavs. |
 | `board.py` | Writes handwritten whiteboard text over the HeyGen render from an `items.py` cue file. Validates the cues. `--preview` writes still frames. |
 | `captions.py` | WebVTT captions from `seg/segs.txt` and the per-section clip lengths. |

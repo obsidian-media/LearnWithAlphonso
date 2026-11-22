@@ -1,9 +1,17 @@
 # App Store Connect: App Privacy answers (iOS)
 
-Written 2026-11-18 from the code at main (build 71 candidate). The source of truth is
+Written 2026-11-18 from the code at main (build 71 candidate); status section added 2026-11-22. The source of truth is
 `ios/LearnWithAlphonso/PrivacyInfo.xcprivacy`, pinned one-to-one by `src/lib/ios-privacy-manifest.test.ts`; enter the
 rows below in App Store Connect > App Privacy exactly as listed. Cross-checked against `src/routes/privacy.tsx`,
 `src/lib/app-store/review-notes.ts` and `android/LearnWithAlphonso/play/data-safety.md`.
+
+## Status (verified 2026-11-22 against d8350542, build 72)
+
+- The 13 data-type rows below match `ios/LearnWithAlphonso/PrivacyInfo.xcprivacy` one-to-one (type, linked flag, purposes); tracking is false with no tracking domains.
+- Privacy Policy URL is `https://learnwithalphonso.com/privacy` (`PRIVACY` in `src/lib/app-store/listing-copy.ts:23`; returns HTTP 200 on 2026-11-22).
+- Sentry "Prevent Storing of IP Addresses" owner step is done (`docs/sentry-crash-reporting.md`, owner step 1).
+- Mismatch 5 (time zone) is resolved. Mismatches 2, 3 and 4 are still open (see Cross-check result).
+- Entering these answers in App Store Connect is still the owner's step.
 
 ## Top-level answers
 
@@ -11,7 +19,7 @@ rows below in App Store Connect > App Privacy exactly as listed. Cross-checked a
 | ----------------------------------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Do you or your third-party partners collect data from this app?                           | Yes                            | Table below                                                                                                                                                                                                                |
 | Used to track you (linked with third-party data for advertising, or shared with brokers)? | **No, for every type**         | `NSPrivacyTracking` false, no tracking domains; no `AdSupport`, `AppTrackingTransparency` or `ASIdentifierManager` anywhere (probe in `ios-privacy-manifest.test.ts`); no `NSUserTrackingUsageDescription`; no ad SDK |
-| Privacy Policy URL                                                                        | https://learn.alphonsoecosystem.app/privacy | `src/routes/privacy.tsx`                                                                                                                                                                              |
+| Privacy Policy URL                                                                        | https://learnwithalphonso.com/privacy | `src/lib/app-store/listing-copy.ts` (`PRIVACY`), `src/routes/privacy.tsx`                                                                                                                                                                              |
 
 Not collected (answer No): precise or coarse location from the device (the country is a choice the learner makes in
 first-run, so it is "Other Data", not Location), contacts, photos or videos, health and fitness, sensitive info,
@@ -80,11 +88,11 @@ Mismatches found (no legal page was changed; listed for the owner):
 4. `review-notes.ts` does not mention the Help chat or Miya (it says "Report an AI reply: press and hold, then Report
    this response", which now also holds for Miya's replies). The notes are near the 4000-character limit; add a short
    Help chat line only if App Review asks.
-5. Time zone (another builder's work in flight) is listed under Other Data Types; confirm the privacy page time zone
-   wording still matches once that PR merges.
+5. Resolved (2026-11-22): time zone is listed under Other Data Types and `src/routes/privacy.tsx` now describes it
+   (used to show dates and to decide which calendar day streaks and daily totals count towards; UTC if absent).
 
-## Owner step before answering Crash Data as not linked
+## Owner step before answering Crash Data as not linked (done)
 
-In the Sentry project `learnwithalphonso-ios`, Settings > Security & Privacy: turn ON "Prevent Storing of IP Addresses" (and Data Scrubber).
+Done by the owner per `docs/sentry-crash-reporting.md` (owner step 1: Data Scrubber and Prevent Storing of IP Addresses on in all three projects). For reference, in the Sentry project `learnwithalphonso-ios`, Settings > Security & Privacy: turn ON "Prevent Storing of IP Addresses" (and Data Scrubber).
 The code removes the user, device name and install id, but Sentry derives an IP from the request unless this setting is on; the
 "not linked" answer depends on it.

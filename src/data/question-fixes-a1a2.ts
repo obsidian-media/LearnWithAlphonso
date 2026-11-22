@@ -1,6 +1,6 @@
 import type { QuestionFix } from "./question-fixes";
 
-/** Phase 1 rewrites for English A1/A2, written under docs/distractor-policy.md. Review table: docs/content-fixes-a1a2-phase1.md */
+/** Phase 1 rewrites for English A1/A2, written under docs/distractor-policy.md. Review table: docs/archive/2026-11/content-fixes-a1a2-phase1.md */
 export const FIXES_A1A2: Record<string, QuestionFix> = {
   "a1p10l1/a1p10q0": {
     why: "options replaced with same-kind wrong options",

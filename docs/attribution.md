@@ -8,7 +8,7 @@ One row per account in `public.signup_attribution`: `utm_source`, `utm_medium`, 
 
 ## How it gets there
 
-1. A visitor opens a link such as `https://learn.alphonsoecosystem.app/?utm_source=r_testflight&utm_medium=post&utm_campaign=beta1`.
+1. A visitor opens a link such as `https://learnwithalphonso.com/?utm_source=r_testflight&utm_medium=post&utm_campaign=beta1`.
 2. `AttributionBridge` (mounted in `src/routes/__root.tsx`) reads the tags from the browser address on every page load, so it works even on routes whose `validateSearch` drops unknown params (`/auth`).
 3. Consent decides where they wait (`src/lib/signup-attribution.ts`): cookie banner unanswered, in `sessionStorage` (gone when the tab closes); **Accept all**, in `localStorage`; **Essential only**, nothing is kept. First touch wins.
 4. After sign-in (and only with Accept all) the tags are sent once to `record_signup_attribution()` through the `recordSignupAttribution` server function, then cleared from the browser. The database function ignores any account older than 7 days, drops values that are not short plain tags, and never overwrites.
@@ -19,7 +19,7 @@ Coverage is therefore "learners who accepted all cookies and signed up from a ta
 
 `?utm_source=<r_languagelearning|r_testflight|r_alphaandbetausers|site|video>&utm_medium=post&utm_campaign=beta1`
 
-The marketing website's sign-up buttons use `utm_source=site&utm_medium=button&utm_campaign=beta1`. TestFlight links cannot carry tags; TestFlight shows installs per public-link group instead.
+The marketing website's sign-up buttons use `utm_source=site&utm_medium=button&utm_campaign=beta1`. (unverified: the marketing site is a separate repo, not read here; the web app's `AttributionBridge.test.tsx` does use these tags.) TestFlight links cannot carry tags; TestFlight shows installs per public-link group instead.
 
 ## Reading it
 

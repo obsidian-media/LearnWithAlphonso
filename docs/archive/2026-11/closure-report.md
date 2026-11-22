@@ -1,3 +1,5 @@
+> Historical record. Delivered in #471 (2026-11-07; the 17 owner decisions in #460 and #465). Current behaviour: docs/CONTENT-PLAYBOOK.md.
+
 # Full content review: closure report (2026-11-06)
 
 One-time review of every English, French and Spanish content item, run with `scripts/content-review/run.ts` (see `docs/CONTENT-PLAYBOOK.md`). This report is the evidence for closing the content backlog items listed at the end.

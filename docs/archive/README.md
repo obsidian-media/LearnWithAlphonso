@@ -104,6 +104,19 @@ Moved from docs/superpowers/ in the 2026-11-22 doc pass (ledger: [DOC-PASS-2026-
 - [2026-11-17-say-the-picture-design.md](2026-11/2026-11-17-say-the-picture-design.md) (delivered, #609 #613 #658 #660); now: ARCHITECTURE.md § Say the picture
 - [2026-11-18-interactive-branching-stories-design.md](2026-11/2026-11-18-interactive-branching-stories-design.md) (delivered, #622 #635 #659 #675); now: ARCHITECTURE.md § Branching stories
 
-## Root and other archived files
+## Root and other archived files (2026-11-22 doc pass, workstream A)
 
-(Workstream A adds its archived root files here.)
+Ledger: [DOC-PASS-2026-11-22-core.md](DOC-PASS-2026-11-22-core.md).
+
+### 2026-11
+
+- [gap-closure-plan-2026-10-19.md](2026-11/gap-closure-plan-2026-10-19.md): pre-launch hardening plan, delivered in #337 (2026-11-02); now ARCHITECTURE.md, AGENTS.md
+- [launch-audit-2026-10-19.md](2026-11/launch-audit-2026-10-19.md): launch audit, delivered in #337 (2026-11-02); now ARCHITECTURE.md, AGENTS.md
+- [LESSON_ASSETS-original-plan.md](2026-11/LESSON_ASSETS-original-plan.md): the original 2026-09 lesson-asset wish list, mostly never built; now LESSON_ASSETS.md
+- [content-audit-2026-11.md](2026-11/content-audit-2026-11.md): English bank point-in-time audit (#358 #363 #365 #366 #369); now docs/CONTENT-PLAYBOOK.md, docs/distractor-policy.md
+- [content-fixes-a1a2-phase1.md](2026-11/content-fixes-a1a2-phase1.md): the 837-row English A1/A2 rewrite table (#358 #363 #365 #378); now docs/distractor-policy.md
+- [closure-report.md](2026-11/closure-report.md): content closure report (#471, 2026-11-07); now docs/CONTENT-PLAYBOOK.md
+- [cost-plan.md](2026-11/cost-plan.md): content review cost plan and measured run (2026-11-06); now docs/CONTENT-PLAYBOOK.md
+- [owner-list.md](2026-11/owner-list.md): owner decision list, all settled (#460 #465); now docs/CONTENT-PLAYBOOK.md
+- [content-panel-2026-11-06-first-run.md](2026-11/content-panel-2026-11-06-first-run.md): pilot panel run, superseded by the full review (#471); now docs/CONTENT-PLAYBOOK.md
+- [native-practice-verification.md](2026-11/native-practice-verification.md): PR-time test report for the native Practice hub (#464); now ARCHITECTURE.md (Practice hub)

@@ -16,7 +16,7 @@ const ALSO_CORRECT: [prompt: string, answer: string, wrong: string][] = [
   ["They ___ at home.", "are", "study"],
   // Not covered, on purpose: lexical-for-lexical swaps ("We ___ English every day",
   // study vs speak) need word meaning, which this detector does not have. They are
-  // sized by hand in docs/content-audit-2026-11.md.
+  // sized by hand in docs/archive/2026-11/content-audit-2026-11.md.
   ["We ___ breakfast together.", "have", "had"],
   ["He ___ not eat meat.", "does", "did"],
   ["___ you see the film?", "Did", "Do"],

@@ -3,6 +3,13 @@
 Every environment variable the project reads, grouped by **where it is set**. Values live only in the
 dashboards (Vercel / Supabase / GitHub) and are never committed here.
 
+Production addresses: web `https://learnwithalphonso.com`, admin `https://admin.learnwithalphonso.com`, Supabase
+custom domain `https://api.learnwithalphonso.com` (so production `SUPABASE_URL` / `VITE_SUPABASE_URL` are that URL;
+`.env.example` says the same, and the browser session key is pinned so the URL change signed nobody out). The old
+`learn.` / `admin.alphonsoecosystem.app` hosts still answer 200. The marketing site stays on
+`discover.alphonsoecosystem.app`. (unverified: the actual Vercel env values were not read here, only the code and
+`.env.example`.)
+
 Surfaces:
 
 - **Vercel — web** project (`learnwithalphonso`): the learner site + its `/api/*` server routes.
@@ -47,8 +54,9 @@ first.
 | `AI_SPEND_BREAKER_DAILY_USD` (default 100), `AI_SPEND_BREAKER_ENABLED` | O | switches AI off and emails the owner when today's spend reaches it; reset in operations.md |
 | `AI_COST_ALERT_DAILY_TOTAL_USD`, `AI_COST_ALERT_DAILY_USER_USD`, `AI_COST_USD_PER_CAD`, `AI_COST_HEAVY_PRICE_CAD`, `AI_COST_HEAVY_SHARE` | O | cost dashboard/alerts |
 | `AI_MONTHLY_CAP_FREE_USD`, `AI_MONTHLY_CAP_PRO_USD`, `AI_MONTHLY_CAP_WARN_PERCENT`, `AI_MONTHLY_CAP_ENABLED` | O | per-learner monthly AI-cost cap (defaults in `ai-monthly-cap.ts`) |
-| `REPORT_NOTIFY_FROM`, `SUPPORT_NOTIFY_FROM` | O | email "from" addresses |
+| `REPORT_NOTIFY_FROM`, `SUPPORT_NOTIFY_FROM` | O | email "from" addresses, sent through Resend (`RESEND_API_KEY`). Code defaults are `Alphonso Reports <reports@hello.learnwithalphonso.com>` (`report-notify.server.ts`) and `Learn with Alphonso Support team <support@hello.learnwithalphonso.com>` (`support-notify.server.ts`); the cost-alert and ops-alert sweeps have **no** default for `SUPPORT_NOTIFY_FROM` and skip the email with a log line when it is unset |
 | `SENTRY_DSN`, `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY`, `VITE_TURNSTILE_SITE_KEY` | O | monitoring / analytics / captcha |
+| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | O (build) | source-map upload in `vite.config.ts`; all three or the plugin is off |
 
 ---
 
@@ -98,10 +106,13 @@ Numbers-dashboard tiles (`numbers-sources.server.ts`) — each tile shows "Not c
 | Name | Notes |
 |---|---|
 | `report_notify_secret` | **must equal Vercel `REPORT_NOTIFY_SECRET`** — a mismatch gives a silent 401 on `/api/internal/*` |
-| `push_trigger_service_key`, `send_push_secret` | DB push triggers |
+| `push_trigger_service_key` | DB push triggers |
+| `send_push_secret` | optional: the push trigger sends it as `X-Send-Push-Secret` only when Vault holds one (migration `20261105100600`). Production Vault holds only `push_trigger_service_key` and `report_notify_secret` (checked by SELECT on `vault.secrets`, names only) |
 
-DB triggers call `learn.alphonsoecosystem.app/api/internal/{report-notify,support-notify,maintenance}` and
-`functions/v1/send-push`.
+DB triggers (the `maintenance-sweep` pg_cron job, the report and support triggers) still call the old host
+`learn.alphonsoecosystem.app/api/internal/{report-notify,support-notify,maintenance}` (hard-coded in migrations such as
+`20261117100300_support_notifications.sql` and `20261127170000_admin_health_screen.sql`) and `functions/v1/send-push`.
+The old host still answers; it must keep serving until a migration repoints these URLs.
 
 ---
 
@@ -126,14 +137,14 @@ injections are the RevenueCat public keys and PostHog keys above.
 
 ### `VERCEL_TOKEN`: web goes live only after the database deploy
 
-Vercel builds every main commit and, by default, points the production domains (`learn.alphonsoecosystem.app`,
-`admin.alphonsoecosystem.app`) at the build as soon as it is ready, which can be before the CI job "Deploy Supabase
+Vercel builds every main commit and, by default, points the production domains (`learnwithalphonso.com`,
+`admin.learnwithalphonso.com`, as set in `scripts/promote-vercel.ts`) at the build as soon as it is ready, which can be before the CI job "Deploy Supabase
 migrations + Edge Functions" has applied the migrations the new code needs. The CI job **"Promote web to
 production"** (`promote-web` in `.github/workflows/ci.yml`, runs after that deploy; logic in
 `scripts/promote-vercel.ts`) points both domains at this commit's Vercel build once the database is ready. It never
 moves production back to an older commit, and skips a project Vercel did not build for that commit.
 
-**⚠ O** until set: without the secret the job prints a warning and passes, and Vercel keeps going live on its own.
+`VERCEL_TOKEN` is present in the repo's Actions secrets (`gh secret list`, name only). **⚠ O** if ever removed: without the secret the job prints a warning and passes, and Vercel keeps going live on its own.
 
 Owner steps, in this order:
 

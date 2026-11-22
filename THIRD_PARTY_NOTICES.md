@@ -23,9 +23,18 @@ imported by application code, and a guard test
 
 - `french-verbs-transitive` and `french-contractions` (also from RosaeNLG) are pulled in by `french-verbs`. Their data is under CC BY-SA 3.0. They are development-only, never imported by application code, and no extract is committed.
 
+## Native app libraries (shipped in the iOS and Android binaries)
+
+The web app's runtime packages are in `package.json` and are all permissively licensed; they are not repeated here. The native apps bundle these libraries (versions pinned in `ios/LearnWithAlphonso/project.yml` and `android/LearnWithAlphonso/gradle/libs.versions.toml`):
+
+- iOS (Swift Package Manager): RevenueCat `purchases-ios` (MIT; licence text bundled as `Sources/Licenses/RevenueCat-LICENSE.txt` and shown in Settings, Acknowledgements), Sentry `sentry-cocoa` (MIT) and PostHog `posthog-ios` (MIT). The Kit (`ios/LearnWithAlphonsoKit/Package.swift`) has no third-party dependency.
+- Android (Gradle): AndroidX and Jetpack Compose, Room, Media3, Glance, WorkManager, Kotlin and kotlinx, Ktor, OkHttp (all Apache-2.0), Firebase Messaging (Apache-2.0 SDK under Google's Firebase terms), RevenueCat `purchases` (MIT), Sentry `sentry-android` (MIT) and PostHog `posthog-android` (MIT). Test-only libraries (JUnit, Ktor mock, Room testing, Compose test) are not shipped.
+
+(unverified: the licence of each native library is taken from its upstream project, not read from the shipped artifacts. The iOS Acknowledgements list, `ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/Acknowledgements.swift`, credits RevenueCat, the five fonts and Kenney only; Android has no equivalent screen.)
+
 ## Fluent Emoji 3D icons (shipped)
 
-The 3D icons (`public/icons3d/`, the iOS and Android icon sets; 30 on the web) are a curated subset of Microsoft's Fluent Emoji 3D set, MIT licensed. The licence text is kept at `assets/fluent-3d/LICENSE` and the source PNGs in `assets/fluent-3d/source/`. Added with the visual refresh (#341).
+The 3D icons (`public/icons3d/`, `android/LearnWithAlphonso/app/src/main/assets/icons3d/` and the iOS asset catalog `Sources/Assets.xcassets/Icon3D`; 30 on the web) are a curated subset of Microsoft's Fluent Emoji 3D set, MIT licensed. The licence text is kept at `assets/fluent-3d/LICENSE` and the source PNGs in `assets/fluent-3d/source/`. Added with the visual refresh (#341).
 
 ## Bricolage Grotesque and Figtree (shipped)
 

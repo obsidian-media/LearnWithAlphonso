@@ -1,3 +1,5 @@
+> Status (verified 2026-11-22 against d8350542): answers match the code (Sentry, PostHog opt-in, FCM only, Turnstile, support retention); the Play form itself is not filled in yet (no Play app record), see `docs/OPEN-ITEMS.md` item 3.
+
 # Google Play Data safety answers
 
 Derived from the App Store declaration in `ios/LearnWithAlphonso/PrivacyInfo.xcprivacy`
@@ -14,7 +16,7 @@ chooses it, anonymous, no replay; see `Analytics.kt`). No advertising SDK; Fireb
 | --- | --- | --- |
 | Does your app collect or share any of the required user data types? | Yes | Everything below |
 | Is all of the user data collected by your app encrypted in transit? | Yes | HTTPS to Supabase, the API and Deepgram; no cleartext traffic |
-| Do you provide a way for users to request that their data is deleted? | Yes | In-app account deletion (Settings, Delete My Account) and https://learn.alphonsoecosystem.app/profile |
+| Do you provide a way for users to request that their data is deleted? | Yes | In-app account deletion (Settings, Delete My Account) and https://learnwithalphonso.com/profile |
 | Does your app share data with third parties? | Yes, for the rows marked Shared | Audio to Deepgram and the voice service for transcription; nothing sold, nothing for ads |
 
 ## Data types

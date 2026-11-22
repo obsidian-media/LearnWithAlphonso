@@ -1,3 +1,5 @@
+> Status (verified 2026-11-22 against d8350542): UI strings re-checked against the app source; the whole list is still unticked, no device run is recorded. Open: every row below (owner device checks, `docs/OPEN-ITEMS.md` items 28, 31 to 33, 42a, 42b).
+
 # Device checklist before the first Play upload
 
 CI proves the app compiles, its logic is right, and it launches on an
@@ -31,7 +33,7 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] An episode plays; lock the screen; playback continues and the lock screen shows play, pause and the title.
 - [ ] Unplug headphones (or disconnect Bluetooth): playback pauses.
 - [ ] Start a hold-to-talk recording while an episode plays: the episode pauses and does not resume by itself.
-- [ ] Download an episode, airplane mode on, kill and reopen the app: the Library tab shows "Offline, showing your downloads" and the episode plays.
+- [ ] Download an episode, airplane mode on, kill and reopen the app: the Library tab shows "Offline. Showing your downloads" and the episode plays.
 - [ ] Delete a downloaded episode while it plays: playback stops first, no crash.
 - [ ] Close the app mid-episode, reopen: the episode row shows "Resume" and resumes near the same position.
 - [ ] Play an episode, close the player, tap the same row again without leaving the folder: it shows "Resume" and starts from where you stopped, not from the old position.
@@ -63,10 +65,10 @@ Tick each line in a copy of this file and attach it to the release PR.
 
 ## Widget (Plan 4)
 
-- [ ] Long-press the home screen, Widgets, add Learn with Alphonso Streak: it shows the streak count and "Not studied yet" or "Studied today".
+- [ ] Long-press the home screen, Widgets, add the Streak widget (listed under Learn with Alphonso): it shows the streak count and "Not studied yet" or "Studied today".
 - [ ] Complete a lesson: the widget updates within a few seconds without reopening the launcher.
 
-## Purchases (Plan 3, needs owner items 5 to 7)
+## Purchases (Plan 3, needs owner items 5 to 7, still open: no `REVENUECAT_ANDROID_PUBLIC_KEY` yet, so this build shows no price)
 
 - [ ] Hector tab on a non-Pro account shows a real price from the Play product.
 - [ ] Subscribe with a license-tester account: the Play purchase sheet completes and the Hector conversation opens.
@@ -123,7 +125,7 @@ Use a QA account. Airplane mode for the offline rows.
 
 ## Links
 
-- [ ] Tap an invite link `https://learn.alphonsoecosystem.app/invite/<code>` from a message: it opens the app on the invite screen (needs `assetlinks.json`, owner item 9).
+- [ ] Tap an invite link `https://learnwithalphonso.com/invite/<code>` (the old `learn.alphonsoecosystem.app` host also opens the app) from a message: it opens the app on the invite screen (needs `assetlinks.json`, owner item 9, live on both hosts).
 - [ ] Settings, Export my data saves a file through the system picker.
 - [ ] Settings, Delete my account with the typed DELETE removes the account and returns to sign-in.
 

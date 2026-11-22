@@ -1,3 +1,5 @@
+> Historical record. Delivered in #471 (2026-11-07; the paid run ended 2026-11-06). Current behaviour: docs/CONTENT-PLAYBOOK.md.
+
 # Full content review: cost plan (2026-11-06)
 
 Produced by `bun scripts/content-review/run.ts plan`, which builds every phase's requests with the

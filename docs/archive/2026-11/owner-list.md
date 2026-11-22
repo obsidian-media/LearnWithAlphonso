@@ -1,3 +1,5 @@
+> Historical record. Delivered in #460 and #465 (2026-11-07). Current behaviour: docs/CONTENT-PLAYBOOK.md.
+
 # Content review: owner list (2026-11-06)
 
 Items the review could not settle on its own. Nothing here is applied: each item ships as it is today until you decide.

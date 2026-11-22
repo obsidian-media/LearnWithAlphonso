@@ -1,3 +1,5 @@
+> Status (verified 2026-11-22 against d8350542): re-read against `android-release.yml` (`screenshots` job, `android-screenshots` artifact) and `RootScreen.kt` tab names; no change needed.
+
 # Play screenshot shot list
 
 Captured by `ScreenshotTest` (androidTest) on the CI emulator through the

@@ -1,3 +1,5 @@
+> Historical record. Delivered in #358, #363, #365 (2026-11-04) and #378 (2026-11-05). Current behaviour: docs/distractor-policy.md (the data lives in src/data/question-fixes-a1a2.ts).
+
 # English A1/A2 question rewrites, phase 1
 
 837 questions. Each keeps its id, its answer text and (for multiple choice) its answer

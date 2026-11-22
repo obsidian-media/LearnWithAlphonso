@@ -1,3 +1,5 @@
+> Historical record. Delivered in #358, #363, #365, #366, #369 (2026-11-04). Current behaviour: docs/CONTENT-PLAYBOOK.md and docs/distractor-policy.md.
+
 # English lesson content audit, 2026-11
 
 Measured on the English bank at main e4660169: 609 lessons, 3,096 questions,

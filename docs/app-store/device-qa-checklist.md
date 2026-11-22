@@ -1,6 +1,6 @@
 # Real-iPhone QA checklist before submitting
 
-Run on a physical iPhone with the release candidate from TestFlight (build 71 or later). Use a fresh test account unless
+Run on a physical iPhone with the release candidate from TestFlight (build 72 or later). Use a fresh test account unless
 a step says otherwise. Sandbox purchases need a Sandbox Apple Account. Tick each box and note the build number.
 
 ## Account
@@ -43,7 +43,7 @@ a step says otherwise. Sandbox purchases need a Sandbox Apple Account. Tick each
 ## Stories
 
 - [ ] Graded stories: library, reader, check.
-- [ ] Branching stories (once #635 has landed): pick a branch, finish, see the result screen.
+- [ ] Branching stories (#635, merged 2026-11-19): pick a branch, finish, see the result screen.
 
 ## Notifications, widget, privacy, deletion
 
