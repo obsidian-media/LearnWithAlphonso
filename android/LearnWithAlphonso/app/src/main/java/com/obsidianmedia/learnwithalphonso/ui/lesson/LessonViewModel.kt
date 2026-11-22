@@ -40,6 +40,7 @@ import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectCue
 import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectCues
 import com.obsidianmedia.learnwithalphonso.core.sound.SoundEffectRequest
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -78,6 +79,10 @@ data class LessonUiState(
     val isSubmitting: Boolean = false,
     /** Non-null while the hearts gate blocks this lesson: the out-of-hearts screen replaces the lesson. */
     val outOfHearts: OutOfHeartsModel? = null,
+    /** True when the server refused this lesson as not unlocked yet: "Finish the earlier lessons first" replaces it. */
+    val lessonLocked: Boolean = false,
+    /** Start was tapped while the session call is out: the button shows the wait (at most [LessonViewModel.SESSION_WAIT_MS]). */
+    val startPending: Boolean = false,
     val buyingHeart: Boolean = false,
     val buyMessage: String? = null,
     /** The learner's earlier best on this lesson, read when it opens; unknown (offline) promises no XP per answer. */
@@ -121,7 +126,14 @@ class LessonViewModel(
     private val ownerUserId: () -> String? = { null },
     /** Alphonso Pro: unlimited hearts, so no heart is spent and the offline gate never blocks. */
     private val isPro: () -> Boolean = { false },
+    /** How long a tapped Start waits for the session call (which has no deadline) before playing without it. */
+    private val sessionWaitMs: Long = SESSION_WAIT_MS,
 ) : ViewModel() {
+    companion object {
+        /** How long a tapped Start waits for the start-lesson-session call before the lesson plays without it. */
+        const val SESSION_WAIT_MS = 8_000L
+    }
+
     private val _state = MutableStateFlow(LessonUiState(lesson))
     val state: StateFlow<LessonUiState> = _state.asStateFlow()
     private var attemptSeed = UUID.randomUUID().toString()
@@ -170,11 +182,18 @@ class LessonViewModel(
     /**
      * The lesson session starts when the lesson opens, which is where the server's hearts gate applies
      * (start-lesson-session's 409). Offline, the cached hearts decide with the same rule (HeartsEconomy.gate).
-     * Any other failure is not fatal: finish() starts a session itself when none is held.
+     * The same call refuses a lesson the learner has not unlocked (409 lesson-locked): that is told now, before play,
+     * since its finish could never be saved. Any other failure is not fatal: finish() starts a session itself when none
+     * is held.
      */
     fun openSession(): Job = viewModelScope.launch { openSessionNow() }
 
     private var opened = false
+
+    /** The session call is out. Start waits for it ([beginWhenOpen]), so the server's answer (locked, out of hearts)
+     * always comes before any of the lesson is played. */
+    private var sessionOpening = false
+    private var beginWhenOpen = false
 
     /** Called by the screen when it first shows; the view model survives rotation, so this opens one session. */
     fun onScreenShown() {
@@ -185,12 +204,15 @@ class LessonViewModel(
 
     private suspend fun openSessionNow() {
         sessionToken = null
+        beginWhenOpen = false
+        _state.update { it.copy(lessonLocked = false, startPending = false) }
         if (!isConnected()) {
             val cached = syncStore.lastKnownProgress() ?: return
             val decision = HeartsEconomy.gate(cached.hearts, cached.heartsRefillAt?.toLong(), now(), unlimited = isPro())
             _state.update { it.copy(outOfHearts = (decision as? HeartsEconomy.GateDecision.OutOfHearts)?.let { d -> OutOfHeartsModel(d.refillAt) }) }
             return
         }
+        sessionOpening = true
         try {
             sessionToken = client.startLessonSession(_state.value.lesson.id, course.code)
             Analytics.track(
@@ -200,9 +222,20 @@ class LessonViewModel(
             _state.update { it.copy(outOfHearts = null, buyMessage = null) }
         } catch (e: ProgressSyncError.OutOfHearts) {
             _state.update { it.copy(outOfHearts = OutOfHeartsModel(e.refillAt)) }
+        } catch (e: ProgressSyncError.LessonLocked) {
+            _state.update { it.copy(lessonLocked = true, outOfHearts = null) }
         } catch (e: Exception) {
             // Best effort: finish() starts a session when none is held.
         }
+        sessionOpening = false
+        // A Start tapped while the call was out goes ahead now, unless the server refused the lesson.
+        if (beginWhenOpen) {
+            beginWhenOpen = false
+            _state.update { it.copy(startPending = false) }
+            val s = _state.value
+            if (!s.lessonLocked && s.outOfHearts == null && s.phase == LessonPhase.Overview) begin()
+        }
+        if (_state.value.lessonLocked) return
         // The earlier best decides which right answers pay on a replay. Unreadable means unknown: no XP is promised.
         val openedFor = _state.value.lesson.id
         val best = runCatching { client.fetchLessonBest(openedFor, course.code) }
@@ -254,6 +287,22 @@ class LessonViewModel(
     }
 
     fun begin() {
+        if (sessionOpening) {
+            if (beginWhenOpen) return
+            beginWhenOpen = true
+            _state.update { it.copy(startPending = true) }
+            // No deadline on the call itself: past the wait the lesson plays best-effort (finish() starts a session).
+            viewModelScope.launch {
+                delay(sessionWaitMs)
+                if (!beginWhenOpen || !sessionOpening) return@launch
+                beginWhenOpen = false
+                sessionOpening = false
+                _state.update { it.copy(startPending = false) }
+                val s = _state.value
+                if (!s.lessonLocked && s.outOfHearts == null && s.phase == LessonPhase.Overview) begin()
+            }
+            return
+        }
         timer = ActiveTimer(now())
         _state.update { it.copy(phase = if (vocab.isEmpty()) LessonPhase.Quiz else LessonPhase.Vocab) }
     }

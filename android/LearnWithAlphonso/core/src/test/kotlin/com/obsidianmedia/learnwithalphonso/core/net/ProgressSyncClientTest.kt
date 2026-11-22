@@ -67,6 +67,17 @@ class ProgressSyncClientTest {
     }
 
     @Test
+    fun `startLessonSession for a lesson not unlocked yet throws LessonLocked, which is never saved or queued`() = runTest {
+        val locked = FakeSupabase { json("""{"error":"lesson-locked"}""", HttpStatusCode.Conflict) }
+        val e = runCatching { client(locked).startLessonSession("u9l1", "en") }.exceptionOrNull()
+        assertTrue(e is ProgressSyncError.LessonLocked, "got $e")
+        val classified = com.obsidianmedia.learnwithalphonso.core.sync.LessonCompletionError.classify(e!!)
+        assertEquals(com.obsidianmedia.learnwithalphonso.core.sync.LessonCompletionError.Rejected("lesson-locked"), classified)
+        assertEquals("This lesson opens once the earlier lessons are done, so this attempt can't be saved.", classified.userMessage)
+        assertEquals(com.obsidianmedia.learnwithalphonso.core.sync.LessonCompletionError.FinishDisposition.SHOW_FAILURE, classified.finishDisposition)
+    }
+
+    @Test
     fun `buyHeartWithXp sends the course and maps every outcome`() = runTest {
         val ok = FakeSupabase { json("""[{"ok":true,"reason":null,"hearts":1,"xp":150}]""") }
         assertEquals(BuyHeartResult.Ok(1, 150), client(ok).buyHeartWithXp("fr"))

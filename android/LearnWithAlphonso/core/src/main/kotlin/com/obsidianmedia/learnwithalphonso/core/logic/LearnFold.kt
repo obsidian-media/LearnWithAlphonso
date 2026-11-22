@@ -59,6 +59,18 @@ object LearnFold {
         return if (row.first == row.last) row.first else "Units ${num(row.first)}-${num(row.last)}"
     }
 
+    /** CEFR bands in learning order (src/lib/lesson-unlock.ts LEVEL_ORDER). A level not listed sorts after them all. */
+    val LEVEL_ORDER = listOf("A1", "A2", "B1", "B2", "C1")
+
+    fun levelRank(level: String): Int = LEVEL_ORDER.indexOf(level).let { if (it < 0) LEVEL_ORDER.size else it }
+
+    /**
+     * [items] in LEARNING order: band by band (A1 first), curriculum order within a band (web lessonsInLearningOrder).
+     * The curriculum array interleaves bands and the server opens lessons only in this order, so the course's
+     * "Continue" reads it this way, never in raw array order.
+     */
+    fun <T> inLearningOrder(items: List<T>, level: (T) -> String): List<T> = items.sortedBy { levelRank(level(it)) }
+
     /** The learner's place in the whole course: first lesson not done, with the unit's 1-based place of `count`. */
     fun currentUnitOf(units: List<FoldUnit>, completed: Set<String>): CurrentUnit? {
         units.forEachIndexed { i, u ->

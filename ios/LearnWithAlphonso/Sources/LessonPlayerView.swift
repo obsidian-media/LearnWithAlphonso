@@ -87,6 +87,14 @@ struct LessonPlayerView: View {
     @State private var sessionToken: String?
     @State private var outOfHearts: OutOfHeartsModel?
     @State private var heartsGateState: HeartsGateState = .open
+    /// The server refused this lesson as not unlocked yet: "Finish the earlier lessons first" replaces it.
+    @State private var lessonLocked = false
+    /// The session call is out. Start waits for it (`startWhenOpen`), so the server's answer (locked, out of hearts)
+    /// always comes before any of the lesson is played.
+    @State private var sessionOpening = false
+    @State private var startWhenOpen = false
+    /// How long a tapped Start waits for the session call before playing without it.
+    private static let sessionWaitNanoseconds: UInt64 = 8_000_000_000
     @State private var showingReviewInstead = false
     @State private var showingHector = false
     @State private var showingHectorPaywall = false
@@ -254,9 +262,24 @@ struct LessonPlayerView: View {
     }
 
     /// The stage covers the whole screen (its own HUD closes it); a plain result screen keeps the navigation bar.
-    private var onStage: Bool { result != nil || (queuedOffline == nil && completionFailure == nil && total > 0) }
+    private var onStage: Bool {
+        !lessonLocked && (result != nil || (queuedOffline == nil && completionFailure == nil && total > 0))
+    }
 
     private func startLesson() {
+        if sessionOpening {
+            guard !startWhenOpen else { return }
+            startWhenOpen = true
+            // The session call has no deadline of its own, so a dead connection reported as online would leave Start
+            // doing nothing for the OS timeout. Past this wait the lesson plays best-effort (finish() mints a session).
+            let waitingFor = lesson.id
+            Task {
+                try? await Task.sleep(nanoseconds: Self.sessionWaitNanoseconds)
+                guard startWhenOpen, sessionOpening, lesson.id == waitingFor else { return }
+                sessionOpened()
+            }
+            return
+        }
         lessonTimer = ActiveTimer(now: Date().timeIntervalSince1970)
         phase = vocab.isEmpty ? .quiz : .vocab
         Analytics.track(.lessonStarted, ["lesson_id": lesson.id, "level": "\(unit?.level ?? "")", "course": course.wireCode])
@@ -348,7 +371,9 @@ struct LessonPlayerView: View {
 
     @ViewBuilder
     private func stage(topInset: CGFloat) -> some View {
-        if let result {
+        if lessonLocked {
+            LessonLockedView(onBack: { dismiss() })
+        } else if let result {
             completeScreen(result: result, topInset: topInset)
         } else if let queuedOffline {
             OfflineFinishView(
@@ -371,7 +396,7 @@ struct LessonPlayerView: View {
             case .overview:
                 LessonStartView(
                     roomID: roomID, unitLine: unitLine, title: lesson.title, meta: startMeta, steps: startSteps,
-                    hearts: hudHearts, topInset: topInset, onClose: { dismiss() }, onStart: startLesson)
+                    hearts: hudHearts, topInset: topInset, waiting: startWhenOpen, onClose: { dismiss() }, onStart: startLesson)
             case .vocab:
                 VStack(spacing: 0) {
                     LessonHUD(progress: 0, hearts: hudHearts, onLight: true, onClose: { dismiss() })
@@ -734,9 +759,12 @@ struct LessonPlayerView: View {
 
     /// The lesson session starts when the lesson opens, which is where the server's hearts gate applies
     /// (start-lesson-session's 409). Offline, the cached hearts decide with the same rule (HeartsEconomy.gate).
-    /// A failure here is not fatal: finish() mints a token if none is held.
+    /// The same call refuses a lesson the learner has not unlocked (409 lesson-locked): that is told now, before play,
+    /// since its finish could never be saved. Any other failure is not fatal: finish() mints a token if none is held.
     private func openLessonSession() async {
         sessionToken = nil
+        lessonLocked = false
+        startWhenOpen = false
         lessonOwnerUserID = session.userID
         guard networkMonitor.isConnected else {
             if let cached = syncQueueStore.lastKnownProgress(),
@@ -749,15 +777,26 @@ struct LessonPlayerView: View {
             }
             return
         }
-        guard let accessToken = await session.freshAccessToken() else { return }
+        sessionOpening = true
+        guard let accessToken = await session.freshAccessToken() else {
+            sessionOpened()
+            return
+        }
         let client = ProgressSyncClient(supabaseURL: AppConfig.supabaseURL, anonKey: AppConfig.supabasePublishableKey, accessToken: accessToken)
         do {
             sessionToken = try await client.startLessonSession(lessonID: lesson.id, course: course.wireCode)
         } catch let ProgressSyncError.outOfHearts(refillAt) {
             block(refillAt: refillAt)
+        } catch ProgressSyncError.lessonLocked {
+            // Open first, so closing a hearts sheet still up (a reopen after a purchase) does not leave the lesson.
+            heartsGateState = .open
+            outOfHearts = nil
+            lessonLocked = true
         } catch {
             // Best-effort: finish() starts a session itself when none is held.
         }
+        sessionOpened()
+        if lessonLocked { return }
         // The earlier best decides which right answers pay on a replay. Unreadable means unknown: no XP is promised.
         let openedFor = lesson.id
         do {
@@ -767,6 +806,15 @@ struct LessonPlayerView: View {
         } catch {
             previousBest = .unknown
         }
+    }
+
+    /// The session call is answered (or could not be made): a Start tapped meanwhile goes ahead now, unless the server
+    /// refused the lesson.
+    private func sessionOpened() {
+        sessionOpening = false
+        guard startWhenOpen else { return }
+        startWhenOpen = false
+        if !lessonLocked, outOfHearts == nil, phase == .overview { startLesson() }
     }
 
     private func block(refillAt: Date?) {

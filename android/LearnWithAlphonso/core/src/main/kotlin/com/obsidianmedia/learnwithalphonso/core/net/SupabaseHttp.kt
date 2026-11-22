@@ -27,6 +27,9 @@ sealed class ProgressSyncError(message: String) : Exception(message) {
 
     /** start-lesson-session's 409 at 0 hearts. `refillAt` (epoch ms) is null when the server has no refill timer. */
     class OutOfHearts(val refillAt: Long?) : ProgressSyncError("Out of hearts")
+
+    /** start-lesson-session's 409 for a lesson this learner has not unlocked yet (the earlier lessons come first). */
+    class LessonLocked : ProgressSyncError("Lesson locked")
 }
 
 /**

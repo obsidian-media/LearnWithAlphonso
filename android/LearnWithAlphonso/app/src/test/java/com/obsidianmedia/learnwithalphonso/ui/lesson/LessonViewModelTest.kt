@@ -17,6 +17,7 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -38,10 +39,10 @@ class LessonViewModelTest {
     private val lesson = testContent.findLesson("u1l1", Course.ENGLISH)!!.second
     private var tier: String? = "bronze"
 
-    private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true, owner: String? = "u1", pro: Boolean = false) = LessonViewModel(
+    private fun vm(server: FakeServer, store: MemorySyncStore = MemorySyncStore(), connected: Boolean = true, owner: String? = "u1", pro: Boolean = false, sessionWaitMs: Long = 8_000) = LessonViewModel(
         lesson, Course.ENGLISH, testContent, server.progressClient, server.translation, store,
         isConnected = { connected }, lastKnownTier = { tier }, rememberTier = { tier = it }, now = { 42L }, hasAiConsent = { true },
-        ownerUserId = { owner }, isPro = { pro },
+        ownerUserId = { owner }, isPro = { pro }, sessionWaitMs = sessionWaitMs,
     )
 
     private suspend fun playThrough(v: LessonViewModel) {
@@ -292,6 +293,99 @@ class LessonViewModelTest {
         assertEquals(1_792_182_600_000L, v.state.value.outOfHearts!!.refillAt)
         v.onScreenShown()
         assertEquals("the screen opens one session", 1, server.seen.count { it.path.endsWith("start-lesson-session") })
+    }
+
+    @Test
+    fun `a lesson the server says is not unlocked yet is refused before play, never played and then lost`() = runBlocking {
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) json("""{"error":"lesson-locked"}""", HttpStatusCode.Conflict) else json("[]")
+        }
+        val store = MemorySyncStore()
+        val v = vm(server, store)
+        v.onScreenShown()
+        awaitTrue("locked") { v.state.value.lessonLocked }
+        assertEquals("still on the start screen: nothing was played", LessonPhase.Overview, v.state.value.phase)
+        assertNull("not a hearts block", v.state.value.outOfHearts)
+        assertTrue("nothing queued", store.completions.isEmpty())
+        assertEquals(1, server.seen.count { it.path.endsWith("start-lesson-session") })
+    }
+
+    @Test
+    fun `Start tapped while the session call is out waits for it, and a locked answer never starts the lesson`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) { gate.await(); json("""{"error":"lesson-locked"}""", HttpStatusCode.Conflict) } else json("[]")
+        }
+        val v = vm(server)
+        kotlin.concurrent.thread(isDaemon = true) { Thread.sleep(5_000); gate.complete(Unit) }
+        v.onScreenShown()
+        awaitTrue("call out") { server.seen.any { it.path.endsWith("start-lesson-session") } }
+        v.begin()
+        assertEquals("Start waits for the server's answer", LessonPhase.Overview, v.state.value.phase)
+        gate.complete(Unit)
+        awaitTrue("locked") { v.state.value.lessonLocked }
+        assertEquals("never started", LessonPhase.Overview, v.state.value.phase)
+    }
+
+    @Test
+    fun `Start tapped while the session call is out goes ahead once the lesson is opened`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) { gate.await(); json("""{"token":"tok"}""") } else json("[]")
+        }
+        val v = vm(server)
+        kotlin.concurrent.thread(isDaemon = true) { Thread.sleep(5_000); gate.complete(Unit) }
+        v.onScreenShown()
+        awaitTrue("call out") { server.seen.any { it.path.endsWith("start-lesson-session") } }
+        v.begin()
+        assertEquals(LessonPhase.Overview, v.state.value.phase)
+        gate.complete(Unit)
+        awaitTrue("started") { v.state.value.phase != LessonPhase.Overview }
+        assertTrue(!v.state.value.lessonLocked)
+    }
+
+    @Test
+    fun `a held Start proceeds after the wait when the session call is a 5xx, and it is not the locked screen`() = runBlocking {
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) json("""{"error":"boom"}""", HttpStatusCode.InternalServerError) else json("[]")
+        }
+        val v = vm(server, sessionWaitMs = 300)
+        v.onScreenShown()
+        v.begin()
+        awaitTrue("started") { v.state.value.phase != LessonPhase.Overview }
+        assertTrue("best effort, not locked", !v.state.value.lessonLocked)
+        assertTrue("no longer held", !v.state.value.startPending)
+    }
+
+    @Test
+    fun `a held Start proceeds after the wait when the session call never answers`() = runBlocking {
+        val gate = CompletableDeferred<Unit>()
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) { gate.await(); json("""{"token":"tok"}""") } else json("[]")
+        }
+        val v = vm(server, sessionWaitMs = 300)
+        v.onScreenShown()
+        awaitTrue("call out") { server.seen.any { it.path.endsWith("start-lesson-session") } }
+        v.begin()
+        assertTrue("shows the wait", v.state.value.startPending)
+        assertEquals(LessonPhase.Overview, v.state.value.phase)
+        awaitTrue("started") { v.state.value.phase != LessonPhase.Overview }
+        assertTrue(!v.state.value.lessonLocked)
+        gate.complete(Unit); Unit
+    }
+
+    @Test
+    fun `reopening the session clears an earlier locked answer`() = runBlocking {
+        var locked = true
+        val server = FakeServer { req ->
+            if (req.path.endsWith("start-lesson-session")) { if (locked) json("""{"error":"lesson-locked"}""", HttpStatusCode.Conflict) else json("""{"token":"tok"}""") } else json("[]")
+        }
+        val v = vm(server)
+        v.onScreenShown()
+        awaitTrue("locked") { v.state.value.lessonLocked }
+        locked = false
+        v.openSession().join()
+        assertTrue("unlocked on re-entry", !v.state.value.lessonLocked)
     }
 
     @Test
@@ -556,6 +650,8 @@ class LessonViewModelTest {
         val (got, scope) = recordEffects(v)
         playThrough(v)
         awaitTrue("finished") { v.state.value.phase is LessonPhase.Finished }
+        // The phase is set just before the finish sound is emitted (from the engine's thread): wait for both.
+        awaitTrue("finish sound") { got.any { it.key?.startsWith("finish-") == true } }
         val effects = got.effects()
         assertEquals(lesson.questions.size, effects.count { it == listOf(SoundEffect.TAP) })
         assertEquals(listOf(listOf(SoundEffect.LESSON_COMPLETE, SoundEffect.XP)), effects.filter { SoundEffect.LESSON_COMPLETE in it })
