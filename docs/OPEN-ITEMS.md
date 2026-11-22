@@ -12,7 +12,7 @@ A public, sanitised list of what is not finished yet in Learn with Alphonso. The
 
 **Current facts.** Web https://learnwithalphonso.com, admin https://admin.learnwithalphonso.com, Supabase custom domain https://api.learnwithalphonso.com; the old alphonsoecosystem.app hosts still work (redirects are item 72). iOS build 72 is on TestFlight, not submitted. 13,429 questions in 1,830 lessons; 47 stories, all published. Themes: Royal light, Royal night, Meadow.
 
-Items keep their old numbers; gaps are closed items (see E and Recently closed). Counts: owner only 17, verify via browser (coordinator) 5, decision needed 4, device and QA checks 18, agent can do 13.
+Items keep their old numbers; gaps are closed items (see E and Recently closed). Counts: owner only 17, verify via browser (coordinator) 5, decision needed 4, device and QA checks 18, agent can do 16.
 
 ### A. STILL OPEN - owner only (in priority order)
 
@@ -84,6 +84,9 @@ Items keep their old numbers; gaps are closed items (see E and Recently closed).
 59. **Vocab image quality:** draft PR #620 (B1-C1 imageability and licensed photos) is still open as a draft; A1/A2 photos merged in #618.
 63. **Dev server does not boot in the Windows sandbox.** Unverified since 2026-11 (4).
 66. **Per-user cost budget:** the cap shipped (#605); revisit its limits after about a month of real cost data in the AI cost log (#588).
+85. **Referral links open the browser, not the app (product decision needed).** A tapped `https://learnwithalphonso.com/?ref=<code>` link (the shareable link built by the referral code on web, iOS and Android) opens the browser because app links cover only `/invite/*` (android AndroidManifest.xml:52-54, iOS `applinks:` entitlements; web capture of `?ref=` is src/lib/referral.ts). Fix options: share a `/r/<code>` path that the app links cover, or add the root path to the app links (broader, would also catch every link to the home page). Needs a design decision first.
+86. **CI-guard audit findings still open (from 2026-09-26):** (a) CI never exercises real code signing (the iOS CI archive builds with `CODE_SIGNING_ALLOWED=NO`, .github/workflows/ci.yml:942), so a provisioning-profile mismatch is only caught by a release run; (b) there is no cross-runtime parity run for grading logic: CI runs the TS (vitest), Deno (ci.yml:487-503) and Swift suites separately, none feeds one shared fixture set through all three. Findings as recorded by the audit; the CI facts above were re-read on 2026-11-22.
+87. **Native full-screen "account suspended" view is unbuilt.** Verified in code: iOS (Session.swift:641-651) and Android (SessionManager.kt:150, 297) only show the suspension message (AccountSuspension) as a notice or error on the sign-in screen; there is no dedicated full-screen view on either platform. The web and staff ban screen is a separate item (37).
 
 ### E. DONE (recent, verified; recorded here so they are not re-opened)
 
@@ -102,7 +105,7 @@ Items keep their old numbers; gaps are closed items (see E and Recently closed).
 
 - Old item 18 (custom domain for Supabase): done, api.learnwithalphonso.com (#702).
 - Old item 20a (Limrun top-up): iOS QA ran on Limrun on 2026-11-21; the remaining minutes are item 82.
-- Old item 29 (someday feature list): shipped, see E. "Honest billing kit" was not built and is not planned.
+- Old item 29 (someday features, "not started"): referral (#610, #615), pronunciation feedback as Say it right (#616, #621, #661, #664), graded stories (#617, #623, #624, #625) and Say the picture (#609, #613, #658) all shipped; the usage meter (#607, #611), gift a streak freeze (#608, #614) and call recap (#594, #595) too. The "honest billing kit" is not built and not planned. Section B was re-checked: its remaining items (27, 29a, 76, 77) are current.
 - Old item 68 (leaked-password protection): on.
 - Old item 71 (delete a throwaway AI-safety test account): folded into item 13.
 - Old item 67 (launch readiness in flight): done, see E.
