@@ -77,7 +77,7 @@ function StatusBanner({ banner, services }: { banner: Banner; services: ServiceR
   const tone =
     banner.kind === "degraded"
       ? "border-ds-action bg-ds-action-tint text-ds-ink"
-      : banner.kind === "ok"
+      : banner.kind === "ok" && banner.configuredOnly === 0
         ? "border-ds-line bg-ds-right-tint text-ds-ink"
         : "border-ds-line bg-ds-sunk text-ds-ink";
   const configuredOnly = banner.kind === "degraded" ? 0 : banner.configuredOnly;
@@ -192,7 +192,7 @@ function UptimeCard({ service, uptime }: { service: ServiceRow; uptime: Uptime |
     <ConsoleCard>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="text-xs font-bold uppercase tracking-wider text-ds-ink-soft">
-          {service.name} · last 90 days
+          {service.key === "auth" ? "Auth data (database read)" : service.name} · last 90 days
         </span>
         <span className="font-display text-xl font-bold text-ds-ink">
           <Figure
@@ -396,6 +396,9 @@ export function HealthScreen({ api }: { api: HealthApi }) {
 
           <Slab title="Events" />
           <Events data={data} />
+          <p data-footnote="website" className="mt-8 text-xs text-ds-ink-faint">
+            The learner website&apos;s health is tracked by the deploy pipeline, not probed here.
+          </p>
         </>
       ) : null}
     </main>

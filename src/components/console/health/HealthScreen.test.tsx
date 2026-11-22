@@ -128,6 +128,23 @@ describe("unknown means grey, and the banner says nothing false", () => {
     expect(banner().textContent).toContain("nothing tests them live");
   });
 
+  it("the banner is green only when nothing is merely configured; with a configured row it is neutral", async () => {
+    await show(data({ services: [svc("database", "healthy", { latencyMs: 3 })] }));
+    expect(banner().className).toContain("bg-ds-right-tint");
+    cleanup();
+    await show(
+      data({
+        services: [svc("database", "healthy", { latencyMs: 3 }), svc("ai", "configured")],
+      }),
+    );
+    expect(banner().className).not.toContain("bg-ds-right-tint");
+  });
+
+  it("the auth history card says it measures the data read, not the sign-in service", async () => {
+    await show(data());
+    expect(document.body.textContent).toContain("Auth data (database read) · last 90 days");
+  });
+
   it("a degraded row says so with its reason and counts it", async () => {
     await show(
       data({
@@ -228,6 +245,21 @@ describe("the ops events table is preserved", () => {
     await show(data({ ops: null, opsError: "Could not read the events." }));
     expect(screen.getByRole("alert").textContent).toBe("Could not read the events.");
     expect(document.querySelector('[data-service="database"]')).not.toBeNull();
+  });
+});
+
+describe("the learner website note", () => {
+  it("is an informational line, not a service row, and it does not change the banner", async () => {
+    await show(data({ services: [svc("database", "healthy", { latencyMs: 3 })] }));
+    const note = document.querySelector("[data-footnote='website']") as HTMLElement;
+    expect(note.textContent).toBe(
+      "The learner website's health is tracked by the deploy pipeline, not probed here.",
+    );
+    expect(note.closest("[data-service]")).toBeNull();
+    expect(document.querySelectorAll("[data-service]")).toHaveLength(1);
+    // all rows healthy: the banner is still "ok" with the note on the page
+    expect(banner().getAttribute("data-banner")).toBe("ok");
+    expect(banner().textContent).not.toContain("website");
   });
 });
 

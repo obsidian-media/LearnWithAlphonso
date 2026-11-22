@@ -99,6 +99,17 @@ describe("deriveBanner never says everything is fine while a row is unknown", ()
   });
 });
 
+describe("the learner website is not a service", () => {
+  it("there is no website key, so deriveBanner can never count it", () => {
+    const keys: ServiceRow["key"][] = ["database", "auth", "ai", "payments", "jobs"];
+    expect(keys).not.toContain("web");
+    expect(deriveBanner(keys.map((k) => row(k, "healthy")))).toEqual({
+      kind: "ok",
+      configuredOnly: 0,
+    });
+  });
+});
+
 describe("jobsState from the job log", () => {
   const sweep = (over: Partial<SweepRaw> = {}): SweepRaw => ({
     scheduled: true,

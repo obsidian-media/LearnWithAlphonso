@@ -123,11 +123,15 @@ RETURNS TABLE (
   runs_24h integer,
   failed_24h integer
 )
-LANGUAGE sql
+LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
 AS $$
+BEGIN
+  -- plpgsql, not sql: the body is only checked when it runs, so a database without pg_cron (a replay of the migration
+  -- history) can still create it.
+  RETURN QUERY
   WITH job AS (SELECT jobid FROM cron.job WHERE jobname = 'maintenance-sweep' LIMIT 1),
   runs AS (
     SELECT d.start_time, d.status
@@ -143,6 +147,7 @@ AS $$
     (SELECT count(*)::integer FROM runs r WHERE r.start_time >= now() - interval '24 hours'),
     (SELECT count(*)::integer FROM runs r
       WHERE r.start_time >= now() - interval '24 hours' AND r.status = 'failed');
+END;
 $$;
 REVOKE ALL ON FUNCTION public.staff_sweep_status() FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.staff_sweep_status() TO service_role;

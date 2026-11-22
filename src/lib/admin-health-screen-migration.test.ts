@@ -160,6 +160,31 @@ describe("20261127170000_admin_health_screen.sql (real Postgres)", () => {
     expect(r.rows[0]!.n).toBe(1);
   });
 
+  it("staff_sweep_status is plpgsql, so the migration applies where pg_cron does not exist (history replays)", async () => {
+    const r = await db.query<{ lang: string }>(
+      `SELECT l.lanname AS lang FROM pg_proc p JOIN pg_language l ON l.oid = p.prolang WHERE p.proname = 'staff_sweep_status'`,
+    );
+    expect(r.rows[0]!.lang).toBe("plpgsql");
+    const bare = new PGlite();
+    await bare.exec(`
+      CREATE ROLE service_role; CREATE ROLE authenticated; CREATE ROLE anon;
+      CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY);
+      CREATE SCHEMA vault; CREATE SCHEMA net;
+      CREATE TABLE public.app_switches(key text PRIMARY KEY, enabled boolean);
+      CREATE TABLE public.review_grade_attempts(created_at timestamptz);
+      CREATE TABLE public.ai_usage(day date);
+      CREATE TABLE public.nudges(created_at timestamptz);
+      CREATE TABLE public.friend_activity_events(event_type text, created_at timestamptz);
+      CREATE TABLE public.podcast_play_events(started_at timestamptz);
+      CREATE TABLE public.content_reports(account_deleted_at timestamptz);
+      CREATE TABLE public.lesson_session_redemptions(created_at timestamptz);
+      CREATE TABLE public.ops_events(event text, created_at timestamptz);
+      CREATE FUNCTION public.support_purge_old() RETURNS void LANGUAGE sql AS 'SELECT';
+    `);
+    await expect(bare.exec(migration)).resolves.toBeDefined();
+    await bare.close();
+  });
+
   it("keeps every step the previous sweep had", () => {
     const before = deletes(previousSweep);
     const after = deletes(migration);
