@@ -751,7 +751,7 @@ struct LessonStartStep: Identifiable {
     let detail: String
 }
 
-/// Lesson start, set in the unit's room: the unit and title over it, the honest estimate ("About 4 min · 8
+/// Lesson start, set in the unit's room: the unit and title over it, the honest estimate ("About 6 min · 11
 /// questions · Up to 100 XP"), the steps, and the gold Start button pinned at the foot.
 struct LessonStartView: View {
     let roomID: String

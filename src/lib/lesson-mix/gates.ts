@@ -9,7 +9,7 @@
 //              like the answer (homophones; Spanish seseo, yeísmo, b/v; French est/et, a/à)
 //   speak      3 to 12 words, round-trips through the course's spoken-answer normaliser and its
 //              speech-to-text variants, none of the hazards named in the packs
-//   translate  2 to 5 distinct wordings, first is canonical, the prompt never contains the sentence,
+//   translate  2 to 9 distinct wordings, first is canonical, the prompt never contains the sentence,
 //              every wording matches itself, no "(e)" gender trick, word counts for the level
 // Pure.
 
@@ -20,10 +20,12 @@ import { choiceFormatProblems } from "../../data/question-variety-gate";
 import { matchesSpokenAnswer, normaliseSpoken } from "../spoken-answer";
 import { matchesSpokenAnswerFr, normaliseSpokenFr } from "../spoken-answer-fr";
 import { matchesSpokenAnswerEs, normaliseSpokenEs } from "../spoken-answer-es";
-import { matchesAcceptableAnswer } from "../translation-answer";
+import { matchesAcceptableAnswer, normaliseWritten } from "../translation-answer";
 import type { ExtraType, LessonExtra } from "./extras";
 import { EXTRA_TYPES, toQuestion } from "./extras";
 import { homophonePairs, wordsIn } from "./homophones";
+import { metaTextProblems } from "./meta-gate";
+import { britishFindings } from "../american-english";
 
 export type GateResult = { problems: string[]; warnings: string[] };
 
@@ -31,8 +33,37 @@ export type GateContext = {
   course: Course;
   level: Level;
   /** Normalised keys (normKey) of the course's existing listening, speak and translate texts. */
-  existing: { listening: Set<string>; speak: Set<string>; translate: Set<string> };
+  existing: {
+    listening: Set<string>;
+    speak: Set<string>;
+    translate: Set<string>;
+    /** Every question's text as curriculum-consistency.test.ts compares it (see `dedupKey`). Optional in tests. */
+    all?: Set<string>;
+  };
 };
+
+/** The text curriculum-consistency.test.ts compares across packs: trimmed, no trailing blank, lower case. */
+export const dedupKey = (s: string): string =>
+  s
+    .trim()
+    .replace(/\s*___\s*$/, "")
+    .toLowerCase();
+
+/** American English (owner decision 2026-11-06): any British spelling or British-only word in learner-facing text. */
+export function britishProblems(course: Course, texts: string[]): string[] {
+  if (course !== "en") return [];
+  const out: string[] = [];
+  for (const t of texts)
+    for (const w of britishFindings(t))
+      out.push(`"${w}" is British English (the course is American)`);
+  return out;
+}
+
+/** Another question in the course already has this text: the consistency test counts that as a repeat. */
+const repeatProblem = (ctx: GateContext, text: string): string[] =>
+  ctx.existing.all?.has(dedupKey(text))
+    ? ["duplicate: another question in the course has this exact text (a repeat to the learner)"]
+    : [];
 
 /** Comparison key for "is this the same sentence": accents and case folded, punctuation removed. */
 export const normKey = (s: string): string =>
@@ -55,10 +86,20 @@ export function existingKeys(
     listening: new Set<string>(),
     speak: new Set<string>(),
     translate: new Set<string>(),
+    all: new Set<string>(),
   };
   for (const u of units)
     for (const l of u.lessons)
       for (const q of l.questions) {
+        out.all.add(
+          dedupKey(
+            q.type === "listening"
+              ? q.audioText
+              : q.type === "speak"
+                ? q.answer
+                : String(q.prompt ?? ""),
+          ),
+        );
         if (q.type === "listening") out.listening.add(normKey(q.audioText));
         else if (q.type === "speak") out.speak.add(normKey(q.answer));
         else if (q.type === "reorder") out.speak.add(normKey(q.answer));
@@ -96,6 +137,10 @@ function explanationProblems(ex: unknown, answer: string): string[] {
   if (ex.length > 320) out.push("the explanation is over 320 characters (one or two sentences)");
   if (/"[^"]*" is correct here\./.test(ex))
     out.push("the explanation is the generic 'is correct here' line");
+  out.push(...metaTextProblems(ex, "explanation", answer.trim()));
+  // lesson-bank-listening.test.ts: no doubled terminal punctuation (an ellipsis counts).
+  if (/[.?!]["']?\s*\./.test(ex))
+    out.push("the explanation has doubled punctuation (or an ellipsis)");
   return out;
 }
 
@@ -135,6 +180,7 @@ export function listeningGate(l: unknown, ctx: GateContext): GateResult {
   for (const c of [audio, ...wrong])
     if (pk.includes(normKey(c))) problems.push("the prompt contains a choice");
   if (wordCount(String(x.prompt)) > 14) warnings.push("the prompt is long (over 14 words)");
+  problems.push(...metaTextProblems(String(x.prompt), "prompt"));
   for (const w of wrong) {
     if (wordCount(w) !== n) problems.push(`"${w}" does not have the answer's ${n} words`);
     else {
@@ -149,7 +195,10 @@ export function listeningGate(l: unknown, ctx: GateContext): GateResult {
     }
     if (leaks(ctx.course, w)) warnings.push(`"${w}" looks like English`);
   }
-  const fmt = choiceFormatProblems([audio, ...wrong]);
+  // French writes a space before ? ! : ; (the standard), so the shared "space before punctuation" rule skips those.
+  const fmt = choiceFormatProblems(
+    [audio, ...wrong].map((c) => (ctx.course === "fr" ? c.replace(/\s+([?!;:])/g, "$1") : c)),
+  );
   problems.push(...fmt);
   // A distractor sharing under half the answer's content words is easy to rule out without hearing.
   const aw = new Set(wordsIn(audio).filter((t) => t.length > 2));
@@ -162,6 +211,10 @@ export function listeningGate(l: unknown, ctx: GateContext): GateResult {
     problems.push("duplicate: the course already has this listening sentence");
   if (leaks(ctx.course, audio))
     problems.push("the audio looks like English, not the course language");
+  problems.push(...repeatProblem(ctx, audio));
+  problems.push(
+    ...britishProblems(ctx.course, [String(x.prompt), audio, ...wrong, String(x.explanation)]),
+  );
   problems.push(...explanationProblems(x.explanation, audio));
   return { problems, warnings };
 }
@@ -188,7 +241,7 @@ const POSSESSIVE_OK = new Set([
 const ORDINAL =
   /\b(\d+(st|nd|rd|th)|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|primer[oa]?|segund[oa]|tercer[oa]?|cuart[oa]|quint[oa]|premier|première|deuxième|troisième)\b/i;
 const COMPOUND_NUMBER =
-  /\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[ -](one|two|three|four|five|six|seven|eight|nine)\b|\bhundred\b|\bthousand\b|\btreinta y\b|\bcuarenta y\b|\bcincuenta y\b|\bsesenta y\b|\bsetenta y\b|\bochenta y\b|\bnoventa y\b|\bcien\b|\bciento\b|\bmil\b|\b(trente|quarante|cinquante|soixante|quatre-vingt)[ -]|\bcent\b|\bmille\b/i;
+  /\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[ -](one|two|three|four|five|six|seven|eight|nine)\b|\bhundred\b|\bthousand\b|\btreinta y\b|\bcuarenta y\b|\bcincuenta y\b|\bsesenta y\b|\bsetenta y\b|\bochenta y\b|\bnoventa y\b|\bcien\b|\bciento\b|\bmil\b|\b(trente|quarante|cinquante|soixante|quatre-vingt)[ -]|\bcent\b|\bmille\b|\bdix[ -](sept|huit|neuf)\b|\bdieci(s[eé]is|siete|ocho|nueve)\b|\bveinti\w+|\b(un|une|deux|trois|uno|dos|tres|cuatro|cinco|one|two|three|four|five)\s*,\s*(un|une|deux|trois|uno|dos|tres|cuatro|cinco|one|two|three|four|five|six|seis)\s*,\s*(deux|trois|quatre|dos|tres|cuatro|cinco|two|three|four|five|six|seis|siete)\b/i;
 
 export const spokenOf = {
   en: { norm: normaliseSpoken, match: matchesSpokenAnswer },
@@ -265,12 +318,16 @@ export function speakGate(s: unknown, ctx: GateContext): GateResult {
     problems.push("duplicate: the course already has this phrase");
   if (leaks(ctx.course, answer))
     problems.push("the phrase looks like English, not the course language");
+  problems.push(...repeatProblem(ctx, answer));
+  problems.push(...britishProblems(ctx.course, [answer, String(x.explanation)]));
   problems.push(...explanationProblems(x.explanation, answer));
   return { problems, warnings };
 }
 
 // ---- Translate -----------------------------------------------------------------------------------
 
+/** The generated wordings plus the alternatives the second-answer pass adds. */
+export const MAX_WORDINGS = 12;
 const TRANSLATE_MAX_WORDS: Record<Level, number> = { A1: 10, A2: 12, B1: 16, B2: 20, C1: 24 };
 
 export function translateGate(t: unknown, ctx: GateContext): GateResult {
@@ -290,12 +347,18 @@ export function translateGate(t: unknown, ctx: GateContext): GateResult {
     };
   const answers = (x.acceptableAnswers as string[]).map((a) => a.trim());
   const first = answers[0] ?? "";
-  const distinct = new Set(answers.map((a) => normKey(a)));
+  // Distinct by the grader's own rule (curriculum-consistency.test.ts): "What's" and "What is" are ONE wording.
+  const distinct = new Set(answers.map((a) => normaliseWritten(a)));
   if (distinct.size !== answers.length)
     problems.push("two wordings are the same after normalising");
   if (answers.length < 2)
     problems.push(`only ${answers.length} wording(s): at least 2 are required`);
-  if (answers.length > 5) problems.push(`${answers.length} wordings (at most 5)`);
+  else if (distinct.size < 3)
+    problems.push(
+      `only ${distinct.size} distinct wording(s) once normalised: at least 3 are required`,
+    );
+  if (answers.length > MAX_WORDINGS)
+    problems.push(`${answers.length} wordings (at most ${MAX_WORDINGS})`);
   const wantMin = ctx.level === "A1" || ctx.level === "A2" ? 2 : 3;
   if (answers.length >= 2 && answers.length < wantMin)
     warnings.push(`${ctx.level} usually has ${wantMin} or more wordings`);
@@ -317,6 +380,7 @@ export function translateGate(t: unknown, ctx: GateContext): GateResult {
     if (a && normKey(a).length > 3 && pk.includes(normKey(a)))
       problems.push("the prompt contains an accepted wording");
   if (wordCount(String(x.prompt)) > 22) warnings.push("the prompt is long (over 22 words)");
+  problems.push(...metaTextProblems(String(x.prompt), "prompt"));
   // A wording far longer than the canonical one is usually a different sentence.
   const fn = wordCount(first);
   for (const a of answers.slice(1))
@@ -324,6 +388,10 @@ export function translateGate(t: unknown, ctx: GateContext): GateResult {
       warnings.push(`"${a}" differs a lot in length from "${first}"`);
   if (ctx.existing.translate.has(normKey(first)))
     problems.push("duplicate: the course already asks for this sentence");
+  problems.push(...repeatProblem(ctx, String(x.prompt)));
+  problems.push(
+    ...britishProblems(ctx.course, [String(x.prompt), ...answers, String(x.explanation)]),
+  );
   problems.push(...explanationProblems(x.explanation, first));
   return { problems, warnings };
 }

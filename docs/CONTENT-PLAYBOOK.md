@@ -28,7 +28,6 @@ Every rule here exists because breaking it shipped a defect. The history is in
   repetition is keyed on them. Fix a question by replacing it in place, 1:1. Append, never insert
   or delete. `id-parity.test.ts` holds this. Placement question ids are not review keys, so placement
   content may be rewritten (ARCHITECTURE.md, "Placement content is safe to rewrite").
-- **Reserved ids.** Ids `lx1`/`sx1`/`tx1` are reserved for appended extras; never use them in hand-written content.
 - **One correct answer.** The sentence, a bracketed clue, the subject or a picture rules every
   other option out. If two options fit, add a clue or change an option.
 - **Wrong options earn their place.** `docs/distractor-policy.md` applies in full: same slot,
@@ -236,9 +235,14 @@ lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N 
   `src/data/lesson-extras.test.ts`): listening (prompt never restates the audio, four distinct choices,
   one-to-three-word variants, no homophone: English list, French est/et a/à ou/où and silent endings,
   Spanish seseo, yeísmo, b/v, silent h, a bare tilde); speak (3 to 12 words, no digits, compound numbers,
-  ordinals or possessive 's, round trip through the course's spoken-answer normaliser); translate (2 to 5
+  ordinals or possessive 's, round trip through the course's spoken-answer normaliser); translate (2 to 9
   distinct wordings, the idea never contains the sentence, no "(e)" trick, word counts by level); all
   types: explanation quotes the answer, no duplicate of an existing item, no English in French or Spanish.
+- **Meta-text gate** (`src/lib/lesson-mix/meta-gate.ts`): an explanation or prompt is shown to the learner, so it never mentions "the learner", "this item", "the prompt", "the lesson", "read aloud", a CEFR level or a [placeholder], and is never just the target sentence said again. Quoted course text is exempt. The first bulk missed this (a blind sample found it in about a third of the speak explanations).
+- **Second answers.** `alts` (Sonnet batch) proposes extra wordings for every translate item, `merge-alts` appends them to `acceptableAnswers` (the existing alternatives field; first stays canonical, at most 9 wordings) one at a time through the translate gate. Speak grades one phrase by design and has no alternatives field.
+- **New drafts vs existing items.** The "hold every answer-key change" rule protects EXISTING questions. Lesson-mix items are new drafts no learner has seen, so `apply` applies the judge's patches, keys included, then re-runs the gates; an unpatchable ruling goes to `regen.json` and the next `draft --retry-failed` repairs it with the reason. The tooling always plans from `stripLessonExtras(curriculum)`, so it is re-runnable over an exported data file.
+- **Blind sample.** `blind --round 1|2`: 300 items, 100 per course, judged by Opus with no earlier verdicts; round 2 excludes round 1's ids. Report the rate with its 95% Wilson range and, separately, the share where a correct answer would be marked wrong.
+- **Strict explanation rubric is generator-only.** `strictExplanationProblems` (`meta-gate.ts`) only picks which explanations the `explain` pass rewrites (explains the pattern, at most 230 characters, not just the sentence again). It is not a gate: CI and `gateExtra` do not enforce it, and a shipped explanation may fail it.
 - **Panel.** The closure run's reviewers read every new item (Sonnet), every flag plus 10% (Mistral), and
   Opus judges the flagged. Say "AI-reviewed", never "native-reviewed".
 - **Bundles.** Content changes need the native bundles: `bun scripts/export-ios-content.ts` and
@@ -248,5 +252,6 @@ lesson then has 7 or 8 questions; `lesson-timing.json` is per type, so "About N 
   the builds before the reseed or accept the tester window.
 - **Web rollout order.** Appended lessons answer `409 lesson-version-mismatch` between the web deploy and the database reseed, so run the reseed IMMEDIATELY after the merge's deploy. Old native bundles also get 409 on changed lessons until the app updates: cut and distribute the build first.
 - **What the speak gate proves.** The round trip proves WEB grading only (`src/lib/spoken-answer*.ts`); `lesson-mix.test.ts` also checks the web normalisers agree with the edge copies in `supabase/functions/_shared/spoken-answer*.ts` on a sample. A lesson may not pass 50 questions after appending (server cap; `addLessonExtras` throws).
+- **Reserved ids.** Ids `lx1`/`sx1`/`tx1` are reserved for appended extras; never use them in hand-written content.
 - **Counts.** No test hard-codes a question count (they assert lesson counts, which do not change); id-parity compares ids with a
   baseline (`src/lib/id-parity.test.ts`): a bulk content PR must check it and say if it adds ids.

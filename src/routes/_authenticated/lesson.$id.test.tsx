@@ -34,6 +34,13 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 // `canSpeak` gates a readable fallback for listening questions, so it is mocked
 // rather than shimmed. Defaults to available; the fallback test flips it.
 const canSpeak = vi.fn(() => true);
+// These tests pin the lessons as authored (8 questions, "8 questions: pick, fill in"). The lesson-mix
+// questions appended to them (src/data/lesson-extras) are covered by lesson-extras.test.ts.
+vi.mock("../../data/lesson-extras", () => ({
+  LESSON_EXTRAS: { en: {}, fr: {}, es: {} },
+  applyLessonExtras: <T,>(units: T) => units,
+}));
+
 vi.mock("../../lib/speech", () => ({
   speak: vi.fn(),
   canSpeak: () => canSpeak(),

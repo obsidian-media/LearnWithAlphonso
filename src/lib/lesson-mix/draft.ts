@@ -54,6 +54,8 @@ export function draftSystem(course: Course): string {
     "translate: the learner reads an English description of an idea and writes it in the course language. `prompt` describes the idea in English WITHOUT giving the sentence away (for example 'Ask where the station is.', not 'Where is the station?'). `acceptableAnswers`: every natural wording you would accept, most canonical first, in the course language, 2 to 3 wordings at A1 and A2 and 3 to 4 at B1 to C1. Each wording is a complete natural sentence and genuinely a different way to say the same thing. Never use the (e) or (s) trick for gender or number: write one form.",
     "",
     "explanation (every type): one or two plain English sentences on WHY this is the answer or what the phrase means, and it MUST quote the answer in double quotes exactly as written (for translate, the first wording; for listening, the audioText; for speak, the phrase). Never write a generic line such as '\"x\" is correct here.'.",
+    'The explanation and the prompt are shown to the LEARNER, so write to them directly ("you"). NEVER write text addressed to us or about the exercise itself: no "the learner", "the user", "this item", "this question", "the prompt", "the lesson", "read this aloud", "say it slowly", "this phrase uses", "the first wording", no CEFR level, no [placeholder]. Do not just say the sentence again: name the grammar point, the meaning of the key word, or what to listen for.',
+    "Quality rules (a blind panel checks each): (1) American English for the English course: color, favorite, apartment, the check (not the bill), game (not match), canceled; (2) listening wrong choices are real, natural, grammatical sentences that make sense, never absurd or ungrammatical, and each differs only by a word a listener can hear, so no choice can be ruled out without listening; (3) translate and speak prompts never give the answer away (none of the key words of the answer, no hedge or idiom the learner is meant to produce), and a prompt that wants a specific structure or idiom must ask for it; (4) a translate prompt has one reading: if register (tu/vous, tú/usted) or gender changes the wording, say which in the prompt; (5) every natural correct wording a learner might write is in acceptableAnswers (common synonyms, the usual regional-standard word, both genders when the prompt leaves it open); (6) every sentence is natural, correctly spelled and punctuated, with a final period or question mark.",
     "",
     "Reply with JSON only, no prose and no code fence, with only the types you were asked for:",
     '{"listening":{"prompt":"...","audioText":"...","wrong":["...","...","..."],"explanation":"..."},"speak":{"answer":"...","explanation":"..."},"translate":{"prompt":"...","acceptableAnswers":["...","..."],"explanation":"..."}}',
@@ -68,6 +70,8 @@ export type DraftInput = {
   need: ExtraType[];
   /** Feedback from a failed first attempt (the gate problems), when redrafting. */
   feedback?: string[];
+  /** The earlier record of a repair, so the model changes only what is wrong. */
+  previous?: unknown;
 };
 
 export function draftUser(d: DraftInput): string {
@@ -85,8 +89,9 @@ export function draftUser(d: DraftInput): string {
     ...(d.feedback?.length
       ? [
           "",
-          "Your previous attempt failed these automatic checks; fix every one:",
+          "Your previous attempt was rejected for these reasons; fix every one and keep everything else that was right:",
           ...d.feedback.map((f) => `- ${f}`),
+          ...(d.previous ? ["Your previous record: " + JSON.stringify(d.previous)] : []),
         ]
       : []),
   ].join("\n");

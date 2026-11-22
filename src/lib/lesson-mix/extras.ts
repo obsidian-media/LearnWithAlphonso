@@ -132,8 +132,19 @@ export function isEligible(lesson: Lesson): boolean {
  * Listening and translate: every eligible lesson that lacks one. Speak: "Every other lesson" (owner,
  * 2026-11-21), so `speakSlot` is true on every second ELIGIBLE lesson of the course (see courseNeeds).
  */
+/**
+ * The Spanish "Minimal Pairs" lessons are a dedicated spelling-choice pack (owner decision 2026-11-16;
+ * src/data/es-minimal-pairs.test.ts pins their 125 questions and that none is listening: under seseo, yeísmo
+ * and b/v the two words sound the same). Like every dedicated pack, they get no appended questions.
+ */
+export const NO_EXTRAS_LESSONS: ReadonlySet<string> = new Set(
+  ["esa1p28", "esa2p28", "esb1p28", "esb2p28", "esc1p28"].flatMap((id) =>
+    [1, 2, 3, 4, 5].map((k) => `${id}l${k}`),
+  ),
+);
+
 export function lessonNeed(lesson: Lesson, speakSlot: boolean): LessonNeed {
-  if (!isEligible(lesson)) return [];
+  if (!isEligible(lesson) || NO_EXTRAS_LESSONS.has(lesson.id)) return [];
   const has = (t: string) => lesson.questions.some((q) => q.type === t);
   const need: LessonNeed = [];
   if (!has("listening")) need.push("listening");
@@ -157,4 +168,21 @@ export function courseNeeds(units: Unit[]): Map<string, LessonNeed> {
       ordinal++;
     }
   return out;
+}
+
+/**
+ * The units as they were BEFORE the lesson-mix pass: the appended questions (the fixed ids lx1, sx1,
+ * tx1, which no authored question uses) removed. The content tooling plans, gates and dedupes against
+ * this, so re-running it over an already exported data file sees the lessons as they were.
+ */
+export function stripLessonExtras(units: Unit[]): Unit[] {
+  const ours = new Set<string>(Object.values(EXTRA_IDS));
+  return units.map((u) => ({
+    ...u,
+    lessons: u.lessons.map((l) =>
+      l.questions.some((q) => ours.has(q.id))
+        ? { ...l, questions: l.questions.filter((q) => !ours.has(q.id)) }
+        : l,
+    ),
+  }));
 }

@@ -1,0 +1,124 @@
+[
+ {
+  "id": "en:question:b1p20l5/tx1",
+  "why": "failed the automatic checks after 15 drafts: explanation is meta text (an instruction addressed to the author)",
+  "draft": {
+   "prompt": "Give advice about the last stage of a process: say that going over all of the work two times is a good idea before you stop.",
+   "acceptableAnswers": [
+    "Before finishing, you should check everything twice.",
+    "Before you finish, you should check everything twice.",
+    "You should check everything twice before you finish.",
+    "Before you finish, you should verify everything twice."
+   ],
+   "explanation": "To give advice, use \"should\" plus the base verb. The time phrase can come first or last, as in \"Before finishing, you should check everything twice.\" The verb \"check\" means to make sure something is right, and \"verify\" is a more formal word with the same meaning."
+  }
+ },
+ {
+  "id": "en:question:c1p18l1/lx1",
+  "why": "failed the automatic checks after 18 drafts: \"After the merger, the company announced that several senior managers had been hired very quietly.\" does not have the answer's 16 words",
+  "draft": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "After the merger, the company announced that several senior managers had been let go very quietly.",
+   "wrong": [
+    "After the merger, the company announced that several senior managers had been hired very quietly.",
+    "After the merger, the company announced that several senior managers had been warned very quietly.",
+    "After the merger, the company announced that several senior managers had been promoted very quietly."
+   ],
+   "explanation": "In \"After the merger, the company announced that several senior managers had been let go very quietly.\", the phrase \"let go\" is a polite way of saying the managers were fired. Listen closely to the words before \"very quietly\", because being hired, warned, or promoted means something quite different."
+  }
+ },
+ {
+  "id": "fr:question:fra1p12l2/lx1",
+  "why": "failed the automatic checks after 18 drafts: \"Le chat est devant la table maison.\" does not have the answer's 8 words",
+  "draft": {
+   "prompt": "What did you hear?",
+   "audioText": "Le chat est à côté de la table.",
+   "wrong": [
+    "Le chat est devant la table maison.",
+    "Le chat est loin de la table.",
+    "Le chat est entre de la table."
+   ],
+   "explanation": "\"Le chat est à côté de la table.\" means the cat is next to the table. Listen for \"à côté de\" (next to), which sounds different from \"loin de\" (far from)."
+  }
+ },
+ {
+  "id": "fr:question:fra1p16l4/sx1",
+  "why": "failed the automatic checks after 4 drafts: the explanation must quote the answer in double quotes: \"Où est la salle de classe ?\"",
+  "draft": {
+   "answer": "Où est la salle de classe ?",
+   "explanation": "This phrase means 'Where is the classroom?' Use \"où est\" to ask where something is, and remember that \"salle\" is feminine, so it takes \"la\"."
+  }
+ },
+ {
+  "id": "fr:question:fra1p17l5/lx1",
+  "why": "failed the automatic checks after 18 drafts: \"Je reçois un message de mon ami.\" does not have the answer's 6 words",
+  "draft": {
+   "prompt": "What did you hear?",
+   "audioText": "J'envoie un message à mon ami.",
+   "wrong": [
+    "Je reçois un message de mon ami.",
+    "J'envoie un courriel à mon ami.",
+    "J'envoie un message à mon père."
+   ],
+   "explanation": "\"J'envoie un message à mon ami.\" means you are sending a message to a friend. Listen for the verb \"envoyer\" (to send), the noun \"message\", and \"ami\" at the end."
+  }
+ },
+ {
+  "id": "fr:question:fra2p20l2/lx1",
+  "why": "failed the automatic checks after 18 drafts: \"Il y a un marché près de la gare.\" is not a close variant (5 words apart)",
+  "draft": {
+   "prompt": "What did you hear?",
+   "audioText": "Il y a un rond-point près de la gare.",
+   "wrong": [
+    "Il y a un marché près de la gare.",
+    "Il y a un trottoir près de la gare.",
+    "Il y a un bâtiment près de la gare."
+   ],
+   "explanation": "\"Il y a un rond-point près de la gare.\" means there is a roundabout near the station. Listen for the key noun: \"rond-point\" sounds very different from \"marché\", \"trottoir\" or \"bâtiment\"."
+  }
+ },
+ {
+  "id": "fr:question:frc1p1l2/lx1",
+  "why": "failed the automatic checks after 18 drafts: the audio is 17 words (3 to 16)",
+  "draft": {
+   "prompt": "What did you hear?",
+   "audioText": "Depuis son dernier succès, cette jeune entreprise a vraiment le vent en poupe sur le marché européen.",
+   "wrong": [
+    "Depuis son dernier échec, cette jeune entreprise a vraiment le vent en poupe sur le marché européen.",
+    "Depuis son dernier succès, cette jeune entreprise a vraiment le vent en poupe sur le marché mondial.",
+    "Depuis son dernier succès, cette jeune entreprise a vraiment le vent en poupe sur le marché français."
+   ],
+   "explanation": "You hear \"Depuis son dernier succès, cette jeune entreprise a vraiment le vent en poupe sur le marché européen.\" The idiom \"avoir le vent en poupe\" means to be thriving and gaining momentum, so listen closely to the final word, which tells you which market is meant."
+  }
+ },
+ {
+  "id": "es:question:esa1p24l3/lx1",
+  "why": "failed the automatic checks after 2 drafts: explanation is meta text (gives a how-to-say instruction)",
+  "draft": {
+   "prompt": "What did you hear?",
+   "audioText": "No entiendo, ¿puedes repetirlo?",
+   "wrong": [
+    "No entiendo, ¿puedes escribirlo?",
+    "No sé, ¿puedes repetirlo?",
+    "No entiendo, ¿puedes comerlo?"
+   ],
+   "explanation": "You hear \"No entiendo, ¿puedes repetirlo?\", which means 'I don't understand, can you repeat it?' Listen for \"entiendo\" (I understand) and \"repetirlo\" (repeat it), since the other choices swap in a clearly different word."
+  }
+ },
+ {
+  "id": "es:question:esb2p3l1/tx1",
+  "why": "failed the automatic checks after 2 drafts: the explanation has doubled punctuation (or an ellipsis)",
+  "draft": {
+   "prompt": "You are a waiter. Politely ask a gentleman, addressing him formally with usted, whether he would like anything else.",
+   "acceptableAnswers": [
+    "¿Desea algo más, señor?",
+    "¿Desea usted algo más, señor?",
+    "¿Quiere algo más, señor?",
+    "¿Desea alguna otra cosa, señor?",
+    "¿Le gustaría algo más, señor?",
+    "¿Quisiera algo más, señor?"
+   ],
+   "explanation": "\"¿Desea algo más, señor?\" uses \"desea\", the usted form of the polite verb \"desear\", instead of the informal \"¿quieres algo más?\". It is the usual way for staff to ask a customer if they need anything else."
+  }
+ }
+]
