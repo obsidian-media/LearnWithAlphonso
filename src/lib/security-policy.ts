@@ -49,7 +49,8 @@ export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): stri
       if (parsedUrl.protocol === "https:") supabaseOrigin = parsedUrl.origin;
     }
   } catch {
-    // Invalid/missing configuration must not broaden the policy.
+    // Invalid/missing configuration adds no configured origin. The only fixed first-party exception is
+    // LEGACY_SUPABASE_ORIGIN below, which is always allowed: it is a constant, never derived from input.
   }
   const realtimeOrigin = supabaseOrigin?.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
   const legacyOrigin =
@@ -100,8 +101,9 @@ export function addSecurityHeaders(response: Response, request: Request, nonce: 
   if (process.env.NODE_ENV === "production") {
     headers.set("content-security-policy", contentSecurityPolicy(nonce, process.env.SUPABASE_URL));
     if (new URL(request.url).protocol === "https:") {
-      // Same value as the static files (static-headers.ts / vercel.json). includeSubDomains covers only hosts under
-      // this one (*.learnwithalphonso.com), never siblings such as discover.alphonsoecosystem.app.
+      // Same value as the static files (static-headers.ts / vercel.json). Sent from the apex learnwithalphonso.com,
+      // includeSubDomains covers every *.learnwithalphonso.com host (admin, api, www), which must all stay HTTPS-only.
+      // It never reaches sibling domains such as discover.alphonsoecosystem.app.
       headers.set("strict-transport-security", HSTS_VALUE);
     }
   }

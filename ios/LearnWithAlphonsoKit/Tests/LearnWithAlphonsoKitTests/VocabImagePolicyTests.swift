@@ -44,4 +44,10 @@ final class VocabImagePolicyTests: XCTestCase {
     func testAnUnrenderableURLCollapsesBeforeAnyLoadAttempt() {
         XCTAssertEqual(VocabImagePolicy.slot(url: "https://pixabay.com/get/gabc_640.jpg", failedURL: nil), .collapsed)
     }
+
+    func testApiDomainLookalikesAndUserinfoTricksAreNotRenderable() {
+        for host in ["api.learnwithalphonso.com.evil.com", "api.learnwithalphonso.com@evil.com", "user@api.learnwithalphonso.com@evil.com", "qhcjpfbxfcltjbiuknyt.supabase.co@evil.com"] {
+            XCTAssertFalse(VocabImagePolicy.isRenderable("https://\(host)/storage/v1/object/public/vocab-images/en/apple.jpg?v=0123abcd"), host)
+        }
+    }
 }

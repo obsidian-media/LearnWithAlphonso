@@ -233,4 +233,15 @@ class ReferralTest {
         assertEquals("29d081151d67", ReferralLink.codeFromUrl("https://learn.alphonsoecosystem.app/?ref=29d081151d67"))
         assertNull(ReferralLink.codeFromUrl("https://evil.example/?ref=29d081151d67"))
     }
+
+    @Test
+    fun `rejects lookalike referral hosts and userinfo tricks`() {
+        for (host in listOf(
+            "learnwithalphonso.com.evil.com",
+            "learnwithalphonso.com@evil.com",
+            "user@learnwithalphonso.com@evil.com",
+        )) {
+            assertNull(ReferralLink.codeFromUrl("https://$host/?ref=29d081151d67"), host)
+        }
+    }
 }

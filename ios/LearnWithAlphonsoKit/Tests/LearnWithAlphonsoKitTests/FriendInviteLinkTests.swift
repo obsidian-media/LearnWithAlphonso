@@ -33,4 +33,14 @@ final class FriendInviteLinkTests: XCTestCase {
         XCTAssertEqual(ReferralLink.code(from: URL(string: "https://learnwithalphonso.com/?ref=29d081151d67")!), "29d081151d67")
         XCTAssertEqual(ReferralLink.code(from: URL(string: "https://learn.alphonsoecosystem.app/?ref=29d081151d67")!), "29d081151d67")
     }
+
+    func testRejectsLookalikeHostsAndUserinfoTricks() {
+        for host in ["learnwithalphonso.com.evil.com", "learnwithalphonso.com@evil.com", "user@learnwithalphonso.com@evil.com"] {
+            // A malformed multi-@ URL may not parse at all (nil is fine); if it does, the host must not be accepted.
+            let invite = URL(string: "https://\(host)/invite/29d081151d67")
+            let referral = URL(string: "https://\(host)/?ref=29d081151d67")
+            XCTAssertNil(invite.flatMap { FriendInviteLink.code(from: $0) }, host)
+            XCTAssertNil(referral.flatMap { ReferralLink.code(from: $0) }, host)
+        }
+    }
 }

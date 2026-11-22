@@ -65,6 +65,17 @@ describe("custom API domain", () => {
         OK.replace("qhcjpfbxfcltjbiuknyt.supabase.co", "api.learnwithalphonso.com.evil.example"),
       ),
     ).toBe(false);
+    for (const host of [
+      "api.learnwithalphonso.com.evil.com",
+      "api.learnwithalphonso.com@evil.com",
+      "user@api.learnwithalphonso.com@evil.com",
+      "qhcjpfbxfcltjbiuknyt.supabase.co@evil.com",
+    ]) {
+      expect(
+        isRenderableVocabImageUrl(OK.replace("qhcjpfbxfcltjbiuknyt.supabase.co", host)),
+        host,
+      ).toBe(false);
+    }
     expect(
       isRenderableVocabImageUrl(
         OK.replace("qhcjpfbxfcltjbiuknyt.supabase.co", "evil.example/api.learnwithalphonso.com"),

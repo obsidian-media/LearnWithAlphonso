@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
 import { AUTH_STORAGE_KEY } from "./auth-storage-key";
@@ -41,8 +41,40 @@ describe("web auth storage key pin", () => {
     }
   });
 
-  it("every browser-persisting client in src/ and admin/ is built through the pinned client", () => {
-    // Only client.ts may persist a session; the server clients must stay non-persisting.
+  it("every createClient/createBrowserClient call in src/ and admin/ either never persists or passes the pinned key", () => {
+    const sites: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (/\.(ts|tsx)$/.test(entry.name) && !/\.test\.|\.gen\.|\.d\.ts$/.test(entry.name)) {
+          const src = readFileSync(full, "utf8");
+          const re = /\bcreate(?:Browser|Server)?Client\s*(?:<[^>(]*>)?\s*\(/g;
+          for (let m = re.exec(src); m; m = re.exec(src)) {
+            // The call's argument list, up to its matching close paren.
+            let depth = 1;
+            let i = m.index + m[0].length;
+            for (; i < src.length && depth > 0; i++) {
+              if (src[i] === "(") depth++;
+              else if (src[i] === ")") depth--;
+            }
+            const call = src.slice(m.index, i);
+            const persists = !/persistSession:\s*false/.test(call);
+            if (persists && !/storageKey:\s*AUTH_STORAGE_KEY/.test(call))
+              sites.push(`${full}: ${call.slice(0, 60)}`);
+          }
+        }
+      }
+    };
+    walk(resolve("src"));
+    walk(resolve("admin"));
+    // A new browser client must pass storageKey: AUTH_STORAGE_KEY, or its default key would follow the URL host.
+    expect(sites).toEqual([]);
+  });
+
+  it("the scan itself sees the app client and the server clients (it would otherwise pass vacuously)", () => {
+    const client = readFileSync(resolve("src/integrations/supabase/client.ts"), "utf8");
+    expect(client).toMatch(/storageKey:\s*AUTH_STORAGE_KEY/);
     for (const file of [
       "src/integrations/supabase/client.server.ts",
       "src/integrations/supabase/auth-middleware.ts",

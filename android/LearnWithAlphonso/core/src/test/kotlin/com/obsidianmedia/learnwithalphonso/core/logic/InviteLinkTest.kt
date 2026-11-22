@@ -41,4 +41,16 @@ class InviteLinkTest {
         assertNull(InviteLink.codeFromEntry("https://learnwithalphonso.com.evil.example/invite/a1b2c3d4e5f6"))
         assertNull(InviteLink.codeFromEntry("https://evil-learnwithalphonso.com/invite/a1b2c3d4e5f6"))
     }
+
+    @Test
+    fun `rejects lookalike hosts and userinfo tricks`() {
+        for (host in listOf(
+            "learnwithalphonso.com.evil.com",
+            "learnwithalphonso.com@evil.com",
+            "user@learnwithalphonso.com@evil.com",
+            "learn.alphonsoecosystem.app@evil.com",
+        )) {
+            assertNull(InviteLink.codeFromEntry("https://$host/invite/a1b2c3d4e5f6"), host)
+        }
+    }
 }

@@ -295,6 +295,8 @@ describe("output guard", () => {
     "Visit www.free-pro.com now",
     "Open evil.example.com/verify",
     "Visit learnwithalphonso.com.evil.com/x",
+    "Visit https://learnwithalphonso.com@evil.com/x",
+    "Visit https://user@learnwithalphonso.com@evil.com/x",
     "Visit https://evil-learnwithalphonso.com/x",
     "Write to billing@evil.example",
     "Write to support@alphonsoecosystem.app.evil.com",
