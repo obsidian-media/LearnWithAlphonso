@@ -6,6 +6,7 @@ import type { Level } from "../data/levels";
 import {
   firstUndoneInCurriculumOrder,
   isLessonUnlocked,
+  LEVEL_ORDER,
   lessonsInLearningOrder,
   nextStartableLessonId,
   pathStates,
@@ -305,5 +306,146 @@ describe("the Edge Function copy", () => {
       "utf8",
     );
     expect(edge).toBe(web);
+  });
+});
+
+/**
+ * An adversary for the rule: random courses whose bands interleave in the array, and random learner states that mix
+ * learning-order prefixes, curriculum-order prefixes, scattered extras and ids no longer in the course. Every case is
+ * checked against a second, independent statement of the rule written here from its doc comment, for the whole open
+ * set (not just one lesson), with and without the installed apps' curriculum-order allowance.
+ */
+describe("the rule against an independent model, on random interleaved courses", () => {
+  const BANDS = ["A1", "A2", "B1", "B2", "C1"];
+
+  /** Learning order the long way: one bucket per band in band order, curriculum order inside each bucket. */
+  function modelOrder(lessons: { id: string; level: string }[]): { id: string; level: string }[] {
+    const known = BANDS.flatMap((band) => lessons.filter((l) => l.level === band));
+    return [...known, ...lessons.filter((l) => !BANDS.includes(l.level))];
+  }
+
+  function modelOpen(
+    lessons: { id: string; level: string }[],
+    done: Set<string>,
+    level: string | null | undefined,
+    curriculumNext: boolean,
+  ): Set<string> {
+    const order = modelOrder(lessons);
+    // A band the rule does not know ranks after every known one, for lessons and for the stored level alike. (So an
+    // unknown stored level is a floor at the course's first unknown-band lesson, if it has one: unreachable with the
+    // real curricula, whose units all sit in known bands.)
+    const rank = (band: string) => (BANDS.includes(band) ? BANDS.indexOf(band) : BANDS.length);
+    let floor = 0;
+    if (level) {
+      // The first lesson of the learner's band or any later band.
+      const at = order.findIndex((l) => rank(l.level) >= rank(level));
+      floor = at === -1 ? 0 : at;
+    }
+    // Only strictly startable completions raise the ceiling, stated as a fixed point (the rule walks instead): the
+    // ceiling is the floor, or one past the furthest completion inside the ceiling, raised until it stops moving.
+    let ceiling = floor;
+    for (;;) {
+      let furthest = -1;
+      order.forEach((l, i) => {
+        if (i <= ceiling && done.has(l.id)) furthest = i;
+      });
+      const next = Math.max(floor, furthest + 1);
+      if (next === ceiling) break;
+      ceiling = next;
+    }
+    const open = new Set<string>();
+    for (let i = 0; i <= ceiling && i < order.length; i++) open.add(order[i].id);
+    // Every completed lesson replays, counted or not.
+    for (const l of lessons) if (done.has(l.id)) open.add(l.id);
+    if (curriculumNext) {
+      const next = lessons.find((l) => !done.has(l.id));
+      if (next) open.add(next.id);
+    }
+    return open;
+  }
+
+  const sorted = (s: Iterable<string>) => [...s].sort();
+
+  it("matches the model on every case, and never refuses what the screens offer", () => {
+    const rand = rng(20261121);
+    const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)];
+    let cases = 0;
+    let someLocked = 0;
+    let allOpen = 0;
+    for (let c = 0; c < 300; c++) {
+      // A course of 1-30 lessons, bands drawn at random so they interleave in the array; one course in five also
+      // has lessons in a band the rule does not know.
+      const n = 1 + Math.floor(rand() * 30);
+      const bands = c % 5 === 0 ? [...BANDS, "X9"] : BANDS;
+      const lessons = Array.from({ length: n }, (_, i) => ({ id: `L${i}`, level: pick(bands) }));
+      const learning = lessonsInLearningOrder(lessons);
+      expect(learning.map((l) => l.id)).toEqual(modelOrder(lessons).map((l) => l.id));
+
+      for (let s = 0; s < 20; s++) {
+        const done = new Set<string>();
+        const k1 = Math.floor(rand() * (n + 1));
+        const k2 = Math.floor(rand() * (n + 1));
+        // A mix: some of a learning-order prefix, some of a curriculum-order prefix, scattered extras, a stale id.
+        if (rand() < 0.7) learning.slice(0, k1).forEach((l) => done.add(l.id));
+        if (rand() < 0.5) lessons.slice(0, k2).forEach((l) => done.add(l.id));
+        const extra = rand() * 0.3;
+        lessons.forEach((l) => {
+          if (rand() < extra) done.add(l.id);
+        });
+        if (rand() < 0.2) done.add("gone-from-the-course");
+
+        for (const level of [...BANDS, null, undefined, "", "X9"]) {
+          for (const curriculumNext of [true, false]) {
+            const got = unlockedLessonIds(lessons, done, level, { curriculumNext });
+            const want = modelOpen(lessons, done, level, curriculumNext);
+            expect(
+              sorted(got),
+              `course ${lessons.map((l) => `${l.id}:${l.level}`).join(",")} done ${sorted(done).join(",")} level ${level} curriculumNext ${curriculumNext}`,
+            ).toEqual(sorted(want));
+            cases++;
+            if (got.size < n) someLocked++;
+            else allOpen++;
+          }
+          // What the screens offer is always startable: the map's next without the allowance, the installed
+          // apps' place with it (the server's default), and every completed lesson for replay.
+          const strict = unlockedLessonIds(lessons, done, level, { curriculumNext: false });
+          const next = nextStartableLessonId(lessons, done, level);
+          if (next) expect(strict.has(next)).toBe(true);
+          const legacy = firstUndoneInCurriculumOrder(lessons, done);
+          if (legacy) expect(isLessonUnlocked(lessons, done, level, legacy)).toBe(true);
+          for (const l of lessons) if (done.has(l.id)) expect(strict.has(l.id)).toBe(true);
+          // The first undone lesson in learning order is where the learner is: it is always open.
+          const firstUndone = learning.find((l) => !done.has(l.id));
+          if (firstUndone) expect(strict.has(firstUndone.id)).toBe(true);
+        }
+      }
+    }
+    expect(cases).toBe(300 * 20 * 9 * 2);
+    // Not vacuous: plenty of the cases have lessons locked, and plenty have everything open.
+    expect(someLocked).toBeGreaterThan(cases / 5);
+    expect(allOpen).toBeGreaterThan(cases / 20);
+  }, 120_000);
+});
+
+/** The apps carry their own copy of the band order (LearnFold); a drift would sort lessons differently from the server. */
+describe("the native copies of LEVEL_ORDER", () => {
+  const root = path.resolve(import.meta.dirname, "../..");
+  const text = (p: string) => fs.readFileSync(path.join(root, p), "utf8");
+  const bands = (list: string) => [...list.matchAll(/"([A-Z]\d)"/g)].map((m) => m[1]);
+
+  it("iOS levelOrder equals LEVEL_ORDER", () => {
+    const swift = text("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/LearnFold.swift");
+    const m = swift.match(/static let levelOrder = \[([^\]]*)\]/);
+    expect(m, "levelOrder not found").not.toBeNull();
+    expect(bands(m![1])).toEqual([...LEVEL_ORDER]);
+  });
+
+  it("Android LEVEL_ORDER equals LEVEL_ORDER", () => {
+    const kt = text(
+      "android/LearnWithAlphonso/core/src/main/kotlin/com/obsidianmedia/learnwithalphonso/core/logic/LearnFold.kt",
+    );
+    const m = kt.match(/val LEVEL_ORDER = listOf\(([^)]*)\)/);
+    expect(m, "LEVEL_ORDER not found").not.toBeNull();
+    expect(bands(m![1])).toEqual([...LEVEL_ORDER]);
   });
 });

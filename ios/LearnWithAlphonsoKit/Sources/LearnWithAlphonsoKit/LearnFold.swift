@@ -72,6 +72,21 @@ public enum LearnFold {
         public let lessonID: String
     }
 
+    /// CEFR bands in learning order (src/lib/lesson-unlock.ts LEVEL_ORDER). A level not listed sorts after them all.
+    public static let levelOrder = ["A1", "A2", "B1", "B2", "C1"]
+
+    public static func levelRank(_ level: String) -> Int { levelOrder.firstIndex(of: level) ?? levelOrder.count }
+
+    /// `items` in LEARNING order: band by band (A1 first), curriculum order within a band (web lessonsInLearningOrder).
+    /// The curriculum array interleaves bands and the server opens lessons only in this order, so the course's
+    /// "Continue" reads it this way, never in raw array order.
+    public static func inLearningOrder<T>(_ items: [T], level: (T) -> String) -> [T] {
+        items.enumerated().sorted { a, b in
+            let (ra, rb) = (levelRank(level(a.element)), levelRank(level(b.element)))
+            return ra != rb ? ra < rb : a.offset < b.offset
+        }.map(\.element)
+    }
+
     /// The learner's place in the whole course: first lesson not done, with the unit's 1-based place of `count`.
     public static func currentUnitOf(_ units: [FoldUnit], completed: Set<String>) -> CurrentUnit? {
         for (i, u) in units.enumerated() {
