@@ -886,7 +886,12 @@ through this path; a failed hearts read fails open and is logged; switch:
 `startLessonSession` returns the same shape as a value. `complete-lesson`
 answers a lesson whose content no longer matches the server (different
 question count or ids) with `409 { error: "lesson-version-mismatch" }` so a
-client knows the rejection is permanent. Both functions share
+client knows the rejection is permanent. A lesson that gained APPENDED extras (ids `lx1`/`sx1`/`tx1`, the lesson-mix
+pass) is accepted in two shapes, judged against the server's own lesson by `src/lib/lesson-version.ts`
+(`resolveLessonSubmission`, byte-identical copy in `complete-lesson/lesson-version.ts`): every question (full) or every
+non-extra question (base, what an older build sends). An answer for an extra id the server lesson lacks (a newer build
+before the re-seed) is dropped, never graded or counted; any other unknown id, a duplicate, a missing real question or
+a partial set of the server's extras is still 409. Grading, XP, hearts and streak run on the accepted set only. Both functions share
 `_shared/hearts.ts`. With consent withheld, `complete-lesson` and
 `grade-review` grade against the curated list only (no AI grader).
 

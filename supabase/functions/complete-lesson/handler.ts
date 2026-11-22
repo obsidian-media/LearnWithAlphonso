@@ -33,7 +33,7 @@ import {
   verifiedOfflineCompletionDay,
 } from "./offline-completion-date.ts";
 import { completionInstantMs, HOURLY_COMPLETION_LIMIT } from "./anti-farming.ts";
-import { lessonPayloadMatches } from "./lesson-version.ts";
+import { resolveLessonSubmission } from "./lesson-version.ts";
 import {
   gainHearts,
   MAX_HEARTS,
@@ -463,7 +463,14 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   } catch {
     return jsonResponse({ error: "Invalid request body" }, 400);
   }
-  const { lessonId, total, answers, course, sessionToken, completedAt } = parsed;
+  const {
+    lessonId,
+    total: claimedTotal,
+    answers: claimedAnswers,
+    course,
+    sessionToken,
+    completedAt,
+  } = parsed;
 
   const admin = deps.admin();
   const checkQuota = deps.translateQuotaCheck(userClient, admin);
@@ -483,18 +490,22 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   if (found === "read-failed") {
     return jsonResponse({ error: "Could not load lesson" }, 503);
   }
-  if (!lessonPayloadMatches(found, total, answers)) {
+  // Both the current version and the version before appended extras are accepted (lesson-version.ts); what is graded
+  // and paid from here on is the accepted set, never the client's own count.
+  const submission = resolveLessonSubmission(found, claimedTotal, claimedAnswers);
+  if (!submission.ok) {
     console.log(
       JSON.stringify({
         event: "lesson_version_mismatch",
         lessonId,
         course,
-        total,
+        total: claimedTotal,
         serverTotal: found?.questions.length ?? null,
       }),
     );
     return jsonResponse({ error: "lesson-version-mismatch" }, 409);
   }
+  const { answers, total } = submission;
   const lesson = found!;
 
   // A queued completion (it carries the device's completedAt) may arrive long after the live window.
@@ -543,7 +554,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   const graded: { type: string; correct: boolean }[] = [];
   try {
     for (const { questionId, answer } of answers) {
-      // Safe: validateLessonAnswerCoverage already proved questionId is a
+      // Safe: resolveLessonSubmission already proved questionId is a
       // real id in this lesson.
       const question = questionById.get(questionId)!;
       const isCorrect = await deriveAnswerCorrectness(question, answer, course, ai);

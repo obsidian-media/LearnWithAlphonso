@@ -12,10 +12,10 @@ import {
   computeLeaguePromotion,
   computeLessonReplayXp,
   computeStreakUpdate,
-  validateLessonAnswerCoverage,
 } from "./progress-math";
 import { makeBlockedTermCheck } from "./ai-safety";
 import { gradeLessonAnswer } from "./grade-lesson-answer.server";
+import { resolveLessonSubmission } from "./lesson-version";
 import { localDay, streakBridge } from "./local-day";
 import { recordOpsEvent } from "./ops-events.server";
 import {
@@ -334,7 +334,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => completeLessonSchema.parse(d))
   .handler(async ({ data, context }): Promise<CompletionResponse> => {
     const { supabase, userId } = context;
-    const { lessonId, total, answers, course, sessionToken } = data;
+    const { lessonId, total: claimedTotal, answers: claimedAnswers, course, sessionToken } = data;
 
     const { createHash } = await import("node:crypto");
     const tokenHash = createHash("sha256").update(sessionToken).digest("hex");
@@ -459,13 +459,16 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // Trust boundary: the client reports its own score, so verify the
     // lesson exists, that `total` matches its real question count, that
     // the answers cover exactly this lesson's real questions (no missing,
-    // no duplicate, no foreign id -- see validateLessonAnswerCoverage), and
+    // no duplicate, no foreign id -- see resolveLessonSubmission), and
     // that a real lesson session was started, before grading anything.
     const found = getCourse(course).findLesson(lessonId);
-    if (!found || total !== found.lesson.questions.length) {
+    // Accepts the current lesson and the version before appended extras (lesson-version.ts); what is graded and paid
+    // from here on is the accepted set, never the client's own count.
+    const submission = resolveLessonSubmission(found?.lesson ?? null, claimedTotal, claimedAnswers);
+    if (!submission.ok) {
       throw new Error("Invalid lesson completion payload");
     }
-    validateLessonAnswerCoverage(found.lesson, answers);
+    const { answers, total } = submission;
     const { lessonSessionIssuedAt } = await import("./lesson-session.server");
     const sessionIssuedAt = lessonSessionIssuedAt(sessionToken, { userId, lessonId, course });
     if (sessionIssuedAt === null) {
@@ -507,7 +510,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     const missedQuestionIds: string[] = [];
     const graded: { type: string; correct: boolean }[] = [];
     for (const { questionId, answer } of answers) {
-      // Safe: validateLessonAnswerCoverage already proved questionId is a
+      // Safe: resolveLessonSubmission already proved questionId is a
       // real id in this lesson.
       const question = questionById.get(questionId)!;
       const isCorrect = await gradeLessonAnswer(question, answer, course, {

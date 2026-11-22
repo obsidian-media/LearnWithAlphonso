@@ -5,6 +5,8 @@ import {
   createSupabaseMock,
   type ChainCall,
 } from "./__testutils__/supabase-mock";
+import { findLesson } from "../data/curriculum";
+import { getCourse } from "../data/courses";
 
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
 vi.mock("@tanstack/react-start", () => ({
@@ -709,6 +711,115 @@ describe("completeLessonRemote", () => {
         },
       }),
     ).rejects.toThrow("Invalid lesson completion payload");
+  });
+
+  /** The mocks a first-ever completion of u1l1 needs, so a version-compat test only states what differs. */
+  function mockFirstCompletion() {
+    const supabase = createSupabaseMock();
+    supabase.from
+      .mockReturnValueOnce(
+        chainable({
+          data: {
+            streak: 0,
+            longest_streak: 0,
+            last_active_date: null,
+            hearts: 4,
+            hearts_refill_at: null,
+            streak_freezes: 0,
+          },
+        }),
+      )
+      .mockReturnValueOnce(chainable({ data: { xp: 0, league_tier: "bronze" } }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: null }))
+      .mockReturnValueOnce(chainable({ data: [{ correct: 8, total: 8 }] }))
+      .mockReturnValueOnce(chainable({ data: [] }));
+    supabaseAdminFrom.mockReturnValue(chainable({}));
+    return supabase;
+  }
+  const savedTotal = () =>
+    (
+      adminRpc.mock.calls.find((c) => c[0] === "apply_lesson_completion_once")?.[1] as {
+        _next: { total: number };
+      }
+    )._next.total;
+
+  describe("across a content changeover (extras appended to the lesson)", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("a build that sends extra questions this server does not have is paid on the real lesson only", async () => {
+      const supabase = mockFirstCompletion();
+      const result = await completeLessonRemote({
+        context: ctx(supabase),
+        data: {
+          lessonId: LESSON_ID,
+          total: 11,
+          answers: [
+            ...answers(),
+            { questionId: "lx1", answer: "wrong" },
+            { questionId: "sx1", answer: "x" },
+            { questionId: "tx1", answer: "x" },
+          ],
+          course: "en",
+          sessionToken: validToken(),
+        },
+      });
+      expect(result.xpGain).toBe(8 * 10 + 20); // computeXpGain(8, 8): extras neither graded nor counted
+      expect(savedTotal()).toBe(8);
+    });
+
+    it("an older build is accepted once the server lesson has the extras, and a full one is paid on all", async () => {
+      const real = findLesson(LESSON_ID)!;
+      const extra = { id: "lx1", type: "mc", prompt: "p", choices: ["a", "b"], answer: 0 };
+      const withExtra = {
+        ...real,
+        lesson: { ...real.lesson, questions: [...real.lesson.questions, extra] },
+      };
+      vi.spyOn(getCourse("en"), "findLesson").mockReturnValue(
+        withExtra as unknown as ReturnType<typeof findLesson>,
+      );
+      const base = await completeLessonRemote({
+        context: ctx(mockFirstCompletion()),
+        data: {
+          lessonId: LESSON_ID,
+          total: 8,
+          answers: answers(),
+          course: "en",
+          sessionToken: validToken(),
+        },
+      });
+      expect(base.xpGain).toBe(8 * 10 + 20);
+      expect(savedTotal()).toBe(8);
+
+      adminRpc.mockClear();
+      const full = await completeLessonRemote({
+        context: ctx(mockFirstCompletion()),
+        data: {
+          lessonId: LESSON_ID,
+          total: 9,
+          answers: [...answers(), { questionId: "lx1", answer: "a" }],
+          course: "en",
+          sessionToken: validToken(),
+        },
+      });
+      expect(full.xpGain).toBe(9 * 10 + 20);
+      expect(savedTotal()).toBe(9);
+    });
+
+    it("a submission missing a real question is still rejected when extras are present", async () => {
+      await expect(
+        completeLessonRemote({
+          context: ctx(createSupabaseMock()),
+          data: {
+            lessonId: LESSON_ID,
+            total: 8,
+            answers: [...answers().slice(0, 7), { questionId: "lx1", answer: "x" }],
+            course: "en",
+            sessionToken: validToken(),
+          },
+        }),
+      ).rejects.toThrow("Invalid lesson completion payload");
+    });
   });
 
   it("rejects a payload that doesn't answer every real question in the lesson", async () => {
