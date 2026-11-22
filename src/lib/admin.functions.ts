@@ -60,33 +60,32 @@ export const ADMIN_FUNCTION_NAMES = [
 const BUCKET = "podcast-audio";
 
 /**
- * Writes one podcast or folder change to the staff action record (staff_record), after the change itself succeeded.
- * No learner is involved, so the target is empty and the ids go in `after`. Never put text a person typed into it
- * (titles and transcripts stay in their own tables); only ids and sizes.
- *
- * The change has already been committed, so a record that cannot be written must not turn it into an error (the
- * caller would retry a finished change): it is logged (action and ids only, event audit_write_failed) and the call
- * goes on, as staffDeleteUser does after the account is gone.
+ * Calls one staff_podcast_* SQL function as the signed-in staff member. Each of them checks the reason (3 to 500
+ * characters), makes the change and writes the action-record row in ONE transaction, so a change can never exist
+ * without its reason and its record. The database error is returned, not thrown, so each caller can turn the
+ * constraint it expects (a duplicate slug, a folder that still has episodes) into a sentence.
  */
-export async function recordPodcastAction(
+async function podcastWrite(
   context: { supabaseAdmin: SupabaseClient; userId: string; staffRole: StaffRole },
-  action: string,
-  after: Record<string, Json>,
-): Promise<void> {
-  try {
-    const { recordStaffAction } = await import("./staff-audit.server");
-    await recordStaffAction(context.supabaseAdmin, {
-      actor: context.userId,
-      role: context.staffRole,
-      action,
-      target: null,
-      reason: null,
-      after,
-    });
-  } catch {
-    console.error(JSON.stringify({ event: "audit_write_failed", action, ids: after }));
-  }
+  fn: string,
+  args: Record<string, unknown>,
+): Promise<{ data: unknown; error: { message: string; code?: string } | null }> {
+  const { data, error } = await context.supabaseAdmin.rpc(fn, {
+    p_actor: context.userId,
+    p_role: context.staffRole,
+    ...args,
+  } as never);
+  return { data, error };
 }
+
+/** The reason every podcast write carries: checked here for a readable refusal, and again in SQL. */
+async function podcastReason(reason: unknown): Promise<string> {
+  const { validateReason } = await import("./staff-audit.server");
+  return validateReason(reason);
+}
+
+/** Every podcast write's input carries the reason the person typed. */
+const reasonField = { reason: z.string() };
 
 const slugSchema = z.string().min(1).max(80).refine(isValidSlug, "use lowercase kebab-case");
 
@@ -151,15 +150,35 @@ export function affectedOrThrow(
   if (!result.count) throw new Error(missingMessage);
 }
 
-/** The whole folder tree, including branches with nothing published. */
+/**
+ * A folder with its real episode counts. The counts are null (never 0) when they could not be read, so the screen says
+ * "Could not read" instead of showing an empty folder that may not be empty.
+ */
+export type AdminFolder = PodcastFolder & {
+  episodeCount: number | null;
+  publishedCount: number | null;
+};
+
+/** The whole folder tree, including branches with nothing published, each with its episode and published counts. */
 export const adminListFolders = createServerFn({ method: "GET" })
   .middleware([requireStaff("podcasts.manage")])
-  .handler(async ({ context }): Promise<PodcastFolder[]> => {
-    const { data, error } = await context.supabaseAdmin
-      .from("podcast_folders")
-      .select("id,parent_id,slug,title,description,sort_order")
-      .order("sort_order", { ascending: true });
+  .handler(async ({ context }): Promise<AdminFolder[]> => {
+    const [{ data, error }, counted] = await Promise.all([
+      context.supabaseAdmin
+        .from("podcast_folders")
+        .select("id,parent_id,slug,title,description,sort_order")
+        .order("sort_order", { ascending: true }),
+      context.supabaseAdmin.rpc("staff_podcast_folder_counts" as never),
+    ]);
     if (error) throw new Error(error.message);
+    // Grouped in the database. A folder missing from the result has no episodes: a real zero, but only when the read worked.
+    const counts = counted.error
+      ? null
+      : new Map(
+          ((counted.data ?? []) as { folder_id: string; total: number; published: number }[]).map(
+            (c) => [c.folder_id, { total: Number(c.total), published: Number(c.published) }],
+          ),
+        );
     return (data ?? []).map((row) => ({
       id: row.id,
       parentId: row.parent_id ?? null,
@@ -167,6 +186,8 @@ export const adminListFolders = createServerFn({ method: "GET" })
       title: row.title,
       description: row.description ?? null,
       sortOrder: row.sort_order,
+      episodeCount: counts ? (counts.get(row.id)?.total ?? 0) : null,
+      publishedCount: counts ? (counts.get(row.id)?.published ?? 0) : null,
     }));
   });
 
@@ -213,21 +234,20 @@ export const adminCreateFolder = createServerFn({ method: "POST" })
         title: z.string().min(1).max(200),
         description: z.string().max(2000).nullable().default(null),
         sortOrder: z.number().int().min(0).default(0),
+        ...reasonField,
       })
       .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ id: string }> => {
-    const { data: row, error } = await context.supabaseAdmin
-      .from("podcast_folders")
-      .insert({
-        parent_id: data.parentId,
-        slug: data.slug,
-        title: data.title,
-        description: data.description,
-        sort_order: data.sortOrder,
-      })
-      .select("id")
-      .single();
+    const reason = await podcastReason(data.reason);
+    const { data: newId, error } = await podcastWrite(context, "staff_podcast_folder_create", {
+      p_parent: data.parentId,
+      p_slug: data.slug,
+      p_title: data.title,
+      p_description: data.description,
+      p_sort_order: data.sortOrder,
+      p_reason: reason,
+    });
     // The two partial unique indexes (one for parent_id IS NOT NULL, one
     // for root slugs -- Postgres treats NULL parents as mutually
     // distinct, so a plain UNIQUE would not constrain roots) surface here
@@ -241,12 +261,7 @@ export const adminCreateFolder = createServerFn({ method: "POST" })
           : error.message,
       );
     }
-    await recordPodcastAction(context, "podcast.folder.create", {
-      folderId: row.id,
-      parentId: data.parentId,
-      slug: data.slug,
-    });
-    return { id: row.id };
+    return { id: newId as string };
   });
 
 export const adminRenameFolder = createServerFn({ method: "POST" })
@@ -257,28 +272,35 @@ export const adminRenameFolder = createServerFn({ method: "POST" })
         id: z.string().uuid(),
         title: z.string().min(1).max(200),
         description: z.string().max(2000).nullable().default(null),
+        ...reasonField,
       })
       .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const reason = await podcastReason(data.reason);
     // Title and description only. The slug is part of every episode's
     // storage path underneath this folder, so changing it here would
     // orphan audio without moving a single object.
-    const result = await context.supabaseAdmin
-      .from("podcast_folders")
-      .update({ title: data.title, description: data.description }, { count: "exact" })
-      .eq("id", data.id);
-    affectedOrThrow(result, "That folder no longer exists. Reload the list.");
-    await recordPodcastAction(context, "podcast.folder.rename", { folderId: data.id });
+    const { data: changed, error } = await podcastWrite(context, "staff_podcast_folder_rename", {
+      p_id: data.id,
+      p_title: data.title,
+      p_description: data.description,
+      p_reason: reason,
+    });
+    if (error) throw new Error(error.message);
+    if (!changed) throw new Error("That folder no longer exists. Reload the list.");
     return { ok: true };
   });
 
 export const adminMoveFolder = createServerFn({ method: "POST" })
   .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
-    z.object({ id: z.string().uuid(), parentId: z.string().uuid().nullable() }).parse(d),
+    z
+      .object({ id: z.string().uuid(), parentId: z.string().uuid().nullable(), ...reasonField })
+      .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const reason = await podcastReason(data.reason);
     const client = context.supabaseAdmin;
     const { data: rows, error: readError } = await client
       .from("podcast_folders")
@@ -304,22 +326,26 @@ export const adminMoveFolder = createServerFn({ method: "POST" })
       const names = cycle.map((id) => byId.get(id) ?? id).join(" → ");
       throw new Error(`That move would put the folder inside itself: ${names} → …`);
     }
-    const result = await client
-      .from("podcast_folders")
-      .update({ parent_id: data.parentId }, { count: "exact" })
-      .eq("id", data.id);
-    affectedOrThrow(result, "That folder no longer exists. Reload the list.");
-    await recordPodcastAction(context, "podcast.folder.move", {
-      folderId: data.id,
-      parentId: data.parentId,
+    // The database checks the loop again in the same transaction as the write (the check above is for the readable message).
+    const { data: changed, error } = await podcastWrite(context, "staff_podcast_folder_move", {
+      p_id: data.id,
+      p_parent: data.parentId,
+      p_reason: reason,
     });
+    if (error) {
+      throw new Error(
+        error.code === "23514" ? "That move would put the folder inside itself." : error.message,
+      );
+    }
+    if (!changed) throw new Error("That folder no longer exists. Reload the list.");
     return { ok: true };
   });
 
 export const adminDeleteFolder = createServerFn({ method: "POST" })
   .middleware([requireStaff("podcasts.manage")])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), ...reasonField }).parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const reason = await podcastReason(data.reason);
     const client = context.supabaseAdmin;
     // Checked here even though the database already refuses: both
     // podcast_folders.parent_id and podcast_episodes.folder_id are
@@ -339,12 +365,19 @@ export const adminDeleteFolder = createServerFn({ method: "POST" })
     ]);
     if ((childCount ?? 0) > 0) throw new Error("Move or delete the subfolders first.");
     if ((episodeCount ?? 0) > 0) throw new Error("Delete this folder's episodes first.");
-    const result = await client
-      .from("podcast_folders")
-      .delete({ count: "exact" })
-      .eq("id", data.id);
-    affectedOrThrow(result, "That folder was already deleted. Reload the list.");
-    await recordPodcastAction(context, "podcast.folder.delete", { folderId: data.id });
+    const { data: removed, error } = await podcastWrite(context, "staff_podcast_folder_delete", {
+      p_id: data.id,
+      p_reason: reason,
+    });
+    if (error) {
+      throw new Error(
+        // ON DELETE RESTRICT raises restrict_violation (23001); a plain foreign key says 23503.
+        error.code === "23001" || error.code === "23503"
+          ? "Move or delete what is inside this folder first."
+          : error.message,
+      );
+    }
+    if (!removed) throw new Error("That folder was already deleted. Reload the list.");
     return { ok: true };
   });
 
@@ -357,6 +390,15 @@ export type AdminEpisode = {
   durationSeconds: number;
   published: boolean;
   audioPath: string;
+  /** The first time it was published; null while it never was. */
+  publishedAt: string | null;
+  /** en | fr | es, or null when the episode has no language set. */
+  course: string | null;
+  /** Who made the audio (deepgram, human, ...) and the voice or model; null when never recorded. */
+  voiceProvider: string | null;
+  voiceModel: string | null;
+  /** The public URL of the audio, built by the storage client from audioPath; null when it could not be built. */
+  audioUrl: string | null;
 };
 
 /** Every episode in a folder, published or not. */
@@ -366,10 +408,13 @@ export const adminListEpisodes = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<AdminEpisode[]> => {
     const { data: rows, error } = await context.supabaseAdmin
       .from("podcast_episodes")
-      .select("id,folder_id,slug,title,description,duration_seconds,published,audio_path")
+      .select(
+        "id,folder_id,slug,title,description,duration_seconds,published,audio_path,published_at,course,voice_provider,voice_model",
+      )
       .eq("folder_id", data.folderId)
       .order("slug", { ascending: true });
     if (error) throw new Error(error.message);
+    const bucket = context.supabaseAdmin.storage.from(BUCKET);
     return (rows ?? []).map((row) => ({
       id: row.id,
       folderId: row.folder_id,
@@ -379,6 +424,11 @@ export const adminListEpisodes = createServerFn({ method: "GET" })
       durationSeconds: row.duration_seconds,
       published: row.published,
       audioPath: row.audio_path,
+      publishedAt: row.published_at ?? null,
+      course: row.course ?? null,
+      voiceProvider: row.voice_provider ?? null,
+      voiceModel: row.voice_model ?? null,
+      audioUrl: bucket.getPublicUrl(row.audio_path).data?.publicUrl ?? null,
     }));
   });
 
@@ -390,30 +440,35 @@ export const adminUpdateEpisode = createServerFn({ method: "POST" })
         id: z.string().uuid(),
         title: z.string().min(1).max(200),
         description: z.string().max(4000).nullable().default(null),
+        ...reasonField,
       })
       .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const reason = await podcastReason(data.reason);
     // Slug is deliberately not editable. It is baked into the storage
     // path (see storagePathFor in podcast-authoring.ts), so renaming it
     // without moving the object orphans the audio -- and moving the
     // object is a different, riskier operation than editing a title.
     // Publish under a new slug instead.
-    const result = await context.supabaseAdmin
-      .from("podcast_episodes")
-      .update({ title: data.title, description: data.description }, { count: "exact" })
-      .eq("id", data.id);
-    affectedOrThrow(result, "That episode no longer exists. Reload the list.");
-    await recordPodcastAction(context, "podcast.episode.update", { episodeId: data.id });
+    const { data: changed, error } = await podcastWrite(context, "staff_podcast_episode_update", {
+      p_id: data.id,
+      p_title: data.title,
+      p_description: data.description,
+      p_reason: reason,
+    });
+    if (error) throw new Error(error.message);
+    if (!changed) throw new Error("That episode no longer exists. Reload the list.");
     return { ok: true };
   });
 
 export const adminSetPublished = createServerFn({ method: "POST" })
   .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
-    z.object({ id: z.string().uuid(), published: z.boolean() }).parse(d),
+    z.object({ id: z.string().uuid(), published: z.boolean(), ...reasonField }).parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const reason = await podcastReason(data.reason);
     // Publishing hides or shows the ROW. It does not touch the object:
     // the podcast-audio bucket is public-read, so an unpublished
     // episode's audio stays fetchable by anyone holding the URL. Any UI
@@ -438,16 +493,16 @@ export const adminSetPublished = createServerFn({ method: "POST" })
         throw new Error(UNPUBLISHABLE_PROVIDER_MESSAGE);
       }
     }
-    const result = await context.supabaseAdmin
-      .from("podcast_episodes")
-      .update({ published: data.published }, { count: "exact" })
-      .eq("id", data.id);
-    affectedOrThrow(result, "That episode no longer exists. Reload the list.");
-    await recordPodcastAction(
+    const { data: changed, error } = await podcastWrite(
       context,
-      data.published ? "podcast.episode.publish" : "podcast.episode.unpublish",
-      { episodeId: data.id },
+      "staff_podcast_episode_set_published",
+      { p_id: data.id, p_published: data.published, p_reason: reason },
     );
+    if (error) {
+      // The table's own CHECK is the backstop for audio the app may not distribute.
+      throw new Error(error.code === "23514" ? UNPUBLISHABLE_PROVIDER_MESSAGE : error.message);
+    }
+    if (!changed) throw new Error("That episode no longer exists. Reload the list.");
     return { ok: true };
   });
 
@@ -658,10 +713,13 @@ export const adminCreateEpisode = createServerFn({ method: "POST" })
         description: z.string().max(4000).nullable().default(null),
         course: z.enum(COURSE_IDS).nullable().default(null),
         levelId: z.string().min(1).nullable().default(null),
+        ...reasonField,
       })
       .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ id: string; durationSeconds: number }> => {
+    // Before the audio is read or promoted: a missing reason must not leave a promoted object behind.
+    const reason = await podcastReason(data.reason);
     const client = context.supabaseAdmin;
     const draft = await draftForNewEpisode(client, data);
     const audioPath = storagePathFor(draft);
@@ -675,22 +733,17 @@ export const adminCreateEpisode = createServerFn({ method: "POST" })
       .upload(audioPath, buffer, { contentType, upsert: true });
     if (promoteError) throw new Error(promoteError.message);
 
-    const { data: row, error } = await client
-      .from("podcast_episodes")
-      .insert({
-        folder_id: data.folderId,
-        slug: data.slug,
-        title: data.title,
-        description: data.description,
-        audio_path: audioPath,
-        duration_seconds: durationSeconds,
-        course: data.course,
-        level_id: data.levelId,
-        source: "upload",
-        published: false,
-      })
-      .select("id")
-      .single();
+    const { data: newId, error } = await podcastWrite(context, "staff_podcast_episode_create", {
+      p_folder: data.folderId,
+      p_slug: data.slug,
+      p_title: data.title,
+      p_description: data.description,
+      p_audio_path: audioPath,
+      p_duration: durationSeconds,
+      p_course: data.course,
+      p_level: data.levelId,
+      p_reason: reason,
+    });
     if (error) {
       throw new Error(
         error.code === "23505"
@@ -698,12 +751,7 @@ export const adminCreateEpisode = createServerFn({ method: "POST" })
           : `Upload succeeded but the database insert failed: ${error.message}. Orphaned object: ${BUCKET}/${audioPath}`,
       );
     }
-    await recordPodcastAction(context, "podcast.episode.create", {
-      episodeId: row.id,
-      folderId: data.folderId,
-      slug: data.slug,
-    });
-    return { id: row.id, durationSeconds };
+    return { id: newId as string, durationSeconds };
   });
 
 /**
@@ -761,8 +809,11 @@ export const adminCreateAudioUploadUrl = createServerFn({ method: "POST" })
  */
 export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
   .middleware([requireStaff("podcasts.manage")])
-  .inputValidator((d: unknown) => z.object({ episodeId: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({ episodeId: z.string().uuid(), ...reasonField }).parse(d),
+  )
   .handler(async ({ data, context }): Promise<{ ok: true; durationSeconds: number }> => {
+    const reason = await podcastReason(data.reason);
     const client = context.supabaseAdmin;
     const audioPath = await audioPathForEpisode(client, data.episodeId);
     const { buffer, contentType, durationSeconds } = await verifyStagedAudio(
@@ -782,15 +833,13 @@ export const adminVerifyUploadedAudio = createServerFn({ method: "POST" })
     // Written only after the live object is the verified one. A row
     // claiming a duration the file does not have is exactly what the iOS
     // cache's durationDisagrees check reads as a truncated download.
-    const { error } = await client
-      .from("podcast_episodes")
-      .update({ duration_seconds: durationSeconds })
-      .eq("id", data.episodeId);
+    const { data: changed, error } = await podcastWrite(
+      context,
+      "staff_podcast_episode_audio_replace",
+      { p_id: data.episodeId, p_duration: durationSeconds, p_reason: reason },
+    );
     if (error) throw new Error(error.message);
-    await recordPodcastAction(context, "podcast.episode.audio_replace", {
-      episodeId: data.episodeId,
-      durationSeconds,
-    });
+    if (!changed) throw new Error("That episode no longer exists. Reload the list.");
     return { ok: true, durationSeconds };
   });
 
@@ -810,9 +859,12 @@ export const adminGetTranscript = createServerFn({ method: "GET" })
 export const adminSaveTranscript = createServerFn({ method: "POST" })
   .middleware([requireStaff("podcasts.manage")])
   .inputValidator((d: unknown) =>
-    z.object({ episodeId: z.string().uuid(), text: z.string().max(200_000) }).parse(d),
+    z
+      .object({ episodeId: z.string().uuid(), text: z.string().max(200_000), ...reasonField })
+      .parse(d),
   )
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const reason = await podcastReason(data.reason);
     // The SAME rule --transcript enforces, from the same module. A
     // transcript is not the TTS script: episode 1's script carries
     // ElevenLabs SSML, and rendering that to a screen reader is the
@@ -829,28 +881,18 @@ export const adminSaveTranscript = createServerFn({ method: "POST" })
     } catch (e) {
       throw new Error(e instanceof Error ? e.message : "That transcript was rejected.");
     }
-    if (normalized === null) {
-      // Empty is a deletion request, not an error: clearing the box is
-      // how an admin removes a transcript that should never have been
-      // published. Refusing would leave them no way to undo it.
-      const { error: deleteError } = await context.supabaseAdmin
-        .from("podcast_transcripts")
-        .delete()
-        .eq("episode_id", data.episodeId);
-      if (deleteError) throw new Error(deleteError.message);
-      await recordPodcastAction(context, "podcast.transcript.delete", {
-        episodeId: data.episodeId,
-      });
-      return { ok: true };
-    }
-    const { error } = await context.supabaseAdmin
-      .from("podcast_transcripts")
-      .upsert({ episode_id: data.episodeId, text: normalized }, { onConflict: "episode_id" });
-    if (error) throw new Error(error.message);
-    await recordPodcastAction(context, "podcast.transcript.save", {
-      episodeId: data.episodeId,
-      characters: normalized.length,
+    // Empty is a deletion request, not an error: clearing the box is how an admin removes a transcript that should never
+    // have been published. Refusing would leave them no way to undo it. The SQL function deletes on empty text.
+    const { error } = await podcastWrite(context, "staff_podcast_transcript_save", {
+      p_episode: data.episodeId,
+      p_text: normalized ?? "",
+      p_reason: reason,
     });
+    if (error) {
+      throw new Error(
+        error.code === "23503" ? "That episode no longer exists. Reload the list." : error.message,
+      );
+    }
     return { ok: true };
   });
 
