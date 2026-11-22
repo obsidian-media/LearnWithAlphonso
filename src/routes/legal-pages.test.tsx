@@ -58,7 +58,7 @@ describe("Terms route", () => {
     const Terms = TermsRoute.options.component!;
     render(<Terms />);
     expect(screen.getByRole("heading", { name: "Terms of Use" })).toBeInTheDocument();
-    expect(screen.getAllByText(/support@alphonsoecosystem\.app/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/support@learnwithalphonso.com/).length).toBeGreaterThan(0);
   });
 
   it("names the AI processors", () => {
@@ -170,7 +170,7 @@ describe("Support route", () => {
     // Appears more than once by design -- contact, data deletion and
     // reporting each name it, so someone skimming one section does not
     // have to hunt for it.
-    expect(screen.getAllByText(/support@alphonsoecosystem\.app/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/support@learnwithalphonso.com/).length).toBeGreaterThan(0);
   });
 
   // The address must match the one the legal pages already use. An
@@ -185,7 +185,7 @@ describe("Support route", () => {
     // Was ["privacy@...", "support@..."] before the 2026-09-28 fix below:
     // privacy@ was only here to route a manual Hector-deletion request,
     // which no longer exists now that Hector deletes with the account.
-    expect([...new Set(addresses)].sort()).toEqual(["support@alphonsoecosystem.app"]);
+    expect([...new Set(addresses)].sort()).toEqual(["support@learnwithalphonso.com"]);
   });
 });
 
@@ -302,7 +302,7 @@ describe("Terms route: Alphonso Pro", () => {
     expect(text).toMatch(
       /minus a proportionate amount for the time Pro was available before you told us/,
     );
-    expect(text).toMatch(/support@alphonsoecosystem\.app or use the Help chat/);
+    expect(text).toMatch(/support@learnwithalphonso.com or use the Help chat/);
     expect(text).not.toMatch(/lose your\s+right to withdraw/);
   });
 
@@ -324,7 +324,7 @@ describe("Accessibility route", () => {
     expect(text).toMatch(/Android/);
     expect(text).toMatch(/WCAG\) 2\.2 at level AA/);
     expect(text).toMatch(/not a claim that we meet\s+it today/);
-    expect(text).toMatch(/support@alphonsoecosystem\.app/);
+    expect(text).toMatch(/support@learnwithalphonso.com/);
     expect(text).not.toMatch(/26 September 2026/);
   });
 });

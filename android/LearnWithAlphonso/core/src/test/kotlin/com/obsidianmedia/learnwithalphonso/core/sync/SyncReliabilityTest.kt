@@ -87,7 +87,7 @@ class SyncReliabilityTest {
         assertEquals("We couldn't save this lesson.", LessonCompletionError.Rejected(null).userMessage)
         assertNull(LessonCompletionError.Offline.supportLine)
         assertNull(LessonCompletionError.Server(500).supportLine)
-        assertEquals("If this keeps happening, email support@alphonsoecosystem.app.", LessonCompletionError.Rejected(null).supportLine)
+        assertEquals("If this keeps happening, email support@learnwithalphonso.com.", LessonCompletionError.Rejected(null).supportLine)
     }
 
     @Test
@@ -331,7 +331,7 @@ class SyncReliabilityTest {
         assertEquals("1 lesson couldn't be saved. Contact support.", DeadLetterNotice.message(1))
         assertEquals("3 lessons couldn't be saved. Contact support.", DeadLetterNotice.message(3))
         val uri = DeadLetterNotice.supportMailUri(listOf("u1l1|en|10"), listOf("lesson-version-mismatch"), "1.2.3")
-        assertTrue(uri.startsWith("mailto:support@alphonsoecosystem.app?subject=A%20lesson%20couldn%27t%20be%20saved&body="), uri)
+        assertTrue(uri.startsWith("mailto:support@learnwithalphonso.com?subject=A%20lesson%20couldn%27t%20be%20saved&body="), uri)
         assertTrue(uri.contains("u1l1%7Cen%7C10%20%28lesson-version-mismatch%29"), uri)
         assertTrue(uri.contains("App%3A%201.2.3"), uri)
     }

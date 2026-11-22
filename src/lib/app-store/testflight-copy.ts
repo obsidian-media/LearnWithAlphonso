@@ -21,7 +21,7 @@ export const TESTFLIGHT: TestflightCopy = {
 Take a short placement test, then learn through CEFR-graded lessons from A1 to C1 that mix vocabulary, grammar, translation, listening and speaking. Spaced review brings back what you missed. Practice everyday scenarios out loud, listen to level-graded audio episodes with transcripts, and, if you want, learn with friends, leagues, teams and study buddies.
 
 Sign in with Apple, Google or your email (you get a 6-digit code). AI features run only after you allow them and can be turned off in Settings.`,
-  feedbackEmail: "support@alphonsoecosystem.app",
+  feedbackEmail: "support@learnwithalphonso.com",
   marketingUrl: LISTING.marketingUrl,
   privacyPolicyUrl: PRIVACY,
   // Remove the "Known in this build" paragraph once the Paid Apps Agreement is active and Pro can be
@@ -35,7 +35,7 @@ Also welcome: speaking practice in Practice, an audio episode in Listen (also wi
 
 Known in this build: Alphonso Pro cannot be bought by testers yet, so Hector (the AI voice tutor, a Pro feature) is not available and the subscription screen may say it couldn't load the options. The level test is in English only for now, even for French and Spanish learners. Android is not out yet. Lessons, review, speaking practice and listening are free to use.
 
-Tell us what confused you or broke: send feedback with a screenshot from TestFlight, or write to support@alphonsoecosystem.app.`,
+Tell us what confused you or broke: send feedback with a screenshot from TestFlight, or write to support@learnwithalphonso.com.`,
 };
 
 /** Every reason the copy would be rejected by App Store Connect or mislead a tester; empty when fine. */

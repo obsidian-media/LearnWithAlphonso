@@ -4,7 +4,7 @@ import Foundation
 /// The sync engine moves such an item to a dead-letter store so it stops blocking the queue; without
 /// this notice the learner would never know a finished lesson was not saved.
 public enum DeadLetterNotice {
-    public static let supportAddress = "support@alphonsoecosystem.app"
+    public static let supportAddress = "support@learnwithalphonso.com"
     public static let contactTitle = "Contact support"
     public static let dismissTitle = "Dismiss"
 

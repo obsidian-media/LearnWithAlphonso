@@ -352,7 +352,7 @@ function checkSupportReply(
   for (const email of reply.match(EMAIL_RE) ?? []) {
     if (email.toLowerCase() !== supportEmail) return { ok: false, why: "email" };
   }
-  // Email addresses contain host-looking text (support@alphonsoecosystem.app): take them out before the host checks.
+  // Email addresses contain host-looking text (support@learnwithalphonso.com): take them out before the host checks.
   const withoutEmails = reply.replace(EMAIL_RE, " ");
   for (const url of withoutEmails.match(URL_RE) ?? []) {
     try {

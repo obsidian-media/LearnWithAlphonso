@@ -56,6 +56,6 @@ describe("What to Test for Reddit testers", () => {
     expect(t).toMatch(/2\. Finish one lesson\./);
     expect(t).toMatch(/3\. Save a word/);
     expect(t).toMatch(/level test is in English only for now/);
-    expect(t).toMatch(/support@alphonsoecosystem\.app/);
+    expect(t).toMatch(/support@learnwithalphonso.com/);
   });
 });

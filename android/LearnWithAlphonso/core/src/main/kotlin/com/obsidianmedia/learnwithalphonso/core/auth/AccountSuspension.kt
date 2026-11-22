@@ -11,7 +11,7 @@ import com.obsidianmedia.learnwithalphonso.core.net.SupabaseAuthError
 object AccountSuspension {
     const val TITLE = "This account is suspended."
     const val API_ERROR = "account_suspended"
-    private const val SUPPORT_ADDRESS = "support@alphonsoecosystem.app"
+    private const val SUPPORT_ADDRESS = "support@learnwithalphonso.com"
     const val BODY = "If you think this is a mistake, contact support at $SUPPORT_ADDRESS."
     const val MESSAGE = "$TITLE $BODY"
 

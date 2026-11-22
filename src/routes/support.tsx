@@ -19,7 +19,7 @@ import { canonicalLink, shareMeta } from "@/lib/seo";
 // one page App Store Connect requires and the address a reviewer is
 // most likely to write to, so an alias nobody had created would be
 // worse here than anywhere else.
-const CONTACT = "support@alphonsoecosystem.app";
+const CONTACT = "support@learnwithalphonso.com";
 
 export const Route = createFileRoute("/support")({
   component: Support,
