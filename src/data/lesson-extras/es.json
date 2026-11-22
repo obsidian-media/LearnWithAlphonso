@@ -54,13 +54,13 @@
  "esa1p10l3": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "El conejo come una zanahoria",
+   "audioText": "El conejo come una zanahoria.",
    "wrong": [
-    "El conejo bebe una zanahoria",
-    "El conejo come una manzana",
-    "El perro come una zanahoria"
+    "El conejo bebe una zanahoria.",
+    "El conejo come una manzana.",
+    "El perro come una zanahoria."
    ],
-   "explanation": "The sentence \"El conejo come una zanahoria\" means the rabbit eats a carrot. The other choices change one word: drinks, apple or dog."
+   "explanation": "The sentence \"El conejo come una zanahoria.\" means the rabbit eats a carrot. The other choices change one word: drinks, apple or dog."
   },
   "speak": {
    "answer": "El perro es grande.",
@@ -164,13 +164,13 @@
  "esa1p11l3": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Hay mucha humedad hoy",
+   "audioText": "Hay mucha humedad hoy.",
    "wrong": [
-    "Hay mucha nieve hoy",
-    "Hay mucho viento hoy",
-    "Hay mucho hielo hoy"
+    "Hay mucha nieve hoy.",
+    "Hay mucho viento hoy.",
+    "Hay mucho hielo hoy."
    ],
-   "explanation": "The speaker says \"Hay mucha humedad hoy\", meaning there is a lot of humidity today; the other sentences swap in snow, wind and ice."
+   "explanation": "The speaker says \"Hay mucha humedad hoy.\", meaning there is a lot of humidity today; the other sentences swap in snow, wind and ice."
   },
   "speak": {
    "answer": "Veo un arcoíris y escucho un trueno",
@@ -233,7 +233,7 @@
     "Llevo un abrigo y calcetines.",
     "Llevo un sombrero y zapatos."
    ],
-   "explanation": "The speaker says \"Llevo un abrigo y zapatos.\" meaning \"I am wearing a coat and shoes\"; the other choices change one clothing word."
+   "explanation": "\"Llevo un abrigo y zapatos.\" uses \"llevo\" (I wear) with two clothing items: \"abrigo\" (coat) and \"zapatos\" (shoes). Listen for each item, since the other options swap one."
   },
   "speak": {
    "answer": "Llevo un sombrero y una chaqueta",
@@ -267,7 +267,7 @@
     "Llevo una chaqueta y guantes.",
     "Llevo una falda y guantes."
    ],
-   "explanation": "The speaker says \"Llevo una bufanda y guantes.\" meaning \"I am wearing a scarf and gloves.\" The other choices change one clothing word."
+   "explanation": "\"Llevo una bufanda y guantes.\" means \"I'm wearing a scarf and gloves.\" \"Llevo\" means \"I wear\"; \"una\" goes with feminine \"bufanda\", while plural \"guantes\" takes no article."
   },
   "translate": {
    "prompt": "Say that you are wearing a belt and a hat.",
@@ -406,13 +406,13 @@
  "esa1p14l2": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mi padre es bombero",
+   "audioText": "Mi padre es bombero.",
    "wrong": [
-    "Mi padre es abogado",
-    "Mi madre es bombera",
-    "Mi padre es cocinero"
+    "Mi padre es abogado.",
+    "Mi madre es bombera.",
+    "Mi padre es cocinero."
    ],
-   "explanation": "The speaker says \"Mi padre es bombero\", meaning my father is a firefighter; the other choices change the family member or the job."
+   "explanation": "The speaker says \"Mi padre es bombero.\", meaning my father is a firefighter; the other choices change the family member or the job."
   },
   "speak": {
    "answer": "Mi hermana es artista",
@@ -514,13 +514,13 @@
  "esa1p15l3": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "La ropa está seca",
+   "audioText": "La ropa está seca.",
    "wrong": [
-    "La ropa está sucia",
-    "La ropa está nueva",
-    "La ropa está fría"
+    "La ropa está sucia.",
+    "La ropa está nueva.",
+    "La ropa está fría."
    ],
-   "explanation": "The sentence \"La ropa está seca\" means the clothes are dry; the other choices change the last word to dirty, new or cold."
+   "explanation": "The sentence \"La ropa está seca.\" means the clothes are dry; the other choices change the last word to dirty, new or cold."
   },
   "speak": {
    "answer": "La caja está llena",
@@ -545,13 +545,13 @@
  "esa1p15l4": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "La caja está muy pesada",
+   "audioText": "La caja está muy pesada.",
    "wrong": [
-    "La caja está muy sucia",
-    "La caja está muy cerrada",
-    "La caja está muy mojada"
+    "La caja está muy sucia.",
+    "La caja está muy cerrada.",
+    "La caja está muy mojada."
    ],
-   "explanation": "\"La caja está muy pesada\" means the box is very heavy; the wrong choices change the last word to sucia (dirty), cerrada (closed) or mojada (wet)."
+   "explanation": "\"La caja está muy pesada.\" means the box is very heavy; the wrong choices change the last word to sucia (dirty), cerrada (closed) or mojada (wet)."
   },
   "translate": {
    "prompt": "Say that the room is very quiet.",
@@ -639,13 +639,13 @@
  "esa1p16l3": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Hoy estoy muy cansado",
+   "audioText": "Hoy estoy muy cansado.",
    "wrong": [
-    "Hoy estoy muy contento",
-    "Hoy estoy muy nervioso",
-    "Hoy estoy muy enojado"
+    "Hoy estoy muy contento.",
+    "Hoy estoy muy nervioso.",
+    "Hoy estoy muy enojado."
    ],
-   "explanation": "The sentence is \"Hoy estoy muy cansado\", meaning \"Today I am very tired\". The other choices swap in different feelings: happy, nervous and angry."
+   "explanation": "The sentence is \"Hoy estoy muy cansado.\", meaning \"Today I am very tired\". The other choices swap in different feelings: happy, nervous and angry."
   },
   "speak": {
    "answer": "Estoy muy orgulloso de ti",
@@ -675,7 +675,7 @@
     "¿Dónde está la mesa?",
     "¿Cómo está la casa?"
    ],
-   "explanation": "The speaker asks \"¿Dónde está la casa?\", which means \"Where is the house?\". The other choices change the question word or the noun, so they ask something different."
+   "explanation": "You heard a question asking where the house is: \"¿Dónde está la casa?\" The other choices change the question word or the noun, so they ask something different."
   },
   "translate": {
    "prompt": "Ask a friend (informal 'you') where he or she is from, using the question word for 'where'.",
@@ -870,7 +870,7 @@
     "El gato está cerca de la silla.",
     "El gato está encima de la silla."
    ],
-   "explanation": "The speaker says \"El gato está debajo de la silla.\", meaning the cat is under the chair; \"debajo de\" means below or under."
+   "explanation": "\"El gato está debajo de la silla.\" uses \"debajo de\" (under), the opposite of \"encima de\" (on top of). Listen for the position word that tells you where the cat is."
   },
   "speak": {
    "answer": "El libro está encima de la mesa",
@@ -897,7 +897,7 @@
     "Hola, buenos días, por favor.",
     "Adiós, buenos días, mucho gusto."
    ],
-   "explanation": "The speaker said \"Hola, buenos días, mucho gusto.\" The wrong choices change \"buenos días\" to \"buenas noches\", \"mucho gusto\" to \"por favor\", or \"Hola\" to \"Adiós\"."
+   "explanation": "\"Hola, buenos días, mucho gusto.\" strings together a greeting, a daytime greeting (\"buenos días\" is morning, not night), and \"mucho gusto\" (nice to meet you)."
   },
   "speak": {
    "answer": "Hola, buenas noches",
@@ -958,7 +958,7 @@
     "Hola, me llamo Luis, ¿y tú?",
     "Hola, no llamo Ana, ¿y tú?"
    ],
-   "explanation": "The speaker says \"Hola, me llamo Ana, ¿y tú?\", which means \"Hi, my name is Ana, and you?\". The other choices change one word, such as the name or the pronoun."
+   "explanation": "\"Hola, me llamo Ana, ¿y tú?\" uses \"me llamo\" (my name is) and informal \"tú\" for \"you\". Formal \"usted\" would sound different, as would a different name."
   },
   "speak": {
    "answer": "Buenas noches, hablo español",
@@ -1266,13 +1266,13 @@
  "esa1p22l2": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Yo caliento la sopa",
+   "audioText": "Yo caliento la sopa.",
    "wrong": [
-    "Yo caliento la leche",
-    "Yo añado la sopa",
-    "Yo sirvo la sopa"
+    "Yo caliento la leche.",
+    "Yo añado la sopa.",
+    "Yo sirvo la sopa."
    ],
-   "explanation": "The speaker says \"Yo caliento la sopa\", meaning \"I heat the soup\"; the other choices change the verb or the noun to a clearly different word."
+   "explanation": "The speaker says \"Yo caliento la sopa.\", meaning \"I heat the soup\"; the other choices change the verb or the noun to a clearly different word."
   },
   "speak": {
    "answer": "Yo sirvo la sopa.",
@@ -1444,7 +1444,7 @@
     "Tengo pocos libros aquí.",
     "Tengo pocos amigos allí."
    ],
-   "explanation": "The speaker says \"Tengo pocos amigos aquí.\", meaning 'I have few friends here'; \"pocos\" is the word for 'few'."
+   "explanation": "\"Tengo pocos amigos aquí.\" uses \"pocos\" (few), which agrees with plural masculine \"amigos\". Listen for \"pocos\" versus \"muchos\" (many) and \"aquí\" (here) versus \"allí\" (there)."
   },
   "speak": {
    "answer": "Tengo muchos libros en casa",
@@ -1477,7 +1477,7 @@
     "No quiero ese café, gracias.",
     "No quiero otro café, gracias."
    ],
-   "explanation": "The sentence \"No quiero más café, gracias.\" means \"I don't want more coffee, thanks.\" The word \"más\" (more) sounds different from \"mucho\", \"ese\" and \"otro\"."
+   "explanation": "\"No quiero más café, gracias.\" uses \"más\" (more) after \"no quiero\" to decline another serving. Compare it with \"mucho\" (a lot), \"ese\" (that) and \"otro\" (another)."
   },
   "translate": {
    "prompt": "Say that you want nothing.",
@@ -1506,7 +1506,7 @@
   },
   "speak": {
    "answer": "Quiero comer la pizza entera",
-   "explanation": "The phrase \"Quiero comer la pizza entera\" means \"I want to eat the whole pizza\"; \"entera\" agrees with the feminine noun \"pizza\"."
+   "explanation": "\"Quiero comer la pizza entera\" uses \"entera\" (whole), which ends in -a to match feminine \"pizza\". A masculine noun would take \"entero\"."
   },
   "translate": {
    "prompt": "Say that there are exactly ten people here.",
@@ -1587,16 +1587,6 @@
   }
  },
  "esa1p24l3": {
-  "listening": {
-   "prompt": "What did you hear?",
-   "audioText": "No entiendo, ¿puedes repetirlo?",
-   "wrong": [
-    "No entiendo, ¿puedes escribirlo?",
-    "No sé, ¿puedes repetirlo?",
-    "No entiendo, ¿puedes comerlo?"
-   ],
-   "explanation": "The speaker says \"No entiendo, ¿puedes repetirlo?\", which means 'I don't understand, can you repeat it?'. The wrong choices change one word that sounds clearly different."
-  },
   "translate": {
    "prompt": "Tell someone it's fine and that there is no problem.",
    "acceptableAnswers": [
@@ -1616,13 +1606,13 @@
  "esa1p24l4": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Estoy muy contento hoy",
+   "audioText": "Estoy muy contento hoy.",
    "wrong": [
-    "Estoy muy cansado hoy",
-    "Estoy muy bien aquí",
-    "Estamos muy contentos hoy"
+    "Estoy muy cansado hoy.",
+    "Estoy muy bien aquí.",
+    "Estamos muy contentos hoy."
    ],
-   "explanation": "\"Estoy muy contento hoy\" means \"I am very happy today\"; contento is the word for happy or glad, and estar is used for how you feel."
+   "explanation": "\"Estoy muy contento hoy.\" means \"I am very happy today\"; contento is the word for happy or glad, and estar is used for how you feel."
   },
   "speak": {
    "answer": "Buena suerte, hasta luego",
@@ -1674,7 +1664,7 @@
     "Encantado de conocerte.",
     "Encantada de conocerte."
    ],
-   "explanation": "\"Es un placer.\" means 'It's a pleasure' and is said when you meet someone. Add \"conocerte\" for someone you call tú, \"conocerlo/conocerla\" for usted, or \"conocerlos/conocerlas\" for a group; \"Mucho gusto\" and \"Encantado/Encantada\" also work."
+   "explanation": "\"Es un placer.\" (It's a pleasure) is a set phrase for meeting someone. You can add \"conocerte\" (tú), \"conocerlo/la\" (usted) or \"conocerlos/las\" (a group); \"Mucho gusto\" and \"Encantado/a\" also work."
   }
  },
  "esa1p25l1": {
@@ -1796,13 +1786,13 @@
  "esa1p25l5": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Quiero una camisa azul oscuro",
+   "audioText": "Quiero una camisa azul oscuro.",
    "wrong": [
-    "Quiero una camisa verde oscuro",
-    "Quiero una falda azul oscuro",
-    "Quiero una camisa azul claro"
+    "Quiero una camisa verde oscuro.",
+    "Quiero una falda azul oscuro.",
+    "Quiero una camisa azul claro."
    ],
-   "explanation": "\"Quiero una camisa azul oscuro\" means 'I want a dark blue shirt'; oscuro after the color makes the shade dark."
+   "explanation": "\"Quiero una camisa azul oscuro.\" means 'I want a dark blue shirt'; oscuro after the color makes the shade dark."
   },
   "speak": {
    "answer": "El perro tiene manchas negras",
@@ -1825,13 +1815,13 @@
  "esa1p26l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Cruza la calle y camina",
+   "audioText": "Cruza la calle y camina.",
    "wrong": [
-    "Cruza la puerta y camina",
-    "Cruza la calle y espera",
-    "Sube la calle y camina"
+    "Cruza la puerta y camina.",
+    "Cruza la calle y espera.",
+    "Sube la calle y camina."
    ],
-   "explanation": "The speaker says \"Cruza la calle y camina\", two tú commands: cross the street and walk. The other choices change one word (puerta, espera, sube)."
+   "explanation": "The speaker says \"Cruza la calle y camina.\", two tú commands: cross the street and walk. The other choices change one word (puerta, espera, sube)."
   },
   "translate": {
    "prompt": "Tell a friend to wait here.",
@@ -1880,6 +1870,16 @@
   }
  },
  "esa1p26l3": {
+  "listening": {
+   "prompt": "Which sentence did you hear?",
+   "audioText": "Espera un momento, por favor.",
+   "wrong": [
+    "Corre un momento, por favor.",
+    "Espera un minuto, por favor.",
+    "Espera un momento, bien, gracias."
+   ],
+   "explanation": "You hear \"Espera un momento, por favor.\", which uses espera, the tú command of esperar (to wait), to politely ask someone to wait a moment. Listen for espera (wait), momento (moment) and por favor (please)."
+  },
   "translate": {
    "prompt": "Tell a friend to come here.",
    "acceptableAnswers": [
@@ -1900,13 +1900,13 @@
  "esa1p26l4": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Espera aquí, por favor",
+   "audioText": "Espera aquí, por favor.",
    "wrong": [
-    "Mira aquí, por favor",
-    "Sube aquí, por favor",
-    "Entra aquí, por favor"
+    "Mira aquí, por favor.",
+    "Sube aquí, por favor.",
+    "Entra aquí, por favor."
    ],
-   "explanation": "The speaker says \"Espera aquí, por favor\", which uses espera, the tú command of esperar (to wait), to ask someone to wait here."
+   "explanation": "The speaker says \"Espera aquí, por favor.\", which uses espera, the tú command of esperar (to wait), to ask someone to wait here."
   },
   "speak": {
    "answer": "Mira aquí y escucha",
@@ -1925,7 +1925,7 @@
     "Sube arriba.",
     "Sube para arriba."
    ],
-   "explanation": "\"Sube.\" is the tú command of subir (to go up), the opposite of baja."
+   "explanation": "\"Sube.\" is the informal (tú) command of \"subir\" (to go up). The tú command drops the -ir ending and uses the -e form, and it's the opposite of \"baja\" (go down)."
   }
  },
  "esa1p26l5": {
@@ -1937,7 +1937,7 @@
     "Abre la ventana, por favor.",
     "Abre la puerta, ahora mismo."
    ],
-   "explanation": "The speaker said \"Abre la puerta, por favor.\", which means please open the door. \"Abre\" is the tú command of abrir."
+   "explanation": "\"Abre la puerta, por favor.\" uses \"abre\", the tú command of \"abrir\" (to open). Listen for \"puerta\" (door) versus \"ventana\", and \"abre\" versus \"cierra\" (close)."
   },
   "translate": {
    "prompt": "Tell a friend to sit down.",
@@ -2037,13 +2037,13 @@
  "esa1p2l4": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Tengo diecisiete años",
+   "audioText": "Tengo diecisiete años.",
    "wrong": [
-    "Tengo veinte años",
-    "Tengo catorce años",
-    "Tengo doce años"
+    "Tengo veinte años.",
+    "Tengo catorce años.",
+    "Tengo doce años."
    ],
-   "explanation": "The speaker says \"Tengo diecisiete años\", meaning \"I am seventeen years old\"; the other choices use different numbers that sound clearly different."
+   "explanation": "The speaker says \"Tengo diecisiete años.\", meaning \"I am seventeen years old\"; the other choices use different numbers that sound clearly different."
   },
   "translate": {
    "prompt": "Say that you have eighteen books.",
@@ -2065,7 +2065,7 @@
     "La casa es azul y negra.",
     "La casa es blanca y verde."
    ],
-   "explanation": "The speaker says \"La casa es azul y verde.\" The other choices change one color word, so listen for azul and verde."
+   "explanation": "\"La casa es azul y verde.\" names two colors, \"azul\" (blue) and \"verde\" (green). \"Azul\" and \"verde\" don't change for a feminine noun like \"casa\", unlike \"blanca\" or \"negra\"."
   },
   "speak": {
    "answer": "Mi coche es rojo y negro",
@@ -2191,13 +2191,13 @@
  "esa1p4l2": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mi abuela es muy buena",
+   "audioText": "Mi abuela es muy buena.",
    "wrong": [
-    "Mi abuela es muy bonita",
-    "Mi abuelo es muy bueno",
-    "Mi tía es muy buena"
+    "Mi abuela es muy bonita.",
+    "Mi abuelo es muy bueno.",
+    "Mi tía es muy buena."
    ],
-   "explanation": "The speaker says \"Mi abuela es muy buena\", meaning my grandmother is very good; abuela is the grandmother, while abuelo, tía and bonita sound clearly different."
+   "explanation": "The speaker says \"Mi abuela es muy buena.\", meaning my grandmother is very good; abuela is the grandmother, while abuelo, tía and bonita sound clearly different."
   },
   "translate": {
    "prompt": "Say that your uncle is a good man.",
@@ -2213,13 +2213,13 @@
  "esa1p4l3": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mi esposa es muy buena",
+   "audioText": "Mi esposa es muy buena.",
    "wrong": [
-    "Mi madre es muy buena",
-    "Mi esposa es muy alta",
-    "Mi esposa es muy joven"
+    "Mi madre es muy buena.",
+    "Mi esposa es muy alta.",
+    "Mi esposa es muy joven."
    ],
-   "explanation": "The sentence \"Mi esposa es muy buena\" means \"My wife is very good.\" The other choices change one word, such as \"madre\" (mother) or \"alta\" (tall)."
+   "explanation": "The sentence \"Mi esposa es muy buena.\" means \"My wife is very good.\" The other choices change one word, such as \"madre\" (mother) or \"alta\" (tall)."
   },
   "speak": {
    "answer": "Mi primo y mi esposa",
@@ -2236,7 +2236,7 @@
     "Mi primo es parte de la familia.",
     "Mi primo pertenece a mi familia."
    ],
-   "explanation": "\"Mi primo es parte de mi familia.\" uses \"primo\" for a male cousin and \"es parte de\" for \"is part of\"."
+   "explanation": "\"Mi primo es parte de mi familia.\" Use \"primo\" for a male cousin (\"prima\" for a female), and \"es parte de\" to say someone belongs to a group."
   }
  },
  "esa1p4l4": {
@@ -2407,7 +2407,7 @@
     "Hoy es martes y trabajo.",
     "Hoy es lunes y salgo."
    ],
-   "explanation": "The sentence is \"Hoy es lunes y trabajo.\" It says that today is Monday and the speaker is working."
+   "explanation": "\"Hoy es lunes y trabajo.\" The choices differ in the day or the verb, so listen for \"lunes\" (Monday) and \"trabajo\" (I work)."
   },
   "translate": {
    "prompt": "Say that today is Monday.",
@@ -2428,7 +2428,7 @@
     "Hoy es martes y hace calor.",
     "Ayer es martes y hace frío."
    ],
-   "explanation": "The speaker says \"Hoy es martes y hace frío.\", meaning today is Tuesday and it is cold."
+   "explanation": "\"Hoy es martes y hace frío.\" Listen for \"hoy\" (today), \"martes\" (Tuesday), and \"frío\" (cold, not \"calor\"). Weather uses \"hace\"."
   },
   "speak": {
    "answer": "Hoy es sábado y mañana es domingo",
@@ -2442,7 +2442,7 @@
     "Fue viernes ayer.",
     "El viernes fue ayer."
    ],
-   "explanation": "\"Ayer fue viernes.\" uses \"ayer\" for yesterday and \"fue\" (was) with the day \"viernes\"."
+   "explanation": "\"Ayer fue viernes.\" \"Ayer\" means yesterday, and \"fue\" is the past of \"es\", used with a day of the week."
   }
  },
  "esa1p6l3": {
@@ -2472,7 +2472,7 @@
     "Voy a ir al mercado más tarde, ahora no.",
     "Voy a ir al mercado luego, ahora no."
    ],
-   "explanation": "\"Voy al mercado luego, ahora no.\" uses \"luego\" for later and \"ahora\" for now, with \"no\" to say not now."
+   "explanation": "\"Voy al mercado luego, ahora no.\" \"Luego\" means later, \"ahora\" means now, and \"no\" after it says not now."
   }
  },
  "esa1p6l4": {
@@ -2589,7 +2589,7 @@
     "El reloj está en la alcoba.",
     "El reloj está en la pieza."
    ],
-   "explanation": "\"El reloj está en la habitación.\" uses \"está\" to say where something is. You can say \"habitación\" or \"dormitorio\" for bedroom."
+   "explanation": "\"El reloj está en la habitación.\" Use \"estar\" for where something is located. \"Habitación\" and \"dormitorio\" both mean bedroom."
   }
  },
  "esa1p7l4": {
@@ -2629,13 +2629,13 @@
  "esa1p8l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Me duele la cabeza",
+   "audioText": "Me duele la cabeza.",
    "wrong": [
-    "Me duele la mano",
-    "Me duele la nariz",
-    "Me duele la boca"
+    "Me duele la mano.",
+    "Me duele la nariz.",
+    "Me duele la boca."
    ],
-   "explanation": "The speaker says \"Me duele la cabeza\", which means \"My head hurts.\" The other choices name different body parts: hand, nose and mouth."
+   "explanation": "The speaker says \"Me duele la cabeza.\", which means \"My head hurts.\" The other choices name different body parts: hand, nose and mouth."
   },
   "translate": {
    "prompt": "Say that you have blue eyes.",
@@ -2740,13 +2740,13 @@
  "esa1p9l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Tengo treinta y dos libros",
+   "audioText": "Tengo treinta y dos libros.",
    "wrong": [
-    "Tengo treinta y dos amigos",
-    "Tengo cuarenta y dos libros",
-    "Tengo treinta y tres libros"
+    "Tengo treinta y dos amigos.",
+    "Tengo cuarenta y dos libros.",
+    "Tengo treinta y tres libros."
    ],
-   "explanation": "The speaker says \"Tengo treinta y dos libros\", meaning I have thirty-two books. Each wrong choice changes one word: the thing counted, or the number."
+   "explanation": "The speaker says \"Tengo treinta y dos libros.\", meaning I have thirty-two books. Each wrong choice changes one word: the thing counted, or the number."
   },
   "translate": {
    "prompt": "Say that you are twenty-three years old.",
@@ -2774,7 +2774,7 @@
     "Tengo cincuenta y cinco años.",
     "Tengo treinta y cinco años."
    ],
-   "explanation": "The sentence is \"Tengo cuarenta y cinco años.\" and it means 'I am forty-five years old'; cuarenta is 40 and cinco is 5."
+   "explanation": "\"Tengo cuarenta y cinco años.\" Tens link to units with \"y\": \"cuarenta\" (40) + \"y\" + \"cinco\" (5). Age uses \"tener\"."
   },
   "speak": {
    "answer": "Tengo setenta años",
@@ -3006,7 +3006,7 @@
     "Me queda bien, pero quiero otra talla.",
     "Me queda bien, pero quiero otro probador."
    ],
-   "explanation": "The speaker says \"Me queda bien, pero quiero otro color.\" meaning it fits well but they want a different color."
+   "explanation": "\"Me queda bien, pero quiero otro color.\" \"Me queda bien\" means it fits me well. The choices differ in \"bien/mal\" and in what you want instead: color, talla, probador."
   },
   "speak": {
    "answer": "¿Dónde están los probadores?",
@@ -3188,13 +3188,13 @@
  "esa2p14l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mañana voy a enviar un correo electrónico",
+   "audioText": "Mañana voy a enviar un correo electrónico.",
    "wrong": [
-    "Mañana voy a abrir un correo electrónico",
-    "Mañana voy a enviar un archivo electrónico",
-    "Mañana voy a recibir un correo electrónico"
+    "Mañana voy a abrir un correo electrónico.",
+    "Mañana voy a enviar un archivo electrónico.",
+    "Mañana voy a recibir un correo electrónico."
    ],
-   "explanation": "The speaker says \"Mañana voy a enviar un correo electrónico\", meaning tomorrow they will send an email. Each other choice changes one word: abrir, archivo or recibir."
+   "explanation": "The speaker says \"Mañana voy a enviar un correo electrónico.\", meaning tomorrow they will send an email. Each other choice changes one word: abrir, archivo or recibir."
   },
   "speak": {
    "answer": "Mi computadora no tiene internet.",
@@ -3228,7 +3228,7 @@
     "Mi computadora no tiene un buen ratón.",
     "Mi computadora no tiene un buen archivo."
    ],
-   "explanation": "The sentence is \"Mi computadora no tiene un buen teclado.\" Only the last word changes in the other choices, so listen for \"teclado\" (keyboard)."
+   "explanation": "\"Mi computadora no tiene un buen teclado.\" Only the last word changes between choices, so listen for \"teclado\" (keyboard)."
   },
   "translate": {
    "prompt": "Say that you need the charger for your phone.",
@@ -3252,13 +3252,13 @@
  "esa2p14l3": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mi computadora no tiene batería hoy",
+   "audioText": "Mi computadora no tiene batería hoy.",
    "wrong": [
-    "Mi computadora no tiene cargador hoy",
-    "Mi computadora no tiene internet hoy",
-    "Mi computadora no tiene teclado hoy"
+    "Mi computadora no tiene cargador hoy.",
+    "Mi computadora no tiene internet hoy.",
+    "Mi computadora no tiene teclado hoy."
    ],
-   "explanation": "The speaker says \"Mi computadora no tiene batería hoy\", meaning my computer has no battery today. Each other choice swaps \"batería\" for another tech word."
+   "explanation": "The speaker says \"Mi computadora no tiene batería hoy.\", meaning my computer has no battery today. Each other choice swaps \"batería\" for another tech word."
   },
   "speak": {
    "answer": "Necesito el cargador y la batería",
@@ -3286,13 +3286,13 @@
  "esa2p15l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mi hermana siempre come en casa",
+   "audioText": "Mi hermana siempre come en casa.",
    "wrong": [
-    "Mi hermana nunca come en casa",
-    "Mi hermana siempre duerme en casa",
-    "Mi madre siempre come en casa"
+    "Mi hermana nunca come en casa.",
+    "Mi hermana siempre duerme en casa.",
+    "Mi madre siempre come en casa."
    ],
-   "explanation": "The speaker says \"Mi hermana siempre come en casa\", meaning my sister always eats at home; \"siempre\" is the frequency adverb for always."
+   "explanation": "The speaker says \"Mi hermana siempre come en casa.\", meaning my sister always eats at home; \"siempre\" is the frequency adverb for always."
   },
   "translate": {
    "prompt": "Say that you rarely go to the movies.",
@@ -3322,7 +3322,7 @@
     "Mi hermano nunca come en casa los lunes.",
     "Mi hermana nunca come en casa los domingos."
    ],
-   "explanation": "The speaker says \"Mi hermano nunca come en casa los domingos.\" The key word is \"nunca\" (never), which is the opposite of \"siempre\" (always)."
+   "explanation": "\"Mi hermano nunca come en casa los domingos.\" \"Nunca\" means never, the opposite of \"siempre\". Also check \"hermano\" (brother) and \"domingos\" (Sundays)."
   },
   "speak": {
    "answer": "Voy al cine una vez a la semana",
@@ -3726,13 +3726,13 @@
  "esa2p1l2": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Quiero pescado con arroz y verduras",
+   "audioText": "Quiero pescado con arroz y verduras.",
    "wrong": [
-    "Quiero pollo con arroz y verduras",
-    "Quiero pescado con pan y verduras",
-    "Quiero pescado con arroz y fruta"
+    "Quiero pollo con arroz y verduras.",
+    "Quiero pescado con pan y verduras.",
+    "Quiero pescado con arroz y fruta."
    ],
-   "explanation": "The speaker says \"Quiero pescado con arroz y verduras\", ordering fish with rice and vegetables; the other choices change one food word."
+   "explanation": "The speaker says \"Quiero pescado con arroz y verduras.\", ordering fish with rice and vegetables; the other choices change one food word."
   },
   "speak": {
    "answer": "Para el desayuno quiero pan y fruta",
@@ -4592,7 +4592,7 @@
     "Trabajé aquí desde las doce hasta las cinco.",
     "Estudié aquí desde las nueve hasta las cinco."
    ],
-   "explanation": "\"Trabajé aquí desde las nueve hasta las cinco.\" uses \"desde...hasta\" to mark the start and end of a span of time, here nine to five."
+   "explanation": "\"Trabajé aquí desde las nueve hasta las cinco.\" uses \"desde…hasta\" to mark the start and end of a span of time, here nine to five."
   },
   "speak": {
    "answer": "Vivo aquí desde hace dos años.",
@@ -4842,13 +4842,13 @@
  "esa2p2l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Ayer yo compré pan en la tienda",
+   "audioText": "Ayer yo compré pan en la tienda.",
    "wrong": [
-    "Ayer yo comí pan en la tienda",
-    "Ayer yo vendí pan en la tienda",
-    "Ayer yo compré pan en la fiesta"
+    "Ayer yo comí pan en la tienda.",
+    "Ayer yo vendí pan en la tienda.",
+    "Ayer yo compré pan en la fiesta."
    ],
-   "explanation": "The speaker says \"Ayer yo compré pan en la tienda\", using the yo form of comprar (-é) to say they bought bread yesterday."
+   "explanation": "The speaker says \"Ayer yo compré pan en la tienda.\", using the yo form of comprar (-é) to say they bought bread yesterday."
   },
   "translate": {
    "prompt": "Say that yesterday you worked at home.",
@@ -4876,7 +4876,7 @@
     "Ayer yo estuve en Cuba todo el día.",
     "Ayer yo estuve en casa toda la tarde."
    ],
-   "explanation": "The speaker says \"Ayer yo estuve en casa todo el día.\" meaning 'Yesterday I was at home all day', using the irregular preterite \"estuve\"."
+   "explanation": "\"Ayer yo estuve en casa todo el día.\" uses \"estuve\", the irregular yo preterite of estar, for a finished past stay at home."
   },
   "speak": {
    "answer": "Ayer yo puse la mesa para la cena",
@@ -4940,7 +4940,7 @@
     "Ayer yo busqué la guitarra en casa.",
     "Ayer yo toqué la guitarra en clase."
    ],
-   "explanation": "The speaker says \"Ayer yo toqué la guitarra en casa.\" The -car verb tocar changes c to qu in the yo preterite, giving \"toqué\"."
+   "explanation": "In \"Ayer yo toqué la guitarra en casa.\", tocar changes c to qu before -é in the yo preterite, giving \"toqué\" and keeping the hard k sound."
   },
   "speak": {
    "answer": "Ayer yo pagué la cuenta del café",
@@ -4974,7 +4974,7 @@
     "Ayer yo caminé al banco con mi perro.",
     "Ayer yo corrí al parque con mi perro."
    ],
-   "explanation": "The speaker says \"Ayer yo caminé al parque con mi perro.\" The ending -é on \"caminé\" shows a finished action done by \"yo\"."
+   "explanation": "In \"Ayer yo caminé al parque con mi perro.\", the ending -é on \"caminé\" marks a finished past action by yo with a regular -ar verb."
   },
   "translate": {
    "prompt": "Say that yesterday you finished your homework (use the 'I' form).",
@@ -5111,7 +5111,7 @@
     "Mis amigas son muy tranquilas y divertidas.",
     "Mis amigos son muy simpáticos y divertidos."
    ],
-   "explanation": "The speaker said \"Mis amigas son muy simpáticas y divertidas.\" Both adjectives are feminine plural because \"amigas\" is feminine plural."
+   "explanation": "In \"Mis amigas son muy simpáticas y divertidas.\", both adjectives take -as to match the feminine plural \"amigas\"."
   },
   "speak": {
    "answer": "Las casas son muy bonitas",
@@ -5172,7 +5172,7 @@
     "Mi hermana es muy simpática y callada.",
     "Mi madre es muy simpática y trabajadora."
    ],
-   "explanation": "The sentence you hear is \"Mi hermana es muy simpática y trabajadora.\" Both adjectives end in -a because they describe a feminine singular noun, \"mi hermana\"."
+   "explanation": "In \"Mi hermana es muy simpática y trabajadora.\", both adjectives end in -a to match the feminine singular \"hermana\"."
   },
   "speak": {
    "answer": "Las casas nuevas son muy bonitas",
@@ -5263,7 +5263,7 @@
     "Mi casa es más grande que tu coche.",
     "Mi mesa es más grande que tu casa."
    ],
-   "explanation": "The speaker says \"Mi casa es más grande que tu casa.\", comparing the size of two houses with \"más ... que\"."
+   "explanation": "\"Mi casa es más grande que tu casa.\" compares two things with \"más + adjective + que\", meaning 'bigger than'."
   },
   "translate": {
    "prompt": "Say that your friend is as tall as your brother.",
@@ -5402,7 +5402,7 @@
     "Tú vives en una casa muy bonita.",
     "Tú vives en una playa muy grande."
    ],
-   "explanation": "The speaker says \"Tú vives en una casa muy grande.\" using the tú form of vivir, \"vives\", to say where you live."
+   "explanation": "\"Tú vives en una casa muy grande.\" uses \"vives\", the tú form of vivir: the -ir verb ends in -es for tú."
   },
   "speak": {
    "answer": "Tú vives en una casa grande",
@@ -5515,13 +5515,13 @@
  "esa2p6l5": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Tú vuelves a casa muy tarde",
+   "audioText": "Tú vuelves a casa muy tarde.",
    "wrong": [
-    "Tú vienes a casa muy tarde",
-    "Tú vuelves a casa muy temprano",
-    "Tú vuelves a clase muy tarde"
+    "Tú vienes a casa muy tarde.",
+    "Tú vuelves a casa muy temprano.",
+    "Tú vuelves a clase muy tarde."
    ],
-   "explanation": "The sentence is \"Tú vuelves a casa muy tarde\": volver changes o to ue in the stem and takes -es for tú. The other choices swap one word, such as vienes, temprano or clase."
+   "explanation": "The sentence is \"Tú vuelves a casa muy tarde.\": volver changes o to ue in the stem and takes -es for tú. The other choices swap one word, such as vienes, temprano or clase."
   },
   "speak": {
    "answer": "Tú pides ayuda y yo trabajo",
@@ -5635,13 +5635,13 @@
  "esa2p7l4": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "El cliente va a pagar con tarjeta hoy",
+   "audioText": "El cliente va a pagar con tarjeta hoy.",
    "wrong": [
-    "El cliente va a gastar con tarjeta hoy",
-    "El cliente va a pagar con cartera hoy",
-    "El cliente va a pagar con tarjeta mañana"
+    "El cliente va a gastar con tarjeta hoy.",
+    "El cliente va a pagar con cartera hoy.",
+    "El cliente va a pagar con tarjeta mañana."
    ],
-   "explanation": "The speaker says \"El cliente va a pagar con tarjeta hoy\", meaning the customer will pay by card today. The other choices change the verb, the payment method or the day."
+   "explanation": "The speaker says \"El cliente va a pagar con tarjeta hoy.\", meaning the customer will pay by card today. The other choices change the verb, the payment method or the day."
   },
   "speak": {
    "answer": "Quiero pagar con tarjeta de crédito.",
@@ -5672,7 +5672,7 @@
     "Los sábados me gusta nadar en la playa.",
     "Los domingos me gusta nadar en la piscina."
    ],
-   "explanation": "The speaker says \"Los sábados me gusta nadar en la piscina.\" (On Saturdays I like to swim in the pool), using \"nadar\" for swimming and \"la piscina\" for the pool."
+   "explanation": "\"Los sábados me gusta nadar en la piscina.\" pairs \"me gusta\" with the infinitive \"nadar\" to say what you like doing; \"piscina\" means pool."
   },
   "translate": {
    "prompt": "Say that you like to dance salsa with your friends.",
@@ -5785,13 +5785,13 @@
  "esa2p9l1": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Hoy hace mucho frío en la ciudad",
+   "audioText": "Hoy hace mucho frío en la ciudad.",
    "wrong": [
-    "Hoy hace mucho calor en la ciudad",
-    "Hoy hace mucho viento en la ciudad",
-    "Hoy hace mucho sol en la ciudad"
+    "Hoy hace mucho calor en la ciudad.",
+    "Hoy hace mucho viento en la ciudad.",
+    "Hoy hace mucho sol en la ciudad."
    ],
-   "explanation": "The sentence \"Hoy hace mucho frío en la ciudad\" uses hacer with frío to say it is very cold today. The other choices change the weather word to calor, viento or sol."
+   "explanation": "The sentence \"Hoy hace mucho frío en la ciudad.\" uses hacer with frío to say it is very cold today. The other choices change the weather word to calor, viento or sol."
   },
   "translate": {
    "prompt": "Say that it is very windy this afternoon.",
@@ -5936,13 +5936,13 @@
  "esb1p10l3": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Ayer vi a Pedro en la fiesta y lo saludé",
+   "audioText": "Ayer vi a Pedro en la fiesta y lo saludé.",
    "wrong": [
-    "Ayer vi a Pedro en la fiesta y lo salvé",
-    "Ayer vi a Pedro en la fiesta y los saludé",
-    "Ayer vi a Pedro en la tienda y lo saludé"
+    "Ayer vi a Pedro en la fiesta y lo salvé.",
+    "Ayer vi a Pedro en la fiesta y los saludé.",
+    "Ayer vi a Pedro en la tienda y lo saludé."
    ],
-   "explanation": "The sentence \"Ayer vi a Pedro en la fiesta y lo saludé\" uses \"lo\" to replace the masculine singular person Pedro, placed before the verb \"saludé\"."
+   "explanation": "The sentence \"Ayer vi a Pedro en la fiesta y lo saludé.\" uses \"lo\" to replace the masculine singular person Pedro, placed before the verb \"saludé\"."
   },
   "translate": {
    "prompt": "Say that you looked for your keys and you found them in the car.",
@@ -6023,13 +6023,13 @@
  "esb1p11l3": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "A mis padres les encantan las películas de misterio",
+   "audioText": "A mis padres les encantan las películas de misterio.",
    "wrong": [
-    "A mis padres les encantan las películas de terror",
-    "A mis padres les encantan las películas de amor",
-    "A mis padres les encantan las canciones de misterio"
+    "A mis padres les encantan las películas de terror.",
+    "A mis padres les encantan las películas de amor.",
+    "A mis padres les encantan las canciones de misterio."
    ],
-   "explanation": "The sentence is \"A mis padres les encantan las películas de misterio\": encantan is plural because it agrees with \"las películas\", and \"les\" points to the parents."
+   "explanation": "The sentence is \"A mis padres les encantan las películas de misterio.\": encantan is plural because it agrees with \"las películas\", and \"les\" points to the parents."
   },
   "speak": {
    "answer": "A mi hermana le molesta el ruido de la calle",
@@ -6150,13 +6150,13 @@
  "esb1p13l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mi jefe trabaja en una empresa grande de la ciudad",
+   "audioText": "Mi jefe trabaja en una empresa grande de la ciudad.",
    "wrong": [
-    "Mi jefa trabaja en una empresa grande de la ciudad",
-    "Mi jefe trabaja en una oficina grande de la ciudad",
-    "Mi jefe trabaja en una empresa pequeña de la ciudad"
+    "Mi jefa trabaja en una empresa grande de la ciudad.",
+    "Mi jefe trabaja en una oficina grande de la ciudad.",
+    "Mi jefe trabaja en una empresa pequeña de la ciudad."
    ],
-   "explanation": "The sentence heard was \"Mi jefe trabaja en una empresa grande de la ciudad\"; it says the boss works at a big company, and each other choice changes one word (jefa, oficina, pequeña)."
+   "explanation": "The sentence heard was \"Mi jefe trabaja en una empresa grande de la ciudad.\"; it says the boss works at a big company, and each other choice changes one word (jefa, oficina, pequeña)."
   },
   "speak": {
    "answer": "Trabajo en una oficina con mis colegas",
@@ -6220,7 +6220,7 @@
     "Mañana tengo una reunión importante en la oficina de mi nueva empresa.",
     "Mañana tengo una entrevista importante en la oficina de mis nuevas empresas."
    ],
-   "explanation": "The sentence \"Mañana tengo una entrevista importante en la oficina de mi nueva empresa.\" says you have an important interview tomorrow at your new company's office; the other choices swap in \"vieja\", \"reunión\" or the plural \"mis nuevas empresas\"."
+   "explanation": "\"Mañana tengo una entrevista importante en la oficina de mi nueva empresa.\" uses \"entrevista\" (interview) and the singular \"mi nueva empresa\" (new company)."
   },
   "speak": {
    "answer": "Me dieron un ascenso después de firmar el contrato",
@@ -6312,13 +6312,13 @@
  "esb1p14l3": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mañana mis hermanos tienen que levantarse muy temprano para viajar",
+   "audioText": "Mañana mis hermanos tienen que levantarse muy temprano para viajar.",
    "wrong": [
-    "Mañana mis hermanos tienen que levantarse muy temprano para trabajar",
-    "Mañana mis hermanos tienen que acostarse muy temprano para viajar",
-    "Mañana mis hermanos tienen que levantarse muy tarde para viajar"
+    "Mañana mis hermanos tienen que levantarse muy temprano para trabajar.",
+    "Mañana mis hermanos tienen que acostarse muy temprano para viajar.",
+    "Mañana mis hermanos tienen que levantarse muy tarde para viajar."
    ],
-   "explanation": "The speaker says \"Mañana mis hermanos tienen que levantarse muy temprano para viajar\": tener que plus an infinitive expresses obligation, and the siblings must get up early in order to travel."
+   "explanation": "The speaker says \"Mañana mis hermanos tienen que levantarse muy temprano para viajar.\": tener que plus an infinitive expresses obligation, and the siblings must get up early in order to travel."
   },
   "translate": {
    "prompt": "Say that you feel like eating something sweet right now.",
@@ -6348,7 +6348,7 @@
     "Ayer descargué una aplicación nueva para cocinar recetas en internet.",
     "Ayer descargué una aplicación nueva para buscar fotos en internet."
    ],
-   "explanation": "You hear \"Ayer descargué una aplicación nueva para buscar recetas en internet.\" The past tense \"descargué\" means \"I downloaded\", and \"buscar\" means \"to search\"; listen for the final words \"recetas\" (recipes) and \"en internet\" (online) to tell the choices apart."
+   "explanation": "\"Ayer descargué una aplicación nueva para buscar recetas en internet.\" The ending is what differs between choices: \"recetas\" means recipes and \"en internet\" means online."
   },
   "speak": {
    "answer": "Quiero subir mis fotos a internet",
@@ -6376,13 +6376,13 @@
  "esb1p15l2": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Tengo que actualizar el teléfono antes de instalar la nueva aplicación",
+   "audioText": "Tengo que actualizar el teléfono antes de instalar la nueva aplicación.",
    "wrong": [
-    "Tengo que actualizar el teléfono antes de eliminar la nueva aplicación",
-    "Tengo que actualizar el teléfono antes de compartir la nueva aplicación",
-    "Tengo que guardar el teléfono antes de instalar la nueva aplicación"
+    "Tengo que actualizar el teléfono antes de eliminar la nueva aplicación.",
+    "Tengo que actualizar el teléfono antes de compartir la nueva aplicación.",
+    "Tengo que guardar el teléfono antes de instalar la nueva aplicación."
    ],
-   "explanation": "The sentence \"Tengo que actualizar el teléfono antes de instalar la nueva aplicación\" says you must update the phone before installing the new app. The other choices swap one verb, such as eliminar (delete), compartir (share) or guardar (save)."
+   "explanation": "The sentence \"Tengo que actualizar el teléfono antes de instalar la nueva aplicación.\" says you must update the phone before installing the new app. The other choices swap one verb, such as eliminar (delete), compartir (share) or guardar (save)."
   },
   "translate": {
    "prompt": "Say that you are going to delete the old file and save the new one.",
@@ -6470,13 +6470,13 @@
  "esb1p16l2": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Después de la cena se deben lavar los platos sucios",
+   "audioText": "Después de la cena se deben lavar los platos sucios.",
    "wrong": [
-    "Después de la cena se deben secar los platos sucios",
-    "Después de la cena se deben lavar los vasos sucios",
-    "Después de la cena se deben lavar los platos limpios"
+    "Después de la cena se deben secar los platos sucios.",
+    "Después de la cena se deben lavar los vasos sucios.",
+    "Después de la cena se deben lavar los platos limpios."
    ],
-   "explanation": "The sentence heard was \"Después de la cena se deben lavar los platos sucios\"; the other choices change one word (secar, vasos, limpios) and so mean something different."
+   "explanation": "The sentence heard was \"Después de la cena se deben lavar los platos sucios.\"; the other choices change one word (secar, vasos, limpios) and so mean something different."
   },
   "speak": {
    "answer": "Hay que barrer el piso todos los días",
@@ -6567,13 +6567,13 @@
  "esb1p17l2": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "El entrenador dijo que el equipo jugó muy bien ayer",
+   "audioText": "El entrenador dijo que el equipo jugó muy bien ayer.",
    "wrong": [
-    "El entrenador dijo que el equipo jugó muy mal ayer",
-    "El entrenador dijo que el equipo juega muy bien ayer",
-    "El entrenador dijo que el equipo jugó muy bien hoy"
+    "El entrenador dijo que el equipo jugó muy mal ayer.",
+    "El entrenador dijo que el equipo juega muy bien ayer.",
+    "El entrenador dijo que el equipo jugó muy bien hoy."
    ],
-   "explanation": "\"El entrenador dijo que el equipo jugó muy bien ayer\" uses the preterite \"jugó\" because the match is over, and \"ayer\" places it in the past. The other options change the evaluation, the tense or the day."
+   "explanation": "\"El entrenador dijo que el equipo jugó muy bien ayer.\" uses the preterite \"jugó\" because the match is over, and \"ayer\" places it in the past. The other options change the evaluation, the tense or the day."
   },
   "translate": {
    "prompt": "Say that the team celebrated its victory after the match.",
@@ -6603,7 +6603,7 @@
     "El árbitro anunció que el partido comenzó en empate ayer.",
     "El entrenador anunció que el partido terminó en empate ayer."
    ],
-   "explanation": "You hear \"El árbitro anunció que el partido terminó en empate ayer.\", which means the referee announced that the match ended in a tie yesterday. Listen for \"árbitro\" (referee), \"terminó\" (ended) and \"empate\" (tie), because the other choices change one of those words."
+   "explanation": "\"El árbitro anunció que el partido terminó en empate ayer.\" Listen for \"árbitro\" (referee), \"terminó\" (ended) and \"empate\" (tie); the other choices change one of these."
   },
   "speak": {
    "answer": "El campeón ganó la medalla de oro en el torneo",
@@ -6655,13 +6655,13 @@
  "esb1p18l2": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Nos vemos a las ocho en la puerta del cine",
+   "audioText": "Nos vemos a las ocho en la puerta del cine.",
    "wrong": [
-    "Nos vemos a las nueve en la puerta del cine",
-    "Nos vemos a las ocho en la plaza del cine",
-    "Nos vemos a las ocho en la puerta del café"
+    "Nos vemos a las nueve en la puerta del cine.",
+    "Nos vemos a las ocho en la plaza del cine.",
+    "Nos vemos a las ocho en la puerta del café."
    ],
-   "explanation": "The speaker says \"Nos vemos a las ocho en la puerta del cine\", setting a time (\"a las ocho\") and a meeting place (\"en la puerta del cine\")."
+   "explanation": "The speaker says \"Nos vemos a las ocho en la puerta del cine.\", setting a time (\"a las ocho\") and a meeting place (\"en la puerta del cine\")."
   },
   "speak": {
    "answer": "Estoy libre el sábado, cuenta conmigo",
@@ -6710,19 +6710,19 @@
     "¿Vamos al cine el viernes? ¿Te viene bien?",
     "¿Por qué no vamos al cine el viernes? ¿Te parece bien?"
    ],
-   "explanation": "\"¿Qué tal si vamos al cine el viernes?\" uses the common suggestion pattern ¿Qué tal si + present? (what if we...), which both proposes the plan and invites the other person to agree."
+   "explanation": "\"¿Qué tal si vamos al cine el viernes?\" uses the common suggestion pattern ¿Qué tal si + present? (what if we…), which both proposes the plan and invites the other person to agree."
   }
  },
  "esb1p19l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mis abuelos celebraron su aniversario de boda el año pasado",
+   "audioText": "Mis abuelos celebraron su aniversario de boda el año pasado.",
    "wrong": [
-    "Mis abuelos celebraron su aniversario de boda el mes pasado",
-    "Mis abuelos celebran su aniversario de boda el año pasado",
-    "Mis abuelos celebraron su aniversario de boda el año próximo"
+    "Mis abuelos celebraron su aniversario de boda el mes pasado.",
+    "Mis abuelos celebran su aniversario de boda el año pasado.",
+    "Mis abuelos celebraron su aniversario de boda el año próximo."
    ],
-   "explanation": "The sentence heard was \"Mis abuelos celebraron su aniversario de boda el año pasado\", with the past tense celebraron and \"el año pasado\" (last year); the other choices change the tense or the time word."
+   "explanation": "The sentence heard was \"Mis abuelos celebraron su aniversario de boda el año pasado.\", with the past tense celebraron and \"el año pasado\" (last year); the other choices change the tense or the time word."
   },
   "speak": {
    "answer": "Mi graduación fue el mejor día de mi vida.",
@@ -6750,13 +6750,13 @@
  "esb1p19l2": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Mis abuelos celebraron su aniversario con toda la familia ayer",
+   "audioText": "Mis abuelos celebraron su aniversario con toda la familia ayer.",
    "wrong": [
-    "Mis abuelos celebraron su divorcio con toda la familia ayer",
-    "Mis abuelos celebraron su aniversario con toda la familia mañana",
-    "Mis abuelos celebran su aniversario con toda la familia ayer"
+    "Mis abuelos celebraron su divorcio con toda la familia ayer.",
+    "Mis abuelos celebraron su aniversario con toda la familia mañana.",
+    "Mis abuelos celebran su aniversario con toda la familia ayer."
    ],
-   "explanation": "The sentence \"Mis abuelos celebraron su aniversario con toda la familia ayer\" says that my grandparents celebrated their anniversary with the whole family yesterday; the other choices change the event, the time or the tense."
+   "explanation": "The sentence \"Mis abuelos celebraron su aniversario con toda la familia ayer.\" says that my grandparents celebrated their anniversary with the whole family yesterday; the other choices change the event, the time or the tense."
   },
   "translate": {
    "prompt": "Say that after her retirement, your aunt wants to travel more.",
@@ -6780,13 +6780,13 @@
  "esb1p19l3": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Mis suegros celebraron su aniversario de boda con toda la familia",
+   "audioText": "Mis suegros celebraron su aniversario de boda con toda la familia.",
    "wrong": [
-    "Mis suegros celebraron su aniversario de boda con toda la graduación",
-    "Mis suegros celebraron su aniversario de boda con toda la infancia",
-    "Mis suegros celebraron su aniversario de boda con toda la jubilación"
+    "Mis suegros celebraron su aniversario de boda con toda la graduación.",
+    "Mis suegros celebraron su aniversario de boda con toda la infancia.",
+    "Mis suegros celebraron su aniversario de boda con toda la jubilación."
    ],
-   "explanation": "The speaker says \"Mis suegros celebraron su aniversario de boda con toda la familia\": the in-laws celebrated their wedding anniversary with the whole family. The other options change the last word to a different life-event noun."
+   "explanation": "The speaker says \"Mis suegros celebraron su aniversario de boda con toda la familia.\": the in-laws celebrated their wedding anniversary with the whole family. The other options change the last word to a different life-event noun."
   },
   "speak": {
    "answer": "Mi madrastra se casó con mi padre el año pasado",
@@ -6975,13 +6975,13 @@
  "esb1p20l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Me alegra mucho que hayas conseguido el trabajo que querías",
+   "audioText": "Me alegra mucho que hayas conseguido el trabajo que querías.",
    "wrong": [
-    "Me alegra mucho que hayas perdido el trabajo que querías",
-    "Me alegra mucho que hayas conseguido el coche que querías",
-    "Me alegra mucho que hayas conseguido el trabajo que tenías"
+    "Me alegra mucho que hayas perdido el trabajo que querías.",
+    "Me alegra mucho que hayas conseguido el coche que querías.",
+    "Me alegra mucho que hayas conseguido el trabajo que tenías."
    ],
-   "explanation": "The speaker says \"Me alegra mucho que hayas conseguido el trabajo que querías\", reacting happily to someone landing the job they wanted; the other options change one word (perdido, coche, tenías) and so change the meaning."
+   "explanation": "The speaker says \"Me alegra mucho que hayas conseguido el trabajo que querías.\", reacting happily to someone landing the job they wanted; the other options change one word (perdido, coche, tenías) and so change the meaning."
   },
   "translate": {
    "prompt": "A friend tells you that her grandfather has just died. React in two short phrases: first say you are in disbelief, then say you are very sorry.",
@@ -6999,19 +6999,19 @@
     "No me lo puedo creer, lo siento mucho.",
     "No me lo puedo creer, lo siento muchísimo."
    ],
-   "explanation": "\"No puedo creerlo, lo siento mucho.\" joins two reactions: \"No puedo creerlo\" (poder + creer, with \"lo\" attached to the infinitive) shows disbelief, and \"Lo siento mucho\" expresses sympathy. You can also say \"No lo puedo creer\" or \"lo lamento mucho\" with the same meaning."
+   "explanation": "\"No puedo creerlo, lo siento mucho.\" \"No puedo creerlo\" shows disbelief (\"lo\" attaches to the infinitive), and \"lo siento mucho\" expresses sympathy. \"No lo puedo creer\" and \"lo lamento\" also work."
   }
  },
  "esb1p20l2": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Cuando supe que ganaste el premio, me quedé sin palabras",
+   "audioText": "Cuando supe que ganaste el premio, me quedé sin palabras.",
    "wrong": [
-    "Cuando supe que perdiste el premio, me quedé sin palabras",
-    "Cuando supe que ganaste el premio, me quedé sin dinero",
-    "Cuando supe que ganaste el premio, me quedé sin ganas"
+    "Cuando supe que perdiste el premio, me quedé sin palabras.",
+    "Cuando supe que ganaste el premio, me quedé sin dinero.",
+    "Cuando supe que ganaste el premio, me quedé sin ganas."
    ],
-   "explanation": "The speaker says \"Cuando supe que ganaste el premio, me quedé sin palabras\", meaning they were speechless on hearing the news; the other choices change the key word (ganaste, palabras) to something different."
+   "explanation": "The speaker says \"Cuando supe que ganaste el premio, me quedé sin palabras.\", meaning they were speechless on hearing the news; the other choices change the key word (ganaste, palabras) to something different."
   },
   "speak": {
    "answer": "Estoy muy feliz por ti, ¡qué emoción!",
@@ -7097,7 +7097,7 @@
     "Coloqué un cojín encima del sofá.",
     "He colocado un cojín encima del sofá."
    ],
-   "explanation": "\"He puesto un cojín en el sofá.\" uses the present perfect of \"poner\", whose past participle \"puesto\" is irregular; in Latin America the preterite \"Puse un cojín en el sofá\" is just as common. Both \"en\" and \"sobre\" work for \"on\" here."
+   "explanation": "\"He puesto un cojín en el sofá.\" The present perfect uses \"haber\" plus the irregular participle \"puesto\" (from poner). \"En\" and \"sobre\" both mean \"on\" here."
   }
  },
  "esb1p21l2": {
@@ -7133,13 +7133,13 @@
  "esb1p21l3": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Necesito una toalla limpia para secarme después de la ducha",
+   "audioText": "Necesito una toalla limpia para secarme después de la ducha.",
    "wrong": [
-    "Necesito una sábana limpia para secarme después de la ducha",
-    "Necesito una toalla limpia para secarme después de la cena",
-    "Necesito una toalla limpia para sentarme después de la ducha"
+    "Necesito una sábana limpia para secarme después de la ducha.",
+    "Necesito una toalla limpia para secarme después de la cena.",
+    "Necesito una toalla limpia para sentarme después de la ducha."
    ],
-   "explanation": "The sentence \"Necesito una toalla limpia para secarme después de la ducha\" says you need a clean towel to dry off after the shower; the other choices change one word (sheet, dinner, sit down)."
+   "explanation": "The sentence \"Necesito una toalla limpia para secarme después de la ducha.\" says you need a clean towel to dry off after the shower; the other choices change one word (sheet, dinner, sit down)."
   },
   "speak": {
    "answer": "La toalla está en el baño.",
@@ -7201,7 +7201,7 @@
     "Guardamos las herramientas en el balcón porque el garaje está lleno.",
     "Guardaremos las herramientas en el sótano porque el garaje está lleno."
    ],
-   "explanation": "The speaker says \"Guardamos las herramientas en el sótano porque el garaje está lleno.\" meaning they keep the tools in the basement because the garage is full."
+   "explanation": "\"Guardamos las herramientas en el sótano porque el garaje está lleno.\" Listen for \"sótano\" (basement), \"lleno\" (full) and the present-tense \"guardamos\"; the other choices change one of these."
   },
   "speak": {
    "answer": "Tenemos un garaje y un sótano muy grandes",
@@ -7231,9 +7231,9 @@
    "prompt": "What did you hear?",
    "audioText": "Mis hermanos se preocupan mucho cuando yo llego tarde a casa.",
    "wrong": [
-    "Mis hermanos se preocupan mucho cuando yo salgo tarde a casa.",
-    "Mis hermanos se divierten mucho cuando yo llego tarde a casa.",
-    "Mis hermanos se preocupan poco cuando yo llego tarde a casa."
+    "Mis hermanos se preocupan poco cuando yo llego tarde a casa.",
+    "Mis hermanos se preocupan mucho cuando yo vuelvo tarde a casa.",
+    "Mis hermanos se divierten mucho cuando yo llego tarde a casa."
    ],
    "explanation": "The sentence \"Mis hermanos se preocupan mucho cuando yo llego tarde a casa.\" says that my brothers worry a lot when I arrive home late. The wrong choices change one word: \"salgo\" (I leave), \"divierten\" (have fun) or \"poco\" (little)."
   },
@@ -7289,13 +7289,13 @@
  "esb1p22l3": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Ellos se divierten mucho cuando van a las fiestas",
+   "audioText": "Ellos se divierten mucho cuando van a las fiestas.",
    "wrong": [
-    "Ellos se cansan mucho cuando van a las fiestas",
-    "Ellos se divierten mucho cuando van a las playas",
-    "Ellas se divierten mucho cuando van a las fiestas"
+    "Ellos se cansan mucho cuando van a las fiestas.",
+    "Ellos se divierten mucho cuando van a las playas.",
+    "Ellas se divierten mucho cuando van a las fiestas."
    ],
-   "explanation": "The speaker says \"Ellos se divierten mucho cuando van a las fiestas\", using the third-person plural of divertirse. The other choices change one word: cansan, playas or Ellas."
+   "explanation": "The speaker says \"Ellos se divierten mucho cuando van a las fiestas.\", using the third-person plural of divertirse. The other choices change one word: cansan, playas or Ellas."
   },
   "translate": {
    "prompt": "Say that you feel ashamed easily when you speak in public.",
@@ -7319,13 +7319,13 @@
  "esb1p22l4": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mis hermanos se quejan siempre de la comida del comedor",
+   "audioText": "Mis hermanos se quejan siempre de la comida del comedor.",
    "wrong": [
-    "Mis hermanos se quejan siempre de la ropa del comedor",
-    "Mis hermanos se quejan siempre de la comida del trabajo",
-    "Mis hermanos se quejan siempre de la música del comedor"
+    "Mis hermanos se quejan siempre de la ropa del comedor.",
+    "Mis hermanos se quejan siempre de la comida del trabajo.",
+    "Mis hermanos se quejan siempre de la música del comedor."
    ],
-   "explanation": "The sentence \"Mis hermanos se quejan siempre de la comida del comedor\" says that my siblings always complain about the cafeteria food; the other choices change one word, such as ropa, trabajo, or música."
+   "explanation": "The sentence \"Mis hermanos se quejan siempre de la comida del comedor.\" says that my siblings always complain about the cafeteria food; the other choices change one word, such as ropa, trabajo, or música."
   },
   "speak": {
    "answer": "Nos acostumbramos rápido a la nueva rutina",
@@ -7359,7 +7359,7 @@
     "Mis hermanos se enojan mucho cuando ganan el partido.",
     "Mis hermanos se enojan poco cuando pierden el partido."
    ],
-   "explanation": "The sentence \"Mis hermanos se enojan mucho cuando pierden el partido.\" uses enojarse in the third-person plural (se enojan) to say my brothers get very angry when they lose the game; the other choices change the verb, the amount or the result."
+   "explanation": "\"Mis hermanos se enojan mucho cuando pierden el partido.\" \"Se enojan\" is reflexive enojarse (to get angry) in the plural. Distractors change the amount, the emotion or \"pierden\" (they lose)."
   },
   "translate": {
    "prompt": "Say that you get nervous when you speak in front of many people. Use a reflexive verb with an adjective, and assume the speaker is male.",
@@ -7434,7 +7434,7 @@
     "La selva junto al valle es muy húmeda y llena de vida.",
     "La selva cerca del valle es muy húmeda y llena de vida."
    ],
-   "explanation": "\"La selva cerca del valle es muy húmeda y está llena de vida.\" uses \"selva\" for the jungle and \"valle\" for the valley. You use ser (\"es\") for a lasting trait like being humid, and estar (\"está llena\") for the state of being full of life."
+   "explanation": "\"La selva cerca del valle es muy húmeda y está llena de vida.\" \"Es\" (ser) describes a lasting trait like humidity; \"está llena\" (estar) describes the current state of being full."
   }
  },
  "esb1p23l3": {
@@ -7446,7 +7446,7 @@
     "Desde la cima de la colina se ve toda la llanura.",
     "Desde la cima de la meseta se ve toda la bahía."
    ],
-   "explanation": "You hear \"Desde la cima de la colina se ve toda la bahía.\", which means that from the top of the hill you can see the whole bay. Listen for the two landscape words, colina and bahía, because the other choices swap one of them for a different place."
+   "explanation": "\"Desde la cima de la colina se ve toda la bahía.\" \"Se ve\" means \"you can see\". Listen for \"colina\" (hill) and \"bahía\" (bay); the other choices swap in a different landscape word."
   },
   "speak": {
    "answer": "La península tiene una costa muy bonita.",
@@ -7598,7 +7598,7 @@
     "Cuando me dieron la noticia, dije que no me lo creerían.",
     "Cuando me dieron la noticia, dijo que no me lo creía."
    ],
-   "explanation": "The speaker says \"Cuando me dieron la noticia, dije que no me lo creía.\" with first-person \"dije\" (I said) and imperfect \"creía\"; the other choices change the speaker (\"dijo\") or the tense (\"creo\", \"creerían\")."
+   "explanation": "\"Cuando me dieron la noticia, dije que no me lo creía.\" \"Dije\" (I said) is first person, and \"creía\" is imperfect, matching the past. Distractors change the person (\"dijo\") or the tense (\"creo\", \"creerían\")."
   },
   "translate": {
    "prompt": "Say that you were very surprised when you heard the news.",
@@ -7755,7 +7755,7 @@
   },
   "speak": {
    "answer": "Voy a sazonar la salsa con un poco de sal",
-   "explanation": "\"Voy a sazonar la salsa con un poco de sal\" means 'I am going to season the sauce with a little salt'. The structure ir a + infinitive (voy a sazonar) expresses what you are about to do, and sazonar is the verb for adding salt or spices."
+   "explanation": "\"Voy a sazonar la salsa con un poco de sal\" uses ir a + infinitive for what you're about to do. \"Sazonar\" means to season, with \"con\" naming what you add."
   },
   "translate": {
    "prompt": "Say that you are going to garnish the dish with parsley and serve it with the sauce.",
@@ -7909,9 +7909,9 @@
    "prompt": "Which sentence did you hear?",
    "audioText": "Mis primos están muy contentos con su nueva casa en el campo.",
    "wrong": [
+    "Mis primos estaban muy contentos con su nueva casa en el campo.",
     "Mis primos están muy contentos con su nueva escuela en el campo.",
-    "Mis primos están muy cansados con su nueva casa en el campo.",
-    "Mis primos estaban muy contentos con su nueva casa en el campo."
+    "Mis primos están muy satisfechos con su nueva casa en el campo."
    ],
    "explanation": "The sentence \"Mis primos están muy contentos con su nueva casa en el campo.\" uses \"contentos con\" (happy with something). Listen for the noun (casa), the adjective (contentos) and the present tense (están), because the other choices change one of them."
   },
@@ -7927,7 +7927,7 @@
     "Yo estoy acostumbrado al ruido de la ciudad.",
     "Yo estoy acostumbrada al ruido de la ciudad."
    ],
-   "explanation": "\"Estoy acostumbrado al ruido de la ciudad.\" uses \"acostumbrado a\" (used to), and \"a + el\" contracts to \"al\" before \"ruido\"."
+   "explanation": "\"Estoy acostumbrado al ruido de la ciudad.\" uses \"acostumbrado a\" (used to), and \"a + el\" always contracts to \"al\" before a masculine noun like \"ruido\"."
   }
  },
  "esb1p26l4": {
@@ -7939,7 +7939,7 @@
     "Mis vecinos son muy amables con todos los niños del pueblo.",
     "Mis vecinos son muy amables con todas las niñas del barrio."
    ],
-   "explanation": "The sentence you heard is \"Mis vecinos son muy amables con todos los niños del barrio.\" The adjective \"amable\" takes \"con\" for the people you are kind to."
+   "explanation": "\"Mis vecinos son muy amables con todos los niños del barrio.\" Use \"amable con\" for the people you are kind to. The wrong options change who or where."
   },
   "speak": {
    "answer": "Estoy muy orgulloso de mi hermana",
@@ -7964,13 +7964,13 @@
  "esb1p26l5": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Mis padres están muy orgullosos de mis notas este año",
+   "audioText": "Mis padres están muy orgullosos de mis notas este año.",
    "wrong": [
-    "Mis padres están muy orgullosos de mis casas este año",
-    "Mis padres están muy orgullosos de mis notas ese año",
-    "Mis amigos están muy orgullosos de mis notas este año"
+    "Mis padres están muy orgullosos de mis casas este año.",
+    "Mis padres están muy orgullosos de mis notas ese año.",
+    "Mis amigos están muy orgullosos de mis notas este año."
    ],
-   "explanation": "The speaker says \"Mis padres están muy orgullosos de mis notas este año\", using \"orgulloso de\" for the thing you are proud of. The other choices change one word, such as the people, the thing, or the time."
+   "explanation": "The speaker says \"Mis padres están muy orgullosos de mis notas este año.\", using \"orgulloso de\" for the thing you are proud of. The other choices change one word, such as the people, the thing, or the time."
   },
   "translate": {
    "prompt": "Say that your sister is kind to the neighbors (use an adjective plus a preposition, not a verb).",
@@ -7986,13 +7986,13 @@
  "esb1p2l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mis hermanos se despiertan muy temprano todos los días",
+   "audioText": "Mis hermanos se despiertan muy temprano todos los días.",
    "wrong": [
-    "Mis hermanos se acuestan muy temprano todos los días",
-    "Mi hermano se despierta muy temprano todos los días",
-    "Mis hermanos se despiertan muy tarde todos los días"
+    "Mis hermanos se acuestan muy temprano todos los días.",
+    "Mi hermano se despierta muy temprano todos los días.",
+    "Mis hermanos se despiertan muy tarde todos los días."
    ],
-   "explanation": "The sentence is \"Mis hermanos se despiertan muy temprano todos los días\": the plural subject takes \"se despiertan\" (wake up), and \"temprano\" means early, not late."
+   "explanation": "\"Mis hermanos se despiertan muy temprano todos los días.\": plural \"hermanos\" takes \"se despiertan\" (wake up), and \"temprano\" means early, not \"tarde\" (late)."
   },
   "translate": {
    "prompt": "Say that you take a shower and get dressed quickly every morning.",
@@ -8074,7 +8074,7 @@
     "Tú te vistes rápidamente todas las mañanas.",
     "Cada mañana te vistes rápidamente."
    ],
-   "explanation": "Vestirse is reflexive and changes e to i; with tú it becomes \"Te vistes rápido todas las mañanas.\""
+   "explanation": "\"Te vistes rápido todas las mañanas.\" Vestirse is reflexive, so it needs \"te\" for tú, and its stem changes e to i: \"vistes\"."
   }
  },
  "esb1p2l4": {
@@ -8144,13 +8144,13 @@
  "esb1p3l1": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Ojalá que mis padres puedan venir a la fiesta este sábado",
+   "audioText": "Ojalá que mis padres puedan venir a la fiesta este sábado.",
    "wrong": [
-    "Ojalá que mis amigos puedan venir a la fiesta este sábado",
-    "Ojalá que mis padres puedan venir a la cena este sábado",
-    "Ojalá que mis padres puedan venir a la fiesta este domingo"
+    "Ojalá que mis padres puedan venir a la cena este sábado.",
+    "Ojalá que mis padres puedan venir a la fiesta este domingo.",
+    "Ojalá que mis amigos puedan venir a la fiesta este sábado."
    ],
-   "explanation": "The speaker said \"Ojalá que mis padres puedan venir a la fiesta este sábado\"; the other choices change one word, such as padres, fiesta or sábado."
+   "explanation": "\"Ojalá que mis padres puedan venir a la fiesta este sábado.\" \"Ojalá que\" expresses a wish, so it takes the subjunctive \"puedan\"; listen for padres, fiesta and sábado."
   },
   "speak": {
    "answer": "Es necesario que ellos lleguen temprano mañana",
@@ -8204,17 +8204,17 @@
  "esb1p3l3": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Espero que ustedes puedan llegar temprano a la reunión mañana",
+   "audioText": "Espero que ustedes puedan llegar temprano a la reunión mañana.",
    "wrong": [
-    "Espero que ustedes puedan llegar temprano a la comida mañana",
-    "Espero que ustedes puedan salir temprano de la reunión mañana",
-    "Espero que ustedes puedan llegar tarde a la reunión mañana"
+    "Espero que ustedes puedan llegar temprano a la comida mañana.",
+    "Espero que ustedes puedan salir temprano de la reunión mañana.",
+    "Espero que ustedes puedan llegar tarde a la reunión mañana."
    ],
-   "explanation": "The sentence heard is \"Espero que ustedes puedan llegar temprano a la reunión mañana\": \"Espero que\" expresses a hope and triggers the subjunctive \"puedan\". The other choices swap in \"tarde\", \"comida\" or \"salir de\", which sound clearly different."
+   "explanation": "\"Espero que ustedes puedan llegar temprano a la reunión mañana.\": \"espero que\" expresses a hope and triggers the subjunctive \"puedan\". Listen for \"temprano\", \"reunión\" and \"llegar a\"."
   },
   "speak": {
-   "answer": "Recomiendo que ustedes lleguen temprano a la reunión",
-   "explanation": "\"Recomiendo que ustedes lleguen temprano a la reunión\" uses \"Recomiendo que\" to make a recommendation, which triggers the subjunctive. Because \"ustedes\" is plural, llegar becomes \"lleguen\", with the g changing to gu before e to keep the hard sound."
+   "answer": "Recomiendo que ustedes lleguen temprano a la reunión.",
+   "explanation": "\"Recomiendo que ustedes lleguen temprano a la reunión.\" \"Recomiendo que\" triggers the subjunctive, and for \"ustedes\" llegar becomes \"lleguen\" (g changes to gu to keep the hard g sound)."
   },
   "translate": {
    "prompt": "Say that you doubt your friend will bring the money tomorrow.",
@@ -8238,13 +8238,13 @@
  "esb1p3l4": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Dudo que mis amigos puedan venir a la fiesta mañana",
+   "audioText": "Dudo que mis amigos puedan venir a la fiesta mañana.",
    "wrong": [
-    "Dudo que mis amigos puedan venir a la fiesta ayer",
-    "Dudo que mis amigos puedan venir a la cena mañana",
-    "Dudo que mis primos puedan venir a la fiesta mañana"
+    "Dudo que mis amigos puedan venir a la fiesta ayer.",
+    "Dudo que mis amigos puedan venir a la cena mañana.",
+    "Dudo que mis primos puedan venir a la fiesta mañana."
    ],
-   "explanation": "\"Dudo que mis amigos puedan venir a la fiesta mañana\" uses the subjunctive \"puedan\" after \"dudo que\", which expresses doubt; the other choices change one word such as the time or the event."
+   "explanation": "\"Dudo que mis amigos puedan venir a la fiesta mañana.\" uses the subjunctive \"puedan\" after \"dudo que\", which expresses doubt; the other choices change one word such as the time or the event."
   },
   "translate": {
    "prompt": "Tell someone you hope that your brother arrives early for the meeting.",
@@ -8268,17 +8268,17 @@
  "esb1p3l5": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Dudo que ellos vuelvan a tiempo para la cena esta noche",
+   "audioText": "Dudo que ellos vuelvan a tiempo para la cena esta noche.",
    "wrong": [
-    "Dudo que ellos vuelvan a tiempo para la cama esta noche",
-    "Dudo que ellos vuelvan a tiempo para la cena esta tarde",
-    "Dudo que ellas vuelvan a tiempo para la cena esta noche"
+    "Dudo que ellos vuelvan a tiempo para la cama esta noche.",
+    "Dudo que ellos vuelvan a tiempo para la cena esta tarde.",
+    "Dudo que ellas vuelvan a tiempo para la cena esta noche."
    ],
-   "explanation": "\"Dudo que ellos vuelvan a tiempo para la cena esta noche\" expresses doubt, so it takes the subjunctive \"vuelvan\"; the other choices change one word (cama, tarde, ellas) that sounds clearly different."
+   "explanation": "\"Dudo que ellos vuelvan a tiempo para la cena esta noche.\" expresses doubt, so it takes the subjunctive \"vuelvan\"; the other choices change one word (cama, tarde, ellas) that sounds clearly different."
   },
   "speak": {
    "answer": "Quiero que ustedes me ayuden con este trabajo",
-   "explanation": "\"Quiero que ustedes me ayuden con este trabajo\" expresses a wish, so \"ayuden\" is subjunctive, matching \"ustedes\"."
+   "explanation": "\"Quiero que ustedes me ayuden con este trabajo\": \"quiero que\" expresses a wish, so the verb is subjunctive. \"Ayuden\" is the \"ustedes\" form."
   },
   "translate": {
    "prompt": "Say that you hope your friend finds a good job soon.",
@@ -8342,7 +8342,7 @@
   },
   "speak": {
    "answer": "Es barato; además, es muy rápido",
-   "explanation": "\"Es barato; además, es muy rápido\" uses \"además\" to add one more point to what you just said."
+   "explanation": "\"Es barato; además, es muy rápido\": \"además\" means besides or what's more, and adds another point to what you just said."
   },
   "translate": {
    "prompt": "Say that the food is cheap and, in addition, it is delicious.",
@@ -8431,7 +8431,7 @@
     "Mi hermano tiene mucho sueño porque llega tarde a clase.",
     "Mi hermano tiene mucha prisa porque llegó tarde a clase."
    ],
-   "explanation": "The speaker says \"Mi hermano tiene mucha prisa porque llega tarde a clase.\" because \"tener prisa\" means to be in a hurry, and the reason is that he is arriving late."
+   "explanation": "\"Mi hermano tiene mucha prisa porque llega tarde a clase.\" uses \"tener prisa\" (to be in a hurry); \"prisa\" is feminine, so it takes \"mucha\". Present \"llega\" is not past \"llegó\"."
   },
   "translate": {
    "prompt": "Tell a friend that you are very sleepy and want to go to bed early today.",
@@ -8455,13 +8455,13 @@
  "esb1p5l2": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Ese reloj nuevo me costó un ojo de la cara",
+   "audioText": "Ese reloj nuevo me costó un ojo de la cara.",
    "wrong": [
-    "Ese reloj nuevo me costaba un ojo de la cara",
-    "Ese reloj viejo me costó un ojo de la cara",
-    "Ese reloj nuevo me costó un ojo de mi cara"
+    "Ese reloj nuevo me costaba un ojo de la cara.",
+    "Ese reloj viejo me costó un ojo de la cara.",
+    "Ese reloj nuevo me costó un ojo de mi cara."
    ],
-   "explanation": "The sentence \"Ese reloj nuevo me costó un ojo de la cara\" uses the idiom \"costar un ojo de la cara\" in the past to say the new watch cost a fortune."
+   "explanation": "The sentence \"Ese reloj nuevo me costó un ojo de la cara.\" uses the idiom \"costar un ojo de la cara\" in the past to say the new watch cost a fortune."
   },
   "speak": {
    "answer": "No me tomes el pelo, dime la verdad",
@@ -8547,13 +8547,13 @@
  "esb1p6l1": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Mis padres han vivido en esta ciudad durante muchos años",
+   "audioText": "Mis padres han vivido en esta ciudad durante muchos años.",
    "wrong": [
-    "Mis padres han vendido en esta ciudad durante muchos años",
-    "Mis padres han vivido en esta ciudad durante pocos años",
-    "Mis padres han vivido en esa ciudad durante muchos años"
+    "Mis padres han vendido en esta ciudad durante muchos años.",
+    "Mis padres han vivido en esta ciudad durante pocos años.",
+    "Mis padres han vivido en esa ciudad durante muchos años."
    ],
-   "explanation": "The sentence \"Mis padres han vivido en esta ciudad durante muchos años\" uses \"han\" with the participle \"vivido\" to say what has happened up to now; the other choices change one word, such as \"vendido\" (sold) or \"pocos\" (few)."
+   "explanation": "The sentence \"Mis padres han vivido en esta ciudad durante muchos años.\" uses \"han\" with the participle \"vivido\" to say what has happened up to now; the other choices change one word, such as \"vendido\" (sold) or \"pocos\" (few)."
   },
   "translate": {
    "prompt": "Tell a friend that you have never traveled by plane.",
@@ -8609,13 +8609,13 @@
  "esb1p6l3": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Mis padres ya han vuelto de su viaje a la playa",
+   "audioText": "Mis padres ya han vuelto de su viaje a la playa.",
    "wrong": [
-    "Mis padres ya han vuelto de su viaje a la montaña",
-    "Mis padres no han vuelto de su viaje a la playa",
-    "Mis padres ya han salido de su viaje a la playa"
+    "Mis padres ya han vuelto de su viaje a la montaña.",
+    "Mis padres no han vuelto de su viaje a la playa.",
+    "Mis padres ya han salido de su viaje a la playa."
    ],
-   "explanation": "The sentence \"Mis padres ya han vuelto de su viaje a la playa\" uses \"han\" with the irregular participle \"vuelto\" from volver, meaning the parents have already come back from their trip."
+   "explanation": "The sentence \"Mis padres ya han vuelto de su viaje a la playa.\" uses \"han\" with the irregular participle \"vuelto\" from volver, meaning the parents have already come back from their trip."
   },
   "translate": {
    "prompt": "Tell a friend: \"You have broken your phone this week.\"",
@@ -8639,13 +8639,13 @@
  "esb1p6l4": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Mis padres ya han vuelto de su viaje a Chile",
+   "audioText": "Mis padres ya han vuelto de su viaje a Chile.",
    "wrong": [
-    "Mis padres ya han vuelto de su viaje a Perú",
-    "Mis padres ya han vuelto de su visita a Chile",
-    "Mis padres ya han salido de su viaje a Chile"
+    "Mis padres ya han vuelto de su viaje a Perú.",
+    "Mis padres ya han vuelto de su visita a Chile.",
+    "Mis padres ya han salido de su viaje a Chile."
    ],
-   "explanation": "The sentence \"Mis padres ya han vuelto de su viaje a Chile\" uses the present perfect \"han vuelto\", with the irregular participle of volver, to say that the parents have already returned."
+   "explanation": "The sentence \"Mis padres ya han vuelto de su viaje a Chile.\" uses the present perfect \"han vuelto\", with the irregular participle of volver, to say that the parents have already returned."
   },
   "speak": {
    "answer": "Nosotros hemos abierto todas las ventanas",
@@ -8737,13 +8737,13 @@
  "esb1p7l2": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Mi hermano está muy cansado porque trabajó todo el día",
+   "audioText": "Mi hermano está muy cansado porque trabajó todo el día.",
    "wrong": [
-    "Mi hermano está muy contento porque trabajó todo el día",
-    "Mi hermano está muy cansado porque estudió todo el día",
-    "Mi hermano está muy cansado porque trabajó todo el año"
+    "Mi hermano está muy contento porque trabajó todo el día.",
+    "Mi hermano está muy cansado porque estudió todo el día.",
+    "Mi hermano está muy cansado porque trabajó todo el año."
    ],
-   "explanation": "The sentence \"Mi hermano está muy cansado porque trabajó todo el día\" uses estar because being tired is a temporary state, and it says he worked all day."
+   "explanation": "The sentence \"Mi hermano está muy cansado porque trabajó todo el día.\" uses estar because being tired is a temporary state, and it says he worked all day."
   },
   "translate": {
    "prompt": "Say that your brother is a doctor and that today he is very busy at the hospital.",
@@ -8929,7 +8929,7 @@
     "Mi vuelo llega a la ciudad ayer por la tarde.",
     "Mi vuelo sale de la ciudad mañana por la tarde."
    ],
-   "explanation": "The sentence \"Mi vuelo llega a la ciudad mañana por la tarde.\" says your flight arrives in the city tomorrow afternoon. Listen for \"llega\" (arrives, not leaves), \"mañana\" (tomorrow, not yesterday) and \"tarde\" (afternoon, not night)."
+   "explanation": "\"Mi vuelo llega a la ciudad mañana por la tarde.\" Listen for \"llega\" (arrives, not leaves), \"mañana\" (tomorrow, not yesterday) and \"tarde\" (afternoon, not night)."
   },
   "translate": {
    "prompt": "Say that you want to arrive at the station before the bus departs.",
@@ -8993,7 +8993,7 @@
     "No abras la ventana porque hace mucho calor afuera hoy.",
     "No abras la ventana porque hace mucho frío adentro hoy."
    ],
-   "explanation": "The sentence heard is \"No abras la ventana porque hace mucho frío afuera hoy.\" It uses a negative tú command (\"abras\") and gives the reason that it is cold outside."
+   "explanation": "\"No abras la ventana porque hace mucho frío afuera hoy.\" A negative tú command uses the subjunctive form: \"abras\", not \"abres\". \"Afuera\" means outside, \"adentro\" inside."
   },
   "translate": {
    "prompt": "Tell a friend (informal) to close the door, and to not leave the keys on the table.",
@@ -9014,13 +9014,13 @@
  "esb1p9l2": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "No pongas tus libros sobre la mesa de la cocina",
+   "audioText": "No pongas tus libros sobre la mesa de la cocina.",
    "wrong": [
-    "No pongas tus libros sobre la silla de la cocina",
-    "No pongas tus llaves sobre la mesa de la cocina",
-    "No pongas tus libros sobre la mesa de la sala"
+    "No pongas tus libros sobre la silla de la cocina.",
+    "No pongas tus llaves sobre la mesa de la cocina.",
+    "No pongas tus libros sobre la mesa de la sala."
    ],
-   "explanation": "The sentence is \"No pongas tus libros sobre la mesa de la cocina\", a negative tú command using the subjunctive form \"pongas\"; the other choices change one word such as the object or the place."
+   "explanation": "The sentence is \"No pongas tus libros sobre la mesa de la cocina.\", a negative tú command using the subjunctive form \"pongas\"; the other choices change one word such as the object or the place."
   },
   "speak": {
    "answer": "Sal de la casa y no vuelvas tarde",
@@ -9080,7 +9080,7 @@
     "No pongas la mochila en el sofá, por favor, ponla en su cuarto.",
     "No pongas la mochila en el piso, por favor, ponla en tu cuarto."
    ],
-   "explanation": "The speaker says \"No pongas la mochila en el sofá, por favor, ponla en tu cuarto.\" It combines a negative tú command (\"pongas\") with an affirmative command plus pronoun (\"ponla\")."
+   "explanation": "\"No pongas la mochila en el sofá, por favor, ponla en tu cuarto.\" A negative command takes the subjunctive form \"pongas\"; an affirmative one attaches the pronoun: \"ponla\". Note \"tu\" (your), not \"su\"."
   },
   "speak": {
    "answer": "No pongas los pies en la mesa",
@@ -9171,7 +9171,7 @@
     "Me alegra mucho que ustedes hayan podido venir a la boda de mi hermana.",
     "Me alegra mucho que ustedes hayan podido venir a la fiesta de mi prima."
    ],
-   "explanation": "The speaker says \"Me alegra mucho que ustedes hayan podido venir a la fiesta de mi hermana.\" The feeling \"me alegra\" triggers the perfect subjunctive \"hayan podido\" for something that already happened."
+   "explanation": "\"Me alegra mucho que ustedes hayan podido venir a la fiesta de mi hermana.\" The emotion \"me alegra\" takes the subjunctive; \"hayan podido\" is the perfect form, for something already done."
   },
   "speak": {
    "answer": "Es una lástima que no puedas venir con nosotros",
@@ -9199,13 +9199,13 @@
  "esb2p11l1": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Compré estas flores para mi madre porque hoy es su cumpleaños",
+   "audioText": "Compré estas flores para mi madre porque hoy es su cumpleaños.",
    "wrong": [
-    "Compré estas flores para mi abuela porque hoy es su cumpleaños",
-    "Compré estas flores para mi madre porque hoy es su aniversario",
-    "Vendí estas flores para mi madre porque hoy es su cumpleaños"
+    "Compré estas flores para mi abuela porque hoy es su cumpleaños.",
+    "Compré estas flores para mi madre porque hoy es su aniversario.",
+    "Vendí estas flores para mi madre porque hoy es su cumpleaños."
    ],
-   "explanation": "The speaker says \"Compré estas flores para mi madre porque hoy es su cumpleaños\": \"para\" marks the recipient of the flowers, and \"porque\" gives the reason."
+   "explanation": "\"Compré estas flores para mi madre porque hoy es su cumpleaños.\": \"para\" marks the recipient of the flowers, and \"porque\" introduces the reason."
   },
   "speak": {
    "answer": "Caminamos por la calle para llegar al parque",
@@ -9303,7 +9303,7 @@
     "No encontré a nadie que viera dónde estaba la llave.",
     "No encontré a alguien que supiera dónde estaba la llave."
    ],
-   "explanation": "The sentence \"No encontré a nadie que supiera dónde estaba la llave.\" uses the negative pronoun \"nadie\" with the subjunctive \"supiera\" in the clause about the key; the other choices change one word, such as \"maleta\", \"viera\" or \"alguien\"."
+   "explanation": "\"No encontré a nadie que supiera dónde estaba la llave.\" After a negated search like \"no… a nadie que\", the verb goes in the subjunctive: \"supiera\". \"Alguien\" would not fit a negative sentence."
   },
   "speak": {
    "answer": "No hay nada en la mesa y tampoco hay nadie",
@@ -9463,7 +9463,7 @@
     "En este restaurante se venden platos típicos que se preparan con ingredientes locales.",
     "En este restaurante se sirven postres típicos que se preparan con ingredientes locales."
    ],
-   "explanation": "The speaker says \"En este restaurante se sirven platos típicos que se preparan con ingredientes locales.\" Both \"sirven\" and \"preparan\" are plural because, with passive \"se\", they agree with \"platos\" (the relative \"que\" refers back to it)."
+   "explanation": "\"En este restaurante se sirven platos típicos que se preparan con ingredientes locales.\" With passive \"se\", the verb agrees with the thing: plural \"platos\" gives \"sirven\" and \"preparan\"."
   },
   "translate": {
    "prompt": "Say that in this shop discounts are offered to people who buy online.",
@@ -9526,7 +9526,7 @@
     "Si tuvieras más paciencia, aprenderías mucho más rápido las cosas viejas.",
     "Si tuvieras más dinero, aprenderías mucho más rápido las cosas nuevas."
    ],
-   "explanation": "The speaker says \"Si tuvieras más paciencia, aprenderías mucho más rápido las cosas nuevas.\" It is a hypothetical: imperfect subjunctive \"tuvieras\" after si, with the conditional \"aprenderías\" in the result."
+   "explanation": "\"Si tuvieras más paciencia, aprenderías mucho más rápido las cosas nuevas.\" A hypothetical \"si\" clause takes the imperfect subjunctive (\"tuvieras\"); the result takes the conditional (\"aprenderías\")."
   },
   "translate": {
    "prompt": "Tell a friend that if he were more honest with you, you would trust him more.",
@@ -9556,7 +9556,7 @@
     "Si tuviera más tiempo libre, viviría por toda Sudamérica con mis amigos.",
     "Si tuviera más tiempo libre, viajaría por toda Sudamérica con mis hermanos."
    ],
-   "explanation": "The speaker says \"Si tuviera más tiempo libre, viajaría por toda Sudamérica con mis amigos.\", a hypothetical present: imperfect subjunctive after \"si\" and a conditional in the result."
+   "explanation": "\"Si tuviera más tiempo libre, viajaría por toda Sudamérica con mis amigos.\" Hypothetical \"si\" takes the imperfect subjunctive (\"tuviera\"), and the result takes the conditional (\"viajaría\")."
   },
   "speak": {
    "answer": "Si pudiera, te ayudaría con el trabajo",
@@ -9589,7 +9589,7 @@
     "La empresa tuvo una pérdida enorme porque la oferta bajó mucho este año.",
     "La empresa tuvo una pérdida enorme porque la demanda subió mucho este año."
    ],
-   "explanation": "The sentence \"La empresa tuvo una pérdida enorme porque la demanda bajó mucho este año.\" says the company had a huge loss because demand fell; the other options change \"pérdida\" to \"ganancia\", \"demanda\" to \"oferta\", or \"bajó\" to \"subió\"."
+   "explanation": "\"La empresa tuvo una pérdida enorme porque la demanda bajó mucho este año.\" \"Pérdida\" means loss (not \"ganancia\", profit), and \"bajó\" means fell (not \"subió\", rose)."
   },
   "translate": {
    "prompt": "Say that the government wants to attract investment because the economy is weak.",
@@ -9618,7 +9618,7 @@
     "La empresa tuvo una pérdida porque el impuesto fue demasiado pequeño.",
     "La empresa tuvo una pérdida porque el presupuesto fue demasiado grande."
    ],
-   "explanation": "The speaker says \"La empresa tuvo una pérdida porque el presupuesto fue demasiado pequeño.\", meaning the company had a loss because the budget was too small."
+   "explanation": "\"La empresa tuvo una pérdida porque el presupuesto fue demasiado pequeño.\" Listen for the key words: \"pérdida\" (loss), \"presupuesto\" (budget), and \"pequeño\" (small, not grande)."
   },
   "speak": {
    "answer": "La inflación afecta el presupuesto de la empresa",
@@ -9701,7 +9701,7 @@
     "Los ciudadanos van a votar en las elecciones para elegir a un presidente nuevo.",
     "Los ciudadanos votarán en las elecciones para escoger un nuevo presidente."
    ],
-   "explanation": "\"Los ciudadanos van a votar en las elecciones para elegir a un nuevo presidente.\" uses ir a + infinitive for a near-future plan, and \"para elegir\" expresses the purpose of the vote. The personal \"a\" before \"un nuevo presidente\" is usual but optional here, because the president is not yet a specific person."
+   "explanation": "\"Los ciudadanos van a votar en las elecciones para elegir a un nuevo presidente.\" \"Ir a\" + infinitive gives a near-future plan, and \"para elegir\" gives the purpose of the vote."
   }
  },
  "esb2p16l2": {
@@ -9713,7 +9713,7 @@
     "El Congreso rechazó la ley después de que el ministro explicara sus razones.",
     "El Congreso aprobó la ley después de que el presidente explicara sus razones."
    ],
-   "explanation": "The sentence \"El Congreso aprobó la ley después de que el ministro explicara sus razones.\" says that Congress passed the law after the minister explained his reasons; the other options change one word (alcalde, presidente, rechazó)."
+   "explanation": "\"El Congreso aprobó la ley después de que el ministro explicara sus razones.\" Listen for \"aprobó\" (passed, not rejected) and \"ministro\". \"Después de que\" takes the subjunctive \"explicara\"."
   },
   "translate": {
    "prompt": "Say that the citizens will vote in a referendum so that the people can decide whether the new law is approved.",
@@ -9731,7 +9731,7 @@
     "Los ciudadanos van a votar en un referéndum para que el pueblo pueda decidir si se aprueba la nueva ley.",
     "Los ciudadanos votarán en un referéndum para que la gente pueda decidir si se aprueba la nueva ley."
    ],
-   "explanation": "The purpose clause \"para que\" takes the subjunctive (\"decida\"), and \"si se aprueba\" is a passive-reflexive for 'whether it is approved', so the full sentence is \"Los ciudadanos votarán en un referéndum para que el pueblo decida si se aprueba la nueva ley.\""
+   "explanation": "\"Los ciudadanos votarán en un referéndum para que el pueblo decida si se aprueba la nueva ley.\" \"Para que\" (purpose) takes the subjunctive \"decida\", and \"se aprueba\" is a reflexive passive: \"is approved\"."
   }
  },
  "esb2p16l3": {
@@ -9743,7 +9743,7 @@
     "El alcalde anunció que el debate se celebrará después de la campaña electoral.",
     "El presidente anunció que el referéndum se celebrará después de la campaña electoral."
    ],
-   "explanation": "The sentence \"El alcalde anunció que el referéndum se celebrará después de la campaña electoral.\" says the mayor announced the referendum will be held after the election campaign; the other choices change one word (antes, debate, presidente)."
+   "explanation": "\"El alcalde anunció que el referéndum se celebrará después de la campaña electoral.\" Listen for \"alcalde\" (mayor), \"referéndum\", and \"después de\" (after, not antes). \"Se celebrará\" means \"will be held\"."
   },
   "speak": {
    "answer": "El senado discute la nueva ley",
@@ -9832,7 +9832,7 @@
     "El corresponsal envió un informe sobre la conferencia de prensa.",
     "El corresponsal mandó un informe sobre la rueda de prensa."
    ],
-   "explanation": "\"El corresponsal envió un reportaje sobre la rueda de prensa.\" combines \"corresponsal\" (correspondent), \"reportaje\" (news report) and \"rueda de prensa\" (press conference, also \"conferencia de prensa\" in Latin America); \"sobre\" means about."
+   "explanation": "\"El corresponsal envió un reportaje sobre la rueda de prensa.\" \"Reportaje\" is a news report, \"rueda de prensa\" is a press conference, and \"sobre\" means \"about\"."
   }
  },
  "esb2p17l3": {
@@ -9844,7 +9844,7 @@
     "El periódico publicó un titular que denunció la censura impuesta por el gobierno.",
     "El periódico publicó un reportaje que apoyó la censura impuesta por el gobierno."
    ],
-   "explanation": "The speaker says \"El periódico publicó un reportaje que denunció la censura impuesta por el gobierno.\", meaning the newspaper published a report that exposed censorship imposed by the government. The other options change one word (empresa, titular, apoyó)."
+   "explanation": "\"El periódico publicó un reportaje que denunció la censura impuesta por el gobierno.\" Listen for \"reportaje\" (not titular), \"denunció\" (exposed, not apoyó), and \"gobierno\". \"Impuesta\" agrees with feminine \"censura\"."
   },
   "translate": {
    "prompt": "Say that the journalist refused to reveal the source of the information to the audience.",
@@ -10002,7 +10002,7 @@
     "El médico dijo que la recuperación será lenta porque la inflamación era grave.",
     "El médico dijo que la operación será lenta porque la infección era grave."
    ],
-   "explanation": "The sentence \"El médico dijo que la recuperación será lenta porque la infección era grave.\" says the doctor expects a slow recovery because the infection was serious; the other choices change one word (rápida, inflamación, operación)."
+   "explanation": "\"El médico dijo que la recuperación será lenta porque la infección era grave.\" Listen for \"lenta\" (slow, not \"rápida\"), \"infección\" and \"recuperación\", the words the other choices swap."
   },
   "speak": {
    "answer": "Tiene un dolor crónico y necesita ver a un especialista",
@@ -10062,9 +10062,9 @@
    "prompt": "What did you hear?",
    "audioText": "Si tuviéramos más tiempo libre, visitaríamos a nuestros abuelos en el campo.",
    "wrong": [
-    "Si tuviéramos más dinero libre, visitaríamos a nuestros abuelos en el campo.",
+    "Si tuviéramos más tiempo libre, visitaríamos a nuestros abuelos en la playa.",
     "Si tuviéramos más tiempo libre, visitaríamos a nuestros primos en el campo.",
-    "Si tuviéramos más tiempo libre, visitaríamos a nuestros abuelos en la playa."
+    "Si tuviéramos más días libres, visitaríamos a nuestros abuelos en el campo."
    ],
    "explanation": "The speaker says \"Si tuviéramos más tiempo libre, visitaríamos a nuestros abuelos en el campo.\" The \"si tuviéramos\" clause sets up an imaginary situation, so the result uses the conditional \"visitaríamos\"."
   },
@@ -10093,8 +10093,8 @@
    "audioText": "Si tuviéramos más dinero, viajaríamos por toda Sudamérica durante el verano.",
    "wrong": [
     "Si tuviéramos más dinero, viajaríamos por toda Sudamérica durante el invierno.",
-    "Si tuviéramos más dinero, compraríamos por toda Sudamérica durante el verano.",
-    "Si tuviéramos más tiempo, viajaríamos por toda Sudamérica durante el verano."
+    "Si tuviéramos más tiempo, viajaríamos por toda Sudamérica durante el verano.",
+    "Si tuviéramos más dinero, viajaríamos por todo México durante el verano."
    ],
    "explanation": "In \"Si tuviéramos más dinero, viajaríamos por toda Sudamérica durante el verano.\" the imperfect subjunctive \"tuviéramos\" sets up an imaginary condition, and the conditional \"viajaríamos\" says what would happen. Listen for the key words \"dinero\", \"viajaríamos\" and \"verano\", which the other choices change."
   },
@@ -10188,7 +10188,7 @@
     "Si tuviera más tiempo libre, trabajaría por toda la costa del sur.",
     "Si tuviera más tiempo libre, viajaría por toda la ciudad del sur."
    ],
-   "explanation": "The sentence is \"Si tuviera más tiempo libre, viajaría por toda la costa del sur.\" The si-clause with \"tuviera\" sets up a hypothetical, and \"viajaría\" is the conditional result."
+   "explanation": "\"Si tuviera más tiempo libre, viajaría por toda la costa del sur.\" Hypothetical \"si\" + imperfect subjunctive (\"tuviera\") pairs with the conditional (\"viajaría\") for what would happen."
   },
   "translate": {
    "prompt": "Say that you would accept the job right away if they offered it to you.",
@@ -10222,7 +10222,7 @@
   },
   "speak": {
    "answer": "Puede ser que no tengan tiempo",
-   "explanation": "\"Puede ser que no tengan tiempo\" means \"it may be that they don't have time\", and \"puede ser que\" takes the subjunctive \"tengan\"."
+   "explanation": "\"Puede ser que no tengan tiempo\" means \"it may be that they don't have time\". \"Puede ser que\" expresses probability and takes the subjunctive \"tengan\"."
   },
   "translate": {
    "prompt": "Say that he must be very tired after the long trip (use a probability phrase with an infinitive).",
@@ -10246,13 +10246,13 @@
  "esb2p20l2": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "A lo mejor Marta ya sabe que su hermano llegó ayer",
+   "audioText": "A lo mejor Marta ya sabe que su hermano llegó ayer.",
    "wrong": [
-    "A lo mejor Marta ya sabe que su hermano salió ayer",
-    "A lo mejor Marta ya sabe que su hermano volvió ayer",
-    "A lo mejor Marta ya sabe que su hermano murió ayer"
+    "A lo mejor Marta ya sabe que su hermano salió ayer.",
+    "A lo mejor Marta ya sabe que su hermano volvió ayer.",
+    "A lo mejor Marta ya sabe que su hermano murió ayer."
    ],
-   "explanation": "The speaker says \"A lo mejor Marta ya sabe que su hermano llegó ayer\", using the indicative after \"a lo mejor\" to guess that she may already know about his arrival; the other options change only the verb at the end."
+   "explanation": "The speaker says \"A lo mejor Marta ya sabe que su hermano llegó ayer.\", using the indicative after \"a lo mejor\" to guess that she may already know about his arrival; the other options change only the verb at the end."
   },
   "translate": {
    "prompt": "Say that it is possible the neighbors have already left.",
@@ -10407,7 +10407,7 @@
     "Dudo que mis primas quieran venir a la fiesta de mañana.",
     "Dudo que mis primos quieran venir a la cena de mañana."
    ],
-   "explanation": "The sentence \"Dudo que mis primos quieran venir a la fiesta de mañana.\" expresses doubt, so the verb \"quieran\" is in the subjunctive."
+   "explanation": "\"Dudo que mis primos quieran venir a la fiesta de mañana.\" \"Dudo que\" expresses doubt, so the next verb takes the subjunctive: \"quieran\", not \"quieren\"."
   },
   "speak": {
    "answer": "No creo que ellos tengan tiempo hoy",
@@ -10496,13 +10496,13 @@
  "esb2p22l2": {
   "listening": {
    "prompt": "Which sentence did you hear?",
-   "audioText": "Mi hermana es tan cautelosa que nunca toma una decisión sin pensarlo mucho",
+   "audioText": "Mi hermana es tan cautelosa que nunca toma una decisión sin pensarlo mucho.",
    "wrong": [
-    "Mi hermana es tan generosa que nunca toma una decisión sin pensarlo mucho",
-    "Mi hermana es tan cautelosa que nunca toma una decisión sin consultarlo mucho",
-    "Mi hermana es tan cautelosa que siempre toma una decisión sin pensarlo mucho"
+    "Mi hermana es tan generosa que nunca toma una decisión sin pensarlo mucho.",
+    "Mi hermana es tan cautelosa que nunca toma una decisión sin consultarlo mucho.",
+    "Mi hermana es tan cautelosa que siempre toma una decisión sin pensarlo mucho."
    ],
-   "explanation": "The sentence \"Mi hermana es tan cautelosa que nunca toma una decisión sin pensarlo mucho\" describes someone so careful that she never decides without thinking it over; the other choices change \"cautelosa\", \"pensarlo\" or \"nunca\" to words that sound different and mean something else."
+   "explanation": "\"Mi hermana es tan cautelosa que nunca toma una decisión sin pensarlo mucho.\" uses \"tan… que\" (so… that). \"Cautelosa\" means cautious, and \"nunca… sin pensarlo\" means never without thinking."
   },
   "translate": {
    "prompt": "Say that your friend is so curious that he asks questions about everything he sees.",
@@ -10518,7 +10518,7 @@
     "Mi amigo es tan curioso que pregunta sobre todas las cosas que ve.",
     "Mi amigo es tan curioso que hace preguntas sobre todas las cosas que ve."
    ],
-   "explanation": "\"Mi amigo es tan curioso que hace preguntas sobre todo lo que ve.\" uses \"curioso\" for someone who wants to find out about things, and the structure \"tan ... que\" expresses a result (so ... that)."
+   "explanation": "\"Mi amigo es tan curioso que hace preguntas sobre todo lo que ve.\" uses \"curioso\" for someone who wants to find out about things, and the structure \"tan … que\" expresses a result (so … that)."
   }
  },
  "esb2p22l3": {
@@ -10592,7 +10592,7 @@
     "Mi jefa es muy exigente porque quiere que todos terminen el trabajo a tiempo.",
     "Mi jefa es muy exigente porque quiere que todos entreguen el trabajo con tiempo."
    ],
-   "explanation": "You heard \"Mi jefa es muy exigente porque quiere que todos entreguen el trabajo a tiempo.\": \"a tiempo\" means on time (not \"con tiempo\", with time to spare), the verb is \"entreguen\" (hand in), and \"exigente\" means demanding, the opposite of \"tolerante\"."
+   "explanation": "\"Mi jefa es muy exigente porque quiere que todos entreguen el trabajo a tiempo.\" \"A tiempo\" means on time, \"entreguen\" means hand in, and \"exigente\" means demanding (the opposite of \"tolerante\")."
   },
   "speak": {
    "answer": "Mi hermano es muy ingenioso y competitivo",
@@ -10644,7 +10644,7 @@
     "La acusada tiene derecho a la privacidad, aunque mucha gente está viendo el juicio.",
     "El acusado tiene derecho a la privacidad, aunque muchas personas están viendo el juicio."
    ],
-   "explanation": "\"El acusado tiene derecho a la privacidad, aunque mucha gente está viendo el juicio.\" uses \"derecho a\" for an entitlement; \"aunque\" + indicative presents the crowd as a known fact, while the subjunctive treats it as true but irrelevant."
+   "explanation": "\"El acusado tiene derecho a la privacidad, aunque mucha gente está viendo el juicio.\" \"Tener derecho a\" means to have a right to; \"aunque\" + indicative treats the crowd as a known fact."
   }
  },
  "esb2p23l2": {
@@ -10749,7 +10749,7 @@
     "El juez anunció que el veredicto del testigo se conocería después de la audiencia.",
     "El juez anunció que el veredicto del jurado se olvidaría después de la audiencia."
    ],
-   "explanation": "The sentence \"El juez anunció que el veredicto del jurado se conocería después de la audiencia.\" says the jury's verdict would be known after the hearing; the other options change one word (protesta, testigo, olvidaría) that sounds clearly different."
+   "explanation": "\"El juez anunció que el veredicto del jurado se conocería después de la audiencia.\" After the past \"anunció que\", the future-in-the-past is the conditional \"se conocería\" (would be known)."
   },
   "translate": {
    "prompt": "Say that the defendant had to pay a fine because he did not respect the law.",
@@ -10797,7 +10797,7 @@
     "Mi autoestima ha mejorado porque he aprendido a expresar mis opiniones de forma clara y respetuosa.",
     "Mi autoestima ha mejorado porque he aprendido a expresar mis opiniones de manera clara y respetuosa."
    ],
-   "explanation": "\"Mi autoestima ha crecido porque he aprendido a expresar mis opiniones con claridad y respeto.\" uses the present perfect \"ha crecido\" and \"he aprendido\" for a change that still matters now, and \"con claridad y respeto\" for \"clearly and respectfully\"."
+   "explanation": "\"Mi autoestima ha crecido porque he aprendido a expresar mis opiniones con claridad y respeto.\" The present perfect (\"ha crecido\", \"he aprendido\") links a change to now; \"con claridad y respeto\" means \"clearly and respectfully\"."
   }
  },
  "esb2p24l2": {
@@ -10835,7 +10835,7 @@
     "Pedí una disculpa porque mi tono de voz había causado una traición.",
     "Pedí un perdón porque mi tono de voz había causado un malentendido."
    ],
-   "explanation": "The sentence \"Pedí una disculpa porque mi tono de voz había causado un malentendido.\" says the speaker apologized because their tone of voice led to a misunderstanding; the other choices change one key word (conflicto, traición, perdón)."
+   "explanation": "\"Pedí una disculpa porque mi tono de voz había causado un malentendido.\" \"Había causado\" (past perfect) shows the misunderstanding came before the apology; \"malentendido\" means misunderstanding."
   },
   "speak": {
    "answer": "Te pido una disculpa y espero tu perdón",
@@ -10951,7 +10951,7 @@
     "El inquilino paga la renta todos los meses al dueño del apartamento.",
     "El inquilino paga el alquiler todos los meses al propietario del departamento."
    ],
-   "explanation": "The tenant (\"inquilino\") pays the \"alquiler\" to the \"propietario\", so the natural sentence is \"El inquilino paga el alquiler todos los meses al propietario del apartamento.\""
+   "explanation": "\"El inquilino paga el alquiler todos los meses al propietario del apartamento.\" The tenant (\"inquilino\") pays rent (\"alquiler\") to the owner (\"propietario\"); \"todos los meses\" means every month."
   }
  },
  "esb2p25l2": {
@@ -11061,7 +11061,7 @@
     "El inquilino prefirió mudarse al suburbio porque el contrato del centro era muy caro.",
     "El propietario prefirió mudarse al suburbio porque el alquiler del centro era muy caro."
    ],
-   "explanation": "The sentence \"El inquilino prefirió mudarse al suburbio porque el alquiler del centro era muy caro.\" says the tenant moved out of the center because the rent there was too expensive; the other options change one word (bajo, contrato, propietario)."
+   "explanation": "\"El inquilino prefirió mudarse al suburbio porque el alquiler del centro era muy caro.\" \"Mudarse\" means to move (house); \"caro\" is expensive, the opposite of \"bajo\"; the tenant (\"inquilino\") pays rent."
   },
   "translate": {
    "prompt": "Say that the real estate market is very expensive right now, so the couple will wait before buying.",
@@ -11349,7 +11349,7 @@
     "La ley fue aprobada por el congreso antes de que se discutiera varias semanas.",
     "La ley fue aprobada por el senado después de que se discutiera varias semanas."
    ],
-   "explanation": "The speaker says \"La ley fue aprobada por el congreso después de que se discutiera varias semanas.\" Here ser + the feminine singular participle \"aprobada\" agrees with \"la ley\", and \"después de que\" introduces the subordinate clause."
+   "explanation": "\"La ley fue aprobada por el congreso después de que se discutiera varias semanas.\" In the passive, \"aprobada\" agrees with feminine \"la ley\"; \"después de que\" introduces a clause with the subjunctive \"discutiera\"."
   },
   "translate": {
    "prompt": "Say that the new law was approved by the senators last week. Use the passive voice with ser.",
@@ -11375,7 +11375,7 @@
     "El puente fue construido por los vecinos que llegaron de la capital.",
     "El puente fue construido por los ingenieros que salieron de la capital."
    ],
-   "explanation": "The sentence heard was \"El puente fue construido por los ingenieros que llegaron de la capital.\" Each other option changes one word: destruido, vecinos or salieron."
+   "explanation": "\"El puente fue construido por los ingenieros que llegaron de la capital.\" The passive \"fue construido\" agrees with masculine \"el puente\"; \"por\" introduces who did it, and \"construido\" differs from \"destruido\"."
   },
   "speak": {
    "answer": "Las puertas fueron cerradas por el guardia",
@@ -11410,24 +11410,6 @@
     "Le agradezco que me haya vendido tan rápido esta mañana, señora."
    ],
    "explanation": "\"Le agradezco que me haya atendido tan rápido esta mañana, señora.\" uses the usted pronoun \"le\" and the subjunctive after \"agradezco que\", a polite way to thank someone formally."
-  },
-  "translate": {
-   "prompt": "Politely ask a gentleman, addressing him formally, whether he would like something more.",
-   "acceptableAnswers": [
-    "¿Desea algo más, señor?",
-    "¿Desea usted algo más, señor?",
-    "¿Quiere algo más, señor?",
-    "¿Desea algo más, caballero?",
-    "¿Quiere usted algo más, señor?",
-    "¿Desea alguna otra cosa, señor?",
-    "¿Le gustaría algo más, señor?",
-    "¿Quisiera algo más, señor?",
-    "¿Desearía algo más, señor?",
-    "¿Desea algo más?",
-    "¿Desea usted algo más?",
-    "¿Quisiera algo más, caballero?"
-   ],
-   "explanation": "\"¿Desea algo más, señor?\" uses the usted form \"desea\" of the polite verb \"desear\", instead of the informal \"¿quieres algo más?\"."
   }
  },
  "esb2p3l2": {
@@ -11473,7 +11455,7 @@
     "Le agradecería que me enviara la respuesta después del viernes por la tarde.",
     "Le agradecería que me enviara la respuesta antes del viernes por la noche."
    ],
-   "explanation": "The speaker says \"Le agradecería que me enviara la respuesta antes del viernes por la tarde.\", a formal request using the conditional \"agradecería\" and the usted pronoun \"le\"."
+   "explanation": "\"Le agradecería que me enviara la respuesta antes del viernes por la tarde.\" is a polite formal request: the conditional \"agradecería\" and \"le\" (usted) soften it, and \"enviara\" is the subjunctive."
   },
   "translate": {
    "prompt": "Formally, tell a customer you are glad to have met them and that they should call you if they need anything else.",
@@ -11627,11 +11609,11 @@
     "Cabe destacar que los resultados mejoraron mucho después de que cambiamos el equipo de trabajo.",
     "Cabe destacar que los resultados mejoraron mucho antes de que cambiáramos el método de trabajo."
    ],
-   "explanation": "\"Cabe destacar que los resultados mejoraron mucho después de que cambiamos el método de trabajo.\" uses \"cabe destacar que\" to introduce a point worth noting; the other choices change one word (antes, empeoraron, equipo) and so change the meaning."
+   "explanation": "\"Cabe destacar que los resultados mejoraron mucho después de que cambiamos el método de trabajo.\" opens with \"cabe destacar que\" ('it's worth noting that'). Listen for \"mejoraron\", \"después\" and \"método\"."
   },
   "speak": {
    "answer": "Tomando en cuenta los resultados, cabe destacar que el proyecto mejoró.",
-   "explanation": "\"Tomando en cuenta los resultados, cabe destacar que el proyecto mejoró.\" is a full formal sentence: \"tomando en cuenta\" means \"taking into account\" and \"cabe destacar que\" introduces a point worth noting, followed by the verb \"mejoró\"."
+   "explanation": "\"Tomando en cuenta los resultados, cabe destacar que el proyecto mejoró.\" combines two formal phrases: \"tomando en cuenta\" ('taking into account') and \"cabe destacar que\" ('it's worth noting that')."
   },
   "translate": {
    "prompt": "Say that, in the same way, the second proposal deserves attention (formal register).",
@@ -11659,7 +11641,7 @@
     "Nos quedamos en casa a pesar de que el día estaba muy caluroso.",
     "Nos quedamos en casa a pesar de que el día estaba muy tranquilo."
    ],
-   "explanation": "The speaker says \"Nos quedamos en casa a pesar de que el día estaba muy soleado.\" The only difference between the options is the final word, so listen for \"soleado\" (sunny)."
+   "explanation": "\"Nos quedamos en casa a pesar de que el día estaba muy soleado.\" The options differ only in the last word, so listen for \"soleado\" (sunny). \"A pesar de que\" means 'even though'."
   },
   "translate": {
    "prompt": "Say that, despite the traffic, you arrived on time at the meeting.",
@@ -11787,7 +11769,7 @@
     "El profesor que conocimos ayer vive en la casa donde nací.",
     "El doctor que conocimos ayer vive en la ciudad donde nací."
    ],
-   "explanation": "The speaker says \"El profesor que conocimos ayer vive en la ciudad donde nací.\" Listen for the relative clause \"que conocimos ayer\" and the final clause \"donde nací\"."
+   "explanation": "\"El profesor que conocimos ayer vive en la ciudad donde nací.\" has two relative clauses: \"que conocimos ayer\" and \"donde nací\" (where = the place). Listen for \"profesor\", \"ciudad\" and \"nací\"."
   },
   "translate": {
    "prompt": "Say that the woman whose daughter you met is a famous doctor.",
@@ -11805,7 +11787,7 @@
     "La mujer a cuya hija usted conoció es una médica famosa.",
     "La señora a cuya hija conoció es una médica famosa."
    ],
-   "explanation": "\"La mujer a cuya hija conociste es una doctora famosa.\" uses \"cuya\" for 'whose', agreeing with \"hija\" rather than \"mujer\". The personal \"a\" is needed because the daughter, a person, is the one you met, and \"conociste\" matches 'you'."
+   "explanation": "\"La mujer a cuya hija conociste es una doctora famosa.\" \"Cuya\" means 'whose' and agrees with the thing possessed (\"hija\"), not the owner. The personal \"a\" precedes a person who is the object."
   }
  },
  "esb2p6l2": {
@@ -11851,7 +11833,7 @@
     "El profesor con quien hablé ayer me recomendó un libro enorme.",
     "El profesor con quien viajé ayer me recomendó un libro excelente."
    ],
-   "explanation": "The sentence is \"El profesor con quien hablé ayer me recomendó un libro excelente.\" Here \"quien\" follows the preposition \"con\" and refers back to a person, \"el profesor\"."
+   "explanation": "\"El profesor con quien hablé ayer me recomendó un libro excelente.\" After a preposition like \"con\", \"quien\" refers to a person. Listen for \"hablé\", \"recomendó\" and \"excelente\"."
   },
   "translate": {
    "prompt": "Say that the woman whose car was stolen called the police.",
@@ -11881,11 +11863,11 @@
     "El profesor a quien escribimos ayer nos recibió con mucha amabilidad.",
     "El profesor a quien escribimos ayer nos respondió con mucha tristeza."
    ],
-   "explanation": "In \"El profesor a quien escribimos ayer nos respondió con mucha amabilidad.\" the relative pronoun \"quien\" follows the preposition \"a\" and refers to a person. Listen for the verbs \"escribimos\" and \"respondió\" and the noun \"amabilidad\", which are the words that tell the options apart."
+   "explanation": "\"El profesor a quien escribimos ayer nos respondió con mucha amabilidad.\" \"A quien\" refers to a person who receives the action. Listen for \"escribimos\", \"respondió\" and \"amabilidad\"."
   },
   "speak": {
    "answer": "El libro que compré ayer es muy interesante.",
-   "explanation": "In \"El libro que compré ayer es muy interesante.\" the relative \"que\" refers to \"el libro\" and is the object of \"compré\". With no preposition in front, \"que\" is the normal relative for things and for people; \"quien\" is not used for things."
+   "explanation": "\"El libro que compré ayer es muy interesante.\" \"Que\" is the everyday relative pronoun for things and is the object of \"compré\". \"Quien\" refers only to people."
   },
   "translate": {
    "prompt": "Say that the writer whose book you read is coming to the university tomorrow.",
@@ -11945,11 +11927,11 @@
     "Es importante proteger el bosque para que los animales pierdan su hábitat.",
     "Es importante proteger el bosque para que los animales conserven su energía."
    ],
-   "explanation": "The speaker says \"Es importante proteger el bosque para que los animales conserven su hábitat.\" The other choices change one word: río, pierdan or energía."
+   "explanation": "\"Es importante proteger el bosque para que los animales conserven su hábitat.\" \"Para que\" ('so that') takes the subjunctive \"conserven\". Listen for \"bosque\", \"conserven\" and \"hábitat\"."
   },
   "speak": {
    "answer": "Cuidar el medio ambiente es responsabilidad de todos.",
-   "explanation": "In \"Cuidar el medio ambiente es responsabilidad de todos.\" the infinitive \"cuidar\" works as the subject, a common way to state general principles in Spanish. \"Responsabilidad\" appears without an article because it is used as a predicate noun after \"es\"."
+   "explanation": "\"Cuidar el medio ambiente es responsabilidad de todos.\" An infinitive (\"cuidar\") can be the subject. \"Responsabilidad\" takes no article because it is a predicate noun after \"es\"."
   },
   "translate": {
    "prompt": "Say that the forest and the river form a habitat where many species live.",
@@ -11964,19 +11946,19 @@
     "El bosque y el río forman un hábitat en el que habitan muchas especies.",
     "El bosque y el río constituyen un hábitat en el que viven muchas especies."
    ],
-   "explanation": "The relative adverb \"donde\" introduces the clause that describes the place, and the plural subject takes a plural verb: \"El bosque y el río forman un hábitat donde viven muchas especies.\" Remember that \"hábitat\" needs its written accent and is masculine."
+   "explanation": "\"El bosque y el río forman un hábitat donde viven muchas especies.\" Here \"donde\" refers back to the place, and the compound subject \"el bosque y el río\" takes the plural \"forman\". \"Hábitat\" is masculine and keeps its accent."
   }
  },
  "esb2p7l2": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "La contaminación del aire aumenta cuando las fábricas queman demasiado carbón todos los días",
+   "audioText": "La contaminación del aire aumenta cuando las fábricas queman demasiado carbón todos los días.",
    "wrong": [
-    "La contaminación del aire aumenta cuando las fábricas usan demasiada energía todos los días",
-    "La contaminación del aire disminuye cuando las fábricas queman demasiado carbón todos los días",
-    "La contaminación del océano aumenta cuando las fábricas queman demasiado carbón todos los días"
+    "La contaminación del aire aumenta cuando las fábricas usan demasiada energía todos los días.",
+    "La contaminación del aire disminuye cuando las fábricas queman demasiado carbón todos los días.",
+    "La contaminación del océano aumenta cuando las fábricas queman demasiado carbón todos los días."
    ],
-   "explanation": "You heard \"La contaminación del aire aumenta cuando las fábricas queman demasiado carbón todos los días\": air pollution rises when factories burn too much coal every day. Each other choice changes one clearly different part (\"usan demasiada energía\", \"disminuye\", \"océano\")."
+   "explanation": "\"La contaminación del aire aumenta cuando las fábricas queman demasiado carbón todos los días.\": listen for \"queman\" (burn), \"carbón\" (coal) and \"aumenta\" (rises), which the other choices replace."
   },
   "translate": {
    "prompt": "Say that recycling plastic helps protect the habitat of many species.",
@@ -12003,7 +11985,7 @@
     "Muchos científicos creen que la sequía afectará los recursos naturales de nuestro hábitat.",
     "Muchos científicos creen que la sequía afectará los recursos naturales de nuestra fauna."
    ],
-   "explanation": "The speaker says \"Muchos científicos creen que la sequía afectará los recursos naturales de nuestro planeta.\" Only the final noun changes in the other options, so listen for \"planeta\" (planet), which sounds clearly different from océano, hábitat or fauna."
+   "explanation": "\"Muchos científicos creen que la sequía afectará los recursos naturales de nuestro planeta.\" Listen for the last word, \"planeta\", which differs from océano, hábitat and fauna."
   },
   "speak": {
    "answer": "Debemos proteger cada especie de nuestro planeta",
@@ -12034,7 +12016,7 @@
     "La biodiversidad de este bosque desaparecerá si no protegemos los ecosistemas naturales.",
     "La biodiversidad de este bosque aumentará si no protegemos los recursos naturales."
    ],
-   "explanation": "The speaker says \"La biodiversidad de este bosque desaparecerá si no protegemos los recursos naturales.\" meaning the forest's biodiversity will disappear unless natural resources are protected; the other options change one word (río, ecosistemas, aumentará)."
+   "explanation": "\"La biodiversidad de este bosque desaparecerá si no protegemos los recursos naturales.\" Listen for \"bosque\" (forest), \"desaparecerá\" (will disappear) and \"recursos\" (resources); the other choices swap one of these."
   },
   "translate": {
    "prompt": "Say that renewable energy is important because it helps protect the ecosystem.",
@@ -12086,7 +12068,7 @@
     "Mis amigos están durmiendo ahora mismo, así que hablo en voz baja.",
     "Mis amigos están durmiendo ahora, así que estoy hablando en voz baja."
    ],
-   "explanation": "Both actions are happening at this moment, so each uses estar + gerund: \"Mis amigos están durmiendo ahora mismo, así que estoy hablando bajito.\" Remember that dormir changes its stem vowel in the gerund (o becomes u), giving \"durmiendo\"."
+   "explanation": "Actions happening now use estar + gerund: \"Mis amigos están durmiendo ahora mismo, así que estoy hablando bajito.\" The gerund of dormir is \"durmiendo\", with o changing to u."
   }
  },
  "esb2p8l2": {
@@ -12180,7 +12162,7 @@
     "Mis amigos están viajando por México en este momento y estoy aprendiendo mucho con sus fotos.",
     "Mis amigos están viajando por México ahora mismo y yo estoy aprendiendo mucho de sus fotos."
    ],
-   "explanation": "To describe actions happening right now, use estar + gerund: viajar (-ar) becomes \"están viajando\" and aprender (-er) becomes \"estoy aprendiendo\". For example: \"Mis amigos están viajando por México ahora y yo estoy aprendiendo mucho con sus fotos.\""
+   "explanation": "Use estar + gerund for actions in progress: -ar verbs end in -ando, -er verbs in -iendo. \"Mis amigos están viajando por México ahora y yo estoy aprendiendo mucho con sus fotos.\""
   }
  },
  "esb2p8l5": {
@@ -12256,7 +12238,7 @@
     "Es probable que mis padres salgan mañana por la tarde a la ciudad.",
     "Es probable que mis padres lleguen mañana por la noche a la ciudad."
    ],
-   "explanation": "The sentence you heard is \"Es probable que mis padres lleguen mañana por la tarde a la ciudad.\" and \"es probable que\" takes the subjunctive form \"lleguen\" for \"mis padres\"."
+   "explanation": "\"Es probable que\" expresses possibility, so the verb that follows is subjunctive: \"Es probable que mis padres lleguen mañana por la tarde a la ciudad.\" Note \"lleguen\", not the indicative \"llegan\"."
   },
   "speak": {
    "answer": "Es necesario que ustedes traigan los documentos",
@@ -12350,7 +12332,7 @@
     "Si hubiéramos firmado el contrato con más cuidado, habríamos evitado este malentendido tan costoso.",
     "Si hubiéramos revisado el contrato con más cuidado, habríamos tenido este malentendido tan costoso."
    ],
-   "explanation": "\"Si hubiéramos revisado el contrato con más cuidado, habríamos evitado este malentendido tan costoso.\" combines the pluperfect subjunctive in the \"si\" clause with the conditional perfect in the result clause, expressing an unreal past condition."
+   "explanation": "An unreal past condition pairs pluperfect subjunctive with conditional perfect: \"Si hubiéramos revisado el contrato con más cuidado, habríamos evitado este malentendido tan costoso.\" Listen for \"revisado\" and \"malentendido\"."
   },
   "translate": {
    "prompt": "Say that if you had known the truth, you would have told her immediately.",
@@ -12508,7 +12490,7 @@
     "Ambas partes interesadas aceptaron la propuesta antes de que venciera el plazo acordado.",
     "Ambas partes interesadas aceptaron la contraoferta antes de que venciera el contrato acordado."
    ],
-   "explanation": "The sentence \"Ambas partes interesadas aceptaron la contraoferta antes de que venciera el plazo acordado.\" says both stakeholders accepted the counteroffer before the agreed deadline; the other options change one word (rechazaron, propuesta, contrato)."
+   "explanation": "\"Ambas partes interesadas aceptaron la contraoferta antes de que venciera el plazo acordado.\" Listen for \"aceptaron\" (accepted), \"contraoferta\" (counteroffer) and \"plazo\" (deadline), which the other choices alter."
   },
   "speak": {
    "answer": "Presentamos una propuesta para la fusión de las dos sociedades",
@@ -12542,7 +12524,7 @@
     "El accionista mayoritario rechazó la propuesta porque los términos y condiciones no incluían garantías suficientes.",
     "El accionista mayoritario aceptó la propuesta porque los términos y condiciones no ofrecían garantías suficientes."
    ],
-   "explanation": "The sentence \"El accionista mayoritario rechazó la propuesta porque los términos y condiciones no ofrecían garantías suficientes.\" says the majority shareholder rejected the proposal because the terms and conditions did not offer enough guarantees."
+   "explanation": "\"El accionista mayoritario rechazó la propuesta porque los términos y condiciones no ofrecían garantías suficientes.\" Listen for the contrasts: mayoritario/minoritario, rechazó/aceptó, ofrecían/incluían."
   },
   "translate": {
    "prompt": "Say that the shareholders approved the acquisition once the terms and conditions had been clarified.",
@@ -12576,7 +12558,7 @@
   },
   "speak": {
    "answer": "El incumplimiento del plazo afectó los ingresos de la empresa",
-   "explanation": "\"El incumplimiento del plazo afectó los ingresos de la empresa\" means that missing a deadline hurt the company's revenue. Here \"incumplimiento\" is a failure to meet an obligation, \"plazo\" is the deadline, and \"ingresos\" is usually plural when it means revenue."
+   "explanation": "\"El incumplimiento del plazo afectó los ingresos de la empresa\": \"incumplimiento\" is failure to meet an obligation, and \"ingresos\" is usually plural when it means revenue."
   },
   "translate": {
    "prompt": "State that, after a long negotiation, the shareholders accepted the counteroffer.",
@@ -12606,7 +12588,7 @@
     "Con motivo de la reunión del próximo mes, le ruego aplazar su asistencia cuanto antes.",
     "Con motivo de la reunión del pasado mes, le ruego confirmar su asistencia cuanto antes."
    ],
-   "explanation": "\"Con motivo de la reunión del próximo mes, le ruego confirmar su asistencia cuanto antes.\" is a formal request using \"le ruego\" plus an infinitive; the other options change one word (ausencia, aplazar, pasado) and so alter the meaning."
+   "explanation": "\"Con motivo de la reunión del próximo mes, le ruego confirmar su asistencia cuanto antes.\" \"Le ruego\" + infinitive is a formal request; the other options each change one key word (ausencia, aplazar, pasado)."
   },
   "translate": {
    "prompt": "Formally tell the recipient that you attach the requested documents and ask them to reply soon.",
@@ -12624,7 +12606,7 @@
     "Le adjunto los documentos solicitados y le agradecería una pronta respuesta.",
     "Le envío adjuntos los documentos solicitados y quedo a la espera de su pronta respuesta."
    ],
-   "explanation": "\"Adjunto encontrará los documentos solicitados y quedo a la espera de su pronta respuesta.\" combines two standard formal formulas: \"adjunto encontrará\" for enclosures and \"quedo a la espera de su respuesta\" for the closing request."
+   "explanation": "\"Adjunto encontrará los documentos solicitados y quedo a la espera de su pronta respuesta.\" Two standard formal formulas: \"adjunto encontrará\" for enclosures, \"quedo a la espera de\" for asking for a reply."
   }
  },
  "esc1p13l2": {
@@ -12636,7 +12618,7 @@
     "Lamentamos informarle de que su respuesta no ha podido ser atendida en el plazo previsto.",
     "Lamentamos informarle de que su solicitud no ha podido ser atendida en el lugar previsto."
    ],
-   "explanation": "The sentence heard is \"Lamentamos informarle de que su solicitud no ha podido ser atendida en el plazo previsto.\" It opens bad news formally with \"lamentamos informarle\" and says the request could not be handled within the expected deadline."
+   "explanation": "\"Lamentamos informarle de que su solicitud no ha podido ser atendida en el plazo previsto.\" \"Lamentamos informarle de que\" is a formal way to open bad news; \"plazo\" is a deadline, not a place."
   },
   "speak": {
    "answer": "Adjunto encontrará la documentación que nos solicitó",
@@ -12670,7 +12652,7 @@
     "En nombre del Ministerio, le recordamos la atención prestada a nuestra solicitud de información adicional.",
     "En nombre del Ministerio, le agradecemos la decisión prestada a nuestra solicitud de información adicional."
    ],
-   "explanation": "The sentence \"En nombre del Ministerio, le agradecemos la atención prestada a nuestra solicitud de información adicional.\" is a formal thank-you using \"en nombre de\" for \"on behalf of\"; the other choices change one word (reunión, recordamos, decisión) and so alter the meaning."
+   "explanation": "\"En nombre del Ministerio, le agradecemos la atención prestada a nuestra solicitud de información adicional.\" \"En nombre de\" means 'on behalf of'; the other options swap one word (reunión, recordamos, decisión)."
   },
   "translate": {
    "prompt": "Formally tell the recipient that the requested documents are attached to your letter.",
@@ -12832,7 +12814,7 @@
   },
   "speak": {
    "answer": "sin duda, la creencia no es conocimiento",
-   "explanation": "\"sin duda, la creencia no es conocimiento\" means 'without a doubt, belief is not knowledge'. It puts \"duda\", \"creencia\" and \"conocimiento\" together in one philosophical claim, with \"sin duda\" as the fixed phrase for 'without a doubt'."
+   "explanation": "\"sin duda, la creencia no es conocimiento\": \"sin duda\" is the fixed phrase for 'without a doubt', followed by a claim linking \"creencia\" and \"conocimiento\" with \"es\"."
   },
   "translate": {
    "prompt": "State that reason helps us tell reality apart from mere belief.",
@@ -12926,7 +12908,7 @@
     "Los investigadores presentaron una teoría que explica cómo interactúa cada gen con la bacteria.",
     "Los investigadores presentaron una teoría que explica cómo interactúa cada gen con la célula."
    ],
-   "explanation": "The sentence heard was \"Los investigadores presentaron una teoría que explica cómo interactúa cada gen con la molécula.\" The final noun, molécula, is the only word that differs from the other options."
+   "explanation": "\"Los investigadores presentaron una teoría que explica cómo interactúa cada gen con la molécula.\" Only the final noun, \"molécula\", tells the options apart, so listen to the end of the sentence."
   },
   "translate": {
    "prompt": "Say that sustainability is no longer a theory but the main goal of technological innovation.",
@@ -12938,7 +12920,7 @@
     "La sostenibilidad no es ya una teoría, sino el objetivo principal de la innovación tecnológica.",
     "La sostenibilidad ya no es una teoría, sino la principal meta de la innovación tecnológica."
    ],
-   "explanation": "\"La sostenibilidad ya no es una teoría, sino el objetivo principal de la innovación tecnológica.\" uses \"ya no ... sino\" to contrast what something no longer is with what it is, and \"innovación\" and \"teoría\" keep their written accents."
+   "explanation": "\"La sostenibilidad ya no es una teoría, sino el objetivo principal de la innovación tecnológica.\" \"Ya no … sino\" contrasts what something no longer is with what it is. \"Teoría\" and \"innovación\" keep their written accents."
   }
  },
  "esc1p16l3": {
@@ -13046,7 +13028,7 @@
     "Muchos investigadores subestiman la capacidad de los jóvenes para sobrevivir en condiciones favorables.",
     "Muchos investigadores subestiman la capacidad de los viajeros para sobrevivir en condiciones adversas."
    ],
-   "explanation": "\"Muchos investigadores subestiman la capacidad de los jóvenes para sobrevivir en condiciones adversas.\" combines subestimar (to underestimate) and sobrevivir (to survive). Listen for the verb after \"para\", the group of people, and whether the conditions are \"adversas\" (hostile) or \"favorables\" (good)."
+   "explanation": "\"Muchos investigadores subestiman la capacidad de los jóvenes para sobrevivir en condiciones adversas.\" Subestimar is \"to underestimate\" and sobrevivir is \"to survive\"; \"adversas\" means hostile, the opposite of \"favorables\"."
   },
   "translate": {
    "prompt": "Say that the impossibility of finishing the project on time made the team's work useless.",
@@ -13142,7 +13124,7 @@
   },
   "speak": {
    "answer": "Con la sal se me fue la mano",
-   "explanation": "The phrase \"Con la sal se me fue la mano\" uses \"írsele la mano\" to say you overdid the salt."
+   "explanation": "\"Con la sal se me fue la mano\" uses \"írsele la mano\" (literally, the hand slipped), an idiom for overdoing something. The unplanned slip is marked by \"se me\"."
   },
   "translate": {
    "prompt": "Say that your cousin talks a mile a minute and never lets anyone else speak (use the idiom about the elbows).",
@@ -13254,7 +13236,7 @@
     "Los compañeros de trabajo han decidido retirarse de la reunión antes de lo previsto.",
     "Los colegas han decidido marcharse de la reunión antes de lo previsto."
    ],
-   "explanation": "\"Los compañeros han decidido marcharse de la reunión antes de lo previsto.\" pairs \"compañeros\" (a neutral, professional word for coworkers) with \"marcharse\" or \"retirarse\", the polite verbs for leaving, and \"antes de lo previsto\" is the formal way to say earlier than expected."
+   "explanation": "\"Los compañeros han decidido marcharse de la reunión antes de lo previsto.\" \"Marcharse\" or \"retirarse\" are polite verbs for leaving, and \"antes de lo previsto\" is the formal way to say earlier than expected."
   }
  },
  "esc1p1l1": {
@@ -13364,7 +13346,7 @@
     "Si ellos trabajaran con más paciencia, entregarían el proyecto mucho antes de la fecha límite.",
     "Si ellos trabajaran con más disciplina, revisarían el proyecto mucho antes de la fecha límite."
    ],
-   "explanation": "The speaker says \"Si ellos trabajaran con más disciplina, entregarían el proyecto mucho antes de la fecha límite.\", an unreal \"si\" clause with the imperfect subjunctive \"trabajaran\" and a conditional result."
+   "explanation": "\"Si ellos trabajaran con más disciplina, entregarían el proyecto mucho antes de la fecha límite.\" An unreal \"si\" clause uses the imperfect subjunctive (\"trabajaran\") and a conditional result (\"entregarían\")."
   },
   "translate": {
    "prompt": "Say that you would have liked your colleagues to have been more honest with you about the problem.",
@@ -13450,7 +13432,7 @@
     "Como se mencionó previamente, los resultados se publicarán a finales de año.",
     "Como se ha mencionado anteriormente, los resultados se publicarán a finales de año."
    ],
-   "explanation": "\"Como se mencionó anteriormente, los resultados se publicarán a finales de año.\" opens with the formal back-reference marker \"como se mencionó anteriormente\" and then uses the passive se with the future (\"se publicarán\") to say the results will be published."
+   "explanation": "\"Como se mencionó anteriormente, los resultados se publicarán a finales de año.\" opens with the formal back-reference \"como se mencionó anteriormente\" and uses passive \"se\" plus the future: \"se publicarán\"."
   }
  },
  "esc1p20l2": {
@@ -13462,7 +13444,7 @@
     "En ausencia de pruebas concluyentes, de ello se desprende que la teoría carece de fundamento.",
     "En presencia de pruebas concluyentes, de ello se desprende que la hipótesis carece de fundamento."
    ],
-   "explanation": "The sentence \"En ausencia de pruebas concluyentes, de ello se desprende que la hipótesis carece de fundamento.\" combines \"en ausencia de\" (in the absence of) with \"de ello se desprende que\" (it follows that) to draw a formal conclusion."
+   "explanation": "\"En ausencia de pruebas concluyentes, de ello se desprende que la hipótesis carece de fundamento.\" pairs \"en ausencia de\" (in the absence of) with \"de ello se desprende que\" (it follows that) for a formal conclusion."
   },
   "translate": {
    "prompt": "Say that, in the absence of conclusive evidence, no one can reach a firm decision.",
@@ -13491,7 +13473,7 @@
     "Con esto en mente, la comisión revisará los plazos en la medida de lo necesario.",
     "Con esto en mente, la dirección revisará los plazos en la medida de lo posible."
    ],
-   "explanation": "In \"Con esto en mente, la comisión revisará los plazos en la medida de lo posible.\" the opening phrase builds on what was just said, and \"en la medida de lo posible\" limits the promise to what is feasible. Listen closely to the nouns (comisión, plazos) and to the final word, posible."
+   "explanation": "\"Con esto en mente, la comisión revisará los plazos en la medida de lo posible.\" uses \"con esto en mente\" to build on what was said, and \"en la medida de lo posible\" to limit the promise to what is feasible."
   },
   "speak": {
    "answer": "A su debido tiempo se informará a todos los interesados",
@@ -13525,7 +13507,7 @@
     "Buscamos una persona que tenga experiencia en traducciones internacionales y domine varios idiomas con soltura.",
     "Buscamos una persona que tenga paciencia en negociaciones internacionales y domine varios idiomas con soltura."
    ],
-   "explanation": "\"Buscamos una persona que tenga experiencia en negociaciones internacionales y domine varios idiomas con soltura.\" uses the subjunctive \"tenga\" and \"domine\" because the person sought is unspecified; the other options change one clearly audible word."
+   "explanation": "\"Buscamos una persona que tenga experiencia en negociaciones internacionales y domine varios idiomas con soltura.\" uses the subjunctive (\"tenga\", \"domine\") because the person sought is not a specific, known one."
   },
   "translate": {
    "prompt": "Say that there is no one in the office who understands this problem.",
@@ -13604,7 +13586,7 @@
     "Estoy buscando un apartamento tranquilo que tenga terraza.",
     "Estoy buscando un departamento tranquilo que tenga terraza."
    ],
-   "explanation": "Because you have not found the apartment yet and do not know that it exists, the relative clause takes the subjunctive: \"Busco un apartamento que sea tranquilo y tenga terraza.\" Both \"sea\" and \"tenga\" are subjunctive, agreeing with the singular \"apartamento\"."
+   "explanation": "\"Busco un apartamento que sea tranquilo y tenga terraza.\" The apartment is not found yet, so the relative clause takes the subjunctive: \"sea\" and \"tenga\"."
   }
  },
  "esc1p21l4": {
@@ -13636,7 +13618,7 @@
     "No hay nadie en esta oficina que pueda arreglar el problema.",
     "En esta oficina no hay nadie que pueda solucionar el problema."
    ],
-   "explanation": "You are denying that anyone like that exists, so the relative clause needs the subjunctive: \"No hay nadie en esta oficina que pueda resolver el problema.\" Because \"nadie\" names a nonexistent person, you say \"pueda\", not the indicative \"puede\"."
+   "explanation": "\"No hay nadie en esta oficina que pueda resolver el problema.\" \"Nadie\" names a nonexistent person, so the relative clause takes the subjunctive \"pueda\", not \"puede\"."
   }
  },
  "esc1p21l5": {
@@ -13677,7 +13659,7 @@
     "El gobierno decidió posponer la reforma hasta que el contexto económico fuera más peligroso para todos.",
     "El gobierno decidió posponer la reforma hasta que el contexto político fuera más favorable para todos."
    ],
-   "explanation": "The sentence heard was \"El gobierno decidió posponer la reforma hasta que el contexto económico fuera más favorable para todos.\" Here \"posponer\" means to delay something until a later time."
+   "explanation": "\"El gobierno decidió posponer la reforma hasta que el contexto económico fuera más favorable para todos.\" \"Posponer\" means to delay something until later, so it fits \"hasta que\"; \"aprobar\" would not."
   },
   "speak": {
    "answer": "Los trabajadores decidieron reclamar sus derechos",
@@ -13699,7 +13681,7 @@
     "Las nuevas medidas lograron reducir los daños que había causado la tormenta.",
     "Las nuevas medidas lograron disminuir los daños que había causado la tormenta."
    ],
-   "explanation": "In \"Las nuevas medidas lograron disminuir los daños que había ocasionado la tormenta.\", \"ocasionar\" is a more formal, written-style synonym of \"causar\". The past perfect \"había ocasionado\" shows the damage came before the measures worked."
+   "explanation": "\"Las nuevas medidas lograron disminuir los daños que había ocasionado la tormenta.\" \"Ocasionar\" is a formal synonym of \"causar\", and \"había ocasionado\" places the damage before the measures."
   }
  },
  "esc1p22l2": {
@@ -13745,7 +13727,7 @@
   },
   "speak": {
    "answer": "Debemos solucionar el conflicto y contemplar todas las posibilidades",
-   "explanation": "\"Debemos solucionar el conflicto y contemplar todas las posibilidades\" pairs two formal verbs: \"solucionar\" means to find a solution to a problem, and \"contemplar\" means to take options into account. Both sound more precise and formal than everyday \"arreglar\" and \"tener en cuenta\"."
+   "explanation": "\"Debemos solucionar el conflicto y contemplar todas las posibilidades\" uses two formal verbs: \"solucionar\" (find a solution to) and \"contemplar\" (take into account), more precise than \"arreglar\" and \"tener en cuenta\"."
   },
   "translate": {
    "prompt": "Say that the new law undermines workers' rights.",
@@ -13772,7 +13754,7 @@
     "El ministro decidió ampliar la reunión hasta que se esclarecieran todos los detalles del acuerdo.",
     "El ministro decidió posponer la reunión hasta que se esclarecieran todos los detalles del contrato."
    ],
-   "explanation": "The sentence \"El ministro decidió posponer la reunión hasta que se esclarecieran todos los detalles del acuerdo.\" means the minister delayed the meeting until every detail of the agreement was made clear; the other choices change one word (respaldaran, ampliar, contrato)."
+   "explanation": "\"El ministro decidió posponer la reunión hasta que se esclarecieran todos los detalles del acuerdo.\" \"Esclarecer\" means to make clear, and \"posponer\" means to delay; the other options swap one word."
   },
   "translate": {
    "prompt": "Say that the report condenses the main ideas of the project into its essential points.",
@@ -13790,7 +13772,7 @@
     "El informe resume en sus puntos esenciales las ideas principales del proyecto.",
     "El informe condensa en puntos esenciales las ideas principales del proyecto."
    ],
-   "explanation": "\"El informe sintetiza las ideas principales del proyecto en sus puntos esenciales.\" uses \"sintetiza\", the precise formal verb for boiling ideas down to their essentials; \"condensa\" also works, and \"resume\" is the more everyday choice."
+   "explanation": "\"El informe sintetiza las ideas principales del proyecto en sus puntos esenciales.\" \"Sintetizar\" is the precise formal verb for boiling ideas down to essentials; \"condensa\" also works, and \"resume\" is more everyday."
   }
  },
  "esc1p22l5": {
@@ -13840,7 +13822,7 @@
   },
   "speak": {
    "answer": "la participación cívica fortalece el movimiento de base",
-   "explanation": "\"la participación cívica fortalece el movimiento de base\" means that civic engagement strengthens the grassroots movement. Notice that each adjective or complement follows its noun, as in \"participación cívica\" and \"movimiento de base\"."
+   "explanation": "\"la participación cívica fortalece el movimiento de base\": Spanish adjectives and complements usually follow the noun, as in \"participación cívica\" and \"movimiento de base\"."
   },
   "translate": {
    "prompt": "Say that social inequality and the lack of civic engagement worry public opinion.",
@@ -13874,7 +13856,7 @@
   },
   "speak": {
    "answer": "La justicia social exige una acción colectiva y un cambio sistémico",
-   "explanation": "\"La justicia social exige una acción colectiva y un cambio sistémico\" means fairness for all demands people acting together and change to the whole system. Note that \"colectiva\" and \"sistémico\" agree with feminine \"acción\" and masculine \"cambio\"."
+   "explanation": "\"La justicia social exige una acción colectiva y un cambio sistémico\": adjectives agree with their nouns, so \"colectiva\" matches feminine \"acción\" and \"sistémico\" matches masculine \"cambio\"."
   },
   "translate": {
    "prompt": "Say that a person's socioeconomic status shapes their access to social mobility and public welfare.",
@@ -13922,7 +13904,7 @@
     "La desigualdad económica hace más difícil la movilidad social en muchas comunidades.",
     "La disparidad económica entorpece la movilidad social en muchas comunidades."
    ],
-   "explanation": "\"La disparidad económica dificulta la movilidad social en muchas comunidades.\" combines two noun phrases where the adjective follows the noun, with the verb \"dificultar\" (to make harder) as the main action. \"Hace más difícil\" is a natural alternative for the same idea."
+   "explanation": "\"La disparidad económica dificulta la movilidad social en muchas comunidades.\" The verb \"dificultar\" means \"to make harder\" and takes a direct object; \"hace más difícil\" says the same."
   }
  },
  "esc1p23l4": {
@@ -13938,7 +13920,7 @@
   },
   "speak": {
    "answer": "La rendición de cuentas pública fortalece el bien común",
-   "explanation": "\"La rendición de cuentas pública fortalece el bien común\" means that public accountability strengthens the common good. It links two political terms with the verb \"fortalece\" (strengthens), which agrees with the singular subject \"la rendición\"."
+   "explanation": "\"La rendición de cuentas pública fortalece el bien común\": the verb \"fortalece\" is third-person singular to agree with the singular subject \"la rendición de cuentas\"."
   },
   "translate": {
    "prompt": "Say that social mobility depends on the trust people have in institutions.",
@@ -14123,7 +14105,7 @@
     "Los investigadores tuvieron que categorizar los resultados antes de formular una hipótesis más precisa.",
     "Los investigadores tuvieron que contextualizar los problemas antes de formular una hipótesis más precisa."
    ],
-   "explanation": "The sentence heard is \"Los investigadores tuvieron que contextualizar los resultados antes de formular una hipótesis más precisa.\" It uses \"contextualizar\" (to place in context) and \"formular una hipótesis\" (to put forward a hypothesis), and the other choices change one word you can hear."
+   "explanation": "\"Contextualizar\" means to place something in context, and \"formular una hipótesis\" means to put forward a hypothesis: \"Los investigadores tuvieron que contextualizar los resultados antes de formular una hipótesis más precisa.\""
   },
   "speak": {
    "answer": "es necesario contextualizar y categorizar los resultados",
@@ -14145,7 +14127,7 @@
     "El autor intenta distinguir dos conceptos y después enumerar sus características principales.",
     "La autora intenta distinguir dos conceptos y luego enumerar sus características principales."
    ],
-   "explanation": "After \"intenta\" (or \"trata de\") both verbs stay in the infinitive, so you get \"El autor intenta diferenciar dos conceptos y luego enumerar sus características principales.\" The verbs \"diferenciar\" and \"enumerar\" are typical scholarly-writing verbs for distinguishing ideas and listing their features."
+   "explanation": "\"Intentar\" and \"tratar de\" are followed by an infinitive, so both actions stay infinitives: \"El autor intenta diferenciar dos conceptos y luego enumerar sus características principales.\""
   }
  },
  "esc1p25l1": {
@@ -14157,7 +14139,7 @@
     "Antes de cerrar el trato, conviene que el gerente dé el visto bueno al informe final.",
     "Antes de cerrar el trato, conviene que el director dé el visto bueno al informe inicial."
    ],
-   "explanation": "The sentence heard is \"Antes de cerrar el trato, conviene que el director dé el visto bueno al informe final.\" It uses \"dar el visto bueno\" (to give the green light) with the subjunctive after \"conviene que\"."
+   "explanation": "\"Conviene que\" triggers the subjunctive, so \"dar\" appears as \"dé\" in \"Antes de cerrar el trato, conviene que el director dé el visto bueno al informe final.\" \"Dar el visto bueno\" means to give the green light."
   },
   "translate": {
    "prompt": "Say that, because of the new strategy, the team is at a crossroads and must change direction.",
@@ -14175,7 +14157,7 @@
     "Debido a la nueva estrategia, el equipo está en una encrucijada y debe cambiar de dirección.",
     "Por la nueva estrategia, el equipo está en una encrucijada y debe cambiar de rumbo."
    ],
-   "explanation": "You combine \"estar en una encrucijada\" (to be at a crossroads) with \"cambiar el rumbo\" (to change course), as in \"Debido a la nueva estrategia, el equipo está en una encrucijada y debe cambiar el rumbo.\" Debido a introduces the cause of the situation."
+   "explanation": "\"Estar en una encrucijada\" means to be at a crossroads, and \"cambiar el rumbo\" means to change course: \"Debido a la nueva estrategia, el equipo está en una encrucijada y debe cambiar el rumbo.\" \"Debido a\" introduces the cause."
   }
  },
  "esc1p25l2": {
@@ -14187,7 +14169,7 @@
     "Si queremos que el proyecto salga bien, debemos olvidar el tema con el equipo directivo mañana.",
     "Si queremos que el proyecto salga bien, debemos retomar el tema con el equipo financiero mañana."
    ],
-   "explanation": "The speaker says \"Si queremos que el proyecto salga bien, debemos retomar el tema con el equipo directivo mañana.\", using \"retomar el tema\" to mean coming back to a subject later; the other options change one word such as the time, the verb or the team."
+   "explanation": "\"Retomar el tema\" means to come back to a topic: \"Si queremos que el proyecto salga bien, debemos retomar el tema con el equipo directivo mañana.\" Note \"salga\", subjunctive after \"queremos que\"."
   },
   "speak": {
    "answer": "generar un impacto real en la empresa",
@@ -14239,7 +14221,7 @@
     "El año pasado, el nuevo gerente subió la vara de los objetivos del departamento.",
     "El año pasado, el nuevo gerente subió el listón de rendimiento del departamento."
    ],
-   "explanation": "\"El año pasado, la nueva gerente subió el listón de los objetivos de rendimiento del departamento.\" uses the idiom \"subir el listón\" (to raise the bar) for demanding more. \"Elevar el listón\" and, in much of Latin America, \"subir la vara\" mean the same."
+   "explanation": "\"Subir el listón\" is the idiom for raising the bar: \"El año pasado, la nueva gerente subió el listón de los objetivos de rendimiento del departamento.\" \"Elevar el listón\" and Latin American \"subir la vara\" also work."
   }
  },
  "esc1p25l4": {
@@ -14251,7 +14233,7 @@
     "Tras la reunión, decidimos poner las cosas en marcha antes de que empezara el trimestre.",
     "Tras la reunión, decidimos dejar las cosas en marcha antes de que terminara el trimestre."
    ],
-   "explanation": "The sentence \"Tras la reunión, decidimos poner las cosas en marcha antes de que terminara el trimestre.\" uses the idiom \"poner las cosas en marcha\" (to get the ball rolling), and the other options each change one clearly audible word."
+   "explanation": "\"Poner las cosas en marcha\" means to get things moving, like \"get the ball rolling\": \"Tras la reunión, decidimos poner las cosas en marcha antes de que terminara el trimestre.\" \"Terminara\" is subjunctive after \"antes de que\"."
   },
   "speak": {
    "answer": "Prefiero ir al grano y evitar rodeos innecesarios",
@@ -14285,7 +14267,7 @@
     "Tras meses de incertidumbre, la directiva decidió por fin aplazar lo inevitable y reestructurar el departamento.",
     "Tras meses de incertidumbre, la directiva decidió por fin afrontar lo inevitable y cerrar el departamento."
    ],
-   "explanation": "In \"Tras meses de incertidumbre, la directiva decidió por fin afrontar lo inevitable y reestructurar el departamento.\", \"afrontar lo inevitable\" is close to 'bite the bullet'. Listen for \"afrontar\" (to face), not \"aplazar\" (to postpone)."
+   "explanation": "\"Afrontar lo inevitable\" means to face the unavoidable, like \"bite the bullet\": \"Tras meses de incertidumbre, la directiva decidió por fin afrontar lo inevitable y reestructurar el departamento.\" \"Aplazar\" means to postpone."
   },
   "translate": {
    "prompt": "Say that the company is facing a decisive choice about its future and cannot decide which way to go.",
@@ -14382,8 +14364,8 @@
    "explanation": "The speaker says \"Siendo así, huelga decir que el comité deberá revisar el acuerdo cuanto antes.\", which means the committee must review the agreement as soon as possible; the other choices change one word (firmar, contrato, mañana mismo)."
   },
   "speak": {
-   "answer": "Sea como fuere, en estas circunstancias debemos actuar",
-   "explanation": "\"Sea como fuere, en estas circunstancias debemos actuar\" joins two connectors: \"sea como fuere\" (be that as it may) sets the previous point aside, and \"en estas circunstancias\" (under these circumstances) leads into what you conclude."
+   "answer": "Sea como fuere, en estas circunstancias debemos actuar.",
+   "explanation": "\"Sea como fuere, en estas circunstancias debemos actuar.\" opens with \"sea como fuere\" (be that as it may), which sets aside a prior point, and then \"en estas circunstancias\" leads to your conclusion."
   },
   "translate": {
    "prompt": "Say that, by virtue of the law, the company must pay the compensation.",
@@ -14413,7 +14395,7 @@
     "En la medida de lo posible, rechazaremos el informe con miras a mejorar el proceso.",
     "En la medida de lo posible, revisaremos el contrato con miras a mejorar el proceso."
    ],
-   "explanation": "The speaker says \"En la medida de lo posible, revisaremos el informe con miras a mejorar el proceso.\", combining two connectors: \"en la medida de lo posible\" (to the extent possible) and \"con miras a\" (with a view to)."
+   "explanation": "\"En la medida de lo posible, revisaremos el informe con miras a mejorar el proceso.\" It pairs \"en la medida de lo posible\" (to the extent possible) with \"con miras a\" (with a view to) plus an infinitive."
   },
   "translate": {
    "prompt": "Say that, as things stand, the committee cannot approve the plan, even though everyone acts in the interest of clarity.",
@@ -14477,7 +14459,7 @@
     "Los investigadores lograron esclarecer las causas del conflicto tras varios meses de trabajo minucioso.",
     "Los investigadores lograron esclarecer las dudas del problema tras varios meses de trabajo minucioso."
    ],
-   "explanation": "The speaker says \"Los investigadores lograron esclarecer las causas del problema tras varios meses de trabajo minucioso.\" Here esclarecer means to clarify or bring to light, and the other choices change one word (agotador, conflicto, dudas)."
+   "explanation": "\"Los investigadores lograron esclarecer las causas del problema tras varios meses de trabajo minucioso.\" \"Esclarecer\" means to clarify or bring to light, and \"minucioso\" means meticulous."
   },
   "translate": {
    "prompt": "Say that the director openly expressed her disagreement during the meeting yesterday.",
@@ -14541,7 +14523,7 @@
     "El comité decidió iniciar la reforma después de evaluar todas las propuestas.",
     "El comité decidió iniciar la reforma antes de evaluar todas las consecuencias."
    ],
-   "explanation": "The speaker says \"El comité decidió iniciar la reforma después de evaluar todas las consecuencias.\", using the formal verb \"iniciar\" for starting something and \"consecuencias\" for the results to be weighed."
+   "explanation": "\"El comité decidió iniciar la reforma después de evaluar todas las consecuencias.\" \"Iniciar\" is the formal verb for starting, and \"después de\" (after) sets the order of events."
   },
   "translate": {
    "prompt": "In a formal register, say that the team ran into a setback with the order and decided to improve the process.",
@@ -14571,7 +14553,7 @@
     "El director procura esclarecer las consecuencias de la decisión antes de la votación de mañana.",
     "El director procura esclarecer los inconvenientes de la decisión antes de la reunión de mañana."
    ],
-   "explanation": "The sentence heard was \"El director procura esclarecer las consecuencias de la decisión antes de la reunión de mañana.\" It uses \"procurar\" (to make an effort) and \"esclarecer\" (to clarify) in a formal register, and the wrong choices each swap one clearly different word."
+   "explanation": "\"El director procura esclarecer las consecuencias de la decisión antes de la reunión de mañana.\" \"Procurar\" means to make an effort, and \"esclarecer\" means to clarify; both are formal."
   },
   "speak": {
    "answer": "Procuro comprender el criterio de mi jefe",
@@ -14750,7 +14732,7 @@
     "Conviene señalar que los resultados del estudio fueron alentadores.",
     "Cabe resaltar que los resultados del estudio fueron alentadores."
    ],
-   "explanation": "In formal written Spanish, \"Cabe señalar que los hallazgos del estudio fueron alentadores.\" uses the impersonal phrase \"cabe señalar que\" (it should be noted that), where \"cabe\" is followed by an infinitive and then \"que\" introduces the clause."
+   "explanation": "\"Cabe señalar que los hallazgos del estudio fueron alentadores.\" Impersonal \"cabe\" + infinitive + \"que\" means \"it should be noted that\", a formal way to introduce a remark."
   }
  },
  "esc1p4l2": {
@@ -14762,7 +14744,7 @@
     "Cabe señalar que los resultados de la investigación resultan bastante concluyentes en este informe.",
     "Cabe señalar que los resultados de la propuesta resultan bastante concluyentes en este ámbito."
    ],
-   "explanation": "The sentence \"Cabe señalar que los resultados de la investigación resultan bastante concluyentes en este ámbito.\" uses the formal \"cabe + infinitive\" to introduce a remark; the other choices change one word (discutibles, informe, propuesta)."
+   "explanation": "\"Cabe señalar que los resultados de la investigación resultan bastante concluyentes en este ámbito.\" Formal \"cabe\" + infinitive introduces a remark, and \"resultan\" here means \"turn out to be\"."
   },
   "speak": {
    "answer": "Resulta evidente que se necesita más tiempo",
@@ -14796,7 +14778,7 @@
     "Cabe señalar que los resultados del estudio no permiten extraer opiniones definitivas todavía.",
     "Cabe señalar que los objetivos del estudio no permiten extraer conclusiones definitivas todavía."
    ],
-   "explanation": "The sentence heard was \"Cabe señalar que los resultados del estudio no permiten extraer conclusiones definitivas todavía.\" and it uses the formal impersonal \"cabe\" followed by an infinitive."
+   "explanation": "\"Cabe señalar que los resultados del estudio no permiten extraer conclusiones definitivas todavía.\" Formal impersonal \"cabe\" + infinitive introduces the remark; \"extraer conclusiones\" means to draw conclusions."
   },
   "translate": {
    "prompt": "Say, in formal academic register, that it is advisable to underline the most relevant conclusions of the study.",
@@ -14814,7 +14796,7 @@
     "Se aconseja subrayar las conclusiones más relevantes del estudio.",
     "Es aconsejable destacar las conclusiones más relevantes del estudio."
    ],
-   "explanation": "The impersonal verb \"conviene\" takes an infinitive, so the sentence is \"Conviene subrayar las conclusiones más relevantes del estudio.\""
+   "explanation": "\"Conviene subrayar las conclusiones más relevantes del estudio.\" Impersonal \"conviene\" (it is advisable) takes an infinitive directly, with no \"que\" needed."
   }
  },
  "esc1p4l4": {
@@ -14848,7 +14830,7 @@
     "Es oportuno concluir que las limitaciones del estudio son relevantes.",
     "Resulta oportuno concluir que las limitaciones del estudio son relevantes."
    ],
-   "explanation": "\"Cabe concluir que las limitaciones del estudio son pertinentes.\" uses \"Cabe\" + infinitive for \"it is fitting to\" and the formal adjective \"pertinente\" for \"relevant\"; \"Es oportuno\", \"Resulta oportuno\" and \"Procede\" are equally formal ways to open the same statement."
+   "explanation": "\"Cabe concluir que las limitaciones del estudio son pertinentes.\" uses \"cabe\" + infinitive for \"it is fitting to\", and \"pertinentes\" is the formal word for \"relevant\". \"Es oportuno\" and \"Procede\" work the same way."
   }
  },
  "esc1p5l1": {
@@ -14860,7 +14842,7 @@
     "En la medida en que los datos lo permitan, la propuesta será revisada por el gobierno.",
     "En la medida en que los costos lo permitan, la propuesta será revisada por el comité."
    ],
-   "explanation": "You heard \"En la medida en que los datos lo permitan, la propuesta será revisada por el comité.\" The connector \"en la medida en que\" (to the extent that) takes the subjunctive \"permitan\"; each other option changes one word (costos, gobierno, rechazada)."
+   "explanation": "\"En la medida en que los datos lo permitan, la propuesta será revisada por el comité.\" The connector \"en la medida en que\" (to the extent that) takes the subjunctive \"permitan\" when the condition is open."
   },
   "translate": {
    "prompt": "Say that the results were disappointing; conversely, the team's morale has never been higher.",
@@ -15047,7 +15029,7 @@
     "Para cuando llegaron los invitados, nosotros ya habíamos recogido todos los vasos de la mesa.",
     "Para cuando llegaron los invitados, nosotros ya habíamos cortado todos los platos de la mesa."
    ],
-   "explanation": "The speaker says \"Para cuando llegaron los invitados, nosotros ya habíamos recogido todos los platos de la mesa.\" The pluperfect \"habíamos recogido\" shows the clearing was done before the guests arrived."
+   "explanation": "\"Para cuando llegaron los invitados, nosotros ya habíamos recogido todos los platos de la mesa.\" The pluperfect \"habíamos recogido\" marks an action completed before another past moment (the guests' arrival)."
   },
   "translate": {
    "prompt": "Speaking for yourself and your colleagues, say that by the end of the year you all (we) will have finished the project.",
@@ -15129,7 +15111,7 @@
     "Cuando lleguen los invitados mañana por la noche, usted ya habrá preparado toda la cena.",
     "Para cuando los invitados lleguen mañana en la noche, usted ya habrá preparado toda la cena."
    ],
-   "explanation": "\"Para cuando lleguen los invitados mañana por la noche, usted ya habrá preparado toda la cena.\" needs the future perfect \"habrá preparado\" for an action finished before a future point, with the subjunctive \"lleguen\" after \"para cuando\"."
+   "explanation": "\"Para cuando lleguen los invitados mañana por la noche, usted ya habrá preparado toda la cena.\" The future perfect \"habrá preparado\" shows completion before a future point, and \"para cuando\" takes the subjunctive \"lleguen\"."
   }
  },
  "esc1p7l1": {
@@ -15175,7 +15157,7 @@
     "El abogado presentó una cláusula y aportó pruebas suficientes ante el tribunal competente.",
     "El abogado presentó una demanda y aportó pruebas suficientes ante el juez competente."
    ],
-   "explanation": "You heard \"El abogado presentó una demanda y aportó pruebas suficientes ante el tribunal competente.\": the lawyer filed a lawsuit and provided enough evidence (pruebas) before the competent court (tribunal); each other option swaps one of these words."
+   "explanation": "\"El abogado presentó una demanda y aportó pruebas suficientes ante el tribunal competente.\" Legal terms to catch: \"demanda\" (lawsuit), \"pruebas\" (evidence), \"tribunal\" (court)."
   },
   "translate": {
    "prompt": "Say that the lawsuit was dismissed because one clause of the regulation was not respected.",
@@ -15193,7 +15175,7 @@
     "La demanda fue desestimada porque una cláusula del reglamento no fue respetada.",
     "La demanda fue desestimada porque una cláusula del reglamento no se respetó."
    ],
-   "explanation": "\"La demanda fue desestimada porque no se respetó una cláusula del reglamento.\" uses \"demanda\" for lawsuit, \"cláusula\" for a single provision and \"reglamento\" for the official set of rules; the passive or impersonal \"se\" keeps the formal register."
+   "explanation": "\"La demanda fue desestimada porque no se respetó una cláusula del reglamento.\" \"Desestimar\" means to dismiss a claim, \"cláusula\" is one provision, and the passive keeps the register formal."
   }
  },
  "esc1p7l3": {
@@ -15205,7 +15187,7 @@
     "La investigadora presentó una hipótesis novedosa ante el jurado durante la presentación de su tesis.",
     "La investigadora presentó una hipótesis novedosa ante el jurado durante la defensa de su beca."
    ],
-   "explanation": "You heard \"La investigadora presentó una hipótesis novedosa ante el jurado durante la defensa de su tesis.\": a researcher put forward a new hypothesis to the panel (jurado) while defending her thesis; the other options swap one word (conclusión, presentación, beca)."
+   "explanation": "\"La investigadora presentó una hipótesis novedosa ante el jurado durante la defensa de su tesis.\" \"Defensa de tesis\" is the oral defense of a thesis, and \"jurado\" is the examining panel."
   },
   "speak": {
    "answer": "La metodología respalda la hipótesis de la investigación",
@@ -15224,7 +15206,7 @@
     "La conclusión del estudio contradice el argumento medular de la tesis.",
     "La conclusión del estudio se contradice con el argumento central de la tesis."
    ],
-   "explanation": "\"La conclusión del estudio contradice el argumento central de la tesis.\" uses \"contradice\" for contradicts and \"argumento central\" for the central argument."
+   "explanation": "\"La conclusión del estudio contradice el argumento central de la tesis.\" uses the transitive verb \"contradice\" with a direct object, and \"central\" modifies \"argumento\"."
   }
  },
  "esc1p7l4": {
@@ -15266,7 +15248,7 @@
     "La directora aseguró que los resultados ya se habían revisado en la página oficial.",
     "La directora aseguró que los resultados ya se habían publicado en la página principal."
    ],
-   "explanation": "The speaker said \"La directora aseguró que los resultados ya se habían publicado en la página oficial.\" Listen for the indicative \"habían\" (not the conditional \"habrían\"), the verb \"publicado\" and the final word \"oficial\"."
+   "explanation": "\"La directora aseguró que los resultados ya se habían publicado en la página oficial.\" After a past verb of saying, the earlier action uses the pluperfect \"habían publicado\", not the conditional \"habrían\"."
   },
   "speak": {
    "answer": "Él dijo que tenía mucho trabajo pendiente",
@@ -15285,7 +15267,7 @@
     "María aseguró que ya habían terminado el proyecto.",
     "María dijo que ya habían concluido el proyecto."
    ],
-   "explanation": "The best rendering is \"María dijo que ya habían terminado el proyecto.\" The present perfect \"hemos terminado\" shifts to the pluperfect \"habían terminado\" after a past reporting verb, and the pronoun changes from \"we\" to the third person."
+   "explanation": "\"María dijo que ya habían terminado el proyecto.\" After a past reporting verb, \"hemos terminado\" becomes the pluperfect \"habían terminado\", and \"we\" becomes third person."
   }
  },
  "esc1p8l2": {
@@ -15347,7 +15329,7 @@
     "Ella nos dijo que había terminado el informe el día anterior y que nos lo enviaría a la mañana siguiente.",
     "Nos dijo que había terminado el informe el día anterior y que nos lo enviaría la mañana siguiente."
    ],
-   "explanation": "After a past reporting verb, a past action becomes the pluperfect and a future becomes the conditional: \"Nos dijo que había terminado el informe el día anterior y que nos lo enviaría a la mañana siguiente.\" Time words shift too, so \"ayer\" becomes \"el día anterior\"."
+   "explanation": "\"Nos dijo que había terminado el informe el día anterior y que nos lo enviaría a la mañana siguiente.\" Past becomes pluperfect, future becomes conditional, and time words shift (\"mañana\" becomes \"la mañana siguiente\")."
   }
  },
  "esc1p8l4": {
@@ -15359,7 +15341,7 @@
     "El director aseguró que la reunión comenzaría puntualmente y que nadie podría quedarse.",
     "El director aseguró que la visita comenzaría puntualmente y que nadie podría ausentarse."
    ],
-   "explanation": "In \"El director aseguró que la reunión comenzaría puntualmente y que nadie podría ausentarse.\", a past verb of saying (aseguró) turns the original future promise into the conditional (comenzaría, podría). Listen for the key words comenzaría, reunión and ausentarse, which separate it from the similar-sounding options."
+   "explanation": "\"El director aseguró que la reunión comenzaría puntualmente y que nadie podría ausentarse.\" After a past verb of saying, a future promise becomes the conditional (\"comenzaría\", \"podría\")."
   },
   "translate": {
    "prompt": "Report what she said: she stated that she would not accept the proposal because it was not fair.",
@@ -15388,7 +15370,7 @@
     "El ministro negó que la propuesta ya hubiera sido rechazada por la mayoría de los diputados.",
     "El ministro afirmó que la propuesta ya había sido aprobada por la mayoría de los diputados."
    ],
-   "explanation": "The sentence heard was \"El ministro afirmó que la propuesta ya había sido rechazada por la mayoría de los diputados.\"; the other choices change the reporting verb (negó), the outcome (aprobada) or the chamber (senadores), and each sounds clearly different."
+   "explanation": "\"El ministro afirmó que la propuesta ya había sido rechazada por la mayoría de los diputados.\" \"Afirmó que\" takes the indicative \"había sido\", unlike \"negó que\", which needs the subjunctive."
   },
   "speak": {
    "answer": "Ella explicó que el problema ya se había resuelto",
@@ -15451,11 +15433,11 @@
     "Firmaremos el contrato con tal de que revisen los informes antes del viernes.",
     "Firmaremos el documento con tal de que revisen las cláusulas antes del viernes."
    ],
-   "explanation": "The speaker said \"Firmaremos el contrato con tal de que revisen las cláusulas antes del viernes.\" The phrase \"con tal de que\" (provided that) introduces a condition and takes the subjunctive \"revisen\"."
+   "explanation": "\"Firmaremos el contrato con tal de que revisen las cláusulas antes del viernes.\" \"Con tal de que\" (provided that) introduces a condition and takes the subjunctive \"revisen\"."
   },
   "speak": {
    "answer": "Saldremos a menos que empiece a llover",
-   "explanation": "\"Saldremos a menos que empiece a llover\" means \"We will go out unless it starts to rain\"; \"a menos que\" (unless) is followed by the subjunctive \"empiece\"."
+   "explanation": "\"Saldremos a menos que empiece a llover\" means \"We will go out unless it starts to rain.\" \"A menos que\" (unless) always takes the subjunctive, here \"empiece\"."
   },
   "translate": {
    "prompt": "Tell someone you will explain the plan again so that everyone understands it.",
@@ -15627,7 +15609,7 @@
     "Nosotros bebemos agua en la casa.",
     "Nosotros comemos agua en la mesa."
    ],
-   "explanation": "The speaker says \"Nosotros bebemos agua en la mesa.\", where \"nosotros\" (we) takes the -emos ending, giving \"bebemos\"."
+   "explanation": "In \"Nosotros bebemos agua en la mesa.\", \"nosotros\" (we) takes the -emos ending: \"bebemos\". Listen for \"agua\" and \"mesa\" to rule out the other choices."
   },
   "translate": {
    "prompt": "Say that you (informal, singular) drink tea with milk.",
@@ -15672,7 +15654,7 @@
     "Por la mañana tomas jugo.",
     "Bebes zumo por la mañana."
    ],
-   "explanation": "\"Tú bebes jugo por la mañana.\" uses the -es ending for tú, and \"por la mañana\" means in the morning."
+   "explanation": "For tú, -er verbs end in -es: \"Tú bebes jugo por la mañana.\" Here \"por la mañana\" means in the morning, and \"tú\" can be dropped."
   }
  },
  "esga2p3l1": {
@@ -15884,7 +15866,7 @@
     "Mi hermana lee una caja en la cocina.",
     "Mi hermano lee una carta en la cocina."
    ],
-   "explanation": "The speaker says \"Mi hermana lee una carta en la cocina.\" The other choices change one word: place, object or family member."
+   "explanation": "\"Mi hermana lee una carta en la cocina.\" The other choices swap one word, so listen for \"hermana\" (sister), \"carta\" (letter) and \"cocina\" (kitchen)."
   },
   "speak": {
    "answer": "Nosotros leemos un libro en casa",
@@ -16064,7 +16046,7 @@
     "Ayer ellos comieron pan con pollo.",
     "Ayer ellos comieron arroz con queso."
    ],
-   "explanation": "The sentence heard was \"Ayer ellos comieron arroz con pollo.\" Here \"comieron\" is the preterite of comer for ellos (they)."
+   "explanation": "\"Ayer ellos comieron arroz con pollo.\" \"Comieron\" is the preterite of comer for ellos, with \"ayer\" (yesterday) marking the past."
   },
   "speak": {
    "answer": "Ayer nosotros comimos una manzana",
@@ -16159,7 +16141,7 @@
     "Ayer ella compró una regla en la escuela.",
     "Ayer ella vendió una regla en la tienda."
    ],
-   "explanation": "The speaker says \"Ayer ella compró una regla en la tienda.\" The other choices change one word (silla, escuela, vendió), so listen for \"regla\", \"tienda\" and \"compró\"."
+   "explanation": "\"Ayer ella compró una regla en la tienda.\" \"Compró\" (bought) differs from \"vendió\" (sold). Listen for \"regla\" (ruler) and \"tienda\" (store) too."
   },
   "translate": {
    "prompt": "Say that you (informal, one person) bought a notebook yesterday.",
@@ -16188,7 +16170,7 @@
     "Ayer yo compré una camisa negra en la tienda.",
     "Ayer yo vendí una camisa blanca en la tienda."
    ],
-   "explanation": "The sentence \"Ayer yo compré una camisa blanca en la tienda.\" uses the preterite \"compré\" (I bought) with the subject \"yo\"."
+   "explanation": "\"Ayer yo compré una camisa blanca en la tienda.\" \"Compré\" is the preterite for yo (I bought), and \"vendí\" would mean sold."
   },
   "speak": {
    "answer": "Ayer mi mamá compró un abrigo",
@@ -16246,7 +16228,7 @@
     "Ayer nosotros vimos un pez en el parque.",
     "Ayer nosotros vimos un oso en el zoológico."
    ],
-   "explanation": "The speaker says \"Ayer nosotros vimos un oso en el parque.\", meaning 'Yesterday we saw a bear in the park.' \"Vimos\" is the preterite of ver for \"nosotros\"."
+   "explanation": "\"Ayer nosotros vimos un oso en el parque.\" \"Vimos\" is the preterite of ver for nosotros, while \"vieron\" is for ellos."
   },
   "speak": {
    "answer": "Ayer vi un caballo grande",

@@ -138,6 +138,9 @@ function explanationProblems(ex: unknown, answer: string): string[] {
   if (/"[^"]*" is correct here\./.test(ex))
     out.push("the explanation is the generic 'is correct here' line");
   out.push(...metaTextProblems(ex, "explanation", answer.trim()));
+  // lesson-bank-listening.test.ts: no doubled terminal punctuation (an ellipsis counts).
+  if (/[.?!]["']?\s*\./.test(ex))
+    out.push("the explanation has doubled punctuation (or an ellipsis)");
   return out;
 }
 

@@ -796,7 +796,7 @@
                 "I wash up at seven."
               ],
               "answer": "I wake up at seven.",
-              "explanation": "The speaker says \"I wake up at seven.\" using the base verb \"wake\" with \"I\" in the present simple."
+              "explanation": "\"I wake up at seven.\" uses the verb \"wake\" with \"I\" in the present simple, to describe a daily habit. Listen for \"wake\", not \"walk\" or \"wash\"."
             },
             {
               "id": "sx1",
@@ -1280,7 +1280,7 @@
                 "I go to bed at noon."
               ],
               "answer": "I go to bed at night.",
-              "explanation": "The speaker says \"I go to bed at night.\": listen for \"bed\" (not \"work\") and \"night\", not a clock time like \"nine\" or a time of day like \"noon\"."
+              "explanation": "\"I go to bed at night.\" The place is \"bed\" and the time is \"night\", a part of the day, not a clock time like \"nine\" or a word like \"noon\"."
             },
             {
               "id": "tx1",
@@ -1442,7 +1442,7 @@
                 "Could you call me, please?"
               ],
               "answer": "Could you help me, please?",
-              "explanation": "The speaker says \"Could you help me, please?\", a polite way to ask for help using \"Could you\" and \"please\"."
+              "explanation": "\"Could you help me, please?\" uses \"Could you\" plus \"please\" to ask for help politely. Listen for \"help\", not \"thank\", \"find\" or \"call\"."
             },
             {
               "id": "sx1",
@@ -1761,7 +1761,7 @@
                 "Turn left at the town wall."
               ],
               "answer": "Turn left at the town hall.",
-              "explanation": "The speaker says \"Turn left at the town hall.\" The town hall is a landmark, and \"left\" is the direction to turn."
+              "explanation": "\"Turn left at the town hall.\" Listen for the direction \"left\" and the landmark \"town hall\", which sounds close to \"mall\" and \"wall\"."
             },
             {
               "id": "sx1",
@@ -2062,7 +2062,7 @@
                 "We watched a movie last night."
               ],
               "answer": "We watched a movie last night.",
-              "explanation": "The speaker says \"We watched a movie last night.\" using the regular past form \"watched\" and the time phrase \"last night\"."
+              "explanation": "\"We watched a movie last night.\" Regular verbs add \"-ed\" for the past, and \"last night\" marks the finished time. Don't mix up \"watched\" with \"washed\" or \"wanted\"."
             },
             {
               "id": "sx1",
@@ -2197,7 +2197,7 @@
                 "First, we ate lunch. Then we went home."
               ],
               "answer": "First, we ate dinner. Then we went home.",
-              "explanation": "The speaker said \"First, we ate dinner. Then we went home.\" using \"first\" and \"then\" to put two past actions in order."
+              "explanation": "\"First, we ate dinner. Then we went home.\" \"First\" and \"then\" put past actions in order, and \"ate\" and \"went\" are irregular past forms."
             },
             {
               "id": "tx1",
@@ -2332,7 +2332,7 @@
                 "Can I pay by card for the red jacket?"
               ],
               "answer": "Can I pay by card for the blue jacket?",
-              "explanation": "The speaker says \"Can I pay by card for the blue jacket?\" The other choices change one word: the way of paying, the color, or the item."
+              "explanation": "\"Can I pay by card for the blue jacket?\" Each wrong choice changes one detail: \"cash\", \"shirt\" or \"red\". Listen for \"card\", \"blue\" and \"jacket\"."
             },
             {
               "id": "sx1",
@@ -2468,7 +2468,7 @@
                 "Our flight was delayed, so we waited at the gate."
               ],
               "answer": "Our flight was delayed, so we waited at the gate.",
-              "explanation": "The speaker says \"Our flight was delayed, so we waited at the gate.\" The flight is late but still going, and they wait at the gate."
+              "explanation": "\"Our flight was delayed, so we waited at the gate.\" \"Delayed\" means late, not \"canceled\", and \"so\" shows the result: they waited at the gate."
             },
             {
               "id": "tx1",
@@ -2609,7 +2609,7 @@
                 "I'd argue that this plan tends to work better for large teams."
               ],
               "answer": "I'd argue that this plan tends to work better for small teams.",
-              "explanation": "The speaker says \"I'd argue that this plan tends to work better for small teams.\" The other choices change one word, such as \"large\", \"look\" or \"harder\", which changes the meaning."
+              "explanation": "The speaker said \"I'd argue that this plan tends to work better for small teams.\" \"I'd argue\" introduces an opinion, and the claim is that the plan works \"better\" (not \"harder\") for \"small\" (not \"large\") teams."
             },
             {
               "id": "sx1",
@@ -3022,7 +3022,7 @@
                 "Before we move on, should you elaborate on that point?"
               ],
               "answer": "Before we move on, could you elaborate on that point?",
-              "explanation": "The speaker said \"Before we move on, could you elaborate on that point?\", politely asking a colleague to explain an idea in more detail."
+              "explanation": "\"Before we move on, could you elaborate on that point?\" \"Could you\" makes the request polite, and \"elaborate\" means to explain in more detail."
             },
             {
               "id": "tx1",
@@ -3164,7 +3164,7 @@
                 "The report that was written last week has finally been published online."
               ],
               "answer": "The report that was written last month has finally been published online.",
-              "explanation": "The speaker says \"The report that was written last month has finally been published online.\" The passive \"has been published\" focuses on the report, not on who published it."
+              "explanation": "\"The report that was written last month has finally been published online.\" \"Has been published\" is present perfect passive: it focuses on the report, not who published it."
             },
             {
               "id": "sx1",
@@ -3317,7 +3317,7 @@
                 "The team lost the game, but they still felt they had improved.",
                 "Despite losing the game, the team felt they had improved."
               ],
-              "explanation": "A linker like \"nevertheless\" means 'in spite of that', so it introduces a positive point that follows the loss: \"The team lost the game; nevertheless, they felt they had improved.\" A clause with \"although\" or the phrase \"that said\" can do the same job."
+              "explanation": "\"The team lost the game; nevertheless, they felt they had improved.\" \"Nevertheless\" means \"in spite of that\" and introduces the contrasting point. \"Although\" or \"that said\" also work."
             }
           ]
         }
@@ -3443,7 +3443,7 @@
                 "The committee decided to table the proposal until more reliable figures became unavailable next quarter."
               ],
               "answer": "The committee decided to table the proposal until more reliable figures became available next quarter.",
-              "explanation": "The speaker said \"The committee decided to table the proposal until more reliable figures became available next quarter.\" Each other choice changes one word: last, scrap or unavailable."
+              "explanation": "\"The committee decided to table the proposal until more reliable figures became available next quarter.\" Here \"table\" means to postpone (in American English), the opposite of \"scrap.\" \"Next quarter\" points to the future."
             },
             {
               "id": "sx1",
@@ -3581,7 +3581,7 @@
                 "The researchers attempted to ascertain whether the results remained consistent with previous findings over time."
               ],
               "answer": "The researchers attempted to ascertain whether the results remained consistent with previous studies over time.",
-              "explanation": "The sentence heard was \"The researchers attempted to ascertain whether the results remained consistent with previous studies over time.\" Each other choice changes one word you can hear: \"years\", \"findings\" or \"inconsistent\"."
+              "explanation": "\"The researchers attempted to ascertain whether the results remained consistent with previous studies over time.\" \"Ascertain\" means to find out for certain, and \"consistent\" means the results matched earlier ones."
             },
             {
               "id": "tx1",
@@ -10731,7 +10731,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "The price went up this week",
-              "explanation": "The phrase \"The price went up this week\" uses \"went up\" to say that something became more expensive."
+              "explanation": "\"Went up\" means increased. \"The price went up this week\" says it now costs more, and \"went\" is the past of \"go up\"."
             }
           ]
         }
@@ -20498,7 +20498,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "This road is safer than that road",
-              "explanation": "The comparative of \"safe\" is \"safer\", and \"than\" connects the two things you compare, so you say \"This road is safer than that road\"."
+              "explanation": "Short adjectives like \"safe\" add -er to compare, and \"than\" links the two things: \"This road is safer than that road\"."
             }
           ]
         },
@@ -20756,7 +20756,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "This street is narrower than that one",
-              "explanation": "The adjective \"narrow\" takes -er to make the comparative, so you say \"This street is narrower than that one\"."
+              "explanation": "Short adjectives like \"narrow\" add -er to compare, and \"than\" links the two things: \"This street is narrower than that one\"."
             }
           ]
         }
@@ -21823,7 +21823,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "Would you like some more coffee?",
-              "explanation": "We use \"some\" in offers, and coffee is uncountable, so you say \"Would you like some more coffee?\" and not \"many\"."
+              "explanation": "Offers use \"some\", not \"any\". Coffee is uncountable, so \"some more coffee\" works and \"many\" does not: \"Would you like some more coffee?\""
             }
           ]
         },
@@ -31742,7 +31742,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "My brother is as tall as my father",
-              "explanation": "The 'as ... as' pattern says two people are equal in height, so \"My brother is as tall as my father\" means they are the same height."
+              "explanation": "The 'as … as' pattern says two people are equal in height, so \"My brother is as tall as my father\" means they are the same height."
             }
           ]
         },
@@ -32912,7 +32912,7 @@
                 "My sister always looks after our neighbor's cat on the weekends."
               ],
               "answer": "My sister always looks after our neighbor's dog on the weekends.",
-              "explanation": "The speaker says \"My sister always looks after our neighbor's dog on the weekends.\" Only this sentence has the right person, pet, and time."
+              "explanation": "\"My sister always looks after our neighbor's dog on the weekends.\" \"Look after\" means take care of; \"on the weekends\" shows a repeated habit."
             },
             {
               "id": "sx1",
@@ -33040,7 +33040,7 @@
                 "They had to call off the meeting because the manager was tired."
               ],
               "answer": "They had to call off the meeting because the manager was sick.",
-              "explanation": "The speaker says \"They had to call off the meeting because the manager was sick.\" \"Call off\" means cancel, so the meeting was canceled because the manager was ill."
+              "explanation": "\"They had to call off the meeting because the manager was sick.\" \"Call off\" means cancel, and \"because\" introduces the reason: the manager was ill."
             },
             {
               "id": "tx1",
@@ -33638,7 +33638,7 @@
                 "If we had more time, we would visit the market."
               ],
               "answer": "If we had more time, we would visit the museum.",
-              "explanation": "The speaker says \"If we had more time, we would visit the museum.\" The past form \"had\" with \"would\" shows an unreal present situation."
+              "explanation": "\"If we had more time, we would visit the museum.\" This second conditional uses \"had\" in the if-clause and \"would\" in the result clause for an unreal situation."
             },
             {
               "id": "sx1",
@@ -34950,7 +34950,7 @@
                 "She has lived in this city for about three years."
               ],
               "answer": "She has lived in this city for about five years.",
-              "explanation": "The speaker says \"She has lived in this city for about five years.\" We use \"for\" with a length of time, like \"about five years\", in the present perfect."
+              "explanation": "\"She has lived in this city for about five years.\" The present perfect (\"has lived\") with \"for\" and a length of time shows a situation that started in the past and continues now."
             },
             {
               "id": "tx1",
@@ -35187,7 +35187,7 @@
                 "We have lived in this apartment since last summer."
               ],
               "answer": "We have lived in this apartment since last summer.",
-              "explanation": "The speaker says \"We have lived in this apartment since last summer.\" The other choices change one word, such as the season or the verb."
+              "explanation": "\"We have lived in this apartment since last summer.\" uses present perfect with \"since\" plus a starting point. Listen for the verb \"lived\" and the season \"summer\"."
             },
             {
               "id": "tx1",
@@ -35435,7 +35435,7 @@
                 "After a long discussion, the two companies finally reached a decision."
               ],
               "answer": "After a long discussion, the two companies finally reached an agreement.",
-              "explanation": "The speaker says \"After a long discussion, the two companies finally reached an agreement.\" because \"reach an agreement\" is the collocation for both sides accepting a deal."
+              "explanation": "\"After a long discussion, the two companies finally reached an agreement.\" \"Reach an agreement\" is the fixed phrase for both sides accepting a deal. \"Decision\" and \"signed\" change that."
             },
             {
               "id": "tx1",
@@ -35676,7 +35676,7 @@
                 "After a long conversation, she finally decided to change her job."
               ],
               "answer": "After a long conversation, she finally decided to change her mind.",
-              "explanation": "The speaker says \"After a long conversation, she finally decided to change her mind.\" The collocation \"change her mind\" means she made a different decision."
+              "explanation": "\"After a long conversation, she finally decided to change her mind.\" \"Change your mind\" is a fixed phrase meaning to decide something different from before."
             },
             {
               "id": "tx1",
@@ -35819,7 +35819,7 @@
                 "I want to face the challenge together with my team.",
                 "I want to face the difficult challenge with my team."
               ],
-              "explanation": "The natural wording is \"I want to face a challenge with my team.\" It uses the collocation \"face a challenge\" for a difficult task."
+              "explanation": "\"I want to face a challenge with my team.\" \"Face a challenge\" is the natural collocation for dealing with something difficult, and \"with my team\" adds the teamwork."
             }
           ]
         }
@@ -36270,7 +36270,7 @@
                 "The woman who lives next door is a very rude doctor."
               ],
               "answer": "The woman who lives next door is a very kind doctor.",
-              "explanation": "The speaker said \"The woman who lives next door is a very kind doctor.\" The relative word \"who\" refers to a person, and the other choices change one word such as \"lives\", \"kind\" or \"doctor\"."
+              "explanation": "\"The woman who lives next door is a very kind doctor.\" \"Who\" introduces a clause about a person. Listen for \"lives\", \"kind\" and \"doctor\", since the wrong choices change one of them."
             },
             {
               "id": "sx1",
@@ -36387,7 +36387,7 @@
                 "The man who lives next door works at the hospital uptown."
               ],
               "answer": "The man who lives next door works at the hospital downtown.",
-              "explanation": "The speaker says \"The man who lives next door works at the hospital downtown.\" The other choices change one word, such as the workplace, the direction, or the verb."
+              "explanation": "\"The man who lives next door works at the hospital downtown.\" Check the workplace (\"hospital\"), the place word (\"downtown\") and the verb \"lives\"; the wrong choices alter one."
             },
             {
               "id": "tx1",
@@ -36625,7 +36625,7 @@
                 "Our flight was canceled, so we waited at the airport for hours."
               ],
               "answer": "Our flight was delayed, so we waited at the airport for hours.",
-              "explanation": "The speaker said \"Our flight was delayed, so we waited at the airport for hours.\" Only this sentence has the flight leaving late and the travelers waiting at the airport."
+              "explanation": "\"Our flight was delayed, so we waited at the airport for hours.\" \"Delayed\" means late, not \"canceled\", which is why they waited. Listen for \"airport\" and \"waited\"."
             },
             {
               "id": "tx1",
@@ -36761,7 +36761,7 @@
                 "I booked a tour with a guide for tomorrow morning.",
                 "We booked a tour with a guide for tomorrow morning."
               ],
-              "explanation": "The natural wording is \"We booked a guided tour for tomorrow morning.\" because \"guided tour\" is the fixed phrase for a tour led by a guide."
+              "explanation": "\"We booked a guided tour for tomorrow morning.\" \"Guided tour\" is the fixed phrase for a tour led by a guide, and \"booked\" is the verb for reserving it."
             }
           ]
         },
@@ -36857,7 +36857,7 @@
                 "We took a scenic route along the coast to the station."
               ],
               "answer": "We took a scenic route along the coast to the village.",
-              "explanation": "The speaker says \"We took a scenic route along the coast to the village.\" The other choices change one word: station, river or across."
+              "explanation": "\"We took a scenic route along the coast to the village.\" \"Along\" means following the coast's edge. Listen for \"coast\" and \"village\" as the details that change."
             },
             {
               "id": "tx1",
@@ -36973,7 +36973,7 @@
                 "We booked a rental apartment near the tourist offices downtown."
               ],
               "answer": "We booked a rental apartment near the tourist office downtown.",
-              "explanation": "The sentence \"We booked a rental apartment near the tourist office downtown.\" has the singular \"office\" and the word \"downtown\", which are the details that separate it from the other choices. Listen for the final word and for whether \"office\" is singular."
+              "explanation": "\"We booked a rental apartment near the tourist office downtown.\" Listen for singular \"office\" (no -s) and the final word \"downtown\", which separate it from the other choices."
             },
             {
               "id": "sx1",
@@ -37218,7 +37218,7 @@
                 "She felt a lot of pride when her son graduated recently."
               ],
               "answer": "She felt a lot of pride when her son graduated yesterday.",
-              "explanation": "You hear \"She felt a lot of pride when her son graduated yesterday.\" The noun \"pride\" comes from the adjective \"proud\", and the time word at the end is \"yesterday\"."
+              "explanation": "\"She felt a lot of pride when her son graduated yesterday.\" The noun \"pride\" names the feeling of being proud, and \"yesterday\" marks the time as the day before."
             },
             {
               "id": "sx1",
@@ -37341,7 +37341,7 @@
                 "She felt a lot of disappointment when she forgot his name."
               ],
               "answer": "She felt a lot of embarrassment when she forgot his name.",
-              "explanation": "The speaker says \"She felt a lot of embarrassment when she forgot his name.\" The noun \"embarrassment\" comes from the adjective \"embarrassed\", and the other choices change that one noun."
+              "explanation": "\"She felt a lot of embarrassment when she forgot his name.\" The noun \"embarrassment\" is the feeling of being embarrassed, which fits forgetting a name."
             },
             {
               "id": "tx1",
@@ -37580,7 +37580,7 @@
                 "She felt a deep sense of relief after the exam finished."
               ],
               "answer": "She felt a deep sense of relief after the exam finished.",
-              "explanation": "The speaker says \"She felt a deep sense of relief after the exam finished.\" The noun \"relief\" is the feeling of being free from worry."
+              "explanation": "\"She felt a deep sense of relief after the exam finished.\" \"Relief\" is the feeling of being free from worry, which fits the end of an exam."
             },
             {
               "id": "tx1",
@@ -37831,7 +37831,7 @@
                 "I am trying to save some money for my vacation this summer."
               ],
               "answer": "I am trying to save some money for my vacation this summer.",
-              "explanation": "The speaker says \"I am trying to save some money for my vacation this summer.\" The other choices change one word, such as save to spend, so only this one matches what was said."
+              "explanation": "\"I am trying to save some money for my vacation this summer.\" \"Save\" means to keep money for later, the opposite of \"spend\", so listen for that verb."
             },
             {
               "id": "tx1",
@@ -37944,7 +37944,7 @@
                 "She always checks her account balance before she orders anything expensive."
               ],
               "answer": "She always checks her account balance before she buys anything expensive.",
-              "explanation": "The speaker said \"She always checks her account balance before she buys anything expensive.\" The other choices change the verb to something with a different meaning."
+              "explanation": "\"She always checks her account balance before she buys anything expensive.\" Checking your balance before \"buys\" makes sense, since you need money to pay."
             },
             {
               "id": "sx1",
@@ -38799,7 +38799,7 @@
                 "People should use public transportation rather than cars for short trips to reduce pollution.",
                 "People should use buses or trains instead of cars for short trips to have less pollution."
               ],
-              "explanation": "The natural wording is \"We should use public transportation instead of driving to cut pollution on short trips.\" You use \"instead of\" followed by an -ing form (\"driving\") to name the choice you reject, and \"to cut pollution\" explains the purpose."
+              "explanation": "\"Instead of\" names what you avoid and is followed by a noun or an -ing form, as in \"We should use public transportation instead of driving to cut pollution on short trips.\""
             }
           ]
         }
@@ -39626,7 +39626,7 @@
                 "House prices have risen steadily in the city over the last year."
               ],
               "answer": "House prices have risen steadily in the city over the past year.",
-              "explanation": "The speaker says \"House prices have risen steadily in the city over the past year.\" The other choices change one word: fallen, town, or last."
+              "explanation": "\"House prices have risen steadily in the city over the past year.\" Listen for \"risen\" (not fallen), \"city\" (not town), and \"past year\" (not last year)."
             },
             {
               "id": "sx1",
@@ -39650,7 +39650,7 @@
                 "The unemployment rate remained at about the same level for several months.",
                 "The unemployment rate stayed roughly the same for several months."
               ],
-              "explanation": "\"The unemployment rate remained stable for several months.\" uses \"remained\" followed by an adjective like \"stable\" to say a figure did not change. You can also use \"stayed\" with an adjective such as \"constant\" or \"steady\" for the same idea."
+              "explanation": "\"The unemployment rate remained stable for several months.\" \"Remained\" or \"stayed\" plus an adjective like \"stable\" or \"steady\" says a figure did not change."
             }
           ]
         },
@@ -39859,7 +39859,7 @@
                 "Prices have risen steadily since the company opened its new store."
               ],
               "answer": "Prices have risen steadily since the company opened its new store.",
-              "explanation": "The speaker said \"Prices have risen steadily since the company opened its new store.\" The other choices change one word: fallen, closed, or suddenly."
+              "explanation": "\"Prices have risen steadily since the company opened its new store.\" \"Risen steadily\" means a gradual increase, and \"opened\" (not closed) is what started it."
             },
             {
               "id": "sx1",
@@ -39979,7 +39979,7 @@
                 "The number of visitors has increased steadily over the past three years."
               ],
               "answer": "The number of visitors has increased steadily over the past five years.",
-              "explanation": "The speaker says \"The number of visitors has increased steadily over the past five years.\" The other choices change one word: decreased, suddenly or three."
+              "explanation": "\"The number of visitors has increased steadily over the past five years.\" \"Increased steadily\" means a gradual rise; listen for the exact period, \"five years\"."
             },
             {
               "id": "tx1",
@@ -40333,7 +40333,7 @@
                 "I worked as an engineer for a local company last summer."
               ],
               "answer": "I worked as an intern for a local company last summer.",
-              "explanation": "The speaker says \"I worked as an intern for a local company last summer.\" The other choices change one word: winter, large or engineer."
+              "explanation": "\"I worked as an intern for a local company last summer.\" An intern is a short-term trainee; \"last summer\" is the previous summer, so listen for \"summer\" and \"local\"."
             },
             {
               "id": "sx1",
@@ -40817,7 +40817,7 @@
                 "My brother is very shy, so he feels nervous meeting new people."
               ],
               "answer": "My brother is very shy, so he feels nervous meeting new people.",
-              "explanation": "The speaker says \"My brother is very shy, so he feels nervous meeting new people.\" A shy person is uncomfortable with people they don't know."
+              "explanation": "\"My brother is very shy, so he feels nervous meeting new people.\" \"Shy\" means uncomfortable around people you don't know, which explains why he feels nervous."
             },
             {
               "id": "sx1",
@@ -41189,7 +41189,7 @@
                 "My brother is very loyal and never stays faithful to his friends."
               ],
               "answer": "My brother is very loyal and always stays faithful to his friends.",
-              "explanation": "The speaker says \"My brother is very loyal and always stays faithful to his friends.\" A loyal person supports their friends and does not let them down."
+              "explanation": "\"My brother is very loyal and always stays faithful to his friends.\" \"Loyal\" means supporting your friends and not letting them down; \"jealous\" has a different meaning."
             },
             {
               "id": "tx1",
@@ -41311,7 +41311,7 @@
                 "When I was a child, we used to visit the market."
               ],
               "answer": "When I was a child, we used to visit the lake.",
-              "explanation": "The speaker says \"When I was a child, we used to visit the lake.\" Here \"used to\" describes something we did regularly in the past."
+              "explanation": "\"When I was a child, we used to visit the lake.\" \"Used to\" plus a base verb describes something done regularly in the past."
             },
             {
               "id": "sx1",
@@ -41432,7 +41432,7 @@
                 "My grandfather would tell us a story every night before bed."
               ],
               "answer": "My grandfather would tell us a story every night before bed.",
-              "explanation": "The speaker said \"My grandfather would tell us a story every night before bed.\" Here \"would\" describes a repeated habit in the past."
+              "explanation": "\"My grandfather would tell us a story every night before bed.\" \"Would\" plus a base verb can describe a repeated habit in the past, here shown by \"every night\"."
             },
             {
               "id": "tx1",
@@ -41909,7 +41909,7 @@
                 "Your brother has lived in this city for about ten years, isn't he?"
               ],
               "answer": "Your brother has lived in this city for about ten years, hasn't he?",
-              "explanation": "The speaker says \"Your brother has lived in this city for about ten years, hasn't he?\" The statement uses \"has\", so the negative tag repeats it as \"hasn't he\"."
+              "explanation": "\"Your brother has lived in this city for about ten years, hasn't he?\" The statement uses \"has\", so the negative tag repeats it as \"hasn't he\"."
             },
             {
               "id": "tx1",
@@ -42016,7 +42016,7 @@
                 "You didn't go to the meeting yesterday, do you?"
               ],
               "answer": "You didn't go to the meeting yesterday, did you?",
-              "explanation": "The sentence heard is \"You didn't go to the meeting yesterday, did you?\" The statement is negative past simple, so the tag is positive and uses \"did\"."
+              "explanation": "\"You didn't go to the meeting yesterday, did you?\" A negative past simple statement takes a positive tag with \"did\"."
             },
             {
               "id": "sx1",
@@ -42238,7 +42238,7 @@
                 "You haven't seen my keys anyone, have you?"
               ],
               "answer": "You haven't seen my keys anywhere, have you?",
-              "explanation": "The speaker said \"You haven't seen my keys anywhere, have you?\" The statement is negative, so the tag is positive and repeats the auxiliary \"have\"."
+              "explanation": "\"You haven't seen my keys anywhere, have you?\" A negative statement takes a positive tag that repeats the auxiliary: \"haven't\" becomes \"have you\"."
             },
             {
               "id": "sx1",
@@ -42595,7 +42595,7 @@
                 "I see what you mean, but I would have to agree."
               ],
               "answer": "I see what you mean, but I would have to disagree.",
-              "explanation": "The speaker says \"I see what you mean, but I would have to disagree.\" The word \"disagree\" shows they hold the opposite opinion."
+              "explanation": "\"I see what you mean, but I would have to disagree.\" After \"I see what you mean, but\", \"disagree\" politely softens a difference of opinion."
             },
             {
               "id": "tx1",
@@ -42718,7 +42718,7 @@
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "From my point of view, it's a good plan",
-              "explanation": "\"From my point of view, it's a good plan\" uses the fixed phrase \"from my point of view\" to share an opinion."
+              "explanation": "\"From my point of view, it's a good plan\" opens with the fixed phrase \"from my point of view\", a way to introduce your own opinion."
             },
             {
               "id": "tx1",
@@ -42834,7 +42834,7 @@
                 "I'm afraid I can't agree with them on this point."
               ],
               "answer": "I'm afraid I can't agree with you on this point.",
-              "explanation": "The speaker says \"I'm afraid I can't agree with you on this point.\", a polite way to disagree. The other choices change one word, such as \"problem\", \"them\" or \"speak\"."
+              "explanation": "\"I'm afraid I can't agree with you on this point.\" \"I'm afraid\" is a polite way to deliver bad news or disagree. Listen for \"agree with you\" and \"point\"."
             },
             {
               "id": "tx1",
@@ -42847,7 +42847,7 @@
                 "It seems to me the team has to start over.",
                 "It seems to me that the team has no other choice but to start over."
               ],
-              "explanation": "The phrase \"It seems to me that the team has no choice but to start over.\" uses 'It seems to me that...' to introduce your opinion in a polite, measured way."
+              "explanation": "The phrase \"It seems to me that the team has no choice but to start over.\" uses 'It seems to me that…' to introduce your opinion in a polite, measured way."
             }
           ]
         },
@@ -42944,7 +42944,7 @@
                 "To be honest, I hadn't thought about it that way before."
               ],
               "answer": "To be honest, I hadn't thought about it that way before.",
-              "explanation": "The speaker said \"To be honest, I hadn't thought about it that way before.\" Each other choice swaps one word (\"day\", \"this\" or \"again\"), so it does not match what you heard."
+              "explanation": "\"To be honest, I hadn't thought about it that way before.\" \"That way\" means that way of seeing it, and \"before\" fits the past perfect \"hadn't thought\"."
             },
             {
               "id": "sx1",
@@ -43195,7 +43195,7 @@
                 "After my workout I always drink plenty of water at the pool."
               ],
               "answer": "After my workout I always drink plenty of water at the gym.",
-              "explanation": "The speaker says \"After my workout I always drink plenty of water at the gym.\" The other choices change only the final place word."
+              "explanation": "\"After my workout I always drink plenty of water at the gym.\" Listen for the final place word: a workout usually happens at \"the gym\"."
             },
             {
               "id": "sx1",
@@ -43423,7 +43423,7 @@
                 "My trainer says I should stretch before every workout session."
               ],
               "answer": "My trainer says I should stretch before every workout session.",
-              "explanation": "The speaker says \"My trainer says I should stretch before every workout session.\" The other choices change one word and give a different meaning."
+              "explanation": "\"My trainer says I should stretch before every workout session.\" \"Before\" shows when you stretch; \"after\" or \"during\" would change the advice."
             },
             {
               "id": "sx1",
@@ -43443,7 +43443,7 @@
                 "Eating too much junk food isn't a good habit for your health.",
                 "Eating too much junk food is not a good habit."
               ],
-              "explanation": "The idea is expressed as \"Eating too much junk food isn't a healthy habit.\" A habit is something you do regularly, and here it is a bad one."
+              "explanation": "\"Eating too much junk food isn't a healthy habit.\" \"Too much\" signals excess, and a habit is something you do regularly."
             }
           ]
         },
@@ -44023,7 +44023,7 @@
                 "The heavy snow caused a blackout that lasted for nearly three days."
               ],
               "answer": "The heavy snow caused a blackout that lasted for nearly three hours.",
-              "explanation": "The speaker says \"The heavy snow caused a blackout that lasted for nearly three hours.\" The other choices change one word: days, blizzard or rain."
+              "explanation": "\"The heavy snow caused a blackout that lasted for nearly three hours.\" Listen for the cause (snow), the result (blackout) and the duration (hours)."
             },
             {
               "id": "tx1",
@@ -44136,7 +44136,7 @@
                 "The tornado destroyed several houses before the storm moved away from town."
               ],
               "answer": "The tornado destroyed several houses before the storm moved away from town.",
-              "explanation": "The speaker says \"The tornado destroyed several houses before the storm moved away from town.\" A tornado is a spinning column of wind that can damage buildings."
+              "explanation": "\"The tornado destroyed several houses before the storm moved away from town.\" Listen for \"houses\" (not \"horses\") and \"away from\" (not \"across from\"). A tornado is a spinning column of wind."
             },
             {
               "id": "sx1",
@@ -44263,7 +44263,7 @@
                 "After that, you should mix the flour and butter in a large bowl."
               ],
               "answer": "After that, you should mix the flour and sugar in a large bowl.",
-              "explanation": "The speaker says \"After that, you should mix the flour and sugar in a large bowl.\" The other choices change one word: pan, butter, or before."
+              "explanation": "\"After that, you should mix the flour and sugar in a large bowl.\" \"After that\" marks the next step; \"should\" gives advice. Listen for \"sugar\" and \"bowl\"."
             },
             {
               "id": "tx1",
@@ -44503,7 +44503,7 @@
                 "After you wash your hands, switch on the machine and wait."
               ],
               "answer": "After you wash your hands, switch on the machine and wait.",
-              "explanation": "The speaker says \"After you wash your hands, switch on the machine and wait.\" This describes two steps in order: first washing, then turning the machine on."
+              "explanation": "\"After you wash your hands, switch on the machine and wait.\" \"Switch on\" means start a machine; \"switch off\" means stop it. \"After\" shows what comes first."
             },
             {
               "id": "tx1",
@@ -44616,7 +44616,7 @@
                 "After that, you should test the device before you use it."
               ],
               "answer": "After that, you should test the device before you use it.",
-              "explanation": "The speaker says \"After that, you should test the device before you use it.\" Testing a device means checking that it works before using it."
+              "explanation": "\"After that, you should test the device before you use it.\" \"Before\" shows the order: test first, then use. Don't confuse \"test\" with \"rest\"."
             },
             {
               "id": "sx1",
@@ -44739,7 +44739,7 @@
                 "After you mix the ingredients, let the mixture rest for two minutes."
               ],
               "answer": "After you mix the ingredients, let the mixture rest for ten minutes.",
-              "explanation": "The speaker says \"After you mix the ingredients, let the mixture rest for ten minutes.\" The other choices change one word: \"set\", \"cook\" or \"two\"."
+              "explanation": "\"After you mix the ingredients, let the mixture rest for ten minutes.\" \"Let\" plus a base verb means allow something to happen; \"rest\" here means sit untouched."
             }
           ]
         }
@@ -45776,7 +45776,7 @@
                 "The documents were sent by the manager before the meeting started."
               ],
               "answer": "The documents were signed by the manager before the meeting started.",
-              "explanation": "The speaker said \"The documents were signed by the manager before the meeting started.\" The passive \"were signed\" fits the plural \"documents\", and the other choices change one word."
+              "explanation": "\"The documents were signed by the manager before the meeting started.\" uses the passive \"were signed\" (be + past participle), and \"were\" agrees with plural \"documents\"."
             },
             {
               "id": "sx1",
@@ -45899,7 +45899,7 @@
                 "The report was finished before the manager wondered whether it had been checked."
               ],
               "answer": "The report was finished before the manager asked whether it had been checked.",
-              "explanation": "The speaker says \"The report was finished before the manager asked whether it had been checked.\" The other choices change one word, such as started, printed, or wondered."
+              "explanation": "\"The report was finished before the manager asked whether it had been checked.\" uses the past perfect passive \"had been checked\" for something done before the asking."
             },
             {
               "id": "tx1",
@@ -46493,7 +46493,7 @@
                 "My sister gave me some good advice before I chose which course to take."
               ],
               "answer": "My sister gave me some good advice before I chose which course to take.",
-              "explanation": "The speaker says \"My sister gave me some good advice before I chose which course to take.\" The other choices change one word, such as good, course or take."
+              "explanation": "\"My sister gave me some good advice before I chose which course to take.\" \"Advice\" is an uncountable noun (some advice), and \"course\" is a class you study."
             },
             {
               "id": "sx1",
@@ -46616,7 +46616,7 @@
                 "If you need a pen, I can lend you nine while you fill out the form."
               ],
               "answer": "If you need a pen, I can lend you mine while you fill out the form.",
-              "explanation": "The speaker said \"If you need a pen, I can lend you mine while you fill out the form.\" The other choices change one word, such as \"nine\" or \"throw\", and so change the meaning."
+              "explanation": "\"If you need a pen, I can lend you mine while you fill out the form.\" \"Lend\" means give temporarily, \"mine\" is a possessive pronoun, and \"fill out\" means complete a form."
             },
             {
               "id": "tx1",
@@ -46732,7 +46732,7 @@
                 "Could you remind me to call her before the store opens tonight?"
               ],
               "answer": "Could you remind me to call her before the store closes tonight?",
-              "explanation": "The speaker says \"Could you remind me to call her before the store closes tonight?\", asking someone to make them remember to make a call."
+              "explanation": "\"Could you remind me to call her before the store closes tonight?\" \"Remind me to\" means help me remember to do something; \"closes\" is the opposite of \"opens\"."
             },
             {
               "id": "sx1",
@@ -46756,7 +46756,7 @@
                 "I'm too busy because I have too much work to do.",
                 "I have a lot of work to do."
               ],
-              "explanation": "\"I have too much work to do.\" uses \"work\" as an uncountable noun, so it goes with \"much\", not \"jobs\" or \"many\"."
+              "explanation": "\"I have too much work to do.\" \"Work\" in the sense of tasks is uncountable, so it takes \"much\" or \"a lot of\", never \"many\" or a plural."
             }
           ]
         },
@@ -46852,7 +46852,7 @@
                 "The manager wanted to assure that every employee understood the new safety rules."
               ],
               "answer": "The manager wanted to ensure that every employee understood the new safety rules.",
-              "explanation": "The sentence heard was \"The manager wanted to ensure that every employee understood the new safety rules.\" Here \"ensure\" means to make certain that something happens."
+              "explanation": "\"The manager wanted to ensure that every employee understood the new safety rules.\" \"Ensure\" means make certain something happens; \"assure\" means tell someone confidently so they feel sure."
             },
             {
               "id": "tx1",
@@ -46872,7 +46872,7 @@
                 "The old woman is lonely because she lives alone and rarely sees anyone.",
                 "The old woman feels lonely because she lives alone and rarely sees anyone."
               ],
-              "explanation": "Use \"lonely\" for the sad feeling of having no company, as in \"The old woman is lonely because she lives by herself and rarely sees anyone.\" \"Alone\" only means without other people, and you cannot put it before a noun, so it does not work as \"an alone old woman\"."
+              "explanation": "\"Lonely\" describes the sad feeling of having no company, as in \"The old woman is lonely because she lives by herself and rarely sees anyone.\" \"Alone\" only means without others."
             }
           ]
         }
@@ -47096,7 +47096,7 @@
                 "The project was delayed due to the storm, although the team worked overnight."
               ],
               "answer": "The project was delayed due to the storm, although the team worked overtime.",
-              "explanation": "The speaker said \"The project was delayed due to the storm, although the team worked overtime.\", using \"due to\" for the cause and \"although\" for the contrast."
+              "explanation": "\"The project was delayed due to the storm, although the team worked overtime.\" \"Due to\" is followed by a noun giving the cause, and \"although\" introduces a contrasting clause."
             },
             {
               "id": "tx1",
@@ -47336,7 +47336,7 @@
                 "The trial failed; nevertheless, the company stopped funding the project last week."
               ],
               "answer": "The trial failed; consequently, the company stopped funding the project last week.",
-              "explanation": "The sentence heard is \"The trial failed; consequently, the company stopped funding the project last week.\" The linker \"consequently\" shows that stopping the funding was a result of the failure."
+              "explanation": "\"The trial failed; consequently, the company stopped funding the project last week.\" \"Consequently\" marks a result: the failure caused the funding to stop."
             },
             {
               "id": "tx1",
@@ -47447,7 +47447,7 @@
                 "The repairs start next week, but meanwhile the elevator is still broken."
               ],
               "answer": "The repairs start next month, but meanwhile the elevator is still broken.",
-              "explanation": "The speaker says \"The repairs start next month, but meanwhile the elevator is still broken.\" \"Meanwhile\" links the time before the repairs with the elevator's current state."
+              "explanation": "\"The repairs start next month, but meanwhile the elevator is still broken.\" \"Meanwhile\" means \"in the time between now and then,\" linking the wait to the elevator's current state."
             },
             {
               "id": "sx1",
@@ -47818,7 +47818,7 @@
                 "The manager told us that the meeting would start later than planned."
               ],
               "answer": "The manager told us that the meeting would start earlier than planned.",
-              "explanation": "The speaker said \"The manager told us that the meeting would start earlier than planned.\" The future \"will start\" shifts back to \"would start\" after the past verb \"told\"; the other choices change one word, such as end, later, or stop."
+              "explanation": "\"The manager told us that the meeting would start earlier than planned.\" After a past reporting verb like \"told,\" \"will\" shifts back to \"would.\""
             },
             {
               "id": "tx1",
@@ -47934,7 +47934,7 @@
                 "The manager admitted that she had missed a mistake in the report."
               ],
               "answer": "The manager admitted that she had made a mistake in the report.",
-              "explanation": "The speaker says \"The manager admitted that she had made a mistake in the report.\" Only this sentence has \"made a mistake\" and \"report\" together; the others change one word."
+              "explanation": "\"The manager admitted that she had made a mistake in the report.\" After the past verb \"admitted,\" the earlier action moves back to past perfect: \"had made.\""
             },
             {
               "id": "sx1",
@@ -48057,7 +48057,7 @@
                 "She confirmed that she would cancel the meeting if the train arrived on time."
               ],
               "answer": "She confirmed that she would attend the meeting if the train arrived on time.",
-              "explanation": "The speaker said \"She confirmed that she would attend the meeting if the train arrived on time.\" Both verbs are in the past form because the reporting verb \"confirmed\" is in the past."
+              "explanation": "\"She confirmed that she would attend the meeting if the train arrived on time.\" After the past verb \"confirmed,\" the reported \"will\" becomes \"would\" and the \"if\" clause uses the past \"arrived.\""
             },
             {
               "id": "tx1",
@@ -48182,7 +48182,7 @@
                 "The committee finally reached a firm decision after a long and heated debate."
               ],
               "answer": "The committee finally reached a firm decision after a long and heated debate.",
-              "explanation": "The speaker says \"The committee finally reached a firm decision after a long and heated debate.\" A debate full of angry or strong feeling is a \"heated\" debate."
+              "explanation": "\"The committee finally reached a firm decision after a long and heated debate.\" \"Heated\" is the word that goes with \"debate\" to mean angry, intense argument."
             },
             {
               "id": "sx1",
@@ -48305,7 +48305,7 @@
                 "The company made steady progress, although the market remained very unpredictable throughout the week."
               ],
               "answer": "The company made steady progress, although the market remained very unpredictable throughout the year.",
-              "explanation": "The speaker said \"The company made steady progress, although the market remained very unpredictable throughout the year.\" Each other choice changes one word, such as steady, unpredictable or year."
+              "explanation": "\"The company made steady progress, although the market remained very unpredictable throughout the year.\" \"Steady\" is the natural partner of \"progress,\" meaning gradual and consistent."
             },
             {
               "id": "tx1",
@@ -48561,7 +48561,7 @@
                 "My sister has an extensive knowledge of the history of the city.",
                 "My sister has a really thorough knowledge of the history of the city."
               ],
-              "explanation": "The natural wording is \"My sister has a thorough knowledge of the history of the city.\" because \"thorough\" is the word that pairs with \"knowledge\" to mean detailed and complete."
+              "explanation": "\"My sister has a thorough knowledge of the history of the city.\" \"Thorough\" pairs naturally with \"knowledge\" to mean detailed and complete."
             }
           ]
         },
@@ -48809,7 +48809,7 @@
                 "The managers finally reached a decision after a long discussion.",
                 "After discussing it for a long time, the managers finally reached a decision."
               ],
-              "explanation": "The verb \"decide\" becomes the noun \"decision\", so the idea is expressed as \"The managers made a decision after a long discussion.\""
+              "explanation": "\"The managers made a decision after a long discussion.\" The verb \"decide\" becomes the noun \"decision,\" which fits after \"made\" or \"reached.\""
             }
           ]
         },
@@ -49860,7 +49860,7 @@
                 "The manager confirmed that the meeting had been canceled until the following week."
               ],
               "answer": "The manager confirmed that the meeting had been postponed until the following week.",
-              "explanation": "The speaker said \"The manager confirmed that the meeting had been postponed until the following week.\" Each other choice changes one word, such as \"delayed\", \"canceled\" or \"previous\"."
+              "explanation": "\"The manager confirmed that the meeting had been postponed until the following week.\" \"Postponed\" means moved to a later time, unlike \"canceled\"; \"following\" points forward, unlike \"previous\"."
             },
             {
               "id": "sx1",
@@ -50109,7 +50109,7 @@
                 "She decided to break the news to her family before they heard it elsewhere."
               ],
               "answer": "She decided to break the news to her family before they heard it elsewhere.",
-              "explanation": "The speaker said \"She decided to break the news to her family before they heard it elsewhere.\" Each other choice changes one word, which changes the meaning."
+              "explanation": "\"She decided to break the news to her family before they heard it elsewhere.\" \"Break the news\" means to tell someone important news; listen for \"family\" and \"heard\"."
             },
             {
               "id": "sx1",
@@ -50366,15 +50366,12 @@
                 "The new law finally caused serious damage to local farmers.",
                 "The new law finally caused local farmers serious damage.",
                 "In the end, the new law caused serious damage to local farmers.",
-                "The new law finally did serious damage to local farmers.",
                 "In the end, the new law caused local farmers serious damage.",
                 "The new law ultimately caused serious damage to local farmers.",
-                "The new law finally inflicted serious damage on local farmers.",
                 "The new law caused serious damage to local farmers in the end.",
                 "Ultimately, the new law caused serious damage to local farmers.",
                 "Eventually, the new law caused serious damage to local farmers.",
-                "The new law eventually caused serious damage to local farmers.",
-                "In the end, the new law did serious damage to local farmers."
+                "The new law eventually caused serious damage to local farmers."
               ],
               "explanation": "The verb \"cause\" is the natural partner of \"damage\", as in \"The new law finally caused serious damage to local farmers.\""
             }
@@ -51193,7 +51190,7 @@
                 "I couldn't open the article because the app kept updating every time I tried."
               ],
               "answer": "I couldn't open the article because the app kept crashing every time I tried.",
-              "explanation": "The speaker says \"I couldn't open the article because the app kept crashing every time I tried.\" The other choices change only the verb after \"kept\", so listen for \"crashing\"."
+              "explanation": "\"I couldn't open the article because the app kept crashing every time I tried.\" \"Crashing\" means suddenly stopping completely, which explains why the article won't open."
             },
             {
               "id": "tx1",
@@ -51305,7 +51302,7 @@
                 "The company was criticized after the news site reported that customer data had been deleted."
               ],
               "answer": "The company was criticized after the news site reported that customer data had been exposed.",
-              "explanation": "The sentence is \"The company was criticized after the news site reported that customer data had been exposed.\" Listen for the verb that follows \"was\": \"criticized\" means publicly blamed, so it fits a story about exposed data, while \"praised\" would mean the opposite."
+              "explanation": "\"The company was criticized after the news site reported that customer data had been exposed.\" \"Criticized\" means blamed, which fits exposed data, while \"praised\" would be the opposite."
             },
             {
               "id": "sx1",
@@ -51547,7 +51544,7 @@
                 "She backed up her photos because the old laptop kept crashing during the day."
               ],
               "answer": "She backed up her files because the old laptop kept crashing during the day.",
-              "explanation": "The speaker says \"She backed up her files because the old laptop kept crashing during the day.\" The other choices change one word, such as charging, photos, or week."
+              "explanation": "\"She backed up her files because the old laptop kept crashing during the day.\" Listen for \"files\", \"crashing\", and \"day\": \"kept\" plus -ing shows something repeating."
             },
             {
               "id": "sx1",
@@ -51573,7 +51570,7 @@
                 "I checked whether the story was true before I shared it with my friends.",
                 "I checked if the news story was true before sharing it with my friends."
               ],
-              "explanation": "The verb \"verified\" means to check that something is true, so \"I verified the news story before I shared it with my friends.\" says you made sure the story was accurate first. The word \"before\" shows the checking came earlier than the sharing."
+              "explanation": "\"I verified the news story before I shared it with my friends.\" \"Verified\" means checked that it is true, and \"before\" puts the checking first."
             }
           ]
         },
@@ -51792,7 +51789,7 @@
                 "The talks broke down because both sides refused to make a compromise."
               ],
               "answer": "The talks broke down because both sides refused to make a compromise.",
-              "explanation": "The speaker says \"The talks broke down because both sides refused to make a compromise.\" A compromise is an agreement in which each side gives up something."
+              "explanation": "\"The talks broke down because both sides refused to make a compromise.\" To \"make a compromise\" means each side gives up something to reach an agreement."
             },
             {
               "id": "sx1",
@@ -51927,7 +51924,7 @@
                 "After the two firms merge, the company will lay off some employees.",
                 "Some workers will be laid off after the two firms merge."
               ],
-              "explanation": "The idea is a company ending jobs once a merger happens, so the natural sentence is \"The company will lay off some workers after the two firms merge.\""
+              "explanation": "\"Lay off\" means to end someone's job because of business needs, not for poor work. Use \"will\" for the future and \"merge\" after \"after\": \"The company will lay off some workers after the two firms merge.\""
             }
           ]
         },
@@ -52149,7 +52146,7 @@
                 "The deal fell through at the last minute because the board refused to approve it."
               ],
               "answer": "The deal fell through at the last minute because the board refused to approve it.",
-              "explanation": "The speaker says \"The deal fell through at the last minute because the board refused to approve it.\" The verb \"approve\" is the only word that changes across the choices, so listen closely to it."
+              "explanation": "\"Refused to approve\" means the board would not give official permission. Only the last verb differs among the choices, so listen for \"approve\" in \"The deal fell through at the last minute because the board refused to approve it.\""
             },
             {
               "id": "tx1",
@@ -52260,7 +52257,7 @@
                 "The manager asked the stakeholders to approve the old contract before the deadline passed."
               ],
               "answer": "The manager asked the stakeholders to approve the new contract before the deadline passed.",
-              "explanation": "The speaker says \"The manager asked the stakeholders to approve the new contract before the deadline passed.\" The other choices change one word: meeting, review, or old."
+              "explanation": "\"Approve\" means to give formal agreement to something. Check the nouns too: \"The manager asked the stakeholders to approve the new contract before the deadline passed.\" Meeting, review and old are all wrong."
             },
             {
               "id": "sx1",
@@ -52769,7 +52766,7 @@
                 "She only reported the break-in to the police after she got back from vacation.",
                 "She reported the break-in to the police only after she came home from vacation."
               ],
-              "explanation": "The idea is naturally expressed as \"She reported the burglary to the police only after she got back from vacation.\", using \"reported\" for telling the authorities and \"only after\" for the late timing."
+              "explanation": "\"Report\" is the verb for telling the authorities about a crime, and \"only after\" stresses that she waited: \"She reported the burglary to the police only after she got back from vacation.\""
             }
           ]
         },
@@ -52865,7 +52862,7 @@
                 "The police arrested a man who had been watching houses in the neighborhood."
               ],
               "answer": "The police arrested a man who had been robbing houses in the neighborhood.",
-              "explanation": "The speaker says \"The police arrested a man who had been robbing houses in the neighborhood.\" The other choices change one word: stores, watching, or woman."
+              "explanation": "\"Had been robbing\" shows the crime was ongoing before the arrest. Listen for the exact words: \"The police arrested a man who had been robbing houses in the neighborhood.\""
             },
             {
               "id": "tx1",
@@ -52881,7 +52878,7 @@
                 "After a long trial, the jury found the accused person guilty.",
                 "The jury convicted the accused after a long trial."
               ],
-              "explanation": "The most direct wording is \"The jury found the defendant guilty after a long trial.\" Here \"found ... guilty\" is the usual way to report a verdict, and \"convicted\" is a close alternative."
+              "explanation": "The most direct wording is \"The jury found the defendant guilty after a long trial.\" Here \"found … guilty\" is the usual way to report a verdict, and \"convicted\" is a close alternative."
             }
           ]
         }
@@ -53107,7 +53104,7 @@
                 "The minister decided to resign after the scandal became public last month."
               ],
               "answer": "The minister decided to resign after the scandal became public last week.",
-              "explanation": "The speaker says \"The minister decided to resign after the scandal became public last week.\" The other choices change one word, such as \"refused\", \"popular\" or \"month\"."
+              "explanation": "\"Decided to resign\" shows a choice to quit, and \"last week\" gives the time. Listen for both in \"The minister decided to resign after the scandal became public last week.\""
             },
             {
               "id": "tx1",
@@ -53220,7 +53217,7 @@
                 "The council held a meeting to discuss the policy that people are worried about."
               ],
               "answer": "The council held a meeting to discuss the issues that people are worried about.",
-              "explanation": "The speaker says \"The council held a meeting to discuss the issues that people are worried about.\" The other choices swap in frustrated, hearing or policy, so they are not what you heard."
+              "explanation": "\"Issues that people are worried about\" uses a relative clause to say which issues. Catch each detail in \"The council held a meeting to discuss the issues that people are worried about.\""
             },
             {
               "id": "sx1",
@@ -53456,7 +53453,7 @@
                 "The minister said that public trust had declined since the last protest."
               ],
               "answer": "The minister said that public trust had declined since the last election.",
-              "explanation": "The speaker says \"The minister said that public trust had declined since the last election.\" The other choices each change one word: taxes, improved or protest."
+              "explanation": "\"Trust had declined\" uses the past perfect: the drop happened before the minister spoke. Listen for it in \"The minister said that public trust had declined since the last election.\""
             },
             {
               "id": "sx1",
@@ -53704,7 +53701,7 @@
                 "The exhibition was so crowded that we barely saw the costumes."
               ],
               "answer": "The exhibition was so crowded that we barely saw the sculptures.",
-              "explanation": "The speaker says \"The exhibition was so crowded that we barely saw the sculptures.\" The other choices change only the last word, to something with a different meaning."
+              "explanation": "\"So crowded that\" shows a result. Only the final noun differs among the choices, so listen for it: \"The exhibition was so crowded that we barely saw the sculptures.\""
             },
             {
               "id": "sx1",
@@ -53827,7 +53824,7 @@
                 "The museum acquired a painting that critics had praised for its stunning range of color."
               ],
               "answer": "The museum acquired a painting that critics had praised for its stunning use of color.",
-              "explanation": "The speaker says \"The museum acquired a painting that critics had praised for its stunning use of color.\" The other sentences change one word, such as color, use or praised."
+              "explanation": "\"Praised for\" introduces the reason critics liked it, and \"use of color\" names the skill. Catch each word in \"The museum acquired a painting that critics had praised for its stunning use of color.\""
             },
             {
               "id": "tx1",
@@ -54063,7 +54060,7 @@
                 "The museum, which opened last spring, displays a remarkable collection of modern sculpture."
               ],
               "answer": "The museum, which opened last spring, displays a remarkable collection of modern sculpture.",
-              "explanation": "The sentence \"The museum, which opened last spring, displays a remarkable collection of modern sculpture.\" describes a recently opened museum and what it shows; the other choices change one key word such as 'ancient', 'paintings' or 'closed'."
+              "explanation": "\"The museum, which opened last spring, displays a remarkable collection of modern sculpture.\" Listen for the exact details: \"opened\" (not closed), \"modern\" (not ancient), \"sculpture\" (not paintings)."
             },
             {
               "id": "tx1",
@@ -54193,7 +54190,7 @@
                 "Because the deadline is tomorrow, I need to hit the cooks tonight."
               ],
               "answer": "Because the deadline is tomorrow, I need to hit the books tonight.",
-              "explanation": "The speaker says \"Because the deadline is tomorrow, I need to hit the books tonight.\" using the idiom \"hit the books\" to mean study hard."
+              "explanation": "\"Because the deadline is tomorrow, I need to hit the books tonight.\" The idiom \"hit the books\" means to study hard, and \"tonight\" and \"tomorrow\" are the details to catch."
             },
             {
               "id": "sx1",
@@ -54321,7 +54318,7 @@
                 "After we spent an hour chatting, everyone felt more relaxed, so the deal was finally broken."
               ],
               "answer": "After we spent an hour chatting, everyone felt more relaxed, so the ice was finally broken.",
-              "explanation": "The speaker says \"After we spent an hour chatting, everyone felt more relaxed, so the ice was finally broken.\" This uses the idiom \"break the ice\" for easing tension when people first meet."
+              "explanation": "\"After we spent an hour chatting, everyone felt more relaxed, so the ice was finally broken.\" \"Break the ice\" means to ease the tension; relaxed people fit that result, and the idiom needs \"broken\", not \"melted\"."
             },
             {
               "id": "tx1",
@@ -54442,7 +54439,7 @@
                 "My sister decided to sit on the fence because she did not want to invite anyone."
               ],
               "answer": "My sister decided to sit on the fence because she did not want to upset anyone.",
-              "explanation": "The speaker says \"My sister decided to sit on the fence because she did not want to upset anyone.\" The idiom means she avoided choosing a side."
+              "explanation": "\"My sister decided to sit on the fence because she did not want to upset anyone.\" \"Sit on the fence\" means to avoid taking a side; \"anyone\" fits the negative, unlike \"everyone\"."
             },
             {
               "id": "sx1",
@@ -54570,7 +54567,7 @@
                 "After the first plan failed, we had to run back to square one."
               ],
               "answer": "After the first plan failed, we had to go back to square one.",
-              "explanation": "The speaker says \"After the first plan failed, we had to go back to square one.\" This uses the idiom \"go back to square one\", meaning to start again from the beginning."
+              "explanation": "\"After the first plan failed, we had to go back to square one.\" The fixed idiom \"go back to square one\" means to start over; changing the verb or the number breaks it."
             },
             {
               "id": "tx1",
@@ -54691,7 +54688,7 @@
                 "Our vacation plans are still uncertain because the airline has not confirmed the flight."
               ],
               "answer": "Our vacation plans are still uncertain because the airline has not confirmed the flight.",
-              "explanation": "The speaker says \"Our vacation plans are still uncertain because the airline has not confirmed the flight.\" The airline has not yet said the flight is definite, so the plans are unsettled."
+              "explanation": "\"Our vacation plans are still uncertain because the airline has not confirmed the flight.\" \"Confirmed\" means made official, which explains why the plans are still unsettled."
             },
             {
               "id": "sx1",
@@ -54828,7 +54825,7 @@
                 "The game was canceled because the field was flooded after the storm."
               ],
               "answer": "The game was canceled because the field was flooded after the storm.",
-              "explanation": "The speaker says \"The game was canceled because the field was flooded after the storm.\" Here \"because\" introduces a full clause giving the direct reason."
+              "explanation": "\"The game was canceled because the field was flooded after the storm.\" \"Because\" gives the reason, and a storm naturally causes a \"flooded\" field. Listen for \"field\" versus \"farm\"."
             },
             {
               "id": "tx1",
@@ -54949,7 +54946,7 @@
                 "The company cut its prices, and consequently more customers came to the office."
               ],
               "answer": "The company cut its prices, and consequently more customers came to the store.",
-              "explanation": "The speaker says \"The company cut its prices, and consequently more customers came to the store.\" The connector \"consequently\" shows that the extra customers were the result of the lower prices."
+              "explanation": "\"The company cut its prices, and consequently more customers came to the store.\" \"Consequently\" introduces a result, and lower prices logically lead to \"more\" customers."
             },
             {
               "id": "sx1",
@@ -55072,7 +55069,7 @@
                 "The flight was delayed on account of the storm, so we booked our connection."
               ],
               "answer": "The flight was delayed on account of the storm, so we missed our connection.",
-              "explanation": "The speaker says \"The flight was delayed on account of the storm, so we missed our connection.\" Here \"on account of\" means \"because of,\" so the storm is the reason for the delay."
+              "explanation": "\"The flight was delayed on account of the storm, so we missed our connection.\" \"On account of\" means \"because of\" and is followed by a noun, here the cause of the delay."
             },
             {
               "id": "sx1",
@@ -55199,7 +55196,7 @@
                 "The company raised its prices because the cost of materials had risen sharply."
               ],
               "answer": "The company raised its prices because the cost of materials had risen sharply.",
-              "explanation": "The speaker says \"The company raised its prices because the cost of materials had risen sharply.\" The connector \"because\" links the price rise to its cause."
+              "explanation": "\"The company raised its prices because the cost of materials had risen sharply.\" \"Because\" links the effect (higher prices) to its cause (rising costs), so both must point the same direction."
             },
             {
               "id": "sx1",
@@ -55223,7 +55220,7 @@
                 "The road was closed due to the storm, which is why I was late.",
                 "The road was closed because of the storm, so we were late."
               ],
-              "explanation": "\"The road was closed because of the storm, which is why we were late.\" gives the cause with \"because of\" and then the result with \"which is why\" or \"that is why\"."
+              "explanation": "\"The road was closed because of the storm, which is why we were late.\" \"Because of\" plus a noun gives the cause; \"which is why\" or \"that is why\" then introduces the result."
             }
           ]
         },
@@ -55324,7 +55321,7 @@
                 "Given that the evidence was new, the committee defended its decision completely."
               ],
               "answer": "Given that the evidence was new, the committee changed its decision completely.",
-              "explanation": "The speaker says \"Given that the evidence was new, the committee changed its decision completely.\" Here \"given that\" introduces the reason, so the new evidence explains why the decision changed."
+              "explanation": "\"Given that the evidence was new, the committee changed its decision completely.\" Here \"given that\" introduces a reason: the new evidence is why the decision changed."
             },
             {
               "id": "tx1",
@@ -55453,7 +55450,7 @@
                 "We had to put off the meeting because the manager was away."
               ],
               "answer": "We had to put off the meeting because the manager was ill.",
-              "explanation": "The speaker says \"We had to put off the meeting because the manager was ill.\" The other choices change only the last word, so listen for \"ill\"."
+              "explanation": "\"We had to put off the meeting because the manager was ill.\" Here \"put off\" means postpone, and \"because\" introduces the reason: the manager was \"ill\"."
             },
             {
               "id": "sx1",
@@ -55581,7 +55578,7 @@
                 "Scientists will carry out several jobs before they give up on the project."
               ],
               "answer": "Scientists will carry out several tests before they give up on the project.",
-              "explanation": "In \"Scientists will carry out several tests before they give up on the project.\", \"carry out\" means to perform a task, and \"give up\" means to stop trying. Listen for \"tests\", \"Scientists\" and \"give up\" to rule out the other choices."
+              "explanation": "\"Scientists will carry out several tests before they give up on the project.\" Here \"carry out\" means perform, and \"give up on\" means stop trying with something."
             },
             {
               "id": "tx1",
@@ -55702,7 +55699,7 @@
                 "My brother set up a small business after he lost his job."
               ],
               "answer": "My brother set up a small business after he lost his job.",
-              "explanation": "The speaker says \"My brother set up a small business after he lost his job.\" Here \"set up\" means to start or establish something, and the other choices change one word."
+              "explanation": "\"My brother set up a small business after he lost his job.\" Here \"set up\" means start or establish, and \"lost his job\" is what happened first."
             },
             {
               "id": "sx1",
@@ -55843,7 +55840,7 @@
                 "I am trying to cut back on sugar because it is bad for my health.",
                 "I am trying to cut down on my sugar intake because it is bad for my health."
               ],
-              "explanation": "The natural wording is \"I am trying to cut down on sugar because it is bad for my health.\", since \"cut down on\" means to reduce the amount of something."
+              "explanation": "\"I am trying to cut down on sugar because it is bad for my health.\" The phrasal verb \"cut down on\" means to reduce how much of something you have or use."
             }
           ]
         },
@@ -55944,7 +55941,7 @@
                 "She decided to go through with the plan even though it was boring."
               ],
               "answer": "She decided to go through with the plan even though it was difficult.",
-              "explanation": "The speaker says \"She decided to go through with the plan even though it was difficult.\" Here \"go through with\" means to complete something as planned despite the challenge."
+              "explanation": "\"She decided to go through with the plan even though it was difficult.\" Here \"go through with\" means to carry out a plan as intended, and \"even though\" shows the difficulty did not stop her."
             },
             {
               "id": "sx1",
@@ -56076,7 +56073,7 @@
                 "If I had studied harder at school, I would have a better job now."
               ],
               "answer": "If I had studied harder at school, I would have a better job now.",
-              "explanation": "The speaker says \"If I had studied harder at school, I would have a better job now.\" The other choices change one word, such as house, worked, or college."
+              "explanation": "\"If I had studied harder at school, I would have a better job now.\" A mixed conditional pairs a past condition (\"had studied\") with a present result (\"would have\")."
             },
             {
               "id": "tx1",
@@ -56187,7 +56184,7 @@
                 "If she had studied harder, she would be a driver now."
               ],
               "answer": "If she had studied harder, she would be a doctor now.",
-              "explanation": "The speaker says \"If she had studied harder, she would be a doctor now.\" A past condition with a present result uses \"had studied\" and then \"would\" + base verb."
+              "explanation": "\"If she had studied harder, she would be a doctor now.\" A past condition with a present result uses \"had studied\" in the if-clause and \"would be\" in the result."
             },
             {
               "id": "sx1",
@@ -56307,7 +56304,7 @@
                 "If she had listened to the teacher, she would feel much better today."
               ],
               "answer": "If she had listened to the doctor, she would feel much better today.",
-              "explanation": "The speaker says \"If she had listened to the doctor, she would feel much better today.\" The past condition (not listening) leads to a present result."
+              "explanation": "\"If she had listened to the doctor, she would feel much better today.\" The past condition (\"had listened\") leads to a present result (\"would feel\"), shown by \"today\"."
             },
             {
               "id": "tx1",
@@ -56420,7 +56417,7 @@
                 "If she had taken the earlier train, she would be late by now."
               ],
               "answer": "If she had taken the earlier train, she would be home by now.",
-              "explanation": "The speaker says \"If she had taken the earlier train, she would be home by now.\" It combines a past condition with a result that would be true in the present."
+              "explanation": "\"If she had taken the earlier train, she would be home by now.\" A past condition (\"had taken\") has a present result (\"would be home\"), and \"by now\" signals the present."
             },
             {
               "id": "sx1",
@@ -57023,7 +57020,7 @@
                 "I wish my neighbors would turn the music up when I'm trying to sleep."
               ],
               "answer": "I wish my neighbors would turn the music down when I'm trying to sleep.",
-              "explanation": "The speaker says \"I wish my neighbors would turn the music down when I'm trying to sleep.\" Here \"would\" expresses annoyance about other people's repeated behavior."
+              "explanation": "\"I wish my neighbors would turn the music down when I'm trying to sleep.\" \"Wish\" + \"would\" expresses annoyance at someone's repeated behavior and a wish for it to change."
             },
             {
               "id": "tx1",
@@ -57272,7 +57269,7 @@
                 "Let the sauce simmer gently while you drain the onions for the salad."
               ],
               "answer": "Let the sauce simmer gently while you chop the onions for the salad.",
-              "explanation": "The speaker says \"Let the sauce simmer gently while you chop the onions for the salad.\" The other choices change one word, such as drain, carrots or stir."
+              "explanation": "\"Let the sauce simmer gently while you chop the onions for the salad.\" Listen for the cooking verbs: \"simmer\" is to cook just below boiling, \"chop\" is to cut into pieces."
             },
             {
               "id": "tx1",
@@ -57388,7 +57385,7 @@
                 "After you drain the pasta, stir in the butter while it's still hot."
               ],
               "answer": "After you drain the pasta, stir in the sauce while it's still hot.",
-              "explanation": "The sentence heard was \"After you drain the pasta, stir in the sauce while it's still hot.\" The other choices change one word: butter, warm, or rice."
+              "explanation": "\"After you drain the pasta, stir in the sauce while it's still hot.\" \"Drain\" means pour off the water, and \"stir in\" means mix an ingredient into the food."
             },
             {
               "id": "sx1",
@@ -57744,7 +57741,7 @@
                 "You should chop the onions before you add them to the pan."
               ],
               "answer": "You should dice the onions before you add them to the pan.",
-              "explanation": "The speaker says \"You should dice the onions before you add them to the pan.\" The other choices change one word: chop, pour or slice."
+              "explanation": "\"You should dice the onions before you add them to the pan.\" \"Dice\" means cut into small cubes, which differs from \"slice\" (thin flat pieces) and \"chop\" (rough pieces)."
             },
             {
               "id": "tx1",
@@ -58803,7 +58800,7 @@
                 "The committee chose to bite the bullet and reject the unpopular budget cuts despite widespread criticism."
               ],
               "answer": "The committee chose to bite the bullet and approve the unpopular budget cuts despite widespread criticism.",
-              "explanation": "The sentence is \"The committee chose to bite the bullet and approve the unpopular budget cuts despite widespread criticism.\" The other choices change one word: complaints, reject, or costs."
+              "explanation": "\"The committee chose to bite the bullet and approve the unpopular budget cuts despite widespread criticism.\" \"Bite the bullet\" means to accept something unpleasant but necessary."
             },
             {
               "id": "sx1",
@@ -59540,7 +59537,7 @@
                 "The committee will postpone the meeting until all the necessary documents have been circulated for review."
               ],
               "answer": "The committee will postpone the meeting until all the necessary documents have been submitted for review.",
-              "explanation": "The sentence heard was \"The committee will postpone the meeting until all the necessary documents have been submitted for review.\" The other choices each change one word, such as \"conduct\" instead of \"postpone\"."
+              "explanation": "\"The committee will postpone the meeting until all the necessary documents have been submitted for review.\" \"Postpone\" means to delay until later, which fits \"until.\""
             },
             {
               "id": "sx1",
@@ -60027,7 +60024,7 @@
                 "Seldom have the committee members reached such a unanimous decision after so lively a debate."
               ],
               "answer": "Seldom have the committee members reached such a unanimous decision after so lengthy a debate.",
-              "explanation": "The speaker said \"Seldom have the committee members reached such a unanimous decision after so lengthy a debate.\" The other choices each change one word, such as \"delay\", \"hasty\" or \"lively\"."
+              "explanation": "\"Seldom have the committee members reached such a unanimous decision after so lengthy a debate.\" The negative adverb \"Seldom\" comes first, so \"have\" goes before the subject."
             },
             {
               "id": "sx1",
@@ -60151,7 +60148,7 @@
                 "Rarely have I encountered an argument so thoroughly unconvincing as the one presented this evening."
               ],
               "answer": "Rarely have I encountered an argument so thoroughly unconvincing as the one presented this morning.",
-              "explanation": "The speaker says \"Rarely have I encountered an argument so thoroughly unconvincing as the one presented this morning.\", where the fronted negative adverb \"Rarely\" triggers inversion of \"have\" and \"I\"."
+              "explanation": "\"Rarely have I encountered an argument so thoroughly unconvincing as the one presented this morning.\" The fronted negative adverb \"Rarely\" triggers inversion of \"have\" and \"I\"."
             },
             {
               "id": "tx1",
@@ -60263,7 +60260,7 @@
                 "Rarely have I encountered such a remarkably persistent argument in an academic paper."
               ],
               "answer": "Rarely have I encountered such a remarkably persuasive argument in an academic paper.",
-              "explanation": "The sentence heard was \"Rarely have I encountered such a remarkably persuasive argument in an academic paper.\" The fronted negative adverb \"Rarely\" triggers inversion of \"have\" and \"I\"."
+              "explanation": "\"Rarely have I encountered such a remarkably persuasive argument in an academic paper.\" The fronted negative adverb \"Rarely\" triggers inversion of \"have\" and \"I\"."
             },
             {
               "id": "sx1",
@@ -60651,7 +60648,7 @@
                 "On the whole, the results were encouraging, although some targets were missed.",
                 "Overall, the results were encouraging, albeit with a few targets missed."
               ],
-              "explanation": "To give an overall judgment that allows for exceptions, you can open with \"Broadly speaking, the results were encouraging, although a few targets were missed.\" Here \"Broadly speaking\" frames the general verdict and \"although\" introduces the limiting detail."
+              "explanation": "\"Broadly speaking, the results were encouraging, although a few targets were missed.\" \"Broadly speaking\" gives the general verdict, and \"although\" adds the limiting detail."
             }
           ]
         },
@@ -60870,7 +60867,7 @@
                 "The committee approved the proposal, albeit with several reservations about its long-term financial implications."
               ],
               "answer": "The committee approved the proposal, albeit with several reservations about its long-term financial implications.",
-              "explanation": "The sentence heard was \"The committee approved the proposal, albeit with several reservations about its long-term financial implications.\" The connector \"albeit\" introduces a qualification: the approval came with doubts attached."
+              "explanation": "\"The committee approved the proposal, albeit with several reservations about its long-term financial implications.\" \"Albeit\" adds a qualification: the approval came with doubts attached."
             },
             {
               "id": "tx1",
@@ -60986,7 +60983,7 @@
                 "The results were inconclusive; accordingly, the committee postponed its decision until further evidence could be questioned."
               ],
               "answer": "The results were inconclusive; accordingly, the committee postponed its decision until further evidence could be gathered.",
-              "explanation": "The speaker said \"The results were inconclusive; accordingly, the committee postponed its decision until further evidence could be gathered.\" \"Accordingly\" shows the postponement follows logically from the inconclusive results, while \"conversely\" would signal a reversal."
+              "explanation": "\"The results were inconclusive; accordingly, the committee postponed its decision until further evidence could be gathered.\" \"Accordingly\" marks a logical result, while \"conversely\" would signal a reversal."
             },
             {
               "id": "sx1",
@@ -61109,7 +61106,7 @@
                 "Arguably, the committee's decision was ultimately shaped less by the data than by financial pressure."
               ],
               "answer": "Arguably, the committee's decision was ultimately shaped less by the data than by political pressure.",
-              "explanation": "The sentence heard was \"Arguably, the committee's decision was ultimately shaped less by the data than by political pressure.\" It uses \"arguably\" to flag a disputable claim and \"ultimately\" to mark the final outcome."
+              "explanation": "\"Arguably, the committee's decision was ultimately shaped less by the data than by political pressure.\" \"Arguably\" flags a debatable claim, and \"ultimately\" marks the final outcome."
             },
             {
               "id": "tx1",
@@ -61126,7 +61123,7 @@
                 "All things considered, the committee's cautious approach proved to be the sensible one, even though some members had disagreed with it.",
                 "In the end, the committee's cautious approach proved to be the sensible one, although some members had disagreed with it."
               ],
-              "explanation": "\"Ultimately, the committee's cautious approach proved to be the sensible one, although some members had disagreed with it.\" opens with a connector that gives the final verdict (\"All things considered\" works too), and \"although\" concedes the earlier disagreement."
+              "explanation": "\"Ultimately, the committee's cautious approach proved to be the sensible one, although some members had disagreed with it.\" \"Ultimately\" gives the final verdict, and \"although\" concedes the earlier disagreement."
             }
           ]
         }
@@ -61352,7 +61349,7 @@
                 "The author sought to corroborate the earlier findings with a much larger and more diverse sample."
               ],
               "answer": "The author sought to corroborate the earlier findings with a much larger and more diverse sample.",
-              "explanation": "The sentence heard was \"The author sought to corroborate the earlier findings with a much larger and more diverse sample.\" The verb \"corroborate\" means to confirm earlier findings with further evidence."
+              "explanation": "\"The author sought to corroborate the earlier findings with a much larger and more diverse sample.\" \"Corroborate\" means to confirm earlier findings with further evidence; \"challenge\" would reverse the meaning."
             },
             {
               "id": "tx1",
@@ -61466,7 +61463,7 @@
                 "The authors corroborate their earlier findings by replicating the experiment across three independent laboratories."
               ],
               "answer": "The authors corroborate their earlier findings by replicating the experiment across three independent laboratories.",
-              "explanation": "The speaker says \"The authors corroborate their earlier findings by replicating the experiment across three independent laboratories.\" Here \"corroborate\" means to confirm earlier findings with further evidence, which repeating the experiment in independent labs provides."
+              "explanation": "\"The authors corroborate their earlier findings by replicating the experiment across three independent laboratories.\" \"Corroborate\" means to confirm; repeating the experiment in independent labs is how they do it."
             },
             {
               "id": "sx1",
@@ -61589,7 +61586,7 @@
                 "The committee decided to substantiate the original claim with additional evidence before publishing the final review."
               ],
               "answer": "The committee decided to substantiate the original claim with additional evidence before publishing the final report.",
-              "explanation": "The sentence \"The committee decided to substantiate the original claim with additional evidence before publishing the final report.\" uses \"substantiate\", meaning to support a claim with evidence; each other choice changes one word and so changes the meaning."
+              "explanation": "\"The committee decided to substantiate the original claim with additional evidence before publishing the final report.\" \"Substantiate\" means to support a claim with evidence; \"scrutinize\" means to examine closely."
             },
             {
               "id": "tx1",
@@ -61609,7 +61606,7 @@
                 "A team of scientists scrutinized the data and refuted the earlier hypothesis.",
                 "After scrutinizing the evidence, a team of scientists refuted an earlier hypothesis."
               ],
-              "explanation": "\"The scientists scrutinized the results and refuted the earlier hypothesis.\" pairs \"scrutinize\", meaning to examine something in careful detail, with \"refute\", meaning to prove a claim false; the plainer verbs \"examine\" and \"disprove\" are less precise in academic writing."
+              "explanation": "\"The scientists scrutinized the results and refuted the earlier hypothesis.\" \"Scrutinize\" means to examine in careful detail, and \"refute\" means to prove false; both are more precise than \"examine\" and \"disprove\"."
             }
           ]
         },
@@ -61837,7 +61834,7 @@
                 "The findings appear to suggest a modest connection between income and reported well-being."
               ],
               "answer": "The findings appear to suggest a modest correlation between income and reported well-being.",
-              "explanation": "The speaker says \"The findings appear to suggest a modest correlation between income and reported well-being.\" The other choices each change one word: happiness, age or connection."
+              "explanation": "\"The findings appear to suggest a modest correlation between income and reported well-being.\" Listen for the key nouns: \"correlation\", \"income\" and \"well-being\". \"Appear to suggest\" and \"modest\" are hedges that soften the claim."
             },
             {
               "id": "tx1",
@@ -61953,7 +61950,7 @@
                 "The results are suggestive, but they should be treated with caution until further research is completed."
               ],
               "answer": "The results are suggestive, but they should be treated with caution until further research is completed.",
-              "explanation": "The speaker says \"The results are suggestive, but they should be treated with caution until further research is completed.\" The hedge \"treated with caution\" signals that the findings are not yet certain and need more research."
+              "explanation": "\"The results are suggestive, but they should be treated with caution until further research is completed.\" \"Treated with caution\" is a hedge: it warns that the findings are not yet certain."
             },
             {
               "id": "sx1",
@@ -61980,7 +61977,7 @@
                 "The data appear to suggest a link, but it has not been proven.",
                 "The data may point to a link, but it has not been proven."
               ],
-              "explanation": "Hedges like \"seem to suggest\", \"possible\" and \"not fully established\" soften the claim, as in \"The data seem to suggest a possible link, but it has not been fully established.\""
+              "explanation": "\"The data seem to suggest a possible link, but it has not been fully established.\" Hedges like \"seem to suggest\" and \"possible\", plus \"not fully established\", soften the claim."
             }
           ]
         },
@@ -62192,7 +62189,7 @@
                 "The data appear to suggest a modest correlation, although the sample remains relatively small."
               ],
               "answer": "The data appear to suggest a modest correlation, although the sample remains relatively small.",
-              "explanation": "The speaker says \"The data appear to suggest a modest correlation, although the sample remains relatively small.\" The word \"small\" hedges the claim by pointing to a limitation in the evidence."
+              "explanation": "\"The data appear to suggest a modest correlation, although the sample remains relatively small.\" \"Although\" introduces a limitation, and \"small\" points to a weakness in the evidence, which hedges the claim."
             },
             {
               "id": "sx1",
@@ -62440,7 +62437,7 @@
                 "The tenant shall maintain the premises in poor condition throughout the term of the lease."
               ],
               "answer": "The tenant shall maintain the premises in good condition throughout the term of the lease.",
-              "explanation": "The sentence heard was \"The tenant shall maintain the premises in good condition throughout the term of the lease.\" The other choices each change one word, such as \"contract\", \"end\" or \"poor\", which alters the meaning."
+              "explanation": "\"The tenant shall maintain the premises in good condition throughout the term of the lease.\" \"Shall\" states a legal obligation, and \"the term of the lease\" means the period the lease lasts."
             },
             {
               "id": "sx1",
@@ -62564,7 +62561,7 @@
                 "The signatory warrants that all documentation provided in the application is accurate and complete."
               ],
               "answer": "The signatory warrants that all information provided in the application is accurate and complete.",
-              "explanation": "The speaker said \"The signatory warrants that all information provided in the application is accurate and complete.\" The other choices each change one word, such as agreement, current, or documentation."
+              "explanation": "\"The signatory warrants that all information provided in the application is accurate and complete.\" \"Warrants\" means formally guarantees; listen for \"application\" and the pair \"accurate and complete\"."
             },
             {
               "id": "tx1",
@@ -62681,7 +62678,7 @@
                 "The tenant shall remit the monthly rent to the landlord without any delay."
               ],
               "answer": "The tenant shall remit the monthly rent to the landlord without any deduction.",
-              "explanation": "The sentence heard was \"The tenant shall remit the monthly rent to the landlord without any deduction.\" The other choices each change one word: delay, fee, or lawyer."
+              "explanation": "\"The tenant shall remit the monthly rent to the landlord without any deduction.\" \"Remit\" means to pay, and \"shall\" marks a duty; \"without any deduction\" means the full amount must be paid."
             },
             {
               "id": "sx1",
@@ -63189,7 +63186,7 @@
                 "He is so irascible that even small delays make him lose his temper.",
                 "He is so irascible that he loses his temper even over minor delays."
               ],
-              "explanation": "\"He is so irascible that even minor delays make him lose his temper.\" uses \"irascible\", the precise word for someone who is easily irritated, followed by a \"so... that\" clause showing the result."
+              "explanation": "\"He is so irascible that even minor delays make him lose his temper.\" uses \"irascible\", the precise word for someone who is easily irritated, followed by a \"so… that\" clause showing the result."
             }
           ]
         },
@@ -64630,7 +64627,7 @@
                 "The researchers controlled for several potential confounders.",
                 "The researchers controlled for several other variables that might have distorted the results."
               ],
-              "explanation": "Researchers \"control for\" a variable when they remove its effect from the analysis, so \"The researchers controlled for several confounding variables.\" is the precise phrase here; a confounding variable is one that could distort the results."
+              "explanation": "In research, you \"control for\" a variable to remove its effect on the results. \"The researchers controlled for several confounding variables.\" A confounding variable is one that could distort them."
             }
           ]
         },
@@ -64847,7 +64844,7 @@
                 "With all due respect, we would greatly appreciate a more detailed explanation of the proposed decision."
               ],
               "answer": "With all due respect, we would greatly appreciate a more detailed explanation of the proposed timeline.",
-              "explanation": "The speaker says \"With all due respect, we would greatly appreciate a more detailed explanation of the proposed timeline.\" The other choices change one word, such as timeline to deadline or explanation to assessment."
+              "explanation": "Listen for the exact nouns: \"With all due respect, we would greatly appreciate a more detailed explanation of the proposed timeline.\" Similar words like \"deadline\" or \"assessment\" change the meaning."
             },
             {
               "id": "sx1",
@@ -64990,7 +64987,7 @@
                 "We have listened carefully to your view, but we must respectfully disagree.",
                 "We understand your view, but we must respectfully disagree."
               ],
-              "explanation": "In formal negotiation you acknowledge the other side's stance before disagreeing, as in \"We understand your position, but we must respectfully disagree.\" The word \"respectfully\" softens the refusal so it sounds courteous rather than blunt."
+              "explanation": "Acknowledge the other side first, then soften the refusal: \"We understand your position, but we must respectfully disagree.\" \"Respectfully\" keeps the disagreement courteous, not blunt."
             }
           ]
         },
@@ -65086,7 +65083,7 @@
                 "While we appreciate your concerns, we must respectfully decline to comment further at this point."
               ],
               "answer": "While we appreciate your concerns, we must respectfully decline to comment further at this stage.",
-              "explanation": "The speaker says \"While we appreciate your concerns, we must respectfully decline to comment further at this stage.\" The other choices change one word, such as \"refuse\", \"point\" or \"questions\"."
+              "explanation": "\"Decline to comment\" is the polite, formal way to refuse: \"While we appreciate your concerns, we must respectfully decline to comment further at this stage.\" \"Refuse\" is blunter, and \"stage\" is the fixed phrase."
             },
             {
               "id": "sx1",
@@ -65113,7 +65110,7 @@
                 "It would be premature for me to comment at this stage.",
                 "We would prefer not to comment yet, because it is too early."
               ],
-              "explanation": "A diplomatic speaker softens a refusal with \"premature\" or a conditional, as in \"It would be premature to comment at this stage.\""
+              "explanation": "\"Premature\" politely signals that it is too early to comment: \"It would be premature to comment at this stage.\" The conditional \"would\" softens the refusal."
             }
           ]
         },
@@ -65209,7 +65206,7 @@
                 "We sincerely hope that this matter can be discussed amicably before the end of the quarter."
               ],
               "answer": "We sincerely hope that this matter can be resolved amicably before the end of the quarter.",
-              "explanation": "The speaker says \"We sincerely hope that this matter can be resolved amicably before the end of the quarter.\" The other choices change one key word: start, quickly or discussed."
+              "explanation": "Catch the key words: \"We sincerely hope that this matter can be resolved amicably before the end of the quarter.\" \"Resolved amicably\" means settled in a friendly way, and \"end\" sets the deadline."
             },
             {
               "id": "tx1",
@@ -65325,7 +65322,7 @@
                 "We would be hopeful if the committee could reconsider its position on this matter."
               ],
               "answer": "We would be grateful if the committee could reconsider its position on this matter.",
-              "explanation": "The speaker says \"We would be grateful if the committee could reconsider its position on this matter.\", a polite, hedged request in the conditional; the other choices each change one word."
+              "explanation": "\"We would be grateful if the committee could reconsider its position on this matter.\" \"Would be grateful if you could\" makes a request polite and indirect. Note \"position\" and \"matter\"."
             },
             {
               "id": "sx1",
@@ -65583,7 +65580,7 @@
                 "After weeks of failed negotiations, the exhausted team finally decided to throw in the towels."
               ],
               "answer": "After weeks of failed negotiations, the exhausted team finally decided to throw in the towel.",
-              "explanation": "The speaker says \"After weeks of failed negotiations, the exhausted team finally decided to throw in the towel.\", using the idiom \"throw in the towel\" to mean that the team gave up."
+              "explanation": "\"Throw in the towel\" means to give up, as in \"After weeks of failed negotiations, the exhausted team finally decided to throw in the towel.\" The idiom keeps its fixed form, with \"towel\" singular."
             },
             {
               "id": "sx1",
@@ -65711,7 +65708,7 @@
                 "After weeks of hesitation, she finally decided to break the bullet and accept the demanding position."
               ],
               "answer": "After weeks of hesitation, she finally decided to bite the bullet and accept the demanding position.",
-              "explanation": "The sentence heard was \"After weeks of hesitation, she finally decided to bite the bullet and accept the demanding position.\" To bite the bullet means to face something unpleasant with courage, and the other choices each change one word."
+              "explanation": "\"Bite the bullet\" means to face something unpleasant with courage: \"After weeks of hesitation, she finally decided to bite the bullet and accept the demanding position.\" \"Demanding\" explains why she hesitated."
             },
             {
               "id": "tx1",
@@ -65728,7 +65725,7 @@
                 "I take the rumor with a grain of salt.",
                 "I don't fully believe that rumor, so I take it with a grain of salt."
               ],
-              "explanation": "To \"take something with a grain of salt\" means to doubt it a little, so you say \"I take that rumor with a grain of salt.\""
+              "explanation": "\"Take something with a grain of salt\" means to doubt it somewhat: \"I take that rumor with a grain of salt.\" British English also says \"a pinch of salt\"."
             }
           ]
         },
@@ -65829,7 +65826,7 @@
                 "After the first design failed, the team decided to go back to the drawing board."
               ],
               "answer": "After the first design failed, the team decided to go back to the drawing board.",
-              "explanation": "The speaker says \"After the first design failed, the team decided to go back to the drawing board.\" and the idiom means starting the planning again after a failure."
+              "explanation": "\"Go back to the drawing board\" means to start planning again after a failure: \"After the first design failed, the team decided to go back to the drawing board.\" The idiom's wording is fixed."
             },
             {
               "id": "sx1",
@@ -66079,7 +66076,7 @@
                 "The contract is believed to have been sealed by both parties before the deadline."
               ],
               "answer": "The contract is believed to have been signed by both parties before the deadline.",
-              "explanation": "The speaker says \"The contract is believed to have been signed by both parties before the deadline.\" The other choices change one word: sealed, after, or partners."
+              "explanation": "\"The contract is believed to have been signed by both parties before the deadline.\" \"Is believed to have been + past participle\" reports a belief about an earlier event, and \"before\" fixes the timing."
             },
             {
               "id": "sx1",
@@ -66344,7 +66341,7 @@
                 "It is widely believed that the decision will soon be reversed by the court.",
                 "It is generally believed that the court will soon reverse the decision."
               ],
-              "explanation": "The impersonal passive with a that-clause expresses general belief: \"It is widely believed that the decision will soon be overturned by the court.\" The future passive \"will be + past participle\" shows the action has not yet happened."
+              "explanation": "Use the impersonal passive to express general belief: \"It is widely believed that the decision will soon be overturned by the court.\" \"Will be + past participle\" shows the action is still to come."
             }
           ]
         },
@@ -66440,7 +66437,7 @@
                 "The proposal is believed to have been carefully reviewed by the committee before the vote."
               ],
               "answer": "The proposal is believed to have been carefully reviewed by the committee before the vote.",
-              "explanation": "The passive reporting structure 'is believed to have been + past participle' fits \"The proposal is believed to have been carefully reviewed by the committee before the vote.\" The other choices change the participle to a word with a clearly different meaning."
+              "explanation": "\"The proposal is believed to have been carefully reviewed by the committee before the vote.\" Listen for the participle \"reviewed\" after \"been\"; \"rejected\", \"revised\" and \"repaired\" sound different."
             },
             {
               "id": "tx1",
@@ -67048,7 +67045,7 @@
                 "I would be grateful if you could confirm delivery of the attached documents promptly."
               ],
               "answer": "I would be grateful if you could confirm receipt of the attached documents promptly.",
-              "explanation": "The sentence heard was \"I would be grateful if you could confirm receipt of the attached documents promptly.\" The key words are \"receipt\" (the act of receiving), \"documents\" and \"promptly\", which separate it from the other options."
+              "explanation": "\"I would be grateful if you could confirm receipt of the attached documents promptly.\" \"Receipt\" means the act of receiving, and \"promptly\" means quickly, unlike \"personally\"."
             },
             {
               "id": "sx1",
@@ -67171,7 +67168,7 @@
                 "We would be grateful if you could confirm review of the attached documents by Friday."
               ],
               "answer": "We would be grateful if you could confirm receipt of the attached documents by Friday.",
-              "explanation": "The speaker says \"We would be grateful if you could confirm receipt of the attached documents by Friday.\" The key words are 'receipt', meaning that the documents have arrived, and the Friday deadline."
+              "explanation": "\"We would be grateful if you could confirm receipt of the attached documents by Friday.\" \"Receipt\" means the documents arrived, and \"by Friday\" gives the deadline; the others change the day or the noun."
             },
             {
               "id": "tx1",
@@ -67296,7 +67293,7 @@
                 "The committee's final decision rested on a careful analysis of the available evidence."
               ],
               "answer": "The committee's final decision rested on a careful analysis of the available evidence.",
-              "explanation": "In \"The committee's final decision rested on a careful analysis of the available evidence.\", the key word is \"analysis\", the abstract noun formed from the verb \"to analyze\". Listen for that noun, because the other options swap in different abstract nouns."
+              "explanation": "\"The committee's final decision rested on a careful analysis of the available evidence.\" \"Analysis\" is the noun from \"analyze\"; the other options swap in different nouns."
             },
             {
               "id": "sx1",
@@ -67418,7 +67415,7 @@
                 "The committee demanded a thorough investigation into the causes of the unexpected increase in construction."
               ],
               "answer": "The committee demanded a thorough investigation into the causes of the unexpected delay in construction.",
-              "explanation": "The speaker said \"The committee demanded a thorough investigation into the causes of the unexpected delay in construction.\", where \"investigation\" is the noun formed from the verb \"investigate\"."
+              "explanation": "\"The committee demanded a thorough investigation into the causes of the unexpected delay in construction.\" \"Investigation\" is the noun from \"investigate\"; the other options change one word elsewhere."
             },
             {
               "id": "tx1",
@@ -67558,7 +67555,7 @@
                 "The committee is worried about the sharp reduction in the number of its customers.",
                 "The committee is worried about the sharp reduction in the customer base."
               ],
-              "explanation": "You turn the verb \"reduced\" into the noun \"reduction\" and put it after the preposition: \"The committee is concerned about the sharp reduction in customer numbers.\" The adverb \"sharply\" also becomes the adjective \"sharp\" to describe the new noun."
+              "explanation": "The verb \"reduced\" becomes the noun \"reduction\" after a preposition: \"The committee is concerned about the sharp reduction in customer numbers.\" The adverb \"sharply\" becomes the adjective \"sharp\"."
             }
           ]
         },
@@ -67673,7 +67670,7 @@
                 "The decision was taken to set up a new school.",
                 "The decision to set up a new school was reached."
               ],
-              "explanation": "The verb \"decide\" becomes the noun \"decision\", so the idea can be written as \"The decision to establish a new school was made.\""
+              "explanation": "The verb \"decide\" becomes the noun \"decision\": \"The decision to establish a new school was made.\" The noun is followed by an infinitive and a passive verb."
             }
           ]
         },
@@ -67901,7 +67898,7 @@
                 "It was the manager who made the final decision about the new budget."
               ],
               "answer": "It was the manager who made the final decision about the new budget.",
-              "explanation": "The speaker says \"It was the manager who made the final decision about the new budget.\" The other choices each change one word, such as schedule, old, or changed."
+              "explanation": "The it-cleft \"It was the manager who made the final decision about the new budget.\" stresses who decided. Listen for \"made\", \"new\" and \"budget\", which the wrong options change."
             },
             {
               "id": "sx1",
@@ -68045,7 +68042,7 @@
                 "It was the lack of funding, and not the staff, that caused the project to fail.",
                 "It was a lack of funding, not the staff, that caused the project to fail."
               ],
-              "explanation": "An 'It was ... that' cleft puts the focus on one element: \"It was the lack of funding that made the project fail.\" The past event requires 'was', and 'that' introduces the rest of the clause."
+              "explanation": "An 'It was … that' cleft puts the focus on one element: \"It was the lack of funding that made the project fail.\" The past event requires 'was', and 'that' introduces the rest of the clause."
             }
           ]
         },
@@ -68141,7 +68138,7 @@
                 "It was only before the long negotiations ended that the director finally admitted her mistake."
               ],
               "answer": "It was only after the long negotiations ended that the director finally admitted her mistake.",
-              "explanation": "The sentence heard was \"It was only after the long negotiations ended that the director finally admitted her mistake.\"; the focus phrase 'only after the long negotiations ended' is stressed by the it-cleft, and 'admitted' (not 'denied' or 'repeated') gives the meaning."
+              "explanation": "\"It was only after the long negotiations ended that the director finally admitted her mistake.\" The cleft stresses when she admitted it. \"After\" and \"admitted\" are the words that separate it from the wrong options."
             },
             {
               "id": "tx1",
@@ -68159,7 +68156,7 @@
                 "What I value more than anything in a friend is honesty.",
                 "What I most value in a friend is their honesty."
               ],
-              "explanation": "A 'What ...' cleft puts the emphasis on the final focus, so \"What I value most in a friend is honesty.\" links the opening clause to 'honesty' with the verb be."
+              "explanation": "A 'What …' cleft puts the emphasis on the final focus, so \"What I value most in a friend is honesty.\" links the opening clause to 'honesty' with the verb be."
             }
           ]
         },
@@ -68256,7 +68253,7 @@
                 "It was the unexpected delay that caused most of the confusion during the lecture."
               ],
               "answer": "It was the unexpected delay that caused most of the confusion during the meeting.",
-              "explanation": "The sentence heard is \"It was the unexpected delay that caused most of the confusion during the meeting.\" It is an it-cleft that puts the focus on \"the unexpected delay\", and only the final word separates it from the other choices."
+              "explanation": "\"It was the unexpected delay that caused most of the confusion during the meeting.\" The it-cleft puts the focus on the cause, \"the unexpected delay\". Listen to the final word to tell it from the other options."
             },
             {
               "id": "sx1",
@@ -68376,14 +68373,14 @@
                 "What really surprised everyone was how quietly the committee reached a final decision."
               ],
               "answer": "What really surprised everyone was how quickly the committee reached a final decision.",
-              "explanation": "The speaker said \"What really surprised everyone was how quickly the committee reached a final decision.\" The other choices each change one word, such as 'formal', 'quietly' or 'worried'."
+              "explanation": "In \"What really surprised everyone was how quickly the committee reached a final decision.\", the what-cleft saves the surprising fact for last. Listen for \"surprised\", \"quickly\" and \"final\"."
             },
             {
               "id": "sx1",
               "type": "speak",
               "prompt": "Say this aloud:",
               "answer": "What annoyed me was the lack of communication.",
-              "explanation": "In \"What annoyed me was the lack of communication.\", the wh-clause \"What annoyed me\" acts as a singular subject, so it takes \"was\". Putting the clause first places the stress on the lack of communication, the thing that bothered you."
+              "explanation": "In \"What annoyed me was the lack of communication.\", the clause \"What annoyed me\" is a singular subject, so it takes \"was\". Putting it first stresses the thing that bothered you."
             },
             {
               "id": "tx1",
@@ -68398,7 +68395,7 @@
                 "It was the delay rather than the cost that was the real issue.",
                 "It was the delay that was the real problem rather than the cost."
               ],
-              "explanation": "A cleft with 'It was ... that' puts the focus on one element, as in \"It was the delay, not the cost, that was the real problem.\" The contrast is added with 'not' or 'rather than'."
+              "explanation": "A cleft with 'It was … that' puts the focus on one element, as in \"It was the delay, not the cost, that was the real problem.\" The contrast is added with 'not' or 'rather than'."
             }
           ]
         }
@@ -68642,7 +68639,7 @@
                 "The company has done a lot of careful research and did a colleague a favor by sharing the results.",
                 "The company has done a lot of research and has done a favor for a colleague by sharing the results."
               ],
-              "explanation": "English uses \"do\" with both of these nouns: you do research for careful study and you do someone a favor for a kind act. A sentence like \"The company has done a lot of research and has done a colleague a favor by sharing the results.\" shows both fixed pairs, where \"make\" or \"take\" would sound wrong."
+              "explanation": "English pairs \"do\" with both nouns: \"do research\" and \"do someone a favor\". \"The company has done a lot of research and has done a colleague a favor by sharing the results.\" \"Make\" or \"take\" would sound wrong."
             }
           ]
         },
@@ -68767,7 +68764,7 @@
                 "Take advantage of the opportunity while you can.",
                 "Take advantage of this opportunity while you can."
               ],
-              "explanation": "The idea is expressed as \"You should take advantage of the opportunity while you can.\" because the fixed collocation is take advantage of something."
+              "explanation": "The fixed phrase is \"take advantage of\": \"You should take advantage of the opportunity while you can.\" Other verbs such as \"use\" or \"get\" don't form this collocation."
             }
           ]
         },
@@ -68880,7 +68877,7 @@
                 "The two colleagues had an argument over the budget again.",
                 "The two colleagues once again had an argument over the budget."
               ],
-              "explanation": "The fixed phrase with \"have\" is \"have an argument\", so the natural wording is \"The two colleagues had another argument about the budget.\""
+              "explanation": "The collocation is \"have an argument\", not \"make\" or \"do\". \"The two colleagues had another argument about the budget.\" uses \"another\" to show it happened again."
             }
           ]
         },
@@ -69463,7 +69460,7 @@
                 "The spokesperson described the sudden layoffs as a necessary rebuilding of the company's operations."
               ],
               "answer": "The spokesperson described the sudden layoffs as a necessary restructuring of the company's operations.",
-              "explanation": "The speaker said \"The spokesperson described the sudden layoffs as a necessary restructuring of the company's operations.\" This is a typical corporate euphemism that softens the idea of firing many workers."
+              "explanation": "\"The spokesperson described the sudden layoffs as a necessary restructuring of the company's operations.\" \"Restructuring\" is a corporate euphemism that softens mass firing."
             },
             {
               "id": "sx1",
@@ -69716,7 +69713,7 @@
                 "The committee approved the proposal, although several members had expressed serious reservations about its long-term benefits."
               ],
               "answer": "The committee approved the proposal, although several members had expressed serious reservations about its long-term cost.",
-              "explanation": "The sentence heard was \"The committee approved the proposal, although several members had expressed serious reservations about its long-term cost.\" Each wrong choice changes just one word (cause, costs, short-term), so listen closely to the ending."
+              "explanation": "\"The committee approved the proposal, although several members had expressed serious reservations about its long-term cost.\" \"Although\" sets approval against the members' doubts."
             },
             {
               "id": "sx1",
@@ -69839,7 +69836,7 @@
                 "The proposal was ambitious; nevertheless, the board approved it without any significant objections from directors."
               ],
               "answer": "The proposal was ambitious; nevertheless, the board approved it without any significant objections from investors.",
-              "explanation": "The sentence heard was \"The proposal was ambitious; nevertheless, the board approved it without any significant objections from investors.\" Here \"nevertheless\" introduces the contrast between an ambitious plan and its easy approval."
+              "explanation": "\"The proposal was ambitious; nevertheless, the board approved it without any significant objections from investors.\" \"Nevertheless\" signals that the result goes against what you might expect."
             },
             {
               "id": "tx1",
@@ -69855,7 +69852,7 @@
                 "The new policy was unpopular, but the manager supported it anyway.",
                 "The new policy was unpopular; the manager supported it all the same."
               ],
-              "explanation": "The linking adverb \"nevertheless\" (or \"nonetheless\", \"however\") shows the contrast, as in \"The new policy was unpopular; nevertheless, the manager supported it.\" A conjunction such as \"although\" can also introduce the unpopular policy as the concession."
+              "explanation": "\"The new policy was unpopular; nevertheless, the manager supported it.\" A linking adverb like \"nevertheless\" or \"nonetheless\" shows contrast, as does \"although\" at the start."
             }
           ]
         },
@@ -69951,7 +69948,7 @@
                 "The results were disappointing; even so, we decided to continue with the plan for another year."
               ],
               "answer": "The results were disappointing; even so, we decided to continue with the project for another year.",
-              "explanation": "The speaker says \"The results were disappointing; even so, we decided to continue with the project for another year.\" Each other choice changes one word: encouraging, plan, or week."
+              "explanation": "\"The results were disappointing; even so, we decided to continue with the project for another year.\" \"Even so\" introduces an action that contrasts with what came before."
             },
             {
               "id": "sx1",
@@ -70069,7 +70066,7 @@
                 "The rules are strict; on the other hand, exceptions are sometimes made for special cases."
               ],
               "answer": "The rules are strict; on the other hand, exceptions are sometimes made for special cases.",
-              "explanation": "The speaker says \"The rules are strict; on the other hand, exceptions are sometimes made for special cases.\" using \"on the other hand\" to set a contrasting point against the strict rules."
+              "explanation": "\"The rules are strict; on the other hand, exceptions are sometimes made for special cases.\" \"On the other hand\" introduces a point that balances or contrasts with the first."
             },
             {
               "id": "tx1",
@@ -70432,7 +70429,7 @@
                 "In light of the above, the following section will explore alternative limitations for the findings."
               ],
               "answer": "In light of the above, the following section will explore alternative explanations for the findings.",
-              "explanation": "The sentence heard was \"In light of the above, the following section will explore alternative explanations for the findings.\" It uses \"in light of\" and \"the following section\" to link back to earlier points and forward to the next part."
+              "explanation": "\"In light of the above, the following section will explore alternative explanations for the findings.\" \"In light of the above\" links back to earlier points before moving on."
             },
             {
               "id": "sx1",
@@ -70791,7 +70788,7 @@
                 "As shown in the appendix, the results differ considerably across the three regions studied."
               ],
               "answer": "As shown in the appendix, the results vary considerably across the three regions studied.",
-              "explanation": "The speaker says \"As shown in the appendix, the results vary considerably across the three regions studied.\" using the fixed phrase \"As shown in\" to point readers to evidence."
+              "explanation": "\"As shown in the appendix, the results vary considerably across the three regions studied.\" \"As shown in\" is a fixed academic phrase that points to supporting evidence."
             },
             {
               "id": "tx1",

@@ -33,7 +33,7 @@
     "Le coiffeur travaille dans un hôpital.",
     "Le coiffeur travaille dans un restaurant."
    ],
-   "explanation": "The speaker says \"Le coiffeur travaille dans un salon.\" The other choices change the job or the workplace to a different word."
+   "explanation": "\"Le coiffeur travaille dans un salon.\" pairs a job with its usual workplace: a hairdresser works in a \"salon\". Listen for both the job word and the place word."
   },
   "speak": {
    "answer": "Je suis professeur dans une école",
@@ -87,7 +87,7 @@
     "Mon père est plombier.",
     "Mon père est comptable."
    ],
-   "explanation": "The sentence is \"Mon père est dentiste.\" and it means \"My father is a dentist.\" The other jobs sound clearly different."
+   "explanation": "\"Mon père est dentiste.\" means \"My father is a dentist.\" Listen for the job word after \"est\"; each job has its own distinct sound."
   },
   "speak": {
    "answer": "Je suis plombier",
@@ -105,7 +105,7 @@
     "Ma mère exerce le métier de comptable.",
     "Ma mère, c'est une comptable."
    ],
-   "explanation": "\"Ma mère est comptable.\" means \"My mother is an accountant.\" After \"est\" the job needs no \"un\" or \"une\"."
+   "explanation": "\"Ma mère est comptable.\" After \"est\", French usually drops \"un\"/\"une\" before a job: say \"est comptable\", not \"est une comptable\"."
   }
  },
  "fra1p10l5": {
@@ -354,7 +354,7 @@
     "Le chat est devant le mur.",
     "Le chat est près du mur."
    ],
-   "explanation": "\"Le chat est contre le mur.\" means the cat is against the wall; \"contre\" is the word for \"against\"."
+   "explanation": "\"Le chat est contre le mur.\" uses \"contre\" for \"against\", meaning touching the wall. \"Sous\", \"devant\" and \"près de\" place the cat elsewhere."
   },
   "speak": {
    "answer": "Il marche le long de la rivière.",
@@ -436,7 +436,7 @@
     "Il est sept heures du matin.",
     "Il est six heures et demie."
    ],
-   "explanation": "The speaker says \"Il est six heures du matin.\" because \"du matin\" marks the morning, so this is 6 a.m."
+   "explanation": "\"Il est six heures du matin.\" uses \"du matin\" for a.m.; \"du soir\" would mean evening. Listen for the number and that tag."
   },
   "translate": {
    "prompt": "Say that it is half past five in the afternoon.",
@@ -697,7 +697,7 @@
   },
   "speak": {
    "answer": "J'ai une réservation",
-   "explanation": "\"J'ai une réservation\" means \"I have a reservation\"; it is what you tell the waiter when you arrive."
+   "explanation": "\"J'ai une réservation\" means \"I have a reservation\". \"Réservation\" is feminine, so it takes \"une\", and \"j'\" is \"je\" shortened before \"ai\"."
   },
   "translate": {
    "prompt": "Tell the waiter you would like the set menu, politely.",
@@ -926,10 +926,6 @@
    ],
    "explanation": "The sentence \"J'ai un cahier dans mon sac.\" means 'I have a notebook in my bag.' The wrong choices change one word: stylo (pen), classe (class) or dictionnaire (dictionary)."
   },
-  "speak": {
-   "answer": "Où est la salle de classe ?",
-   "explanation": "\"Où est la salle de classe ?\" means 'Where is the classroom?'. Use \"où est\" to ask where something is, and remember that \"salle\" is feminine, so it takes \"la\"."
-  },
   "translate": {
    "prompt": "Say that the dictionary is on the chair.",
    "acceptableAnswers": [
@@ -972,11 +968,11 @@
     "J'ai un nouveau clavier.",
     "J'ai un nouveau chargeur."
    ],
-   "explanation": "The speaker says \"J'ai un nouvel ordinateur.\" meaning \"I have a new computer.\" Nouvel is used before a masculine word starting with a vowel."
+   "explanation": "\"J'ai un nouvel ordinateur.\" Before a masculine noun starting with a vowel, \"nouveau\" becomes \"nouvel\", so it links smoothly to \"ordinateur\"."
   },
   "speak": {
    "answer": "Où est le chargeur ?",
-   "explanation": "\"Où est le chargeur ?\" means \"Where is the charger?\". Use où est to ask where one thing is, and say le before a masculine noun like chargeur."
+   "explanation": "\"Où est le chargeur ?\" means \"Where is the charger?\" Use où est to ask where one thing is, and say le before a masculine noun like chargeur."
   },
   "translate": {
    "prompt": "Say that you like your phone.",
@@ -1038,7 +1034,7 @@
   },
   "speak": {
    "answer": "Où est mon appareil photo ?",
-   "explanation": "\"Où est mon appareil photo ?\" means \"Where is my camera?\". \"Où\" asks where, and \"mon\" is used before \"appareil\" because the noun is masculine."
+   "explanation": "\"Où est mon appareil photo ?\" is how you ask where your camera is. \"Où\" asks where, and \"mon\" is used before \"appareil\" because the noun is masculine."
   },
   "translate": {
    "prompt": "Say that the battery is empty (has no charge left).",
@@ -1055,7 +1051,7 @@
     "Ma batterie est morte.",
     "La batterie est morte."
    ],
-   "explanation": "\"La batterie est vide\" uses \"la batterie\" (feminine) with \"vide\", meaning empty."
+   "explanation": "\"La batterie est vide\" uses \"vide\" (empty) after \"est\". \"Batterie\" is feminine, so it takes \"la\", but \"vide\" looks the same for both genders."
   }
  },
  "fra1p17l4": {
@@ -1290,7 +1286,7 @@
     "Je suis très curieux aujourd'hui.",
     "Je suis très jaloux aujourd'hui."
    ],
-   "explanation": "The speaker says \"Je suis très nerveux aujourd'hui.\", meaning \"I am very nervous today.\" The other choices change only the feeling word."
+   "explanation": "\"Je suis très nerveux aujourd'hui.\" means \"I am very nervous today.\" Only the feeling word changes between choices, so listen closely to it."
   },
   "translate": {
    "prompt": "Say that you are bored today.",
@@ -1434,7 +1430,7 @@
     "Excusez-moi, je suis content.",
     "Excusez-moi, je suis malade."
    ],
-   "explanation": "The speaker says \"Excusez-moi, je suis désolé.\" The last word, \"désolé\", means sorry, and it sounds clearly different from \"fatigué\", \"content\" and \"malade\"."
+   "explanation": "\"Excusez-moi, je suis désolé.\" ends with \"désolé\" (sorry), a different word from \"malade\", \"fatigué\" or \"content\", so listen for the last word."
   },
   "translate": {
    "prompt": "You are talking to a stranger on the street. Politely ask them (use vous) to speak slowly.",
@@ -1521,8 +1517,8 @@
    "explanation": "The speaker says \"Je ne comprends pas, désolé.\", meaning \"I don't understand, sorry.\" The other choices change one clearly audible word."
   },
   "speak": {
-   "answer": "Je ne comprends pas, excusez-moi",
-   "explanation": "\"Je ne comprends pas, excusez-moi\" means \"I don't understand, excuse me\", a polite phrase for when you are lost in a conversation."
+   "answer": "Excusez-moi, je ne comprends pas",
+   "explanation": "\"Excusez-moi, je ne comprends pas\" means \"Excuse me, I don't understand.\" \"Ne … pas\" wraps around the verb \"comprends\" to make it negative."
   },
   "translate": {
    "prompt": "Politely ask someone if they speak French.",
@@ -1600,7 +1596,7 @@
     "Pour aller au travail, je prends le métro.",
     "Je vais au boulot en métro."
    ],
-   "explanation": "\"Je prends le métro pour aller au travail.\" uses \"prendre\" for taking transport, and \"le métro\" is the subway."
+   "explanation": "\"Je prends le métro pour aller au travail.\" uses \"prendre\" for taking transport; \"pour\" plus an infinitive means \"in order to\" (here, to go to work)."
   }
  },
  "fra1p20l3": {
@@ -1808,7 +1804,7 @@
     "J'ai 50 euros.",
     "Moi, j'ai 50 euros."
    ],
-   "explanation": "\"J'ai cinquante euros.\" uses \"j'ai\" (I have) followed by \"cinquante\" (fifty) and the noun \"euros\"."
+   "explanation": "\"J'ai cinquante euros.\" Use \"j'ai\" (I have) plus the number and the noun; \"euros\" follows the number directly, with no \"de\"."
   }
  },
  "fra1p3l1": {
@@ -2270,13 +2266,13 @@
  "fra1p6l3": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "J'ai mal au bras",
+   "audioText": "J'ai mal au bras.",
    "wrong": [
-    "J'ai mal au dos",
-    "J'ai mal au doigt",
-    "J'ai mal au ventre"
+    "J'ai mal au dos.",
+    "J'ai mal au doigt.",
+    "J'ai mal au ventre."
    ],
-   "explanation": "\"J'ai mal au bras\" means \"My arm hurts\". The other choices name different body parts: back, finger and stomach."
+   "explanation": "\"J'ai mal au bras.\" means \"My arm hurts\". The other choices name different body parts: back, finger and stomach."
   },
   "translate": {
    "prompt": "Say that your hand hurts.",
@@ -2330,7 +2326,7 @@
     "J'ai mal au cou.",
     "J'ai mal au nez."
    ],
-   "explanation": "The sentence is \"J'ai mal au dos.\" It means my back hurts; \"dos\" is the back, which sounds different from \"cœur\", \"cou\" and \"nez\"."
+   "explanation": "\"J'ai mal au dos.\" means \"My back hurts.\" The pattern is \"avoir mal à\" plus a body part, and \"à + le\" becomes \"au\" with masculine \"dos\"."
   },
   "translate": {
    "prompt": "Say that your chin hurts.",
@@ -2526,7 +2522,7 @@
   },
   "speak": {
    "answer": "Je veux travailler au bureau.",
-   "explanation": "\"Je veux travailler au bureau.\" means \"I want to work at the office.\" The verb \"travailler\" follows \"je veux\" in the infinitive."
+   "explanation": "\"Je veux travailler au bureau.\" means \"I want to work at the office.\" After \"je veux\", the next verb stays in the infinitive: \"travailler\"."
   },
   "translate": {
    "prompt": "Say that you want to study French.",
@@ -2984,7 +2980,7 @@
     "Je voudrais envoyer ce colis demain soir.",
     "Je voudrais envoyer ce colis lundi matin."
    ],
-   "explanation": "The sentence is \"Je voudrais envoyer ce colis demain matin.\" and means 'I would like to send this parcel tomorrow morning.'"
+   "explanation": "\"Je voudrais envoyer ce colis demain matin.\" uses \"je voudrais\" (I would like) for a polite request. \"Colis\" is a parcel, not \"compte\" (account)."
   },
   "speak": {
    "answer": "Je dois envoyer un colis à Lyon.",
@@ -3206,7 +3202,7 @@
     "Demain, je vais balayer la chambre avec mon frère.",
     "Demain, je vais nettoyer la cuisine avec mon frère."
    ],
-   "explanation": "The sentence heard is \"Demain, je vais balayer la cuisine avec mon frère.\" It uses the near future \"je vais balayer\" to say that I am going to sweep the kitchen with my brother."
+   "explanation": "\"Demain, je vais balayer la cuisine avec mon frère.\" shows the near future: \"aller\" + infinitive. \"Balayer\" means to sweep, while \"nettoyer\" means to clean."
   },
   "translate": {
    "prompt": "Say that you tidied your room before dinner.",
@@ -3357,7 +3353,7 @@
     "Je vais arriver vers minuit demain.",
     "Je vais arriver vers midi lundi."
    ],
-   "explanation": "The speaker says \"Je vais arriver vers midi demain.\", using \"vers\" to give an approximate time, around noon tomorrow."
+   "explanation": "\"Je vais arriver vers midi demain.\" uses \"vers\" for an approximate time (around noon). \"Avant\" would mean before, and \"midi\" (noon) differs from \"minuit\" (midnight)."
   },
   "speak": {
    "answer": "Enfin, il arrive avant midi",
@@ -3391,7 +3387,7 @@
     "Ce sont tes amis qui partent demain.",
     "Ce sont tes amis qui arrivent hier."
    ],
-   "explanation": "The sentence heard is \"Ce sont tes amis qui arrivent demain.\" Here \"tes\" is the plural form of \"your\" (informal), matching the plural \"amis\"."
+   "explanation": "\"Ce sont tes amis qui arrivent demain.\" \"Tes\" is the plural of informal \"your\" (ton/ta/tes). It matches plural \"amis\", whereas \"nos\" means our."
   },
   "translate": {
    "prompt": "Tell a friend (someone you call tu) that their house is very big.",
@@ -3417,7 +3413,7 @@
     "Nous avons vendu notre voiture hier soir.",
     "Nous avons perdu notre voiture demain soir."
    ],
-   "explanation": "The speaker says \"Nous avons perdu notre voiture hier soir.\" \"Notre\" is used because the owners are \"nous\" and \"voiture\" is a single thing."
+   "explanation": "\"Nous avons perdu notre voiture hier soir.\" \"Notre\" (our) goes with a singular noun. \"Hier\" means yesterday, \"demain\" tomorrow, and \"perdu\" is lost."
   },
   "speak": {
    "answer": "Ce sont mes amis et leurs enfants",
@@ -3476,7 +3472,7 @@
     "Nous avons lavé notre voiture hier soir.",
     "Nous avons vendu notre voiture demain soir."
    ],
-   "explanation": "The speaker says \"Nous avons vendu notre voiture hier soir.\" with \"notre\" because the owners are \"nous\" and \"voiture\" is a singular noun."
+   "explanation": "\"Nous avons vendu notre voiture hier soir.\" \"Notre\" is our before a singular noun. \"Vendu\" means sold, and \"hier soir\" is last night."
   },
   "speak": {
    "answer": "Elle adore son chat et ses chiens",
@@ -3502,7 +3498,7 @@
     "Nous invitons nos cousins à dîner demain soir.",
     "Nous invitons nos voisins à danser demain soir."
    ],
-   "explanation": "The speaker says \"Nous invitons nos voisins à dîner demain soir.\" The possessive \"nos\" goes with \"nous\" and the plural noun \"voisins\"."
+   "explanation": "\"Nous invitons nos voisins à dîner demain soir.\" \"Nos\" is our before a plural noun, while \"vos\" is your. \"Voisins\" are neighbors, \"cousins\" are cousins."
   },
   "translate": {
    "prompt": "Say that she has finished her homework (hers).",
@@ -3523,7 +3519,7 @@
     "Il ne boit jamais de thé le soir.",
     "Il ne boit jamais de café le matin."
    ],
-   "explanation": "The speaker says \"Il ne boit jamais de café le soir.\", using \"ne ... jamais\" to mean he never drinks coffee in the evening."
+   "explanation": "\"Il ne boit jamais de café le soir.\" \"Ne … jamais\" means never, unlike \"ne … plus\" (no longer). After it, \"de\" replaces \"du\"."
   },
   "speak": {
    "answer": "Je ne vois personne ici",
@@ -3564,7 +3560,7 @@
     "Je n'ai plus de temps libre aujourd'hui.",
     "Aujourd'hui je n'ai plus le temps."
    ],
-   "explanation": "\"Je n'ai plus de temps aujourd'hui.\" uses \"ne ... plus\" for no longer, and \"de\" replaces the article after a negation."
+   "explanation": "\"Je n'ai plus de temps aujourd'hui.\" uses \"ne … plus\" for no longer, and \"de\" replaces the article after a negation."
   }
  },
  "fra2p15l3": {
@@ -3576,11 +3572,11 @@
     "Je ne mange plus de viande le matin.",
     "Je ne mange jamais de viande le soir."
    ],
-   "explanation": "The speaker says \"Je ne mange plus de viande le soir.\", using ne ... plus to mean 'no longer' and ending with \"le soir\". The other choices use pas or jamais instead, or change the time to le matin."
+   "explanation": "The speaker says \"Je ne mange plus de viande le soir.\", using ne … plus to mean 'no longer' and ending with \"le soir\". The other choices use pas or jamais instead, or change the time to le matin."
   },
   "speak": {
    "answer": "Je ne vois personne dans la rue",
-   "explanation": "\"Je ne vois personne dans la rue\" uses ne ... personne to say you see nobody, so \"personne\" is the negative word and no pas is needed."
+   "explanation": "\"Je ne vois personne dans la rue\" uses ne … personne to say you see nobody, so \"personne\" is the negative word and no pas is needed."
   },
   "translate": {
    "prompt": "Say that you no longer have time for your friends.",
@@ -3596,7 +3592,7 @@
     "Je n'ai plus le temps pour mes copains.",
     "Je n'ai plus le temps pour mes copines."
    ],
-   "explanation": "\"Je n'ai plus de temps pour mes amis.\" uses ne ... plus to mean 'no longer', and after a negation 'du temps' becomes 'de temps'."
+   "explanation": "\"Je n'ai plus de temps pour mes amis.\" uses ne … plus to mean 'no longer', and after a negation 'du temps' becomes 'de temps'."
   }
  },
  "fra2p15l4": {
@@ -3608,7 +3604,7 @@
     "Elle ne mange jamais de viande le matin.",
     "Elle ne mange pas de viande le soir."
    ],
-   "explanation": "The sentence \"Elle ne mange jamais de viande le soir.\" uses ne...jamais to say she never eats meat in the evening."
+   "explanation": "The sentence \"Elle ne mange jamais de viande le soir.\" uses ne…jamais to say she never eats meat in the evening."
   },
   "translate": {
    "prompt": "Say that you no longer eat meat.",
@@ -3620,7 +3616,7 @@
     "Je ne mange plus de viande du tout.",
     "Je ne mange plus aucune viande."
    ],
-   "explanation": "\"Je ne mange plus de viande.\" uses ne...plus for \"no longer\", and de replaces the article after the negation."
+   "explanation": "\"Je ne mange plus de viande.\" uses ne…plus for \"no longer\", and de replaces the article after the negation."
   }
  },
  "fra2p15l5": {
@@ -3632,11 +3628,11 @@
     "Je ne regarde pas la télévision le soir.",
     "Je ne regarde jamais la télévision le matin."
    ],
-   "explanation": "The sentence is \"Je ne regarde jamais la télévision le soir.\" and \"ne ... jamais\" means never, so you never watch television in the evening."
+   "explanation": "\"Je ne regarde jamais la télévision le soir.\" \"Ne … jamais\" means never, \"ne … plus\" means no longer, and \"ne … pas\" is a plain not."
   },
   "speak": {
    "answer": "Je ne comprends rien",
-   "explanation": "\"Je ne comprends rien\" uses ne...rien after the verb to say you understand nothing."
+   "explanation": "\"Je ne comprends rien\" uses ne…rien after the verb to say you understand nothing."
   },
   "translate": {
    "prompt": "Say that you no longer live here.",
@@ -3648,7 +3644,7 @@
     "Je n'habite plus là.",
     "Je ne vis plus là."
    ],
-   "explanation": "\"Je n'habite plus ici.\" uses ne...plus, meaning 'not any more', around the verb, with the elision n' before habite."
+   "explanation": "\"Je n'habite plus ici.\" uses ne…plus, meaning 'not any more', around the verb, with the elision n' before habite."
   }
  },
  "fra2p16l1": {
@@ -3669,11 +3665,10 @@
     "Où allez-vous, monsieur ?",
     "Où allez-vous, madame ?",
     "Excusez-moi, où allez-vous ?",
-    "Où allez-vous, mademoiselle ?",
     "Pardon, où allez-vous ?",
     "Excusez-moi, où allez-vous, monsieur ?"
    ],
-   "explanation": "With inversion the verb comes before the pronoun, joined by a hyphen, and vous keeps it polite: \"Où allez-vous ?\"."
+   "explanation": "With inversion the verb comes before the pronoun, joined by a hyphen, and vous keeps it polite, so you say \"Où allez-vous ?\" for where are you going."
   }
  },
  "fra2p16l2": {
@@ -3757,7 +3752,7 @@
     "Est-ce que vous pouvez venir demain, s'il vous plaît ?",
     "Est-ce que vous pourriez venir demain, s'il vous plaît ?"
    ],
-   "explanation": "With a stranger you use vous, and est-ce que simply goes in front of a normal statement: \"Est-ce que vous pouvez venir demain ?\"."
+   "explanation": "With a stranger you use vous, and est-ce que simply goes in front of a normal statement to make a question: \"Est-ce que vous pouvez venir demain ?\""
   }
  },
  "fra2p16l5": {
@@ -3781,7 +3776,7 @@
     "Aimez-vous les voyages ?",
     "Vous aimez les voyages ?"
    ],
-   "explanation": "With a stranger you use \"vous\". The most formal wording puts the pronoun after the verb with a hyphen: \"Aimez-vous voyager ?\". Est-ce que or a rising tone gives the same question."
+   "explanation": "With a stranger you use \"vous\", so the question is built on the vous form of the verb. The most formal wording puts the pronoun after the verb with a hyphen, \"Aimez-vous voyager ?\", while est-ce que or a rising tone gives the same question."
   }
  },
  "fra2p17l1": {
@@ -3797,7 +3792,7 @@
   },
   "speak": {
    "answer": "Je ne mange jamais de poisson",
-   "explanation": "The phrase \"Je ne mange jamais de poisson\" means \"I never eat fish\"; jamais goes with ne to say never."
+   "explanation": "\"Je ne mange jamais de poisson\" means I never eat fish. \"Ne … jamais\" wraps the verb, and \"de\" replaces \"du/des\" after a negation."
   },
   "translate": {
    "prompt": "Say that you always drink coffee in the morning.",
@@ -3834,7 +3829,7 @@
     "Je mange presque jamais de viande.",
     "Je ne mange quasiment jamais de viande."
    ],
-   "explanation": "\"Je ne mange presque jamais de viande.\" uses \"ne ... presque jamais\" for 'almost never'. The \"ne\" goes before the verb and \"de\" replaces \"de la\" after the negation."
+   "explanation": "\"Je ne mange presque jamais de viande.\" uses \"ne … presque jamais\" for 'almost never'. The \"ne\" goes before the verb and \"de\" replaces \"de la\" after the negation."
   }
  },
  "fra2p17l3": {
@@ -3922,7 +3917,7 @@
     "Je ne regarde quasiment jamais la télévision.",
     "Je ne regarde quasiment jamais la télé."
    ],
-   "explanation": "\"Je ne regarde presque jamais la télévision.\" uses \"ne ... presque jamais\" for 'almost never': \"ne\" goes before the verb and \"presque jamais\" right after it."
+   "explanation": "\"Je ne regarde presque jamais la télévision.\" uses \"ne … presque jamais\" for 'almost never': \"ne\" goes before the verb and \"presque jamais\" right after it."
   }
  },
  "fra2p18l1": {
@@ -4035,7 +4030,7 @@
     "Le coach est content du match aujourd'hui.",
     "L'entraîneuse est contente du match aujourd'hui."
    ],
-   "explanation": "\"L'entraîneur est content du match aujourd'hui.\" uses \"être content de\" (to be happy with), and \"de + le\" becomes \"du\" before \"match\"."
+   "explanation": "\"L'entraîneur est content du match aujourd'hui.\" uses \"être content de\" (to be happy with). \"De + le\" contracts to \"du\" before masculine \"match\"."
   }
  },
  "fra2p18l5": {
@@ -4077,7 +4072,7 @@
     "Mon patron est dans la réunion avec un collègue.",
     "Mon collègue est dans le bureau avec un patron."
    ],
-   "explanation": "The sentence is \"Mon patron est dans le bureau avec un collègue.\" and it says the boss is in the office with a colleague; the other choices swap one of the work words."
+   "explanation": "\"Mon patron est dans le bureau avec un collègue.\" \"Patron\" is boss and \"collègue\" is coworker. Listen for each work word, since the other choices swap one."
   },
   "speak": {
    "answer": "J'ai une réunion avec mon patron",
@@ -4110,7 +4105,7 @@
     "Je dois envoyer ce courriel au bureau demain.",
     "Je dois envoyer ce courriel au client hier."
    ],
-   "explanation": "The sentence is \"Je dois envoyer ce courriel au client demain.\" Listen for \"courriel\" (email), \"client\" and \"demain\" (tomorrow), which differ from the other choices."
+   "explanation": "\"Je dois envoyer ce courriel au client demain.\" Listen for \"courriel\" (email), \"client\" and \"demain\" (tomorrow); similar words like \"rapport\", \"bureau\" and \"hier\" change the meaning."
   },
   "translate": {
    "prompt": "Say that the deadline for the project is next week.",
@@ -4231,7 +4226,7 @@
     "Je vais au marché avec mon chien.",
     "Je vais au bureau avec mon chat."
    ],
-   "explanation": "The speaker says \"Je vais au marché avec mon chat.\", using the je form of aller (\"vais\") followed by the place and the companion."
+   "explanation": "\"Je vais au marché avec mon chat.\" uses \"vais\", the je form of aller, plus a place. Don't confuse \"vais\" with \"mange\" or \"chat\" with \"chien\"."
   },
   "speak": {
    "answer": "Je suis fatigué mais je parle français.",
@@ -4257,7 +4252,7 @@
     "Je veux un thé avec du lait.",
     "Je veux un café avec du sucre."
    ],
-   "explanation": "The speaker says \"Je veux un café avec du lait.\" meaning they want a coffee with milk; the je form of vouloir is \"veux\"."
+   "explanation": "\"Je veux un café avec du lait.\" uses \"veux\", the je form of vouloir, to say what you want. Listen for \"café\" and \"lait\" to rule out the other drinks."
   },
   "translate": {
    "prompt": "Say that you can help your friend today.",
@@ -4273,7 +4268,7 @@
     "Aujourd'hui, je peux aider mon copain.",
     "Aujourd'hui, je peux aider ma copine."
    ],
-   "explanation": "Pouvoir takes \"peux\" with je, followed by the infinitive, so the sentence is \"Je peux t'aider aujourd'hui.\""
+   "explanation": "With \"je\", pouvoir becomes \"peux\" and is followed by an infinitive: \"Je peux t'aider aujourd'hui.\" Here \"t'\" means \"you\" before the verb."
   }
  },
  "fra2p1l3": {
@@ -4303,7 +4298,7 @@
     "Je vais dormir huit heures cette nuit.",
     "Cette nuit, je vais dormir huit heures."
    ],
-   "explanation": "\"Je dors huit heures ce soir.\" uses \"dors\", the je form of dormir, with \"ce soir\" for tonight."
+   "explanation": "\"Je dors huit heures ce soir.\" uses \"dors\", the je form of dormir. \"Ce soir\" means tonight, and the hours follow the verb directly."
   }
  },
  "fra2p1l4": {
@@ -4891,7 +4886,7 @@
     "Hier, il faisait un temps terrible et il a plu toute la journée.",
     "Il a fait un temps épouvantable hier et il a plu toute la journée."
    ],
-   "explanation": "\"Hier, il a fait un temps épouvantable et il a plu toute la journée.\" uses \"il fait un temps ...\" for the weather, put in the past with \"il a fait\", and \"il a plu\" (from pleuvoir) for the rain."
+   "explanation": "\"Hier, il a fait un temps épouvantable et il a plu toute la journée.\" uses \"il fait un temps …\" for the weather, put in the past with \"il a fait\", and \"il a plu\" (from pleuvoir) for the rain."
   }
  },
  "fra2p4l4": {
@@ -4967,7 +4962,7 @@
   },
   "speak": {
    "answer": "Ma valise est lourde mais mon sac est léger",
-   "explanation": "\"Ma valise est lourde mais mon sac est léger\" contrasts two opposites: \"lourd\" (heavy) and \"léger\" (light)."
+   "explanation": "\"Ma valise est lourde mais mon sac est léger\" pairs opposites: \"lourde\" (heavy) and \"léger\" (light). \"Lourde\" is feminine to match \"valise\"."
   },
   "translate": {
    "prompt": "Say that the soup is hot but the water is cold.",
@@ -5013,7 +5008,7 @@
     "Cette valise est lourde, mais mon sac est mou.",
     "Cette valise est lourde, mais mon sac est joli."
    ],
-   "explanation": "The sentence heard was \"Cette valise est lourde, mais mon sac est léger.\" It contrasts a heavy suitcase (lourde) with a light bag (léger)."
+   "explanation": "\"Cette valise est lourde, mais mon sac est léger.\" \"Mais\" signals a contrast, here between \"lourde\" (heavy) and \"léger\" (light)."
   },
   "speak": {
    "answer": "La porte est ouverte, mais la fenêtre est fermée",
@@ -5041,7 +5036,7 @@
     "Cette valise est trop grande pour moi.",
     "Cette valise est trop vieille pour moi."
    ],
-   "explanation": "The speaker says \"Cette valise est trop lourde pour moi.\" (This suitcase is too heavy for me), using \"lourde\" for the weight of the suitcase."
+   "explanation": "\"Cette valise est trop lourde pour moi.\" \"Trop\" means \"too\" before an adjective, and \"lourde\" (heavy) agrees with feminine \"valise\"."
   },
   "translate": {
    "prompt": "Say that the street is quiet but the neighbours are noisy.",
@@ -5231,7 +5226,7 @@
     "Je ne m'inquiète pas, je me relaxe ce soir.",
     "Ce soir, je ne m'inquiète pas, je me détends."
    ],
-   "explanation": "With the subject \"je\" both reflexive verbs take me/m' and the first-person form, and ne ... pas goes around the first verb: \"Je ne m'inquiète pas, je me détends ce soir.\""
+   "explanation": "With the subject \"je\" both reflexive verbs take me/m' and the first-person form, and ne … pas goes around the first verb: \"Je ne m'inquiète pas, je me détends ce soir.\""
   }
  },
  "fra2p7l1": {
@@ -5326,7 +5321,7 @@
     "Demain, nous allons manger chez mes voisins.",
     "Hier, nous allons manger chez mes parents."
    ],
-   "explanation": "The speaker says \"Demain, nous allons manger chez mes parents.\", using aller + infinitive to talk about a plan for tomorrow."
+   "explanation": "\"Demain, nous allons manger chez mes parents.\" uses aller + infinitive (\"allons manger\") for a near-future plan, and \"demain\" marks it as tomorrow."
   },
   "translate": {
    "prompt": "Say that your friend and you are going to have dinner at the restaurant tonight.",
@@ -5382,7 +5377,7 @@
     "Demain, je vais aller chez le médecin avec mon père.",
     "Demain, je vais aller chez le médecin avec ma sœur."
    ],
-   "explanation": "The sentence is \"Demain, je vais aller chez le médecin avec ma mère.\" and it means you are going to the doctor tomorrow with your mother. Listen for who you see (médecin, not dentiste) and who comes with you (mère, not père or sœur)."
+   "explanation": "\"Demain, je vais aller chez le médecin avec ma mère.\" Listen for \"médecin\" (doctor, not dentiste) and \"ma mère\" (mother, not père or sœur)."
   },
   "translate": {
    "prompt": "Say that you have had a sore throat since yesterday.",
@@ -6008,7 +6003,7 @@
     "J'ai ressenti beaucoup de reconnaissance envers mes amis après cette semaine difficile.",
     "J'ai ressenti beaucoup de gratitude pour mes amis après la semaine difficile."
    ],
-   "explanation": "\"J'ai ressenti beaucoup de gratitude envers mes amis après cette semaine difficile.\" uses \"ressentir\" for feeling an emotion and \"envers\" for the person it is directed at. Gratitude is feminine, and after \"beaucoup de\" it takes no article."
+   "explanation": "\"J'ai ressenti beaucoup de gratitude envers mes amis après cette semaine difficile.\" \"Ressentir\" expresses a felt emotion, and \"envers\" names who it is directed at."
   }
  },
  "frb1p12l2": {
@@ -6098,7 +6093,7 @@
     "J'ai un doute, mais je fais toujours confiance à mon amie.",
     "J'ai un doute, mais j'ai tout de même confiance en mon amie."
    ],
-   "explanation": "\"J'ai un doute, mais j'ai quand même confiance en mon ami.\" combines \"avoir un doute\" with \"avoir confiance en quelqu'un\", linked by \"mais\" and \"quand même\" (still)."
+   "explanation": "\"J'ai un doute, mais j'ai quand même confiance en mon ami.\" \"Avoir confiance en\" means to trust someone, and \"quand même\" adds \"still\" after \"mais\"."
   }
  },
  "frb1p12l5": {
@@ -6369,7 +6364,7 @@
     "L'emploi du temps du premier semestre est très chargé et les étudiants ont plein de devoirs.",
     "L'emploi du temps du premier semestre est très chargé, donc les étudiants ont beaucoup de devoirs."
    ],
-   "explanation": "\"Le programme du premier semestre est très chargé et les étudiants ont beaucoup de devoirs.\" In French a heavy workload is described as chargé (literally \"loaded\"), and \"beaucoup de\" is followed by a plural noun like devoirs without an article."
+   "explanation": "\"Le programme du premier semestre est très chargé et les étudiants ont beaucoup de devoirs.\" A heavy workload is \"chargé\" (loaded), and \"beaucoup de\" takes a plural noun with no article."
   }
  },
  "frb1p14l4": {
@@ -6489,7 +6484,7 @@
     "Le stress est mauvais pour votre santé et la détente vous aide tous les jours.",
     "Le stress nuit à votre santé et la détente vous aide chaque jour."
    ],
-   "explanation": "\"Le stress est mauvais pour votre santé et la relaxation vous aide tous les jours.\" uses est mauvais pour (is bad for), votre to match vous, and the pronoun vous placed before the verb aide. Le stress is masculine and la relaxation is feminine."
+   "explanation": "\"Le stress est mauvais pour votre santé et la relaxation vous aide tous les jours.\" \"Votre\" matches formal \"vous\", and the pronoun \"vous\" comes before the verb \"aide\"."
   }
  },
  "frb1p15l3": {
@@ -6535,7 +6530,7 @@
     "Un bilan de santé régulier aide à la prévention des maladies rares.",
     "Un bilan de santé régulier aide à la prévention des symptômes graves."
    ],
-   "explanation": "The sentence \"Un bilan de santé régulier aide à la prévention des maladies graves.\" says that a regular checkup helps prevent serious illnesses; the other choices change prévention, graves or maladies to words that sound different."
+   "explanation": "\"Un bilan de santé régulier aide à la prévention des maladies graves.\" \"Prévention\" means preventing, not \"guérison\" (healing); \"maladies graves\" means serious illnesses."
   },
   "translate": {
    "prompt": "Say that regular exercise helps to prevent many illnesses.",
@@ -6565,7 +6560,7 @@
     "Le médecin m'a conseillé de changer mon mode de nuit.",
     "Le médecin m'a conseillé de changer mon mode de pays."
    ],
-   "explanation": "You hear \"Le médecin m'a conseillé de changer mon mode de vie.\" meaning the doctor advised you to change your lifestyle. \"Le mode de vie\" literally means 'way of life', so listen for the final word \"vie\" (life) rather than a place or a time."
+   "explanation": "\"Le médecin m'a conseillé de changer mon mode de vie.\" \"Mode de vie\" means 'lifestyle' (literally 'way of life'), so listen for the final word \"vie\", not a place or a time."
   },
   "speak": {
    "answer": "J'ai pris de bonnes habitudes pour ma santé",
@@ -6939,7 +6934,7 @@
     "Les lettres seront envoyées demain par la directrice de l'usine.",
     "Les lettres seront envoyées hier par la directrice de l'école."
    ],
-   "explanation": "The sentence is in the future passive, with \"seront envoyées\" and \"demain\", so the letters have not been sent yet: \"Les lettres seront envoyées demain par la directrice de l'école.\""
+   "explanation": "\"Les lettres seront envoyées demain par la directrice de l'école.\" Future passive: \"seront\" plus the past participle, and \"demain\" confirms the letters are not sent yet."
   },
   "speak": {
    "answer": "La maison a été vendue la semaine dernière",
@@ -7367,7 +7362,7 @@
     "Si j'étais toi, je prendrais quelques jours de repos la semaine passée.",
     "Si j'étais toi, je prendrais quelques jours de repos la semaine suivante."
    ],
-   "explanation": "The sentence \"Si j'étais toi, je prendrais quelques jours de repos la semaine prochaine.\" gives advice with si + imperfect and the conditional. Listen for \"prochaine\", meaning 'next', as opposed to \"dernière\" (last), \"passée\" (past) or \"suivante\" (following)."
+   "explanation": "\"Si j'étais toi, je prendrais quelques jours de repos la semaine prochaine.\" Advice uses si + imperfect, then the conditional. \"Prochaine\" means 'next', unlike \"dernière\" (last)."
   },
   "translate": {
    "prompt": "Advise a friend (informal) that it would be better to leave now.",
@@ -7396,7 +7391,7 @@
     "Je te conseille de consulter un avocat avant de partir en voyage.",
     "Je te conseille de consulter un médecin avant de partir en vacances."
    ],
-   "explanation": "The sentence is \"Je te conseille de consulter un médecin avant de partir en voyage.\" and it means 'I advise you to see a doctor before leaving on a trip'."
+   "explanation": "\"Je te conseille de consulter un médecin avant de partir en voyage.\" \"Conseiller de\" is followed by an infinitive; \"avant de\" also takes an infinitive. Listen for \"médecin\" and \"voyage\"."
   },
   "speak": {
    "answer": "À ta place, je resterais prudent",
@@ -7456,7 +7451,7 @@
     "Je te conseille de réserver une chambre pour samedi soir.",
     "Je te conseille de réserver une table pour dimanche soir."
    ],
-   "explanation": "The sentence \"Je te conseille de réserver une table pour samedi soir.\" means 'I advise you to book a table for Saturday evening'; \"conseiller de\" is followed by an infinitive, and you must listen for the noun (table) and the day and time (samedi soir)."
+   "explanation": "\"Je te conseille de réserver une table pour samedi soir.\" \"Conseiller de\" takes an infinitive. Listen for \"table\" (not chambre) and for the day and time, \"samedi soir\"."
   },
   "speak": {
    "answer": "Il serait préférable d'attendre jusqu'à demain",
@@ -7489,7 +7484,7 @@
     "Je te conseille vivement de prendre un peu de vacances demain.",
     "Je te conseille vivement de rendre un peu de repos demain."
    ],
-   "explanation": "The speaker says \"Je te conseille vivement de prendre un peu de repos demain.\", meaning \"I strongly advise you to take a bit of rest tomorrow\"; \"conseiller de\" is followed by an infinitive."
+   "explanation": "\"Je te conseille vivement de prendre un peu de repos demain.\" \"Conseiller de\" takes an infinitive, and \"vivement\" makes the advice stronger. Note \"prendre\" (take), not \"rendre\"."
   },
   "translate": {
    "prompt": "Tell a friend that if you were in their position, you would ask someone else for help.",
@@ -7547,7 +7542,7 @@
     "Mon grand-père est vieux mais il est encore très triste.",
     "Mon grand-père est vieux mais il est encore très riche."
    ],
-   "explanation": "The sentence heard was \"Mon grand-père est vieux mais il est encore très fort.\" and it means 'My grandfather is old but he is still very strong.'"
+   "explanation": "\"Mon grand-père est vieux mais il est encore très fort.\" \"Mais\" links two contrasting ideas, so \"vieux\" pairs with \"fort\" (strong), not \"jeune\" or \"triste\"."
   },
   "speak": {
    "answer": "Cet homme est gentil et très drôle",
@@ -7596,7 +7591,7 @@
     "Mon nouveau collègue est très amusant, mais il est aussi plutôt sérieux au travail.",
     "Mon nouveau collègue est très drôle, mais il est également assez sérieux au travail."
    ],
-   "explanation": "Because your colleague is a man, both adjectives stay in the masculine form: \"Mon nouveau collègue est très drôle, mais il est aussi assez sérieux au travail.\" Here drôle means funny and sérieux means serious, and très and assez are placed before the adjective."
+   "explanation": "\"Mon nouveau collègue est très drôle, mais il est aussi assez sérieux au travail.\" The adjectives \"drôle\" and \"sérieux\" describe a man, and \"très\" and \"assez\" come before them."
   }
  },
  "frb1p2l4": {
@@ -7762,7 +7757,7 @@
     "Nous avons raté notre réservation à cause du retard de l'avion.",
     "Nous avons raté notre correspondance à cause du retard du train."
    ],
-   "explanation": "The sentence \"Nous avons raté notre correspondance à cause du retard de l'avion.\" means we missed our connection because the plane was late. The other choices change one word (départ, réservation, train) that sounds clearly different."
+   "explanation": "\"Nous avons raté notre correspondance à cause du retard de l'avion.\" \"À cause de\" gives a cause, and \"correspondance\" means 'connection'. Listen for \"retard\" (delay), not \"départ\"."
   },
   "translate": {
    "prompt": "Say that your first flight was late, so you missed your connection.",
@@ -7913,7 +7908,7 @@
     "Demain, nous irons voir nos amis à la plage.",
     "Demain, nous irons voir nos parents à la campagne."
    ],
-   "explanation": "The sentence heard was \"Demain, nous irons voir nos amis à la campagne.\", with the irregular future stem ir- and the nous ending -ons."
+   "explanation": "\"Demain, nous irons voir nos amis à la campagne.\" \"Irons\" is the irregular future of \"aller\": stem \"ir-\" plus \"-ons\". Listen for \"amis\" and \"campagne\"."
   },
   "speak": {
    "answer": "Nous devrons partir très tôt demain matin",
@@ -7944,7 +7939,7 @@
     "Demain, nous partirons en voyage avec toute la classe.",
     "Demain, nous partirons en voyage avec toute la bande."
    ],
-   "explanation": "\"Demain, nous partirons en voyage avec toute la famille.\" is in the futur simple: \"partirons\" is the infinitive partir plus -ons for \"nous\", and \"demain\" signals a future plan. To pick the right sentence, listen for \"voyage\" and for the last word \"famille\", which differ from \"vacances\", \"classe\" and \"bande\"."
+   "explanation": "\"Demain, nous partirons en voyage avec toute la famille.\" Futur simple: infinitive \"partir\" plus \"-ons\" for \"nous\". Listen for \"voyage\" and the final word \"famille\"."
   },
   "speak": {
    "answer": "Nous finirons le travail demain matin",
@@ -8174,7 +8169,7 @@
   },
   "speak": {
    "answer": "Pourriez-vous m'aider, s'il vous plaît ?",
-   "explanation": "\"Pourriez-vous m'aider, s'il vous plaît ?\" uses the conditional of pouvoir to make a polite request, meaning 'Could you help me, please?'."
+   "explanation": "The conditional of pouvoir softens a request, so \"Pourriez-vous m'aider, s'il vous plaît ?\" means 'Could you help me, please' and sounds more polite than 'Pouvez-vous'."
   },
   "translate": {
    "prompt": "Say politely that you would like to ask the person you are addressing a question (use the formal 'you').",
@@ -8453,7 +8448,7 @@
     "Je lui ai téléphoné hier soir pour lui parler de notre travail.",
     "Je leur ai téléphoné hier soir pour lui parler de notre voyage."
    ],
-   "explanation": "The sentence \"Je lui ai téléphoné hier soir pour lui parler de notre voyage.\" uses the indirect pronoun \"lui\" twice, because \"téléphoner à\" and \"parler à\" both take an indirect object, and it says the call was last night about the trip."
+   "explanation": "In \"Je lui ai téléphoné hier soir pour lui parler de notre voyage.\", \"lui\" replaces a person after \"téléphoner à\" and \"parler à\". It is singular; \"leur\" would be plural."
   },
   "translate": {
    "prompt": "Say that you see them (your friends) every day and that you often talk to them.",
@@ -8481,7 +8476,7 @@
     "Je leur ai téléphoné demain soir pour parler de la fête.",
     "Je leur ai téléphoné hier soir pour parler de la fin."
    ],
-   "explanation": "\"Je leur ai téléphoné hier soir pour parler de la fête.\" uses \"leur\" (to them) with \"téléphoner à\", and \"hier soir\" places it in the past."
+   "explanation": "\"Je leur ai téléphoné hier soir pour parler de la fête.\" uses \"leur\" (to them) because \"téléphoner à\" takes an indirect object; \"lui\" would mean one person."
   },
   "speak": {
    "answer": "Je les ai vus hier avec leurs amis",
@@ -8680,7 +8675,7 @@
     "Ils y vont tous les hivers depuis dix ans.",
     "Ils y vont tous les étés depuis trois ans."
    ],
-   "explanation": "The speaker says \"Ils y vont tous les étés depuis dix ans.\", with \"y\" standing for a place already mentioned; listen for \"dix\", not \"deux\" or \"trois\", and for \"étés\", not \"hivers\"."
+   "explanation": "In \"Ils y vont tous les étés depuis dix ans.\", \"y\" replaces a place already mentioned. Listen for \"dix\" (not \"deux\") and \"étés\" (not \"hivers\")."
   },
   "translate": {
    "prompt": "Say that you have already eaten some of it (the cake), so you don't want any more.",
@@ -8736,7 +8731,7 @@
     "Comme il neigeait depuis ce matin, nous avons décidé de rester à la maison.",
     "Comme il pleuvait depuis ce soir, nous avons décidé de rester à la maison."
    ],
-   "explanation": "The speaker says \"Comme il pleuvait depuis ce matin, nous avons décidé de rester à la maison.\", where \"comme\" gives the cause (the rain) and the rest gives what followed."
+   "explanation": "In \"Comme il pleuvait depuis ce matin, nous avons décidé de rester à la maison.\", \"comme\" opens with the cause (the rain), then the result follows."
   },
   "translate": {
    "prompt": "Say that since you already know the answer, you will explain it to your colleague.",
@@ -8817,7 +8812,7 @@
     "Le train avait du retard, donc j'ai manqué ma réunion.",
     "Le train était en retard, donc j'ai raté ma réunion."
    ],
-   "explanation": "\"Le train avait du retard, de ce fait j'ai manqué ma réunion.\" uses \"de ce fait\" (as a result) to link the cause, the late train, to its consequence, the missed meeting. Other consequence connectors like \"par conséquent\" or \"c'est pourquoi\" work equally well."
+   "explanation": "\"Le train avait du retard, de ce fait j'ai manqué ma réunion.\" uses \"de ce fait\" (as a result) to link the cause to its consequence. \"Par conséquent\" or \"c'est pourquoi\" also work."
   }
  },
  "frb2p10l4": {
@@ -8862,7 +8857,7 @@
     "Il a beaucoup travaillé afin que ses voisins soient fiers de lui.",
     "Il a beaucoup travaillé afin que ses parents soient déçus de lui."
    ],
-   "explanation": "The speaker says \"Il a beaucoup travaillé afin que ses parents soient fiers de lui.\", using \"afin que\" to express purpose, followed by the subjunctive \"soient\"."
+   "explanation": "\"Il a beaucoup travaillé afin que ses parents soient fiers de lui.\" uses \"afin que\" to state a purpose; it always takes the subjunctive, here \"soient\"."
   },
   "translate": {
    "prompt": "Say that the road works caused a long delay, which is why the train arrived late.",
@@ -8926,7 +8921,7 @@
     "Le président a annoncé que le parlement voterait cette loi avant la fin du mois.",
     "Le ministre a annoncé que le gouvernement voterait cette loi avant la fin du mois."
    ],
-   "explanation": "The sentence heard is \"Le ministre a annoncé que le parlement voterait cette loi avant la fin du mois.\" It means the minister announced that parliament would vote on this law before the end of the month; the other choices swap one clearly audible word (année, président, gouvernement)."
+   "explanation": "In \"Le ministre a annoncé que le parlement voterait cette loi avant la fin du mois.\", the conditional \"voterait\" gives a future-in-the-past after the past \"a annoncé\"."
   },
   "translate": {
    "prompt": "Say that the citizens are demonstrating because they do not agree with the government's policy.",
@@ -9017,7 +9012,7 @@
     "Le ministre a annoncé que la réforme des retraites serait votée avant l'hiver.",
     "Le président a annoncé que la réforme des retraites serait votée avant l'été."
    ],
-   "explanation": "The sentence \"Le ministre a annoncé que la réforme des retraites serait votée avant l'été.\" says a minister announced that the pension reform would be voted on before summer; the other choices change one clearly audible word (impôts, hiver, président)."
+   "explanation": "\"Le ministre a annoncé que la réforme des retraites serait votée avant l'été.\" Listen for \"retraites\" (pensions), \"ministre\" and \"avant l'été\" (before summer); the wrong choices swap one of these words."
   },
   "speak": {
    "answer": "L'opinion publique est favorable à cette réforme",
@@ -9036,7 +9031,7 @@
     "Les impôts sont un thème qui divise l'opinion publique.",
     "Les impôts, c'est un sujet qui divise l'opinion publique."
    ],
-   "explanation": "\"Les impôts sont un sujet qui divise l'opinion publique.\" uses impôts in the plural, as is usual when talking about taxes in general, and \"qui\" introduces a relative clause that describes the subject. Opinion publique is feminine, so publique takes the feminine form and follows the noun."
+   "explanation": "\"Les impôts sont un sujet qui divise l'opinion publique.\" Use the plural \"impôts\" for taxes in general; \"qui\" starts a clause describing the subject, and \"publique\" is feminine to match \"opinion\"."
   }
  },
  "frb2p12l1": {
@@ -9048,7 +9043,7 @@
     "Le réchauffement climatique menace les océans parce que les températures augmentent chaque année.",
     "Le réchauffement climatique menace les forêts parce que les températures augmentent chaque hiver."
    ],
-   "explanation": "The sentence \"Le réchauffement climatique menace les forêts parce que les températures augmentent chaque année.\" says global warming threatens forests because temperatures rise every year; the other choices change one clearly audible word (baissent, océans, hiver)."
+   "explanation": "\"Le réchauffement climatique menace les forêts parce que les températures augmentent chaque année.\" Listen for \"forêts\" (not océans), \"augmentent\" (rise, not baissent) and \"chaque année\" (not chaque hiver)."
   },
   "translate": {
    "prompt": "Say that reducing your carbon footprint helps to fight climate change.",
@@ -9111,7 +9106,7 @@
     "Les scientifiques pensent que la sécheresse sera moins grave si les émissions continuent d'augmenter.",
     "Les scientifiques pensent que la sécheresse sera plus grave si les émissions continuent d'exister."
    ],
-   "explanation": "\"Les scientifiques pensent que la sécheresse sera plus grave si les émissions continuent d'augmenter.\" means scientists think the drought will be worse if emissions keep rising. Listen for \"plus grave\" (worse, not \"moins grave\"), \"émissions\" (not \"déchets\", waste) and \"augmenter\" (to rise, not \"exister\")."
+   "explanation": "\"Les scientifiques pensent que la sécheresse sera plus grave si les émissions continuent d'augmenter.\" Listen for \"plus grave\" (worse), \"émissions\" (not déchets) and \"augmenter\" (to rise, not exister)."
   },
   "translate": {
    "prompt": "Say that the flood destroyed the village because the rivers had risen too quickly.",
@@ -9129,7 +9124,7 @@
     "La crue a détruit le village parce que les rivières avaient monté trop vite.",
     "La crue a détruit le village car les rivières étaient montées trop vite."
    ],
-   "explanation": "\"L'inondation a détruit le village parce que les rivières avaient monté trop vite.\" uses the passé composé for the main event and the pluperfect for the earlier cause; with water levels, monter can take avoir (\"avaient monté\") or être (\"étaient montées\")."
+   "explanation": "\"L'inondation a détruit le village parce que les rivières avaient monté trop vite.\" The pluperfect \"avaient monté\" marks the cause as earlier than the passé composé \"a détruit\"; \"monter\" can also take \"être\" here."
   }
  },
  "frb2p12l4": {
@@ -9141,7 +9136,7 @@
     "Les experts pensent que la sécheresse va empirer si nous ne protégeons pas les richesses naturelles.",
     "Les experts pensent que la sécheresse va empirer si nous ne protégeons pas les espèces naturelles."
    ],
-   "explanation": "You hear that experts expect drought to worsen unless we protect resources: \"Les experts pensent que la sécheresse va empirer si nous ne protégeons pas les ressources naturelles.\" Listen for \"sécheresse\" (drought) and \"ressources\"."
+   "explanation": "\"Les experts pensent que la sécheresse va empirer si nous ne protégeons pas les ressources naturelles.\" Listen for \"sécheresse\" (drought, not pollution) and \"ressources\" (not richesses or espèces)."
   },
   "speak": {
    "answer": "La conservation de la nature est essentielle.",
@@ -9191,7 +9186,7 @@
     "Une entreprise industrielle a promis qu'elle deviendrait neutre en carbone.",
     "Une entreprise industrielle a promis d'être neutre en carbone."
    ],
-   "explanation": "\"Une entreprise industrielle a promis de devenir neutre en carbone.\" uses promettre de + infinitive for a promise about the company's own future, and \"neutre en carbone\" is the fixed phrase for carbon neutral. \"Société\" works as a synonym for \"entreprise\", and \"la neutralité carbone\" is the noun form of the same idea."
+   "explanation": "\"Une entreprise industrielle a promis de devenir neutre en carbone.\" \"Promettre de\" takes an infinitive, and \"neutre en carbone\" is the fixed phrase for carbon neutral."
   }
  },
  "frb2p13l1": {
@@ -9203,7 +9198,7 @@
     "Le juge a annoncé que le procès commencerait après l'arrivée du policier.",
     "Le juge a annoncé que le procès continuerait après l'arrivée du témoin."
    ],
-   "explanation": "The sentence \"Le juge a annoncé que le procès commencerait après l'arrivée du témoin.\" says the trial would begin once the witness arrived. Listen for commencerait, après and témoin, which the other choices replace with continuerait, avant and policier."
+   "explanation": "\"Le juge a annoncé que le procès commencerait après l'arrivée du témoin.\" Listen for \"commencerait\" (would begin), \"après\" (after) and \"témoin\" (witness); the wrong choices change one of them."
   },
   "speak": {
    "answer": "L'avocat parle au juge pendant le procès",
@@ -9237,7 +9232,7 @@
     "Le juge a annoncé que le jury rendrait son appel demain matin.",
     "Le juge a annoncé que le suspect rendrait son verdict demain matin."
    ],
-   "explanation": "The sentence \"Le juge a annoncé que le jury rendrait son verdict demain matin.\" says the judge announced that the jury would deliver its verdict the next morning; the other choices change one word (hier, appel, suspect) so the meaning changes."
+   "explanation": "\"Le juge a annoncé que le jury rendrait son verdict demain matin.\" \"Rendre un verdict\" means to deliver a verdict; listen for \"verdict\" (not appel), \"demain\" (not hier) and \"jury\" (not suspect)."
   },
   "translate": {
    "prompt": "Say that the lawyer thinks the evidence will convince the jury.",
@@ -9385,7 +9380,7 @@
     "Les consommateurs achètent moins quand la croissance ralentit et que la dette diminue.",
     "Les consommateurs achètent plus quand la croissance ralentit et que la dette augmente."
    ],
-   "explanation": "The sentence \"Les consommateurs achètent moins quand la croissance ralentit et que la dette augmente.\" says that consumers buy less when growth slows and debt rises; the wrong choices change one clearly audible word (récession, diminue, plus)."
+   "explanation": "\"Les consommateurs achètent moins quand la croissance ralentit et que la dette augmente.\" Listen for \"moins\" (less, not plus), \"croissance\" (growth, not récession) and \"augmente\" (rises, not diminue)."
   },
   "speak": {
    "answer": "l'impôt sur le revenu augmente",
@@ -9403,7 +9398,7 @@
     "Le budget familial dépend des revenus de la famille et des impôts qu'elle paie.",
     "Le budget de la famille dépend de ses revenus ainsi que des impôts qu'elle paie."
    ],
-   "explanation": "\"Le budget de la famille dépend de ses revenus et des impôts qu'elle paie.\" In French, dépendre takes de, so you repeat it before each item (de ses revenus, des impôts). The relative pronoun qu' links the taxes to what the family pays."
+   "explanation": "\"Le budget de la famille dépend de ses revenus et des impôts qu'elle paie.\" \"Dépendre\" takes \"de\", repeated before each item (\"de ses revenus\", \"des impôts\"); \"qu'\" links the taxes to what the family pays."
   }
  },
  "frb2p14l3": {
@@ -9549,7 +9544,7 @@
     "L'artiste prépare une sculpture qui sera présentée à la galerie le mois prochain.",
     "Le mois prochain, la galerie exposera la sculpture sur laquelle l'artiste travaille."
    ],
-   "explanation": "\"L'artiste travaille sur une sculpture qui sera exposée à la galerie le mois prochain.\" uses the relative pronoun \"qui\" to link the sculpture to the exhibition, and the future \"sera exposée\" for something that will be shown. The participle agrees with \"une sculpture\", so it takes an extra e."
+   "explanation": "\"L'artiste travaille sur une sculpture qui sera exposée à la galerie le mois prochain.\" \"Qui\" links the sculpture to the future \"sera exposée\", which agrees with feminine \"une sculpture\" (extra e)."
   }
  },
  "frb2p15l3": {
@@ -9608,7 +9603,7 @@
     "Bien que le théâtre soit fermé, le compositeur veut protéger le patrimoine culturel du pays.",
     "Le compositeur veut protéger le patrimoine culturel du pays, quoique le théâtre soit fermé."
    ],
-   "explanation": "\"Le compositeur veut protéger le patrimoine culturel du pays, même si le théâtre est fermé.\" uses \"même si\", which is always followed by the indicative (\"est fermé\"); \"bien que\" is also correct but needs the subjunctive (\"soit fermé\")."
+   "explanation": "\"Le compositeur veut protéger le patrimoine culturel du pays, même si le théâtre est fermé.\" \"Même si\" takes the indicative (\"est fermé\"); \"bien que\" would need the subjunctive (\"soit fermé\")."
   }
  },
  "frb2p15l5": {
@@ -9672,7 +9667,7 @@
     "Ma voisine est très généreuse : elle a le cœur sur la main et aide toujours tout le monde.",
     "Ma voisine a le cœur sur la main et est toujours prête à aider tout le monde."
    ],
-   "explanation": "\"Mon voisin a le cœur sur la main et il aide toujours tout le monde.\" uses the idiom \"avoir le cœur sur la main\", meaning to be very generous."
+   "explanation": "\"Mon voisin a le cœur sur la main et il aide toujours tout le monde.\" The idiom \"avoir le cœur sur la main\" (literally, to have the heart on the hand) means to be very generous."
   }
  },
  "frb2p16l2": {
@@ -9805,7 +9800,7 @@
     "C'est à ma sœur que j'ai écrit hier, parce que je voulais lui téléphoner.",
     "C'est à ma mère que j'ai écrit hier, parce que je voulais lui parler."
    ],
-   "explanation": "The sentence heard is \"C'est à ma sœur que j'ai écrit hier, parce que je voulais lui parler.\" It stresses \"à ma sœur\" with c'est...que, and each wrong choice changes one word you can hear: lundi, téléphoner or mère."
+   "explanation": "The sentence heard is \"C'est à ma sœur que j'ai écrit hier, parce que je voulais lui parler.\" It stresses \"à ma sœur\" with c'est…que, and each wrong choice changes one word you can hear: lundi, téléphoner or mère."
   },
   "speak": {
    "answer": "C'est ce livre que je cherche depuis hier",
@@ -9824,7 +9819,7 @@
     "C'est mon frère qui va conduire ce soir et personne d'autre.",
     "Ce soir, c'est mon frère et personne d'autre qui va conduire."
    ],
-   "explanation": "\"C'est mon frère qui va conduire ce soir.\" uses c'est...qui because the stressed word \"mon frère\" is the subject of the verb that follows."
+   "explanation": "\"C'est mon frère qui va conduire ce soir.\" uses c'est…qui because the stressed word \"mon frère\" is the subject of the verb that follows."
   }
  },
  "frb2p17l2": {
@@ -9836,7 +9831,7 @@
     "C'est en été que nous partons toujours à la campagne avec nos amis.",
     "C'est en été que nous restons toujours à la montagne avec nos amis."
    ],
-   "explanation": "The sentence \"C'est en été que nous partons toujours à la montagne avec nos amis.\" stresses the time phrase \"en été\" with c'est...que; the other choices change one audible word (hiver, campagne, restons)."
+   "explanation": "The sentence \"C'est en été que nous partons toujours à la montagne avec nos amis.\" stresses the time phrase \"en été\" with c'est…que; the other choices change one audible word (hiver, campagne, restons)."
   },
   "translate": {
    "prompt": "Emphasise that it is your sister, and nobody else, who called you last night.",
@@ -9854,7 +9849,7 @@
     "C'est ma sœur, et personne d'autre, qui m'a appelé hier soir.",
     "C'est ma sœur, et personne d'autre, qui m'a appelée hier soir."
    ],
-   "explanation": "\"C'est ma sœur qui m'a téléphoné hier soir.\" uses c'est...qui because the stressed phrase \"ma sœur\" is the subject of the verb that follows."
+   "explanation": "\"C'est ma sœur qui m'a téléphoné hier soir.\" uses c'est…qui because the stressed phrase \"ma sœur\" is the subject of the verb that follows."
   }
  },
  "frb2p17l3": {
@@ -9887,7 +9882,7 @@
     "C'est ce livre-là que je suis en train de lire.",
     "C'est ce livre, et pas un autre, que je suis en train de lire."
    ],
-   "explanation": "\"C'est ce livre que je lis en ce moment.\" uses c'est ... que because the stressed phrase \"ce livre\" is the direct object of \"lis\", not its subject (the subject is \"je\")."
+   "explanation": "\"C'est ce livre que je lis en ce moment.\" uses c'est … que because the stressed phrase \"ce livre\" is the direct object of \"lis\", not its subject (the subject is \"je\")."
   }
  },
  "frb2p17l4": {
@@ -9899,7 +9894,7 @@
     "C'est en juillet que nous avons décidé de déménager à Lyon.",
     "C'est en juin que nous avons refusé de déménager à Lyon."
    ],
-   "explanation": "\"C'est en juin que nous avons décidé de déménager à Lyon.\" stresses the time phrase \"en juin\" with the cleft \"C'est... que\", and the other sentences change the month, the city or the verb."
+   "explanation": "\"C'est en juin que nous avons décidé de déménager à Lyon.\" stresses the time phrase \"en juin\" with the cleft \"C'est… que\", and the other sentences change the month, the city or the verb."
   },
   "translate": {
    "prompt": "Stress that it is your sister, and nobody else, who called the doctor yesterday.",
@@ -9929,11 +9924,11 @@
     "C'est hier soir que mes parents ont décidé de vendre leur voiture.",
     "C'est hier soir que mes parents ont refusé de vendre leur maison."
    ],
-   "explanation": "The sentence \"C'est hier soir que mes parents ont décidé de vendre leur maison.\" stresses the time (hier soir) with the cleft c'est ... que; the other choices change louer, voiture or refusé."
+   "explanation": "The sentence \"C'est hier soir que mes parents ont décidé de vendre leur maison.\" stresses the time (hier soir) with the cleft c'est … que; the other choices change louer, voiture or refusé."
   },
   "speak": {
    "answer": "C'est ma sœur qui a choisi ce cadeau",
-   "explanation": "\"C'est ma sœur qui a choisi ce cadeau\" stresses the subject with c'est ... qui, because ma sœur is the one who did the choosing."
+   "explanation": "\"C'est ma sœur qui a choisi ce cadeau\" stresses the subject with c'est … qui, because ma sœur is the one who did the choosing."
   },
   "translate": {
    "prompt": "Insist that it was this book, and not another, that you wanted to read.",
@@ -9951,7 +9946,7 @@
     "C'est bien ce livre-là que je voulais lire.",
     "C'est ce livre-là, et pas un autre, que je voulais lire."
    ],
-   "explanation": "\"C'est ce livre que je voulais lire.\" uses c'est ... que because the stressed phrase ce livre is the direct object of voulais lire."
+   "explanation": "\"C'est ce livre que je voulais lire.\" uses c'est … que because the stressed phrase ce livre is the direct object of voulais lire."
   }
  },
  "frb2p18l1": {
@@ -9963,7 +9958,7 @@
     "Je te le donnerai demain, parce que j'ai acheté le livre chez moi.",
     "Je te le donnerai lundi, parce que j'ai oublié le livre chez moi."
    ],
-   "explanation": "The sentence heard is \"Je te le donnerai demain, parce que j'ai oublié le livre chez moi.\" The speaker will give the book tomorrow because they forgot it at their own home; the other choices change one clearly audible word (toi, acheté, lundi)."
+   "explanation": "\"Je te le donnerai demain, parce que j'ai oublié le livre chez moi.\" Listen for \"oublié\" (forgot), \"demain\" and \"chez moi\" (at my place); the others swap in \"acheté\", \"lundi\" or \"chez toi\"."
   },
   "translate": {
    "prompt": "Tell a friend (use tu) that you are going to show him the photos tomorrow, replacing both objects with pronouns.",
@@ -9987,7 +9982,7 @@
     "Je te l'ai déjà dit hier, mais tu ne m'as pas regardé.",
     "Je te l'ai déjà dit hier, mais tu ne m'as pas attendu."
    ],
-   "explanation": "The speaker says \"Je te l'ai déjà dit hier, mais tu ne m'as pas écouté.\" The final word écouté (listened to) is what separates it from the other sentences."
+   "explanation": "\"Je te l'ai déjà dit hier, mais tu ne m'as pas écouté.\" The final participle \"écouté\" (listened to) is the only difference; the others end in \"attendu\", \"répondu\" or \"regardé\"."
   },
   "speak": {
    "answer": "Il nous les a envoyés hier",
@@ -10204,7 +10199,7 @@
     "Nous avons fait réparer le toit parce qu'il pleuvait dans la cuisine.",
     "Nous avons fait réparer le mur parce qu'il pleuvait dans la chambre."
    ],
-   "explanation": "The sentence heard is \"Nous avons fait réparer le toit parce qu'il pleuvait dans la chambre.\" and it means we had the roof repaired because rain was coming into the bedroom."
+   "explanation": "\"Nous avons fait réparer le toit parce qu'il pleuvait dans la chambre.\" \"Faire réparer\" means to have something repaired. Listen for \"toit\" (roof), \"réparer\" and \"chambre\"."
   },
   "translate": {
    "prompt": "Say that you are having the plumber come tomorrow because the kitchen sink is leaking.",
@@ -10320,7 +10315,7 @@
     "Je doute que mes amies puissent venir à la fête demain.",
     "Je doute que mes amis puissent venir à la soirée de demain."
    ],
-   "explanation": "You express doubt with \"Je doute que mes amis puissent venir à la fête demain.\" The phrase \"je doute que\" is always followed by the subjunctive, so with the plural subject \"mes amis\", pouvoir becomes \"puissent\" rather than the indicative \"peuvent\"."
+   "explanation": "\"Je doute que mes amis puissent venir à la fête demain.\" \"Je doute que\" takes the subjunctive, so pouvoir becomes \"puissent\", not the indicative \"peuvent\"."
   }
  },
  "frb2p1l3": {
@@ -10526,7 +10521,7 @@
   },
   "speak": {
    "answer": "Je reste à votre disposition pour toute information complémentaire.",
-   "explanation": "\"Je reste à votre disposition pour toute information complémentaire.\" is a standard formal closing meaning \"I remain at your disposal for any further information\"."
+   "explanation": "\"Je reste à votre disposition pour toute information complémentaire.\" This is a standard formal closing for letters and emails, offering further help. It uses \"votre\", the polite form."
   },
   "translate": {
    "prompt": "Tell the recipient that you are enclosing the contract with your letter, using a formal letter phrase.",
@@ -10914,7 +10909,7 @@
     "Ma sœur n'est pas aussi grande que moi, quoiqu'elle soit plus âgée.",
     "Bien qu'elle soit plus âgée, ma sœur n'est pas aussi grande que moi."
    ],
-   "explanation": "\"Ma sœur n'est pas aussi grande que moi, même si elle est plus âgée.\" uses the negative comparison \"pas aussi ... que\" (or \"moins ... que\"), and the adjective \"grande\" is feminine to agree with \"sœur\"."
+   "explanation": "\"Ma sœur n'est pas aussi grande que moi, même si elle est plus âgée.\" uses the negative comparison \"pas aussi … que\" (or \"moins … que\"), and the adjective \"grande\" is feminine to agree with \"sœur\"."
   }
  },
  "frb2p4l2": {
@@ -10943,7 +10938,7 @@
     "Ce film est moins captivant que le livre.",
     "Ce film-là est moins intéressant que le livre."
    ],
-   "explanation": "\"Ce film est moins intéressant que le livre.\" uses \"moins ... que\" for an inferior comparison, with \"intéressant\" agreeing with the masculine \"film\"."
+   "explanation": "\"Ce film est moins intéressant que le livre.\" uses \"moins … que\" for an inferior comparison, with \"intéressant\" agreeing with the masculine \"film\"."
   }
  },
  "frb2p4l3": {
@@ -10989,7 +10984,7 @@
   },
   "speak": {
    "answer": "Il parle plus lentement que son frère",
-   "explanation": "\"Il parle plus lentement que son frère\" uses the adverb \"lentement\" after the verb \"parle\" in a comparative with \"plus ... que\"."
+   "explanation": "\"Il parle plus lentement que son frère\" uses the adverb \"lentement\" after the verb \"parle\" in a comparative with \"plus … que\"."
   },
   "translate": {
    "prompt": "Say that this neighbourhood is less expensive than the city centre.",
@@ -11002,7 +10997,7 @@
     "Ce quartier est moins cher que le centre de la ville.",
     "Ce quartier est moins onéreux que le centre-ville."
    ],
-   "explanation": "\"Ce quartier est moins cher que le centre-ville.\" uses \"moins ... que\" for inferiority, with \"cher\" agreeing with the masculine singular \"quartier\"."
+   "explanation": "\"Ce quartier est moins cher que le centre-ville.\" uses \"moins … que\" for inferiority, with \"cher\" agreeing with the masculine singular \"quartier\"."
   }
  },
  "frb2p4l5": {
@@ -11575,7 +11570,7 @@
     "Ils ont réussi à convaincre le directeur en préparant soigneusement leur voyage.",
     "Ils ont échoué à convaincre le directeur en préparant soigneusement leur présentation."
    ],
-   "explanation": "The sentence heard is \"Ils ont réussi à convaincre le directeur en préparant soigneusement leur présentation.\" The gerund \"en préparant\" explains how they convinced the director: by carefully preparing their presentation."
+   "explanation": "\"Ils ont réussi à convaincre le directeur en préparant soigneusement leur présentation.\" The gerund \"en préparant\" gives the means: how they succeeded. \"Réussi\" (not \"échoué\") shows the outcome."
   },
   "speak": {
    "answer": "Elle a appris l'anglais en regardant des films",
@@ -11606,7 +11601,7 @@
     "Il a appris la nouvelle en écoutant la radio pendant que nous préparions le déjeuner.",
     "Il a appris la nouvelle en écoutant la radio pendant que nous mangions le dîner."
    ],
-   "explanation": "The sentence heard is \"Il a appris la nouvelle en écoutant la radio pendant que nous préparions le dîner.\" The gerund \"en écoutant\" shows how he learned the news. The other choices change the gerund, the meal or the verb \"préparions\"."
+   "explanation": "\"Il a appris la nouvelle en écoutant la radio pendant que nous préparions le dîner.\" \"En écoutant\" is a gerund giving the means; \"pendant que\" adds a simultaneous action in the imperfect."
   },
   "translate": {
    "prompt": "Say that you improved your French by watching films every evening. Use the structure that expresses the means or manner.",
@@ -11692,7 +11687,7 @@
     "Il a accepté le poste tandis que sa femme préférait quitter la ville.",
     "Il a accepté le poste tandis que sa sœur préférait rester en ville."
    ],
-   "explanation": "The sentence is \"Il a accepté le poste tandis que sa femme préférait rester en ville.\" The connector \"tandis que\" contrasts the husband's choice with his wife's preference."
+   "explanation": "\"Il a accepté le poste tandis que sa femme préférait rester en ville.\" \"Tandis que\" sets two actions in contrast, here his choice against her preference."
   },
   "speak": {
    "answer": "C'est cher, mais je l'achète tout de même",
@@ -11726,7 +11721,7 @@
     "Contrairement à ce que nous pensions, la réception a duré moins longtemps que prévu.",
     "Contrairement à ce que nous pensions, la réunion a duré plus longtemps que prévu."
    ],
-   "explanation": "The sentence heard is \"Contrairement à ce que nous pensions, la réunion a duré moins longtemps que prévu.\" It uses \"contrairement à\" to contrast the expected length of the meeting with what actually happened."
+   "explanation": "\"Contrairement à ce que nous pensions, la réunion a duré moins longtemps que prévu.\" \"Contrairement à\" introduces a contrast with expectation; \"moins longtemps\" means shorter, not longer."
   },
   "translate": {
    "prompt": "Say that your brother loves city life, whereas you prefer the quiet of the countryside.",
@@ -11815,7 +11810,7 @@
     "Le notaire a authentifié le document avant que les parties ne signent l'appel.",
     "Le notaire a authentifié le document avant que les parties ne signent l'examen."
    ],
-   "explanation": "The audio said \"Le notaire a authentifié le document avant que les parties ne signent l'accord.\": the last word is \"l'accord\" (the agreement), not \"l'appel\", \"l'aveu\" or \"l'examen\"."
+   "explanation": "\"Le notaire a authentifié le document avant que les parties ne signent l'accord.\" You sign an \"accord\" (agreement); only the last word differs, so listen for it."
   },
   "speak": {
    "answer": "Il convient de respecter les obligations légales",
@@ -11849,7 +11844,7 @@
     "Le tribunal a ordonné la saisie des comptes du débiteur défaillant avant la fin du mois.",
     "Le tribunal a ordonné la saisie des biens du débiteur défaillant avant la fin de l'année."
    ],
-   "explanation": "The sentence heard is \"Le tribunal a ordonné la saisie des biens du débiteur défaillant avant la fin du mois.\" The other choices change one audible word: \"vente\" (sale), \"comptes\" (accounts) or \"l'année\" (year); \"saisie\" means seizure of assets."
+   "explanation": "\"Le tribunal a ordonné la saisie des biens du débiteur défaillant avant la fin du mois.\" \"Saisie\" means seizure; the wrong choices swap one word: \"vente\", \"comptes\" or \"l'année\"."
   },
   "translate": {
    "prompt": "Say that the court rejected the appeal because the deadline had expired.",
@@ -11867,7 +11862,7 @@
     "Le tribunal a rejeté l'appel car le délai avait expiré.",
     "La cour a rejeté l'appel parce que le délai était expiré."
    ],
-   "explanation": "\"Le tribunal a rejeté le recours parce que le délai était expiré.\" uses \"rejeter\" for dismissing an appeal or challenge, and the deadline (\"le délai\") is the stated ground; other formal wordings like \"débouter\" are equally natural in legal French."
+   "explanation": "\"Le tribunal a rejeté le recours parce que le délai était expiré.\" \"Rejeter\" means to dismiss an appeal, and \"parce que\" introduces the reason; \"débouter\" is a formal alternative."
   }
  },
  "frc1p10l4": {
@@ -11879,7 +11874,7 @@
     "La cour d'appel a confirmé le contrat rendu par le tribunal de première instance.",
     "La cour d'appel a confirmé le jugement rendu par le greffier de première instance."
    ],
-   "explanation": "The sentence \"La cour d'appel a confirmé le jugement rendu par le tribunal de première instance.\" says the appeal court upheld the lower court's decision; \"annulé\", \"contrat\" and \"greffier\" in the other choices sound clearly different and change the meaning."
+   "explanation": "\"La cour d'appel a confirmé le jugement rendu par le tribunal de première instance.\" \"Confirmé\" means upheld; \"annulé\", \"contrat\" and \"greffier\" would change the meaning."
   },
   "speak": {
    "answer": "L'avocat a plaidé la défense de son client",
@@ -11901,7 +11896,7 @@
     "Le plaignant a retiré sa plainte avant que l'audience n'ait eu lieu.",
     "Le demandeur a retiré sa plainte avant que l'audience ait lieu."
    ],
-   "explanation": "\"Le plaignant a retiré sa plainte avant que l'audience n'ait lieu.\" uses \"retirer une plainte\" for withdrawing a complaint, and \"avant que\" always takes the subjunctive (\"ait\"). The \"ne\" before \"ait\" is an optional formal touch, and the simpler \"avant l'audience\" is also correct."
+   "explanation": "\"Le plaignant a retiré sa plainte avant que l'audience n'ait lieu.\" \"Retirer une plainte\" means to withdraw a complaint; \"avant que\" takes the subjunctive (\"ait\"), and \"ne\" is optional."
   }
  },
  "frc1p10l5": {
@@ -11913,7 +11908,7 @@
     "Le tribunal a ordonné la suspension immédiate des travaux jusqu'à la décision définitive du maire.",
     "Le tribunal a ordonné la reprise immédiate des travaux jusqu'à la décision définitive du juge."
    ],
-   "explanation": "The sentence heard was \"Le tribunal a ordonné la suspension immédiate des travaux jusqu'à la décision définitive du juge.\" The court halted the works until the judge's final ruling; the other choices change one clearly audible word (réunion, maire, reprise)."
+   "explanation": "\"Le tribunal a ordonné la suspension immédiate des travaux jusqu'à la décision définitive du juge.\" \"Suspension\" means a halt, not \"reprise\" (resumption); \"décision du juge\" is the end point."
   },
   "speak": {
    "answer": "Le plaignant a déposé sa demande auprès du tribunal",
@@ -11935,7 +11930,7 @@
     "Les témoins ont été convoqués devant le tribunal puisque le litige n'avait pas été réglé à l'amiable.",
     "Les témoins ont été assignés à comparaître devant le tribunal parce que le litige n'avait pas été réglé à l'amiable."
    ],
-   "explanation": "\"Les témoins ont été convoqués devant le tribunal parce que le litige n'avait pas été réglé à l'amiable.\" uses the passive with \"convoqués\" agreeing with the masculine plural \"témoins\", and the fixed phrase \"à l'amiable\" for an out-of-court settlement."
+   "explanation": "\"Les témoins ont été convoqués devant le tribunal parce que le litige n'avait pas été réglé à l'amiable.\" The passive makes \"convoqués\" agree with \"témoins\"; \"à l'amiable\" means out of court."
   }
  },
  "frc1p11l1": {
@@ -11951,7 +11946,7 @@
   },
   "speak": {
    "answer": "L'ambassadeur a convoqué le délégué à l'ambassade.",
-   "explanation": "\"L'ambassadeur a convoqué le délégué à l'ambassade.\" means the ambassador summoned the delegate to the embassy; \"convoquer\" is the formal verb for calling someone in to an official meeting, and the past participle \"convoqué\" follows \"a\"."
+   "explanation": "\"L'ambassadeur a convoqué le délégué à l'ambassade.\" uses \"convoquer\", the formal verb for officially calling someone in. In the passé composé it takes \"a\" plus \"convoqué\"."
   },
   "translate": {
    "prompt": "Say that the summit ended with the signing of a treaty.",
@@ -11974,13 +11969,13 @@
  "frc1p11l2": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Le conseil de sécurité a adopté une résolution imposant des sanctions contre le régime au pouvoir.",
+   "audioText": "Le Conseil de sécurité a adopté une résolution imposant des sanctions contre le régime au pouvoir.",
    "wrong": [
-    "Le conseil de sécurité a adopté une résolution imposant un embargo contre le régime au pouvoir.",
-    "Le conseil de sécurité a rejeté une résolution imposant des sanctions contre le régime au pouvoir.",
-    "Le conseil de sécurité a adopté une résolution imposant des sanctions contre le régime en exil."
+    "Le Conseil de sécurité a rejeté une résolution imposant des sanctions contre le régime au pouvoir.",
+    "Le Conseil de sécurité a adopté une résolution imposant des sanctions contre le régime en exil.",
+    "Le Conseil de sécurité a adopté une résolution imposant un embargo contre le régime au pouvoir."
    ],
-   "explanation": "The sentence \"Le conseil de sécurité a adopté une résolution imposant des sanctions contre le régime au pouvoir.\" says the council adopted a resolution imposing sanctions; the other choices change one audible word (embargo, rejeté, en exil)."
+   "explanation": "\"Le Conseil de sécurité a adopté une résolution imposant des sanctions contre le régime au pouvoir.\" Listen for \"adopté\", \"sanctions\" and \"au pouvoir\": each wrong option swaps one of these."
   },
   "translate": {
    "prompt": "Say that the two countries agreed to a ceasefire after weeks of mediation by an envoy.",
@@ -12061,7 +12056,7 @@
     "Le droit international garantit la souveraineté de tout État, quelle qu'en soit la taille.",
     "Le droit international garantit la souveraineté de chaque État, indépendamment de sa taille."
    ],
-   "explanation": "\"Le droit international garantit la souveraineté de chaque État, quelle que soit sa taille.\" uses the concessive \"quelle que soit\", which is written as separate words and agrees in the feminine with \"taille\"; \"garantit\" is the verb for guarantee."
+   "explanation": "\"Le droit international garantit la souveraineté de chaque État, quelle que soit sa taille.\" \"Quelle que soit\" is written as separate words and agrees with the feminine noun \"taille\"."
   }
  },
  "frc1p11l5": {
@@ -12073,11 +12068,11 @@
     "Le Conseil de sécurité n'est parvenu à aucune résolution en raison du retrait d'un membre permanent.",
     "Le Conseil de sécurité n'est parvenu à aucune résolution en raison du boycott d'un membre permanent."
    ],
-   "explanation": "The speaker says \"Le Conseil de sécurité n'est parvenu à aucune résolution en raison du veto d'un membre permanent.\" The noun you hear is veto, not vote, retrait or boycott, so the resolution was blocked by a permanent member's veto."
+   "explanation": "\"Le Conseil de sécurité n'est parvenu à aucune résolution en raison du veto d'un membre permanent.\" The key noun is \"veto\", a permanent member's blocking right, not \"vote\", \"retrait\" or \"boycott\"."
   },
   "speak": {
    "answer": "la délégation attend l'envoyé à l'ambassade",
-   "explanation": "This sentence, \"la délégation attend l'envoyé à l'ambassade\", means the delegation is waiting for the envoy at the embassy. Notice that l'envoyé elides le before a vowel, and that \"attend\" is the third-person singular of attendre, which takes no preposition in French."
+   "explanation": "\"la délégation attend l'envoyé à l'ambassade\": \"le\" elides to \"l'\" before the vowel in \"envoyé\". \"Attend\" is from \"attendre\", which takes no preposition."
   },
   "translate": {
    "prompt": "Say that the envoy released an official written statement to the press after the negotiation.",
@@ -12107,7 +12102,7 @@
     "Pour souligner son indignation, l'auteur recourt à une hyperbole que le lecteur ne peut pardonner.",
     "Pour souligner son admiration, l'auteur recourt à une hyperbole que le lecteur ne peut oublier."
    ],
-   "explanation": "The sentence heard is \"Pour souligner son indignation, l'auteur recourt à une hyperbole que le lecteur ne peut oublier.\" It says the author uses deliberate exaggeration (une hyperbole) to express indignation, and the other choices change the figure, the verb or the feeling."
+   "explanation": "\"Pour souligner son indignation, l'auteur recourt à une hyperbole que le lecteur ne peut oublier.\" Listen for \"indignation\", \"hyperbole\" (deliberate exaggeration) and \"oublier\"; the other options change one of them."
   },
   "translate": {
    "prompt": "Say that the narrator uses irony to criticize society without ever stating his opinion openly.",
@@ -12158,7 +12153,7 @@
     "L'écrivain utilise une question rhétorique pour interpeller le lecteur et le faire réfléchir.",
     "L'auteur utilise une question rhétorique afin d'interpeller le lecteur et de le faire réfléchir."
    ],
-   "explanation": "\"L'auteur utilise une question rhétorique pour interpeller le lecteur et le faire réfléchir.\" names the device with la question rhétorique, and pour followed by infinitives expresses the author's purpose. Interpeller is the usual verb for addressing a reader directly."
+   "explanation": "\"L'auteur utilise une question rhétorique pour interpeller le lecteur et le faire réfléchir.\" \"Pour\" plus an infinitive gives the purpose, and \"interpeller\" means to address someone directly."
   }
  },
  "frc1p12l3": {
@@ -12170,7 +12165,7 @@
     "Le registre soutenu de ce passage contraste avec le ton tragique de la conclusion.",
     "Le registre soutenu de ce passage contraste avec le ton ironique de la digression."
    ],
-   "explanation": "The sentence \"Le registre soutenu de ce passage contraste avec le ton ironique de la conclusion.\" says the formal register of the passage contrasts with the ironic tone of the ending. Listen for the adjectives (soutenu, ironique) and the final noun (conclusion)."
+   "explanation": "\"Le registre soutenu de ce passage contraste avec le ton ironique de la conclusion.\" Listen for the adjectives \"soutenu\" and \"ironique\" and the final noun \"conclusion\"; the others change one of them."
   },
   "translate": {
    "prompt": "Say that the writer uses an allegory to make an abstract idea concrete.",
@@ -12200,7 +12195,7 @@
     "Dans ce passage, l'auteur recourt à une litote pour accentuer la violence du propos.",
     "Dans ce passage, l'auteur renonce à une litote pour atténuer la violence du propos."
    ],
-   "explanation": "The sentence \"Dans ce passage, l'auteur recourt à une litote pour atténuer la violence du propos.\" says the author uses understatement (une litote) to soften the violence of what is said; the wrong choices change the device, the verb or the effect."
+   "explanation": "\"Dans ce passage, l'auteur recourt à une litote pour atténuer la violence du propos.\" A \"litote\" is understatement, and \"atténuer\" means to soften, so the effect is toned down."
   },
   "speak": {
    "answer": "Le récit s'achève sur une ironie amère",
@@ -12360,7 +12355,7 @@
     "Après un long voyage, les participants étaient épuisés et ont demandé qu'on prépare la réunion.",
     "Après un long voyage, les participants étaient épuisés et ont demandé qu'on commence la réunion."
    ],
-   "explanation": "The sentence \"Après un long voyage, les participants étaient épuisés et ont demandé qu'on reporte la réunion.\" uses the formal word \"épuisés\" instead of the familiar \"crevés\", and \"reporte\" (postpone) sounds clearly different from annule, prépare and commence."
+   "explanation": "\"Après un long voyage, les participants étaient épuisés et ont demandé qu'on reporte la réunion.\" Reporter means to postpone. Don't confuse it with annuler (cancel), commencer (start), or préparer (prepare)."
   },
   "translate": {
    "prompt": "Say, in formal French, that the director was so exhausted that he had to leave the meeting early.",
@@ -12378,7 +12373,7 @@
     "Le directeur était si épuisé qu'il a dû quitter la réunion prématurément.",
     "Le directeur était tellement épuisé qu'il a dû quitter la réunion avant la fin."
    ],
-   "explanation": "\"Le directeur était tellement épuisé qu'il a dû quitter la réunion plus tôt.\" uses the formal \"épuisé\" instead of the familiar \"crevé\", and \"quitter\" or \"partir\" for leaving, in a tellement/si ... que consequence clause."
+   "explanation": "\"Le directeur était tellement épuisé qu'il a dû quitter la réunion plus tôt.\" uses the formal \"épuisé\" instead of the familiar \"crevé\", and \"quitter\" or \"partir\" for leaving, in a tellement/si … que consequence clause."
   }
  },
  "frc1p13l5": {
@@ -12390,7 +12385,7 @@
     "Après une longue journée, il était sans le sou et complètement épuisé, mais il restait optimiste.",
     "Après une longue réunion, il était sans le sou et complètement ravi, mais il restait optimiste."
    ],
-   "explanation": "The sentence heard is \"Après une longue réunion, il était sans le sou et complètement épuisé, mais il restait optimiste.\" \"Sans le sou\" (penniless) is the neutral, slightly literary way of saying the familiar \"fauché\"."
+   "explanation": "\"Après une longue réunion, il était sans le sou et complètement épuisé, mais il restait optimiste.\" Sans le sou means penniless, a neutral way to say \"fauché\". Listen for réunion/journée, épuisé/ravi, and optimiste/pessimiste."
   },
   "speak": {
    "answer": "Il a perdu la tête et il est devenu fou",
@@ -12424,7 +12419,7 @@
     "Le gouvernement doit mettre en œuvre une réforme ambitieuse avant la fin de l'été.",
     "Le gouvernement doit mettre en œuvre une réforme ambitieuse avant la fin du match."
    ],
-   "explanation": "You hear \"Le gouvernement doit mettre en œuvre une réforme ambitieuse avant la fin du mois.\" Mettre en œuvre means to implement, and \"la fin du mois\" (the end of the month) is the deadline; listen for \"fin\" versus \"début\" and for the final noun."
+   "explanation": "\"Le gouvernement doit mettre en œuvre une réforme ambitieuse avant la fin du mois.\" Mettre en œuvre means to implement. Listen for \"fin\" (end) versus \"début\" (start), and for the final noun, \"mois\"."
   },
   "translate": {
    "prompt": "Say that the company has to face up to a serious crisis without harming its employees' rights.",
@@ -12442,7 +12437,7 @@
     "L'entreprise doit faire face à une crise grave sans nuire aux droits de ses employés.",
     "L'entreprise doit faire face à une crise grave sans léser les droits de ses employés."
    ],
-   "explanation": "A natural rendering is \"L'entreprise doit faire face à une crise grave sans porter atteinte aux droits de ses employés.\" It pairs faire face à (to face up to a difficulty) with porter atteinte à (to undermine or harm something such as rights)."
+   "explanation": "\"L'entreprise doit faire face à une crise grave sans porter atteinte aux droits de ses employés.\" Faire face à means to confront a difficulty, and porter atteinte à means to harm something, such as rights."
   }
  },
  "frc1p14l2": {
@@ -12454,7 +12449,7 @@
     "Les chercheurs ont dû avoir recours à des méthodes plus rudimentaires pour valider leurs résultats.",
     "Les chercheurs ont pu avoir recours à des méthodes plus rigoureuses pour valider leurs résultats."
    ],
-   "explanation": "The sentence is \"Les chercheurs ont dû avoir recours à des méthodes plus rigoureuses pour valider leurs résultats.\" It uses avoir recours à (to resort to) with rigoureuses and valider, which differ in sound and meaning from the other choices."
+   "explanation": "\"Les chercheurs ont dû avoir recours à des méthodes plus rigoureuses pour valider leurs résultats.\" Avoir recours à means to resort to. Listen for \"dû\" (had to), \"rigoureuses\" and \"valider\"."
   },
   "speak": {
    "answer": "Il a fait preuve de beaucoup de courage",
@@ -12582,7 +12577,7 @@
     "Il travaille actuellement à Lyon, mais il viendra éventuellement nous attendre le mois prochain.",
     "Il travaille actuellement à Lyon, mais il viendra éventuellement nous voir le mois suivant."
    ],
-   "explanation": "\"Il travaille actuellement à Lyon, mais il viendra éventuellement nous voir le mois prochain.\" uses actuellement (currently, not 'actually') and éventuellement (possibly, not 'eventually'); each wrong choice changes one word: prochain/suivant, voir/attendre or Lyon/Nice."
+   "explanation": "\"Il travaille actuellement à Lyon, mais il viendra éventuellement nous voir le mois prochain.\" Actuellement means currently and éventuellement means possibly, so neither matches its English look-alike."
   },
   "speak": {
    "answer": "Il est très sensible, mais il travaille actuellement dans une librairie",
@@ -12616,7 +12611,7 @@
     "Il a dû assister à la réunion, mais il ignorait totalement le compte rendu.",
     "Il a dû renoncer à la réunion, mais il ignorait totalement l'ordre du jour."
    ],
-   "explanation": "\"Il a dû assister à la réunion, mais il ignorait totalement l'ordre du jour.\" means he had to attend the meeting but had no idea what was on the agenda: assister à means to be present at, and ignorer means to not know. Listen for these two verbs, which are easy to mistake for \"assist\" and \"ignore\"."
+   "explanation": "\"Il a dû assister à la réunion, mais il ignorait totalement l'ordre du jour.\" Assister à means to attend, and ignorer means to not know. Neither means the English \"assist\" or \"ignore\"."
   },
   "translate": {
    "prompt": "Say that you do not know the answer, and that you will ask the teacher.",
@@ -12646,7 +12641,7 @@
     "Il prétend avoir terminé son rapport hier soir, mais personne ne l'a vraiment cru.",
     "Il prétend avoir terminé son rapport hier soir, mais personne ne l'a vraiment su."
    ],
-   "explanation": "The sentence is \"Il prétend avoir terminé son rapport hier soir, mais personne ne l'a vraiment vu.\" Here \"prétend\" means he claims, not that he is pretending."
+   "explanation": "\"Il prétend avoir terminé son rapport hier soir, mais personne ne l'a vraiment vu.\" Prétendre means to claim, not to pretend. The ending \"vu\" (seen) is the word to catch."
   },
   "speak": {
    "answer": "Il prétend que la route est très large",
@@ -12736,7 +12731,7 @@
     "Après des mois de procédure, elle a refusé de tourner la page et de repartir.",
     "Après des mois de procédure, elle a décidé de fermer la page et de repartir."
    ],
-   "explanation": "You heard \"Après des mois de procédure, elle a décidé de tourner la page et de repartir.\" The idiom \"tourner la page\" means to move on from something and leave it behind. Listen for \"décidé\" (not \"refusé\") and \"tourner\" (not \"fermer\")."
+   "explanation": "\"Après des mois de procédure, elle a décidé de tourner la page et de repartir.\" Tourner la page means to move on and leave something behind. Listen for \"décidé\" (not \"refusé\") and \"tourner\" (not \"fermer\")."
   },
   "translate": {
    "prompt": "Say that you cannot go out this weekend because you have a huge amount of work waiting for you.",
@@ -12763,7 +12758,7 @@
     "Après des années de négociations difficiles, il a fini par mettre de l'eau dans son thé.",
     "Après des années de négociations difficiles, il a fini par mettre de l'eau dans son pain."
    ],
-   "explanation": "The idiom \"mettre de l'eau dans son vin\" means to tone down one's demands; the audio is \"Après des années de négociations difficiles, il a fini par mettre de l'eau dans son vin.\" The wrong choices change one clearly audible word (huile, thé, pain)."
+   "explanation": "\"Après des années de négociations difficiles, il a fini par mettre de l'eau dans son vin.\" The idiom means to tone down one's demands. Listen for \"eau\" and \"vin\" in place of huile, thé, or pain."
   },
   "speak": {
    "answer": "Il a le compas dans l'œil",
@@ -12848,7 +12843,7 @@
     "Ça va de soi, personne n'a besoin de l'expliquer.",
     "Cela va sans dire, personne n'a besoin de l'expliquer."
    ],
-   "explanation": "\"Cela tombe sous le sens, personne n'a besoin de l'expliquer.\" uses \"tomber sous le sens\", meaning to be obvious."
+   "explanation": "\"Cela tombe sous le sens, personne n'a besoin de l'expliquer.\" Tomber sous le sens means to be obvious, so it needs no explanation."
   }
  },
  "frc1p16l5": {
@@ -13009,7 +13004,7 @@
     "Tu aurais pu m'avertir plus tard, car j'aurais pu changer mes plans.",
     "Tu aurais pu m'attendre plus tôt, car j'aurais pu changer mes plans."
    ],
-   "explanation": "You hear \"Tu aurais pu m'avertir plus tôt, car j'aurais pu changer mes plans.\", which uses the conditional perfect of pouvoir to express a reproach: 'You could have warned me earlier.' Listen for \"tôt\" (early) against \"tard\" (late), and for \"avertir\" (to warn) against \"attendre\" (to wait)."
+   "explanation": "\"Tu aurais pu m'avertir plus tôt, car j'aurais pu changer mes plans.\" The conditional perfect of pouvoir expresses a reproach: \"you could have\". Listen for \"avertir\" (warn) and \"tôt\" (early)."
   },
   "speak": {
    "answer": "Vous auriez pu nous prévenir plus tôt",
@@ -13167,7 +13162,7 @@
     "La modernisation de l'économie a profondément transformé la productivité de ces exploitations familiales.",
     "La centralisation de l'économie a profondément transformé la productivité de ces entreprises familiales."
    ],
-   "explanation": "You heard \"La modernisation de l'économie a profondément transformé la productivité de ces entreprises familiales.\" Note \"-isation\" in \"modernisation\" (from moderniser) and \"-ité\" in \"productivité\"; the other options change \"modernisation\", \"profondément\" or \"entreprises\"."
+   "explanation": "In \"La modernisation de l'économie a profondément transformé la productivité de ces entreprises familiales.\", \"-isation\" and \"-ité\" build nouns from verbs and adjectives (moderniser, productif)."
   },
   "translate": {
    "prompt": "Say that the creativity of this young designer makes his projects particularly innovative.",
@@ -13182,7 +13177,7 @@
     "La créativité de ce jeune styliste fait de ses projets des réalisations particulièrement innovantes.",
     "La créativité de ce jeune créateur fait de ses projets des réalisations particulièrement novatrices."
    ],
-   "explanation": "\"La créativité de ce jeune styliste rend ses projets particulièrement novateurs.\" uses \"-ité\" to build the abstract noun \"créativité\" and \"-iste\" for the person \"styliste\", and \"rendre\" + adjective means \"to make (something) + adjective\"."
+   "explanation": "\"La créativité de ce jeune styliste rend ses projets particulièrement novateurs.\" shows \"-ité\" and \"-iste\" building nouns, and \"rendre\" + adjective meaning \"to make\" something that way."
   }
  },
  "frc1p19l1": {
@@ -13228,7 +13223,7 @@
     "Il convient de souligner que cette méthode reste fragile au regard des données disponibles.",
     "Il convient de souligner que cette hypothèse reste solide au regard des données disponibles."
    ],
-   "explanation": "The sentence \"Il convient de souligner que cette hypothèse reste fragile au regard des données disponibles.\" uses the formula \"il convient de souligner\" to stress that a hypothesis is weak given the available data; the other choices change one audible word such as \"méthode\", \"théories\" or \"solide\"."
+   "explanation": "\"Il convient de souligner que cette hypothèse reste fragile au regard des données disponibles.\" opens with the formal \"il convient de souligner\" (it should be stressed) and \"au regard de\" (in light of)."
   },
   "translate": {
    "prompt": "Say that this study aims to fill a gap in existing research by approaching the question from a different angle.",
@@ -13410,7 +13405,7 @@
     "Elle a toujours la langue bien pendue, mais ce matin elle a préféré écouter les autres.",
     "Elle a rarement la langue bien pendue, mais ce soir elle a préféré écouter les autres."
    ],
-   "explanation": "The sentence heard is \"Elle a toujours la langue bien pendue, mais ce soir elle a préféré écouter les autres.\" It says she is always talkative but chose to listen tonight."
+   "explanation": "\"Elle a toujours la langue bien pendue, mais ce soir elle a préféré écouter les autres.\" uses the idiom \"avoir la langue bien pendue\" (to be talkative), contrasted with listening instead."
   },
   "speak": {
    "answer": "Il ne mâche pas ses mots avec ses collègues",
@@ -13432,7 +13427,7 @@
     "Les deux collègues ont d'emblée eu des atomes crochus.",
     "Les deux collègues ont eu d'emblée des atomes crochus."
    ],
-   "explanation": "\"Les deux collègues ont tout de suite eu des atomes crochus.\" uses \"avoir des atomes crochus\" for people who click instantly."
+   "explanation": "\"Les deux collègues ont tout de suite eu des atomes crochus.\" uses the idiom \"avoir des atomes crochus\", literally \"to have hooked atoms\", meaning two people click instantly."
   }
  },
  "frc1p1l4": {
@@ -13496,7 +13491,7 @@
     "Les deux collègues se sont serré les coudes pendant cette période difficile.",
     "Les deux collègues se sont serré les coudes et se sont soutenus pendant toute cette période difficile."
    ],
-   "explanation": "\"Les deux collègues se sont serré les coudes pendant toute cette période difficile.\" uses se serrer les coudes, to support each other and stick together; the past participle serré stays invariable because coudes is the direct object placed after the verb."
+   "explanation": "\"Les deux collègues se sont serré les coudes pendant toute cette période difficile.\" uses \"se serrer les coudes\" (to stick together). \"Serré\" stays invariable because the object \"les coudes\" follows the verb."
   }
  },
  "frc1p20l1": {
@@ -13632,7 +13627,7 @@
     "Nous venons de recevoir la réponse du directeur, mais nous ne l'avons pas encore écrite.",
     "Nous venons de recevoir la réponse du directeur, mais nous ne l'avons pas encore payée."
    ],
-   "explanation": "The speaker says \"Nous venons de recevoir la réponse du directeur, mais nous ne l'avons pas encore lue.\" because \"venir de\" + infinitive marks something that has just happened, and the other choices change one clearly audible word."
+   "explanation": "\"Nous venons de recevoir la réponse du directeur, mais nous ne l'avons pas encore lue.\" uses \"venir de\" + infinitive for the recent past, and \"lue\" agrees with the feminine \"la réponse\" (\"l'\")."
   },
   "translate": {
    "prompt": "Say that your colleagues were about to leave the office when the phone rang.",
@@ -13692,7 +13687,7 @@
     "Il importe de souligner que cette réforme a supprimé de vives réticences chez les magistrats.",
     "Il importe de souligner que cette réforme a suscité de vives critiques chez les magistrats."
    ],
-   "explanation": "The sentence heard is \"Il importe de souligner que cette réforme a suscité de vives réticences chez les magistrats.\", a formal sentence meaning it is important to stress that the reform provoked strong reluctance among magistrates."
+   "explanation": "\"Il importe de souligner que cette réforme a suscité de vives réticences chez les magistrats.\" uses the formal \"il importe de\" (it is important to) and \"susciter\" (to provoke), here \"réticences\" (reluctance)."
   },
   "speak": {
    "answer": "Il convient de procéder avec prudence",
@@ -13726,7 +13721,7 @@
     "Il serait imprudent de tirer des conclusions hâtives avant l'achèvement de cette réforme approfondie.",
     "Il serait imprudent de rejeter des conclusions hâtives avant l'achèvement de cette enquête approfondie."
    ],
-   "explanation": "The sentence heard is \"Il serait imprudent de tirer des conclusions hâtives avant l'achèvement de cette enquête approfondie.\" It uses \"tirer des conclusions\" (to draw conclusions) and \"l'achèvement\" (the completion) of the inquiry."
+   "explanation": "\"Il serait imprudent de tirer des conclusions hâtives avant l'achèvement de cette enquête approfondie.\" uses \"tirer des conclusions\" (to draw conclusions) and the formal noun \"achèvement\" (completion)."
   },
   "translate": {
    "prompt": "Say, in a formal written register, that it would be unwise to draw hasty conclusions before the study is finished.",
@@ -13744,7 +13739,7 @@
     "Il serait malavisé de tirer des conclusions hâtives avant que l'étude ne soit terminée.",
     "Il serait imprudent de tirer des conclusions hâtives avant que l'étude ne soit finie."
    ],
-   "explanation": "\"Il serait imprudent de tirer des conclusions hâtives avant l'achèvement de l'étude.\" uses the conditional \"il serait imprudent de\" + infinitive for a cautious warning, and the noun phrase \"avant l'achèvement de\" (before the completion of) sounds more formal than \"avant la fin de\" or \"avant que\" + subjunctive."
+   "explanation": "\"Il serait imprudent de tirer des conclusions hâtives avant l'achèvement de l'étude.\" uses the conditional for a cautious warning, and \"l'achèvement de\" is more formal than \"la fin de\"."
   }
  },
  "frc1p2l4": {
@@ -13752,11 +13747,11 @@
    "prompt": "Which sentence did you hear?",
    "audioText": "Il va sans dire que cette approche comporte certaines limites, qu'il conviendrait d'examiner plus avant.",
    "wrong": [
-    "Il va sans dire que cette approche comporte certaines limites, qu'il conviendrait d'écarter plus avant.",
-    "Il va sans dire que cette approche comporte certaines limites, qu'il conviendrait d'oublier plus avant.",
-    "Il va sans dire que cette approche comporte certaines limites, qu'il conviendrait d'ignorer plus avant."
+    "Il va sans dire que cette approche comporte certaines lacunes, qu'il conviendrait d'examiner plus avant.",
+    "Il va sans dire que cette approche comporte certaines limites, qu'il faudrait examiner plus avant.",
+    "Il va sans dire que cette approche comporte certaines limites, qu'il conviendrait d'explorer plus avant."
    ],
-   "explanation": "The sentence heard is \"Il va sans dire que cette approche comporte certaines limites, qu'il conviendrait d'examiner plus avant.\"; \"examiner\" is the verb that fits \"plus avant\", meaning to look into the limits further."
+   "explanation": "The audio says \"Il va sans dire que cette approche comporte certaines limites, qu'il conviendrait d'examiner plus avant.\" Listen for \"limites\", the formal \"conviendrait\" (it would be fitting) and \"examiner\" (to look into); each wrong choice swaps one of these words."
   },
   "speak": {
    "answer": "Il convient de revoir nos attentes à la baisse",
@@ -13854,7 +13849,7 @@
     "Le projet est périlleux, et en outre, il bénéficie d'un financement public conséquent.",
     "Le projet est ambitieux, et en outre, il bénéficie d'un financement privé conséquent."
    ],
-   "explanation": "You hear \"Le projet est ambitieux, et en outre, il bénéficie d'un financement public conséquent.\" Here \"en outre\" formally adds a further point; listen for the key words ambitieux, public and conséquent, which the other choices replace with périlleux, privé and ridicule."
+   "explanation": "\"Le projet est ambitieux, et en outre, il bénéficie d'un financement public conséquent.\" \"En outre\" formally adds a further point; here \"conséquent\" means substantial, not \"consequent\"."
   },
   "translate": {
    "prompt": "Say that the proposal is convincing and, as a further remark, that it is realistic (use \"du reste\").",
@@ -13883,7 +13878,7 @@
     "Étant donné que le projet prend de l'avance, nous devrons revoir entièrement notre calendrier de travail.",
     "Étant donné que le projet prend du retard, nous devrons réduire entièrement notre calendrier de travail."
    ],
-   "explanation": "The speaker says \"Étant donné que le projet prend du retard, nous devrons revoir entièrement notre calendrier de travail.\" Étant donné que gives the known cause (the delay), and the other choices change one clearly audible word such as retard/avance or calendrier/budget."
+   "explanation": "\"Étant donné que le projet prend du retard, nous devrons revoir entièrement notre calendrier de travail.\" \"Étant donné que\" introduces a known cause (\"du retard\"); listen for the exact words \"retard\" and \"calendrier\"."
   },
   "speak": {
    "answer": "Bien qu'il soit tard, nous continuons à travailler.",
@@ -13981,7 +13976,7 @@
     "La diminution progressive des exigences a facilité la conclusion de l'accord entre les deux pays.",
     "La diminution progressive des exigences a compliqué la conclusion de l'accord entre les deux parties."
    ],
-   "explanation": "The sentence heard is \"La diminution progressive des exigences a facilité la conclusion de l'accord entre les deux parties.\" It uses the abstract nouns \"diminution\", \"exigences\" and \"conclusion\", each derived from a verb."
+   "explanation": "\"La diminution progressive des exigences a facilité la conclusion de l'accord entre les deux parties.\" It packs its meaning into verb-derived nouns: \"diminution\", \"exigences\", \"conclusion\"."
   },
   "translate": {
    "prompt": "Say that the company's decision to reduce production surprised the analysts.",
@@ -14010,7 +14005,7 @@
     "Cette entreprise a connu une forte aggravation de ses résultats grâce au développement de nouveaux marchés.",
     "Cette entreprise a connu une forte amélioration de ses salaires grâce au développement de nouveaux marchés."
    ],
-   "explanation": "The sentence heard was \"Cette entreprise a connu une forte amélioration de ses résultats grâce au développement de nouveaux marchés.\" It uses two nominalisations: amélioration (from améliorer) and développement (from développer)."
+   "explanation": "\"Cette entreprise a connu une forte amélioration de ses résultats grâce au développement de nouveaux marchés.\" Two nouns from verbs, \"amélioration\" (améliorer) and \"développement\" (développer), carry the meaning."
   },
   "speak": {
    "answer": "La réussite de ce projet dépend de notre exigence.",
@@ -14061,7 +14056,7 @@
     "La diminution des coûts de production a exigé une justification approfondie de la part de la direction.",
     "La baisse des coûts de production a exigé une justification approfondie de la part de la direction."
    ],
-   "explanation": "\"La réduction des coûts de production a exigé une justification approfondie de la part de la direction.\" turns réduire, produire and justifier into the nouns \"la réduction\", \"la production\" and \"la justification\", giving formal noun-heavy style."
+   "explanation": "\"La réduction des coûts de production a exigé une justification approfondie de la part de la direction.\" The formal style uses nouns (\"réduction\", \"justification\") where speech would use verbs."
   }
  },
  "frc1p4l4": {
@@ -14102,7 +14097,7 @@
     "La diminution du chômage résulte surtout de la création récente de nombreux contrats.",
     "La réduction du chômage résulte surtout de la création récente de nombreux emplois."
    ],
-   "explanation": "\"La diminution du chômage résulte surtout de la création récente de nombreux emplois.\" turns the verbs diminuer and créer into the feminine abstract nouns \"diminution\" and \"création\"; listen for these two nouns, since the wrong choices swap one of them or the final noun."
+   "explanation": "\"La diminution du chômage résulte surtout de la création récente de nombreux emplois.\" \"Diminution\" and \"création\" are feminine nouns from diminuer and créer; catch them and the final \"emplois\"."
   },
   "translate": {
    "prompt": "Say that the creation of this company led to a major transformation of the local economy.",
@@ -14119,7 +14114,7 @@
     "La création de cette entreprise a donné lieu à une transformation majeure de l'économie locale.",
     "La création de cette entreprise a mené à une transformation majeure de l'économie locale."
    ],
-   "explanation": "The verbs créer and transformer become nouns with -ation, giving \"La création de cette entreprise a entraîné une transformation majeure de l'économie locale.\" Both nouns are feminine, and the abstract nouns replace clauses like 'when the company was created'."
+   "explanation": "\"La création de cette entreprise a entraîné une transformation majeure de l'économie locale.\" Créer and transformer become the feminine nouns \"création\" and \"transformation\", replacing a clause like \"when the company was created\"."
   }
  },
  "frc1p5l1": {
@@ -14135,7 +14130,7 @@
   },
   "speak": {
    "answer": "Il serait réducteur de ne pas peser le pour et le contre.",
-   "explanation": "\"Il serait réducteur de ne pas peser le pour et le contre.\" means it would be an oversimplification not to weigh both sides. \"Réducteur\" is the formal word for criticizing an analysis that is too simple, and \"peser le pour et le contre\" is the set phrase for weighing up an issue."
+   "explanation": "\"Il serait réducteur de ne pas peser le pour et le contre.\" Here \"réducteur\" criticizes an analysis as too simple, and \"peser le pour et le contre\" is the set phrase for weighing both sides."
   },
   "translate": {
    "prompt": "Say that this argument rests on a flawed starting point of the reasoning. Use the precise noun for that starting point.",
@@ -14193,7 +14188,7 @@
     "Il convient de réfuter point par point les conclusions de cette argumentation fallacieuse.",
     "Il convient de réfuter point par point les prémisses de cette argumentation rigoureuse."
    ],
-   "explanation": "The sentence heard is \"Il convient de réfuter point par point les prémisses de cette argumentation fallacieuse.\" and it means one should disprove the premises of a misleading argument one by one."
+   "explanation": "\"Il convient de réfuter point par point les prémisses de cette argumentation fallacieuse.\" \"Réfuter\" means to disprove and \"fallacieuse\" means misleading, so the sentence is about taking apart a flawed argument."
   },
   "speak": {
    "answer": "Il faut anticiper les contre-arguments",
@@ -14226,7 +14221,7 @@
     "Il serait plus prudent de nuancer cette affirmation avant de la réfuter devant le comité.",
     "Il serait plus prudent de nuancer cette affirmation avant de la défendre devant le public."
    ],
-   "explanation": "The sentence \"Il serait plus prudent de nuancer cette affirmation avant de la défendre devant le comité.\" says it is wiser to qualify a claim before defending it; the other choices change one audible word (vérifier, réfuter, public)."
+   "explanation": "\"Il serait plus prudent de nuancer cette affirmation avant de la défendre devant le comité.\" \"Nuancer\" means to qualify a claim; the wrong choices swap one word: \"vérifier\", \"réfuter\" or \"public\"."
   },
   "translate": {
    "prompt": "Say that this argument rests on weak premises and that you intend to refute it.",
@@ -14253,7 +14248,7 @@
     "Il convient de nuancer cette affirmation avant de la contester comme une vérité absolue.",
     "Il convient de défendre cette affirmation avant de la présenter comme une vérité absolue."
    ],
-   "explanation": "The sentence \"Il convient de nuancer cette affirmation avant de la présenter comme une vérité absolue.\" means one should qualify the claim before presenting it as an absolute truth; the wrong choices change one clearly audible word (\"défendre\", \"contester\", \"injustice\")."
+   "explanation": "\"Il convient de nuancer cette affirmation avant de la présenter comme une vérité absolue.\" \"Nuancer\" means to qualify a claim; listen for \"nuancer\", \"présenter\" and \"vérité\", which the wrong choices replace."
   },
   "speak": {
    "answer": "Il est essentiel de favoriser un débat constructif",
@@ -14287,7 +14282,7 @@
     "Je regrette qu'ils ne puissent pas venir à la réunion avant la fin du mois.",
     "Je regrette qu'ils n'aient pas voulu venir à la réunion avant la fin du mois."
    ],
-   "explanation": "You heard \"Je regrette qu'ils n'aient pas pu venir à la réunion avant la fin du mois.\": the past subjunctive \"aient pu\" follows \"regretter que\" (not present \"puissent\" or \"voulu\"), and it ends with \"du mois\", not \"de mai\"."
+   "explanation": "\"Je regrette qu'ils n'aient pas pu venir à la réunion avant la fin du mois.\" \"Regretter que\" takes the subjunctive, and a past event needs the past form \"aient pu\"; also listen for \"du mois\"."
   },
   "translate": {
    "prompt": "Say that you are glad she had already left before the storm, using the past subjunctive after an expression of emotion.",
@@ -14305,7 +14300,7 @@
     "Je suis contente qu'elle soit partie avant l'orage.",
     "Je suis heureux qu'elle soit partie avant l'orage."
    ],
-   "explanation": "\"Je suis ravi qu'elle soit déjà partie avant l'orage.\" uses the past subjunctive because the emotion \"ravi que\" requires the subjunctive and her departure is already done. \"Partir\" forms its past with être, so the participle agrees with feminine \"elle\": \"soit partie\"."
+   "explanation": "\"Je suis ravi qu'elle soit déjà partie avant l'orage.\" An emotion like \"ravi que\" takes the subjunctive, and her earlier departure needs the past form. \"Partir\" uses être, so the participle agrees: \"partie\"."
   }
  },
  "frc1p6l2": {
@@ -14317,7 +14312,7 @@
     "Il est dommage que nous n'ayons pas pu nous voir avant votre retour.",
     "Il est dommage que nous n'ayons pas su nous voir avant votre départ."
    ],
-   "explanation": "The sentence is \"Il est dommage que nous n'ayons pas pu nous voir avant votre départ.\" Regret takes the past subjunctive, and the key words are \"avant\" (before) and \"départ\" (departure)."
+   "explanation": "\"Il est dommage que nous n'ayons pas pu nous voir avant votre départ.\" \"Il est dommage que\" expresses regret and takes the subjunctive, here the past \"ayons pu\"; listen for \"avant\" and \"départ\"."
   },
   "speak": {
    "answer": "Je regrette que vous n'ayez pas pu venir hier",
@@ -14415,7 +14410,7 @@
     "Je regrette qu'ils aient refusé notre invitation sans même prendre le temps de l'examiner sérieusement.",
     "Je regrette qu'ils aient refusé notre proposition sans même prendre le temps de l'examiner rapidement."
    ],
-   "explanation": "The sentence heard is \"Je regrette qu'ils aient refusé notre proposition sans même prendre le temps de l'examiner sérieusement.\" Regretting triggers the past subjunctive \"aient refusé\", and the other choices change one clearly audible word (écouter, invitation, rapidement)."
+   "explanation": "\"Je regrette qu'ils aient refusé notre proposition sans même prendre le temps de l'examiner sérieusement.\" \"Regretter que\" takes the subjunctive; the past form \"aient refusé\" fits a completed refusal."
   },
   "translate": {
    "prompt": "Say that it is unlikely that she has already left without telling us.",
@@ -14445,7 +14440,7 @@
     "Lorsque le roi entra dans la salle, tous les courtisans s'enfuirent aussitôt devant lui.",
     "Lorsque le roi entra dans la chambre, tous les courtisans s'inclinèrent aussitôt devant lui."
    ],
-   "explanation": "The sentence heard is \"Lorsque le roi entra dans la salle, tous les courtisans s'inclinèrent aussitôt devant lui.\" Both \"entra\" and \"s'inclinèrent\" are passé simple forms (third person singular and plural) narrating successive past events."
+   "explanation": "\"Lorsque le roi entra dans la salle, tous les courtisans s'inclinèrent aussitôt devant lui.\" \"Entra\" and \"s'inclinèrent\" are passé simple, the literary tense for completed events in a story."
   },
   "speak": {
    "answer": "Il prit son chapeau et sortit sans un mot",
@@ -14479,7 +14474,7 @@
     "Quand il comprit enfin la vérité, il se retourna sans un mot et quitta la salle.",
     "Quand il comprit enfin la vérité, il se leva sans un mot et traversa la salle."
    ],
-   "explanation": "The sentence heard is \"Quand il comprit enfin la vérité, il se leva sans un mot et quitta la salle.\", where \"comprit\" is the passé simple of comprendre, narrating a completed action."
+   "explanation": "\"Quand il comprit enfin la vérité, il se leva sans un mot et quitta la salle.\" The passé simple \"comprit\" (-it ending) narrates a completed past event; \"apprit\" would be a different verb."
   },
   "translate": {
    "prompt": "Narrate in literary style: he took the letter, read it slowly, then went out without saying anything.",
@@ -14509,7 +14504,7 @@
     "Après un long silence, le vieux notaire se leva, reprit son manteau et gagna la salle.",
     "Après un long voyage, le vieux notaire se leva, reprit son manteau et quitta la salle."
    ],
-   "explanation": "The sentence heard was \"Après un long silence, le vieux notaire se leva, reprit son manteau et quitta la salle.\" It uses the passé simple forms \"se leva\", \"reprit\" and \"quitta\" to narrate successive actions."
+   "explanation": "\"Après un long silence, le vieux notaire se leva, reprit son manteau et quitta la salle.\" The passé simple endings \"-a\" (se leva, quitta) and \"-it\" (reprit) narrate a chain of completed actions."
   },
   "speak": {
    "answer": "Il devint roi et il mourut très vieux",
@@ -14637,7 +14632,7 @@
   },
   "speak": {
    "answer": "La morale et l'éthique ne sont pas la même chose.",
-   "explanation": "In \"La morale et l'éthique ne sont pas la même chose.\", la morale is the set of accepted rules of right and wrong, while l'éthique is the philosophical study of those rules. Note \"ne sont pas\" for the negation and \"la même chose\" for \"the same thing\"."
+   "explanation": "\"La morale et l'éthique ne sont pas la même chose.\" \"La morale\" means accepted rules of right and wrong; \"l'éthique\" is the philosophical study of them. Negation wraps the verb: \"ne sont pas\"."
   },
   "translate": {
    "prompt": "Say that the meaning of life is a question that every person must ask themselves.",
@@ -14666,7 +14661,7 @@
     "Le doute méthodique permet de remettre en question toutes nos raisons les plus anciennes.",
     "Le doute méthodique permet de remettre en question toutes nos vertus les plus anciennes."
    ],
-   "explanation": "The sentence heard is \"Le doute méthodique permet de remettre en question toutes nos croyances les plus anciennes.\" The key word is « croyances » (beliefs), which sounds clearly different from « perceptions », « raisons » or « vertus »."
+   "explanation": "\"Le doute méthodique permet de remettre en question toutes nos croyances les plus anciennes.\" The key word is \"croyances\" (beliefs), which sounds different from \"perceptions\", \"raisons\" or \"vertus\"."
   },
   "translate": {
    "prompt": "Say that reason and perception do not always lead to the same truth.",
@@ -14818,7 +14813,7 @@
   },
   "speak": {
    "answer": "La recherche en biotechnologie progresse rapidement",
-   "explanation": "In \"La recherche en biotechnologie progresse rapidement\", the verb progresser means to advance, and rapidement is an adverb built from rapide that tells you how fast the research moves. En introduces the field, as in en biotechnologie."
+   "explanation": "\"La recherche en biotechnologie progresse rapidement\": \"progresser\" means to advance, and \"rapidement\" is an adverb formed from \"rapide\". \"En\" introduces the field."
   },
   "translate": {
    "prompt": "Say that this discovery opens new prospects for robotics.",
@@ -14875,7 +14870,7 @@
     "Cette équipe de chercheurs a présenté un prototype innovant dans le domaine de la génétique.",
     "Cette équipe de chercheurs a présenté un prototype innovant dans le domaine de la nanotechnologie."
    ],
-   "explanation": "The sentence heard is \"Cette équipe de chercheurs a présenté un prototype innovant dans le domaine de la robotique.\" It describes researchers unveiling an innovative prototype in the field of robotics; the other choices swap one key noun."
+   "explanation": "\"Cette équipe de chercheurs a présenté un prototype innovant dans le domaine de la robotique.\" Each wrong choice swaps one noun: \"algorithme\", \"génétique\" or \"nanotechnologie\" instead of \"prototype\" or \"robotique\"."
   },
   "speak": {
    "answer": "le réseau de neurones améliore l'évolutivité du système",
@@ -14903,13 +14898,13 @@
  "frga2p1l1": {
   "listening": {
    "prompt": "What did you hear?",
-   "audioText": "Nous mangeons du pain avec du fromage",
+   "audioText": "Nous mangeons du pain avec du fromage.",
    "wrong": [
-    "Nous mangeons du riz avec du fromage",
-    "Nous mangeons du pain avec du poisson",
-    "Nous mangeons du gâteau avec du fromage"
+    "Nous mangeons du riz avec du fromage.",
+    "Nous mangeons du pain avec du poisson.",
+    "Nous mangeons du gâteau avec du fromage."
    ],
-   "explanation": "The sentence is \"Nous mangeons du pain avec du fromage\", meaning we eat bread with cheese; the other choices change the food word."
+   "explanation": "The sentence is \"Nous mangeons du pain avec du fromage.\", meaning we eat bread with cheese; the other choices change the food word."
   },
   "speak": {
    "answer": "Elle mange une pomme et un gâteau",
@@ -14925,7 +14920,7 @@
     "Vous êtes en train de manger du riz et un œuf",
     "Vous êtes en train de manger du riz et un oeuf"
    ],
-   "explanation": "With the formal \"vous\", regular -er verbs end in \"-ez\", so \"Vous mangez du riz et un œuf\"."
+   "explanation": "With formal \"vous\", regular -er verbs end in \"-ez\": \"Vous mangez du riz et un œuf\". \"Du\" marks an uncountable food like rice, \"un\" a single egg."
   }
  },
  "frga2p1l2": {

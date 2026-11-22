@@ -1005,7 +1005,12 @@ async function judge() {
   const sampleN = Number(arg("sample", "0"));
   if (sampleN) {
     const merged = readJson<Record<string, { added: string[] }>>(mergedAltsPath, {});
-    const pool = items.filter((it) => universe.has(it.id) && merged[it.id]?.added.length);
+    const explIds = new Set(readJson<string[]>(path.join(STATE, "expl-applied.json"), []));
+    const pool = items.filter((it) =>
+      arg("sample-pool", "") === "expl"
+        ? explIds.has(it.id)
+        : universe.has(it.id) && merged[it.id]?.added.length,
+    );
     for (const it of stratifiedDraw(pool, sampleN, `${SEED}:alts`, (x) => x.course)) ids.add(it.id);
   }
   // Fallback when the Mistral second opinion is unavailable: the judge also sees the control sample
@@ -1325,6 +1330,7 @@ function explainApplyCommand() {
   }
   runGates(drafts);
   saveDrafts(drafts);
+  writeJson(path.join(STATE, "expl-applied.json"), changed);
   invalidate(changed, { keepAlts: true });
   console.log(
     `explain-apply: ${changed.length} explanations rewritten, ${refused} refused by the gates.`,
@@ -1560,6 +1566,20 @@ function exportBulkPage(a: {
             b4,
             "After an Opus pass over every translate and listening item for answers the grader would reject, a stricter explanation rewrite and a re-check of the regional, naturalness and spelling findings, a fresh sample (samples 1 to 3 excluded), judged blind by Opus",
           ),
+        ],
+        [
+          "Round 4: explanations",
+          (() => {
+            const asked = Object.keys(
+              readJson<Record<string, string>>(path.join(STATE, "expl.json"), {}),
+            ).length;
+            const done = readJson<string[]>(path.join(STATE, "expl-applied.json"), []).length;
+            const j = readJson<{ sampled: number; rejected: number; explanation: number }>(
+              path.join(STATE, "expl-judge.json"),
+              { sampled: 0, rejected: 0, explanation: 0 },
+            );
+            return `${asked} explanations failed a stricter rubric (explains the pattern, at most 230 characters, no meta text, not just the sentence again) and were rewritten by Sonnet; ${done} passed every gate and replaced the old text. Opus judged a random ${j.sampled} of them: ${j.sampled - j.rejected} found clean (${((100 * (j.sampled - j.rejected)) / Math.max(1, j.sampled)).toFixed(1)}%); the ${j.rejected} it flagged (only ${j.explanation} for the explanation itself, the rest older findings on the same items) were reverted or patched. 58 Spanish and French listening items also got the missing final period. No new full blind sample was taken (owner decision to ship).`;
+          })(),
         ],
         [
           "Second opinion",
