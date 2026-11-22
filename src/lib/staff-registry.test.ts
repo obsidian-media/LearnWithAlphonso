@@ -118,15 +118,31 @@ describe("the registry of console server functions", () => {
       "adminListFolders",
     ]);
     for (const name of PODCAST_WRITE_FUNCTIONS) {
-      const body = byName.get(name);
+      const body = byName.get(name)!;
       expect(body, `${name} exists`).toBeDefined();
-      expect(body, `${name} must record what it did`).toMatch(/recordPodcastAction\(/);
+      expect(body, `${name} records through a staff_podcast_* SQL function`).toMatch(
+        /podcastWrite\(\s*context,\s*"staff_podcast_/,
+      );
+      expect(body, `${name} takes and checks a reason`).toMatch(/\.\.\.reasonField/);
+      expect(body).toMatch(/await podcastReason\(data\.reason\)/);
+      expect(body).toMatch(/p_reason: reason/);
+      expect(body, `${name} must not change a table itself`).not.toMatch(
+        /\.(insert|update|delete|upsert)\(/,
+      );
     }
-    // The helper writes through the one recording path, with the actor and role.
-    const helper = src.slice(src.indexOf("async function recordPodcastAction"));
-    expect(helper).toMatch(/recordStaffAction\(/);
-    expect(helper).toMatch(/actor: context\.userId/);
-    expect(helper).toMatch(/role: context\.staffRole/);
+    // The helper calls the SQL function as the signed-in staff member, with the actor and role.
+    const helper = src.slice(src.indexOf("async function podcastWrite"));
+    expect(helper).toMatch(/p_actor: context\.userId/);
+    expect(helper).toMatch(/p_role: context\.staffRole/);
+    // Every SQL function the podcast writes name exists in a migration.
+    const sql = readdirSync("supabase/migrations")
+      .map((f) => readFileSync(path.join("supabase/migrations", f), "utf8"))
+      .join("\n");
+    const called = new Set([...src.matchAll(/"(staff_podcast_\w+)"/g)].map((m) => m[1]!));
+    expect(called.size).toBeGreaterThanOrEqual(10);
+    for (const fn of called) {
+      expect(sql, fn).toMatch(new RegExp(`CREATE FUNCTION public\\.${fn}\\(`));
+    }
   });
 
   it("every staff_* SQL function the console calls exists in a migration", () => {

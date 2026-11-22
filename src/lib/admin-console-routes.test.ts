@@ -152,6 +152,64 @@ describe("every screen is gated by a server call, not by the navigation", () => 
     }
   });
 
+  it("both podcast routes are gated by podcasts.manage in their loader, show one screen, and never touch the database themselves", () => {
+    for (const file of ["folders.tsx", "folder.$id.tsx"]) {
+      const src = readFileSync(`admin/routes/${file}`, "utf8");
+      expect(src, file).toContain('me.scopes.includes("podcasts.manage")');
+      expect(src, file).toContain("ssr: false");
+      expect(src, file).toContain('<ForbiddenCard title="Podcast" scope="podcasts.manage"');
+      expect(src, file).toContain("PodcastScreen");
+      expect(src, file).not.toMatch(/supabaseAdmin|from\(["']podcast_/);
+      // a signed-out person goes to sign in; only a missing scope shows the forbidden card
+      expect(src, file).toMatch(/classifyStaffError\(e\) === "forbidden"/);
+      expect(src, file).toMatch(/redirect\(\{ to: "\/signin" \}\)/);
+    }
+  });
+
+  it("every existing podcast action stays reachable: each server function is wired, each write passes the reason, and the screen calls every one", () => {
+    const wiring = readFileSync("src/components/console/podcast/serverApi.ts", "utf8");
+    const screen = readFileSync("src/components/console/podcast/PodcastScreen.tsx", "utf8");
+    for (const fn of [
+      "adminListFolders",
+      "adminListEpisodes",
+      "adminGetTranscript",
+      "adminCreateFolder",
+      "adminRenameFolder",
+      "adminMoveFolder",
+      "adminDeleteFolder",
+      "adminUpdateEpisode",
+      "adminSetPublished",
+      "adminSaveTranscript",
+      "adminCreateAudioUploadUrl",
+      "adminVerifyUploadedAudio",
+      "adminCreateEpisodeUploadUrl",
+      "adminCreateEpisode",
+    ]) {
+      expect(wiring, fn).toContain(fn);
+    }
+    for (const call of wiring.match(
+      /(adminCreateFolder|adminRenameFolder|adminMoveFolder|adminDeleteFolder|adminUpdateEpisode|adminSetPublished|adminSaveTranscript)\(\{\s*data: \{[^}]*\}\s*\}\)/g,
+    ) ?? []) {
+      expect(call, call).toContain("reason");
+    }
+    for (const method of [
+      "createFolder",
+      "renameFolder",
+      "moveFolder",
+      "deleteFolder",
+      "updateEpisode",
+      "setPublished",
+      "saveTranscript",
+      "replaceAudio",
+      "createEpisode",
+      "transcript",
+      "episodes",
+      "folders",
+    ]) {
+      expect(screen, method).toMatch(new RegExp(String.raw`api\s*\.${method}\(`));
+    }
+  });
+
   it("the staff page is owner-only in the loader and changes staff only through the staff server functions", () => {
     const src = readFileSync("admin/routes/staff.tsx", "utf8");
     expect(src).toContain('"staff.manage"');
