@@ -1,5 +1,5 @@
 /**
- * Graded stories (docs/superpowers/specs/2026-11-17-graded-stories-design.md): the pure rules behind the library
+ * Graded stories (docs/archive/2026-11/2026-11-17-graded-stories-design.md): the pure rules behind the library
  * and the read-along. The database decides what a learner may see (RLS: published only); the filter here is a second
  * line, so a draft that ever reached the client still never shows.
  */

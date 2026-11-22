@@ -24,7 +24,7 @@ describe("buildIOSContentBundle", () => {
     // translate) + 25 (phase 2 PR 3: fra1p22/fra2p22/frb1p22/frb2p22/frc1p22,
     // listening) + 25 (phase 2 PR 4: fra1p23/fra2p23/frb1p23/frb2p23/frc1p23,
     // speak) -- one 25-line pack per level per type, 5 lessons each. See
-    // docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md
+    // docs/archive/2026-09/2026-09-24-french-phase-2-question-types-design.md
     expect(lessonCount).toBe(611);
   });
 

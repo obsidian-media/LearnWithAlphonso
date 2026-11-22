@@ -2,7 +2,7 @@
 // Functions bundle each function directory independently, so a relative
 // import reaching outside supabase/functions/ is not reliably resolvable
 // by the deploy pipeline (see the "Open question" section of
-// docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md,
+// docs/archive/2026-09/2026-09-17-complete-lesson-edge-function-design.md,
 // which explicitly allows this local-copy fallback). This file must stay
 // byte-for-byte equivalent to the source of truth -- if you change the
 // math here, change it there too (and vice versa), and keep both test

@@ -10,7 +10,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * Interactive branching stories (docs/superpowers/specs/2026-11-18-interactive-branching-stories-design.md): a tree of
+ * Interactive branching stories (docs/archive/2026-11/2026-11-18-interactive-branching-stories-design.md): a tree of
  * read-along nodes joined by choice points that reaches one of several endings. Port of Branching.swift; mirrors
  * src/lib/branching.ts (the rules and the walk).
  *

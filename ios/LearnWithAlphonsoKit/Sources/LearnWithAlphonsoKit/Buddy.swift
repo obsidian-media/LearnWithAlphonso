@@ -1,6 +1,6 @@
 import Foundation
 
-/// Study buddies (study together, Phase 3a on the server; docs/superpowers/specs/2026-10-06-study-together-design.md).
+/// Study buddies (study together, Phase 3a on the server; docs/archive/2026-10/2026-10-06-study-together-design.md).
 /// The server is the source of truth for the week rules (`_resolve_buddy_pair`); `BuddyRules` mirrors them so the
 /// clients stay honest, and `BuddyCopy` owns the wording, which is word-for-word src/lib/buddy.ts (both pinned by the
 /// shared Fixtures/buddy.fixtures.json).

@@ -1,6 +1,6 @@
 /**
  * Content-authoring CLI for the podcast/audio library (Phase 1a -- see
- * docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md).
+ * docs/archive/2026-09/2026-09-24-podcast-library-phase1-design.md).
  * Publishes episodes from two sources through one pipeline: an MP3 you
  * recorded (`--file`) or a script spoken by Deepgram (`--script`). They
  * differ only in the `source` column; everything after synthesis --

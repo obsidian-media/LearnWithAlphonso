@@ -4,7 +4,7 @@ import { packQuestions } from "./bank-engine";
 
 /**
  * Measures the exact failure mode
- * docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md §5
+ * docs/archive/2026-09/2026-09-25-spanish-content-audit-design.md §5
  * flags: `bank-engine.ts`'s `pickDistractors` pools a cloze pack's answers
  * with no ranking at all (Spanish inherits zero ordering, unlike English's
  * `orderDistractorCandidates`), so a verb-conjugation drill can offer

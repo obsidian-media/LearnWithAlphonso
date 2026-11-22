@@ -15,7 +15,7 @@ import Foundation
 /// rule below as a hypothesis to confirm once Spanish speak content is live.
 ///
 /// What this deliberately does NOT attempt, per
-/// docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md §6.1:
+/// docs/archive/2026-09/2026-09-25-spanish-content-audit-design.md §6.1:
 /// seseo/ceceo, the b/v merger, and yeísmo are genuine phonemic mergers for
 /// most Spanish speakers -- two different words pronounced identically, so
 /// no normalisation rule can recover which one a learner meant. That is a

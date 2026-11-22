@@ -10,7 +10,7 @@ import LearnWithAlphonsoKit
 /// deliberately separate type from NotificationScheduler, not an
 /// extension of it -- these are genuinely different systems (local
 /// UNUserNotificationCenter scheduling vs. remote APNs registration), see
-/// docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md's
+/// docs/archive/2026-09/2026-09-21-remote-push-notifications-design.md's
 /// "What already exists" section for why this doesn't touch
 /// NotificationScheduler.swift at all.
 ///

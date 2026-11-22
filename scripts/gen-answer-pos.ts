@@ -11,7 +11,7 @@
  * nouns into verb slots -- precisely the defect the layer exists to remove.
  * Filling the blank and tagging the term in place fixes ~9 of 10 of those.
  * (This repo already documented compromise's bare-word weakness; see
- * docs/superpowers/specs/2026-09-22-generative-sentence-content-design.md.)
+ * docs/archive/2026-09/2026-09-22-generative-sentence-content-design.md.)
  *
  * Two conservative rules, because a wrong tag is worse than no tag -- no tag
  * merely declines to express a preference, while a wrong one actively promotes

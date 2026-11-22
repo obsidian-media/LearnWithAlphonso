@@ -8,7 +8,7 @@
  * drift from each other. Re-run this whenever curriculum.ts,
  * curriculum-fr.ts, scenarios.ts, or campaigns.ts change -- the native app has no other
  * way to pick up content changes short of a new build (see the native
- * app's design doc, docs/superpowers/specs/2026-09-17-native-ios-app-design.md,
+ * app's design doc, docs/archive/2026-09/2026-09-17-native-ios-app-design.md,
  * for why content is bundled rather than fetched at runtime for V1).
  *
  * Usage: bun scripts/export-ios-content.ts

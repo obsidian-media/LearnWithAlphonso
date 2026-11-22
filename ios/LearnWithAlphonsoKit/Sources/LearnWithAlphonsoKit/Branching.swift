@@ -3,7 +3,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-// Interactive branching stories (docs/superpowers/specs/2026-11-18-interactive-branching-stories-design.md): a tree of
+// Interactive branching stories (docs/archive/2026-11/2026-11-18-interactive-branching-stories-design.md): a tree of
 // read-along nodes joined by choice points that reaches one of several endings. Mirrors src/lib/branching.ts (the rules
 // and the walk) and src/lib/stories.functions.ts (loading and finishing).
 //

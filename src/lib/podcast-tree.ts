@@ -1,6 +1,6 @@
 /**
  * Pure folder-tree logic for the podcast library (Phase 1a, see
- * docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md).
+ * docs/archive/2026-09/2026-09-24-podcast-library-phase1-design.md).
  *
  * The editorial shape the account owner publishes (Course -> Level ->
  * Series) is a convention for populating the tree, not a constraint in

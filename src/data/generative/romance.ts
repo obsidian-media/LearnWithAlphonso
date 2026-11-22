@@ -1,6 +1,6 @@
 /**
  * Shared types and checks for the French and Spanish generative templates
- * (design: docs/superpowers/specs/2026-10-17-generative-content-fr-es-design.md).
+ * (design: docs/archive/2026-10/2026-10-17-generative-content-fr-es-design.md).
  *
  * Nothing here imports a conjugation library. The committed tables in
  * fr-data.ts / es-data.ts are the authority; the libraries are only ever

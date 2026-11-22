@@ -33,7 +33,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<!-- Background audio for the podcast library (Phase 1b, see
-	     docs/superpowers/specs/2026-09-24-podcast-phase1b-ios-design.md).
+	     docs/archive/2026-09/2026-09-24-podcast-phase1b-ios-design.md).
 	     Without this, playback stops the moment the screen locks, which is
 	     most of what people want a listening tab for. This capability is
 	     visible in App Store review: a reviewer may check that background

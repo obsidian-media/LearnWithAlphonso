@@ -737,7 +737,7 @@ pay attention|presta atención`,
     // the real normaliser (every line round-trips through
     // matchesSpokenAnswerEs, and every number word was checked against its
     // digit-rendered STT variant too, per
-    // docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md §6.1),
+    // docs/archive/2026-09/2026-09-25-spanish-content-audit-design.md §6.1),
     // not against intuition. Four things are avoided on purpose:
     //   - compound numbers 31+ ("treinta y uno" etc.), which will not
     //     survive smart_format, the same reasoning as English's and

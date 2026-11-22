@@ -1,7 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.podcast
 
 /**
- * Graded stories: leveled texts read along with narration (docs/superpowers/specs/2026-11-17-graded-stories-design.md).
+ * Graded stories: leveled texts read along with narration (docs/archive/2026-11/2026-11-17-graded-stories-design.md).
  * Port of Stories.swift; mirrors src/lib/stories.ts and the podcast model.
  *
  * The database decides what a learner may see (RLS: published stories only) and the filter here is a second line, so a

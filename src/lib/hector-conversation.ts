@@ -1,6 +1,6 @@
 /**
  * Pure helpers for `/api/hector-respond` — the decoupled Hector tutor
- * (docs/superpowers/specs/2026-09-27-hector-decoupling-design.md).
+ * (docs/archive/2026-09/2026-09-27-hector-decoupling-design.md).
  *
  * Kept separate from the route so the message-building, voice mapping and
  * reply-shaping are unit-tested directly, rather than only ever exercised

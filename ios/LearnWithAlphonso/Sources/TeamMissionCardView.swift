@@ -1,8 +1,8 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// A team's weekly shared mission, on the team screen and the Learn tab (BACKLOG 0.0-ac #2, docs/superpowers/
-/// specs/2026-10-06-study-together-design.md). It renders what the `get_team_mission` RPC returns and does no
+/// A team's weekly shared mission, on the team screen and the Learn tab (BACKLOG 0.0-ac #2, docs/archive/2026-10/
+/// 2026-10-06-study-together-design.md). It renders what the `get_team_mission` RPC returns and does no
 /// mission maths of its own: the server computes the target, the progress and the payout, and `TeamMission`
 /// (tested in the Kit against the shared fixtures) owns the wording, which is word-for-word the web card's.
 /// The section renders nothing while loading, without a team, or when the call fails, so it never disrupts

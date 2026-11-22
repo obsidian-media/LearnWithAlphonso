@@ -10,7 +10,7 @@ import type { Level } from "./levels";
  * exam that sets someone's whole course; the typing fallback that rescues a
  * speaking question inside a lesson would here be assessing writing while
  * claiming to assess speaking. That is a product decision, recorded in
- * docs/superpowers/plans/2026-09-24-placement-question-types.md so it can be
+ * docs/archive/2026-09/2026-09-24-placement-question-types.md so it can be
  * overturned knowingly.
  *
  * Unlike lesson content, these ids are NOT review-item keys (review keys are

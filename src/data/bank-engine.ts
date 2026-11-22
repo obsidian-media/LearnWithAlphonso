@@ -137,7 +137,7 @@ function pickDistractors(
   // is no blank). This is deliberately NOT `src/lib/distractor-affinity.ts`'s
   // `orderDistractorCandidates` -- that ranks by part-of-speech affinity via
   // `compromise`, an English-only NLP library (spec
-  // docs/superpowers/specs/2026-09-24-french-content-audit-design.md section
+  // docs/archive/2026-09/2026-09-24-french-content-audit-design.md section
   // 2.1), and stays out of this shared engine until the morphology decision in
   // that spec's section 8.3 is made. `orderByLexicalSimilarity` there is a
   // *different*, language-neutral function (pure content-word overlap, no POS

@@ -2,7 +2,7 @@ import SwiftUI
 import LearnWithAlphonsoKit
 
 /// Profile: the hub for everything that left the tab bar in Phase 0 of the
-/// podcast work (docs/superpowers/specs/2026-09-24-podcast-phase0-ios-tabs-design.md).
+/// podcast work (docs/archive/2026-09/2026-09-24-podcast-phase0-ios-tabs-design.md).
 ///
 /// Seven tabs were declared and iPhone renders five, so Achievements was
 /// already collapsed into the system "More" list before Listen needed a

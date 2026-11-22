@@ -219,7 +219,7 @@ const VOCAB_FILE = "src/data/generative/vocab.ts";
  * from the committed lexicons (src/data/generative/fr-data.ts, es-data.ts),
  * which are built only from nouns and verbs already in the shipped course, and
  * every pack is a named plan in romance-packs.ts. Design:
- * docs/superpowers/specs/2026-10-17-generative-content-fr-es-design.md
+ * docs/archive/2026-10/2026-10-17-generative-content-fr-es-design.md
  */
 function cmdGenerateRomance(course: "fr" | "es", flags: Flags) {
   const id = requireString(

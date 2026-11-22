@@ -2,7 +2,7 @@
 # deterministically (`xcodegen generate`), so the actual .xcodeproj is
 # never hand-edited or committed (see .gitignore). This is what lets the
 # app project exist without ever opening Xcode's GUI -- see
-# docs/superpowers/specs/2026-09-17-native-ios-app-design.md.
+# docs/archive/2026-09/2026-09-17-native-ios-app-design.md.
 #
 # PRODUCT_BUNDLE_IDENTIFIER below is now frozen, not a placeholder -- an
 # App ID (com.obsidianmedia.learnwithalphonso) is registered in App Store

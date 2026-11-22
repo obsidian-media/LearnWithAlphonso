@@ -730,7 +730,7 @@ jobs:
 
       - name: Sync APNs secrets (V4 push notifications)
         # Deliberately conditional on all four being set -- none exist yet
-        # (see docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md's
+        # (see docs/archive/2026-09/2026-09-21-remote-push-notifications-design.md's
         # hard blocker: the APNs Auth Key is an interactive
         # developer.apple.com action no agent can perform). Once a human
         # creates the key and adds these four as repo secrets, this step

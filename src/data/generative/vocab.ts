@@ -12,7 +12,7 @@ export type VocabEntry = {
 
 /**
  * Curated vocab dataset for the generative sentence-content pilot
- * (docs/superpowers/specs/2026-09-22-generative-sentence-content-design.md).
+ * (docs/archive/2026-09/2026-09-22-generative-sentence-content-design.md).
  * Grows ONLY through the `generate` CLI command (scripts/pack-tool.ts)
  * -- an LLM-proposed candidate is only ever added here after passing a
  * real part-of-speech cross-check against `compromise`'s own tagging

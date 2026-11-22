@@ -14,7 +14,7 @@ import {
 } from "./support-links";
 
 /**
- * The Help chat's AI agent, pure parts (docs/superpowers/plans/2026-11-14-support-help-chat.md, "The AI agent: exact
+ * The Help chat's AI agent, pure parts (docs/archive/2026-11/2026-11-14-support-help-chat.md, "The AI agent: exact
  * rules"): the prompt, the keyword table that forces a hand-off, the reply parser and the output guard. Nothing here
  * touches the network or the database, and this file must never import a staff function: the AI has no write path
  * (support-ai.test.ts reads this file's imports).

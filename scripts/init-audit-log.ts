@@ -35,7 +35,7 @@ const body = `# English Content Audit Log (Phase 1)
 > verdict before phase 1 can be called done -- including "no issues
 > found". Coverage is proved by enumeration, not sampling.
 >
-> Spec: \`docs/superpowers/specs/2026-09-23-english-content-overhaul-design.md\`
+> Spec: \`docs/archive/2026-09/2026-09-23-english-content-overhaul-design.md\`
 
 ## Coverage
 
@@ -54,7 +54,10 @@ _Line add/remove proposals and pack re-leveling proposals. Each needs an
 explicit applied/declined decision before phase 1 exits._
 `;
 
-const out = path.resolve(import.meta.dirname, "../docs/superpowers/english-content-audit-log.md");
+const out = path.resolve(
+  import.meta.dirname,
+  "../docs/archive/2026-09/english-content-audit-log.md",
+);
 
 // This script SCAFFOLDS the log; it does not maintain it. Once the audit has
 // filled in verdicts, regenerating would silently discard all of them -- which

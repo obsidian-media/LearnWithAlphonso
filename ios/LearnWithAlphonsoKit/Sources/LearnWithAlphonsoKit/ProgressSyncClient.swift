@@ -86,7 +86,7 @@ public struct Duel: Sendable, Equatable, Identifiable {
 /// discriminates a real lesson-question item ("lesson", the default)
 /// from a synthetic weakness-detection item ("weakness") that carries
 /// its own embedded gradable content instead of pointing at a real
-/// lessons/questions row -- see docs/superpowers/specs/
+/// lessons/questions row -- see docs/archive/2026-09/
 /// 2026-09-20-hector-weakness-detection-design.md.
 public struct ReviewItem: Sendable, Equatable {
     public let itemKey: String
@@ -333,7 +333,7 @@ public struct LessonAnswer: Sendable, Equatable {
 /// Supabase Edge Function (supabase/functions/complete-lesson/index.ts)
 /// rather than PostgREST directly, since granting XP needs a server-only
 /// secret (LESSON_SESSION_SECRET) that can never ship in this binary. See
-/// docs/superpowers/specs/2026-09-17-complete-lesson-edge-function-design.md
+/// docs/archive/2026-09/2026-09-17-complete-lesson-edge-function-design.md
 /// for the full design.
 public final class ProgressSyncClient: Sendable {
     public typealias Requester = @Sendable (URLRequest) async throws -> (Data, URLResponse)

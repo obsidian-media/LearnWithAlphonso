@@ -6,7 +6,7 @@ import PackageDescription
 /// port and gamification math. Deliberately a plain Swift Package with zero
 /// UIKit/SwiftUI dependency, so it builds and tests on any platform with a
 /// Swift toolchain (this was written and verified on Windows, not macOS --
-/// see docs/superpowers/specs/2026-09-17-native-ios-app-design.md for why
+/// see docs/archive/2026-09/2026-09-17-native-ios-app-design.md for why
 /// that distinction matters). The eventual Xcode iOS app target imports
 /// this package as a local dependency rather than duplicating this code
 /// inline -- standard practice for factoring an iOS app's logic out from

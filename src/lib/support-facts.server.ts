@@ -8,7 +8,7 @@ import {
 } from "./revenuecat-entitlement";
 
 /**
- * What the Help chat's AI may know about the learner it is talking to (docs/superpowers/plans/2026-11-14-support-help-chat.md,
+ * What the Help chat's AI may know about the learner it is talking to (docs/archive/2026-11/2026-11-14-support-help-chat.md,
  * "The AI agent: exact rules"). A small, separate shape on purpose: loadLearnerFacts (staff) includes the email, notes
  * and reasons, so the AI must never use it.
  *

@@ -28,7 +28,7 @@ final class ContentStoreTests: XCTestCase {
     }
 
     func testLoadsCampaigns() throws {
-        // V4 candidate #4, see docs/superpowers/specs/2026-09-21-
+        // V4 candidate #4, see docs/archive/2026-09/2026-09-21-
         // conversation-campaigns-design.md. city-day plus twelve story campaigns.
         let store = try ContentStore()
         XCTAssertEqual(

@@ -277,7 +277,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
 /**
  * Hector, decoupled — the tutor turn running in OUR backend against the
  * MAIN account, replacing the call to AlphonsoEcosystem's Cloud Voice
- * (docs/superpowers/specs/2026-09-27-hector-decoupling-design.md).
+ * (docs/archive/2026-09/2026-09-27-hector-decoupling-design.md).
  *
  * It is turn-based (LLM reply + TTS audio), the same pipeline `/api/chat`
  * and `/api/tts` already run, so no new infrastructure — just this route.

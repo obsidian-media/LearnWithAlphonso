@@ -12,7 +12,7 @@ import FoundationNetworking
 /// Bearer-token-over-apiBaseURL shape as AIConversationClient.
 ///
 /// Hector runs in-account now (the 2026-09-27 decouple, see
-/// docs/superpowers/specs/2026-09-27-hector-decoupling-design.md), so
+/// docs/archive/2026-09/2026-09-27-hector-decoupling-design.md), so
 /// deleteMyAccount removes Hector data along with the rest -- there is no
 /// separate account to reach.
 public enum AccountError: Error, Equatable {

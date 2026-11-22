@@ -96,8 +96,8 @@ const INSTRUCTIONAL_PROMPTS = new Set([
  *          hand-written units stopped collapsing into one pseudo-pack: 8 genuine
  *          duplicates plus one instructional-prompt false positive, now excluded
  *          by INSTRUCTIONAL_PROMPTS rather than by tolerating a non-zero count.
- *   es  0  audited and fixed 2026-09-25, in two steps (docs/superpowers/
- *          specs/2026-09-25-spanish-content-audit-design.md §7 steps 3-4).
+ *   es  0  audited and fixed 2026-09-25, in two steps (docs/archive/2026-09/
+ *          2026-09-25-spanish-content-audit-design.md §7 steps 3-4).
  *          40 true repeats (step 3): each replaced in place with a new,
  *          non-colliding line, never deleted, so no id moved. 17
  *          contradictory prompts (step 4, same prompt, different accepted
@@ -312,7 +312,7 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
   });
 
   it("has no duplicate prompt text across different packs", () => {
-    // spec docs/superpowers/specs/2026-09-24-french-content-audit-design.md
+    // spec docs/archive/2026-09/2026-09-24-french-content-audit-design.md
     // section 6.3 item 3: the same sentence in two packs yields two ids that a
     // learner experiences as a repeat. Trailing "___" is stripped before
     // comparing -- the same pack line can compile to an mc question (no
@@ -516,7 +516,7 @@ describe.each(courses)("curriculum consistency ($name)", ({ name, units }) => {
   if (name === "es") {
     it("Spanish: every known accented/typographic character still appears somewhere in the bank", () => {
       // Verified 2026-09-25 by scanning lesson-bank-es.ts source directly: 11
-      // distinct non-ASCII characters -- docs/superpowers/specs/
+      // distinct non-ASCII characters -- docs/archive/2026-09/
       // 2026-09-25-spanish-content-audit-design.md appendix A.2. Same
       // reasoning as the French block above: a floor, not a per-question
       // check, catching a whole character class silently disappearing (e.g.

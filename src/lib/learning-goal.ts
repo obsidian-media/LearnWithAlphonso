@@ -2,7 +2,7 @@ import type { Level } from "../data/levels";
 
 /**
  * The learning-goal plan, computed ONCE here and rendered by web, iOS and Android
- * (docs/superpowers/specs/2026-10-05-learning-goal-planner-design.md). Clients never
+ * (docs/archive/2026-10/2026-10-05-learning-goal-planner-design.md). Clients never
  * redo this maths: a fix lands everywhere at once.
  */
 export const LEVEL_ORDER: Level[] = ["A1", "A2", "B1", "B2", "C1"];

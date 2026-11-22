@@ -75,7 +75,7 @@ Ses livres sont à moi.|Ses livres sont à moi.`,
 // French, so accented-character coverage only proves French's diacritic
 // range (à/â/ç/è/é/ê/ë/î/ô/ù/û/œ). Spanish's own range (á/é/í/ñ/ó/ú/ü/¿/¡)
 // is disjoint enough (ñ, ¿, ¡ have no French equivalent) that it is worth
-// its own pin -- docs/superpowers/specs/2026-09-25-spanish-content-audit-
+// its own pin -- docs/archive/2026-09/2026-09-25-spanish-content-audit-
 // design.md §7 step 7's "generator check": bank-engine.ts needs no Spanish-
 // specific code (it already declares all five kinds language-neutrally, and
 // STOP_WORDS already carries Spanish stopwords), but that claim is worth
@@ -178,7 +178,7 @@ describe("packQuestions", () => {
 
   it("Spanish: 'listening' distractors prefer the minimal-pair sibling over an unrelated line (¿/¡ and ñ/á/é/í/ó/ú survive the same content-word overlap French's tests cover)", () => {
     // pesa/besa (weighs/kisses) is one of the concrete minimal pairs
-    // docs/superpowers/specs/2026-09-25-spanish-content-audit-design.md
+    // docs/archive/2026-09/2026-09-25-spanish-content-audit-design.md
     // §6.2 names for Spanish listening content. Spanish's own accent range
     // (ñ, ¿, ¡) has no French equivalent, so this is not redundant with the
     // French dessus/dessous test above -- it is the actual claim ("bank-

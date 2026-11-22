@@ -6,7 +6,7 @@ import { LEVEL_ORDER, planGoal, validateGoalInput } from "@/lib/learning-goal";
 import { lessonsByLevel, loadLearnerState } from "@/lib/learning-goal.server";
 
 /**
- * Learning goal planner (docs/superpowers/specs/2026-10-05-learning-goal-planner-design.md).
+ * Learning goal planner (docs/archive/2026-10/2026-10-05-learning-goal-planner-design.md).
  * The plan is computed here, once, by `planGoal`; web, iOS and Android only render it.
  * Writes use supabaseAdmin after validation (clients have SELECT on the table only),
  * and every read and write is scoped to the user id from the verified token, never

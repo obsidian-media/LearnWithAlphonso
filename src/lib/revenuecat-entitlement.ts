@@ -2,7 +2,7 @@
  * Server-side RevenueCat entitlement verification.
  *
  * Hector re-parenting Phase 1's own prerequisite
- * (docs/superpowers/specs/2026-09-26-hector-reparenting-design.md):
+ * (docs/archive/2026-09/2026-09-26-hector-reparenting-design.md):
  * before this, this app's backend had no way to check "is this user
  * Pro" at all -- `EntitlementStore` (iOS) only ever asks the RevenueCat
  * *client* SDK, which a server endpoint can't reach into. Any design

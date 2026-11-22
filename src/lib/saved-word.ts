@@ -1,6 +1,6 @@
 /**
  * Pure rules for the save-any-word feature (spec:
- * docs/superpowers/specs/2026-10-05-save-any-word-design.md). No I/O and no
+ * docs/archive/2026-10/2026-10-05-save-any-word-design.md). No I/O and no
  * Node-only imports, so the web client can reuse it in the web phase.
  */
 export type SavedWordCourse = "en" | "fr" | "es";

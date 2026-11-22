@@ -2,7 +2,7 @@ import AVFoundation
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// Graded stories (docs/superpowers/specs/2026-11-17-graded-stories-design.md): the reading analog of the Listen library.
+/// Graded stories (docs/archive/2026-11/2026-11-17-graded-stories-design.md): the reading analog of the Listen library.
 /// Mirrors the web's StoriesLibrary, StoryReader and StoryCheck. The rules are `Stories`, `StoryNarration` and
 /// `PodcastClient.fetchStories/fetchStory/saveStoryProgress/submitStoryCheck` in the Kit (XCTest coverage in
 /// StoriesTests); this file only draws them. Compiles in CI's ios-app-build; look at it on a device.
