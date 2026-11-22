@@ -806,6 +806,59 @@ describe("completeLessonRemote", () => {
       expect(savedTotal()).toBe(9);
     });
 
+    it("a base replay of a lesson stored on the full version keeps best_correct <= total and pays nothing", async () => {
+      const real = findLesson(LESSON_ID)!;
+      const extra = { id: "lx1", type: "mc", prompt: "p", choices: ["a", "b"], answer: 0 };
+      vi.spyOn(getCourse("en"), "findLesson").mockReturnValue({
+        ...real,
+        lesson: { ...real.lesson, questions: [...real.lesson.questions, extra] },
+      } as unknown as ReturnType<typeof findLesson>);
+      for (const stored of [
+        { correct: 9, total: 9, xp_earned: 9 * 10 + 20 },
+        { correct: 8, total: 9, xp_earned: 8 * 10 }, // full 8/9: a perfect base replay must not earn the bonus
+      ]) {
+        adminRpc.mockClear();
+        const supabase = createSupabaseMock();
+        supabase.from
+          .mockReturnValueOnce(
+            chainable({
+              data: {
+                streak: 1,
+                longest_streak: 1,
+                last_active_date: new Date().toISOString().slice(0, 10),
+                hearts: 5,
+                hearts_refill_at: null,
+                streak_freezes: 0,
+              },
+            }),
+          )
+          .mockReturnValueOnce(chainable({ data: { xp: 200, league_tier: "bronze" } }))
+          .mockReturnValueOnce(chainable({ data: stored }))
+          .mockReturnValueOnce(chainable({ data: { xp_earned: 100 } }))
+          .mockReturnValueOnce(chainable({ data: [{ correct: stored.correct, total: 9 }] }))
+          .mockReturnValueOnce(chainable({ data: [{ achievement_id: "first_lesson" }] }));
+        supabaseAdminFrom.mockReturnValue(chainable({}));
+        const result = await completeLessonRemote({
+          context: ctx(supabase),
+          data: {
+            lessonId: LESSON_ID,
+            total: 8,
+            answers: answers(),
+            course: "en",
+            sessionToken: validToken(),
+          },
+        });
+        expect(result.xpGain).toBe(0);
+        const next = (
+          adminRpc.mock.calls.find((c) => c[0] === "apply_lesson_completion_once")?.[1] as {
+            _next: { best_correct: number; total: number };
+          }
+        )._next;
+        expect(next.best_correct).toBeLessThanOrEqual(next.total);
+        expect(next.total).toBe(9);
+      }
+    });
+
     it("a submission missing a real question is still rejected when extras are present", async () => {
       await expect(
         completeLessonRemote({

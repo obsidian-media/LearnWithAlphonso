@@ -465,7 +465,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
     // Accepts the current lesson and the version before appended extras (lesson-version.ts); what is graded and paid
     // from here on is the accepted set, never the client's own count.
     const submission = resolveLessonSubmission(found?.lesson ?? null, claimedTotal, claimedAnswers);
-    if (!submission.ok) {
+    if (!found || !submission.ok) {
       throw new Error("Invalid lesson completion payload");
     }
     const { answers, total } = submission;
@@ -550,7 +550,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
           .maybeSingle(),
         supabase
           .from("lesson_completions")
-          .select("correct,xp_earned")
+          .select("correct,total,xp_earned")
           .eq("user_id", userId)
           .eq("lesson_id", lessonId)
           .eq("language", course)
@@ -575,10 +575,13 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
       // every time -- previously completeLessonRemote had no dedup check at
       // all, so a scripted loop of startLessonSession+completeLessonRemote
       // against any lesson farmed unlimited XP and hearts.
+      // The stored best is a (correct, total) pair: the total only ever grows (a lesson that gained extras), so a
+      // replay of the older, shorter version can neither break correct <= total nor re-earn the perfect bonus.
+      const bestTotal = Math.max(existingComp?.total ?? 0, total);
       const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
         existingComp ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned } : null,
         correct,
-        total,
+        bestTotal,
       );
 
       const cur = pRow ?? {
@@ -716,7 +719,7 @@ export const completeLessonRemote = createServerFn({ method: "POST" })
           xp,
           league_tier: leagueTier,
           best_correct: bestCorrect,
-          total,
+          total: bestTotal,
           best_xp: bestXp,
           day_xp: (existingDay?.xp_earned ?? 0) + xpGain,
         },

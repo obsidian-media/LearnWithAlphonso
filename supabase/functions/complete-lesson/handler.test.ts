@@ -1753,3 +1753,77 @@ Deno.test("a base completion moves hearts and streak like any completion", async
   // A perfect lesson on the base set earns the perfect-lesson heart.
   assertEquals(db.lastNext!.hearts, 4);
 });
+
+// A stored best is a (correct, total) pair and lesson_completions has CHECK (correct <= total): replaying the shorter
+// (base) version of a lesson already completed on the full one must keep the pair consistent and must not pay again.
+Deno.test(
+  "a base replay of a lesson stored on the full version keeps best_correct <= total and pays nothing",
+  async () => {
+    const { db, handler } = setup();
+    db.lesson!.questions = withExtra();
+    db.tables.lesson_completions = [
+      {
+        user_id: USER,
+        lesson_id: "u1l1",
+        language: "fr",
+        correct: 3,
+        total: 3,
+        xp_earned: computeXpGain(3, 3),
+      },
+    ];
+    const res = await handler(post(answersFor(BASE)));
+    assertEquals(res.status, 200);
+    assertEquals((await res.json()).xpGain, 0);
+    const next = db.lastNext!;
+    assert((next.best_correct as number) <= (next.total as number));
+    assertEquals(next.total, 3);
+    assertEquals(next.best_correct, 3);
+  },
+);
+
+Deno.test(
+  "a perfect base replay of a lesson stored 2 of 3 on the full version cannot farm the perfect bonus",
+  async () => {
+    const { db, handler } = setup();
+    db.lesson!.questions = withExtra();
+    db.tables.lesson_completions = [
+      {
+        user_id: USER,
+        lesson_id: "u1l1",
+        language: "fr",
+        correct: 2,
+        total: 3,
+        xp_earned: computeXpGain(2, 3),
+      },
+    ];
+    const res = await handler(post(answersFor(BASE)));
+    assertEquals(res.status, 200);
+    assertEquals((await res.json()).xpGain, 0);
+    const next = db.lastNext!;
+    assert((next.best_correct as number) <= (next.total as number));
+    assertEquals(next.total, 3);
+  },
+);
+
+Deno.test(
+  "a full replay of a lesson stored on the base version raises the pair together",
+  async () => {
+    const { db, handler } = setup();
+    db.lesson!.questions = withExtra();
+    db.tables.lesson_completions = [
+      {
+        user_id: USER,
+        lesson_id: "u1l1",
+        language: "fr",
+        correct: 2,
+        total: 2,
+        xp_earned: computeXpGain(2, 2),
+      },
+    ];
+    const res = await handler(post(answersFor([...BASE, ["lx1", "x"]])));
+    assertEquals(res.status, 200);
+    assertEquals((await res.json()).xpGain, computeXpGain(3, 3) - computeXpGain(2, 2));
+    const next = db.lastNext!;
+    assertEquals([next.best_correct, next.total], [3, 3]);
+  },
+);

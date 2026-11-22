@@ -493,7 +493,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   // Both the current version and the version before appended extras are accepted (lesson-version.ts); what is graded
   // and paid from here on is the accepted set, never the client's own count.
   const submission = resolveLessonSubmission(found, claimedTotal, claimedAnswers);
-  if (!submission.ok) {
+  if (!found || !submission.ok) {
     console.log(
       JSON.stringify({
         event: "lesson_version_mismatch",
@@ -506,7 +506,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
     return jsonResponse({ error: "lesson-version-mismatch" }, 409);
   }
   const { answers, total } = submission;
-  const lesson = found!;
+  const lesson = found;
 
   // A queued completion (it carries the device's completedAt) may arrive long after the live window.
   const receivedAt = deps.now();
@@ -592,7 +592,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
       .maybeSingle(),
     admin
       .from("lesson_completions")
-      .select("correct,xp_earned")
+      .select("correct,total,xp_earned")
       .eq("user_id", userId)
       .eq("lesson_id", lessonId)
       .eq("language", course)
@@ -618,10 +618,13 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
   // Replay-farming fix, mirrors src/lib/sync.functions.ts's
   // completeLessonRemote: a repeat completion only pays the XP delta over
   // its previous best score.
+  // The stored best is a (correct, total) pair: the total only ever grows (a lesson that gained extras), so a replay of
+  // the older, shorter version can neither break correct <= total nor re-earn the perfect bonus on a smaller total.
+  const bestTotal = Math.max(existingComp?.total ?? 0, total);
   const { bestCorrect, bestXp, xpGain } = computeLessonReplayXp(
     existingComp ? { correct: existingComp.correct, xpEarned: existingComp.xp_earned } : null,
     correct,
-    total,
+    bestTotal,
   );
 
   // A late (long-window) completion that pays nothing (a replay of a finished lesson) credits the receipt day, never a
@@ -784,7 +787,7 @@ async function handleRequest(req: Request, deps: CompleteLessonDeps): Promise<Re
       xp,
       league_tier: leagueTier,
       best_correct: bestCorrect,
-      total,
+      total: bestTotal,
       best_xp: bestXp,
       day_xp: (existingDay?.xp_earned ?? 0) + xpGain,
     },
