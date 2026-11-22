@@ -20,6 +20,28 @@ final class PodcastLibraryTests: XCTestCase {
         XCTAssertEqual(ids, ["en", "en-a1", "shared", "shared-tips"])
     }
 
+    func testPublishedFoldersKeepsEveryCoursesRootForTheLibrarySwitch() {
+        let tree3 = tree + [folder("es", course: "es"), folder("es-a1", parent: "es")]
+        let published: Set<String> = ["en-a1", "fr-a1", "es-a1", "shared-tips"]
+        let all = PodcastLibrary.publishedFolders(tree3, publishedFolderIDs: published)
+        XCTAssertEqual(Set(all.map(\.id)), ["en", "en-a1", "fr", "fr-a1", "es", "es-a1", "shared", "shared-tips"])
+        func ep(_ id: String, _ folderID: String) -> PodcastEpisode {
+            PodcastEpisode(id: id, folderID: folderID, slug: id, title: id, description: nil,
+                           audioURL: URL(string: "https://x.test/a.mp3")!, durationSeconds: 60, positionSeconds: 0,
+                           playbackUpdatedAt: nil, aiNarrated: false, course: nil)
+        }
+        let eps = [ep("e1", "en-a1"), ep("f1", "fr-a1"), ep("s1", "es-a1")]
+        // Every course the Library switch offers has a shelf.
+        for course in ["en", "fr", "es"] {
+            XCTAssertEqual(
+                ListenShelf.shelves(folders: all, episodes: eps, progress: [], course: course).count, 1, course)
+        }
+        // The old active-course pre-filter made the other courses' shelves empty: the bug.
+        let narrowed = PodcastLibrary.visibleFolders(tree3, publishedFolderIDs: published, courseCode: "en")
+        XCTAssertTrue(ListenShelf.shelves(folders: narrowed, episodes: eps, progress: [], course: "fr").isEmpty)
+        XCTAssertFalse(all.map(\.id).contains("en-empty"))
+    }
+
     func testAFolderWithNothingPublishedBeneathItIsHidden() {
         let ids = Set(PodcastLibrary.visibleFolders(tree, publishedFolderIDs: ["en-a1"], courseCode: "en").map(\.id))
         XCTAssertFalse(ids.contains("en-empty"))

@@ -11,6 +11,25 @@ public enum PodcastLibrary {
         publishedFolderIDs: Set<String>,
         courseCode: String
     ) -> [PodcastFolder] {
+        foldersWithContent(folders, publishedFolderIDs: publishedFolderIDs, courseCode: courseCode)
+    }
+
+    /// Every folder with a published episode beneath it, whatever its course. The Library's own EN/FR/ES switch
+    /// narrows by course inside `ListenShelf.shelves`, so it must be handed all of them: pre-filtering to the
+    /// active course left the other two courses' roots unreachable (build 72 report: no French or Spanish episodes).
+    public static func publishedFolders(
+        _ folders: [PodcastFolder],
+        publishedFolderIDs: Set<String>
+    ) -> [PodcastFolder] {
+        foldersWithContent(folders, publishedFolderIDs: publishedFolderIDs, courseCode: nil)
+    }
+
+    /// `courseCode` nil keeps every root; otherwise a root must be that course's or course-free.
+    private static func foldersWithContent(
+        _ folders: [PodcastFolder],
+        publishedFolderIDs: Set<String>,
+        courseCode: String?
+    ) -> [PodcastFolder] {
         let childrenByParent = Dictionary(grouping: folders, by: { $0.parentID })
         var nonEmpty = Set<String>()
 
@@ -27,7 +46,7 @@ public enum PodcastLibrary {
         }
 
         let rootKey: String? = nil
-        for root in childrenByParent[rootKey] ?? [] where root.course == nil || root.course == courseCode {
+        for root in childrenByParent[rootKey] ?? [] where courseCode == nil || root.course == nil || root.course == courseCode {
             _ = hasContent(root, depth: 0)
         }
         return folders.filter { nonEmpty.contains($0.id) }

@@ -27,7 +27,8 @@ public enum SayThePicture {
     /// LIVE, not a list: derived on each call from the lessons' own vocabulary, with each word's image looked up in
     /// `images` at that moment. A word that gains a photo is in the pool the next time a session starts, with no
     /// curation step. Deliberately nothing is cached, so a snapshot cannot creep in. Words whose image the app would
-    /// not draw (`VocabImagePolicy`) are left out, so a round is never an empty box.
+    /// not draw (`VocabImagePolicy`) are left out, so a round is never an empty box, and so are words whose bundle
+    /// entry says `picturable: false` (action words and the shared deny list, build 72 feedback).
     public static func pool(units: [Unit], images: [String: VocabImageRef]) -> [PictureWord] {
         var seen: Set<String> = []
         var pool: [PictureWord] = []
@@ -35,7 +36,10 @@ public enum SayThePicture {
             for lesson in unit.lessons {
                 for item in deriveVocab(lesson: lesson, images: images) {
                     let key = item.term.trimmingCharacters(in: .whitespaces).lowercased()
-                    guard let image = item.image, VocabImagePolicy.isRenderable(image.url), !seen.contains(key) else { continue }
+                    // `picturable` is the export's answer (action words and the shared deny list are false): a photo
+                    // that reads as another word is fine on a lesson card but unfair to ask a learner to name.
+                    guard let image = item.image, image.picturable != false, VocabImagePolicy.isRenderable(image.url),
+                          !seen.contains(key) else { continue }
                     seen.insert(key)
                     pool.append(PictureWord(term: item.term, image: image, example: item.example))
                 }

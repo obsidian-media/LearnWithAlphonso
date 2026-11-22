@@ -154,6 +154,44 @@ final class PodcastPlayerMachineTests: XCTestCase {
         XCTAssertEqual(pausedFirst.phase, .paused)
     }
 
+    /// Build 72 report: an episode started on its own while the learner switched Library tabs. Other in-app players
+    /// (video sheet, sound effects, the Stories narrator) re-take the shared audio session, so interruption-ended
+    /// with shouldResume can arrive for an episode the learner had paused. None of these orderings may resume it.
+    func testAUserPausedEpisodeNeverResumesWhateverTheInterruptionOrdering() {
+        // Interruption ends with no began at all.
+        var noBegan = playing()
+        _ = noBegan.send(.togglePressed)
+        XCTAssertEqual(noBegan.send(.interruptionEnded(shouldResume: true)), [])
+        XCTAssertEqual(noBegan.phase, .paused)
+
+        // Learner resumed after a call, then paused again: the earlier interruption must not stay armed.
+        var replayed = playing()
+        _ = replayed.send(.pausedExternally(resumable: true))
+        _ = replayed.send(.togglePressed)
+        _ = replayed.send(.timeControlPlaying)
+        _ = replayed.send(.togglePressed)
+        XCTAssertEqual(replayed.phase, .paused)
+        XCTAssertEqual(replayed.send(.interruptionEnded(shouldResume: true)), [])
+        XCTAssertEqual(replayed.phase, .paused)
+
+        // Two interruption-ended in a row after one pause: the window is one interruption long.
+        var twice = playing()
+        _ = twice.send(.pausedExternally(resumable: true))
+        _ = twice.send(.interruptionEnded(shouldResume: true))
+        _ = twice.send(.togglePressed)
+        XCTAssertEqual(twice.send(.interruptionEnded(shouldResume: true)), [])
+        XCTAssertEqual(twice.phase, .paused)
+    }
+
+    /// The mini bar's X says what the web player's X says (PodcastPlayer.tsx "Close player"), and closing really stops.
+    func testTheMiniBarCloseLabelMatchesWebAndClosingEndsPlayback() {
+        XCTAssertEqual(PodcastPlaybackCopy.closePlayerLabel, "Close player")
+        var machine = playing()
+        _ = machine.send(.closed)
+        XCTAssertEqual(machine.phase, .idle)
+        XCTAssertEqual(machine.control, .none)
+    }
+
     func testAVoicePauseNeverResumes() {
         var machine = playing()
         XCTAssertEqual(machine.send(.pausedExternally(resumable: false)), [.pause, .savePosition])

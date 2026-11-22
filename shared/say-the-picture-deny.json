@@ -1,0 +1,25 @@
+{
+  "$comment": "Which vocab pictures Say the Picture may use. One file for web, iOS and Android: scripts/export-*-content.ts bakes the answer into vocab-images.json as `picturable` (and `category`), the apps read that flag, and src/lib/say-the-picture.test.ts replays this file against the exported bundles. A word is excluded when its imageability category (scripts/vocab-imageability.json) is in excludedCategories, or its lookup form (lowercased, leading article stripped) is in deny[lang]. Deny entries are words whose photo reads as a different word (build, delivery, rock...). Add to deny rather than removing a photo: the photo is still fine on a lesson card, where the word is printed beside it. Build 72 owner feedback: 'The pictures would be confusing a lot'.",
+  "excludedCategories": ["action"],
+  "deny": {
+    "en": [
+      "actress",
+      "build",
+      "card games",
+      "contactless",
+      "delivery",
+      "empty",
+      "field",
+      "hiking",
+      "nap",
+      "package",
+      "pollution",
+      "rock",
+      "shelves",
+      "sleeves",
+      "sprinkle"
+    ],
+    "fr": [],
+    "es": []
+  }
+}

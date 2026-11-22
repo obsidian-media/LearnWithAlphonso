@@ -53,6 +53,39 @@ class SayThePictureTest {
     }
 
     @Test
+    fun `an action or denied word is not in the pool, and an older bundle with no flag still draws`() {
+        fun ref(name: String, category: String, picturable: Boolean) =
+            VocabImageRef(url = "$base$name.jpg", alt = name, credit = "c", category = category, picturable = picturable)
+        val images = mapOf(
+            "dog" to ref("dog", "noun", true),
+            "hiking" to ref("hiking", "action", false),
+            "rock" to ref("rock", "noun", false), // a denied noun: its category alone is fine
+            "cat" to image("cat"),
+        )
+        val pool = SayThePicture.pool(listOf(unit("dog", "hiking", "rock", "cat")), images)
+        assertEquals(listOf("dog", "cat"), pool.map { it.term })
+    }
+
+    @Test
+    fun `the shipped bundle bakes the answer and the shared deny list is excluded`() {
+        val file = java.io.File("../../../shared/say-the-picture-deny.json").takeIf { it.exists() } ?: java.io.File("shared/say-the-picture-deny.json")
+        val policy = kotlinx.serialization.json.Json.parseToJsonElement(file.readText()).let { it as kotlinx.serialization.json.JsonObject }
+        val deny = (policy["deny"] as kotlinx.serialization.json.JsonObject)["en"]!!.let { it as kotlinx.serialization.json.JsonArray }.map { (it as kotlinx.serialization.json.JsonPrimitive).content }
+        assertEquals(15, deny.toSet().size)
+        val store = com.obsidianmedia.learnwithalphonso.core.content.ContentStore { name -> checkNotNull(javaClass.getResourceAsStream("/$name")).bufferedReader().readText() }
+        val images = store.vocabImages
+        assertTrue(images.values.all { it.picturable != null }, "every entry carries the baked flag")
+        assertTrue(images.values.filter { it.category == "action" }.all { it.picturable == false })
+        for (term in deny) for (key in listOf(term, "a $term", "the $term")) images[key]?.let { assertEquals(false, it.picturable, key) }
+        assertTrue(images.values.any { it.picturable == true }, "the filter is not blanket")
+        // And the pool never holds a word the bundle marks false.
+        for (course in Course.entries) {
+            val excluded = images.filterValues { it.picturable == false }.keys
+            assertTrue(SayThePicture.pool(store.bundle(course).units, images).none { it.term.trim().lowercase() in excluded }, course.code)
+        }
+    }
+
+    @Test
     fun `the real bundled content yields a pool for every course that is more than a session`() {
         val store = com.obsidianmedia.learnwithalphonso.core.content.ContentStore { name -> checkNotNull(javaClass.getResourceAsStream("/$name")).bufferedReader().readText() }
         for (course in Course.entries) {
