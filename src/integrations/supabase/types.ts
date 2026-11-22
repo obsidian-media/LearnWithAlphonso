@@ -1366,6 +1366,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      ops_health_checks: {
+        Row: {
+          at: string;
+          latency_ms: number | null;
+          ok: boolean;
+          service: string;
+        };
+        Insert: {
+          at?: string;
+          latency_ms?: number | null;
+          ok: boolean;
+          service: string;
+        };
+        Update: {
+          at?: string;
+          latency_ms?: number | null;
+          ok?: boolean;
+          service?: string;
+        };
+        Relationships: [];
+      };
       placement_questions: {
         Row: {
           answer_index: number | null;
@@ -4065,6 +4086,15 @@ export type Database = {
         Args: { p_actor_role: string; p_target: string };
         Returns: undefined;
       };
+      staff_audit_actors: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          disabled: boolean;
+          display_name: string;
+          role: string;
+          user_id: string;
+        }[];
+      };
       staff_disband_team: {
         Args: {
           p_actor: string;
@@ -4087,6 +4117,25 @@ export type Database = {
         Returns: boolean;
       };
       staff_get_settings: { Args: { p_actor: string }; Returns: Json };
+      staff_health_history: {
+        Args: { p_days?: number };
+        Returns: {
+          checks: number;
+          day: string;
+          ok_checks: number;
+          service: string;
+        }[];
+      };
+      staff_health_summary: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          first_at: string;
+          last_at: string;
+          last_latency_ms: number;
+          last_ok: boolean;
+          service: string;
+        }[];
+      };
       staff_home_metrics: { Args: { p_range: string }; Returns: Json };
       staff_is_active_owner: { Args: { p_user: string }; Returns: boolean };
       staff_lift_restriction: {
@@ -4240,6 +4289,17 @@ export type Database = {
           p_status: string;
         };
         Returns: boolean;
+      };
+      staff_sweep_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          failed_24h: number;
+          last_ok_at: string;
+          last_run_at: string;
+          last_status: string;
+          runs_24h: number;
+          scheduled: boolean;
+        }[];
       };
       staff_update_member: {
         Args: {
