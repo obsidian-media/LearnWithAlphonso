@@ -6,6 +6,10 @@ Vendored, out of scope: `.agents/`, `.claude/`, `.hellos/.hermes/` (external thi
 
 Counts (49 files in scope): UPDATED 30, VERIFIED 6 (VIDEO-PLAYBOOK, five font licence texts), ARCHIVED 9 (plus 1 archive created from LESSON_ASSETS's old body), DELETED 0, MERGED 0, GAP FILLED 6 (2 new docs, 4 new ARCHITECTURE.md sections). Note: `docs/app-store/*.md` and several root docs have CRLF in some checkouts; git normalises to LF (.gitattributes eol=lf).
 
+## Review round (after #707 merged)
+
+Merged origin/main (34047b17). Rewrote 13 dead docs/superpowers links to docs/archive paths (the three living specs stay), unioned docs/archive/README.md, reconciled the support-chat limits (30/h is the code's own notice hold, Resend free 100/day and 3,000/month, Supabase auth email 100/h), fixed the README story counts (47 published: 38 branching, 14/12/12, plus 9 linear), the ARCHITECTURE test-count scope, and the operations text on SUPPORT_NOTIFY_FROM. Added OPEN-ITEMS 88 to 90 and corrected item 10 (Android needs both REVENUECAT_ANDROID_PUBLIC_KEY and PLAY_SERVICE_ACCOUNT_JSON). The #691 commit title says "hidden" but its stories are published (47 published, queried); a merged commit title cannot be changed, so no document change.
+
 ## Archive moves done by the coordinator step (content batch)
 
 | File | State | What changed | Evidence |

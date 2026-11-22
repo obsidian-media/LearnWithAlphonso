@@ -2,7 +2,7 @@ import type { SavedWordCourse, SavedWordInput } from "./saved-word";
 
 /**
  * Splits displayed text into words and the text between them, for the web's
- * tap-to-save (docs/superpowers/specs/2026-10-05-save-any-word-design.md). The
+ * tap-to-save (docs/archive/2026-10/2026-10-05-save-any-word-design.md). The
  * iOS twin is WordSegmenter.swift; the token rule is deliberately the SAME
  * regex `validateSavedWordInput` uses on the server, so a word this finds is a
  * word the server accepts: letters, with an apostrophe (straight or

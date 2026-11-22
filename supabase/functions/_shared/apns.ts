@@ -1,6 +1,6 @@
 // Minimal APNs HTTP/2 sender for real (remote) push notifications -- V4
 // candidate #2 (docs/BACKLOG.md sec 2.1). See
-// docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md
+// docs/archive/2026-09/2026-09-21-remote-push-notifications-design.md
 // for the full design.
 //
 // Gracefully no-ops when APNs secrets aren't configured -- the same

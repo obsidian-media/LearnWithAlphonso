@@ -6,7 +6,7 @@
 // status here). Resolves the caller's previous week's cohort if it's
 // unresolved (lazy, no cron -- same pattern as get_my_duels), then
 // ensures the caller has a current-week cohort, and returns their
-// live status. See docs/superpowers/specs/2026-09-22-deeper-
+// live status. See docs/archive/2026-09/2026-09-22-deeper-
 // gamification-design.md section 2.
 import { createClient } from "@supabase/supabase-js";
 import { suspendedResponseIfBanned } from "../_shared/account-status.ts";

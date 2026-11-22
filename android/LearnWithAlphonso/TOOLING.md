@@ -5,7 +5,7 @@
 No Android Studio or emulator was set up in the development environment as of 2026-09-29 (unverified for today: machine state, not in the repo). The
 command-line SDK lives at
 a folder outside this repository (the `android-sdk` directory next to the
-Gradle home; installed by `setup-android-toolchain.ps1`, a script that lives outside this repo, its text is in `docs/superpowers/plans/2026-09-29-android-plan-1-foundation-and-learning-loop.md`; owner decision
+Gradle home; installed by `setup-android-toolchain.ps1`, a script that lives outside this repo, its text is in `docs/archive/2026-09/2026-09-29-android-plan-1-foundation-and-learning-loop.md`; owner decision
 2026-09-29 that nothing Android-SDK-related goes anywhere else). Before any
 Gradle command in this directory, set:
 

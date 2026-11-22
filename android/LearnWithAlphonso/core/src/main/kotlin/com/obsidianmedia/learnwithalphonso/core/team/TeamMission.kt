@@ -9,7 +9,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * A team's weekly shared mission (docs/superpowers/specs/2026-10-06-study-together-design.md, Part 1). The server
+ * A team's weekly shared mission (docs/archive/2026-10/2026-10-06-study-together-design.md, Part 1). The server
  * computes everything in `get_team_mission()`; this module only turns its row into a view model and owns the wording,
  * which is word-for-word the web card's (src/lib/team-mission.ts) and pinned by the shared fixtures
  * (core/src/test/resources/team-mission.fixtures.json, a byte-for-byte copy guarded on the web side).

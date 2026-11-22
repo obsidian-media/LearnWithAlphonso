@@ -139,7 +139,7 @@ function CampaignChatPage({
     seconds: number;
   } | null>(null);
 
-  // Design decision (see docs/superpowers/specs/2026-09-21-conversation-
+  // Design decision (see docs/archive/2026-09/2026-09-21-conversation-
   // campaigns-design.md): client-side, in-memory only -- matches the
   // existing single-scenario chat's own "zero persistence" baseline
   // rather than inventing new resume behavior for campaigns alone.

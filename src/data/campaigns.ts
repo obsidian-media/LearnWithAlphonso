@@ -12,7 +12,7 @@ import SCENE_PROMPT_FIXES from "./campaign-scene-prompt-fixes.json" with { type:
  * its own character, its own systemPrompt, its own opener) that share one
  * continuous chat transcript, so a later scene's model call sees everything
  * said in earlier scenes and can reference it. See
- * docs/superpowers/specs/2026-09-21-conversation-campaigns-design.md.
+ * docs/archive/2026-09/2026-09-21-conversation-campaigns-design.md.
  *
  * Every text field is keyed by course, with the same rules
  * as scenarios.ts (see its header). Each course is its own continuous story

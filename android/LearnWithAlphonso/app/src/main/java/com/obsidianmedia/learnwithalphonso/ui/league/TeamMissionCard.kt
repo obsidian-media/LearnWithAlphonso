@@ -43,7 +43,7 @@ class TeamMissionViewModel(client: ProgressSyncClient) : ViewModel() {
 }
 
 /**
- * A team's weekly shared mission (BACKLOG 0.0-ac #2, docs/superpowers/specs/2026-10-06-study-together-design.md). It
+ * A team's weekly shared mission (BACKLOG 0.0-ac #2, docs/archive/2026-10/2026-10-06-study-together-design.md). It
  * renders what `get_team_mission` returns and does no mission maths: the server computes the target, the progress and
  * the payout, and `TeamMission` (tested in :core against the shared fixtures) owns the wording, which is word-for-word
  * the web card's. Stateless on purpose, so callers can skip the list item entirely while there is nothing to show.

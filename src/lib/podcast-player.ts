@@ -4,7 +4,7 @@ import { SLEEP_OFF, type SleepState } from "./sleep-timer";
 
 /**
  * Playback state for the podcast player (Phase 1a, see
- * docs/superpowers/specs/2026-09-24-podcast-library-phase1-design.md).
+ * docs/archive/2026-09/2026-09-24-podcast-library-phase1-design.md).
  *
  * The state lives here, outside the route tree, because the <audio>
  * element it drives is mounted beside the router's Outlet rather than

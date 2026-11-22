@@ -1,7 +1,7 @@
 import SwiftUI
 import LearnWithAlphonsoKit
 
-/// The learning goal on Build my path (BACKLOG 0.0-ac #8, docs/superpowers/specs/
+/// The learning goal on Build my path (BACKLOG 0.0-ac #8, docs/archive/2026-10/
 /// 2026-10-05-learning-goal-planner-design.md). It renders what `/api/learning-goal` returns and does no
 /// plan maths of its own: the server's `planGoal` is the single implementation and the web card shows the
 /// same numbers. Every string comes from `GoalCopy` (word-for-word the web card's wording), every request

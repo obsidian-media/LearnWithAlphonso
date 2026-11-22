@@ -1,5 +1,5 @@
 /**
- * Interactive branching stories (docs/superpowers/specs/2026-11-18-interactive-branching-stories-design.md):
+ * Interactive branching stories (docs/archive/2026-11/2026-11-18-interactive-branching-stories-design.md):
  * the pure rules behind the branching reader. A branching story is a tree of read-along nodes joined by choice
  * points, reaching one of several endings. These functions navigate the tree and re-walk a chosen path; the
  * server (public.finish_branching_story) is the authority on the ending reached and the reading credit, and

@@ -1,6 +1,6 @@
 # iOS notes
 
-Behaviour of the iOS app that no other living doc records. Every claim was checked against the code at d8350542 (2026-11-22); paths are under `ios/`, `LearnWithAlphonso/Sources` is the app target, `LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit` the Kit. The app target has no unit tests (CI's `ios-app-build` only proves it compiles), so only the pure rules in the Kit are test-pinned. Original design text: `docs/superpowers/specs/2026-09-19-ios-push-notifications-design.md`, `2026-09-24-podcast-phase1b-ios-design.md`.
+Behaviour of the iOS app that no other living doc records. Every claim was checked against the code at d8350542 (2026-11-22); paths are under `ios/`, `LearnWithAlphonso/Sources` is the app target, `LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit` the Kit. The app target has no unit tests (CI's `ios-app-build` only proves it compiles), so only the pure rules in the Kit are test-pinned. Original design text: `docs/archive/2026-09/2026-09-19-ios-push-notifications-design.md`, `2026-09-24-podcast-phase1b-ios-design.md`.
 
 ## 1. Local notifications
 

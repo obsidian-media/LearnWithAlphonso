@@ -122,7 +122,7 @@ public struct LessonCompletion: Sendable, Equatable {
 /// This is exactly the check the design doc flags as needing a real
 /// Supabase Edge Function equivalent on the native side (see "Data flow
 /// changes vs. the web app" in
-/// docs/superpowers/specs/2026-09-17-native-ios-app-design.md) -- this pure
+/// docs/archive/2026-09/2026-09-17-native-ios-app-design.md) -- this pure
 /// function is the logic that Edge Function needs to run server-side; this
 /// port itself does not (and must not) become the client-trusted source of
 /// truth.

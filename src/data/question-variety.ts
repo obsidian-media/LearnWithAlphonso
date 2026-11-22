@@ -3,7 +3,7 @@
 // Most A1/A2 packs are pick-the-word only. This overlay appends, to the END of each lesson that
 // lacks them: one reorder question, one listening question and one translate question. Existing
 // ids, answers and answer positions never move (ids of the new questions continue after the last
-// existing id; docs/superpowers/specs and src/lib/id-parity.test.ts guard that).
+// existing id; docs/archive/2026-09 specs and src/lib/id-parity.test.ts guard that).
 //
 // - reorder: one cloze sentence of 3-8 words, filled in and shuffled.
 // - listening: a different sentence of the lesson, read aloud by the existing text-to-speech; the

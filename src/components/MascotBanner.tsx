@@ -15,7 +15,7 @@ const MASCOT_NAME = {
 /**
  * A mascot portrait + a short message on a moss->moss-deep gradient --
  * the web equivalent of iOS's AlphonsoMascotBanner (see
- * docs/superpowers/specs/2026-09-24-canopy-web-port-design.md). Not
+ * docs/archive/2026-09/2026-09-24-canopy-web-port-design.md). Not
  * Canopy-conditional -- every theme's own moss/moss-deep renders here,
  * same as every other moss-colored surface in this app.
  */

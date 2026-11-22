@@ -6,7 +6,7 @@
 // pg_net -- not intended to be called from any client directly (no
 // user-facing use case needs to send an arbitrary push to an arbitrary
 // user). See
-// docs/superpowers/specs/2026-09-21-remote-push-notifications-design.md.
+// docs/archive/2026-09/2026-09-21-remote-push-notifications-design.md.
 //
 // Authenticated the same way every other Edge Function in this repo
 // Authenticated by a shared secret, not a user JWT: it sends a push to an

@@ -3,7 +3,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-// Graded stories: leveled texts read along with narration (docs/superpowers/specs/2026-11-17-graded-stories-design.md).
+// Graded stories: leveled texts read along with narration (docs/archive/2026-11/2026-11-17-graded-stories-design.md).
 // Mirrors src/lib/stories.ts and src/lib/stories.functions.ts, and the podcast model.
 //
 // The database decides what a learner may see (RLS: published stories only) and the filter here is a second line, so a

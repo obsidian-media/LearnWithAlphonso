@@ -69,7 +69,7 @@ import com.obsidianmedia.learnwithalphonso.ui.theme.LocalAlphonsoTokens
 import kotlinx.coroutines.launch
 
 /**
- * The learning goal on Build my path (BACKLOG 0.0-ac #8, docs/superpowers/specs/2026-10-05-learning-goal-planner-design.md),
+ * The learning goal on Build my path (BACKLOG 0.0-ac #8, docs/archive/2026-10/2026-10-05-learning-goal-planner-design.md),
  * in the batch-1 design (the same card as iOS GoalCardView.swift): the goal as chips (purpose, level, date), then the
  * navy hero with the progress, the status in words and Change goal / Remove goal. It renders what /api/learning-goal
  * returns and does no plan maths: the server's planGoal is the single implementation. Every string comes from GoalCopy

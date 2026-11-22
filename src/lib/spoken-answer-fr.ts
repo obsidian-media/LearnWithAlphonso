@@ -3,7 +3,7 @@
  * was asked to say.
  *
  * A sibling of spoken-answer.ts, not an extension of it. Two reasons, from
- * spec docs/superpowers/specs/2026-09-24-french-phase-2-question-types-design.md
+ * spec docs/archive/2026-09/2026-09-24-french-phase-2-question-types-design.md
  * section 4.3: English's rules are actively wrong for French (`'s` -> "is"
  * encodes an English AUXILIARY-VERB contraction -- has/is/would/will being
  * dropped -- and French elision is a PHONOLOGICAL rule about vowel-initial
