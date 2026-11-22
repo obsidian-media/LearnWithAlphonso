@@ -82,3 +82,30 @@ export function metaTextProblems(text: string, role: MetaRole, answer?: string):
   }
   return out;
 }
+
+/** The content words of `text` outside quotes (the part that actually explains). */
+function contentWords(text: string): number {
+  return withoutQuotes(text)
+    .toLowerCase()
+    .replace(/[^a-zà-ÿ' -]/g, " ")
+    .split(/[\s-]+/)
+    .filter((w) => w.length >= 3 && !STOP.has(w) && w !== "¤").length;
+}
+
+const RESTATING_OPENER =
+  /^(the speaker (says|said)|the sentence (heard|is|you hear)|you (hear|heard)|the idea is|the model answer|the natural wording|the first wording)\b/i;
+
+/**
+ * The stricter explanation rubric of the last round: it explains the pattern (enough content outside the
+ * quoted sentence), says no more than the answer needs (230 characters), and does not open by restating
+ * the sentence and stop. A failure is rewritten, not dropped.
+ */
+export function strictExplanationProblems(explanation: string): string[] {
+  const out: string[] = [];
+  const n = contentWords(explanation);
+  if (explanation.length > 230) out.push("longer than the answer needs (over 230 characters)");
+  if (n < 5) out.push("says too little beyond the sentence itself");
+  else if (RESTATING_OPENER.test(explanation) && n < 8)
+    out.push("opens by restating the sentence and adds little");
+  return out;
+}

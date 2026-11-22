@@ -68,6 +68,9 @@ import {
   altsSystem,
   altsUser,
   dedupeWordings,
+  explainSystem,
+  explainUser,
+  parseExplanations,
   mergeAlternatives,
   parseAlts,
 } from "../../src/lib/lesson-mix/alternatives";
@@ -118,6 +121,7 @@ import {
   parseItemId,
   toReviewItem,
 } from "../../src/lib/lesson-mix/panel";
+import { strictExplanationProblems } from "../../src/lib/lesson-mix/meta-gate";
 import { renderPage, type PageLesson } from "../../src/lib/lesson-mix/page";
 
 const argv = process.argv.slice(2);
@@ -174,7 +178,7 @@ function approved() {
 
 type Job = {
   ref: string;
-  phase: "draft" | "review" | "judge" | "blind" | "blind2" | "blind3" | "alts";
+  phase: "draft" | "review" | "judge" | "blind" | "blind2" | "blind3" | "blind4" | "alts" | "expl";
   model: string;
   reservedUsd: number;
   status: "reserved" | "submitted" | "unknown" | "collected" | "released";
@@ -220,6 +224,8 @@ const blind2Path = path.join(STATE, "rulings", "blind2.json");
 const loadBlind2 = () => readJson<Record<string, Ruling>>(blind2Path, {});
 const blind3Path = path.join(STATE, "rulings", "blind3.json");
 const loadBlind3 = () => readJson<Record<string, Ruling>>(blind3Path, {});
+const blind4Path = path.join(STATE, "rulings", "blind4.json");
+const loadBlind4 = () => readJson<Record<string, Ruling>>(blind4Path, {});
 const blindFiles = (round: number) =>
   round === 1
     ? { sample: "blind-sample.json", store: blindPath, load: loadBlind, phase: "blind" as const }
@@ -230,12 +236,19 @@ const blindFiles = (round: number) =>
           load: loadBlind2,
           phase: "blind2" as const,
         }
-      : {
-          sample: "blind-sample-3.json",
-          store: blind3Path,
-          load: loadBlind3,
-          phase: "blind3" as const,
-        };
+      : round === 3
+        ? {
+            sample: "blind-sample-3.json",
+            store: blind3Path,
+            load: loadBlind3,
+            phase: "blind3" as const,
+          }
+        : {
+            sample: "blind-sample-4.json",
+            store: blind4Path,
+            load: loadBlind4,
+            phase: "blind4" as const,
+          };
 
 /** Items whose draft was edited, regenerated or extended since they were last reviewed: they are re-verified, nothing else is. */
 const changedPath = path.join(STATE, "changed.json");
@@ -738,6 +751,20 @@ async function collect() {
             missing += p.missing.length;
           }
           writeJson(verdictPath("review"), store);
+        } else if (job.phase === "expl") {
+          const store = readJson<Record<string, string>>(explPath, {});
+          for (const c of job.chunks ?? []) {
+            const t = texts.get(c.customId);
+            if (!t) {
+              missing += c.items.length;
+              continue;
+            }
+            const p = parseExplanations(c, t);
+            Object.assign(store, p.byId);
+            got += Object.keys(p.byId).length;
+            missing += p.missing.length;
+          }
+          writeJson(explPath, store);
         } else if (job.phase === "alts") {
           const store = readJson<Record<string, string[]>>(altsPath, {});
           for (const c of job.chunks ?? []) {
@@ -756,13 +783,16 @@ async function collect() {
           const blind = job.phase === "blind";
           const blind2 = job.phase === "blind2";
           const blind3 = job.phase === "blind3";
-          const store = blind
-            ? loadBlind()
-            : blind2
-              ? loadBlind2()
-              : blind3
-                ? loadBlind3()
-                : loadRulings();
+          const blind4 = job.phase === "blind4";
+          const store = blind4
+            ? loadBlind4()
+            : blind
+              ? loadBlind()
+              : blind2
+                ? loadBlind2()
+                : blind3
+                  ? loadBlind3()
+                  : loadRulings();
           for (const c of job.chunks ?? []) {
             const t = texts.get(c.customId);
             if (!t) {
@@ -775,7 +805,15 @@ async function collect() {
             missing += p.missing.length;
           }
           writeJson(
-            blind ? blindPath : blind2 ? blind2Path : blind3 ? blind3Path : rulingPath,
+            blind
+              ? blindPath
+              : blind2
+                ? blind2Path
+                : blind3
+                  ? blind3Path
+                  : blind4
+                    ? blind4Path
+                    : rulingPath,
             store,
           );
         }
@@ -930,6 +968,15 @@ async function second() {
   });
 }
 
+const FOCUS_ANSWERS = [
+  "",
+  "",
+  "FOCUS OF THIS PASS (overrides the general review): look ONLY for a correct learner answer that the app would mark wrong. Ignore style, explanation wording and everything else; return keep for those.",
+  'For a TRANSLATE item: find natural, fully correct wordings of the English prompt that are not in acceptableAnswers (the literal rendering, a synonym, subject dropped or stated, another word order, the usual regional-standard word, a gender form the prompt leaves open). If any is missing, decision "fix" with patch {"acceptableAnswers": [...]} holding the WHOLE list: every existing wording unchanged and in order, then the new ones, at most 12 in all. Only wordings that mean exactly what the prompt asks.',
+  'For a LISTENING item: find a wrong choice that a listener could ALSO have heard (it sounds the same, or is an equally valid reading of the audio). If found, decision "fix" with patch {"choices": [...], "answer": "..."}: the whole list with that choice replaced by a clearly different, natural, grammatical sentence, the answer at the same position.',
+  'If the KEY itself (first accepted answer, or the listening answer) is wrong for this NEW item, fix it and set "keyChange": true.',
+].join("\n");
+
 async function judge() {
   const drafts = loadDrafts();
   const items = reviewItems(drafts);
@@ -947,7 +994,13 @@ async function judge() {
   // --all-types translate,listening: Opus reads EVERY item of those types it has not ruled on yet.
   const allTypes = arg("all-types", "").split(",").filter(Boolean);
   if (allTypes.length)
-    for (const it of items) if (allTypes.includes(it.subtype) && !rulings[it.id]) ids.add(it.id);
+    for (const it of items)
+      if (
+        allTypes.includes(it.subtype) &&
+        (flag("redo") || !rulings[it.id]) &&
+        (!arg("course", "") || it.course === arg("course", ""))
+      )
+        ids.add(it.id);
   // --sample N: Opus also reads N of the items the second-answer pass extended (a quality check on the additions).
   const sampleN = Number(arg("sample", "0"));
   if (sampleN) {
@@ -966,13 +1019,22 @@ async function judge() {
     );
     for (const it of s.control) ids.add(it.id);
   }
-  const todo = items.filter((it) => ids.has(it.id) && !rulings[it.id]);
+  // --cats regional,naturalness,spelling: re-judge the items a reviewer put in those categories.
+  const cats = arg("cats", "").split(",").filter(Boolean);
+  if (cats.length)
+    for (const v of claude.values())
+      if (v.verdict === "defect" && cats.includes(v.category ?? "") && universe.has(v.id))
+        ids.add(v.id);
+  // --redo: read them again even if an earlier ruling exists (the new ruling replaces it).
+  const todo = items.filter((it) => ids.has(it.id) && (flag("redo") || !rulings[it.id]));
   const chunks = chunk(todo, "jdg");
+  // --focus answers: this pass looks ONLY for valid learner answers the grader would reject.
+  const focus = flag("focus") ? FOCUS_ANSWERS : "";
   const reqs = chunks.map((c) =>
     buildRequest(c, {
       model: MODEL.judge,
       effort: "medium",
-      system: judgeSystem(c.course),
+      system: judgeSystem(c.course) + focus,
       user: userMessage(c, (it) => judgeContext(it, claude, mistral)),
       maxTokens: maxTokensFor(c, ASSUME.maxOut.judge),
     }),
@@ -1204,6 +1266,71 @@ function tidyCommand() {
   );
 }
 
+const explPath = path.join(STATE, "expl.json");
+
+/** Sonnet rewrites every explanation that fails the stricter rubric (one batch). */
+async function explainCommand() {
+  const drafts = loadDrafts();
+  runGates(drafts);
+  const done = readJson<Record<string, string>>(explPath, {});
+  const items = reviewItems(drafts).filter(
+    (it) => !done[it.id] && strictExplanationProblems(String(it.data.explanation ?? "")).length,
+  );
+  const chunks = chunk(items, "exp");
+  const reqs = chunks.map((c) =>
+    buildRequest(c, {
+      model: MODEL.review,
+      effort: "low",
+      system: explainSystem(c.course),
+      user: explainUser(c),
+      maxTokens: Math.max(1024, c.items.length * 200),
+    }),
+  );
+  if (!reqs.length) return console.log("explain: nothing fails the stricter rubric.");
+  console.log(`explain: ${items.length} explanations fail the stricter rubric.`);
+  await submitAnthropic("expl", MODEL.review, reqs, (_ref, group) => ({
+    chunks: chunks.filter((c) => group.some((r) => r.custom_id === c.customId)),
+  }));
+}
+
+/** Puts the rewrites in the drafts when they pass every gate and the stricter rubric; changed items are re-verified. */
+function explainApplyCommand() {
+  const drafts = loadDrafts();
+  runGates(drafts);
+  const store = readJson<Record<string, string>>(explPath, {});
+  const changed: string[] = [];
+  let refused = 0;
+  for (const [id, text] of Object.entries(store)) {
+    const parsed = parseItemId(id);
+    const d = parsed && drafts[dkey(parsed.course, parsed.lessonId)];
+    if (!parsed || !d?.extra[parsed.type]) continue;
+    const before = d.extra[parsed.type] as { explanation: string };
+    if (before.explanation === text) continue;
+    const trial: LessonExtra = {
+      ...d.extra,
+      [parsed.type]: { ...before, explanation: text },
+    };
+    const gate = gateExtra(
+      parsed.type,
+      trial,
+      gateContext(d.course, d.level as GateContext["level"], baseKeys(d.course)),
+    ).problems.filter((p) => !/^duplicate:/.test(p));
+    const had = new Set(d.problems[parsed.type] ?? []);
+    if (gate.some((p) => !had.has(p)) || strictExplanationProblems(text).length) {
+      refused++;
+      continue;
+    }
+    d.extra = trial;
+    changed.push(id);
+  }
+  runGates(drafts);
+  saveDrafts(drafts);
+  invalidate(changed, { keepAlts: true });
+  console.log(
+    `explain-apply: ${changed.length} explanations rewritten, ${refused} refused by the gates.`,
+  );
+}
+
 /** Items that still need a redraft and what is wrong (no spend). */
 function regenReport() {
   const drafts = loadDrafts();
@@ -1328,6 +1455,7 @@ function exportBulkPage(a: {
   const b1 = blindStats(1);
   const b2 = blindStats(2);
   const b3 = blindStats(3);
+  const b4 = blindStats(4);
   const ledger = openLedger().status();
   const pct = (x: number, y: number) => `${((100 * x) / Math.max(1, y)).toFixed(1)}%`;
   const range = (b: ReturnType<typeof blindStats>) =>
@@ -1424,6 +1552,13 @@ function exportBulkPage(a: {
           blindLine(
             b3,
             "After the targeted round (a second Sonnet pass for extra accepted answers, then Opus read every translate and listening item), a fresh sample of the shipping content (samples 1 and 2 excluded), judged blind by Opus. The target was 6% with no wrong-answer defects: NOT met. The 29 patches Opus proposed for this sample's defects were applied afterwards, which this rate does not reflect",
+          ),
+        ],
+        [
+          "Blind sample 4 (after the owner's extra round)",
+          blindLine(
+            b4,
+            "After an Opus pass over every translate and listening item for answers the grader would reject, a stricter explanation rewrite and a re-check of the regional, naturalness and spelling findings, a fresh sample (samples 1 to 3 excluded), judged blind by Opus",
           ),
         ],
         [
@@ -1619,6 +1754,8 @@ const commands: Record<string, () => unknown> = {
   judge,
   apply: applyCommand,
   alts: altsCommand,
+  explain: explainCommand,
+  "explain-apply": explainApplyCommand,
   "merge-alts": mergeAltsCommand,
   regen: regenReport,
   tidy: tidyCommand,

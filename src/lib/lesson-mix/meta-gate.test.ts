@@ -152,3 +152,34 @@ describe("the type gates use it", () => {
     ).toMatch(/meta|addressed/i);
   });
 });
+
+import { strictExplanationProblems } from "./meta-gate";
+describe("strictExplanationProblems", () => {
+  it("passes a short explanation of the pattern", () => {
+    expect(
+      strictExplanationProblems(
+        '"The cat sleeps on the sofa" puts the verb in the third person singular, so "sleeps" takes an -s.',
+      ),
+    ).toEqual([]);
+  });
+  it("fails one that is too long, too thin, or restates and stops", () => {
+    expect(strictExplanationProblems(`"x" ${"because of the rule ".repeat(14)}`).join()).toMatch(
+      /230/,
+    );
+    expect(
+      strictExplanationProblems('The speaker says "The cat sleeps on the sofa".').join(),
+    ).toMatch(/too little/);
+    expect(
+      strictExplanationProblems(
+        'The speaker says "The cat sleeps on the sofa", with a short sentence about a pet living indoors.',
+      ).join(),
+    ).toMatch(/restating/);
+  });
+  it("does not count words inside the quoted sentence", () => {
+    expect(
+      strictExplanationProblems(
+        '"Tuvieron muchas cosas importantes que hacer ayer por la tarde" is the sentence.',
+      ).length,
+    ).toBeGreaterThan(0);
+  });
+});

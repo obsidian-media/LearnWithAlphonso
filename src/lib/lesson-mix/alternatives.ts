@@ -16,6 +16,48 @@ const VARIETY: Record<Course, string> = {
   es: "Latin American Spanish (tú/usted/ustedes, never vosotros; mesera, carro, computadora are fine; a Spain-only word such as ordenador or vosotros is not an addition).",
 };
 
+const EXPLAIN_RULES = [
+  'Rewrite each explanation so that it: (1) explains the PATTERN the answer shows (the grammar point, the meaning of the key word, or what to listen for), (2) says no more than the answer needs: one or two short sentences, at most 200 characters, (3) quotes the answer in double quotes exactly as given, (4) contains NO text about the exercise itself (never "the learner", "this item", "read aloud", "the lesson", "the first wording", a CEFR level), (5) does not just restate the sentence or its translation, (6) is correct: do not claim a rule the sentence does not show, and use American English for English.',
+  'Write to the learner ("you"). Keep the facts of the old explanation that are right.',
+];
+
+export function explainSystem(course: Course): string {
+  return [
+    `You rewrite the explanations shown after a ${languageName(course)} course question (learners are English speakers).`,
+    ...EXPLAIN_RULES,
+    'Reply with JSON only: {"items":[{"key":"i1","explanation":"..."}]}, one entry per key, in order.',
+  ].join("\n");
+}
+
+export function explainUser(c: Chunk): string {
+  return [
+    `Rewrite these ${c.items.length} explanations.`,
+    ...c.items.map((it, i) => `\n### key: ${localKey(i)} (level ${it.level})\n${it.text}`),
+  ].join("\n");
+}
+
+export function parseExplanations(
+  c: Chunk,
+  text: string,
+): { byId: Record<string, string>; missing: string[] } {
+  const byId: Record<string, string> = {};
+  const json = firstJsonObject(text);
+  if (json) {
+    try {
+      const parsed = JSON.parse(json) as { items?: { key?: unknown; explanation?: unknown }[] };
+      const byKey = new Map(c.items.map((it, i) => [localKey(i), it.id]));
+      for (const e of parsed.items ?? []) {
+        const id = typeof e.key === "string" ? byKey.get(e.key) : undefined;
+        if (id && typeof e.explanation === "string" && e.explanation.trim() && !byId[id])
+          byId[id] = e.explanation.trim();
+      }
+    } catch {
+      /* every key is missing */
+    }
+  }
+  return { byId, missing: c.items.map((it) => it.id).filter((id) => !byId[id]) };
+}
+
 /** A second pass is told what the blind audit found still missing after the first. */
 export const SECOND_PASS_NOTE =
   'SECOND PASS. The list may already hold additions from an earlier pass, and a blind audit still found correct answers rejected. Look hardest for: (1) the most LITERAL rendering of the English prompt (if the prompt says "someone" or "a curious person" or "is not", the literal word-for-word rendering), (2) the subject dropped or stated (yo, tú, il, they), (3) both common word orders and a fronted time phrase, (4) the other standard word for the same thing (por día / al día, mostrar / enseñar, concejo / ayuntamiento), (5) the feminine form when the speaker or the person is not fixed, (6) est-ce que or its absence, (7) the full or the contracted form. If a listed wording does NOT mean the same as the prompt (once a week vs every week), do not copy its pattern.';

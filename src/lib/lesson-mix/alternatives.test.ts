@@ -69,7 +69,7 @@ describe("mergeAlternatives", () => {
     ].map((w) => `J'ai mangé une salade ${w} hier.`);
     expect(
       mergeAlternatives(base, many, check).translate.acceptableAnswers.length,
-    ).toBeLessThanOrEqual(9);
+    ).toBeLessThanOrEqual(12);
   });
 });
 

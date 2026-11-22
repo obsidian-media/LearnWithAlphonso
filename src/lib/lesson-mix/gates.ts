@@ -324,7 +324,7 @@ export function speakGate(s: unknown, ctx: GateContext): GateResult {
 // ---- Translate -----------------------------------------------------------------------------------
 
 /** The generated wordings plus the alternatives the second-answer pass adds. */
-export const MAX_WORDINGS = 9;
+export const MAX_WORDINGS = 12;
 const TRANSLATE_MAX_WORDS: Record<Level, number> = { A1: 10, A2: 12, B1: 16, B2: 20, C1: 24 };
 
 export function translateGate(t: unknown, ctx: GateContext): GateResult {

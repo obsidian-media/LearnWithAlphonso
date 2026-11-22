@@ -401,11 +401,11 @@ describe("translate gate", () => {
     );
     expect(
       p({
-        acceptableAnswers: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"].map(
+        acceptableAnswers: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"].map(
           (x) => `Where is the station ${x}?`,
         ),
       }),
-    ).toMatch(/at most 9/);
+    ).toMatch(/at most 12/);
     expect(p({ prompt: "Say: Where is the station?" })).toMatch(/prompt contains/);
     expect(
       p({ acceptableAnswers: ["Estoy cansado(a).", "Estoy muy cansado."] }, ctx("es")),
