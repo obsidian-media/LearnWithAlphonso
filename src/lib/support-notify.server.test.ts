@@ -125,7 +125,7 @@ afterEach(() => vi.restoreAllMocks());
 describe("the reply email's sender and subject", () => {
   it("comes from the Support team, never from Alphonso or Miya, with no bracket prefix", async () => {
     expect(DEFAULT_SUPPORT_FROM).toBe(
-      "Learn with Alphonso Support team <support@hello.alphonsoecosystem.app>",
+      "Learn with Alphonso Support team <support@hello.learnwithalphonso.com>",
     );
     const { world, deps, emails } = setup();
     await deliverNotice(deps, world.rows[0]);

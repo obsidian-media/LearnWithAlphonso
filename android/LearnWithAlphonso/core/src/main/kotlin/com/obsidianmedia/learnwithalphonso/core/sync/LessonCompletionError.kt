@@ -94,7 +94,7 @@ sealed class LessonCompletionError : Exception() {
     fun whileSession(stillSignedIn: Boolean): LessonCompletionError = if (this == Unauthorized && stillSignedIn) Offline else this
 
     companion object {
-        const val SUPPORT_ADDRESS = "support@alphonsoecosystem.app"
+        const val SUPPORT_ADDRESS = "support@learnwithalphonso.com"
 
         /** start-lesson-session's code for a lesson the learner has not unlocked (src/lib/lesson-unlock.ts). */
         const val LESSON_LOCKED = "lesson-locked"

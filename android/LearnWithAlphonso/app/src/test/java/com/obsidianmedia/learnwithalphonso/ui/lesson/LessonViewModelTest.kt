@@ -225,7 +225,7 @@ class LessonViewModelTest {
         awaitTrue("failure shown") { v.state.value.phase is LessonPhase.SaveFailed }
         val failed = v.state.value.phase as LessonPhase.SaveFailed
         assertEquals("This lesson changed since you started it, so this attempt can't be saved. Update the app, then try the lesson again.", failed.message)
-        assertEquals("If this keeps happening, email support@alphonsoecosystem.app.", failed.supportLine)
+        assertEquals("If this keeps happening, email support@learnwithalphonso.com.", failed.supportLine)
         assertTrue("nothing a retry could fix is queued", store.completions.isEmpty())
     }
 

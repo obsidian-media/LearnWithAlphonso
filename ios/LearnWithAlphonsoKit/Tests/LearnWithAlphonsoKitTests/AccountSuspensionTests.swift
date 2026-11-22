@@ -6,9 +6,9 @@ final class AccountSuspensionTests: XCTestCase {
         XCTAssertEqual(AccountSuspension.title, "This account is suspended.")
         XCTAssertEqual(
             AccountSuspension.body,
-            "If you think this is a mistake, contact support at support@alphonsoecosystem.app."
+            "If you think this is a mistake, contact support at support@learnwithalphonso.com."
         )
-        XCTAssertEqual(AccountSuspension.message, "This account is suspended. If you think this is a mistake, contact support at support@alphonsoecosystem.app.")
+        XCTAssertEqual(AccountSuspension.message, "This account is suspended. If you think this is a mistake, contact support at support@learnwithalphonso.com.")
     }
 
     func testUserBannedSignInErrorMapsToSuspended() {

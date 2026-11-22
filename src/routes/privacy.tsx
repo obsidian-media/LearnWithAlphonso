@@ -25,7 +25,7 @@ export const Route = createFileRoute("/privacy")({
   }),
 });
 
-const SUPPORT = "support@alphonsoecosystem.app";
+const SUPPORT = "support@learnwithalphonso.com";
 const OPERATOR = "Shayan Salimi";
 const UPDATED = "19 November 2026"; // same date on all four legal pages
 

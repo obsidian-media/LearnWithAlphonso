@@ -299,8 +299,8 @@ describe("output guard", () => {
     "Visit https://user@learnwithalphonso.com@evil.com/x",
     "Visit https://evil-learnwithalphonso.com/x",
     "Write to billing@evil.example",
-    "Write to support@alphonsoecosystem.app.evil.com",
-    "Write to Support@evil.example or support@alphonsoecosystem.app",
+    "Write to support@learnwithalphonso.com.evil.com",
+    "Write to Support@evil.example or support@learnwithalphonso.com",
     "Claim it at free-pro.xyz",
   ];
   it.each(blocked)("blocks %j", (text) => {

@@ -62,7 +62,7 @@ final class DeadLetterNoticeTests: XCTestCase {
     func testTheSupportEmailCarriesWhatSupportNeeds() throws {
         let url = try XCTUnwrap(DeadLetterNotice.supportMailURL(identities: ["fra1p1l1|fr|1760000000.0"], reasons: ["lesson-version-mismatch"], appVersion: "1.0 (50)"))
         let s = url.absoluteString
-        XCTAssertTrue(s.hasPrefix("mailto:support@alphonsoecosystem.app?"), s)
+        XCTAssertTrue(s.hasPrefix("mailto:support@learnwithalphonso.com?"), s)
         let items = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems)
         XCTAssertEqual(items.first { $0.name == "subject" }?.value, "A lesson couldn't be saved")
         let body = try XCTUnwrap(items.first { $0.name == "body" }?.value)

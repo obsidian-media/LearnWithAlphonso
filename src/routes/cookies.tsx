@@ -87,7 +87,7 @@ function Cookies() {
       <Section heading="More information">
         <p>
           How we handle your data is described in our <a href="/privacy">Privacy Policy</a>.
-          Questions? Write to support@alphonsoecosystem.app.
+          Questions? Write to support@learnwithalphonso.com.
         </p>
       </Section>
     </LegalPage>

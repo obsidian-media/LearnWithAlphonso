@@ -12,7 +12,7 @@ import { canonicalLink, shareMeta } from "@/lib/seo";
  * low-vision user then cannot find is worse than one that admits the
  * gap, because it costs them the time of trying.
  */
-const CONTACT = "support@alphonsoecosystem.app";
+const CONTACT = "support@learnwithalphonso.com";
 
 export const Route = createFileRoute("/accessibility")({
   component: Accessibility,

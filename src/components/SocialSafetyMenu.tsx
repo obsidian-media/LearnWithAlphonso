@@ -296,7 +296,7 @@ function BlockConfirmDialog({
       <p className="mb-4 ds-type-footnote text-ds-ink-soft">
         {displayName.charAt(0).toUpperCase() + displayName.slice(1)} won't be able to add you as a
         friend or challenge you to a duel, and you won't see them in friends, activity, or
-        leaderboards. Contact support@alphonsoecosystem.app if you need help with this.
+        leaderboards. Contact support@learnwithalphonso.com if you need help with this.
       </p>
       {error && (
         <p role="alert" className="mb-3 ds-type-footnote font-bold text-ds-wrong-ink">
@@ -351,7 +351,7 @@ function ReportDialog({
       <DialogFrame title="Report submitted" onClose={onClose}>
         <p className="ds-type-footnote text-ds-ink-soft">
           Thanks for letting us know. Our team reviews every report. If you need to follow up,
-          contact support@alphonsoecosystem.app.
+          contact support@learnwithalphonso.com.
         </p>
         <div className="mt-4 flex justify-end">
           <DsButton small onClick={onClose}>
