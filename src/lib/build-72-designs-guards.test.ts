@@ -140,7 +140,7 @@ describe("pick 4: Practice cards show real art on every platform", () => {
   it("the two vocab photos are bundled as small thumbnails everywhere", () => {
     for (const w of ["coffee", "train"]) {
       for (const rel of [
-        `public/practice/say-the-picture-${w}.jpg`,
+        `public/figures/practice-say-the-picture-${w}.jpg`,
         `${IOS}/Sources/Assets.xcassets/PracticePhoto-${w}.imageset/PracticePhoto-${w}.jpg`,
         `${ANDROID}/res/drawable-nodpi/practice_photo_${w}.jpg`,
       ]) {

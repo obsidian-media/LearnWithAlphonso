@@ -188,8 +188,8 @@ describe("Practice hub parity: quick practice", () => {
     const art = picture.querySelector("[data-say-picture-art]") as HTMLElement;
     expect(art.className).toContain("bg-ds-choice-tint");
     expect(Array.from(art.querySelectorAll("img")).map((i) => i.getAttribute("src"))).toEqual([
-      "/practice/say-the-picture-train.jpg",
-      "/practice/say-the-picture-coffee.jpg",
+      "/figures/practice-say-the-picture-train.jpg",
+      "/figures/practice-say-the-picture-coffee.jpg",
       "/icons3d/studio_microphone.png",
     ]);
     expect(art.querySelector("[data-mic-badge]")).not.toBeNull();

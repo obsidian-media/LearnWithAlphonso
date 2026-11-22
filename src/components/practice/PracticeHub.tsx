@@ -534,13 +534,13 @@ export function PracticeHub({
             className="relative w-[124px] shrink-0 self-stretch overflow-hidden bg-ds-choice-tint"
           >
             <img
-              src="/practice/say-the-picture-train.jpg"
+              src="/figures/practice-say-the-picture-train.jpg"
               alt=""
               draggable={false}
               className="absolute left-9 top-3 size-[70px] rotate-[7deg] rounded-xl border-2 border-ds-card object-cover shadow-md"
             />
             <img
-              src="/practice/say-the-picture-coffee.jpg"
+              src="/figures/practice-say-the-picture-coffee.jpg"
               alt=""
               draggable={false}
               className="absolute left-2.5 top-11 size-[76px] -rotate-6 rounded-xl border-2 border-ds-card object-cover shadow-md"
