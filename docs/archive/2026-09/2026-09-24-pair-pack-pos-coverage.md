@@ -1,4 +1,4 @@
-> Historical record. Superseded (delivered then replaced; PRs: executed 2026-09; header says superseded in execution). Current behaviour: ARCHITECTURE.md (two sources of POS tags); src/data/pair-answer-class.ts.
+> Historical record. Superseded in execution: the template-declaration approach landed in commit 017f016f and was withdrawn in commit 6882dfb9 (no PR numbers, 2026-09-24); the pair-pack tagging is now src/data/pair-answer-class.ts. Current behaviour: ARCHITECTURE.md § Known rough edges, "Tags have two sources".
 
 # Pair-pack part-of-speech coverage Implementation Plan
 

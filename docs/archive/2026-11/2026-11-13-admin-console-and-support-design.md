@@ -1,4 +1,4 @@
-> Historical record. Delivered in #496 (2026-11-13), #515 (2026-11-14), #524, #532, #541, #544, #554, #557, #567 (2026-11-14 to 2026-11-16); redesign #568, #682-#703 (2026-11-16 to 2026-11-22). Current behaviour: ARCHITECTURE.md staff console (line 2167); docs/operations.md (staff console); docs/security.md.
+> Historical record. Delivered in #496 (2026-11-13), #515 (2026-11-14), #524, #532, #541, #544, #554, #557, #567 (2026-11-14 to 2026-11-16); redesign #568, #682-#703 (2026-11-16 to 2026-11-22). Current behaviour: ARCHITECTURE.md § Build 62, "Staff console, phase 1"; docs/operations.md (staff console); docs/security.md.
 
 # Admin console, roles, and in-app support: design
 

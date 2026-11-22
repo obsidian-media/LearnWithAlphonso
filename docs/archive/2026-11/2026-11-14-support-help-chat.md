@@ -1,4 +1,4 @@
-> Historical record. Delivered in M1 #515, M2 #524, M3 #532 (2026-11-14); M4 #541, M5 #544, Miya #554, M6 #557 (2026-11-15). Current behaviour: ARCHITECTURE.md (Help chat sections ~lines 1699-1709); docs/operations.md (support_ai switch); docs/OPEN-ITEMS.md items 1b and 8.
+> Historical record. Delivered in M1 #515, M2 #524, M3 #532 (2026-11-14); M4 #541, M5 #544, Miya #554, M6 #557 (2026-11-15). Current behaviour: ARCHITECTURE.md (§ Help chat server and the Help chat sections); docs/operations.md (support_ai switch); docs/OPEN-ITEMS.md items 1b and 8.
 
 # In-app Help chat and support inbox: implementation plan
 

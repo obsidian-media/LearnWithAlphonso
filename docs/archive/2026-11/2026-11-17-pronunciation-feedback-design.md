@@ -1,4 +1,4 @@
-> Historical record. Delivered in #616 web (2026-11-17), #621 iOS+Android (2026-11-18); reshaped by #661, #664 (2026-11-20). Current behaviour: none - GAP FOR A (src/lib/pronunciation.ts, SayItRight.tsx).
+> Historical record. Delivered in #616 web (2026-11-17), #621 iOS+Android (2026-11-18); reshaped by #661, #664 (2026-11-20). Current behaviour: ARCHITECTURE.md § Say it right.
 
 # Say it right: word-level pronunciation feedback
 

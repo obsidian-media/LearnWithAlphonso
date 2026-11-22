@@ -31,7 +31,7 @@ A short WHY in the learner's own language, only when asked. Lesson text stays 10
 | --- | --- | --- |
 | Migration `20261112100000` (table, `explain` quota kind) | **Merged** | the PR was held until the owner applied it |
 | `/api/explain`, cache, quota, consent | **Done** (#488) | `explain.test.ts`, `explain-migration.test.ts` (PGlite), `routes/api/explain.test.ts` |
-| Web, iOS, Android UI and Settings | **Done** (#488) | first shipped in build 62 (TestFlight); not submitted to App Review; no device check on record |
+| Web, iOS, Android UI and Settings | **Done** (#488) | first shipped in build 62 (TestFlight; verified: #488 `cc70949d` is an ancestor of the build 62 commit `f86cc7d4`, #498); not submitted to App Review; no device check on record |
 | Right-to-left layout | **Done** (#488) | (unverified: no device check on record) |
 | PostHog `explain_requested` event | **Done** (round 14) | source = kind of item; fires where the item is sent, after consent; web, iOS, Android |
 | App Privacy and Play Data safety labels for AI requests | **Open, owner** | Explain sends the item text to the model provider; tracked in `docs/OPEN-ITEMS.md` item 3 |

@@ -1,4 +1,4 @@
-> Historical record. Delivered in #617 web (2026-11-17), #623 Edge Function, #624 iOS, #625 Android (2026-11-18); later #648, #657, #659, #675, #678, #691. Current behaviour: docs/operations.md (story narration only) - GAP: no living doc for the data model/reader.
+> Historical record. Delivered in #617 web (2026-11-17), #623 Edge Function, #624 iOS, #625 Android (2026-11-18); later #648, #657, #659, #675, #678, #691. Current behaviour: ARCHITECTURE.md § Graded stories (narration: docs/operations.md).
 
 # Graded stories (read-along leveled reading) - design
 

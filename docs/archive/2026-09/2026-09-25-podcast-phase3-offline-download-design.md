@@ -1,4 +1,4 @@
-> Historical record. Delivered in #131 (spec+plan, 2026-09-25), #133 (Kit cache logic, 2026-09-25) plus app wiring PRs. Current behaviour: ARCHITECTURE.md "Offline download (Phase 3)" (~line 372).
+> Historical record. Delivered in #131 (spec+plan, 2026-09-25), #133 (Kit cache logic, 2026-09-25) plus app wiring PRs. Current behaviour: ARCHITECTURE.md § Database, "Offline download (Phase 3)".
 
 # Podcast library Phase 3 — offline download
 

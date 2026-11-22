@@ -1,4 +1,4 @@
-> Historical record. Delivered in #622 web (2026-11-18), #635 mobile (2026-11-19); #659 reader, #675/#678 Mona stories (2026-11-20). Current behaviour: none - GAP FOR A (migration 20261122100000_branching_stories.sql, src/lib/branching.ts, BranchingStoryReader.tsx).
+> Historical record. Delivered in #622 web (2026-11-18), #635 mobile (2026-11-19); #659 reader, #675/#678 Mona stories (2026-11-20). Current behaviour: ARCHITECTURE.md § Branching stories.
 
 # Interactive branching stories — design
 

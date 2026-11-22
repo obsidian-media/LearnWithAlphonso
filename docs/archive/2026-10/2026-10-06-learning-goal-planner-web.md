@@ -1,4 +1,4 @@
-> Historical record. Delivered in #223 (2026-10-06), #224 (grants revoke). Current behaviour: ARCHITECTURE.md (~line 242); src/lib/learning-goal.ts.
+> Historical record. Delivered in #223 (2026-10-06), #224 (grants revoke). Current behaviour: ARCHITECTURE.md (§ Database, "Learning goal planner"); src/lib/learning-goal.ts.
 
 # Learning goal planner, part 1 (web, route, migration) Implementation Plan
 

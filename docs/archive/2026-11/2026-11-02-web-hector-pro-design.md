@@ -1,4 +1,4 @@
-> Historical record. Delivered in #339 (2026-11-03). Current behaviour: ARCHITECTURE.md "Alphonso Pro on the web" (line 1952); docs/OPEN-ITEMS.md item 9 for the owner launch steps.
+> Historical record. Delivered in #339 (2026-11-03). Current behaviour: ARCHITECTURE.md § Alphonso Pro on the web; docs/OPEN-ITEMS.md item 9 for the owner launch steps.
 
 # Web Hector + Alphonso Pro on the web: design
 

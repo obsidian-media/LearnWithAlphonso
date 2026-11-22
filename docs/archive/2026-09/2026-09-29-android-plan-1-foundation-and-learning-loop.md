@@ -1,4 +1,4 @@
-> Historical record. Delivered in #200 (2026-10-01). Current behaviour: ARCHITECTURE.md (Android sections ~line 1477+); android/LearnWithAlphonso/.
+> Historical record. Delivered in #200 (2026-10-01). Current behaviour: ARCHITECTURE.md (§ Native Android app); android/LearnWithAlphonso/.
 
 # Android Plan 1: Foundation and Learning Loop
 

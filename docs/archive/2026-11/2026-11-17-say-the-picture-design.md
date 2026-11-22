@@ -1,4 +1,4 @@
-> Historical record. Delivered in #609 web (2026-11-17), #613 iOS+Android (2026-11-17); reshaped by #658, #660, #665 (2026-11-19 to 2026-11-20). Current behaviour: none - GAP FOR A (src/lib/say-the-picture.ts, src/components/practice/SayThePicture.tsx).
+> Historical record. Delivered in #609 web (2026-11-17), #613 iOS+Android (2026-11-17); reshaped by #658, #660, #665 (2026-11-19 to 2026-11-20). Current behaviour: ARCHITECTURE.md § Say the picture.
 
 # Say the picture: a Practice Hub activity
 

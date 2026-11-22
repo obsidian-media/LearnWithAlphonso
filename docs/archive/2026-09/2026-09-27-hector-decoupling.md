@@ -1,4 +1,4 @@
-> Historical record. Delivered in #189 (2026-09-27). Current behaviour: ARCHITECTURE.md (Hector section, /api/hector-respond ~line 970).
+> Historical record. Delivered in #189 (2026-09-27). Current behaviour: ARCHITECTURE.md (§ Native iOS app, the /api/hector-respond note).
 
 # Hector Decoupling Implementation Plan
 

@@ -1,4 +1,4 @@
-> Historical record. Delivered in #339 (2026-11-03); #470 weak-spot memory. Current behaviour: ARCHITECTURE.md ("Alphonso Pro on the web", ~line 1952).
+> Historical record. Delivered in #339 (2026-11-03); #470 weak-spot memory. Current behaviour: ARCHITECTURE.md (§ Alphonso Pro on the web).
 
 # Web Hector + Alphonso Pro on the web: Implementation Plan
 

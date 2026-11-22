@@ -1,4 +1,4 @@
-> Historical record. Delivered in #140-#143 (2026-09-25); UI later rebuilt in #703 (2026-11-22). Current behaviour: ARCHITECTURE.md (podcast admin ~line 355; staff console line 2167); admin/routes/folders.tsx.
+> Historical record. Delivered in #140-#143 (2026-09-25); UI later rebuilt in #703 (2026-11-22). Current behaviour: ARCHITECTURE.md (§ Database, podcast admin; § Build 62, "Staff console, phase 1"); admin/routes/folders.tsx.
 
 # Podcast Phase 4 — the admin subsystem
 

@@ -1,4 +1,4 @@
-> Historical record. Delivered in #225 (2026-10-06). Current behaviour: ARCHITECTURE.md (~line 242).
+> Historical record. Delivered in #225 (2026-10-06). Current behaviour: ARCHITECTURE.md (§ Database, "Learning goal planner").
 
 # Learning goal planner, part 2 (iOS) Implementation Plan
 

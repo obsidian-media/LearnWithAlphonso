@@ -22,7 +22,7 @@ Owner-approved mock: mocks-r8 Feature 2, layout A "the road", plus layout B's we
 
 ## The rules (shown to the learner on "Why this mix")
 
-1. The week is daily minutes x 6 study days; one day (Sunday, UTC) is a rest day.
+1. The week is daily minutes x 6 study days; one day is a rest day: default Sunday, configurable via `pathRestDay` (the learner's local day; #493, #497).
 2. Lessons are at least half the week, and as many minutes as the goal planner's lessons a week need (capped at the week). A weak lesson-trained skill raises the floor.
 3. The rest is split among the enabled optional types: equal weight, plus a boost for the types that train the weakest skill (listening to podcasts, speaking to talks and, at half weight, campaigns), half of it for the second weakest, plus a boost to campaigns when one is tagged with the learner's goal.
 4. Items are ranked by level fit, goal tag, interest tags and weak skills, and never above the learner's level.

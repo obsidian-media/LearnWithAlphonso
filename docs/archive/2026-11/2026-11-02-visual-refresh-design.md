@@ -1,4 +1,4 @@
-> Historical record. Delivered in #341 (2026-11-03), #347, #350 (2026-11-04). Current behaviour: ARCHITECTURE.md (Royal/Meadow design system ~line 939); design/tokens.json.
+> Historical record. Delivered in #341 (2026-11-03), #347, #350 (2026-11-04). Current behaviour: ARCHITECTURE.md (§ Themes); design/tokens.json.
 
 # Visual refresh: closing the gap with Learna and Duolingo
 

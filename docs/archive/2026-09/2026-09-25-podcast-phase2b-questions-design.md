@@ -1,4 +1,4 @@
-> Historical record. Delivered in #125, #126 (2a); #374, #375, #376, #381 (2026-11-04); #487 SRS (2026-11-13). Current behaviour: ARCHITECTURE.md 'Podcast quiz' and line 2164 (#487).
+> Historical record. Delivered in #125, #126 (2a); #374, #375, #376, #381 (2026-11-04); #487 SRS (2026-11-13). Current behaviour: ARCHITECTURE.md § Podcast quiz and the "Podcast quiz mistakes go to spaced review" item under § Build 62 (#487).
 
 # Podcast Phase 2b — comprehension questions, XP and SRS
 

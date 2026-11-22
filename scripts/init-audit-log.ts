@@ -54,7 +54,10 @@ _Line add/remove proposals and pack re-leveling proposals. Each needs an
 explicit applied/declined decision before phase 1 exits._
 `;
 
-const out = path.resolve(import.meta.dirname, "../docs/archive/2026-09/english-content-audit-log.md");
+const out = path.resolve(
+  import.meta.dirname,
+  "../docs/archive/2026-09/english-content-audit-log.md",
+);
 
 // This script SCAFFOLDS the log; it does not maintain it. Once the audit has
 // filled in verdicts, regenerating would silently discard all of them -- which
