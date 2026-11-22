@@ -216,9 +216,9 @@ private fun ScreenHarnessBody(screen: String, container: AppContainer) {
         "friends" -> FriendsScreen(
             container, {}, {}, {},
             FriendsViewModel(
-                client, container.nudgeCache, me, "https://learn.alphonsoecosystem.app",
+                client, container.nudgeCache, me, "https://learnwithalphonso.com",
                 FriendsUiState(
-                    isLoading = false, friends = listOf(mina, jon, priya), inviteLink = "https://learn.alphonsoecosystem.app/invite/ABC123",
+                    isLoading = false, friends = listOf(mina, jon, priya), inviteLink = "https://learnwithalphonso.com/invite/ABC123",
                     activity = listOf(
                         FriendActivityEvent("e1", "u-mina", "lesson_completed", 0, xpGain = 20),
                         FriendActivityEvent("e2", "u-jon", "streak_milestone", 0, streak = 7),

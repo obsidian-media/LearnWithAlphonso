@@ -104,10 +104,10 @@ describe("Landing route", () => {
     expect(meta.find((m) => m.title)?.title).toBe(
       "Learn With Alphonso: Learn English, French and Spanish",
     );
-    expect(byKey("og:image")).toBe("https://learn.alphonsoecosystem.app/og-image.png");
+    expect(byKey("og:image")).toBe("https://learnwithalphonso.com/og-image.png");
     expect(byKey("og:image:width")).toBe("1200");
     expect(byKey("twitter:card")).toBe("summary_large_image");
-    expect(byKey("twitter:image")).toBe("https://learn.alphonsoecosystem.app/og-image.png");
+    expect(byKey("twitter:image")).toBe("https://learnwithalphonso.com/og-image.png");
     expect(byKey("description")).not.toMatch(/\$|Pro\b|Duolingo/);
   });
 

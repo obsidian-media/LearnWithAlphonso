@@ -1,7 +1,7 @@
 package com.obsidianmedia.learnwithalphonso.core.logic
 
 /**
- * The friend code in https://learn.alphonsoecosystem.app/invite/{code}. Any web page can open that link, so the code
+ * The friend code in https://learnwithalphonso.com/invite/{code} (or the previous host). Any web page can open that link, so the code
  * is accepted only in the shape the server issues (letters and digits; today 12 hex characters) before it reaches a
  * navigation route, where a slash or other character would change the route itself.
  */
@@ -14,7 +14,7 @@ object InviteLink {
         return pathSegments[1].takeIf { CODE.matches(it) }
     }
 
-    private val LINK = Regex("""^https://learn[.]alphonsoecosystem[.]app/invite/([A-Za-z0-9]{6,64})/?$""")
+    private val LINK = Regex("""^https://(?:learnwithalphonso[.]com|learn[.]alphonsoecosystem[.]app)/invite/([A-Za-z0-9]{6,64})/?$""")
 
     /** What a learner typed or pasted in the friend-code field: a bare code, or the whole invite link. Null otherwise. */
     fun codeFromEntry(text: String): String? {

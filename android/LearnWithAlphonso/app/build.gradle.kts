@@ -34,9 +34,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Public client values (same as ios/.../AppConfig.swift). Not secrets.
-        buildConfigField("String", "SUPABASE_URL", "\"https://qhcjpfbxfcltjbiuknyt.supabase.co\"")
+        buildConfigField("String", "SUPABASE_URL", "\"https://api.learnwithalphonso.com\"")
         buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9\"")
-        buildConfigField("String", "API_BASE_URL", "\"https://learn.alphonsoecosystem.app\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://learnwithalphonso.com\"")
         // Injected by CI from REVENUECAT_ANDROID_PUBLIC_KEY; empty means Pro is unavailable in this build (Plan 3).
         buildConfigField("String", "REVENUECAT_PUBLIC_KEY", "\"${System.getenv("REVENUECAT_ANDROID_PUBLIC_KEY") ?: ""}\"")
         // Optional usage analytics (PostHog). The repo is public, so the key is never committed: CI injects it from the

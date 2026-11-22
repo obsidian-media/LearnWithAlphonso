@@ -21,7 +21,7 @@ const payload = {
   createdAt: "2026-10-08T10:00:00Z",
 };
 const req = (body: unknown, secret?: string) =>
-  new Request("https://learn.alphonsoecosystem.app/api/internal/report-notify", {
+  new Request("https://learnwithalphonso.com/api/internal/report-notify", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

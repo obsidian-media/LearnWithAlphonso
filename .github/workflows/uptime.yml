@@ -20,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      SITE: https://learn.alphonsoecosystem.app
-      API: https://qhcjpfbxfcltjbiuknyt.supabase.co
+      SITE: https://learnwithalphonso.com
+      API: https://api.learnwithalphonso.com
       # The public client key that ships in the app and the web bundle.
       PUBLIC_KEY: sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9
     steps:

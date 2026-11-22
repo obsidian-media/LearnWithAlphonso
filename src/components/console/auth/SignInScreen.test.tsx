@@ -418,7 +418,7 @@ describe("the Supabase adapter keeps every existing path", () => {
     });
     await api.resetPassword("a@b.c");
     expect(auth.resetPasswordForEmail).toHaveBeenCalledWith("a@b.c", {
-      redirectTo: "https://learn.alphonsoecosystem.app/reset-password",
+      redirectTo: "https://learnwithalphonso.com/reset-password",
     });
   });
 });

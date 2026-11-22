@@ -13,7 +13,7 @@ import {
 const worst: ReviewNotesInput = {
   demoAccountEmail: `${"d".repeat(49)}@example.com`, // 61 chars
   reviewContactEmail: `${"c".repeat(48)}@gmail.com`, // 58 chars
-  demoCodeURL: `https://learn.alphonsoecosystem.app/api/review-demo-code?key=${"k".repeat(80)}`, // 140 chars
+  demoCodeURL: `https://learnwithalphonso.com/api/review-demo-code?key=${"k".repeat(80)}`, // 140 chars
   recordingURL: `https://www.youtube.com/watch?v=${"r".repeat(68)}`, // 100 chars
   productTitle: "Alphonso Pro",
 };
@@ -74,7 +74,7 @@ describe("buildReviewNotes", () => {
   it("is plain ASCII with no literal double hyphen, whatever the secret values contain", () => {
     const unlucky = {
       ...worst,
-      demoCodeURL: "https://learn.alphonsoecosystem.app/api/review-demo-code?key=a--b",
+      demoCodeURL: "https://learnwithalphonso.com/api/review-demo-code?key=a--b",
     };
     const notes = buildReviewNotes(unlucky);
     expect(notes).not.toMatch(/[^\n\r\t -~]/);

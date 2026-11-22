@@ -37,7 +37,7 @@ function Privacy() {
           Learn with Alphonso is a language learning app for English, French and Spanish, operated
           by {OPERATOR} ("we", "us"). This policy explains what we collect, why, who else handles
           it, and the choices you have. It covers the iOS app, the Android app where it is
-          available, and the website at learn.alphonsoecosystem.app.
+          available, and the website at learnwithalphonso.com.
         </p>
         <p>
           We are the data controller for everything described here. Write to {SUPPORT} about

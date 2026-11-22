@@ -44,8 +44,8 @@ function Accessibility() {
         <p>
           Learning a language should not depend on how well you see, hear or move. We would rather
           tell you plainly what works today than claim support you then discover is missing — so
-          this page lists both. It covers the website at learn.alphonsoecosystem.app, the iPhone app
-          and the Android app.
+          this page lists both. It covers the website at learnwithalphonso.com, the iPhone app and
+          the Android app.
         </p>
         <p>
           Our goal is for the website and both apps to meet the Web Content Accessibility Guidelines

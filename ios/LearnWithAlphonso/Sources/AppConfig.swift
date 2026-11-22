@@ -7,7 +7,7 @@ import Foundation
 /// the native app design doc's architecture section: one account, shared
 /// backend, no migration).
 enum AppConfig {
-    static let supabaseURL = URL(string: "https://qhcjpfbxfcltjbiuknyt.supabase.co")!
+    static let supabaseURL = URL(string: "https://api.learnwithalphonso.com")!
     static let supabasePublishableKey = "sb_publishable_mIBGe0mIBTz---kX-vP59A_x0UhYbs9"
 
     /// This repo's own deployed web app -- AIConversationClient calls its
@@ -17,12 +17,12 @@ enum AppConfig {
     ///
     /// Was the english-buddy-app-33.vercel.app alias until 2026-09-26.
     /// Both resolve, so nothing was broken -- but Supabase's site_url now
-    /// sends every auth confirmation link to learn.alphonsoecosystem.app
+    /// sends every auth confirmation link to learnwithalphonso.com
     /// (scripts/update-auth-email-template.ts), and an app calling one
     /// origin while its own emails point at another is the kind of split
     /// that stays invisible right up until a cookie, a CORS rule or a
     /// redirect depends on them matching.
-    static let apiBaseURL = URL(string: "https://learn.alphonsoecosystem.app")!
+    static let apiBaseURL = URL(string: "https://learnwithalphonso.com")!
 
     /// Hector's tutor turn runs in our own backend against the main
     /// account (docs/superpowers/specs/2026-09-27-hector-decoupling-design.md).

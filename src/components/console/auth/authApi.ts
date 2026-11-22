@@ -47,7 +47,7 @@ export type SupabaseAuthLike = {
 };
 
 // Reset lands on the LEARNER app, which already owns the reset-password route and its email template.
-const RESET_REDIRECT = "https://learn.alphonsoecosystem.app/reset-password";
+const RESET_REDIRECT = "https://learnwithalphonso.com/reset-password";
 
 export function supabaseAuthApi(auth: SupabaseAuthLike, origin: () => string): AuthApi {
   return {

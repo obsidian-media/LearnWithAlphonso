@@ -111,6 +111,7 @@ targets:
           - Default
         # Universal Links for friend invite links; see the entitlements files for the App ID capability note.
         com.apple.developer.associated-domains:
+          - applinks:learnwithalphonso.com
           - applinks:learn.alphonsoecosystem.app
         # Push Notifications (V4 candidate #2). Found live 2026-09-28: this
         # `properties` block is what XcodeGen uses to register a target's

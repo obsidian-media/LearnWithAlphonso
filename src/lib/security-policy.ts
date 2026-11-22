@@ -33,6 +33,13 @@ export async function requestWithCspNonce(request: Request, nonce: string): Prom
   });
 }
 
+/**
+ * The project's original Supabase host. Always allowed alongside the configured SUPABASE_URL (now
+ * https://api.learnwithalphonso.com): stored public storage URLs (vocab images) and older native/web builds still
+ * point at it, and it keeps working. Drop it only after those are migrated.
+ */
+export const LEGACY_SUPABASE_ORIGIN = "https://qhcjpfbxfcltjbiuknyt.supabase.co";
+
 export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): string {
   let supabaseOrigin: string | undefined;
   try {
@@ -42,13 +49,27 @@ export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): stri
       if (parsedUrl.protocol === "https:") supabaseOrigin = parsedUrl.origin;
     }
   } catch {
-    // Invalid/missing configuration must not broaden the policy.
+    // Invalid/missing configuration adds no configured origin. The only fixed first-party exception is
+    // LEGACY_SUPABASE_ORIGIN below, which is always allowed: it is a constant, never derived from input.
   }
   const realtimeOrigin = supabaseOrigin?.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
-  const connect = ["'self'", supabaseOrigin, realtimeOrigin, SENTRY_INGEST_ORIGIN, POSTHOG_ORIGIN]
+  const legacyOrigin =
+    LEGACY_SUPABASE_ORIGIN === supabaseOrigin ? undefined : LEGACY_SUPABASE_ORIGIN;
+  const legacyRealtime = legacyOrigin?.replace(/^https:/, "wss:");
+  const connect = [
+    "'self'",
+    supabaseOrigin,
+    realtimeOrigin,
+    legacyOrigin,
+    legacyRealtime,
+    SENTRY_INGEST_ORIGIN,
+    POSTHOG_ORIGIN,
+  ]
     .filter(Boolean)
     .join(" ");
-  const images = ["'self'", "data:", "blob:", supabaseOrigin].filter(Boolean).join(" ");
+  const images = ["'self'", "data:", "blob:", supabaseOrigin, legacyOrigin]
+    .filter(Boolean)
+    .join(" ");
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
@@ -56,7 +77,7 @@ export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): stri
     // Script execution remains nonce-only; style tightening is a separate migration.
     "style-src 'self' 'unsafe-inline'",
     `img-src ${images}`,
-    `media-src 'self' blob: ${supabaseOrigin ?? ""}`.trim(),
+    `media-src ${["'self'", "blob:", supabaseOrigin, legacyOrigin].filter(Boolean).join(" ")}`,
     `connect-src ${connect}`,
     "font-src 'self' data:",
     "object-src 'none'",
@@ -80,8 +101,9 @@ export function addSecurityHeaders(response: Response, request: Request, nonce: 
   if (process.env.NODE_ENV === "production") {
     headers.set("content-security-policy", contentSecurityPolicy(nonce, process.env.SUPABASE_URL));
     if (new URL(request.url).protocol === "https:") {
-      // Same value as the static files (static-headers.ts / vercel.json). includeSubDomains covers only hosts under
-      // this one (*.learn.alphonsoecosystem.app), never siblings such as discover.alphonsoecosystem.app.
+      // Same value as the static files (static-headers.ts / vercel.json). Sent from the apex learnwithalphonso.com,
+      // includeSubDomains covers every *.learnwithalphonso.com host (admin, api, www), which must all stay HTTPS-only.
+      // It never reaches sibling domains such as discover.alphonsoecosystem.app.
       headers.set("strict-transport-security", HSTS_VALUE);
     }
   }

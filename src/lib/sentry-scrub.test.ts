@@ -32,9 +32,9 @@ describe("scrubString", () => {
   });
 
   it("redacts sensitive URL query and fragment parameters but keeps the path", () => {
-    const url = `https://learn.alphonsoecosystem.app/auth/callback?code=9f8e7d6c&next=/learn#access_token=${ACCESS_JWT}&refresh_token=r3fr3sh&type=signup`;
+    const url = `https://learnwithalphonso.com/auth/callback?code=9f8e7d6c&next=/learn#access_token=${ACCESS_JWT}&refresh_token=r3fr3sh&type=signup`;
     const out = scrubString(url);
-    expect(out).toContain("https://learn.alphonsoecosystem.app/auth/callback");
+    expect(out).toContain("https://learnwithalphonso.com/auth/callback");
     expect(out).toContain("next=/learn");
     expect(out).not.toContain("9f8e7d6c");
     expect(out).not.toContain("r3fr3sh");
@@ -70,7 +70,7 @@ describe("account ids and query strings", () => {
   it("strips the query string from breadcrumb, request and navigation URLs", () => {
     const out = scrubEvent({
       request: {
-        url: `https://learn.alphonsoecosystem.app/lesson?uid=abc&x=${USER_ID}`,
+        url: `https://learnwithalphonso.com/lesson?uid=abc&x=${USER_ID}`,
         query_string: "uid=abc",
       },
       breadcrumbs: [
@@ -109,7 +109,7 @@ describe("scrubEvent (the beforeSend hook)", () => {
     exception: { values: [{ type: "AuthError", value: `bad token ${ACCESS_JWT}` }] },
     user: { id: "1b4c2e74", email: EMAIL, ip_address: "203.0.113.9" },
     request: {
-      url: `https://learn.alphonsoecosystem.app/reset?token_hash=abc123&email=${EMAIL}`,
+      url: `https://learnwithalphonso.com/reset?token_hash=abc123&email=${EMAIL}`,
       headers: { Authorization: `Bearer ${ACCESS_JWT}`, Cookie: "sb-access-token=zzz" },
       cookies: { session: "s" },
       data: { answer: "my private answer", password: "hunter2" },
