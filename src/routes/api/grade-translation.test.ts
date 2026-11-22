@@ -63,7 +63,14 @@ beforeEach(() => {
   global.fetch = vi.fn().mockResolvedValue(
     new Response(
       JSON.stringify({
-        choices: [{ message: { content: '{"correct": true, "reason": "Same meaning."}' } }],
+        choices: [
+          {
+            message: {
+              content:
+                '{"elements": ["the greeting"], "missing": [], "correct": true, "reason": "Same meaning."}',
+            },
+          },
+        ],
       }),
       { status: 200 },
     ),
