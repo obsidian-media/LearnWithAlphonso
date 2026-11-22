@@ -21,8 +21,8 @@ export const CONSOLE_FUNCTIONS: Readonly<Record<string, readonly string[]>> = {
     "staffDeleteUser",
   ],
   "staff-admin.functions.ts": ["staffListStaff", "staffAddStaff", "staffUpdateStaff"],
-  "staff-audit.functions.ts": ["staffListAudit"],
-  "staff-health.functions.ts": ["staffGetSystemHealth"],
+  "staff-audit.functions.ts": ["staffListAudit", "staffListAuditActors"],
+  "staff-health.functions.ts": ["staffGetSystemHealth", "staffGetHealth"],
   "staff-home.functions.ts": [
     "staffNavCounts",
     "staffHomeMetrics",
@@ -49,6 +49,7 @@ export const STAFF_READ_FUNCTIONS = [
   "staffGetUser",
   "staffListStaff",
   "staffListAudit",
+  "staffListAuditActors",
   "staffListTickets",
   "staffGetTicket",
   "staffNavCounts",
@@ -58,4 +59,5 @@ export const STAFF_READ_FUNCTIONS = [
   "staffGetSettings",
   "staffGetNumbers",
   "staffGetSystemHealth",
+  "staffGetHealth",
 ] as const;
