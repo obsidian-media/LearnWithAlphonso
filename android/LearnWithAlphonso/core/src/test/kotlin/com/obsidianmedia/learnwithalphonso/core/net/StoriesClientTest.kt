@@ -4,6 +4,8 @@ import com.obsidianmedia.learnwithalphonso.core.net.FakeSupabase.Companion.json
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizAnswer
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizError
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizException
+import com.obsidianmedia.learnwithalphonso.core.podcast.Stories
+import com.obsidianmedia.learnwithalphonso.core.podcast.StoryCoverProbe
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -62,6 +64,82 @@ class StoriesClientTest {
         assertEquals(1, story.endingsFound)
         assertTrue(story.coverUrl!!.endsWith("/storage/v1/object/public/story-art/en/key/n1.jpg"))
         assertTrue(fake.seen[0].query["select"]!!.contains("nodes"))
+    }
+
+    // ---- Linear story covers (owner pick 3): illustrated by convention, gradient when the object is missing.
+
+    private fun linearRow(slug: String) =
+        """{"id":"$storyId","course":"en","level_id":"A1","slug":"$slug","title":"Lucy","sort_order":1,"published":true,"segments":["One."]}"""
+
+    private fun coverFake(rows: String, headStatus: () -> HttpStatusCode) = FakeSupabase { req ->
+        when {
+            req.method == "HEAD" -> json("", headStatus())
+            req.path.endsWith("/stories") -> json(rows)
+            else -> json("[]")
+        }
+    }
+
+    @Test
+    fun `a linear story reads its cover by convention when the object exists`() = runTest {
+        val fake = coverFake("[${linearRow("lucys-morning")}]") { HttpStatusCode.OK }
+        val story = StoriesClient(fake.http, StoryCoverProbe()).fetchStories("en").single()
+        assertEquals("https://example.supabase.co/storage/v1/object/public/story-art/en/lucys-morning/cover.jpg", story.coverUrl)
+        assertEquals(1, fake.seen.count { it.method == "HEAD" }, "an existence check, never a download")
+    }
+
+    @Test
+    fun `a linear story with no cover object falls back to the gradient (null, never a broken image)`() = runTest {
+        val fake = coverFake("[${linearRow("no-art")}]") { HttpStatusCode.NotFound }
+        assertNull(StoriesClient(fake.http, StoryCoverProbe()).fetchStories("en").single().coverUrl)
+    }
+
+    @Test
+    fun `the cover is looked up once, not on every library load`() = runTest {
+        val fake = coverFake("[${linearRow("lucys-morning")}]") { HttpStatusCode.OK }
+        val client = StoriesClient(fake.http, StoryCoverProbe())
+        repeat(3) { client.fetchStories("en") }
+        assertEquals(1, fake.seen.count { it.method == "HEAD" })
+    }
+
+    @Test
+    fun `a missing cover is asked about again after the window, so later art appears`() = runTest {
+        var clock = 1_000L
+        var present = false
+        val fake = coverFake("[${linearRow("later")}]") { if (present) HttpStatusCode.OK else HttpStatusCode.NotFound }
+        val client = StoriesClient(fake.http, StoryCoverProbe(now = { clock }, missingTtlMs = 60_000))
+        assertNull(client.fetchStories("en").single().coverUrl)
+        present = true
+        clock += 30_000
+        assertNull(client.fetchStories("en").single().coverUrl, "still inside the window: no new request")
+        clock += 31_000
+        assertTrue(client.fetchStories("en").single().coverUrl != null)
+        assertEquals(2, fake.seen.count { it.method == "HEAD" })
+    }
+
+    @Test
+    fun `a failed check is not remembered as missing`() = runTest {
+        var status = HttpStatusCode.ServiceUnavailable
+        val fake = coverFake("[${linearRow("flaky")}]") { status }
+        val client = StoriesClient(fake.http, StoryCoverProbe())
+        assertNull(client.fetchStories("en").single().coverUrl)
+        status = HttpStatusCode.OK
+        assertTrue(client.fetchStories("en").single().coverUrl != null)
+    }
+
+    @Test
+    fun `a branching story keeps its scene art and is never probed`() = runTest {
+        val nodes = """{"start":"n1","map":{"n1":{"segments":["a"],"art":"en/key/n1.jpg","ending":{"id":"good","title":"G","wrap":"w","quality":"good"}}}}"""
+        val row = """{"id":"$storyId","course":"en","level_id":"A2","slug":"key","title":"The Key","sort_order":3,"published":true,"branching":true,"segments":[],"nodes":$nodes}"""
+        val fake = coverFake("[$row]") { HttpStatusCode.OK }
+        val story = StoriesClient(fake.http, StoryCoverProbe()).fetchStories("en").single()
+        assertTrue(story.coverUrl!!.endsWith("/en/key/n1.jpg"))
+        assertEquals(0, fake.seen.count { it.method == "HEAD" })
+    }
+
+    @Test
+    fun `the cover convention is course slash slug slash cover dot jpg, beside the branching scene art`() {
+        assertEquals("en/lucys-morning/cover.jpg", Stories.linearCoverKey("en", "lucys-morning"))
+        assertNull(Stories.linearCoverUrl("https://x.supabase.co", "en", ""))
     }
 
     @Test

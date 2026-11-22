@@ -14,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -38,6 +39,14 @@ class MainActivity : ComponentActivity() {
     private var pendingHelp by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // The launch screen (Theme.Alphonso.Starting): the brand colour and the app icon. It stays up while the saved
+        // session restores, so a signed-in learner never sees a blank frame, then hands off to RootScreen's
+        // LaunchRestoringView (identical) if restoring runs long. Never held past LAUNCH_HOLD_MAX_MS.
+        val launchedAt = android.os.SystemClock.elapsedRealtime()
+        installSplashScreen().setKeepOnScreenCondition {
+            container.session.isRestoring.value &&
+                android.os.SystemClock.elapsedRealtime() - launchedAt < LAUNCH_HOLD_MAX_MS
+        }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         container.micPermission.register(this)
@@ -168,3 +177,6 @@ class MainActivity : ComponentActivity() {
         const val ACTION_OAUTH_CALLBACK = "com.obsidianmedia.learnwithalphonso.OAUTH_CALLBACK"
     }
 }
+
+/** The longest the system launch screen is held for the session to restore; after that the app's own identical view takes over. */
+private const val LAUNCH_HOLD_MAX_MS = 1500L

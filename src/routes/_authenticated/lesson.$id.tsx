@@ -782,6 +782,32 @@ function LessonPage() {
               {q.prompt}
             </AlphonsoBubble>
           </div>
+          {/* A Quick practice re-ask never touches the score (recordAnswer is skipped for it), so it says so. */}
+          {isReinforcing && (
+            <span
+              role="img"
+              aria-label="Practice, not scored"
+              data-practice-tag=""
+              className="inline-flex items-center gap-1.5 self-start rounded-full border-[1.5px] border-ds-action bg-ds-action-tint px-3 py-1 ds-type-caption font-extrabold text-ds-action-text"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="size-3.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" />
+                <path d="M3 21v-5h5" />
+              </svg>
+              <span aria-hidden="true">Practice · not scored</span>
+            </span>
+          )}
 
           {hasImage && q.type === "mc" && q.imageKey && (
             <VocabImage

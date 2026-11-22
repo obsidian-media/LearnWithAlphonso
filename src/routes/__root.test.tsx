@@ -538,3 +538,30 @@ describe("AuthSync (inside RootComponent)", () => {
     expect(reset).not.toHaveBeenCalled();
   });
 });
+
+describe("the boot splash (owner pick 1)", () => {
+  it("is in the server-rendered shell: the app icon on the hero colour, hidden from assistive tech", async () => {
+    const { Route } = await import("./__root");
+    const Shell = (
+      Route as unknown as {
+        options: { shellComponent: React.ComponentType<{ children: React.ReactNode }> };
+      }
+    ).options.shellComponent;
+    const markup = renderToStaticMarkup(<Shell>{null}</Shell>);
+    expect(markup).toContain('id="boot-splash"');
+    expect(markup).toMatch(
+      /<div id="boot-splash"[^>]*aria-hidden="true"[^>]*><img src="\/icon-192\.png"/,
+    );
+    expect(markup).toContain("var(--c-hero,#1D2B64)");
+    // Without JavaScript nothing would ever dismiss it, so a <noscript> style hides it.
+    expect(markup).toMatch(/<noscript><style>#boot-splash\{display:none\}<\/style><\/noscript>/);
+  });
+
+  it("dismissBootSplash marks the page as booted, which the stylesheet turns into hidden", async () => {
+    const { dismissBootSplash, BOOT_SPLASH_CSS } = await import("../lib/boot-splash");
+    document.documentElement.removeAttribute("data-booted");
+    dismissBootSplash();
+    expect(document.documentElement.hasAttribute("data-booted")).toBe(true);
+    expect(BOOT_SPLASH_CSS).toContain("html[data-booted] #boot-splash{opacity:0;visibility:hidden");
+  });
+});

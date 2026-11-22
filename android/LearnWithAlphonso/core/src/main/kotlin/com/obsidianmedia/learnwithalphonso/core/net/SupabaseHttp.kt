@@ -13,6 +13,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.TextContent
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -64,6 +66,23 @@ class SupabaseHttp(
         /** For PostgREST filters that repeat a key, such as two `day` bounds. */
         queryList: List<Pair<String, String>> = emptyList(),
     ): HttpResponse = send(method, "rest/v1/$table", query.toList() + queryList, body, headers)
+
+    /**
+     * A HEAD on an absolute URL (a public storage object): its status code, or null when the request failed or took longer than
+     * [timeoutMs]. Sends no body and downloads none; used to ask whether a story cover exists.
+     */
+    suspend fun headStatus(url: String, timeoutMs: Long = 3_000): Int? = try {
+        withTimeoutOrNull(timeoutMs) {
+            client.request(url) {
+                this.method = HttpMethod.Head
+                header("apikey", anonKey)
+            }.status.value
+        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        null
+    }
 
     suspend fun rpc(name: String, body: JsonObject): HttpResponse =
         send(HttpMethod.Post, "rest/v1/rpc/$name", emptyList(), body, emptyMap())

@@ -171,7 +171,7 @@ describe("Practice hub parity: quick practice", () => {
     ).toBeInTheDocument();
   });
 
-  it("cards have a uniform border-2 with no bottom lip, a waveform thumbnail, and a plain Start pill", () => {
+  it("cards have a uniform border-2 with no bottom lip, real art on both, and a plain Start pill", () => {
     const { container } = hub();
     for (const sel of ["[data-say-the-picture-card]", "[data-say-it-right-card]"]) {
       const card = container.querySelector(sel) as HTMLElement;
@@ -183,15 +183,27 @@ describe("Practice hub parity: quick practice", () => {
       expect(start.className).not.toMatch(/shadow/);
       expect(start.querySelector("svg")).toBeNull();
     }
-    const thumb = (
-      container.querySelector("[data-say-it-right-card]") as HTMLElement
-    ).querySelector("[data-glyph='waveform']") as SVGElement;
-    expect(thumb).not.toBeNull();
-    expect(thumb.parentElement!.className).toContain("bg-ds-right-tint");
-    expect(thumb.parentElement!.className).toContain("text-ds-right-edge");
-    expect(
-      (container.querySelector("[data-say-it-right-card]") as HTMLElement).querySelectorAll("i")
-        .length,
-    ).toBe(0);
+    // Say the picture: two real vocab photos in frames and a mic badge (owner pick 4.1).
+    const picture = container.querySelector("[data-say-the-picture-card]") as HTMLElement;
+    const art = picture.querySelector("[data-say-picture-art]") as HTMLElement;
+    expect(art.className).toContain("bg-ds-choice-tint");
+    expect(Array.from(art.querySelectorAll("img")).map((i) => i.getAttribute("src"))).toEqual([
+      "/practice/say-the-picture-train.jpg",
+      "/practice/say-the-picture-coffee.jpg",
+      "/icons3d/studio_microphone.png",
+    ]);
+    expect(art.querySelector("[data-mic-badge]")).not.toBeNull();
+    // Say it right: Alphonso listening and a score badge in the right tokens (owner pick 4.2).
+    const right = container.querySelector("[data-say-it-right-card]") as HTMLElement;
+    const rightArt = right.querySelector("[data-say-right-art]") as HTMLElement;
+    expect(rightArt.className).toContain("bg-ds-right-tint");
+    expect(rightArt.querySelector("img")).toHaveAttribute(
+      "src",
+      "/figures/alphonso-listening-headphones.webp",
+    );
+    const badge = rightArt.querySelector("[data-score-badge]") as HTMLElement;
+    expect(badge.className).toContain("bg-ds-right");
+    expect(badge.className).toContain("text-ds-on-right");
+    expect(right.querySelector("[data-glyph='waveform']")).toBeNull();
   });
 });

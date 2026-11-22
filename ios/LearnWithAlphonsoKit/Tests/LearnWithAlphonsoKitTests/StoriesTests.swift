@@ -17,6 +17,18 @@ final class StoriesTests: XCTestCase {
         var last: URLRequest? { requests.last }
     }
 
+    private final class ClockBox: @unchecked Sendable {
+        private let lock = NSLock()
+        private var _now = Date(timeIntervalSince1970: 1_000_000)
+        var now: Date { get { lock.lock(); defer { lock.unlock() }; return _now } set { lock.lock(); _now = newValue; lock.unlock() } }
+    }
+
+    private final class FlagBox: @unchecked Sendable {
+        private let lock = NSLock()
+        private var _value = false
+        var value: Bool { get { lock.lock(); defer { lock.unlock() }; return _value } set { lock.lock(); _value = newValue; lock.unlock() } }
+    }
+
     private func makeClient(
         response: @escaping @Sendable (URLRequest) async throws -> (Data, URLResponse)
     ) -> PodcastClient {
@@ -162,6 +174,113 @@ final class StoriesTests: XCTestCase {
         XCTAssertNotNil(stories.first?.coverURL)
         let first = await box.requests.first?.url?.absoluteString ?? ""
         XCTAssertTrue(first.contains("nodes"))
+    }
+
+    // MARK: - Linear story covers (owner pick 3: illustrated covers by convention, gradient when missing)
+
+    func testALinearCoverLivesBesideTheBranchingSceneArt() {
+        XCTAssertEqual(Stories.linearCoverKey(course: "en", slug: "lucys-morning"), "en/lucys-morning/cover.jpg")
+        XCTAssertEqual(
+            Stories.linearCoverURL(supabaseURL: supabaseURL, course: "fr", slug: "ma-famille")?.absoluteString,
+            "https://project.supabase.co/storage/v1/object/public/story-art/fr/ma-famille/cover.jpg")
+        XCTAssertNil(Stories.linearCoverURL(supabaseURL: supabaseURL, course: "en", slug: ""))
+    }
+
+    private func linearRow(slug: String, id: String = "11111111-1111-4111-8111-111111111111") -> [String: Any] {
+        ["id": id, "course": "en", "level_id": "A1", "slug": slug, "title": slug, "published": true, "segments": ["One."]]
+    }
+
+    private func coverClient(
+        rows: [[String: Any]], coverStatus: @escaping @Sendable (URL) -> Int, box: RequestBox,
+        probe: StoryCoverProbe = StoryCoverProbe()
+    ) -> PodcastClient {
+        PodcastClient(
+            supabaseURL: supabaseURL, anonKey: "publishable-key", accessToken: "user-access-token",
+            requester: { request in
+                await box.record(request)
+                if request.httpMethod == "HEAD" {
+                    let status = coverStatus(request.url!)
+                    return (Data(), HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!)
+                }
+                if request.url!.path.hasSuffix("/stories") { return self.json(rows) }
+                return self.json([])
+            },
+            coverProbe: probe)
+    }
+
+    func testALinearStoryShowsItsCoverWhenTheObjectExists() async throws {
+        let box = RequestBox()
+        let client = coverClient(rows: [linearRow(slug: "lucys-morning")], coverStatus: { _ in 200 }, box: box)
+        let stories = try await client.fetchStories(course: "en")
+        XCTAssertEqual(
+            stories.first?.coverURL?.absoluteString,
+            "https://project.supabase.co/storage/v1/object/public/story-art/en/lucys-morning/cover.jpg")
+        let heads = await box.requests.filter { $0.httpMethod == "HEAD" }
+        XCTAssertEqual(heads.count, 1, "an existence check, never a download")
+    }
+
+    func testALinearStoryWithoutAnObjectFallsBackToTheGradient() async throws {
+        let box = RequestBox()
+        let client = coverClient(rows: [linearRow(slug: "no-art")], coverStatus: { _ in 400 }, box: box)
+        let stories = try await client.fetchStories(course: "en")
+        XCTAssertNil(stories.first?.coverURL, "a missing cover is nil, so the library draws its gradient, never a broken image")
+    }
+
+    func testTheCoverIsLookedUpOnceNotOnEveryLibraryLoad() async throws {
+        let box = RequestBox()
+        let client = coverClient(rows: [linearRow(slug: "lucys-morning")], coverStatus: { _ in 200 }, box: box)
+        _ = try await client.fetchStories(course: "en")
+        _ = try await client.fetchStories(course: "en")
+        _ = try await client.fetchStories(course: "en")
+        let heads = await box.requests.filter { $0.httpMethod == "HEAD" }
+        XCTAssertEqual(heads.count, 1)
+    }
+
+    func testAMissingCoverIsRetriedAfterTheWindowSoLaterArtAppears() async throws {
+        let box = RequestBox()
+        let clock = ClockBox()
+        let probe = StoryCoverProbe(now: { clock.now }, missingTTL: 60)
+        let present = FlagBox()
+        let client = coverClient(
+            rows: [linearRow(slug: "later")], coverStatus: { _ in present.value ? 200 : 404 }, box: box, probe: probe)
+        let first = try await client.fetchStories(course: "en").first?.coverURL
+        XCTAssertNil(first)
+        present.value = true
+        clock.now = clock.now.addingTimeInterval(30)
+        let inside = try await client.fetchStories(course: "en").first?.coverURL
+        XCTAssertNil(inside, "still inside the window: no new request")
+        clock.now = clock.now.addingTimeInterval(31)
+        let after = try await client.fetchStories(course: "en").first?.coverURL
+        XCTAssertNotNil(after)
+        let heads = await box.requests.filter { $0.httpMethod == "HEAD" }
+        XCTAssertEqual(heads.count, 2)
+    }
+
+    func testAFailedCheckIsNotRememberedAsMissing() async throws {
+        let box = RequestBox()
+        let status = FlagBox()
+        status.value = false
+        let client = coverClient(
+            rows: [linearRow(slug: "flaky")], coverStatus: { _ in status.value ? 200 : 503 }, box: box)
+        let failed = try await client.fetchStories(course: "en").first?.coverURL
+        XCTAssertNil(failed)
+        status.value = true
+        let retried = try await client.fetchStories(course: "en").first?.coverURL
+        XCTAssertNotNil(retried)
+    }
+
+    func testABranchingStoryKeepsItsSceneArtAndIsNeverProbed() async throws {
+        let box = RequestBox()
+        let row: [String: Any] = [
+            "id": "33333333-3333-4333-8333-333333333333", "course": "en", "level_id": "A2", "slug": "mona", "title": "Mona",
+            "published": true, "branching": true, "segments": [],
+            "nodes": ["start": "a", "map": ["a": ["segments": ["Hi."], "art": "en/mona/a.jpg", "ending": ["id": "good", "title": "Good", "wrap": "w", "quality": "good"]]]],
+        ]
+        let client = coverClient(rows: [row], coverStatus: { _ in 200 }, box: box)
+        let stories = try await client.fetchStories(course: "en")
+        XCTAssertTrue(stories.first?.coverURL?.absoluteString.hasSuffix("/en/mona/a.jpg") ?? false)
+        let heads = await box.requests.filter { $0.httpMethod == "HEAD" }
+        XCTAssertTrue(heads.isEmpty)
     }
 
     func testNextSegmentNeverRunsPastTheTextOrLoops() {

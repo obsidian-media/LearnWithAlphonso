@@ -4,7 +4,7 @@ import { DsIcon } from "../ds/DsIcon";
 import { DsButton } from "../ds/Blocks";
 import { HectorInvite } from "../HectorInvite";
 import { PracticeStars, StarTally } from "./PracticeStars";
-import { BubbleGlyph, WaveformGlyph } from "./PracticeGlyphs";
+import { BubbleGlyph } from "./PracticeGlyphs";
 import { SayThePicture } from "./SayThePicture";
 import { SayItRight } from "./SayItRight";
 import { PreCallSheet, type CallMode, type PreCallTarget } from "./PreCallSheet";
@@ -527,15 +527,35 @@ export function PracticeHub({
           onClick={() => setSayPicture(true)}
           className="flex items-stretch overflow-hidden rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card text-left"
         >
+          {/* Two real vocab photos in frames (small bundled thumbnails) and a mic badge: see a picture, say the word. */}
           <span
             aria-hidden="true"
-            className="grid w-24 shrink-0 grid-cols-2 grid-rows-2 gap-1 bg-ds-choice-tint p-2"
+            data-say-picture-art=""
+            className="relative w-[124px] shrink-0 self-stretch overflow-hidden bg-ds-choice-tint"
           >
-            {["hot_beverage", "airplane", "stethoscope", "spaghetti"].map((icon) => (
-              <span key={icon} className="grid place-items-center rounded-lg bg-ds-card shadow-sm">
-                <img src={`/icons3d/${icon}.png`} alt="" draggable={false} className="size-6" />
-              </span>
-            ))}
+            <img
+              src="/practice/say-the-picture-train.jpg"
+              alt=""
+              draggable={false}
+              className="absolute left-9 top-3 size-[70px] rotate-[7deg] rounded-xl border-2 border-ds-card object-cover shadow-md"
+            />
+            <img
+              src="/practice/say-the-picture-coffee.jpg"
+              alt=""
+              draggable={false}
+              className="absolute left-2.5 top-11 size-[76px] -rotate-6 rounded-xl border-2 border-ds-card object-cover shadow-md"
+            />
+            <span
+              data-mic-badge=""
+              className="absolute bottom-2 right-2 grid size-10 place-items-center rounded-full border-2 border-ds-card bg-ds-choice shadow-md"
+            >
+              <img
+                src="/icons3d/studio_microphone.png"
+                alt=""
+                draggable={false}
+                className="size-6"
+              />
+            </span>
           </span>
           <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-3">
             <span className="ds-type-headline font-extrabold text-ds-ink">Say the picture</span>
@@ -553,11 +573,24 @@ export function PracticeHub({
           onClick={() => setSayItRight(true)}
           className="flex items-stretch overflow-hidden rounded-[var(--ds-radius-control)] border-2 border-ds-line bg-ds-card text-left"
         >
+          {/* Alphonso listening, with a score badge: he hears how you say it, and you get a result. */}
           <span
             aria-hidden="true"
-            className="grid w-24 shrink-0 place-items-center bg-ds-right-tint text-ds-right-edge"
+            data-say-right-art=""
+            className="relative w-[124px] shrink-0 self-stretch overflow-hidden bg-ds-right-tint"
           >
-            <WaveformGlyph className="size-9" />
+            <img
+              src="/figures/alphonso-listening-headphones.webp"
+              alt=""
+              draggable={false}
+              className="absolute -bottom-1.5 left-[18px] h-[132px] w-auto max-w-none select-none"
+            />
+            <span
+              data-score-badge=""
+              className="absolute right-2 top-3 rounded-full bg-ds-right px-2.5 py-0.5 ds-type-caption font-extrabold text-ds-on-right shadow-md"
+            >
+              92 ✓
+            </span>
           </span>
           <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-3">
             <span className="ds-type-headline font-extrabold text-ds-ink">Say it right</span>

@@ -30,6 +30,16 @@
 	     app ever adds encryption for actual data confidentiality (e.g.
 	     encrypting stored content, not just an OAuth handshake), this
 	     needs re-evaluating -- don't copy this value forward blindly. -->
+	<!-- The launch screen: the brand colour (LaunchBackground, Royal hero #1D2B64) with the app icon (LaunchIcon) in the
+	     middle. A static launch screen can only be a colour plus an image, so RootView's restoring view draws exactly
+	     this and the hand-off is invisible. Replaces INFOPLIST_KEY_UILaunchScreen_Generation (project.yml). -->
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+		<key>UIImageName</key>
+		<string>LaunchIcon</string>
+	</dict>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<!-- Background audio for the podcast library (Phase 1b, see

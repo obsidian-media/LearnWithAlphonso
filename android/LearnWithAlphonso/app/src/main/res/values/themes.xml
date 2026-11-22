@@ -3,4 +3,12 @@
     <style name="Theme.Alphonso" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/royal_surface</item>
     </style>
+
+    <!-- The launch screen (owner pick 1): the brand colour and the app icon, drawn by the system on Android 12+ and by
+         core-splashscreen before that. MainActivity installs it; once the app has drawn, the theme becomes Theme.Alphonso. -->
+    <style name="Theme.Alphonso.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/launch_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/launch_icon</item>
+        <item name="postSplashScreenTheme">@style/Theme.Alphonso</item>
+    </style>
 </resources>
