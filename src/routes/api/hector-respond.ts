@@ -223,14 +223,9 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
         },
       );
       if (!ttsResp.ok) {
-        return {
-          ok: false as const,
-          failure: await upstreamErrorResponse(
-            "Deepgram TTS",
-            ttsResp.status,
-            await ttsResp.text().catch(() => ""),
-          ),
-        };
+        // The text reply is good and the quota is spent: a failed voice must not cost the learner the turn.
+        console.warn(JSON.stringify({ event: "hector_tts_failed", status: ttsResp.status }));
+        return { audioBase64: undefined };
       }
       // Billed on the characters sent, and the reply is written for this learner: logged, never cached.
       const { recordAiCost, scheduleBackground } = await import("@/lib/ai-cost-log.server");
@@ -238,23 +233,15 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
       scheduleBackground(recordAiCost(ttsEntry({ userId }, ttsModel, safeReply.length, false)));
       const audio = await boundedAudio(ttsResp, 1_500_000);
       if (!audio) {
-        return {
-          ok: false as const,
-          failure: noStoreJson({ error: "Hector audio too large" }, { status: 502 }),
-        };
+        console.warn(JSON.stringify({ event: "hector_tts_failed", status: "too_large" }));
+        return { audioBase64: undefined };
       }
-      return {
-        ok: true as const,
-        audioBase64: audio.toString("base64"),
-      };
+      return { audioBase64: audio.toString("base64") };
     } catch {
-      return {
-        ok: false as const,
-        failure: noStoreJson({ error: "Hector voice unavailable" }, { status: 504 }),
-      };
+      console.warn(JSON.stringify({ event: "hector_tts_failed", status: "network" }));
+      return { audioBase64: undefined };
     }
   });
-  if (!tts.ok) return tts.failure;
   const audioBase64 = tts.audioBase64;
   const ttsMs = performance.now() - ttsStart;
 

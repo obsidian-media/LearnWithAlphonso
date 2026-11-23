@@ -51,3 +51,33 @@ export function hasVoiceFor(lang: string): boolean {
 export function cancelSpeech(): void {
   if (canSpeak()) window.speechSynthesis.cancel();
 }
+
+/**
+ * Speaks `text` with the device voice and reports how it went, so a caller can tell a line that was heard from one the
+ * browser refused (iOS Safari refuses speech that does not start from a tap). Returns false where the device cannot
+ * speak at all.
+ */
+export function speakWithCallbacks(
+  text: string,
+  lang: string,
+  cb: { onStart?: () => void; onEnd: () => void; onError: (reason?: string) => void },
+): boolean {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return false;
+  try {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    utterance.onstart = () => cb.onStart?.();
+    utterance.onend = () => cb.onEnd();
+    utterance.onerror = (e) => {
+      // A line cut off by cancelSpeech() is a skip, not a failure.
+      const reason = (e as { error?: string }).error;
+      if (reason === "canceled" || reason === "interrupted") return;
+      cb.onError(reason);
+    };
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    return true;
+  } catch {
+    return false;
+  }
+}

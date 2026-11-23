@@ -8,7 +8,8 @@ import {
   type HandsFreeTuning,
 } from "./hands-free-loop";
 import { HANDS_FREE_NOTE_SEEN_KEY } from "./hands-free-copy";
-import { readHandsFreePreference, writeHandsFreePreference } from "./hands-free-preference";
+import { readHandsFreeChoice, writeHandsFreePreference } from "./hands-free-preference";
+import { acquireAudioContext, closeAudioContext } from "./shared-audio-context";
 import { useSpeechCapture } from "./use-speech-capture";
 import type { HandsFreeCall } from "@/components/HandsFreeSwitch";
 import type { Course } from "@/data/courses";
@@ -31,15 +32,6 @@ function noteConfirmed(): boolean {
   } catch {
     return false;
   }
-}
-
-function audioContextClass(): typeof AudioContext | undefined {
-  if (typeof window === "undefined") return undefined;
-  const w = window as unknown as {
-    AudioContext?: typeof AudioContext;
-    webkitAudioContext?: typeof AudioContext;
-  };
-  return w.AudioContext ?? w.webkitAudioContext;
 }
 
 /** An RMS amplitude (0..1) as dBFS; silence reads -160, like the iOS recorder before any audio. */
@@ -112,24 +104,13 @@ export function useHandsFree({
     dispatch({ type: "voicePhase", phase });
   }, [phase, dispatch]);
 
-  // The AudioContext is made inside the learner's tap (switch or Resume), where a browser lets it run, and is
-  // reused for every turn; it is closed when hands-free stops and when the call is left.
-  const ctxRef = useRef<AudioContext | null>(null);
+  // The AudioContext (the one shared with the level bars) is made or resumed inside the learner's tap (switch or
+  // Resume), where a browser lets it run. It is suspended while a reply plays (see voice-playback) and resumed by
+  // the next turn's first sample; it is closed when hands-free stops and when the call is left.
   const prime = useCallback(() => {
-    const Ctx = audioContextClass();
-    if (!Ctx) return;
-    try {
-      if (!ctxRef.current || ctxRef.current.state === "closed") ctxRef.current = new Ctx();
-      void ctxRef.current.resume?.();
-    } catch {
-      ctxRef.current = null;
-    }
+    acquireAudioContext();
   }, []);
-  const closeContext = useCallback(() => {
-    const ctx = ctxRef.current;
-    ctxRef.current = null;
-    void ctx?.close?.().catch(() => {});
-  }, []);
+  const closeContext = useCallback(() => closeAudioContext(), []);
 
   const enabled = wanted && live;
   const wasEnabled = useRef(false);
@@ -160,7 +141,6 @@ export function useHandsFree({
     phase === "recording" && (status.kind === "listening" || status.kind === "hearing");
   useEffect(() => {
     if (!sampling) return;
-    const Ctx = audioContextClass();
     let source: MediaStreamAudioSourceNode | null = null;
     let analyser: AnalyserNode | null = null;
     let samples: Float32Array<ArrayBuffer> | null = null;
@@ -174,13 +154,11 @@ export function useHandsFree({
     const onTrackEnded = () => breakDown({ type: "audioInterrupted" });
     const id = setInterval(() => {
       let dBFS: number | null = null;
-      if (Ctx && !analyser) {
+      if (!analyser) {
         const stream = getStreamRef.current();
-        if (stream) {
+        const ctx = stream ? acquireAudioContext() : null;
+        if (stream && ctx) {
           try {
-            if (!ctxRef.current || ctxRef.current.state === "closed") ctxRef.current = new Ctx();
-            const ctx = ctxRef.current;
-            void ctx.resume?.();
             source = ctx.createMediaStreamSource(stream);
             analyser = ctx.createAnalyser();
             analyser.fftSize = 2048;
@@ -197,7 +175,7 @@ export function useHandsFree({
         }
       }
       if (analyser && samples) {
-        if (ctxRef.current?.state === "suspended") void ctxRef.current.resume?.();
+        acquireAudioContext();
         analyser.getFloatTimeDomainData(samples);
         let sum = 0;
         for (const v of samples) sum += v * v;
@@ -258,6 +236,7 @@ export function useHandsFreeCapture({
   onBeginTurn,
   partner,
   onWantedChange,
+  defaultOnAfterNote = false,
 }: {
   course?: Course;
   onTranscript: (text: string, confidence: number | null) => void | Promise<void>;
@@ -272,6 +251,11 @@ export function useHandsFreeCapture({
   partner: string;
   /** The switch was changed. The call keeps the state (so a campaign carries it from scene to scene). */
   onWantedChange: (on: boolean) => void;
+  /**
+   * Once the learner has confirmed the safety note on this device, start ON unless they last switched it off
+   * (Hector: the call is voice-first, so the learner should not have to find a switch each time).
+   */
+  defaultOnAfterNote?: boolean;
 }) {
   const on = wanted && live;
   // Read after mount, so the server and the first client render agree (no switch), then the browser decides.
@@ -284,9 +268,12 @@ export function useHandsFreeCapture({
   useEffect(() => {
     // Like iOS and Android: only once the safety note was confirmed, and never in a background tab.
     if (document.hidden) return;
-    if (handsFreeSupported() && readHandsFreePreference() && noteConfirmed()) {
+    if (!handsFreeSupported() || !noteConfirmed()) return;
+    const choice = readHandsFreeChoice();
+    if (choice === "on" || (choice === "unset" && defaultOnAfterNote)) {
       onWantedChangeRef.current(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const reportRef = useRef<{ noWords: () => void; failed: () => void } | null>(null);
   const capture = useSpeechCapture({

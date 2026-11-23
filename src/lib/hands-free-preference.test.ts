@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   HANDS_FREE_PREFERENCE_KEY,
+  readHandsFreeChoice,
   readHandsFreePreference,
   writeHandsFreePreference,
 } from "./hands-free-preference";
@@ -22,6 +23,15 @@ describe("hands-free preference", () => {
     expect(window.localStorage.getItem(HANDS_FREE_PREFERENCE_KEY)).toBe("1");
     writeHandsFreePreference(false);
     expect(readHandsFreePreference()).toBe(false);
+  });
+
+  it("tells never chosen apart from switched off, so a default-on call respects an explicit off", () => {
+    expect(readHandsFreeChoice()).toBe("unset");
+    writeHandsFreePreference(true);
+    expect(readHandsFreeChoice()).toBe("on");
+    writeHandsFreePreference(false);
+    expect(readHandsFreeChoice()).toBe("off");
+    expect(window.localStorage.getItem(HANDS_FREE_PREFERENCE_KEY)).toBe("0");
   });
 
   it("survives storage that throws", () => {

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { localeForCourse, type Course } from "@/data/course-meta";
 import { fetchModelSpeech } from "./use-model-speech";
 import { canSpeak, speak } from "./speech";
+import { claimAudioSession } from "./audio-session";
+import { voicePlayback } from "./voice-playback";
 import { WAVE_BARS, decodeBlobSamples, waveformPeaks, type SampleDecoder } from "./waveform";
 
 /** "Say it slower": the model replays at this fraction of normal speed, client side (no second /api/tts call). */
@@ -27,7 +29,15 @@ export function useSayItRightAudio({
   resetKey,
   decode = decodeBlobSamples,
   fetchModel = fetchModelSpeech,
-  createAudio = (src: string) => new Audio(src),
+  // The app's one persistent element (see voice-playback.ts), so a tap's unlock covers the clip that plays after a fetch.
+  createAudio = (src: string) => {
+    const playback = voicePlayback();
+    playback.stop();
+    claimAudioSession("voice");
+    const el = playback.element() ?? new Audio();
+    el.src = src;
+    return el;
+  },
   onPlayStart,
 }: {
   course: Course;
@@ -143,9 +153,13 @@ export function useSayItRightAudio({
     (audio as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
     const entry: Active = { audio, raf: null };
     active.current = entry;
-    audio.onended = () => {
+    const settle = () => {
       if (active.current === entry) stop();
     };
+    // Every way a clip can end settles the buttons: the end, a pause (a locked screen, a call) and an error.
+    audio.onended = settle;
+    audio.onpause = settle;
+    audio.onerror = settle;
     const tick = () => {
       if (active.current !== entry) return;
       const d = audio.duration;
@@ -166,6 +180,8 @@ export function useSayItRightAudio({
   const playModel = useCallback(async (text: string, slow = false) => {
     stop();
     opts.current.onPlayStart?.();
+    // Inside the tap: the persistent element may then play the model after its fetch.
+    voicePlayback().unlock();
     const mine = token.current;
     try {
       const clip = await ensureModel(text);
@@ -186,6 +202,7 @@ export function useSayItRightAudio({
     if (!clip) return;
     stop();
     opts.current.onPlayStart?.();
+    voicePlayback().unlock();
     if (!clip.url) clip.url = URL.createObjectURL(clip.blob);
     await start("you", clip.url, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -4,6 +4,7 @@ import { authHeaders } from "./auth-headers";
 import { nextSegment } from "./stories";
 import { fetchStoryRecordings, recordingPathFor, storyAudioPublicUrl } from "./story-recordings";
 import { voiceFor } from "./voice-prefs";
+import { voicePlayback } from "./voice-playback";
 
 export type NarrationState = {
   /** The segment being read aloud (highlighted), or null when nothing is playing. */
@@ -35,7 +36,6 @@ export function useStoryNarration(
     playing: false,
     failed: false,
   });
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const runRef = useRef(0);
   const cacheRef = useRef(new Map<number, Promise<string>>());
   const onSegmentRef = useRef(onSegment);
@@ -85,14 +85,16 @@ export function useStoryNarration(
 
   const stop = useCallback(() => {
     runRef.current += 1;
-    audioRef.current?.pause();
-    audioRef.current = null;
+    voicePlayback().stop();
     setState((s) => ({ ...s, current: null, playing: false }));
   }, []);
 
   const play = useCallback(
     async (from = 0) => {
-      audioRef.current?.pause();
+      const playback = voicePlayback();
+      playback.stop();
+      // Inside the tap that starts the story: the persistent element may then play every sentence, after each fetch.
+      playback.unlock();
       const run = ++runRef.current;
       let index: number | null = from;
       setState({ current: from, playing: true, failed: false });
@@ -105,21 +107,29 @@ export function useStoryNarration(
           const url = await fetchUrl(index);
           if (run !== runRef.current) return;
           if (ahead !== null) void fetchUrl(ahead).catch(() => undefined);
-          const playUrl = (src: string) =>
-            new Promise<void>((resolve, reject) => {
-              const audio = new Audio(src);
-              audioRef.current = audio;
-              audio.onended = () => resolve();
-              audio.onerror = () => reject(new Error("audio"));
-              audio.play().catch(reject);
-            });
+          // Resolves true when the sentence played out; false when it was stopped (by the learner, or by the system
+          // pausing audio, a locked screen or a call); rejects when it could not play.
+          const playUrl = async (src: string): Promise<boolean> => {
+            const outcome = await playback.play(src);
+            if (outcome.result === "ended") return true;
+            if (outcome.result === "stopped") return false;
+            throw new Error(outcome.errorName ?? "audio");
+          };
           try {
-            await playUrl(url);
+            if (!(await playUrl(url))) {
+              if (run === runRef.current)
+                setState({ current: null, playing: false, failed: false });
+              return;
+            }
           } catch (err) {
             // A recording that will not play (file missing or unreadable) falls back to live speech for this sentence.
             if (!recordedRef.current.has(index) || run !== runRef.current) throw err;
             cacheRef.current.delete(index);
-            await playUrl(await fetchUrl(index, true));
+            if (!(await playUrl(await fetchUrl(index, true)))) {
+              if (run === runRef.current)
+                setState({ current: null, playing: false, failed: false });
+              return;
+            }
           }
         } catch {
           if (run === runRef.current) setState({ current: null, playing: false, failed: true });
@@ -135,7 +145,7 @@ export function useStoryNarration(
   useEffect(
     () => () => {
       runRef.current += 1;
-      audioRef.current?.pause();
+      voicePlayback().stop();
       for (const p of cacheRef.current.values())
         void p.then(
           (u) => {

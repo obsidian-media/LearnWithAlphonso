@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { track } from "../lib/analytics";
+import { voicePlayback } from "../lib/voice-playback";
 import {
   Outlet,
   createRootRouteWithContext,
@@ -172,6 +173,9 @@ function RootComponent() {
     void track("app_open");
     dismissBootSplash();
   }, []);
+  // iOS Safari lets only an audio element a tap has played start sound later, after a fetch: so the first tap anywhere
+  // unlocks the app's one voice element, long before a call's greeting or a reply needs it.
+  useEffect(() => voicePlayback().installGestureUnlock(), []);
 
   // A suspended account sees one plain screen instead of the app, whatever page it was on.
   if (suspended) return <SuspendedScreen />;

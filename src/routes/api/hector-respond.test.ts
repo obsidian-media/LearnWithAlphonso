@@ -253,7 +253,7 @@ describe("POST /api/hector-respond", () => {
     expect(messages.some((m) => m.content.startsWith("0:"))).toBe(false);
   });
 
-  it("bounds the speech call and returns a retryable failure when it times out", async () => {
+  it("bounds the speech call and still returns the text when it times out", async () => {
     const timeout = vi.spyOn(AbortSignal, "timeout");
     let speech: RequestInit | undefined;
     globalThis.fetch = vi
@@ -264,8 +264,11 @@ describe("POST /api/hector-respond", () => {
         throw new DOMException("timed out", "TimeoutError");
       }) as unknown as typeof fetch;
     const res = await handler({ request: req() });
-    expect(res.status).toBe(504);
-    expect(await res.json()).toEqual({ error: "Hector voice unavailable" });
+    // The voice failing must not cost the turn: the quota is spent and the text reply is good.
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.reply).toBe("Hello");
+    expect("audio_base64" in body).toBe(false);
     expect(timeout).toHaveBeenCalledWith(10_000);
     expect(speech?.signal).toBeInstanceOf(AbortSignal);
     timeout.mockRestore();
@@ -280,14 +283,42 @@ describe("POST /api/hector-respond", () => {
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 
-  it("stops reading oversized speech audio and does not return it to the app", async () => {
+  it("stops reading oversized speech audio, does not return it, and still returns the text", async () => {
     globalThis.fetch = vi
       .fn()
       .mockResolvedValueOnce(Response.json({ choices: [{ message: { content: "Hello" } }] }))
       .mockResolvedValueOnce(new Response(new Uint8Array(1_500_001))) as typeof fetch;
     const res = await handler({ request: req() });
-    expect(res.status).toBe(502);
-    expect(await res.json()).toEqual({ error: "Hector audio too large" });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.reply).toBe("Hello");
+    expect("audio_base64" in body).toBe(false);
+  });
+
+  it("a Deepgram error returns 200 with the text and the correction, omits the audio, and spends one quota unit", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json({
+          choices: [
+            {
+              message: {
+                content: `Nice order! What size?
+<correction>{"slip":"I will like","fix":"I'd like","note":"Polite orders use I'd like."}</correction>`,
+              },
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(new Response("upstream down", { status: 500 })) as typeof fetch;
+    const res = await handler({ request: req({ text: "I will like a coffee", language: "en" }) });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.reply).toBe("Nice order! What size?");
+    expect(body.correction).toMatchObject({ fix: "I'd" });
+    expect("audio_base64" in body).toBe(false);
+    expect(body.state).toBe("ok");
+    expect(consumeQuota).toHaveBeenCalledTimes(1);
   });
 
   it("returns a TutorReply with the exact keys the iOS client decodes", async () => {

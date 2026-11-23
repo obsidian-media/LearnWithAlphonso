@@ -150,3 +150,40 @@ test("Hector: the same switch, Pause button and pill", async ({ page }) => {
   await expect(status).toHaveText("Hands-free is paused.");
   await shot(page, "08-hector-paused");
 });
+
+test("Hector: the hands-free chip is on the call screen itself, no sheet needed", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await setup(page);
+  await page.goto("/hector");
+  await expect(page.getByTestId("call-caption")).toBeVisible({ timeout: 30_000 });
+  const chip = page.getByTestId("hands-free-chip");
+  await expect(chip).toBeVisible();
+  await expect(chip).toHaveText("Hands-free: Off");
+  await noSideScroll(page);
+  // The first press shows the once-per-device safety note; confirming turns it on.
+  await chip.click();
+  const note = page.getByRole("dialog", { name: "Talk without holding the button" });
+  await expect(note).toContainText("Hector listens after each reply");
+  await note.getByRole("button", { name: "Turn on hands-free" }).click();
+  await expect(chip).toHaveText("Hands-free: On");
+  await expect(page.getByTestId("hands-free-status")).toHaveText("Listening. Just talk.", {
+    timeout: 15_000,
+  });
+});
+
+test("Hector: once the safety note was confirmed on this device, a new call starts hands-free", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await setup(page);
+  await page.addInitScript(() => window.localStorage.setItem("handsFree.safetyNoteSeen.v2", "1"));
+  await page.goto("/hector");
+  await expect(page.getByTestId("hands-free-chip")).toHaveText("Hands-free: On", {
+    timeout: 30_000,
+  });
+  await expect(page.getByTestId("hands-free-status")).toHaveText("Listening. Just talk.", {
+    timeout: 20_000,
+  });
+});

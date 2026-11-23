@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { MIC_MESSAGES } from "@/lib/mic-errors";
+import { __resetVoicePlaybackForTests } from "@/lib/voice-playback";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearOpenerSpeechCache } from "@/lib/opener-speech-cache";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -114,12 +116,16 @@ beforeEach(() => {
   vi.stubGlobal(
     "Audio",
     class {
+      src: string;
+      constructor(src = "") {
+        this.src = src;
+      }
       play = vi.fn().mockResolvedValue(undefined);
       pause = vi.fn();
       onended: (() => void) | null = null;
-      constructor(public src: string) {}
     },
   );
+  __resetVoicePlaybackForTests();
   Object.defineProperty(global.URL, "createObjectURL", {
     value: vi.fn(() => "blob:mock-url"),
     configurable: true,
@@ -139,6 +145,9 @@ beforeEach(() => {
     return new Response("{}", { status: 200 });
   }) as typeof fetch;
 });
+
+// A voice clip, not the tap-unlock's silent data: clip or a sound effect.
+const isVoiceClip = (src: string) => !src.startsWith("data:") && !src.startsWith("/sfx/");
 
 describe("Campaign chat page", () => {
   it("renders the campaign header, first scene's progress label, and opener", async () => {
@@ -331,7 +340,9 @@ describe("Campaign chat page", () => {
       value: {
         getUserMedia: granted
           ? vi.fn().mockResolvedValue({ getTracks: () => [track] })
-          : vi.fn().mockRejectedValue(new Error("denied")),
+          : vi
+              .fn()
+              .mockRejectedValue(Object.assign(new Error("denied"), { name: "NotAllowedError" })),
       },
       configurable: true,
     });
@@ -344,7 +355,7 @@ describe("Campaign chat page", () => {
 
     await user.click(await screen.findByRole("button", { name: "Record a voice message" }));
 
-    expect(await screen.findByText("Microphone access is needed to speak.")).toBeInTheDocument();
+    expect(await screen.findByText(MIC_MESSAGES.denied)).toBeInTheDocument();
     // The button must fall back out of the recording state, or the user is
     // stuck looking at a Stop button that can never stop anything.
     expect(
@@ -866,14 +877,19 @@ describe("Hands-free across a campaign's scenes", () => {
     vi.stubGlobal(
       "Audio",
       class {
-        play = vi.fn().mockResolvedValue(undefined);
+        src: string;
+        constructor(src = "") {
+          this.src = src;
+        }
+        play = vi.fn(() => {
+          if (isVoiceClip(this.src)) audios.push(this);
+          return Promise.resolve();
+        });
         pause = vi.fn();
         onended: (() => void) | null = null;
-        constructor(public src: string) {
-          audios.push(this);
-        }
       },
     );
+    __resetVoicePlaybackForTests();
     getUserMedia.mockReset();
     getUserMedia.mockResolvedValue({ getTracks: () => [{ stop: vi.fn() }] });
     Object.defineProperty(navigator, "mediaDevices", {

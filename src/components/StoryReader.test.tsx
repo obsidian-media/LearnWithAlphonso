@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { __resetVoicePlaybackForTests } from "@/lib/voice-playback";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -75,8 +76,12 @@ beforeEach(() => {
     onended: (() => void) | null = null;
     onerror: (() => void) | null = null;
     pause = vi.fn();
-    constructor(public src: string) {}
+    src: string;
+    constructor(src = "") {
+      this.src = src;
+    }
     play() {
+      if (!isVoiceClip(this.src)) return Promise.resolve();
       played.push(this.src);
       if (brokenFiles.has(this.src)) {
         queueMicrotask(() => this.onerror?.());
@@ -86,6 +91,7 @@ beforeEach(() => {
       return Promise.resolve();
     }
   }
+  __resetVoicePlaybackForTests();
   vi.stubGlobal("Audio", FakeAudio);
 });
 afterEach(() => {
@@ -99,6 +105,9 @@ const finishCurrent = async () => {
   const fn = ended.shift()!;
   await act(async () => fn());
 };
+
+// A voice clip, not the tap-unlock's silent data: clip or a sound effect.
+const isVoiceClip = (src: string) => !src.startsWith("data:") && !src.startsWith("/sfx/");
 
 describe("StoryReader narration", () => {
   it("narrates segment by segment through /api/tts and moves the highlight along", async () => {

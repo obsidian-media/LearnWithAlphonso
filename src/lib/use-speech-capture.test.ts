@@ -455,4 +455,163 @@ describe("useSpeechCapture, hands-free turns", () => {
     });
     expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
   });
+
+  describe("microphone errors, by cause", () => {
+    function failWith(...errors: Error[]) {
+      const getUserMedia = vi.fn();
+      for (const e of errors) getUserMedia.mockRejectedValueOnce(e);
+      Object.defineProperty(navigator, "mediaDevices", {
+        configurable: true,
+        value: { getUserMedia },
+      });
+      return getUserMedia;
+    }
+    const named = (name: string) => Object.assign(new Error(name), { name });
+
+    it.each([
+      ["NotAllowedError", /blocked/i],
+      ["NotFoundError", /no microphone/i],
+      ["NotReadableError", /another app/i],
+      ["OverconstrainedError", /can't be used/i],
+    ])("%s gets its own message", async (name, message) => {
+      failWith(named(name), named(name));
+      const { result } = renderHook(() => useSpeechCapture({ onTranscript: vi.fn() }));
+      await act(async () => {
+        await result.current.start();
+      });
+      expect(result.current.error).toMatch(message);
+      expect(result.current.failed).toBe(true);
+    });
+
+    it("an OverconstrainedError is retried once with plain audio before the learner is told", async () => {
+      const { track } = installMediaMocks();
+      const stream = { getTracks: () => [track] };
+      const getUserMedia = vi
+        .fn()
+        .mockRejectedValueOnce(named("OverconstrainedError"))
+        .mockResolvedValueOnce(stream);
+      Object.defineProperty(navigator, "mediaDevices", {
+        configurable: true,
+        value: { getUserMedia },
+      });
+      const { result } = renderHook(() => useSpeechCapture({ onTranscript: vi.fn() }));
+      await act(async () => {
+        await result.current.start();
+      });
+      expect(getUserMedia).toHaveBeenNthCalledWith(1, { audio: { echoCancellation: true } });
+      expect(getUserMedia).toHaveBeenNthCalledWith(2, { audio: true });
+      expect(result.current.state).toBe("recording");
+      expect(result.current.error).toBeNull();
+    });
+  });
+
+  it("falls back to mp4 where webm is not supported (iOS Safari) and uploads it as mp4", async () => {
+    installMediaMocks();
+    const seen: string[] = [];
+    class SafariRecorder {
+      state = "inactive";
+      mimeType = "audio/mp4";
+      ondataavailable: ((e: { data: Blob }) => void) | null = null;
+      onstop: (() => void) | null = null;
+      constructor(_s: unknown, opts?: { mimeType?: string }) {
+        seen.push(opts?.mimeType ?? "default");
+      }
+      start() {
+        this.state = "recording";
+        this.ondataavailable?.({ data: new Blob(["x".repeat(4096)]) });
+      }
+      stop() {
+        this.state = "inactive";
+        this.onstop?.();
+      }
+      static isTypeSupported(t: string) {
+        return t === "audio/mp4";
+      }
+    }
+    vi.stubGlobal("MediaRecorder", SafariRecorder);
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ text: "hola" }) }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript: vi.fn() }));
+    await act(async () => {
+      await result.current.start();
+    });
+    await act(async () => {
+      result.current.stop();
+    });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(seen).toEqual(["audio/mp4"]);
+    const fd = (fetchMock.mock.calls[0] as unknown as [string, { body: FormData }])[1].body;
+    expect((fd.get("file") as File).name).toBe("recording.mp4");
+  });
+
+  it("a microphone revoked mid-press ends a hold-to-talk with a clear message and sends nothing", async () => {
+    const { track } = installMediaMocks();
+    const listeners: Record<string, () => void> = {};
+    const stream = {
+      getTracks: () => [track],
+      getAudioTracks: () => [
+        { addEventListener: (e: string, fn: () => void) => (listeners[e] = fn) },
+      ],
+    };
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia: vi.fn(async () => stream) },
+    });
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const onTranscript = vi.fn();
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript }));
+    await act(async () => {
+      await result.current.start();
+    });
+    expect(result.current.state).toBe("recording");
+    await act(async () => {
+      listeners.ended();
+    });
+    expect(result.current.error).toMatch(/microphone stopped/i);
+    expect(result.current.state).toBe("idle");
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(onTranscript).not.toHaveBeenCalled();
+  });
+
+  it("a hidden page (a locked phone) drops a hold-to-talk recording and sends nothing", async () => {
+    installMediaMocks();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const { result } = renderHook(() => useSpeechCapture({ onTranscript: vi.fn() }));
+    await act(async () => {
+      await result.current.start();
+    });
+    const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    hidden.mockRestore();
+    expect(result.current.state).toBe("idle");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("leaving the screen mid-upload aborts it and never delivers the late transcript", async () => {
+    installMediaMocks();
+    let signal: AbortSignal | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((_u: string, init: { signal: AbortSignal }) => {
+        signal = init.signal;
+        return new Promise(() => {});
+      }),
+    );
+    const onTranscript = vi.fn();
+    const { result, unmount } = renderHook(() => useSpeechCapture({ onTranscript }));
+    await act(async () => {
+      await result.current.start();
+    });
+    await act(async () => {
+      result.current.stop();
+    });
+    await waitFor(() => expect(signal).toBeDefined());
+    unmount();
+    expect(signal!.aborted).toBe(true);
+    expect(onTranscript).not.toHaveBeenCalled();
+  });
 });

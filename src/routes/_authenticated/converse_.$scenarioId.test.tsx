@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { MIC_MESSAGES } from "@/lib/mic-errors";
+import { __resetVoicePlaybackForTests } from "@/lib/voice-playback";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearOpenerSpeechCache } from "@/lib/opener-speech-cache";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -103,13 +105,22 @@ const audioInstances: {
   pause: ReturnType<typeof vi.fn>;
   onended: (() => void) | null;
 }[] = [];
+// The app plays every clip on ONE persistent element (src swapped), so a "clip played" is a play() of a real source,
+// not a construction. The tap-unlock's silent clip is a data: URI and is not counted.
+// A voice clip, not the tap-unlock's silent data: clip or a sound effect.
+const isVoiceClip = (src: string) => !src.startsWith("data:") && !src.startsWith("/sfx/");
+
 class FakeAudio {
-  play = vi.fn().mockResolvedValue(undefined);
+  src: string;
+  constructor(src = "") {
+    this.src = src;
+  }
+  play = vi.fn(() => {
+    if (isVoiceClip(this.src)) audioInstances.push(this);
+    return Promise.resolve();
+  });
   pause = vi.fn();
   onended: (() => void) | null = null;
-  constructor(public src: string) {
-    audioInstances.push(this);
-  }
 }
 
 function jsonResponse(body: unknown, status = 200) {
@@ -142,6 +153,7 @@ beforeEach(() => {
   getUserMedia.mockResolvedValue(fakeStream);
   fakeTrack.stop.mockClear();
   audioInstances.length = 0;
+  __resetVoicePlaybackForTests();
   Object.defineProperty(navigator, "mediaDevices", {
     value: { getUserMedia },
     configurable: true,
@@ -431,14 +443,14 @@ describe("Converse chat page", () => {
   });
 
   it("shows a permission message when the microphone is denied", async () => {
-    getUserMedia.mockRejectedValue(new Error("Permission denied"));
+    getUserMedia.mockRejectedValue(
+      Object.assign(new Error("Permission denied"), { name: "NotAllowedError" }),
+    );
     const user = userEvent.setup();
     await renderPage();
     await user.click(screen.getByRole("button", { name: "Record a voice message" }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Microphone access is needed to speak.",
-    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(MIC_MESSAGES.denied);
     expect(screen.getByRole("button", { name: "Record a voice message" })).toBeInTheDocument();
   });
 
@@ -977,7 +989,8 @@ describe("Hands-free on a Practice call", () => {
     expect(sw).toHaveAttribute("aria-checked", "true");
     // Switching it off is remembered too: the next call is hold-to-talk again.
     await user.click(sw);
-    expect(localStorage.getItem("handsFree.preferred.v1")).toBeNull();
+    // Switched off is remembered as an explicit off, so a Hector call (on by default) respects it.
+    expect(localStorage.getItem("handsFree.preferred.v1")).toBe("0");
   });
 
   it("half-duplex: the mic stays shut while Alphonso speaks and opens only after his voice ends", async () => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { authHeaders } from "./auth-headers";
 import { readApiError } from "./read-api-error";
 import { normaliseSpoken } from "./spoken-answer";
+import { MIC_MESSAGES, micErrorMessage } from "./mic-errors";
 import type { Course } from "@/data/courses";
 
 export type SpeechCaptureState = "idle" | "recording" | "transcribing";
@@ -93,6 +94,9 @@ export function useSpeechCapture({
   const cancelRequestedRef = useRef(false);
   const startedAtRef = useRef(0);
   const startingRef = useRef(false);
+  // The /api/stt upload in flight, and whether the screen is gone: a late transcript is never delivered.
+  const sttAbortRef = useRef<AbortController | null>(null);
+  const goneRef = useRef(false);
 
   const canRecord =
     typeof navigator !== "undefined" &&
@@ -111,10 +115,20 @@ export function useSpeechCapture({
     startingRef.current = true;
     setStarting(true);
     try {
-      // Echo cancellation on, so a reply played from the speaker is less likely to be heard as the learner.
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true },
-      });
+      // Echo cancellation on, so a reply played from the speaker is less likely to be heard as the learner. A device
+      // that cannot meet even that (OverconstrainedError) is asked again for plain audio before the learner is told.
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true } });
+      } catch (first) {
+        if ((first as { name?: string } | null)?.name !== "OverconstrainedError") throw first;
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
+      if (goneRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        startingRef.current = false;
+        return;
+      }
       if (stopToken.requested) {
         stream.getTracks().forEach((t) => t.stop());
         startingRef.current = false;
@@ -122,12 +136,34 @@ export function useSpeechCapture({
         return;
       }
       streamRef.current = stream;
-      const mime = MediaRecorder.isTypeSupported("audio/webm")
-        ? "audio/webm"
-        : MediaRecorder.isTypeSupported("audio/mp4")
-          ? "audio/mp4"
-          : "";
-      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      // Chrome and Firefox record webm; iOS Safari records only mp4 (AAC), which /api/stt accepts as it does webm.
+      const supports = (t: string) =>
+        typeof MediaRecorder.isTypeSupported === "function" && MediaRecorder.isTypeSupported(t);
+      const mime = supports("audio/webm") ? "audio/webm" : supports("audio/mp4") ? "audio/mp4" : "";
+      let rec: MediaRecorder;
+      try {
+        rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      } catch {
+        // A type the browser claimed and then refused: its own default is still a recording.
+        rec = new MediaRecorder(stream);
+      }
+      // The microphone going away mid-press (unplugged, permission revoked, taken by a call) ends the recording
+      // with a clear message, instead of a clip that silently stops.
+      stream.getAudioTracks?.().forEach((t) =>
+        t.addEventListener?.("ended", () => {
+          if (recorderRef.current !== rec || rec.state === "inactive") return;
+          if (!handsFreeRef.current) {
+            cancelRequestedRef.current = true;
+            setError(MIC_MESSAGES.lost);
+            setFailed(true);
+          }
+          try {
+            rec.stop();
+          } catch {
+            /* already stopped */
+          }
+        }),
+      );
       chunksRef.current = [];
       rec.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
@@ -136,7 +172,13 @@ export function useSpeechCapture({
         streamRef.current?.getTracks().forEach((t) => t.stop());
         streamRef.current = null;
         const type = rec.mimeType || mime || "audio/webm";
-        const ext = type.includes("mp4") ? "mp4" : type.includes("mpeg") ? "mp3" : "webm";
+        const ext = type.includes("mp4")
+          ? "mp4"
+          : type.includes("aac")
+            ? "aac"
+            : type.includes("mpeg")
+              ? "mp3"
+              : "webm";
         const blob = new Blob(chunksRef.current, { type });
         if (cancelRequestedRef.current) {
           setState("idle");
@@ -158,6 +200,8 @@ export function useSpeechCapture({
         }
         setState("transcribing");
         onClipRef.current?.(blob);
+        const abort = new AbortController();
+        sttAbortRef.current = abort;
         try {
           const fd = new FormData();
           fd.append("file", blob, `recording.${ext}`);
@@ -166,9 +210,11 @@ export function useSpeechCapture({
             method: "POST",
             headers: await authHeaders(),
             body: fd,
+            signal: abort.signal,
           });
           if (!resp.ok) throw new Error((await readApiError(resp)) || "Transcription failed");
           const data = (await resp.json()) as { text?: string; confidence?: number | null };
+          if (goneRef.current) return;
           const text = (data.text ?? "").trim();
           // Gate on the NORMALISED transcript, not the raw one. Deepgram
           // returns hesitation noise as real text ("Um.", "Uh, ah"), which is
@@ -186,11 +232,14 @@ export function useSpeechCapture({
             await onTranscriptRef.current(text, data.confidence ?? null);
           }
         } catch (e) {
+          // The screen was left mid-upload: nothing to show, nothing to grade.
+          if (goneRef.current) return;
           setError(e instanceof Error ? e.message : "Transcription failed.");
           setFailed(true);
           onFailureRef.current?.();
         } finally {
-          setState("idle");
+          if (sttAbortRef.current === abort) sttAbortRef.current = null;
+          if (!goneRef.current) setState("idle");
         }
       };
       recorderRef.current = rec;
@@ -199,8 +248,12 @@ export function useSpeechCapture({
       startingRef.current = false;
       setStarting(false);
       setState("recording");
-    } catch {
-      setError("Microphone access is needed to speak.");
+    } catch (err) {
+      if (goneRef.current) {
+        startingRef.current = false;
+        return;
+      }
+      setError(micErrorMessage(err));
       setFailed(true);
       startingRef.current = false;
       setStarting(false);
@@ -227,10 +280,22 @@ export function useSpeechCapture({
   const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => {
+    goneRef.current = false;
     return () => {
+      goneRef.current = true;
+      sttAbortRef.current?.abort();
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
+
+  // A hidden tab (a locked phone, another app) is not a place to keep a hold-to-talk recording open: it is dropped.
+  useEffect(() => {
+    const onHidden = () => {
+      if (document.hidden) cancel();
+    };
+    document.addEventListener("visibilitychange", onHidden);
+    return () => document.removeEventListener("visibilitychange", onHidden);
+  }, [cancel]);
 
   /** The live microphone stream while recording (for a level meter), otherwise null. */
   const getStream = useCallback(() => streamRef.current, []);

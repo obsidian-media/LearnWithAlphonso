@@ -26,6 +26,8 @@ import { fetchProgress } from "../../lib/sync.functions";
 import { voiceFor } from "@/lib/voice-prefs";
 import { cachedOpenerSpeech, openerSpeechKey } from "@/lib/opener-speech-cache";
 import { waitForCallCue } from "@/lib/sfx";
+import { voicePlayback } from "@/lib/voice-playback";
+import { useReplyVoice } from "@/lib/use-reply-voice";
 import { finishPracticeCall, newCallId, type PracticeResult as Result } from "@/lib/practice-api";
 import { PracticeResult } from "@/components/practice/PracticeResult";
 import { useCallRecap } from "@/lib/use-call-recap";
@@ -157,13 +159,22 @@ function ConverseChatPage({
     };
   }, [course]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // The reply voice: one persistent audio element (unlocked by the learner's first tap), the device voice and a "Tap to
+  // hear" button when the browser refuses to play a reply by itself, and no hands-free turn over an unheard reply.
+  const replyVoice = useReplyVoice("practice", course);
+  const { skip: skipReply, say: sayReply } = replyVoice;
   /** Set once the screen is gone, so a reply voice that finishes loading afterwards is never played. */
   const leftRef = useRef(false);
   // The talking Alphonso: what is being spoken, whether its audio is loading or playing, and what the latest reply
   // said about the learner's turn (he reacts to it once the reply has been spoken).
   const [spoken, setSpoken] = useState<string | null>(null);
-  const [voice, setVoice] = useState<"idle" | "loading" | "playing">("idle");
+  const [voiceFetch, setVoice] = useState<"idle" | "loading">("idle");
+  const voice: "idle" | "loading" | "playing" =
+    voiceFetch === "loading"
+      ? "loading"
+      : replyVoice.speaking || replyVoice.awaitingTap
+        ? "playing"
+        : "idle";
   const [replyVerdict, setReplyVerdict] = useState<AvatarReplyVerdict>({
     serial: 0,
     verdict: "none",
@@ -206,31 +217,13 @@ function ConverseChatPage({
         if (opts?.opener) await waitForCallCue();
         // The learner hung up (or left) while the voice was loading: it must not start on the next screen.
         if (leftRef.current) return;
-        const url = URL.createObjectURL(blob);
-        if (audioRef.current) {
-          audioRef.current.pause();
-        }
-        const audio = new Audio(url);
-        audioRef.current = audio;
-        // A replaced or stopped clip must not flip the avatar back to idle under the clip that replaced it.
-        const settle = () => {
-          if (audioRef.current === audio) setVoice("idle");
-        };
-        audio.onplaying = () => {
-          if (audioRef.current === audio) setVoice("playing");
-        };
-        audio.onended = () => {
-          URL.revokeObjectURL(url);
-          settle();
-        };
-        audio.onpause = settle;
-        audio.onerror = settle;
-        void audio.play().catch(settle);
+        setVoice("idle");
+        await sayReply(text, blob);
       } catch {
         setVoice("idle");
       }
     },
-    [ttsOn, course],
+    [ttsOn, course, sayReply],
   );
 
   // Auto-speak the opener once on mount
@@ -362,9 +355,9 @@ function ConverseChatPage({
     leftRef.current = false;
     return () => {
       leftRef.current = true;
-      audioRef.current?.pause();
+      skipReply();
     };
-  }, []);
+  }, [skipReply]);
 
   const learnerReplies = messages.filter((m) => m.role === "user").length;
   // The recap starts when the result appears; it never holds the result screen up (use-call-recap.ts).
@@ -378,7 +371,7 @@ function ConverseChatPage({
   /** Hang up or finish: with no reply there is nothing to score, so straight back to Practice. */
   const endCall = useCallback(async () => {
     if (ending) return;
-    audioRef.current?.pause();
+    skipReply();
     if (learnerReplies === 0) {
       void navigate({ to: "/converse" });
       return;
@@ -393,7 +386,7 @@ function ConverseChatPage({
     }
     void track("practice_call_completed", { scenario_id: scenario.id, stars: scored.stars });
     setResult({ result: scored, seconds: Math.round((Date.now() - startedAt) / 1000) });
-  }, [ending, learnerReplies, navigate, callId, startedAt, scenario.id]);
+  }, [ending, learnerReplies, navigate, callId, startedAt, scenario.id, skipReply]);
 
   const hint = (
     <div className="px-5">
@@ -683,7 +676,7 @@ function ConverseChatPage({
           avatar={{
             phase: avatarPhase,
             replyText: spoken,
-            getAudio: () => audioRef.current,
+            getAudio: () => voicePlayback().element(),
             replyVerdict,
             course,
             reducedMotion,
@@ -696,7 +689,8 @@ function ConverseChatPage({
           onHoldStart={() => {
             if (captureState !== "idle" || sending) return;
             // Talking over Alphonso cuts him off, as on a call; his voice must not end up in the recording.
-            audioRef.current?.pause();
+            skipReply();
+            voicePlayback().unlock();
             void startRecording();
           }}
           onHoldEnd={() => {
@@ -705,7 +699,8 @@ function ConverseChatPage({
           onToggle={() => {
             if (recording) stopRecording();
             else {
-              audioRef.current?.pause();
+              skipReply();
+              voicePlayback().unlock();
               void startRecording();
             }
           }}
@@ -718,6 +713,11 @@ function ConverseChatPage({
           messages={messages}
           reducedMotion={reducedMotion}
           handsFree={handsFreeCall}
+          tapToHear={
+            replyVoice.awaitingTap
+              ? { onTap: replyVoice.replay, onSkip: skipReply, partner: "Alphonso" }
+              : null
+          }
           sheet={
             <>
               {hint}

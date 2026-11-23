@@ -14,10 +14,22 @@ export function readHandsFreePreference(): boolean {
   }
 }
 
+/**
+ * Whether the learner has chosen on this device: "on", "off" (they switched it off), or "unset" (never chosen).
+ * Hector calls start ON from "unset" once the safety note was confirmed; an explicit "off" is kept.
+ */
+export function readHandsFreeChoice(): "on" | "off" | "unset" {
+  try {
+    const v = window.localStorage.getItem(HANDS_FREE_PREFERENCE_KEY);
+    return v === "1" ? "on" : v === "0" ? "off" : "unset";
+  } catch {
+    return "unset";
+  }
+}
+
 export function writeHandsFreePreference(on: boolean): void {
   try {
-    if (on) window.localStorage.setItem(HANDS_FREE_PREFERENCE_KEY, "1");
-    else window.localStorage.removeItem(HANDS_FREE_PREFERENCE_KEY);
+    window.localStorage.setItem(HANDS_FREE_PREFERENCE_KEY, on ? "1" : "0");
   } catch {
     /* the choice is not remembered; nothing else depends on it */
   }
