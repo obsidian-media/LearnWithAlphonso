@@ -177,7 +177,7 @@ export function PodcastPlayer() {
         {finished && offer ? (
           <div
             data-testid="quiz-offer"
-            className="mx-auto mb-2 flex max-w-[430px] items-center gap-3 rounded-2xl border border-ds-line bg-ds-card px-4 py-3"
+            className="mx-auto mb-2 flex max-w-[430px] items-center md:max-w-none gap-3 rounded-2xl border border-ds-line bg-ds-card px-4 py-3"
           >
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ds-ink">Test what you heard</p>
@@ -197,7 +197,7 @@ export function PodcastPlayer() {
             </button>
           </div>
         ) : null}
-        <div className="relative mx-auto flex max-w-[430px] items-center gap-3 overflow-hidden rounded-2xl bg-ds-hero px-3 py-2.5 text-ds-on-hero">
+        <div className="relative mx-auto flex max-w-[430px] items-center md:max-w-none gap-3 overflow-hidden rounded-2xl bg-ds-hero px-3 py-2.5 text-ds-on-hero">
           <button
             type="button"
             onClick={() => setExpanded(true)}

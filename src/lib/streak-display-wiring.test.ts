@@ -11,9 +11,12 @@ const KT = "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnw
 
 describe("the shown streak is used wherever the learner's streak appears", () => {
   it("web: the top bar uses useShownStreak with the protected mark, and Learn no longer repeats the pill", () => {
-    const shell = read("src/components/AppShell.tsx");
-    expect(shell).toMatch(/const shown = useShownStreak\(\)/);
-    expect(shell).toMatch(/shown\.state === "protected"/);
+    // The one stats hook feeds the phone top bar, the tablet strip and the desktop panel alike.
+    const stats = read("src/components/shell/use-shell-stats.ts");
+    expect(stats).toMatch(/const shown = useShownStreak\(\)/);
+    expect(read("src/components/shell/ShellStats.tsx")).toMatch(/shown\.state === "protected"/);
+    expect(read("src/components/AppShell.tsx")).toMatch(/useShellStats\(\)/);
+    expect(read("src/components/shell/PanelCards.tsx")).toMatch(/useShellStats\(\)/);
     const learn = read("src/routes/_authenticated/learn.tsx");
     // Learn dropped its own stat pills (the shell's top bar shows them), so it must not read a raw streak either.
     expect(learn).not.toMatch(/useProgress\(\(s\) => s\.streak\)/);

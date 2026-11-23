@@ -301,7 +301,7 @@ export function WebPaywallSheet({
       aria-label={PAYWALL_COPY.fallbackTitle}
       className="ds-light fixed inset-0 z-40 overflow-y-auto bg-ds-surface"
     >
-      <div className="mx-auto max-w-[430px]">
+      <div className="mx-auto max-w-[430px] md:max-w-[560px]">
         <WebPaywall source={source} onClose={onClose} />
       </div>
     </div>
