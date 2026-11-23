@@ -26,10 +26,10 @@ const LIBRARY_PANEL: PanelPlan = { ...STANDARD_PANEL, nowPlaying: true };
 const LEAGUE_PANEL: PanelPlan = { ...STANDARD_PANEL, league: false };
 
 /**
- * PROFILE: a wide single column with no panel. The owner has not decided this; it is the coordinator's default.
- * To give Profile (and its sub-pages) the standard panel instead, set this to STANDARD_PANEL.
+ * PROFILE: the standard panel, like Learn (owner decision 2026-11-22: "Should Profile get the right panel too: yes").
+ * Profile's sub-pages follow it. Set this to null for a wide single column with no panel.
  */
-export const PROFILE_PANEL: PanelPlan | null = null;
+export const PROFILE_PANEL: PanelPlan | null = STANDARD_PANEL;
 
 /** The panel for a path, or null for none. Order matters: the first prefix that matches wins. */
 export function panelPlanFor(pathname: string): PanelPlan | null {

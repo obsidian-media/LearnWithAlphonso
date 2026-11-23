@@ -324,18 +324,20 @@ describe("1280 and up: labelled rail, 720px main, 336px panel", () => {
     expect(within(aside).queryByLabelText("League")).toBeNull();
   });
 
-  it("Profile is a wide single column with no panel (the owner has not decided: PROFILE_PANEL)", () => {
+  it("Profile gets the standard panel with the main column at 720 (PROFILE_PANEL, owner: yes)", async () => {
     mockPathname = "/profile";
     const { container } = shell(
       <MobileFrame>
         <p>page</p>
       </MobileFrame>,
     );
-    expect(PROFILE_PANEL).toBeNull();
-    expect(container.querySelector("aside")).toBeNull();
-    expect(container.querySelector("[data-shell-main]")!.className).toContain("max-w-[880px]");
+    expect(PROFILE_PANEL).toBe(STANDARD_PANEL);
+    const aside = container.querySelector("aside")!;
+    expect(await within(aside).findByText("Daily goal")).toBeInTheDocument();
+    expect(within(aside).getByLabelText("League")).toBeInTheDocument();
+    expect(container.querySelector("[data-shell-main]")!.className).toContain("w-[720px]");
     // Sub-pages of Profile follow it.
-    expect(panelPlanFor("/profile/memory")).toBeNull();
+    expect(panelPlanFor("/profile/memory")).toBe(STANDARD_PANEL);
     expect(panelPlanFor("/learn")).toBe(STANDARD_PANEL);
   });
 
