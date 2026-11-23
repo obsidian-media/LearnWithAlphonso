@@ -70,7 +70,7 @@ Deno.test("an added claim makes the answer wrong, and a missing extra list is no
   assertEquals(decideVerdict('{"elements":["a"],"missing":[],"correct":true}'), null);
 });
 
-Deno.test("only an explicit real-word flag makes a misspelling wrong", () => {
+Deno.test("a spelling flag is trusted only for a genuine typo of an accepted word", () => {
   const spelled = (entry: string) =>
     decideVerdict(
       `{"elements":["a"],"missing":[],"extra":[],"grammar":[],"spelling":[${entry}],"correct":true}`,
@@ -79,10 +79,10 @@ Deno.test("only an explicit real-word flag makes a misspelling wrong", () => {
     spelled('{"written":"roam","intended":"room","written_is_real_word":true}')?.correct,
     false,
   );
-  assertEquals(spelled('{"written":"roam","intended":"room"}')?.correct, true);
+  assertEquals(spelled('{"written":"roam","intended":"room"}')?.correct, false);
   assertEquals(
     spelled('{"written":"swiming","intended":"swimming","written_is_real_word":false}')?.correct,
-    true,
+    false,
   );
 });
 
