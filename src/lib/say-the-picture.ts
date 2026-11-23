@@ -1,5 +1,6 @@
 import { getCourse, type Course } from "@/data/courses";
 import { deriveVocab, type VocabItem } from "@/data/vocab";
+import { isPicturable } from "./vocab-images/picturable";
 import { normaliseSpoken } from "./spoken-answer";
 import { normaliseSpokenFr } from "./spoken-answer-fr";
 import { normaliseSpokenEs } from "./spoken-answer-es";
@@ -13,7 +14,9 @@ export const MIN_POOL = 4;
 export type PictureWord = VocabItem & { image: NonNullable<VocabItem["image"]> };
 
 /**
- * Every word of the course that has a picture, learned or not.
+ * Every word of the course that has a picture a learner can name, learned or not. Action words and the shared deny
+ * list (shared/say-the-picture-deny.json) are left out: their photos read as other words. They keep their photo on
+ * the lesson card, where the word is printed beside it.
  *
  * LIVE, not a list: it is derived on each call from the lessons' own vocabulary, and deriveVocab attaches the image
  * at that moment. A word that gains a photo is in the pool the next time a session starts, with no curation step.
@@ -26,7 +29,7 @@ export function imageWordPool(course: Course): PictureWord[] {
     for (const lesson of unit.lessons) {
       for (const item of deriveVocab(lesson)) {
         const key = item.term.trim().toLowerCase();
-        if (!item.image || seen.has(key)) continue;
+        if (!item.image || seen.has(key) || !isPicturable(item.term, course)) continue;
         seen.add(key);
         pool.push(item as PictureWord);
       }

@@ -147,6 +147,7 @@ public struct PodcastPlayerMachine: Equatable, Sendable {
                 resumeAfterInterruption = false
                 return [.pause, .savePosition]
             case .paused, .finished:
+                resumeAfterInterruption = false
                 phase = .loading
                 stallGeneration += 1
                 return [.play, .scheduleLoadTimeout(generation: stallGeneration)]
@@ -155,7 +156,13 @@ public struct PodcastPlayerMachine: Equatable, Sendable {
             }
 
         case let .pausedExternally(resumable):
-            guard isActive else { return [] }
+            guard isActive else {
+                // Already not playing (an interruption paused it, or the learner did). A pause that is not itself
+                // resumable (a pulled headphone, the sleep timer, a speaking exercise) must also disarm the earlier
+                // interruption's resume, or a later .shouldResume would start the episode the learner never asked for.
+                if !resumable { resumeAfterInterruption = false }
+                return []
+            }
             phase = .paused
             resumeAfterInterruption = resumable
             return [.pause, .savePosition]

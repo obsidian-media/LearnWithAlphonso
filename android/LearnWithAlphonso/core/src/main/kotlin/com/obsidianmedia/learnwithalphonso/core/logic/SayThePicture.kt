@@ -64,6 +64,8 @@ object SayThePicture {
         val pool = ArrayList<PictureWord>()
         for (unit in units) for (lesson in unit.lessons) for (item in deriveVocab(lesson, images)) {
             val image = item.image ?: continue
+            // The export's answer: action words and the shared deny list are false (build 72, confusing pictures).
+            if (image.picturable == false) continue
             if (ALLOWED_URL_PREFIXES.none { image.url.startsWith(it) }) continue
             if (!seen.add(item.term.trim().lowercase())) continue
             pool.add(PictureWord(item.term, image, item.example))

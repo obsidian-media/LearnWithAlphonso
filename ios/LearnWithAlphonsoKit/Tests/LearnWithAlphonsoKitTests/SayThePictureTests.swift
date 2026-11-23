@@ -42,6 +42,41 @@ final class SayThePictureTests: XCTestCase {
         XCTAssertTrue(SayThePicture.pool(units: [u], images: ["dog": bad]).isEmpty)
     }
 
+    func testAnActionOrDeniedWordIsNotInThePool() throws {
+        let u = try unit(["dog", "hiking", "rock", "cat"])
+        func ref(_ name: String, category: String, picturable: Bool) -> VocabImageRef {
+            VocabImageRef(url: base + name + ".jpg", alt: name, credit: "c", category: category, picturable: picturable)
+        }
+        let images = [
+            "dog": ref("dog", category: "noun", picturable: true),
+            "hiking": ref("hiking", category: "action", picturable: false),
+            "rock": ref("rock", category: "noun", picturable: false),  // a denied noun: the category alone is fine
+            "cat": image("cat"),  // an older bundle with no flag still draws
+        ]
+        XCTAssertEqual(SayThePicture.pool(units: [u], images: images).map(\.term), ["dog", "cat"])
+    }
+
+    /// The shipped bundle carries the export's answer for every photo, and the owner's deny list is all false.
+    func testTheShippedBundleBakesTheAnswerAndTheSharedDenyListIsExcluded() throws {
+        var url = URL(fileURLWithPath: #filePath)
+        for _ in 0..<5 { url.deleteLastPathComponent() }
+        let policy = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(contentsOf: url.appendingPathComponent("shared/say-the-picture-deny.json")))
+                as? [String: Any])
+        let deny = try XCTUnwrap((policy["deny"] as? [String: [String]])?["en"])
+        XCTAssertEqual(Set(deny).count, 15)
+        let bundled = url.appendingPathComponent("ios/LearnWithAlphonsoKit/Sources/LearnWithAlphonsoKit/Resources/vocab-images.json")
+        let images = try JSONDecoder().decode([String: VocabImageRef].self, from: Data(contentsOf: bundled))
+        XCTAssertTrue(images.values.allSatisfy { $0.picturable != nil }, "every entry carries the baked flag")
+        XCTAssertTrue(images.values.filter { $0.category == "action" }.allSatisfy { $0.picturable == false })
+        for term in deny {
+            for key in images.keys where key == term || key == "a " + term || key == "the " + term {
+                XCTAssertEqual(images[key]?.picturable, false, key)
+            }
+        }
+        XCTAssertTrue(images.values.contains { $0.picturable == true }, "the filter is not blanket")
+    }
+
     func testPoolDeduplicatesByTermIgnoringCase() throws {
         let u = try unit(["Dog", "dog"])
         XCTAssertEqual(SayThePicture.pool(units: [u], images: ["dog": image("dog")]).count, 1)

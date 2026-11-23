@@ -146,6 +146,17 @@ struct PodcastMiniBar: View {
                         EmptyView()
                     }
 
+                    // The X: stops and clears the player (build 72 feedback: "there is no X on it"). Always present, so
+                    // a failed or finished episode can be dismissed too.
+                    Button {
+                        player.close()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundStyle(ds.onHero)
+                            .frame(width: AlphonsoDS.Space.minTouch, height: AlphonsoDS.Space.minTouch)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel(PodcastPlaybackCopy.closePlayerLabel)
                 }
                 .padding(.leading, AlphonsoDS.Space.s2)
                 .padding(.trailing, AlphonsoDS.Space.s3 + 2)

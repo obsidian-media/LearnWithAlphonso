@@ -197,6 +197,9 @@ final class PodcastAudioPlayer {
         currentSourceURL = nil
         _ = machine.send(.closed)
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        // Hand the audio session back, as stopForAccountChange does: a closed player must not stay the app's claim on
+        // the lock screen or hold other apps' audio ducked. Best effort (it fails while a video is still playing).
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
     /// The learner started speaking. RootView registers this as the voice engine's pause

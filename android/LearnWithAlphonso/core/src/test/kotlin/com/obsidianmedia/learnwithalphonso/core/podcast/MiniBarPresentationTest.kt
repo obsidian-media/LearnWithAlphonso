@@ -7,8 +7,12 @@ import org.junit.jupiter.api.Test
 
 class MiniBarPresentationTest {
     @Test
-    fun `the pill carries only the play button`() {
-        assertEquals(listOf(PlayerAction.TOGGLE), MiniBarPresentation.pillActions())
+    fun `the pill carries the play button and a close X`() {
+        assertEquals(listOf(PlayerAction.TOGGLE, PlayerAction.CLOSE), MiniBarPresentation.pillActions())
+        assertEquals("Close player", MiniBarPresentation.CLOSE_LABEL)
+        // Next and transcript stay off the pill so the title keeps its room.
+        assertFalse(PlayerAction.NEXT in MiniBarPresentation.pillActions())
+        assertFalse(PlayerAction.TRANSCRIPT in MiniBarPresentation.pillActions())
     }
 
     @Test
