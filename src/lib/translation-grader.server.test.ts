@@ -267,17 +267,24 @@ describe("extra claims and spelling slips (the gate failures of the first real-m
     expect(real?.correct).toBe(false);
     expect(real?.reason).toContain('"roam" is a different word from "room"');
     expect(real?.reason).not.toContain("not a real word");
-    // Unsure, missing or malformed flags are typos, which are fine.
-    expect(verdict({ spelling: [{ written: "roam", intended: "room" }] })?.correct).toBe(true);
+    // An unsure or missing flag is trusted only when the narrow typo rule agrees; roam is not a typo of room.
+    expect(verdict({ spelling: [{ written: "roam", intended: "room" }] })?.correct).toBe(false);
+    // A malformed entry says nothing.
     expect(verdict({ spelling: ["roam"] })?.correct).toBe(true);
   });
 
   it("still accepts a slip that is certainly not a word", () => {
-    expect(
-      verdict({
-        spelling: [{ written: "swiming", intended: "swimming", written_is_real_word: false }],
-      })?.correct,
-    ).toBe(true);
+    const reply = JSON.stringify({
+      elements: ["a"],
+      missing: [],
+      extra: [],
+      grammar: [],
+      correct: true,
+      spelling: [{ written: "swiming", intended: "swimming", written_is_real_word: false }],
+    });
+    expect(decideVerdict(reply, ["I like swimming."], "I like swiming.")?.correct).toBe(true);
+    // Without an accepted answer to check the word against, the model's say-so is not enough.
+    expect(decideVerdict(reply)?.correct).toBe(false);
   });
 
   it("asks for both lists in the prompt", () => {
@@ -308,7 +315,6 @@ describe("the typo allowance", () => {
   it.each([
     ["gratitute", true],
     ["swiming", true],
-    ["gratitudes", true],
   ])("treats %s as a typo of a known word even when the model calls it a word", (written) => {
     expect(isTypoOfKnownWord(written, known.concat(["I like swimming."]))).toBe(true);
     expect(flagged(written, known.concat(["I like swimming."]))?.correct).toBe(true);
@@ -403,14 +409,14 @@ describe("grammar errors", () => {
 describe("a typo filed under missing, grammar or a false verdict (gate runs 4 and 5)", () => {
   const reply = (o: Record<string, unknown>) =>
     JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o });
-  const en = ["Gratitude is important.", "Gratitude matters."];
+  const en = ["My gratitude is important.", "My gratitude matters."];
   const fr = ["Je pars demain matin."];
 
   it("forgives a typo the model listed under missing, saying it is a misspelling", () => {
     const v = decideVerdict(
       reply({ missing: ["'gratitude' is misspelled as 'gratitute'"], correct: false }),
       en,
-      "Gratitute is important.",
+      "My gratitute is important.",
     );
     expect(v?.correct).toBe(true);
   });
@@ -433,7 +439,7 @@ describe("a typo filed under missing, grammar or a false verdict (gate runs 4 an
     const v = decideVerdict(
       reply({ missing: ["'gratitude'"], correct: false }),
       en,
-      "Gratitute is important.",
+      "My gratitute is important.",
     );
     expect(v?.correct).toBe(false);
   });
@@ -446,7 +452,7 @@ describe("a typo filed under missing, grammar or a false verdict (gate runs 4 an
         correct: false,
       }),
       en,
-      "Gratitute is.",
+      "My gratitute is.",
     );
     expect(v?.correct).toBe(false);
     expect(v?.reason).toContain("important");
@@ -495,7 +501,7 @@ describe("a typo filed under missing, grammar or a false verdict (gate runs 4 an
     [
       "gratitute",
       en,
-      "Gratitute is important.",
+      "My gratitute is important.",
       "Your sentence is right in meaning, but 'gratitute' is misspelled",
     ],
     [
@@ -562,5 +568,211 @@ describe("a typo filed under missing, grammar or a false verdict (gate runs 4 an
     ]) {
       expect(decideVerdict(reply(o), room, "My roam is big.")?.correct).toBe(false);
     }
+  });
+});
+
+describe("the typo allowance never forgives another form of a word, a name or a mixed remark", () => {
+  const reply = (o: Record<string, unknown>) =>
+    JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o });
+
+  it.each([
+    ["hablo", "habla", "Ella habla español.", "Ella hablo español."],
+    ["pequeña", "pequeño", "El gato es pequeño.", "El gato es pequeña."],
+    ["friends", "friend", "My friend is kind.", "My friends is kind."],
+    ["walks", "walk", "I walk to school.", "I walks to school."],
+    ["tienes", "tiene", "Ella tiene un perro.", "Ella tienes un perro."],
+    ["ellos", "ellas", "Ellas comen aquí.", "Ellos comen aquí."],
+    ["petite", "petit", "Le garçon est petit.", "Le garçon est petite."],
+    ["Maria", "Marie", "Je vois Marie ici.", "Je vois Maria ici."],
+  ])("keeps %s for %s wrong in every reply shape", (written, intended, acceptable, submission) => {
+    const said = `'${written}' is misspelled, it should be '${intended}'`;
+    for (const o of [
+      { spelling: [{ written, intended, written_is_real_word: true }] },
+      { missing: [`'${intended}' is misspelled as '${written}'`], correct: false },
+      { grammar: [`'${written}' is misspelled`], correct: false },
+      { correct: false, reason: `'${written}' is misspelled` },
+      { correct: false, reason: said },
+    ]) {
+      expect(decideVerdict(reply(o), [acceptable], submission)?.correct).toBe(false);
+    }
+  });
+
+  it("keeps a mixed item that also mentions a negation or a missing element", () => {
+    const acceptable = ["I did not receive it."];
+    for (const item of [
+      "the negation 'not'; also 'recive' is misspelled",
+      "'receive' is misspelled as 'recive' and the word 'did' is missing",
+    ]) {
+      expect(
+        decideVerdict(reply({ missing: [item], correct: false }), acceptable, "I did recive it.")
+          ?.correct,
+      ).toBe(false);
+    }
+  });
+
+  it("keeps a bare false whose reason says anything beyond the misspelling", () => {
+    const acceptable = ["My gratitude is important."];
+    for (const why of [
+      "'gratitute' is misspelled and the tense is wrong",
+      "'gratitute' is misspelled, a word is missing",
+      "'gratitute' is misspelled. The negation is also wrong.",
+    ]) {
+      expect(
+        decideVerdict(
+          reply({ correct: false, reason: why }),
+          acceptable,
+          "My gratitute is important.",
+        )?.correct,
+      ).toBe(false);
+    }
+  });
+
+  it("still forgives a pure spelling remark in French and Spanish wording", () => {
+    expect(
+      decideVerdict(
+        reply({ correct: false, reason: "'demmain' est mal orthographié" }),
+        ["Je pars demain matin."],
+        "Je pars demmain matin.",
+      )?.correct,
+    ).toBe(true);
+    expect(
+      decideVerdict(
+        reply({ correct: false, reason: "'aprovada' está mal escrito" }),
+        ["La propuesta fue aprobada."],
+        "La propuesta fue aprovada.",
+      )?.correct,
+    ).toBe(true);
+  });
+});
+
+describe("the typo allow-list (review of the follow-up)", () => {
+  const reply = (o: Record<string, unknown>) =>
+    JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o });
+  const shapes = (w: string, i: string) => [
+    { spelling: [{ written: w, intended: i, written_is_real_word: true }] },
+    { spelling: [{ written: w, intended: i, written_is_real_word: false }] },
+    { missing: [`'${i}' is misspelled as '${w}'`], correct: false },
+    { grammar: [`'${w}' is misspelled`], correct: false },
+    { correct: false, reason: `'${w}' is misspelled` },
+  ];
+
+  it.each([
+    ["write", "wrote", "I wrote a letter yesterday.", "I write a letter yesterday."],
+    ["drink", "drank", "I drank water yesterday.", "I drink water yesterday."],
+    ["drunk", "drank", "He drank water.", "He drunk water."],
+    ["begun", "began", "She began to sing.", "She begun to sing."],
+    ["tienes", "tienen", "Ellos tienen un perro.", "Ellos tienes un perro."],
+    ["tienen", "tienes", "Tú tienes un perro.", "Tú tienen un perro."],
+    ["comen", "comes", "Tú comes pan.", "Tú comen pan."],
+    ["hablan", "hablas", "Tú hablas mucho.", "Tú hablan mucho."],
+    ["vivamos", "vivimos", "Nosotros vivimos aquí.", "Nosotros vivamos aquí."],
+    ["taken", "token", "I have a token.", "I have a taken."],
+    ["wanted", "wasted", "I wasted time.", "I wanted time."],
+    ["lived", "liked", "I liked it.", "I lived it."],
+    ["estoy", "estay", "Yo estay aquí.", "Yo estoy aquí."],
+    ["Lukas", "Lucas", "Lucas es mi amigo.", "Lukas es mi amigo."],
+  ])("keeps %s for %s wrong in every reply shape", (w, i, acceptable, submission) => {
+    for (const o of shapes(w, i)) {
+      expect(decideVerdict(reply(o), [acceptable], submission)?.correct).toBe(false);
+    }
+  });
+
+  it.each([
+    [
+      "gratitute",
+      "gratitude",
+      "I showed my gratitude to my friend.",
+      "I showed my gratitute to my friend.",
+    ],
+    ["aprovada", "aprobada", "La ley fue aprobada ayer.", "La ley fue aprovada ayer."],
+    ["swiming", "swimming", "I like swimming a lot.", "I like swiming a lot."],
+    ["demmain", "demain", "Je pars demain matin.", "Je pars demmain matin."],
+    ["recive", "receive", "I did receive it.", "I did recive it."],
+  ])("still accepts the typo %s for %s in every reply shape", (w, i, acceptable, submission) => {
+    for (const o of shapes(w, i)) {
+      expect(decideVerdict(reply(o), [acceptable], submission)?.correct).toBe(true);
+    }
+  });
+
+  it("does not trust a spelling remark for an answer that is not otherwise an accepted one", () => {
+    const spelling = {
+      spelling: [{ written: "gratitute", intended: "gratitude", written_is_real_word: true }],
+    };
+    expect(
+      decideVerdict(reply(spelling), ["Gratitude matters."], "Gratitute matters quickly.")?.correct,
+    ).toBe(false);
+    expect(
+      decideVerdict(reply(spelling), ["I did not receive the letter."], "I did recive the letter.")
+        ?.correct,
+    ).toBe(false);
+    expect(
+      decideVerdict(
+        reply({ missing: ["'recive' is misspelled"], correct: false }),
+        ["I did not receive it."],
+        "I did recive it.",
+      )?.correct,
+    ).toBe(false);
+    expect(
+      decideVerdict(
+        reply({ missing: ["'gratitute' is misspelled"] }),
+        ["Gratitude matters."],
+        "Gratitute matters quickly.",
+      )?.correct,
+    ).toBe(false);
+    expect(
+      decideVerdict(
+        reply({ grammar: ["'recive' is misspelled"] }),
+        ["I did receive it."],
+        "I did recive quickly it.",
+      )?.correct,
+    ).toBe(false);
+  });
+
+  it("keeps an item that remarks on a quoted article", () => {
+    expect(
+      decideVerdict(
+        reply({ extra: ["'the' recive misspelled"], correct: false }),
+        ["I did receive it."],
+        "I did the recive it.",
+      )?.correct,
+    ).toBe(false);
+  });
+
+  it("still fails the reviewer's bare-false scratch inputs", () => {
+    expect(
+      decideVerdict(
+        reply({ correct: false, reason: "Missing negation; recive spelling" }),
+        ["I did not receive the letter."],
+        "I recive the letter.",
+      )?.correct,
+    ).toBe(false);
+    expect(
+      decideVerdict(
+        reply({ correct: false, reason: "'hablo' is a spelling error for 'habla'" }),
+        ["Ella habla español."],
+        "Ella hablo español.",
+      )?.correct,
+    ).toBe(false);
+  });
+
+  it("accepts a reason that restates the intended word of the named typo", () => {
+    const acceptable = ["I showed my gratitude to my friend."];
+    const submission = "I showed my gratitute to my friend.";
+    for (const why of [
+      "'gratitute' is misspelled; it should be 'gratitude'.",
+      "'gratitute' is misspelled, it should be spelled 'gratitude'",
+      "'gratitute' is misspelled instead of 'gratitude'",
+    ]) {
+      expect(
+        decideVerdict(reply({ correct: false, reason: why }), acceptable, submission)?.correct,
+      ).toBe(true);
+    }
+    expect(
+      decideVerdict(
+        reply({ correct: false, reason: "'gratitute' is misspelled; it should be 'thanks'" }),
+        acceptable,
+        submission,
+      )?.correct,
+    ).toBe(false);
   });
 });
