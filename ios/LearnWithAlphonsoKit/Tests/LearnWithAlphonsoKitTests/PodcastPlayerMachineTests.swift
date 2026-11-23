@@ -154,6 +154,25 @@ final class PodcastPlayerMachineTests: XCTestCase {
         XCTAssertEqual(pausedFirst.phase, .paused)
     }
 
+    /// Review of #710: an interruption pauses (armed), then a pulled headphone / sleep timer / speaking exercise arrives
+    /// while already paused. That non-resumable pause must disarm the interruption, or a later shouldResume starts it.
+    func testANonResumablePauseWhileAlreadyPausedDisarmsTheInterruptionResume() {
+        var routeChange = playing()
+        _ = routeChange.send(.pausedExternally(resumable: true))
+        XCTAssertEqual(routeChange.send(.pausedExternally(resumable: false)), [], "already paused: nothing to do")
+        XCTAssertEqual(routeChange.send(.interruptionEnded(shouldResume: true)), [], "the route change disarmed it")
+        XCTAssertEqual(routeChange.phase, .paused)
+
+        // A second resumable pause while paused changes nothing: it is not a reason to arm or disarm.
+        var stillArmed = playing()
+        _ = stillArmed.send(.pausedExternally(resumable: true))
+        _ = stillArmed.send(.pausedExternally(resumable: true))
+        XCTAssertEqual(
+            stillArmed.send(.interruptionEnded(shouldResume: true)),
+            [.play, .scheduleLoadTimeout(generation: stillArmed.stallGeneration)]
+        )
+    }
+
     /// Build 72 report: an episode started on its own while the learner switched Library tabs. Other in-app players
     /// (video sheet, sound effects, the Stories narrator) re-take the shared audio session, so interruption-ended
     /// with shouldResume can arrive for an episode the learner had paused. None of these orderings may resume it.

@@ -2985,7 +2985,7 @@
     "reviewedBy": "agent:p6-b002",
     "reviewedAt": "2026-11-04",
     "category": "noun",
-    "picturable": true
+    "picturable": false
   },
   "contento": {
     "url": "https://qhcjpfbxfcltjbiuknyt.supabase.co/storage/v1/object/public/vocab-images/es/contento.jpg?v=94b870ea",

@@ -152,6 +152,26 @@ describe("iOS podcast guards", () => {
     }
   });
 
+  it("the mini player keeps its close X on both platforms (a view-level guard: pillActions() alone is unused)", () => {
+    const bar = source("Sources/PodcastMiniBar.swift");
+    // Button { player.close() } ... .accessibilityLabel(closePlayerLabel): both, so the X is rendered and wired.
+    expect(bar).toMatch(/Button\s*\{\s*player\.close\(\)\s*\}/);
+    expect(bar).toContain("PodcastPlaybackCopy.closePlayerLabel");
+    // close() hands the audio session back, like stopForAccountChange.
+    expect(source("Sources/PodcastAudioPlayer.swift")).toMatch(
+      /func close\(\) \{(?:(?!\bfunc )[\s\S])*?setActive\(false, options: \.notifyOthersOnDeactivation\)/,
+    );
+    const screen = fs.readFileSync(
+      path.join(
+        ROOT,
+        "android/LearnWithAlphonso/app/src/main/java/com/obsidianmedia/learnwithalphonso/ui/listen/ListenScreen.kt",
+      ),
+      "utf8",
+    );
+    expect(screen).toMatch(/IconButton\(onClick = \{ container\.podcastPlayer\.close\(\) \}/);
+    expect(screen).toContain("MiniBarPresentation.CLOSE_LABEL");
+  });
+
   it("Listen hands the Library every course's published folders; the course filter lives in ListenShelf.shelves", () => {
     const listen = code(source("Sources/ListenView.swift"));
     // Pre-filtering by the active course here hid the other courses' episodes (build 72). The folder set must be

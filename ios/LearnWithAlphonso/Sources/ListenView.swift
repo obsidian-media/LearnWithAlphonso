@@ -225,8 +225,8 @@ func makePodcastClient(session: Session) -> PodcastClient? {
     )
 }
 
-/// Search results, flat across the active course's visible folders. Mirrors the web
-/// app's `PodcastSearchResults`.
+/// Search results, flat across every course's published folders (the Library has its own EN/FR/ES switch, so a result in
+/// any course it can show must be reachable). Mirrors the web app's `PodcastSearchResults`.
 ///
 /// Owns no `NavigationStack` -- ListenView owns it.
 ///
