@@ -97,13 +97,13 @@ Deno.test("a known real-word confusion is caught without the model", () => {
 });
 
 Deno.test("a typo of a known word is forgiven, a confusable real word is not", () => {
-  assertEquals(isTypoOfKnownWord("gratitute", ["Gratitude is important."]), true);
+  assertEquals(isTypoOfKnownWord("gratitute", ["My gratitude is important."]), true);
   assertEquals(isTypoOfKnownWord("aprovada", ["Estaba aprobada."]), true);
   assertEquals(isTypoOfKnownWord("roam", ["My room."]), false);
   assertEquals(isTypoOfKnownWord("rom", ["My room."]), false);
   const flagged = decideVerdict(
     '{"elements":["a"],"missing":[],"extra":[],"grammar":[],"spelling":[{"written":"gratitute","intended":"gratitude","written_is_real_word":true}],"correct":true}',
-    ["Gratitude is important."],
+    ["My gratitude is important."],
   );
   assertEquals(flagged?.correct, true);
 });
@@ -124,12 +124,12 @@ const typoReply = (o: Record<string, unknown>) =>
   JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o });
 
 Deno.test("a typo the model says is a misspelling is forgiven wherever it filed it", () => {
-  const en = ["Gratitude is important.", "Gratitude matters."];
+  const en = ["My gratitude is important.", "My gratitude matters."];
   assertEquals(
     decideVerdict(
       typoReply({ missing: ["'gratitude' is misspelled as 'gratitute'"], correct: false }),
       en,
-      "Gratitute is important.",
+      "My gratitute is important.",
     )?.correct,
     true,
   );
@@ -142,7 +142,7 @@ Deno.test("a typo the model says is a misspelling is forgiven wherever it filed 
     true,
   );
   assertEquals(
-    decideVerdict(typoReply({ missing: ["'gratitude'"], correct: false }), en, "Gratitute is.")
+    decideVerdict(typoReply({ missing: ["'gratitude'"], correct: false }), en, "My gratitute is.")
       ?.correct,
     false,
   );
@@ -191,8 +191,8 @@ Deno.test("the real gratitute and aprovada cases are accepted in every reply sha
   const cases: [string, string[], string, string][] = [
     [
       "gratitute",
-      ["Gratitude is important.", "Gratitude matters."],
-      "Gratitute is important.",
+      ["My gratitude is important.", "My gratitude matters."],
+      "My gratitute is important.",
       "Your sentence is right in meaning, but 'gratitute' is misspelled",
     ],
     [
@@ -260,9 +260,51 @@ Deno.test("another form of a word, a name or a mixed remark is never forgiven as
   assertEquals(
     decideVerdict(
       typoReply({ correct: false, reason: "'gratitute' is misspelled and the tense is wrong" }),
-      ["Gratitude is important."],
-      "Gratitute is important.",
+      ["My gratitude is important."],
+      "My gratitute is important.",
     )?.correct,
     false,
+  );
+});
+
+Deno.test("the typo allow-list rejects vowel and other substitutions and untrusted remarks", () => {
+  const cases: [string, string, string, string][] = [
+    ["write", "wrote", "I wrote a letter yesterday.", "I write a letter yesterday."],
+    ["drink", "drank", "I drank water yesterday.", "I drink water yesterday."],
+    ["tienen", "tienes", "Tú tienes un perro.", "Tú tienen un perro."],
+    ["taken", "token", "I have a token.", "I have a taken."],
+    ["lived", "liked", "I liked it.", "I lived it."],
+    ["estoy", "estay", "Yo estay aquí.", "Yo estoy aquí."],
+    ["Lukas", "Lucas", "Lucas es mi amigo.", "Lukas es mi amigo."],
+  ];
+  for (const [written, intended, acceptable, submission] of cases) {
+    for (const o of [
+      { spelling: [{ written, intended, written_is_real_word: true }] },
+      { missing: [`'${intended}' is misspelled as '${written}'`], correct: false },
+      { correct: false, reason: `'${written}' is misspelled` },
+    ]) {
+      assertEquals(decideVerdict(typoReply(o), [acceptable], submission)?.correct, false);
+    }
+  }
+  const grat = { missing: ["'gratitute' is misspelled"] };
+  assertEquals(
+    decideVerdict(typoReply(grat), ["Gratitude matters."], "Gratitute matters quickly.")?.correct,
+    false,
+  );
+  assertEquals(
+    decideVerdict(
+      typoReply({ extra: ["'the' recive misspelled"], correct: false }),
+      ["I did receive it."],
+      "I did the recive it.",
+    )?.correct,
+    false,
+  );
+  assertEquals(
+    decideVerdict(
+      typoReply({ correct: false, reason: "'gratitute' is misspelled; it should be 'gratitude'." }),
+      ["I showed my gratitude to my friend."],
+      "I showed my gratitute to my friend.",
+    )?.correct,
+    true,
   );
 });
