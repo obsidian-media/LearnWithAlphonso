@@ -100,7 +100,7 @@ struct RootView: View {
                 // flipping straight to the signed-in app a moment later on
                 // every single launch, which is the exact scenario this
                 // whole persistence effort exists to fix.
-                AlphonsoDS.current.surface.ignoresSafeArea()
+                LaunchRestoringView()
             } else {
                 switch session.state {
                 case .signedOut, .awaitingCode:
@@ -651,5 +651,29 @@ enum FirstRunCover: Identifiable {
         case .complete(let edit): return edit ? "edit" : "complete"
         case .placement: return "placement"
         }
+    }
+}
+
+/// What shows while the session restores: the launch screen again. Info.plist's UILaunchScreen is the brand colour
+/// (LaunchBackground, Royal hero) with the app icon (LaunchIcon) centred; this draws exactly the same colour and the
+/// same icon in the same spot, so the hand-off from launch to app cannot be seen. The one addition is the small
+/// ring, which appears after launch. Both are fixed Royal values, not the learner's theme, because the launch screen
+/// cannot know the theme either.
+struct LaunchRestoringView: View {
+    var body: some View {
+        ZStack {
+            Color("LaunchBackground").ignoresSafeArea()
+            Image("LaunchIcon")
+                .accessibilityHidden(true)
+            VStack {
+                Spacer()
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(AlphonsoDS.current.onHeroKick)
+                    .accessibilityLabel("Loading")
+                    .padding(.bottom, AlphonsoDS.Space.s12 + AlphonsoDS.Space.s6)
+            }
+        }
+        .accessibilityIdentifier("launchRestoring")
     }
 }

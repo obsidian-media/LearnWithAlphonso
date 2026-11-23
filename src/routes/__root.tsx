@@ -25,6 +25,13 @@ import { useAccountStatus } from "../lib/account-suspended";
 import { supabase } from "@/integrations/supabase/client";
 import { useProgress } from "../lib/progress";
 import { THEME_BOOT_SCRIPT, useTheme } from "../lib/theme";
+import {
+  BOOT_SPLASH_CSS,
+  BOOT_SPLASH_ICON,
+  BOOT_SPLASH_ID,
+  BOOT_SPLASH_NOSCRIPT_CSS,
+  dismissBootSplash,
+} from "../lib/boot-splash";
 import { fetchProgress } from "../lib/sync.functions";
 import { getMyProfile } from "../lib/leaderboard.functions";
 import { clearCachedVoicePrefs } from "../lib/voice-prefs";
@@ -134,9 +141,17 @@ function RootShell({ children }: { children: ReactNode }) {
           media="(prefers-color-scheme: light)"
         />
         <meta name="theme-color" content={THEME_COLOR_NIGHT} media="(prefers-color-scheme: dark)" />
+        {/* The boot splash (src/lib/boot-splash.ts): brand colour and app icon until the app has hydrated. */}
+        <style nonce={nonce} dangerouslySetInnerHTML={{ __html: BOOT_SPLASH_CSS }} />
+        <noscript>
+          <style dangerouslySetInnerHTML={{ __html: BOOT_SPLASH_NOSCRIPT_CSS }} />
+        </noscript>
         <HeadContent />
       </head>
       <body>
+        <div id={BOOT_SPLASH_ID} aria-hidden="true" data-boot-splash="">
+          <img src={BOOT_SPLASH_ICON} alt="" width={112} height={112} draggable={false} />
+        </div>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ds-ink focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-ds-card"
@@ -155,6 +170,7 @@ function RootComponent() {
   const suspended = useAccountStatus((s) => s.suspended);
   useEffect(() => {
     void track("app_open");
+    dismissBootSplash();
   }, []);
 
   // A suspended account sees one plain screen instead of the app, whatever page it was on.

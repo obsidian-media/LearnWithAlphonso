@@ -116,6 +116,8 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.core.ktx)
+    // The launch screen: the brand colour and the app icon on every Android version (Theme.Alphonso.Starting).
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.session)
     implementation(libs.androidx.glance.appwidget)

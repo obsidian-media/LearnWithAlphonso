@@ -514,6 +514,11 @@ describe("app icon", () => {
         "Miya-looking-up.imageset",
         "Miya-handoff.imageset",
         "Miya-help-head.imageset",
+        // The launch screen's app icon (Info.plist UILaunchScreen, build 72 feedback pick 1) and the two vocab photos on
+        // the Say the picture card (pick 4.1).
+        "LaunchIcon.imageset",
+        "PracticePhoto-coffee.imageset",
+        "PracticePhoto-train.imageset",
         ...poses,
         ...figurePoses,
         ...badgeSets,

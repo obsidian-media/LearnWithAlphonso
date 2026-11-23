@@ -400,7 +400,8 @@ describe("the drills", () => {
     expect(picture).toHaveTextContent("Say the picture");
     expect(right).toHaveTextContent("Say it right");
     for (const card of [picture, right]) expect(card).toHaveTextContent("Start");
-    expect(picture.querySelectorAll("img").length).toBe(4);
+    // Two vocab photos in frames plus the mic badge.
+    expect(picture.querySelectorAll("img").length).toBe(3);
     fireEvent.click(picture);
     expect(screen.getByTestId("say-the-picture")).toBeInTheDocument();
   });

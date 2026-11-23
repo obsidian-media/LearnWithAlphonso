@@ -1218,12 +1218,15 @@ describe("Lesson page -- in-lesson reinforcement (V3 pkg 4b)", () => {
     expect(await screen.findByText("Not quite")).toBeInTheDocument();
     expect(loseHeartRemote).toHaveBeenCalledTimes(1);
     expect(screen.queryByText("Quick practice")).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Practice, not scored" })).not.toBeInTheDocument();
 
     // Got it reveals the reinforcement round, not q2 yet -- progress
     // stays at 1/8 since it isn't a real question.
     await user.click(screen.getByRole("button", { name: "Got it" }));
     expect(await screen.findByText("Quick practice")).toBeInTheDocument();
     expect(screen.getByText("Reinforcement: pick the greeting.")).toBeInTheDocument();
+    // Only this re-ask says it is not scored (owner pick 5): a real question never carries the tag.
+    expect(screen.getByRole("img", { name: "Practice, not scored" })).toBeInTheDocument();
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuetext", "Question 1 of 8");
 
     // Answering it (even wrong) doesn't touch hearts/missed again.
@@ -1234,6 +1237,7 @@ describe("Lesson page -- in-lesson reinforcement (V3 pkg 4b)", () => {
     // Past the (missed) reinforcement lands on the real next question.
     await user.click(screen.getByRole("button", { name: "Got it" }));
     expect(await screen.findByText("Nice to ___ you.")).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "Practice, not scored" })).not.toBeInTheDocument();
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuetext", "Question 2 of 8");
   });
 

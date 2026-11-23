@@ -37,17 +37,21 @@ public final class PodcastClient: Sendable {
     let anonKey: String
     let accessToken: String
     let requester: Requester
+    /// Remembers which linear-story covers exist (Stories.swift); one per app by default, a fresh one in a test.
+    let coverProbe: StoryCoverProbe
 
     public init(
         supabaseURL: URL,
         anonKey: String,
         accessToken: String,
-        requester: @escaping Requester = { try await URLSession.shared.data(for: $0) }
+        requester: @escaping Requester = { try await URLSession.shared.data(for: $0) },
+        coverProbe: StoryCoverProbe = .shared
     ) {
         self.supabaseURL = supabaseURL
         self.anonKey = anonKey
         self.accessToken = accessToken
         self.requester = requester
+        self.coverProbe = coverProbe
     }
 
     // MARK: - Requests

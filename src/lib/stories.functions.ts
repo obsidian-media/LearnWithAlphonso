@@ -4,16 +4,32 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publicError } from "./public-error";
 import type { PodcastQuizResult } from "./podcast-quiz.functions";
 import { allEndings, type StoryGraph } from "./branching";
+import { createCoverProbe, resolveLinearCovers } from "./story-cover-probe";
 import {
   clampSegment,
   isStoryCourse,
+  linearCoverKey,
   type BranchingStory,
   type LoadedStory,
   type Story,
+  type StoryCourse,
   type StorySummary,
 } from "./stories";
 
 const STORY_ART_BUCKET = "story-art";
+
+/** One per server instance: a linear cover is looked up once, not on every library load (story-cover-probe.ts). */
+const coverProbe = createCoverProbe({
+  allowedHost: (() => {
+    try {
+      return (
+        new URL(process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "").host || undefined
+      );
+    } catch {
+      return undefined;
+    }
+  })(),
+});
 
 /** The result of finishing a branching path; the ending and credit are the server's, never the client's. */
 export type FinishBranchingResult = {
@@ -153,6 +169,12 @@ export const listStories = createServerFn({ method: "GET" })
         rows.map((r) => r.id),
       );
     const byStory = new Map(((prog.data ?? []) as ProgressRow[]).map((p) => [p.story_id, p]));
+    // A linear story's illustrated cover is read by convention (<course>/<slug>/cover.jpg) when the object exists.
+    const linearCovers = await resolveLinearCovers(
+      rows.filter((r) => isStoryCourse(r.course)),
+      (course, slug) => artUrlOf(context.supabase, linearCoverKey(course as StoryCourse, slug)),
+      coverProbe,
+    );
     return rows.map((r) => {
       const p = byStory.get(r.id);
       return {
@@ -170,6 +192,7 @@ export const listStories = createServerFn({ method: "GET" })
         checkTotal: p?.check_total ?? null,
         completed: !!p?.completed_at,
         ...branchingFacts(context.supabase, r, p),
+        ...(linearCovers.has(r.id) ? { coverUrl: linearCovers.get(r.id)! } : {}),
       };
     });
   });
