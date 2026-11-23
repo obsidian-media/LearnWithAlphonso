@@ -77,6 +77,7 @@ describe("gradeLessonAnswer", () => {
                 content: JSON.stringify({
                   elements: ["buen día"],
                   missing: [],
+                  extra: [],
                   correct: true,
                   reason: null,
                 }),
@@ -130,6 +131,7 @@ describe("gradeLessonAnswer", () => {
                   content: JSON.stringify({
                     elements: ["buen día"],
                     missing: [],
+                    extra: [],
                     correct: true,
                     reason: null,
                   }),
@@ -161,6 +163,7 @@ describe("gradeLessonAnswer", () => {
                   content: JSON.stringify({
                     elements: ["buen día"],
                     missing: [],
+                    extra: [],
                     correct: true,
                     reason: null,
                   }),

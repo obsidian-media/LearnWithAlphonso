@@ -3,6 +3,7 @@ import {
   buildGradingPrompt,
   decideVerdict,
   gradeTranslationWithAi,
+  knownWordConfusion,
 } from "./translation-grader.server";
 
 const ARGS = {
@@ -23,8 +24,8 @@ function stubResponse(content: string) {
   );
 }
 
-const reply = (elements: string[], missing: string[], extra: Record<string, unknown> = {}) =>
-  JSON.stringify({ elements, missing, correct: missing.length === 0, ...extra });
+const reply = (elements: string[], missing: string[], more: Record<string, unknown> = {}) =>
+  JSON.stringify({ elements, missing, extra: [], correct: missing.length === 0, ...more });
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -162,6 +163,7 @@ describe("decideVerdict", () => {
       JSON.stringify({
         elements: ["a", "b"],
         missing: ["b"],
+        extra: [],
         correct: true,
         reason: "Great job, perfect!",
       }),
@@ -171,9 +173,12 @@ describe("decideVerdict", () => {
 
   it("lets a false boolean veto an empty missing list, never the reverse", () => {
     expect(
-      decideVerdict(JSON.stringify({ elements: ["a"], missing: [], correct: false }))?.correct,
+      decideVerdict(JSON.stringify({ elements: ["a"], missing: [], extra: [], correct: false }))
+        ?.correct,
     ).toBe(false);
-    expect(decideVerdict(JSON.stringify({ elements: ["a"], missing: [] }))?.correct).toBe(true);
+    expect(
+      decideVerdict(JSON.stringify({ elements: ["a"], missing: [], extra: [] }))?.correct,
+    ).toBe(true);
   });
 
   it("ignores blank entries in missing", () => {
@@ -183,10 +188,10 @@ describe("decideVerdict", () => {
   it.each([
     ["no JSON", "I think it is fine"],
     ["the old shape", '{"correct": true, "reason": "ok"}'],
-    ["missing not a list", '{"elements": ["a"], "missing": "b", "correct": false}'],
-    ["elements not a list", '{"elements": "a", "missing": [], "correct": true}'],
-    ["an empty elements list", '{"elements": [], "missing": [], "correct": true}'],
-    ["non-string entries", '{"elements": ["a"], "missing": [1], "correct": false}'],
+    ["missing not a list", '{"elements": ["a"], "missing": "b", "extra": [], "correct": false}'],
+    ["elements not a list", '{"elements": "a", "missing": [], "extra": [], "correct": true}'],
+    ["an empty elements list", '{"elements": [], "missing": [], "extra": [], "correct": true}'],
+    ["non-string entries", '{"elements": ["a"], "missing": [1], "extra": [], "correct": false}'],
     ["a bare array", "[1, 2]"],
   ])("returns null for %s", (_name, content) => {
     expect(decideVerdict(content)).toBeNull();
@@ -211,5 +216,88 @@ describe("gradeTranslationWithAi, learner text stays inside its markers", () => 
     expect(prompt.match(/LEARNER_ANSWER>>>/g)).toHaveLength(1);
     expect(prompt.match(/<<<LEARNER_ANSWER/gi)).toHaveLength(1);
     expect(prompt).toContain("Reply correct: true");
+  });
+});
+
+describe("extra claims and spelling slips (the gate failures of the first real-model run)", () => {
+  const verdict = (o: Record<string, unknown>) =>
+    decideVerdict(JSON.stringify({ elements: ["a"], missing: [], extra: [], correct: true, ...o }));
+
+  it("rejects an answer that adds a claim, whatever the model's own boolean says", () => {
+    const v = verdict({ extra: ["she is a lawyer"], reason: "Adds a claim but fine." });
+    expect(v?.correct).toBe(false);
+    expect(v?.reason).toContain("adds something the task did not ask for: she is a lawyer");
+  });
+
+  it("requires the extra list: a reply without one is no opinion, not a pass", () => {
+    expect(decideVerdict('{"elements": ["a"], "missing": [], "correct": true}')).toBeNull();
+    expect(verdict({ extra: "none" })).toBeNull();
+  });
+
+  it("rejects a misspelling the model calls a real word, and one it is unsure about", () => {
+    const real = verdict({
+      spelling: [{ written: "roam", intended: "room", written_is_real_word: true }],
+      reason: "roam is a misspelling that is not a real word",
+    });
+    expect(real?.correct).toBe(false);
+    expect(real?.reason).toContain('"roam" is a different word from "room"');
+    expect(real?.reason).not.toContain("not a real word");
+    expect(verdict({ spelling: [{ written: "roam", intended: "room" }] })?.correct).toBe(false);
+    expect(verdict({ spelling: ["roam"] })?.correct).toBe(false);
+  });
+
+  it("still accepts a slip that is certainly not a word", () => {
+    expect(
+      verdict({
+        spelling: [{ written: "swiming", intended: "swimming", written_is_real_word: false }],
+      })?.correct,
+    ).toBe(true);
+  });
+
+  it("asks for both lists in the prompt", () => {
+    const p = buildGradingPrompt({ prompt: "p", acceptableAnswers: ["a"], submission: "x" });
+    expect(p).toContain('"extra"');
+    expect(p).toContain("written_is_real_word");
+    expect(p).toContain("not sure whether the written form is a real word, set it to true");
+  });
+});
+
+describe("knownWordConfusion", () => {
+  it.each([
+    ["There are four shelves in my roam.", ["There are four shelves in my room."], "roam", "room"],
+    [
+      "Mis amigos son de Colombia, perro ahora estan aqui.",
+      ["Mis amigos son de Colombia, pero ahora estan aqui."],
+      "perro",
+      "pero",
+    ],
+    ["I saw a ship on the farm.", ["I saw a sheep on the farm."], "ship", "sheep"],
+  ])("catches %s", (submission, known, written, meant) => {
+    expect(knownWordConfusion(submission, known)).toEqual({ written, meant });
+  });
+
+  it("leaves a word alone when a known wording uses it, or the partner is absent", () => {
+    expect(
+      knownWordConfusion("The roam is big.", ["The roam is big.", "The room is big."]),
+    ).toBeNull();
+    expect(knownWordConfusion("My roam is big.", ["My flat is big."])).toBeNull();
+    expect(
+      knownWordConfusion("There are four shelves in my room.", [
+        "There are four shelves in my room.",
+      ]),
+    ).toBeNull();
+  });
+
+  it("answers without calling the model", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const v = await gradeTranslationWithAi({
+      ...ARGS,
+      prompt: "Say there are four shelves in your room.",
+      acceptableAnswers: ["There are four shelves in my room."],
+      submission: "There are four shelves in my roam.",
+    });
+    expect(v?.correct).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
