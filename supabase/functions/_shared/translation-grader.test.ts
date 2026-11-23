@@ -308,3 +308,31 @@ Deno.test("the typo allow-list rejects vowel and other substitutions and untrust
     true,
   );
 });
+
+Deno.test("a spelling entry the model calls not-a-word is trusted only for a genuine typo", () => {
+  const wrong: [string, string, string, string][] = [
+    ["write", "wrote", "I wrote a letter yesterday.", "I write a letter yesterday."],
+    ["tienen", "tienes", "Tú tienes un perro.", "Tú tienen un perro."],
+    ["Lukas", "Lucas", "Lucas es mi amigo.", "Lukas es mi amigo."],
+  ];
+  for (const [written, intended, acceptable, submission] of wrong) {
+    assertEquals(
+      decideVerdict(
+        typoReply({ spelling: [{ written, intended, written_is_real_word: false }] }),
+        [acceptable],
+        submission,
+      )?.correct,
+      false,
+    );
+  }
+  assertEquals(
+    decideVerdict(
+      typoReply({
+        spelling: [{ written: "gratitute", intended: "gratitude", written_is_real_word: false }],
+      }),
+      ["I showed my gratitude to my friend."],
+      "I showed my gratitute to my friend.",
+    )?.correct,
+    true,
+  );
+});

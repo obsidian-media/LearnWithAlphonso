@@ -476,18 +476,21 @@ export function decideVerdict(
       correct === false &&
       nothingElse &&
       (droppedSpelling > 0 || falseIsOnlyATypo(reason, submission, acceptableAnswers, pairs));
-    // `spelling` is optional (nothing misspelled). Only an explicit true rejects, and only when it is not a plain typo.
+    // `spelling` is optional (nothing misspelled). A word the model calls a typo is trusted only when the narrow typo
+    // rule agrees (and, when the model names the word it meant, names the same one) for an answer that is otherwise
+    // exactly an accepted one; a word it calls real is forgiven only by the narrow rule alone. Otherwise the slip counts.
     const slips = Array.isArray(spelling) ? spelling : [];
     const realWordSlips = slips.flatMap((entry) => {
       const e =
         typeof entry === "object" && entry !== null ? (entry as Record<string, unknown>) : {};
-      if (e.written_is_real_word !== true) return [];
       const written = typeof e.written === "string" ? e.written.trim() : "";
-      // The narrow typo rule is the guard here: the model's own "it is a real word" flag does not outrank it.
-      if (trusted && written && narrowTypoOf(written.toLowerCase(), knownWords, names)) return [];
+      if (!written) return [];
       const intended = typeof e.intended === "string" ? e.intended.trim() : "";
+      const near = trusted ? narrowTypoOf(written.toLowerCase(), knownWords, names) : null;
+      const flaggedReal = e.written_is_real_word === true;
+      if (near && (flaggedReal || !intended || near === intended.toLowerCase())) return [];
       return [
-        written && intended
+        intended
           ? `"${written}" is a different word from "${intended}"`
           : "a word that is not the one meant",
       ];

@@ -267,17 +267,24 @@ describe("extra claims and spelling slips (the gate failures of the first real-m
     expect(real?.correct).toBe(false);
     expect(real?.reason).toContain('"roam" is a different word from "room"');
     expect(real?.reason).not.toContain("not a real word");
-    // Unsure, missing or malformed flags are typos, which are fine.
-    expect(verdict({ spelling: [{ written: "roam", intended: "room" }] })?.correct).toBe(true);
+    // An unsure or missing flag is trusted only when the narrow typo rule agrees; roam is not a typo of room.
+    expect(verdict({ spelling: [{ written: "roam", intended: "room" }] })?.correct).toBe(false);
+    // A malformed entry says nothing.
     expect(verdict({ spelling: ["roam"] })?.correct).toBe(true);
   });
 
   it("still accepts a slip that is certainly not a word", () => {
-    expect(
-      verdict({
-        spelling: [{ written: "swiming", intended: "swimming", written_is_real_word: false }],
-      })?.correct,
-    ).toBe(true);
+    const reply = JSON.stringify({
+      elements: ["a"],
+      missing: [],
+      extra: [],
+      grammar: [],
+      correct: true,
+      spelling: [{ written: "swiming", intended: "swimming", written_is_real_word: false }],
+    });
+    expect(decideVerdict(reply, ["I like swimming."], "I like swiming.")?.correct).toBe(true);
+    // Without an accepted answer to check the word against, the model's say-so is not enough.
+    expect(decideVerdict(reply)?.correct).toBe(false);
   });
 
   it("asks for both lists in the prompt", () => {
@@ -665,8 +672,7 @@ describe("the typo allow-list (review of the follow-up)", () => {
     ["estoy", "estay", "Yo estay aquí.", "Yo estoy aquí."],
     ["Lukas", "Lucas", "Lucas es mi amigo.", "Lukas es mi amigo."],
   ])("keeps %s for %s wrong in every reply shape", (w, i, acceptable, submission) => {
-    // The model saying the word is not a real word is its own judgement; the other shapes must not be forgiven.
-    for (const o of shapes(w, i).filter((_, n) => n !== 1)) {
+    for (const o of shapes(w, i)) {
       expect(decideVerdict(reply(o), [acceptable], submission)?.correct).toBe(false);
     }
   });
