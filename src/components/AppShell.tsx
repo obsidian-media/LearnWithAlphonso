@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import type { ReactNode } from "react";
-import { COURSES } from "../data/courses";
+import { COURSES } from "../data/course-meta";
 import { useProgress } from "../lib/progress";
 import { hasPanel, useViewportTier, type ViewportTier } from "../lib/use-viewport-tier";
 import { DsIcon } from "./ds/DsIcon";

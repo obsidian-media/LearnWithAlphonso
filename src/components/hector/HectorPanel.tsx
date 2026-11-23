@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { COURSES, type Course } from "../../data/courses";
+import { COURSES, type Course } from "../../data/course-meta";
 import { fetchTutorMemory } from "../../lib/call-recap-api";
 import type { HectorChip } from "../../lib/hector-chips";
 import { goalLines } from "../../lib/tutor-memory-view";
