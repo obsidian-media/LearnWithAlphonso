@@ -5,11 +5,15 @@ enum class PlayerAction { TOGGLE, NEXT, TRANSCRIPT, CLOSE }
 
 /**
  * Where each player action lives (round 6.1 "mini player"). The pill holds only what fits at 360 dp and at the largest font:
- * the art, the title and the gold play button. Next, transcript and "Stop and close" are in the expanded player, so the
- * title is never squeezed to a few characters; every action stays reachable from one of the two.
+ * the art, the title, the gold play button and a close X (build 72 feedback: "there is no X on it"; the web bar has the
+ * same "Close player" button). Next and transcript are in the expanded player, so the title is never squeezed to a few
+ * characters; every action stays reachable from one of the two.
  */
 object MiniBarPresentation {
-    fun pillActions(): List<PlayerAction> = listOf(PlayerAction.TOGGLE)
+    fun pillActions(): List<PlayerAction> = listOf(PlayerAction.TOGGLE, PlayerAction.CLOSE)
+
+    /** The spoken label of the pill's X; the same words as the web player's button. */
+    const val CLOSE_LABEL: String = "Close player"
 
     fun expandedActions(hasNext: Boolean): List<PlayerAction> =
         listOf(PlayerAction.TOGGLE, PlayerAction.TRANSCRIPT) + (if (hasNext) listOf(PlayerAction.NEXT) else emptyList()) + PlayerAction.CLOSE

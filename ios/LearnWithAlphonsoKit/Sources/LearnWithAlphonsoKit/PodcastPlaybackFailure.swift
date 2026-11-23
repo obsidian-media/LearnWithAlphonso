@@ -80,6 +80,8 @@ public enum PodcastPlaybackFailure: Equatable, Sendable {
 
 public enum PodcastPlaybackCopy {
     public static let retryTitle = "Retry"
+    /// The mini bar's X, spoken. The same words as the web player's button (PodcastPlayer.tsx) and Android's.
+    public static let closePlayerLabel = "Close player"
     public static let bufferingLabel = "Buffering…"
 
     public static func message(for failure: PodcastPlaybackFailure) -> String {

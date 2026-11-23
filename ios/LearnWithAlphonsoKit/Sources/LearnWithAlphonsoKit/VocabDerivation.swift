@@ -30,12 +30,21 @@ public struct VocabImageRef: Decodable, Sendable, Equatable {
     public let license: String?
     public let reviewedBy: String?
     public let reviewedAt: String?
+    /// What kind of word the photo shows ("noun", "action", "place", "food"), baked in by the content export from
+    /// scripts/vocab-imageability.json. Optional so older bundles and fixtures decode.
+    public let category: String?
+    /// Whether Say the Picture may use this photo, baked in by the export (rule and data: src/lib/vocab-images/picturable.ts
+    /// and shared/say-the-picture-deny.json). Nil (an older bundle, a fixture) means allowed; only an explicit false excludes.
+    public let picturable: Bool?
 
     public init(
         url: String, alt: String, credit: String,
         source: String? = nil, sourcePageUrl: String? = nil, license: String? = nil,
-        reviewedBy: String? = nil, reviewedAt: String? = nil
+        reviewedBy: String? = nil, reviewedAt: String? = nil,
+        category: String? = nil, picturable: Bool? = nil
     ) {
+        self.category = category
+        self.picturable = picturable
         self.url = url
         self.alt = alt
         self.credit = credit

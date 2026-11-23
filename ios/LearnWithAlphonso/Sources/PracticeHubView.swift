@@ -87,12 +87,10 @@ struct PracticeHubView: View {
                     }.scrollIndicators(.hidden)
                     practiceSectionLabel("Quick practice")
                     PracticeDrillCard(title: "Say the picture", detail: "See a picture and say the word. A miss shows you the word and how it sounds.", identifier: "practiceSayPictureCard", action: { sayPicture = true }) {
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AlphonsoDS.Space.s1) {
-                            ForEach(["\u{2615}", "\u{2708}\u{FE0F}", "\u{1FA7A}", "\u{1F35D}"], id: \.self) { Icon3DView(emoji: $0, size: AlphonsoDS.Space.s6) }
-                        }.padding(AlphonsoDS.Space.s2).frame(maxHeight: .infinity).background(ds.choiceTint)
+                        PracticeSayPictureArt()
                     }
                     PracticeDrillCard(title: "Say it right", detail: "Hear a word you have learned, say it, and find out how clearly you were understood. A miss teaches, it never punishes.", identifier: "practiceSayItRightCard", action: { sayItRight = true }) {
-                        Image(systemName: "waveform").dsText(.display).foregroundStyle(ds.rightEdge).frame(maxWidth: .infinity, maxHeight: .infinity).background(ds.rightTint)
+                        PracticeSayItRightArt()
                     }
                     // Hector keeps the same entitlement and paywall source rules as the previous Practice card; quiet and last.
                     if !entitlementStore.isPro {
@@ -400,6 +398,62 @@ struct PracticeTile: View {
     }
 }
 
+/// The drill cards' art column: wide enough for two framed photos, or Alphonso and a score badge.
+enum PracticeDrillArt {
+    static let width: CGFloat = AlphonsoDS.Space.s12 * 2 + AlphonsoDS.Space.s6 + AlphonsoDS.Space.s1
+}
+
+/// Say the picture's art: two real vocab photos (small bundled thumbnails) in frames and a mic badge. See a picture, say
+/// the word. Decorative: the card's own title and line say what it is.
+struct PracticeSayPictureArt: View {
+    @Environment(\.alphonsoDS) private var ds
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            ds.choiceTint
+            photo("PracticePhoto-train", side: 70).rotationEffect(.degrees(7)).offset(x: 36, y: 12)
+            photo("PracticePhoto-coffee", side: 76).rotationEffect(.degrees(-6)).offset(x: 10, y: 44)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            Icon3DView(emoji: "\u{1F399}\u{FE0F}", size: AlphonsoDS.Space.s6)
+                .frame(width: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s2, height: AlphonsoDS.Space.s8 + AlphonsoDS.Space.s2)
+                .background(ds.choice, in: Circle())
+                .overlay(Circle().strokeBorder(ds.card, lineWidth: 2))
+                .shadow(radius: AlphonsoDS.Space.s1)
+                .padding(AlphonsoDS.Space.s2)
+        }
+        .clipped()
+        .accessibilityIdentifier("practiceSayPictureArt")
+    }
+
+    private func photo(_ name: String, side: CGFloat) -> some View {
+        Image(name).resizable().scaledToFill().frame(width: side, height: side)
+            .clipShape(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control))
+            .overlay(RoundedRectangle(cornerRadius: AlphonsoDS.Radius.control).strokeBorder(ds.card, lineWidth: 2))
+            .shadow(radius: AlphonsoDS.Space.s1)
+    }
+}
+
+/// Say it right's art: Alphonso listening (the approved listening-headphones pose) with a score badge. He hears how you
+/// say it, and you get a result. Decorative: the badge is an example of the result, not this learner's score.
+struct PracticeSayItRightArt: View {
+    @Environment(\.alphonsoDS) private var ds
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            ds.rightTint
+            Image("Alphonso-listening-headphones").resizable().scaledToFit().frame(height: 132).offset(y: 6)
+        }
+        .overlay(alignment: .topTrailing) {
+            Text("92 \u{2713}").dsText(.caption).foregroundStyle(ds.onRight)
+                .padding(.horizontal, AlphonsoDS.Space.s2 + AlphonsoDS.Space.s1 / 2).padding(.vertical, 2)
+                .background(ds.right, in: Capsule())
+                .shadow(radius: AlphonsoDS.Space.s1)
+                .padding(.top, AlphonsoDS.Space.s3).padding(.trailing, AlphonsoDS.Space.s2)
+        }
+        .clipped()
+        .accessibilityIdentifier("practiceSayItRightArt")
+    }
+}
+
 /// A featured drill: its own thumbnail, title, line and a Start button. The whole card is one button.
 struct PracticeDrillCard<Thumb: View>: View {
     let title: String
@@ -411,7 +465,7 @@ struct PracticeDrillCard<Thumb: View>: View {
     var body: some View {
         Button(action: action) {
             HStack(alignment: .center, spacing: CGFloat.zero) {
-                thumb().frame(width: AlphonsoDS.Space.s12 * 2).frame(maxHeight: .infinity).accessibilityHidden(true)
+                thumb().frame(width: PracticeDrillArt.width).frame(maxHeight: .infinity).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: AlphonsoDS.Space.s1) {
                     Text(title).dsText(.headline)
                     Text(detail).dsText(.caption).foregroundStyle(ds.inkSoft).fixedSize(horizontal: false, vertical: true)

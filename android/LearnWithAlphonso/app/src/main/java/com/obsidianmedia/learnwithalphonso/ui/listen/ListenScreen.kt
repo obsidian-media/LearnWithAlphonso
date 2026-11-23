@@ -386,6 +386,10 @@ fun PodcastMiniBar(container: AppContainer) {
                         }
                     }
                 }
+                // The X: stops and clears the player (the full player's "Stop and close"), 44 dp hit target like the play button.
+                IconButton(onClick = { container.podcastPlayer.close() }, modifier = Modifier.size(AlphonsoTokens.Space.minTouch)) {
+                    Icon(Icons.Filled.Close, contentDescription = com.obsidianmedia.learnwithalphonso.core.podcast.MiniBarPresentation.CLOSE_LABEL, tint = ds.onHero)
+                }
             }
             // The thin gold progress line along the foot of the pill.
             val fraction = if (episode.durationSeconds > 0) (state.elapsedSeconds / episode.durationSeconds).toFloat().coerceIn(0f, 1f) else 0f

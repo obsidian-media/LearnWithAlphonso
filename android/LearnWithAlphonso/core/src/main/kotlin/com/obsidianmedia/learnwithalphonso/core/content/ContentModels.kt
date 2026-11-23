@@ -92,4 +92,12 @@ data class VocabImageRef(
     val license: String? = null,
     val reviewedBy: String? = null,
     val reviewedAt: String? = null,
+    /** What kind of word the photo shows ("noun", "action", "place", "food"); baked in by the content export. */
+    val category: String? = null,
+    /**
+     * Whether Say the Picture may use this photo (action words and the shared deny list are false), baked in by the
+     * content export; rule and data in src/lib/vocab-images/picturable.ts and shared/say-the-picture-deny.json.
+     * Null (an older bundle, a fixture) means allowed; only an explicit false excludes.
+     */
+    val picturable: Boolean? = null,
 )

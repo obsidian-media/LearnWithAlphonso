@@ -160,7 +160,10 @@ targets:
         # ASWebAuthenticationSession callback, which has no INFOPLIST_KEY_
         # equivalent. See ../Info.plist.
         INFOPLIST_FILE: Info.plist
-        INFOPLIST_KEY_UILaunchScreen_Generation: true
+        # The launch screen is the UILaunchScreen dict in Info.plist (LaunchBackground colour set + LaunchIcon image,
+        # the brand colour and the app icon), which replaces INFOPLIST_KEY_UILaunchScreen_Generation (a blank
+        # auto-generated screen). RootView's restoring view draws the same colour and icon so the hand-off cannot be
+        # seen. Pinned by src/lib/build-72-designs-guards.test.ts.
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
         # App Store Connect's upload validation (error 90474) requires all
         # four orientations declared even for a TARGETED_DEVICE_FAMILY=1
@@ -337,7 +340,7 @@ targets:
         # accident, which made App Store Connect require 13-inch iPad
         # screenshots at Add for Review. No code change.
         # 50: first build after build 49; resubmission.
-        CURRENT_PROJECT_VERSION: "72"
+        CURRENT_PROJECT_VERSION: "73"
       configs:
         Release:
           # Manual signing, scoped to just this app target -- NOT set as a
@@ -476,7 +479,7 @@ targets:
         # target's MARKETING_VERSION/CURRENT_PROJECT_VERSION above by hand
         # for now (no XcodeGen mechanism to derive one from the other).
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "72"
+        CURRENT_PROJECT_VERSION: "73"
         SKIP_INSTALL: true
       configs:
         Release:

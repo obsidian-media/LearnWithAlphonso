@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The splash icon: the app icon, 112dp, centred on a 288dp transparent canvas. On Android 12+ the system fits the
+     canvas in a 192dp circle, and the 112dp icon (158dp across its diagonal) sits inside it, so nothing is cropped. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="288dp" android:height="288dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/launch_transparent" />
+        </shape>
+    </item>
+    <item android:width="112dp" android:height="112dp" android:gravity="center">
+        <bitmap android:src="@drawable/launch_icon_art" android:gravity="fill" />
+    </item>
+</layer-list>

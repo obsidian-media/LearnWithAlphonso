@@ -34,11 +34,14 @@ struct ListenView: View {
 
     private var courseCode: String { activeCourse.course.wireCode }
 
+    /// Every folder with a published episode, of ALL courses. The Library has its own EN/FR/ES switch that narrows by
+    /// course inside ListenShelf.shelves; pre-filtering to the active course here hid the other two courses' episodes
+    /// (build 72: "I don't see the Spanish/French podcast episodes"). Search shares this set, so a result in any
+    /// course the Library can show is reachable.
     private var visibleFolders: [PodcastFolder] {
-        PodcastLibrary.visibleFolders(
+        PodcastLibrary.publishedFolders(
             folders,
-            publishedFolderIDs: Set(publishedIndex.map(\.folderID)),
-            courseCode: courseCode
+            publishedFolderIDs: Set(publishedIndex.map(\.folderID))
         )
     }
 
@@ -222,8 +225,8 @@ func makePodcastClient(session: Session) -> PodcastClient? {
     )
 }
 
-/// Search results, flat across the active course's visible folders. Mirrors the web
-/// app's `PodcastSearchResults`.
+/// Search results, flat across every course's published folders (the Library has its own EN/FR/ES switch, so a result in
+/// any course it can show must be reachable). Mirrors the web app's `PodcastSearchResults`.
 ///
 /// Owns no `NavigationStack` -- ListenView owns it.
 ///

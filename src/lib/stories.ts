@@ -8,6 +8,16 @@ import type { QuizQuestion } from "./podcast-quiz-run";
 
 export type StoryCourse = "en" | "fr" | "es";
 
+/**
+ * Where a linear story's illustrated cover lives in the public `story-art` bucket: `<course>/<slug>/cover.jpg`, the same
+ * folder the branching stories' scene art uses (`<course>/<slug>/<nodeId>.jpg`). The library shows it when the object
+ * exists (src/lib/story-cover-probe.ts) and its designed gradient otherwise. Mirrors Stories.linearCoverKey in the Kit
+ * and in Android core.
+ */
+export function linearCoverKey(course: StoryCourse, slug: string): string {
+  return `${course}/${slug}/cover.jpg`;
+}
+
 export type StorySummary = {
   id: string;
   course: StoryCourse;
@@ -25,7 +35,10 @@ export type StorySummary = {
   bestCorrect: number | null;
   checkTotal: number | null;
   completed: boolean;
-  /** The first scene's art as a public URL, or null (a linear story, or a branching one without art): a designed fallback is drawn. */
+  /**
+   * The cover as a public URL, or null: a branching story's first scene art, or a linear story's `cover.jpg` when that object
+   * exists (linearCoverKey). Null draws the designed gradient, never a broken image.
+   */
   coverUrl: string | null;
   /** Endings in a branching story's node graph (0 for a linear story). */
   endingsTotal: number;

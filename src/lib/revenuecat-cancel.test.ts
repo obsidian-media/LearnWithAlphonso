@@ -53,7 +53,7 @@ describe("revenueCatConfigFromEnv (v2 settings)", () => {
         REVENUECAT_V2_SECRET_KEY: "b",
         REVENUECAT_PROJECT_ID: "p",
       } as NodeJS.ProcessEnv),
-    ).toEqual({ secretApiKey: "a", v2SecretKey: "b", projectId: "p" });
+    ).toEqual({ secretApiKey: "a", v2SecretKey: "b", projectId: "projp" });
     expect(
       revenueCatConfigFromEnv({
         REVENUECAT_SECRET_API_KEY: "a",

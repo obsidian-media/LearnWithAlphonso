@@ -26,7 +26,7 @@ data class StorySummary(
     val completed: Boolean,
     /** A "choose your path" story: its text lives in the node graph, so it has no top-level sentences. */
     val branching: Boolean = false,
-    /** The first scene's art (public `story-art` URL), or null: a linear story, or a branching one without art (a designed fallback is drawn). */
+    /** The cover (public `story-art` URL): a branching story's first scene art, or a linear story's `cover.jpg` when that object exists. Null draws the designed fallback, never a broken image. */
     val coverUrl: String? = null,
     /** Endings in a branching story's node graph; 0 for a linear story. */
     val endingsTotal: Int = 0,
@@ -53,6 +53,16 @@ data class StoriesLibraryLayout(val featured: StorySummary?, val resume: StorySu
 
 object Stories {
     val COURSES = setOf("en", "fr", "es")
+
+    /**
+     * Where a linear story's illustrated cover lives in the public `story-art` bucket: `<course>/<slug>/cover.jpg`, the same
+     * folder the branching stories' scene art uses. Mirrors linearCoverKey in src/lib/stories.ts.
+     */
+    fun linearCoverKey(course: String, slug: String): String = "$course/$slug/cover.jpg"
+
+    /** The public URL of a linear story's cover, or null without a slug. Shown only once it is known to exist (StoryCoverProbe). */
+    fun linearCoverUrl(supabaseUrl: String, course: String, slug: String): String? =
+        if (slug.isEmpty()) null else Branching.artUrl(supabaseUrl, linearCoverKey(course, slug))
 
     /**
      * Only published stories in the learner's course, in a stable order. A branching story has no top-level sentences (its

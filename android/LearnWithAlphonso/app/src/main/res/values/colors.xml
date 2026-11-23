@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="royal_surface">#F4F7F2</color>
+    <!-- The launch screen colour: the Royal hero (design/tokens.json), the same on iOS (LaunchBackground) and web. -->
+    <color name="launch_background">#1D2B64</color>
+    <color name="launch_transparent">#00000000</color>
 </resources>

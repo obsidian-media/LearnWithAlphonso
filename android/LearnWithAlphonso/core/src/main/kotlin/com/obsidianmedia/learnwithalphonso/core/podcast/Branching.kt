@@ -298,7 +298,9 @@ object Branching {
         if (key.isNullOrEmpty()) return null
         val parts = key.split("/").filter { it.isNotEmpty() }
         if (parts.isEmpty() || ".." in parts || "." in parts) return null
-        return (listOf(supabaseUrl.trimEnd('/'), "storage", "v1", "object", "public", ART_BUCKET) + parts).joinToString("/")
+        // Each segment is percent-encoded, so an accented slug ("l-\u00e9p\u00e9e") is a valid URL, as on web and iOS.
+        val encoded = parts.map { java.net.URLEncoder.encode(it, "UTF-8").replace("+", "%20") }
+        return (listOf(supabaseUrl.trimEnd('/'), "storage", "v1", "object", "public", ART_BUCKET) + encoded).joinToString("/")
     }
 
     /**

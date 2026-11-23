@@ -25,7 +25,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.ui.text.style.TextAlign
 import com.obsidianmedia.learnwithalphonso.ui.lesson.rememberReduceMotion
@@ -43,6 +42,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
+import com.obsidianmedia.learnwithalphonso.R
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -171,22 +175,12 @@ internal fun PracticeHubContent(
         item { HubHeading("Quick practice") }
         item {
             DrillCard("Say the picture", "See a picture and say the word. A miss shows you the word and how it sounds.", "practice-say-picture", onSayPicture) {
-                Column(Modifier.fillMaxSize().background(ds.choiceTint).padding(Space.s2), verticalArrangement = Arrangement.spacedBy(Space.s1), horizontalAlignment = Alignment.CenterHorizontally) {
-                    val context = LocalContext.current
-                    listOf(listOf("hot_beverage", "airplane"), listOf("stethoscope", "spaghetti")).forEach { pair ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(Space.s1)) {
-                            pair.forEach { name ->
-                                val icon by produceState<ImageBitmap?>(null, name) { value = withContext(Dispatchers.IO) { loadAsset(context, "icons3d/$name.png") } }
-                                Box(Modifier.size(Space.s8)) { icon?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize()) } }
-                            }
-                        }
-                    }
-                }
+                SayPictureArt()
             }
         }
         item {
             DrillCard("Say it right", "Hear a word you have learned, say it, and find out how clearly you were understood. A miss teaches, it never punishes.", "practice-say-it-right", onSayItRight) {
-                Box(Modifier.fillMaxSize().background(ds.rightTint), contentAlignment = Alignment.Center) { Icon(Icons.Filled.GraphicEq, contentDescription = null, tint = ds.rightEdge, modifier = Modifier.size(Space.s12)) }
+                SayItRightArt()
             }
         }
         // Hector: Pro's one feature, quiet and last; same entitlement entry point as the Hector tab.
@@ -387,12 +381,57 @@ internal fun PracticeTile(room: String, overline: String, title: String, stars: 
     }
 }
 
+/** The drill cards' art column: wide enough for two framed photos, or Alphonso and a score badge. */
+private val DRILL_ART_WIDTH = Space.s12 * 2 + Space.s6 + Space.s1
+
+/**
+ * Say the picture's art: two real vocab photos (small bundled thumbnails) in frames and a mic badge. See a picture, say the
+ * word. Decorative: the card's own title and line say what it is.
+ */
+@Composable
+private fun SayPictureArt() {
+    val ds = LocalAlphonsoTokens.current
+    val context = LocalContext.current
+    val mic by produceState<ImageBitmap?>(null) { value = withContext(Dispatchers.IO) { loadAsset(context, "icons3d/studio_microphone.png") } }
+    val frame = RoundedCornerShape(AlphonsoTokens.Radius.control)
+    Box(Modifier.fillMaxSize().background(ds.choiceTint).clipToBounds().testTag("practice-say-picture-art")) {
+        Image(painterResource(R.drawable.practice_photo_train), null, contentScale = ContentScale.Crop,
+            modifier = Modifier.offset(36.dp, 12.dp).size(70.dp).rotate(7f).shadow(Space.s1, frame).clip(frame).border(2.dp, ds.card, frame))
+        Image(painterResource(R.drawable.practice_photo_coffee), null, contentScale = ContentScale.Crop,
+            modifier = Modifier.offset(10.dp, 44.dp).size(76.dp).rotate(-6f).shadow(Space.s1, frame).clip(frame).border(2.dp, ds.card, frame))
+        Box(
+            Modifier.align(Alignment.BottomEnd).padding(Space.s2).size(Space.s8 + Space.s2).shadow(Space.s1, CircleShape)
+                .background(ds.choice, CircleShape).border(2.dp, ds.card, CircleShape).testTag("practice-mic-badge"),
+            contentAlignment = Alignment.Center,
+        ) { mic?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.size(Space.s6)) } }
+    }
+}
+
+/**
+ * Say it right's art: Alphonso listening (the approved listening-headphones pose) with a score badge. He hears how you say
+ * it, and you get a result. Decorative: the badge is an example of the result, not this learner's score.
+ */
+@Composable
+private fun SayItRightArt() {
+    val ds = LocalAlphonsoTokens.current
+    val context = LocalContext.current
+    val pose by produceState<ImageBitmap?>(null) { value = withContext(Dispatchers.IO) { loadAsset(context, "poses/alphonso-listening-headphones.webp") } }
+    Box(Modifier.fillMaxSize().background(ds.rightTint).clipToBounds().testTag("practice-say-it-right-art")) {
+        pose?.let { Image(it, null, contentScale = ContentScale.Fit, modifier = Modifier.align(Alignment.BottomCenter).offset(y = 6.dp).height(132.dp)) }
+        Text(
+            "92 ✓", style = Type.caption.toTextStyle(), color = ds.onRight,
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = Space.s3, end = Space.s2).shadow(Space.s1, CircleShape)
+                .background(ds.right, CircleShape).padding(horizontal = 10.dp, vertical = 2.dp).testTag("practice-score-badge"),
+        )
+    }
+}
+
 /** A featured drill: its own thumbnail, title, line and a Start button. The whole card is one button. */
 @Composable
 private fun DrillCard(title: String, detail: String, tag: String, onClick: () -> Unit, thumb: @Composable () -> Unit) {
     val ds = LocalAlphonsoTokens.current
     Row(Modifier.testTag(tag).fillMaxWidth().height(IntrinsicSize.Min).clip(RoundedCornerShape(AlphonsoTokens.Radius.control)).background(ds.card).border(2.dp, ds.line, RoundedCornerShape(AlphonsoTokens.Radius.control)).clickable(role = Role.Button, onClick = onClick)) {
-        Box(Modifier.width(Space.s12 * 2).fillMaxHeight().clearAndSetSemantics {}) { thumb() }
+        Box(Modifier.width(DRILL_ART_WIDTH).fillMaxHeight().clearAndSetSemantics {}) { thumb() }
         Column(Modifier.weight(1f).padding(Space.s3), verticalArrangement = Arrangement.spacedBy(Space.s1)) {
             Text(title, style = Type.headline.toTextStyle(), color = ds.ink)
             Text(detail, style = Type.caption.toTextStyle(), color = ds.inkSoft)

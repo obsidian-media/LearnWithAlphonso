@@ -1091,6 +1091,8 @@ struct QuestionCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             bubble
+            // A re-ask after a miss is not scored (recordAnswer skips it): say so while it is on screen.
+            if isReinforcing { PracticeNotScoredTag() }
             switch question {
             case .multipleChoice(let q):
                 if let imageKey = q.imageKey, let image = vocabImages[imageKey] {
@@ -1519,4 +1521,22 @@ struct HectorAccess {
     let entitlementStore: EntitlementStore
     let activeCourse: ActiveCourseModel
     let conversationStore: ConversationStore
+}
+
+/// "Practice · not scored": shown above a Quick practice question, the re-ask after a miss. recordAnswer is skipped for
+/// it, so it never touches the score, hearts or XP; the tag says so at the moment of the question. VoiceOver reads
+/// "Practice, not scored".
+struct PracticeNotScoredTag: View {
+    @Environment(\.alphonsoDS) private var ds
+    var body: some View {
+        Label("Practice · not scored", systemImage: "arrow.triangle.2.circlepath")
+            .dsText(.caption)
+            .foregroundStyle(ds.actionText)
+            .padding(.horizontal, AlphonsoDS.Space.s3).padding(.vertical, AlphonsoDS.Space.s1)
+            .background(ds.actionTint, in: Capsule())
+            .overlay(Capsule().strokeBorder(ds.action, lineWidth: 1.5))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Practice, not scored")
+            .accessibilityIdentifier("practiceNotScoredTag")
+    }
 }

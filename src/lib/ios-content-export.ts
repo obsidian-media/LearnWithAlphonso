@@ -3,7 +3,8 @@ import { SCENARIOS, scenariosFor, type LocalizedScenario } from "@/data/scenario
 import { CAMPAIGNS, campaignsFor, type LocalizedCampaign } from "@/data/campaigns";
 import type { Unit } from "@/data/curriculum";
 import { ACHIEVEMENTS, type Achievement } from "@/data/achievements";
-import { VOCAB_IMAGES, type VocabImage } from "@/data/vocab-images";
+import { VOCAB_IMAGES } from "@/data/vocab-images";
+import { withPicturability, type PicturableImage } from "./vocab-images/picturable";
 import type { PlacementQuestion } from "@/data/placement";
 import { PENDING_ROOMS, ROOMS } from "@/data/rooms";
 import { UNIT_ROOMS } from "@/data/unit-rooms";
@@ -70,9 +71,13 @@ export function buildIOSAchievementsBundle(): Achievement[] {
   return ACHIEVEMENTS;
 }
 
-/** Same pass-through reasoning as buildIOSContentBundle, for VOCAB_IMAGES. */
-export function buildIOSVocabImagesBundle(): Record<string, VocabImage> {
-  return VOCAB_IMAGES;
+/**
+ * VOCAB_IMAGES for the native apps, each entry with the Say the Picture answer baked in (`category`, `picturable`;
+ * rule and data in src/lib/vocab-images/picturable.ts and shared/say-the-picture-deny.json), so the apps carry no copy
+ * of the rule and cannot drift from it.
+ */
+export function buildIOSVocabImagesBundle(): Record<string, PicturableImage> {
+  return withPicturability(VOCAB_IMAGES);
 }
 
 /**
