@@ -229,3 +229,40 @@ Deno.test("desert for dessert stays wrong even when the model calls it a typo", 
     );
   }
 });
+
+Deno.test("another form of a word, a name or a mixed remark is never forgiven as a typo", () => {
+  const cases: [string, string, string, string][] = [
+    ["hablo", "habla", "Ella habla español.", "Ella hablo español."],
+    ["pequeña", "pequeño", "El gato es pequeño.", "El gato es pequeña."],
+    ["friends", "friend", "My friend is kind.", "My friends is kind."],
+    ["tienes", "tiene", "Ella tiene un perro.", "Ella tienes un perro."],
+    ["ellos", "ellas", "Ellas comen aquí.", "Ellos comen aquí."],
+    ["petite", "petit", "Le garçon est petit.", "Le garçon est petite."],
+    ["Maria", "Marie", "Je vois Marie ici.", "Je vois Maria ici."],
+  ];
+  for (const [written, intended, acceptable, submission] of cases) {
+    for (const o of [
+      { spelling: [{ written, intended, written_is_real_word: true }] },
+      { missing: [`'${intended}' is misspelled as '${written}'`], correct: false },
+      { correct: false, reason: `'${written}' is misspelled` },
+    ]) {
+      assertEquals(decideVerdict(typoReply(o), [acceptable], submission)?.correct, false);
+    }
+  }
+  assertEquals(
+    decideVerdict(
+      typoReply({ missing: ["the negation 'not'; also 'recive' is misspelled"], correct: false }),
+      ["I did not receive it."],
+      "I did recive it.",
+    )?.correct,
+    false,
+  );
+  assertEquals(
+    decideVerdict(
+      typoReply({ correct: false, reason: "'gratitute' is misspelled and the tense is wrong" }),
+      ["Gratitude is important."],
+      "Gratitute is important.",
+    )?.correct,
+    false,
+  );
+});

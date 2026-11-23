@@ -308,7 +308,6 @@ describe("the typo allowance", () => {
   it.each([
     ["gratitute", true],
     ["swiming", true],
-    ["gratitudes", true],
   ])("treats %s as a typo of a known word even when the model calls it a word", (written) => {
     expect(isTypoOfKnownWord(written, known.concat(["I like swimming."]))).toBe(true);
     expect(flagged(written, known.concat(["I like swimming."]))?.correct).toBe(true);
@@ -562,5 +561,77 @@ describe("a typo filed under missing, grammar or a false verdict (gate runs 4 an
     ]) {
       expect(decideVerdict(reply(o), room, "My roam is big.")?.correct).toBe(false);
     }
+  });
+});
+
+describe("the typo allowance never forgives another form of a word, a name or a mixed remark", () => {
+  const reply = (o: Record<string, unknown>) =>
+    JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o });
+
+  it.each([
+    ["hablo", "habla", "Ella habla español.", "Ella hablo español."],
+    ["pequeña", "pequeño", "El gato es pequeño.", "El gato es pequeña."],
+    ["friends", "friend", "My friend is kind.", "My friends is kind."],
+    ["walks", "walk", "I walk to school.", "I walks to school."],
+    ["tienes", "tiene", "Ella tiene un perro.", "Ella tienes un perro."],
+    ["ellos", "ellas", "Ellas comen aquí.", "Ellos comen aquí."],
+    ["petite", "petit", "Le garçon est petit.", "Le garçon est petite."],
+    ["Maria", "Marie", "Je vois Marie ici.", "Je vois Maria ici."],
+  ])("keeps %s for %s wrong in every reply shape", (written, intended, acceptable, submission) => {
+    const said = `'${written}' is misspelled, it should be '${intended}'`;
+    for (const o of [
+      { spelling: [{ written, intended, written_is_real_word: true }] },
+      { missing: [`'${intended}' is misspelled as '${written}'`], correct: false },
+      { grammar: [`'${written}' is misspelled`], correct: false },
+      { correct: false, reason: `'${written}' is misspelled` },
+      { correct: false, reason: said },
+    ]) {
+      expect(decideVerdict(reply(o), [acceptable], submission)?.correct).toBe(false);
+    }
+  });
+
+  it("keeps a mixed item that also mentions a negation or a missing element", () => {
+    const acceptable = ["I did not receive it."];
+    for (const item of [
+      "the negation 'not'; also 'recive' is misspelled",
+      "'receive' is misspelled as 'recive' and the word 'did' is missing",
+    ]) {
+      expect(
+        decideVerdict(reply({ missing: [item], correct: false }), acceptable, "I did recive it.")
+          ?.correct,
+      ).toBe(false);
+    }
+  });
+
+  it("keeps a bare false whose reason says anything beyond the misspelling", () => {
+    const acceptable = ["Gratitude is important."];
+    for (const why of [
+      "'gratitute' is misspelled and the tense is wrong",
+      "'gratitute' is misspelled, a word is missing",
+      "'gratitute' is misspelled instead of 'gratitude'",
+      "'gratitute' is misspelled. The negation is also wrong.",
+    ]) {
+      expect(
+        decideVerdict(reply({ correct: false, reason: why }), acceptable, "Gratitute is important.")
+          ?.correct,
+      ).toBe(false);
+    }
+  });
+
+  it("still forgives a pure spelling remark in French and Spanish wording", () => {
+    expect(
+      decideVerdict(
+        reply({ correct: false, reason: "'demmain' est mal orthographié" }),
+        ["Je pars demain matin."],
+        "Je pars demmain matin.",
+      )?.correct,
+    ).toBe(true);
+    expect(
+      decideVerdict(
+        reply({ correct: false, reason: "'aprovada' está mal escrito" }),
+        ["La propuesta fue aprobada."],
+        "La propuesta fue aprovada.",
+      )?.correct,
+    ).toBe(true);
   });
 });
