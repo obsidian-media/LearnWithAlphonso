@@ -62,6 +62,7 @@ export async function gradeLessonAnswer(
     submission: answer,
     apiKey,
     model: resolveLlmChatModel(),
+    course,
   });
   // `null` is "no usable AI opinion" (vendor down, no key, unparseable
   // reply), never "wrong" -- keep the local verdict, which already failed.

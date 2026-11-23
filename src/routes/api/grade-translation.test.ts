@@ -63,7 +63,14 @@ beforeEach(() => {
   global.fetch = vi.fn().mockResolvedValue(
     new Response(
       JSON.stringify({
-        choices: [{ message: { content: '{"correct": true, "reason": "Same meaning."}' } }],
+        choices: [
+          {
+            message: {
+              content:
+                '{"elements": ["the greeting"], "missing": [], "extra": [], "grammar": [], "correct": true, "reason": "Same meaning."}',
+            },
+          },
+        ],
       }),
       { status: 200 },
     ),
@@ -73,6 +80,42 @@ beforeEach(() => {
 afterEach(() => {
   global.fetch = originalFetch;
   delete process.env.OPENROUTER_API_KEY;
+});
+
+describe("the prompt is the same on every grading path", () => {
+  // The player's live check (this route) and the server regrade (gradeLessonAnswer, which complete-lesson's web twin
+  // and the review function use) must send the model the IDENTICAL prompt. If they differ, a borderline answer can read
+  // "correct" in the player and be counted wrong at completion, so XP and score stop matching what the learner saw.
+  const sentPrompt = (fetchMock: unknown) => {
+    const init = (fetchMock as { mock: { calls: [string, { body: string }][] } }).mock.calls[0]![1];
+    return (JSON.parse(init.body) as { messages: { content: string }[] }).messages
+      .map((m) => m.content)
+      .join(" | ");
+  };
+
+  it.each(["en", "fr", "es"] as const)("for the %s course", async (course) => {
+    const { getCourse } = await import("@/data/courses");
+    const { gradeLessonAnswer } = await import("@/lib/grade-lesson-answer.server");
+    const bundle = getCourse(course);
+    const lessonId = bundle.allLessonIds.find((id) =>
+      bundle.findLesson(id)!.lesson.questions.some((q) => q.type === "translate"),
+    )!;
+    const found = bundle.findLesson(lessonId)!;
+    const question = found.lesson.questions.find((q) => q.type === "translate")!;
+    const submission = "zzz a borderline answer the list will not know";
+
+    // Client path: the route. The client also sends level; it must not change the prompt.
+    await post({ lessonId, questionId: question.id, submission, course, level: found.unit.level });
+    const fromClient = sentPrompt(global.fetch);
+
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockClear();
+    // Regrade path: what complete-lesson / review call.
+    await gradeLessonAnswer(question, submission, course, { allowed: async () => true });
+    const fromRegrade = sentPrompt(global.fetch);
+
+    expect(fromClient).toBe(fromRegrade);
+    expect(fromClient).not.toMatch(/level/i);
+  });
 });
 
 describe("POST /api/grade-translation, auth", () => {
