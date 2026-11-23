@@ -59,34 +59,81 @@ export function clearWebOfferingCache(): void {
   cache.clear();
 }
 
-/** The offer for `productId` (a RevenueCat product id), or null when it cannot be read: then no price is shown. */
+type V2Product = {
+  id?: string;
+  store_identifier?: string;
+  subscription?: { duration?: string; trial_duration?: string | null };
+  indicative_price?: unknown;
+};
+
+/** RevenueCat's v2 project ids are "proj" + the id in the dashboard URL; accept either spelling. */
+export function normalizeProjectId(raw: string): string {
+  const id = raw.trim();
+  return /^proj/i.test(id) ? id : `proj${id}`;
+}
+
+function warn(reason: string, extra: Record<string, string | number> = {}): void {
+  // Never the key, the project id or a user id: a reason code and, at most, the product reference being looked up.
+  console.warn(`[web-offering] ${reason} ${JSON.stringify(extra)}`);
+}
+
+/** Every product of the project, following RevenueCat's pages (at most 5 of 100). Null with the reason logged. */
+async function listProducts(
+  config: RevenueCatConfig,
+  fetchImpl: typeof fetch,
+): Promise<V2Product[] | null> {
+  const project = encodeURIComponent(normalizeProjectId(config.projectId!));
+  let url: string | null =
+    `${API}/projects/${project}/products?expand=items.indicative_price&limit=100`;
+  const all: V2Product[] = [];
+  for (let page = 0; url && page < 5; page += 1) {
+    const res: Response = await fetchImpl(url, {
+      headers: { Authorization: `Bearer ${config.v2SecretKey}` },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) {
+      warn("v2-http-error", { status: res.status });
+      return null;
+    }
+    const body = (await res.json()) as { items?: V2Product[]; next_page?: string | null };
+    all.push(...(body?.items ?? []));
+    const next: unknown = body?.next_page;
+    // next_page is a path on the same API (e.g. "/v2/projects/.../products?starting_after=..."): never another host.
+    url =
+      typeof next === "string" && next.startsWith("/v2/")
+        ? `https://api.revenuecat.com${next}`
+        : null;
+  }
+  return all;
+}
+
+/**
+ * The offer for a product, or null when it cannot be read (then no price is shown). `productRef` is a RevenueCat
+ * product id ("prod...") or the store identifier ("alphonso_pro_monthly_web"): whichever the env holds. Every null is
+ * logged with the step that failed.
+ */
 export async function getWebOffering(
   config: RevenueCatConfig,
-  productId: string,
+  productRef: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<WebOffering | null> {
-  if (!config.v2SecretKey || !config.projectId) return null;
-  const key = `${config.projectId}/${productId}`;
+  if (!config.v2SecretKey || !config.projectId) {
+    warn("missing-v2-settings");
+    return null;
+  }
+  const ref = productRef.trim();
+  const key = `${normalizeProjectId(config.projectId)}/${ref}`;
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < CACHE_MS) return hit.value;
   try {
-    const res = await fetchImpl(
-      `${API}/projects/${encodeURIComponent(config.projectId)}/products?expand=items.indicative_price`,
-      {
-        headers: { Authorization: `Bearer ${config.v2SecretKey}` },
-        signal: AbortSignal.timeout(5000),
-      },
-    );
-    if (!res.ok) return null;
-    const body = (await res.json()) as {
-      items?: {
-        id?: string;
-        subscription?: { duration?: string; trial_duration?: string | null };
-        indicative_price?: unknown;
-      }[];
-    };
-    const product = body?.items?.find((p) => p?.id === productId);
-    if (!product) return null;
+    const items = await listProducts(config, fetchImpl);
+    if (!items) return null;
+    const product =
+      items.find((p) => p?.id === ref) ?? items.find((p) => p?.store_identifier === ref);
+    if (!product) {
+      warn("product-not-found", { ref, productsSeen: items.length });
+      return null;
+    }
     const priceRaw = Array.isArray(product.indicative_price)
       ? product.indicative_price[0]
       : product.indicative_price;
@@ -95,9 +142,15 @@ export async function getWebOffering(
       amount_micros?: number;
       country?: unknown;
     };
-    if (typeof currency !== "string" || typeof amount_micros !== "number") return null;
+    if (typeof currency !== "string" || typeof amount_micros !== "number") {
+      warn("missing-price", { ref });
+      return null;
+    }
     const period = periodOf(parseIsoDuration(product.subscription?.duration));
-    if (!period) return null;
+    if (!period) {
+      warn("unknown-period", { ref, duration: String(product.subscription?.duration) });
+      return null;
+    }
     const value: WebOffering = {
       price: new Intl.NumberFormat("en", { style: "currency", currency }).format(
         amount_micros / 1_000_000,
@@ -110,7 +163,8 @@ export async function getWebOffering(
     };
     cache.set(key, { at: Date.now(), value });
     return value;
-  } catch {
+  } catch (e) {
+    warn("v2-request-failed", { error: e instanceof Error ? e.name : "unknown" });
     return null;
   }
 }

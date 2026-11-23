@@ -66,7 +66,13 @@ export function revenueCatConfigFromEnv(
   const secretApiKey = env.REVENUECAT_SECRET_API_KEY;
   if (!secretApiKey) return null;
   const v2SecretKey = env.REVENUECAT_V2_SECRET_KEY;
-  const projectId = env.REVENUECAT_PROJECT_ID;
+  const rawProjectId = env.REVENUECAT_PROJECT_ID?.trim();
+  // The dashboard URL shows "945111ee"; the v2 API wants "proj945111ee". Accept either.
+  const projectId = rawProjectId
+    ? /^proj/i.test(rawProjectId)
+      ? rawProjectId
+      : `proj${rawProjectId}`
+    : undefined;
   const config: RevenueCatConfig =
     v2SecretKey && projectId ? { secretApiKey, v2SecretKey, projectId } : { secretApiKey };
   const testers = (env.REVENUECAT_TEST_PURCHASE_USER_IDS ?? "")
