@@ -59,6 +59,63 @@ public struct StorySummary: Equatable, Identifiable, Sendable {
         self.endingsTotal = max(0, endingsTotal)
         self.endingsFound = min(max(0, endingsFound), max(0, endingsTotal))
     }
+
+    /// The same story with a cover (a linear story whose `cover.jpg` exists).
+    func withCover(_ url: URL?) -> StorySummary {
+        StorySummary(
+            id: id, course: course, level: level, slug: slug, title: title, sortOrder: sortOrder, published: published,
+            segmentIndex: segmentIndex, segmentCount: segmentCount, bestCorrect: bestCorrect, checkTotal: checkTotal,
+            completed: completed, branching: branching, coverURL: url, endingsTotal: endingsTotal, endingsFound: endingsFound)
+    }
+}
+
+/// What asking whether a cover exists can come back with. Only a definite "missing" is remembered, and only for a while.
+public enum CoverCheck: Equatable, Sendable { case exists, missing, unknown }
+
+/// Remembers which linear-story covers exist, so the library asks once and not on every load or render. A 200 is kept for
+/// the life of the app; a "no such object" for `missingTTL` seconds (so art uploaded later appears without an app update);
+/// a network failure or a server error is never kept, and concurrent askers share one request. Mirrors
+/// src/lib/story-cover-probe.ts. Chosen over a `published`-style flag column: no migration, no regenerated types, no step
+/// after the upload.
+public actor StoryCoverProbe {
+    public static let shared = StoryCoverProbe()
+
+    private var found: Set<URL> = []
+    private var missingUntil: [URL: Date] = [:]
+    private var inFlight: [URL: Task<CoverCheck, Never>] = [:]
+    private let now: @Sendable () -> Date
+    private let missingTTL: TimeInterval
+
+    public init(now: @escaping @Sendable () -> Date = { Date() }, missingTTL: TimeInterval = 600) {
+        self.now = now
+        self.missingTTL = missingTTL
+    }
+
+    /// Whether the object at `url` exists, asking `check` only when the answer is not already known.
+    public func exists(_ url: URL, check: @escaping @Sendable (URL) async -> CoverCheck) async -> Bool {
+        if found.contains(url) { return true }
+        if let until = missingUntil[url], now() < until { return false }
+        let task: Task<CoverCheck, Never>
+        if let pending = inFlight[url] {
+            task = pending
+        } else {
+            task = Task { await check(url) }
+            inFlight[url] = task
+        }
+        let result = await task.value
+        inFlight[url] = nil
+        switch result {
+        case .exists:
+            found.insert(url)
+            missingUntil[url] = nil
+            return true
+        case .missing:
+            missingUntil[url] = now().addingTimeInterval(missingTTL)
+            return false
+        case .unknown:
+            return false
+        }
+    }
 }
 
 public struct Story: Equatable, Identifiable, Sendable {
@@ -177,6 +234,17 @@ public enum Stories {
     /// Fraction of endings found, 0...1, for the progress ring.
     public static func endingsFraction(_ story: StorySummary) -> Double {
         story.endingsTotal <= 0 ? 0 : min(1, Double(story.endingsFound) / Double(story.endingsTotal))
+    }
+
+    /// Where a linear story's illustrated cover lives in the public `story-art` bucket: `<course>/<slug>/cover.jpg`, the
+    /// same folder the branching stories' scene art uses. Mirrors linearCoverKey in src/lib/stories.ts.
+    public static func linearCoverKey(course: String, slug: String) -> String { "\(course)/\(slug)/cover.jpg" }
+
+    /// The public URL of a linear story's cover, or nil without a slug. The library shows it only once it is known to
+    /// exist (StoryCoverProbe), and draws its gradient otherwise.
+    public static func linearCoverURL(supabaseURL: URL, course: String, slug: String) -> URL? {
+        guard !slug.isEmpty else { return nil }
+        return Branching.artURL(supabaseURL: supabaseURL, key: linearCoverKey(course: course, slug: slug))
     }
 
     /// Cover art and endings counts from a stored `nodes` object and the learner's saved ending ids: the first scene's
@@ -310,7 +378,7 @@ extension PodcastClient {
             for row in progressRows { if let id = row["story_id"] as? String { progress[id] = row } }
         }
 
-        return rows.compactMap { row in
+        let summaries: [StorySummary] = rows.compactMap { row in
             guard let id = row["id"] as? String,
                   let level = row["level_id"] as? String,
                   let title = row["title"] as? String else { return nil }
@@ -339,6 +407,42 @@ extension PodcastClient {
                 endingsFound: facts.found
             )
         }
+        return await withLinearCovers(summaries)
+    }
+
+    /// A linear story reads an illustrated cover by convention (`<course>/<slug>/cover.jpg`) when that object exists, one
+    /// cached HEAD per story, never a download and never a broken image: no object means no cover, and the library draws
+    /// its gradient. Branching stories keep their first scene's art.
+    private func withLinearCovers(_ stories: [StorySummary]) async -> [StorySummary] {
+        let probe = coverProbe
+        let base = supabaseURL
+        let found = await withTaskGroup(of: (String, URL?).self, returning: [String: URL].self) { group in
+            for story in stories where !story.branching && story.coverURL == nil {
+                guard let url = Stories.linearCoverURL(supabaseURL: base, course: story.course, slug: story.slug) else { continue }
+                let id = story.id
+                group.addTask { [self] in
+                    let there = await probe.exists(url) { await self.coverCheck($0) }
+                    return (id, there ? url : nil)
+                }
+            }
+            var out: [String: URL] = [:]
+            for await (id, url) in group { if let url { out[id] = url } }
+            return out
+        }
+        guard !found.isEmpty else { return stories }
+        return stories.map { found[$0.id].map($0.withCover) ?? $0 }
+    }
+
+    /// One HEAD on a cover's public URL: exists (2xx), definitely missing (400/404, what Supabase answers for no such
+    /// object), or unknown (offline, timeout, 5xx), which is never remembered.
+    func coverCheck(_ url: URL) async -> CoverCheck {
+        var request = URLRequest(url: url)
+        request.httpMethod = "HEAD"
+        request.timeoutInterval = 3
+        guard let (_, response) = try? await requester(request), let http = response as? HTTPURLResponse else { return .unknown }
+        if (200..<300).contains(http.statusCode) { return .exists }
+        if http.statusCode == 400 || http.statusCode == 404 { return .missing }
+        return .unknown
     }
 
     /// One published story with its check questions; nil when it does not exist or is not published. A question row the

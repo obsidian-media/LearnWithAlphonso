@@ -538,3 +538,46 @@ describe("AuthSync (inside RootComponent)", () => {
     expect(reset).not.toHaveBeenCalled();
   });
 });
+
+describe("the boot splash (owner pick 1)", () => {
+  it("is in the server-rendered shell: the app icon on the hero colour, hidden from assistive tech", async () => {
+    const { Route } = await import("./__root");
+    const Shell = (
+      Route as unknown as {
+        options: { shellComponent: React.ComponentType<{ children: React.ReactNode }> };
+      }
+    ).options.shellComponent;
+    const markup = renderToStaticMarkup(<Shell>{null}</Shell>);
+    expect(markup).toContain('id="boot-splash"');
+    expect(markup).toMatch(
+      /<div id="boot-splash"[^>]*aria-hidden="true"[^>]*><img src="\/icon-192\.png"/,
+    );
+    expect(markup).toContain("var(--c-hero,#1D2B64)");
+    // Without JavaScript nothing would ever dismiss it, so a <noscript> style hides it.
+    expect(markup).toMatch(/<noscript><style>#boot-splash\{display:none\}<\/style><\/noscript>/);
+  });
+
+  it("dismissBootSplash marks the page as booted, which the stylesheet turns into hidden", async () => {
+    const { dismissBootSplash, BOOT_SPLASH_CSS } = await import("../lib/boot-splash");
+    document.documentElement.removeAttribute("data-booted");
+    dismissBootSplash();
+    expect(document.documentElement.hasAttribute("data-booted")).toBe(true);
+    expect(BOOT_SPLASH_CSS).toContain("html[data-booted] #boot-splash{opacity:0;visibility:hidden");
+  });
+});
+
+describe("the boot splash failsafe", () => {
+  it("hides itself with CSS alone after the failsafe delay, so a failed bundle never leaves a stuck overlay", async () => {
+    const { BOOT_SPLASH_CSS, BOOT_SPLASH_FAILSAFE_S } = await import("../lib/boot-splash");
+    expect(BOOT_SPLASH_FAILSAFE_S).toBeGreaterThanOrEqual(5);
+    expect(BOOT_SPLASH_FAILSAFE_S).toBeLessThanOrEqual(15);
+    // The base rule runs the keyframes after the delay, with no JavaScript involved ...
+    expect(BOOT_SPLASH_CSS).toContain(
+      `animation:boot-splash-out 0s ${BOOT_SPLASH_FAILSAFE_S}s forwards`,
+    );
+    // ... and the keyframes end hidden and click-through.
+    expect(BOOT_SPLASH_CSS).toMatch(
+      /@keyframes boot-splash-out\{to\{visibility:hidden;opacity:0;pointer-events:none\}\}/,
+    );
+  });
+});

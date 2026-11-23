@@ -126,4 +126,15 @@ class StoriesSourceGuardsTest {
         assertTrue(code(read(shelf)).contains("StoriesPeekSection(stories, course, onOpenStory)"))
         assertTrue(code(read(shelf)).contains("LibraryTab.Stories -> storiesFullItems(stories, course, onOpenStory)"))
     }
+
+    @Test
+    fun `the Library All tab has a Podcasts rail between Continue and Watch, and the course is a compact chip`() {
+        val src = code(read(shelf))
+        val rail = src.indexOf("PodcastsRailSection(shelves, onOpenFolder)")
+        assertTrue("the rail is drawn on All", rail > 0)
+        assertTrue("the rail comes before the Watch rail", rail < src.indexOf("item(key = \"watch\")"))
+        assertTrue("See all jumps to the Listen tab", src.contains("PodcastsRailSection(shelves, onOpenFolder) { select(LibraryTab.Listen) }"))
+        assertTrue(src.contains("CourseChip(course) { course = it }"))
+        assertFalse("the full-width course control is gone", src.contains("DsSegmented("))
+    }
 }

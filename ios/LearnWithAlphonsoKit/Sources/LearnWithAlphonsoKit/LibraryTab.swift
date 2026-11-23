@@ -29,6 +29,9 @@ public enum LibraryTab: String, CaseIterable, Sendable, Equatable {
         }
     }
 
+    /// The spoken name of the All tab's Podcasts rail "See all" (it opens the Listen tab).
+    public static let podcastsSeeAllLabel = "See all podcasts"
+
     /// "Continue <series>, episode N of M: <title>, <left>": the Continue card's one spoken label.
     public static func continueLabel(series: String, number: Int, count: Int, title: String, detail: String) -> String {
         "Continue \(series), episode \(number) of \(count): \(title), \(detail)"
@@ -38,4 +41,28 @@ public enum LibraryTab: String, CaseIterable, Sendable, Equatable {
     public static func continueSubtitle(number: Int, count: Int, detail: String) -> String {
         "Episode \(number) of \(count) \u{00B7} \(detail)"
     }
+}
+
+/// The Library's course chip, "EN \u{25BE}": the compact chip in place of the full-width English / Francais / Espanol control
+/// (owner pick, build 72 feedback). Mirrors CourseChip in ListenLibrary.tsx and ListenShelfUi.kt.
+public enum LibraryCourse {
+    public struct Option: Equatable, Sendable {
+        public let code: String
+        public let label: String
+    }
+
+    public static let options: [Option] = [
+        Option(code: "en", label: "English"),
+        Option(code: "fr", label: "Fran\u{00E7}ais"),
+        Option(code: "es", label: "Espa\u{00F1}ol"),
+    ]
+
+    /// The chip's text: the course code in capitals ("EN").
+    public static func chipTitle(_ code: String) -> String { code.uppercased() }
+
+    /// The language's own name, or the code for one the Library does not list.
+    public static func label(_ code: String) -> String { options.first { $0.code == code }?.label ?? code }
+
+    /// The chip's one spoken label: "Course: English".
+    public static func accessibilityLabel(_ code: String) -> String { "Course: \(label(code))" }
 }

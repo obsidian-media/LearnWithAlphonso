@@ -12,12 +12,17 @@ import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizQuestion
 import com.obsidianmedia.learnwithalphonso.core.podcast.PodcastQuizResult
 import com.obsidianmedia.learnwithalphonso.core.podcast.Stories
 import com.obsidianmedia.learnwithalphonso.core.podcast.Story
+import com.obsidianmedia.learnwithalphonso.core.podcast.CoverCheck
+import com.obsidianmedia.learnwithalphonso.core.podcast.StoryCoverProbe
 import com.obsidianmedia.learnwithalphonso.core.podcast.StorySummary
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -41,7 +46,7 @@ import java.io.IOException
  * (which calls the service-role-only submit_story_check with the verified user id). The client never calls that function
  * itself and never sends a score.
  */
-class StoriesClient(private val http: SupabaseHttp) {
+class StoriesClient(private val http: SupabaseHttp, private val coverProbe: StoryCoverProbe = StoryCoverProbe.shared) {
     internal companion object {
         const val STORY_COLUMNS = "id,course,level_id,slug,title,segments,sort_order,published,branching"
         const val PROGRESS_COLUMNS = "story_id,segment_index,best_correct,check_total,completed_at,endings_found"
@@ -75,7 +80,7 @@ class StoriesClient(private val http: SupabaseHttp) {
         } catch (e: Exception) {
             // Progress is garnish.
         }
-        return storyRows.mapNotNull { row ->
+        val summaries = storyRows.mapNotNull { row ->
             val id = row.str("id") ?: return@mapNotNull null
             val saved = progress[id]
             val isBranching = row.bool("branching") ?: false
@@ -101,6 +106,31 @@ class StoriesClient(private val http: SupabaseHttp) {
                 endingsTotal = endingIds.size,
                 endingsFound = savedEndings.count { it in endingIds },
             )
+        }
+        return withLinearCovers(summaries)
+    }
+
+    /**
+     * A linear story reads an illustrated cover by convention (`<course>/<slug>/cover.jpg`) when that object exists: one
+     * cached HEAD per story, never a download and never a broken image. No object means no cover, and the library draws its
+     * gradient. Branching stories keep their first scene's art.
+     */
+    private suspend fun withLinearCovers(stories: List<StorySummary>): List<StorySummary> = coroutineScope {
+        stories.map { story ->
+            async {
+                val url = if (story.branching || story.coverUrl != null) null else Stories.linearCoverUrl(http.baseUrl, story.course, story.slug)
+                if (url != null && coverProbe.exists(url) { checkCover(it) }) story.copy(coverUrl = url) else story
+            }
+        }.awaitAll()
+    }
+
+    /** One HEAD on a cover's public URL: exists (2xx), definitely missing (400/404, what Supabase answers for no such object), or unknown. */
+    private suspend fun checkCover(url: String): CoverCheck {
+        val status = http.headStatus(url) ?: return CoverCheck.UNKNOWN
+        return when (status) {
+            in 200..299 -> CoverCheck.EXISTS
+            400, 404 -> CoverCheck.MISSING
+            else -> CoverCheck.UNKNOWN
         }
     }
 

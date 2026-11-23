@@ -27,7 +27,11 @@ import androidx.compose.ui.unit.dp
 import com.obsidianmedia.learnwithalphonso.BuildConfig
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.platform.testTag
+import com.obsidianmedia.learnwithalphonso.R
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -50,6 +54,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -171,7 +177,7 @@ fun RootScreen(
             harness != null && BuildConfig.DEBUG -> LessonLightScope(themeIdForFirstRun, paletteIdForFirstRun) { FirstRunHarness(harness, container) }
             // Replaces the app rather than covering it, so TalkBack cannot reach anything underneath.
             gate != null -> UpdateRequiredScreen(gate)
-            isRestoring -> Unit
+            isRestoring -> LaunchRestoringView()
             state !is AuthState.SignedIn && showSignIn -> Box(Modifier.fillMaxSize()) {
                 AuthScreen(container)
                 TextButton(onClick = { showSignIn = false; session.clearMessages() }, modifier = Modifier.align(Alignment.TopStart).statusBarsPadding().padding(4.dp)) {
@@ -512,4 +518,25 @@ private suspend fun checkFirstRun(container: AppContainer, userId: String): Firs
     val profile = runCatching { container.learnerProfileClient.fetch() }.getOrNull() ?: return null
     if (container.session.userId != userId || !profile.needsCompleteProfile) return null
     return FirstRunCover.Complete(edit = false)
+}
+
+/**
+ * What shows while the session restores: the launch screen again. The system splash (Theme.Alphonso.Starting) is the
+ * brand colour with the app icon (launch_icon_art, 112dp) centred; this draws the same colour and the same icon in the
+ * same spot, so the hand-off cannot be seen. The colour is a fixed Royal value, not the theme: the launch screen cannot
+ * know the theme either.
+ */
+@Composable
+internal fun LaunchRestoringView() {
+    Box(
+        Modifier.fillMaxSize().background(colorResource(R.color.launch_background))
+            .testTag("launchRestoring"),
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.launch_icon_art),
+            contentDescription = null,
+            modifier = Modifier.size(112.dp),
+        )
+    }
 }

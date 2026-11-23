@@ -13,8 +13,8 @@ enum WatchPresentation {
     case peek, full, hidden
 }
 
-/// The Library home under four sub-tabs (All, Listen, Watch, Stories). All is a Continue card plus a one-row peek of Watch
-/// and of Stories, each with "See all"; Listen is the course switch, level chips and one painted room per folder, each
+/// The Library home under four sub-tabs (All, Listen, Watch, Stories). All is a Continue card plus a one-row rail of the
+/// podcast rooms and a peek of Watch and of Stories, each with "See all"; Listen is the course switch, level chips and one painted room per folder, each
 /// with its own episode count and percent heard; Watch and Stories are the focused screens. All logic is `ListenShelf` in the Kit;
 /// this file only draws it. Compiles in CI's ios-app-build; look at it on a device.
 struct ListenShelfRoot: View {
@@ -55,12 +55,10 @@ struct ListenShelfRoot: View {
 
         ScrollView {
             VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
-                DSSegmented(
-                    options: courses.map { DSSegmented<String>.Option(value: $0.code, label: $0.label) },
-                    selection: Binding(get: { activeCourse }, set: { course = $0; level = nil }),
-                    accessibilityLabel: "Course")
-
                 libraryTabs
+
+                // The compact "EN \u{25BE}" chip, right-aligned under the tabs (it replaced the full-width course control).
+                HStack { Spacer(minLength: 0); courseChip }
 
                 // All: the Continue card, then a one-row peek of Watch and of Stories, each with "See all".
                 if tab == .all, let target {
@@ -72,6 +70,11 @@ struct ListenShelfRoot: View {
                 VStack(alignment: .leading, spacing: AlphonsoDS.Space.s4) {
                 // One Watch host at one fixed place in the stack, so its player sheet and the path deep link survive a tab
                 // switch. It draws the peek on All, the full shelf on Watch, and only its loader and sheet elsewhere.
+                // All: the course's podcast rooms as a rail (the Listen tab has the full grid), before Watch and Stories.
+                if tab == .all, !all.isEmpty {
+                    podcastsRail(all)
+                }
+
                 WatchShelfHost(session: session, player: player, course: activeCourse, presentation: watchPresentation,
                                onSeeAll: { select(.watch) })
 
@@ -155,6 +158,60 @@ struct ListenShelfRoot: View {
         .task { await load() }
         // Back from a folder, or after an episode played, the shelf reflects what was just heard.
         .task(id: player.episode?.id) { await reloadProgress() }
+    }
+
+    /// The course chip: "EN \u{25BE}", opening a menu of the three courses (a checkmark on the current one).
+    private var courseChip: some View {
+        Menu {
+            Picker("Course", selection: Binding(get: { activeCourse }, set: { course = $0; level = nil })) {
+                ForEach(LibraryCourse.options, id: \.code) { option in
+                    Text(option.label).tag(option.code)
+                }
+            }
+        } label: {
+            HStack(spacing: AlphonsoDS.Space.s1) {
+                Text(LibraryCourse.chipTitle(activeCourse)).dsText(.footnote)
+                Image(systemName: "chevron.down").imageScale(.small)
+            }
+            .foregroundStyle(ds.ink)
+            .padding(.horizontal, AlphonsoDS.Space.s3)
+            .frame(minHeight: AlphonsoDS.Space.minTouch)
+            .background(Capsule().fill(ds.card))
+            .overlay(Capsule().stroke(ds.line, lineWidth: 2))
+        }
+        .accessibilityLabel(LibraryCourse.accessibilityLabel(activeCourse))
+        .accessibilityIdentifier("libraryCourseChip")
+    }
+
+    /// The All tab's Podcasts rail: the same room tiles as the Listen grid, in a row, with "See all" opening Listen.
+    @ViewBuilder
+    private func podcastsRail(_ rooms: [ListenShelfFolder]) -> some View {
+        HStack {
+            Text("Podcasts").dsText(.title).foregroundStyle(ds.ink)
+                .accessibilityAddTraits(.isHeader)
+            Spacer(minLength: AlphonsoDS.Space.s2)
+            Button("See all") { select(.listen) }
+                .dsText(.footnote).foregroundStyle(ds.choice)
+                .frame(minHeight: AlphonsoDS.Space.minTouch)
+                .accessibilityLabel(LibraryTab.podcastsSeeAllLabel)
+        }
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(alignment: .top, spacing: AlphonsoDS.Space.s3) {
+                ForEach(rooms, id: \.folder.id) { shelf in
+                    NavigationLink {
+                        ListenShelfDetail(
+                            shelf: shelf, progress: progress, session: session, player: player,
+                            downloads: downloads, networkMonitor: networkMonitor
+                        )
+                    } label: {
+                        RoomTile(shelf: shelf)
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: AlphonsoDS.Space.s12 * 3 + AlphonsoDS.Space.s4)
+                }
+            }
+        }
+        .accessibilityIdentifier("libraryPodcastsRail")
     }
 
     private var watchPresentation: WatchPresentation {
