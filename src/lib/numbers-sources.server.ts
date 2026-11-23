@@ -1,3 +1,4 @@
+import { normalizeProjectId } from "./revenuecat-project-id";
 import { createSign, createPrivateKey } from "node:crypto";
 import { gunzipSync } from "node:zlib";
 import {
@@ -243,7 +244,7 @@ export function revenueCatSource(env: Env, f: FetchLike): SourceFn {
       "Add a RevenueCat metrics key (owner step)",
     );
     const headers = { Authorization: `Bearer ${k.REVENUECAT_METRICS_KEY}` };
-    const root = `https://api.revenuecat.com/v2/projects/${encodeURIComponent(k.REVENUECAT_PROJECT_ID!)}`;
+    const root = `https://api.revenuecat.com/v2/projects/${encodeURIComponent(normalizeProjectId(k.REVENUECAT_PROJECT_ID!))}`;
     const day = (d: Date) => d.toISOString().slice(0, 10);
     const start = new Date(now.getTime() - windowDays * 86_400_000);
     const chart = async (name: string): Promise<unknown> => {

@@ -190,16 +190,88 @@ describe("GET /api/pro-offering", () => {
   });
 
   it.each([
-    ["the offering cannot be read", () => getWebOffering.mockResolvedValue(null)],
+    [
+      "the offering cannot be read",
+      () => getWebOffering.mockResolvedValue(null),
+      "monthly-product-unreadable",
+    ],
+    [
+      "the monthly product is really a yearly one",
+      () => getWebOffering.mockResolvedValue({ ...OFFER, period: "year" }),
+      "monthly-wrong-period",
+    ],
     [
       "eligibility cannot be read",
       () => getSubscriberSummary.mockResolvedValue({ status: "unavailable" }),
+      "subscriber-unavailable",
     ],
-  ])("503 offering-unavailable (a retry may help) and no price when %s", async (_l, arrange) => {
-    arrange();
-    const res = await handler({ request: req() });
-    expect(res.status).toBe(503);
-    expect(await res.json()).toEqual({ error: "offering-unavailable" });
+    [
+      "the subscriber has no login id",
+      () => {
+        getSubscriberSummary.mockResolvedValue({
+          status: "inactive",
+          store: null,
+          trialEligible: true,
+          managementUrl: null,
+        });
+        // The mock gives loginId = the user id; an empty one leaves none.
+        getUser.mockResolvedValue({ data: { user: { id: "" } }, error: null });
+      },
+      "subscriber-no-login-id",
+    ],
+  ])(
+    "503 offering-unavailable (a retry may help) and no price when %s, logging %s",
+    async (_l, arrange, reason) => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      arrange();
+      const res = await handler({ request: req() });
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ error: "offering-unavailable", reason });
+      expect(warn).toHaveBeenCalledWith(`[pro-offering] unavailable ${reason}`);
+      warn.mockRestore();
+    },
+  );
+
+  it("an account with a promotional Pro gets 409 already-pro, not a 503", async () => {
+    getSubscriberSummary.mockResolvedValue({
+      status: "active",
+      store: "promotional",
+      trialEligible: true,
+      managementUrl: null,
+    });
+    expect((await handler({ request: req() })).status).toBe(409);
+  });
+
+  it("logs a yearly plan that cannot be read once per instance, not per request", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubEnv("REVENUECAT_WEB_YEARLY_PRODUCT_ID", "prod_web_year");
+    vi.stubEnv("REVENUECAT_WEB_YEARLY_PURCHASE_LINK", "https://pay.rev.cat/year_trial_tok");
+    vi.stubEnv(
+      "REVENUECAT_WEB_YEARLY_PURCHASE_LINK_NO_TRIAL",
+      "https://pay.rev.cat/year_plain_tok",
+    );
+    getWebOffering.mockImplementation(async (_c: unknown, id: string) =>
+      id === "prod_web_year" ? null : OFFER,
+    );
+    for (let i = 0; i < 3; i += 1) expect((await handler({ request: req() })).status).toBe(200);
+    const lines = warn.mock.calls
+      .map((c) => String(c[0]))
+      .filter((l) => l.includes("yearly plan left out"));
+    expect(lines).toHaveLength(1);
+    warn.mockRestore();
+  });
+
+  it("logs which setting is missing when not configured", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubEnv("REVENUECAT_WEB_PRODUCT_ID", "");
+    await handler({ request: req() });
+    expect(warn).toHaveBeenCalledWith("[pro-offering] not-configured monthly-product-or-links");
+    warn.mockClear();
+    vi.stubEnv("REVENUECAT_WEB_PRODUCT_ID", "prod_web");
+    revenueCatConfigFromEnv.mockReturnValue(null);
+    await handler({ request: req() });
+    expect(warn).toHaveBeenCalledWith("[pro-offering] not-configured revenuecat-secret-api-key");
+    warn.mockRestore();
   });
 
   it.each([

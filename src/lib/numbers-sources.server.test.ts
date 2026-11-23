@@ -214,6 +214,19 @@ describe("RevenueCat", () => {
     expect(by.churn!.value).toBeNull();
     expect(by.churn!.reason).toBe("Not reported by RevenueCat");
   });
+  it("accepts the project id as shown in the dashboard URL (no proj prefix)", async () => {
+    const urls: string[] = [];
+    const f = vi.fn(async (url: string) => {
+      urls.push(url);
+      return json({ metrics: [{ id: "mrr", value: 1 }] });
+    });
+    await revenueCatSource(
+      { ...env, REVENUECAT_PROJECT_ID: "945111ee" },
+      f as unknown as typeof fetch,
+    )(ctx(30));
+    expect(urls.length).toBeGreaterThan(0);
+    for (const u of urls) expect(u).toContain("/v2/projects/proj945111ee/");
+  });
   it("an overview failure throws", async () => {
     const f = vi.fn(async () => json({}, 403));
     await expect(revenueCatSource(env, f as unknown as typeof fetch)(ctx())).rejects.toThrow(

@@ -34,6 +34,14 @@ function planEnv(prefix: "REVENUECAT_WEB" | "REVENUECAT_WEB_YEARLY"): PlanEnv | 
   return productId && trialLink && plainLink ? { productId, trialLink, plainLink } : null;
 }
 
+/** A condition that persists (a yearly plan that cannot be read) is logged once per server instance, not per request. */
+const warned = new Set<string>();
+function warnOnce(message: string): void {
+  if (warned.has(message)) return;
+  warned.add(message);
+  console.warn(`[pro-offering] ${message}`);
+}
+
 async function handle(request: Request): Promise<Response> {
   const accessToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
   if (!accessToken) return noStoreJson({ error: "unauthorized" }, { status: 401 });
@@ -44,30 +52,43 @@ async function handle(request: Request): Promise<Response> {
   const { data, error } = await supabaseAdmin.auth.getUser(accessToken);
   if (error || !data?.user) return noStoreJson({ error: "unauthorized" }, { status: 401 });
 
-  const unavailable = () => noStoreJson({ error: "offering-unavailable" }, { status: 503 });
+  // Which step failed goes to the server log and, as a plain code, the body. No secrets, no user id.
+  const unavailable = (reason: string) => {
+    console.warn(`[pro-offering] unavailable ${reason}`);
+    return noStoreJson({ error: "offering-unavailable", reason }, { status: 503 });
+  };
   // Not set up on this deployment (no products or links yet): the paywall says Pro is coming, not "try again".
-  const notConfigured = () =>
-    noStoreJson({ error: "offering-unavailable", reason: "not-configured" }, { status: 503 });
+  const notConfigured = (missing: string) => {
+    console.warn(`[pro-offering] not-configured ${missing}`);
+    return noStoreJson(
+      { error: "offering-unavailable", reason: "not-configured" },
+      { status: 503 },
+    );
+  };
   // The monthly plan is required. Both its links must be absolute https URLs; the no-trial link is what keeps it to
   // one free trial per person, so there is no falling back to the trial link. The yearly plan is optional and is
   // left out (never an error) when any of its three settings is missing or unreadable.
   const monthly = planEnv("REVENUECAT_WEB");
   const yearly = planEnv("REVENUECAT_WEB_YEARLY");
-  if (!monthly) return notConfigured();
+  if (!monthly) return notConfigured("monthly-product-or-links");
 
   const { revenueCatConfigFromEnv, getAccountSubscriberSummary } =
     await import("@/lib/revenuecat-entitlement");
   const { getWebOffering, buildPurchaseUrl } = await import("@/lib/web-offering.server");
   const config = revenueCatConfigFromEnv();
-  if (!config) return notConfigured();
+  if (!config) return notConfigured("revenuecat-secret-api-key");
   const [monthOffer, yearOffer, summary] = await Promise.all([
     getWebOffering(config, monthly.productId),
     yearly ? getWebOffering(config, yearly.productId) : Promise.resolve(null),
     getAccountSubscriberSummary(config, data.user.id),
   ]);
   // A monthly setting that names a yearly product would sell two yearly plans: refuse it rather than guess.
-  if (!monthOffer || monthOffer.period !== "month") return unavailable();
-  if (summary.status === "unavailable" || !summary.loginId) return unavailable();
+  if (!monthOffer) return unavailable("monthly-product-unreadable");
+  if (monthOffer.period !== "month") return unavailable("monthly-wrong-period");
+  if (yearly && !yearOffer) warnOnce("yearly plan left out: product unreadable");
+  else if (yearOffer && yearOffer.period !== "year") warnOnce("yearly plan left out: wrong period");
+  if (summary.status === "unavailable") return unavailable("subscriber-unavailable");
+  if (!summary.loginId) return unavailable("subscriber-no-login-id");
   // Already Pro (on any store): no checkout, so nobody can pay twice.
   if (summary.status === "active") return noStoreJson({ error: "already-pro" }, { status: 409 });
   const loginId = summary.loginId;

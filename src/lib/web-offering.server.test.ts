@@ -5,6 +5,7 @@ import {
   getWebOffering,
   parseIsoDuration,
 } from "./web-offering.server";
+import { normalizeProjectId } from "./revenuecat-project-id";
 
 const CONFIG = { secretApiKey: "sk_v1", v2SecretKey: "sk_v2", projectId: "proj1" };
 
@@ -49,7 +50,7 @@ describe("getWebOffering", () => {
     });
     const [url, init] = vi.mocked(fetchImpl).mock.calls[0] as [string, RequestInit];
     expect(url).toBe(
-      "https://api.revenuecat.com/v2/projects/proj1/products?expand=items.indicative_price",
+      "https://api.revenuecat.com/v2/projects/proj1/products?expand=items.indicative_price&limit=100",
     );
     expect(new Headers(init.headers).get("Authorization")).toBe("Bearer sk_v2");
   });
@@ -122,5 +123,183 @@ describe("buildPurchaseUrl", () => {
     expect(buildPurchaseUrl("https://pay.rev.cat/tok123/", "u", "practice_end_prompt")).toBe(
       "https://pay.rev.cat/tok123/u?metadata%5Bpaywall_source%5D=practice_end_prompt",
     );
+  });
+});
+
+describe("getWebOffering robustness", () => {
+  const monthly = {
+    id: "prod88b1e18ebe",
+    store_identifier: "alphonso_pro_monthly_web",
+    subscription: { duration: "P1M", trial_duration: "P1W" },
+    indicative_price: [{ currency: "USD", amount_micros: 9_990_000, country: "US" }],
+  };
+  const yearly = {
+    id: "prod4d1632d97c",
+    store_identifier: "alphonso_pro_yearly_web",
+    subscription: { duration: "P1Y" },
+    indicative_price: [{ currency: "USD", amount_micros: 59_990_000, country: "US" }],
+  };
+  const warn = () => vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  it("normalises the project id: 945111ee and proj945111ee call the same URL", async () => {
+    expect(normalizeProjectId("945111ee")).toBe("proj945111ee");
+    expect(normalizeProjectId(" proj945111ee ")).toBe("proj945111ee");
+    for (const projectId of ["945111ee", "proj945111ee"]) {
+      clearWebOfferingCache();
+      const fetchImpl = productsResponse([monthly]);
+      await getWebOffering({ ...CONFIG, projectId }, "prod88b1e18ebe", fetchImpl);
+      const url = (fetchImpl as unknown as ReturnType<typeof vi.fn>).mock.calls[0]![0] as string;
+      expect(url).toContain("/v2/projects/proj945111ee/products?");
+    }
+  });
+
+  it("finds the product by its RevenueCat id and by its store identifier", async () => {
+    const list = [yearly, monthly];
+    const byId = await getWebOffering(CONFIG, "prod88b1e18ebe", productsResponse(list));
+    clearWebOfferingCache();
+    const byStore = await getWebOffering(
+      CONFIG,
+      "alphonso_pro_monthly_web",
+      productsResponse(list),
+    );
+    expect(byId).toMatchObject({ period: "month", trialDays: 7, price: "$9.99" });
+    expect(byStore).toEqual(byId);
+    clearWebOfferingCache();
+    expect(
+      await getWebOffering(CONFIG, "alphonso_pro_yearly_web", productsResponse(list)),
+    ).toMatchObject({ period: "year" });
+  });
+
+  it("follows next_page so a product past the first page is still found", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json({
+          items: [yearly],
+          next_page: "/v2/projects/proj1/products?starting_after=x",
+        }),
+      )
+      .mockResolvedValueOnce(Response.json({ items: [monthly] }));
+    expect(
+      await getWebOffering(CONFIG, "prod88b1e18ebe", fetchImpl as unknown as typeof fetch),
+    ).toMatchObject({ period: "month" });
+    expect(fetchImpl.mock.calls[1]![0]).toBe(
+      "https://api.revenuecat.com/v2/projects/proj1/products?starting_after=x",
+    );
+  });
+
+  const failing = (status: number) =>
+    vi.fn(async () => new Response("", { status })) as unknown as typeof fetch;
+  const throwing = vi.fn(async () => {
+    throw new TypeError("boom");
+  }) as unknown as typeof fetch;
+
+  it.each([
+    ["v2-http-error", () => failing(403), '"status":403'],
+    ["product-not-found", () => productsResponse([yearly]), '"ref":"prod88b1e18ebe"'],
+    [
+      "missing-price",
+      () => productsResponse([{ ...monthly, indicative_price: undefined }]),
+      '"ref":"prod88b1e18ebe"',
+    ],
+    [
+      "unknown-period",
+      () => productsResponse([{ ...monthly, subscription: { duration: "P3M" } }]),
+      '"duration":"P3M"',
+    ],
+    ["v2-request-failed", () => throwing, '"error":"TypeError"'],
+  ])("logs %s and returns null, with no secret in the line", async (reason, mk, detail) => {
+    const w = warn();
+    expect(await getWebOffering(CONFIG, "prod88b1e18ebe", mk())).toBeNull();
+    const line = String(w.mock.calls[0]![0]);
+    expect(line).toContain(`[web-offering] ${reason}`);
+    expect(line).toContain(detail);
+    expect(line).not.toContain("sk_v2");
+    w.mockRestore();
+  });
+
+  it("logs missing-v2-settings without calling RevenueCat", async () => {
+    const w = warn();
+    const fetchImpl = vi.fn();
+    expect(
+      await getWebOffering({ secretApiKey: "sk" }, "x", fetchImpl as unknown as typeof fetch),
+    ).toBeNull();
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(w.mock.calls[0]![0]).toContain("missing-v2-settings");
+    w.mockRestore();
+  });
+});
+
+describe("getWebOffering pagination and ambiguity", () => {
+  const item = (over: Record<string, unknown>) => ({
+    id: "prodX",
+    store_identifier: "alphonso_pro_monthly_web",
+    subscription: { duration: "P1M" },
+    indicative_price: [{ currency: "USD", amount_micros: 9_990_000, country: "US" }],
+    ...over,
+  });
+  const warn = () => vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  it("ignores a next_page that is not this project's product list, and logs it", async () => {
+    const w = warn();
+    const fetchImpl = vi.fn(async () =>
+      Response.json({ items: [], next_page: "https://evil.example/v2/projects/proj1/products" }),
+    );
+    await getWebOffering(CONFIG, "nope", fetchImpl as unknown as typeof fetch);
+    clearWebOfferingCache();
+    const other = vi.fn(async () =>
+      Response.json({ items: [], next_page: "/v2/projects/projOTHER/products?x=1" }),
+    );
+    await getWebOffering(CONFIG, "nope", other as unknown as typeof fetch);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(other).toHaveBeenCalledTimes(1);
+    expect(
+      w.mock.calls.map((c) => String(c[0])).filter((l) => l.includes("foreign-next-page")),
+    ).toHaveLength(2);
+    w.mockRestore();
+  });
+
+  it("stops at 5 pages and warns that the list was truncated", async () => {
+    const w = warn();
+    const fetchImpl = vi.fn(async () =>
+      Response.json({ items: [], next_page: "/v2/projects/proj1/products?starting_after=y" }),
+    );
+    expect(await getWebOffering(CONFIG, "nope", fetchImpl as unknown as typeof fetch)).toBeNull();
+    expect(fetchImpl).toHaveBeenCalledTimes(5);
+    expect(w.mock.calls.some((c) => String(c[0]).includes("page-cap-truncated"))).toBe(true);
+    w.mockRestore();
+  });
+
+  it("rejects a store identifier shared by several products, and logs it", async () => {
+    const w = warn();
+    const list = [item({ id: "prodA", app_id: "appA" }), item({ id: "prodB", app_id: "appB" })];
+    expect(
+      await getWebOffering(CONFIG, "alphonso_pro_monthly_web", productsResponse(list)),
+    ).toBeNull();
+    expect(w.mock.calls.some((c) => String(c[0]).includes("ambiguous-store-identifier"))).toBe(
+      true,
+    );
+    w.mockRestore();
+  });
+
+  it("prefers the Web Billing app's product when the payload names the app type", async () => {
+    const list = [
+      item({
+        id: "prodA",
+        app: { type: "app_store" },
+        indicative_price: [{ currency: "EUR", amount_micros: 1_000_000, country: "DE" }],
+      }),
+      item({ id: "prodB", app: { type: "rc_billing" } }),
+    ];
+    expect(
+      await getWebOffering(CONFIG, "alphonso_pro_monthly_web", productsResponse(list)),
+    ).toMatchObject({ currency: "USD" });
+  });
+
+  it("a RevenueCat product id still wins even when its store identifier is shared", async () => {
+    const list = [item({ id: "prodA" }), item({ id: "prodB" })];
+    expect(await getWebOffering(CONFIG, "prodB", productsResponse(list))).toMatchObject({
+      period: "month",
+    });
   });
 });
