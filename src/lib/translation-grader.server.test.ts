@@ -3,6 +3,7 @@ import {
   buildGradingPrompt,
   decideVerdict,
   gradeTranslationWithAi,
+  isTypoOfKnownWord,
   knownWordConfusion,
 } from "./translation-grader.server";
 
@@ -234,7 +235,7 @@ describe("extra claims and spelling slips (the gate failures of the first real-m
     expect(verdict({ extra: "none" })).toBeNull();
   });
 
-  it("rejects a misspelling the model calls a real word, and one it is unsure about", () => {
+  it("rejects a misspelling only when the model explicitly says it is a real word", () => {
     const real = verdict({
       spelling: [{ written: "roam", intended: "room", written_is_real_word: true }],
       reason: "roam is a misspelling that is not a real word",
@@ -242,8 +243,9 @@ describe("extra claims and spelling slips (the gate failures of the first real-m
     expect(real?.correct).toBe(false);
     expect(real?.reason).toContain('"roam" is a different word from "room"');
     expect(real?.reason).not.toContain("not a real word");
-    expect(verdict({ spelling: [{ written: "roam", intended: "room" }] })?.correct).toBe(false);
-    expect(verdict({ spelling: ["roam"] })?.correct).toBe(false);
+    // Unsure, missing or malformed flags are typos, which are fine.
+    expect(verdict({ spelling: [{ written: "roam", intended: "room" }] })?.correct).toBe(true);
+    expect(verdict({ spelling: ["roam"] })?.correct).toBe(true);
   });
 
   it("still accepts a slip that is certainly not a word", () => {
@@ -258,7 +260,44 @@ describe("extra claims and spelling slips (the gate failures of the first real-m
     const p = buildGradingPrompt({ prompt: "p", acceptableAnswers: ["a"], submission: "x" });
     expect(p).toContain('"extra"');
     expect(p).toContain("written_is_real_word");
-    expect(p).toContain("not sure whether the written form is a real word, set it to true");
+    expect(p).toContain("NEVER extra");
+    expect(p).toContain("emphatic subject pronoun");
+    expect(p).toContain("excuses a negation the task states explicitly");
+  });
+});
+
+describe("the typo allowance", () => {
+  const known = ["He is grateful and very happy.", "Gratitude is important."];
+  const flagged = (written: string, acceptable: string[] = known) =>
+    decideVerdict(
+      JSON.stringify({
+        elements: ["a"],
+        missing: [],
+        extra: [],
+        spelling: [{ written, intended: "x", written_is_real_word: true }],
+        correct: true,
+      }),
+      acceptable,
+    );
+
+  it.each([
+    ["gratitute", true],
+    ["swiming", true],
+    ["gratitudes", true],
+  ])("treats %s as a typo of a known word even when the model calls it a word", (written) => {
+    expect(isTypoOfKnownWord(written, known.concat(["I like swimming."]))).toBe(true);
+    expect(flagged(written, known.concat(["I like swimming."]))?.correct).toBe(true);
+  });
+
+  it("does not forgive a confusable real word, a far-off word or a very short one", () => {
+    expect(isTypoOfKnownWord("roam", ["My room."])).toBe(false);
+    expect(isTypoOfKnownWord("table", ["My room."])).toBe(false);
+    expect(isTypoOfKnownWord("rom", ["My room."])).toBe(false);
+    expect(flagged("roam", ["My room."])?.correct).toBe(false);
+  });
+
+  it("does not forgive a word that is itself in the known wordings", () => {
+    expect(isTypoOfKnownWord("happy", known)).toBe(false);
   });
 });
 

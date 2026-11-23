@@ -3,6 +3,7 @@ import { assertEquals, assertStringIncludes } from "jsr:@std/assert@1";
 import {
   buildGradingPrompt,
   decideVerdict,
+  isTypoOfKnownWord,
   knownWordConfusion,
   withoutFenceMarkers,
 } from "./translation-grader.ts";
@@ -62,7 +63,7 @@ Deno.test("an added claim makes the answer wrong, and a missing extra list is no
   assertEquals(decideVerdict('{"elements":["a"],"missing":[],"correct":true}'), null);
 });
 
-Deno.test("a misspelling that is a real word, or an unsure one, is wrong", () => {
+Deno.test("only an explicit real-word flag makes a misspelling wrong", () => {
   const spelled = (entry: string) =>
     decideVerdict(
       `{"elements":["a"],"missing":[],"extra":[],"spelling":[${entry}],"correct":true}`,
@@ -71,7 +72,7 @@ Deno.test("a misspelling that is a real word, or an unsure one, is wrong", () =>
     spelled('{"written":"roam","intended":"room","written_is_real_word":true}')?.correct,
     false,
   );
-  assertEquals(spelled('{"written":"roam","intended":"room"}')?.correct, false);
+  assertEquals(spelled('{"written":"roam","intended":"room"}')?.correct, true);
   assertEquals(
     spelled('{"written":"swiming","intended":"swimming","written_is_real_word":false}')?.correct,
     true,
@@ -86,4 +87,16 @@ Deno.test("a known real-word confusion is caught without the model", () => {
     { written: "roam", meant: "room" },
   );
   assertEquals(knownWordConfusion("My roam is big.", ["My flat is big."]), null);
+});
+
+Deno.test("a typo of a known word is forgiven, a confusable real word is not", () => {
+  assertEquals(isTypoOfKnownWord("gratitute", ["Gratitude is important."]), true);
+  assertEquals(isTypoOfKnownWord("aprovada", ["Estaba aprobada."]), true);
+  assertEquals(isTypoOfKnownWord("roam", ["My room."]), false);
+  assertEquals(isTypoOfKnownWord("rom", ["My room."]), false);
+  const flagged = decideVerdict(
+    '{"elements":["a"],"missing":[],"extra":[],"spelling":[{"written":"gratitute","intended":"gratitude","written_is_real_word":true}],"correct":true}',
+    ["Gratitude is important."],
+  );
+  assertEquals(flagged?.correct, true);
 });

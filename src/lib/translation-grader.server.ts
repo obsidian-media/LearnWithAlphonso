@@ -49,25 +49,28 @@ export function buildGradingPrompt(args: {
     '   the person, and any named word, verb, structure or grammar point (for example "using a mixed conditional",',
     '   "use the verb that goes with damage", "the near future", "with a question tag"). Put them in "elements".',
     '2. Check each element against the learner\'s answer. Put in "missing" only an element the answer truly lacks.',
-    "3. Look for anything the answer ADDS: a fact, person, place, quantity, reason or claim the task does not ask for",
-    '   ("She is a doctor and a lawyer" adds a claim to "Say that she is a doctor"). Put each in "extra" as a short',
-    '   phrase. Filler that carries no claim ("well", "I think", "you know") is not an addition. Rewording an element is not',
-    "   an addition either.",
+    "3. Look for anything the answer ADDS. Extra means a NEW fact, person, object, place, time or claim that changes",
+    '   what is asserted ("She is a doctor and a lawyer" adds a claim to "Say that she is a doctor"). Put each in "extra"',
+    '   as a short phrase. These are NEVER extra: a pronoun, including an emphatic subject pronoun (tú, moi: "No vayas tú',
+    '   solo" means the same as "No vayas solo"); an article; an intensifier ("very", "really"); a politeness word',
+    '   ("please", "s\'il vous plaît"); a filler ("well", "I think", "you know"); restating the same idea in other words.',
     "4. Check the spelling of the learner's own words. For every word that is not spelled correctly, add an entry to",
     '   "spelling": {"written": the word as written, "intended": the word you think was meant, "written_is_real_word":',
     "   true or false}. Set written_is_real_word to true when the letters exactly as written spell ANY real word of the",
-    '   language, even an unrelated one ("roam" written for "room" is a real word; so is "ship" for "sheep"). If you are',
-    "   not sure whether the written form is a real word, set it to true. Set it to false only when you are certain the",
-    '   written form is not a word of the language at all ("swiming" for "swimming"). Leave "spelling" empty when every',
-    "   word is spelled correctly.",
+    '   language, even an unrelated one ("roam" written for "room" is a real word; so is "ship" for "sheep"). Set it to',
+    '   false when the written form is not a word of the language at all ("swiming" for "swimming", "gratitute" for',
+    '   "gratitude", "aprovada" for "aprobada"): such a slip is only a typo. Leave "spelling" empty when every word is',
+    "   spelled correctly.",
     "",
     'The answer is correct only if "missing" is empty (it expresses EVERY element), "extra" is empty and no spelling',
     "entry has written_is_real_word true.",
     "- Natural rewording is fine when every element is kept: a synonym, a different word order, a different but equally",
     "  natural phrasing, or a reformulation with the same meaning (shorter than for not as tall as). Do not demand the",
     "  exact words of the task or of the known wordings, except a word or structure the task names.",
-    "- An element counts as expressed when the grammar or the word choice carries it, even unspoken: used to already",
-    "  says it is no longer so, a past form already places it in the past. Do not demand it be spelled out.",
+    '- An element counts as expressed when the grammar or the word choice carries it, even unspoken: "used to" already',
+    '  says it is no longer so, a past form already places it in the past, "plus petite que moi" already says "not as',
+    '  tall as", and "and", "et" or "comme" joining two ideas keeps both. Do not demand it be spelled out. This never',
+    "  excuses a negation the task states explicitly: it must be written, or clearly carried by the grammar.",
     "- Each of these leaves an element missing: a dropped or added negation; a different tense, mood or time; a dropped",
     "  clause or detail; a changed quantity, person or object; a different word where the task asks for a named word,",
     "  verb or structure; a structure the task names that the answer does not use (an active sentence is not a passive);",
@@ -76,8 +79,8 @@ export function buildGradingPrompt(args: {
     "  itself a real word, so do not mark such a slip as missing. If the letters as written spell a different real word",
     "  (sheep written as ship), that word is what the learner wrote, even when it is obvious which word was meant: the",
     "  element is missing. A misspelling that is certainly not a real word is never a reason to mark the answer wrong.",
-    "- An answer must not ADD a fact, person or claim the task did not ask for: an added claim is never fine, however",
-    '  true or natural it sounds. List it in "extra".',
+    "- An answer must not ADD a new fact, person, object, place, time or claim the task did not ask for: an added claim",
+    '  is never fine, however true or natural it sounds. List it in "extra".',
     "- The known wordings below are examples of correct answers, not a complete list. They show what the task intends.",
     "",
     `The learner was asked to: ${args.prompt}`,
@@ -125,7 +128,18 @@ const CONFUSABLE_WORDS: [string, string][] = [
   ["ship", "sheep"],
   ["perro", "pero"],
   ["marcher", "marché"],
+  ["than", "then"],
+  ["hear", "here"],
+  ["where", "were"],
+  ["accept", "except"],
+  ["affect", "effect"],
+  ["ces", "ses"],
+  ["mon", "mont"],
+  ["casa", "caza"],
+  ["hola", "ola"],
+  ["tuvo", "tubo"],
 ];
+const CONFUSABLE_SET = new Set(CONFUSABLE_WORDS.flat());
 
 const wordsOf = (text: string): Set<string> =>
   new Set((text.toLowerCase().match(/[\p{L}'’]+/gu) ?? []).map((w) => w.replace(/’/g, "'")));
@@ -152,18 +166,56 @@ export function knownWordConfusion(
   return null;
 }
 
+const editDistance = (a: string, b: string): number => {
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    for (let j = 1; j <= b.length; j++) {
+      row[j] = Math.min(
+        prev[j]! + 1,
+        row[j - 1]! + 1,
+        prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+    }
+    prev = row;
+  }
+  return prev[b.length]!;
+};
+
+/**
+ * Whether `written` is just a typo of a word the known wordings use: it is not itself one of those words, it is not
+ * a word in the confusable list, and it is within edit distance 1 (4 letters or more) or 2 (5 letters or more) of
+ * one. A typo is never a reason to mark an answer wrong, even when the model thinks the slip happens to be a word.
+ */
+export function isTypoOfKnownWord(written: string, acceptableAnswers: string[]): boolean {
+  const w = written.toLowerCase().trim();
+  if (w.length < 4 || CONFUSABLE_SET.has(w)) return false;
+  const known = wordsOf(acceptableAnswers.join(" "));
+  if (known.has(w)) return false;
+  const limit = w.length >= 5 ? 2 : 1;
+  for (const k of known) {
+    if (Math.abs(k.length - w.length) <= limit && editDistance(w, k) <= limit) return true;
+  }
+  return false;
+}
+
 /**
  * Pulls the verdict out of whatever the model actually said, and decides it here.
  *
  * Models wrap JSON in prose and fences however they feel that day, so this takes the first balanced-looking object in
  * the text rather than assuming the whole response is JSON. `correct` is computed, not read: the answer is correct
- * only when `missing` is empty, `extra` is empty, and no `spelling` entry is a real word (or unsure: anything but an
- * explicit `written_is_real_word: false` counts as a real word). The model's own boolean can only make the verdict
+ * only when `missing` is empty, `extra` is empty, and no `spelling` entry is explicitly `written_is_real_word: true`
+ * (an unsure or missing flag is a typo, which is fine, and so is a flagged word that is within a typo's reach of a
+ * word the known wordings use; a real-word confusion that matters is caught by `knownWordConfusion` before the
+ * model is asked). The model's own boolean can only make the verdict
  * stricter (a "false" that contradicts the lists is honoured), never looser. A reply with no readable `elements`,
  * `missing` or `extra` list, or with an empty `elements` list (nothing was checked), is no answer: `null`, which the
  * callers treat as "no AI opinion" and keep the local verdict.
  */
-export function decideVerdict(content: string): AiTranslationVerdict | null {
+export function decideVerdict(
+  content: string,
+  acceptableAnswers: string[] = [],
+): AiTranslationVerdict | null {
   const start = content.indexOf("{");
   const end = content.lastIndexOf("}");
   if (start === -1 || end === -1 || end < start) return null;
@@ -178,13 +230,14 @@ export function decideVerdict(content: string): AiTranslationVerdict | null {
     const lacking = strings(missing);
     const added = strings(extra);
     if (!required || required.length === 0 || !lacking || !added) return null;
-    // `spelling` is optional (nothing misspelled), but an entry that is malformed or not an explicit false is unsure.
+    // `spelling` is optional (nothing misspelled). Only an explicit true rejects, and only when it is not a plain typo.
     const slips = Array.isArray(spelling) ? spelling : [];
     const realWordSlips = slips.flatMap((entry) => {
       const e =
         typeof entry === "object" && entry !== null ? (entry as Record<string, unknown>) : {};
-      if (e.written_is_real_word === false) return [];
+      if (e.written_is_real_word !== true) return [];
       const written = typeof e.written === "string" ? e.written.trim() : "";
+      if (written && isTypoOfKnownWord(written, acceptableAnswers)) return [];
       const intended = typeof e.intended === "string" ? e.intended.trim() : "";
       return [
         written && intended
@@ -267,7 +320,7 @@ export async function gradeTranslationWithAi(args: {
     });
     if (!resp.ok) return null;
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
-    return decideVerdict(data.choices?.[0]?.message?.content ?? "");
+    return decideVerdict(data.choices?.[0]?.message?.content ?? "", args.acceptableAnswers);
   } catch {
     return null;
   }
