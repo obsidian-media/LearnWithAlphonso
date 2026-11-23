@@ -307,6 +307,7 @@ export const gradeReview = createServerFn({ method: "POST" })
               submission: data.answer,
               apiKey,
               model: resolveLlmChatModel(),
+              course,
             });
             if (verdict?.correct) correct = true;
           }

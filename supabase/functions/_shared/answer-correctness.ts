@@ -101,6 +101,7 @@ export async function deriveAnswerCorrectness(
       // The model list (and its fallbacks) lives in llm-chat.ts, the edge chokepoint, not here.
       model: resolveLlmChatModel(),
       onUsage: ai.recordUsage,
+      course,
     });
     // `null` is "no usable AI opinion", not "wrong" -- keep the local verdict.
     return verdict?.correct ?? false;
