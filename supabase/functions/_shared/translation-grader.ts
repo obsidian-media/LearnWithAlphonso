@@ -138,6 +138,12 @@ const CONFUSABLE_WORDS: [string, string][] = [
   ["casa", "caza"],
   ["hola", "ola"],
   ["tuvo", "tubo"],
+  ["desert", "dessert"],
+  ["later", "latter"],
+  ["advice", "advise"],
+  ["cocer", "coser"],
+  ["casar", "cazar"],
+  ["poisson", "poison"],
 ];
 const CONFUSABLE_SET = new Set(CONFUSABLE_WORDS.flat());
 
@@ -200,42 +206,64 @@ export function isTypoOfKnownWord(written: string, acceptableAnswers: string[]):
 }
 
 /**
- * The words of the submission that are plain typos of a word the known wordings use: at least 5 letters, not itself a
- * known word, not a confusable real word, and within edit distance 1 (2 when the intended word has 8 letters or more)
- * of a known word. Deliberately narrow: short words (has/was, ai/as, le/la) and inflections (prends/prendre) are real
- * grammar or meaning errors, never typos.
+ * The known word a plain typo was meant to be, or null: at least 5 letters, not itself a known word, not a confusable
+ * real word, and within edit distance 1 (2 when the intended word has 8 letters or more) of a known word.
+ * Deliberately narrow: short words (has/was, ai/as, le/la) and inflections (prends/prendre) are real grammar or
+ * meaning errors, never typos.
  */
-function typoPairs(
-  submission: string,
-  acceptableAnswers: string[],
-): { written: string; near: string }[] {
-  const known = wordsOf(acceptableAnswers.join(" "));
-  const pairs: { written: string; near: string }[] = [];
-  for (const w of wordsOf(submission)) {
-    if (w.length < 5 || known.has(w) || CONFUSABLE_SET.has(w)) continue;
-    let best = "";
-    let bestDistance = Infinity;
-    for (const k of known) {
-      if (Math.abs(k.length - w.length) > 2) continue;
-      const d = editDistance(w, k);
-      if (d < bestDistance) [best, bestDistance] = [k, d];
-    }
-    if (best && bestDistance <= (best.length >= 8 ? 2 : 1)) pairs.push({ written: w, near: best });
+function narrowTypoOf(word: string, known: Set<string>): string | null {
+  if (word.length < 5 || known.has(word) || CONFUSABLE_SET.has(word)) return null;
+  let best = "";
+  let bestDistance = Infinity;
+  for (const k of known) {
+    if (Math.abs(k.length - word.length) > 2) continue;
+    const d = editDistance(word, k);
+    if (d < bestDistance) [best, bestDistance] = [k, d];
   }
-  return pairs;
+  return best && bestDistance <= (best.length >= 8 ? 2 : 1) ? best : null;
+}
+
+type TypoPair = { written: string; near: string };
+
+/** The submission's words that are narrow typos, each with the word it was meant to be. */
+function typoPairs(submission: string, acceptableAnswers: string[]): TypoPair[] {
+  const known = wordsOf(acceptableAnswers.join(" "));
+  return [...wordsOf(submission)].flatMap((w) => {
+    const near = narrowTypoOf(w, known);
+    return near ? [{ written: w, near }] : [];
+  });
 }
 
 /** Whether a flagged item says it is about spelling (English, French or Spanish wording). */
 const SPELLING_WORDING =
   /misspell|spelling|spelt|typo|orthograph|faute de frappe|ortograf|mal escrito|errata/i;
 
-/** An item is dropped only when it says it is about spelling AND names the typo or the word it was meant to be. */
-const isSpellingOnlyItem = (item: string, pairs: { written: string; near: string }[]): boolean => {
-  if (!SPELLING_WORDING.test(item)) return false;
-  // Quote marks around a word arrive as apostrophes, which `wordsOf` keeps inside words.
-  const words = new Set([...wordsOf(item)].map((w) => w.replace(/^'+|'+$/g, "")));
+/** The words of a text, without the quote marks around them (apostrophes are kept inside words by `wordsOf`). */
+const plainWords = (text: string): Set<string> =>
+  new Set([...wordsOf(text)].map((w) => w.replace(/^'+|'+$/g, "")));
+
+/** Whether a text says it is about spelling AND names a typo or the word it was meant to be. */
+const isSpellingNamingTypo = (text: string, pairs: TypoPair[]): boolean => {
+  if (!SPELLING_WORDING.test(text)) return false;
+  const words = plainWords(text);
   return pairs.some((p) => words.has(p.written) || words.has(p.near));
 };
+
+/**
+ * Whether the model's bare `false` only restates a typo: its reason is about spelling and names the typo, and every
+ * word of the submission that the known wordings lack is a narrow typo.
+ */
+function falseIsOnlyATypo(
+  reason: unknown,
+  submission: string,
+  acceptableAnswers: string[],
+  pairs: TypoPair[],
+): boolean {
+  if (typeof reason !== "string" || !isSpellingNamingTypo(reason, pairs)) return false;
+  const known = wordsOf(acceptableAnswers.join(" "));
+  const typos = new Set(pairs.map((p) => p.written));
+  return [...wordsOf(submission)].every((w) => known.has(w) || typos.has(w));
+}
 
 /**
  * Pulls the verdict out of whatever the model actually said, and decides it here.
@@ -274,7 +302,8 @@ export function decideVerdict(
     // files a misspelling under `missing` or `grammar` instead of `spelling`) is not a reason to reject. Anything
     // about tense, mood, negation, meaning or a missing element stays, and so do real-word confusions.
     const pairs = typoPairs(submission, acceptableAnswers);
-    const notSpelling = (item: string) => !isSpellingOnlyItem(item, pairs);
+    const knownWords = wordsOf(acceptableAnswers.join(" "));
+    const notSpelling = (item: string) => !isSpellingNamingTypo(item, pairs);
     const lacking = rawLacking.filter(notSpelling);
     const added = rawAdded.filter(notSpelling);
     const wrongGrammar = rawGrammar.filter(notSpelling);
@@ -285,11 +314,13 @@ export function decideVerdict(
       lacking.length -
       added.length -
       wrongGrammar.length;
-    // The model's own "false" stands, except when the only thing it had flagged was such a spelling item.
+    // The model's own "false" stands, except when the only thing it had flagged was such a spelling item, or when it
+    // flagged nothing and its reason only restates a typo.
+    const nothingElse = lacking.length + added.length + wrongGrammar.length === 0;
     const falseOnlyForTypo =
       correct === false &&
-      lacking.length + added.length + wrongGrammar.length === 0 &&
-      droppedSpelling > 0;
+      nothingElse &&
+      (droppedSpelling > 0 || falseIsOnlyATypo(reason, submission, acceptableAnswers, pairs));
     // `spelling` is optional (nothing misspelled). Only an explicit true rejects, and only when it is not a plain typo.
     const slips = Array.isArray(spelling) ? spelling : [];
     const realWordSlips = slips.flatMap((entry) => {
@@ -297,7 +328,8 @@ export function decideVerdict(
         typeof entry === "object" && entry !== null ? (entry as Record<string, unknown>) : {};
       if (e.written_is_real_word !== true) return [];
       const written = typeof e.written === "string" ? e.written.trim() : "";
-      if (written && isTypoOfKnownWord(written, acceptableAnswers)) return [];
+      // The narrow typo rule is the guard here: the model's own "it is a real word" flag does not outrank it.
+      if (written && narrowTypoOf(written.toLowerCase(), knownWords)) return [];
       const intended = typeof e.intended === "string" ? e.intended.trim() : "";
       return [
         written && intended

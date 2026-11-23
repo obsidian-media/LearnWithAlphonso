@@ -491,15 +491,67 @@ describe("a typo filed under missing, grammar or a false verdict (gate runs 4 an
     );
   });
 
-  it("keeps a bare correct:false standing when nothing was a spelling item", () => {
+  describe.each([
+    [
+      "gratitute",
+      en,
+      "Gratitute is important.",
+      "Your sentence is right in meaning, but 'gratitute' is misspelled",
+    ],
+    [
+      "aprovada",
+      ["La propuesta fue aprobada."],
+      "La propuesta fue aprovada.",
+      "The meaning and passive structure are right, but 'aprovada' is misspelled",
+    ],
+  ])("the real %s case", (word, acceptable, submission, why) => {
+    it.each([
+      [
+        "a spelling entry flagged as a real word",
+        { spelling: [{ written: word, intended: "x", written_is_real_word: true }], correct: true },
+      ],
+      ["a missing item", { missing: [`'${word}' is misspelled`], correct: false, reason: why }],
+      ["a bare false with a reason", { correct: false, reason: why }],
+    ])("is accepted as %s", (_shape, o) => {
+      expect(decideVerdict(reply(o), acceptable, submission)?.correct).toBe(true);
+    });
+
+    it("stays wrong when the bare false is not about spelling or another word is off", () => {
+      expect(
+        decideVerdict(reply({ correct: false, reason: "Wrong tense." }), acceptable, submission)
+          ?.correct,
+      ).toBe(false);
+      expect(
+        decideVerdict(reply({ correct: false, reason: why }), acceptable, `${submission} hola`)
+          ?.correct,
+      ).toBe(false);
+    });
+  });
+
+  it("keeps a bare correct:false standing when the typo it names is not a candidate", () => {
     expect(
       decideVerdict(
-        reply({ correct: false, reason: "'gratitude' is misspelled" }),
-        en,
-        "Gratitute is important.",
+        reply({ correct: false, reason: "'roam' is misspelled, it should be 'room'" }),
+        ["My room is big."],
+        "My roam is big.",
       )?.correct,
     ).toBe(false);
   });
+
+  it.each([
+    ["desert", "dessert", "I love dessert.", "I love desert."],
+    ["later", "latter", "The latter is best.", "The later is best."],
+  ])(
+    "keeps %s for %s wrong even when the model calls it a typo",
+    (_a, _b, acceptable, submission) => {
+      for (const o of [
+        { spelling: [{ written: _a, intended: _b, written_is_real_word: true }] },
+        { correct: false, reason: `'${_a}' is misspelled, it should be '${_b}'` },
+      ]) {
+        expect(decideVerdict(reply(o), [acceptable], submission)?.correct).toBe(false);
+      }
+    },
+  );
 
   it("still rejects roam for room, in missing, grammar or a false verdict", () => {
     const room = ["My room is big."];

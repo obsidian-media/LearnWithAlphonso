@@ -186,3 +186,46 @@ Deno.test("roam for room is still rejected in missing, grammar or a false verdic
     assertEquals(decideVerdict(typoReply(o), room, "My roam is big.")?.correct, false);
   }
 });
+
+Deno.test("the real gratitute and aprovada cases are accepted in every reply shape", () => {
+  const cases: [string, string[], string, string][] = [
+    [
+      "gratitute",
+      ["Gratitude is important.", "Gratitude matters."],
+      "Gratitute is important.",
+      "Your sentence is right in meaning, but 'gratitute' is misspelled",
+    ],
+    [
+      "aprovada",
+      ["La propuesta fue aprobada."],
+      "La propuesta fue aprovada.",
+      "The meaning and passive structure are right, but 'aprovada' is misspelled",
+    ],
+  ];
+  for (const [word, acceptable, submission, why] of cases) {
+    for (const o of [
+      { spelling: [{ written: word, intended: "x", written_is_real_word: true }] },
+      { missing: [`'${word}' is misspelled`], correct: false, reason: why },
+      { correct: false, reason: why },
+    ]) {
+      assertEquals(decideVerdict(typoReply(o), acceptable, submission)?.correct, true);
+    }
+    assertEquals(
+      decideVerdict(typoReply({ correct: false, reason: why }), acceptable, `${submission} hola`)
+        ?.correct,
+      false,
+    );
+  }
+});
+
+Deno.test("desert for dessert stays wrong even when the model calls it a typo", () => {
+  for (const o of [
+    { spelling: [{ written: "desert", intended: "dessert", written_is_real_word: true }] },
+    { correct: false, reason: "'desert' is misspelled, it should be 'dessert'" },
+  ]) {
+    assertEquals(
+      decideVerdict(typoReply(o), ["I love dessert."], "I love desert.")?.correct,
+      false,
+    );
+  }
+});
