@@ -32,18 +32,22 @@ Deno.test("the prompt names the course language, and asks for every element", ()
 });
 
 Deno.test("the verdict is computed from the missing list, not the model's boolean", () => {
-  assertEquals(decideVerdict('{"elements":["a"],"missing":[],"extra":[],"correct":true}'), {
-    correct: true,
-    reason: null,
-  });
+  assertEquals(
+    decideVerdict('{"elements":["a"],"missing":[],"extra":[],"grammar":[],"correct":true}'),
+    {
+      correct: true,
+      reason: null,
+    },
+  );
   assertEquals(
     decideVerdict(
-      '{"elements":["a","negation"],"missing":["negation"],"extra":[],"correct":true,"reason":"Great!"}',
+      '{"elements":["a","negation"],"missing":["negation"],"extra":[],"grammar":[],"correct":true,"reason":"Great!"}',
     ),
     { correct: false, reason: "Your answer is missing: negation." },
   );
   assertEquals(
-    decideVerdict('{"elements":["a"],"missing":[],"extra":[],"correct":false}')?.correct,
+    decideVerdict('{"elements":["a"],"missing":[],"extra":[],"grammar":[],"correct":false}')
+      ?.correct,
     false,
   );
 });
@@ -51,12 +55,15 @@ Deno.test("the verdict is computed from the missing list, not the model's boolea
 Deno.test("an unreadable or old-shape reply is no opinion", () => {
   assertEquals(decideVerdict("nope"), null);
   assertEquals(decideVerdict('{"correct":true,"reason":"ok"}'), null);
-  assertEquals(decideVerdict('{"elements":[],"missing":[],"extra":[],"correct":true}'), null);
+  assertEquals(
+    decideVerdict('{"elements":[],"missing":[],"extra":[],"grammar":[],"correct":true}'),
+    null,
+  );
 });
 
 Deno.test("an added claim makes the answer wrong, and a missing extra list is no opinion", () => {
   const v = decideVerdict(
-    '{"elements":["a"],"missing":[],"extra":["she is a lawyer"],"correct":true,"reason":"fine"}',
+    '{"elements":["a"],"missing":[],"extra":["she is a lawyer"],"grammar":[],"correct":true,"reason":"fine"}',
   );
   assertEquals(v?.correct, false);
   assertStringIncludes(v?.reason ?? "", "she is a lawyer");
@@ -66,7 +73,7 @@ Deno.test("an added claim makes the answer wrong, and a missing extra list is no
 Deno.test("only an explicit real-word flag makes a misspelling wrong", () => {
   const spelled = (entry: string) =>
     decideVerdict(
-      `{"elements":["a"],"missing":[],"extra":[],"spelling":[${entry}],"correct":true}`,
+      `{"elements":["a"],"missing":[],"extra":[],"grammar":[],"spelling":[${entry}],"correct":true}`,
     );
   assertEquals(
     spelled('{"written":"roam","intended":"room","written_is_real_word":true}')?.correct,
@@ -95,8 +102,20 @@ Deno.test("a typo of a known word is forgiven, a confusable real word is not", (
   assertEquals(isTypoOfKnownWord("roam", ["My room."]), false);
   assertEquals(isTypoOfKnownWord("rom", ["My room."]), false);
   const flagged = decideVerdict(
-    '{"elements":["a"],"missing":[],"extra":[],"spelling":[{"written":"gratitute","intended":"gratitude","written_is_real_word":true}],"correct":true}',
+    '{"elements":["a"],"missing":[],"extra":[],"grammar":[],"spelling":[{"written":"gratitute","intended":"gratitude","written_is_real_word":true}],"correct":true}',
     ["Gratitude is important."],
   );
   assertEquals(flagged?.correct, true);
 });
+
+Deno.test(
+  "a grammar error makes the answer wrong, and a missing grammar list is no opinion",
+  () => {
+    const v = decideVerdict(
+      '{"elements":["a"],"missing":[],"extra":[],"grammar":["subjunctive required"],"correct":true}',
+    );
+    assertEquals(v?.correct, false);
+    assertStringIncludes(v?.reason ?? "", "subjunctive required");
+    assertEquals(decideVerdict('{"elements":["a"],"missing":[],"extra":[],"correct":true}'), null);
+  },
+);

@@ -26,7 +26,14 @@ function stubResponse(content: string) {
 }
 
 const reply = (elements: string[], missing: string[], more: Record<string, unknown> = {}) =>
-  JSON.stringify({ elements, missing, extra: [], correct: missing.length === 0, ...more });
+  JSON.stringify({
+    elements,
+    missing,
+    extra: [],
+    grammar: [],
+    correct: missing.length === 0,
+    ...more,
+  });
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -165,6 +172,7 @@ describe("decideVerdict", () => {
         elements: ["a", "b"],
         missing: ["b"],
         extra: [],
+        grammar: [],
         correct: true,
         reason: "Great job, perfect!",
       }),
@@ -174,11 +182,13 @@ describe("decideVerdict", () => {
 
   it("lets a false boolean veto an empty missing list, never the reverse", () => {
     expect(
-      decideVerdict(JSON.stringify({ elements: ["a"], missing: [], extra: [], correct: false }))
-        ?.correct,
+      decideVerdict(
+        JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: false }),
+      )?.correct,
     ).toBe(false);
     expect(
-      decideVerdict(JSON.stringify({ elements: ["a"], missing: [], extra: [] }))?.correct,
+      decideVerdict(JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [] }))
+        ?.correct,
     ).toBe(true);
   });
 
@@ -189,10 +199,22 @@ describe("decideVerdict", () => {
   it.each([
     ["no JSON", "I think it is fine"],
     ["the old shape", '{"correct": true, "reason": "ok"}'],
-    ["missing not a list", '{"elements": ["a"], "missing": "b", "extra": [], "correct": false}'],
-    ["elements not a list", '{"elements": "a", "missing": [], "extra": [], "correct": true}'],
-    ["an empty elements list", '{"elements": [], "missing": [], "extra": [], "correct": true}'],
-    ["non-string entries", '{"elements": ["a"], "missing": [1], "extra": [], "correct": false}'],
+    [
+      "missing not a list",
+      '{"elements": ["a"], "missing": "b", "extra": [], "grammar": [], "correct": false}',
+    ],
+    [
+      "elements not a list",
+      '{"elements": "a", "missing": [], "extra": [], "grammar": [], "correct": true}',
+    ],
+    [
+      "an empty elements list",
+      '{"elements": [], "missing": [], "extra": [], "grammar": [], "correct": true}',
+    ],
+    [
+      "non-string entries",
+      '{"elements": ["a"], "missing": [1], "extra": [], "grammar": [], "correct": false}',
+    ],
     ["a bare array", "[1, 2]"],
   ])("returns null for %s", (_name, content) => {
     expect(decideVerdict(content)).toBeNull();
@@ -222,7 +244,9 @@ describe("gradeTranslationWithAi, learner text stays inside its markers", () => 
 
 describe("extra claims and spelling slips (the gate failures of the first real-model run)", () => {
   const verdict = (o: Record<string, unknown>) =>
-    decideVerdict(JSON.stringify({ elements: ["a"], missing: [], extra: [], correct: true, ...o }));
+    decideVerdict(
+      JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o }),
+    );
 
   it("rejects an answer that adds a claim, whatever the model's own boolean says", () => {
     const v = verdict({ extra: ["she is a lawyer"], reason: "Adds a claim but fine." });
@@ -274,6 +298,7 @@ describe("the typo allowance", () => {
         elements: ["a"],
         missing: [],
         extra: [],
+        grammar: [],
         spelling: [{ written, intended: "x", written_is_real_word: true }],
         correct: true,
       }),
@@ -338,5 +363,39 @@ describe("knownWordConfusion", () => {
     });
     expect(v?.correct).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("grammar errors", () => {
+  const verdict = (o: Record<string, unknown>) =>
+    decideVerdict(
+      JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o }),
+    );
+
+  it("rejects an answer with a grammar error the model noticed, whatever its own boolean says", () => {
+    const v = verdict({
+      grammar: ["the subjunctive 'tenga' is required, not 'tiene'"],
+      reason: "Fine overall.",
+    });
+    expect(v?.correct).toBe(false);
+    expect(v?.reason).toContain("Grammar: the subjunctive 'tenga' is required");
+  });
+
+  it("requires the grammar list: a reply without one is no opinion, not a pass", () => {
+    expect(
+      decideVerdict('{"elements": ["a"], "missing": [], "extra": [], "correct": true}'),
+    ).toBeNull();
+    expect(verdict({ grammar: "none" })).toBeNull();
+  });
+
+  it("accepts an answer whose grammar list is empty", () => {
+    expect(verdict({})?.correct).toBe(true);
+  });
+
+  it("tells the model what belongs in missing and in grammar", () => {
+    const p = buildGradingPrompt({ prompt: "p", acceptableAnswers: ["a"], submission: "x" });
+    expect(p).toContain('"grammar"');
+    expect(p).toContain("NEVER grammar errors");
+    expect(p).toContain("Never put a note there that an element is acceptable");
   });
 });

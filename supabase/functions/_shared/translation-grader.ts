@@ -38,17 +38,22 @@ export function buildGradingPrompt(args: {
     `You are marking one written answer in ${language === "English" ? "an" : "a"} ${language} course.`,
     `The answer must be written in ${language}.`,
     "",
-    "Work in four steps.",
+    "Work in five steps.",
     "1. Read the task and list every element it asks for: each fact, each negation, the time or tense, each quantity,",
     '   the person, and any named word, verb, structure or grammar point (for example "using a mixed conditional",',
     '   "use the verb that goes with damage", "the near future", "with a question tag"). Put them in "elements".',
-    '2. Check each element against the learner\'s answer. Put in "missing" only an element the answer truly lacks.',
+    '2. Check each element against the learner\'s answer. "missing" holds ONLY elements that are genuinely absent from the',
+    "   answer. Never put a note there that an element is acceptable, present, fine or correct: if it is, leave it out.",
     "3. Look for anything the answer ADDS. Extra means a NEW fact, person, object, place, time or claim that changes",
     '   what is asserted ("She is a doctor and a lawyer" adds a claim to "Say that she is a doctor"). Put each in "extra"',
     '   as a short phrase. These are NEVER extra: a pronoun, including an emphatic subject pronoun (tú, moi: "No vayas tú',
     '   solo" means the same as "No vayas solo"); an article; an intensifier ("very", "really"); a politeness word',
     '   ("please", "s\'il vous plaît"); a filler ("well", "I think", "you know"); restating the same idea in other words.',
-    "4. Check the spelling of the learner's own words. For every word that is not spelled correctly, add an entry to",
+    "4. Look for grammar errors that make the answer wrong: a required mood that is not used (the subjunctive where the",
+    '   structure demands it, as after "necesito un apartamento que"), a wrong tense, a wrong agreement of gender,',
+    '   number or person, a required structure or word order that is broken. Put each in "grammar" as a short phrase.',
+    "   Style preferences, optional variants and wordings that are equally correct are NEVER grammar errors.",
+    "5. Check the spelling of the learner's own words. For every word that is not spelled correctly, add an entry to",
     '   "spelling": {"written": the word as written, "intended": the word you think was meant, "written_is_real_word":',
     "   true or false}. Set written_is_real_word to true when the letters exactly as written spell ANY real word of the",
     '   language, even an unrelated one ("roam" written for "room" is a real word; so is "ship" for "sheep"). Set it to',
@@ -56,8 +61,8 @@ export function buildGradingPrompt(args: {
     '   "gratitude", "aprovada" for "aprobada"): such a slip is only a typo. Leave "spelling" empty when every word is',
     "   spelled correctly.",
     "",
-    'The answer is correct only if "missing" is empty (it expresses EVERY element), "extra" is empty and no spelling',
-    "entry has written_is_real_word true.",
+    'The answer is correct only if "missing" is empty (it expresses EVERY element), "extra" is empty, "grammar" is',
+    "empty and no spelling entry has written_is_real_word true.",
     "- Natural rewording is fine when every element is kept: a synonym, a different word order, a different but equally",
     "  natural phrasing, or a reformulation with the same meaning (shorter than for not as tall as). Do not demand the",
     "  exact words of the task or of the known wordings, except a word or structure the task names.",
@@ -97,6 +102,7 @@ export function buildGradingPrompt(args: {
     "Reply with ONLY this JSON and nothing else:",
     '{"elements": ["each required element"], "missing": ["each element the answer lacks, empty if none"],',
     '"extra": ["each claim the answer adds, empty if none"],',
+    '"grammar": ["each grammar error that makes the answer wrong, empty if none"],',
     '"spelling": [{"written": "...", "intended": "...", "written_is_real_word": true or false}],',
     '"correct": true or false, "reason": "one short sentence for the learner"}',
   ].join("\n");
@@ -198,12 +204,12 @@ export function isTypoOfKnownWord(written: string, acceptableAnswers: string[]):
  *
  * Models wrap JSON in prose and fences however they feel that day, so this takes the first balanced-looking object in
  * the text rather than assuming the whole response is JSON. `correct` is computed, not read: the answer is correct
- * only when `missing` is empty, `extra` is empty, and no `spelling` entry is explicitly `written_is_real_word: true`
+ * only when `missing`, `extra` and `grammar` are empty, and no `spelling` entry is explicitly `written_is_real_word: true`
  * (an unsure or missing flag is a typo, which is fine, and so is a flagged word that is within a typo's reach of a
  * word the known wordings use; a real-word confusion that matters is caught by `knownWordConfusion` before the
  * model is asked). The model's own boolean can only make the verdict
  * stricter (a "false" that contradicts the lists is honoured), never looser. A reply with no readable `elements`,
- * `missing` or `extra` list, or with an empty `elements` list (nothing was checked), is no answer: `null`, which the
+ * `missing`, `extra` or `grammar` list, or with an empty `elements` list (nothing was checked), is no answer: `null`, which the
  * callers treat as "no AI opinion" and keep the local verdict.
  */
 export function decideVerdict(
@@ -216,14 +222,15 @@ export function decideVerdict(
   try {
     const parsed = JSON.parse(content.slice(start, end + 1)) as unknown;
     if (typeof parsed !== "object" || parsed === null) return null;
-    const { elements, missing, extra, spelling, correct, reason } = parsed as Record<
+    const { elements, missing, extra, grammar, spelling, correct, reason } = parsed as Record<
       string,
       unknown
     >;
     const required = strings(elements);
     const lacking = strings(missing);
     const added = strings(extra);
-    if (!required || required.length === 0 || !lacking || !added) return null;
+    const wrongGrammar = strings(grammar);
+    if (!required || required.length === 0 || !lacking || !added || !wrongGrammar) return null;
     // `spelling` is optional (nothing misspelled). Only an explicit true rejects, and only when it is not a plain typo.
     const slips = Array.isArray(spelling) ? spelling : [];
     const realWordSlips = slips.flatMap((entry) => {
@@ -240,22 +247,28 @@ export function decideVerdict(
       ];
     });
     const isCorrect =
-      lacking.length === 0 && added.length === 0 && realWordSlips.length === 0 && correct !== false;
+      lacking.length === 0 &&
+      added.length === 0 &&
+      wrongGrammar.length === 0 &&
+      realWordSlips.length === 0 &&
+      correct !== false;
     // A reason that cheers an answer the lists just rejected would contradict the verdict the learner sees.
     const said =
       typeof reason === "string" &&
       reason.trim() &&
       !(correct === true && !isCorrect) &&
       added.length === 0 &&
+      wrongGrammar.length === 0 &&
       realWordSlips.length === 0
         ? reason.trim()
         : null;
     if (isCorrect) return { correct: true, reason: said };
     const problems = [
-      ...(lacking.length || (!added.length && !realWordSlips.length)
+      ...(lacking.length || (!added.length && !wrongGrammar.length && !realWordSlips.length)
         ? [`Your answer is missing: ${lacking.join("; ") || "part of the task"}.`]
         : []),
       ...(added.length ? [`It adds something the task did not ask for: ${added.join("; ")}.`] : []),
+      ...(wrongGrammar.length ? [`Grammar: ${wrongGrammar.join("; ")}.`] : []),
       ...realWordSlips.map((s) => `${s}.`),
     ];
     return { correct: false, reason: said ?? problems.join(" ") };

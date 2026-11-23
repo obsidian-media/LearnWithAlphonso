@@ -67,7 +67,7 @@ beforeEach(() => {
           {
             message: {
               content:
-                '{"elements": ["the greeting"], "missing": [], "extra": [], "correct": true, "reason": "Same meaning."}',
+                '{"elements": ["the greeting"], "missing": [], "extra": [], "grammar": [], "correct": true, "reason": "Same meaning."}',
             },
           },
         ],

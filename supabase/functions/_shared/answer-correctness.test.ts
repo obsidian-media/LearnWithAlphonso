@@ -51,7 +51,7 @@ Deno.test("an AI-accepted paraphrase is graded correct, not lapsed", async () =>
   // have the item lapsed anyway.
   Deno.env.set("OPENROUTER_API_KEY", "test-key");
   stubVerdict(
-    '{"elements": ["buen día"], "missing": [], "extra": [], "correct": true, "reason": "Same meaning."}',
+    '{"elements": ["buen día"], "missing": [], "extra": [], "grammar": [], "correct": true, "reason": "Same meaning."}',
   );
   try {
     assertEquals(
@@ -127,7 +127,7 @@ Deno.test("checkQuota returning false blocks the AI call entirely", async () => 
 Deno.test("checkQuota returning true still allows a real AI-accepted paraphrase", async () => {
   Deno.env.set("OPENROUTER_API_KEY", "test-key");
   stubVerdict(
-    '{"elements": ["buen día"], "missing": [], "extra": [], "correct": true, "reason": "Same meaning."}',
+    '{"elements": ["buen día"], "missing": [], "extra": [], "grammar": [], "correct": true, "reason": "Same meaning."}',
   );
   try {
     assertEquals(
@@ -145,7 +145,7 @@ Deno.test("checkQuota returning true still allows a real AI-accepted paraphrase"
 Deno.test("omitting checkQuota (with consent) leaves the AI grader unlimited", async () => {
   Deno.env.set("OPENROUTER_API_KEY", "test-key");
   stubVerdict(
-    '{"elements": ["buen día"], "missing": [], "extra": [], "correct": true, "reason": "Same meaning."}',
+    '{"elements": ["buen día"], "missing": [], "extra": [], "grammar": [], "correct": true, "reason": "Same meaning."}',
   );
   try {
     assertEquals(
@@ -224,7 +224,7 @@ Deno.test("the AI grading prompt carries the safety preamble", async () => {
             {
               message: {
                 content:
-                  '{"elements": ["buen día"], "missing": [], "extra": [], "correct": true, "reason": "ok"}',
+                  '{"elements": ["buen día"], "missing": [], "extra": [], "grammar": [], "correct": true, "reason": "ok"}',
               },
             },
           ],
