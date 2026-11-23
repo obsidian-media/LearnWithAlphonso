@@ -94,15 +94,38 @@ describe("the phone layout below 768px is unchanged", () => {
           <p>page</p>
         </MobileFrame>,
       );
-      // The column and its width cap, the sticky top bar, one dock holding the tab bar, no desktop parts.
-      const column = container.querySelector("main")!.parentElement!;
+      // The exact tree the phone has always had: an added wrapper, a changed class or a moved bar fails here.
+      expect(container.children).toHaveLength(1);
+      const root = container.firstElementChild!;
+      expect(root.className).toBe("grain min-h-dvh bg-ds-surface text-ds-ink");
+      expect(root.children).toHaveLength(1);
+      const column = root.firstElementChild!;
       expect(column.className).toBe(
         "mx-auto flex min-h-dvh max-w-[430px] flex-col bg-ds-surface/60",
       );
-      expect(container.querySelector("header")!.className).toContain("sticky top-0");
-      expect(screen.getByTestId("bottom-dock")).toContainElement(
-        screen.getByRole("navigation", { name: "Main" }),
+      expect(Array.from(column.children).map((c) => c.tagName)).toEqual(["HEADER", "MAIN", "DIV"]);
+      const header = column.children[0]!;
+      expect(header.className).toBe(
+        "sticky top-0 z-30 border-b border-ds-line bg-ds-card/90 backdrop-blur-md",
       );
+      expect(header.querySelector("[role=status]")).not.toBeNull();
+      expect(header.lastElementChild!.className).toBe(
+        "mx-auto flex max-w-[430px] items-center justify-between px-4 py-2.5",
+      );
+      expect(column.children[1]).toHaveAttribute("id", "main-content");
+      expect(column.children[1]!.className).toBe("flex-1");
+      const dock = screen.getByTestId("bottom-dock");
+      expect(dock).toBe(column.children[2]);
+      expect(dock.className).toBe("sticky bottom-0 z-30");
+      expect(Array.from(dock.children).map((c) => c.tagName)).toEqual(["NAV"]);
+      const tabs = dock.firstElementChild!;
+      expect(tabs.className).toBe(
+        "sticky bottom-0 z-30 border-t border-ds-line bg-ds-card/95 backdrop-blur-md",
+      );
+      expect(tabs.firstElementChild!.className).toBe(
+        "mx-auto flex max-w-[430px] items-stretch px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-1",
+      );
+      expect(tabs.firstElementChild!.children).toHaveLength(5);
       expect(container.querySelector("[data-shell-rail]")).toBeNull();
       expect(container.querySelector("aside")).toBeNull();
       expect(screen.getAllByRole("navigation")).toHaveLength(1);
@@ -117,9 +140,16 @@ describe("the phone layout below 768px is unchanged", () => {
         <p>lesson</p>
       </LessonFrame>,
     );
-    const main = container.querySelector("main")!;
-    expect(main.className).toContain("max-w-[430px]");
-    expect(main.className).toContain("md:max-w-[640px]");
+    expect(container.children).toHaveLength(1);
+    const root = container.firstElementChild!;
+    expect(root.className).toBe("grain min-h-dvh bg-ds-surface text-ds-ink");
+    expect(root.children).toHaveLength(1);
+    const main = root.firstElementChild!;
+    expect(main.tagName).toBe("MAIN");
+    expect(main.className).toBe(
+      "mx-auto flex min-h-dvh max-w-[430px] flex-col bg-ds-surface/60 md:max-w-[640px] md:border-x md:border-ds-line",
+    );
+    expect(main.children).toHaveLength(1);
     expect(container.querySelector("nav")).toBeNull();
   });
 });

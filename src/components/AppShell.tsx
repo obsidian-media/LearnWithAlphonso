@@ -419,6 +419,9 @@ export function MobileFrame({
   panel?: ReactNode | null;
 }) {
   const tier = useViewportTier();
+  // Known and accepted: the phone and desktop frames are different trees, so crossing 768 (rotating a tablet,
+  // resizing a window) remounts the page content and the mini player. Playback itself survives: the <audio> element
+  // lives beside the router's Outlet, not in either frame.
   if (tier !== "phone") {
     return (
       <DesktopFrame tier={tier} aboveTabs={aboveTabs} panel={panel}>
