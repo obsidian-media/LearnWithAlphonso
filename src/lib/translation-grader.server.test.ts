@@ -400,22 +400,22 @@ describe("grammar errors", () => {
   });
 });
 
-describe("a typo filed under missing, grammar or a false verdict (gate run 4)", () => {
+describe("a typo filed under missing, grammar or a false verdict (gate runs 4 and 5)", () => {
   const reply = (o: Record<string, unknown>) =>
     JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o });
   const en = ["Gratitude is important.", "Gratitude matters."];
   const fr = ["Je pars demain matin."];
 
-  it("forgives a typo the model listed under missing", () => {
+  it("forgives a typo the model listed under missing, saying it is a misspelling", () => {
     const v = decideVerdict(
-      reply({ missing: ["'gratitude' (written 'gratitute')"], correct: false }),
+      reply({ missing: ["'gratitude' is misspelled as 'gratitute'"], correct: false }),
       en,
       "Gratitute is important.",
     );
     expect(v?.correct).toBe(true);
   });
 
-  it("forgives a typo the model listed under grammar", () => {
+  it("forgives a typo the model listed under grammar, saying it is a misspelling", () => {
     const v = decideVerdict(
       reply({
         grammar: ["'demmain' is misspelled"],
@@ -429,18 +429,22 @@ describe("a typo filed under missing, grammar or a false verdict (gate run 4)", 
     expect(v?.reason).toBeNull();
   });
 
-  it("forgives a typo when only the model's boolean and reason complain", () => {
+  it("does not forgive an item that does not say it is about spelling", () => {
     const v = decideVerdict(
-      reply({ correct: false, reason: "Your sentence is right, but 'gratitude' is misspelled" }),
+      reply({ missing: ["'gratitude'"], correct: false }),
       en,
       "Gratitute is important.",
     );
-    expect(v?.correct).toBe(true);
+    expect(v?.correct).toBe(false);
   });
 
-  it("still rejects a real missing element next to a typo", () => {
+  it("still rejects a real missing element next to a spelling item", () => {
     const v = decideVerdict(
-      reply({ missing: ["the word 'important'", "'gratitude' (written 'gratitute')"] }),
+      reply({
+        missing: ["the word 'important'"],
+        grammar: ["'gratitude' is misspelled as 'gratitute'"],
+        correct: false,
+      }),
       en,
       "Gratitute is.",
     );
@@ -448,11 +452,60 @@ describe("a typo filed under missing, grammar or a false verdict (gate run 4)", 
     expect(v?.reason).toContain("important");
   });
 
+  it.each([
+    [
+      "en-a2p1l2-33",
+      ["She gave him a present."],
+      "She has given him a present",
+      { grammar: ["tense: past simple required"], correct: false },
+    ],
+    [
+      "fr-frb1p5l3-37",
+      ["Je jouais au foot."],
+      "j'ai joué",
+      { grammar: ["tense: imparfait required, not passé composé"], correct: false },
+    ],
+    [
+      "fr-fra2p7l3-39",
+      ["Tu vas prendre le train demain."],
+      "Tu prends le train demain",
+      { grammar: ["near future (aller + infinitive) required"], correct: false },
+    ],
+    [
+      "fr-frb2p7l2-41",
+      ["Je n'avais pas le choix."],
+      "j'avais le choix",
+      { missing: ["the negation 'n'... pas'"], correct: false },
+    ],
+    [
+      "fr-frb1p7l5-51",
+      ["J'habite à Lyon."],
+      "habite à Paris",
+      { missing: ["Lyon"], extra: ["Paris"], correct: false },
+    ],
+  ])("keeps %s wrong", (_id, acceptable, submission, o) => {
+    expect(decideVerdict(reply(o), acceptable, submission)?.correct).toBe(false);
+    // Even when the model's boolean is silent, the lists alone reject it.
+    expect(decideVerdict(reply({ ...o, correct: true }), acceptable, submission)?.correct).toBe(
+      false,
+    );
+  });
+
+  it("keeps a bare correct:false standing when nothing was a spelling item", () => {
+    expect(
+      decideVerdict(
+        reply({ correct: false, reason: "'gratitude' is misspelled" }),
+        en,
+        "Gratitute is important.",
+      )?.correct,
+    ).toBe(false);
+  });
+
   it("still rejects roam for room, in missing, grammar or a false verdict", () => {
     const room = ["My room is big."];
     for (const o of [
-      { missing: ["'room' (written 'roam')"] },
-      { grammar: ["'roam' should be 'room'"] },
+      { missing: ["'room' is misspelled as 'roam'"] },
+      { grammar: ["'roam' should be 'room' (spelling)"] },
       { correct: false, reason: "'roam' is not 'room'" },
     ]) {
       expect(decideVerdict(reply(o), room, "My roam is big.")?.correct).toBe(false);

@@ -123,12 +123,11 @@ Deno.test(
 const typoReply = (o: Record<string, unknown>) =>
   JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o });
 
-Deno.test("a typo filed under missing, grammar or a false verdict is forgiven", () => {
+Deno.test("a typo the model says is a misspelling is forgiven wherever it filed it", () => {
   const en = ["Gratitude is important.", "Gratitude matters."];
-  const fr = ["Je pars demain matin."];
   assertEquals(
     decideVerdict(
-      typoReply({ missing: ["'gratitude' (written 'gratitute')"], correct: false }),
+      typoReply({ missing: ["'gratitude' is misspelled as 'gratitute'"], correct: false }),
       en,
       "Gratitute is important.",
     )?.correct,
@@ -136,42 +135,52 @@ Deno.test("a typo filed under missing, grammar or a false verdict is forgiven", 
   );
   assertEquals(
     decideVerdict(
-      typoReply({
-        grammar: ["'demmain' is misspelled"],
-        correct: false,
-        reason: "fully correct in meaning and grammar, but 'demmain' is misspelled",
-      }),
-      fr,
+      typoReply({ grammar: ["'demmain' is misspelled"], correct: false }),
+      ["Je pars demain matin."],
       "Je pars demmain matin.",
     )?.correct,
     true,
   );
   assertEquals(
-    decideVerdict(
-      typoReply({
-        correct: false,
-        reason: "Your sentence is right, but 'gratitude' is misspelled",
-      }),
-      en,
-      "Gratitute is important.",
-    )?.correct,
-    true,
-  );
-  assertEquals(
-    decideVerdict(
-      typoReply({ missing: ["the word 'important'", "'gratitude' (written 'gratitute')"] }),
-      en,
-      "Gratitute is.",
-    )?.correct,
+    decideVerdict(typoReply({ missing: ["'gratitude'"], correct: false }), en, "Gratitute is.")
+      ?.correct,
     false,
   );
+});
+
+Deno.test("grammar and meaning errors are never dropped as typos", () => {
+  const cases: [string[], string, Record<string, unknown>][] = [
+    [
+      ["She gave him a present."],
+      "She has given him a present",
+      {
+        grammar: ["tense: past simple required"],
+      },
+    ],
+    [["Je jouais au foot."], "j'ai joué", { grammar: ["tense: imparfait required"] }],
+    [
+      ["Tu vas prendre le train demain."],
+      "Tu prends le train demain",
+      {
+        grammar: ["near future required"],
+      },
+    ],
+    [["Je n'avais pas le choix."], "j'avais le choix", { missing: ["the negation"] }],
+    [["J'habite à Lyon."], "habite à Paris", { missing: ["Lyon"], extra: ["Paris"] }],
+  ];
+  for (const [acceptable, submission, o] of cases) {
+    assertEquals(
+      decideVerdict(typoReply({ ...o, correct: false }), acceptable, submission)?.correct,
+      false,
+    );
+  }
 });
 
 Deno.test("roam for room is still rejected in missing, grammar or a false verdict", () => {
   const room = ["My room is big."];
   for (const o of [
-    { missing: ["'room' (written 'roam')"] },
-    { grammar: ["'roam' should be 'room'"] },
+    { missing: ["'room' is misspelled as 'roam'"] },
+    { grammar: ["'roam' should be 'room' (spelling)"] },
     { correct: false, reason: "'roam' is not 'room'" },
   ]) {
     assertEquals(decideVerdict(typoReply(o), room, "My roam is big.")?.correct, false);

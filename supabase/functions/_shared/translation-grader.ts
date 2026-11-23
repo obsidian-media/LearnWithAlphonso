@@ -200,8 +200,10 @@ export function isTypoOfKnownWord(written: string, acceptableAnswers: string[]):
 }
 
 /**
- * The words of the submission that are typos of a known word (see `isTypoOfKnownWord`), each with the known word it
- * is nearest to. Used to recognise a flagged item that is only about such a typo, whichever list the model put it in.
+ * The words of the submission that are plain typos of a word the known wordings use: at least 5 letters, not itself a
+ * known word, not a confusable real word, and within edit distance 1 (2 when the intended word has 8 letters or more)
+ * of a known word. Deliberately narrow: short words (has/was, ai/as, le/la) and inflections (prends/prendre) are real
+ * grammar or meaning errors, never typos.
  */
 function typoPairs(
   submission: string,
@@ -210,21 +212,28 @@ function typoPairs(
   const known = wordsOf(acceptableAnswers.join(" "));
   const pairs: { written: string; near: string }[] = [];
   for (const w of wordsOf(submission)) {
-    if (known.has(w) || !isTypoOfKnownWord(w, acceptableAnswers)) continue;
+    if (w.length < 5 || known.has(w) || CONFUSABLE_SET.has(w)) continue;
     let best = "";
     let bestDistance = Infinity;
     for (const k of known) {
+      if (Math.abs(k.length - w.length) > 2) continue;
       const d = editDistance(w, k);
       if (d < bestDistance) [best, bestDistance] = [k, d];
     }
-    pairs.push({ written: w, near: best });
+    if (best && bestDistance <= (best.length >= 8 ? 2 : 1)) pairs.push({ written: w, near: best });
   }
   return pairs;
 }
 
-const mentionsTypo = (text: string, pairs: { written: string; near: string }[]): boolean => {
+/** Whether a flagged item says it is about spelling (English, French or Spanish wording). */
+const SPELLING_WORDING =
+  /misspell|spelling|spelt|typo|orthograph|faute de frappe|ortograf|mal escrito|errata/i;
+
+/** An item is dropped only when it says it is about spelling AND names the typo or the word it was meant to be. */
+const isSpellingOnlyItem = (item: string, pairs: { written: string; near: string }[]): boolean => {
+  if (!SPELLING_WORDING.test(item)) return false;
   // Quote marks around a word arrive as apostrophes, which `wordsOf` keeps inside words.
-  const words = new Set([...wordsOf(text)].map((w) => w.replace(/^'+|'+$/g, "")));
+  const words = new Set([...wordsOf(item)].map((w) => w.replace(/^'+|'+$/g, "")));
   return pairs.some((p) => words.has(p.written) || words.has(p.near));
 };
 
@@ -261,23 +270,26 @@ export function decideVerdict(
     const rawAdded = strings(extra);
     const rawGrammar = strings(grammar);
     if (!required || required.length === 0 || !rawLacking || !rawAdded || !rawGrammar) return null;
-    // A flagged item that is only about a typo (the model sometimes files a misspelling under `missing` or `grammar`
-    // instead of `spelling`) is not a reason to reject. Real-word confusions are never typo pairs, so "roam" stays out.
+    // A flagged item that explicitly says it is about spelling and names a typo of a known word (the model sometimes
+    // files a misspelling under `missing` or `grammar` instead of `spelling`) is not a reason to reject. Anything
+    // about tense, mood, negation, meaning or a missing element stays, and so do real-word confusions.
     const pairs = typoPairs(submission, acceptableAnswers);
-    const notTypo = (item: string) => !mentionsTypo(item, pairs);
-    const lacking = rawLacking.filter(notTypo);
-    const added = rawAdded.filter(notTypo);
-    const wrongGrammar = rawGrammar.filter(notTypo);
-    const droppedTypo =
-      lacking.length + added.length + wrongGrammar.length <
-      rawLacking.length + rawAdded.length + rawGrammar.length;
-    // The model's own "false" is honoured, except when it only restates the typo (its reason names the typo and no
-    // list holds anything else).
-    const reasonText = typeof reason === "string" ? reason : "";
+    const notSpelling = (item: string) => !isSpellingOnlyItem(item, pairs);
+    const lacking = rawLacking.filter(notSpelling);
+    const added = rawAdded.filter(notSpelling);
+    const wrongGrammar = rawGrammar.filter(notSpelling);
+    const droppedSpelling =
+      rawLacking.length +
+      rawAdded.length +
+      rawGrammar.length -
+      lacking.length -
+      added.length -
+      wrongGrammar.length;
+    // The model's own "false" stands, except when the only thing it had flagged was such a spelling item.
     const falseOnlyForTypo =
       correct === false &&
       lacking.length + added.length + wrongGrammar.length === 0 &&
-      (droppedTypo || mentionsTypo(reasonText, pairs));
+      droppedSpelling > 0;
     // `spelling` is optional (nothing misspelled). Only an explicit true rejects, and only when it is not a plain typo.
     const slips = Array.isArray(spelling) ? spelling : [];
     const realWordSlips = slips.flatMap((entry) => {
