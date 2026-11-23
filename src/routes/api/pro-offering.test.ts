@@ -242,6 +242,25 @@ describe("GET /api/pro-offering", () => {
     expect((await handler({ request: req() })).status).toBe(409);
   });
 
+  it("logs a yearly plan that cannot be read once per instance, not per request", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubEnv("REVENUECAT_WEB_YEARLY_PRODUCT_ID", "prod_web_year");
+    vi.stubEnv("REVENUECAT_WEB_YEARLY_PURCHASE_LINK", "https://pay.rev.cat/year_trial_tok");
+    vi.stubEnv(
+      "REVENUECAT_WEB_YEARLY_PURCHASE_LINK_NO_TRIAL",
+      "https://pay.rev.cat/year_plain_tok",
+    );
+    getWebOffering.mockImplementation(async (_c: unknown, id: string) =>
+      id === "prod_web_year" ? null : OFFER,
+    );
+    for (let i = 0; i < 3; i += 1) expect((await handler({ request: req() })).status).toBe(200);
+    const lines = warn.mock.calls
+      .map((c) => String(c[0]))
+      .filter((l) => l.includes("yearly plan left out"));
+    expect(lines).toHaveLength(1);
+    warn.mockRestore();
+  });
+
   it("logs which setting is missing when not configured", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.stubEnv("REVENUECAT_WEB_PRODUCT_ID", "");

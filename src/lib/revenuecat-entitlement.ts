@@ -26,6 +26,7 @@
  */
 
 import { createHmac } from "node:crypto";
+import { normalizeProjectId } from "./revenuecat-project-id";
 
 const REVENUECAT_API_HOST = "https://api.revenuecat.com";
 /** Matches AppConfig.proEntitlementID (iOS) -- the RevenueCat dashboard's Entitlement identifier. */
@@ -67,12 +68,7 @@ export function revenueCatConfigFromEnv(
   if (!secretApiKey) return null;
   const v2SecretKey = env.REVENUECAT_V2_SECRET_KEY;
   const rawProjectId = env.REVENUECAT_PROJECT_ID?.trim();
-  // The dashboard URL shows "945111ee"; the v2 API wants "proj945111ee". Accept either.
-  const projectId = rawProjectId
-    ? /^proj/i.test(rawProjectId)
-      ? rawProjectId
-      : `proj${rawProjectId}`
-    : undefined;
+  const projectId = rawProjectId ? normalizeProjectId(rawProjectId) : undefined;
   const config: RevenueCatConfig =
     v2SecretKey && projectId ? { secretApiKey, v2SecretKey, projectId } : { secretApiKey };
   const testers = (env.REVENUECAT_TEST_PURCHASE_USER_IDS ?? "")

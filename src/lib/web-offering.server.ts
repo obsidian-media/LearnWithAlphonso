@@ -1,4 +1,5 @@
 import type { RevenueCatConfig } from "./revenuecat-entitlement";
+import { normalizeProjectId } from "./revenuecat-project-id";
 import type { BillingPeriod, PaywallSource } from "./paywall-copy";
 
 /**
@@ -62,15 +63,12 @@ export function clearWebOfferingCache(): void {
 type V2Product = {
   id?: string;
   store_identifier?: string;
+  app_id?: string;
+  /** Present only when RevenueCat expands the app: its type is "rc_billing" for Web Billing. */
+  app?: { type?: string };
   subscription?: { duration?: string; trial_duration?: string | null };
   indicative_price?: unknown;
 };
-
-/** RevenueCat's v2 project ids are "proj" + the id in the dashboard URL; accept either spelling. */
-export function normalizeProjectId(raw: string): string {
-  const id = raw.trim();
-  return /^proj/i.test(id) ? id : `proj${id}`;
-}
 
 function warn(reason: string, extra: Record<string, string | number> = {}): void {
   // Never the key, the project id or a user id: a reason code and, at most, the product reference being looked up.
@@ -82,7 +80,8 @@ async function listProducts(
   config: RevenueCatConfig,
   fetchImpl: typeof fetch,
 ): Promise<V2Product[] | null> {
-  const project = encodeURIComponent(normalizeProjectId(config.projectId!));
+  const projectId = normalizeProjectId(config.projectId!);
+  const project = encodeURIComponent(projectId);
   let url: string | null =
     `${API}/projects/${project}/products?expand=items.indicative_price&limit=100`;
   const all: V2Product[] = [];
@@ -99,12 +98,32 @@ async function listProducts(
     all.push(...(body?.items ?? []));
     const next: unknown = body?.next_page;
     // next_page is a path on the same API (e.g. "/v2/projects/.../products?starting_after=..."): never another host.
+    // Only a continuation of this same project's product list is followed, never another path or host.
+    const ownList = `/v2/projects/${projectId}/products`;
     url =
-      typeof next === "string" && next.startsWith("/v2/")
+      typeof next === "string" && next.startsWith(ownList)
         ? `https://api.revenuecat.com${next}`
         : null;
+    if (typeof next === "string" && !url) warn("foreign-next-page-ignored");
+    if (url && page === 4) warn("page-cap-truncated", { pages: 5 });
   }
   return all;
+}
+
+/**
+ * The product a setting names: by RevenueCat product id (unique), else by store identifier. A store identifier can be
+ * shared by products of different apps (App Store, Play, Web Billing), so when it matches several the Web Billing
+ * one is taken if the payload says which that is; otherwise the match is refused (logged) rather than guessed.
+ */
+function pickProduct(items: V2Product[], ref: string): V2Product | undefined | "ambiguous" {
+  const byId = items.find((p) => p?.id === ref);
+  if (byId) return byId;
+  const matches = items.filter((p) => p?.store_identifier === ref);
+  if (matches.length <= 1) return matches[0];
+  const web = matches.filter((p) => p.app?.type === "rc_billing");
+  if (web.length === 1) return web[0];
+  warn("ambiguous-store-identifier", { ref, matches: matches.length });
+  return "ambiguous";
 }
 
 /**
@@ -128,8 +147,8 @@ export async function getWebOffering(
   try {
     const items = await listProducts(config, fetchImpl);
     if (!items) return null;
-    const product =
-      items.find((p) => p?.id === ref) ?? items.find((p) => p?.store_identifier === ref);
+    const product = pickProduct(items, ref);
+    if (product === "ambiguous") return null;
     if (!product) {
       warn("product-not-found", { ref, productsSeen: items.length });
       return null;

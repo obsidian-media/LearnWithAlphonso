@@ -34,6 +34,14 @@ function planEnv(prefix: "REVENUECAT_WEB" | "REVENUECAT_WEB_YEARLY"): PlanEnv | 
   return productId && trialLink && plainLink ? { productId, trialLink, plainLink } : null;
 }
 
+/** A condition that persists (a yearly plan that cannot be read) is logged once per server instance, not per request. */
+const warned = new Set<string>();
+function warnOnce(message: string): void {
+  if (warned.has(message)) return;
+  warned.add(message);
+  console.warn(`[pro-offering] ${message}`);
+}
+
 async function handle(request: Request): Promise<Response> {
   const accessToken = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
   if (!accessToken) return noStoreJson({ error: "unauthorized" }, { status: 401 });
@@ -77,10 +85,8 @@ async function handle(request: Request): Promise<Response> {
   // A monthly setting that names a yearly product would sell two yearly plans: refuse it rather than guess.
   if (!monthOffer) return unavailable("monthly-product-unreadable");
   if (monthOffer.period !== "month") return unavailable("monthly-wrong-period");
-  if (yearly && !yearOffer) console.warn("[pro-offering] yearly plan left out: product unreadable");
-  else if (yearOffer && yearOffer.period !== "year") {
-    console.warn("[pro-offering] yearly plan left out: wrong period");
-  }
+  if (yearly && !yearOffer) warnOnce("yearly plan left out: product unreadable");
+  else if (yearOffer && yearOffer.period !== "year") warnOnce("yearly plan left out: wrong period");
   if (summary.status === "unavailable") return unavailable("subscriber-unavailable");
   if (!summary.loginId) return unavailable("subscriber-no-login-id");
   // Already Pro (on any store): no checkout, so nobody can pay twice.

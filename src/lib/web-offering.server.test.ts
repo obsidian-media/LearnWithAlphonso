@@ -3,9 +3,9 @@ import {
   buildPurchaseUrl,
   clearWebOfferingCache,
   getWebOffering,
-  normalizeProjectId,
   parseIsoDuration,
 } from "./web-offering.server";
+import { normalizeProjectId } from "./revenuecat-project-id";
 
 const CONFIG = { secretApiKey: "sk_v1", v2SecretKey: "sk_v2", projectId: "proj1" };
 
@@ -227,5 +227,79 @@ describe("getWebOffering robustness", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(w.mock.calls[0]![0]).toContain("missing-v2-settings");
     w.mockRestore();
+  });
+});
+
+describe("getWebOffering pagination and ambiguity", () => {
+  const item = (over: Record<string, unknown>) => ({
+    id: "prodX",
+    store_identifier: "alphonso_pro_monthly_web",
+    subscription: { duration: "P1M" },
+    indicative_price: [{ currency: "USD", amount_micros: 9_990_000, country: "US" }],
+    ...over,
+  });
+  const warn = () => vi.spyOn(console, "warn").mockImplementation(() => {});
+
+  it("ignores a next_page that is not this project's product list, and logs it", async () => {
+    const w = warn();
+    const fetchImpl = vi.fn(async () =>
+      Response.json({ items: [], next_page: "https://evil.example/v2/projects/proj1/products" }),
+    );
+    await getWebOffering(CONFIG, "nope", fetchImpl as unknown as typeof fetch);
+    clearWebOfferingCache();
+    const other = vi.fn(async () =>
+      Response.json({ items: [], next_page: "/v2/projects/projOTHER/products?x=1" }),
+    );
+    await getWebOffering(CONFIG, "nope", other as unknown as typeof fetch);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(other).toHaveBeenCalledTimes(1);
+    expect(
+      w.mock.calls.map((c) => String(c[0])).filter((l) => l.includes("foreign-next-page")),
+    ).toHaveLength(2);
+    w.mockRestore();
+  });
+
+  it("stops at 5 pages and warns that the list was truncated", async () => {
+    const w = warn();
+    const fetchImpl = vi.fn(async () =>
+      Response.json({ items: [], next_page: "/v2/projects/proj1/products?starting_after=y" }),
+    );
+    expect(await getWebOffering(CONFIG, "nope", fetchImpl as unknown as typeof fetch)).toBeNull();
+    expect(fetchImpl).toHaveBeenCalledTimes(5);
+    expect(w.mock.calls.some((c) => String(c[0]).includes("page-cap-truncated"))).toBe(true);
+    w.mockRestore();
+  });
+
+  it("rejects a store identifier shared by several products, and logs it", async () => {
+    const w = warn();
+    const list = [item({ id: "prodA", app_id: "appA" }), item({ id: "prodB", app_id: "appB" })];
+    expect(
+      await getWebOffering(CONFIG, "alphonso_pro_monthly_web", productsResponse(list)),
+    ).toBeNull();
+    expect(w.mock.calls.some((c) => String(c[0]).includes("ambiguous-store-identifier"))).toBe(
+      true,
+    );
+    w.mockRestore();
+  });
+
+  it("prefers the Web Billing app's product when the payload names the app type", async () => {
+    const list = [
+      item({
+        id: "prodA",
+        app: { type: "app_store" },
+        indicative_price: [{ currency: "EUR", amount_micros: 1_000_000, country: "DE" }],
+      }),
+      item({ id: "prodB", app: { type: "rc_billing" } }),
+    ];
+    expect(
+      await getWebOffering(CONFIG, "alphonso_pro_monthly_web", productsResponse(list)),
+    ).toMatchObject({ currency: "USD" });
+  });
+
+  it("a RevenueCat product id still wins even when its store identifier is shared", async () => {
+    const list = [item({ id: "prodA" }), item({ id: "prodB" })];
+    expect(await getWebOffering(CONFIG, "prodB", productsResponse(list))).toMatchObject({
+      period: "month",
+    });
   });
 });
