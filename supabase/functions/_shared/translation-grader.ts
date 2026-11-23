@@ -32,12 +32,10 @@ export function buildGradingPrompt(args: {
   acceptableAnswers: string[];
   submission: string;
   course?: GraderCourse;
-  level?: string;
 }): string {
   const language = LANGUAGE_NAME[args.course ?? "en"] ?? LANGUAGE_NAME.en;
-  const level = args.level?.trim();
   return [
-    `You are marking one written answer in ${language === "English" ? "an" : "a"} ${language} course${level ? ` for learners at level ${level}` : ""}.`,
+    `You are marking one written answer in ${language === "English" ? "an" : "a"} ${language} course.`,
     `The answer must be written in ${language}.`,
     "",
     "Work in three steps.",
@@ -168,9 +166,8 @@ export async function gradeTranslationWithAi(args: {
   submission: string;
   apiKey: string;
   model: string;
-  /** The course and the unit's level, so the prompt names the real language (default English) and the learner's level. */
+  /** The course, so the prompt names the real language (default English). The prompt takes nothing else from the call site, so every grading path sends the identical prompt. */
   course?: GraderCourse;
-  level?: string;
   /** Called with the model's reply body on success, for the AI cost log; its failure never reaches the grading. */
   onUsage?: (body: unknown, requestedModel: string) => Promise<void> | void;
 }): Promise<AiTranslationVerdict | null> {
@@ -179,10 +176,10 @@ export async function gradeTranslationWithAi(args: {
       apiKey: args.apiKey,
       // A slow or half-open vendor connection would otherwise hold the
       // learner on a disabled "Checking..." button for the platform default.
-      // 15s is well past a normal completion and well short of feeling stuck;
+      // 20s is well past a normal completion and well short of feeling stuck;
       // a timeout lands in the catch below and yields null, which means "no
       // opinion" and leaves the local verdict standing.
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(20_000),
       body: {
         model: args.model,
         temperature: 0,
@@ -194,7 +191,6 @@ export async function gradeTranslationWithAi(args: {
               acceptableAnswers: args.acceptableAnswers,
               submission: args.submission,
               course: args.course,
-              level: args.level,
             }),
           },
         ],

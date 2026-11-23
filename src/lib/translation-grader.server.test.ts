@@ -84,16 +84,16 @@ describe("gradeTranslationWithAi", () => {
     expect(await gradeTranslationWithAi(ARGS)).toBeNull();
   });
 
-  it("names the course language and the level in the prompt it sends", async () => {
+  it("names the course language in the prompt it sends", async () => {
     const fetchMock = vi.fn(async (_url: string, _init: { body: string }) => ({
       ok: true,
       json: async () => ({ choices: [{ message: { content: reply(["x"], []) } }] }),
     }));
     vi.stubGlobal("fetch", fetchMock);
-    await gradeTranslationWithAi({ ...ARGS, course: "fr", level: "B1" });
+    await gradeTranslationWithAi({ ...ARGS, course: "fr" });
     const body = JSON.parse(fetchMock.mock.calls[0][1].body) as { messages: { content: string }[] };
     const sent = body.messages.map((m) => m.content).join(" ");
-    expect(sent).toContain("a French course for learners at level B1");
+    expect(sent).toContain("a French course.");
     expect(sent).not.toContain("beginner English course");
   });
 });
@@ -105,10 +105,10 @@ describe("buildGradingPrompt", () => {
     submission: "x",
   };
 
-  it("defaults to English and omits the level when none is given", () => {
+  it("defaults to English and never mentions a level", () => {
     const p = buildGradingPrompt(base);
     expect(p).toContain("an English course.");
-    expect(p).not.toContain("learners at level");
+    expect(p).not.toMatch(/level/i);
   });
 
   it.each([
@@ -116,10 +116,8 @@ describe("buildGradingPrompt", () => {
     ["es", "Spanish"],
     ["en", "English"],
   ] as const)("names %s as %s and never the old beginner-English wording", (course, name) => {
-    const p = buildGradingPrompt({ ...base, course, level: "A2" });
-    expect(p).toContain(
-      `${name === "English" ? "an" : "a"} ${name} course for learners at level A2`,
-    );
+    const p = buildGradingPrompt({ ...base, course });
+    expect(p).toContain(`${name === "English" ? "an" : "a"} ${name} course.`);
     expect(p).toContain(`written in ${name}`);
     expect(p).not.toMatch(/beginner English course/);
   });

@@ -21,4 +21,20 @@ describe("translation grader prompt", () => {
       block("src/lib/translation-grader.server.ts"),
     );
   });
+
+  it("is built from the course alone at every call site, so every path sends the same prompt", () => {
+    // The Deno regrade (complete-lesson, grade-review) cannot be run from here; pin its call sites as text.
+    for (const path of [
+      "src/routes/api/grade-translation.ts",
+      "src/lib/grade-lesson-answer.server.ts",
+      "src/lib/review.functions.ts",
+      "supabase/functions/_shared/answer-correctness.ts",
+    ]) {
+      const src = readFileSync(path, "utf8");
+      const call = /gradeTranslationWithAi\(\{[\s\S]*?\}\);/.exec(src);
+      expect(call, path).not.toBeNull();
+      expect(call![0], path).toContain("course");
+      expect(call![0], path).not.toMatch(/\blevel\b/);
+    }
+  });
 });

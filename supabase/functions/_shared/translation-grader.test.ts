@@ -13,15 +13,14 @@ Deno.test("leaves an ordinary answer unchanged", () => {
   assertEquals(withoutFenceMarkers("I don't understand."), "I don't understand.");
 });
 
-Deno.test("the prompt names the course language and the level, and asks for every element", () => {
+Deno.test("the prompt names the course language, and asks for every element", () => {
   const p = buildGradingPrompt({
     prompt: "Say that you are not hungry.",
     acceptableAnswers: ["No tengo hambre."],
     submission: "Tengo hambre.",
     course: "es",
-    level: "A2",
   });
-  assertStringIncludes(p, "a Spanish course for learners at level A2");
+  assertStringIncludes(p, "a Spanish course.");
   assertStringIncludes(p, "EVERY element");
   assertEquals(p.includes("beginner English course"), false);
 });

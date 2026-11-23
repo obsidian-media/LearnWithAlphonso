@@ -6,8 +6,10 @@
  *
  *   OPENROUTER_API_KEY=... bun scripts/check-translation-grader.ts [--cap 1.00] [--out results.json]
  *
- * The goal is 0 wrong answers accepted and at least 90% of the right ones accepted; the exit code is 1 when either
- * is missed. Spend is read from the `usage.cost` OpenRouter returns on every reply and the run stops at the cap
+ * The goal is 0 wrong answers accepted and at least 90% of the right ones accepted, measured on the MODEL-JUDGED
+ * cases only: a case the local accept-list settles never reached the model, so it is reported separately. A "no
+ * opinion" on a known-wrong case is a failure (production keeps the local verdict, so nothing rejected it). The exit
+ * code is 1 when the gate is missed. Spend is read from the `usage.cost` OpenRouter returns on every reply and the run stops at the cap
  * (default $1). The key is never printed. Owner-run: it costs a few cents and needs network.
  */
 import { readFileSync, writeFileSync } from "node:fs";
@@ -18,7 +20,6 @@ import { resolveLlmApiKey, resolveLlmChatModel } from "../src/lib/llm-chat-model
 type Case = {
   id: string;
   course: "en" | "fr" | "es";
-  level: string;
   prompt: string;
   acceptableAnswers: string[];
   submission: string;
@@ -97,8 +98,7 @@ async function run(c: Case): Promise<Result> {
     apiKey: key as string,
     model,
     course: c.course,
-    level: c.level,
-  } as Parameters<typeof gradeTranslationWithAi>[0]);
+  });
   if (!verdict) return { c, outcome: "no-opinion", reason: null, local: false };
   return {
     c,
@@ -119,27 +119,47 @@ await Promise.all(
   }),
 );
 
-const wrong = results.filter((r) => !r.c.expectCorrect);
-const right = results.filter((r) => r.c.expectCorrect);
+// A case the local accept-list settles never reached the model: it is reported on its own and counts toward neither
+// the rate nor the gate, except a known-wrong case the list accepts, which is a failure the model never got to catch.
+const modelJudged = results.filter((r) => !r.local);
+const localHits = results.filter((r) => r.local);
+const wrong = modelJudged.filter((r) => !r.c.expectCorrect);
+const right = modelJudged.filter((r) => r.c.expectCorrect);
 const wrongAccepted = wrong.filter((r) => r.outcome === "accepted");
+const noVerdict = (r: Result) => r.outcome === "no-opinion" || r.outcome === "skipped-cap";
+// A wrong case with no model verdict was NOT rejected by the grader (production keeps the local verdict).
+const wrongNoOpinion = wrong.filter(noVerdict);
 const rightAccepted = right.filter((r) => r.outcome === "accepted");
-const noOpinion = results.filter((r) => r.outcome === "no-opinion" || r.outcome === "skipped-cap");
+const rightNoOpinion = right.filter(noVerdict);
+const localWrongAccepted = localHits.filter((r) => !r.c.expectCorrect);
 
-for (const r of results) {
+for (const r of modelJudged) {
   const bad =
     (r.c.expectCorrect && r.outcome !== "accepted") ||
-    (!r.c.expectCorrect && r.outcome === "accepted");
+    (!r.c.expectCorrect && r.outcome !== "rejected");
   if (!bad) continue;
+  const label = r.c.expectCorrect
+    ? "RIGHT not accepted"
+    : r.outcome === "accepted"
+      ? "WRONG accepted"
+      : "WRONG got NO OPINION (failure)";
   console.log(
-    `${r.c.expectCorrect ? "RIGHT rejected" : "WRONG accepted"} [${r.outcome}] ${r.c.id} (${r.c.kind})\n  asked:  ${r.c.prompt}\n  answer: ${r.c.submission}\n  reason: ${r.reason ?? "-"}`,
+    `${label} [${r.outcome}] ${r.c.id} (${r.c.kind})\n  asked:  ${r.c.prompt}\n  answer: ${r.c.submission}\n  reason: ${r.reason ?? "-"}`,
+  );
+}
+for (const r of localWrongAccepted) {
+  console.log(
+    `WRONG accepted by the LOCAL accept-list (failure) ${r.c.id} (${r.c.kind})\n  answer: ${r.c.submission}`,
   );
 }
 const pct = right.length ? ((rightAccepted.length / right.length) * 100).toFixed(1) : "n/a";
 console.log(
-  `\nmodel: ${model}\ncases: ${results.length} (${wrong.length} known-wrong, ${right.length} known-right)` +
+  `\nmodel: ${model}\ncases: ${results.length}; settled by the local accept-list, not model-judged: ${localHits.length} (${localHits.map((r) => r.c.id).join(", ") || "none"})` +
+    `\nmodel-judged: ${modelJudged.length} (${wrong.length} known-wrong, ${right.length} known-right)` +
     `\nwrong answers accepted: ${wrongAccepted.length} of ${wrong.length}` +
-    `\nright answers accepted: ${rightAccepted.length} of ${right.length} (${pct}%)` +
-    `\nno opinion / skipped:   ${noOpinion.length}` +
+    `\nwrong answers with NO model opinion (counted as failures): ${wrongNoOpinion.length}` +
+    `\nright answers accepted: ${rightAccepted.length} of ${right.length} (${pct}%), no opinion: ${rightNoOpinion.length}` +
+    `\nknown-wrong answers accepted by the local list: ${localWrongAccepted.length}` +
     `\nmodel calls: ${calls}, tokens in/out: ${tokensIn}/${tokensOut}, cost: $${spentUsd.toFixed(4)}${estimated ? " (estimated from tokens, upper bound)" : ""} (cap $${capUsd.toFixed(2)})`,
 );
 if (outPath) {
@@ -151,6 +171,7 @@ if (outPath) {
         kind: r.c.kind,
         expectCorrect: r.c.expectCorrect,
         outcome: r.outcome,
+        local: r.local,
         reason: r.reason,
       })),
       null,
@@ -159,5 +180,9 @@ if (outPath) {
   );
 }
 const ok =
-  wrongAccepted.length === 0 && right.length > 0 && rightAccepted.length / right.length >= 0.9;
+  wrongAccepted.length === 0 &&
+  wrongNoOpinion.length === 0 &&
+  localWrongAccepted.length === 0 &&
+  right.length > 0 &&
+  rightAccepted.length / right.length >= 0.9;
 process.exit(ok ? 0 : 1);

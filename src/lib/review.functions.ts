@@ -308,7 +308,6 @@ export const gradeReview = createServerFn({ method: "POST" })
               apiKey,
               model: resolveLlmChatModel(),
               course,
-              level: ref.level,
             });
             if (verdict?.correct) correct = true;
           }
