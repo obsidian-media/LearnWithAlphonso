@@ -8,6 +8,7 @@ import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
 import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
 import { LessonFrame, MobileFrame } from "../../components/AppShell";
+import { HectorPanel } from "../../components/hector/HectorPanel";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
 import { WebPaywall } from "../../components/WebPaywall";
@@ -709,7 +710,20 @@ function HectorConversation({
   }
 
   return (
-    <MobileFrame aboveTabs={dockComposer}>
+    <MobileFrame
+      aboveTabs={dockComposer}
+      panel={
+        <HectorPanel
+          course={course}
+          chips={chips}
+          disabled={sending || transcribing || greetingLoading}
+          onPick={(chip) => {
+            interrupt();
+            void send(chip.message);
+          }}
+        />
+      }
+    >
       {classicTop}
       {hintAndLog}
     </MobileFrame>
