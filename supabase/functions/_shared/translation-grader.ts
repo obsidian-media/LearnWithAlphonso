@@ -200,6 +200,35 @@ export function isTypoOfKnownWord(written: string, acceptableAnswers: string[]):
 }
 
 /**
+ * The words of the submission that are typos of a known word (see `isTypoOfKnownWord`), each with the known word it
+ * is nearest to. Used to recognise a flagged item that is only about such a typo, whichever list the model put it in.
+ */
+function typoPairs(
+  submission: string,
+  acceptableAnswers: string[],
+): { written: string; near: string }[] {
+  const known = wordsOf(acceptableAnswers.join(" "));
+  const pairs: { written: string; near: string }[] = [];
+  for (const w of wordsOf(submission)) {
+    if (known.has(w) || !isTypoOfKnownWord(w, acceptableAnswers)) continue;
+    let best = "";
+    let bestDistance = Infinity;
+    for (const k of known) {
+      const d = editDistance(w, k);
+      if (d < bestDistance) [best, bestDistance] = [k, d];
+    }
+    pairs.push({ written: w, near: best });
+  }
+  return pairs;
+}
+
+const mentionsTypo = (text: string, pairs: { written: string; near: string }[]): boolean => {
+  // Quote marks around a word arrive as apostrophes, which `wordsOf` keeps inside words.
+  const words = new Set([...wordsOf(text)].map((w) => w.replace(/^'+|'+$/g, "")));
+  return pairs.some((p) => words.has(p.written) || words.has(p.near));
+};
+
+/**
  * Pulls the verdict out of whatever the model actually said, and decides it here.
  *
  * Models wrap JSON in prose and fences however they feel that day, so this takes the first balanced-looking object in
@@ -215,6 +244,7 @@ export function isTypoOfKnownWord(written: string, acceptableAnswers: string[]):
 export function decideVerdict(
   content: string,
   acceptableAnswers: string[] = [],
+  submission = "",
 ): AiTranslationVerdict | null {
   const start = content.indexOf("{");
   const end = content.lastIndexOf("}");
@@ -227,10 +257,27 @@ export function decideVerdict(
       unknown
     >;
     const required = strings(elements);
-    const lacking = strings(missing);
-    const added = strings(extra);
-    const wrongGrammar = strings(grammar);
-    if (!required || required.length === 0 || !lacking || !added || !wrongGrammar) return null;
+    const rawLacking = strings(missing);
+    const rawAdded = strings(extra);
+    const rawGrammar = strings(grammar);
+    if (!required || required.length === 0 || !rawLacking || !rawAdded || !rawGrammar) return null;
+    // A flagged item that is only about a typo (the model sometimes files a misspelling under `missing` or `grammar`
+    // instead of `spelling`) is not a reason to reject. Real-word confusions are never typo pairs, so "roam" stays out.
+    const pairs = typoPairs(submission, acceptableAnswers);
+    const notTypo = (item: string) => !mentionsTypo(item, pairs);
+    const lacking = rawLacking.filter(notTypo);
+    const added = rawAdded.filter(notTypo);
+    const wrongGrammar = rawGrammar.filter(notTypo);
+    const droppedTypo =
+      lacking.length + added.length + wrongGrammar.length <
+      rawLacking.length + rawAdded.length + rawGrammar.length;
+    // The model's own "false" is honoured, except when it only restates the typo (its reason names the typo and no
+    // list holds anything else).
+    const reasonText = typeof reason === "string" ? reason : "";
+    const falseOnlyForTypo =
+      correct === false &&
+      lacking.length + added.length + wrongGrammar.length === 0 &&
+      (droppedTypo || mentionsTypo(reasonText, pairs));
     // `spelling` is optional (nothing misspelled). Only an explicit true rejects, and only when it is not a plain typo.
     const slips = Array.isArray(spelling) ? spelling : [];
     const realWordSlips = slips.flatMap((entry) => {
@@ -251,12 +298,13 @@ export function decideVerdict(
       added.length === 0 &&
       wrongGrammar.length === 0 &&
       realWordSlips.length === 0 &&
-      correct !== false;
+      (correct !== false || falseOnlyForTypo);
     // A reason that cheers an answer the lists just rejected would contradict the verdict the learner sees.
     const said =
       typeof reason === "string" &&
       reason.trim() &&
       !(correct === true && !isCorrect) &&
+      !falseOnlyForTypo &&
       added.length === 0 &&
       wrongGrammar.length === 0 &&
       realWordSlips.length === 0
@@ -355,7 +403,11 @@ export async function gradeTranslationWithAi(args: {
     if (!resp.ok) return null;
     const data = (await resp.json()) as { choices?: { message?: { content?: string } }[] };
     await settleUsage(() => args.onUsage?.(data, args.model));
-    return decideVerdict(data.choices?.[0]?.message?.content ?? "", args.acceptableAnswers);
+    return decideVerdict(
+      data.choices?.[0]?.message?.content ?? "",
+      args.acceptableAnswers,
+      args.submission,
+    );
   } catch {
     return null;
   }

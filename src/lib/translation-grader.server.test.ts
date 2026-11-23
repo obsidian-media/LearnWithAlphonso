@@ -399,3 +399,63 @@ describe("grammar errors", () => {
     expect(p).toContain("Never put a note there that an element is acceptable");
   });
 });
+
+describe("a typo filed under missing, grammar or a false verdict (gate run 4)", () => {
+  const reply = (o: Record<string, unknown>) =>
+    JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o });
+  const en = ["Gratitude is important.", "Gratitude matters."];
+  const fr = ["Je pars demain matin."];
+
+  it("forgives a typo the model listed under missing", () => {
+    const v = decideVerdict(
+      reply({ missing: ["'gratitude' (written 'gratitute')"], correct: false }),
+      en,
+      "Gratitute is important.",
+    );
+    expect(v?.correct).toBe(true);
+  });
+
+  it("forgives a typo the model listed under grammar", () => {
+    const v = decideVerdict(
+      reply({
+        grammar: ["'demmain' is misspelled"],
+        correct: false,
+        reason: "fully correct in meaning and grammar, but 'demmain' is misspelled",
+      }),
+      fr,
+      "Je pars demmain matin.",
+    );
+    expect(v?.correct).toBe(true);
+    expect(v?.reason).toBeNull();
+  });
+
+  it("forgives a typo when only the model's boolean and reason complain", () => {
+    const v = decideVerdict(
+      reply({ correct: false, reason: "Your sentence is right, but 'gratitude' is misspelled" }),
+      en,
+      "Gratitute is important.",
+    );
+    expect(v?.correct).toBe(true);
+  });
+
+  it("still rejects a real missing element next to a typo", () => {
+    const v = decideVerdict(
+      reply({ missing: ["the word 'important'", "'gratitude' (written 'gratitute')"] }),
+      en,
+      "Gratitute is.",
+    );
+    expect(v?.correct).toBe(false);
+    expect(v?.reason).toContain("important");
+  });
+
+  it("still rejects roam for room, in missing, grammar or a false verdict", () => {
+    const room = ["My room is big."];
+    for (const o of [
+      { missing: ["'room' (written 'roam')"] },
+      { grammar: ["'roam' should be 'room'"] },
+      { correct: false, reason: "'roam' is not 'room'" },
+    ]) {
+      expect(decideVerdict(reply(o), room, "My roam is big.")?.correct).toBe(false);
+    }
+  });
+});

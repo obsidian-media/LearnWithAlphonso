@@ -119,3 +119,61 @@ Deno.test(
     assertEquals(decideVerdict('{"elements":["a"],"missing":[],"extra":[],"correct":true}'), null);
   },
 );
+
+const typoReply = (o: Record<string, unknown>) =>
+  JSON.stringify({ elements: ["a"], missing: [], extra: [], grammar: [], correct: true, ...o });
+
+Deno.test("a typo filed under missing, grammar or a false verdict is forgiven", () => {
+  const en = ["Gratitude is important.", "Gratitude matters."];
+  const fr = ["Je pars demain matin."];
+  assertEquals(
+    decideVerdict(
+      typoReply({ missing: ["'gratitude' (written 'gratitute')"], correct: false }),
+      en,
+      "Gratitute is important.",
+    )?.correct,
+    true,
+  );
+  assertEquals(
+    decideVerdict(
+      typoReply({
+        grammar: ["'demmain' is misspelled"],
+        correct: false,
+        reason: "fully correct in meaning and grammar, but 'demmain' is misspelled",
+      }),
+      fr,
+      "Je pars demmain matin.",
+    )?.correct,
+    true,
+  );
+  assertEquals(
+    decideVerdict(
+      typoReply({
+        correct: false,
+        reason: "Your sentence is right, but 'gratitude' is misspelled",
+      }),
+      en,
+      "Gratitute is important.",
+    )?.correct,
+    true,
+  );
+  assertEquals(
+    decideVerdict(
+      typoReply({ missing: ["the word 'important'", "'gratitude' (written 'gratitute')"] }),
+      en,
+      "Gratitute is.",
+    )?.correct,
+    false,
+  );
+});
+
+Deno.test("roam for room is still rejected in missing, grammar or a false verdict", () => {
+  const room = ["My room is big."];
+  for (const o of [
+    { missing: ["'room' (written 'roam')"] },
+    { grammar: ["'roam' should be 'room'"] },
+    { correct: false, reason: "'roam' is not 'room'" },
+  ]) {
+    assertEquals(decideVerdict(typoReply(o), room, "My roam is big.")?.correct, false);
+  }
+});
