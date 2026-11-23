@@ -2,6 +2,8 @@ package com.obsidianmedia.learnwithalphonso.core.podcast
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -47,8 +49,11 @@ class StoryCoverProbe(
             val asked = try {
                 check(url)
             } catch (e: CancellationException) {
-                lock.withLock { inFlight.remove(url) }
-                own.cancel()
+                // The asker went away: anyone waiting on it gets "unknown" (never remembered), not a cancellation of their own.
+                withContext(NonCancellable) {
+                    own.complete(CoverCheck.UNKNOWN)
+                    lock.withLock { inFlight.remove(url) }
+                }
                 throw e
             } catch (e: Exception) {
                 CoverCheck.UNKNOWN

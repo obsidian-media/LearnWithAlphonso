@@ -23,6 +23,8 @@ export type CoverProbeOptions = {
   missingTtlMs?: number;
   /** How long a HEAD may take before the answer is "unknown". */
   timeoutMs?: number;
+  /** When set, only URLs on this host are ever requested (the Supabase project's): anything else is "no cover". */
+  allowedHost?: string;
 };
 
 export const COVER_MISSING_TTL_MS = 10 * 60 * 1000;
@@ -33,6 +35,16 @@ export function createCoverProbe(options: CoverProbeOptions = {}): CoverProbe {
   const now = options.now ?? Date.now;
   const missingTtlMs = options.missingTtlMs ?? COVER_MISSING_TTL_MS;
   const timeoutMs = options.timeoutMs ?? COVER_PROBE_TIMEOUT_MS;
+  const allowedHost = options.allowedHost;
+  const hostAllowed = (url: string) => {
+    if (!allowedHost) return true;
+    try {
+      const u = new URL(url);
+      return u.host === allowedHost;
+    } catch {
+      return false;
+    }
+  };
   const found = new Set<string>();
   const missingUntil = new Map<string, number>();
   const inFlight = new Map<string, Promise<boolean>>();
@@ -55,6 +67,7 @@ export function createCoverProbe(options: CoverProbeOptions = {}): CoverProbe {
 
   return {
     exists(url) {
+      if (!hostAllowed(url)) return Promise.resolve(false);
       if (found.has(url)) return Promise.resolve(true);
       const until = missingUntil.get(url);
       if (until !== undefined && now() < until) return Promise.resolve(false);
@@ -65,4 +78,29 @@ export function createCoverProbe(options: CoverProbeOptions = {}): CoverProbe {
       return request;
     },
   };
+}
+
+/** The rows resolveLinearCovers reads: only what decides whether a story can have a linear cover. */
+export type CoverRow = { id: string; course: string; slug: string; branching: boolean };
+
+/**
+ * A linear story's cover URL by convention, for every linear story whose cover object exists. All the existence checks
+ * start together (never one after another), branching stories are never asked about (they keep their scene art), and a
+ * story whose check says no, or whose URL cannot be built, is simply absent from the result.
+ */
+export async function resolveLinearCovers(
+  rows: readonly CoverRow[],
+  urlOf: (course: string, slug: string) => string | null,
+  probe: CoverProbe,
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  await Promise.all(
+    rows
+      .filter((r) => !r.branching)
+      .map(async (r) => {
+        const url = urlOf(r.course, r.slug);
+        if (url && (await probe.exists(url))) out.set(r.id, url);
+      }),
+  );
+  return out;
 }

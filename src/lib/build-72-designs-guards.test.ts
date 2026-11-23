@@ -136,6 +136,29 @@ describe("pick 2: the Library All tab has a Podcasts rail, and the course is a c
   });
 });
 
+describe("Android launch hold: the order and the cap are real", () => {
+  const main = read(`${ANDROID}/java/com/obsidianmedia/learnwithalphonso/MainActivity.kt`);
+  const onCreate = main.slice(main.indexOf("override fun onCreate"));
+
+  it("installSplashScreen() runs before super.onCreate (the other order loses the splash theme)", () => {
+    const install = onCreate.indexOf("installSplashScreen()");
+    const sup = onCreate.indexOf("super.onCreate(savedInstanceState)");
+    expect(install).toBeGreaterThan(-1);
+    expect(sup).toBeGreaterThan(-1);
+    expect(install).toBeLessThan(sup);
+  });
+
+  it("the hold while the session restores is capped at 1500 ms and the cap is in the condition", () => {
+    expect(main).toMatch(/private const val LAUNCH_HOLD_MAX_MS = 1500L/);
+    const condition = onCreate.slice(
+      onCreate.indexOf("setKeepOnScreenCondition"),
+      onCreate.indexOf("super.onCreate"),
+    );
+    expect(condition).toContain("isRestoring.value");
+    expect(condition).toMatch(/elapsedRealtime\(\) - launchedAt < LAUNCH_HOLD_MAX_MS/);
+  });
+});
+
 describe("pick 4: Practice cards show real art on every platform", () => {
   it("the two vocab photos are bundled as small thumbnails everywhere", () => {
     for (const w of ["coffee", "train"]) {

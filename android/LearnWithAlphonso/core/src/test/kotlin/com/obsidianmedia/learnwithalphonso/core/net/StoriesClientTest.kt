@@ -127,6 +127,22 @@ class StoriesClientTest {
     }
 
     @Test
+    fun `a hung HEAD is unknown within the timeout`() = runTest {
+        val fake = FakeSupabase { kotlinx.coroutines.delay(30_000); json("") }
+        val started = System.nanoTime()
+        assertNull(fake.http.headStatus("https://example.supabase.co/x/cover.jpg", timeoutMs = 50))
+        assertTrue((System.nanoTime() - started) / 1_000_000 < 5_000, "the timeout ran on the real clock")
+    }
+
+    @Test
+    fun `an accented slug is asked about with a percent-encoded path`() = runTest {
+        val fake = coverFake("[${linearRow("l-\u00e9p\u00e9e")}]") { HttpStatusCode.OK }
+        val story = StoriesClient(fake.http, StoryCoverProbe()).fetchStories("en").single()
+        assertEquals("https://example.supabase.co/storage/v1/object/public/story-art/en/l-%C3%A9p%C3%A9e/cover.jpg", story.coverUrl)
+        assertTrue(fake.seen.single { it.method == "HEAD" }.path.endsWith("/l-%C3%A9p%C3%A9e/cover.jpg"))
+    }
+
+    @Test
     fun `a branching story keeps its scene art and is never probed`() = runTest {
         val nodes = """{"start":"n1","map":{"n1":{"segments":["a"],"art":"en/key/n1.jpg","ending":{"id":"good","title":"G","wrap":"w","quality":"good"}}}}"""
         val row = """{"id":"$storyId","course":"en","level_id":"A2","slug":"key","title":"The Key","sort_order":3,"published":true,"branching":true,"segments":[],"nodes":$nodes}"""

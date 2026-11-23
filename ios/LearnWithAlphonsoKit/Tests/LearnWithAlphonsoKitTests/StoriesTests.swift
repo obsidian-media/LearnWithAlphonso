@@ -23,6 +23,13 @@ final class StoriesTests: XCTestCase {
         var now: Date { get { lock.lock(); defer { lock.unlock() }; return _now } set { lock.lock(); _now = newValue; lock.unlock() } }
     }
 
+    private final class CounterBox: @unchecked Sendable {
+        private let lock = NSLock()
+        private var _value = 0
+        var value: Int { lock.lock(); defer { lock.unlock() }; return _value }
+        func increment() { lock.lock(); _value += 1; lock.unlock() }
+    }
+
     private final class FlagBox: @unchecked Sendable {
         private let lock = NSLock()
         private var _value = false
@@ -267,6 +274,58 @@ final class StoriesTests: XCTestCase {
         status.value = true
         let retried = try await client.fetchStories(course: "en").first?.coverURL
         XCTAssertNotNil(retried)
+    }
+
+    func testTwoConcurrentAskersShareOneRequest() async {
+        let probe = StoryCoverProbe()
+        let counter = CounterBox()
+        let url = URL(string: "https://project.supabase.co/storage/v1/object/public/story-art/en/x/cover.jpg")!
+        let check: @Sendable (URL) async -> CoverCheck = { _ in
+            counter.increment()
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            return .exists
+        }
+        async let first = probe.exists(url, check: check)
+        async let second = probe.exists(url, check: check)
+        let answers = await [first, second]
+        XCTAssertEqual(answers, [true, true])
+        XCTAssertEqual(counter.value, 1)
+    }
+
+    func testAnAccentedSlugIsAPercentEncodedURLAndIsWhatTheHeadAsksAbout() async throws {
+        let slug = "l-\u{00E9}p\u{00E9}e"
+        XCTAssertEqual(
+            Stories.linearCoverURL(supabaseURL: supabaseURL, course: "fr", slug: slug)?.absoluteString,
+            "https://project.supabase.co/storage/v1/object/public/story-art/fr/l-%C3%A9p%C3%A9e/cover.jpg")
+        let box = RequestBox()
+        let client = coverClient(rows: [linearRow(slug: slug)], coverStatus: { _ in 200 }, box: box)
+        _ = try await client.fetchStories(course: "en")
+        let head = await box.requests.first { $0.httpMethod == "HEAD" }
+        XCTAssertEqual(head?.url?.absoluteString.hasSuffix("/l-%C3%A9p%C3%A9e/cover.jpg"), true)
+    }
+
+    func testTheHeadHasAShortTimeoutAndATimedOutCheckIsNotRemembered() async throws {
+        let box = RequestBox()
+        let flag = FlagBox()
+        let client = PodcastClient(
+            supabaseURL: supabaseURL, anonKey: "k", accessToken: "t",
+            requester: { request in
+                await box.record(request)
+                if request.httpMethod == "HEAD" {
+                    if !flag.value { throw URLError(.timedOut) }
+                    return (Data(), HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+                }
+                if request.url!.path.hasSuffix("/stories") { return self.json([self.linearRow(slug: "slow")]) }
+                return self.json([])
+            },
+            coverProbe: StoryCoverProbe())
+        let timedOut = try await client.fetchStories(course: "en").first?.coverURL
+        XCTAssertNil(timedOut, "a hung or timed-out HEAD means no cover this time")
+        flag.value = true
+        let retried = try await client.fetchStories(course: "en").first?.coverURL
+        XCTAssertNotNil(retried)
+        let head = await box.requests.first { $0.httpMethod == "HEAD" }
+        XCTAssertEqual(head?.timeoutInterval, 3, "a hung HEAD is cut off by the request's own timeout")
     }
 
     func testABranchingStoryKeepsItsSceneArtAndIsNeverProbed() async throws {

@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { publicError } from "./public-error";
 import type { PodcastQuizResult } from "./podcast-quiz.functions";
 import { allEndings, type StoryGraph } from "./branching";
-import { createCoverProbe } from "./story-cover-probe";
+import { createCoverProbe, resolveLinearCovers } from "./story-cover-probe";
 import {
   clampSegment,
   isStoryCourse,
@@ -19,7 +19,17 @@ import {
 const STORY_ART_BUCKET = "story-art";
 
 /** One per server instance: a linear cover is looked up once, not on every library load (story-cover-probe.ts). */
-const coverProbe = createCoverProbe();
+const coverProbe = createCoverProbe({
+  allowedHost: (() => {
+    try {
+      return (
+        new URL(process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "").host || undefined
+      );
+    } catch {
+      return undefined;
+    }
+  })(),
+});
 
 /** The result of finishing a branching path; the ending and credit are the server's, never the client's. */
 export type FinishBranchingResult = {
@@ -160,14 +170,10 @@ export const listStories = createServerFn({ method: "GET" })
       );
     const byStory = new Map(((prog.data ?? []) as ProgressRow[]).map((p) => [p.story_id, p]));
     // A linear story's illustrated cover is read by convention (<course>/<slug>/cover.jpg) when the object exists.
-    const linearCovers = new Map<string, string>();
-    await Promise.all(
-      rows
-        .filter((r) => !r.branching && isStoryCourse(r.course))
-        .map(async (r) => {
-          const url = artUrlOf(context.supabase, linearCoverKey(r.course as StoryCourse, r.slug));
-          if (url && (await coverProbe.exists(url))) linearCovers.set(r.id, url);
-        }),
+    const linearCovers = await resolveLinearCovers(
+      rows.filter((r) => isStoryCourse(r.course)),
+      (course, slug) => artUrlOf(context.supabase, linearCoverKey(course as StoryCourse, slug)),
+      coverProbe,
     );
     return rows.map((r) => {
       const p = byStory.get(r.id);

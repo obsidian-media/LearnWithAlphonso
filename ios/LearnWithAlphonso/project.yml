@@ -163,7 +163,7 @@ targets:
         # The launch screen is the UILaunchScreen dict in Info.plist (LaunchBackground colour set + LaunchIcon image,
         # the brand colour and the app icon), which replaces INFOPLIST_KEY_UILaunchScreen_Generation (a blank
         # auto-generated screen). RootView's restoring view draws the same colour and icon so the hand-off cannot be
-        # seen. Pinned by src/lib/ios-launch-screen-guards.test.ts.
+        # seen. Pinned by src/lib/build-72-designs-guards.test.ts.
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
         # App Store Connect's upload validation (error 90474) requires all
         # four orientations declared even for a TARGETED_DEVICE_FAMILY=1

@@ -565,3 +565,19 @@ describe("the boot splash (owner pick 1)", () => {
     expect(BOOT_SPLASH_CSS).toContain("html[data-booted] #boot-splash{opacity:0;visibility:hidden");
   });
 });
+
+describe("the boot splash failsafe", () => {
+  it("hides itself with CSS alone after the failsafe delay, so a failed bundle never leaves a stuck overlay", async () => {
+    const { BOOT_SPLASH_CSS, BOOT_SPLASH_FAILSAFE_S } = await import("../lib/boot-splash");
+    expect(BOOT_SPLASH_FAILSAFE_S).toBeGreaterThanOrEqual(5);
+    expect(BOOT_SPLASH_FAILSAFE_S).toBeLessThanOrEqual(15);
+    // The base rule runs the keyframes after the delay, with no JavaScript involved ...
+    expect(BOOT_SPLASH_CSS).toContain(
+      `animation:boot-splash-out 0s ${BOOT_SPLASH_FAILSAFE_S}s forwards`,
+    );
+    // ... and the keyframes end hidden and click-through.
+    expect(BOOT_SPLASH_CSS).toMatch(
+      /@keyframes boot-splash-out\{to\{visibility:hidden;opacity:0;pointer-events:none\}\}/,
+    );
+  });
+});
