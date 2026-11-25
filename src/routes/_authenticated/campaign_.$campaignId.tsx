@@ -798,6 +798,7 @@ function CampaignChatPage({
       <LessonFrame>
         <PracticeCall
           title={sceneLine}
+          heading={`Call: ${sceneLine}`}
           // A campaign is not a scenario: it always gets the default room, even where an id looks like one.
           scenarioId={null}
           room={LESSON_STUDY_ROOM}

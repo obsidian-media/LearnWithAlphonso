@@ -47,17 +47,16 @@ const room = (c: HTMLElement) =>
   (c.firstElementChild as HTMLElement).style.backgroundImage.replace(/url\(["']?|["']?\)/g, "");
 
 describe("the call's page heading", () => {
-  it("is the call's title when the caller names none, so a practice call has an h1", () => {
-    const { getByRole } = render(<PracticeCall {...base} scenarioId="coffee" />);
-    expect(getByRole("heading", { level: 1, name: "Ordering a coffee" })).toBeTruthy();
+  it("is the caller's heading, as a level-1 heading", () => {
+    const { getByRole } = render(
+      <PracticeCall {...base} scenarioId="coffee" heading="Call: Ordering a coffee" />,
+    );
+    expect(getByRole("heading", { level: 1, name: "Call: Ordering a coffee" })).toBeTruthy();
   });
 
-  it("is the caller's heading when one is given (Hector's)", () => {
-    const { getByRole, queryByRole } = render(
-      <PracticeCall {...base} scenarioId="coffee" heading="Hector" />,
-    );
-    expect(getByRole("heading", { level: 1, name: "Hector" })).toBeTruthy();
-    expect(queryByRole("heading", { level: 1, name: "Ordering a coffee" })).toBeNull();
+  it("is left out when none is given, so the visible title is not read twice", () => {
+    const { queryByRole } = render(<PracticeCall {...base} scenarioId="coffee" />);
+    expect(queryByRole("heading", { level: 1 })).toBeNull();
   });
 });
 

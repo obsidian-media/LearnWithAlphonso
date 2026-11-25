@@ -47,7 +47,7 @@ export type CallCaption = {
 type Props = {
   /** The scenario's name, shown under "Alphonso". */
   title: string;
-  /** A visually hidden page heading, for a screen that is the whole page and has no other h1 (Hector's). */
+  /** A visually hidden page heading, for a screen that is the whole page and has no other h1 (a call's). */
   heading?: string;
   /** Who is on the call: the name in the call bar, his art and his default room. Alphonso unless told otherwise. */
   kit?: CharacterKit;
@@ -243,8 +243,7 @@ export function PracticeCall(props: Props) {
         color: "var(--c-on-hero)",
       }}
     >
-      {/* The call is the whole page: its title is the heading unless the caller names one (Hector does). */}
-      {(heading ?? title) && <h1 className="sr-only">{heading ?? title}</h1>}
+      {heading && <h1 className="sr-only">{heading}</h1>}
       {art.dimInDark && dark && (
         <div
           aria-hidden="true"

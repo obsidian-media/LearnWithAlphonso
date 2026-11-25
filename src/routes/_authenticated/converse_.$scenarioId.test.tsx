@@ -636,6 +636,10 @@ describe("Converse call screen (setting on, the default)", () => {
   it("is a full-screen call: Alphonso hidden from assistive technology, the three controls labelled", async () => {
     await renderCall();
     expect(screen.getByTestId("alphonso-stage")).toHaveAttribute("aria-hidden", "true");
+    // The call is the whole page, so it has one heading: the scenario, as a call.
+    expect(
+      screen.getByRole("heading", { level: 1, name: `Call: ${scenario.title}` }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Show the conversation" })).toBeInTheDocument();
     // Hanging up scores the call first (Practice stars); with no reply yet it goes straight back to Practice.
