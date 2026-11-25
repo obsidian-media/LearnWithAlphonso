@@ -84,7 +84,7 @@ export function SceneBackdrop({
     <div
       aria-hidden="true"
       data-scene={scene}
-      className="pointer-events-none fixed inset-y-0 left-1/2 z-0 w-full max-w-[430px] -translate-x-1/2 overflow-hidden"
+      className="pointer-events-none fixed inset-y-0 left-1/2 z-0 w-full max-w-[430px] -translate-x-1/2 overflow-hidden md:sticky md:inset-y-auto md:left-auto md:top-0 md:-mb-[100dvh] md:h-dvh md:max-w-none md:translate-x-0"
     >
       <div ref={layer} data-parallax className={LAYER}>
         {clip ? (

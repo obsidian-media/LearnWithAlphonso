@@ -13,7 +13,7 @@ export function LessonScreen({ children }: { children: ReactNode }) {
     >
       <main
         id="main-content"
-        className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-ds-surface"
+        className="mx-auto flex min-h-dvh max-w-[430px] flex-col bg-ds-surface md:max-w-[640px]"
       >
         {children}
       </main>
