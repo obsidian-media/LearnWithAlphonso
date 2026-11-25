@@ -1,6 +1,8 @@
 package com.obsidianmedia.learnwithalphonso
 
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.test.core.app.ActivityScenario
 import androidx.compose.ui.test.hasClickAction
@@ -49,6 +51,20 @@ class ScreenshotTest {
 
     @Test
     fun captureStoreScreenshots() {
+        try {
+            captureAll()
+        } catch (t: Throwable) {
+            // Leave evidence next to the screenshots: what was on screen and the semantics tree, so a red run says why.
+            runCatching { shot("zz-failure") }
+            runCatching {
+                val dir = File(context.getExternalFilesDir(null), "screenshots").apply { mkdirs() }
+                File(dir, "zz-failure-tree.txt").writeText(t.toString() + System.lineSeparator() + compose.onRoot(useUnmergedTree = true).printToString(maxDepth = 40))
+            }
+            throw t
+        }
+    }
+
+    private fun captureAll() {
         ActivityScenario.launch(MainActivity::class.java)
         waitForText("Learn", 30_000)
         // The level chips and the status header arrive from the network after the tab; give them a moment.
