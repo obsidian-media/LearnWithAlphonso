@@ -29,10 +29,9 @@ export const Route = createFileRoute("/api/tts")({
           // turn already spent Hector's allowance. Auth, the AI switch and consent still run; only the charge is skipped.
           const turnToken = new URL(request.url).searchParams.get("turn");
           const access = await timer.time("auth", () =>
-            authorizeAiRequest(request, "tts", {
-              route: "tts",
-              ...(turnToken !== null ? { deferQuota: true } : {}),
-            }),
+            turnToken !== null
+              ? authorizeAiRequest(request, "tts", { route: "tts", deferQuota: true })
+              : authorizeAiRequest(request, "tts", { route: "tts" }),
           );
           if (!access.ok) return access.response;
           let body: { text?: string; voice?: string; course?: string; character?: string };

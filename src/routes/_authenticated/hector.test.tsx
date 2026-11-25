@@ -291,6 +291,7 @@ describe("web Hector", () => {
       course: "fr",
       cefr_level: "A2",
       voice: "aura-2-hector-fr",
+      split_tts: true,
     });
     expect(turns[1]).toEqual({
       text: "Ça va bien",
@@ -302,6 +303,7 @@ describe("web Hector", () => {
       course: "fr",
       cefr_level: "A2",
       voice: "aura-2-hector-fr",
+      split_tts: true,
     });
     expect(URL.createObjectURL).toHaveBeenCalled();
   });
