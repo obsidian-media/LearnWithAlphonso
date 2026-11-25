@@ -36,6 +36,10 @@ on:
         type: choice
         default: internal
         options: [internal, alpha, beta, production]
+      screenshots_only:
+        description: "Run only the store-screenshot job (skips the signed bundle and any Play upload)"
+        type: boolean
+        default: false
 
 # Least privilege: nothing here writes to the repository with GITHUB_TOKEN.
 permissions:
@@ -51,6 +55,7 @@ env:
 jobs:
   bundle:
     name: Signed release bundle
+    if: ${{ !inputs.screenshots_only }}
     runs-on: ubuntu-latest
     environment: android-release
     defaults:
@@ -174,6 +179,7 @@ jobs:
     # mints the iOS one; the test skips itself when no session is passed.
     name: Store screenshots (API 34 emulator)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: production-supabase
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -220,7 +226,8 @@ jobs:
           target: google_apis
           # 1080x2400 at 420 dpi: a plain phone portrait Play accepts as-is.
           profile: pixel_6
-          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          # swangle_indirect, as the passing instrumentation job in android-ci.yml: the older swiftshader_indirect hangs the emulator under Compose load.
+          emulator-options: -no-snapshot -no-window -gpu swangle_indirect -noaudio -no-boot-anim
           disable-animations: true
           working-directory: android/LearnWithAlphonso
           # The action runs each script LINE as its own sh -c, so the whole command
