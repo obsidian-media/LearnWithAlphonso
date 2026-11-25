@@ -77,7 +77,8 @@ export function contentSecurityPolicy(nonce: string, supabaseUrl?: string): stri
     // Script execution remains nonce-only; style tightening is a separate migration.
     "style-src 'self' 'unsafe-inline'",
     `img-src ${images}`,
-    `media-src ${["'self'", "blob:", supabaseOrigin, legacyOrigin].filter(Boolean).join(" ")}`,
+    // data: is the one-tenth-of-a-second silent clip that unlocks the voice for Hector and the call (voice-playback.ts).
+    `media-src ${["'self'", "blob:", "data:", supabaseOrigin, legacyOrigin].filter(Boolean).join(" ")}`,
     `connect-src ${connect}`,
     "font-src 'self' data:",
     "object-src 'none'",
