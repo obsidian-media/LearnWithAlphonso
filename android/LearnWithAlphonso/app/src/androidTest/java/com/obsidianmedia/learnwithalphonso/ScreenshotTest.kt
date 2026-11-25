@@ -107,13 +107,17 @@ class ScreenshotTest {
     private fun tag(tag: String) = hasTestTag(tag)
 
     /** Per tab: something only that screen, loaded, shows (read from the screens' code), and the error texts it must not show. */
-    private class Marker(val shown: SemanticsMatcher, val absent: List<String> = emptyList())
+    private class Marker(val shown: List<Pair<String, SemanticsMatcher>>, val absent: List<String> = emptyList()) {
+        constructor(shown: SemanticsMatcher, absent: List<String> = emptyList()) : this(listOf("content" to shown), absent)
+    }
 
     private val markers = mapOf(
         "Learn" to Marker(heading("For you")),
         "Library" to Marker(hasText("Library") and !hasClickAction()),
         "Practice" to Marker(heading("Practice"), absent = listOf("Could not load Practice.")),
-        "Hector" to Marker(tag("hector-header")),
+        // A Pro account sees the tutor (hector-header); an account without Pro sees the paywall, which is also what a
+        // store listing shows. The test does not grant Pro. Either way it is the real Hector tab, not an error.
+        "Hector" to Marker(listOf("tutor header" to tag("hector-header"), "paywall" to heading("A tutor who remembers you."))),
         "Profile" to Marker(hasText("Edit your answers"), absent = listOf("Profile could not load.")),
     )
 
@@ -134,7 +138,9 @@ class ScreenshotTest {
         compose.waitUntil(timeoutMillis) {
             compose.onAllNodes(hasText(label) and hasClickAction() and isSelected()).fetchSemanticsNodes().isNotEmpty()
         }
-        compose.waitUntil(timeoutMillis) { compose.onAllNodes(marker.shown).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(timeoutMillis) { marker.shown.any { (_, m) -> compose.onAllNodes(m).fetchSemanticsNodes().isNotEmpty() } }
+        val seen = marker.shown.first { (_, m) -> compose.onAllNodes(m).fetchSemanticsNodes().isNotEmpty() }.first
+        android.util.Log.i("ScreenshotTest", "$label: saw the $seen marker")
         compose.waitUntil(timeoutMillis) { compose.onAllNodes(loadingSpinner).fetchSemanticsNodes().isEmpty() }
         marker.absent.forEach { text ->
             check(compose.onAllNodes(hasText(text)).fetchSemanticsNodes().isEmpty()) { "$label shows its error state: $text" }
