@@ -69,4 +69,44 @@ class AccountSuspensionTest {
         assertNull(m.freshAccessToken(force = true))
         assertNull(m.errorMessage.value)
     }
+
+    @Test
+    fun `a banned sign-in raises the full-screen flag and signing out of it clears everything`() = runTest {
+        val engine = MockEngine { respond("""{"msg":"User is banned","error_code":"user_banned"}""", HttpStatusCode.BadRequest) }
+        val m = SessionManager(SupabaseAuthClient("https://x", "pk", engine) { now }, MemoryStore()) { now }
+        assertFalse(m.suspended.value)
+        m.requestCode("a@b.c")
+        assertTrue(m.suspended.value)
+        m.dismissSuspension()
+        assertFalse(m.suspended.value)
+        assertNull(m.errorMessage.value)
+    }
+
+    @Test
+    fun `a banned refresh at launch or later raises the flag, an ordinary rejection does not`() = runTest {
+        val banned = MockEngine { respond("""{"msg":"User is banned","error_code":"user_banned"}""", HttpStatusCode.BadRequest) }
+        val launch = SessionManager(SupabaseAuthClient("https://x", "pk", banned) { now }, MemoryStore(SupabaseSession("at", "rt", now - 10, "u1"))) { now }
+        launch.restore()
+        assertTrue(launch.suspended.value, "found at cold launch")
+
+        val later = SessionManager(SupabaseAuthClient("https://x", "pk", banned) { now }, MemoryStore(SupabaseSession("at", "rt", now + 3600, "u1"))) { now }
+        later.restore()
+        later.freshAccessToken(force = true)
+        assertTrue(later.suspended.value, "found by a later refresh")
+
+        val plain = MockEngine { respond("""{"error":"invalid_grant"}""", HttpStatusCode.BadRequest) }
+        val ordinary = SessionManager(SupabaseAuthClient("https://x", "pk", plain) { now }, MemoryStore(SupabaseSession("at", "rt", now - 10, "u1"))) { now }
+        ordinary.restore()
+        assertFalse(ordinary.suspended.value)
+    }
+
+    @Test
+    fun `the full-screen labels name the action and the address, and a blank reason is none`() {
+        assertEquals("mailto:support@learnwithalphonso.com", AccountSuspension.CONTACT_URL)
+        assertTrue(AccountSuspension.CONTACT_LABEL.contains("support@learnwithalphonso.com"))
+        assertTrue(AccountSuspension.SIGN_OUT_LABEL.startsWith("Sign out"))
+        assertEquals("Repeated abuse of chat", AccountSuspension.reasonLine("  Repeated abuse of chat "))
+        assertNull(AccountSuspension.reasonLine("   "))
+        assertNull(AccountSuspension.reasonLine(null))
+    }
 }

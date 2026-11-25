@@ -133,7 +133,7 @@ final class ScreenshotTests: XCTestCase {
         card.tap()
         _ = capture(
             "03-story-scene", screen: "a story scene",
-            present: [("the scene label", app.staticTexts["Scene 1"]), ("the story title", app.staticTexts["Touchdown"])],
+            present: [("the scene label", el("label ==[c] %@", "Scene 1")), ("the story title", app.staticTexts["Touchdown"])],
             absent: [
                 ("the story load error", el("label CONTAINS %@", "couldn't load this story")),
                 ("story not found", el("label CONTAINS %@", "Story not found")),
@@ -151,7 +151,7 @@ final class ScreenshotTests: XCTestCase {
             "08-profile", screen: "Profile",
             present: [
                 ("the Profile title", app.navigationBars["Profile"]),
-                ("the level in the profile hero", el("label MATCHES %@", ".*Level [0-9]+.*")),
+                ("the level in the profile hero", el("label MATCHES %@", "Level [A-C][12].*")),
             ],
             absent: [("the profile load error", el("label CONTAINS %@", "Profile could not load"))])
     }
@@ -180,7 +180,7 @@ final class ScreenshotTests: XCTestCase {
         let startCall = app.buttons.matching(NSPredicate(format: "label == %@", "Start the call")).firstMatch
         _ = capture(
             "05a-practice-call-sheet", screen: "the call start sheet",
-            present: [("Start the call", startCall), ("How to earn stars", app.staticTexts["How to earn stars"])],
+            present: [("Start the call", startCall), ("How to earn stars", el("label ==[c] %@", "How to earn stars"))],
             absent: [])
         guard startCall.exists else { recoverToTabs(); return }
         // Mic and speech permission alerts and the AI consent sheet can both appear while the call opens.
@@ -197,7 +197,7 @@ final class ScreenshotTests: XCTestCase {
 
     /// 06: Hector, the Pro tutor. Needs a Pro account; this test never grants Pro.
     private func captureHector() {
-        guard openTab("Hector", shot: "06-hector") else { return }
+        guard openTab("Hector", shot: "06-hector", hidesBar: true) else { return }
         let ok = capture(
             "06-hector", screen: "Hector",
             present: [("Hector's call screen", el("label BEGINSWITH %@", "Hold to talk to Hector")), ("End the call", app.buttons["End the call"])],
@@ -288,12 +288,16 @@ final class ScreenshotTests: XCTestCase {
 
     /// Selects a tab and proves it is selected (a tap that lands on a sheet still "succeeds" and the caller would
     /// photograph whatever was already up).
-    private func openTab(_ label: String, shot: String) -> Bool {
+    /// `hidesBar`: the tab opens a full-screen call that hides the tab bar, so a vanished bar after the tap is success
+    /// (the call screen's own markers prove the screen).
+    private func openTab(_ label: String, shot: String, hidesBar: Bool = false) -> Bool {
         recoverToTabs()
         let button = app.tabBars.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", label)).firstMatch
         guard button.waitForExistence(timeout: 15) else { fail(shot, "no \(label) tab in the tab bar"); return false }
         for _ in 0..<3 {
-            if button.isHittable { button.tap() }
+            if button.exists && button.isHittable { button.tap() }
+            Thread.sleep(forTimeInterval: 0.5)
+            if !button.exists { if hidesBar { return true } else { continue } }
             if button.isSelected { return true }
             Thread.sleep(forTimeInterval: 1)
         }
