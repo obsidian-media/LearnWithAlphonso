@@ -6,6 +6,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.getOrNull
 import com.obsidianmedia.learnwithalphonso.core.firstrun.CompleteProfileSkip
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.printToString
