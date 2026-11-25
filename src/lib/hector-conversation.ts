@@ -134,6 +134,7 @@ export type TutorReplyPayload = {
   session_id: string;
   agent: string;
   reply: string;
+  /** "" when the voice could not be made: the reply is still good, and the client speaks it with the device voice. Always present: iOS decodes the key as required. */
   audio_base64: string;
   tts_model: string;
   tts_provider: string;
@@ -149,7 +150,8 @@ export function shapeTutorReply(args: {
   sessionId: string;
   agent: string;
   reply: string;
-  audioBase64: string;
+  /** Omitted or empty when the voice failed: the payload then carries "". */
+  audioBase64?: string;
   ttsModel: string;
   language: string;
   llmMs: number;
@@ -161,7 +163,7 @@ export function shapeTutorReply(args: {
     session_id: args.sessionId,
     agent: args.agent,
     reply: args.reply,
-    audio_base64: args.audioBase64,
+    audio_base64: args.audioBase64 ?? "",
     tts_model: args.ttsModel,
     tts_provider: "deepgram",
     language: args.language,

@@ -1,3 +1,4 @@
+import { claimAudioSession, registerAudioOwner } from "../lib/audio-session";
 import { useCallback, useEffect, useRef } from "react";
 import { track } from "../lib/analytics";
 import { usePodcastPlayer } from "../lib/podcast-player";
@@ -93,10 +94,17 @@ export function PodcastAudio() {
     if (audioRef.current) audioRef.current.playbackRate = rate;
   }, [rate, episodeId]);
 
+  // One voice at a time: a call or a story narration pauses the podcast, and starting the podcast stops them.
+  useEffect(
+    () => registerAudioOwner("podcast", () => usePodcastPlayer.getState().setPlaying(false)),
+    [],
+  );
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     if (isPlaying) {
+      claimAudioSession("podcast");
       // play() resolves to a Promise in modern browsers but is specified
       // to return undefined in older ones -- and jsdom returns undefined
       // too, so calling .catch() unguarded throws rather than handling

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { acquireAudioContext, suspendAudioContext } from "../shared-audio-context";
 
 /** Bars in the "You" tile. */
 export const LEVEL_BARS = 5;
@@ -39,7 +40,6 @@ export function useMicLevel(
       return;
     }
     let raf = 0;
-    let ctx: AudioContext | null = null;
     let cancelled = false;
     // The stream arrives a moment after the press (permission, getUserMedia): look for it each frame.
     let analyser: AnalyserNode | null = null;
@@ -52,7 +52,12 @@ export function useMicLevel(
         const stream = getStreamRef.current();
         if (!stream) return;
         try {
-          ctx = new Ctx();
+          // The context every microphone reader shares (see shared-audio-context.ts), not one of its own.
+          const ctx = acquireAudioContext();
+          if (!ctx) {
+            cancelled = true;
+            return;
+          }
           source = ctx.createMediaStreamSource(stream);
           analyser = ctx.createAnalyser();
           analyser.fftSize = 512;
@@ -73,7 +78,8 @@ export function useMicLevel(
       cancelled = true;
       cancelAnimationFrame(raf);
       source?.disconnect();
-      void ctx?.close().catch(() => {});
+      // The recording is over: free the audio session so the reply that follows plays at full volume.
+      if (source) suspendAudioContext();
       rest();
     };
   }, [active]);

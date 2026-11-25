@@ -8,7 +8,7 @@ import { useNight } from "@/lib/use-night";
 import { LEVEL_BARS, useMicLevel } from "@/lib/avatar/use-mic-level";
 import { playSfx, registerVoiceProbe } from "@/lib/sfx";
 import { handsFreeStatusLine, HANDS_FREE_PAUSE, HANDS_FREE_RESUME } from "@/lib/hands-free-copy";
-import { HandsFreeSwitch, type HandsFreeCall } from "./HandsFreeSwitch";
+import { HandsFreeChip, HandsFreeSwitch, type HandsFreeCall } from "./HandsFreeSwitch";
 
 /** A design token (a --c-* colour) at a share of its strength, over whatever is behind it. */
 const tone = (token: string, percent: number) =>
@@ -89,6 +89,11 @@ type Props = {
    * button and a status pill. Omit it for a browser that cannot do it.
    */
   handsFree?: HandsFreeCall;
+  /**
+   * A reply the browser would not play by itself: the "Tap to hear" button (a tap is what lets the browser play it) and a
+   * way to skip it. While it shows, hands-free keeps the microphone shut.
+   */
+  tapToHear?: { onTap: () => void; onSkip: () => void; partner: string } | null;
 };
 
 const MODE_LABEL: Record<AvatarMode, string> = {
@@ -134,6 +139,7 @@ export function PracticeCall(props: Props) {
     extra,
     reducedMotion,
     handsFree,
+    tapToHear,
   } = props;
   const night = useNight();
   const dark = darkProp ?? night;
@@ -339,6 +345,43 @@ export function PracticeCall(props: Props) {
         </span>
       </div>
 
+      {handsFree && (
+        <HandsFreeChip
+          call={handsFree}
+          className="absolute left-[18px] top-[64px] z-[5]"
+          style={{
+            background: handsFree.on ? tone("call-mint", 40) : GLASS,
+            backdropFilter: "blur(10px)",
+            border: `1px solid ${tone("on-hero", handsFree.on ? 40 : 18)}`,
+            fontFamily: SANS_FACE,
+          }}
+        />
+      )}
+      {tapToHear && (
+        <div
+          className="absolute inset-x-[18px] z-[7] flex items-center justify-center gap-2"
+          style={{ bottom: 212 + lift }}
+        >
+          <button
+            type="button"
+            data-testid="tap-to-hear"
+            onClick={tapToHear.onTap}
+            className="min-h-11 rounded-full px-5 text-sm font-bold"
+            style={{ background: "var(--c-on-hero)", color: "var(--c-call-glass)" }}
+          >
+            Tap to hear {tapToHear.partner}
+          </button>
+          <button
+            type="button"
+            data-testid="tap-to-hear-skip"
+            onClick={tapToHear.onSkip}
+            className="min-h-11 rounded-full px-4 text-sm font-bold"
+            style={{ background: GLASS_STRONG, backdropFilter: "blur(10px)" }}
+          >
+            Skip
+          </button>
+        </div>
+      )}
       <div
         aria-hidden="true"
         data-testid="you-tile"

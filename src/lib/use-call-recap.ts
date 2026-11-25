@@ -9,6 +9,10 @@ import {
   type Transcript,
 } from "./call-recap-api";
 import { voiceFor } from "./voice-prefs";
+import { track } from "./analytics";
+import { canSpeak, speak } from "./speech";
+import { localeForCourse } from "../data/course-meta";
+import { voicePlayback } from "./voice-playback";
 
 /**
  * The result screen's recap. It starts when the result appears and never holds the screen up: while it is pending the
@@ -41,7 +45,7 @@ export function useCallRecap(args: {
   });
   const [review, setReview] = useState<RecapController["review"]>("idle");
   const [speaking, setSpeaking] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const speakRun = useRef(0);
   const argsRef = useRef(args);
   argsRef.current = args;
 
@@ -64,7 +68,8 @@ export function useCallRecap(args: {
 
   useEffect(
     () => () => {
-      audioRef.current?.pause();
+      speakRun.current += 1;
+      voicePlayback().stop();
     },
     [],
   );
@@ -79,8 +84,19 @@ export function useCallRecap(args: {
   const onSpeak = useCallback(
     (text: string) => {
       void (async () => {
-        audioRef.current?.pause();
+        const playback = voicePlayback();
+        const mine = ++speakRun.current;
+        playback.stop();
+        // Inside the tap, so the persistent element may play after the fetch below.
+        playback.unlock();
         setSpeaking(text);
+        const finish = () => {
+          if (mine === speakRun.current) setSpeaking(null);
+        };
+        const device = () => {
+          if (mine !== speakRun.current || !canSpeak()) return;
+          speak(text, localeForCourse(course));
+        };
         try {
           const voice = await voiceFor("alphonso", course);
           const resp = await fetch("/api/tts", {
@@ -88,22 +104,21 @@ export function useCallRecap(args: {
             headers: { "Content-Type": "application/json", ...(await authHeaders()) },
             body: JSON.stringify({ text, course, voice }),
           });
-          if (!resp.ok) return setSpeaking(null);
-          const url = URL.createObjectURL(await resp.blob());
-          const audio = new Audio(url);
-          audioRef.current = audio;
-          const stop = () => {
-            if (audioRef.current === audio) setSpeaking(null);
-          };
-          audio.onended = () => {
-            URL.revokeObjectURL(url);
-            stop();
-          };
-          audio.onpause = stop;
-          audio.onerror = stop;
-          await audio.play();
+          if (!resp.ok) return finish();
+          const clip = await resp.blob();
+          if (mine !== speakRun.current) return;
+          const outcome = await playback.play(clip);
+          if (outcome.result === "blocked" || outcome.result === "error") {
+            void track("voice_playback_failed", {
+              surface: "call_recap",
+              reason: outcome.result === "blocked" ? "play_blocked" : "play_error",
+              error_kind: outcome.errorName,
+            });
+            device();
+          }
+          finish();
         } catch {
-          setSpeaking(null);
+          finish();
         }
       })();
     },

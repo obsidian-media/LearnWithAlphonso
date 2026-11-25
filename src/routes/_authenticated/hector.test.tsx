@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { __resetVoicePlaybackForTests } from "@/lib/voice-playback";
 import { shapeTutorReply } from "@/lib/hector-conversation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
@@ -70,14 +71,23 @@ const OFFER = {
   ],
 };
 
+// One persistent element plays every clip (src swapped): a clip "played" is a play() of a real source, not a
+// construction. The tap-unlock's silent data: clip is not counted.
+// A voice clip, not the tap-unlock's silent data: clip or a sound effect.
+const isVoiceClip = (src: string) => !src.startsWith("data:") && !src.startsWith("/sfx/");
+
 class FakeAudio {
-  play = vi.fn().mockResolvedValue(undefined);
+  src: string;
+  constructor(src = "") {
+    this.src = src;
+  }
+  static instances: FakeAudio[] = [];
+  play = vi.fn(() => {
+    if (isVoiceClip(this.src)) FakeAudio.instances.push(this);
+    return Promise.resolve();
+  });
   pause = vi.fn();
   onended: (() => void) | null = null;
-  static instances: FakeAudio[] = [];
-  constructor(public src: string) {
-    FakeAudio.instances.push(this);
-  }
 }
 
 beforeEach(() => {
@@ -113,6 +123,7 @@ beforeEach(() => {
     const h = routes[path];
     return h ? h(body) : new Response("", { status: 404 });
   }) as unknown as typeof fetch;
+  __resetVoicePlaybackForTests();
   vi.stubGlobal("Audio", FakeAudio);
   URL.createObjectURL = vi.fn(() => "blob:x");
   URL.revokeObjectURL = vi.fn();
@@ -382,16 +393,8 @@ describe("web Hector", () => {
 
 describe("web Hector in the new look", () => {
   it("the header shows his real cut-out, the course tutor line and a status pill that follows him", async () => {
-    const players: FakeAudio[] = [];
-    vi.stubGlobal(
-      "Audio",
-      class extends FakeAudio {
-        constructor(src: string) {
-          super(src);
-          players.push(this);
-        }
-      },
-    );
+    const players = FakeAudio.instances;
+    players.length = 0;
     let answer: (r: Response) => void = () => {};
     routes["/api/hector-respond"] = (() =>
       new Promise<Response>((r) => (answer = r))) as unknown as Handler;
@@ -865,7 +868,8 @@ describe("web Hector correction card", () => {
     await sayOne({ reply: "Bonjour ! Pourquoi ?", correction });
     const before = sent.length;
     await userEvent.click(await screen.findByRole("button", { name: /Hear it/ }));
-    expect(speakCalls).toEqual([{ text: FIX, lang: "fr-FR" }]);
+    // Hector's own lines also fall back to the device voice when no audio came, so look at the fix only.
+    expect(speakCalls.filter((c) => c.text === FIX)).toEqual([{ text: FIX, lang: "fr-FR" }]);
     expect(sent).toHaveLength(before);
   });
 
@@ -898,7 +902,7 @@ describe("web Hector correction card", () => {
     reply.pause.mockClear();
     await userEvent.click(await screen.findByRole("button", { name: /Hear it/ }));
     expect(reply.pause).toHaveBeenCalled();
-    expect(speakCalls).toHaveLength(1);
+    expect(speakCalls.filter((c) => c.text === FIX)).toHaveLength(1);
   });
 
   it("Try again cancels the device speech before the mic opens, and Hear it is then disabled", async () => {

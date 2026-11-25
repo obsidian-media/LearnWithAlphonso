@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
+import { __resetVoicePlaybackForTests } from "@/lib/voice-playback";
 import { shapeTutorReply } from "@/lib/hector-conversation";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fakeConsentApi, withAiConsent } from "../../lib/__testutils__/ai-consent";
 import { clearOpenerSpeechCache } from "../../lib/opener-speech-cache";
+import { installFakeAudioContext } from "../../lib/__testutils__/fake-audio-context";
 import { HECTOR_OUT_FOR_TODAY } from "../../lib/hector-allowance";
 
 /** Hector speaks first (BACKLOG 0.0-bp): the greeting he says when a call opens. */
@@ -64,14 +66,28 @@ let routes: Record<string, Handler>;
 const sent: { url: string; body: unknown }[] = [];
 const realFetch = globalThis.fetch;
 const players: FakeAudio[] = [];
+const playRejects = { current: null as string | null };
+
+// One persistent element plays every clip (src swapped): a clip "played" is a play() of a real source.
+// A voice clip, not the tap-unlock's silent data: clip or a sound effect.
+const isVoiceClip = (src: string) => !src.startsWith("data:") && !src.startsWith("/sfx/");
 
 class FakeAudio {
-  play = vi.fn().mockResolvedValue(undefined);
+  src: string;
+  constructor(src = "") {
+    this.src = src;
+  }
+  play = vi.fn(() => {
+    if (!isVoiceClip(this.src)) return Promise.resolve();
+    players.push(this);
+    // iOS Safari without a tap: play() rejects and nothing is heard.
+    if (playRejects.current) {
+      return Promise.reject(Object.assign(new Error("blocked"), { name: playRejects.current }));
+    }
+    return Promise.resolve();
+  });
   pause = vi.fn();
   onended: (() => void) | null = null;
-  constructor(public src: string) {
-    players.push(this);
-  }
 }
 
 const PRO = { pro: true, store: "app_store", trialEligible: false, manageUrl: null };
@@ -110,6 +126,7 @@ beforeEach(() => {
   usageRows.current = [];
   sent.length = 0;
   players.length = 0;
+  playRejects.current = null;
   routes = {
     "/api/pro-status": () => Response.json(PRO),
     // The daily limit is the server's to say; the page holds no copy.
@@ -137,6 +154,7 @@ beforeEach(() => {
     const h = routes[url];
     return h ? h(body) : new Response("", { status: 404 });
   }) as unknown as typeof fetch;
+  __resetVoicePlaybackForTests();
   vi.stubGlobal("Audio", FakeAudio);
   URL.createObjectURL = vi.fn(() => "blob:x");
   URL.revokeObjectURL = vi.fn();
@@ -433,5 +451,76 @@ describe("Hector's type-or-talk composer", () => {
     await userEvent.click(stop);
     await waitFor(() => expect(screen.queryByTestId("hector-listening")).toBeNull());
     expect(screen.getByRole("textbox", { name: "Message Hector" })).toBeInTheDocument();
+  });
+});
+
+describe("Hector is always heard", () => {
+  const spoken: { text: string; lang: string }[] = [];
+  beforeEach(() => {
+    spoken.length = 0;
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    vi.stubGlobal(
+      "SpeechSynthesisUtterance",
+      class {
+        onend: (() => void) | null = null;
+        onerror: (() => void) | null = null;
+        onstart: (() => void) | null = null;
+        constructor(public text: string) {}
+        lang = "";
+      },
+    );
+    vi.stubGlobal("speechSynthesis", {
+      cancel: vi.fn(),
+      getVoices: () => [],
+      speak: (u: { text: string; lang: string }) => spoken.push({ text: u.text, lang: u.lang }),
+    });
+    Object.defineProperty(window, "speechSynthesis", {
+      value: (globalThis as unknown as { speechSynthesis: unknown }).speechSynthesis,
+      configurable: true,
+    });
+  });
+
+  it("a greeting the browser refuses to play is read by the device voice, with a Tap to hear Hector button", async () => {
+    playRejects.current = "NotAllowedError";
+    renderPage();
+    await shows(GENERIC_EN);
+    expect(await screen.findByRole("button", { name: "Tap to hear Hector" })).toBeInTheDocument();
+    expect(spoken.map((s) => s.text)).toContain(GENERIC_EN);
+  });
+
+  it("the tap plays the greeting (a gesture is what the browser wanted) and the button goes away", async () => {
+    playRejects.current = "NotAllowedError";
+    renderPage();
+    const tap = await screen.findByRole("button", { name: "Tap to hear Hector" });
+    playRejects.current = null;
+    const before = players.length;
+    await userEvent.click(tap);
+    await waitFor(() => expect(players.length).toBeGreaterThan(before));
+    await waitFor(() =>
+      expect(screen.queryByRole("button", { name: "Tap to hear Hector" })).toBeNull(),
+    );
+  });
+
+  it("a reply that comes back with no audio (the server's voice failed) is still shown and is read by the device voice", async () => {
+    getWeaknessTrend.mockResolvedValue({ categories: [] });
+    routes["/api/hector-respond"] = () =>
+      Response.json({ reply: "Sure! What did you do yesterday?", state: "ok" });
+    renderPage();
+    await shows(GENERIC_EN);
+    await userEvent.type(screen.getByRole("textbox", { name: "Message Hector" }), "Hello{Enter}");
+    await shows("What did you do yesterday?");
+    await waitFor(() =>
+      expect(spoken.map((s) => s.text)).toContain("Sure! What did you do yesterday?"),
+    );
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("the call screen carries the hands-free chip itself, and the tap button on the call", async () => {
+    localStorage.removeItem("showAlphonsoWhilePractising");
+    installFakeAudioContext();
+    playRejects.current = "NotAllowedError";
+    renderPage();
+    expect(await screen.findByTestId("hands-free-chip")).toHaveTextContent("Hands-free: Off");
+    expect(await screen.findByTestId("tap-to-hear")).toHaveTextContent("Tap to hear Hector");
   });
 });

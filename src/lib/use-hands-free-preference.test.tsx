@@ -82,7 +82,29 @@ describe("hands-free preference on a new call", () => {
     act(() => view.result.current.handsFreeCall!.onChange(true));
     expect(window.localStorage.getItem(HANDS_FREE_PREFERENCE_KEY)).toBe("1");
     act(() => view.result.current.handsFreeCall!.onChange(false));
-    expect(window.localStorage.getItem(HANDS_FREE_PREFERENCE_KEY)).toBeNull();
+    expect(window.localStorage.getItem(HANDS_FREE_PREFERENCE_KEY)).toBe("0");
+  });
+
+  it("a returning learner who switched it off under the old writer (key removed, note confirmed) stays off", () => {
+    window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
+    const { onWantedChange } = mount();
+    expect(onWantedChange).not.toHaveBeenCalled();
+  });
+
+  it("an explicit off stays off even with the note confirmed", () => {
+    window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
+    window.localStorage.setItem(HANDS_FREE_PREFERENCE_KEY, "0");
+    const { onWantedChange } = mount();
+    expect(onWantedChange).not.toHaveBeenCalled();
+  });
+
+  it("confirming the note writes the on choice, so the next call starts hands-free", () => {
+    const first = mount();
+    act(() => first.view.result.current.handsFreeCall!.onChange(true));
+    expect(window.localStorage.getItem(HANDS_FREE_PREFERENCE_KEY)).toBe("1");
+    window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
+    const next = mount();
+    expect(next.onWantedChange).toHaveBeenCalledWith(true);
   });
 
   it("falls back to hold-to-talk when the microphone is refused, keeping the stored choice", () => {

@@ -18,7 +18,7 @@ describe("the opening line waits for the call-start sound", () => {
       const src = code(rel);
       const wait = src.indexOf("if (opts?.opener) await waitForCallCue();");
       expect(wait, rel).toBeGreaterThan(-1);
-      expect(wait, rel).toBeLessThan(src.indexOf("new Audio(url)"));
+      expect(wait, rel).toBeLessThan(src.indexOf("await sayReply(text, blob)"));
     }
   });
 
@@ -35,7 +35,7 @@ describe("the opening line waits for the call-start sound", () => {
     const fn = src.slice(src.indexOf("const greet = useCallback"));
     const wait = fn.indexOf("await waitForCallCue();");
     expect(wait).toBeGreaterThan(fn.indexOf("cachedOpenerSpeech("));
-    expect(wait).toBeLessThan(fn.indexOf("playBlob(blob)"));
+    expect(wait).toBeLessThan(fn.indexOf("await sayReply(text, blob)"));
   });
 
   it("iOS: Hector's greeting goes through speakOpener, so it waits too", () => {

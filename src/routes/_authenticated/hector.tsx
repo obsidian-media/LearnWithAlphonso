@@ -3,6 +3,9 @@ import { track } from "../../lib/analytics";
 import { RouteError } from "../../components/RouteError";
 import { DsIcon } from "../../components/ds/DsIcon";
 import { cancelSpeech } from "@/lib/speech";
+import { claimAudioSession } from "@/lib/audio-session";
+import { voicePlayback } from "@/lib/voice-playback";
+import { useReplyVoice } from "@/lib/use-reply-voice";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
@@ -205,6 +208,17 @@ function ManageSubscription({ pro, menuItem = false }: { pro: ProStatus; menuIte
   return null;
 }
 
+/** Hector's reply audio (base64 mp3) as a clip, or null when the server sent none or it cannot be decoded. */
+function clipFrom(audioBase64: string | undefined): Blob | null {
+  if (!audioBase64) return null;
+  try {
+    const bytes = Uint8Array.from(atob(audioBase64), (c) => c.charCodeAt(0));
+    return new Blob([bytes], { type: "audio/mpeg" });
+  } catch {
+    return null;
+  }
+}
+
 function HectorConversation({
   course,
   pro,
@@ -220,8 +234,12 @@ function HectorConversation({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cefrLevel, setCefrLevel] = useState<string>("");
-  const [speaking, setSpeaking] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Hector's voice: one persistent audio element (unlocked by the learner's first tap), the device voice and a "Tap to
+  // hear Hector" button when the browser refuses to play a reply by itself, and no hands-free turn over an unheard reply.
+  const voice = useReplyVoice("hector", course);
+  const { speaking, awaitingTap, say: sayReply, skip: skipReply, replay: replayReply } = voice;
+  // The turn in flight, aborted when the screen is left so a late reply is never shown or spoken.
+  const turnAbortRef = useRef<AbortController | null>(null);
   // Hector's greeting is messages[0] once said; the mic waits while its voice loads.
   const [greeted, setGreeted] = useState(false);
   const [greetingLoading, setGreetingLoading] = useState(false);
@@ -237,44 +255,8 @@ function HectorConversation({
   const showCall = useStoredAvatarPreference();
   const reducedMotion = useReducedMotion() ?? false;
 
-  const playBlob = useCallback((blob: Blob) => {
-    try {
-      const url = URL.createObjectURL(blob);
-      audioRef.current?.pause();
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => {
-        URL.revokeObjectURL(url);
-        if (audioRef.current === audio) setSpeaking(false);
-      };
-      setSpeaking(true);
-      void audio.play().catch(() => {
-        if (audioRef.current === audio) setSpeaking(false);
-      });
-    } catch {
-      /* the text reply still shows */
-      setSpeaking(false);
-    }
-  }, []);
-
-  const play = useCallback(
-    (audioBase64: string | undefined) => {
-      if (!audioBase64) return;
-      try {
-        const bytes = Uint8Array.from(atob(audioBase64), (c) => c.charCodeAt(0));
-        playBlob(new Blob([bytes], { type: "audio/mpeg" }));
-      } catch {
-        /* the text reply still shows */
-      }
-    },
-    [playBlob],
-  );
-
   /** Talking over Hector cuts him off, as on a call: his greeting or a reply. */
-  const interrupt = useCallback(() => {
-    audioRef.current?.pause();
-    setSpeaking(false);
-  }, []);
+  const interrupt = skipReply;
 
   /**
    * Hector speaks first (BACKLOG 0.0-bp). The greeting is his first turn, so it is in the history the model gets
@@ -301,19 +283,20 @@ function HectorConversation({
           });
           return resp.ok ? await resp.blob() : null;
         });
-        if (!blob) return;
         // The call-start sound finishes before his first words.
         await waitForCallCue();
         // Never after the learner left, and never over a turn they already started.
         if (leftRef.current || messagesRef.current.length > 1) return;
-        playBlob(blob);
+        setGreetingLoading(false);
+        // No audio (the voice could not be made) is not silence: the device voice reads the greeting.
+        await sayReply(text, blob);
       } catch {
         /* the greeting still shows */
       } finally {
         setGreetingLoading(false);
       }
     },
-    [course, playBlob],
+    [course, sayReply],
   );
 
   useEffect(() => {
@@ -357,9 +340,13 @@ function HectorConversation({
     return () => {
       cancelled = true;
       leftRef.current = true;
-      audioRef.current?.pause();
+      turnAbortRef.current?.abort();
+      skipReply();
     };
-  }, [course, greet]);
+  }, [course, greet, skipReply]);
+
+  // Starting a call pauses the podcast (one voice at a time).
+  useEffect(() => claimAudioSession("voice"), []);
 
   // Leaving the screen stops the fix being spoken.
   useEffect(() => () => cancelSpeech(), []);
@@ -373,9 +360,12 @@ function HectorConversation({
       setMessages([...messages, { role: "user", content: trimmed }]);
       setInput("");
       setSending(true);
+      const abort = new AbortController();
+      turnAbortRef.current = abort;
       try {
         const resp = await fetch("/api/hector-respond", {
           method: "POST",
+          signal: abort.signal,
           headers: { "Content-Type": "application/json", ...(await authHeaders()) },
           // Hector's own voice for this course (Settings > Voices), never Alphonso's.
           body: JSON.stringify({
@@ -415,6 +405,7 @@ function HectorConversation({
           audio_base64?: TutorReplyPayload["audio_base64"];
           correction?: unknown;
         };
+        if (abort.signal.aborted) return;
         // The server already took the block out; parsing the reply here too means a tag can never be shown.
         const parsed = extractCorrection(data.reply ?? "");
         const reply = parsed.text || "…";
@@ -425,14 +416,17 @@ function HectorConversation({
           const withCard = correction ? m.map((x, i) => (i === at ? { ...x, correction } : x)) : m;
           return [...withCard, { role: "assistant", content: reply }];
         });
-        play(data.audio_base64);
+        void sayReply(reply, clipFrom(data.audio_base64));
       } catch (e) {
+        // The screen was left mid-turn: nothing to show.
+        if (abort.signal.aborted) return;
         setError(e instanceof Error ? e.message : "Something went wrong.");
       } finally {
-        setSending(false);
+        if (turnAbortRef.current === abort) turnAbortRef.current = null;
+        if (!abort.signal.aborted) setSending(false);
       }
     },
-    [messages, sending, course, cefrLevel, consent, onNotEntitled, play],
+    [messages, sending, course, cefrLevel, consent, onNotEntitled, sayReply],
   );
 
   // Hands-free starts as the learner last left it on this device (see useHandsFreeCapture) and is carried by this screen's state. It runs on the call screen
@@ -451,11 +445,13 @@ function HectorConversation({
     wanted: handsFreeWanted,
     live: showCall,
     tuning: HECTOR_TUNING,
-    // Until his greeting has begun (or the day is used up) he is "about to speak", so the mic stays shut.
+    // Until his greeting has begun (or the day is used up) he is "about to speak", so the mic stays shut. A reply the
+    // browser would not play (waiting for the learner's tap) counts as still speaking: the mic opens only once it was
+    // heard or skipped.
     replyPhase:
       sending || greetingLoading || (!greeted && !error)
         ? "thinking"
-        : speaking
+        : speaking || awaitingTap
           ? "speaking"
           : "idle",
     failure: error,
@@ -564,6 +560,15 @@ function HectorConversation({
               }}
             />
           )}
+          {awaitingTap && (
+            <button
+              type="button"
+              onClick={replayReply}
+              className="self-center rounded-full bg-ds-brand px-4 py-2 ds-type-footnote font-semibold text-ds-on-brand"
+            >
+              Tap to hear Hector
+            </button>
+          )}
           {shownError && (
             <div
               role="alert"
@@ -588,6 +593,8 @@ function HectorConversation({
         if (recording) stopRecording();
         else {
           interrupt();
+          // Inside the tap: keeps the voice element playable for his next reply.
+          voicePlayback().unlock();
           void beginCapture();
         }
       }}
@@ -659,7 +666,7 @@ function HectorConversation({
           avatar={{
             phase: avatarPhase,
             replyText: lastReply?.content ?? null,
-            getAudio: () => audioRef.current,
+            getAudio: () => voicePlayback().element(),
             // /api/hector-respond returns no verdict, so Hector does not react to right or wrong answers.
             replyVerdict: { serial: 0, verdict: "none" },
             course,
@@ -675,6 +682,7 @@ function HectorConversation({
             if (captureState === "idle" && !sending && !greetingLoading) {
               // Talking over Hector cuts him off; his voice must not end up in the recording.
               interrupt();
+              voicePlayback().unlock();
               void beginCapture();
             }
           }}
@@ -686,6 +694,7 @@ function HectorConversation({
             if (recording) stopRecording();
             else if (!greetingLoading) {
               interrupt();
+              voicePlayback().unlock();
               void beginCapture();
             }
           }}
@@ -695,6 +704,9 @@ function HectorConversation({
           messages={messages}
           reducedMotion={reducedMotion}
           handsFree={handsFreeCall}
+          tapToHear={
+            awaitingTap ? { onTap: replayReply, onSkip: skipReply, partner: "Hector" } : null
+          }
           sheet={
             <>
               <div className="mb-2">

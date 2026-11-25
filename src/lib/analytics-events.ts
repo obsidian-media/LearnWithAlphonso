@@ -25,11 +25,18 @@ export const ANALYTICS_EVENTS = [
   "video_completed",
 ] as const;
 
-export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
+/**
+ * Events only the web sends (a web-only feature has nothing to send on iOS or Android). They are outside the shared
+ * list, so the three-way parity tests do not apply to them, but they obey the same privacy rule below.
+ */
+export const WEB_ONLY_EVENTS = ["voice_playback_failed"] as const;
+
+export type SharedAnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
+export type AnalyticsEvent = SharedAnalyticsEvent | (typeof WEB_ONLY_EVENTS)[number];
 
 type Kind = "id" | "number";
 
-export const ANALYTICS_PROPS: Record<AnalyticsEvent, Record<string, Kind>> = {
+export const ANALYTICS_PROPS: Record<SharedAnalyticsEvent, Record<string, Kind>> = {
   app_open: {},
   onboarding_step: { step: "id" },
   sign_in_completed: { method: "id" },
@@ -48,6 +55,11 @@ export const ANALYTICS_PROPS: Record<AnalyticsEvent, Record<string, Kind>> = {
   video_completed: { video_id: "id", course: "id" },
 };
 
+/** A failed voice playback: which screen, why, and the browser error name (NotAllowedError, ...). No text, no user data. */
+export const WEB_ONLY_PROPS: Record<(typeof WEB_ONLY_EVENTS)[number], Record<string, Kind>> = {
+  voice_playback_failed: { surface: "id", reason: "id", error_kind: "id" },
+};
+
 /** A short identifier: letters, digits and _ . : + - only. No spaces and no at sign, so no sentence and no email. */
 const ID_VALUE = /^[A-Za-z0-9_.:+-]{1,64}$/;
 
@@ -64,7 +76,10 @@ export function sanitizeEventProps(
   event: AnalyticsEvent,
   props: Record<string, unknown>,
 ): Record<string, string | number> {
-  const allowed = ANALYTICS_PROPS[event];
+  const allowed =
+    event in ANALYTICS_PROPS
+      ? ANALYTICS_PROPS[event as SharedAnalyticsEvent]
+      : WEB_ONLY_PROPS[event as (typeof WEB_ONLY_EVENTS)[number]];
   const out: Record<string, string | number> = {};
   for (const [key, kind] of Object.entries(allowed)) {
     const value = props[key];
