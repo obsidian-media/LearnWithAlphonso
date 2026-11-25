@@ -578,7 +578,7 @@ function LearnPage() {
           type="button"
           onClick={jumpToCurrent}
           aria-label={`Jump to where I am, unit ${here.index}`}
-          className="fixed bottom-24 left-1/2 z-20 min-h-11 -translate-x-1/2 rounded-full bg-ds-brand px-5 text-sm font-bold text-ds-card shadow-lg"
+          className="fixed bottom-24 left-1/2 z-20 min-h-11 -translate-x-1/2 rounded-full bg-ds-brand px-5 text-sm font-bold text-ds-card shadow-lg md:sticky md:bottom-6 md:block md:left-auto md:-mb-11 md:ml-6 md:w-fit md:translate-x-0 lg:mx-auto"
         >
           Jump to current ↓
         </button>

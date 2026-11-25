@@ -236,7 +236,6 @@ export function useHandsFreeCapture({
   onBeginTurn,
   partner,
   onWantedChange,
-  defaultOnAfterNote = false,
 }: {
   course?: Course;
   onTranscript: (text: string, confidence: number | null) => void | Promise<void>;
@@ -251,11 +250,6 @@ export function useHandsFreeCapture({
   partner: string;
   /** The switch was changed. The call keeps the state (so a campaign carries it from scene to scene). */
   onWantedChange: (on: boolean) => void;
-  /**
-   * Once the learner has confirmed the safety note on this device, start ON unless they last switched it off
-   * (Hector: the call is voice-first, so the learner should not have to find a switch each time).
-   */
-  defaultOnAfterNote?: boolean;
 }) {
   const on = wanted && live;
   // Read after mount, so the server and the first client render agree (no switch), then the browser decides.
@@ -269,11 +263,10 @@ export function useHandsFreeCapture({
     // Like iOS and Android: only once the safety note was confirmed, and never in a background tab.
     if (document.hidden) return;
     if (!handsFreeSupported() || !noteConfirmed()) return;
-    const choice = readHandsFreeChoice();
-    if (choice === "on" || (choice === "unset" && defaultOnAfterNote)) {
-      onWantedChangeRef.current(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // A stored "on" only. Confirming the note writes it (see handsFreeCall.onChange), so from then on a call starts
+    // hands-free; a missing key with the note confirmed is a learner who switched it off under the old writer, which
+    // removed the key, and stays off.
+    if (readHandsFreeChoice() === "on") onWantedChangeRef.current(true);
   }, []);
   const reportRef = useRef<{ noWords: () => void; failed: () => void } | null>(null);
   const capture = useSpeechCapture({

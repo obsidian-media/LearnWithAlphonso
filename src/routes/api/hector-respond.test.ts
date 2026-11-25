@@ -268,7 +268,7 @@ describe("POST /api/hector-respond", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.reply).toBe("Hello");
-    expect("audio_base64" in body).toBe(false);
+    expect(body.audio_base64).toBe("");
     expect(timeout).toHaveBeenCalledWith(10_000);
     expect(speech?.signal).toBeInstanceOf(AbortSignal);
     timeout.mockRestore();
@@ -292,7 +292,7 @@ describe("POST /api/hector-respond", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.reply).toBe("Hello");
-    expect("audio_base64" in body).toBe(false);
+    expect(body.audio_base64).toBe("");
   });
 
   it("a Deepgram error returns 200 with the text and the correction, omits the audio, and spends one quota unit", async () => {
@@ -316,7 +316,7 @@ describe("POST /api/hector-respond", () => {
     const body = await res.json();
     expect(body.reply).toBe("Nice order! What size?");
     expect(body.correction).toMatchObject({ fix: "I'd" });
-    expect("audio_base64" in body).toBe(false);
+    expect(body.audio_base64).toBe("");
     expect(body.state).toBe("ok");
     expect(consumeQuota).toHaveBeenCalledTimes(1);
   });

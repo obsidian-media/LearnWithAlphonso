@@ -20,7 +20,7 @@ export function FirstRunScreen({ children }: { children: ReactNode }) {
     >
       <main
         id="main-content"
-        className="relative mx-auto flex min-h-dvh max-w-[430px] flex-col overflow-x-hidden bg-ds-surface"
+        className="relative mx-auto flex min-h-dvh max-w-[430px] flex-col overflow-x-hidden bg-ds-surface md:max-w-[560px]"
       >
         {children}
       </main>

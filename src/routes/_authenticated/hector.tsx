@@ -11,6 +11,7 @@ import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
 import { ExplainInMyLanguage } from "../../components/ExplainInMyLanguage";
 import { LessonFrame, MobileFrame } from "../../components/AppShell";
+import { HectorPanel } from "../../components/hector/HectorPanel";
 import { SaveWordHint, SaveWordProvider } from "../../components/SaveWord";
 import { TappableText } from "../../components/TappableText";
 import { WebPaywall } from "../../components/WebPaywall";
@@ -457,8 +458,6 @@ function HectorConversation({
     onBeginTurn: () => setError(null),
     partner: "Hector",
     onWantedChange: setHandsFreeWanted,
-    // Voice-first: once the safety note was confirmed on this device, hands-free is on for his calls unless switched off.
-    defaultOnAfterNote: true,
   });
   const recording = captureState === "recording";
   // A tapped recording has no finger to bound it: it is stopped and sent after the cap (the same minute on every platform).
@@ -723,7 +722,20 @@ function HectorConversation({
   }
 
   return (
-    <MobileFrame aboveTabs={dockComposer}>
+    <MobileFrame
+      aboveTabs={dockComposer}
+      panel={
+        <HectorPanel
+          course={course}
+          chips={chips}
+          disabled={sending || transcribing || greetingLoading}
+          onPick={(chip) => {
+            interrupt();
+            void send(chip.message);
+          }}
+        />
+      }
+    >
       {classicTop}
       {hintAndLog}
     </MobileFrame>

@@ -24,7 +24,7 @@ vi.mock("./use-speech-capture", () => ({
 
 import { useHandsFreeCapture } from "./use-hands-free";
 
-function mount(defaultOnAfterNote = false) {
+function mount() {
   const onWantedChange = vi.fn();
   const view = renderHook(() =>
     useHandsFreeCapture({
@@ -36,7 +36,6 @@ function mount(defaultOnAfterNote = false) {
       failure: null,
       partner: "Hector",
       onWantedChange,
-      defaultOnAfterNote,
     }),
   );
   return { onWantedChange, view };
@@ -86,30 +85,26 @@ describe("hands-free preference on a new call", () => {
     expect(window.localStorage.getItem(HANDS_FREE_PREFERENCE_KEY)).toBe("0");
   });
 
-  describe("Hector default (defaultOnAfterNote)", () => {
-    it("starts ON once the safety note was confirmed and nothing was chosen", () => {
-      window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
-      const { onWantedChange } = mount(true);
-      expect(onWantedChange).toHaveBeenCalledWith(true);
-    });
+  it("a returning learner who switched it off under the old writer (key removed, note confirmed) stays off", () => {
+    window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
+    const { onWantedChange } = mount();
+    expect(onWantedChange).not.toHaveBeenCalled();
+  });
 
-    it("stays off before the note was confirmed, even by default", () => {
-      const { onWantedChange } = mount(true);
-      expect(onWantedChange).not.toHaveBeenCalled();
-    });
+  it("an explicit off stays off even with the note confirmed", () => {
+    window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
+    window.localStorage.setItem(HANDS_FREE_PREFERENCE_KEY, "0");
+    const { onWantedChange } = mount();
+    expect(onWantedChange).not.toHaveBeenCalled();
+  });
 
-    it("respects an explicit off", () => {
-      window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
-      window.localStorage.setItem(HANDS_FREE_PREFERENCE_KEY, "0");
-      const { onWantedChange } = mount(true);
-      expect(onWantedChange).not.toHaveBeenCalled();
-    });
-
-    it("is not the default for a call that did not ask for it (Practice)", () => {
-      window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
-      const { onWantedChange } = mount(false);
-      expect(onWantedChange).not.toHaveBeenCalled();
-    });
+  it("confirming the note writes the on choice, so the next call starts hands-free", () => {
+    const first = mount();
+    act(() => first.view.result.current.handsFreeCall!.onChange(true));
+    expect(window.localStorage.getItem(HANDS_FREE_PREFERENCE_KEY)).toBe("1");
+    window.localStorage.setItem(HANDS_FREE_NOTE_SEEN_KEY, "1");
+    const next = mount();
+    expect(next.onWantedChange).toHaveBeenCalledWith(true);
   });
 
   it("falls back to hold-to-talk when the microphone is refused, keeping the stored choice", () => {

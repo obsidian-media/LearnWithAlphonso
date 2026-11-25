@@ -12,7 +12,7 @@ export function LegalPage({
 }) {
   return (
     <div className="grain min-h-dvh bg-ds-surface text-ds-ink">
-      <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-6 pb-16 pt-8">
+      <div className="mx-auto flex min-h-dvh max-w-[430px] flex-col px-6 pb-16 pt-8 md:max-w-[720px] md:px-8 md:pt-12">
         <Link
           to="/"
           className="mb-6 inline-flex min-h-11 w-fit items-center gap-1 rounded-full border border-ds-card/60 bg-ds-card/80 pl-2.5 pr-3.5 ds-type-footnote font-extrabold text-ds-choice shadow-[var(--ds-shadow-floating)]"
