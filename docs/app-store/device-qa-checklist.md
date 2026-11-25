@@ -1,6 +1,6 @@
 # Real-iPhone QA checklist before submitting
 
-Run on a physical iPhone with the release candidate from TestFlight (build 72 or later). Use a fresh test account unless
+Run on a physical iPhone with the release candidate from TestFlight (build 73 or later). Use a fresh test account unless
 a step says otherwise. Sandbox purchases need a Sandbox Apple Account. Tick each box and note the build number.
 
 ## Account
@@ -39,6 +39,13 @@ a step says otherwise. Sandbox purchases need a Sandbox Apple Account. Tick each
 - [ ] Long-press a Miya reply (and the VoiceOver action): "Report this response" offers reasons and confirms "Thanks";
       a staff reply has no report option.
 - [ ] "Talk to a person" hands off; a staff reply arrives with email and push.
+
+## Web Hector on iPhone Safari (#716, #717; owner check pending)
+
+- [ ] Call Hector in Safari: the greeting plays after the first tap; the reply text appears first and the voice follows within a second or two.
+- [ ] Lock the screen mid-reply: nothing sticks on "speaking"; unlocking and tapping "Tap to hear Hector" plays it.
+- [ ] The hands-free chip is visible on the call screen; after the safety note it starts on; a turn is taken without holding the button; switching it off stays off after a reload.
+- [ ] Deny the microphone once: the message names the cause (denied, not found, busy) and a retry works.
 
 ## Stories
 
