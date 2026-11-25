@@ -23,9 +23,8 @@ export function fetchTurnSpeech(args: {
   const { token, reply, course, voice, signal } = args;
   const doFetch = args.fetchImpl ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
   const getHeaders = args.headers ?? authHeaders;
-  return splitReplyForSpeech(reply).map((text, part) => ({
-    text,
-    clip: (async () => {
+  return splitReplyForSpeech(reply).map((text, part) => {
+    const clip = (async () => {
       try {
         const resp = await doFetch(`/api/tts?turn=${encodeURIComponent(token)}&part=${part}`, {
           method: "POST",
@@ -37,6 +36,9 @@ export function fetchTurnSpeech(args: {
       } catch {
         return null;
       }
-    })(),
-  }));
+    })();
+    // Never an unhandled rejection, even for a piece nobody gets to await (the learner moved on before its turn).
+    clip.catch(() => undefined);
+    return { text, clip };
+  });
 }

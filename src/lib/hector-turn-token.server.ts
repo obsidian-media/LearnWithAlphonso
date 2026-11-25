@@ -58,3 +58,17 @@ export function verifyHectorTurnToken(
   const given = Buffer.from(token.slice(dot + 1));
   return given.length === expected.length && timingSafeEqual(given, expected);
 }
+
+/** Each (token, part) may be spoken this many times: one retry or a Tap-to-hear refetch. The third is refused (429). */
+export const HECTOR_TURN_MAX_USES = 2;
+
+/** The key a token's uses are counted under (migration 20261128100000): sha256 hex of the whole token. */
+export function hectorTurnTokenHash(token: string): string {
+  return createHash("sha256").update(token, "utf8").digest("hex");
+}
+
+/** When the token stops being valid, a minute of slack added so the use count outlives the token. */
+export function hectorTurnUseExpiry(token: string): Date {
+  const expiresAt = Number(token.slice(0, token.indexOf(".")));
+  return new Date(expiresAt + 60_000);
+}

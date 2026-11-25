@@ -55,6 +55,24 @@ export const Route = createFileRoute("/api/tts")({
             const part = Number(new URL(request.url).searchParams.get("part") ?? 0);
             if (!Number.isInteger(part) || part < 0 || part >= parts.length)
               return noStoreJson({ error: "part-invalid" }, { status: 400 });
+            // Stateless, the token alone would let a Pro learner replay a part for free inside its window: the uses
+            // are counted in the database (shared by every instance), two per (token, part). A refused use makes the
+            // client fall back to the device voice; so does an unreadable count (fail closed: it is paid speech).
+            const { HECTOR_TURN_MAX_USES, hectorTurnTokenHash, hectorTurnUseExpiry } =
+              await import("@/lib/hector-turn-token.server");
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const used = await timer.time("uses", async () => {
+              const { data, error } = await supabaseAdmin.rpc("consume_hector_turn_use", {
+                p_sig_hash: hectorTurnTokenHash(turnToken),
+                p_part: part,
+                p_max: HECTOR_TURN_MAX_USES,
+                p_expires_at: hectorTurnUseExpiry(turnToken).toISOString(),
+              });
+              return error ? ("unavailable" as const) : data === true;
+            });
+            if (used === "unavailable")
+              return noStoreJson({ error: "turn-unavailable" }, { status: 503 });
+            if (!used) return noStoreJson({ error: "turn-replay-limit" }, { status: 429 });
             spoken = parts[part]!;
           } else {
             if (text.length > TTS_MAX_CHARS)

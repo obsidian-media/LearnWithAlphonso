@@ -966,6 +966,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      hector_turn_token_uses: {
+        Row: {
+          expires_at: string;
+          part: number;
+          sig_hash: string;
+          uses: number;
+        };
+        Insert: {
+          expires_at: string;
+          part: number;
+          sig_hash: string;
+          uses?: number;
+        };
+        Update: {
+          expires_at?: string;
+          part?: number;
+          sig_hash?: string;
+          uses?: number;
+        };
+        Relationships: [];
+      };
       language_progress: {
         Row: {
           cefr_level: string;
@@ -3573,6 +3594,10 @@ export type Database = {
           count: number;
           per_minute_limit: number;
         }[];
+      };
+      consume_hector_turn_use: {
+        Args: { p_expires_at: string; p_max: number; p_part: number; p_sig_hash: string };
+        Returns: boolean;
       };
       consume_lesson_completion_slot: {
         Args: { _at: string; _limit?: number; _user_id: string };

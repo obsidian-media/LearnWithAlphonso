@@ -4,6 +4,16 @@ const blockedRpc = vi.fn(async (_fn: string, args: { _texts: string[] }) => ({
   data: args._texts.map(() => false),
   error: null,
 }));
+const consumeUse = vi.fn(async (_fn: string, _args: unknown) => ({
+  data: true as unknown,
+  error: null as unknown,
+}));
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: { rpc: (fn: string, args: unknown) => consumeUse(fn, args) },
+}));
+const readCachedSpeech = vi.fn(async (_key: string) => null as Uint8Array | null);
+const writeCachedSpeech = vi.fn(async (_key: string, _audio: Uint8Array) => undefined);
+vi.mock("@/lib/tts-cache.server", () => ({ readCachedSpeech, writeCachedSpeech }));
 const authorizeAiRequest = vi.fn();
 vi.mock("@/lib/ai-consent.server", () => ({ authorizeAiRequest }));
 
@@ -24,6 +34,10 @@ const originalFetch = global.fetch;
 
 beforeEach(() => {
   authorizeAiRequest.mockReset();
+  consumeUse.mockReset();
+  consumeUse.mockResolvedValue({ data: true, error: null });
+  readCachedSpeech.mockClear();
+  writeCachedSpeech.mockClear();
   blockedRpc.mockClear();
   authorizeAiRequest.mockResolvedValue({
     ok: true,
@@ -311,15 +325,84 @@ describe("POST /api/tts with a Hector turn token", () => {
     expect(authorizeAiRequest.mock.calls[0]![2]).toEqual({ route: "tts" });
   });
 
-  it("never stores a turn's speech in the shared cache and streams the body through", async () => {
+  it("never reads or stores a turn's speech in the shared cache, even for a line that IS cacheable", async () => {
     const { issueHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+    const { fixedSpokenLines } = await import("@/lib/tts-cache");
+    const { splitReplyForSpeech } = await import("@/lib/speech-chunks");
+    // One of our own fixed lines that is a single spoken piece, so what a turn speaks IS the cacheable line.
+    const line = [...fixedSpokenLines()].find((l) => splitReplyForSpeech(l).length === 1)!;
+    expect(line).toBeTruthy();
     authorizeAiRequest.mockResolvedValue({ ok: true, userId: "user-1", chargeQuota: vi.fn() });
-    const upstream = audio();
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(upstream);
-    const res = await handler({ request: turnReq(issueHectorTurnToken("user-1", REPLY), 0) });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(audio());
+
+    // The control: the same line without a token IS looked up and stored, so the spies are really wired.
+    await handler({ request: req({ text: line }) });
+    expect(readCachedSpeech).toHaveBeenCalledTimes(1);
+    expect(writeCachedSpeech).toHaveBeenCalledTimes(1);
+    readCachedSpeech.mockClear();
+    writeCachedSpeech.mockClear();
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(audio());
+
+    const res = await handler({
+      request: turnReq(issueHectorTurnToken("user-1", line), 0, { text: line }),
+    });
+    expect(res.status).toBe(200);
+    expect(readCachedSpeech).not.toHaveBeenCalled();
+    expect(writeCachedSpeech).not.toHaveBeenCalled();
     expect(res.headers.get("Cache-Control")).toBe("no-store");
     expect(res.headers.get("Server-Timing")).toMatch(
-      /auth;dur=\d+.*deepgram;dur=\d+.*total;dur=\d+/,
+      /auth;dur=\d+.*uses;dur=\d+.*deepgram;dur=\d+.*total;dur=\d+/,
     );
+  });
+
+  it("counts each (token, part) in the database: two uses allowed, the third is refused with 429 and no vendor call", async () => {
+    const { issueHectorTurnToken, hectorTurnTokenHash } =
+      await import("@/lib/hector-turn-token.server");
+    authorizeAiRequest.mockResolvedValue({ ok: true, userId: "user-1", chargeQuota: vi.fn() });
+    const token = issueHectorTurnToken("user-1", REPLY);
+    // What the database does: allow while the count is under the cap.
+    const counts = new Map<string, number>();
+    consumeUse.mockImplementation(async (_fn, args) => {
+      const a = args as { p_sig_hash: string; p_part: number; p_max: number };
+      const key = `${a.p_sig_hash}:${a.p_part}`;
+      const n = counts.get(key) ?? 0;
+      if (n >= a.p_max) return { data: false, error: null };
+      counts.set(key, n + 1);
+      return { data: true, error: null };
+    });
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(async () => audio());
+
+    expect((await handler({ request: turnReq(token, 0) })).status).toBe(200);
+    expect((await handler({ request: turnReq(token, 0) })).status).toBe(200);
+    const third = await handler({ request: turnReq(token, 0) });
+    expect(third.status).toBe(429);
+    expect(await third.json()).toEqual({ error: "turn-replay-limit" });
+    expect((global.fetch as ReturnType<typeof vi.fn>).mock.calls).toHaveLength(2);
+    // Another part of the same token has its own allowance.
+    expect((await handler({ request: turnReq(token, 1) })).status).toBe(200);
+    const [fn, args] = consumeUse.mock.calls[0]!;
+    expect(fn).toBe("consume_hector_turn_use");
+    expect(args).toMatchObject({ p_sig_hash: hectorTurnTokenHash(token), p_part: 0, p_max: 2 });
+  });
+
+  it("an unreadable use count refuses the speech (503, fail closed: it is paid speech) and calls no vendor", async () => {
+    const { issueHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+    authorizeAiRequest.mockResolvedValue({ ok: true, userId: "user-1", chargeQuota: vi.fn() });
+    consumeUse.mockResolvedValue({ data: null, error: { message: "down" } });
+    const res = await handler({ request: turnReq(issueHectorTurnToken("user-1", REPLY), 0) });
+    expect(res.status).toBe(503);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("a refused token or bad part is not counted as a use", async () => {
+    const { issueHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+    authorizeAiRequest.mockResolvedValue({ ok: true, userId: "user-1", chargeQuota: vi.fn() });
+    expect(
+      (await handler({ request: turnReq(issueHectorTurnToken("user-2", REPLY), 0) })).status,
+    ).toBe(403);
+    expect(
+      (await handler({ request: turnReq(issueHectorTurnToken("user-1", REPLY), 9) })).status,
+    ).toBe(400);
+    expect(consumeUse).not.toHaveBeenCalled();
   });
 });
