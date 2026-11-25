@@ -65,6 +65,7 @@ issue.
 - **A lesson-session token completes a lesson once.** `lesson_session_redemptions` and `apply_lesson_completion_once`
   (`20261125110000`) record each token by its SHA-256, so a replay returns the stored result and writes nothing; hearts
   are settled once per token. Rows older than 7 days are pruned by the maintenance sweep.
+- **A Hector turn token speaks one reply, at most twice per part (#717).** `/api/tts?turn=<token>&part=<n>` verifies an HMAC over `hector-turn:v1|userId|sha256(text)|expiry` (key `LESSON_SESSION_SECRET`, 2 minute window, `src/lib/hector-turn-token.server.ts`): another user, another text, an expired token or a lesson-session or recap token is refused (403 `turn-invalid`). Because the token is stateless, uses are counted in `hector_turn_token_uses` through `consume_hector_turn_use` (service role only); the third use of a (token, part) is 429 `turn-replay-limit` and an unreadable count is 503 `turn-unavailable` (fail closed, it is paid speech); the client then uses the device voice. The route still runs the auth, AI-switch and consent gates; only the second quota charge is skipped. Rows past expiry are pruned by the maintenance sweep.
 
 ## Push notifications
 
