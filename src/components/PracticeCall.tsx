@@ -657,9 +657,9 @@ export function PracticeCall(props: Props) {
       >
         <div aria-hidden="true" className="mx-auto mb-2 h-[5px] w-10 rounded-[3px] bg-hairline" />
         <header className="mb-2 flex items-center justify-between">
-          <h3 className="ds-type-headline" style={{ fontFamily: DISPLAY_FACE, fontWeight: 600 }}>
+          <h2 className="ds-type-headline" style={{ fontFamily: DISPLAY_FACE, fontWeight: 600 }}>
             Conversation
-          </h3>
+          </h2>
           <button
             ref={backRef}
             type="button"
