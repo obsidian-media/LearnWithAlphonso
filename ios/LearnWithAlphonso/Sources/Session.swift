@@ -43,6 +43,9 @@ final class Session {
     var emailFlow = EmailCodeFlow()
     /// A non-error message for the sign-in screen, e.g. why the learner was signed out.
     private(set) var notice: String?
+    /// True after a ban ended or refused a session: RootView shows the full-screen SuspendedView instead of the
+    /// sign-in screen until the learner taps Sign out (`dismissSuspension`).
+    private(set) var isSuspended = false
     /// The access token of the session that is ending, readable only while SessionLifecycle handlers run, so
     /// the push-token handler can delete the old account's device row (AuthAccountCleanup).
     @ObservationIgnored private(set) var retiringAccessToken: String?
@@ -208,6 +211,7 @@ final class Session {
             state = .awaitingCode(email: email)
         } catch {
             emailFlow.sendFailed(error, now: Date())
+            if AccountSuspension.isSuspended(error) { isSuspended = true }
         }
     }
 
@@ -252,6 +256,7 @@ final class Session {
             Analytics.track(.signInCompleted, ["method": "email"])
         } catch {
             emailFlow.verificationFailed(error, now: Date())
+            if AccountSuspension.isSuspended(error) { isSuspended = true }
         }
     }
 
@@ -329,7 +334,7 @@ final class Session {
         } catch GoogleSignInPresenterError.cancelled {
             // The user dismissed the sheet -- not a real error.
         } catch {
-            errorMessage = Self.message(for: error)
+            failSignIn(error)
         }
     }
 
@@ -349,7 +354,7 @@ final class Session {
             authorization = value
         case .failure(let error):
             if AppleSignInCoordinator.isCancellation(error) { return }
-            errorMessage = Self.message(for: error)
+            failSignIn(error)
             return
         }
         errorMessage = nil
@@ -375,7 +380,7 @@ final class Session {
                 linkAppleAuthorization(code: code)
             }
         } catch {
-            errorMessage = Self.message(for: error)
+            failSignIn(error)
         }
     }
 
@@ -435,6 +440,20 @@ final class Session {
 
     func dismissNotice() {
         notice = nil
+    }
+
+    /// Sign out from the suspended screen: back to the sign-in screen with nothing left over.
+    func dismissSuspension() {
+        isSuspended = false
+        notice = nil
+        errorMessage = nil
+        emailFlow = EmailCodeFlow()
+        state = .signedOut
+    }
+
+    private func failSignIn(_ error: Error) {
+        errorMessage = Self.message(for: error)
+        if AccountSuspension.isSuspended(error) { isSuspended = true }
     }
 
     /// Ends the session locally and runs every SessionLifecycle handler for `.signedOut`
@@ -641,6 +660,7 @@ final class Session {
     private func endAfterRejectedRefresh(_ error: Error) {
         if AccountSuspension.isSuspended(error) {
             endSession(.signedOut, notice: AccountSuspension.message)
+            isSuspended = true
         } else {
             signOut()
         }

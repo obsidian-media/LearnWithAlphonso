@@ -76,6 +76,10 @@ class SessionManager(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
+    private val _suspended = MutableStateFlow(false)
+    /** True after a ban refused a sign-in or a refresh: the app shows the full-screen suspended view until [dismissSuspension]. */
+    val suspended: StateFlow<Boolean> = _suspended.asStateFlow()
+
     private val _notice = MutableStateFlow<String?>(null)
     val notice: StateFlow<String?> = _notice.asStateFlow()
 
@@ -147,7 +151,10 @@ class SessionManager(
             if (isRejectedRefreshToken(e) && currentSession()?.userId == current.userId) {
                 endSession(endOnServer = false)
                 // A ban is the one refusal worth explaining: the sign-in screen says so plainly.
-                if (AccountSuspension.isSuspended(e)) _errorMessage.value = AccountSuspension.MESSAGE
+                if (AccountSuspension.isSuspended(e)) {
+                    _errorMessage.value = AccountSuspension.MESSAGE
+                    _suspended.value = true
+                }
             }
             null
         }
@@ -170,7 +177,11 @@ class SessionManager(
                 // Offline or a server hiccup at launch: stay signed in on the stored
                 // session and let the next request's 401 retry refresh it. Clearing
                 // here signed a learner out just for opening the app in airplane mode.
-                if (isRejectedRefreshToken(e)) store.clear() else establish(stored)
+                if (isRejectedRefreshToken(e)) {
+                    store.clear()
+                    // A ban found at launch is shown in full, like one found by a later refresh.
+                    if (AccountSuspension.isSuspended(e)) _suspended.value = true
+                } else establish(stored)
             }
         } finally {
             _isRestoring.value = false
@@ -277,6 +288,13 @@ class SessionManager(
         }
     }
 
+    /** Sign out from the suspended screen: back to the sign-in screen with nothing left over. */
+    fun dismissSuspension() {
+        _suspended.value = false
+        _errorMessage.value = null
+        _notice.value = null
+    }
+
     fun clearMessages() {
         _errorMessage.value = null
         _notice.value = null
@@ -294,8 +312,10 @@ class SessionManager(
         try {
             block()
         } catch (e: SupabaseAuthError.Server) {
-            _errorMessage.value = if (AccountSuspension.isSuspended(e)) AccountSuspension.MESSAGE
-            else e.serverMessage ?: "Something went wrong. Please try again."
+            if (AccountSuspension.isSuspended(e)) {
+                _errorMessage.value = AccountSuspension.MESSAGE
+                _suspended.value = true
+            } else _errorMessage.value = e.serverMessage ?: "Something went wrong. Please try again."
         } catch (e: SupabaseAuthError) {
             _errorMessage.value = "Something went wrong. Please try again."
         } catch (e: Exception) {
