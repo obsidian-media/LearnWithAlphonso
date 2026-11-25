@@ -421,8 +421,11 @@ export function SayThePicture({
       data-say-the-picture="round"
       data-phase={phase}
       data-pose={pose}
-      className="relative flex min-h-dvh flex-col overflow-x-clip bg-ds-brand font-[family-name:var(--ds-font-body)] text-white"
+      className="relative flex min-h-dvh flex-col overflow-x-clip bg-ds-brand font-[family-name:var(--ds-font-body)] text-white max-md:fixed max-md:inset-0 max-md:z-40 max-md:overflow-y-auto"
     >
+      {/* On a phone the round is a full-screen cover over the app's top bar and tab bar. Left in the page it was
+          110px taller than the screen, so tapping a button near the bottom scrolled the page and the sticky top bar
+          hid the revealed word. */}
       {/* The photo is the hero. While asking, its own description would give the answer away. */}
       {/* Clipped here, not on the screen: the result must never be cut off when the phone is short or the text large. */}
       <div className="absolute inset-0 overflow-hidden" data-stp-backdrop="">

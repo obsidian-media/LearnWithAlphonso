@@ -57,6 +57,7 @@ import { vocabForLesson, type VocabItem } from "../../data/vocab";
 import { isInvalidLessonSession, lessonSessionNeedsRenewal } from "../../lib/lesson-session-age";
 import { RouteError } from "../../components/RouteError";
 import { FinishScreen, NotSavedScreen } from "../../components/lesson/FinishScreen";
+import { LeaveLessonDialog } from "../../components/lesson/LeaveLessonDialog";
 
 export const Route = createFileRoute("/_authenticated/lesson/$id")({
   component: LessonPageWithSave,
@@ -189,6 +190,7 @@ function LessonPage() {
   } | null>(null);
   const vocab = useMemo(() => vocabForLesson(id, course), [id, course]);
   const [phase, setPhase] = useState<"overview" | "vocab" | "quiz">("overview");
+  const [confirmLeave, setConfirmLeave] = useState(false);
   // Fresh per-mount seed so replaying the same lesson shuffles answer
   // order differently each time, instead of always looking identical.
   const [attemptSeed] = useState(() => `${id}-${Date.now()}-${Math.random()}`);
@@ -643,15 +645,22 @@ function LessonPage() {
     return xp === null ? null : `+${xp} XP`;
   };
 
-  const close = () => navigate({ to: "/learn" });
+  const leave = () => navigate({ to: "/learn" });
+  // Closing after at least one answer asks first; before that there is nothing to lose.
+  const close = () => (answeredQs.length > 0 ? setConfirmLeave(true) : leave());
   const hud = (progress: number, onLight = false, valueText?: string) => (
-    <LessonHud
-      progress={progress}
-      valueText={valueText}
-      hearts={proStatus.state === "pro" ? null : state.hearts}
-      onClose={close}
-      onLight={onLight}
-    />
+    <>
+      <LessonHud
+        progress={progress}
+        valueText={valueText}
+        hearts={proStatus.state === "pro" ? null : state.hearts}
+        onClose={close}
+        onLight={onLight}
+      />
+      {confirmLeave && (
+        <LeaveLessonDialog onStay={() => setConfirmLeave(false)} onLeave={() => void leave()} />
+      )}
+    </>
   );
   const unitLine = unitNumber && unit ? `Unit ${unitNumber} · ${unit.title}` : lesson.subtitle;
 

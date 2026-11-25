@@ -197,6 +197,13 @@ describe("Say the picture", () => {
     );
   });
 
+  it("covers the app's top bar and tab bar on a phone, so a tap near the bottom cannot scroll the word under them", () => {
+    view();
+    const root = document.querySelector("[data-say-the-picture]") as HTMLElement;
+    for (const cls of ["max-md:fixed", "max-md:inset-0", "max-md:z-40", "max-md:overflow-y-auto"])
+      expect(root.className).toContain(cls);
+  });
+
   it("Alphonso is explaining while asking, listening while recording, thinking after a miss and cheering on a win", () => {
     const { rerender } = view();
     const root = () => document.querySelector("[data-say-the-picture]") as HTMLElement;

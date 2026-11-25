@@ -1190,6 +1190,31 @@ describe("Lesson page", () => {
     await user.click(await screen.findByRole("button", { name: "Close" }));
     expect(navigate).toHaveBeenCalledWith({ to: "/learn" });
   });
+
+  it("asks before leaving once a question has been answered, and keeps the lesson on Keep going", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].correct }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    expect(await screen.findByRole("dialog", { name: "Leave this lesson?" })).toBeInTheDocument();
+    expect(navigate).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Keep going" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("leaves for /learn only when Leave lesson is chosen", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await skipToQuiz(user);
+    await user.click(await screen.findByRole("button", { name: ANSWERS[0].correct }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
+    await user.click(screen.getByRole("button", { name: "Close" }));
+    await user.click(await screen.findByRole("button", { name: "Leave lesson" }));
+    expect(navigate).toHaveBeenCalledWith({ to: "/learn" });
+  });
 });
 
 // V3 pkg 4b: in-lesson reinforcement. pickReinforcementQuestion is mocked

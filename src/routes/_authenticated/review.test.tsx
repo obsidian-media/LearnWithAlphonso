@@ -79,6 +79,13 @@ describe("Review page", () => {
     ).toBeInTheDocument();
   });
 
+  it("names the page for a screen reader while a question is up: one level-1 heading, Review", async () => {
+    fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l1:q1" }], total: 1 });
+    renderPage();
+    await screen.findByText("Which is a formal greeting?");
+    expect(screen.getByRole("heading", { level: 1, name: "Review" })).toBeInTheDocument();
+  });
+
   it("grades a correct multiple-choice answer and advances on Continue", async () => {
     fetchDueReviews.mockResolvedValue({ due: [{ itemKey: "u1l1:q1" }], total: 1 });
     const user = userEvent.setup();
