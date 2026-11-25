@@ -4,6 +4,8 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import com.obsidianmedia.learnwithalphonso.core.firstrun.CompleteProfileSkip
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.printToString
@@ -97,18 +99,44 @@ class ScreenshotTest {
     /** The tab item is the clickable node carrying the label; the screen header is not. */
     private fun tab(label: String) = compose.onNode(hasText(label) and hasClickAction() and !isSelected()).performClick()
 
+    private val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+
+    /** A text that is on the screen's own content, not the tab bar's label of the same name. */
+    private fun heading(text: String) = hasText(text) and isHeading
+    private fun tag(tag: String) = hasTestTag(tag)
+
+    /** Per tab: something only that screen, loaded, shows (read from the screens' code), and the error texts it must not show. */
+    private class Marker(val shown: SemanticsMatcher, val absent: List<String> = emptyList())
+
+    private val markers = mapOf(
+        "Learn" to Marker(heading("For you")),
+        "Library" to Marker(hasText("Library") and !hasClickAction()),
+        "Practice" to Marker(heading("Practice"), absent = listOf("Could not load Practice.")),
+        "Hector" to Marker(tag("hector-header")),
+        "Profile" to Marker(hasText("Edit your answers"), absent = listOf("Profile could not load.")),
+    )
+
+    /** Only a spinner with no value: determinate bars (Learn's "Unit progress") are content and never go away. */
+    private val loadingSpinner = SemanticsMatcher("an indeterminate progress indicator") {
+        it.config.getOrNull(SemanticsProperties.ProgressBarRangeInfo) == ProgressBarRangeInfo.Indeterminate
+    }
+
     /**
      * Fails (so the zz-failure evidence is written) unless the app is really on [label]'s screen: the tab bar exists, which
-     * the first-run questions and Complete your profile cover never show, and that tab is the selected destination. The
-     * header text is not enough: "Learn" is also a substring of "Why are you learning English?" (run 45567728620).
-     * Then it waits for every progress indicator to go, so a spinner is never captured.
+     * the first-run questions and Complete your profile cover never show, that tab is the selected destination, the
+     * screen's own content marker is there (a selected tab showing an error state does not pass), and no loading spinner
+     * remains. The header text alone is not enough: "Learn" is also a substring of "Why are you learning English?"
+     * (run 45567728620).
      */
-    private fun onScreen(label: String, timeoutMillis: Long = 20_000) {
+    private fun onScreen(label: String, timeoutMillis: Long = 30_000) {
+        val marker = markers.getValue(label)
         compose.waitUntil(timeoutMillis) {
             compose.onAllNodes(hasText(label) and hasClickAction() and isSelected()).fetchSemanticsNodes().isNotEmpty()
         }
-        compose.waitUntil(timeoutMillis) {
-            compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).fetchSemanticsNodes().isEmpty()
+        compose.waitUntil(timeoutMillis) { compose.onAllNodes(marker.shown).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(timeoutMillis) { compose.onAllNodes(loadingSpinner).fetchSemanticsNodes().isEmpty() }
+        marker.absent.forEach { text ->
+            check(compose.onAllNodes(hasText(text)).fetchSemanticsNodes().isEmpty()) { "$label shows its error state: $text" }
         }
     }
 
