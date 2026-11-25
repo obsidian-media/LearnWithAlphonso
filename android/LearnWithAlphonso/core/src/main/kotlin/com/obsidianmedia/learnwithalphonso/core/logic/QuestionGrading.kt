@@ -30,7 +30,7 @@ fun isAnswerCorrect(question: Question, picked: String?, course: Course = Course
     }
 }
 
-private fun looseEquals(a: String, b: String): Boolean = a.trim().lowercase() == b.trim().lowercase()
+private fun looseEquals(a: String, b: String): Boolean = normaliseFillAnswer(a) == normaliseFillAnswer(b)
 
 /**
  * Builds a multiple-choice question from a self-contained review row's embedded content (a Hector weakness item or a

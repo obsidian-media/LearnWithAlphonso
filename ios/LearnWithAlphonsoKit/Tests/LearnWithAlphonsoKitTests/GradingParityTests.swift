@@ -5,9 +5,8 @@ import XCTest
 /// The iPhone leg of the shared answer-grading fixture set. The web (src/lib/grading-parity.test.ts), the Deno
 /// edge copy, this file and the Android core all read tests/fixtures/grading-parity.json. Fixtures/grading-parity.json
 /// here is a byte-for-byte copy (a copy, not a symlink: the Kit has to build on Windows too), and
-/// `testTheCopyMatchesTheSource` fails when they differ. `runtimes` says where a case applies; `divergent` records
-/// what this runtime does TODAY where it disagrees with `expected` -- it is asserted, so a fix turns the case red
-/// until the marker is removed.
+/// `testTheCopyMatchesTheSource` fails when they differ. `runtimes` says where a case applies; every runtime it
+/// applies to must produce `expected`.
 final class GradingParityTests: XCTestCase {
     private struct Case: Decodable {
         let id: String
@@ -20,7 +19,6 @@ final class GradingParityTests: XCTestCase {
         let acceptable: [String]?
         let expected: Bool
         let runtimes: [String]?
-        let divergent: [String: Bool]?
     }
 
     private struct Fixture: Decodable {
@@ -73,11 +71,16 @@ final class GradingParityTests: XCTestCase {
         let ids = fixture.cases.map(\.id)
         XCTAssertEqual(Set(ids).count, ids.count, "case ids must be unique")
         let applicable = fixture.cases.filter { ($0.runtimes ?? ["web", "deno", "ios", "android"]).contains(Self.runtime) }
-        XCTAssertGreaterThan(applicable.count, 150)
+        let excluded = fixture.cases.filter { $0.runtimes != nil && !$0.runtimes!.contains(Self.runtime) }
+        XCTAssertEqual(applicable.count, fixture.cases.count - excluded.count)
+        XCTAssertGreaterThan(applicable.count, 0)
+        var ran = 0
         for c in applicable {
             let got = isAnswerCorrect(try question(c), picked: c.input, course: course(c))
-            XCTAssertEqual(got, c.divergent?[Self.runtime] ?? c.expected, c.id)
+            XCTAssertEqual(got, c.expected, c.id)
+            ran += 1
         }
+        XCTAssertEqual(ran, applicable.count)
     }
 
     func testTheCopyMatchesTheSource() throws {

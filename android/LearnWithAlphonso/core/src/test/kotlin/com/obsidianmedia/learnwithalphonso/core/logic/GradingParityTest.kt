@@ -17,9 +17,8 @@ import org.junit.jupiter.api.Test
 /**
  * The Android leg of the shared answer-grading fixture set. The web (src/lib/grading-parity.test.ts), the Deno edge
  * copy, the iOS Kit and this test all read tests/fixtures/grading-parity.json; core/src/test/resources/grading-parity.json
- * is a byte-for-byte copy guarded by src/lib/grading-parity.test.ts. `runtimes` says where a case applies; `divergent`
- * records what this runtime does TODAY where it disagrees with `expected` -- it is asserted, so a fix turns the case
- * red until the marker is removed.
+ * is a byte-for-byte copy, guarded by src/lib/grading-parity.test.ts and by the test below. `runtimes` says where a
+ * case applies; every runtime it applies to must produce `expected`.
  */
 class GradingParityTest {
     private val runtime = "android"
@@ -53,13 +52,27 @@ class GradingParityTest {
         val ids = cases.map { it.jsonObject.str("id") }
         assertEquals(ids.size, ids.toSet().size, "case ids must be unique")
         val applicable = cases.map { it.jsonObject }.filter(::applies)
-        assertTrue(applicable.size > 150, "expected the whole shared set, got ${applicable.size}")
+        val excluded = cases.map { it.jsonObject }.count { it["runtimes"] != null && !applies(it) }
+        assertEquals(cases.size - excluded, applicable.size)
+        assertTrue(applicable.isNotEmpty())
         val failures = mutableListOf<String>()
+        var ran = 0
         for (c in applicable) {
             val got = isAnswerCorrect(question(c), c.str("input"), course(c))
-            val want = c["divergent"]?.jsonObject?.get(runtime)?.jsonPrimitive?.boolean ?: c["expected"]!!.jsonPrimitive.boolean
+            val want = c["expected"]!!.jsonPrimitive.boolean
             if (got != want) failures += "${c.str("id")}: got $got, fixture says $want"
+            ran++
         }
+        assertEquals(applicable.size, ran)
         assertTrue(failures.isEmpty(), failures.joinToString("\n"))
+    }
+
+    @Test
+    fun `the Android copy is byte for byte the shared file`() {
+        // Gradle runs JVM tests from the module directory: core/ -> android/LearnWithAlphonso -> android -> repo root.
+        val source = java.io.File("../../../tests/fixtures/grading-parity.json")
+        assertTrue(source.exists(), "shared fixture not found at ${source.absolutePath}")
+        val copy = javaClass.getResource("/grading-parity.json")!!.readBytes()
+        assertTrue(copy.contentEquals(source.readBytes()), "core/src/test/resources/grading-parity.json differs from tests/fixtures/grading-parity.json")
     }
 }
