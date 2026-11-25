@@ -173,12 +173,16 @@ test("Hector: the hands-free chip is on the call screen itself, no sheet needed"
   });
 });
 
-test("Hector: once the safety note was confirmed on this device, a new call starts hands-free", async ({
+test("Hector: once the learner confirmed the note and left it on, a new call starts hands-free", async ({
   page,
 }) => {
   test.setTimeout(90_000);
   await setup(page);
-  await page.addInitScript(() => window.localStorage.setItem("handsFree.safetyNoteSeen.v2", "1"));
+  await page.addInitScript(() => {
+    // What confirming the note leaves behind: the note seen and the choice "on".
+    window.localStorage.setItem("handsFree.safetyNoteSeen.v2", "1");
+    window.localStorage.setItem("handsFree.preferred.v1", "1");
+  });
   await page.goto("/hector");
   await expect(page.getByTestId("hands-free-chip")).toHaveText("Hands-free: On", {
     timeout: 30_000,
