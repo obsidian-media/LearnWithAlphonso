@@ -59,3 +59,30 @@ export function createStageTimer(now: () => number = () => performance.now()): S
     },
   };
 }
+
+/**
+ * Runs a route handler under a stage timer, then logs one `[ai-timing]` line and adds `Server-Timing` to the answer.
+ * Used by the routes whose slowness has to be attributed to a stage (stt, tts, call-recap). A streamed body is not
+ * waited for: the timings are those of the answer's headers, so for a streamed speech reply `total` is the time to
+ * the first byte, which is what the listener waits for.
+ */
+export async function timedRoute(
+  route: string,
+  run: (timer: StageTimer) => Promise<Response>,
+): Promise<Response> {
+  const timer = createStageTimer();
+  let res = await run(timer);
+  timer.log(route, res.status);
+  try {
+    res.headers.set("Server-Timing", timer.serverTiming());
+  } catch {
+    // A response with immutable headers (one passed straight through from a fetch): copy it, headers first.
+    res = new Response(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: new Headers(res.headers),
+    });
+    res.headers.set("Server-Timing", timer.serverTiming());
+  }
+  return res;
+}
