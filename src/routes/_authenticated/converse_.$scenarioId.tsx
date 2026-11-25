@@ -672,6 +672,7 @@ function ConverseChatPage({
       <LessonFrame>
         <PracticeCall
           title={scenario.title}
+          heading={`Call: ${scenario.title}`}
           scenarioId={scenario.id}
           avatar={{
             phase: avatarPhase,

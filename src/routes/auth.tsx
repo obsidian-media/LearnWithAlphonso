@@ -97,11 +97,18 @@ function AuthPage() {
     },
     [next, navigate],
   );
-  const [pendingVerifyEmail] = useState(readPendingVerifyEmail);
   const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "verify">(
-    pendingVerifyEmail ? "verify" : startMode === "signup" ? "signup" : "signin",
+    startMode === "signup" ? "signup" : "signin",
   );
-  const [email, setEmail] = useState(pendingVerifyEmail ?? "");
+  const [email, setEmail] = useState("");
+  // The remembered address is read after the first paint, not while rendering: the server cannot see session storage,
+  // so reading it during the first render made the page differ from the server's HTML (React error 418) on a refresh.
+  useEffect(() => {
+    const pending = readPendingVerifyEmail();
+    if (!pending) return;
+    setEmail(pending);
+    setMode("verify");
+  }, []);
   // False when the code screen was reached from a sign-in to an unconfirmed account: no code went out this time, so
   // the screen asks for Send a new code instead of claiming one was sent.
   const [codeSent, setCodeSent] = useState(true);
