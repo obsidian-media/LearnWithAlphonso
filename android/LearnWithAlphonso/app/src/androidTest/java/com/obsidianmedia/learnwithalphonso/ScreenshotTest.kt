@@ -12,6 +12,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.screenshot.Screenshot
 import com.obsidianmedia.learnwithalphonso.auth.EncryptedSessionStore
 import com.obsidianmedia.learnwithalphonso.core.net.SupabaseSession
+import kotlinx.coroutines.runBlocking
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
@@ -47,6 +48,11 @@ class ScreenshotTest {
         assumeTrue("no demo session passed; screenshot capture skipped", !access.isNullOrBlank() && !refresh.isNullOrBlank() && !userId.isNullOrBlank())
         val expiresAt = args.getString("uiTestExpiresAt")?.toLongOrNull() ?: (System.currentTimeMillis() / 1000 + 3600)
         EncryptedSessionStore(context).save(SupabaseSession(access!!, refresh!!, expiresAt, userId!!))
+        // The app restores its session once, in AppContainer's init at process start, which is before this test runs
+        // and finds the store empty: the app then shows the signed-out first-run questions (run 45560942267). Restore
+        // again now that the demo session is stored, exactly as a cold launch of a signed-in learner would.
+        val app = context.applicationContext as AlphonsoApplication
+        runBlocking { app.container.session.restore() }
     }
 
     @Test
