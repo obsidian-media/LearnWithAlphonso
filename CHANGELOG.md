@@ -33,7 +33,7 @@ Sources are the PR bodies and the code at 236cb8f1. Not run on a real device unl
 - **Release: build 73 (#712, d383bc61).** See the build 73 entry below.
 - **Native build 72 feedback fixes (#710, e1d91d54).** iOS Library shows French and Spanish podcasts; podcast mini bar Close button (iOS and Android); the "podcast starts playing by itself" report was hardened but its root cause was not reproduced; Say the picture drops action words and a deny list (shared/say-the-picture-deny.json).
 - **Launch screen, Library podcasts, practice art, "not scored" tag (#711, 8a706f5f).** The owner's approved build 72 design picks, on web, iOS and Android; linear story covers are read from the `story-art` bucket when `<course>/<slug>/cover.jpg` exists.
-- **Stricter checking of written answers (#709, 02aa9e9a).** The AI second opinion lists the required elements and which are missing; the verdict is computed in code, so the model can only make it stricter; the course language and level are passed in; a Deno twin and a parity test keep both copies identical. A regression file and a real-model check script were added (`scripts/translation-grader-regression.json`, `scripts/check-translation-grader.ts`).
+- **Stricter checking of written answers (#709, 02aa9e9a).** The AI second opinion lists the required elements and which are missing; the verdict is computed in code, so the model can only make it stricter; the course language is passed in; a Deno twin and a parity test keep both copies identical. A regression file and a real-model check script were added (`scripts/translation-grader-regression.json`, `scripts/check-translation-grader.ts`).
 
 ### Platform move, admin rebuild, lesson mix and unlock, stories, convergence (2026-11-17 to 2026-11-22, #594 to #705)
 
