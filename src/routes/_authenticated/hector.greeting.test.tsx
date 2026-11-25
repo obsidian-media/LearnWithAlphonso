@@ -523,4 +523,59 @@ describe("Hector is always heard", () => {
     expect(await screen.findByTestId("hands-free-chip")).toHaveTextContent("Hands-free: Off");
     expect(await screen.findByTestId("tap-to-hear")).toHaveTextContent("Tap to hear Hector");
   });
+
+  it("a split turn shows the text at once, then speaks it from /api/tts with the turn token, first sentence first", async () => {
+    routes["/api/hector-respond"] = (body) => {
+      expect((body as { split_tts?: boolean }).split_tts).toBe(true);
+      return Response.json({
+        reply: "Very good, you did it! Now tell me what you ate.",
+        audio_base64: "",
+        tts_token: "123.sig",
+        state: "ok",
+      });
+    };
+    renderPage();
+    await shows(GENERIC_EN);
+    await waitFor(() => expect(players.length).toBeGreaterThan(0));
+    const before = players.length;
+    await userEvent.type(screen.getByRole("textbox", { name: "Message Hector" }), "Hello{Enter}");
+    await shows("Very good, you did it!");
+    const turnCalls = () =>
+      (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls
+        .map((c) => String(c[0]))
+        .filter((u) => u.includes("turn="));
+    await waitFor(() =>
+      expect(turnCalls()).toEqual(["/api/tts?turn=123.sig&part=0", "/api/tts?turn=123.sig&part=1"]),
+    );
+    // Both pieces play, in order, on the one element (the first as soon as it arrives).
+    await waitFor(() => expect(players.length).toBeGreaterThan(before));
+    const body = sent.filter((s) => s.url === "/api/tts").at(-1)!.body as { text: string };
+    expect(body.text).toBe("Very good, you did it! Now tell me what you ate.");
+  });
+
+  it("if the turn token is refused the reply is still read, by the device voice", async () => {
+    routes["/api/hector-respond"] = () =>
+      Response.json({
+        reply: "Sure! What did you do yesterday?",
+        audio_base64: "",
+        tts_token: "9.bad",
+      });
+    const original = routes["/api/tts"];
+    let greeted = false;
+    routes["/api/tts"] = (b) => {
+      if (!greeted) {
+        greeted = true;
+        return original!(b);
+      }
+      return new Response("no", { status: 403 });
+    };
+    renderPage();
+    await shows(GENERIC_EN);
+    await waitFor(() => expect(players.length).toBeGreaterThan(0));
+    await userEvent.type(screen.getByRole("textbox", { name: "Message Hector" }), "Hello{Enter}");
+    await shows("What did you do yesterday?");
+    await waitFor(() =>
+      expect(spoken.map((s) => s.text).join(" ")).toContain("Sure! What did you do yesterday?"),
+    );
+  });
 });

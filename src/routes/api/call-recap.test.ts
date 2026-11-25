@@ -143,6 +143,23 @@ describe("the recap", () => {
     expect(h.authorize.mock.calls[0]![1]).toBe("recap");
     expect(h.authorize.mock.calls[0]![2]).toEqual({ route: "call-recap" });
   });
+  it("times each stage in Server-Timing, and logs one [ai-timing] line", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      const res = await call({ callId: CALL, messages: msgs });
+      const names = (res.headers.get("Server-Timing") ?? "")
+        .split(",")
+        .map((p) => p.trim().split(";")[0]);
+      expect(names).toEqual(["auth", "call", "claim", "llm", "memory", "total"]);
+      const lines = info.mock.calls
+        .map((c) => String(c[0]))
+        .filter((l) => l.startsWith("[ai-timing]"));
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain("route=call-recap status=200");
+    } finally {
+      info.mockRestore();
+    }
+  });
   it("takes the course from the server's call row, not the request", async () => {
     await call({ callId: CALL, messages: msgs, course: "en" });
     expect(h.generate.mock.calls[0]![0]).toMatchObject({ course: "es", userId: "u1" });

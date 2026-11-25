@@ -136,6 +136,8 @@ export type TutorReplyPayload = {
   reply: string;
   /** "" when the voice could not be made: the reply is still good, and the client speaks it with the device voice. Always present: iOS decodes the key as required. */
   audio_base64: string;
+  /** Web split turn only: authorises /api/tts?turn=<token> to speak exactly `reply`, for this learner, for about 2 minutes. */
+  tts_token?: string;
   tts_model: string;
   tts_provider: string;
   language: string;
@@ -152,6 +154,8 @@ export function shapeTutorReply(args: {
   reply: string;
   /** Omitted or empty when the voice failed: the payload then carries "". */
   audioBase64?: string;
+  /** Set only for the web split turn (the request asked for it). */
+  ttsToken?: string;
   ttsModel: string;
   language: string;
   llmMs: number;
@@ -164,6 +168,7 @@ export function shapeTutorReply(args: {
     agent: args.agent,
     reply: args.reply,
     audio_base64: args.audioBase64 ?? "",
+    ...(args.ttsToken ? { tts_token: args.ttsToken } : {}),
     tts_model: args.ttsModel,
     tts_provider: "deepgram",
     language: args.language,

@@ -82,6 +82,13 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const denied = await requireAiConsent(userId, { db: supabaseAdmin, route: "hector-respond" });
   if (denied) return denied;
 
+  // The request body is parsed while the entitlement lookup (a third-party call) is in flight. Each decision is still
+  // taken in order below: entitlement, then quota, then the body checks.
+  const bodyPromise = request.json().then(
+    (parsed: unknown) => ({ ok: true as const, parsed }),
+    () => ({ ok: false as const }),
+  );
+
   // A failed entitlement lookup must not masquerade as a lapsed subscription.
   const entitlement = await timer.time("entitlement", async () => {
     const { revenueCatConfigFromEnv, getProEntitlementStatus } =
@@ -96,6 +103,15 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     return noStoreJson({ error: "not-entitled" }, { status: 403 });
   }
 
+  // Hector's memory (Pro only: this point is past the entitlement and consent gates; a free learner's is never read).
+  // Built from the learner's own rows, never taken from the request. Its load runs in parallel with the quota unit
+  // below, which is only spent after the entitlement check above.
+  const memoryPromise = timer.time("memory", async () => {
+    const { loadMemoryPrimingMessage } = await import("@/lib/hector-memory.server");
+    return loadMemoryPrimingMessage(supabaseAdmin as never, userId);
+  });
+  memoryPromise.catch(() => undefined); // a turn refused below never awaits it
+
   // Pro's own daily allowance, not the free `chat` quota Practice spends: practicing must never block the feature a
   // learner pays for. Reached only after the entitlement check above, so a learner without Pro spends nothing.
   const quota = await timer.time("quota", async () => {
@@ -106,7 +122,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   });
   if (!quota.ok) return quotaFailureResponse(quota);
 
-  let body: {
+  type TurnBody = {
     session_id?: string;
     text?: string;
     language?: string;
@@ -115,12 +131,14 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     agent_id?: string;
     voice?: string;
     history?: TutorHistoryMessage[];
+    /** Web only: answer with the text now and a token for /api/tts, instead of waiting for the speech here. */
+    split_tts?: boolean;
   };
-  try {
-    body = await request.json();
-  } catch {
+  const parsedBody = await bodyPromise;
+  if (!parsedBody.ok || typeof parsedBody.parsed !== "object" || parsedBody.parsed === null) {
     return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
   }
+  const body = parsedBody.parsed as TurnBody;
   const text = (body.text ?? "").trim();
   if (!text) return noStoreJson({ error: "text required" }, { status: 400 });
   // `course` and `cefr_level` come from current clients; `language` is what every earlier build sends ("en").
@@ -129,10 +147,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
   const systemPrompt = buildHectorSystemPrompt(course, body.cefr_level ?? "");
   const sessionId = body.session_id || crypto.randomUUID();
   const agent = body.agent_id || "tutor";
-  // Hector's memory (Pro only: this point is past the entitlement and consent gates). Built here from the learner's
-  // own rows, never taken from the request.
-  const { loadMemoryPrimingMessage } = await import("@/lib/hector-memory.server");
-  const memory = await loadMemoryPrimingMessage(supabaseAdmin as never, userId);
+  const memory = await memoryPromise;
 
   // --- LLM turn (OpenRouter, OpenAI-compatible, same as /api/chat) ---
   const llmStart = performance.now();
@@ -211,7 +226,20 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
     stored: parseVoicePrefs(userData.user.user_metadata?.[VOICE_PREFS_METADATA_KEY]),
   });
   const ttsStart = performance.now();
+  // The web client asks (split_tts) to get the text now and fetch the speech itself from /api/tts, which streams it
+  // and starts with the first sentence. Native never sends the flag and keeps getting the audio inline, below. A
+  // missing signing secret falls back to the inline path.
+  let ttsToken: string | undefined;
+  if (body.split_tts === true) {
+    try {
+      const { issueHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+      ttsToken = issueHectorTurnToken(userId, safeReply);
+    } catch {
+      console.warn(JSON.stringify({ event: "hector_turn_token_unavailable" }));
+    }
+  }
   const tts = await timer.time("tts", async () => {
+    if (ttsToken) return { audioBase64: undefined };
     try {
       const ttsResp = await fetch(
         `https://api.deepgram.com/v1/speak?model=${encodeURIComponent(ttsModel)}&encoding=mp3&mip_opt_out=true`,
@@ -252,6 +280,7 @@ async function handleTurn(request: Request, timer: StageTimer): Promise<Response
       agent,
       reply: safeReply,
       audioBase64,
+      ttsToken,
       ttsModel,
       language: course,
       llmMs,

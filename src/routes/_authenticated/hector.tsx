@@ -6,6 +6,7 @@ import { cancelSpeech } from "@/lib/speech";
 import { claimAudioSession } from "@/lib/audio-session";
 import { voicePlayback } from "@/lib/voice-playback";
 import { useReplyVoice } from "@/lib/use-reply-voice";
+import { fetchTurnSpeech } from "@/lib/hector-turn-speech";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "../../components/AiConsentGate";
 import { AiMessageReport } from "../../components/AiMessageReport";
@@ -363,6 +364,7 @@ function HectorConversation({
       const abort = new AbortController();
       turnAbortRef.current = abort;
       try {
+        const voiceId = await voiceFor("hector", course);
         const resp = await fetch("/api/hector-respond", {
           method: "POST",
           signal: abort.signal,
@@ -373,7 +375,10 @@ function HectorConversation({
             history,
             course,
             cefr_level: cefrLevel,
-            voice: await voiceFor("hector", course),
+            voice: voiceId,
+            // Text first: the speech is fetched from /api/tts with the token this answers with (web only; native
+            // does not send this and gets the audio inline).
+            split_tts: true,
           }),
         });
         if (!resp.ok) {
@@ -403,6 +408,7 @@ function HectorConversation({
         const data = (await resp.json()) as {
           reply?: string;
           audio_base64?: TutorReplyPayload["audio_base64"];
+          tts_token?: string;
           correction?: unknown;
         };
         if (abort.signal.aborted) return;
@@ -416,7 +422,20 @@ function HectorConversation({
           const withCard = correction ? m.map((x, i) => (i === at ? { ...x, correction } : x)) : m;
           return [...withCard, { role: "assistant", content: reply }];
         });
-        void sayReply(reply, clipFrom(data.audio_base64));
+        // The turn's speech: inline audio (a server that did not split), or the pieces of the reply fetched with the
+        // turn token (first sentence first). With neither, the device voice reads it.
+        const inline = clipFrom(data.audio_base64);
+        const parts =
+          !inline && data.tts_token && data.reply
+            ? fetchTurnSpeech({
+                token: data.tts_token,
+                reply: data.reply,
+                course,
+                voice: voiceId,
+                signal: abort.signal,
+              })
+            : undefined;
+        void sayReply(reply, inline, parts);
       } catch (e) {
         // The screen was left mid-turn: nothing to show.
         if (abort.signal.aborted) return;
