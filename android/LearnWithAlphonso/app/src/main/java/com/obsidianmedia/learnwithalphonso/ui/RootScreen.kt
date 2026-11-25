@@ -142,6 +142,7 @@ fun RootScreen(
     }
     val isRestoring by session.isRestoring.collectAsState()
     val state by session.state.collectAsState()
+    val suspended by session.suspended.collectAsState()
     val palette = AlphonsoColor.palette
 
     val signedInUserId = (state as? AuthState.SignedIn)?.session?.userId
@@ -177,6 +178,8 @@ fun RootScreen(
             harness != null && BuildConfig.DEBUG -> LessonLightScope(themeIdForFirstRun, paletteIdForFirstRun) { FirstRunHarness(harness, container) }
             // Replaces the app rather than covering it, so TalkBack cannot reach anything underneath.
             gate != null -> UpdateRequiredScreen(gate)
+            // A banned account: the full-screen view, until the learner signs out of it.
+            suspended && state !is AuthState.SignedIn -> SuspendedScreen(onSignOut = { session.dismissSuspension() })
             isRestoring -> LaunchRestoringView()
             state !is AuthState.SignedIn && showSignIn -> Box(Modifier.fillMaxSize()) {
                 AuthScreen(container)

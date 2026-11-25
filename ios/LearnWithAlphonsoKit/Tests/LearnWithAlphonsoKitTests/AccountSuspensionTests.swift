@@ -30,4 +30,20 @@ final class AccountSuspensionTests: XCTestCase {
         XCTAssertFalse(AccountSuspension.isSuspended(status: 403, body: Data(#"{"error":"nope"}"#.utf8)))
         XCTAssertFalse(AccountSuspension.isSuspended(status: 403, body: nil))
     }
+
+    func testFullScreenContentUsesTheSharedCopyAndContactAddress() {
+        let content = AccountSuspension.content()
+        XCTAssertEqual(content.title, "This account is suspended.")
+        XCTAssertEqual(content.body, "If you think this is a mistake, contact support at support@learnwithalphonso.com.")
+        XCTAssertNil(content.reason)
+        XCTAssertEqual(AccountSuspension.contactURL.absoluteString, "mailto:support@learnwithalphonso.com")
+        XCTAssertTrue(content.contactLabel.contains("support@learnwithalphonso.com"))
+        XCTAssertTrue(content.signOutLabel.hasPrefix("Sign out"))
+    }
+
+    func testReasonIsShownOnlyWhenTheAPIGaveOne() {
+        XCTAssertEqual(AccountSuspension.content(reason: "  Repeated abuse of chat  ").reason, "Repeated abuse of chat")
+        XCTAssertNil(AccountSuspension.content(reason: "   ").reason)
+        XCTAssertNil(AccountSuspension.content(reason: nil).reason)
+    }
 }

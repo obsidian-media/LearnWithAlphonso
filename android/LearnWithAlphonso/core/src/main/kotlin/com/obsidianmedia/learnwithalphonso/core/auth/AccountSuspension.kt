@@ -20,4 +20,17 @@ object AccountSuspension {
         val message = (e as? SupabaseAuthError.Server)?.serverMessage ?: return false
         return message.contains("banned", ignoreCase = true) || message.contains(API_ERROR)
     }
+
+    // The full-screen view (backlog item 87). The iOS Kit's AccountSuspension carries the same labels.
+    const val CONTACT_TITLE = "Contact support"
+    const val SIGN_OUT_TITLE = "Sign out"
+    const val CONTACT_URL = "mailto:$SUPPORT_ADDRESS"
+    const val CONTACT_LABEL = "$CONTACT_TITLE. Opens an email to $SUPPORT_ADDRESS."
+    const val SIGN_OUT_LABEL = "$SIGN_OUT_TITLE. Returns to the sign-in screen."
+
+    /**
+     * The optional reason line: the API sends none today (the web screen has none), so this is null unless a future
+     * response carries one. Blank counts as none.
+     */
+    fun reasonLine(reason: String?): String? = reason?.trim()?.takeIf { it.isNotEmpty() }
 }

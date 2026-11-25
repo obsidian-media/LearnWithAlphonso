@@ -93,6 +93,8 @@ struct RootView: View {
         Group {
             if let screen = Self.harnessScreen {
                 harnessView(screen)
+            } else if session.isSuspended, session.userID == nil {
+                SuspendedView(onSignOut: { session.dismissSuspension() })
             } else if session.isRestoring {
                 // Keeps this identical, briefly, to a cold launch that has
                 // no persisted session at all -- see Session.restoreSession's
