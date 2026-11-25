@@ -243,7 +243,8 @@ export function PracticeCall(props: Props) {
         color: "var(--c-on-hero)",
       }}
     >
-      {heading && <h1 className="sr-only">{heading}</h1>}
+      {/* The call is the whole page: its title is the heading unless the caller names one (Hector does). */}
+      {(heading ?? title) && <h1 className="sr-only">{heading ?? title}</h1>}
       {art.dimInDark && dark && (
         <div
           aria-hidden="true"
