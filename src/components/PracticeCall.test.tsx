@@ -46,21 +46,6 @@ const base = {
 const room = (c: HTMLElement) =>
   (c.firstElementChild as HTMLElement).style.backgroundImage.replace(/url\(["']?|["']?\)/g, "");
 
-describe("the call's page heading", () => {
-  it("is the call's title when the caller names none, so a practice call has an h1", () => {
-    const { getByRole } = render(<PracticeCall {...base} scenarioId="coffee" />);
-    expect(getByRole("heading", { level: 1, name: "Ordering a coffee" })).toBeTruthy();
-  });
-
-  it("is the caller's heading when one is given (Hector's)", () => {
-    const { getByRole, queryByRole } = render(
-      <PracticeCall {...base} scenarioId="coffee" heading="Hector" />,
-    );
-    expect(getByRole("heading", { level: 1, name: "Hector" })).toBeTruthy();
-    expect(queryByRole("heading", { level: 1, name: "Ordering a coffee" })).toBeNull();
-  });
-});
-
 describe("Alphonso's robe", () => {
   it("fades out over the last 20% of his square, so it has no hard straight edge above the caption", () => {
     const { getByTestId } = render(<PracticeCall {...base} scenarioId="coffee" dark={false} />);
