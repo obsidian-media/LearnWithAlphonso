@@ -233,3 +233,93 @@ describe("POST /api/tts", () => {
     timeout.mockRestore();
   });
 });
+
+describe("POST /api/tts with a Hector turn token", () => {
+  const REPLY = "Very good, you did it! Now tell me what you ate.";
+  const turnReq = (token: string, part: number | string, body: unknown = { text: REPLY }) =>
+    new Request(`https://example.com/api/tts?turn=${encodeURIComponent(token)}&part=${part}`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  const audio = () =>
+    new Response("audio-bytes", { status: 200, headers: { "Content-Type": "audio/mpeg" } });
+
+  beforeEach(() => {
+    process.env.LESSON_SESSION_SECRET = "test-secret";
+  });
+  afterEach(() => {
+    delete process.env.LESSON_SESSION_SECRET;
+  });
+
+  it("speaks one part of exactly that reply, and does not spend a second quota unit", async () => {
+    const { issueHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+    const chargeQuota = vi.fn(async () => null);
+    authorizeAiRequest.mockResolvedValue({ ok: true, userId: "user-1", chargeQuota });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(audio());
+    const token = issueHectorTurnToken("user-1", REPLY);
+
+    const res = await handler({ request: turnReq(token, 0) });
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("audio-bytes");
+    // Deferred, and never charged: the turn already spent Hector's allowance.
+    expect(authorizeAiRequest.mock.calls[0]![2]).toMatchObject({ route: "tts", deferQuota: true });
+    expect(chargeQuota).not.toHaveBeenCalled();
+    // The first part only: the first sentence, not the whole reply.
+    const sent = JSON.parse(
+      String((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]![1].body),
+    );
+    expect(sent).toEqual({ text: "Very good, you did it!" });
+  });
+
+  it("part 1 is the rest of the reply", async () => {
+    const { issueHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+    authorizeAiRequest.mockResolvedValue({ ok: true, userId: "user-1", chargeQuota: vi.fn() });
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(audio());
+    const res = await handler({ request: turnReq(issueHectorTurnToken("user-1", REPLY), 1) });
+    expect(res.status).toBe(200);
+    const sent = JSON.parse(
+      String((global.fetch as ReturnType<typeof vi.fn>).mock.calls[0]![1].body),
+    );
+    expect(sent).toEqual({ text: "Now tell me what you ate." });
+  });
+
+  it("refuses a token for another user, another text, a missing token and a bad part, calling no vendor", async () => {
+    const { issueHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+    authorizeAiRequest.mockResolvedValue({ ok: true, userId: "user-1", chargeQuota: vi.fn() });
+    const other = issueHectorTurnToken("user-2", REPLY);
+    expect((await handler({ request: turnReq(other, 0) })).status).toBe(403);
+    const mine = issueHectorTurnToken("user-1", REPLY);
+    expect(
+      (await handler({ request: turnReq(mine, 0, { text: `${REPLY} Extra words.` }) })).status,
+    ).toBe(403);
+    expect((await handler({ request: turnReq("", 0) })).status).toBe(403);
+    expect((await handler({ request: turnReq(mine, 2) })).status).toBe(400);
+    expect((await handler({ request: turnReq(mine, "x") })).status).toBe(400);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("an expired token is refused", async () => {
+    const { issueHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+    authorizeAiRequest.mockResolvedValue({ ok: true, userId: "user-1", chargeQuota: vi.fn() });
+    const old = issueHectorTurnToken("user-1", REPLY, Date.now() - 10 * 60_000);
+    expect((await handler({ request: turnReq(old, 0) })).status).toBe(403);
+  });
+
+  it("a plain request still charges quota up front and is capped at 600 characters", async () => {
+    const res = await handler({ request: req({ text: "x".repeat(601) }) });
+    expect(res.status).toBe(413);
+    expect(authorizeAiRequest.mock.calls[0]![2]).toEqual({ route: "tts" });
+  });
+
+  it("never stores a turn's speech in the shared cache and streams the body through", async () => {
+    const { issueHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+    authorizeAiRequest.mockResolvedValue({ ok: true, userId: "user-1", chargeQuota: vi.fn() });
+    const upstream = audio();
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(upstream);
+    const res = await handler({ request: turnReq(issueHectorTurnToken("user-1", REPLY), 0) });
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(res.headers.get("Server-Timing")).toMatch(
+      /auth;dur=\d+.*deepgram;dur=\d+.*total;dur=\d+/,
+    );
+  });
+});

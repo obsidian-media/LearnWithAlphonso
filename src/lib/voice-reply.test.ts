@@ -169,12 +169,93 @@ describe("when nothing can say the line", () => {
   });
 });
 
+describe("a reply made in pieces", () => {
+  const piece = (text: string, blob: Blob | null | Promise<Blob | null>) => ({
+    text,
+    clip: Promise.resolve(blob),
+  });
+
+  it("plays the first piece as soon as it is ready, then the next, and settles after the last", async () => {
+    const t = setup([{ result: "ended" }, { result: "ended" }]);
+    const a = new Blob(["1"]);
+    const b = new Blob(["2"]);
+    await t.voice.say({
+      text: "Oui. Très bien !",
+      lang: "fr-FR",
+      clip: null,
+      parts: [piece("Oui.", a), piece("Très bien !", b)],
+    });
+    expect((t.play.mock.calls as unknown as [Blob][]).map((c) => c[0])).toEqual([a, b]);
+    expect(t.last()).toEqual({ speaking: false, awaitingTap: false });
+    expect(t.speakDevice).not.toHaveBeenCalled();
+  });
+
+  it("starts the first piece while the second is still on its way", async () => {
+    let finishSecond!: (b: Blob) => void;
+    const second = new Promise<Blob | null>((r) => (finishSecond = r));
+    const t = setup([{ result: "ended" }, { result: "ended" }]);
+    const said = t.voice.say({
+      text: "A. B.",
+      lang: "en-US",
+      clip: null,
+      parts: [piece("A.", new Blob(["1"])), { text: "B.", clip: second }],
+    });
+    await vi.waitFor(() => expect(t.play).toHaveBeenCalledTimes(1));
+    expect(t.last().speaking).toBe(true);
+    finishSecond(new Blob(["2"]));
+    await said;
+    expect(t.play).toHaveBeenCalledTimes(2);
+  });
+
+  it("a piece that failed to arrive is read by the device voice, from that piece on", async () => {
+    const t = setup([{ result: "ended" }]);
+    await t.voice.say({
+      text: "Un. Deux trois.",
+      lang: "fr-FR",
+      clip: null,
+      parts: [piece("Un.", new Blob(["1"])), piece("Deux trois.", null)],
+    });
+    expect(t.speakDevice).toHaveBeenCalledWith("Deux trois.", "fr-FR", expect.anything());
+    expect(t.last().awaitingTap).toBe(true);
+  });
+
+  it("a rejected fetch counts as no audio, not a crash", async () => {
+    const t = setup([]);
+    await t.voice.say({
+      text: "Hi. There.",
+      lang: "en-US",
+      clip: null,
+      parts: [{ text: "Hi.", clip: Promise.reject(new Error("net")) }, piece("There.", null)],
+    });
+    expect(t.speakDevice).toHaveBeenCalledWith("Hi. There.", "en-US", expect.anything());
+  });
+
+  it("a blocked second piece falls back from the second piece, and the tap replays from the start", async () => {
+    const t = setup(
+      [{ result: "ended" }, { result: "blocked" }, { result: "ended" }, { result: "ended" }],
+      "refused",
+    );
+    await t.voice.say({
+      text: "A. B.",
+      lang: "en-US",
+      clip: null,
+      parts: [piece("A.", new Blob(["1"])), piece("B.", new Blob(["2"]))],
+    });
+    expect(t.speakDevice).toHaveBeenCalledWith("B.", "en-US", expect.anything());
+    expect(t.last().awaitingTap).toBe(true);
+    t.voice.replay();
+    await vi.waitFor(() => expect(t.last()).toEqual({ speaking: false, awaitingTap: false }));
+    expect(t.play).toHaveBeenCalledTimes(4);
+  });
+});
+
 describe("a newer reply wins", () => {
   it("an old clip that settles late does not touch the state of the newer reply", async () => {
     let finishOld!: (o: PlayOutcome) => void;
     const t = setup([]);
     t.play.mockImplementationOnce(() => new Promise<PlayOutcome>((r) => (finishOld = r)));
     const old = t.voice.say(reply());
+    await new Promise((r) => setTimeout(r, 0)); // the old clip is now playing
     const next = t.voice.say(reply());
     await next;
     expect(t.last()).toEqual({ speaking: false, awaitingTap: false });

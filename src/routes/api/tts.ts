@@ -11,6 +11,9 @@ import { timedRoute } from "@/lib/stage-timer.server";
  */
 export const TTS_MAX_CHARS = 600;
 
+/** The longest Hector reply /api/hector-respond sends (it refuses longer ones), so the most a turn token can speak. */
+export const HECTOR_TURN_MAX_CHARS = 2_000;
+
 /** Speech for the capped text streams in a few seconds. */
 const TTS_TIMEOUT_MS = 30_000;
 
@@ -22,8 +25,14 @@ export const Route = createFileRoute("/api/tts")({
           const key = process.env.DEEPGRAM_API_KEY;
           if (!key) return noStoreJson({ error: "TTS is not configured" }, { status: 500 });
           const { authorizeAiRequest } = await import("@/lib/ai-consent.server");
+          // A Hector turn token (web, from /api/hector-respond) speaks that one reply without a second quota unit: the
+          // turn already spent Hector's allowance. Auth, the AI switch and consent still run; only the charge is skipped.
+          const turnToken = new URL(request.url).searchParams.get("turn");
           const access = await timer.time("auth", () =>
-            authorizeAiRequest(request, "tts", { route: "tts" }),
+            authorizeAiRequest(request, "tts", {
+              route: "tts",
+              ...(turnToken !== null ? { deferQuota: true } : {}),
+            }),
           );
           if (!access.ok) return access.response;
           let body: { text?: string; voice?: string; course?: string; character?: string };
@@ -34,11 +43,27 @@ export const Route = createFileRoute("/api/tts")({
           }
           const text = (body.text ?? "").trim();
           if (!text) return noStoreJson({ error: "text required" }, { status: 400 });
-          if (text.length > TTS_MAX_CHARS)
-            return noStoreJson(
-              { error: "text-too-long", maxChars: TTS_MAX_CHARS },
-              { status: 413 },
-            );
+          // What is spoken: the whole text, or for a turn token one part of the reply the token vouches for.
+          let spoken = text;
+          if (turnToken !== null) {
+            if (text.length > HECTOR_TURN_MAX_CHARS)
+              return noStoreJson({ error: "text-too-long" }, { status: 413 });
+            const { verifyHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+            if (!verifyHectorTurnToken(turnToken, access.userId, text))
+              return noStoreJson({ error: "turn-invalid" }, { status: 403 });
+            const { splitReplyForSpeech } = await import("@/lib/speech-chunks");
+            const parts = splitReplyForSpeech(text);
+            const part = Number(new URL(request.url).searchParams.get("part") ?? 0);
+            if (!Number.isInteger(part) || part < 0 || part >= parts.length)
+              return noStoreJson({ error: "part-invalid" }, { status: 400 });
+            spoken = parts[part]!;
+          } else {
+            if (text.length > TTS_MAX_CHARS)
+              return noStoreJson(
+                { error: "text-too-long", maxChars: TTS_MAX_CHARS },
+                { status: 413 },
+              );
+          }
           // The learner's chosen voice (Settings > Voices) arrives as `voice`; it is used only when it is on the
           // allow-list for the conversation's course (src/lib/voice-catalog.ts). Anything else, including an arbitrary
           // Deepgram model id, falls back to the character's default, so a client cannot pick a pricier model.
@@ -47,9 +72,11 @@ export const Route = createFileRoute("/api/tts")({
           // our own store for every learner; anything else, above all a model reply, is never stored.
           // src/lib/tts-cache.ts says exactly which lines; a hit still spends the learner's quota unit (above), it
           // only stops the vendor being paid again.
-          const spoken = text;
           const { isCacheableSpokenLine, ttsCacheKey } = await import("@/lib/tts-cache");
-          const cacheKey = isCacheableSpokenLine(spoken) ? await ttsCacheKey(model, spoken) : null;
+          const cacheKey =
+            turnToken === null && isCacheableSpokenLine(spoken)
+              ? await ttsCacheKey(model, spoken)
+              : null;
           const { recordAiCost, scheduleBackground } = await import("@/lib/ai-cost-log.server");
           const { ttsEntry } = await import("@/lib/ai-cost");
           if (cacheKey) {

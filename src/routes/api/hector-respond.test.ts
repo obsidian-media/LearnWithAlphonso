@@ -484,7 +484,10 @@ ${BLOCK}`);
       expect(res.status).toBe(200);
       const header = res.headers.get("Server-Timing") ?? "";
       const names = header.split(",").map((p) => p.trim().split(";")[0]);
-      expect(names).toEqual(["auth", "entitlement", "quota", "llm", "tts", "total"]);
+      // Memory loads in parallel with the quota unit, so those two may finish in either order.
+      expect(names.slice(0, 2)).toEqual(["auth", "entitlement"]);
+      expect(names.slice(2, 4).sort()).toEqual(["memory", "quota"]);
+      expect(names.slice(4)).toEqual(["llm", "tts", "total"]);
     });
 
     it("writes one [ai-timing] log line with the route, status and stages", async () => {
@@ -497,7 +500,7 @@ ${BLOCK}`);
           .filter((l) => l.startsWith("[ai-timing]"));
         expect(lines).toHaveLength(1);
         expect(lines[0]).toMatch(
-          /^\[ai-timing\] route=hector-respond status=200 total=\d+ms auth=\d+ms entitlement=\d+ms quota=\d+ms llm=\d+ms tts=\d+ms$/,
+          /^\[ai-timing\] route=hector-respond status=200 total=\d+ms auth=\d+ms entitlement=\d+ms (?:quota=\d+ms memory=\d+ms|memory=\d+ms quota=\d+ms) llm=\d+ms tts=\d+ms$/,
         );
       } finally {
         info.mockRestore();
@@ -817,5 +820,103 @@ describe("POST /api/hector-respond: Hector's memory", () => {
     });
     expect(JSON.stringify(llmMessages(f))).not.toContain("evil");
     expect(llmMessages(f)).toHaveLength(2);
+  });
+
+  describe("split turn (web opt-in) and parallel steps", () => {
+    const llmOnly = () =>
+      (globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(
+          Response.json({ choices: [{ message: { content: "Very good! Tell me more." } }] }),
+        )
+        .mockResolvedValueOnce(new Response(new Uint8Array([1, 2, 3]), { status: 200 })) as never);
+    beforeEach(() => {
+      process.env.LESSON_SESSION_SECRET = "test-secret";
+    });
+    afterEach(() => {
+      delete process.env.LESSON_SESSION_SECRET;
+    });
+
+    it("split_tts answers with the text and a turn token and makes no speech call here", async () => {
+      llmOnly();
+      const res = await handler({ request: req({ text: "hi", language: "en", split_tts: true }) });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.reply).toBe("Very good! Tell me more.");
+      expect(body.audio_base64).toBe("");
+      expect(typeof body.tts_token).toBe("string");
+      // Only the model was called: the speech is fetched by the client from /api/tts.
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+      const { verifyHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+      expect(verifyHectorTurnToken(body.tts_token, "user-1", "Very good! Tell me more.")).toBe(
+        true,
+      );
+      expect(consumeQuota).toHaveBeenCalledTimes(1);
+    });
+
+    it("a request without the flag (native) gets the audio inline and no token, exactly as before", async () => {
+      llmOnly();
+      const body = await (await handler({ request: req({ text: "hi", language: "en" }) })).json();
+      expect(typeof body.audio_base64).toBe("string");
+      expect(body.audio_base64.length).toBeGreaterThan(0);
+      expect("tts_token" in body).toBe(false);
+      expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("split_tts with no signing secret falls back to inline audio", async () => {
+      delete process.env.LESSON_SESSION_SECRET;
+      llmOnly();
+      const body = await (
+        await handler({ request: req({ text: "hi", language: "en", split_tts: true }) })
+      ).json();
+      expect(body.audio_base64.length).toBeGreaterThan(0);
+      expect("tts_token" in body).toBe(false);
+    });
+
+    it("a token is bound to the safe reply that was returned (a blocked reply's fallback line, not the model's)", async () => {
+      llmOnly();
+      blockedRpc.mockResolvedValueOnce({ data: [true], error: null });
+      const body = await (
+        await handler({ request: req({ text: "hi", language: "en", split_tts: true }) })
+      ).json();
+      expect(body.reply).toBe(AI_OUTPUT_FALLBACK.en);
+      const { verifyHectorTurnToken } = await import("@/lib/hector-turn-token.server");
+      expect(verifyHectorTurnToken(body.tts_token, "user-1", AI_OUTPUT_FALLBACK.en)).toBe(true);
+      expect(verifyHectorTurnToken(body.tts_token, "user-1", "Very good! Tell me more.")).toBe(
+        false,
+      );
+    });
+
+    it("loads Hector's memory while the quota unit is being spent, not after it", async () => {
+      llmOnly();
+      let releaseQuota!: () => void;
+      consumeQuota.mockImplementationOnce(
+        () => new Promise((r) => (releaseQuota = () => r({ ok: true }))),
+      );
+      const pending = handler({ request: req({ text: "hi", language: "en" }) });
+      await vi.waitFor(() => expect(consumeQuota).toHaveBeenCalled());
+      // The memory read (adminFrom) started while the quota call is still unresolved.
+      await vi.waitFor(() => expect(adminFrom).toHaveBeenCalled());
+      releaseQuota();
+      expect((await pending).status).toBe(200);
+    });
+
+    it("still spends nothing, and reads no memory, for a learner without Pro", async () => {
+      getProEntitlementStatus.mockResolvedValue("inactive");
+      adminFrom.mockClear();
+      const res = await handler({ request: req({ text: "hi", language: "en", split_tts: true }) });
+      expect(res.status).toBe(403);
+      expect(consumeQuota).not.toHaveBeenCalled();
+      expect(adminFrom).not.toHaveBeenCalled();
+    });
+
+    it("an unreadable body is still a 400 after the gates, and a JSON null is not a crash", async () => {
+      const bad = new Request("https://example.com/api/hector-respond", {
+        method: "POST",
+        headers: { Authorization: "Bearer token-123" },
+        body: "null",
+      });
+      expect((await handler({ request: bad })).status).toBe(400);
+    });
   });
 });

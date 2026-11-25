@@ -31,6 +31,13 @@ export type Reply = {
   lang: string;
   /** The spoken reply; null when the server could not make audio (the device voice then speaks). */
   clip: Blob | null;
+  /**
+   * The reply in order, when it is made in pieces (the first sentence, then the rest): each piece's clip is already
+   * being fetched, and the first one plays as soon as it is ready while the next is still on its way. A clip that
+   * resolves to null or rejects counts as "no audio" and the device voice reads that piece and the ones after it.
+   * Replaces `clip` when present.
+   */
+  parts?: { text: string; clip: Promise<Blob | null> }[];
 };
 
 /**
@@ -65,22 +72,29 @@ export function createReplyVoice(deps: ReplyVoiceDeps) {
   };
 
   /**
-   * The clip could not play (or there is none): the device voice reads the line, and the "Tap to hear" button shows,
-   * because a tap is what lets a browser play. A tap can only help if there is a clip to replay, or if the browser
-   * refused the device voice for want of a gesture ("not-allowed"). A device that simply cannot speak, with no clip,
-   * releases the call instead of holding hands-free shut for a reply nothing can say.
+   * The clip could not play (or there is none): the device voice reads the line from piece `from` on, and the "Tap
+   * to hear" button shows, because a tap is what lets a browser play. A tap can only help if there is a clip to
+   * replay (`hasClip`), or if the browser refused the device voice for want of a gesture ("not-allowed"). A device
+   * that simply cannot speak, with no clip, releases the call instead of holding hands-free shut for a reply nothing
+   * can say.
    */
-  const fallback = (reply: Reply, gen: number) => {
+  const fallback = (reply: Reply, gen: number, from: number, hasClip: boolean) => {
     // Visible at once: even a device voice that the browser also refuses leaves the learner a way to hear him.
     set({ speaking: true, awaitingTap: true });
     const failed = (reason?: string) => {
       clearStartTimer();
       if (gen !== generation) return;
-      if (reply.clip || reason === "not-allowed") set({ speaking: false, awaitingTap: true });
+      if (hasClip || reason === "not-allowed") set({ speaking: false, awaitingTap: true });
       else heard(gen);
     };
     clearStartTimer();
-    const started = deps.speakDevice(reply.text, reply.lang, {
+    const rest = reply.parts
+      ? reply.parts
+          .slice(from)
+          .map((p) => p.text)
+          .join(" ")
+      : reply.text;
+    const started = deps.speakDevice(rest, reply.lang, {
       onStart: clearStartTimer,
       onEnd: () => {
         clearStartTimer();
@@ -93,24 +107,33 @@ export function createReplyVoice(deps: ReplyVoiceDeps) {
   };
 
   const run = async (reply: Reply, gen: number, fromTap: boolean) => {
-    if (!reply.clip) {
-      if (!fromTap) deps.report({ surface: deps.surface, reason: "no_audio" });
-      fallback(reply, gen);
-      return;
+    const parts = reply.parts ?? [{ text: reply.text, clip: Promise.resolve(reply.clip) }];
+    let hasClip = false;
+    for (let i = 0; i < parts.length; i += 1) {
+      const clip = await parts[i]!.clip.catch(() => null);
+      if (gen !== generation) return;
+      if (!clip) {
+        if (!fromTap) deps.report({ surface: deps.surface, reason: "no_audio" });
+        return fallback(reply, gen, i, hasClip);
+      }
+      hasClip = true;
+      const outcome: PlayOutcome = await deps.playback.play(clip, {
+        onPlaying: () => {
+          if (gen === generation) set({ speaking: true, awaitingTap: false });
+        },
+      });
+      if (gen !== generation) return;
+      if (outcome.result === "stopped") return heard(gen);
+      if (outcome.result !== "ended") {
+        deps.report({
+          surface: deps.surface,
+          reason: outcome.result === "blocked" ? "play_blocked" : "play_error",
+          errorName: outcome.errorName,
+        });
+        return fallback(reply, gen, i, hasClip);
+      }
     }
-    const outcome: PlayOutcome = await deps.playback.play(reply.clip, {
-      onPlaying: () => {
-        if (gen === generation) set({ speaking: true, awaitingTap: false });
-      },
-    });
-    if (gen !== generation) return;
-    if (outcome.result === "ended" || outcome.result === "stopped") return heard(gen);
-    deps.report({
-      surface: deps.surface,
-      reason: outcome.result === "blocked" ? "play_blocked" : "play_error",
-      errorName: outcome.errorName,
-    });
-    fallback(reply, gen);
+    heard(gen);
   };
 
   return {

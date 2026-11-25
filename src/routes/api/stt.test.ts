@@ -159,6 +159,32 @@ describe("POST /api/stt", () => {
     expect(chargeQuota).toHaveBeenCalledTimes(1);
   });
 
+  it("times each stage: Server-Timing names auth, quota, budget, deepgram and settle, and one [ai-timing] line is logged", async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response(
+        JSON.stringify({ results: { channels: [{ alternatives: [{ transcript: "ok" }] }] } }),
+        { status: 200 },
+      ),
+    );
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      const res = await handler({
+        request: reqWithFile(new Blob(["x".repeat(600)], { type: "audio/webm" })),
+      });
+      const names = (res.headers.get("Server-Timing") ?? "")
+        .split(",")
+        .map((p) => p.trim().split(";")[0]);
+      expect(names).toEqual(["auth", "quota", "budget", "deepgram", "settle", "total"]);
+      const lines = info.mock.calls
+        .map((c) => String(c[0]))
+        .filter((l) => l.startsWith("[ai-timing]"));
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain("route=stt status=200");
+    } finally {
+      info.mockRestore();
+    }
+  });
+
   it("accepts the types the apps and the browser send, or none", async () => {
     const { isAcceptedAudioType } = await import("./stt");
     for (const t of [

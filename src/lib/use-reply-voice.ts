@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { track } from "./analytics";
 import { cancelSpeech, speakWithCallbacks } from "./speech";
 import { voicePlayback } from "./voice-playback";
-import { createReplyVoice, type ReplyVoiceState } from "./voice-reply";
+import { createReplyVoice, type Reply, type ReplyVoiceState } from "./voice-reply";
 import { localeForCourse, type Course } from "@/data/course-meta";
 
 /**
@@ -30,8 +30,8 @@ export function useReplyVoice(surface: string, course: Course) {
   courseRef.current = course;
 
   const say = useCallback(
-    (text: string, clip: Blob | null) =>
-      controller.say({ text, lang: localeForCourse(courseRef.current), clip }),
+    (text: string, clip: Blob | null, parts?: Reply["parts"]) =>
+      controller.say({ text, lang: localeForCourse(courseRef.current), clip, parts }),
     [controller],
   );
 
