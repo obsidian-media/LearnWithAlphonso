@@ -1,6 +1,10 @@
 package com.obsidianmedia.learnwithalphonso
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelected
+import com.obsidianmedia.learnwithalphonso.core.firstrun.CompleteProfileSkip
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.printToString
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
@@ -53,6 +57,10 @@ class ScreenshotTest {
         // again now that the demo session is stored, exactly as a cold launch of a signed-in learner would.
         val app = context.applicationContext as AlphonsoApplication
         runBlocking { app.container.session.restore() }
+        // The demo account has not completed or dismissed Complete your profile, which covers the whole app. Its Not now
+        // holds for the launch in memory only and also saves a dismissal to the account; this sets only the in-memory
+        // part, so the test never writes to the demo account. App behaviour for real users is untouched.
+        CompleteProfileSkip.skipThisLaunch()
     }
 
     @Test
@@ -72,25 +80,36 @@ class ScreenshotTest {
 
     private fun captureAll() {
         ActivityScenario.launch(MainActivity::class.java)
-        waitForText("Learn", 30_000)
+        onScreen("Learn", 45_000)
         // The level chips and the status header arrive from the network after the tab; give them a moment.
         Thread.sleep(3_000)
-        shot("01-learn")
+        onScreen("Learn"); shot("01-learn")
         // A second Learn capture after the first sync has had time to fill the status header.
         Thread.sleep(6_000)
-        shot("01b-learn-settled")
-        tab("Library"); waitForText("Library", 15_000); shot("04-listen")
-        tab("Practice"); waitForText("Practice", 15_000); shot("05-practice")
-        tab("Hector"); waitForText("Hector", 15_000); shot("06-hector")
-        tab("Profile"); waitForText("Profile", 15_000); shot("07-profile")
-        tab("Learn"); waitForText("Learn", 15_000)
+        onScreen("Learn"); shot("01b-learn-settled")
+        tab("Library"); onScreen("Library"); shot("04-listen")
+        tab("Practice"); onScreen("Practice"); shot("05-practice")
+        tab("Hector"); onScreen("Hector"); shot("06-hector")
+        tab("Profile"); onScreen("Profile"); shot("07-profile")
+        tab("Learn"); onScreen("Learn")
     }
 
     /** The tab item is the clickable node carrying the label; the screen header is not. */
-    private fun tab(label: String) = compose.onNode(hasText(label) and hasClickAction()).performClick()
+    private fun tab(label: String) = compose.onNode(hasText(label) and hasClickAction() and !isSelected()).performClick()
 
-    private fun waitForText(text: String, timeoutMillis: Long) {
-        compose.waitUntil(timeoutMillis) { compose.onAllNodes(hasText(text)).fetchSemanticsNodes().isNotEmpty() }
+    /**
+     * Fails (so the zz-failure evidence is written) unless the app is really on [label]'s screen: the tab bar exists, which
+     * the first-run questions and Complete your profile cover never show, and that tab is the selected destination. The
+     * header text is not enough: "Learn" is also a substring of "Why are you learning English?" (run 45567728620).
+     * Then it waits for every progress indicator to go, so a spinner is never captured.
+     */
+    private fun onScreen(label: String, timeoutMillis: Long = 20_000) {
+        compose.waitUntil(timeoutMillis) {
+            compose.onAllNodes(hasText(label) and hasClickAction() and isSelected()).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.waitUntil(timeoutMillis) {
+            compose.onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).fetchSemanticsNodes().isEmpty()
+        }
     }
 
     private fun shot(name: String) {
