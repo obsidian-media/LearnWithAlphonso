@@ -25,4 +25,32 @@ public enum AccountSuspension {
         guard status == 403, let body, let text = String(data: body, encoding: .utf8) else { return false }
         return text.contains(apiError)
     }
+
+    // MARK: Full-screen view (backlog item 87)
+
+    public static let contactTitle = "Contact support"
+    public static let signOutTitle = "Sign out"
+    /// The address as a mailto link, for the Contact support button.
+    public static var contactURL: URL { URL(string: "mailto:\(supportAddress)")! }
+
+    /// What the full-screen view reads out and shows. `reason` is an optional line from the API; the API sends none
+    /// today (the web screen has none), so it is nil unless a future response carries one. Blank counts as none.
+    public struct Content: Equatable {
+        public let title: String
+        public let body: String
+        public let reason: String?
+        public let contactLabel: String
+        public let signOutLabel: String
+    }
+
+    public static func content(reason: String? = nil) -> Content {
+        let trimmed = reason?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return Content(
+            title: title,
+            body: body,
+            reason: (trimmed?.isEmpty ?? true) ? nil : trimmed,
+            contactLabel: "\(contactTitle). Opens an email to \(supportAddress).",
+            signOutLabel: "\(signOutTitle). Returns to the sign-in screen."
+        )
+    }
 }
