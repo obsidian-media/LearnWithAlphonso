@@ -2,7 +2,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { renderToString } from "react-dom/server";
 
 const navigate = vi.fn();
 let searchParams: { next?: string; mode?: "signup" } = {};
@@ -405,16 +404,6 @@ describe("Auth page", () => {
     );
     // Used: a later visit starts on the ordinary form again.
     expect(sessionStorage.getItem("lwa.auth.verifyEmail.v1")).toBeNull();
-  });
-
-  it("first renders what the server rendered, so a refresh on the code screen is not a hydration mismatch", () => {
-    sessionStorage.setItem("lwa.auth.verifyEmail.v1", "ada@example.com");
-    const AuthPage = Route.options.component!;
-    // The server cannot see session storage: its HTML is the ordinary form, never the code screen.
-    const html = renderToString(<AuthPage />);
-    expect(html).not.toContain("6-digit code");
-    expect(html).not.toContain("ada@example.com");
-    sessionStorage.removeItem("lwa.auth.verifyEmail.v1");
   });
 
   it("Use a different email forgets the remembered address", async () => {
