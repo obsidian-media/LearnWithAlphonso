@@ -22,4 +22,16 @@ describe("LeaveLessonDialog", () => {
     await user.click(screen.getByRole("button", { name: "Leave lesson" }));
     expect(onLeave).toHaveBeenCalledTimes(1);
   });
+
+  it("a tap on the backdrop keeps going, a tap inside the dialog does not", async () => {
+    const onStay = vi.fn();
+    const onLeave = vi.fn();
+    const user = userEvent.setup();
+    render(<LeaveLessonDialog onStay={onStay} onLeave={onLeave} />);
+    await user.click(screen.getByRole("heading", { name: "Leave this lesson?" }));
+    expect(onStay).not.toHaveBeenCalled();
+    await user.click(document.querySelector("[data-modal-backdrop]")!);
+    expect(onStay).toHaveBeenCalledTimes(1);
+    expect(onLeave).not.toHaveBeenCalled();
+  });
 });

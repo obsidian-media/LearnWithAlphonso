@@ -17,6 +17,7 @@ export function LeaveLessonDialog({
       labelledBy="leave-lesson-title"
       describedBy="leave-lesson-body"
       onEscape={onStay}
+      onBackdrop={onStay}
       className="relative grid max-h-[92dvh] w-full max-w-[430px] gap-3 overflow-y-auto rounded-t-[28px] bg-ds-surface px-5 pb-6 pt-5 shadow-[var(--ds-shadow-sheet)] outline-none sm:rounded-[28px]"
     >
       <h2 id="leave-lesson-title" className="ds-type-title text-ds-ink">

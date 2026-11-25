@@ -166,7 +166,7 @@ describe("20261128100000_hector_turn_token_uses.sql (real Postgres)", () => {
     for (const line of before.split("\n")) expect(after.split("\n")).toContain(line);
   });
 
-  it("is the newest definition of the sweep, so it cannot clobber a later one it did not copy", () => {
+  it("was copied in full by the next sweep definition, so nothing was lost since", () => {
     const dir = path.join(process.cwd(), "supabase/migrations");
     const definers = readdirSync(dir)
       .filter((f) => f.endsWith(".sql"))
@@ -176,7 +176,9 @@ describe("20261128100000_hector_turn_token_uses.sql (real Postgres)", () => {
         ),
       )
       .sort();
-    expect(definers.at(-1)).toBe("20261128100000_hector_turn_token_uses.sql");
-    expect(definers.at(-2)).toBe("20261127170000_admin_health_screen.sql");
+    // 20261128110000 redefines it with this body plus one block (prune-cron-run-details-migration.test.ts checks that).
+    expect(definers.at(-1)).toBe("20261128110000_prune_cron_run_details.sql");
+    expect(definers.at(-2)).toBe("20261128100000_hector_turn_token_uses.sql");
+    expect(definers.at(-3)).toBe("20261127170000_admin_health_screen.sql");
   });
 });

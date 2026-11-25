@@ -13,12 +13,15 @@ export function Modal({
   labelledBy,
   describedBy,
   onEscape,
+  onBackdrop,
   className,
   children,
 }: {
   labelledBy: string;
   describedBy?: string;
   onEscape?: () => void;
+  /** A tap on the dimmed area outside the dialog. Optional: most dialogs are explicit choices and ignore it. */
+  onBackdrop?: () => void;
   className?: string;
   children: ReactNode;
 }) {
@@ -94,7 +97,12 @@ export function Modal({
       ref={portalRef}
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
     >
-      <div role="presentation" className="absolute inset-0 bg-ds-ink/40" />
+      <div
+        role="presentation"
+        data-modal-backdrop=""
+        className="absolute inset-0 bg-ds-ink/40"
+        onClick={onBackdrop}
+      />
       <div
         ref={dialogRef}
         role="dialog"
