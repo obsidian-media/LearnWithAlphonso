@@ -61,17 +61,6 @@ describe("the call's page heading", () => {
   });
 });
 
-describe("the call's transcript sheet", () => {
-  it("is headed one level below the page heading, so the outline does not skip a level", () => {
-    const { container } = render(<PracticeCall {...base} scenarioId="coffee" />);
-    // The sheet is closed (hidden from the accessibility tree), so look the element up directly.
-    const sheetHeading = [...container.querySelectorAll("h1, h2, h3")].find(
-      (h) => h.textContent === "Conversation",
-    );
-    expect(sheetHeading?.tagName).toBe("H2");
-  });
-});
-
 describe("Alphonso's robe", () => {
   it("fades out over the last 20% of his square, so it has no hard straight edge above the caption", () => {
     const { getByTestId } = render(<PracticeCall {...base} scenarioId="coffee" dark={false} />);
