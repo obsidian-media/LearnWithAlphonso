@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { acquireInert } from "./inert-stack";
 
 /** Tailwind's `md` is 768px: below it the Say the picture round is a full-screen cover (`max-md:fixed`). */
 export const PHONE_QUERY = "(max-width: 767.98px)";
@@ -20,30 +21,21 @@ export function usePhoneCover(cover: HTMLElement | null) {
       const body = document.body;
       const previousOverflow = body.style.overflow;
       body.style.overflow = "hidden";
-      const saved: { el: Element; inert: boolean; ariaHidden: string | null }[] = [];
+      const hide: Element[] = [];
       for (
         let node: HTMLElement = cover;
         node !== body && node.parentElement;
         node = node.parentElement
       ) {
         for (const sibling of Array.from(node.parentElement.children)) {
-          if (sibling === node) continue;
-          saved.push({
-            el: sibling,
-            inert: sibling.hasAttribute("inert"),
-            ariaHidden: sibling.getAttribute("aria-hidden"),
-          });
-          sibling.setAttribute("inert", "");
-          sibling.setAttribute("aria-hidden", "true");
+          // A Modal's own portal is never hidden by the cover.
+          if (sibling !== node && !sibling.hasAttribute("data-modal-portal")) hide.push(sibling);
         }
       }
+      const releaseInert = acquireInert(hide);
       undo = () => {
         body.style.overflow = previousOverflow;
-        for (const { el, inert, ariaHidden } of saved) {
-          if (!inert) el.removeAttribute("inert");
-          if (ariaHidden === null) el.removeAttribute("aria-hidden");
-          else el.setAttribute("aria-hidden", ariaHidden);
-        }
+        releaseInert();
       };
     }
     function sync() {
