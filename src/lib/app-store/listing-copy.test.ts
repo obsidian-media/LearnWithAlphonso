@@ -28,9 +28,10 @@ describe("LISTING", () => {
     expect(LISTING.supportUrl).toBe("https://learnwithalphonso.com/support");
   });
 
-  it("matches the text applied in App Store Connect on 2026-11-22", () => {
-    // The live description is 2929 characters and the promotional text 157; both stay inside Apple's limits.
-    expect(LISTING.description.length).toBe(2929);
+  it("matches the text applied in App Store Connect on 2026-11-22, except the fuller Subscription paragraph", () => {
+    // Live App Store Connect has the short Subscription paragraph (2929 characters); the owner chose the fuller one
+    // ("Fuller for the App Store Subscription paragraph"), so this file is ahead of live there and live is updated from it.
+    expect(LISTING.description.length).toBeLessThanOrEqual(4000);
     expect(LISTING.promotionalText.length).toBe(157);
     expect(LISTING.promotionalText).toBe(
       "Short lessons, speaking practice, podcasts and choose-your-path stories in English, French and Spanish. Hector, your AI voice tutor, comes with Alphonso Pro.",
@@ -52,6 +53,12 @@ describe("LISTING", () => {
       "SAY IT, SEE IT",
       "KEEP GOING",
     ]);
+  });
+
+  it("keeps the fuller benefits sentence in the Subscription paragraph", () => {
+    expect(LISTING.description).toContain(
+      "within the hearts and AI limits of a free account. Alphonso Pro is an optional auto-renewable monthly subscription. It gives you Hector, the AI voice tutor, unlimited hearts in lessons, What Alphonso remembers (notes from your practice calls), and a larger monthly allowance for the AI features. Eligible new subscribers",
+    );
   });
 
   it("uses only the new domain for its links", () => {
