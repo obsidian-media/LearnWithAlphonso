@@ -5,13 +5,14 @@ Written 2026-11-18 from the code at main (build 71 candidate); status section ad
 rows below in App Store Connect > App Privacy exactly as listed. Cross-checked against `src/routes/privacy.tsx`,
 `src/lib/app-store/review-notes.ts` and `android/LearnWithAlphonso/play/data-safety.md`.
 
-## Status (verified 2026-11-22 against d8350542, build 72)
+## Status (verified 2026-11-22 against d8350542, build 72; delta check 2026-11-25 against 236cb8f1, build 73, last bullet)
 
 - The 13 data-type rows below match `ios/LearnWithAlphonso/PrivacyInfo.xcprivacy` one-to-one (type, linked flag, purposes); tracking is false with no tracking domains.
 - Privacy Policy URL is `https://learnwithalphonso.com/privacy` (`PRIVACY` in `src/lib/app-store/listing-copy.ts:23`; returns HTTP 200 on 2026-11-22).
 - Sentry "Prevent Storing of IP Addresses" owner step is done (`docs/sentry-crash-reporting.md`, owner step 1).
 - Mismatch 5 (time zone) is resolved. Mismatches 2, 3 and 4 are still open (see Cross-check result).
 - Entering these answers in App Store Connect is still the owner's step.
+- Delta check 2026-11-25 (main 236cb8f1, build 73): `PrivacyInfo.xcprivacy` was not touched by #709 to #717 (diff 7fecee42..236cb8f1 has no change to it), so the rows stay valid. The web-only `voice_playback_failed` event carries a surface, a reason and a browser error name (no text, no user data) and is sent only with analytics opt-in (#716). Review notes in `src/lib/app-store/review-notes.ts` name OpenRouter (not NVIDIA) and "crash reports via Sentry; usage analytics via PostHog only if the learner opts in" and are held under the 4000-character limit by `review-notes.test.ts` (`NOTES_LIMIT`); the owner reports the same change was applied in App Store Connect on 2026-11-22 (not re-read from there). The description in `src/lib/app-store/listing-copy.ts` does NOT yet have the stories and Say the picture / Say it right paragraphs that the owner added in App Store Connect (open item: sync the file before any listing push).
 
 ## Top-level answers
 

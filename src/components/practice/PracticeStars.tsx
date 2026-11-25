@@ -51,6 +51,7 @@ export function StarTally({
   return (
     <span
       data-star-tally=""
+      role="img"
       aria-label={`${earned} of ${total} stars earned`}
       className={`inline-flex items-center gap-1.5 rounded-full bg-ds-xp-tint py-0.5 pl-1.5 pr-2.5 ds-type-caption font-extrabold text-ds-xp-text ${className}`}
     >

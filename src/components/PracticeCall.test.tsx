@@ -46,6 +46,31 @@ const base = {
 const room = (c: HTMLElement) =>
   (c.firstElementChild as HTMLElement).style.backgroundImage.replace(/url\(["']?|["']?\)/g, "");
 
+describe("the call's page heading", () => {
+  it("is the caller's heading, as a level-1 heading", () => {
+    const { getByRole } = render(
+      <PracticeCall {...base} scenarioId="coffee" heading="Call: Ordering a coffee" />,
+    );
+    expect(getByRole("heading", { level: 1, name: "Call: Ordering a coffee" })).toBeTruthy();
+  });
+
+  it("is left out when none is given, so the visible title is not read twice", () => {
+    const { queryByRole } = render(<PracticeCall {...base} scenarioId="coffee" />);
+    expect(queryByRole("heading", { level: 1 })).toBeNull();
+  });
+});
+
+describe("the call's transcript sheet", () => {
+  it("is headed one level below the page heading, so the outline does not skip a level", () => {
+    const { container } = render(<PracticeCall {...base} scenarioId="coffee" />);
+    // The sheet is closed (hidden from the accessibility tree), so look the element up directly.
+    const sheetHeading = [...container.querySelectorAll("h1, h2, h3")].find(
+      (h) => h.textContent === "Conversation",
+    );
+    expect(sheetHeading?.tagName).toBe("H2");
+  });
+});
+
 describe("Alphonso's robe", () => {
   it("fades out over the last 20% of his square, so it has no hard straight edge above the caption", () => {
     const { getByTestId } = render(<PracticeCall {...base} scenarioId="coffee" dark={false} />);

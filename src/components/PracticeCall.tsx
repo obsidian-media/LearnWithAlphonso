@@ -47,7 +47,7 @@ export type CallCaption = {
 type Props = {
   /** The scenario's name, shown under "Alphonso". */
   title: string;
-  /** A visually hidden page heading, for a screen that is the whole page and has no other h1 (Hector's). */
+  /** A visually hidden page heading, for a screen that is the whole page and has no other h1 (a call's). */
   heading?: string;
   /** Who is on the call: the name in the call bar, his art and his default room. Alphonso unless told otherwise. */
   kit?: CharacterKit;
@@ -656,9 +656,9 @@ export function PracticeCall(props: Props) {
       >
         <div aria-hidden="true" className="mx-auto mb-2 h-[5px] w-10 rounded-[3px] bg-hairline" />
         <header className="mb-2 flex items-center justify-between">
-          <h3 className="ds-type-headline" style={{ fontFamily: DISPLAY_FACE, fontWeight: 600 }}>
+          <h2 className="ds-type-headline" style={{ fontFamily: DISPLAY_FACE, fontWeight: 600 }}>
             Conversation
-          </h3>
+          </h2>
           <button
             ref={backRef}
             type="button"

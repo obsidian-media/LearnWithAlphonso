@@ -1,4 +1,4 @@
-> Status (verified 2026-11-22 against d8350542): UI strings re-checked against the app source; the whole list is still unticked, no device run is recorded. Open: every row below (owner device checks, `docs/OPEN-ITEMS.md` items 28, 31 to 33, 42a, 42b).
+> Status (verified 2026-11-22 against d8350542; three rows added 2026-11-25 for #710 and #711, not run): UI strings re-checked against the app source; the whole list is still unticked, no device run is recorded. Open: every row below (owner device checks, `docs/OPEN-ITEMS.md` items 28, 31 to 33, 42a, 42b).
 
 # Device checklist before the first Play upload
 
@@ -45,6 +45,9 @@ Tick each line in a copy of this file and attach it to the release PR.
 - [ ] A broken or removed audio file (ask the owner to rename it in the bucket): playing it shows "This episode isn't available right now." with Retry, never a Pause that does nothing.
 - [ ] Kill the network mid-episode: the mini bar shows "Buffering…" in place of the time. If sound does not come back within about 20 seconds it shows "Couldn't reach the server. Check your connection and try again." with Retry; Retry resumes from where it stopped once the network is back. If the network returns before 20 seconds, playback continues by itself and nothing is shown.
 - [ ] Let an episode play to the end: it stops (it does not start again by itself), shows Play, and tapping Play starts it from the beginning within a second or two, with no error afterwards.
+- [ ] (added 2026-11-25, #710) The mini bar has a "Close player" X (44dp target) that stops and hides it (`MiniBarPresentation.CLOSE_LABEL`).
+- [ ] (added 2026-11-25, #711) Cold start shows the brand-blue launch screen with the app icon (Android SplashScreen API, `androidx.core:core-splashscreen` 1.2.0), then the app with no white flash.
+- [ ] (added 2026-11-25, #711) A linear story whose `cover.jpg` exists in the `story-art` bucket shows it as its cover; one without shows the gradient.
 - [ ] Pause and play from the notification, the lock screen and a headset or Bluetooth button: the mini bar follows each press, with no spinner and no error after 20 seconds.
 - [ ] Receive a phone call (or a navigation prompt) while an episode plays: playback pauses and comes back by itself when the call ends, and the bar says Pause the whole time.
 - [ ] Pull the headphones (or switch Bluetooth off): playback pauses and stays paused; it does not play out of the speaker. Start a different audio app while an episode plays: the episode stays paused.

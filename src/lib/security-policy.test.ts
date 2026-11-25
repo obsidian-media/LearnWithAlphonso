@@ -57,6 +57,17 @@ describe("security policy", () => {
     expect(contentSecurityPolicy("n", "http://localhost:54321")).not.toContain("localhost");
   });
 
+  it("lets the page play its own silent unlock clip: media-src allows data: URIs", () => {
+    // voice-playback.ts primes the audio element with a 0.1 s data:audio/wav clip on the first tap. Without data: in
+    // media-src the browser blocks it (a console error) and the iPhone never unlocks the voice.
+    const policy = contentSecurityPolicy("n", "https://project.supabase.co");
+    const media = policy.split("; ").find((d) => d.startsWith("media-src")) ?? "";
+    expect(media.split(" ")).toContain("data:");
+    expect(media.split(" ")).toContain("blob:");
+    // Scripts stay nonce-only: data: is for media, nowhere else.
+    expect(policy.split("; ").find((d) => d.startsWith("script-src"))).not.toContain("data:");
+  });
+
   it("allows the custom API domain and, still, the legacy project host for images, media and connections", () => {
     const policy = contentSecurityPolicy("n", "https://api.learnwithalphonso.com");
     const directive = (name: string) => policy.split("; ").find((d) => d.startsWith(name)) ?? "";

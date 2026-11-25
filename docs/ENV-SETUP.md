@@ -34,13 +34,13 @@ first.
 | `SUPABASE_SERVICE_ROLE_KEY` | R (secret) | privileged server ops |
 | `OPENROUTER_API_KEY` | R (secret) | chat / Hector; 500 "not configured" otherwise |
 | `DEEPGRAM_API_KEY` | R (secret) | TTS/STT voice; 500 otherwise |
-| `LESSON_SESSION_SECRET` | R (secret) | signs lesson-session token; **must equal the Supabase function secret** |
+| `LESSON_SESSION_SECRET` | R (secret) | signs lesson-session token; **must equal the Supabase function secret**. Also the HMAC key of the call-recap token and, since #717, of the Hector turn token (`hector-turn:v1|` domain prefix, `src/lib/hector-turn-token.server.ts`); with it unset `/api/hector-respond` falls back to inline audio, so the split-turn path needs no new variable |
 | `RESEND_API_KEY` | R (secret) | all outgoing email |
 | `REPORT_NOTIFY_SECRET` | R (secret, 32+) | `/api/internal/*`; **must equal Vault `report_notify_secret`** |
 | `REPORT_NOTIFY_TO` | R | report-email recipient |
 | `REVENUECAT_SECRET_API_KEY` | R (secret) | Pro entitlement (v1 API); Pro fails closed otherwise |
-| `REVENUECAT_V2_SECRET_KEY` + `REVENUECAT_PROJECT_ID` | **⚠ R** | paywall **price** (v2 API). Both or neither. Missing → offering `unavailable`, no price/checkout. `PROJECT_ID` has the `proj` prefix (e.g. `proj945111ee`) |
-| `REVENUECAT_WEB_PRODUCT_ID`, `_PURCHASE_LINK`, `_PURCHASE_LINK_NO_TRIAL` | R | monthly web plan; any missing → 503 `not-configured` |
+| `REVENUECAT_V2_SECRET_KEY` + `REVENUECAT_PROJECT_ID` | **⚠ R** | paywall **price** (v2 API). Both or neither. Missing → offering `unavailable`, no price/checkout. `PROJECT_ID` is accepted with or without the `proj` prefix (`945111ee` or `proj945111ee`; `normalizeProjectId`, #713) |
+| `REVENUECAT_WEB_PRODUCT_ID`, `_PURCHASE_LINK`, `_PURCHASE_LINK_NO_TRIAL` | R | monthly web plan; any missing → 503 `not-configured`. The product id may be RevenueCat's `prod...` id or the store identifier (matched on `store_identifier`), and the v2 product list follows `next_page` (#713, `src/lib/web-offering.server.ts`). Every failing step logs `[web-offering]` / `[pro-offering]` with a reason code (no secrets); the 503 body carries `reason` |
 | `REVENUECAT_WEB_YEARLY_PRODUCT_ID`, `_PURCHASE_LINK`, `_PURCHASE_LINK_NO_TRIAL` | **⚠ O** | yearly plan; all three or none — silently omitted if partial |
 | `SUBSCRIPTION_ID_SECRET` | **⚠ O** (32+) | separate subscription id; **silently ignored under 32 chars**; same value in Supabase secrets; never change once set |
 | `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_CLIENT_ID` | **⚠ O** | Sign-in-with-Apple token revocation; any missing → revocation **skipped silently** |
@@ -54,7 +54,7 @@ first.
 | `AI_SPEND_BREAKER_DAILY_USD` (default 100), `AI_SPEND_BREAKER_ENABLED` | O | switches AI off and emails the owner when today's spend reaches it; reset in operations.md |
 | `AI_COST_ALERT_DAILY_TOTAL_USD`, `AI_COST_ALERT_DAILY_USER_USD`, `AI_COST_USD_PER_CAD`, `AI_COST_HEAVY_PRICE_CAD`, `AI_COST_HEAVY_SHARE` | O | cost dashboard/alerts |
 | `AI_MONTHLY_CAP_FREE_USD`, `AI_MONTHLY_CAP_PRO_USD`, `AI_MONTHLY_CAP_WARN_PERCENT`, `AI_MONTHLY_CAP_ENABLED` | O | per-learner monthly AI-cost cap (defaults in `ai-monthly-cap.ts`) |
-| `REPORT_NOTIFY_FROM`, `SUPPORT_NOTIFY_FROM` | O | email "from" addresses, sent through Resend (`RESEND_API_KEY`). Code defaults are `Alphonso Reports <reports@hello.learnwithalphonso.com>` (`report-notify.server.ts`) and `Learn with Alphonso Support team <support@hello.learnwithalphonso.com>` (`support-notify.server.ts`); the cost-alert and ops-alert sweeps have **no** default for `SUPPORT_NOTIFY_FROM` and skip the email with a log line when it is unset |
+| `REPORT_NOTIFY_FROM`, `SUPPORT_NOTIFY_FROM` | O | email "from" addresses, sent through Resend (`RESEND_API_KEY`). Code defaults are `Alphonso Reports <reports@hello.learnwithalphonso.com>` (`report-notify.server.ts`) and `Learn with Alphonso Support team <support@hello.learnwithalphonso.com>` (`support-notify.server.ts`); the cost-alert and ops-alert sweeps have **no** default for `SUPPORT_NOTIFY_FROM` and skip the email with a log line when it is unset. Both variables are SET on the Vercel web Production environment (coordinator read-back 2026-11-22, names only; not re-readable from the agent API, which answers 403). The admin project does not read them |
 | `SENTRY_DSN`, `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY`, `VITE_TURNSTILE_SITE_KEY` | O | monitoring / analytics / captcha |
 | `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | O (build) | source-map upload in `vite.config.ts`; all three or the plugin is off |
 
@@ -71,9 +71,9 @@ Admin-specific:
 |---|---|---|
 | `ADMIN_REQUIRE_AAL2` | optional | admin second factor. **Required by default (fail closed):** only the exact string `"false"` turns it off (`admin-auth.ts`: `if (requireAal2 === "false") return true`); unset, empty or any other value requires an authenticator code. Never set `"false"` in production |
 | `REVENUECAT_SECRET_API_KEY`, `REVENUECAT_V2_SECRET_KEY`, `REVENUECAT_PROJECT_ID` | R (for staff Pro view) | staff-users Pro column + web-sub cancel |
-| `RESEND_API_KEY`, `REPORT_NOTIFY_TO`, `SUPPORT_NOTIFY_FROM`, `AI_COST_*` | O | support + cost emails/tiles |
+| `AI_COST_*` | O | cost tiles. The admin project sends no email: `RESEND_API_KEY`, `REPORT_NOTIFY_*` and `SUPPORT_NOTIFY_FROM` are read only by the web project's `/api/internal/*` routes and sweeps (nothing under `admin/` imports `report-notify.server` or `support-notify.server`) |
 
-Numbers-dashboard tiles (`numbers-sources.server.ts`) — each tile shows "Not connected" if its vars are unset (all O):
+Numbers-dashboard tiles (`numbers-sources.server.ts`) — each tile shows "Not connected" if its vars are unset (all O). On the admin Vercel project (names read back 2026-11-22 by the coordinator) only the RevenueCat tile is connected; PostHog, App Store Connect and Google Play settings are NOT set (open item in `docs/OPEN-ITEMS.md`):
 
 | Tile | Vars |
 |---|---|

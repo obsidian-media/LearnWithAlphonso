@@ -648,6 +648,12 @@ describe("Campaign call screen (setting on, the default)", () => {
   it("is the full-screen call in the default study room, with the scene in the call bar", async () => {
     await renderCall();
     expect(screen.getByTestId("alphonso-stage")).toHaveAttribute("aria-hidden", "true");
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: `Call: ${campaign.title}: scene 1 of ${campaign.scenes.length}`,
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Hold to talk" })).toBeInTheDocument();
     // Hanging up scores the call first (Practice stars); with no reply yet it goes straight back to Practice.
     fireEvent.click(screen.getByRole("button", { name: "End the call" }));

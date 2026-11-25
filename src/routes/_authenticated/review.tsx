@@ -420,6 +420,7 @@ function ReviewPage() {
 
   return (
     <LessonScreen>
+      <h1 className="sr-only">Review</h1>
       <div className="flex flex-1 flex-col">
         <div className="flex items-center gap-3 px-4 pt-3">
           <span

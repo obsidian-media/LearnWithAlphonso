@@ -9,6 +9,11 @@ describe("LeagueTierBadge", () => {
     expect(screen.getByLabelText("Grove league")).toBeInTheDocument();
   });
 
+  it("is an image with a name, so a link that wraps it is named too", () => {
+    render(<LeagueTierBadge tier="sapphire" />);
+    expect(screen.getByRole("img", { name: "Grove league" })).toBeInTheDocument();
+  });
+
   it("sizes small/medium/large differently", () => {
     const { rerender } = render(<LeagueTierBadge tier="ruby" size="sm" />);
     const small = screen.getByLabelText("Treetop league");
