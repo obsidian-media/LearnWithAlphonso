@@ -571,6 +571,11 @@ jobs:
       - name: Test the translation grader keeps learner text inside its markers
         run: deno test supabase/functions/_shared/translation-grader.test.ts
 
+      # The shared answer-grading fixture (tests/fixtures/grading-parity.json) also runs under vitest, the Swift Kit
+      # and the Android core; this is the Deno leg.
+      - name: Test the shared answer-grading fixture set
+        run: deno test --allow-env supabase/functions/_shared/grading-parity.test.ts
+
       - name: Test who may call send-push
         working-directory: supabase/functions/send-push
         run: |
