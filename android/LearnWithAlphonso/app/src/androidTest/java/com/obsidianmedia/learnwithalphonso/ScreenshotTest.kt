@@ -58,7 +58,7 @@ class ScreenshotTest {
             runCatching { shot("zz-failure") }
             runCatching {
                 val dir = File(context.getExternalFilesDir(null), "screenshots").apply { mkdirs() }
-                File(dir, "zz-failure-tree.txt").writeText("${t}
+                File(dir, "zz-failure-tree.txt").writeText("$t
 
 " + compose.onRoot(useUnmergedTree = true).printToString(maxDepth = 40))
             }
