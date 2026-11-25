@@ -37,6 +37,12 @@ Practice everyday scenarios by speaking in the language of your course. You see 
 LISTEN ON YOUR SCHEDULE
 Level-graded audio episodes with transcripts in English, French and Spanish. Keep listening with the screen locked, or download episodes to listen offline.
 
+READ AND CHOOSE YOUR STORY
+Illustrated branching stories where your choices change what happens next, written for your level in English, French and Spanish.
+
+SAY IT, SEE IT
+Say the Picture shows a real photo and asks you to name it out loud. Say it right listens to your pronunciation and tells you how close you were.
+
 KEEP GOING
 Set a learning goal and see how many lessons a week it takes. Tap a word in a tutor reply to save it to your review. Keep a daily streak and earn XP.
 
@@ -61,7 +67,7 @@ Privacy Policy: ${PRIVACY}`;
 export const LISTING: Listing = {
   subtitle: "English, French and Spanish",
   promotionalText:
-    "Short lessons, speaking practice and podcasts in English, French and Spanish. Hector, your AI voice tutor, comes with Alphonso Pro.",
+    "Short lessons, speaking practice, podcasts and choose-your-path stories in English, French and Spanish. Hector, your AI voice tutor, comes with Alphonso Pro.",
   keywords:
     "speaking,vocabulary,grammar,listening,podcast,tutor,fluency,cefr,conversation,practice,review,ai",
   supportUrl: "https://learnwithalphonso.com/support",
