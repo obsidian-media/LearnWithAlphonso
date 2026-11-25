@@ -1,3052 +1,2437 @@
 {
- "$comment": "One answer-grading fixture set, run by web (vitest), Deno, iOS (Swift Kit) and Android (JVM core). Each case has kind, input and expected. runtimes (optional) lists where a case applies: absent means all four of web, deno, ios, android; typo-verdict and confusion exist only on web and deno. divergent (optional) maps a runtime to the verdict it produces TODAY when that differs from expected; the suites assert the recorded value, so fixing a runtime turns its case red until the marker is removed. Do not edit the iOS copy under ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures: a guard test fails when it differs from this file.",
- "version": 1,
- "cases": [
-  {
-   "id": "mc-exact",
-   "kind": "mc",
-   "choices": [
-    "cat",
-    "dog",
-    "bird"
-   ],
-   "answerIndex": 1,
-   "input": "dog",
-   "expected": true
-  },
-  {
-   "id": "mc-wrong-choice",
-   "kind": "mc",
-   "choices": [
-    "cat",
-    "dog",
-    "bird"
-   ],
-   "answerIndex": 1,
-   "input": "cat",
-   "expected": false
-  },
-  {
-   "id": "mc-case-matters",
-   "kind": "mc",
-   "choices": [
-    "cat",
-    "dog"
-   ],
-   "answerIndex": 1,
-   "input": "Dog",
-   "expected": false
-  },
-  {
-   "id": "mc-trailing-space-matters",
-   "kind": "mc",
-   "choices": [
-    "cat",
-    "dog"
-   ],
-   "answerIndex": 1,
-   "input": "dog ",
-   "expected": false
-  },
-  {
-   "id": "mc-accent-matters",
-   "kind": "mc",
-   "choices": [
-    "café",
-    "cafe"
-   ],
-   "answerIndex": 0,
-   "input": "cafe",
-   "expected": false
-  },
-  {
-   "id": "mc-accented-exact",
-   "kind": "mc",
-   "choices": [
-    "café",
-    "cafe"
-   ],
-   "answerIndex": 0,
-   "input": "café",
-   "expected": true
-  },
-  {
-   "id": "mc-index-out-of-range",
-   "kind": "mc",
-   "choices": [
-    "cat"
-   ],
-   "answerIndex": 5,
-   "input": "cat",
-   "expected": false
-  },
-  {
-   "id": "mc-negative-index",
-   "kind": "mc",
-   "choices": [
-    "cat"
-   ],
-   "answerIndex": -1,
-   "input": "cat",
-   "expected": false
-  },
-  {
-   "id": "fill-exact",
-   "kind": "fill",
-   "answer": "went",
-   "input": "went",
-   "expected": true
-  },
-  {
-   "id": "fill-case",
-   "kind": "fill",
-   "answer": "Went",
-   "input": "WENT",
-   "expected": true
-  },
-  {
-   "id": "fill-outer-whitespace",
-   "kind": "fill",
-   "answer": "went",
-   "input": "  went  ",
-   "expected": true
-  },
-  {
-   "id": "fill-wrong",
-   "kind": "fill",
-   "answer": "went",
-   "input": "go",
-   "expected": false
-  },
-  {
-   "id": "fill-empty-input",
-   "kind": "fill",
-   "answer": "went",
-   "input": "",
-   "expected": false
-  },
-  {
-   "id": "fill-trailing-punctuation",
-   "kind": "fill",
-   "answer": "went",
-   "input": "went.",
-   "expected": false
-  },
-  {
-   "id": "fill-articles-are-not-optional",
-   "kind": "fill",
-   "answer": "the cat",
-   "input": "cat",
-   "expected": false
-  },
-  {
-   "id": "fill-inner-double-space",
-   "kind": "fill",
-   "answer": "i am here",
-   "input": "i  am   here",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "fill-straight-apostrophe",
-   "kind": "fill",
-   "answer": "don't go",
-   "input": "don't go",
-   "expected": true
-  },
-  {
-   "id": "fill-curly-apostrophe-typed-for-straight-key",
-   "kind": "fill",
-   "answer": "don't go",
-   "input": "don\u2019t go",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "fill-curly-apostrophe-in-key",
-   "kind": "fill",
-   "answer": "l\u2019ami",
-   "input": "l'ami",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "fill-spaces-hugging-apostrophe",
-   "kind": "fill",
-   "answer": "l'ami",
-   "input": "l ' ami",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "fill-no-break-space-outer",
-   "kind": "fill",
-   "answer": "went",
-   "input": "\u00a0went\u00a0",
-   "expected": true
-  },
-  {
-   "id": "fill-no-break-space-inner",
-   "kind": "fill",
-   "answer": "je suis",
-   "input": "je\u00a0suis",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "fill-accent-matters-e",
-   "kind": "fill",
-   "answer": "café",
-   "input": "cafe",
-   "expected": false
-  },
-  {
-   "id": "fill-accent-exact-e",
-   "kind": "fill",
-   "answer": "café",
-   "input": "café",
-   "expected": true
-  },
-  {
-   "id": "fill-accent-uppercase",
-   "kind": "fill",
-   "answer": "café",
-   "input": "CAFÉ",
-   "expected": true
-  },
-  {
-   "id": "fill-n-tilde-exact",
-   "kind": "fill",
-   "answer": "español",
-   "input": "Español",
-   "expected": true
-  },
-  {
-   "id": "fill-n-tilde-folded-is-wrong",
-   "kind": "fill",
-   "answer": "español",
-   "input": "espanol",
-   "expected": false
-  },
-  {
-   "id": "fill-c-cedilla-uppercase",
-   "kind": "fill",
-   "answer": "français",
-   "input": "FRANÇAIS",
-   "expected": true
-  },
-  {
-   "id": "fill-c-cedilla-folded-is-wrong",
-   "kind": "fill",
-   "answer": "français",
-   "input": "francais",
-   "expected": false
-  },
-  {
-   "id": "fill-oe-ligature-uppercase",
-   "kind": "fill",
-   "answer": "cœur",
-   "input": "CŒUR",
-   "expected": true
-  },
-  {
-   "id": "fill-oe-ligature-spelled-out-is-wrong",
-   "kind": "fill",
-   "answer": "cœur",
-   "input": "coeur",
-   "expected": false
-  },
-  {
-   "id": "fill-inverted-marks-exact",
-   "kind": "fill",
-   "answer": "¿Cómo estás?",
-   "input": "¿cómo estás?",
-   "expected": true
-  },
-  {
-   "id": "fill-inverted-marks-dropped-is-wrong",
-   "kind": "fill",
-   "answer": "¿Cómo estás?",
-   "input": "cómo estás",
-   "expected": false
-  },
-  {
-   "id": "fill-decomposed-accent-typed-for-composed-key",
-   "kind": "fill",
-   "answer": "café",
-   "input": "cafe\u0301",
-   "expected": true,
-   "divergent": {
-    "android": false
-   },
-   "note": "Swift String == treats composed and decomposed accents as equal; Kotlin == compares code units, so Android rejects it"
-  },
-  {
-   "id": "reorder-exact",
-   "kind": "reorder",
-   "answer": "went",
-   "input": "went",
-   "expected": true
-  },
-  {
-   "id": "reorder-case",
-   "kind": "reorder",
-   "answer": "Went",
-   "input": "WENT",
-   "expected": true
-  },
-  {
-   "id": "reorder-outer-whitespace",
-   "kind": "reorder",
-   "answer": "went",
-   "input": "  went  ",
-   "expected": true
-  },
-  {
-   "id": "reorder-wrong",
-   "kind": "reorder",
-   "answer": "went",
-   "input": "go",
-   "expected": false
-  },
-  {
-   "id": "reorder-empty-input",
-   "kind": "reorder",
-   "answer": "went",
-   "input": "",
-   "expected": false
-  },
-  {
-   "id": "reorder-trailing-punctuation",
-   "kind": "reorder",
-   "answer": "went",
-   "input": "went.",
-   "expected": false
-  },
-  {
-   "id": "reorder-articles-are-not-optional",
-   "kind": "reorder",
-   "answer": "the cat",
-   "input": "cat",
-   "expected": false
-  },
-  {
-   "id": "reorder-inner-double-space",
-   "kind": "reorder",
-   "answer": "i am here",
-   "input": "i  am   here",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "reorder-straight-apostrophe",
-   "kind": "reorder",
-   "answer": "don't go",
-   "input": "don't go",
-   "expected": true
-  },
-  {
-   "id": "reorder-curly-apostrophe-typed-for-straight-key",
-   "kind": "reorder",
-   "answer": "don't go",
-   "input": "don\u2019t go",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "reorder-curly-apostrophe-in-key",
-   "kind": "reorder",
-   "answer": "l\u2019ami",
-   "input": "l'ami",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "reorder-spaces-hugging-apostrophe",
-   "kind": "reorder",
-   "answer": "l'ami",
-   "input": "l ' ami",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "reorder-no-break-space-outer",
-   "kind": "reorder",
-   "answer": "went",
-   "input": "\u00a0went\u00a0",
-   "expected": true
-  },
-  {
-   "id": "reorder-no-break-space-inner",
-   "kind": "reorder",
-   "answer": "je suis",
-   "input": "je\u00a0suis",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "reorder-accent-matters-e",
-   "kind": "reorder",
-   "answer": "café",
-   "input": "cafe",
-   "expected": false
-  },
-  {
-   "id": "reorder-accent-exact-e",
-   "kind": "reorder",
-   "answer": "café",
-   "input": "café",
-   "expected": true
-  },
-  {
-   "id": "reorder-accent-uppercase",
-   "kind": "reorder",
-   "answer": "café",
-   "input": "CAFÉ",
-   "expected": true
-  },
-  {
-   "id": "reorder-n-tilde-exact",
-   "kind": "reorder",
-   "answer": "español",
-   "input": "Español",
-   "expected": true
-  },
-  {
-   "id": "reorder-n-tilde-folded-is-wrong",
-   "kind": "reorder",
-   "answer": "español",
-   "input": "espanol",
-   "expected": false
-  },
-  {
-   "id": "reorder-c-cedilla-uppercase",
-   "kind": "reorder",
-   "answer": "français",
-   "input": "FRANÇAIS",
-   "expected": true
-  },
-  {
-   "id": "reorder-c-cedilla-folded-is-wrong",
-   "kind": "reorder",
-   "answer": "français",
-   "input": "francais",
-   "expected": false
-  },
-  {
-   "id": "reorder-oe-ligature-uppercase",
-   "kind": "reorder",
-   "answer": "cœur",
-   "input": "CŒUR",
-   "expected": true
-  },
-  {
-   "id": "reorder-oe-ligature-spelled-out-is-wrong",
-   "kind": "reorder",
-   "answer": "cœur",
-   "input": "coeur",
-   "expected": false
-  },
-  {
-   "id": "reorder-inverted-marks-exact",
-   "kind": "reorder",
-   "answer": "¿Cómo estás?",
-   "input": "¿cómo estás?",
-   "expected": true
-  },
-  {
-   "id": "reorder-inverted-marks-dropped-is-wrong",
-   "kind": "reorder",
-   "answer": "¿Cómo estás?",
-   "input": "cómo estás",
-   "expected": false
-  },
-  {
-   "id": "reorder-decomposed-accent-typed-for-composed-key",
-   "kind": "reorder",
-   "answer": "café",
-   "input": "cafe\u0301",
-   "expected": true,
-   "divergent": {
-    "android": false
-   },
-   "note": "Swift String == treats composed and decomposed accents as equal; Kotlin == compares code units, so Android rejects it"
-  },
-  {
-   "id": "listening-exact",
-   "kind": "listening",
-   "answer": "went",
-   "input": "went",
-   "expected": true
-  },
-  {
-   "id": "listening-case",
-   "kind": "listening",
-   "answer": "Went",
-   "input": "WENT",
-   "expected": true
-  },
-  {
-   "id": "listening-outer-whitespace",
-   "kind": "listening",
-   "answer": "went",
-   "input": "  went  ",
-   "expected": true
-  },
-  {
-   "id": "listening-wrong",
-   "kind": "listening",
-   "answer": "went",
-   "input": "go",
-   "expected": false
-  },
-  {
-   "id": "listening-empty-input",
-   "kind": "listening",
-   "answer": "went",
-   "input": "",
-   "expected": false
-  },
-  {
-   "id": "listening-trailing-punctuation",
-   "kind": "listening",
-   "answer": "went",
-   "input": "went.",
-   "expected": false
-  },
-  {
-   "id": "listening-articles-are-not-optional",
-   "kind": "listening",
-   "answer": "the cat",
-   "input": "cat",
-   "expected": false
-  },
-  {
-   "id": "listening-inner-double-space",
-   "kind": "listening",
-   "answer": "i am here",
-   "input": "i  am   here",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "listening-straight-apostrophe",
-   "kind": "listening",
-   "answer": "don't go",
-   "input": "don't go",
-   "expected": true
-  },
-  {
-   "id": "listening-curly-apostrophe-typed-for-straight-key",
-   "kind": "listening",
-   "answer": "don't go",
-   "input": "don\u2019t go",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "listening-curly-apostrophe-in-key",
-   "kind": "listening",
-   "answer": "l\u2019ami",
-   "input": "l'ami",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "listening-spaces-hugging-apostrophe",
-   "kind": "listening",
-   "answer": "l'ami",
-   "input": "l ' ami",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "listening-no-break-space-outer",
-   "kind": "listening",
-   "answer": "went",
-   "input": "\u00a0went\u00a0",
-   "expected": true
-  },
-  {
-   "id": "listening-no-break-space-inner",
-   "kind": "listening",
-   "answer": "je suis",
-   "input": "je\u00a0suis",
-   "expected": true,
-   "divergent": {
-    "ios": false,
-    "android": false
-   },
-   "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
-  },
-  {
-   "id": "listening-accent-matters-e",
-   "kind": "listening",
-   "answer": "café",
-   "input": "cafe",
-   "expected": false
-  },
-  {
-   "id": "listening-accent-exact-e",
-   "kind": "listening",
-   "answer": "café",
-   "input": "café",
-   "expected": true
-  },
-  {
-   "id": "listening-accent-uppercase",
-   "kind": "listening",
-   "answer": "café",
-   "input": "CAFÉ",
-   "expected": true
-  },
-  {
-   "id": "listening-n-tilde-exact",
-   "kind": "listening",
-   "answer": "español",
-   "input": "Español",
-   "expected": true
-  },
-  {
-   "id": "listening-n-tilde-folded-is-wrong",
-   "kind": "listening",
-   "answer": "español",
-   "input": "espanol",
-   "expected": false
-  },
-  {
-   "id": "listening-c-cedilla-uppercase",
-   "kind": "listening",
-   "answer": "français",
-   "input": "FRANÇAIS",
-   "expected": true
-  },
-  {
-   "id": "listening-c-cedilla-folded-is-wrong",
-   "kind": "listening",
-   "answer": "français",
-   "input": "francais",
-   "expected": false
-  },
-  {
-   "id": "listening-oe-ligature-uppercase",
-   "kind": "listening",
-   "answer": "cœur",
-   "input": "CŒUR",
-   "expected": true
-  },
-  {
-   "id": "listening-oe-ligature-spelled-out-is-wrong",
-   "kind": "listening",
-   "answer": "cœur",
-   "input": "coeur",
-   "expected": false
-  },
-  {
-   "id": "listening-inverted-marks-exact",
-   "kind": "listening",
-   "answer": "¿Cómo estás?",
-   "input": "¿cómo estás?",
-   "expected": true
-  },
-  {
-   "id": "listening-inverted-marks-dropped-is-wrong",
-   "kind": "listening",
-   "answer": "¿Cómo estás?",
-   "input": "cómo estás",
-   "expected": false
-  },
-  {
-   "id": "listening-decomposed-accent-typed-for-composed-key",
-   "kind": "listening",
-   "answer": "café",
-   "input": "cafe\u0301",
-   "expected": true,
-   "divergent": {
-    "android": false
-   },
-   "note": "Swift String == treats composed and decomposed accents as equal; Kotlin == compares code units, so Android rejects it"
-  },
-  {
-   "id": "speak-en-exact",
-   "kind": "speak",
-   "course": "en",
-   "answer": "She is a doctor",
-   "input": "she is a doctor",
-   "expected": true
-  },
-  {
-   "id": "speak-en-contraction-for-expanded",
-   "kind": "speak",
-   "course": "en",
-   "answer": "She is a doctor",
-   "input": "She's a doctor",
-   "expected": true
-  },
-  {
-   "id": "speak-en-expanded-for-contraction",
-   "kind": "speak",
-   "course": "en",
-   "answer": "She's a doctor",
-   "input": "she is a doctor",
-   "expected": true
-  },
-  {
-   "id": "speak-en-apostrophe-dropped",
-   "kind": "speak",
-   "course": "en",
-   "answer": "She's a doctor",
-   "input": "Shes a doctor.",
-   "expected": true
-  },
-  {
-   "id": "speak-en-curly-apostrophe",
-   "kind": "speak",
-   "course": "en",
-   "answer": "She's a doctor",
-   "input": "She\u2019s a doctor",
-   "expected": true
-  },
-  {
-   "id": "speak-en-dont",
-   "kind": "speak",
-   "course": "en",
-   "answer": "I don't understand",
-   "input": "i dont understand",
-   "expected": true
-  },
-  {
-   "id": "speak-en-cannot-for-cant",
-   "kind": "speak",
-   "course": "en",
-   "answer": "I cannot agree",
-   "input": "I can't agree",
-   "expected": true
-  },
-  {
-   "id": "speak-en-lets",
-   "kind": "speak",
-   "course": "en",
-   "answer": "Let's go",
-   "input": "lets go",
-   "expected": true
-  },
-  {
-   "id": "speak-en-filler-removed",
-   "kind": "speak",
-   "course": "en",
-   "answer": "She's a doctor",
-   "input": "um, she's a doctor",
-   "expected": true
-  },
-  {
-   "id": "speak-en-number-word-vs-numeral",
-   "kind": "speak",
-   "course": "en",
-   "answer": "The bus leaves at nine",
-   "input": "the bus leaves at 9",
-   "expected": true
-  },
-  {
-   "id": "speak-en-accent-folded",
-   "kind": "speak",
-   "course": "en",
-   "answer": "I like the cafe",
-   "input": "I like the café",
-   "expected": true
-  },
-  {
-   "id": "speak-en-trailing-punctuation",
-   "kind": "speak",
-   "course": "en",
-   "answer": "Good morning",
-   "input": "Good morning!",
-   "expected": true
-  },
-  {
-   "id": "speak-en-double-space",
-   "kind": "speak",
-   "course": "en",
-   "answer": "Good morning",
-   "input": "good   morning",
-   "expected": true
-  },
-  {
-   "id": "speak-en-different-sentence",
-   "kind": "speak",
-   "course": "en",
-   "answer": "She is a doctor",
-   "input": "He is a driver",
-   "expected": false
-  },
-  {
-   "id": "speak-en-article-dropped",
-   "kind": "speak",
-   "course": "en",
-   "answer": "She is a doctor",
-   "input": "She is doctor",
-   "expected": false
-  },
-  {
-   "id": "speak-en-empty-transcript",
-   "kind": "speak",
-   "course": "en",
-   "answer": "Good morning",
-   "input": "",
-   "expected": false
-  },
-  {
-   "id": "speak-en-punctuation-only-transcript",
-   "kind": "speak",
-   "course": "en",
-   "answer": "Good morning",
-   "input": "...",
-   "expected": false
-  },
-  {
-   "id": "speak-en-wrong-word",
-   "kind": "speak",
-   "course": "en",
-   "answer": "I have a cat",
-   "input": "I have a hat",
-   "expected": false
-  },
-  {
-   "id": "speak-fr-exact",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "J'ai faim",
-   "input": "j'ai faim",
-   "expected": true
-  },
-  {
-   "id": "speak-fr-elision-split-by-space",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "J'ai faim",
-   "input": "j ai faim",
-   "expected": true
-  },
-  {
-   "id": "speak-fr-elision-apostrophe-dropped",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "J'ai faim",
-   "input": "jai faim",
-   "expected": true
-  },
-  {
-   "id": "speak-fr-curly-apostrophe",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "J'ai faim",
-   "input": "J\u2019ai faim",
-   "expected": true
-  },
-  {
-   "id": "speak-fr-accent-folded",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "C'est l'été",
-   "input": "c'est l'ete",
-   "expected": true
-  },
-  {
-   "id": "speak-fr-c-cedilla-folded",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "Français",
-   "input": "francais",
-   "expected": true
-  },
-  {
-   "id": "speak-fr-number-word-vs-numeral",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "J'ai deux chats",
-   "input": "j'ai 2 chats",
-   "expected": true
-  },
-  {
-   "id": "speak-fr-un-is-not-a-number",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "Un chat",
-   "input": "1 chat",
-   "expected": false
-  },
-  {
-   "id": "speak-fr-filler-removed",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "Je suis fatigué",
-   "input": "euh je suis fatigue",
-   "expected": true
-  },
-  {
-   "id": "speak-fr-trailing-punctuation",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "Bonjour",
-   "input": "Bonjour !",
-   "expected": true
-  },
-  {
-   "id": "speak-fr-different-sentence",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "J'ai faim",
-   "input": "j'ai soif",
-   "expected": false
-  },
-  {
-   "id": "speak-fr-oe-ligature-spelled-out-is-wrong",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "Mon cœur",
-   "input": "mon coeur",
-   "expected": false,
-   "note": "the oe ligature is not decomposed by NFD and is then stripped as punctuation, so 'coeur' never matches; every runtime agrees"
-  },
-  {
-   "id": "speak-fr-empty-transcript",
-   "kind": "speak",
-   "course": "fr",
-   "answer": "Bonjour",
-   "input": "",
-   "expected": false
-  },
-  {
-   "id": "speak-es-exact",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Me gusta el café",
-   "input": "me gusta el café",
-   "expected": true
-  },
-  {
-   "id": "speak-es-accent-folded",
-   "kind": "speak",
-   "course": "es",
-   "answer": "¿Cómo estás?",
-   "input": "como estas",
-   "expected": true
-  },
-  {
-   "id": "speak-es-inverted-marks-ignored",
-   "kind": "speak",
-   "course": "es",
-   "answer": "¿Cómo estás?",
-   "input": "¿cómo estás?",
-   "expected": true
-  },
-  {
-   "id": "speak-es-exclamation-marks-ignored",
-   "kind": "speak",
-   "course": "es",
-   "answer": "¡Hola!",
-   "input": "hola",
-   "expected": true
-  },
-  {
-   "id": "speak-es-silent-h",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Hola",
-   "input": "ola",
-   "expected": true
-  },
-  {
-   "id": "speak-es-ch-keeps-h",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Chico",
-   "input": "cico",
-   "expected": false
-  },
-  {
-   "id": "speak-es-n-tilde-folded",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Español",
-   "input": "espanol",
-   "expected": true
-  },
-  {
-   "id": "speak-es-filler-removed",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Hola amigo",
-   "input": "eh hola amigo",
-   "expected": true
-  },
-  {
-   "id": "speak-es-number-word-vs-numeral",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Tengo tres gatos",
-   "input": "tengo 3 gatos",
-   "expected": true
-  },
-  {
-   "id": "speak-es-un-is-not-a-number",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Un gato",
-   "input": "1 gato",
-   "expected": false
-  },
-  {
-   "id": "speak-es-double-space",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Buenos días",
-   "input": "buenos   dias",
-   "expected": true
-  },
-  {
-   "id": "speak-es-different-sentence",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Me gusta el café",
-   "input": "me gusta el té",
-   "expected": false
-  },
-  {
-   "id": "speak-es-empty-transcript",
-   "kind": "speak",
-   "course": "es",
-   "answer": "Hola",
-   "input": "",
-   "expected": false
-  },
-  {
-   "id": "translate-en-exact",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I don't understand.",
-    "I do not understand."
-   ],
-   "input": "I don't understand.",
-   "expected": true
-  },
-  {
-   "id": "translate-en-second-phrasing",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I don't understand.",
-    "I do not understand."
-   ],
-   "input": "I do not understand",
-   "expected": true
-  },
-  {
-   "id": "translate-en-case",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I don't understand.",
-    "I do not understand."
-   ],
-   "input": "I DO NOT UNDERSTAND",
-   "expected": true
-  },
-  {
-   "id": "translate-en-contraction-for-expanded",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I do not understand."
-   ],
-   "input": "I don't understand",
-   "expected": true
-  },
-  {
-   "id": "translate-en-apostrophe-dropped",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I don't understand.",
-    "I do not understand."
-   ],
-   "input": "i dont understand",
-   "expected": true
-  },
-  {
-   "id": "translate-en-curly-apostrophe",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I don't understand."
-   ],
-   "input": "I don\u2019t understand",
-   "expected": true
-  },
-  {
-   "id": "translate-en-trailing-punctuation",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "Good morning."
-   ],
-   "input": "Good morning!!!",
-   "expected": true
-  },
-  {
-   "id": "translate-en-double-space",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "Good morning."
-   ],
-   "input": "good   morning",
-   "expected": true
-  },
-  {
-   "id": "translate-en-outer-whitespace",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "Good morning."
-   ],
-   "input": "   Good morning.  \n",
-   "expected": true
-  },
-  {
-   "id": "translate-en-number-word-vs-numeral",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I have two cats."
-   ],
-   "input": "I have 2 cats",
-   "expected": true
-  },
-  {
-   "id": "translate-en-accent-folded",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I like the cafe."
-   ],
-   "input": "I like the café",
-   "expected": true
-  },
-  {
-   "id": "translate-en-article-dropped",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I have a cat."
-   ],
-   "input": "I have cat",
-   "expected": false
-  },
-  {
-   "id": "translate-en-wrong-word",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I have a cat."
-   ],
-   "input": "I have a hat",
-   "expected": false
-  },
-  {
-   "id": "translate-en-word-order",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "I like cats."
-   ],
-   "input": "cats I like",
-   "expected": false
-  },
-  {
-   "id": "translate-en-empty-submission",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "Good morning."
-   ],
-   "input": "",
-   "expected": false
-  },
-  {
-   "id": "translate-en-whitespace-only-submission",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "Good morning."
-   ],
-   "input": "   ",
-   "expected": false
-  },
-  {
-   "id": "translate-en-punctuation-only-submission",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "Good morning."
-   ],
-   "input": "?!",
-   "expected": false
-  },
-  {
-   "id": "translate-en-empty-acceptable-list",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [],
-   "input": "Good morning",
-   "expected": false
-  },
-  {
-   "id": "translate-en-acceptable-entry-is-only-punctuation",
-   "kind": "translate",
-   "course": "en",
-   "acceptable": [
-    "..."
-   ],
-   "input": "?!",
-   "expected": false
-  },
-  {
-   "id": "translate-fr-exact",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "Je suis étudiant."
-   ],
-   "input": "Je suis étudiant.",
-   "expected": true
-  },
-  {
-   "id": "translate-fr-accent-folded",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "Je suis étudiant."
-   ],
-   "input": "je suis etudiant",
-   "expected": true
-  },
-  {
-   "id": "translate-fr-c-cedilla-folded",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "Je parle français."
-   ],
-   "input": "je parle francais",
-   "expected": true
-  },
-  {
-   "id": "translate-fr-curly-apostrophe",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "J'ai faim."
-   ],
-   "input": "J\u2019ai faim",
-   "expected": true
-  },
-  {
-   "id": "translate-fr-apostrophe-dropped",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "J'ai faim."
-   ],
-   "input": "jai faim",
-   "expected": true
-  },
-  {
-   "id": "translate-fr-elision-split-by-space-is-wrong",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "J'ai faim."
-   ],
-   "input": "j ai faim",
-   "expected": false,
-   "note": "unlike speak, the typed translate path has no French elision join: 'jai' vs 'j ai'"
-  },
-  {
-   "id": "translate-fr-oe-ligature-uppercase",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "Mon cœur."
-   ],
-   "input": "MON CŒUR",
-   "expected": true
-  },
-  {
-   "id": "translate-fr-oe-ligature-spelled-out-is-wrong",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "Mon cœur."
-   ],
-   "input": "mon coeur",
-   "expected": false
-  },
-  {
-   "id": "translate-fr-trailing-punctuation",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "Comment ça va ?"
-   ],
-   "input": "comment ca va",
-   "expected": true
-  },
-  {
-   "id": "translate-fr-no-break-space-before-colon",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "Attention : danger."
-   ],
-   "input": "Attention\u00a0: danger.",
-   "expected": true
-  },
-  {
-   "id": "translate-fr-article-dropped",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "Le chat dort."
-   ],
-   "input": "chat dort",
-   "expected": false
-  },
-  {
-   "id": "translate-fr-wrong-gender-article",
-   "kind": "translate",
-   "course": "fr",
-   "acceptable": [
-    "Le chat dort."
-   ],
-   "input": "La chat dort",
-   "expected": false
-  },
-  {
-   "id": "translate-es-exact",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "¿Cómo estás?"
-   ],
-   "input": "¿Cómo estás?",
-   "expected": true
-  },
-  {
-   "id": "translate-es-accent-folded",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "¿Cómo estás?"
-   ],
-   "input": "como estas",
-   "expected": true
-  },
-  {
-   "id": "translate-es-inverted-marks-dropped",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "¡Buenos días!"
-   ],
-   "input": "buenos dias",
-   "expected": true
-  },
-  {
-   "id": "translate-es-n-tilde-folded",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "Hablo español."
-   ],
-   "input": "hablo espanol",
-   "expected": true
-  },
-  {
-   "id": "translate-es-n-tilde-uppercase",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "Hablo español."
-   ],
-   "input": "HABLO ESPAÑOL",
-   "expected": true
-  },
-  {
-   "id": "translate-es-decomposed-n-tilde",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "Hablo español."
-   ],
-   "input": "hablo espan\u0303ol",
-   "expected": true
-  },
-  {
-   "id": "translate-es-silent-h-is-not-dropped-when-typed",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "Hola amigo."
-   ],
-   "input": "ola amigo",
-   "expected": false
-  },
-  {
-   "id": "translate-es-article-dropped",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "El gato duerme."
-   ],
-   "input": "gato duerme",
-   "expected": false
-  },
-  {
-   "id": "translate-es-ano-for-año-folds",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "Tengo un año."
-   ],
-   "input": "tengo un ano",
-   "expected": true,
-   "note": "ano/año collapse once accents are folded: a real meaning change the local match accepts; every runtime agrees"
-  },
-  {
-   "id": "translate-es-second-phrasing",
-   "kind": "translate",
-   "course": "es",
-   "acceptable": [
-    "Tengo hambre.",
-    "Estoy hambriento."
-   ],
-   "input": "estoy hambriento",
-   "expected": true
-  },
-  {
-   "id": "typo-gratitute-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My gratitude is important.",
-    "My gratitude matters."
-   ],
-   "submission": "My gratitute is important.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "gratitute",
-      "intended": "x",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": true
-  },
-  {
-   "id": "typo-gratitute-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My gratitude is important.",
-    "My gratitude matters."
-   ],
-   "submission": "My gratitute is important.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'gratitute' is misspelled"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "Your sentence is right in meaning, but 'gratitute' is misspelled"
-   },
-   "expected": true
-  },
-  {
-   "id": "typo-gratitute-bare-false-with-spelling-reason",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My gratitude is important.",
-    "My gratitude matters."
-   ],
-   "submission": "My gratitute is important.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "Your sentence is right in meaning, but 'gratitute' is misspelled"
-   },
-   "expected": true
-  },
-  {
-   "id": "typo-gratitute-bare-false-for-another-reason",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My gratitude is important.",
-    "My gratitude matters."
-   ],
-   "submission": "My gratitute is important.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "Wrong tense."
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-gratitute-plus-an-extra-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My gratitude is important.",
-    "My gratitude matters."
-   ],
-   "submission": "My gratitute is important. hola",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "Your sentence is right in meaning, but 'gratitute' is misspelled"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-aprovada-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "La propuesta fue aprobada."
-   ],
-   "submission": "La propuesta fue aprovada.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "aprovada",
-      "intended": "x",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": true
-  },
-  {
-   "id": "typo-aprovada-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "La propuesta fue aprobada."
-   ],
-   "submission": "La propuesta fue aprovada.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'aprovada' is misspelled"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "The meaning and passive structure are right, but 'aprovada' is misspelled"
-   },
-   "expected": true
-  },
-  {
-   "id": "typo-aprovada-bare-false-with-spelling-reason",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "La propuesta fue aprobada."
-   ],
-   "submission": "La propuesta fue aprovada.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "The meaning and passive structure are right, but 'aprovada' is misspelled"
-   },
-   "expected": true
-  },
-  {
-   "id": "typo-aprovada-bare-false-for-another-reason",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "La propuesta fue aprobada."
-   ],
-   "submission": "La propuesta fue aprovada.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "Wrong tense."
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-aprovada-plus-an-extra-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "La propuesta fue aprobada."
-   ],
-   "submission": "La propuesta fue aprovada. hola",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "The meaning and passive structure are right, but 'aprovada' is misspelled"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-roam-for-room-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My room is big."
-   ],
-   "submission": "My roam is big.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "roam",
-      "intended": "room",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-roam-for-room-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My room is big."
-   ],
-   "submission": "My roam is big.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'room' is misspelled as 'roam'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-roam-for-room-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My room is big."
-   ],
-   "submission": "My roam is big.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'roam' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-roam-for-room-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My room is big."
-   ],
-   "submission": "My roam is big.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'roam' is misspelled, it should be 'room'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-desert-for-dessert-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I love dessert."
-   ],
-   "submission": "I love desert.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "desert",
-      "intended": "dessert",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-desert-for-dessert-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I love dessert."
-   ],
-   "submission": "I love desert.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'dessert' is misspelled as 'desert'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-desert-for-dessert-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I love dessert."
-   ],
-   "submission": "I love desert.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'desert' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-desert-for-dessert-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I love dessert."
-   ],
-   "submission": "I love desert.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'desert' is misspelled, it should be 'dessert'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-later-for-latter-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "The latter is best."
-   ],
-   "submission": "The later is best.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "later",
-      "intended": "latter",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-later-for-latter-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "The latter is best."
-   ],
-   "submission": "The later is best.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'latter' is misspelled as 'later'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-later-for-latter-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "The latter is best."
-   ],
-   "submission": "The later is best.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'later' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-later-for-latter-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "The latter is best."
-   ],
-   "submission": "The later is best.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'later' is misspelled, it should be 'latter'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-wrote-for-write-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I write every day."
-   ],
-   "submission": "I wrote every day.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "wrote",
-      "intended": "write",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-wrote-for-write-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I write every day."
-   ],
-   "submission": "I wrote every day.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'write' is misspelled as 'wrote'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-wrote-for-write-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I write every day."
-   ],
-   "submission": "I wrote every day.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'wrote' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-wrote-for-write-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I write every day."
-   ],
-   "submission": "I wrote every day.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'wrote' is misspelled, it should be 'write'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-write-for-wrote-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I wrote every day."
-   ],
-   "submission": "I write every day.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "write",
-      "intended": "wrote",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-write-for-wrote-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I wrote every day."
-   ],
-   "submission": "I write every day.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'wrote' is misspelled as 'write'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-write-for-wrote-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I wrote every day."
-   ],
-   "submission": "I write every day.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'write' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-write-for-wrote-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I wrote every day."
-   ],
-   "submission": "I write every day.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'write' is misspelled, it should be 'wrote'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienes-for-tienen-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ellos tienen un perro."
-   ],
-   "submission": "Ellos tienes un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "tienes",
-      "intended": "tienen",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienes-for-tienen-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ellos tienen un perro."
-   ],
-   "submission": "Ellos tienes un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'tienen' is misspelled as 'tienes'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienes-for-tienen-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ellos tienen un perro."
-   ],
-   "submission": "Ellos tienes un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'tienes' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienes-for-tienen-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ellos tienen un perro."
-   ],
-   "submission": "Ellos tienes un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'tienes' is misspelled, it should be 'tienen'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienen-for-tienes-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Tú tienes un perro."
-   ],
-   "submission": "Tú tienen un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "tienen",
-      "intended": "tienes",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienen-for-tienes-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Tú tienes un perro."
-   ],
-   "submission": "Tú tienen un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'tienes' is misspelled as 'tienen'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienen-for-tienes-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Tú tienes un perro."
-   ],
-   "submission": "Tú tienen un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'tienen' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienen-for-tienes-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Tú tienes un perro."
-   ],
-   "submission": "Tú tienen un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'tienen' is misspelled, it should be 'tienes'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienes-for-tiene-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ella tiene un perro."
-   ],
-   "submission": "Ella tienes un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "tienes",
-      "intended": "tiene",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienes-for-tiene-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ella tiene un perro."
-   ],
-   "submission": "Ella tienes un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'tiene' is misspelled as 'tienes'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienes-for-tiene-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ella tiene un perro."
-   ],
-   "submission": "Ella tienes un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'tienes' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-tienes-for-tiene-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ella tiene un perro."
-   ],
-   "submission": "Ella tienes un perro.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'tienes' is misspelled, it should be 'tiene'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-hablo-for-habla-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ella habla español."
-   ],
-   "submission": "Ella hablo español.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "hablo",
-      "intended": "habla",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-hablo-for-habla-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ella habla español."
-   ],
-   "submission": "Ella hablo español.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'habla' is misspelled as 'hablo'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-hablo-for-habla-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ella habla español."
-   ],
-   "submission": "Ella hablo español.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'hablo' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-hablo-for-habla-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Ella habla español."
-   ],
-   "submission": "Ella hablo español.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'hablo' is misspelled, it should be 'habla'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-walks-for-walk-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I walk to school."
-   ],
-   "submission": "I walks to school.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "walks",
-      "intended": "walk",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-walks-for-walk-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I walk to school."
-   ],
-   "submission": "I walks to school.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'walk' is misspelled as 'walks'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-walks-for-walk-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I walk to school."
-   ],
-   "submission": "I walks to school.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'walks' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-walks-for-walk-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I walk to school."
-   ],
-   "submission": "I walks to school.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'walks' is misspelled, it should be 'walk'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-petite-for-petit-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Le garçon est petit."
-   ],
-   "submission": "Le garçon est petite.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "petite",
-      "intended": "petit",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-petite-for-petit-listed-under-missing",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Le garçon est petit."
-   ],
-   "submission": "Le garçon est petite.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "'petit' is misspelled as 'petite'"
-    ],
-    "extra": [],
-    "grammar": [],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-petite-for-petit-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Le garçon est petit."
-   ],
-   "submission": "Le garçon est petite.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'petite' is misspelled"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-petite-for-petit-bare-false-says-typo",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Le garçon est petit."
-   ],
-   "submission": "Le garçon est petite.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": false,
-    "reason": "'petite' is misspelled, it should be 'petit'"
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-swiming-flagged-real-word",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I like swimming."
-   ],
-   "submission": "I like swiming.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true,
-    "spelling": [
-     {
-      "written": "swiming",
-      "intended": "x",
-      "written_is_real_word": true
-     }
-    ]
-   },
-   "expected": true
-  },
-  {
-   "id": "typo-demmain-listed-under-grammar",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Je pars demain matin."
-   ],
-   "submission": "Je pars demmain matin.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "'demmain' is misspelled"
-    ],
-    "correct": false,
-    "reason": "fully correct in meaning and grammar, but 'demmain' is misspelled"
-   },
-   "expected": true
-  },
-  {
-   "id": "typo-real-missing-element-next-to-spelling-item",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My gratitude is important.",
-    "My gratitude matters."
-   ],
-   "submission": "My gratitute is.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [
-     "the word 'important'"
-    ],
-    "extra": [],
-    "grammar": [
-     "'gratitude' is misspelled as 'gratitute'"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "typo-model-says-correct",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I have a cat."
-   ],
-   "submission": "I have a cat.",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [],
-    "correct": true
-   },
-   "expected": true
-  },
-  {
-   "id": "typo-model-says-wrong-tense",
-   "kind": "typo-verdict",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "She gave him a present."
-   ],
-   "submission": "She has given him a present",
-   "reply": {
-    "elements": [
-     "a"
-    ],
-    "missing": [],
-    "extra": [],
-    "grammar": [
-     "tense: past simple required"
-    ],
-    "correct": false
-   },
-   "expected": false
-  },
-  {
-   "id": "confusion-roam-for-room",
-   "kind": "confusion",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "There are four shelves in my room."
-   ],
-   "input": "There are four shelves in my roam.",
-   "expected": true
-  },
-  {
-   "id": "confusion-desert-for-dessert",
-   "kind": "confusion",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I love dessert."
-   ],
-   "input": "I love desert.",
-   "expected": true
-  },
-  {
-   "id": "confusion-hola-for-ola",
-   "kind": "confusion",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "Hola amigo."
-   ],
-   "input": "ola amigo",
-   "expected": true
-  },
-  {
-   "id": "confusion-pair-already-in-the-known-wording",
-   "kind": "confusion",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "The roam is big.",
-    "The room is big."
-   ],
-   "input": "The roam is big.",
-   "expected": false
-  },
-  {
-   "id": "confusion-other-word-of-pair-not-known",
-   "kind": "confusion",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "My flat is big."
-   ],
-   "input": "My roam is big.",
-   "expected": false
-  },
-  {
-   "id": "confusion-no-confusable-word",
-   "kind": "confusion",
-   "runtimes": [
-    "web",
-    "deno"
-   ],
-   "acceptable": [
-    "I have a cat."
-   ],
-   "input": "I have a cat.",
-   "expected": false
-  }
- ]
+  "$comment": "One answer-grading fixture set, run by web (vitest), Deno, iOS (Swift Kit) and Android (JVM core). Each case has kind, input and expected. runtimes (optional) lists where a case applies: absent means all four of web, deno, ios, android; typo-verdict and confusion exist only on web and deno. divergent (optional) maps a runtime to the verdict it produces TODAY when that differs from expected; the suites assert the recorded value, so fixing a runtime turns its case red until the marker is removed. Do not edit the iOS copy under ios/LearnWithAlphonsoKit/Tests/LearnWithAlphonsoKitTests/Fixtures: a guard test fails when it differs from this file.",
+  "version": 1,
+  "cases": [
+    {
+      "id": "mc-exact",
+      "kind": "mc",
+      "choices": ["cat", "dog", "bird"],
+      "answerIndex": 1,
+      "input": "dog",
+      "expected": true
+    },
+    {
+      "id": "mc-wrong-choice",
+      "kind": "mc",
+      "choices": ["cat", "dog", "bird"],
+      "answerIndex": 1,
+      "input": "cat",
+      "expected": false
+    },
+    {
+      "id": "mc-case-matters",
+      "kind": "mc",
+      "choices": ["cat", "dog"],
+      "answerIndex": 1,
+      "input": "Dog",
+      "expected": false
+    },
+    {
+      "id": "mc-trailing-space-matters",
+      "kind": "mc",
+      "choices": ["cat", "dog"],
+      "answerIndex": 1,
+      "input": "dog ",
+      "expected": false
+    },
+    {
+      "id": "mc-accent-matters",
+      "kind": "mc",
+      "choices": ["café", "cafe"],
+      "answerIndex": 0,
+      "input": "cafe",
+      "expected": false
+    },
+    {
+      "id": "mc-accented-exact",
+      "kind": "mc",
+      "choices": ["café", "cafe"],
+      "answerIndex": 0,
+      "input": "café",
+      "expected": true
+    },
+    {
+      "id": "mc-index-out-of-range",
+      "kind": "mc",
+      "choices": ["cat"],
+      "answerIndex": 5,
+      "input": "cat",
+      "expected": false
+    },
+    {
+      "id": "mc-negative-index",
+      "kind": "mc",
+      "choices": ["cat"],
+      "answerIndex": -1,
+      "input": "cat",
+      "expected": false
+    },
+    {
+      "id": "fill-exact",
+      "kind": "fill",
+      "answer": "went",
+      "input": "went",
+      "expected": true
+    },
+    {
+      "id": "fill-case",
+      "kind": "fill",
+      "answer": "Went",
+      "input": "WENT",
+      "expected": true
+    },
+    {
+      "id": "fill-outer-whitespace",
+      "kind": "fill",
+      "answer": "went",
+      "input": "  went  ",
+      "expected": true
+    },
+    {
+      "id": "fill-wrong",
+      "kind": "fill",
+      "answer": "went",
+      "input": "go",
+      "expected": false
+    },
+    {
+      "id": "fill-empty-input",
+      "kind": "fill",
+      "answer": "went",
+      "input": "",
+      "expected": false
+    },
+    {
+      "id": "fill-trailing-punctuation",
+      "kind": "fill",
+      "answer": "went",
+      "input": "went.",
+      "expected": false
+    },
+    {
+      "id": "fill-articles-are-not-optional",
+      "kind": "fill",
+      "answer": "the cat",
+      "input": "cat",
+      "expected": false
+    },
+    {
+      "id": "fill-inner-double-space",
+      "kind": "fill",
+      "answer": "i am here",
+      "input": "i  am   here",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "fill-straight-apostrophe",
+      "kind": "fill",
+      "answer": "don't go",
+      "input": "don't go",
+      "expected": true
+    },
+    {
+      "id": "fill-curly-apostrophe-typed-for-straight-key",
+      "kind": "fill",
+      "answer": "don't go",
+      "input": "don\u2019t go",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "fill-curly-apostrophe-in-key",
+      "kind": "fill",
+      "answer": "l\u2019ami",
+      "input": "l'ami",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "fill-spaces-hugging-apostrophe",
+      "kind": "fill",
+      "answer": "l'ami",
+      "input": "l ' ami",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "fill-no-break-space-outer",
+      "kind": "fill",
+      "answer": "went",
+      "input": "\u00a0went\u00a0",
+      "expected": true
+    },
+    {
+      "id": "fill-no-break-space-inner",
+      "kind": "fill",
+      "answer": "je suis",
+      "input": "je\u00a0suis",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "fill-accent-matters-e",
+      "kind": "fill",
+      "answer": "café",
+      "input": "cafe",
+      "expected": false
+    },
+    {
+      "id": "fill-accent-exact-e",
+      "kind": "fill",
+      "answer": "café",
+      "input": "café",
+      "expected": true
+    },
+    {
+      "id": "fill-accent-uppercase",
+      "kind": "fill",
+      "answer": "café",
+      "input": "CAFÉ",
+      "expected": true
+    },
+    {
+      "id": "fill-n-tilde-exact",
+      "kind": "fill",
+      "answer": "español",
+      "input": "Español",
+      "expected": true
+    },
+    {
+      "id": "fill-n-tilde-folded-is-wrong",
+      "kind": "fill",
+      "answer": "español",
+      "input": "espanol",
+      "expected": false
+    },
+    {
+      "id": "fill-c-cedilla-uppercase",
+      "kind": "fill",
+      "answer": "français",
+      "input": "FRANÇAIS",
+      "expected": true
+    },
+    {
+      "id": "fill-c-cedilla-folded-is-wrong",
+      "kind": "fill",
+      "answer": "français",
+      "input": "francais",
+      "expected": false
+    },
+    {
+      "id": "fill-oe-ligature-uppercase",
+      "kind": "fill",
+      "answer": "cœur",
+      "input": "CŒUR",
+      "expected": true
+    },
+    {
+      "id": "fill-oe-ligature-spelled-out-is-wrong",
+      "kind": "fill",
+      "answer": "cœur",
+      "input": "coeur",
+      "expected": false
+    },
+    {
+      "id": "fill-inverted-marks-exact",
+      "kind": "fill",
+      "answer": "¿Cómo estás?",
+      "input": "¿cómo estás?",
+      "expected": true
+    },
+    {
+      "id": "fill-inverted-marks-dropped-is-wrong",
+      "kind": "fill",
+      "answer": "¿Cómo estás?",
+      "input": "cómo estás",
+      "expected": false
+    },
+    {
+      "id": "fill-decomposed-accent-typed-for-composed-key",
+      "kind": "fill",
+      "answer": "café",
+      "input": "cafe\u0301",
+      "expected": true,
+      "divergent": {
+        "android": false
+      },
+      "note": "Swift String == treats composed and decomposed accents as equal; Kotlin == compares code units, so Android rejects it"
+    },
+    {
+      "id": "reorder-exact",
+      "kind": "reorder",
+      "answer": "went",
+      "input": "went",
+      "expected": true
+    },
+    {
+      "id": "reorder-case",
+      "kind": "reorder",
+      "answer": "Went",
+      "input": "WENT",
+      "expected": true
+    },
+    {
+      "id": "reorder-outer-whitespace",
+      "kind": "reorder",
+      "answer": "went",
+      "input": "  went  ",
+      "expected": true
+    },
+    {
+      "id": "reorder-wrong",
+      "kind": "reorder",
+      "answer": "went",
+      "input": "go",
+      "expected": false
+    },
+    {
+      "id": "reorder-empty-input",
+      "kind": "reorder",
+      "answer": "went",
+      "input": "",
+      "expected": false
+    },
+    {
+      "id": "reorder-trailing-punctuation",
+      "kind": "reorder",
+      "answer": "went",
+      "input": "went.",
+      "expected": false
+    },
+    {
+      "id": "reorder-articles-are-not-optional",
+      "kind": "reorder",
+      "answer": "the cat",
+      "input": "cat",
+      "expected": false
+    },
+    {
+      "id": "reorder-inner-double-space",
+      "kind": "reorder",
+      "answer": "i am here",
+      "input": "i  am   here",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "reorder-straight-apostrophe",
+      "kind": "reorder",
+      "answer": "don't go",
+      "input": "don't go",
+      "expected": true
+    },
+    {
+      "id": "reorder-curly-apostrophe-typed-for-straight-key",
+      "kind": "reorder",
+      "answer": "don't go",
+      "input": "don\u2019t go",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "reorder-curly-apostrophe-in-key",
+      "kind": "reorder",
+      "answer": "l\u2019ami",
+      "input": "l'ami",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "reorder-spaces-hugging-apostrophe",
+      "kind": "reorder",
+      "answer": "l'ami",
+      "input": "l ' ami",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "reorder-no-break-space-outer",
+      "kind": "reorder",
+      "answer": "went",
+      "input": "\u00a0went\u00a0",
+      "expected": true
+    },
+    {
+      "id": "reorder-no-break-space-inner",
+      "kind": "reorder",
+      "answer": "je suis",
+      "input": "je\u00a0suis",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "reorder-accent-matters-e",
+      "kind": "reorder",
+      "answer": "café",
+      "input": "cafe",
+      "expected": false
+    },
+    {
+      "id": "reorder-accent-exact-e",
+      "kind": "reorder",
+      "answer": "café",
+      "input": "café",
+      "expected": true
+    },
+    {
+      "id": "reorder-accent-uppercase",
+      "kind": "reorder",
+      "answer": "café",
+      "input": "CAFÉ",
+      "expected": true
+    },
+    {
+      "id": "reorder-n-tilde-exact",
+      "kind": "reorder",
+      "answer": "español",
+      "input": "Español",
+      "expected": true
+    },
+    {
+      "id": "reorder-n-tilde-folded-is-wrong",
+      "kind": "reorder",
+      "answer": "español",
+      "input": "espanol",
+      "expected": false
+    },
+    {
+      "id": "reorder-c-cedilla-uppercase",
+      "kind": "reorder",
+      "answer": "français",
+      "input": "FRANÇAIS",
+      "expected": true
+    },
+    {
+      "id": "reorder-c-cedilla-folded-is-wrong",
+      "kind": "reorder",
+      "answer": "français",
+      "input": "francais",
+      "expected": false
+    },
+    {
+      "id": "reorder-oe-ligature-uppercase",
+      "kind": "reorder",
+      "answer": "cœur",
+      "input": "CŒUR",
+      "expected": true
+    },
+    {
+      "id": "reorder-oe-ligature-spelled-out-is-wrong",
+      "kind": "reorder",
+      "answer": "cœur",
+      "input": "coeur",
+      "expected": false
+    },
+    {
+      "id": "reorder-inverted-marks-exact",
+      "kind": "reorder",
+      "answer": "¿Cómo estás?",
+      "input": "¿cómo estás?",
+      "expected": true
+    },
+    {
+      "id": "reorder-inverted-marks-dropped-is-wrong",
+      "kind": "reorder",
+      "answer": "¿Cómo estás?",
+      "input": "cómo estás",
+      "expected": false
+    },
+    {
+      "id": "reorder-decomposed-accent-typed-for-composed-key",
+      "kind": "reorder",
+      "answer": "café",
+      "input": "cafe\u0301",
+      "expected": true,
+      "divergent": {
+        "android": false
+      },
+      "note": "Swift String == treats composed and decomposed accents as equal; Kotlin == compares code units, so Android rejects it"
+    },
+    {
+      "id": "listening-exact",
+      "kind": "listening",
+      "answer": "went",
+      "input": "went",
+      "expected": true
+    },
+    {
+      "id": "listening-case",
+      "kind": "listening",
+      "answer": "Went",
+      "input": "WENT",
+      "expected": true
+    },
+    {
+      "id": "listening-outer-whitespace",
+      "kind": "listening",
+      "answer": "went",
+      "input": "  went  ",
+      "expected": true
+    },
+    {
+      "id": "listening-wrong",
+      "kind": "listening",
+      "answer": "went",
+      "input": "go",
+      "expected": false
+    },
+    {
+      "id": "listening-empty-input",
+      "kind": "listening",
+      "answer": "went",
+      "input": "",
+      "expected": false
+    },
+    {
+      "id": "listening-trailing-punctuation",
+      "kind": "listening",
+      "answer": "went",
+      "input": "went.",
+      "expected": false
+    },
+    {
+      "id": "listening-articles-are-not-optional",
+      "kind": "listening",
+      "answer": "the cat",
+      "input": "cat",
+      "expected": false
+    },
+    {
+      "id": "listening-inner-double-space",
+      "kind": "listening",
+      "answer": "i am here",
+      "input": "i  am   here",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "listening-straight-apostrophe",
+      "kind": "listening",
+      "answer": "don't go",
+      "input": "don't go",
+      "expected": true
+    },
+    {
+      "id": "listening-curly-apostrophe-typed-for-straight-key",
+      "kind": "listening",
+      "answer": "don't go",
+      "input": "don\u2019t go",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "listening-curly-apostrophe-in-key",
+      "kind": "listening",
+      "answer": "l\u2019ami",
+      "input": "l'ami",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "listening-spaces-hugging-apostrophe",
+      "kind": "listening",
+      "answer": "l'ami",
+      "input": "l ' ami",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "listening-no-break-space-outer",
+      "kind": "listening",
+      "answer": "went",
+      "input": "\u00a0went\u00a0",
+      "expected": true
+    },
+    {
+      "id": "listening-no-break-space-inner",
+      "kind": "listening",
+      "answer": "je suis",
+      "input": "je\u00a0suis",
+      "expected": true,
+      "divergent": {
+        "ios": false,
+        "android": false
+      },
+      "note": "web and Deno normalise fill answers (normaliseFillAnswer); iOS and Android only trim and lowercase, so this is accepted on web/Deno and rejected natively"
+    },
+    {
+      "id": "listening-accent-matters-e",
+      "kind": "listening",
+      "answer": "café",
+      "input": "cafe",
+      "expected": false
+    },
+    {
+      "id": "listening-accent-exact-e",
+      "kind": "listening",
+      "answer": "café",
+      "input": "café",
+      "expected": true
+    },
+    {
+      "id": "listening-accent-uppercase",
+      "kind": "listening",
+      "answer": "café",
+      "input": "CAFÉ",
+      "expected": true
+    },
+    {
+      "id": "listening-n-tilde-exact",
+      "kind": "listening",
+      "answer": "español",
+      "input": "Español",
+      "expected": true
+    },
+    {
+      "id": "listening-n-tilde-folded-is-wrong",
+      "kind": "listening",
+      "answer": "español",
+      "input": "espanol",
+      "expected": false
+    },
+    {
+      "id": "listening-c-cedilla-uppercase",
+      "kind": "listening",
+      "answer": "français",
+      "input": "FRANÇAIS",
+      "expected": true
+    },
+    {
+      "id": "listening-c-cedilla-folded-is-wrong",
+      "kind": "listening",
+      "answer": "français",
+      "input": "francais",
+      "expected": false
+    },
+    {
+      "id": "listening-oe-ligature-uppercase",
+      "kind": "listening",
+      "answer": "cœur",
+      "input": "CŒUR",
+      "expected": true
+    },
+    {
+      "id": "listening-oe-ligature-spelled-out-is-wrong",
+      "kind": "listening",
+      "answer": "cœur",
+      "input": "coeur",
+      "expected": false
+    },
+    {
+      "id": "listening-inverted-marks-exact",
+      "kind": "listening",
+      "answer": "¿Cómo estás?",
+      "input": "¿cómo estás?",
+      "expected": true
+    },
+    {
+      "id": "listening-inverted-marks-dropped-is-wrong",
+      "kind": "listening",
+      "answer": "¿Cómo estás?",
+      "input": "cómo estás",
+      "expected": false
+    },
+    {
+      "id": "listening-decomposed-accent-typed-for-composed-key",
+      "kind": "listening",
+      "answer": "café",
+      "input": "cafe\u0301",
+      "expected": true,
+      "divergent": {
+        "android": false
+      },
+      "note": "Swift String == treats composed and decomposed accents as equal; Kotlin == compares code units, so Android rejects it"
+    },
+    {
+      "id": "speak-en-exact",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She is a doctor",
+      "input": "she is a doctor",
+      "expected": true
+    },
+    {
+      "id": "speak-en-contraction-for-expanded",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She is a doctor",
+      "input": "She's a doctor",
+      "expected": true
+    },
+    {
+      "id": "speak-en-expanded-for-contraction",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She's a doctor",
+      "input": "she is a doctor",
+      "expected": true
+    },
+    {
+      "id": "speak-en-apostrophe-dropped",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She's a doctor",
+      "input": "Shes a doctor.",
+      "expected": true
+    },
+    {
+      "id": "speak-en-curly-apostrophe",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She's a doctor",
+      "input": "She\u2019s a doctor",
+      "expected": true
+    },
+    {
+      "id": "speak-en-dont",
+      "kind": "speak",
+      "course": "en",
+      "answer": "I don't understand",
+      "input": "i dont understand",
+      "expected": true
+    },
+    {
+      "id": "speak-en-cannot-for-cant",
+      "kind": "speak",
+      "course": "en",
+      "answer": "I cannot agree",
+      "input": "I can't agree",
+      "expected": true
+    },
+    {
+      "id": "speak-en-lets",
+      "kind": "speak",
+      "course": "en",
+      "answer": "Let's go",
+      "input": "lets go",
+      "expected": true
+    },
+    {
+      "id": "speak-en-filler-removed",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She's a doctor",
+      "input": "um, she's a doctor",
+      "expected": true
+    },
+    {
+      "id": "speak-en-number-word-vs-numeral",
+      "kind": "speak",
+      "course": "en",
+      "answer": "The bus leaves at nine",
+      "input": "the bus leaves at 9",
+      "expected": true
+    },
+    {
+      "id": "speak-en-accent-folded",
+      "kind": "speak",
+      "course": "en",
+      "answer": "I like the cafe",
+      "input": "I like the café",
+      "expected": true
+    },
+    {
+      "id": "speak-en-trailing-punctuation",
+      "kind": "speak",
+      "course": "en",
+      "answer": "Good morning",
+      "input": "Good morning!",
+      "expected": true
+    },
+    {
+      "id": "speak-en-double-space",
+      "kind": "speak",
+      "course": "en",
+      "answer": "Good morning",
+      "input": "good   morning",
+      "expected": true
+    },
+    {
+      "id": "speak-en-different-sentence",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She is a doctor",
+      "input": "He is a driver",
+      "expected": false
+    },
+    {
+      "id": "speak-en-article-dropped",
+      "kind": "speak",
+      "course": "en",
+      "answer": "She is a doctor",
+      "input": "She is doctor",
+      "expected": false
+    },
+    {
+      "id": "speak-en-empty-transcript",
+      "kind": "speak",
+      "course": "en",
+      "answer": "Good morning",
+      "input": "",
+      "expected": false
+    },
+    {
+      "id": "speak-en-punctuation-only-transcript",
+      "kind": "speak",
+      "course": "en",
+      "answer": "Good morning",
+      "input": "...",
+      "expected": false
+    },
+    {
+      "id": "speak-en-wrong-word",
+      "kind": "speak",
+      "course": "en",
+      "answer": "I have a cat",
+      "input": "I have a hat",
+      "expected": false
+    },
+    {
+      "id": "speak-fr-exact",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "J'ai faim",
+      "input": "j'ai faim",
+      "expected": true
+    },
+    {
+      "id": "speak-fr-elision-split-by-space",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "J'ai faim",
+      "input": "j ai faim",
+      "expected": true
+    },
+    {
+      "id": "speak-fr-elision-apostrophe-dropped",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "J'ai faim",
+      "input": "jai faim",
+      "expected": true
+    },
+    {
+      "id": "speak-fr-curly-apostrophe",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "J'ai faim",
+      "input": "J\u2019ai faim",
+      "expected": true
+    },
+    {
+      "id": "speak-fr-accent-folded",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "C'est l'été",
+      "input": "c'est l'ete",
+      "expected": true
+    },
+    {
+      "id": "speak-fr-c-cedilla-folded",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "Français",
+      "input": "francais",
+      "expected": true
+    },
+    {
+      "id": "speak-fr-number-word-vs-numeral",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "J'ai deux chats",
+      "input": "j'ai 2 chats",
+      "expected": true
+    },
+    {
+      "id": "speak-fr-un-is-not-a-number",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "Un chat",
+      "input": "1 chat",
+      "expected": false
+    },
+    {
+      "id": "speak-fr-filler-removed",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "Je suis fatigué",
+      "input": "euh je suis fatigue",
+      "expected": true
+    },
+    {
+      "id": "speak-fr-trailing-punctuation",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "Bonjour",
+      "input": "Bonjour !",
+      "expected": true
+    },
+    {
+      "id": "speak-fr-different-sentence",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "J'ai faim",
+      "input": "j'ai soif",
+      "expected": false
+    },
+    {
+      "id": "speak-fr-oe-ligature-spelled-out-is-wrong",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "Mon cœur",
+      "input": "mon coeur",
+      "expected": false,
+      "note": "the oe ligature is not decomposed by NFD and is then stripped as punctuation, so 'coeur' never matches; every runtime agrees"
+    },
+    {
+      "id": "speak-fr-empty-transcript",
+      "kind": "speak",
+      "course": "fr",
+      "answer": "Bonjour",
+      "input": "",
+      "expected": false
+    },
+    {
+      "id": "speak-es-exact",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Me gusta el café",
+      "input": "me gusta el café",
+      "expected": true
+    },
+    {
+      "id": "speak-es-accent-folded",
+      "kind": "speak",
+      "course": "es",
+      "answer": "¿Cómo estás?",
+      "input": "como estas",
+      "expected": true
+    },
+    {
+      "id": "speak-es-inverted-marks-ignored",
+      "kind": "speak",
+      "course": "es",
+      "answer": "¿Cómo estás?",
+      "input": "¿cómo estás?",
+      "expected": true
+    },
+    {
+      "id": "speak-es-exclamation-marks-ignored",
+      "kind": "speak",
+      "course": "es",
+      "answer": "¡Hola!",
+      "input": "hola",
+      "expected": true
+    },
+    {
+      "id": "speak-es-silent-h",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Hola",
+      "input": "ola",
+      "expected": true
+    },
+    {
+      "id": "speak-es-ch-keeps-h",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Chico",
+      "input": "cico",
+      "expected": false
+    },
+    {
+      "id": "speak-es-n-tilde-folded",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Español",
+      "input": "espanol",
+      "expected": true
+    },
+    {
+      "id": "speak-es-filler-removed",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Hola amigo",
+      "input": "eh hola amigo",
+      "expected": true
+    },
+    {
+      "id": "speak-es-number-word-vs-numeral",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Tengo tres gatos",
+      "input": "tengo 3 gatos",
+      "expected": true
+    },
+    {
+      "id": "speak-es-un-is-not-a-number",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Un gato",
+      "input": "1 gato",
+      "expected": false
+    },
+    {
+      "id": "speak-es-double-space",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Buenos días",
+      "input": "buenos   dias",
+      "expected": true
+    },
+    {
+      "id": "speak-es-different-sentence",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Me gusta el café",
+      "input": "me gusta el té",
+      "expected": false
+    },
+    {
+      "id": "speak-es-empty-transcript",
+      "kind": "speak",
+      "course": "es",
+      "answer": "Hola",
+      "input": "",
+      "expected": false
+    },
+    {
+      "id": "translate-en-exact",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I don't understand.", "I do not understand."],
+      "input": "I don't understand.",
+      "expected": true
+    },
+    {
+      "id": "translate-en-second-phrasing",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I don't understand.", "I do not understand."],
+      "input": "I do not understand",
+      "expected": true
+    },
+    {
+      "id": "translate-en-case",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I don't understand.", "I do not understand."],
+      "input": "I DO NOT UNDERSTAND",
+      "expected": true
+    },
+    {
+      "id": "translate-en-contraction-for-expanded",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I do not understand."],
+      "input": "I don't understand",
+      "expected": true
+    },
+    {
+      "id": "translate-en-apostrophe-dropped",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I don't understand.", "I do not understand."],
+      "input": "i dont understand",
+      "expected": true
+    },
+    {
+      "id": "translate-en-curly-apostrophe",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I don't understand."],
+      "input": "I don\u2019t understand",
+      "expected": true
+    },
+    {
+      "id": "translate-en-trailing-punctuation",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["Good morning."],
+      "input": "Good morning!!!",
+      "expected": true
+    },
+    {
+      "id": "translate-en-double-space",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["Good morning."],
+      "input": "good   morning",
+      "expected": true
+    },
+    {
+      "id": "translate-en-outer-whitespace",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["Good morning."],
+      "input": "   Good morning.  \n",
+      "expected": true
+    },
+    {
+      "id": "translate-en-number-word-vs-numeral",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I have two cats."],
+      "input": "I have 2 cats",
+      "expected": true
+    },
+    {
+      "id": "translate-en-accent-folded",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I like the cafe."],
+      "input": "I like the café",
+      "expected": true
+    },
+    {
+      "id": "translate-en-article-dropped",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I have a cat."],
+      "input": "I have cat",
+      "expected": false
+    },
+    {
+      "id": "translate-en-wrong-word",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I have a cat."],
+      "input": "I have a hat",
+      "expected": false
+    },
+    {
+      "id": "translate-en-word-order",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["I like cats."],
+      "input": "cats I like",
+      "expected": false
+    },
+    {
+      "id": "translate-en-empty-submission",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["Good morning."],
+      "input": "",
+      "expected": false
+    },
+    {
+      "id": "translate-en-whitespace-only-submission",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["Good morning."],
+      "input": "   ",
+      "expected": false
+    },
+    {
+      "id": "translate-en-punctuation-only-submission",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["Good morning."],
+      "input": "?!",
+      "expected": false
+    },
+    {
+      "id": "translate-en-empty-acceptable-list",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": [],
+      "input": "Good morning",
+      "expected": false
+    },
+    {
+      "id": "translate-en-acceptable-entry-is-only-punctuation",
+      "kind": "translate",
+      "course": "en",
+      "acceptable": ["..."],
+      "input": "?!",
+      "expected": false
+    },
+    {
+      "id": "translate-fr-exact",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["Je suis étudiant."],
+      "input": "Je suis étudiant.",
+      "expected": true
+    },
+    {
+      "id": "translate-fr-accent-folded",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["Je suis étudiant."],
+      "input": "je suis etudiant",
+      "expected": true
+    },
+    {
+      "id": "translate-fr-c-cedilla-folded",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["Je parle français."],
+      "input": "je parle francais",
+      "expected": true
+    },
+    {
+      "id": "translate-fr-curly-apostrophe",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["J'ai faim."],
+      "input": "J\u2019ai faim",
+      "expected": true
+    },
+    {
+      "id": "translate-fr-apostrophe-dropped",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["J'ai faim."],
+      "input": "jai faim",
+      "expected": true
+    },
+    {
+      "id": "translate-fr-elision-split-by-space-is-wrong",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["J'ai faim."],
+      "input": "j ai faim",
+      "expected": false,
+      "note": "unlike speak, the typed translate path has no French elision join: 'jai' vs 'j ai'"
+    },
+    {
+      "id": "translate-fr-oe-ligature-uppercase",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["Mon cœur."],
+      "input": "MON CŒUR",
+      "expected": true
+    },
+    {
+      "id": "translate-fr-oe-ligature-spelled-out-is-wrong",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["Mon cœur."],
+      "input": "mon coeur",
+      "expected": false
+    },
+    {
+      "id": "translate-fr-trailing-punctuation",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["Comment ça va ?"],
+      "input": "comment ca va",
+      "expected": true
+    },
+    {
+      "id": "translate-fr-no-break-space-before-colon",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["Attention : danger."],
+      "input": "Attention\u00a0: danger.",
+      "expected": true
+    },
+    {
+      "id": "translate-fr-article-dropped",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["Le chat dort."],
+      "input": "chat dort",
+      "expected": false
+    },
+    {
+      "id": "translate-fr-wrong-gender-article",
+      "kind": "translate",
+      "course": "fr",
+      "acceptable": ["Le chat dort."],
+      "input": "La chat dort",
+      "expected": false
+    },
+    {
+      "id": "translate-es-exact",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["¿Cómo estás?"],
+      "input": "¿Cómo estás?",
+      "expected": true
+    },
+    {
+      "id": "translate-es-accent-folded",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["¿Cómo estás?"],
+      "input": "como estas",
+      "expected": true
+    },
+    {
+      "id": "translate-es-inverted-marks-dropped",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["¡Buenos días!"],
+      "input": "buenos dias",
+      "expected": true
+    },
+    {
+      "id": "translate-es-n-tilde-folded",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Hablo español."],
+      "input": "hablo espanol",
+      "expected": true
+    },
+    {
+      "id": "translate-es-n-tilde-uppercase",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Hablo español."],
+      "input": "HABLO ESPAÑOL",
+      "expected": true
+    },
+    {
+      "id": "translate-es-decomposed-n-tilde",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Hablo español."],
+      "input": "hablo espan\u0303ol",
+      "expected": true
+    },
+    {
+      "id": "translate-es-silent-h-is-not-dropped-when-typed",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Hola amigo."],
+      "input": "ola amigo",
+      "expected": false
+    },
+    {
+      "id": "translate-es-article-dropped",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["El gato duerme."],
+      "input": "gato duerme",
+      "expected": false
+    },
+    {
+      "id": "translate-es-ano-for-año-folds",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Tengo un año."],
+      "input": "tengo un ano",
+      "expected": true,
+      "note": "ano/año collapse once accents are folded: a real meaning change the local match accepts; every runtime agrees"
+    },
+    {
+      "id": "translate-es-second-phrasing",
+      "kind": "translate",
+      "course": "es",
+      "acceptable": ["Tengo hambre.", "Estoy hambriento."],
+      "input": "estoy hambriento",
+      "expected": true
+    },
+    {
+      "id": "typo-gratitute-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My gratitude is important.", "My gratitude matters."],
+      "submission": "My gratitute is important.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "gratitute",
+            "intended": "x",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "typo-gratitute-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My gratitude is important.", "My gratitude matters."],
+      "submission": "My gratitute is important.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'gratitute' is misspelled"],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "Your sentence is right in meaning, but 'gratitute' is misspelled"
+      },
+      "expected": true
+    },
+    {
+      "id": "typo-gratitute-bare-false-with-spelling-reason",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My gratitude is important.", "My gratitude matters."],
+      "submission": "My gratitute is important.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "Your sentence is right in meaning, but 'gratitute' is misspelled"
+      },
+      "expected": true
+    },
+    {
+      "id": "typo-gratitute-bare-false-for-another-reason",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My gratitude is important.", "My gratitude matters."],
+      "submission": "My gratitute is important.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "Wrong tense."
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-gratitute-plus-an-extra-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My gratitude is important.", "My gratitude matters."],
+      "submission": "My gratitute is important. hola",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "Your sentence is right in meaning, but 'gratitute' is misspelled"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-aprovada-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["La propuesta fue aprobada."],
+      "submission": "La propuesta fue aprovada.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "aprovada",
+            "intended": "x",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "typo-aprovada-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["La propuesta fue aprobada."],
+      "submission": "La propuesta fue aprovada.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'aprovada' is misspelled"],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "The meaning and passive structure are right, but 'aprovada' is misspelled"
+      },
+      "expected": true
+    },
+    {
+      "id": "typo-aprovada-bare-false-with-spelling-reason",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["La propuesta fue aprobada."],
+      "submission": "La propuesta fue aprovada.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "The meaning and passive structure are right, but 'aprovada' is misspelled"
+      },
+      "expected": true
+    },
+    {
+      "id": "typo-aprovada-bare-false-for-another-reason",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["La propuesta fue aprobada."],
+      "submission": "La propuesta fue aprovada.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "Wrong tense."
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-aprovada-plus-an-extra-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["La propuesta fue aprobada."],
+      "submission": "La propuesta fue aprovada. hola",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "The meaning and passive structure are right, but 'aprovada' is misspelled"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-roam-for-room-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My room is big."],
+      "submission": "My roam is big.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "roam",
+            "intended": "room",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-roam-for-room-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My room is big."],
+      "submission": "My roam is big.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'room' is misspelled as 'roam'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-roam-for-room-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My room is big."],
+      "submission": "My roam is big.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'roam' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-roam-for-room-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My room is big."],
+      "submission": "My roam is big.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'roam' is misspelled, it should be 'room'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-desert-for-dessert-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I love dessert."],
+      "submission": "I love desert.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "desert",
+            "intended": "dessert",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-desert-for-dessert-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I love dessert."],
+      "submission": "I love desert.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'dessert' is misspelled as 'desert'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-desert-for-dessert-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I love dessert."],
+      "submission": "I love desert.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'desert' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-desert-for-dessert-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I love dessert."],
+      "submission": "I love desert.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'desert' is misspelled, it should be 'dessert'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-later-for-latter-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["The latter is best."],
+      "submission": "The later is best.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "later",
+            "intended": "latter",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-later-for-latter-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["The latter is best."],
+      "submission": "The later is best.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'latter' is misspelled as 'later'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-later-for-latter-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["The latter is best."],
+      "submission": "The later is best.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'later' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-later-for-latter-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["The latter is best."],
+      "submission": "The later is best.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'later' is misspelled, it should be 'latter'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-wrote-for-write-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I write every day."],
+      "submission": "I wrote every day.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "wrote",
+            "intended": "write",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-wrote-for-write-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I write every day."],
+      "submission": "I wrote every day.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'write' is misspelled as 'wrote'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-wrote-for-write-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I write every day."],
+      "submission": "I wrote every day.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'wrote' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-wrote-for-write-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I write every day."],
+      "submission": "I wrote every day.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'wrote' is misspelled, it should be 'write'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-write-for-wrote-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I wrote every day."],
+      "submission": "I write every day.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "write",
+            "intended": "wrote",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-write-for-wrote-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I wrote every day."],
+      "submission": "I write every day.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'wrote' is misspelled as 'write'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-write-for-wrote-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I wrote every day."],
+      "submission": "I write every day.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'write' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-write-for-wrote-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I wrote every day."],
+      "submission": "I write every day.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'write' is misspelled, it should be 'wrote'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienes-for-tienen-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ellos tienen un perro."],
+      "submission": "Ellos tienes un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "tienes",
+            "intended": "tienen",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienes-for-tienen-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ellos tienen un perro."],
+      "submission": "Ellos tienes un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'tienen' is misspelled as 'tienes'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienes-for-tienen-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ellos tienen un perro."],
+      "submission": "Ellos tienes un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'tienes' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienes-for-tienen-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ellos tienen un perro."],
+      "submission": "Ellos tienes un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'tienes' is misspelled, it should be 'tienen'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienen-for-tienes-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Tú tienes un perro."],
+      "submission": "Tú tienen un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "tienen",
+            "intended": "tienes",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienen-for-tienes-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Tú tienes un perro."],
+      "submission": "Tú tienen un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'tienes' is misspelled as 'tienen'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienen-for-tienes-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Tú tienes un perro."],
+      "submission": "Tú tienen un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'tienen' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienen-for-tienes-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Tú tienes un perro."],
+      "submission": "Tú tienen un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'tienen' is misspelled, it should be 'tienes'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienes-for-tiene-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ella tiene un perro."],
+      "submission": "Ella tienes un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "tienes",
+            "intended": "tiene",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienes-for-tiene-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ella tiene un perro."],
+      "submission": "Ella tienes un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'tiene' is misspelled as 'tienes'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienes-for-tiene-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ella tiene un perro."],
+      "submission": "Ella tienes un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'tienes' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-tienes-for-tiene-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ella tiene un perro."],
+      "submission": "Ella tienes un perro.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'tienes' is misspelled, it should be 'tiene'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-hablo-for-habla-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ella habla español."],
+      "submission": "Ella hablo español.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "hablo",
+            "intended": "habla",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-hablo-for-habla-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ella habla español."],
+      "submission": "Ella hablo español.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'habla' is misspelled as 'hablo'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-hablo-for-habla-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ella habla español."],
+      "submission": "Ella hablo español.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'hablo' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-hablo-for-habla-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Ella habla español."],
+      "submission": "Ella hablo español.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'hablo' is misspelled, it should be 'habla'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-walks-for-walk-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I walk to school."],
+      "submission": "I walks to school.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "walks",
+            "intended": "walk",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-walks-for-walk-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I walk to school."],
+      "submission": "I walks to school.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'walk' is misspelled as 'walks'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-walks-for-walk-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I walk to school."],
+      "submission": "I walks to school.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'walks' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-walks-for-walk-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I walk to school."],
+      "submission": "I walks to school.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'walks' is misspelled, it should be 'walk'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-petite-for-petit-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Le garçon est petit."],
+      "submission": "Le garçon est petite.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "petite",
+            "intended": "petit",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-petite-for-petit-listed-under-missing",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Le garçon est petit."],
+      "submission": "Le garçon est petite.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["'petit' is misspelled as 'petite'"],
+        "extra": [],
+        "grammar": [],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-petite-for-petit-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Le garçon est petit."],
+      "submission": "Le garçon est petite.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'petite' is misspelled"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-petite-for-petit-bare-false-says-typo",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Le garçon est petit."],
+      "submission": "Le garçon est petite.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": false,
+        "reason": "'petite' is misspelled, it should be 'petit'"
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-swiming-flagged-real-word",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I like swimming."],
+      "submission": "I like swiming.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true,
+        "spelling": [
+          {
+            "written": "swiming",
+            "intended": "x",
+            "written_is_real_word": true
+          }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "typo-demmain-listed-under-grammar",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Je pars demain matin."],
+      "submission": "Je pars demmain matin.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["'demmain' is misspelled"],
+        "correct": false,
+        "reason": "fully correct in meaning and grammar, but 'demmain' is misspelled"
+      },
+      "expected": true
+    },
+    {
+      "id": "typo-real-missing-element-next-to-spelling-item",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My gratitude is important.", "My gratitude matters."],
+      "submission": "My gratitute is.",
+      "reply": {
+        "elements": ["a"],
+        "missing": ["the word 'important'"],
+        "extra": [],
+        "grammar": ["'gratitude' is misspelled as 'gratitute'"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "typo-model-says-correct",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I have a cat."],
+      "submission": "I have a cat.",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": [],
+        "correct": true
+      },
+      "expected": true
+    },
+    {
+      "id": "typo-model-says-wrong-tense",
+      "kind": "typo-verdict",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["She gave him a present."],
+      "submission": "She has given him a present",
+      "reply": {
+        "elements": ["a"],
+        "missing": [],
+        "extra": [],
+        "grammar": ["tense: past simple required"],
+        "correct": false
+      },
+      "expected": false
+    },
+    {
+      "id": "confusion-roam-for-room",
+      "kind": "confusion",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["There are four shelves in my room."],
+      "input": "There are four shelves in my roam.",
+      "expected": true
+    },
+    {
+      "id": "confusion-desert-for-dessert",
+      "kind": "confusion",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I love dessert."],
+      "input": "I love desert.",
+      "expected": true
+    },
+    {
+      "id": "confusion-hola-for-ola",
+      "kind": "confusion",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["Hola amigo."],
+      "input": "ola amigo",
+      "expected": true
+    },
+    {
+      "id": "confusion-pair-already-in-the-known-wording",
+      "kind": "confusion",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["The roam is big.", "The room is big."],
+      "input": "The roam is big.",
+      "expected": false
+    },
+    {
+      "id": "confusion-other-word-of-pair-not-known",
+      "kind": "confusion",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["My flat is big."],
+      "input": "My roam is big.",
+      "expected": false
+    },
+    {
+      "id": "confusion-no-confusable-word",
+      "kind": "confusion",
+      "runtimes": ["web", "deno"],
+      "acceptable": ["I have a cat."],
+      "input": "I have a cat.",
+      "expected": false
+    }
+  ]
 }
