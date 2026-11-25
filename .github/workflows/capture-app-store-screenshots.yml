@@ -1,12 +1,13 @@
 name: Capture App Store Screenshots
 
 # Manual only. Seeds the demo account once (scripts/seed-demo-account.ts),
-# then boots two simulators (the App Store 6.7" size and the Devpost-spec
-# 6.1" size -- screenshot-shot-list.md) in parallel, each minting its own
-# real session (scripts/mint-demo-session.ts) and running
-# LearnWithAlphonsoUITests/ScreenshotTests to capture every screen it can
-# automate. Does not attempt Hector's shot (a real voice exchange) -- see
-# that test file's own header comment for why.
+# then boots one 6.9" simulator (Royal light, a clean status bar), mints a
+# real session (scripts/mint-demo-session.ts) and runs
+# LearnWithAlphonsoUITests/ScreenshotTests, which captures the App Store set
+# (Learn map, a lesson question, a story scene, Practice, a call, Hector,
+# Library, Profile). Each capture proves it is the right, loaded screen or
+# the run fails (see that file's header). Hector needs a Pro demo account;
+# nothing here grants Pro.
 #
 # Uses SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY -- same secrets ci.yml
 # already uses, nothing new needed. Seeding is its own job (not repeated
@@ -49,21 +50,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # 1320x2868 -- the shot list's own table says Apple accepts this
-          # OR 1290x2796 for the 6.9"/6.7" slot. Chosen because it's this
-          # one that's actually pre-created on GitHub's macOS runner image
-          # (confirmed live: "iPhone 16 Pro Max" -- 1290x2796 -- is a valid
-          # device *type* but has no pre-created device *instance* here,
-          # which `simctl create` below sidesteps anyway, but no reason to
-          # fight the runner's defaults for a resolution the shot list
-          # already says is optional).
+          # 1320x2868 -- the 6.9" slot of the App Store listing.
           - device: "iPhone 17 Pro Max"
             device_type_id: "iPhone-17-Pro-Max"
             label: appstore-69
-          # Devpost's own spec, exactly: 1179x2556, no device frame.
-          - device: "iPhone 16"
-            device_type_id: "iPhone-16"
-            label: devpost
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
@@ -112,6 +102,10 @@ jobs:
           echo "Created $UDID (${{ matrix.device }})"
           echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
           xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          # Royal light (the theme follows the system appearance) and a clean, store-style status bar.
+          xcrun simctl ui "$UDID" appearance light
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularMode active --cellularBars 4 --wifiBars 3
 
       - name: Build for testing
         working-directory: ios/LearnWithAlphonso
@@ -154,7 +148,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: screenshots-${{ matrix.label }}
-          path: screenshots/${{ matrix.label }}/*.png
+          path: |
+            screenshots/${{ matrix.label }}/*.png
+            screenshots/${{ matrix.label }}/*.txt
           if-no-files-found: warn
 
       - name: Upload test result bundle (screenshots are attached here too)
