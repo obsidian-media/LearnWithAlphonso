@@ -28,6 +28,38 @@ describe("LISTING", () => {
     expect(LISTING.supportUrl).toBe("https://learnwithalphonso.com/support");
   });
 
+  it("matches the text applied in App Store Connect on 2026-11-22", () => {
+    // The live description is 2929 characters and the promotional text 157; both stay inside Apple's limits.
+    expect(LISTING.description.length).toBe(2929);
+    expect(LISTING.promotionalText.length).toBe(157);
+    expect(LISTING.promotionalText).toBe(
+      "Short lessons, speaking practice, podcasts and choose-your-path stories in English, French and Spanish. Hector, your AI voice tutor, comes with Alphonso Pro.",
+    );
+    expect(LISTING.supportUrl).toBe("https://learnwithalphonso.com/support");
+    expect(LISTING.marketingUrl).toBe("https://discover.alphonsoecosystem.app");
+  });
+
+  it("has the stories and Say it right paragraphs right after LISTEN ON YOUR SCHEDULE", () => {
+    const heads = LISTING.description
+      .split("\n\n")
+      .map((b) => b.split("\n")[0])
+      .filter((h) => /^[A-Z ,]+$/.test(h));
+    const i = heads.indexOf("LISTEN ON YOUR SCHEDULE");
+    expect(i).toBeGreaterThan(-1);
+    expect(heads.slice(i, i + 4)).toEqual([
+      "LISTEN ON YOUR SCHEDULE",
+      "READ AND CHOOSE YOUR STORY",
+      "SAY IT, SEE IT",
+      "KEEP GOING",
+    ]);
+  });
+
+  it("uses only the new domain for its links", () => {
+    expect(LISTING.description).not.toContain("alphonsoecosystem.app");
+    expect(LISTING.description).toContain("https://learnwithalphonso.com/terms");
+    expect(LISTING.description).toContain("https://learnwithalphonso.com/privacy");
+  });
+
   it("states no price", () => {
     expect(JSON.stringify(LISTING)).not.toMatch(/[$€£]\s?\d|\d\s?(USD|EUR)/);
   });

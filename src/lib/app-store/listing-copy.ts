@@ -37,6 +37,12 @@ Practice everyday scenarios by speaking in the language of your course. You see 
 LISTEN ON YOUR SCHEDULE
 Level-graded audio episodes with transcripts in English, French and Spanish. Keep listening with the screen locked, or download episodes to listen offline.
 
+READ AND CHOOSE YOUR STORY
+Illustrated branching stories where your choices change what happens next, written for your level in English, French and Spanish.
+
+SAY IT, SEE IT
+Say the Picture shows a real photo and asks you to name it out loud. Say it right listens to your pronunciation and tells you how close you were.
+
 KEEP GOING
 Set a learning goal and see how many lessons a week it takes. Tap a word in a tutor reply to save it to your review. Keep a daily streak and earn XP.
 
@@ -52,7 +58,7 @@ AI features run only after you allow them, and you can turn them off at any time
 Learn With Alphonso is for learners aged 13 and over.
 
 SUBSCRIPTION
-Learn With Alphonso is free to download, and lessons, review, speaking practice and listening are free to use, within the hearts and AI limits of a free account. Alphonso Pro is an optional auto-renewable monthly subscription. It gives you Hector, the AI voice tutor, unlimited hearts in lessons, What Alphonso remembers (notes from your practice calls), and a larger monthly allowance for the AI features. Eligible new subscribers start with a free trial. Payment is charged to your Apple Account when you confirm the purchase, after any free trial ends. The subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period, and your account is charged for the renewal within the 24 hours before the period ends. You can manage or cancel it in your Apple Account settings.
+Learn With Alphonso is free to download, and lessons, review, speaking practice and listening are free to use. Alphonso Pro is an optional auto-renewable monthly subscription that unlocks Hector. Eligible new subscribers start with a free trial. Payment is charged to your Apple Account when you confirm the purchase, after any free trial ends. The subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period, and your account is charged for the renewal within the 24 hours before the period ends. You can manage or cancel it in your Apple Account settings.
 
 Terms of Use: ${TERMS}
 Apple Standard EULA: ${EULA}
@@ -61,7 +67,7 @@ Privacy Policy: ${PRIVACY}`;
 export const LISTING: Listing = {
   subtitle: "English, French and Spanish",
   promotionalText:
-    "Short lessons, speaking practice and podcasts in English, French and Spanish. Hector, your AI voice tutor, comes with Alphonso Pro.",
+    "Short lessons, speaking practice, podcasts and choose-your-path stories in English, French and Spanish. Hector, your AI voice tutor, comes with Alphonso Pro.",
   keywords:
     "speaking,vocabulary,grammar,listening,podcast,tutor,fluency,cefr,conversation,practice,review,ai",
   supportUrl: "https://learnwithalphonso.com/support",
